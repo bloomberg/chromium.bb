@@ -11,23 +11,20 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
-#include "testing/gmock/include/gmock/gmock-actions.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -57,6 +54,8 @@ namespace {
 
 const char kTestGaiaId[] = "gaia-id-test_user@test.com";
 const char kTestUser[] = "test_user@test.com";
+const char kRefreshToken[] = "refresh_token";
+const char kPassword[] = "password";
 
 }  // namespace
 
@@ -65,42 +64,10 @@ class SyncUIUtilTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
-// TODO(tim): This shouldn't be required. r194857 removed the
-// AuthInProgress override from FakeSigninManager, which meant this test started
-// using the "real" SigninManager AuthInProgress logic. Without that override,
-// it's no longer possible to test both chrome os + desktop flows as part of the
-// same test, because AuthInProgress is always false on chrome os. Most of the
-// tests are unaffected, but STATUS_CASE_AUTHENTICATING can't exist in both
-// versions, so it we will require two separate tests, one using SigninManager
-// and one using SigninManagerBase (which require different setup procedures.
-class FakeSigninManagerForSyncUIUtilTest : public FakeSigninManagerBase {
- public:
-  explicit FakeSigninManagerForSyncUIUtilTest(Profile* profile)
-      : FakeSigninManagerBase(
-            ChromeSigninClientFactory::GetForProfile(profile),
-            AccountTrackerServiceFactory::GetForProfile(profile),
-            SigninErrorControllerFactory::GetForProfile(profile)),
-        auth_in_progress_(false) {
-    Initialize(nullptr);
-  }
-
-  ~FakeSigninManagerForSyncUIUtilTest() override {}
-
-  bool AuthInProgress() const override { return auth_in_progress_; }
-
-  void set_auth_in_progress() {
-    auth_in_progress_ = true;
-  }
-
- private:
-  bool auth_in_progress_;
-};
-
 // Sets up a TestSyncService to emulate one of a number of distinct cases in
 // order to perform tests on the generated messages.
 void GetDistinctCase(TestSyncService* service,
-                     FakeSigninManagerForSyncUIUtilTest* signin,
-                     ProfileOAuth2TokenService* token_service,
+                     identity::IdentityManager* identity_manager,
                      int case_number) {
   // Auth Error object is returned by reference in mock and needs to stay in
   // scope throughout test, so it is owned by calling method. However it is
@@ -126,7 +93,22 @@ void GetDistinctCase(TestSyncService* service,
       service->SetPassphraseRequired(false);
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
       service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
-      signin->set_auth_in_progress();
+
+      // This case will be run in platforms supporting mutation of the primary
+      // account (i.e., not ChromeOS) only, so we can assume mutator != nullptr.
+      auto* primary_account_mutator =
+          identity_manager->GetPrimaryAccountMutator();
+      DCHECK(primary_account_mutator);
+
+      // Starting the auth process and not completing it will make the mutator
+      // report "auth in progress" when checked from the test later on.
+      primary_account_mutator
+          ->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
+              kRefreshToken, kTestGaiaId, kTestUser, kPassword,
+              base::BindOnce([](const std::string& refresh_token) {
+                // Check that the token is properly passed along.
+                EXPECT_EQ(kRefreshToken, refresh_token);
+              }));
       return;
     }
     case STATUS_CASE_AUTH_ERROR: {
@@ -134,13 +116,13 @@ void GetDistinctCase(TestSyncService* service,
       service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
       service->SetPassphraseRequired(false);
       service->SetDetailedSyncStatus(false, syncer::SyncEngine::Status());
-      std::string account_id = signin->GetAuthenticatedAccountId();
-      token_service->UpdateCredentials(account_id, "refresh_token");
-      // TODO(https://crbug.com/836212): Do not use the delegate directly,
-      // because it is internal API.
-      token_service->GetDelegate()->UpdateAuthError(
-          account_id,
-          GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
+
+      // Make sure to fail authentication with an error in this case.
+      std::string account_id = identity_manager->GetPrimaryAccountId();
+      identity::SetRefreshTokenForPrimaryAccount(identity_manager);
+      identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+          identity_manager, account_id,
+          GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR));
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
       return;
     }
@@ -226,17 +208,31 @@ sync_ui_util::ActionType GetActionTypeforDistinctCase(int case_number) {
 TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
   std::set<base::string16> messages;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
-    std::unique_ptr<Profile> profile = std::make_unique<TestingProfile>();
+    std::unique_ptr<Profile> profile = IdentityTestEnvironmentProfileAdaptor::
+        CreateProfileForIdentityTestEnvironment();
+
+    IdentityTestEnvironmentProfileAdaptor env_adaptor(profile.get());
+    identity::IdentityTestEnvironment* environment =
+        env_adaptor.identity_test_env();
+    identity::IdentityManager* identity_manager =
+        environment->identity_manager();
+
+    // We can't check the "Authenticating" case in platforms that don't support
+    // mutation of the primary account (e.g. ChromeOS), so skip those cases.
+    if (idx == STATUS_CASE_AUTHENTICATING &&
+        !identity_manager->GetPrimaryAccountMutator()) {
+      continue;
+    }
+
+    // Need a primary account signed in before calling GetDistinctCase().
+    environment->MakePrimaryAccountAvailable(kTestUser);
+
     TestSyncService service;
-    FakeSigninManagerForSyncUIUtilTest signin(profile.get());
-    signin.SetAuthenticatedAccountInfo(kTestGaiaId, kTestUser);
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile.get());
-    GetDistinctCase(&service, &signin, token_service, idx);
+    GetDistinctCase(&service, identity_manager, idx);
     base::string16 status_label;
     base::string16 link_label;
     sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-    sync_ui_util::GetStatusLabels(profile.get(), &service, signin,
+    sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
                                   &status_label, &link_label, &action_type);
 
     EXPECT_EQ(GetActionTypeforDistinctCase(idx), action_type)
@@ -256,16 +252,13 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     EXPECT_TRUE(messages.find(combined_label) == messages.end()) <<
         "Duplicate message for case #" << idx << ": " << combined_label;
     messages.insert(combined_label);
-    testing::Mock::VerifyAndClearExpectations(&service);
-    testing::Mock::VerifyAndClearExpectations(&signin);
-    signin.Shutdown();
   }
 }
 
 TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
   std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(profile.get());
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile.get());
 
   TestSyncService service;
   service.SetFirstSetupComplete(true);
@@ -278,7 +271,7 @@ TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
   base::string16 link_label;
   base::string16 unrecoverable_error_status_label;
   sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-  sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
+  sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
                                 &unrecoverable_error_status_label, &link_label,
                                 &action_type);
 
@@ -291,7 +284,7 @@ TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
   status.sync_protocol_error.action = syncer::UPGRADE_CLIENT;
   service.SetDetailedSyncStatus(true, status);
   base::string16 upgrade_client_status_label;
-  sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
+  sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
                                 &upgrade_client_status_label, &link_label,
                                 &action_type);
   // Expect an explicit 'client upgrade' action.
@@ -302,8 +295,8 @@ TEST_F(SyncUIUtilTest, UnrecoverableErrorWithActionableError) {
 
 TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
   std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(profile.get());
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile.get());
 
   TestSyncService service;
   service.SetFirstSetupComplete(true);
@@ -318,7 +311,7 @@ TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
   base::string16 first_actionable_error_status_label;
   base::string16 link_label;
   sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-  sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
+  sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
                                 &first_actionable_error_status_label,
                                 &link_label, &action_type);
   // Expect a 'client upgrade' call to action.
@@ -330,7 +323,7 @@ TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
 
   base::string16 second_actionable_error_status_label;
   action_type = sync_ui_util::NO_ACTION;
-  sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
+  sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
                                 &second_actionable_error_status_label,
                                 &link_label, &action_type);
   // Expect a passive message instead of a call to action.
@@ -342,8 +335,8 @@ TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
 
 TEST_F(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
   std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(profile.get());
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile.get());
 
   TestSyncService service;
   service.SetFirstSetupComplete(false);
@@ -353,7 +346,7 @@ TEST_F(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
   base::string16 link_label;
   sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
 
-  sync_ui_util::GetStatusLabels(profile.get(), &service, *signin,
+  sync_ui_util::GetStatusLabels(profile.get(), &service, identity_manager,
                                 &actionable_error_status_label, &link_label,
                                 &action_type);
 

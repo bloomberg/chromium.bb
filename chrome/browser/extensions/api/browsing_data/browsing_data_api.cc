@@ -19,19 +19,19 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 using content::BrowserThread;
 using browsing_data::ClearBrowsingDataTab;
@@ -132,10 +132,10 @@ bool IsRemovalPermitted(int removal_mask, PrefService* prefs) {
 bool IsSyncRunning(Profile* profile) {
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   sync_ui_util::MessageType sync_status =
-      sync_ui_util::GetStatus(profile, sync_service, *signin_manager);
+      sync_ui_util::GetStatus(profile, sync_service, identity_manager);
   return sync_status == sync_ui_util::SYNCED;
 }
 }  // namespace

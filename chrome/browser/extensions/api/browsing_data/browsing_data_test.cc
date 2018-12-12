@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -40,6 +41,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
 using extension_function_test_utils::RunFunctionAndReturnError;
@@ -427,8 +429,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, Syncing) {
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   sync_service->GetUserSettings()->SetFirstSetupComplete();
+
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   sync_ui_util::MessageType sync_status =
-      sync_ui_util::GetStatus(profile, sync_service, *signin_manager);
+      sync_ui_util::GetStatus(profile, sync_service, identity_manager);
   ASSERT_EQ(sync_ui_util::SYNCED, sync_status);
   // Clear browsing data.
   scoped_refptr<BrowsingDataRemoveFunction> function =
@@ -461,9 +466,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SyncError) {
                       GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                           CREDENTIALS_REJECTED_BY_SERVER));
   // Sync is not running.
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   sync_ui_util::MessageType sync_status = sync_ui_util::GetStatus(
       profile, ProfileSyncServiceFactory::GetForProfile(profile),
-      *signin_manager);
+      identity_manager);
   ASSERT_NE(sync_ui_util::SYNCED, sync_status);
   // Clear browsing data.
   scoped_refptr<BrowsingDataRemoveFunction> function =
