@@ -84,8 +84,7 @@ ChromeVoxEventWatcherUnitTest.prototype = {
   }
 };
 
-// Flaky on Chromium OS: https://crbug.com/912390.
-TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_ButtonFocusFeedback', function() {
+TEST_F('ChromeVoxEventWatcherUnitTest', 'ButtonFocusFeedback', function() {
   this.loadHtml('<div> <button id="alpha">Alpha</button> </div>');
   this.setFocus('alpha');
   this.waitForCalm(this.assertSpoken, 'Alpha Button');
@@ -285,8 +284,7 @@ TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_ListBoxFeedback', function() {
 /**
  * Test feedback when the items of a list box receive focus.
  */
-// Flaky on Chromium OS: https://crbug.com/912390.
-TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_ListBoxOptionFeedback', function() {
+TEST_F('ChromeVoxEventWatcherUnitTest', 'ListBoxOptionFeedback', function() {
   this.loadHtml('<div>' +
       '<p id="before">My listbox</p>' +
       '<div id="listbox" role="listbox">' +
