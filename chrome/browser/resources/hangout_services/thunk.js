@@ -182,7 +182,7 @@ chrome.runtime.onMessageExternal.addListener(function(
     } else if (method == 'logging.startEventLogging') {
       var peerConnectionId = message['peerConnectionId'] || '';
       var maxLogSizeBytes = message['maxLogSizeBytes'] || 0;
-      var outputPeriodMs = message['outputPeriodMs'] || 0;
+      var outputPeriodMs = message['outputPeriodMs'] || -1;
       var webAppId = message['webAppId'] || 0;
       chrome.webrtcLoggingPrivate.startEventLogging(
           requestInfo, origin, peerConnectionId, maxLogSizeBytes,
