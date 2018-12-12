@@ -22,7 +22,7 @@ struct AutocompleteMatch {
   string destination_url;
   string contents;
   string description;
-  int32 transition;
+  string transition;
   bool allowed_to_be_default_match;
   string type;
   bool has_tab_match;
