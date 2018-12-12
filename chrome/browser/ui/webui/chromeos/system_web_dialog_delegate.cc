@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
 
@@ -13,12 +13,22 @@ namespace chromeos {
 
 SystemWebDialogDelegate::SystemWebDialogDelegate(const GURL& gurl,
                                                  const base::string16& title)
-    : gurl_(gurl),
-      title_(title),
-      modal_type_(session_manager::SessionManager::Get()->session_state() ==
-                          session_manager::SessionState::ACTIVE
-                      ? ui::MODAL_TYPE_NONE
-                      : ui::MODAL_TYPE_SYSTEM) {}
+    : gurl_(gurl), title_(title), modal_type_(ui::MODAL_TYPE_NONE) {
+  switch (session_manager::SessionManager::Get()->session_state()) {
+    // Normally system dialogs are not modal.
+    case session_manager::SessionState::UNKNOWN:
+    case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
+    case session_manager::SessionState::ACTIVE:
+      break;
+    // These states use an overlay so dialogs must be modal.
+    case session_manager::SessionState::OOBE:
+    case session_manager::SessionState::LOGIN_PRIMARY:
+    case session_manager::SessionState::LOCKED:
+    case session_manager::SessionState::LOGIN_SECONDARY:
+      modal_type_ = ui::MODAL_TYPE_SYSTEM;
+      break;
+  }
+}
 
 SystemWebDialogDelegate::~SystemWebDialogDelegate() {}
 
@@ -67,15 +77,12 @@ bool SystemWebDialogDelegate::ShouldShowDialogTitle() const {
 void SystemWebDialogDelegate::ShowSystemDialog(gfx::NativeWindow parent) {
   content::BrowserContext* browser_context =
       ProfileManager::GetActiveUserProfile();
-  if (parent) {
-    dialog_window_ = chrome::ShowWebDialog(parent, browser_context, this);
-  } else {
-    int container_id = GetDialogModalType() == ui::MODAL_TYPE_NONE
-                           ? ash::kShellWindowId_AlwaysOnTopContainer
-                           : ash::kShellWindowId_LockSystemModalContainer;
-    dialog_window_ =
-        chrome::ShowWebDialogInContainer(container_id, browser_context, this);
-  }
+  views::Widget::InitParams extra_params;
+  // If unparented and not modal, keep it on top (see header comment).
+  if (!parent && GetDialogModalType() == ui::MODAL_TYPE_NONE)
+    extra_params.keep_on_top = true;
+  dialog_window_ = chrome::ShowWebDialogWithParams(parent, browser_context,
+                                                   this, &extra_params);
 }
 
 }  // namespace chromeos

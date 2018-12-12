@@ -22,6 +22,8 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash_util {
@@ -63,6 +65,14 @@ int GetSystemModalDialogContainerId() {
                  session_manager::SessionState::ACTIVE
              ? ash::kShellWindowId_SystemModalContainer
              : ash::kShellWindowId_LockSystemModalContainer;
+}
+
+views::Widget::InitParams GetFramelessInitParams() {
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
+  params.shadow_elevation = ::wm::kShadowElevationActiveWindow;
+  return params;
 }
 
 service_manager::Connector* GetServiceManagerConnector() {

@@ -2413,6 +2413,7 @@ jumbo_split_static_library("ui") {
       "views/chrome_views_delegate.cc",
       "views/chrome_views_delegate.h",
       "views/chrome_web_dialog_view.cc",
+      "views/chrome_web_dialog_view.h",
       "views/collected_cookies_views.cc",
       "views/collected_cookies_views.h",
       "views/confirm_bubble_views.cc",

@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/chrome_web_dialog_view.h"
+
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/shell_window_ids.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "ui/wm/core/shadow_types.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
+#include "components/user_manager/user.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace chrome {
@@ -37,36 +41,39 @@ gfx::NativeWindow ShowWebDialogWidget(const views::Widget::InitParams& params,
 gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate) {
-  views::WebDialogView* view =
-      new views::WebDialogView(context, delegate, new ChromeWebContentsHandler);
-  views::Widget::InitParams params;
-  params.delegate = view;
-  // NOTE: The |parent| may be null, which will result in the default window
-  // placement on Aura.
-  params.parent = parent;
-  return ShowWebDialogWidget(params, view);
+  return ShowWebDialogWithParams(parent, context, delegate, nullptr);
 }
 
-#if defined(OS_CHROMEOS)
-gfx::NativeWindow ShowWebDialogInContainer(int container_id,
-                                           content::BrowserContext* context,
-                                           ui::WebDialogDelegate* delegate,
-                                           bool is_minimal_style) {
-  DCHECK(container_id != ash::kShellWindowId_Invalid);
+gfx::NativeWindow ShowWebDialogWithParams(
+    gfx::NativeView parent,
+    content::BrowserContext* context,
+    ui::WebDialogDelegate* delegate,
+    const views::Widget::InitParams* extra_params) {
   views::WebDialogView* view =
       new views::WebDialogView(context, delegate, new ChromeWebContentsHandler);
   views::Widget::InitParams params;
-  // TODO(updowndota) Remove the special handling for hiding dialog title after
-  // the bug is fixed.
-  if (is_minimal_style) {
-    params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-    params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
-    params.shadow_elevation = ::wm::kShadowElevationActiveWindow;
-  }
+  if (extra_params)
+    params = *extra_params;
   params.delegate = view;
-  ash_util::SetupWidgetInitParamsForContainer(&params, container_id);
-  return ShowWebDialogWidget(params, view);
+  params.parent = parent;
+#if defined(OS_CHROMEOS)
+  if (!parent && delegate->GetDialogModalType() == ui::MODAL_TYPE_SYSTEM) {
+    int container_id = ash_util::GetSystemModalDialogContainerId();
+    ash_util::SetupWidgetInitParamsForContainer(&params, container_id);
+  }
+#endif
+  gfx::NativeWindow window = ShowWebDialogWidget(params, view);
+#if defined(OS_CHROMEOS)
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(
+          Profile::FromBrowserContext(context));
+  if (user) {
+    // Dialogs should not be shown for other users when logged in.
+    MultiUserWindowManagerClient::GetInstance()->SetWindowOwner(
+        window, user->GetAccountId());
+  }
+#endif
+  return window;
 }
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace chrome

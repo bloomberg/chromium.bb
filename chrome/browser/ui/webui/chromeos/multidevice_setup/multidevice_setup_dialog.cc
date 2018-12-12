@@ -49,14 +49,12 @@ void MultiDeviceSetupDialog::Show() {
 
   current_instance_ = new MultiDeviceSetupDialog();
 
-  // TODO(crbug.com/888629): In order to remove the X button on the top right of
-  // of the dialog, passing |is_minimal_style| == true is required, but as of
-  // now, that will prevent the dialog from presenting in full screen if tablet
-  // mode is on. See bug for more details.
-  chrome::ShowWebDialogInContainer(
-      ash::kShellWindowId_DefaultContainer /* container_id */,
-      ProfileManager::GetActiveUserProfile(), current_instance_,
-      false /* is_minimal_style */);
+  // TODO(hansberry): This should pass ash_util::GetFramelessInitParams() for
+  // extra_params. Currently however, that prevents the dialog from presenting
+  // in full screen if tablet mode is enabled. See https://crbug.com/888629.
+  chrome::ShowWebDialog(nullptr /* parent */,
+                        ProfileManager::GetActiveUserProfile(),
+                        current_instance_);
 }
 
 // static
