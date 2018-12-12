@@ -62,11 +62,10 @@ void SimTest::SetUp() {
 }
 
 void SimTest::LoadURL(const String& url) {
-  WebURLRequest request{KURL(url)};
-  WebView().MainFrameImpl()->CommitNavigation(
-      request, WebFrameLoadType::kStandard, WebHistoryItem(), false,
-      base::UnguessableToken::Create(), nullptr /* navigation_params */,
-      nullptr /* extra_data */);
+  auto navigation_params = std::make_unique<WebNavigationParams>();
+  navigation_params->request = WebURLRequest(KURL(url));
+  WebView().MainFrameImpl()->CommitNavigation(std::move(navigation_params),
+                                              nullptr /* extra_data */);
 }
 
 LocalDOMWindow& SimTest::Window() {

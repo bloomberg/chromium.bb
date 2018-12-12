@@ -100,15 +100,6 @@ T* CreateDefaultClientIfNeeded(T* client, std::unique_ptr<T>& owned_client) {
   return owned_client.get();
 }
 
-std::unique_ptr<WebNavigationParams> BuildDummyNavigationParams() {
-  std::unique_ptr<WebNavigationParams> navigation_params =
-      std::make_unique<WebNavigationParams>();
-  navigation_params->navigation_timings.navigation_start =
-      base::TimeTicks::Now();
-  navigation_params->navigation_timings.fetch_start = base::TimeTicks::Now();
-  return navigation_params;
-}
-
 }  // namespace
 
 void LoadFrame(WebLocalFrame* frame, const std::string& url) {
@@ -117,10 +108,11 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
   if (web_url.ProtocolIs("javascript")) {
     impl->LoadJavaScriptURL(web_url);
   } else {
-    impl->CommitNavigation(
-        WebURLRequest(web_url), blink::WebFrameLoadType::kStandard,
-        blink::WebHistoryItem(), false, base::UnguessableToken::Create(),
-        BuildDummyNavigationParams(), nullptr /* extra_data */);
+    auto params = std::make_unique<WebNavigationParams>();
+    params->request = WebURLRequest(web_url);
+    params->navigation_timings.navigation_start = base::TimeTicks::Now();
+    params->navigation_timings.fetch_start = base::TimeTicks::Now();
+    impl->CommitNavigation(std::move(params), nullptr /* extra_data */);
   }
   PumpPendingRequestsForFrameToLoad(frame);
 }
@@ -129,7 +121,9 @@ void LoadHTMLString(WebLocalFrame* frame,
                     const std::string& html,
                     const WebURL& base_url) {
   WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
-  impl->LoadHTMLString(WebData(html.data(), html.size()), base_url, WebURL());
+  impl->CommitNavigation(
+      WebNavigationParams::CreateWithHTMLString(html, base_url),
+      nullptr /* extra_data */);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
@@ -138,11 +132,14 @@ void LoadHistoryItem(WebLocalFrame* frame,
                      mojom::FetchCacheMode cache_mode) {
   WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
   HistoryItem* history_item = item;
-  impl->CommitNavigation(
-      WrappedResourceRequest(history_item->GenerateResourceRequest(cache_mode)),
-      WebFrameLoadType::kBackForward, item, false /* is_client_redirect */,
-      base::UnguessableToken::Create(), BuildDummyNavigationParams(),
-      nullptr /* extra_data */);
+  auto params = std::make_unique<WebNavigationParams>();
+  params->request =
+      WrappedResourceRequest(history_item->GenerateResourceRequest(cache_mode));
+  params->frame_load_type = WebFrameLoadType::kBackForward;
+  params->history_item = item;
+  params->navigation_timings.navigation_start = base::TimeTicks::Now();
+  params->navigation_timings.fetch_start = base::TimeTicks::Now();
+  impl->CommitNavigation(std::move(params), nullptr /* extra_data */);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
@@ -469,10 +466,8 @@ void TestWebFrameClient::DidStopLoading() {
 
 void TestWebFrameClient::BeginNavigation(
     std::unique_ptr<WebNavigationInfo> info) {
-  frame_->CommitNavigation(
-      info->url_request, info->frame_load_type, blink::WebHistoryItem(),
-      info->is_client_redirect, base::UnguessableToken::Create(),
-      nullptr /* navigation_params */, nullptr /* extra_data */);
+  frame_->CommitNavigation(WebNavigationParams::CreateFromInfo(*info),
+                           nullptr /* extra_data */);
 }
 
 void TestWebFrameClient::DidCreateDocumentLoader(

@@ -50,11 +50,6 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
                                                 public WebDocumentLoader {
  public:
   WebDocumentLoaderImpl(LocalFrame*,
-                        const ResourceRequest&,
-                        const SubstituteData&,
-                        ClientRedirectPolicy,
-                        const base::UnguessableToken& devtools_navigation_token,
-                        WebFrameLoadType load_type,
                         WebNavigationType navigation_type,
                         std::unique_ptr<WebNavigationParams> navigation_params);
 

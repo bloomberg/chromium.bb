@@ -117,47 +117,51 @@ static bool IsArchiveMIMEType(const String& mime_type) {
 
 DocumentLoader::DocumentLoader(
     LocalFrame* frame,
-    const ResourceRequest& req,
-    const SubstituteData& substitute_data,
-    ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token,
-    WebFrameLoadType load_type,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params)
     : frame_(frame),
       fetcher_(FrameFetchContext::CreateFetcherFromDocumentLoader(this)),
-      original_request_(req),
-      substitute_data_(substitute_data),
-      request_(req),
-      load_type_(load_type),
-      is_client_redirect_(client_redirect_policy ==
-                          ClientRedirectPolicy::kClientRedirect),
+      original_request_(navigation_params->request.ToResourceRequest()),
+      request_(navigation_params->request.ToResourceRequest()),
+      load_type_(navigation_params->frame_load_type),
+      is_client_redirect_(navigation_params->is_client_redirect),
       replaces_current_history_item_(false),
       data_received_(false),
       navigation_type_(navigation_type),
       document_load_timing_(*this),
       application_cache_host_(ApplicationCacheHost::Create(this)),
       service_worker_network_provider_(
-          navigation_params
-              ? std::move(navigation_params->service_worker_network_provider)
-              : nullptr),
+          std::move(navigation_params->service_worker_network_provider)),
       was_blocked_after_csp_(false),
       state_(kNotStarted),
       committed_data_buffer_(nullptr),
       in_data_received_(false),
       data_buffer_(SharedBuffer::Create()),
-      devtools_navigation_token_(devtools_navigation_token),
-      had_sticky_activation_(navigation_params &&
-                             navigation_params->is_user_activated),
+      devtools_navigation_token_(navigation_params->devtools_navigation_token),
+      had_sticky_activation_(navigation_params->is_user_activated),
       had_transient_activation_(request_.HasUserGesture()),
       use_counter_(frame_->GetChromeClient().IsSVGImageChromeClient()
                        ? UseCounter::kSVGImageContext
                        : UseCounter::kDefaultContext) {
   DCHECK(frame_);
 
-  WebNavigationTimings timings;
-  if (navigation_params)
-    timings = navigation_params->navigation_timings;
+  if (!navigation_params->data.IsNull()) {
+    substitute_data_ = SubstituteData(
+        navigation_params->data, navigation_params->mime_type,
+        navigation_params->text_encoding, navigation_params->unreachable_url);
+  }
+  if (!substitute_data_.IsValid() &&
+      frame_->Loader().ShouldTreatURLAsSrcdocDocument(request_.Url())) {
+    String srcdoc = frame_->DeprecatedLocalOwner()->FastGetAttribute(
+        html_names::kSrcdocAttr);
+    DCHECK(!srcdoc.IsNull());
+    CString encoded_srcdoc = srcdoc.Utf8();
+    substitute_data_ = SubstituteData(
+        SharedBuffer::Create(encoded_srcdoc.data(), encoded_srcdoc.length()),
+        "text/html", "UTF-8", NullURL());
+  }
+
+  WebNavigationTimings& timings = navigation_params->navigation_timings;
   if (!timings.input_start.is_null())
     document_load_timing_.SetInputStart(timings.input_start);
   if (timings.navigation_start.is_null()) {
@@ -176,7 +180,7 @@ DocumentLoader::DocumentLoader(
     }
   }
 
-  if (navigation_params && navigation_params->source_location.has_value()) {
+  if (navigation_params->source_location.has_value()) {
     WebSourceLocation& location = navigation_params->source_location.value();
     source_location_ = SourceLocation::Create(
         location.url, location.line_number, location.column_number, nullptr);

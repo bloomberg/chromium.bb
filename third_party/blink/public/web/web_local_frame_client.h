@@ -379,8 +379,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidCreateDocumentLoader(WebDocumentLoader*) {}
 
   // A new provisional load has been started.
-  virtual void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
-                                       WebURLRequest& request) {}
+  virtual void DidStartProvisionalLoad(WebDocumentLoader* document_loader) {}
 
   // The provisional load failed. The WebHistoryCommitType is the commit type
   // that would have been used had the load succeeded.

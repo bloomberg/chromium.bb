@@ -58,12 +58,10 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
   // Construct substitute data source. We only need it to have same origin as
   // the worker so the loading checks work correctly.
   CString content("");
-  scoped_refptr<SharedBuffer> buffer(
-      SharedBuffer::Create(content.data(), content.length()));
   main_frame_->GetFrame()->Loader().CommitNavigation(
-      ResourceRequest(script_url), SubstituteData(buffer),
-      ClientRedirectPolicy::kNotClientRedirect,
-      base::UnguessableToken::Create());
+      WebNavigationParams::CreateWithHTMLBuffer(
+          SharedBuffer::Create(content.data(), content.length()), script_url),
+      nullptr /* extra_data */);
 }
 
 void WorkerShadowPage::DidFinishDocumentLoad() {

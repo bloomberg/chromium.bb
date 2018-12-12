@@ -53,9 +53,8 @@ class PingLoaderTest : public PageTestBase {
 
   void SetDocumentURL(const KURL& url) {
     GetFrame().Loader().CommitNavigation(
-        ResourceRequest(url), SubstituteData(SharedBuffer::Create()),
-        ClientRedirectPolicy::kNotClientRedirect,
-        base::UnguessableToken::Create());
+        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+        nullptr /* extra_data */);
     blink::test::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
   }

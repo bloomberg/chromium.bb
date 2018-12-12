@@ -152,9 +152,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ReloadLoFiImages() override;
   void StartNavigation(const WebURLRequest&) override;
   void CheckCompleted() override;
-  void LoadHTMLString(const WebData& html,
-                      const WebURL& base_url,
-                      const WebURL& unreachable_url) override;
   void StopLoading() override;
   WebDocumentLoader* GetProvisionalDocumentLoader() const override;
   WebDocumentLoader* GetDocumentLoader() const override;
@@ -304,11 +301,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   // WebNavigationControl methods:
   bool DispatchBeforeUnloadEvent(bool) override;
   void CommitNavigation(
-      const WebURLRequest&,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      const base::UnguessableToken& devtools_navigation_token,
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
   blink::mojom::CommitResult CommitSameDocumentNavigation(
@@ -318,17 +310,6 @@ class CORE_EXPORT WebLocalFrameImpl final
       bool is_client_redirect,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
   void LoadJavaScriptURL(const WebURL&) override;
-  void CommitDataNavigation(
-      const WebURLRequest&,
-      const WebData&,
-      const WebString& mime_type,
-      const WebString& text_encoding,
-      const WebURL& unreachable_url,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) override;
   FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const override;
   void RenderFallbackContent() const override;
@@ -336,12 +317,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ClientDroppedNavigation() override;
   void MarkAsLoading() override;
   bool CreatePlaceholderDocumentLoader(
-      const WebURLRequest&,
-      WebFrameLoadType,
-      WebNavigationType,
-      bool is_client_redirect,
-      const base::UnguessableToken& devtools_navigation_token,
       std::unique_ptr<WebNavigationParams>,
+      WebNavigationType,
       std::unique_ptr<WebDocumentLoader::ExtraData>) override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
