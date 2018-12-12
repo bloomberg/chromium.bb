@@ -186,6 +186,14 @@ ImmutableCSSPropertyValueSet* CSSParser::ParseInlineStyleDeclaration(
   return CSSParserImpl::ParseInlineStyleDeclaration(style_string, element);
 }
 
+ImmutableCSSPropertyValueSet* CSSParser::ParseInlineStyleDeclaration(
+    const String& style_string,
+    CSSParserMode parser_mode,
+    SecureContextMode secure_context_mode) {
+  return CSSParserImpl::ParseInlineStyleDeclaration(style_string, parser_mode,
+                                                    secure_context_mode);
+}
+
 std::unique_ptr<Vector<double>> CSSParser::ParseKeyframeKeyList(
     const String& key_list) {
   return CSSParserImpl::ParseKeyframeKeyList(key_list);

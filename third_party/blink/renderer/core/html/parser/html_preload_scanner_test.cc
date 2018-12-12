@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -83,6 +84,11 @@ struct ContextTestCase {
 struct IntegrityTestCase {
   size_t number_of_integrity_metadata_found;
   const char* input_html;
+};
+
+struct LazyImageLoadTestCase {
+  const char* input_html;
+  bool is_lazyload_image_disabled;
 };
 
 class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
@@ -185,6 +191,12 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
       actual = preload_request_->IntegrityMetadataForTestingOnly().size();
       EXPECT_EQ(expected, actual);
     }
+  }
+
+  void LazyImageLoadDisableVerification(bool is_lazyload_image_disabled) {
+    ASSERT_TRUE(preload_request_.get());
+    EXPECT_EQ(preload_request_->IsLazyloadImageDisabledForTesting(),
+              is_lazyload_image_disabled);
   }
 
  protected:
@@ -353,6 +365,18 @@ class HTMLPreloadScannerTest : public PageTestBase {
 
     preloader.CheckNumberOfIntegrityConstraints(
         test_case.number_of_integrity_metadata_found);
+  }
+
+  void Test(LazyImageLoadTestCase test_case) {
+    SCOPED_TRACE(test_case.input_html);
+    HTMLMockHTMLResourcePreloader preloader;
+    KURL base_url("http://example.test/");
+    scanner_->AppendToEnd(String(test_case.input_html));
+    PreloadRequestStream requests =
+        scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
+    preloader.TakeAndPreload(requests);
+    preloader.LazyImageLoadDisableVerification(
+        test_case.is_lazyload_image_disabled);
   }
 
  private:
@@ -1178,6 +1202,21 @@ TEST_F(HTMLPreloadScannerTest, MetaCsp_NoPreloadsAfter) {
       // make sure it is not preloaded on subsequent calls to Scan.
       {"http://example.test", "", nullptr, "http://example.test/",
        ResourceType::kScript, 0},
+  };
+
+  for (const auto& test_case : test_cases)
+    Test(test_case);
+}
+
+TEST_F(HTMLPreloadScannerTest, LazyImageLoadDisabledForSmallImages) {
+  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
+  LazyImageLoadTestCase test_cases[] = {
+      {"<img src='foo.jpg'>", false},
+      {"<img src='foo.jpg' style='height: 1px; width: 1px'>", true},
+      {"<img src='foo.jpg' style='height: 10px; width: 10px'>", true},
+      {"<img src='foo.jpg' style='height: 20px; width: 20px'>", false},
+      {"<img src='foo.jpg' style='height: 1px;'>", false},
+      {"<img src='foo.jpg' style='width: 1px;'>", false},
   };
 
   for (const auto& test_case : test_cases)

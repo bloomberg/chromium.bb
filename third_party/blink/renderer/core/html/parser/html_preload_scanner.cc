@@ -31,9 +31,12 @@
 #include "base/optional.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/sizes_attribute_parser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -126,6 +129,28 @@ static bool IsDimensionSmallAndAbsoluteForLazyLoad(
          dimension.IsAbsolute() && dimension.Value() <= kMinDimensionToLazyLoad;
 }
 
+static bool IsInlineStyleDimensionsSmall(const String& style_value,
+                                         bool strict_mode) {
+  // Minimum height or width of the image to start lazyloading.
+  const unsigned kMinDimensionToLazyLoad = 10;
+  CSSParserMode mode = strict_mode ? kHTMLStandardMode : kHTMLQuirksMode;
+  const ImmutableCSSPropertyValueSet* property_set =
+      CSSParser::ParseInlineStyleDeclaration(
+          style_value, mode, SecureContextMode::kInsecureContext);
+  const CSSValue* height = property_set->GetPropertyCSSValue(CSSPropertyHeight);
+  const CSSValue* width = property_set->GetPropertyCSSValue(CSSPropertyWidth);
+
+  if (!height || !height->IsPrimitiveValue() || !width ||
+      !width->IsPrimitiveValue())
+    return false;
+  const CSSPrimitiveValue* width_prim = ToCSSPrimitiveValue(width);
+  const CSSPrimitiveValue* height_prim = ToCSSPrimitiveValue(height);
+  return height_prim->IsPx() &&
+         (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
+         width_prim->IsPx() &&
+         (width_prim->GetDoubleValue() <= kMinDimensionToLazyLoad);
+}
+
 class TokenPreloadScanner::StartTagScanner {
   STACK_ALLOCATED();
 
@@ -157,6 +182,7 @@ class TokenPreloadScanner::StartTagScanner {
         lazyload_attr_set_to_off_(false),
         width_attr_small_absolute_(false),
         height_attr_small_absolute_(false),
+        inline_style_dimensions_small_(false),
         scanner_type_(scanner_type) {
     if (Match(tag_impl_, kImgTag) || Match(tag_impl_, kSourceTag)) {
       source_size_ = SizesAttributeParser(media_values_, String()).length();
@@ -293,7 +319,8 @@ class TokenPreloadScanner::StartTagScanner {
     // for the 'lazyload' attribute is considered as 'auto'.
     if ((lazyload_attr_set_to_off_ &&
          !document_parameters.lazyload_policy_enforced) ||
-        (width_attr_small_absolute_ && height_attr_small_absolute_)) {
+        (width_attr_small_absolute_ && height_attr_small_absolute_) ||
+        inline_style_dimensions_small_) {
       request->SetIsLazyloadImageDisabled(true);
     }
 
@@ -376,6 +403,11 @@ class TokenPreloadScanner::StartTagScanner {
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
       height_attr_small_absolute_ =
           IsDimensionSmallAndAbsoluteForLazyLoad(attribute_value);
+    } else if (!inline_style_dimensions_small_ &&
+               Match(attribute_name, kStyleAttr) &&
+               RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
+      inline_style_dimensions_small_ = IsInlineStyleDimensionsSmall(
+          attribute_value, media_values_->StrictMode());
     }
   }
 
@@ -672,6 +704,7 @@ class TokenPreloadScanner::StartTagScanner {
   bool lazyload_attr_set_to_off_;
   bool width_attr_small_absolute_;
   bool height_attr_small_absolute_;
+  bool inline_style_dimensions_small_;
   TokenPreloadScanner::ScannerType scanner_type_;
 };
 

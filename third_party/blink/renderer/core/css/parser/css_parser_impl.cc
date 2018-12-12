@@ -193,6 +193,19 @@ ImmutableCSSPropertyValueSet* CSSParserImpl::ParseInlineStyleDeclaration(
   return CreateCSSPropertyValueSet(parser.parsed_properties_, mode);
 }
 
+ImmutableCSSPropertyValueSet* CSSParserImpl::ParseInlineStyleDeclaration(
+    const String& string,
+    CSSParserMode parser_mode,
+    SecureContextMode secure_context_mode) {
+  CSSParserContext* context =
+      CSSParserContext::Create(parser_mode, secure_context_mode);
+  CSSParserImpl parser(context);
+  CSSTokenizer tokenizer(string);
+  CSSParserTokenStream stream(tokenizer);
+  parser.ConsumeDeclarationList(stream, StyleRule::kStyle);
+  return CreateCSSPropertyValueSet(parser.parsed_properties_, parser_mode);
+}
+
 bool CSSParserImpl::ParseDeclarationList(
     MutableCSSPropertyValueSet* declaration,
     const String& string,

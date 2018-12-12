@@ -129,6 +129,9 @@ class CORE_EXPORT PreloadRequest {
   void SetIsLazyloadImageDisabled(bool is_lazyload_image_disable) {
     is_lazyload_image_disabled_ = is_lazyload_image_disable;
   }
+  bool IsLazyloadImageDisabledForTesting() {
+    return is_lazyload_image_disabled_;
+  }
 
  private:
   PreloadRequest(const String& initiator_name,

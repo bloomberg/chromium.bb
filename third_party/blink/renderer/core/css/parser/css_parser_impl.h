@@ -95,6 +95,8 @@ class CSSParserImpl {
   static ImmutableCSSPropertyValueSet* ParseInlineStyleDeclaration(
       const String&,
       Element*);
+  static ImmutableCSSPropertyValueSet*
+  ParseInlineStyleDeclaration(const String&, CSSParserMode, SecureContextMode);
   static bool ParseDeclarationList(MutableCSSPropertyValueSet*,
                                    const String&,
                                    const CSSParserContext*);
