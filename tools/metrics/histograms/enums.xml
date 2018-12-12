@@ -43977,6 +43977,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="54" label="ExperimentalWebSchedulingBestEffort"/>
   <int value="55" label="InternalTranslation"/>
   <int value="56" label="FontLoading"/>
+  <int value="57" label="ApplicationLifeCycle"/>
+  <int value="58" label="BackgroundFetch"/>
+  <int value="59" label="Permission"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">

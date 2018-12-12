@@ -32,7 +32,10 @@ PresentationReceiver::PresentationReceiver(LocalFrame* frame)
   interface_provider->GetInterface(mojo::MakeRequest(&presentation_service_));
 
   mojom::blink::PresentationReceiverPtr receiver_ptr;
-  receiver_binding_.Bind(mojo::MakeRequest(&receiver_ptr));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      frame->GetTaskRunner(TaskType::kPresentation);
+  receiver_binding_.Bind(mojo::MakeRequest(&receiver_ptr, task_runner),
+                         task_runner);
   presentation_service_->SetReceiver(std::move(receiver_ptr));
 }
 

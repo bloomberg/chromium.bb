@@ -592,8 +592,13 @@ void CookieStore::StartObserving() {
   if (change_listener_binding_ || !backend_)
     return;
 
+  // A specific task source should be defined but not.
+  // See https://wicg.github.io/cookie-store/
+  auto task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   network::mojom::blink::CookieChangeListenerPtr change_listener;
-  change_listener_binding_.Bind(mojo::MakeRequest(&change_listener));
+  change_listener_binding_.Bind(
+      mojo::MakeRequest(&change_listener, task_runner), task_runner);
   backend_->AddChangeListener(default_cookie_url_, default_site_for_cookies_,
                               std::move(change_listener), {});
 }

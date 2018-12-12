@@ -205,7 +205,11 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
     Platform::Current()->RecordRapporURL("Media.Session.APIUsage.Origin",
                                          document->Url());
     blink::mojom::blink::MediaSessionClientPtr client;
-    client_binding_.Bind(mojo::MakeRequest(&client));
+    // A specific task source should be defined but not.
+    // See https://wicg.github.io/mediasession/.
+    auto task_runner =
+        GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+    client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
     service_->SetClient(std::move(client));
   }
 

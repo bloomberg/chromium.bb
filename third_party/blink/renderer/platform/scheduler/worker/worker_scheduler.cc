@@ -116,6 +116,9 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kIdleTask:
     case TaskType::kMiscPlatformAPI:
     case TaskType::kFontLoading:
+    case TaskType::kApplicationLifeCycle:
+    case TaskType::kBackgroundFetch:
+    case TaskType::kPermission:
     case TaskType::kInternalDefault:
     case TaskType::kInternalLoading:
     case TaskType::kInternalTest:

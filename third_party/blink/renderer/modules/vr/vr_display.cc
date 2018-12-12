@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/scripted_animation_controller.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -38,7 +39,6 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 #include <array>
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 
@@ -856,7 +856,12 @@ Document* VRDisplay::GetDocument() {
 device::mojom::blink::VRDisplayClientPtr VRDisplay::GetDisplayClient() {
   display_client_binding_.Close();
   device::mojom::blink::VRDisplayClientPtr client;
-  display_client_binding_.Bind(mojo::MakeRequest(&client));
+  // A specific task source should be defined but not.
+  // See https://immersive-web.github.io/webvr/spec/1.1/.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  display_client_binding_.Bind(mojo::MakeRequest(&client, task_runner),
+                               task_runner);
   return client;
 }
 

@@ -67,8 +67,11 @@ void BackgroundFetchRegistration::Initialize(
 
   registration_ = registration;
 
+  auto task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kBackgroundFetch);
   mojom::blink::BackgroundFetchRegistrationObserverPtr observer;
-  observer_binding_.Bind(mojo::MakeRequest(&observer));
+  observer_binding_.Bind(mojo::MakeRequest(&observer, task_runner),
+                         task_runner);
 
   BackgroundFetchBridge::From(registration_)
       ->AddRegistrationObserver(unique_id_, std::move(observer));

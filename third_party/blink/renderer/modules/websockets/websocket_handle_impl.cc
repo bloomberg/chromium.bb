@@ -58,7 +58,8 @@ void WebSocketHandleImpl::Connect(network::mojom::blink::WebSocketPtr websocket,
     additional_headers.push_back(network::mojom::blink::HttpHeader::New(
         http_names::kUserAgent, user_agent_override));
   }
-  client_binding_.Bind(mojo::MakeRequest(&client_proxy, task_runner));
+  client_binding_.Bind(mojo::MakeRequest(&client_proxy, task_runner),
+                       task_runner);
   websocket_->AddChannelRequest(url, protocols, site_for_cookies,
                                 std::move(additional_headers),
                                 std::move(client_proxy));

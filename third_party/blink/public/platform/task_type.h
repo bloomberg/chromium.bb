@@ -134,6 +134,15 @@ enum class TaskType : unsigned {
   // https://drafts.csswg.org/css-font-loading/#task-source
   kFontLoading = 56,
 
+  // https://w3c.github.io/manifest/#dfn-application-life-cycle-task-source
+  kApplicationLifeCycle = 57,
+
+  // https://wicg.github.io/background-fetch/#infrastructure
+  kBackgroundFetch = 58,
+
+  // https://www.w3.org/TR/permissions/
+  kPermission = 59,
+
   ///////////////////////////////////////
   // Not-speced tasks should use one of the following task types
   ///////////////////////////////////////
@@ -208,7 +217,7 @@ enum class TaskType : unsigned {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 57,
+  kCount = 60,
 };
 
 }  // namespace blink

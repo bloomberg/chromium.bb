@@ -68,7 +68,12 @@ class LockManager::LockRequestImpl final
         resolver_(resolver),
         name_(name),
         mode_(mode),
-        binding_(this, std::move(request)),
+        // A specific task source should be defined but not.
+        // See https://wicg.github.io/web-locks/.
+        binding_(this,
+                 std::move(request),
+                 manager->GetExecutionContext()->GetTaskRunner(
+                     TaskType::kMiscPlatformAPI)),
         manager_(manager) {}
 
   ~LockRequestImpl() override = default;
