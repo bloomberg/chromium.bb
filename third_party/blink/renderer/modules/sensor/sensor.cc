@@ -131,7 +131,7 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
   is_null = false;
 
   if (WebTestSupport::IsRunningWebTest()) {
-    // In layout tests performance.now() * 0.001 is passed to the shared buffer.
+    // In web tests performance.now() * 0.001 is passed to the shared buffer.
     return sensor_proxy_->GetReading().timestamp() * 1000;
   }
 

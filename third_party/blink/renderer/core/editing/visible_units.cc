@@ -689,11 +689,11 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
       continue;
     const unsigned text_start_offset = text_layout_object->TextStartOffset();
     if (current_node != start_node) {
-      // This assertion fires in layout tests in the case-transform.html test
+      // This assertion fires in web tests in the case-transform.html test
       // because of a mix-up between offsets in the text in the DOM tree with
       // text in the layout tree which can have a different length due to case
       // transformation.
-      // Until we resolve that, disable this so we can run the layout tests!
+      // Until we resolve that, disable this so we can run the web tests!
       // DCHECK_GE(currentOffset, layoutObject->caretMaxOffset());
       return PositionTemplate<Strategy>(
           current_node, layout_object->CaretMaxOffset() + text_start_offset);

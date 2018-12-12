@@ -550,7 +550,7 @@ void TextIteratorAlgorithm<Strategy>::HandleReplacedElement() {
     return;
   }
   // TODO(editing-dev): We can remove |UpdateForReplacedElement()| call when
-  // we address layout test failures (text diff by newlines only) and unit
+  // we address web test failures (text diff by newlines only) and unit
   // tests, e.g. TextIteratorTest.IgnoreAltTextInTextControls.
   text_state_.UpdateForReplacedElement(*node_);
 }

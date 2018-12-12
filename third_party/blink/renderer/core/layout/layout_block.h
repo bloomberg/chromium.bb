@@ -593,7 +593,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
  public:
   // TODO(loonybear): Temporary in order to ensure compatibility with existing
-  // layout test results.
+  // web test results.
   virtual void AdjustChildDebugRect(LayoutRect&) const {}
 };
 

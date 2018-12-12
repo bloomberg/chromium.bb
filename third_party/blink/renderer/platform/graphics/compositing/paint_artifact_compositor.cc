@@ -939,7 +939,7 @@ void PaintArtifactCompositor::Update(
 // Every effect is supposed to have render surface enabled for grouping, but we
 // can omit one if the effect is opacity-only, render surface is not forced,
 // and the effect has only one compositing child. This is both for optimization
-// and not introducing sub-pixel differences in layout tests.
+// and not introducing sub-pixel differences in web tests.
 // TODO(crbug.com/504464): There is ongoing work in cc to delay render surface
 // decision until later phase of the pipeline. Remove premature optimization
 // here once the work is ready.

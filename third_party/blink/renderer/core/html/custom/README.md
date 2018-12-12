@@ -80,12 +80,12 @@ with CustomElement so you can run them with:
 
     $ out/Debug/webkit_unit_tests --gtest_filter=CustomElement*
 
-###### Layout Tests
+###### Web Tests
 
-The custom element layout tests are generally in
+The custom element web tests are generally in
 third_party/blink/web_tests/custom-elements.
 
-All custom elements layout tests use the [web-platform-tests
+All custom elements web tests use the [web-platform-tests
 harness](https://web-platform-tests.org/) and follow its style. The
 WPT style is not very prescriptive, so be consistent with other custom
 elements tests.

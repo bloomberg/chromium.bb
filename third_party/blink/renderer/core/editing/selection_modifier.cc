@@ -131,7 +131,7 @@ TextDirection SelectionModifier::DirectionOfEnclosingBlock() const {
   const Position& selection_extent = selection_.Extent();
 
   // TODO(editing-dev): Check for Position::IsNotNull is an easy fix for few
-  // editing/ layout tests, that didn't expect that (e.g.
+  // editing/ web tests, that didn't expect that (e.g.
   // editing/selection/extend-byline-withfloat.html).
   // That should be fixed in a more appropriate manner.
   // We should either have SelectionModifier aborted earlier for null selection,

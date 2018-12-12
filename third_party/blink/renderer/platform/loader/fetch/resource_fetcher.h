@@ -182,7 +182,7 @@ class PLATFORM_EXPORT ResourceFetcher
                                       mojom::RequestContextType,
                                       const AtomicString& initiator_name);
 
-  // This is called from leak detectors (Real-world leak detector & layout test
+  // This is called from leak detectors (Real-world leak detector & web test
   // leak detector) to clean up loaders after page navigation before instance
   // counting.
   void PrepareForLeakDetection();

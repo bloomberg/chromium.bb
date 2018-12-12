@@ -81,8 +81,8 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
          child_box = child_box->NextSiblingBox()) {
       if (!child_box->IsTableCell())
         continue;
-      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is
-      // needed instead of setNeedsLayout.
+      // TODO(dgrogan) Add a web test showing that SetChildNeedsLayout is
+      // needed instead of SetNeedsLayout.
       child_box->SetChildNeedsLayout();
       child_box->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
     }

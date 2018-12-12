@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Script to generate Web Bluetooth Layout Tests that can be run in ClusterFuzz.
+"""Script to generate Web Bluetooth web tests that can be run in ClusterFuzz.
 
 This script uses templates in the templates/ directory to generate html files
-that can be run as Layout Tests. The script reads a template, includes files
-necessary to run as a layout test, fuzzes its parameters and saves the result in
+that can be run as web tests. The script reads a template, includes files
+necessary to run as a web test, fuzzes its parameters and saves the result in
 a new file in the directory specified when running the script.
 """
 
@@ -58,10 +58,10 @@ def _GetArguments():
 
 
 def FuzzTemplate(template_path, resources_path):
-    """Uses a template to return a test case that can be run as a layout test.
+    """Uses a template to return a test case that can be run as a web test.
 
     This functions reads the template in |template_path|, injects the necessary
-    js files to run as a layout test and fuzzes the template's parameters to
+    js files to run as a web test and fuzzes the template's parameters to
     generate a test case.
 
     Args:

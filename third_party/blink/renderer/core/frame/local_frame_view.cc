@@ -3463,7 +3463,7 @@ void LocalFrameView::ScrollableAreasDidChange() {
   // to be notified post-layout to recompute gesture regions.
   // TODO(wjmaclean): It would be nice to move the !NeedsLayout() check from
   // here to SetScrollGestureRegionIsDirty(), but at present doing so breaks
-  // layout tests. This suggests that there is something that wants to set the
+  // web tests. This suggests that there is something that wants to set the
   // dirty bit when layout is needed, and won't re-try setting the bit after
   // layout has completed - it would be nice to find that and fix it.
   if (!NeedsLayout())

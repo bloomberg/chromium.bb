@@ -932,7 +932,7 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
   HitTestResult hit_test_result =
       src->GetEventHandler().HitTestResultAtLocation(location);
   // FIXME: Can this even happen? I guess it's possible, but should verify
-  // with a layout test.
+  // with a web test.
   if (!state.drag_src_->IsShadowIncludingInclusiveAncestorOf(
           hit_test_result.InnerNode())) {
     // The original node being dragged isn't under the drag origin anymore...

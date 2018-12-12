@@ -386,7 +386,7 @@ static void UpdatePositionIncreasedWithRowHeight(
     int& accumulated_position_increase,
     double& remainder) {
   // Without the cast we lose enough precision to cause heights to miss pixels
-  // (and trigger asserts) in some layout tests.
+  // (and trigger asserts) in some web tests.
   double proportional_position_increase =
       remainder + (extra_height * double(row_height)) / total_height;
   // The epsilon is to push any values that are close to a whole number but

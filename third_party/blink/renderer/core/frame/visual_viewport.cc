@@ -662,7 +662,7 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
         GetScrollbarElementId(orientation));
 
     // The compositor will control the scrollbar's visibility. Set to invisible
-    // by default so scrollbars don't show up in layout tests.
+    // by default so scrollbars don't show up in web tests.
     scrollbar_layer_group->layer->SetOpacity(0.f);
     scrollbar_graphics_layer->SetContentsToCcLayer(
         scrollbar_layer_group->layer.get(),

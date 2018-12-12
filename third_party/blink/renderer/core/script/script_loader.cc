@@ -140,8 +140,8 @@ bool IsValidClassicScriptTypeAndLanguage(
     const String& type,
     const String& language,
     ScriptLoader::LegacyTypeSupport support_legacy_types) {
-  // FIXME: isLegacySupportedJavaScriptLanguage() is not valid HTML5. It is used
-  // here to maintain backwards compatibility with existing layout tests. The
+  // FIXME: IsLegacySupportedJavaScriptLanguage() is not valid HTML5. It is used
+  // here to maintain backwards compatibility with existing web tests. The
   // specific violations are:
   // - Allowing type=javascript. type= should only support MIME types, such as
   //   text/javascript.

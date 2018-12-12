@@ -418,7 +418,7 @@ static void WriteLayoutSVGTextBox(WTF::TextStream& ts,
     return;
 
   // FIXME: Remove this hack, once the new text layout engine is completly
-  // landed. We want to preserve the old layout test results for now.
+  // landed. We want to preserve the old web test results for now.
   ts << " contains 1 chunk(s)";
 
   if (text.Parent() && (text.Parent()->ResolveColor(GetCSSPropertyColor()) !=
@@ -451,7 +451,7 @@ static inline void WriteSVGInlineTextBox(WTF::TextStream& ts,
     unsigned end_offset = fragment.character_offset + fragment.length;
 
     // FIXME: Remove this hack, once the new text layout engine is completly
-    // landed. We want to preserve the old layout test results for now.
+    // landed. We want to preserve the old web test results for now.
     ts << "chunk 1 ";
     ETextAnchor anchor = svg_style.TextAnchor();
     bool is_vertical_text =

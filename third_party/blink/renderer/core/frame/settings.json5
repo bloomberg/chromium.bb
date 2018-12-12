@@ -257,7 +257,7 @@
       invalidate: "Style",
     },
 
-    // Used in layout tests for gesture tap highlights. Makes the highlights square
+    // Used in web tests for gesture tap highlights. Makes the highlights square
     // (rather than rounded) to make it possible to reftest the results.
     {
       name: "mockGestureTapHighlightsEnabled",
@@ -498,7 +498,7 @@
       type: "double",
     },
 
-    // Only used by Layout Tests and inspector emulation.
+    // Only used by web tests and inspector emulation.
     {
       name: "mediaTypeOverride",
       initial: "\"\"",

@@ -1214,7 +1214,7 @@ void ResourceFetcher::InsertAsPreloadIfNecessary(Resource* resource,
   if (!params.IsSpeculativePreload() && !params.IsLinkPreload())
     return;
   DCHECK(!params.IsStaleRevalidation());
-  // CSP layout tests verify that preloads are subject to access checks by
+  // CSP web tests verify that preloads are subject to access checks by
   // seeing if they are in the `preload started` list. Therefore do not add
   // them to the list if the load is immediately denied.
   if (resource->LoadFailedOrCanceled() &&

@@ -74,7 +74,7 @@ updates from compositor (this is not yet in place).
 
 ## Testing
 
-Layout tests that cover web-exposed API for Animation Worklet are tested in 
+Web tests that cover web-exposed API for Animation Worklet are tested in 
 [`web_tests/virtual/threaded/fast/animationworklet/`](../../../web_tests/virtual/threaded/fast/animationworklet/).
 
 There are unit tests covering animation worklet and global scope in [`modules/animationworklet`](.).

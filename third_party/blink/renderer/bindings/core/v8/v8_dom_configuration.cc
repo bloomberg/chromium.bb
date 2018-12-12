@@ -802,7 +802,7 @@ void V8DOMConfiguration::InitializeDOMInterfaceTemplate(
   // Note that V8 minor GC does not collect an object which has an own property.
   // So, if we set the class string to the platform object as an own property,
   // it prevents V8 minor GC to collect the object (V8 minor GC only collects
-  // an empty object).  If set, a layout test fast/dom/minor-dom-gc.html fails.
+  // an empty object).  If set, a web test fast/dom/minor-dom-gc.html fails.
   SetClassString(isolate, prototype_template, interface_name);
 
   if (!parent_interface_template.IsEmpty()) {

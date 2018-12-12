@@ -902,7 +902,7 @@ void ApplyStyleCommand::FixRangeAndApplyInlineStyle(
   Element* editable_root = RootEditableElement(*start_node);
   if (start_node != editable_root) {
     // TODO(editing-dev): Investigate why |start| can be after |end| here in
-    // some cases. For example, in LayoutTest
+    // some cases. For example, in web test
     // editing/style/make-text-writing-direction-inline-{mac,win}.html
     // blink::Range object will collapse to end in this case but EphemeralRange
     // will trigger DCHECK, so we have to explicitly handle this.

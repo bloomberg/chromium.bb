@@ -414,7 +414,7 @@ enum EffectiveConnectionType {
 
     // Disable the 'delay' option for IntersectionObserver, so that observations
     // are recomputed on every frame.  This eliminates the need to add
-    // setTimeout(..., delay_ms) calls to layout tests to wait for notifications
+    // setTimeout(..., delay_ms) calls to web tests to wait for notifications
     // to be generated.
     void DisableIntersectionObserverThrottleDelay();
 

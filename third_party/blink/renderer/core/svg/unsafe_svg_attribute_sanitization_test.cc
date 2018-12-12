@@ -210,11 +210,11 @@ TEST(
       << sanitized_content.Utf8().data();
 }
 
-// Other sanitization integration tests are layout tests that use
+// Other sanitization integration tests are web tests that use
 // document.execCommand('Copy') to source content that they later
 // paste. However SVG animation elements are not serialized when
 // copying, which means we can't test sanitizing these attributes in
-// layout tests: there is nowhere to source the unsafe content from.
+// web tests: there is nowhere to source the unsafe content from.
 TEST(UnsafeSVGAttributeSanitizationTest,
      pasteAnimatedAnchor_javaScriptHrefIsStripped_caseAndEntityInProtocol) {
   std::unique_ptr<DummyPageHolder> page_holder =
