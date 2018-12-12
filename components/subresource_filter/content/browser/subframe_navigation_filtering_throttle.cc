@@ -7,6 +7,8 @@
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
@@ -124,7 +126,15 @@ void SubframeNavigationFilteringThrottle::NotifyLoadPolicy() const {
   content::RenderFrameHost* starting_rfh =
       navigation_handle()->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
           navigation_handle()->GetFrameTreeNodeId());
-  DCHECK(starting_rfh);
+  if (!starting_rfh) {
+    // This should not happen. See https://crbug.com/904248.
+    DEBUG_ALIAS_FOR_GURL(previous_url, navigation_handle()->GetPreviousURL());
+    DEBUG_ALIAS_FOR_GURL(new_url, navigation_handle()->GetURL());
+    base::debug::DumpWithoutCrashing();
+    observer_manager->NotifySubframeNavigationEvaluated(
+        navigation_handle(), load_policy_, false /* is_ad_subframe */);
+    return;
+  }
 
   bool is_ad_subframe =
       delegate_->CalculateIsAdSubframe(starting_rfh, load_policy_);
