@@ -33,6 +33,70 @@ enum class TracenessMemberConfiguration {
 template <typename T,
           TracenessMemberConfiguration tracenessConfiguration =
               TracenessMemberConfiguration::kTraced>
+class MemberPointerVerifier {
+ public:
+  MemberPointerVerifier() = default;
+
+  void SaveCreationThreadState(T* pointer) {
+    if (tracenessConfiguration == TracenessMemberConfiguration::kUntraced) {
+      creation_thread_state_ = nullptr;
+    } else {
+      creation_thread_state_ = ThreadState::Current();
+      // Members should be created in an attached thread. But an empty
+      // value Member may be created on an unattached thread by a heap
+      // collection iterator.
+      DCHECK(creation_thread_state_ || !pointer);
+    }
+  }
+  void CheckPointer(T* pointer) {
+    if (!pointer)
+      return;
+    // HashTable can store a special value (which is not aligned to the
+    // allocation granularity) to Member<> to represent a deleted entry.
+    // Thus we treat a pointer that is not aligned to the granularity
+    // as a valid pointer.
+    if (reinterpret_cast<intptr_t>(pointer) % kAllocationGranularity)
+      return;
+
+    if (tracenessConfiguration != TracenessMemberConfiguration::kUntraced) {
+      ThreadState* current = ThreadState::Current();
+      DCHECK(current);
+      // m_creationThreadState may be null when this is used in a heap
+      // collection which initialized the Member with memset and the
+      // constructor wasn't called.
+      if (creation_thread_state_) {
+        // Member should point to objects that belong in the same ThreadHeap.
+        DCHECK(creation_thread_state_->IsOnThreadHeap(pointer));
+        // Member should point to objects that belong in the same ThreadHeap.
+        DCHECK_EQ(&current->Heap(), &creation_thread_state_->Heap());
+      } else {
+        DCHECK(current->IsOnThreadHeap(pointer));
+      }
+    }
+
+#if defined(ADDRESS_SANITIZER)
+    // TODO(haraken): What we really want to check here is that the pointer
+    // is a traceable object. In other words, the pointer is either of:
+    //
+    //   (a) a pointer to the head of an on-heap object.
+    //   (b) a pointer to the head of an on-heap mixin object.
+    //
+    // We can check it by calling ThreadHeap::isHeapObjectAlive(pointer),
+    // but we cannot call it here because it requires to include T.h.
+    // So we currently only try to implement the check for (a), but do
+    // not insist that T's definition is in scope.
+    if (IsFullyDefined<T>::value && !IsGarbageCollectedMixin<T>::value)
+      HeapObjectHeader::CheckFromPayload(pointer);
+#endif  // ADDRESS_SANITIZER
+  }
+
+ private:
+  const ThreadState* creation_thread_state_;
+};
+
+template <typename T,
+          TracenessMemberConfiguration tracenessConfiguration =
+              TracenessMemberConfiguration::kTraced>
 class MemberBase {
   DISALLOW_NEW();
 
@@ -41,59 +105,55 @@ class MemberBase {
 
   MemberBase(std::nullptr_t) : raw_(nullptr) { SaveCreationThreadState(); }
 
-  MemberBase(T* raw) : raw_(raw) {
+  explicit MemberBase(T* raw) : raw_(raw) {
     SaveCreationThreadState();
     CheckPointer();
+    // No write barrier for initializing stores.
   }
 
   explicit MemberBase(T& raw) : raw_(&raw) {
     SaveCreationThreadState();
     CheckPointer();
+    // No write barrier for initializing stores.
   }
 
-  MemberBase(WTF::HashTableDeletedValueType) : raw_(reinterpret_cast<T*>(-1)) {
+  MemberBase(WTF::HashTableDeletedValueType)
+      : raw_(reinterpret_cast<T*>(kHashTableDeletedRawValue)) {
     SaveCreationThreadState();
   }
 
-  bool IsHashTableDeletedValue() const {
-    return raw_ == reinterpret_cast<T*>(-1);
-  }
-
-  MemberBase(const MemberBase& other) : raw_(other) {
+  MemberBase(const MemberBase& other) : raw_(other.raw_) {
     SaveCreationThreadState();
     CheckPointer();
+    WriteBarrier();
   }
 
   template <typename U>
-  MemberBase(const Persistent<U>& other) {
+  MemberBase(const Persistent<U>& other) : raw_(other) {
     SaveCreationThreadState();
-    raw_ = other;
     CheckPointer();
+    WriteBarrier();
   }
 
   template <typename U>
   MemberBase(const MemberBase<U>& other) : raw_(other) {
     SaveCreationThreadState();
     CheckPointer();
+    WriteBarrier();
   }
-
-  T* Release() {
-    T* result = raw_;
-    raw_ = nullptr;
-    return result;
-  }
-
-  explicit operator bool() const { return raw_; }
-
-  operator T*() const { return raw_; }
-
-  T* operator->() const { return raw_; }
-  T& operator*() const { return *raw_; }
 
   template <typename U>
   MemberBase& operator=(const Persistent<U>& other) {
     raw_ = other;
     CheckPointer();
+    WriteBarrier();
+    return *this;
+  }
+
+  MemberBase& operator=(const MemberBase& other) {
+    raw_ = other;
+    CheckPointer();
+    WriteBarrier();
     return *this;
   }
 
@@ -101,6 +161,7 @@ class MemberBase {
   MemberBase& operator=(const MemberBase<U>& other) {
     raw_ = other;
     CheckPointer();
+    WriteBarrier();
     return *this;
   }
 
@@ -108,6 +169,7 @@ class MemberBase {
   MemberBase& operator=(U* other) {
     raw_ = other;
     CheckPointer();
+    WriteBarrier();
     return *this;
   }
 
@@ -124,75 +186,55 @@ class MemberBase {
   void Swap(MemberBase<T>& other) {
     std::swap(raw_, other.raw_);
     CheckPointer();
+    WriteBarrier();
+    other.WriteBarrier();
   }
+
+  explicit operator bool() const { return raw_; }
+  operator T*() const { return raw_; }
+  T* operator->() const { return raw_; }
+  T& operator*() const { return *raw_; }
 
   T* Get() const { return raw_; }
 
   void Clear() { raw_ = nullptr; }
 
+  T* Release() {
+    T* result = raw_;
+    raw_ = nullptr;
+    return result;
+  }
+
+  bool IsHashTableDeletedValue() const {
+    return raw_ == reinterpret_cast<T*>(kHashTableDeletedRawValue);
+  }
+
  protected:
+  static constexpr intptr_t kHashTableDeletedRawValue = -1;
+
+  ALWAYS_INLINE void WriteBarrier() const {
+#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
+    MarkingVisitor::WriteBarrier(
+        const_cast<typename std::remove_const<T>::type*>(this->raw_));
+#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
+  }
+
   void CheckPointer() {
 #if DCHECK_IS_ON()
-    if (!raw_)
-      return;
-    // HashTable can store a special value (which is not aligned to the
-    // allocation granularity) to Member<> to represent a deleted entry.
-    // Thus we treat a pointer that is not aligned to the granularity
-    // as a valid pointer.
-    if (reinterpret_cast<intptr_t>(raw_) % kAllocationGranularity)
-      return;
-
-    if (tracenessConfiguration != TracenessMemberConfiguration::kUntraced) {
-      ThreadState* current = ThreadState::Current();
-      DCHECK(current);
-      // m_creationThreadState may be null when this is used in a heap
-      // collection which initialized the Member with memset and the
-      // constructor wasn't called.
-      if (creation_thread_state_) {
-        // Member should point to objects that belong in the same ThreadHeap.
-        DCHECK(creation_thread_state_->IsOnThreadHeap(raw_));
-        // Member should point to objects that belong in the same ThreadHeap.
-        DCHECK_EQ(&current->Heap(), &creation_thread_state_->Heap());
-      } else {
-        DCHECK(current->IsOnThreadHeap(raw_));
-      }
-    }
-
-#if defined(ADDRESS_SANITIZER)
-    // TODO(haraken): What we really want to check here is that the pointer
-    // is a traceable object. In other words, the pointer is either of:
-    //
-    //   (a) a pointer to the head of an on-heap object.
-    //   (b) a pointer to the head of an on-heap mixin object.
-    //
-    // We can check it by calling ThreadHeap::isHeapObjectAlive(raw_),
-    // but we cannot call it here because it requires to include T.h.
-    // So we currently only try to implement the check for (a), but do
-    // not insist that T's definition is in scope.
-    if (IsFullyDefined<T>::value && !IsGarbageCollectedMixin<T>::value)
-      HeapObjectHeader::CheckFromPayload(raw_);
-#endif
-#endif
+    pointer_verifier_.CheckPointer(raw_);
+#endif  // DCHECK_IS_ON()
   }
 
   void SaveCreationThreadState() {
 #if DCHECK_IS_ON()
-    if (tracenessConfiguration == TracenessMemberConfiguration::kUntraced) {
-      creation_thread_state_ = nullptr;
-    } else {
-      creation_thread_state_ = ThreadState::Current();
-      // Members should be created in an attached thread. But an empty
-      // value Member may be created on an unattached thread by a heap
-      // collection iterator.
-      DCHECK(creation_thread_state_ || !raw_);
-    }
-#endif
+    pointer_verifier_.SaveCreationThreadState(raw_);
+#endif  // DCHECK_IS_ON()
   }
 
   T* raw_;
 #if DCHECK_IS_ON()
-  const ThreadState* creation_thread_state_;
-#endif
+  MemberPointerVerifier<T, tracenessConfiguration> pointer_verifier_;
+#endif  // DCHECK_IS_ON()
 };
 
 // Members are used in classes to contain strong pointers to other oilpan heap
@@ -208,55 +250,45 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
  public:
   Member() : Parent() {}
   Member(std::nullptr_t) : Parent(nullptr) {}
-  Member(T* raw) : Parent(raw) {
-    // No write barrier for initializing stores.
-  }
-  Member(T& raw) : Parent(raw) {
-    // No write barrier for initializing stores.
-  }
+  Member(T* raw) : Parent(raw) {}
+  Member(T& raw) : Parent(raw) {}
   Member(WTF::HashTableDeletedValueType x) : Parent(x) {}
 
-  Member(const Member& other) : Parent(other) { WriteBarrier(); }
+  Member(const Member& other) : Parent(other) {}
+
   template <typename U>
   Member(const Member<U>& other) : Parent(other) {
-    WriteBarrier();
   }
+
   template <typename U>
-  Member(const Persistent<U>& other) : Parent(other) {
-    WriteBarrier();
-  }
+  Member(const Persistent<U>& other) : Parent(other) {}
 
   template <typename U>
   Member& operator=(const Persistent<U>& other) {
     Parent::operator=(other);
-    WriteBarrier();
     return *this;
   }
 
   Member& operator=(const Member& other) {
     Parent::operator=(other);
-    WriteBarrier();
     return *this;
   }
 
   template <typename U>
   Member& operator=(const Member<U>& other) {
     Parent::operator=(other);
-    WriteBarrier();
     return *this;
   }
 
   template <typename U>
   Member& operator=(const WeakMember<U>& other) {
     Parent::operator=(other);
-    WriteBarrier();
     return *this;
   }
 
   template <typename U>
   Member& operator=(U* other) {
     Parent::operator=(other);
-    WriteBarrier();
     return *this;
   }
 
@@ -271,13 +303,6 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
   }
 
  protected:
-  ALWAYS_INLINE void WriteBarrier() const {
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-    MarkingVisitor::WriteBarrier(
-        const_cast<typename std::remove_const<T>::type*>(this->raw_));
-#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-  }
-
   template <typename P, typename Traits, typename Allocator>
   friend class WTF::ConstructTraits;
 };
@@ -365,40 +390,14 @@ class SameThreadCheckedMember : public Member<T> {
   }
 
  private:
-  void CheckPointer() {
-    if (!this->raw_)
-      return;
-    // HashTable can store a special value (which is not aligned to the
-    // allocation granularity) to Member<> to represent a deleted entry.
-    // Thus we treat a pointer that is not aligned to the granularity
-    // as a valid pointer.
-    if (reinterpret_cast<intptr_t>(this->raw_) % kAllocationGranularity)
-      return;
-
-    ThreadState* current = ThreadState::Current();
-    DCHECK(current);
-    // m_creationThreadState may be null when this is used in a heap
-    // collection which initialized the Member with memset and the
-    // constructor wasn't called.
-    if (creation_thread_state_) {
-      // Member should point to objects that belong in the same ThreadHeap.
-      CHECK(creation_thread_state_->IsOnThreadHeap(this->raw_));
-      // Member should point to objects that belong in the same ThreadHeap.
-      CHECK_EQ(&current->Heap(), &creation_thread_state_->Heap());
-    } else {
-      CHECK(current->IsOnThreadHeap(this->raw_));
-    }
-  }
+  void CheckPointer() { pointer_verifier_.CheckPointer(this->raw_); }
 
   void SaveCreationThreadState() {
-    creation_thread_state_ = ThreadState::Current();
-    // All Members should be created in an attached thread, but an empty
-    // value Member may be created on an unattached thread by a heap
-    // collection iterator.
-    CHECK(this->creation_thread_state_ || !this->raw_);
+    pointer_verifier_.SaveCreationThreadState(this->raw_);
   }
 
-  const ThreadState* creation_thread_state_;
+  MemberPointerVerifier<T, TracenessMemberConfiguration::kTraced>
+      pointer_verifier_;
 };
 
 // WeakMember is similar to Member in that it is used to point to other oilpan
@@ -429,22 +428,19 @@ class WeakMember : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
 
   template <typename U>
   WeakMember& operator=(const Persistent<U>& other) {
-    this->raw_ = other;
-    this->CheckPointer();
+    Parent::operator=(other);
     return *this;
   }
 
   template <typename U>
   WeakMember& operator=(const Member<U>& other) {
-    this->raw_ = other;
-    this->CheckPointer();
+    Parent::operator=(other);
     return *this;
   }
 
   template <typename U>
   WeakMember& operator=(U* other) {
-    this->raw_ = other;
-    this->CheckPointer();
+    Parent::operator=(other);
     return *this;
   }
 
