@@ -5028,6 +5028,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Opened"/>
 </enum>
 
+<enum name="BooleanOptedIn">
+  <int value="0" label="Not opted-in"/>
+  <int value="1" label="Opted-in"/>
+</enum>
+
 <enum name="BooleanOptionConditionsChanged">
   <int value="0" label="Conditions unchanged"/>
   <int value="1" label="Conditions changed"/>
