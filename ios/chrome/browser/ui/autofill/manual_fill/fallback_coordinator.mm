@@ -68,7 +68,7 @@ initWithBaseViewController:(UIViewController*)viewController
   popoverPresentationController.sourceView = button;
   popoverPresentationController.sourceRect = button.bounds;
   popoverPresentationController.permittedArrowDirections =
-      UIPopoverArrowDirectionUp | UIMenuControllerArrowDown;
+      UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
   popoverPresentationController.delegate = self;
   popoverPresentationController.backgroundColor = UIColor.whiteColor;
 }
