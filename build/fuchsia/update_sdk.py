@@ -29,7 +29,7 @@ def GetSdkHashForPlatform():
   return os.path.join(os.path.dirname(__file__), filename)
 
 def GetBucketForPlatform():
-  return 'gs://fuchsia/sdk/{platform}-amd64/'.format(
+  return 'gs://fuchsia/sdk/core/{platform}-amd64/'.format(
       platform = GetHostOsFromPlatform())
 
 
