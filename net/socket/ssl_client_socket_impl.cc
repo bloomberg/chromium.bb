@@ -1191,14 +1191,14 @@ int SSLClientSocketImpl::DoVerifyCertComplete(int result) {
         UMA_HISTOGRAM_ENUMERATION("Net.SSLTLS13DowngradeTypeTLS13Experiment",
                                   type);
       }
-    }
 
-    if (enforce_tls13_downgrade_known_roots_only &&
-        server_cert_verify_result_.is_issued_by_known_root) {
-      // Exit DoHandshakeLoop and return the result to the caller to
-      // Connect.
-      DCHECK_EQ(STATE_NONE, next_handshake_state_);
-      return ERR_TLS13_DOWNGRADE_DETECTED;
+      if (enforce_tls13_downgrade_known_roots_only &&
+          server_cert_verify_result_.is_issued_by_known_root) {
+        // Exit DoHandshakeLoop and return the result to the caller to
+        // Connect.
+        DCHECK_EQ(STATE_NONE, next_handshake_state_);
+        return ERR_TLS13_DOWNGRADE_DETECTED;
+      }
     }
   }
 
