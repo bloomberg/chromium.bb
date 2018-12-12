@@ -69,7 +69,7 @@ index ce21720..324929e 100644
  }
  
  bool StyleRareInheritedData::shadowDataEquivalent(const StyleRareInheritedData& o) const
-diff --git a/LayoutTests/platform/mac/fast/flexbox/box-orient-button-expected.checksum b/LayoutTests/platform/mac/fast/flexbox/box-orient-button-expected.checksum
+diff --git a/web_tests/platform/mac/fast/flexbox/box-orient-button-expected.checksum b/web_tests/platform/mac/fast/flexbox/box-orient-button-expected.checksum
 new file mode 100644
 index 0000000..6db26bd
 --- /dev/null

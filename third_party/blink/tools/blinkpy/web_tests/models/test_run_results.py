@@ -61,7 +61,7 @@ class TestRunResults(object):
         self.unexpected_failures = 0
         self.unexpected_timeouts = 0
 
-        # The wall clock time spent running the tests (layout_test_runner.run()).
+        # The wall clock time spent running the tests (web_test_runner.run()).
         self.run_time = 0
 
         # Map of test name to the *last* result for the test.

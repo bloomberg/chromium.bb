@@ -101,7 +101,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             self._write(path, 'contents')
 
         self.mac_port.host.filesystem.write_text_file(
-            '/test.checkout/LayoutTests/external/wpt/MANIFEST.json', '{}')
+            '/test.checkout/web_tests/external/wpt/MANIFEST.json', '{}')
 
     def tearDown(self):
         BaseTestCase.tearDown(self)

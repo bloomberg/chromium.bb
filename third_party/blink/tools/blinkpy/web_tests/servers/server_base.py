@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Base class used to start servers used by the layout tests."""
+"""Base class used to start servers used by the web tests."""
 
 import errno
 import logging
@@ -42,7 +42,7 @@ class ServerError(Exception):
 
 
 class ServerBase(object):
-    """A skeleton class for starting and stopping servers used by the layout tests."""
+    """A skeleton class for starting and stopping servers used by the web tests."""
 
     def __init__(self, port_obj, output_dir):
         self._port_obj = port_obj

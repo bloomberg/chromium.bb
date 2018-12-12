@@ -1,4 +1,4 @@
-W3C Web Platform Tests in Blink Layout Tests
+W3C Web Platform Tests in Blink Web Tests
 
 Design Doc: https://goo.gl/iXUaZd
 
@@ -28,7 +28,7 @@ changing the ports (HTTP/S, WS/S), make sure to also:
 
 - update `WPT_HOST_AND_PORTS` in
   `//third_party/blink/tools/blinkpy/web_tests/port/driver.py`
-- update LayoutTestContentBrowserClient::GetOriginsRequiringDedicatedProcess()
+- update WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess()
 
 checkout.sh
 ===========
