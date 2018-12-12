@@ -101,7 +101,7 @@
 #define DRM_MAJOR 226 /* Linux */
 #endif
 
-#ifdef __OpenBSD__
+#if defined(__OpenBSD__) || defined(__DragonFly__)
 struct drm_pciinfo {
 	uint16_t	domain;
 	uint8_t		bus;
@@ -3063,7 +3063,7 @@ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
     info->func = func;
 
     return 0;
-#elif defined(__OpenBSD__)
+#elif defined(__OpenBSD__) || defined(__DragonFly__)
     struct drm_pciinfo pinfo;
     int fd, type;
 
@@ -3229,7 +3229,7 @@ static int drmParsePciDeviceInfo(int maj, int min,
         return parse_config_sysfs_file(maj, min, device);
 
     return 0;
-#elif defined(__OpenBSD__)
+#elif defined(__OpenBSD__) || defined(__DragonFly__)
     struct drm_pciinfo pinfo;
     int fd, type;
 
