@@ -1,7 +1,6 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #ifndef COMPONENTS_LEVELDB_PROTO_PROTO_LEVELDB_WRAPPER_H_
 #define COMPONENTS_LEVELDB_PROTO_PROTO_LEVELDB_WRAPPER_H_
 
@@ -14,8 +13,11 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "components/leveldb_proto/leveldb_database.h"
+#include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/proto_leveldb_wrapper_metrics.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -33,28 +35,6 @@ using KeyVector = std::vector<std::string>;
 // Construction/calls/destruction should all happen on the same thread.
 class ProtoLevelDBWrapper {
  public:
-  using InitCallback = base::OnceCallback<void(bool success)>;
-  using UpdateCallback = base::OnceCallback<void(bool success)>;
-  using LoadKeysCallback =
-      base::OnceCallback<void(bool success,
-                              std::unique_ptr<std::vector<std::string>>)>;
-  using DestroyCallback = base::OnceCallback<void(bool success)>;
-  using OnCreateCallback = base::OnceCallback<void(ProtoLevelDBWrapper*)>;
-
-  template <typename T>
-  class Internal {
-   public:
-    using LoadCallback =
-        base::OnceCallback<void(bool success, std::unique_ptr<std::vector<T>>)>;
-    using GetCallback =
-        base::OnceCallback<void(bool success, std::unique_ptr<T>)>;
-    using LoadKeysAndEntriesCallback =
-        base::OnceCallback<void(bool success,
-                                std::unique_ptr<std::map<std::string, T>>)>;
-
-    // A list of key-value (string, T) tuples.
-    using KeyEntryVector = std::vector<std::pair<std::string, T>>;
-  };
 
   // All blocking calls/disk access will happen on the provided |task_runner|.
   ProtoLevelDBWrapper(
@@ -67,94 +47,82 @@ class ProtoLevelDBWrapper {
   virtual ~ProtoLevelDBWrapper();
 
   template <typename T>
-  void UpdateEntries(
-      std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
-          entries_to_save,
-      std::unique_ptr<KeyVector> keys_to_remove,
-      UpdateCallback callback);
+  void UpdateEntries(std::unique_ptr<typename Util::Internal<T>::KeyEntryVector>
+                         entries_to_save,
+                     std::unique_ptr<KeyVector> keys_to_remove,
+                     Callbacks::UpdateCallback callback);
 
   template <typename T>
   void UpdateEntriesWithRemoveFilter(
-      std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
+      std::unique_ptr<typename Util::Internal<T>::KeyEntryVector>
           entries_to_save,
       const LevelDB::KeyFilter& delete_key_filter,
-      UpdateCallback callback);
+      Callbacks::UpdateCallback callback);
 
   template <typename T>
   void UpdateEntriesWithRemoveFilter(
-      std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
+      std::unique_ptr<typename Util::Internal<T>::KeyEntryVector>
           entries_to_save,
       const LevelDB::KeyFilter& delete_key_filter,
       const std::string& target_prefix,
-      UpdateCallback callback);
+      Callbacks::UpdateCallback callback);
 
   template <typename T>
-  void LoadEntries(
-      typename ProtoLevelDBWrapper::Internal<T>::LoadCallback callback);
+  void LoadEntries(typename Callbacks::Internal<T>::LoadCallback callback);
 
   template <typename T>
   void LoadEntriesWithFilter(
       const LevelDB::KeyFilter& key_filter,
-      typename ProtoLevelDBWrapper::Internal<T>::LoadCallback callback);
+      typename Callbacks::Internal<T>::LoadCallback callback);
 
   template <typename T>
   void LoadEntriesWithFilter(
       const LevelDB::KeyFilter& key_filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
-      typename ProtoLevelDBWrapper::Internal<T>::LoadCallback callback);
+      typename Callbacks::Internal<T>::LoadCallback callback);
 
   template <typename T>
   void LoadKeysAndEntries(
-      typename ProtoLevelDBWrapper::Internal<T>::LoadKeysAndEntriesCallback
-          callback);
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback);
 
   template <typename T>
   void LoadKeysAndEntriesWithFilter(
       const LevelDB::KeyFilter& filter,
-      typename ProtoLevelDBWrapper::Internal<T>::LoadKeysAndEntriesCallback
-          callback);
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback);
 
   template <typename T>
   void LoadKeysAndEntriesWithFilter(
       const LevelDB::KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
-      typename ProtoLevelDBWrapper::Internal<T>::LoadKeysAndEntriesCallback
-          callback);
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback);
 
-  void LoadKeys(LoadKeysCallback callback);
-  void LoadKeys(const std::string& target_prefix, LoadKeysCallback callback);
+  void LoadKeys(Callbacks::LoadKeysCallback callback);
+  void LoadKeys(const std::string& target_prefix,
+                Callbacks::LoadKeysCallback callback);
 
   template <typename T>
-  void GetEntry(
-      const std::string& key,
-      typename ProtoLevelDBWrapper::Internal<T>::GetCallback callback);
+  void GetEntry(const std::string& key,
+                typename Callbacks::Internal<T>::GetCallback callback);
 
-  void Destroy(DestroyCallback callback);
-
-  void RunInitCallback(typename ProtoLevelDBWrapper::InitCallback callback,
-                       const leveldb::Status* status);
+  void Destroy(Callbacks::DestroyCallback callback);
 
   // Allow callers to provide their own Database implementation.
   void InitWithDatabase(LevelDB* database,
                         const base::FilePath& database_dir,
                         const leveldb_env::Options& options,
                         bool destroy_on_corruption,
-                        InitCallback callback);
+                        Callbacks::InitStatusCallback callback);
 
   void SetMetricsId(const std::string& id);
 
-  bool IsCorrupt();
   bool GetApproximateMemoryUse(uint64_t* approx_mem_use);
 
   const scoped_refptr<base::SequencedTaskRunner>& task_runner();
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);
-
-  // Set to true if the status from the previous Init call is corruption.
-  bool is_corrupt_ = false;
 
   // Used to run blocking tasks in-order, must be the TaskRunner that |db_|
   // relies on.
@@ -165,55 +133,40 @@ class ProtoLevelDBWrapper {
   // LevelDB calls, likely the database client name.
   std::string metrics_id_ = "Default";
 
-  base::WeakPtrFactory<ProtoLevelDBWrapper> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ProtoLevelDBWrapper);
 };
 
 namespace {
 
 template <typename T>
-void RunUpdateCallback(typename ProtoLevelDBWrapper::UpdateCallback callback,
-                       const bool* success) {
-  std::move(callback).Run(*success);
-}
-
-template <typename T>
-void RunLoadCallback(
-    typename ProtoLevelDBWrapper::Internal<T>::LoadCallback callback,
-    bool* success,
-    std::unique_ptr<std::vector<T>> entries) {
+void RunLoadCallback(typename Callbacks::Internal<T>::LoadCallback callback,
+                     bool* success,
+                     std::unique_ptr<std::vector<T>> entries) {
   std::move(callback).Run(*success, std::move(entries));
 }
 
 template <typename T>
 void RunLoadKeysAndEntriesCallback(
-    typename ProtoLevelDBWrapper::Internal<T>::LoadKeysAndEntriesCallback
-        callback,
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback,
     bool* success,
     std::unique_ptr<std::map<std::string, T>> keys_entries) {
   std::move(callback).Run(*success, std::move(keys_entries));
 }
 
 template <typename T>
-void RunGetCallback(
-    typename ProtoLevelDBWrapper::Internal<T>::GetCallback callback,
-    const bool* success,
-    const bool* found,
-    std::unique_ptr<T> entry) {
+void RunGetCallback(typename Callbacks::Internal<T>::GetCallback callback,
+                    const bool* success,
+                    const bool* found,
+                    std::unique_ptr<T> entry) {
   std::move(callback).Run(*success, *found ? std::move(entry) : nullptr);
 }
 
 template <typename T>
-void UpdateEntriesFromTaskRunner(
+bool UpdateEntriesFromTaskRunner(
     LevelDB* database,
-    std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
-        entries_to_save,
+    std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<KeyVector> keys_to_remove,
-    bool* success,
     const std::string& client_id) {
-  DCHECK(success);
-
   // Serialize the values from Proto to string before passing on to database.
   KeyValueVector pairs_to_save;
   for (const auto& pair : *entries_to_save) {
@@ -222,21 +175,18 @@ void UpdateEntriesFromTaskRunner(
   }
 
   leveldb::Status status;
-  *success = database->Save(pairs_to_save, *keys_to_remove, &status);
-  ProtoLevelDBWrapperMetrics::RecordUpdate(client_id, *success, status);
+  bool success = database->Save(pairs_to_save, *keys_to_remove, &status);
+  ProtoLevelDBWrapperMetrics::RecordUpdate(client_id, success, status);
+  return success;
 }
 
 template <typename T>
-void UpdateEntriesWithRemoveFilterFromTaskRunner(
+bool UpdateEntriesWithRemoveFilterFromTaskRunner(
     LevelDB* database,
-    std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
-        entries_to_save,
+    std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
     const LevelDB::KeyFilter& delete_key_filter,
     const std::string& target_prefix,
-    bool* success,
     const std::string& client_id) {
-  DCHECK(success);
-
   // Serialize the values from Proto to string before passing on to database.
   KeyValueVector pairs_to_save;
   for (const auto& pair : *entries_to_save) {
@@ -245,9 +195,10 @@ void UpdateEntriesWithRemoveFilterFromTaskRunner(
   }
 
   leveldb::Status status;
-  *success = database->UpdateWithRemoveFilter(pairs_to_save, delete_key_filter,
-                                              target_prefix, &status);
-  ProtoLevelDBWrapperMetrics::RecordUpdate(client_id, *success, status);
+  bool success = database->UpdateWithRemoveFilter(
+      pairs_to_save, delete_key_filter, target_prefix, &status);
+  ProtoLevelDBWrapperMetrics::RecordUpdate(client_id, success, status);
+  return success;
 }
 
 template <typename T>
@@ -255,12 +206,11 @@ void LoadKeysAndEntriesFromTaskRunner(LevelDB* database,
                                       const LevelDB::KeyFilter& filter,
                                       const leveldb::ReadOptions& options,
                                       const std::string& target_prefix,
-                                      std::map<std::string, T>* keys_entries,
+                                      const std::string& client_id,
                                       bool* success,
-                                      const std::string& client_id) {
+                                      std::map<std::string, T>* keys_entries) {
   DCHECK(success);
   DCHECK(keys_entries);
-
   keys_entries->clear();
 
   std::map<std::string, std::string> loaded_entries;
@@ -277,7 +227,7 @@ void LoadKeysAndEntriesFromTaskRunner(LevelDB* database,
     keys_entries->insert(std::make_pair(pair.first, entry));
   }
 
-  ProtoLevelDBWrapperMetrics::RecordLoadKeysAndEntries(client_id, *success);
+  ProtoLevelDBWrapperMetrics::RecordLoadKeysAndEntries(client_id, success);
 }
 
 template <typename T>
@@ -285,14 +235,9 @@ void LoadEntriesFromTaskRunner(LevelDB* database,
                                const LevelDB::KeyFilter& filter,
                                const leveldb::ReadOptions& options,
                                const std::string& target_prefix,
-                               std::vector<T>* entries,
+                               const std::string& client_id,
                                bool* success,
-                               const std::string& client_id) {
-  DCHECK(success);
-  DCHECK(entries);
-
-  entries->clear();
-
+                               std::vector<T>* entries) {
   std::vector<std::string> loaded_entries;
   *success =
       database->LoadWithFilter(filter, &loaded_entries, options, target_prefix);
@@ -307,20 +252,16 @@ void LoadEntriesFromTaskRunner(LevelDB* database,
     entries->push_back(entry);
   }
 
-  ProtoLevelDBWrapperMetrics::RecordLoadEntries(client_id, *success);
+  ProtoLevelDBWrapperMetrics::RecordLoadEntries(client_id, success);
 }
 
 template <typename T>
 void GetEntryFromTaskRunner(LevelDB* database,
                             const std::string& key,
-                            T* entry,
-                            bool* found,
+                            const std::string& client_id,
                             bool* success,
-                            const std::string& client_id) {
-  DCHECK(success);
-  DCHECK(found);
-  DCHECK(entry);
-
+                            bool* found,
+                            T* entry) {
   std::string serialized_entry;
   leveldb::Status status;
   *success = database->Get(key, found, &serialized_entry, &status);
@@ -337,27 +278,23 @@ void GetEntryFromTaskRunner(LevelDB* database,
 
 template <typename T>
 void ProtoLevelDBWrapper::UpdateEntries(
-    std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
-        entries_to_save,
+    std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<KeyVector> keys_to_remove,
-    typename ProtoLevelDBWrapper::UpdateCallback callback) {
+    typename Callbacks::UpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bool* success = new bool(false);
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
       base::BindOnce(UpdateEntriesFromTaskRunner<T>, base::Unretained(db_),
                      std::move(entries_to_save), std::move(keys_to_remove),
-                     success, metrics_id_),
-      base::BindOnce(RunUpdateCallback<T>, std::move(callback),
-                     base::Owned(success)));
+                     metrics_id_),
+      std::move(callback));
 }
 
 template <typename T>
 void ProtoLevelDBWrapper::UpdateEntriesWithRemoveFilter(
-    std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
-        entries_to_save,
+    std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
     const LevelDB::KeyFilter& delete_key_filter,
-    typename ProtoLevelDBWrapper::UpdateCallback callback) {
+    Callbacks::UpdateCallback callback) {
   UpdateEntriesWithRemoveFilter<T>(std::move(entries_to_save),
                                    delete_key_filter, std::string(),
                                    std::move(callback));
@@ -365,32 +302,29 @@ void ProtoLevelDBWrapper::UpdateEntriesWithRemoveFilter(
 
 template <typename T>
 void ProtoLevelDBWrapper::UpdateEntriesWithRemoveFilter(
-    std::unique_ptr<typename ProtoLevelDBWrapper::Internal<T>::KeyEntryVector>
-        entries_to_save,
+    std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
     const LevelDB::KeyFilter& delete_key_filter,
     const std::string& target_prefix,
-    typename ProtoLevelDBWrapper::UpdateCallback callback) {
+    Callbacks::UpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bool* success = new bool(false);
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
       base::BindOnce(UpdateEntriesWithRemoveFilterFromTaskRunner<T>,
                      base::Unretained(db_), std::move(entries_to_save),
-                     delete_key_filter, target_prefix, success, metrics_id_),
-      base::BindOnce(RunUpdateCallback<T>, std::move(callback),
-                     base::Owned(success)));
+                     delete_key_filter, target_prefix, metrics_id_),
+      std::move(callback));
 }
 
 template <typename T>
 void ProtoLevelDBWrapper::LoadEntries(
-    typename ProtoLevelDBWrapper::Internal<T>::LoadCallback callback) {
+    typename Callbacks::Internal<T>::LoadCallback callback) {
   LoadEntriesWithFilter<T>(LevelDB::KeyFilter(), std::move(callback));
 }
 
 template <typename T>
 void ProtoLevelDBWrapper::LoadEntriesWithFilter(
     const LevelDB::KeyFilter& key_filter,
-    typename ProtoLevelDBWrapper::Internal<T>::LoadCallback callback) {
+    typename Callbacks::Internal<T>::LoadCallback callback) {
   LoadEntriesWithFilter<T>(key_filter, leveldb::ReadOptions(), std::string(),
                            std::move(callback));
 }
@@ -400,35 +334,32 @@ void ProtoLevelDBWrapper::LoadEntriesWithFilter(
     const LevelDB::KeyFilter& key_filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
-    typename ProtoLevelDBWrapper::Internal<T>::LoadCallback callback) {
+    typename Callbacks::Internal<T>::LoadCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool* success = new bool(false);
-
-  std::unique_ptr<std::vector<T>> entries(new std::vector<T>());
-  // Get this pointer before entries is std::move()'d so we can use it below.
-  std::vector<T>* entries_ptr = entries.get();
+  auto entries = std::make_unique<std::vector<T>>();
+  // Get this pointer before |entries| is std::move()'d so we can use it below.
+  auto* entries_ptr = entries.get();
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(LoadEntriesFromTaskRunner<T>, base::Unretained(db_),
-                     key_filter, options, target_prefix, entries_ptr, success,
-                     metrics_id_),
+                     key_filter, options, target_prefix, metrics_id_, success,
+                     entries_ptr),
       base::BindOnce(RunLoadCallback<T>, std::move(callback),
                      base::Owned(success), std::move(entries)));
 }
 
 template <typename T>
 void ProtoLevelDBWrapper::LoadKeysAndEntries(
-    typename ProtoLevelDBWrapper::Internal<T>::LoadKeysAndEntriesCallback
-        callback) {
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   LoadKeysAndEntriesWithFilter<T>(LevelDB::KeyFilter(), std::move(callback));
 }
 
 template <typename T>
 void ProtoLevelDBWrapper::LoadKeysAndEntriesWithFilter(
     const LevelDB::KeyFilter& key_filter,
-    typename ProtoLevelDBWrapper::Internal<T>::LoadKeysAndEntriesCallback
-        callback) {
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   LoadKeysAndEntriesWithFilter<T>(key_filter, leveldb::ReadOptions(),
                                   std::string(), std::move(callback));
 }
@@ -438,20 +369,18 @@ void ProtoLevelDBWrapper::LoadKeysAndEntriesWithFilter(
     const LevelDB::KeyFilter& key_filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
-    typename ProtoLevelDBWrapper::Internal<T>::LoadKeysAndEntriesCallback
-        callback) {
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool* success = new bool(false);
-
   auto keys_entries = std::make_unique<std::map<std::string, T>>();
-  // Get this pointer before entries is std::move()'d so we can use it below.
-  std::map<std::string, T>* keys_entries_ptr = keys_entries.get();
-
+  // Get this pointer before |keys_entries| is std::move()'d so we can use it
+  // below.
+  auto* keys_entries_ptr = keys_entries.get();
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(LoadKeysAndEntriesFromTaskRunner<T>, base::Unretained(db_),
-                     key_filter, options, target_prefix, keys_entries_ptr,
-                     success, metrics_id_),
+                     key_filter, options, target_prefix, metrics_id_, success,
+                     keys_entries_ptr),
       base::BindOnce(RunLoadKeysAndEntriesCallback<T>, std::move(callback),
                      base::Owned(success), std::move(keys_entries)));
 }
@@ -459,19 +388,18 @@ void ProtoLevelDBWrapper::LoadKeysAndEntriesWithFilter(
 template <typename T>
 void ProtoLevelDBWrapper::GetEntry(
     const std::string& key,
-    typename ProtoLevelDBWrapper::Internal<T>::GetCallback callback) {
+    typename Callbacks::Internal<T>::GetCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool* success = new bool(false);
   bool* found = new bool(false);
-
-  std::unique_ptr<T> entry(new T());
-  // Get this pointer before entry is std::move()'d so we can use it below.
-  T* entry_ptr = entry.get();
+  auto entry = std::make_unique<T>();
+  // Get this pointer before |entry| is std::move()'d so we can use it below.
+  auto* entry_ptr = entry.get();
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(GetEntryFromTaskRunner<T>, base::Unretained(db_), key,
-                     entry_ptr, found, success, metrics_id_),
+                     metrics_id_, success, found, entry_ptr),
       base::BindOnce(RunGetCallback<T>, std::move(callback),
                      base::Owned(success), base::Owned(found),
                      std::move(entry)));

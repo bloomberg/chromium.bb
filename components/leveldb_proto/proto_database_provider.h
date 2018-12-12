@@ -57,6 +57,7 @@ class ProtoDatabaseProvider : public KeyedService {
 
   base::FilePath profile_dir_;
   scoped_refptr<SharedProtoDatabase> db_;
+  base::Lock get_db_lock_;
   // The SequencedTaskRunner used to ensure thread-safe behaviour for
   // GetSharedDBInstance.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

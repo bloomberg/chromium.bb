@@ -22,6 +22,17 @@ const std::string kDefaultNamespace = "ns";
 const std::string kDefaultNamespace2 = "ns2";
 const std::string kDefaultTypePrefix = "tp";
 
+inline void GetClientFromTaskRunner(SharedProtoDatabase* db,
+                                    const std::string& client_namespace,
+                                    const std::string& type_prefix,
+                                    base::OnceClosure closure) {
+  db->GetClient<TestProto>(
+      client_namespace, type_prefix, true /* create_if_missing */,
+      base::BindOnce([](base::OnceClosure closure,
+                        Enums::InitStatus status) { std::move(closure).Run(); },
+                     std::move(closure)));
+}
+
 }  // namespace
 
 class SharedProtoDatabaseTest : public testing::Test {
@@ -29,29 +40,18 @@ class SharedProtoDatabaseTest : public testing::Test {
   void SetUp() override {
     temp_dir_ = std::make_unique<base::ScopedTempDir>();
     ASSERT_TRUE(temp_dir_->CreateUniqueTempDir());
-    db_thread_ = std::make_unique<base::Thread>("db_thread");
-    ASSERT_TRUE(db_thread_->Start());
-    db_ = base::WrapRefCounted(new SharedProtoDatabase(
-        db_thread_->task_runner(), "client", temp_dir_->GetPath()));
+    db_ = base::WrapRefCounted(
+        new SharedProtoDatabase("client", temp_dir_->GetPath()));
   }
 
   void TearDown() override {}
 
-  void InitDB(bool create_if_missing,
-              ProtoLevelDBWrapper::InitCallback callback) {
+  void InitDB(bool create_if_missing, Callbacks::InitStatusCallback callback) {
     db_->Init(create_if_missing, std::move(callback),
               scoped_task_environment_.GetMainThreadTaskRunner());
   }
 
   void KillDB() { db_.reset(); }
-
-  scoped_refptr<SharedProtoDatabase> CreateDatabase(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const char* client_name,
-      const base::FilePath& db_dir) {
-    return base::WrapRefCounted(
-        new SharedProtoDatabase(task_runner, client_name, db_dir));
-  }
 
   bool IsDatabaseInitialized(SharedProtoDatabase* db) {
     return db->init_state_ == SharedProtoDatabase::InitState::kSuccess;
@@ -63,16 +63,17 @@ class SharedProtoDatabaseTest : public testing::Test {
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
-      bool* success) {
+      Enums::InitStatus* status) {
     base::RunLoop loop;
     auto client = db->GetClient<T>(
         client_namespace, type_prefix, create_if_missing,
         base::BindOnce(
-            [](bool* success_out, base::OnceClosure closure, bool success) {
-              *success_out = success;
+            [](Enums::InitStatus* status_out, base::OnceClosure closure,
+               Enums::InitStatus status) {
+              *status_out = status;
               std::move(closure).Run();
             },
-            success, loop.QuitClosure()));
+            status, loop.QuitClosure()));
     loop.Run();
     return client;
   }
@@ -88,26 +89,14 @@ class SharedProtoDatabaseTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<base::ScopedTempDir> temp_dir_;
-  std::unique_ptr<base::Thread> db_thread_;
   scoped_refptr<SharedProtoDatabase> db_;
 };
 
-inline void GetClientFromTaskRunner(SharedProtoDatabase* db,
-                                    const std::string& client_namespace,
-                                    const std::string& type_prefix,
-                                    base::OnceClosure closure) {
-  db->GetClient<TestProto>(
-      client_namespace, type_prefix, true /* create_if_missing */,
-      base::BindOnce([](base::OnceClosure closure,
-                        bool success) { std::move(closure).Run(); },
-                     std::move(closure)));
-}
-
 TEST_F(SharedProtoDatabaseTest, CreateClient_SucceedsWithCreate) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   GetClientAndWait<TestProto>(db(), kDefaultNamespace, kDefaultTypePrefix,
-                              true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                              true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 }
 
 // TODO(912117): Fix flaky test!
@@ -116,28 +105,28 @@ TEST_F(SharedProtoDatabaseTest, DISABLED_CreateClient_FailsWithoutCreate) {
 #else
 TEST_F(SharedProtoDatabaseTest, CreateClient_FailsWithoutCreate) {
 #endif
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   GetClientAndWait<TestProto>(db(), kDefaultNamespace, kDefaultTypePrefix,
-                              false /* create_if_missing */, &success);
-  ASSERT_FALSE(success);
+                              false /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kInvalidOperation);
 }
 
 TEST_F(SharedProtoDatabaseTest,
        CreateClient_SucceedsWithoutCreateIfAlreadyCreated) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   GetClientAndWait<TestProto>(db(), kDefaultNamespace2, kDefaultTypePrefix,
-                              true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                              true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
   GetClientAndWait<TestProto>(db(), kDefaultNamespace, kDefaultTypePrefix,
-                              false /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                              false /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 }
 
 TEST_F(SharedProtoDatabaseTest, GetClient_DifferentThreads) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   GetClientAndWait<TestProto>(db(), kDefaultNamespace, kDefaultTypePrefix,
-                              true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                              true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 
   base::Thread t("test_thread");
   ASSERT_TRUE(t.Start());
@@ -158,8 +147,8 @@ TEST_F(SharedProtoDatabaseTest, TestDBDestructionAfterInit) {
   base::RunLoop run_init_loop;
   InitDB(true /* create_if_missing */,
          base::BindOnce(
-             [](base::OnceClosure signal, bool success) {
-               ASSERT_TRUE(success);
+             [](base::OnceClosure signal, Enums::InitStatus status) {
+               ASSERT_EQ(status, Enums::InitStatus::kOK);
                std::move(signal).Run();
              },
              run_init_loop.QuitClosure()));

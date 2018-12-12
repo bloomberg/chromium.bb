@@ -121,7 +121,8 @@ void OnDBInitComplete(
     FeatureVector feature_filter,
     PersistentAvailabilityStore::OnLoadedCallback on_loaded_callback,
     uint32_t current_day,
-    bool success) {
+    leveldb_proto::Enums::InitStatus status) {
+  bool success = status == leveldb_proto::Enums::InitStatus::kOK;
   stats::RecordDbInitEvent(success, stats::StoreType::AVAILABILITY_STORE);
 
   if (!success) {

@@ -32,10 +32,10 @@ bool KeyFilterStripPrefix(const LevelDB::KeyFilter& key_filter,
   return key_filter.Run(StripPrefix(key, prefix));
 }
 
-void GetSharedDatabaseInitStateAsync(
+void GetSharedDatabaseInitStatusAsync(
     const scoped_refptr<SharedProtoDatabase>& shared_db,
-    ProtoLevelDBWrapper::InitCallback callback) {
-  shared_db->GetDatabaseInitStateAsync(std::move(callback));
+    Callbacks::InitStatusCallback callback) {
+  shared_db->GetDatabaseInitStatusAsync(std::move(callback));
 }
 
 }  // namespace leveldb_proto

@@ -4,137 +4,106 @@
 
 #include "components/leveldb_proto/proto_leveldb_wrapper.h"
 
+#include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/leveldb_proto/proto_leveldb_wrapper_metrics.h"
 
 namespace leveldb_proto {
 
 namespace {
 
-inline void InitFromTaskRunner(LevelDB* database,
-                               const base::FilePath& database_dir,
-                               const leveldb_env::Options& options,
-                               bool destroy_on_corruption,
-                               leveldb::Status* status,
-                               const std::string& client_id) {
-  DCHECK(status);
-
+Enums::InitStatus InitFromTaskRunner(LevelDB* database,
+                                     const base::FilePath& database_dir,
+                                     const leveldb_env::Options& options,
+                                     bool destroy_on_corruption,
+                                     const std::string& client_id) {
   // TODO(cjhopman): Histogram for database size.
-  *status = database->Init(database_dir, options, destroy_on_corruption);
-  ProtoLevelDBWrapperMetrics::RecordInit(client_id, *status);
+  auto status = database->Init(database_dir, options, destroy_on_corruption);
+  ProtoLevelDBWrapperMetrics::RecordInit(client_id, status);
+
+  return Util::ConvertLevelDBStatusToInitStatus(status);
 }
 
-void RunDestroyCallback(typename ProtoLevelDBWrapper::DestroyCallback callback,
-                        const bool* success) {
-  std::move(callback).Run(*success);
-}
-
-inline void DestroyFromTaskRunner(LevelDB* database,
-                                  bool* success,
-                                  const std::string& client_id) {
-  CHECK(success);
-
+bool DestroyFromTaskRunner(LevelDB* database, const std::string& client_id) {
   auto status = database->Destroy();
-  *success = status.ok();
-  ProtoLevelDBWrapperMetrics::RecordDestroy(client_id, *success);
+  bool success = status.ok();
+  ProtoLevelDBWrapperMetrics::RecordDestroy(client_id, success);
+
+  return success;
 }
 
-void RunLoadKeysCallback(
-    typename ProtoLevelDBWrapper::LoadKeysCallback callback,
-    std::unique_ptr<bool> success,
-    std::unique_ptr<std::vector<std::string>> keys) {
-  std::move(callback).Run(*success, std::move(keys));
-}
-
-inline void LoadKeysFromTaskRunner(LevelDB* database,
-                                   const std::string& target_prefix,
-                                   std::vector<std::string>* keys,
-                                   bool* success,
-                                   const std::string& client_id) {
-  DCHECK(success);
-  DCHECK(keys);
-  keys->clear();
-  *success = database->LoadKeys(target_prefix, keys);
-  ProtoLevelDBWrapperMetrics::RecordLoadKeys(client_id, *success);
+void LoadKeysFromTaskRunner(
+    LevelDB* database,
+    const std::string& target_prefix,
+    const std::string& client_id,
+    Callbacks::LoadKeysCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
+  auto keys = std::make_unique<std::vector<std::string>>();
+  bool success = database->LoadKeys(target_prefix, keys.get());
+  ProtoLevelDBWrapperMetrics::RecordLoadKeys(client_id, success);
+  callback_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), success, std::move(keys)));
 }
 
 }  // namespace
 
 ProtoLevelDBWrapper::ProtoLevelDBWrapper(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : task_runner_(task_runner), weak_ptr_factory_(this) {
+    : task_runner_(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ProtoLevelDBWrapper::ProtoLevelDBWrapper(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     LevelDB* db)
-    : task_runner_(task_runner), db_(db), weak_ptr_factory_(this) {
+    : task_runner_(task_runner), db_(db) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ProtoLevelDBWrapper::~ProtoLevelDBWrapper() = default;
-
-void ProtoLevelDBWrapper::RunInitCallback(
-    typename ProtoLevelDBWrapper::InitCallback callback,
-    const leveldb::Status* status) {
-  is_corrupt_ = status->IsCorruption();
-  std::move(callback).Run(status->ok());
-}
 
 void ProtoLevelDBWrapper::InitWithDatabase(
     LevelDB* database,
     const base::FilePath& database_dir,
     const leveldb_env::Options& options,
     bool destroy_on_corruption,
-    typename ProtoLevelDBWrapper::InitCallback callback) {
+    Callbacks::InitStatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!db_);
   DCHECK(database);
   db_ = database;
-  leveldb::Status* status = new leveldb::Status();
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
+
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
       base::BindOnce(InitFromTaskRunner, base::Unretained(db_), database_dir,
-                     options, destroy_on_corruption, status, metrics_id_),
-      base::BindOnce(&ProtoLevelDBWrapper::RunInitCallback,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     base::Owned(status)));
+                     options, destroy_on_corruption, metrics_id_),
+      std::move(callback));
 }
 
-void ProtoLevelDBWrapper::Destroy(
-    typename ProtoLevelDBWrapper::DestroyCallback callback) {
+void ProtoLevelDBWrapper::Destroy(Callbacks::DestroyCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
 
-  bool* success = new bool(false);
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(DestroyFromTaskRunner, base::Unretained(db_), success,
-                     metrics_id_),
-      base::BindOnce(RunDestroyCallback, std::move(callback),
-                     base::Owned(success)));
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
+      base::BindOnce(DestroyFromTaskRunner, base::Unretained(db_), metrics_id_),
+      std::move(callback));
 }
 
 void ProtoLevelDBWrapper::LoadKeys(
-    typename ProtoLevelDBWrapper::LoadKeysCallback callback) {
+    typename Callbacks::LoadKeysCallback callback) {
   LoadKeys(std::string(), std::move(callback));
 }
 
 void ProtoLevelDBWrapper::LoadKeys(
     const std::string& target_prefix,
-    typename ProtoLevelDBWrapper::LoadKeysCallback callback) {
+    typename Callbacks::LoadKeysCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto success = std::make_unique<bool>(false);
-  auto keys = std::make_unique<std::vector<std::string>>();
-  bool* success_ptr = success.get();
-  std::vector<std::string>* keys_ptr = keys.get();
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(LoadKeysFromTaskRunner, base::Unretained(db_),
-                     target_prefix, base::Unretained(keys_ptr),
-                     base::Unretained(success_ptr), metrics_id_),
-      base::BindOnce(RunLoadKeysCallback, std::move(callback),
-                     std::move(success), std::move(keys)));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(LoadKeysFromTaskRunner, base::Unretained(db_),
+                                target_prefix, metrics_id_, std::move(callback),
+                                base::SequencedTaskRunnerHandle::Get()));
 }
 
 void ProtoLevelDBWrapper::SetMetricsId(const std::string& id) {
@@ -146,10 +115,6 @@ bool ProtoLevelDBWrapper::GetApproximateMemoryUse(uint64_t* approx_mem_use) {
     return 0;
 
   return db_->GetApproximateMemoryUse(approx_mem_use);
-}
-
-bool ProtoLevelDBWrapper::IsCorrupt() {
-  return is_corrupt_;
 }
 
 const scoped_refptr<base::SequencedTaskRunner>&
