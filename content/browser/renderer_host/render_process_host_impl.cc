@@ -2392,8 +2392,7 @@ void RenderProcessHostImpl::BindInterface(
   child_connection_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
-const service_manager::Identity& RenderProcessHostImpl::GetChildIdentity()
-    const {
+const service_manager::Identity& RenderProcessHostImpl::GetChildIdentity() {
   // GetChildIdentity should only be called if the RPH is (or soon will be)
   // backed by an actual renderer process.  This helps prevent leaks similar to
   // the ones raised in https://crbug.com/813045.
@@ -2407,12 +2406,12 @@ RenderProcessHostImpl::TakeMetricsAllocator() {
   return std::move(metrics_allocator_);
 }
 
-const base::TimeTicks& RenderProcessHostImpl::GetInitTimeForNavigationMetrics()
-    const {
+const base::TimeTicks&
+RenderProcessHostImpl::GetInitTimeForNavigationMetrics() {
   return init_time_;
 }
 
-bool RenderProcessHostImpl::IsProcessBackgrounded() const {
+bool RenderProcessHostImpl::IsProcessBackgrounded() {
   return priority_.is_background();
 }
 
@@ -2654,15 +2653,15 @@ void RenderProcessHostImpl::UpdateClientPriority(PriorityClient* client) {
   UpdateProcessPriorityInputs();
 }
 
-int RenderProcessHostImpl::VisibleClientCount() const {
+int RenderProcessHostImpl::VisibleClientCount() {
   return visible_clients_;
 }
 
-unsigned int RenderProcessHostImpl::GetFrameDepth() const {
+unsigned int RenderProcessHostImpl::GetFrameDepth() {
   return frame_depth_;
 }
 
-bool RenderProcessHostImpl::GetIntersectsViewport() const {
+bool RenderProcessHostImpl::GetIntersectsViewport() {
   return intersects_viewport_;
 }
 
@@ -2857,11 +2856,11 @@ void RenderProcessHostImpl::NotifyRendererIfLockedToSite() {
   GetRendererInterface()->SetIsLockedToSite();
 }
 
-bool RenderProcessHostImpl::IsForGuestsOnly() const {
+bool RenderProcessHostImpl::IsForGuestsOnly() {
   return is_for_guests_only_;
 }
 
-StoragePartition* RenderProcessHostImpl::GetStoragePartition() const {
+StoragePartition* RenderProcessHostImpl::GetStoragePartition() {
   return storage_partition_impl_;
 }
 
@@ -3202,7 +3201,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   CopyFeatureSwitch(browser_cmd, renderer_cmd, switches::kDisableBlinkFeatures);
 }
 
-const base::Process& RenderProcessHostImpl::GetProcess() const {
+const base::Process& RenderProcessHostImpl::GetProcess() {
   if (run_renderer_in_process()) {
     // This is a sentinel object used for this process in single process mode.
     static const base::NoDestructor<base::Process> self(
@@ -3219,7 +3218,7 @@ const base::Process& RenderProcessHostImpl::GetProcess() const {
   return child_process_launcher_->GetProcess();
 }
 
-bool RenderProcessHostImpl::IsReady() const {
+bool RenderProcessHostImpl::IsReady() {
   // The process launch result (that sets GetHandle()) and the channel
   // connection (that sets channel_connected_) can happen in either order.
   return GetProcess().Handle() && channel_connected_;
@@ -3388,20 +3387,20 @@ void RenderProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
                                   bad_message::RPH_DESERIALIZATION_FAILED);
 }
 
-BrowserContext* RenderProcessHostImpl::GetBrowserContext() const {
+BrowserContext* RenderProcessHostImpl::GetBrowserContext() {
   return browser_context_;
 }
 
 bool RenderProcessHostImpl::InSameStoragePartition(
-    StoragePartition* partition) const {
+    StoragePartition* partition) {
   return storage_partition_impl_ == partition;
 }
 
-int RenderProcessHostImpl::GetID() const {
+int RenderProcessHostImpl::GetID() {
   return id_;
 }
 
-bool RenderProcessHostImpl::IsInitializedAndNotDead() const {
+bool RenderProcessHostImpl::IsInitializedAndNotDead() {
   return is_initialized_ && !is_dead_;
 }
 
@@ -3413,7 +3412,7 @@ void RenderProcessHostImpl::SetBlocked(bool blocked) {
   blocked_state_changed_callback_list_.Notify(blocked);
 }
 
-bool RenderProcessHostImpl::IsBlocked() const {
+bool RenderProcessHostImpl::IsBlocked() {
   return is_blocked_;
 }
 
@@ -3553,11 +3552,11 @@ void RenderProcessHostImpl::SetSuddenTerminationAllowed(bool enabled) {
   sudden_termination_allowed_ = enabled;
 }
 
-bool RenderProcessHostImpl::SuddenTerminationAllowed() const {
+bool RenderProcessHostImpl::SuddenTerminationAllowed() {
   return sudden_termination_allowed_;
 }
 
-base::TimeDelta RenderProcessHostImpl::GetChildProcessIdleTime() const {
+base::TimeDelta RenderProcessHostImpl::GetChildProcessIdleTime() {
   return base::TimeTicks::Now() - child_process_activity_time_;
 }
 
@@ -3640,7 +3639,7 @@ void RenderProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
   channel_->AddFilter(filter->GetFilter());
 }
 
-bool RenderProcessHostImpl::FastShutdownStarted() const {
+bool RenderProcessHostImpl::FastShutdownStarted() {
   return fast_shutdown_started_;
 }
 

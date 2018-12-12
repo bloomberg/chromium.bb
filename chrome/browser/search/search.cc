@@ -224,7 +224,7 @@ bool IsRenderedInInstantProcess(content::WebContents* contents,
 #if defined(OS_ANDROID)
   return false;
 #else
-  const content::RenderProcessHost* process_host =
+  content::RenderProcessHost* process_host =
       contents->GetMainFrame()->GetProcess();
   if (!process_host)
     return false;

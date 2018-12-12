@@ -67,7 +67,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   // represented by |render_process_host|, if any. Otherwise, an empty string is
   // returned.
   static std::string GetPartitionID(
-      const content::RenderProcessHost* render_process_host);
+      content::RenderProcessHost* render_process_host);
 
   static const char Type[];
 

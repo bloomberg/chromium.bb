@@ -157,7 +157,7 @@ void MockRenderProcessHost::ShutdownForBadMessage(
 
 void MockRenderProcessHost::UpdateClientPriority(PriorityClient* client) {}
 
-int MockRenderProcessHost::VisibleClientCount() const {
+int MockRenderProcessHost::VisibleClientCount() {
   int count = 0;
   for (auto* client : priority_clients_) {
     const Priority priority = client->GetPriority();
@@ -168,17 +168,17 @@ int MockRenderProcessHost::VisibleClientCount() const {
   return count;
 }
 
-unsigned int MockRenderProcessHost::GetFrameDepth() const {
+unsigned int MockRenderProcessHost::GetFrameDepth() {
   NOTIMPLEMENTED();
   return 0u;
 }
 
-bool MockRenderProcessHost::GetIntersectsViewport() const {
+bool MockRenderProcessHost::GetIntersectsViewport() {
   NOTIMPLEMENTED();
   return true;
 }
 
-bool MockRenderProcessHost::IsForGuestsOnly() const {
+bool MockRenderProcessHost::IsForGuestsOnly() {
   return is_for_guests_only_;
 }
 
@@ -191,7 +191,7 @@ void MockRenderProcessHost::OnMediaStreamAdded() {}
 
 void MockRenderProcessHost::OnMediaStreamRemoved() {}
 
-StoragePartition* MockRenderProcessHost::GetStoragePartition() const {
+StoragePartition* MockRenderProcessHost::GetStoragePartition() {
   return BrowserContext::GetDefaultStoragePartition(browser_context_);
 }
 
@@ -212,11 +212,11 @@ bool MockRenderProcessHost::FastShutdownIfPossible(size_t page_count,
   return true;
 }
 
-bool MockRenderProcessHost::FastShutdownStarted() const {
+bool MockRenderProcessHost::FastShutdownStarted() {
   return fast_shutdown_started_;
 }
 
-const base::Process& MockRenderProcessHost::GetProcess() const {
+const base::Process& MockRenderProcessHost::GetProcess() {
   // Return the current-process handle for the IPC::GetPlatformFileForTransit
   // function.
   if (process.IsValid())
@@ -226,7 +226,7 @@ const base::Process& MockRenderProcessHost::GetProcess() const {
   return current_process;
 }
 
-bool MockRenderProcessHost::IsReady() const {
+bool MockRenderProcessHost::IsReady() {
   return false;
 }
 
@@ -237,17 +237,17 @@ bool MockRenderProcessHost::Send(IPC::Message* msg) {
   return true;
 }
 
-int MockRenderProcessHost::GetID() const {
+int MockRenderProcessHost::GetID() {
   return id_;
 }
 
-bool MockRenderProcessHost::IsInitializedAndNotDead() const {
+bool MockRenderProcessHost::IsInitializedAndNotDead() {
   return has_connection_;
 }
 
 void MockRenderProcessHost::SetBlocked(bool blocked) {}
 
-bool MockRenderProcessHost::IsBlocked() const {
+bool MockRenderProcessHost::IsBlocked() {
   return false;
 }
 
@@ -300,16 +300,16 @@ ChildProcessImportance MockRenderProcessHost::GetEffectiveImportance() {
 void MockRenderProcessHost::SetSuddenTerminationAllowed(bool allowed) {
 }
 
-bool MockRenderProcessHost::SuddenTerminationAllowed() const {
+bool MockRenderProcessHost::SuddenTerminationAllowed() {
   return true;
 }
 
-BrowserContext* MockRenderProcessHost::GetBrowserContext() const {
+BrowserContext* MockRenderProcessHost::GetBrowserContext() {
   return browser_context_;
 }
 
 bool MockRenderProcessHost::InSameStoragePartition(
-    StoragePartition* partition) const {
+    StoragePartition* partition) {
   // Mock RPHs only have one partition.
   return true;
 }
@@ -321,7 +321,7 @@ IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
 void MockRenderProcessHost::AddFilter(BrowserMessageFilter* filter) {
 }
 
-base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
+base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() {
   return base::TimeDelta::FromMilliseconds(0);
 }
 
@@ -332,8 +332,7 @@ void MockRenderProcessHost::BindInterface(
     binder_overrides_[interface_name].Run(std::move(interface_pipe));
 }
 
-const service_manager::Identity& MockRenderProcessHost::GetChildIdentity()
-    const {
+const service_manager::Identity& MockRenderProcessHost::GetChildIdentity() {
   return child_identity_;
 }
 
@@ -342,13 +341,13 @@ MockRenderProcessHost::TakeMetricsAllocator() {
   return nullptr;
 }
 
-const base::TimeTicks& MockRenderProcessHost::GetInitTimeForNavigationMetrics()
-    const {
+const base::TimeTicks&
+MockRenderProcessHost::GetInitTimeForNavigationMetrics() {
   static base::TimeTicks dummy_time = base::TimeTicks::Now();
   return dummy_time;
 }
 
-bool MockRenderProcessHost::IsProcessBackgrounded() const {
+bool MockRenderProcessHost::IsProcessBackgrounded() {
   return is_process_backgrounded_;
 }
 

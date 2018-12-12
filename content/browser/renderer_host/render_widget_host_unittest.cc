@@ -311,7 +311,7 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
   }
   ~RenderWidgetHostProcess() override {}
 
-  bool IsInitializedAndNotDead() const override { return true; }
+  bool IsInitializedAndNotDead() override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostProcess);

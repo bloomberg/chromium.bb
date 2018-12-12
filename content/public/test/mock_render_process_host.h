@@ -79,26 +79,26 @@ class MockRenderProcessHost : public RenderProcessHost {
   void RemoveObserver(RenderProcessHostObserver* observer) override;
   void ShutdownForBadMessage(CrashReportMode crash_report_mode) override;
   void UpdateClientPriority(PriorityClient* client) override;
-  int VisibleClientCount() const override;
-  unsigned int GetFrameDepth() const override;
-  bool GetIntersectsViewport() const override;
-  bool IsForGuestsOnly() const override;
+  int VisibleClientCount() override;
+  unsigned int GetFrameDepth() override;
+  bool GetIntersectsViewport() override;
+  bool IsForGuestsOnly() override;
   RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() override;
   void OnMediaStreamAdded() override;
   void OnMediaStreamRemoved() override;
-  StoragePartition* GetStoragePartition() const override;
+  StoragePartition* GetStoragePartition() override;
   virtual void AddWord(const base::string16& word);
   bool Shutdown(int exit_code) override;
   bool FastShutdownIfPossible(size_t page_count,
                               bool skip_unload_handlers) override;
-  bool FastShutdownStarted() const override;
-  const base::Process& GetProcess() const override;
-  bool IsReady() const override;
-  int GetID() const override;
-  bool IsInitializedAndNotDead() const override;
+  bool FastShutdownStarted() override;
+  const base::Process& GetProcess() override;
+  bool IsReady() override;
+  int GetID() override;
+  bool IsInitializedAndNotDead() override;
   void SetBlocked(bool blocked) override;
-  bool IsBlocked() const override;
+  bool IsBlocked() override;
   std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
   RegisterBlockStateChangedCallback(
       const base::RepeatingCallback<void(bool)>& cb) override;
@@ -111,12 +111,12 @@ class MockRenderProcessHost : public RenderProcessHost {
   ChildProcessImportance GetEffectiveImportance() override;
 #endif
   void SetSuddenTerminationAllowed(bool allowed) override;
-  bool SuddenTerminationAllowed() const override;
-  BrowserContext* GetBrowserContext() const override;
-  bool InSameStoragePartition(StoragePartition* partition) const override;
+  bool SuddenTerminationAllowed() override;
+  BrowserContext* GetBrowserContext() override;
+  bool InSameStoragePartition(StoragePartition* partition) override;
   IPC::ChannelProxy* GetChannel() override;
   void AddFilter(BrowserMessageFilter* filter) override;
-  base::TimeDelta GetChildProcessIdleTime() const override;
+  base::TimeDelta GetChildProcessIdleTime() override;
   void FilterURL(bool empty_allowed, GURL* url) override;
   void EnableAudioDebugRecordings(const base::FilePath& file) override;
   void DisableAudioDebugRecordings() override;
@@ -131,11 +131,11 @@ class MockRenderProcessHost : public RenderProcessHost {
   void DisableWebRtcEventLogOutput(int lid) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
-  const service_manager::Identity& GetChildIdentity() const override;
+  const service_manager::Identity& GetChildIdentity() override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
-  const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
-  bool IsProcessBackgrounded() const override;
+  const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
+  bool IsProcessBackgrounded() override;
   size_t GetKeepAliveRefCount() const;
   void IncrementKeepAliveRefCount(KeepAliveClientType) override;
   void DecrementKeepAliveRefCount(KeepAliveClientType) override;

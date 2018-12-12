@@ -640,7 +640,7 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
     if (!rvh)
       return;
 
-    const content::RenderProcessHost* rph = rvh->GetProcess();
+    content::RenderProcessHost* rph = rvh->GetProcess();
     if (!rph)
       return;
 
