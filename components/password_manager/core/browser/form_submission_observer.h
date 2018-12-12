@@ -7,14 +7,15 @@
 
 namespace password_manager {
 
-class PasswordManagerDriver;
-
 // Observer interface for the password manager about the relevant events from
 // the embedder.
+
 class FormSubmissionObserver {
  public:
-  // Notifies the listener that a form may be submitted due to a navigation.
-  virtual void OnStartNavigation(PasswordManagerDriver* driver) = 0;
+  // Notifies the listener that the main frame navigation happened. Not called
+  // for same document navigation. |form_may_be_submitted| true if the reason of
+  // this navigation might be a form submission.
+  virtual void DidNavigateMainFrame(bool form_may_be_submitted) = 0;
 
  protected:
   virtual ~FormSubmissionObserver() = default;
