@@ -7,23 +7,35 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_source_location.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
+#include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_timings.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 
+#if INSIDE_BLINK
+#include "base/memory/scoped_refptr.h"
+#endif
+
 namespace blink {
+
+class KURL;
+class SharedBuffer;
 
 // This structure holds all information collected by Blink when
 // navigation is being initiated.
@@ -106,9 +118,68 @@ struct BLINK_EXPORT WebNavigationInfo {
 // WebDocumentLoader::ExtraData, which is an opaque structure stored in the
 // DocumentLoader and used by the embedder.
 struct BLINK_EXPORT WebNavigationParams {
+  WebNavigationParams();
+  ~WebNavigationParams();
+
+  // Allows to specify |devtools_navigation_token|, instead of creating
+  // a new one.
+  explicit WebNavigationParams(const base::UnguessableToken&);
+
+  // Shortcut for navigating based on WebNavigationInfo parameters.
+  static std::unique_ptr<WebNavigationParams> CreateFromInfo(
+      const WebNavigationInfo&);
+
+  // Shortcut for loading html with "text/html" mime type and "UTF8" encoding.
+  static std::unique_ptr<WebNavigationParams> CreateWithHTMLString(
+      base::span<const char> html,
+      const WebURL& base_url);
+
+#if INSIDE_BLINK
+  // Shortcut for loading html with "text/html" mime type and "UTF8" encoding.
+  static std::unique_ptr<WebNavigationParams> CreateWithHTMLBuffer(
+      scoped_refptr<SharedBuffer> buffer,
+      const KURL& base_url);
+#endif
+
+  // The request to navigate to. Its URL indicates the security origin
+  // and will be used as a base URL to resolve links in the committed document.
+  // TODO(dgozman): do we actually need a request here? Maybe just a URL?
+  WebURLRequest request;
+
+  // If the data is non null, it will be used as a main resource content
+  // instead of loading the request above.
+  WebData data;
+  // Specifies the mime type of the raw data. Must be set together with the
+  // data.
+  WebString mime_type;
+  // The encoding of the raw data. Must be set together with the data.
+  WebString text_encoding;
+  // If non-null, used as a URL which we weren't able to load. For example,
+  // history item will contain this URL instead of request's URL.
+  // This URL can be retrieved through WebDocumentLoader::UnreachableURL.
+  WebURL unreachable_url;
+
+  // The load type. See WebFrameLoadType for definition.
+  WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
+  // History item should be provided for back-forward load types.
+  WebHistoryItem history_item;
+  // Whether this navigation is a result of client redirect.
+  bool is_client_redirect = false;
+
+  // The devtools token for this navigation. See DocumentLoader
+  // for details.
+  base::UnguessableToken devtools_navigation_token;
+  // Known timings related to navigation. If the navigation has
+  // started in another process, timings are propagated from there.
   WebNavigationTimings navigation_timings;
+  // Source location which triggered the navigation. Used for
+  // providing debug information to developers.
   base::Optional<WebSourceLocation> source_location;
+  // Whether this navigation had a transient user activation.
   bool is_user_activated = false;
+
+  // The service worker network provider to be used in the new
+  // document.
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
       service_worker_network_provider;
 };

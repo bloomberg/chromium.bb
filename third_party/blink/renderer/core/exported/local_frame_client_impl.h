@@ -97,8 +97,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                                        WebHistoryCommitType,
                                        bool content_initiated) override;
   void DispatchWillCommitProvisionalLoad() override;
-  void DispatchDidStartProvisionalLoad(DocumentLoader*,
-                                       const ResourceRequest&) override;
+  void DispatchDidStartProvisionalLoad(DocumentLoader*) override;
   void DispatchDidReceiveTitle(const String&) override;
   void DispatchDidChangeIcons(IconType) override;
   void DispatchDidCommitLoad(HistoryItem*,
@@ -161,11 +160,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   //   layer
   DocumentLoader* CreateDocumentLoader(
       LocalFrame*,
-      const ResourceRequest&,
-      const SubstituteData&,
-      ClientRedirectPolicy,
-      const base::UnguessableToken& devtools_navigation_token,
-      WebFrameLoadType,
       WebNavigationType,
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;

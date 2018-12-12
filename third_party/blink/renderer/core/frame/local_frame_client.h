@@ -91,7 +91,6 @@ class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
 class SecurityOrigin;
-class SubstituteData;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebCookieJar;
@@ -132,8 +131,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                                WebHistoryCommitType,
                                                bool content_initiated) {}
   virtual void DispatchWillCommitProvisionalLoad() = 0;
-  virtual void DispatchDidStartProvisionalLoad(DocumentLoader*,
-                                               const ResourceRequest&) = 0;
+  virtual void DispatchDidStartProvisionalLoad(DocumentLoader*) = 0;
   virtual void DispatchDidReceiveTitle(const String&) = 0;
   virtual void DispatchDidChangeIcons(IconType) = 0;
   virtual void DispatchDidCommitLoad(HistoryItem*,
@@ -244,11 +242,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual DocumentLoader* CreateDocumentLoader(
       LocalFrame*,
-      const ResourceRequest&,
-      const SubstituteData&,
-      ClientRedirectPolicy,
-      const base::UnguessableToken& devtools_navigation_token,
-      WebFrameLoadType,
       WebNavigationType,
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;

@@ -417,12 +417,10 @@ void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
 }
 
 void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
-    DocumentLoader* loader,
-    const ResourceRequest& request) {
+    DocumentLoader* loader) {
   if (web_frame_->Client()) {
-    WrappedResourceRequest wrapped_request(request);
     web_frame_->Client()->DidStartProvisionalLoad(
-        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request);
+        WebDocumentLoaderImpl::FromDocumentLoader(loader));
   }
 }
 
@@ -743,20 +741,13 @@ void LocalFrameClientImpl::SelectorMatchChanged(
 
 DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
     LocalFrame* frame,
-    const ResourceRequest& request,
-    const SubstituteData& data,
-    ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token,
-    WebFrameLoadType load_type,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(frame);
   WebDocumentLoaderImpl* document_loader =
-      MakeGarbageCollected<WebDocumentLoaderImpl>(
-          frame, request, data, client_redirect_policy,
-          devtools_navigation_token, load_type, navigation_type,
-          std::move(navigation_params));
+      MakeGarbageCollected<WebDocumentLoaderImpl>(frame, navigation_type,
+                                                  std::move(navigation_params));
   document_loader->SetExtraData(std::move(extra_data));
   if (web_frame_->Client())
     web_frame_->Client()->DidCreateDocumentLoader(document_loader);

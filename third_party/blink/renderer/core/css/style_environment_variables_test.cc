@@ -82,9 +82,8 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
   void SimulateNavigation() {
     const KURL& url = KURL(NullURL(), "https://www.example.com");
     GetDocument().GetFrame()->Loader().CommitNavigation(
-        ResourceRequest(url), SubstituteData(SharedBuffer::Create()),
-        ClientRedirectPolicy::kNotClientRedirect,
-        base::UnguessableToken::Create());
+        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+        nullptr /* extra_data */);
     blink::test::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
   }

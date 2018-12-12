@@ -97,6 +97,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -111,8 +112,6 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
-using blink::WebURLRequest;
 
 namespace blink {
 
@@ -234,11 +233,10 @@ void FrameLoader::Init() {
   initial_request.SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(frame_));
 
+  auto navigation_params = std::make_unique<WebNavigationParams>();
+  navigation_params->request = WrappedResourceRequest(initial_request);
   provisional_document_loader_ = CreateDocumentLoader(
-      initial_request, SubstituteData(),
-      ClientRedirectPolicy::kNotClientRedirect,
-      base::UnguessableToken::Create(), WebFrameLoadType::kStandard,
-      kWebNavigationTypeOther, nullptr /* navigation_params */,
+      kWebNavigationTypeOther, std::move(navigation_params),
       nullptr /* extra_data */);
   provisional_document_loader_->StartLoading();
 
@@ -961,12 +959,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 }
 
 void FrameLoader::CommitNavigation(
-    const ResourceRequest& request,
-    const SubstituteData& substitute_data,
-    ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token,
-    WebFrameLoadType frame_load_type,
-    HistoryItem* history_item,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(frame_->GetDocument());
@@ -990,7 +982,8 @@ void FrameLoader::CommitNavigation(
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
     element->CancelPendingLazyLoad();
 
-  ResourceRequest resource_request = request;
+  ResourceRequest& resource_request =
+      navigation_params->request.ToMutableResourceRequest();
   resource_request.SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(frame_));
   resource_request.SetFetchRequestMode(
@@ -1000,9 +993,9 @@ void FrameLoader::CommitNavigation(
   resource_request.SetFetchRedirectMode(
       network::mojom::FetchRedirectMode::kManual);
 
-  frame_load_type =
-      DetermineFrameLoadType(resource_request, nullptr /* origin_document */,
-                             substitute_data.FailingURL(), frame_load_type);
+  navigation_params->frame_load_type = DetermineFrameLoadType(
+      resource_request, nullptr /* origin_document */,
+      navigation_params->unreachable_url, navigation_params->frame_load_type);
 
   // Note: we might actually classify this navigation as same document
   // right here in the following circumstances:
@@ -1024,7 +1017,8 @@ void FrameLoader::CommitNavigation(
   // It seems incorrect to pass |false| for |have_event| and then use
   // determined navigation type to update resource request.
   WebNavigationType navigation_type = DetermineNavigationType(
-      frame_load_type, resource_request.HttpBody(), false /* have_event */);
+      navigation_params->frame_load_type, resource_request.HttpBody(),
+      false /* have_event */);
   // TODO(dgozman): should these fields be propagated from StartNavigation
   // and/or set by the caller instead?
   resource_request.SetRequestContext(
@@ -1033,22 +1027,23 @@ void FrameLoader::CommitNavigation(
       frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
                             : network::mojom::RequestContextFrameType::kNested);
 
+  HistoryItem* history_item = nullptr;
+  if (IsBackForwardLoadType(navigation_params->frame_load_type)) {
+    history_item = navigation_params->history_item;
+    DCHECK(history_item);
+  }
+
   // TODO(dgozman): get rid of provisional document loader and most of the code
   // below. We should probably call DocumentLoader::CommitNavigation directly.
   provisional_document_loader_ = CreateDocumentLoader(
-      resource_request, substitute_data, client_redirect_policy,
-      devtools_navigation_token, frame_load_type, navigation_type,
-      std::move(navigation_params), std::move(extra_data));
+      navigation_type, std::move(navigation_params), std::move(extra_data));
   provisional_document_loader_->AppendRedirect(
       provisional_document_loader_->Url());
-  if (IsBackForwardLoadType(frame_load_type)) {
-    DCHECK(history_item);
+  if (history_item)
     provisional_document_loader_->SetItemForHistoryNavigation(history_item);
-  }
 
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
-  Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
-                                            resource_request);
+  Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
   probe::didStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
 
@@ -1105,12 +1100,8 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
 }
 
 bool FrameLoader::CreatePlaceholderDocumentLoader(
-    const ResourceRequest& resource_request,
-    ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token,
-    WebFrameLoadType frame_load_type,
-    WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params,
+    WebNavigationType navigation_type,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   if (!CancelProvisionalLoaderForNewNavigation(
           true /* cancel_scheduled_navigations */)) {
@@ -1118,9 +1109,7 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
   }
 
   provisional_document_loader_ = CreateDocumentLoader(
-      resource_request, SubstituteData(), client_redirect_policy,
-      devtools_navigation_token, frame_load_type, navigation_type,
-      std::move(navigation_params), std::move(extra_data));
+      navigation_type, std::move(navigation_params), std::move(extra_data));
   provisional_document_loader_->AppendRedirect(
       provisional_document_loader_->Url());
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
@@ -1128,17 +1117,6 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
   virtual_time_pauser_.PauseVirtualTime();
   TakeObjectSnapshot();
   return true;
-}
-
-SubstituteData FrameLoader::DefaultSubstituteDataForURL(const KURL& url) {
-  if (!ShouldTreatURLAsSrcdocDocument(url))
-    return SubstituteData();
-  String srcdoc = frame_->DeprecatedLocalOwner()->FastGetAttribute(kSrcdocAttr);
-  DCHECK(!srcdoc.IsNull());
-  CString encoded_srcdoc = srcdoc.Utf8();
-  return SubstituteData(
-      SharedBuffer::Create(encoded_srcdoc.data(), encoded_srcdoc.length()),
-      "text/html", "UTF-8", NullURL());
 }
 
 void FrameLoader::StopAllLoaders() {
@@ -1789,20 +1767,12 @@ inline void FrameLoader::TakeObjectSnapshot() const {
 }
 
 DocumentLoader* FrameLoader::CreateDocumentLoader(
-    const ResourceRequest& request,
-    const SubstituteData& substitute_data,
-    ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token,
-    WebFrameLoadType load_type,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DocumentLoader* loader = Client()->CreateDocumentLoader(
-      frame_, request,
-      substitute_data.IsValid() ? substitute_data
-                                : DefaultSubstituteDataForURL(request.Url()),
-      client_redirect_policy, devtools_navigation_token, load_type,
-      navigation_type, std::move(navigation_params), std::move(extra_data));
+      frame_, navigation_type, std::move(navigation_params),
+      std::move(extra_data));
   probe::lifecycleEvent(frame_, loader, "init", CurrentTimeTicksInSeconds());
   return loader;
 }

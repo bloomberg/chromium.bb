@@ -37,6 +37,7 @@
 #include <memory>
 #include <set>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -6658,12 +6659,13 @@ class TestSubstituteDataWebFrameClient
   // frame_test_helpers::TestWebFrameClient:
   void DidFailProvisionalLoad(const WebURLError& error,
                               WebHistoryCommitType) override {
-    Frame()->CommitDataNavigation(
-        WebURLRequest(ToKURL("chrome-error://chromewebdata/")),
-        WebData("This should appear"), WebString::FromUTF8("text/html"),
-        WebString::FromUTF8("UTF-8"), error.url(),
-        WebFrameLoadType::kReplaceCurrentItem, WebHistoryItem(),
-        false /* is_client_redirect */, nullptr, nullptr);
+    const char kData[] = "This should appear";
+    auto navigation_params = WebNavigationParams::CreateWithHTMLString(
+        kData, KURL("chrome-error://chromewebdata/"));
+    navigation_params->unreachable_url = error.url();
+    navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+    Frame()->CommitNavigation(std::move(navigation_params),
+                              nullptr /* extra_data */);
   }
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType,
@@ -7504,12 +7506,12 @@ TEST_F(WebFrameTest, BackDuringChildFrameReload) {
   WebURL history_url(ToKURL(base_url_ + "white-1x1.png"));
   item.SetURLString(history_url.GetString());
   HistoryItem* history_item = item;
-  ResourceRequest request =
-      history_item->GenerateResourceRequest(mojom::FetchCacheMode::kDefault);
-  main_frame->CommitNavigation(
-      WrappedResourceRequest(request), WebFrameLoadType::kBackForward, item,
-      false, base::UnguessableToken::Create(), nullptr /* navigation_params */,
-      nullptr /* extra_data */);
+  auto params = std::make_unique<WebNavigationParams>();
+  params->request = WrappedResourceRequest(
+      history_item->GenerateResourceRequest(mojom::FetchCacheMode::kDefault));
+  params->frame_load_type = WebFrameLoadType::kBackForward;
+  params->history_item = item;
+  main_frame->CommitNavigation(std::move(params), nullptr /* extra_data */);
 
   frame_test_helpers::ReloadFrame(child_frame);
   EXPECT_EQ(item.UrlString(), main_frame->GetDocument().Url().GetString());
@@ -7895,8 +7897,7 @@ class TestHistoryChildWebFrameClient
   ~TestHistoryChildWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
-                               WebURLRequest& request) override {
+  void DidStartProvisionalLoad(WebDocumentLoader* document_loader) override {
     replaces_current_history_item_ =
         document_loader->ReplacesCurrentHistoryItem();
   }
@@ -10717,7 +10718,7 @@ class CallbackOrderingWebFrameClient
     EXPECT_EQ(0, callback_count_++);
     frame_test_helpers::TestWebFrameClient::DidStartLoading();
   }
-  void DidStartProvisionalLoad(WebDocumentLoader*, WebURLRequest&) override {
+  void DidStartProvisionalLoad(WebDocumentLoader*) override {
     EXPECT_EQ(1, callback_count_++);
   }
   void DidCommitProvisionalLoad(const WebHistoryItem&,
@@ -12538,9 +12539,8 @@ class TestFallbackWebFrameClient
       return;
     }
     Frame()->CreatePlaceholderDocumentLoader(
-        info->url_request, info->frame_load_type, info->navigation_type,
-        info->is_client_redirect, base::UnguessableToken::Create(), nullptr,
-        nullptr);
+        WebNavigationParams::CreateFromInfo(*info), info->navigation_type,
+        nullptr /* extra_data */);
   }
 
  private:

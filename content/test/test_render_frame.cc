@@ -214,10 +214,8 @@ void TestRenderFrame::BeginNavigation(
     // frame. However if the loaded html has a subframe,
     // BeginNavigation will be called from Blink and we should avoid
     // going through browser process in this case.
-    frame_->CommitNavigation(
-        info->url_request, info->frame_load_type, blink::WebHistoryItem(),
-        info->is_client_redirect, base::UnguessableToken::Create(),
-        nullptr /* navigation_params */, nullptr /* extra_data */);
+    frame_->CommitNavigation(blink::WebNavigationParams::CreateFromInfo(*info),
+                             nullptr /* extra_data */);
     return;
   }
   RenderFrameImpl::BeginNavigation(std::move(info));

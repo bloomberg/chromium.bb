@@ -681,9 +681,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
     void BeginNavigation(
         std::unique_ptr<blink::WebNavigationInfo> info) override {
       frame_->CommitNavigation(
-          info->url_request, info->frame_load_type, blink::WebHistoryItem(),
-          info->is_client_redirect, base::UnguessableToken::Create(),
-          nullptr /* navigation_params */, nullptr /* extra_data */);
+          blink::WebNavigationParams::CreateFromInfo(*info),
+          nullptr /* extra_data */);
     }
 
    private:
@@ -936,8 +935,10 @@ void PrepareFrameAndViewForPrint::CopySelection(
 
   // When loading is done this will call didStopLoading() and that will do the
   // actual printing.
-  navigation_control_->LoadHTMLString(blink::WebData(html),
-                                      blink::WebURL(GURL(url::kAboutBlankURL)));
+  navigation_control_->CommitNavigation(
+      blink::WebNavigationParams::CreateWithHTMLString(
+          html, GURL(url::kAboutBlankURL)),
+      nullptr /* extra_data */);
 }
 
 blink::WebScreenInfo PrepareFrameAndViewForPrint::GetScreenInfo() {
@@ -988,9 +989,8 @@ void PrepareFrameAndViewForPrint::BeginNavigation(
   // TODO(dgozman): We disable javascript through WebPreferences, so perhaps
   // we want to disallow any navigations here by just removing this method?
   navigation_control_->CommitNavigation(
-      info->url_request, info->frame_load_type, blink::WebHistoryItem(),
-      info->is_client_redirect, base::UnguessableToken::Create(),
-      nullptr /* navigation_params */, nullptr /* extra_data */);
+      blink::WebNavigationParams::CreateFromInfo(*info),
+      nullptr /* extra_data */);
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>

@@ -253,8 +253,8 @@ using base::TimeDelta;
 using blink::WebContentDecryptionModule;
 using blink::WebContextMenuData;
 using blink::WebData;
-using blink::WebDocumentLoader;
 using blink::WebDocument;
+using blink::WebDocumentLoader;
 using blink::WebDOMEvent;
 using blink::WebDOMMessageEvent;
 using blink::WebElement;
@@ -272,6 +272,7 @@ using blink::WebLocalFrame;
 using blink::WebMediaPlayer;
 using blink::WebMediaPlayerClient;
 using blink::WebMediaPlayerEncryptedMediaClient;
+using blink::WebNavigationParams;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
@@ -969,15 +970,11 @@ blink::WebNavigationTimings BuildNavigationTimings(
   return renderer_navigation_timings;
 }
 
-// Packs all loading data sent by the browser to a blink understandable
+// Fills navigation data sent by the browser to a blink understandable
 // format, blink::WebNavigationParams.
-std::unique_ptr<blink::WebNavigationParams> BuildNavigationParams(
-    const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params,
-    std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
-        service_worker_network_provider) {
-  std::unique_ptr<blink::WebNavigationParams> navigation_params =
-      std::make_unique<blink::WebNavigationParams>();
+void FillNavigationParams(const CommonNavigationParams& common_params,
+                          const RequestNavigationParams& request_params,
+                          blink::WebNavigationParams* navigation_params) {
   navigation_params->navigation_timings = BuildNavigationTimings(
       common_params.navigation_start, request_params.navigation_timing,
       common_params.input_start);
@@ -994,9 +991,6 @@ std::unique_ptr<blink::WebNavigationParams> BuildNavigationParams(
 
   navigation_params->is_user_activated =
       request_params.was_activated == WasActivatedOption::kYes;
-  navigation_params->service_worker_network_provider =
-      std::move(service_worker_network_provider);
-  return navigation_params;
 }
 
 }  // namespace
@@ -2809,7 +2803,10 @@ void RenderFrameImpl::LoadNavigationErrorPage(
                                                      error, &error_html);
   }
 
-  std::unique_ptr<blink::WebNavigationParams> navigation_params;
+  // Make sure we never show errors in view source mode.
+  frame_->EnableViewSourceMode(false);
+
+  auto navigation_params = std::make_unique<WebNavigationParams>();
   std::unique_ptr<DocumentState> document_state;
 
   if (inherit_document_state) {
@@ -2819,28 +2816,33 @@ void RenderFrameImpl::LoadNavigationErrorPage(
         navigation_state->common_params(), navigation_state->request_params(),
         base::TimeTicks(),  // Not used for failed navigation.
         CommitNavigationCallback(), nullptr);
-    navigation_params = BuildNavigationParams(
-        navigation_state->common_params(), navigation_state->request_params(),
-        BuildServiceWorkerNetworkProviderForNavigation(
-            nullptr /* request_params */,
-            nullptr /* controller_service_worker_info */));
+    FillNavigationParams(navigation_state->common_params(),
+                         navigation_state->request_params(),
+                         navigation_params.get());
   } else {
     document_state = BuildDocumentState();
   }
 
-  // Make sure we never show errors in view source mode.
-  frame_->EnableViewSourceMode(false);
-
   // Locally generated error pages should not be cached.
   failed_request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
   failed_request.SetURL(GURL(kUnreachableWebDataURL));
+  navigation_params->request = failed_request;
 
-  frame_->CommitDataNavigation(
-      failed_request, error_html, "text/html", "UTF-8", error.url(),
-      replace_current_item ? WebFrameLoadType::kReplaceCurrentItem
-                           : WebFrameLoadType::kStandard,
-      WebHistoryItem(), false /* is_client_redirect */,
-      std::move(navigation_params), std::move(document_state));
+  if (replace_current_item)
+    navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+
+  navigation_params->data = WebData(error_html.data(), error_html.length());
+  navigation_params->mime_type = "text/html";
+  navigation_params->text_encoding = "UTF-8";
+  navigation_params->unreachable_url = error.url();
+
+  navigation_params->service_worker_network_provider =
+      BuildServiceWorkerNetworkProviderForNavigation(nullptr, nullptr);
+
+  // The load of the error page can result in this frame being removed.
+  frame_->CommitNavigation(std::move(navigation_params),
+                           std::move(document_state));
+  // Do not access |this| or |frame_| without checking weak self.
 }
 
 void RenderFrameImpl::DidMeaningfulLayout(
@@ -3260,11 +3262,17 @@ void RenderFrameImpl::CommitNavigation(
   bool is_client_redirect =
       !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
 
-  std::unique_ptr<blink::WebNavigationParams> navigation_params =
-      BuildNavigationParams(
-          common_params, request_params,
-          BuildServiceWorkerNetworkProviderForNavigation(
-              &request_params, std::move(controller_service_worker_info)));
+  auto navigation_params =
+      std::make_unique<WebNavigationParams>(devtools_navigation_token);
+  navigation_params->frame_load_type = load_type;
+  navigation_params->history_item = item_for_history_navigation;
+  navigation_params->is_client_redirect = is_client_redirect;
+  navigation_params->service_worker_network_provider =
+      BuildServiceWorkerNetworkProviderForNavigation(
+          &request_params, std::move(controller_service_worker_info));
+  FillNavigationParams(common_params, request_params, navigation_params.get());
+
+  RequestExtraData* request_extra_data = nullptr;
 
   // Perform a navigation to a data url if needed (for main frames).
   // Note: the base URL might be invalid, so also check the data URL string.
@@ -3273,54 +3281,46 @@ void RenderFrameImpl::CommitNavigation(
   should_load_data_url |= !request_params.data_url_as_string.empty();
 #endif
   if (is_main_frame_ && should_load_data_url) {
-    std::string mime_type;
-    std::string charset;
-    std::string data;
+    std::string mime_type, charset, data;
     GURL base_url;
     DecodeDataURL(common_params, request_params, &mime_type, &charset, &data,
                   &base_url);
-    frame_->CommitDataNavigation(
-        WebURLRequest(base_url), WebData(data.c_str(), data.length()),
-        WebString::FromUTF8(mime_type), WebString::FromUTF8(charset),
-        // Needed so that history-url-only changes don't become reloads.
-        common_params.history_url_for_data_url, load_type,
-        item_for_history_navigation, is_client_redirect,
-        std::move(navigation_params), std::move(document_state));
-    // The commit can result in this frame being removed. Use a
-    // WeakPtr as an easy way to detect whether this has occured. If so, this
-    // method should return immediately and not touch any part of the object,
-    // otherwise it will result in a use-after-free bug.
-    if (!weak_this)
-      return;
+    navigation_params->request = WebURLRequest(base_url);
+    navigation_params->data = WebData(data.c_str(), data.length());
+    navigation_params->mime_type = WebString::FromUTF8(mime_type);
+    navigation_params->text_encoding = WebString::FromUTF8(charset);
+    // Needed so that history-url-only changes don't become reloads.
+    navigation_params->unreachable_url = common_params.history_url_for_data_url;
   } else {
-    WebURLRequest request =
+    navigation_params->request =
         CreateURLRequestForCommit(common_params, request_params,
                                   std::move(url_loader_client_endpoints), head);
-    // Note: we cannot use base::AutoReset here, since |this| can be deleted
-    // in the next call and auto reset will introduce use-after-free bug.
-    committing_main_request_ = true;
-    frame_->CommitNavigation(request, load_type, item_for_history_navigation,
-                             is_client_redirect, devtools_navigation_token,
-                             std::move(navigation_params),
-                             std::move(document_state));
-    // The commit can result in this frame being removed. Use a
-    // WeakPtr as an easy way to detect whether this has occured. If so, this
-    // method should return immediately and not touch any part of the object,
-    // otherwise it will result in a use-after-free bug.
-    if (!weak_this)
-      return;
-    committing_main_request_ = false;
+    request_extra_data = static_cast<RequestExtraData*>(
+        navigation_params->request.GetExtraData());
+  }
 
-    // Continue the navigation.
-    // TODO(arthursonzogni): Pass the data needed to continue the navigation to
-    // this function instead of storing it in the
-    // NavigationResponseOverrideParameters. The architecture of committing the
-    // navigation in the renderer process should be simplified and avoid going
-    // through the ResourceFetcher for the main resource.
-    RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData());
+  // Note: we cannot use base::AutoReset here, since |this| can be deleted
+  // in the next call and auto reset will introduce use-after-free bug.
+  committing_main_request_ = true;
+  frame_->CommitNavigation(std::move(navigation_params),
+                           std::move(document_state));
+  // The commit can result in this frame being removed. Use a
+  // WeakPtr as an easy way to detect whether this has occured. If so, this
+  // method should return immediately and not touch any part of the object,
+  // otherwise it will result in a use-after-free bug.
+  if (!weak_this)
+    return;
+  committing_main_request_ = false;
+
+  // Continue the navigation.
+  // TODO(arthursonzogni): Pass the data needed to continue the navigation to
+  // this function instead of storing it in the
+  // NavigationResponseOverrideParameters. The architecture of committing the
+  // navigation in the renderer process should be simplified and avoid going
+  // through the ResourceFetcher for the main resource.
+  if (request_extra_data) {
     base::OnceClosure continue_navigation =
-        extra_data->TakeContinueNavigationFunctionOwnerShip();
+        request_extra_data->TakeContinueNavigationFunctionOwnerShip();
     if (continue_navigation) {
       base::AutoReset<bool> replaying(&replaying_main_response_, true);
       std::move(continue_navigation).Run();
@@ -3415,14 +3415,6 @@ void RenderFrameImpl::CommitFailedNavigation(
   if (request_params.page_state.IsValid())
     history_entry = PageStateToHistoryEntry(request_params.page_state);
 
-  std::unique_ptr<blink::WebNavigationParams> navigation_params =
-      BuildNavigationParams(common_params, request_params,
-                            BuildServiceWorkerNetworkProviderForNavigation(
-                                &request_params, nullptr));
-  std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
-      common_params, request_params, base::TimeTicks(), std::move(callback),
-      nullptr);
-
   if (request_params.nav_entry_id == 0) {
     // For renderer initiated navigations, we send out a
     // DidFailProvisionalLoad() notification.
@@ -3452,26 +3444,37 @@ void RenderFrameImpl::CommitFailedNavigation(
   // Make sure we never show errors in view source mode.
   frame_->EnableViewSourceMode(false);
 
-  WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
-  if (history_entry)
-    frame_load_type = WebFrameLoadType::kBackForward;
-  else if (replace)
-    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  auto navigation_params = std::make_unique<WebNavigationParams>();
+  if (history_entry) {
+    navigation_params->frame_load_type = WebFrameLoadType::kBackForward;
+    navigation_params->history_item = history_entry->root();
+  } else if (replace) {
+    navigation_params->frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  }
+  navigation_params->service_worker_network_provider =
+      BuildServiceWorkerNetworkProviderForNavigation(&request_params, nullptr);
+  FillNavigationParams(common_params, request_params, navigation_params.get());
 
   failed_request.SetURL(GURL(kUnreachableWebDataURL));
   failed_request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
+  navigation_params->request = failed_request;
+
+  navigation_params->data = WebData(error_html.data(), error_html.length());
+  navigation_params->mime_type = "text/html";
+  navigation_params->text_encoding = "UTF-8";
+  navigation_params->unreachable_url = error.url();
+
+  std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
+      common_params, request_params, base::TimeTicks(), std::move(callback),
+      nullptr);
 
   // The load of the error page can result in this frame being removed.
   // Use a WeakPtr as an easy way to detect whether this has occured. If so,
   // this method should return immediately and not touch any part of the object,
   // otherwise it will result in a use-after-free bug.
   base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
-  frame_->CommitDataNavigation(
-      failed_request, error_html, "text/html", "UTF-8", error.url(),
-      frame_load_type,
-      history_entry ? history_entry->root() : blink::WebHistoryItem(),
-      false /* is_client_redirect */, std::move(navigation_params),
-      std::move(document_state));
+  frame_->CommitNavigation(std::move(navigation_params),
+                           std::move(document_state));
   if (!weak_this)
     return;
 
@@ -4207,8 +4210,7 @@ void RenderFrameImpl::DidCreateDocumentLoader(
 }
 
 void RenderFrameImpl::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader,
-    blink::WebURLRequest& request) {
+    blink::WebDocumentLoader* document_loader) {
   // In fast/loader/stop-provisional-loads.html, we abort the load before this
   // callback is invoked.
   if (!document_loader)
@@ -6171,18 +6173,15 @@ void RenderFrameImpl::BeginNavigation(
       BeginNavigationInternal(std::move(info));
     } else {
       // TODO(dgozman): should we follow the RFI::CommitNavigation path instead?
-      auto navigation_params = std::make_unique<blink::WebNavigationParams>();
-      navigation_params->navigation_timings.input_start = info->input_start;
+      auto navigation_params = WebNavigationParams::CreateFromInfo(*info);
       // We need the provider to be non-null, otherwise Blink crashes, even
       // though the provider should not be used for any actual networking.
       navigation_params->service_worker_network_provider =
           BuildServiceWorkerNetworkProviderForNavigation(
               nullptr /* request_params */,
               nullptr /* controller_service_worker_info */);
-      frame_->CommitNavigation(
-          info->url_request, info->frame_load_type, blink::WebHistoryItem(),
-          info->is_client_redirect, base::UnguessableToken::Create(),
-          std::move(navigation_params), BuildDocumentState());
+      frame_->CommitNavigation(std::move(navigation_params),
+                               BuildDocumentState());
     }
     return;
   }
@@ -6704,18 +6703,16 @@ std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
 
 void RenderFrameImpl::BeginNavigationInternal(
     std::unique_ptr<blink::WebNavigationInfo> info) {
-  auto navigation_params = std::make_unique<blink::WebNavigationParams>();
-  navigation_params->navigation_timings.input_start = info->input_start;
+  auto navigation_params = blink::WebNavigationParams::CreateFromInfo(*info);
   // We need the provider to be non-null, otherwise Blink crashes, even though
   // the provider should not be used for any actual networking.
   navigation_params->service_worker_network_provider =
       BuildServiceWorkerNetworkProviderForNavigation(
           nullptr /* request_params */,
           nullptr /* controller_service_worker_info */);
-  if (!frame_->CreatePlaceholderDocumentLoader(
-          info->url_request, info->frame_load_type, info->navigation_type,
-          info->is_client_redirect, base::UnguessableToken::Create(),
-          std::move(navigation_params), BuildDocumentState())) {
+  if (!frame_->CreatePlaceholderDocumentLoader(std::move(navigation_params),
+                                               info->navigation_type,
+                                               BuildDocumentState())) {
     return;
   }
 
@@ -7080,13 +7077,17 @@ void RenderFrameImpl::LoadHTMLString(const std::string& html,
                                      const std::string& text_encoding,
                                      const GURL& unreachable_url,
                                      bool replace_current_item) {
-  frame_->CommitDataNavigation(
-      blink::WebURLRequest(base_url), WebData(html.data(), html.length()),
-      "text/html", WebString::FromUTF8(text_encoding), unreachable_url,
+  auto navigation_params = std::make_unique<WebNavigationParams>();
+  navigation_params->request = WebURLRequest(base_url);
+  navigation_params->data = WebData(html.data(), html.length());
+  navigation_params->mime_type = "text/html";
+  navigation_params->text_encoding = WebString::FromUTF8(text_encoding);
+  navigation_params->unreachable_url = unreachable_url;
+  navigation_params->frame_load_type =
       replace_current_item ? blink::WebFrameLoadType::kReplaceCurrentItem
-                           : blink::WebFrameLoadType::kStandard,
-      blink::WebHistoryItem(), false /* is_client_redirect */,
-      nullptr /* navigation_params */, nullptr /* navigation_data */);
+                           : blink::WebFrameLoadType::kStandard;
+  frame_->CommitNavigation(std::move(navigation_params),
+                           nullptr /* extra_data */);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> RenderFrameImpl::GetTaskRunner(

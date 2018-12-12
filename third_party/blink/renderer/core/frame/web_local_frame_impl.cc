@@ -943,16 +943,6 @@ void WebLocalFrameImpl::CheckCompleted() {
   GetFrame()->GetDocument()->CheckCompleted();
 }
 
-void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
-                                       const WebURL& base_url,
-                                       const WebURL& unreachable_url) {
-  DCHECK(GetFrame());
-  CommitDataNavigation(
-      WebURLRequest(base_url), data, WebString::FromUTF8("text/html"),
-      WebString::FromUTF8("UTF-8"), unreachable_url,
-      WebFrameLoadType::kStandard, WebHistoryItem(), false, nullptr, nullptr);
-}
-
 void WebLocalFrameImpl::StopLoading() {
   if (!GetFrame())
     return;
@@ -2017,25 +2007,14 @@ bool WebLocalFrameImpl::DispatchBeforeUnloadEvent(bool is_reload) {
 }
 
 void WebLocalFrameImpl::CommitNavigation(
-    const WebURLRequest& request,
-    WebFrameLoadType web_frame_load_type,
-    const WebHistoryItem& item,
-    bool is_client_redirect,
-    const base::UnguessableToken& devtools_navigation_token,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(GetFrame());
-  DCHECK(!request.IsNull());
-  DCHECK(!request.Url().ProtocolIs("javascript"));
+  DCHECK(!navigation_params->request.IsNull());
+  DCHECK(!navigation_params->request.Url().ProtocolIs("javascript"));
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
-
-  HistoryItem* history_item = item;
   GetFrame()->Loader().CommitNavigation(
-      request.ToResourceRequest(), SubstituteData(),
-      is_client_redirect ? ClientRedirectPolicy::kClientRedirect
-                         : ClientRedirectPolicy::kNotClientRedirect,
-      devtools_navigation_token, web_frame_load_type, history_item,
       std::move(navigation_params), std::move(extra_data));
 }
 
@@ -2098,26 +2077,6 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
     GetFrame()->Loader().ReplaceDocumentWhileExecutingJavaScriptURL(
         script_result, owner_document);
   }
-}
-
-void WebLocalFrameImpl::CommitDataNavigation(
-    const WebURLRequest& request,
-    const WebData& data,
-    const WebString& mime_type,
-    const WebString& text_encoding,
-    const WebURL& unreachable_url,
-    WebFrameLoadType web_frame_load_type,
-    const WebHistoryItem& history_item,
-    bool is_client_redirect,
-    std::unique_ptr<WebNavigationParams> navigation_params,
-    std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) {
-  GetFrame()->Loader().CommitNavigation(
-      request.ToResourceRequest(),
-      SubstituteData(data, mime_type, text_encoding, unreachable_url),
-      is_client_redirect ? ClientRedirectPolicy::kClientRedirect
-                         : ClientRedirectPolicy::kNotClientRedirect,
-      base::UnguessableToken::Create(), web_frame_load_type, history_item,
-      std::move(navigation_params), std::move(navigation_data));
 }
 
 WebNavigationControl::FallbackContentResult
@@ -2242,21 +2201,13 @@ void WebLocalFrameImpl::MarkAsLoading() {
 }
 
 bool WebLocalFrameImpl::CreatePlaceholderDocumentLoader(
-    const WebURLRequest& request,
-    WebFrameLoadType frame_load_type,
-    WebNavigationType navigation_type,
-    bool is_client_redirect,
-    const base::UnguessableToken& devtools_navigation_token,
     std::unique_ptr<WebNavigationParams> navigation_params,
+    WebNavigationType navigation_type,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
-  DCHECK(!request.IsNull());
-  DCHECK(!request.Url().ProtocolIs("javascript"));
+  DCHECK(!navigation_params->request.IsNull());
+  DCHECK(!navigation_params->request.Url().ProtocolIs("javascript"));
   return GetFrame()->Loader().CreatePlaceholderDocumentLoader(
-      request.ToResourceRequest(),
-      is_client_redirect ? ClientRedirectPolicy::kClientRedirect
-                         : ClientRedirectPolicy::kNotClientRedirect,
-      devtools_navigation_token, frame_load_type, navigation_type,
-      std::move(navigation_params), std::move(extra_data));
+      std::move(navigation_params), navigation_type, std::move(extra_data));
 }
 
 void WebLocalFrameImpl::SendOrientationChangeEvent() {

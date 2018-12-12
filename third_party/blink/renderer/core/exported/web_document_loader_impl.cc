@@ -99,19 +99,9 @@ void WebDocumentLoaderImpl::SetExtraData(
 
 WebDocumentLoaderImpl::WebDocumentLoaderImpl(
     LocalFrame* frame,
-    const ResourceRequest& request,
-    const SubstituteData& data,
-    ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token,
-    WebFrameLoadType load_type,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params)
     : DocumentLoader(frame,
-                     request,
-                     data,
-                     client_redirect_policy,
-                     devtools_navigation_token,
-                     load_type,
                      navigation_type,
                      std::move(navigation_params)),
       original_request_wrapper_(DocumentLoader::OriginalRequest()),

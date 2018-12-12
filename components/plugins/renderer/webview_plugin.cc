@@ -66,7 +66,9 @@ WebViewPlugin* WebViewPlugin::Create(content::RenderView* render_view,
                                      const GURL& url) {
   DCHECK(url.is_valid()) << "Blink requires the WebView to have a valid URL.";
   WebViewPlugin* plugin = new WebViewPlugin(render_view, delegate, preferences);
-  plugin->web_view_helper_.main_frame()->LoadHTMLString(html_data, url);
+  plugin->web_view_helper_.main_frame()->CommitNavigation(
+      blink::WebNavigationParams::CreateWithHTMLString(html_data, url),
+      nullptr /* extra_data */);
   return plugin;
 }
 
@@ -375,10 +377,8 @@ void WebViewPlugin::WebViewHelper::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
   // TODO(dgozman): remove this method and effectively disallow
   // content-inititated navigations in WebViewPlugin.
-  frame_->CommitNavigation(
-      info->url_request, info->frame_load_type, blink::WebHistoryItem(),
-      info->is_client_redirect, base::UnguessableToken::Create(),
-      nullptr /* navigation_params */, nullptr /* extra_data */);
+  frame_->CommitNavigation(blink::WebNavigationParams::CreateFromInfo(*info),
+                           nullptr /* extra_data */);
 }
 
 void WebViewPlugin::OnZoomLevelChanged() {

@@ -650,8 +650,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
       blink::WebDocumentLoader* document_loader) override;
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               blink::WebURLRequest& request) override;
+  void DidStartProvisionalLoad(
+      blink::WebDocumentLoader* document_loader) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error,
                               blink::WebHistoryCommitType commit_type) override;
   void DidCommitProvisionalLoad(

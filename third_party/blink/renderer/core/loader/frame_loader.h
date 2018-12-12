@@ -52,10 +52,6 @@
 
 #include <memory>
 
-namespace base {
-class UnguessableToken;
-}
-
 namespace blink {
 
 class Document;
@@ -68,7 +64,6 @@ class ProgressTracker;
 class ResourceError;
 class ResourceRequest;
 class SerializedScriptValue;
-class SubstituteData;
 class TracedValue;
 struct FrameLoadRequest;
 struct WebNavigationParams;
@@ -107,19 +102,10 @@ class CORE_EXPORT FrameLoader final {
   // Called when the browser process has asked this renderer process to commit
   // a navigation in this frame. This method skips most of the checks assuming
   // that browser process has already performed any checks necessary.
-  // For history navigations, a history item should be provided and
-  // an appropriate WebFrameLoadType should be given.
-  // See DocumentLoader::devtools_navigation_token_ for documentation on
-  // the token.
+  // See WebNavigationParams for details.
   void CommitNavigation(
-      const ResourceRequest&,
-      const SubstituteData&,
-      ClientRedirectPolicy,
-      const base::UnguessableToken& devtools_navigation_token,
-      WebFrameLoadType = WebFrameLoadType::kStandard,
-      HistoryItem* = nullptr,
-      std::unique_ptr<WebNavigationParams> navigation_params = nullptr,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data = nullptr);
+      std::unique_ptr<WebNavigationParams> navigation_params,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data);
 
   // Called when the browser process has asked this renderer process to commit a
   // same document navigation in that frame. Returns false if the navigation
@@ -138,15 +124,9 @@ class CORE_EXPORT FrameLoader final {
   // This placeholder document loader will be later abandoned, and only
   // lives temporarily so that the rest of Blink code knows the navigation
   // is in place.
-  // See DocumentLoader::devtools_navigation_token_ for documentation on
-  // the token.
   bool CreatePlaceholderDocumentLoader(
-      const ResourceRequest&,
-      ClientRedirectPolicy,
-      const base::UnguessableToken& devtools_navigation_token,
-      WebFrameLoadType,
-      WebNavigationType,
       std::unique_ptr<WebNavigationParams>,
+      WebNavigationType,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
 
   // This runs the "stop document loading" algorithm in HTML:
@@ -266,8 +246,6 @@ class CORE_EXPORT FrameLoader final {
       const KURL& failing_url,
       WebFrameLoadType);
 
-  SubstituteData DefaultSubstituteDataForURL(const KURL&);
-
   bool ShouldPerformFragmentNavigation(bool is_form_submission,
                                        const String& http_method,
                                        WebFrameLoadType,
@@ -301,11 +279,6 @@ class CORE_EXPORT FrameLoader final {
   void TakeObjectSnapshot() const;
 
   DocumentLoader* CreateDocumentLoader(
-      const ResourceRequest&,
-      const SubstituteData&,
-      ClientRedirectPolicy,
-      const base::UnguessableToken& devtools_navigation_token,
-      WebFrameLoadType,
       WebNavigationType,
       std::unique_ptr<WebNavigationParams>,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
