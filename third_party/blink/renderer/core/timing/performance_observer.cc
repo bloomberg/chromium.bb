@@ -96,9 +96,11 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
     }
   }
   if (entry_types == PerformanceEntry::kInvalid) {
-    exception_state.ThrowTypeError(
+    String message =
         "A Performance Observer MUST have at least one valid entryType in its "
-        "entryTypes attribute.");
+        "entryTypes attribute.";
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel, message));
     return;
   }
   filter_options_ = entry_types;
