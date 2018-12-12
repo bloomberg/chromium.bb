@@ -754,6 +754,8 @@ void CreditCardSaveManager::OnUserDidAcceptUpload(
 #else
   OnUserDidAcceptUploadHelper(user_provided_card_details);
 #endif
+
+  personal_data_manager_->OnUserAcceptedUpstreamOffer();
 }
 
 #if defined(OS_ANDROID)

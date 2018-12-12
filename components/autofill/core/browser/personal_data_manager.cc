@@ -2108,6 +2108,16 @@ void PersonalDataManager::LogServerCardLinkClicked() const {
   AutofillMetrics::LogServerCardLinkClicked(GetSyncSigninState());
 }
 
+void PersonalDataManager::OnUserAcceptedUpstreamOffer() {
+  // If the user is in sync transport mode for Wallet, record an opt-in.
+  if (GetSyncSigninState() ==
+      AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
+    prefs::SetUserOptedInWalletSyncTransport(
+        pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id,
+        /*opted_in=*/true);
+  }
+}
+
 std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
     const AutofillType& type,
     const base::string16& field_contents,

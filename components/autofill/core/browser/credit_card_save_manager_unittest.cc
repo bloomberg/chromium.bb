@@ -89,6 +89,13 @@ std::string NextMonth() {
 
 }  // anonymous namespace
 
+class MockPersonalDataManager : public TestPersonalDataManager {
+ public:
+  MockPersonalDataManager() {}
+  ~MockPersonalDataManager() override {}
+  MOCK_METHOD0(OnUserAcceptedUpstreamOffer, void());
+};
+
 class CreditCardSaveManagerTest : public testing::Test {
  public:
   void SetUp() override {
@@ -315,7 +322,7 @@ class CreditCardSaveManagerTest : public testing::Test {
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  TestPersonalDataManager personal_data_;
+  MockPersonalDataManager personal_data_;
   syncer::TestSyncService sync_service_;
   base::test::ScopedFeatureList scoped_feature_list_;
   // Ends up getting owned (and destroyed) by TestFormDataImporter:
@@ -4631,6 +4638,15 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NumStrikesLoggedOnAdd) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.StrikeDatabase.StrikesPresentWhenServerCardSaved",
       /*sample=*/2, /*count=*/1);
+}
+
+// Make sure that the PersonalDataManager gets notified when the user accepts
+// an upload offer.
+TEST_F(CreditCardSaveManagerTest, OnUserDidAcceptUpload_NotifiesPDM) {
+  EXPECT_CALL(personal_data_, OnUserAcceptedUpstreamOffer);
+
+  // Simulate that the user has accepted the upload from the prompt.
+  UserHasAcceptedUpload({});
 }
 
 }  // namespace autofill

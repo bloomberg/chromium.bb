@@ -387,6 +387,9 @@ class PersonalDataManager : public KeyedService,
   // about the current sync state.
   void LogServerCardLinkClicked() const;
 
+  // Records the sync transport consent if the user is in sync transport mode.
+  virtual void OnUserAcceptedUpstreamOffer();
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
