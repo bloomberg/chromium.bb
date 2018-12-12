@@ -419,9 +419,8 @@ class WprProxySimulatorTestRunnerTest(TestCase):
 
     self.assertTrue(tr)
 
-  def test_run(self):
-    """Ensures the _run method can handle passed and failed tests."""
-
+  def run_wpr_test(self, test_filter=[], invert=False):
+    """Wrapper that mocks the _run method and returns its result."""
     class FakeStdout:
       def __init__(self):
         self.line_index = 0
@@ -477,8 +476,12 @@ class WprProxySimulatorTestRunnerTest(TestCase):
     self.mock(subprocess, 'Popen', popen)
 
     tr.xctest_path = 'fake.xctest'
-    cmd = tr.get_launch_command()
-    result = tr._run(cmd=cmd, shards=1)
+    cmd = tr.get_launch_command(test_filter=test_filter, invert=invert)
+    return tr._run(cmd=cmd, shards=1)
+
+  def test_run_no_filter(self):
+    """Ensures the _run method can handle passed and failed tests."""
+    result = self.run_wpr_test()
     self.assertIn('file1.a/1', result.passed_tests)
     self.assertIn('file1.b/2', result.passed_tests)
     self.assertIn('file1.c/3', result.failed_tests)
@@ -486,6 +489,25 @@ class WprProxySimulatorTestRunnerTest(TestCase):
     self.assertIn('file2.b/2', result.passed_tests)
     self.assertIn('file2.c/3', result.failed_tests)
 
+  def test_run_with_filter(self):
+    """Ensures the _run method works with a filter."""
+    result = self.run_wpr_test(test_filter=["file1"], invert=False)
+    self.assertIn('file1.a/1', result.passed_tests)
+    self.assertIn('file1.b/2', result.passed_tests)
+    self.assertIn('file1.c/3', result.failed_tests)
+    self.assertNotIn('file2.a/1', result.passed_tests)
+    self.assertNotIn('file2.b/2', result.passed_tests)
+    self.assertNotIn('file2.c/3', result.failed_tests)
+
+  def test_run_with_inverted_filter(self):
+    """Ensures the _run method works with an inverted filter."""
+    result = self.run_wpr_test(test_filter=["file1"], invert=True)
+    self.assertNotIn('file1.a/1', result.passed_tests)
+    self.assertNotIn('file1.b/2', result.passed_tests)
+    self.assertNotIn('file1.c/3', result.failed_tests)
+    self.assertIn('file2.a/1', result.passed_tests)
+    self.assertIn('file2.b/2', result.passed_tests)
+    self.assertIn('file2.c/3', result.failed_tests)
 
 class DeviceTestRunnerTest(TestCase):
   def setUp(self):

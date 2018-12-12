@@ -1050,8 +1050,9 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     Args:
       cmd: List of strings forming the command to run.
       NOTE: in the case of WprProxySimulatorTestRunner, cmd
-        is just a descriptor for the test, and not indicative
-        of the actual command we build and execute in _run.
+        is a dict forming the configuration for the test (including
+        filter rules), and not indicative of the actual command
+        we build and execute in _run.
 
     Returns:
       GTestResult instance.
@@ -1060,6 +1061,9 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     result = gtest_utils.GTestResult(cmd)
     completed_without_failure = True
     total_returncode = 0
+
+    invert = cmd['invert']
+    test_filter = cmd['test_filter']
 
     if shards > 1:
       # TODO(crbug.com/881096): reimplement sharding in the future
@@ -1086,7 +1090,19 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
         testName = os.path.splitext(baseName)[0]
         replayPath = '{}/{}'.format(self.replay_path, testName)
 
-        if os.path.isfile(replayPath):
+        # the filters are in the form 'testFileName.testSuiteName/testName'
+        # i.e. 'ios_costco.test.AutofillAutomationTestCase/testActions'
+        test_matched_filter = False
+        for filter_name in test_filter:
+          if testName in filter_name:
+            test_matched_filter = True
+
+        if test_filter == []:
+          test_matched_filter = True
+
+        # if the test matches the filter and invert is disabled, OR if the
+        # test doesn't match the filter and invert is enabled, run the test
+        if os.path.isfile(replayPath) and test_matched_filter != invert:
           print 'Running test for recipe {}'.format(recipePath)
           self.wprgo_start(replayPath)
 
@@ -1175,7 +1191,7 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
           print '%s test returned %s' % (recipePath, proc.returncode)
           print
 
-        else:
+        elif test_matched_filter != invert:
           print 'No matching replay file for recipe {}'.format(
               recipePath)
 
@@ -1189,9 +1205,9 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     return result
 
   def get_launch_command(self, test_filter=[], invert=False):
-    '''Returns the name of the test, instead of the real launch command.
-    We build our own command in _run, which is what this is usually passed to,
-    so instead we just use this for a test descriptor.
+    '''Returns a config dict for the test, instead of the real launch command.
+    Normally this is passed into _run as the command it should use, but since
+    the WPR runner builds its own cmd, we use this to configure the function.
 
     Args:
       test_filter: List of test cases to filter.
@@ -1199,21 +1215,13 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
       match everything except the given test cases.
 
     Returns:
-      A list of strings forming the command to launch the test.
+      A dict forming the configuration for the test.
     '''
 
-    invert_str = "Inverted" if invert else ""
-    if test_filter:
-      return [
-        '{} WprProxySimulatorTest'.format(invert_str),
-        'Test folder: {}'.format(self.replay_path)
-      ]
-    else:
-      return [
-        '{} WprProxySimulatorTest'.format(invert_str),
-        'Filter: {}'.format(' '.join(test_filter)),
-        'Test folder: {}'.format(self.replay_path)
-      ]
+    test_config = {}
+    test_config['invert'] = invert
+    test_config['test_filter'] = test_filter
+    return test_config
 
   def proxy_start(self):
     '''Starts tsproxy and routes the machine's traffic through tsproxy.'''
