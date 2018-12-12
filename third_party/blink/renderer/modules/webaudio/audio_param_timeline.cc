@@ -1316,7 +1316,8 @@ AudioParamTimeline::HandleCancelValues(const ParamEvent* current_event,
   ParamEvent::Type next_event_type =
       next_event ? next_event->GetType() : ParamEvent::kLastType;
 
-  if (next_event && next_event->GetType() == ParamEvent::kCancelValues) {
+  if (next_event && next_event->GetType() == ParamEvent::kCancelValues &&
+      next_event->SavedEvent()) {
     float value1 = current_event->Value();
     double time1 = current_event->Time();
 
