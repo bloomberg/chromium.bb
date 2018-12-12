@@ -746,6 +746,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   // on at the same time.
   DCHECK(!(migrate_session_early_v2_ && go_away_on_path_degrading_));
   default_network_ = default_network;
+  auto* socket_raw = socket.get();
   sockets_.push_back(std::move(socket));
   packet_readers_.push_back(std::make_unique<QuicChromiumPacketReader>(
       sockets_.back().get(), clock, this, yield_after_packets,
@@ -764,7 +765,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       base::Bind(NetLogQuicClientSessionCallback, &session_key.server_id(),
                  cert_verify_flags, require_confirmation_));
   IPEndPoint address;
-  if (socket && socket->GetLocalAddress(&address) == OK &&
+  if (socket_raw && socket_raw->GetLocalAddress(&address) == OK &&
       address.GetFamily() == ADDRESS_FAMILY_IPV6) {
     connection->SetMaxPacketLength(connection->max_packet_length() -
                                    kAdditionalOverheadForIPv6);
@@ -2142,7 +2143,6 @@ void QuicChromiumClientSession::OnWriteUnblocked() {
       SendPing();
     }
   }
-  return;
 }
 
 void QuicChromiumClientSession::OnPathDegrading() {
@@ -2671,8 +2671,8 @@ std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
   SSLInfo ssl_info;
 
   std::unique_ptr<base::ListValue> alias_list(new base::ListValue());
-  for (auto it = aliases.begin(); it != aliases.end(); it++) {
-    alias_list->AppendString(it->ToString());
+  for (const auto& alias : aliases) {
+    alias_list->AppendString(alias.ToString());
   }
   dict->Set("aliases", std::move(alias_list));
 
