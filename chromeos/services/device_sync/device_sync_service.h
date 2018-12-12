@@ -13,10 +13,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 
-namespace cryptauth {
-class GcmDeviceInfoProvider;
-}  // namespace cryptauth
-
 namespace gcm {
 class GCMDriver;
 }  // namespace gcm
@@ -34,6 +30,7 @@ namespace chromeos {
 namespace device_sync {
 
 class DeviceSyncBase;
+class GcmDeviceInfoProvider;
 
 // Service which provides an implementation for
 // device_sync::mojom::DeviceSync. This service creates one
@@ -43,7 +40,7 @@ class DeviceSyncService : public service_manager::Service {
   DeviceSyncService(
       identity::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
-      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+      const GcmDeviceInfoProvider* gcm_device_info_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       service_manager::mojom::ServiceRequest request);
   ~DeviceSyncService() override;
@@ -59,7 +56,7 @@ class DeviceSyncService : public service_manager::Service {
 
   identity::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
-  const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;
+  const GcmDeviceInfoProvider* gcm_device_info_provider_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<DeviceSyncBase> device_sync_;

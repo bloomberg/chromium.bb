@@ -10,10 +10,16 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chromeos/components/proximity_auth/proximity_auth_client.h"
-#include "components/cryptauth/cryptauth_client.h"
-#include "components/cryptauth/cryptauth_device_manager.h"
-#include "components/cryptauth/cryptauth_enrollment_manager.h"
+#include "chromeos/services/device_sync/cryptauth_client.h"
+#include "chromeos/services/device_sync/cryptauth_device_manager.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+namespace chromeos {
+namespace device_sync {
+class CryptAuthClientFactory;
+}  // namespace device_sync
+}  // namespace chromeos
 
 namespace proximity_auth {
 
@@ -39,7 +45,7 @@ class MockProximityAuthClient : public ProximityAuthClient {
 
   // Proxy mock methods because implementation requires returning scoped_ptr.
   MOCK_METHOD0(CreateCryptAuthClientFactoryPtr,
-               cryptauth::CryptAuthClientFactory*(void));
+               chromeos::device_sync::CryptAuthClientFactory*(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockProximityAuthClient);

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "components/cryptauth/mock_cryptauth_client.h"
+#include "chromeos/services/device_sync/mock_cryptauth_client.h"
 
 namespace cryptauth {
 
@@ -15,11 +15,12 @@ FakeCryptAuthService::FakeCryptAuthService() {}
 
 FakeCryptAuthService::~FakeCryptAuthService() {}
 
-CryptAuthDeviceManager* FakeCryptAuthService::GetCryptAuthDeviceManager() {
+chromeos::device_sync::CryptAuthDeviceManager*
+FakeCryptAuthService::GetCryptAuthDeviceManager() {
   return cryptauth_device_manager_;
 }
 
-CryptAuthEnrollmentManager*
+chromeos::device_sync::CryptAuthEnrollmentManager*
 FakeCryptAuthService::GetCryptAuthEnrollmentManager() {
   return cryptauth_enrollment_manager_;
 }
@@ -32,10 +33,11 @@ std::string FakeCryptAuthService::GetAccountId() {
   return account_id_;
 }
 
-std::unique_ptr<CryptAuthClientFactory>
+std::unique_ptr<chromeos::device_sync::CryptAuthClientFactory>
 FakeCryptAuthService::CreateCryptAuthClientFactory() {
-  return std::make_unique<MockCryptAuthClientFactory>(
-      MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS);
+  return std::make_unique<chromeos::device_sync::MockCryptAuthClientFactory>(
+      chromeos::device_sync::MockCryptAuthClientFactory::MockType::
+          MAKE_NICE_MOCKS);
 }
 
 }  // namespace cryptauth

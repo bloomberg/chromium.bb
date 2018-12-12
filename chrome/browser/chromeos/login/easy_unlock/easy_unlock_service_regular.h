@@ -17,18 +17,15 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/services/device_sync/cryptauth_device_manager.h"
+#include "chromeos/services/device_sync/network_request_error.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
-#include "components/cryptauth/network_request_error.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
 class ListValue;
 }  // namespace base
-
-namespace cryptauth {
-class RemoteDeviceLoader;
-}  // namespace cryptauth
 
 namespace proximity_auth {
 class ProximityAuthProfilePrefManager;
@@ -37,6 +34,10 @@ class ProximityAuthProfilePrefManager;
 class Profile;
 
 namespace chromeos {
+
+namespace device_sync {
+class RemoteDeviceLoader;
+}  // namespace device_sync
 
 namespace secure_channel {
 class SecureChannelClient;
@@ -151,7 +152,7 @@ class EasyUnlockServiceRegular
       pref_manager_;
 
   // Loads the RemoteDevice instances from CryptAuth and local data.
-  std::unique_ptr<cryptauth::RemoteDeviceLoader> remote_device_loader_;
+  std::unique_ptr<device_sync::RemoteDeviceLoader> remote_device_loader_;
 
   // If a new RemoteDevice was synced while the screen is locked, we defer
   // loading the RemoteDevice until the screen is unlocked. For security,

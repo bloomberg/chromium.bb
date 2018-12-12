@@ -20,9 +20,9 @@
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/device_sync_service.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
+#include "chromeos/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
 #include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
-#include "components/cryptauth/fake_gcm_device_info_provider.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -62,7 +62,7 @@ class FakeDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
       identity::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       service_manager::Connector* connector,
-      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+      const GcmDeviceInfoProvider* gcm_device_info_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<base::OneShotTimer> timer) override {
     EXPECT_TRUE(fake_device_sync_);
@@ -144,7 +144,7 @@ class DeviceSyncClientImplTest : public testing::Test {
   void SetUp() override {
     fake_gcm_driver_ = std::make_unique<gcm::FakeGCMDriver>();
     fake_gcm_device_info_provider_ =
-        std::make_unique<cryptauth::FakeGcmDeviceInfoProvider>(
+        std::make_unique<device_sync::FakeGcmDeviceInfoProvider>(
             GetTestGcmDeviceInfo());
 
     identity_test_environment_ =
@@ -421,7 +421,7 @@ class DeviceSyncClientImplTest : public testing::Test {
 
   std::unique_ptr<identity::IdentityTestEnvironment> identity_test_environment_;
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;
-  std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
+  std::unique_ptr<device_sync::FakeGcmDeviceInfoProvider>
       fake_gcm_device_info_provider_;
   FakeDeviceSync* fake_device_sync_;
   std::unique_ptr<FakeDeviceSyncImplFactory> fake_device_sync_impl_factory_;

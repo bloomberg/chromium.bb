@@ -17,7 +17,7 @@ namespace device_sync {
 DeviceSyncService::DeviceSyncService(
     identity::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
-    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+    const GcmDeviceInfoProvider* gcm_device_info_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)),

@@ -10,6 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "chromeos/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/android_sms_app_installing_status_observer.h"
 #include "chromeos/services/multidevice_setup/device_reenroller.h"
@@ -36,7 +37,6 @@
 #include "chromeos/services/multidevice_setup/public/cpp/fake_auth_token_validator.h"
 #include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/fake_gcm_device_info_provider.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -417,7 +417,7 @@ class FakeDeviceReenrollerFactory : public DeviceReenroller::Factory {
  public:
   FakeDeviceReenrollerFactory(
       device_sync::FakeDeviceSyncClient* expected_device_sync_client,
-      const cryptauth::FakeGcmDeviceInfoProvider*
+      const device_sync::FakeGcmDeviceInfoProvider*
           expected_gcm_device_info_provider)
       : expected_device_sync_client_(expected_device_sync_client),
         expected_gcm_device_info_provider_(expected_gcm_device_info_provider) {}
@@ -428,7 +428,7 @@ class FakeDeviceReenrollerFactory : public DeviceReenroller::Factory {
   // DeviceReenroller::Factory:
   std::unique_ptr<DeviceReenroller> BuildInstance(
       device_sync::DeviceSyncClient* device_sync_client,
-      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+      const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
       std::unique_ptr<base::OneShotTimer> timer) override {
     EXPECT_EQ(expected_device_sync_client_, device_sync_client);
     EXPECT_EQ(expected_gcm_device_info_provider_, gcm_device_info_provider);
@@ -438,7 +438,7 @@ class FakeDeviceReenrollerFactory : public DeviceReenroller::Factory {
   }
 
   device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
-  const cryptauth::GcmDeviceInfoProvider* expected_gcm_device_info_provider_;
+  const device_sync::GcmDeviceInfoProvider* expected_gcm_device_info_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceReenrollerFactory);
 };
@@ -511,7 +511,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
         fake_android_sms_pairing_state_tracker.get();
 
     fake_gcm_device_info_provider_ =
-        std::make_unique<cryptauth::FakeGcmDeviceInfoProvider>(
+        std::make_unique<device_sync::FakeGcmDeviceInfoProvider>(
             cryptauth::GcmDeviceInfo());
 
     fake_eligible_host_devices_provider_factory_ =
@@ -869,7 +869,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<FakeAuthTokenValidator> fake_auth_token_validator_;
   std::unique_ptr<OobeCompletionTracker> fake_oobe_completion_tracker_;
-  std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
+  std::unique_ptr<device_sync::FakeGcmDeviceInfoProvider>
       fake_gcm_device_info_provider_;
 
   std::unique_ptr<FakeEligibleHostDevicesProviderFactory>

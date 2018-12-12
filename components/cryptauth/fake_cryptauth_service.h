@@ -11,11 +11,15 @@
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/cryptauth_service.h"
 
-namespace cryptauth {
-
+namespace chromeos {
+namespace device_sync {
 class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
 class CryptAuthEnrollmentManager;
+}  // namespace device_sync
+}  // namespace chromeos
+
+namespace cryptauth {
 
 // Service which provides access to various CryptAuth singletons.
 class FakeCryptAuthService : public CryptAuthService {
@@ -24,12 +28,13 @@ class FakeCryptAuthService : public CryptAuthService {
   ~FakeCryptAuthService() override;
 
   void set_cryptauth_device_manager(
-      CryptAuthDeviceManager* cryptauth_device_manager) {
+      chromeos::device_sync::CryptAuthDeviceManager* cryptauth_device_manager) {
     cryptauth_device_manager_ = cryptauth_device_manager;
   }
 
   void set_cryptauth_enrollment_manager(
-      CryptAuthEnrollmentManager* cryptauth_enrollment_manager) {
+      chromeos::device_sync::CryptAuthEnrollmentManager*
+          cryptauth_enrollment_manager) {
     cryptauth_enrollment_manager_ = cryptauth_enrollment_manager;
   }
 
@@ -42,16 +47,19 @@ class FakeCryptAuthService : public CryptAuthService {
   }
 
   // CryptAuthService:
-  CryptAuthDeviceManager* GetCryptAuthDeviceManager() override;
-  CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager() override;
+  chromeos::device_sync::CryptAuthDeviceManager* GetCryptAuthDeviceManager()
+      override;
+  chromeos::device_sync::CryptAuthEnrollmentManager*
+  GetCryptAuthEnrollmentManager() override;
   DeviceClassifier GetDeviceClassifier() override;
   std::string GetAccountId() override;
-  std::unique_ptr<CryptAuthClientFactory> CreateCryptAuthClientFactory()
-      override;
+  std::unique_ptr<chromeos::device_sync::CryptAuthClientFactory>
+  CreateCryptAuthClientFactory() override;
 
  private:
-  CryptAuthDeviceManager* cryptauth_device_manager_;
-  CryptAuthEnrollmentManager* cryptauth_enrollment_manager_;
+  chromeos::device_sync::CryptAuthDeviceManager* cryptauth_device_manager_;
+  chromeos::device_sync::CryptAuthEnrollmentManager*
+      cryptauth_enrollment_manager_;
   DeviceClassifier device_classifier_;
   std::string account_id_;
 

@@ -22,7 +22,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "components/cryptauth/cryptauth_device_manager.h"
+#include "chromeos/services/device_sync/cryptauth_device_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

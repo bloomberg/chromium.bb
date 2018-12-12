@@ -10,7 +10,7 @@
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "components/cryptauth/fake_gcm_device_info_provider.h"
+#include "chromeos/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -30,7 +30,7 @@ class MultiDeviceSetupDeviceReenrollerTest : public testing::Test {
     fake_device_sync_client_->NotifyReady();
 
     fake_gcm_device_info_provider_ =
-        std::make_unique<cryptauth::FakeGcmDeviceInfoProvider>(
+        std::make_unique<device_sync::FakeGcmDeviceInfoProvider>(
             cryptauth::GcmDeviceInfo());
   }
 
@@ -51,7 +51,8 @@ class MultiDeviceSetupDeviceReenrollerTest : public testing::Test {
       gcm_device_info.add_supported_software_features(feature);
     }
     fake_gcm_device_info_provider_ =
-        std::make_unique<cryptauth::FakeGcmDeviceInfoProvider>(gcm_device_info);
+        std::make_unique<device_sync::FakeGcmDeviceInfoProvider>(
+            gcm_device_info);
   }
 
   device_sync::FakeDeviceSyncClient* fake_device_sync_client() {
@@ -86,7 +87,7 @@ class MultiDeviceSetupDeviceReenrollerTest : public testing::Test {
   multidevice::RemoteDeviceRef test_local_device_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
-  std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
+  std::unique_ptr<device_sync::FakeGcmDeviceInfoProvider>
       fake_gcm_device_info_provider_;
   base::MockOneShotTimer* mock_timer_;
 

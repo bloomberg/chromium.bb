@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "components/cryptauth/cryptauth_enroller_impl.h"
+#include "chromeos/services/device_sync/cryptauth_enroller_impl.h"
 #include "components/cryptauth/secure_message_delegate_impl.h"
 
 namespace chromeos {
@@ -14,14 +14,14 @@ namespace chromeos {
 namespace device_sync {
 
 CryptAuthEnrollerFactoryImpl::CryptAuthEnrollerFactoryImpl(
-    cryptauth::CryptAuthClientFactory* cryptauth_client_factory)
+    CryptAuthClientFactory* cryptauth_client_factory)
     : cryptauth_client_factory_(cryptauth_client_factory) {}
 
 CryptAuthEnrollerFactoryImpl::~CryptAuthEnrollerFactoryImpl() = default;
 
-std::unique_ptr<cryptauth::CryptAuthEnroller>
+std::unique_ptr<CryptAuthEnroller>
 CryptAuthEnrollerFactoryImpl::CreateInstance() {
-  return std::make_unique<cryptauth::CryptAuthEnrollerImpl>(
+  return std::make_unique<CryptAuthEnrollerImpl>(
       cryptauth_client_factory_,
       cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
 }

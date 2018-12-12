@@ -8,8 +8,28 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("device_sync") {
   sources = [
+    "cryptauth_api_call_flow.cc",
+    "cryptauth_api_call_flow.h",
+    "cryptauth_client.h",
+    "cryptauth_client_impl.cc",
+    "cryptauth_client_impl.h",
+    "cryptauth_device_manager.cc",
+    "cryptauth_device_manager.h",
+    "cryptauth_device_manager_impl.cc",
+    "cryptauth_device_manager_impl.h",
+    "cryptauth_enroller.h",
     "cryptauth_enroller_factory_impl.cc",
     "cryptauth_enroller_factory_impl.h",
+    "cryptauth_enroller_impl.cc",
+    "cryptauth_enroller_impl.h",
+    "cryptauth_enrollment_manager.cc",
+    "cryptauth_enrollment_manager.h",
+    "cryptauth_enrollment_manager_impl.cc",
+    "cryptauth_enrollment_manager_impl.h",
+    "cryptauth_gcm_manager.cc",
+    "cryptauth_gcm_manager.h",
+    "cryptauth_gcm_manager_impl.cc",
+    "cryptauth_gcm_manager_impl.h",
     "device_sync_base.cc",
     "device_sync_base.h",
     "device_sync_impl.cc",
@@ -18,13 +38,31 @@ static_library("device_sync") {
     "device_sync_service.h",
     "device_sync_type_converters.cc",
     "device_sync_type_converters.h",
+    "network_request_error.cc",
+    "network_request_error.h",
+    "pref_names.cc",
+    "pref_names.h",
+    "remote_device_loader.cc",
+    "remote_device_loader.h",
+    "remote_device_provider.cc",
+    "remote_device_provider.h",
+    "remote_device_provider_impl.cc",
+    "remote_device_provider_impl.h",
+    "software_feature_manager.h",
+    "software_feature_manager_impl.cc",
+    "software_feature_manager_impl.h",
+    "switches.cc",
+    "switches.h",
+    "sync_scheduler.cc",
+    "sync_scheduler.h",
+    "sync_scheduler_impl.cc",
+    "sync_scheduler_impl.h",
   ]
 
   public_deps = [
     "//chromeos/components/multidevice",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/device_sync/public/mojom",
-    "//components/cryptauth",
     "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
   ]
@@ -32,7 +70,10 @@ static_library("device_sync") {
   deps = [
     "//base",
     "//chromeos/components/proximity_auth/logging",
+    "//chromeos/services/device_sync/proto:util",
+    "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
+    "//components/cryptauth:secure_message",
     "//components/gcm_driver",
     "//net",
     "//services/identity/public/cpp",
@@ -50,10 +91,24 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_cryptauth_device_manager.cc",
+    "fake_cryptauth_device_manager.h",
+    "fake_cryptauth_enrollment_manager.cc",
+    "fake_cryptauth_enrollment_manager.h",
+    "fake_cryptauth_gcm_manager.cc",
+    "fake_cryptauth_gcm_manager.h",
     "fake_device_sync.cc",
     "fake_device_sync.h",
     "fake_device_sync_observer.cc",
     "fake_device_sync_observer.h",
+    "fake_remote_device_provider.cc",
+    "fake_remote_device_provider.h",
+    "fake_software_feature_manager.cc",
+    "fake_software_feature_manager.h",
+    "mock_cryptauth_client.cc",
+    "mock_cryptauth_client.h",
+    "mock_sync_scheduler.cc",
+    "mock_sync_scheduler.h",
   ]
 
   public_deps = [
@@ -65,6 +120,7 @@ static_library("test_support") {
     "//base",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
@@ -73,7 +129,17 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "cryptauth_api_call_flow_unittest.cc",
+    "cryptauth_client_impl_unittest.cc",
+    "cryptauth_device_manager_impl_unittest.cc",
+    "cryptauth_enroller_impl_unittest.cc",
+    "cryptauth_enrollment_manager_impl_unittest.cc",
+    "cryptauth_gcm_manager_impl_unittest.cc",
     "device_sync_service_unittest.cc",
+    "remote_device_loader_unittest.cc",
+    "remote_device_provider_impl_unittest.cc",
+    "software_feature_manager_impl_unittest.cc",
+    "sync_scheduler_impl_unittest.cc",
   ]
 
   deps = [
@@ -84,15 +150,19 @@ source_set("unit_tests") {
     "//chromeos",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
+    "//chromeos/services/device_sync/proto:util",
+    "//chromeos/services/device_sync/public/cpp:test_support",
     "//chromeos/services/device_sync/public/cpp:unit_tests",
     "//chromeos/services/device_sync/public/mojom",
-    "//components/cryptauth",
-    "//components/cryptauth:test_support",
+    "//components/cryptauth:secure_message",
+    "//components/cryptauth:secure_message_test_support",
     "//components/gcm_driver:test_support",
     "//components/prefs:test_support",
+    "//net/traffic_annotation:test_support",
     "//services/identity/public/cpp:test_support",
     "//services/network:test_support",
     "//services/service_manager/public/cpp/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

@@ -8,7 +8,7 @@
 #include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
-#include "components/cryptauth/gcm_device_info_provider.h"
+#include "chromeos/services/device_sync/public/cpp/gcm_device_info_provider.h"
 
 namespace chromeos {
 
@@ -84,7 +84,7 @@ DeviceReenroller::Factory::~Factory() = default;
 
 std::unique_ptr<DeviceReenroller> DeviceReenroller::Factory::BuildInstance(
     device_sync::DeviceSyncClient* device_sync_client,
-    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
     std::unique_ptr<base::OneShotTimer> timer) {
   return base::WrapUnique(new DeviceReenroller(
       device_sync_client, gcm_device_info_provider, std::move(timer)));
@@ -96,7 +96,7 @@ DeviceReenroller::~DeviceReenroller() {
 
 DeviceReenroller::DeviceReenroller(
     device_sync::DeviceSyncClient* device_sync_client,
-    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
     std::unique_ptr<base::OneShotTimer> timer)
     : device_sync_client_(device_sync_client),
       gcm_supported_software_features_(GetSupportedFeaturesFromGcmDeviceInfo(

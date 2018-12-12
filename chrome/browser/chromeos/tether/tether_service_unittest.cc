@@ -40,20 +40,20 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test.h"
 #include "chromeos/network/network_type_pattern.h"
+#include "chromeos/services/device_sync/cryptauth_device_manager.h"
+#include "chromeos/services/device_sync/cryptauth_enroller.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
+#include "chromeos/services/device_sync/fake_cryptauth_enrollment_manager.h"
+#include "chromeos/services/device_sync/fake_remote_device_provider.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "chromeos/services/device_sync/remote_device_provider_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client_impl.h"
-#include "components/cryptauth/cryptauth_device_manager.h"
-#include "components/cryptauth/cryptauth_enroller.h"
-#include "components/cryptauth/cryptauth_enrollment_manager.h"
-#include "components/cryptauth/fake_cryptauth_enrollment_manager.h"
 #include "components/cryptauth/fake_cryptauth_service.h"
-#include "components/cryptauth/fake_remote_device_provider.h"
-#include "components/cryptauth/remote_device_provider_impl.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -218,17 +218,17 @@ class TestTetherComponentFactory final
 };
 
 class FakeRemoteDeviceProviderFactory
-    : public cryptauth::RemoteDeviceProviderImpl::Factory {
+    : public chromeos::device_sync::RemoteDeviceProviderImpl::Factory {
  public:
   FakeRemoteDeviceProviderFactory() = default;
   ~FakeRemoteDeviceProviderFactory() override = default;
 
-  // cryptauth::RemoteDeviceProviderImpl::Factory:
-  std::unique_ptr<cryptauth::RemoteDeviceProvider> BuildInstance(
-      cryptauth::CryptAuthDeviceManager* device_manager,
+  // chromeos::device_sync::RemoteDeviceProviderImpl::Factory:
+  std::unique_ptr<chromeos::device_sync::RemoteDeviceProvider> BuildInstance(
+      chromeos::device_sync::CryptAuthDeviceManager* device_manager,
       const std::string& user_id,
       const std::string& user_private_key) override {
-    return std::make_unique<cryptauth::FakeRemoteDeviceProvider>();
+    return std::make_unique<chromeos::device_sync::FakeRemoteDeviceProvider>();
   }
 };
 
@@ -376,8 +376,8 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
     fake_cryptauth_service_ =
         std::make_unique<cryptauth::FakeCryptAuthService>();
-    fake_enrollment_manager_ =
-        std::make_unique<cryptauth::FakeCryptAuthEnrollmentManager>();
+    fake_enrollment_manager_ = std::make_unique<
+        chromeos::device_sync::FakeCryptAuthEnrollmentManager>();
     fake_enrollment_manager_->set_user_private_key(kTestUserPrivateKey);
     fake_cryptauth_service_->set_cryptauth_enrollment_manager(
         fake_enrollment_manager_.get());
@@ -400,8 +400,8 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
     fake_remote_device_provider_factory_ =
         base::WrapUnique(new FakeRemoteDeviceProviderFactory());
-    cryptauth::RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
-        fake_remote_device_provider_factory_.get());
+    chromeos::device_sync::RemoteDeviceProviderImpl::Factory::
+        SetInstanceForTesting(fake_remote_device_provider_factory_.get());
 
     fake_tether_host_fetcher_factory_ =
         base::WrapUnique(new FakeTetherHostFetcherFactory(test_devices_));
@@ -604,7 +604,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   std::unique_ptr<FakeMultiDeviceSetupClientImplFactory>
       fake_multidevice_setup_client_impl_factory_;
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
-  std::unique_ptr<cryptauth::FakeCryptAuthEnrollmentManager>
+  std::unique_ptr<chromeos::device_sync::FakeCryptAuthEnrollmentManager>
       fake_enrollment_manager_;
 
   chromeos::multidevice_setup::mojom::FeatureState initial_feature_state_;

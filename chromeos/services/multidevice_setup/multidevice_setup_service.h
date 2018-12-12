@@ -16,14 +16,11 @@
 class PrefService;
 class PrefRegistrySimple;
 
-namespace cryptauth {
-class GcmDeviceInfoProvider;
-}  // namespace cryptauth
-
 namespace chromeos {
 
 namespace device_sync {
 class DeviceSyncClient;
+class GcmDeviceInfoProvider;
 }  // namespace device_sync
 
 namespace multidevice_setup {
@@ -50,7 +47,7 @@ class MultiDeviceSetupService : public service_manager::Service {
           android_sms_app_helper_delegate,
       std::unique_ptr<AndroidSmsPairingStateTracker>
           android_sms_pairing_state_tracker,
-      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
+      const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider);
   ~MultiDeviceSetupService() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
