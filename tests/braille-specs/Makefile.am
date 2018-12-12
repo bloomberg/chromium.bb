@@ -62,6 +62,7 @@ EXTRA_DIST =					\
 	hu-hu-g1_backward.yaml			\
 	hu-hu-g1_harness.yaml			\
 	hu-hu-g2_harness.yaml			\
+	hu-hu-g2_backward.yaml			\
 	iu-ca-g1_harness.yaml			\
 	ko-2006-g2_harness.yaml			\
 	ko-g2_harness.yaml			\
