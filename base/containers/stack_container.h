@@ -183,6 +183,32 @@ class StackContainer {
   DISALLOW_COPY_AND_ASSIGN(StackContainer);
 };
 
+// Range-based iteration support for StackContainer.
+template <typename TContainerType, int stack_capacity>
+auto begin(
+    const StackContainer<TContainerType, stack_capacity>& stack_container)
+    -> decltype(begin(stack_container.container())) {
+  return begin(stack_container.container());
+}
+
+template <typename TContainerType, int stack_capacity>
+auto begin(StackContainer<TContainerType, stack_capacity>& stack_container)
+    -> decltype(begin(stack_container.container())) {
+  return begin(stack_container.container());
+}
+
+template <typename TContainerType, int stack_capacity>
+auto end(StackContainer<TContainerType, stack_capacity>& stack_container)
+    -> decltype(end(stack_container.container())) {
+  return end(stack_container.container());
+}
+
+template <typename TContainerType, int stack_capacity>
+auto end(const StackContainer<TContainerType, stack_capacity>& stack_container)
+    -> decltype(end(stack_container.container())) {
+  return end(stack_container.container());
+}
+
 // StackVector -----------------------------------------------------------------
 
 // Example:
