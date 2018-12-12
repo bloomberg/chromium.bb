@@ -563,6 +563,12 @@ message StartLxdContainerRequest {
 
   // The owner of the VM and container.
   string owner_id = 3;
+
+  // If true, StartLxdContainer will return the final container start result
+  // as a signal. If false, StartLxdContainer will block until the container
+  // has started. This field will be required to be true once all clients are
+  // migrated to use async.
+  bool async = 4;
 }
 
 // Response for starting an LXD container.
@@ -571,7 +577,8 @@ message StartLxdContainerResponse {
     // The status of starting the container is unknown.
     UNKNOWN = 0;
 
-    // The container has started.
+    // The container has started. This is only valid if async was false in the
+    // request.
     STARTED = 1;
 
     // The container was already running.
@@ -579,6 +586,14 @@ message StartLxdContainerResponse {
 
     // The container could not be started.
     FAILED = 3;
+
+    // The container is starting. This is only valid if async was true in the
+    // request.
+    STARTING = 4;
+
+    // The container is remapping its rootfs uids/gids and will take longer than
+    // usual to start up. This is only valid if async was true in the request.
+    REMAPPING = 5;
   }
 
   // Container startup status.
@@ -586,6 +601,39 @@ message StartLxdContainerResponse {
 
   // The failure_reason if the container could not be started.
   string failure_reason = 2;
+}
+
+// Message used in the signal for when a container is starting.
+message LxdContainerStartingSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    // Start status is unknown.
+    UNKNOWN = 0;
+
+    // The container has started. No more signals are expected.
+    STARTED = 1;
+
+    // The container start was cancelled. No more signals are expected.
+    CANCELLED = 2;
+
+    // One or more steps failed and the container could not be started. No
+    // more signals are expected.
+    FAILED = 3;
+  }
+
+  // The current status of starting the container.
+  Status status = 4;
+
+  // The failure_reason if the container was not successfully started.
+  string failure_reason = 5;
 }
 
 // Request for getting the primary user for an LXD container.

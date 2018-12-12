@@ -42,6 +42,7 @@ const char kInstallLinuxPackageProgressSignal[] =
 const char kUninstallPackageProgressSignal[] = "UninstallPackageProgress";
 const char kLxdContainerCreatedSignal[] = "LxdContainerCreated";
 const char kLxdContainerDownloadingSignal[] = "LxdContainerDownloading";
+const char kLxdContainerStartingSignal[] = "LxdContainerStarting";
 const char kTremplinStartedSignal[] = "TremplinStarted";
 
 }  // namespace cicerone
