@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
+#include "chrome/browser/ui/webui/hats/hats_ui.h"
 #include "chrome/browser/ui/webui/identity_internals_ui.h"
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_ui.h"
@@ -430,7 +431,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<AppLauncherPageUI>;
   }
 #endif  // !defined(OS_CHROMEOS)
-
+  // HaTS for Desktop is distinct from the Android implementation of HaTS
+  if (url.host_piece() == chrome::kChromeUIHatsHost &&
+      base::FeatureList::IsEnabled(
+          features::kHappinessTrackingSurveysForDesktop)) {
+    return &NewWebUI<HatsUI>;
+  }
   if (profile->IsGuestSession() &&
       (url.host_piece() == chrome::kChromeUIAppLauncherPageHost ||
        url.host_piece() == chrome::kChromeUIBookmarksHost ||
@@ -529,7 +535,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SnippetsInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIWebApksHost)
     return &NewWebUI<WebApksUI>;
-#else
+#else   // !defined(OS_ANDROID)
   if (url.SchemeIs(content::kChromeDevToolsScheme)) {
     if (!DevToolsUIBindings::IsValidFrontendURL(url))
       return nullptr;
@@ -540,7 +546,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // extensions aren't supported.
   if (url.host_piece() == chrome::kChromeUIInspectHost)
     return &NewWebUI<InspectUI>;
-#endif
+#endif  // defined(OS_ANDROID)
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   if (url.host_piece() == chrome::kChromeUIMdUserManagerHost)
     return &NewWebUI<MDUserManagerUI>;

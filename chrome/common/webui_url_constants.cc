@@ -247,6 +247,8 @@ const char kChromeUICastHost[] = "cast";
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 const char kChromeUIDiscardsHost[] = "discards";
 const char kChromeUIDiscardsURL[] = "chrome://discards/";
+const char kChromeUIHatsHost[] = "hats";
+const char kChromeUIHatsURL[] = "chrome://hats/";
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)

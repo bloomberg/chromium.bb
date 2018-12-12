@@ -243,6 +243,9 @@ extern const char kChromeUICastHost[];
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 extern const char kChromeUIDiscardsHost[];
 extern const char kChromeUIDiscardsURL[];
+extern const char kChromeUIHatsHost[];
+extern const char kChromeUIHatsURL[];
+
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)

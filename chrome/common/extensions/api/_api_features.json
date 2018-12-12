@@ -258,6 +258,7 @@
     "matches": [
       "chrome://chrome-signin/*",
       "chrome://discards/*",
+      "chrome://hats/*",
       "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
