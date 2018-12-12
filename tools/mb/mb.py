@@ -1101,14 +1101,7 @@ class MetaBuildWrapper(object):
       self.WriteFailureAndRaise('We should not be isolating %s.' % target,
                                 output_path=None)
 
-    if test_type == 'fuzzer':
-      cmdline = [
-        '../../testing/test_env.py',
-        '../../tools/code_coverage/run_fuzz_target.py',
-        '--fuzzer', './' + target,
-        '--output-dir', '${ISOLATED_OUTDIR}',
-        '--timeout', '3600']
-    elif is_android and test_type != "script":
+    if is_android and test_type != "script":
       cmdline = [
           '../../testing/test_env.py',
           '../../build/android/test_wrapper/logdog_wrapper.py',
