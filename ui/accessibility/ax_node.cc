@@ -199,7 +199,7 @@ const AXLanguageInfo* AXNode::GetLanguageInfo() {
   if (!parent())
     return nullptr;
 
-  const AXLanguageInfo* parent_lang_info = GetLanguageInfo();
+  const AXLanguageInfo* parent_lang_info = parent()->GetLanguageInfo();
   if (!parent_lang_info)
     return nullptr;
 
