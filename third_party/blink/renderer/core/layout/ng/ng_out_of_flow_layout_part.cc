@@ -102,15 +102,14 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
 
 void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     Vector<NGOutOfFlowPositionedDescendant> descendants) {
-  HashMap<const LayoutObject*, NGBoxFragmentBuilder::FragmentPair>
-      inline_container_fragments;
+  NGBoxFragmentBuilder::InlineContainingBlockMap inline_container_fragments;
 
   for (auto& descendant : descendants) {
     if (descendant.inline_container &&
         !inline_container_fragments.Contains(descendant.inline_container)) {
-      NGBoxFragmentBuilder::FragmentPair fragment_pair = {};
+      NGBoxFragmentBuilder::InlineContainingBlockGeometry inline_geometry = {};
       inline_container_fragments.insert(descendant.inline_container,
-                                        fragment_pair);
+                                        inline_geometry);
     }
   }
   // Fetch start/end fragment info.
@@ -128,7 +127,7 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     NGLogicalOffset container_offset;
     NGPhysicalOffset physical_container_offset;
 
-    if (!block_info.value.start_fragment) {
+    if (!block_info.value.has_value()) {
       // This happens when Legacy block is the default container.
       // In this case, container builder does not have any fragments because
       // ng layout algorithm did not run.
@@ -211,7 +210,7 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
 
       // Step 1 - determine the start_offset.
       const NGPhysicalOffsetRect& start_rect =
-          block_info.value.start_fragment_union_rect;
+          block_info.value.value().start_fragment_union_rect;
       NGLogicalOffset start_offset = start_rect.offset.ConvertToLogical(
           container_writing_mode, container_direction,
           container_builder_physical_size, start_rect.size);
@@ -224,7 +223,7 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
 
       // Step 2 - determine the end_offset.
       const NGPhysicalOffsetRect& end_rect =
-          block_info.value.end_fragment_union_rect;
+          block_info.value.value().end_fragment_union_rect;
       NGLogicalOffset end_offset = end_rect.offset.ConvertToLogical(
           container_writing_mode, container_direction,
           container_builder_physical_size, end_rect.size);

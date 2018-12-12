@@ -202,16 +202,25 @@ scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::Abort(
   return base::AdoptRef(new NGLayoutResult(status, this));
 }
 
-// Finds FragmentPairs that define inline containing blocks.
-// inline_container_fragments is a map whose keys specify which
+// Finds InlineContainingBlockGeometry that define inline containing blocks.
+// inline_containing_block_map is a map whose keys specify which
 // inline containing blocks are required.
 // Not finding a required block is an unexpected behavior (DCHECK).
 void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
-    HashMap<const LayoutObject*, FragmentPair>* inline_container_fragments) {
+    InlineContainingBlockMap* inline_containing_block_map) {
+  if (!inline_containing_block_map->size())
+    return;
+
   // This function has detailed knowledge of inline fragment tree structure,
   // and will break if this changes.
   DCHECK_GE(InlineSize(), LayoutUnit());
   DCHECK_GE(BlockSize(), LayoutUnit());
+
+  // std::pair.first points to start linebox fragment.
+  // std::pair.second points to ending linebox fragment.
+  using LineBoxPair = std::pair<const NGPhysicalLineBoxFragment*,
+                                const NGPhysicalLineBoxFragment*>;
+  HashMap<const LayoutObject*, LineBoxPair> containing_linebox_map;
 
   for (wtf_size_t i = 0; i < children_.size(); i++) {
     if (children_[i]->IsLineBox()) {
@@ -227,29 +236,38 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
           continue;
 
         LayoutObject* key = descendant.fragment->GetLayoutObject();
-        auto it = inline_container_fragments->find(key);
-        if (it != inline_container_fragments->end()) {
-          NGBoxFragmentBuilder::FragmentPair& value = it->value;
-          // |DescendantsOf| returns the offset from the given fragment. Since
-          // we give it the line box, need to add the |linebox_offset|.
-          NGPhysicalOffsetRect fragment_rect(
-              linebox_offset + descendant.offset_to_container_box,
-              descendant.fragment->Size());
-          if (value.start_linebox_fragment == linebox) {
-            value.start_fragment_union_rect.Unite(fragment_rect);
-          } else if (!value.start_fragment) {
-            value.start_fragment = descendant.fragment.get();
-            value.start_fragment_union_rect = fragment_rect;
-            value.start_linebox_fragment = linebox;
-          }
-          // Skip fragments within an empty line boxes for the end fragment.
-          if (value.end_linebox_fragment == linebox) {
-            value.end_fragment_union_rect.Unite(fragment_rect);
-          } else if (!value.end_fragment || !linebox->IsEmptyLineBox()) {
-            value.end_fragment = descendant.fragment.get();
-            value.end_fragment_union_rect = fragment_rect;
-            value.end_linebox_fragment = linebox;
-          }
+        auto it = inline_containing_block_map->find(key);
+        if (it == inline_containing_block_map->end())
+          continue;
+        base::Optional<NGBoxFragmentBuilder::InlineContainingBlockGeometry>&
+            containing_block_geometry = it->value;
+
+        LineBoxPair* containing_lineboxes =
+            &containing_linebox_map.insert(key, LineBoxPair{nullptr, nullptr})
+                 .stored_value->value;
+
+        // |DescendantsOf| returns the offset from the given fragment. Since
+        // we give it the line box, need to add the |linebox_offset|.
+        NGPhysicalOffsetRect fragment_rect(
+            linebox_offset + descendant.offset_to_container_box,
+            descendant.fragment->Size());
+        if (containing_lineboxes->first == linebox) {
+          containing_block_geometry.value().start_fragment_union_rect.Unite(
+              fragment_rect);
+        } else if (!containing_lineboxes->first) {
+          containing_lineboxes->first = linebox;
+          containing_block_geometry = InlineContainingBlockGeometry{
+              fragment_rect, NGPhysicalOffsetRect()};
+        }
+        // Skip fragments within an empty line boxes for the end fragment.
+        if (containing_lineboxes->second == linebox) {
+          containing_block_geometry.value().end_fragment_union_rect.Unite(
+              fragment_rect);
+        } else if (!containing_lineboxes->second ||
+                   !linebox->IsEmptyLineBox()) {
+          containing_lineboxes->second = linebox;
+          containing_block_geometry.value().end_fragment_union_rect =
+              fragment_rect;
         }
       }
     }
