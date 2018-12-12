@@ -12,9 +12,6 @@
 #include "base/mac/mac_logging.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/mac/core_audio_util_mac.h"
 #include "media/base/bind_to_current_loop.h"
@@ -46,8 +43,6 @@ const AudioObjectPropertyAddress kPropertyInputSourceChanged = {
 
 class AudioDeviceListenerMac::PropertyListener {
  public:
-  static constexpr base::TimeDelta kPruneTime =
-      base::TimeDelta::FromSeconds(15);
   PropertyListener(AudioObjectID monitored_object,
                    const AudioObjectPropertyAddress* property,
                    base::RepeatingClosure callback)
@@ -58,27 +53,12 @@ class AudioDeviceListenerMac::PropertyListener {
   AudioObjectID monitored_object() const { return monitored_object_; }
   const base::RepeatingClosure& callback() const { return callback_; }
   const AudioObjectPropertyAddress* property() const { return address_; }
-  base::TimeTicks deletion_time() const { return deletion_time_; }
-  bool IsActive() const { return deletion_time_.is_null(); }
-  void MarkAsInactive() { deletion_time_ = base::TimeTicks::Now(); }
-  void MarkAsActive() { deletion_time_ = base::TimeTicks(); }
 
  private:
   AudioObjectID monitored_object_;
   const AudioObjectPropertyAddress* address_;
   base::RepeatingClosure callback_;
-  // Stores a deletion time, used for pruning the listener after it is
-  // deregistered from the OS. This helps prevent a race between destroying the
-  // listener after the OS reports the device is removed, and notifications
-  // about the same device that could originate concurrently on another thread.
-  // This can for example, when unplugging a device with input and output
-  // sources, where the noification about source changes might arrive after the
-  // OS reports the device as removed (and therefore marked as deleted). A null
-  // |deletion_time_| means the listener has not been marked as deleted.
-  base::TimeTicks deletion_time_;
 };
-
-constexpr base::TimeDelta AudioDeviceListenerMac::PropertyListener::kPruneTime;
 
 // Callback from the system when an event occurs; this must be called on the
 // MessageLoop that created the AudioManager.
@@ -188,7 +168,6 @@ void AudioDeviceListenerMac::UpdateSourceListeners() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   std::vector<AudioObjectID> device_ids =
       core_audio_mac::GetAllAudioDeviceIDs();
-  bool did_mark_as_deleted = false;
   for (bool is_input : {true, false}) {
     for (auto device_id : device_ids) {
       const AudioObjectPropertyAddress* property_address =
@@ -209,37 +188,15 @@ void AudioDeviceListenerMac::UpdateSourceListeners() {
           } else {
             source_listener.reset();
           }
-        } else {
-          it_key->second->MarkAsActive();
         }
       } else if (is_monitored) {
         // Stop monitoring if the device has no source but is currently being
         // monitored.
         RemovePropertyListener(it_key->second.get());
-        it_key->second->MarkAsInactive();
-        did_mark_as_deleted = true;
+        source_listeners_.erase(it_key);
       }
     }
   }
-  if (did_mark_as_deleted) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&AudioDeviceListenerMac::PruneDeletedListeners,
-                       weak_factory_.GetWeakPtr()),
-        2 * PropertyListener::kPruneTime);
-  }
-}
-
-void AudioDeviceListenerMac::PruneDeletedListeners() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::EraseIf(source_listeners_, [](const auto& elem) {
-    if (elem.second->IsActive())
-      return false;
-
-    base::TimeDelta elapsed =
-        base::TimeTicks::Now() - elem.second->deletion_time();
-    return elapsed >= PropertyListener::kPruneTime;
-  });
 }
 
 }  // namespace media
