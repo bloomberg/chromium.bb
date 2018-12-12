@@ -172,11 +172,8 @@ void SystemClipboard::WriteImage(Image* image,
   if (bitmap.isNull())
     return;
 
-  // Only 32-bit bitmaps are supported.
-  DCHECK_EQ(bitmap.colorType(), kN32_SkColorType);
-  void* pixels = bitmap.getPixels();
   // TODO(piman): this should not be NULL, but it is. crbug.com/369621
-  if (!pixels)
+  if (!bitmap.getPixels())
     return;
 
   clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);

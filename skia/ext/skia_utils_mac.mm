@@ -219,6 +219,8 @@ NSBitmapImageRep* SkBitmapToNSBitmapImageRepWithColorSpace(
   // First convert SkBitmap to CGImageRef.
   base::ScopedCFTypeRef<CGImageRef> cgimage(
       SkCreateCGImageRefWithColorspace(skiaBitmap, colorSpace));
+  if (!cgimage)
+    return nil;
 
   // Now convert to NSBitmapImageRep.
   base::scoped_nsobject<NSBitmapImageRep> bitmap(
@@ -232,8 +234,11 @@ NSImage* SkBitmapToNSImageWithColorSpace(const SkBitmap& skiaBitmap,
     return nil;
 
   base::scoped_nsobject<NSImage> image([[NSImage alloc] init]);
-  [image addRepresentation:
-      SkBitmapToNSBitmapImageRepWithColorSpace(skiaBitmap, colorSpace)];
+  NSBitmapImageRep* imageRep =
+      SkBitmapToNSBitmapImageRepWithColorSpace(skiaBitmap, colorSpace);
+  if (!imageRep)
+    return nil;
+  [image addRepresentation:imageRep];
   [image setSize:NSMakeSize(skiaBitmap.width(), skiaBitmap.height())];
   return [image.release() autorelease];
 }
