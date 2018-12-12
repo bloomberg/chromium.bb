@@ -178,7 +178,7 @@ AudioDeviceFactory::NewAudioCapturerSource(
 
   return base::MakeRefCounted<media::AudioInputDevice>(
       AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id, params),
-      base::ThreadPriority::REALTIME_AUDIO);
+      media::AudioInputDevice::Purpose::kUserInput);
 }
 
 // static

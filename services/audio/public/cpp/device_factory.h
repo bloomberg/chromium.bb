@@ -5,8 +5,10 @@
 #ifndef SERVICES_AUDIO_PUBLIC_CPP_DEVICE_FACTORY_H_
 #define SERVICES_AUDIO_PUBLIC_CPP_DEVICE_FACTORY_H_
 
-#include "media/audio/audio_input_device.h"
+#include <memory>
+#include <string>
 
+#include "media/audio/audio_input_device.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
