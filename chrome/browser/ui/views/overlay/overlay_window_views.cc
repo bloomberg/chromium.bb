@@ -14,7 +14,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/overlay/close_image_button.h"
 #include "chrome/browser/ui/views/overlay/control_image_button.h"
-#include "chrome/browser/ui/views/overlay/playback_image_button.h"
 #include "chrome/browser/ui/views/overlay/resize_handle_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
@@ -187,7 +186,7 @@ OverlayWindowViews::OverlayWindowViews(
 #if defined(OS_CHROMEOS)
       resize_handle_view_(new views::ResizeHandleButton(this)),
 #endif
-      play_pause_controls_view_(new views::PlaybackImageButton(this)),
+      play_pause_controls_view_(new views::ToggleImageButton(this)),
       hide_controls_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(2500 /* 2.5 seconds */),
@@ -336,9 +335,10 @@ void OverlayWindowViews::SetUpViews() {
   video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   video_view_->layer()->set_name("VideoView");
 
-  // views::View that toggles play/pause/replay. ------------------------------
-  play_pause_controls_view_->SetPlaybackState(
-      controller_->IsPlayerActive() ? kPlaying : kPaused);
+  // views::View that toggles play/pause. -------------------------------------
+  play_pause_controls_view_->SetImageAlignment(
+      views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
+  play_pause_controls_view_->SetToggled(controller_->IsPlayerActive());
   play_pause_controls_view_->set_owned_by_client();
 
 #if defined(OS_CHROMEOS)
@@ -348,6 +348,21 @@ void OverlayWindowViews::SetUpViews() {
   resize_handle_view_->layer()->set_name("ResizeHandleView");
   resize_handle_view_->set_owned_by_client();
 #endif
+
+  // Accessibility.
+  play_pause_controls_view_->SetFocusForPlatform();  // Make button focusable.
+  const base::string16 play_pause_accessible_button_label(
+      l10n_util::GetStringUTF16(
+          IDS_PICTURE_IN_PICTURE_PLAY_PAUSE_CONTROL_ACCESSIBLE_TEXT));
+  play_pause_controls_view_->SetAccessibleName(
+      play_pause_accessible_button_label);
+  const base::string16 play_button_label(
+      l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_PLAY_CONTROL_TEXT));
+  play_pause_controls_view_->SetTooltipText(play_button_label);
+  const base::string16 pause_button_label(
+      l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_PAUSE_CONTROL_TEXT));
+  play_pause_controls_view_->SetToggledTooltipText(pause_button_label);
+  play_pause_controls_view_->SetInstallFocusRingOnFocus(true);
 
   // Set up view::Views heirarchy. --------------------------------------------
   controls_parent_view_->AddChildView(play_pause_controls_view_.get());
@@ -393,13 +408,16 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
   if (always_hide_play_pause_button_ && is_visible)
     play_pause_controls_view_->SetVisible(false);
 
-  GetControlsScrimLayer()->SetVisible(is_visible);
-  GetControlsParentLayer()->SetVisible(is_visible);
   GetCloseControlsLayer()->SetVisible(is_visible);
 
 #if defined(OS_CHROMEOS)
   GetResizeHandleLayer()->SetVisible(is_visible);
 #endif
+
+  GetControlsScrimLayer()->SetVisible(
+      (playback_state_ == kEndOfVideo) ? false : is_visible);
+  GetControlsParentLayer()->SetVisible(
+      (playback_state_ == kEndOfVideo) ? false : is_visible);
 }
 
 void OverlayWindowViews::UpdateControlsBounds() {
@@ -463,7 +481,19 @@ void OverlayWindowViews::UpdateCustomControlsSize(
 
 void OverlayWindowViews::UpdatePlayPauseControlsSize() {
   UpdateButtonSize();
-  play_pause_controls_view_->SetButtonSize(button_size_);
+  play_pause_controls_view_->SetSize(button_size_);
+  play_pause_controls_view_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(vector_icons::kPlayArrowIcon,
+                            button_size_.width() / 2, kControlIconColor));
+  gfx::ImageSkia pause_icon = gfx::CreateVectorIcon(
+      vector_icons::kPauseIcon, button_size_.width() / 2, kControlIconColor);
+  play_pause_controls_view_->SetToggledImage(views::Button::STATE_NORMAL,
+                                             &pause_icon);
+  const gfx::ImageSkia play_pause_background = gfx::CreateVectorIcon(
+      kPictureInPictureControlBackgroundIcon, button_size_.width(), kBgColor);
+  play_pause_controls_view_->SetBackgroundImage(
+      kBgColor, &play_pause_background, &play_pause_background);
 }
 
 void OverlayWindowViews::CreateCustomControl(
@@ -595,8 +625,28 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
 }
 
 void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
-  playback_state_for_testing_ = playback_state;
-  play_pause_controls_view_->SetPlaybackState(playback_state);
+  // TODO(apacible): have machine state for controls visibility.
+  bool controls_parent_layer_visible = GetControlsParentLayer()->visible();
+
+  playback_state_ = playback_state;
+
+  switch (playback_state_) {
+    case kPlaying:
+      play_pause_controls_view_->SetToggled(true);
+      controls_parent_view_->SetVisible(true);
+      GetControlsParentLayer()->SetVisible(controls_parent_layer_visible);
+      break;
+    case kPaused:
+      play_pause_controls_view_->SetToggled(false);
+      controls_parent_view_->SetVisible(true);
+      GetControlsParentLayer()->SetVisible(controls_parent_layer_visible);
+      break;
+    case kEndOfVideo:
+      controls_scrim_view_->SetVisible(false);
+      controls_parent_view_->SetVisible(false);
+      GetControlsParentLayer()->SetVisible(false);
+      break;
+  }
 }
 
 void OverlayWindowViews::SetAlwaysHidePlayPauseButton(bool is_visible) {
@@ -853,10 +903,10 @@ void OverlayWindowViews::TogglePlayPause() {
   // TogglePlayPause() since the IPC message may not have been propogated
   // the media player yet.
   bool is_active = controller_->TogglePlayPause();
-  play_pause_controls_view_->SetPlaybackState(is_active ? kPlaying : kPaused);
+  play_pause_controls_view_->SetToggled(is_active);
 }
 
-views::PlaybackImageButton*
+views::ToggleImageButton*
 OverlayWindowViews::play_pause_controls_view_for_testing() const {
   return play_pause_controls_view_.get();
 }
@@ -875,5 +925,5 @@ views::View* OverlayWindowViews::controls_parent_view_for_testing() const {
 
 OverlayWindowViews::PlaybackState
 OverlayWindowViews::playback_state_for_testing() const {
-  return playback_state_for_testing_;
+  return playback_state_;
 }

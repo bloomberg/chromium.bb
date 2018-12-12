@@ -18,8 +18,8 @@
 namespace views {
 class ControlImageButton;
 class CloseImageButton;
-class PlaybackImageButton;
 class ResizeHandleButton;
+class ToggleImageButton;
 }  // namespace views
 
 // The Chrome desktop implementation of OverlayWindow. This will only be
@@ -82,7 +82,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   // visible.
   bool AreControlsVisible() const;
 
-  views::PlaybackImageButton* play_pause_controls_view_for_testing() const;
+  views::ToggleImageButton* play_pause_controls_view_for_testing() const;
   gfx::Point close_image_position_for_testing() const;
   gfx::Point resize_handle_position_for_testing() const;
   views::View* controls_parent_view_for_testing() const;
@@ -161,6 +161,10 @@ class OverlayWindowViews : public content::OverlayWindow,
   // case for media streams video that user is not allowed to play/pause.
   bool always_hide_play_pause_button_ = false;
 
+  // Current playback state on the video in Picture-in-Picture window. It is
+  // used to show/hide controls.
+  PlaybackState playback_state_ = kEndOfVideo;
+
   // The upper and lower bounds of |current_size_|. These are determined by the
   // size of the primary display work area when Picture-in-Picture is initiated.
   // TODO(apacible): Update these bounds when the display the window is on
@@ -190,7 +194,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   std::unique_ptr<views::View> controls_parent_view_;
   std::unique_ptr<views::CloseImageButton> close_controls_view_;
   std::unique_ptr<views::ResizeHandleButton> resize_handle_view_;
-  std::unique_ptr<views::PlaybackImageButton> play_pause_controls_view_;
+  std::unique_ptr<views::ToggleImageButton> play_pause_controls_view_;
   std::unique_ptr<views::ControlImageButton> first_custom_controls_view_;
   std::unique_ptr<views::ControlImageButton> second_custom_controls_view_;
 #if defined(OS_CHROMEOS)
@@ -199,10 +203,6 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   // Automatically hides the controls a few seconds after user tap gesture.
   base::RetainingOneShotTimer hide_controls_timer_;
-
-  // Current playback state on the video in Picture-in-Picture window. It is
-  // used to toggle play/pause/replay button.
-  PlaybackState playback_state_for_testing_ = kEndOfVideo;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowViews);
 };
