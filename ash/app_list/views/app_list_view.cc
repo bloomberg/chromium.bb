@@ -1231,6 +1231,15 @@ void AppListView::StartAnimationForState(AppListViewState target_state) {
     animation_duration = kAppListAnimationDurationMs;
   }
 
+  if (fullscreen_widget_->GetNativeView()->bounds().y() ==
+      display.work_area().bottom()) {
+    // If the animation start position is the bottom of the screen, activate the
+    // fade in animation. This prevents the search box from flashing at the
+    // bottom of the screen as it goes behind the shelf.
+    app_list_main_view_->contents_view()->FadeInOnOpen(
+        base::TimeDelta::FromMilliseconds(animation_duration));
+  }
+
   ui::Layer* layer = fullscreen_widget_->GetLayer();
   layer->SetBounds(target_bounds);
   gfx::Transform transform;
@@ -1260,7 +1269,15 @@ void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
   if (is_side_shelf_)
     return;
 
+  // If animating from PEEKING, animate the opacity twice as fast so the
+  // SearchBoxView does not flash behind the shelf.
+  if (app_list_state_ == AppListViewState::PEEKING ||
+      app_list_state_ == AppListViewState::CLOSED) {
+    animation_duration /= 2;
+  }
+
   SetState(AppListViewState::CLOSED);
+  app_list_main_view_->contents_view()->FadeOutOnClose(animation_duration);
 }
 
 void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty,

@@ -74,6 +74,8 @@ void AppListMainView::AddContentsViews() {
   DCHECK(search_box_view_);
   contents_view_ = new ContentsView(app_list_view_);
   contents_view_->Init(model_);
+  contents_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+  contents_view_->layer()->SetMasksToBounds(true);
   AddChildView(contents_view_);
 
   search_box_view_->set_contents_view(contents_view_);
