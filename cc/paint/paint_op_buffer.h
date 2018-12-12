@@ -270,9 +270,7 @@ class CC_PAINT_EXPORT PaintOp {
            static_cast<uint32_t>(SkClipOp::kMax_EnumValue);
   }
 
-  static bool IsValidPath(const SkPath& path) {
-    return path.isValid() && path.pathRefIsValid();
-  }
+  static bool IsValidPath(const SkPath& path) { return path.isValid(); }
 
   static bool IsUnsetRect(const SkRect& rect) {
     return rect.fLeft == SK_ScalarInfinity;

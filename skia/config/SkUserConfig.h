@@ -163,6 +163,8 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 
 #define SK_LEGACY_SRGB_STAGE_CHOICE
 
+#define SK_SUPPORT_DIRECT_PATHREF_VALIDATION  // see crbug.com/913930
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
