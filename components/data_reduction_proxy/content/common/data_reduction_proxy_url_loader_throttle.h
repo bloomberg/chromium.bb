@@ -78,6 +78,8 @@ class DataReductionProxyURLLoaderThrottle : public content::URLLoaderThrottle {
 
   // The final load flags used to complete the request.
   int final_load_flags_ = 0;
+
+  base::WeakPtrFactory<DataReductionProxyURLLoaderThrottle> weak_factory_{this};
 };
 
 }  // namespace data_reduction_proxy
