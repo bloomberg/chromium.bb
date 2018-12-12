@@ -462,11 +462,11 @@ class BASE_EXPORT StringStorage {
       ::free(data_);
   }
 
-  StringStorage(StringStorage&& other) : data_(other.data_) {
+  StringStorage(StringStorage&& other) noexcept : data_(other.data_) {
     other.data_ = nullptr;
   }
 
-  StringStorage& operator=(StringStorage&& other) {
+  StringStorage& operator=(StringStorage&& other) noexcept {
     if (this != &other) {
       if (data_)
         ::free(data_);
