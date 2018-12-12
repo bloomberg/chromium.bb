@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
-#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -18,7 +17,7 @@
 
 namespace blink {
 
-IDBValue::IDBValue(const WebData& data,
+IDBValue::IDBValue(const scoped_refptr<SharedBuffer>& data,
                    const WebVector<WebBlobInfo>& web_blob_info)
     : data_(data) {
   blob_info_.ReserveInitialCapacity(SafeCast<wtf_size_t>(web_blob_info.size()));
@@ -40,7 +39,7 @@ IDBValue::~IDBValue() {
 }
 
 std::unique_ptr<IDBValue> IDBValue::Create(
-    const WebData& data,
+    const scoped_refptr<SharedBuffer>& data,
     const WebVector<WebBlobInfo>& web_blob_info) {
   return base::WrapUnique(new IDBValue(data, web_blob_info));
 }

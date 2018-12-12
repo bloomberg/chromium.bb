@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
@@ -19,7 +20,6 @@ namespace blink {
 
 class BlobDataHandle;
 class SerializedScriptValue;
-class WebData;
 class WebBlobInfo;
 
 // Represents an IndexedDB Object Store value retrieved from the backing store.
@@ -39,7 +39,7 @@ class WebBlobInfo;
 class MODULES_EXPORT IDBValue final {
  public:
   // Creates an IDBValue from backing store information.
-  static std::unique_ptr<IDBValue> Create(const WebData&,
+  static std::unique_ptr<IDBValue> Create(const scoped_refptr<SharedBuffer>&,
                                           const WebVector<WebBlobInfo>&);
 
   // Used by IDBValueUnwrapper tests.
@@ -54,6 +54,7 @@ class MODULES_EXPORT IDBValue final {
   bool IsNull() const;
   scoped_refptr<SerializedScriptValue> CreateSerializedValue() const;
   const Vector<WebBlobInfo>& BlobInfo() const { return blob_info_; }
+  const scoped_refptr<SharedBuffer>& Data() const { return data_; }
   const IDBKey* PrimaryKey() const { return primary_key_.get(); }
   const IDBKeyPath& KeyPath() const { return key_path_; }
 
@@ -92,7 +93,7 @@ class MODULES_EXPORT IDBValue final {
 
   friend class IDBValueUnwrapper;
 
-  IDBValue(const WebData&, const WebVector<WebBlobInfo>&);
+  IDBValue(const scoped_refptr<SharedBuffer>&, const WebVector<WebBlobInfo>&);
   IDBValue(scoped_refptr<SharedBuffer> unwrapped_data,
            Vector<WebBlobInfo>);
 

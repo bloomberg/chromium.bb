@@ -68,7 +68,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
               WebIDBCallbacks*) override;
   void Put(long long transaction_id,
            long long object_store_id,
-           const WebData& value,
+           const scoped_refptr<SharedBuffer>& value,
            const Vector<WebBlobInfo>&,
            std::unique_ptr<IDBKey> primary_key,
            mojom::IDBPutMode,

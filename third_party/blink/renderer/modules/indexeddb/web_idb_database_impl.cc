@@ -15,8 +15,6 @@
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
-#include "third_party/blink/public/platform/web_blob_info.h"
-#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
@@ -125,7 +123,7 @@ void WebIDBDatabaseImpl::GetAll(long long transaction_id,
 
 void WebIDBDatabaseImpl::Put(long long transaction_id,
                              long long object_store_id,
-                             const WebData& value,
+                             const scoped_refptr<SharedBuffer>& value,
                              const Vector<WebBlobInfo>& web_blob_info,
                              std::unique_ptr<IDBKey> primary_key,
                              mojom::IDBPutMode put_mode,
@@ -136,12 +134,7 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   auto mojo_value = mojom::blink::IDBValue::New();
 
   // mojo_value->bits initialization.
-  value.ForEachSegment([&mojo_value](const char* segment, size_t segment_size,
-                                     size_t segment_offset) {
-    const auto& segment_span = base::make_span(segment, segment + segment_size);
-    mojo_value->bits.AppendRange(segment_span.begin(), segment_span.end());
-    return true;
-  });
+  mojo_value->bits = value->CopyAs<Vector<uint8_t>>();
 
   // mojo_value->blob_or_file_info initialization.
   mojo_value->blob_or_file_info.ReserveInitialCapacity(web_blob_info.size());

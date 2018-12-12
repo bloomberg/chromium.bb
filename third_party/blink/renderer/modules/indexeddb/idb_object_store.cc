@@ -31,7 +31,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
-#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
@@ -580,10 +579,10 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
     value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
 
   request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
-  BackendDB()->Put(
-      transaction_->Id(), Id(), WebData(value_wrapper.TakeWireBytes()),
-      value_wrapper.TakeBlobInfo(), IDBKey::Clone(key), put_mode,
-      request->CreateWebCallbacks().release(), std::move(index_keys));
+  BackendDB()->Put(transaction_->Id(), Id(), value_wrapper.TakeWireBytes(),
+                   value_wrapper.TakeBlobInfo(), IDBKey::Clone(key), put_mode,
+                   request->CreateWebCallbacks().release(),
+                   std::move(index_keys));
 
   return request;
 }

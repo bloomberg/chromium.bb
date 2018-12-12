@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 
 using blink::WebBlobInfo;
-using blink::WebData;
 using blink::WebIDBCallbacks;
 using blink::mojom::blink::IDBCallbacksAssociatedPtrInfo;
 using blink::mojom::blink::IDBCursorAssociatedPtrInfo;

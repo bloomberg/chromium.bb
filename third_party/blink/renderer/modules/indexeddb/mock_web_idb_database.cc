@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/web_data.h"
 
 namespace blink {
 

@@ -86,7 +86,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
   MOCK_METHOD8(Put,
                void(long long transaction_id,
                     long long object_store_id,
-                    const WebData& value,
+                    const scoped_refptr<SharedBuffer>& value,
                     const Vector<WebBlobInfo>&,
                     std::unique_ptr<IDBKey> primary_key,
                     mojom::IDBPutMode,

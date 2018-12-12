@@ -124,7 +124,7 @@ bool UnionTraits<
     case blink::mojom::IDBKeyDataDataView::Tag::BINARY: {
       ArrayDataView<uint8_t> bytes;
       data.GetBinaryDataView(&bytes);
-      *out = blink::IDBKey::CreateBinary(blink::WebData(
+      *out = blink::IDBKey::CreateBinary(blink::SharedBuffer::Create(
           reinterpret_cast<const char*>(bytes.data()), bytes.size()));
       return true;
     }
@@ -163,16 +163,7 @@ UnionTraits<blink::mojom::IDBKeyDataDataView, std::unique_ptr<blink::IDBKey>>::
 Vector<uint8_t>
 UnionTraits<blink::mojom::IDBKeyDataDataView, std::unique_ptr<blink::IDBKey>>::
     binary(const std::unique_ptr<blink::IDBKey>& key) {
-  const blink::WebData& data = key->Binary();
-  Vector<uint8_t> result;
-  result.ReserveInitialCapacity(SafeCast<wtf_size_t>(data.size()));
-  data.ForEachSegment([&result](const char* segment, size_t segment_size,
-                                size_t segment_offset) {
-    const auto& segment_span = base::make_span(segment, segment + segment_size);
-    result.AppendRange(segment_span.begin(), segment_span.end());
-    return true;
-  });
-  return result;
+  return key->Binary()->CopyAs<Vector<uint8_t>>();
 }
 
 // static

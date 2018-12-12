@@ -240,6 +240,20 @@ inline Vector<char> SharedBuffer::CopyAs() const {
 }
 
 template <>
+inline Vector<uint8_t> SharedBuffer::CopyAs() const {
+  Vector<uint8_t> buffer;
+  buffer.ReserveInitialCapacity(SafeCast<wtf_size_t>(size_));
+
+  for (const auto& span : *this) {
+    buffer.Append(reinterpret_cast<const uint8_t*>(span.data()),
+                  static_cast<wtf_size_t>(span.size()));
+  }
+
+  DCHECK_EQ(buffer.size(), size_);
+  return buffer;
+}
+
+template <>
 inline std::vector<char> SharedBuffer::CopyAs() const {
   std::vector<char> buffer;
   buffer.reserve(size_);
