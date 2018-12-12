@@ -129,7 +129,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
   void OnChromeWillHide();
 
   // AppShimHandler overrides:
-  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
   void OnShimClose(AppShimHost* host) override;
   void OnShimFocus(AppShimHost* host,
                    AppShimFocusType focus_type,

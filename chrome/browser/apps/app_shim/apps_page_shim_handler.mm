@@ -53,7 +53,7 @@ void OpenAppsPage(Profile* fallback_profile) {
 
 }  // namespace
 
-void AppsPageShimHandler::OnShimLaunch(
+void AppsPageShimHandler::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   AppController* controller =
       base::mac::ObjCCastStrict<AppController>([NSApp delegate]);

@@ -31,7 +31,12 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   chrome::mojom::AppShimHostRequest GetLaunchAppShimHostRequest();
   const std::string& GetAppId() const { return app_id_; }
   const base::FilePath& GetProfilePath() const { return profile_path_; }
+
+  // Indicates the type of launch (by Chrome or from the app).
   apps::AppShimLaunchType GetLaunchType() const { return launch_type_; }
+
+  // If non-empty, holds an array of file paths given as arguments, or dragged
+  // onto the app bundle or dock icon.
   const std::vector<base::FilePath>& GetLaunchFiles() const { return files_; }
 
  protected:

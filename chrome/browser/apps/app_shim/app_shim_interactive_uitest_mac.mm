@@ -103,11 +103,12 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
   }
 
   // AppShimHandler overrides:
-  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
     // Remove self and pass through to the default handler.
     apps::AppShimHandler::RemoveHandler(app_mode_id_);
     apps::AppShimHandler::GetForAppMode(app_mode_id_)
-        ->OnShimLaunch(std::move(bootstrap));
+        ->OnShimProcessConnected(std::move(bootstrap));
     observed_ = true;
     if (run_loop_.get())
       run_loop_->Quit();

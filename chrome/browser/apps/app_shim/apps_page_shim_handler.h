@@ -17,7 +17,8 @@ class AppsPageShimHandler : public apps::AppShimHandler {
   AppsPageShimHandler() {}
 
   // AppShimHandler:
-  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
   void OnShimClose(AppShimHost* host) override;
   void OnShimFocus(AppShimHost* host,
                    apps::AppShimFocusType focus_type,

@@ -46,12 +46,11 @@ class AppShimHandler {
   // running.
   static bool ShouldRestoreSession();
 
-  // Invoked by the shim host when the shim process is launched. The handler
-  // must call OnAppLaunchComplete to inform the shim of the result.
-  // |launch_type| indicates the type of launch.
-  // |files|, if non-empty, holds an array of files paths given as arguments, or
-  // dragged onto the app bundle or dock icon.
-  virtual void OnShimLaunch(
+  // Invoked by the AppShimHostBootstrap  when a shim process has connected to
+  // the browser process. This will connect to (creating, if needed) an
+  // AppShimHost. |bootstrap| must have OnLaunchAppSucceeded or
+  // OnLaunchAppFailed called on it to inform the shim of the result.
+  virtual void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) = 0;
 
   // Invoked by the shim host when the connection to the shim process is closed.

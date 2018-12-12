@@ -542,9 +542,9 @@ TEST_F(ExtensionAppShimHandlerTest, RegisterOnly) {
 }
 
 TEST_F(ExtensionAppShimHandlerTest, LoadProfile) {
-  // If the profile is not loaded when an OnShimLaunch arrives, return false
-  // and load the profile asynchronously. Launch the app when the profile is
-  // ready.
+  // If the profile is not loaded when an OnShimProcessConnected arrives, return
+  // false and load the profile asynchronously. Launch the app when the profile
+  // is ready.
   EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
       .WillOnce(Return(static_cast<Profile*>(NULL)))
       .WillRepeatedly(Return(&profile_a_));

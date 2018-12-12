@@ -86,7 +86,7 @@ void AppShimHostBootstrap::LaunchApp(
   // |handler| takes ownership of |this| now.
   apps::AppShimHandler* handler = GetHandler();
   if (handler)
-    handler->OnShimLaunch(std::move(deleter));
+    handler->OnShimProcessConnected(std::move(deleter));
   // |handler| can only be NULL after AppShimHostManager is destroyed. Since
   // this only happens at shutdown, do nothing here.
 }

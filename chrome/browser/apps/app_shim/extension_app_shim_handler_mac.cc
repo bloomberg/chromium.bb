@@ -422,7 +422,7 @@ void ExtensionAppShimHandler::OnChromeWillHide() {
     entry.second->OnAppHide();
 }
 
-void ExtensionAppShimHandler::OnShimLaunch(
+void ExtensionAppShimHandler::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   const std::string& app_id = bootstrap->GetAppId();
   AppShimLaunchType launch_type = bootstrap->GetLaunchType();
