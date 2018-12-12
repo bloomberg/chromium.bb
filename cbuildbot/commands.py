@@ -42,7 +42,6 @@ from chromite.lib.paygen import filelib
 from chromite.scripts import pushimage
 
 
-_PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
 CHROME_UNMASK_FILE = ('/build/%(board)s/etc/portage/package.unmask/chrome')
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
@@ -1818,12 +1817,10 @@ def UprevPackages(buildroot, boards, overlay_type, workspace=None):
   """
   assert overlay_type
 
-  drop_file = _PACKAGE_FILE % {'buildroot': buildroot}
   cmd = [
       'cros_mark_as_stable', 'commit',
       '--all',
       '--boards=%s' % ':'.join(boards),
-      '--drop_file=%s' % drop_file,
       '--buildroot', workspace or buildroot,
       '--overlay-type', overlay_type,
   ]
