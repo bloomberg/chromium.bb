@@ -76,9 +76,6 @@ if (use_bundled_fontconfig) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
     public_configs = [ ":fontconfig_config" ]
-    public_deps = [
-      "//third_party:freetype_harfbuzz",
-    ]
 
     if (is_clang) {
       cflags = [
