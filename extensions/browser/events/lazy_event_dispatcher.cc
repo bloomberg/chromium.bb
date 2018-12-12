@@ -55,7 +55,7 @@ bool LazyEventDispatcher::HasAlreadyDispatched(
         std::make_unique<LazyContextId>(context, listener->extension_id());
   }
 
-  return HasAlreadyDispatchedImpl(dispatch_context.get());
+  return HasAlreadyDispatchedImpl(*dispatch_context);
 }
 
 void LazyEventDispatcher::DispatchToLazyContext(
@@ -71,32 +71,32 @@ void LazyEventDispatcher::DispatchToLazyContext(
   // should load a non-peristent context (a lazy background page or an
   // extension service worker) to handle the event. We need to use the incognito
   // context in the case of split-mode extensions.
-  if (QueueEventDispatch(dispatch_context, extension, listener_filter))
-    RecordAlreadyDispatched(dispatch_context);
+  if (QueueEventDispatch(*dispatch_context, extension, listener_filter))
+    RecordAlreadyDispatched(*dispatch_context);
 
   BrowserContext* additional_context = GetIncognitoContext(extension);
   if (!additional_context)
     return;
 
   dispatch_context->set_browser_context(additional_context);
-  if (QueueEventDispatch(dispatch_context, extension, listener_filter))
-    RecordAlreadyDispatched(dispatch_context);
+  if (QueueEventDispatch(*dispatch_context, extension, listener_filter))
+    RecordAlreadyDispatched(*dispatch_context);
 }
 
 bool LazyEventDispatcher::QueueEventDispatch(
-    LazyContextId* dispatch_context,
+    const LazyContextId& dispatch_context,
     const Extension* extension,
     const base::DictionaryValue* listener_filter) {
   if (!EventRouter::CanDispatchEventToBrowserContext(
-          dispatch_context->browser_context(), extension, *event_)) {
+          dispatch_context.browser_context(), extension, *event_)) {
     return false;
   }
 
   if (HasAlreadyDispatchedImpl(dispatch_context))
     return false;
 
-  LazyContextTaskQueue* queue = dispatch_context->GetTaskQueue();
-  if (!queue->ShouldEnqueueTask(dispatch_context->browser_context(),
+  LazyContextTaskQueue* queue = dispatch_context.GetTaskQueue();
+  if (!queue->ShouldEnqueueTask(dispatch_context.browser_context(),
                                 extension)) {
     return false;
   }
@@ -109,7 +109,7 @@ bool LazyEventDispatcher::QueueEventDispatch(
   if (!event_->will_dispatch_callback.is_null()) {
     dispatched_event.reset(event_->DeepCopy().release());
     if (!dispatched_event->will_dispatch_callback.Run(
-            dispatch_context->browser_context(), extension,
+            dispatch_context.browser_context(), extension,
             dispatched_event.get(), listener_filter)) {
       // The event has been canceled.
       return true;
@@ -125,30 +125,30 @@ bool LazyEventDispatcher::QueueEventDispatch(
 }
 
 bool LazyEventDispatcher::HasAlreadyDispatchedImpl(
-    const LazyContextId* dispatch_context) const {
-  if (dispatch_context->is_for_service_worker()) {
+    const LazyContextId& dispatch_context) const {
+  if (dispatch_context.is_for_service_worker()) {
     ServiceWorkerDispatchIdentifier dispatch_id(
-        dispatch_context->browser_context(),
-        dispatch_context->service_worker_scope());
+        dispatch_context.browser_context(),
+        dispatch_context.service_worker_scope());
     return base::ContainsKey(dispatched_ids_for_service_worker_, dispatch_id);
   }
-  DCHECK(dispatch_context->is_for_event_page());
-  EventPageDispatchIdentifier dispatch_id(dispatch_context->browser_context(),
-                                          dispatch_context->extension_id());
+  DCHECK(dispatch_context.is_for_event_page());
+  EventPageDispatchIdentifier dispatch_id(dispatch_context.browser_context(),
+                                          dispatch_context.extension_id());
   return base::ContainsKey(dispatched_ids_for_event_page_, dispatch_id);
 }
 
 void LazyEventDispatcher::RecordAlreadyDispatched(
-    LazyContextId* dispatch_context) {
-  if (dispatch_context->is_for_service_worker()) {
+    const LazyContextId& dispatch_context) {
+  if (dispatch_context.is_for_service_worker()) {
     dispatched_ids_for_service_worker_.insert(
-        std::make_pair(dispatch_context->browser_context(),
-                       dispatch_context->service_worker_scope()));
+        std::make_pair(dispatch_context.browser_context(),
+                       dispatch_context.service_worker_scope()));
     return;
   }
-  DCHECK(dispatch_context->is_for_event_page());
+  DCHECK(dispatch_context.is_for_event_page());
   dispatched_ids_for_event_page_.insert(std::make_pair(
-      dispatch_context->browser_context(), dispatch_context->extension_id()));
+      dispatch_context.browser_context(), dispatch_context.extension_id()));
 }
 
 BrowserContext* LazyEventDispatcher::GetIncognitoContext(

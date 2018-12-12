@@ -98,9 +98,9 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
 }
 
 void LazyBackgroundTaskQueue::AddPendingTaskToDispatchEvent(
-    const LazyContextId* context_id,
+    const LazyContextId& context_id,
     LazyContextTaskQueue::PendingTask task) {
-  AddPendingTask(context_id->browser_context(), context_id->extension_id(),
+  AddPendingTask(context_id.browser_context(), context_id.extension_id(),
                  base::BindOnce(&PendingTaskAdapter, std::move(task)));
 }
 

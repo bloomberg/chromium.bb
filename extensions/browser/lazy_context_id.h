@@ -46,7 +46,7 @@ class LazyContextId {
     return service_worker_scope_;
   }
 
-  LazyContextTaskQueue* GetTaskQueue();
+  LazyContextTaskQueue* GetTaskQueue() const;
 
  private:
   const Type type_;

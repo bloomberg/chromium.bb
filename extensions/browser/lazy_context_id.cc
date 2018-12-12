@@ -21,7 +21,7 @@ LazyContextId::LazyContextId(content::BrowserContext* context,
       extension_id_(extension_id),
       service_worker_scope_(service_worker_scope) {}
 
-LazyContextTaskQueue* LazyContextId::GetTaskQueue() {
+LazyContextTaskQueue* LazyContextId::GetTaskQueue() const {
   if (is_for_event_page())
     return LazyBackgroundTaskQueue::Get(context_);
   DCHECK(is_for_service_worker());

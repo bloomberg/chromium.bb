@@ -72,13 +72,13 @@ class LazyEventDispatcher {
   // Possibly loads given extension's background page or extension Service
   // Worker in preparation to dispatch an event.  Returns true if the event was
   // queued for subsequent dispatch, false otherwise.
-  bool QueueEventDispatch(LazyContextId* dispatch_context,
+  bool QueueEventDispatch(const LazyContextId& dispatch_context,
                           const Extension* extension,
                           const base::DictionaryValue* listener_filter);
 
-  bool HasAlreadyDispatchedImpl(const LazyContextId* dispatch_context) const;
+  bool HasAlreadyDispatchedImpl(const LazyContextId& dispatch_context) const;
 
-  void RecordAlreadyDispatched(LazyContextId* dispatch_context);
+  void RecordAlreadyDispatched(const LazyContextId& dispatch_context);
 
   content::BrowserContext* GetIncognitoContext(const Extension* extension);
 
