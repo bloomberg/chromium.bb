@@ -49,6 +49,13 @@
 
 namespace blink {
 
+namespace {
+
+constexpr char kInterfaceMapLabel[] =
+    "V8PerIsolateData::interface_template_map_for_v8_context_snapshot_";
+
+}  // namespace
+
 // Wrapper function defined in WebKit.h
 v8::Isolate* MainThreadIsolate() {
   return V8PerIsolateData::MainThreadIsolate();
@@ -75,7 +82,8 @@ V8PerIsolateData::V8PerIsolateData(
                          : gin::IsolateHolder::kAllowAtomicsWait,
           IsMainThread() ? gin::IsolateHolder::IsolateType::kBlinkMainThread
                          : gin::IsolateHolder::IsolateType::kBlinkWorkerThread),
-      interface_template_map_for_v8_context_snapshot_(GetIsolate()),
+      interface_template_map_for_v8_context_snapshot_(GetIsolate(),
+                                                      kInterfaceMapLabel),
       string_cache_(std::make_unique<StringCache>(GetIsolate())),
       private_property_(V8PrivateProperty::Create()),
       constructor_mode_(ConstructorMode::kCreateNewObject),

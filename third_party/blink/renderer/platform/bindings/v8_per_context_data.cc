@@ -45,16 +45,25 @@
 
 namespace blink {
 
+namespace {
+
+constexpr char kWrapperBoilerplatesLabel[] =
+    "V8PerContextData::wrapper_boilerplates_";
+constexpr char kConstructorMapLabel[] = "V8PerContextData::constructor_map_";
+constexpr char kContextLabel[] = "V8PerContextData::context_";
+
+}  // namespace
+
 V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
     : isolate_(context->GetIsolate()),
-      wrapper_boilerplates_(isolate_),
-      constructor_map_(isolate_),
+      wrapper_boilerplates_(isolate_, kWrapperBoilerplatesLabel),
+      constructor_map_(isolate_, kConstructorMapLabel),
       context_holder_(std::make_unique<gin::ContextHolder>(isolate_)),
       context_(isolate_, context),
       activity_logger_(nullptr),
       data_map_(MakeGarbageCollected<DataMap>()) {
   context_holder_->SetContext(context);
-  context_.Get().AnnotateStrongRetainer("blink::V8PerContextData::context_");
+  context_.Get().AnnotateStrongRetainer(kContextLabel);
 
   if (IsMainThread()) {
     InstanceCounters::IncrementCounter(
