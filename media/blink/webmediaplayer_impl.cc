@@ -99,7 +99,7 @@ void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
   sink->SwitchOutputDevice(device_id, std::move(callback));
 }
 
-bool IsBackgroundSuspendEnabled(WebMediaPlayerDelegate* delegate) {
+bool IsBackgroundSuspendEnabled(const WebMediaPlayerImpl* wmpi) {
   // TODO(crbug.com/867146): remove these switches.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableMediaSuspend))
@@ -108,7 +108,7 @@ bool IsBackgroundSuspendEnabled(WebMediaPlayerDelegate* delegate) {
           switches::kEnableMediaSuspend))
     return true;
 
-  return delegate->IsBackgroundMediaSuspendEnabled();
+  return wmpi->IsBackgroundMediaSuspendEnabled();
 }
 
 bool IsResumeBackgroundVideosEnabled() {
@@ -272,7 +272,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       create_bridge_callback_(params->create_bridge_callback()),
       request_routing_token_cb_(params->request_routing_token_cb()),
       overlay_routing_token_(OverlayInfo::RoutingToken()),
-      media_metrics_provider_(params->take_metrics_provider()) {
+      media_metrics_provider_(params->take_metrics_provider()),
+      is_background_suspend_enabled_(params->IsBackgroundSuspendEnabled()),
+      is_background_video_track_optimization_supported_(
+          params->IsBackgroundVideoTrackOptimizationSupported()) {
   DVLOG(1) << __func__;
   DCHECK(adjust_allocated_memory_cb_);
   DCHECK(renderer_factory_selector_);
@@ -2671,7 +2674,7 @@ void WebMediaPlayerImpl::UpdatePlayState() {
 #endif
 
   bool is_suspended = pipeline_controller_.IsSuspended();
-  bool is_backgrounded = IsBackgroundSuspendEnabled(delegate_) && IsHidden();
+  bool is_backgrounded = IsBackgroundSuspendEnabled(this) && IsHidden();
   PlayState state = UpdatePlayState_ComputePlayState(
       is_remote, is_flinging_, can_auto_suspend, is_suspended, is_backgrounded);
   SetDelegateState(state.delegate_state, state.is_idle);
@@ -2871,8 +2874,8 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
   // suspend is enabled and resuming background videos is not (original Android
   // behavior).
   bool backgrounded_video_has_no_remote_controls =
-      IsBackgroundSuspendEnabled(delegate_) &&
-      !IsResumeBackgroundVideosEnabled() && is_backgrounded && HasVideo();
+      IsBackgroundSuspendEnabled(this) && !IsResumeBackgroundVideosEnabled() &&
+      is_backgrounded && HasVideo();
   bool can_play = !has_error && have_future_data;
   bool has_remote_controls =
       HasAudio() && !backgrounded_video_has_no_remote_controls;
@@ -3114,7 +3117,7 @@ bool WebMediaPlayerImpl::IsOpaque() const {
 bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
   // If suspending background video, pause any video that's not remoted or
   // not unlocked to play in the background.
-  if (IsBackgroundSuspendEnabled(delegate_)) {
+  if (IsBackgroundSuspendEnabled(this)) {
     if (!HasVideo())
       return false;
 
@@ -3138,7 +3141,8 @@ bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
   // video. MSE video track switching on hide has gone through a field test.
   // TODO(tmathmeyer): Passing load_type_ won't be needed after src= field
   // testing is finished. see: http://crbug.com/709302
-  if (!IsBackgroundVideoTrackOptimizationEnabled(load_type_))
+  if (!is_background_video_track_optimization_supported_ ||
+      !IsBackgroundVideoTrackOptimizationEnabled(load_type_))
     return false;
 
   // Disable video track only for players with audio that match the criteria for

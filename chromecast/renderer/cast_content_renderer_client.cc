@@ -288,13 +288,6 @@ bool CastContentRendererClient::IsIdleMediaSuspendEnabled() {
   return false;
 }
 
-bool CastContentRendererClient::IsBackgroundMediaSuspendEnabled(
-    content::RenderFrame* render_frame) {
-  auto* playback_options = CastMediaPlaybackOptions::Get(render_frame);
-  DCHECK(playback_options);
-  return playback_options->IsBackgroundSuspendEnabled();
-}
-
 void CastContentRendererClient::
     SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
   // Settings for ATV (Android defaults are not what we want).

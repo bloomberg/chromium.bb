@@ -87,7 +87,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       mojom::MediaMetricsProviderPtr metrics_provider,
       CreateSurfaceLayerBridgeCB bridge_callback,
       scoped_refptr<viz::ContextProvider> context_provider,
-      blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video);
+      blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video,
+      bool is_background_suspend_enabled,
+      bool is_background_video_track_optimization_supported);
 
   ~WebMediaPlayerParams();
 
@@ -158,6 +160,14 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return use_surface_layer_for_video_;
   }
 
+  bool IsBackgroundSuspendEnabled() const {
+    return is_background_suspend_enabled_;
+  }
+
+  bool IsBackgroundVideoTrackOptimizationSupported() const {
+    return is_background_video_track_optimization_supported_;
+  }
+
  private:
   DeferLoadCB defer_load_cb_;
   scoped_refptr<SwitchableAudioRendererSink> audio_renderer_sink_;
@@ -178,6 +188,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   CreateSurfaceLayerBridgeCB create_bridge_callback_;
   scoped_refptr<viz::ContextProvider> context_provider_;
   blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video_;
+
+  // Whether the renderer should automatically suspend media playback in
+  // background tabs.
+  bool is_background_suspend_enabled_ = false;
+  // Whether background video optimization is supported on current platform.
+  bool is_background_video_track_optimization_supported_ = true;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

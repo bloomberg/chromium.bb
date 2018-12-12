@@ -295,6 +295,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnBecameVisible() override;
   bool IsOpaque() const override;
 
+  bool IsBackgroundMediaSuspendEnabled() const {
+    return is_background_suspend_enabled_;
+  }
+
   // Called from WebMediaPlayerCast.
   // TODO(hubbe): WMPI_CAST make private.
   void OnPipelineSeeked(bool time_updated);
@@ -975,6 +979,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // True if StartPipeline() completed a lazy load startup.
   bool did_lazy_load_ = false;
+
+  // Whether the renderer should automatically suspend media playback in
+  // background tabs.
+  bool is_background_suspend_enabled_ = false;
+
+  // Whether background video optimization is supported on current platform.
+  bool is_background_video_track_optimization_supported_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

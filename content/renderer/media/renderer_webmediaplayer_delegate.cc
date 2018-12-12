@@ -40,10 +40,6 @@ RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
     : RenderFrameObserver(render_frame),
       allow_idle_cleanup_(
           content::GetContentClient()->renderer()->IsIdleMediaSuspendEnabled()),
-      background_suspend_enabled_(
-          content::GetContentClient()
-              ->renderer()
-              ->IsBackgroundMediaSuspendEnabled(render_frame)),
       tick_clock_(base::DefaultTickClock::GetInstance()) {
   idle_cleanup_interval_ = base::TimeDelta::FromSeconds(5);
   idle_timeout_ = base::TimeDelta::FromSeconds(15);
@@ -170,10 +166,6 @@ void RendererWebMediaPlayerDelegate::
         blink::WebMediaPlayer::PipWindowResizedCallback callback) {
   picture_in_picture_window_resize_observer_ =
       std::make_pair(player_id, std::move(callback));
-}
-
-bool RendererWebMediaPlayerDelegate::IsBackgroundMediaSuspendEnabled() {
-  return background_suspend_enabled_;
 }
 
 void RendererWebMediaPlayerDelegate::DidPause(int player_id) {

@@ -7112,6 +7112,16 @@ RenderFrameImpl::GetURLLoaderFactory() {
   return GetLoaderFactoryBundle();
 }
 
+const RenderFrameMediaPlaybackOptions&
+RenderFrameImpl::GetRenderFrameMediaPlaybackOptions() {
+  return renderer_media_playback_options_;
+}
+
+void RenderFrameImpl::SetRenderFrameMediaPlaybackOptions(
+    const RenderFrameMediaPlaybackOptions& opts) {
+  renderer_media_playback_options_ = opts;
+}
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 void RenderFrameImpl::PepperInstanceCreated(
     PepperPluginInstanceImpl* instance) {

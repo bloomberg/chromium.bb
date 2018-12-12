@@ -82,7 +82,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void RegisterPictureInPictureWindowResizeCallback(
       int player_id,
       blink::WebMediaPlayer::PipWindowResizedCallback) override;
-  bool IsBackgroundMediaSuspendEnabled() override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;
@@ -151,9 +150,6 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // Flag for gating if players should ever transition to a stale state after a
   // period of inactivity.
   bool allow_idle_cleanup_ = true;
-
-  // Flag for whether players should suspend when tab is in background.
-  bool background_suspend_enabled_ = true;
 
   // Tracks which players have entered an idle state. After some period of
   // inactivity these players will be notified and become stale.
