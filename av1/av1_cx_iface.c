@@ -106,6 +106,7 @@ struct av1_extracfg {
   int enable_global_motion;     // enable global motion usage for sequence
   int enable_warped_motion;     // sequence level
   int allow_warped_motion;      // frame level
+  int enable_filter_intra;
   int enable_superres;
 #if CONFIG_DENOISE
   float noise_level;
@@ -188,6 +189,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // enable_global_motion usage
   1,                            // enable_warped_motion at sequence level
   1,                            // allow_warped_motion at frame level
+  1,                            // enable filter intra at sequence level
   1,                            // superres
 #if CONFIG_DENOISE
   0,   // noise_level
@@ -696,6 +698,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_warped_motion = extra_cfg->enable_warped_motion;
   oxcf->allow_warped_motion =
       extra_cfg->allow_warped_motion & extra_cfg->enable_warped_motion;
+  oxcf->enable_filter_intra = extra_cfg->enable_filter_intra;
 
   oxcf->enable_superres =
       (oxcf->superres_mode != SUPERRES_NONE) && extra_cfg->enable_superres;
@@ -1132,6 +1135,13 @@ static aom_codec_err_t ctrl_set_allow_warped_motion(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.allow_warped_motion = CAST(AV1E_SET_ALLOW_WARPED_MOTION, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_filter_intra(aom_codec_alg_priv_t *ctx,
+                                                    va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_filter_intra = CAST(AV1E_SET_ENABLE_FILTER_INTRA, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1883,6 +1893,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ENABLE_GLOBAL_MOTION, ctrl_set_enable_global_motion },
   { AV1E_SET_ENABLE_WARPED_MOTION, ctrl_set_enable_warped_motion },
   { AV1E_SET_ALLOW_WARPED_MOTION, ctrl_set_allow_warped_motion },
+  { AV1E_SET_ENABLE_FILTER_INTRA, ctrl_set_enable_filter_intra },
   { AV1E_SET_ENABLE_SUPERRES, ctrl_set_enable_superres },
   { AV1E_SET_AQ_MODE, ctrl_set_aq_mode },
   { AV1E_SET_REDUCED_TX_TYPE_SET, ctrl_set_reduced_tx_type_set },

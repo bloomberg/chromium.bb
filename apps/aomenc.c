@@ -477,6 +477,10 @@ static const arg_def_t enable_warped_motion =
     ARG_DEF(NULL, "enable-warped-motion", 1,
             "Enable local warped motion "
             "(0: false, 1: true (default))");
+static const arg_def_t enable_filter_intra =
+    ARG_DEF(NULL, "enable-filter-intra", 1,
+            "Enable filter intra prediction mode "
+            "(0: false, 1: true (default))");
 static const arg_def_t enable_obmc = ARG_DEF(
     NULL, "enable-obmc", 1, "Enable OBMC (0: false, 1: true (default))");
 static const arg_def_t disable_trellis_quant =
@@ -692,6 +696,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_interintra_wedge,
                                        &enable_global_motion,
                                        &enable_warped_motion,
+                                       &enable_filter_intra,
                                        &enable_obmc,
                                        &disable_trellis_quant,
                                        &enable_qm,
@@ -762,6 +767,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_INTERINTRA_WEDGE,
                                         AV1E_SET_ENABLE_GLOBAL_MOTION,
                                         AV1E_SET_ENABLE_WARPED_MOTION,
+                                        AV1E_SET_ENABLE_FILTER_INTRA,
                                         AV1E_SET_ENABLE_OBMC,
                                         AV1E_SET_DISABLE_TRELLIS_QUANT,
                                         AV1E_SET_ENABLE_QM,

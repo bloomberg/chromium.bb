@@ -334,6 +334,7 @@ typedef struct AV1EncoderConfig {
   int enable_global_motion;
   int enable_warped_motion;
   int allow_warped_motion;
+  int enable_filter_intra;
   int enable_superres;
   unsigned int save_as_annexb;
 
