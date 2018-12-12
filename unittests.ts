@@ -22,8 +22,8 @@ import {
 
   add("list", new PList('hello', [1, 2, 3]));
   add("unit", new PUnit());
-  add("combine_none", new PCombiner([]));
-  add("combine_unit_unit", new PCombiner([new PUnit(), new PUnit()]));
+  add("combiner_none", new PCombiner([]));
+  add("combiner_unit_unit", new PCombiner([new PUnit(), new PUnit()]));
   add("combiner_lists", new PCombiner([
     new PList('x', [1, 2]),
     new PList('y', ['a', 'b']),
