@@ -39,6 +39,10 @@
 -ScreenLockerTest.PasswordAuthWhenAuthDisabled
 -ScreenLockerTest.TestBadThenGoodPassword
 -ScreenLockerTest.TestShowTwice
+-SwitchAccessNavigationManagerTest.MoveForward
+-SwitchAccessNavigationManagerTest.MoveBackward
+-SwitchAccessNavigationManagerTest.MoveBackAndForth
+-SwitchAccessNavigationManagerTest.SelectButton
 -SwitchAccessPredicateTest.IsActionable
 -SwitchAccessPredicateTest.IsGroup
 -SwitchAccessPredicateTest.IsInterestingSubtree
