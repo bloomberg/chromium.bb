@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/performance_observer_entry_list.h"
@@ -45,6 +46,24 @@ PerformanceObserver* PerformanceObserver::Create(
           "PerformanceObserver",
           "No 'worker' or 'window' in current context."));
   return nullptr;
+}
+
+// static
+Vector<AtomicString> PerformanceObserver::supportedEntryTypes() {
+  Vector<AtomicString> supportedEntryTypes;
+  if (RuntimeEnabledFeatures::ElementTimingEnabled())
+    supportedEntryTypes.push_back(performance_entry_names::kElement);
+  // TODO(npm): add "event" and "firstInput" when they ship. Currently, the
+  // support for event timing relies on origin trials, and thus depends on the
+  // execution context. This cannot be queried from a static method. See
+  // https://crbug.com/841224
+  if (RuntimeEnabledFeatures::LayoutJankAPIEnabled())
+    supportedEntryTypes.push_back(performance_entry_names::kLayoutJank);
+  supportedEntryTypes.AppendVector(Vector<AtomicString>(
+      {performance_entry_names::kLongtask, performance_entry_names::kMark,
+       performance_entry_names::kMeasure, performance_entry_names::kNavigation,
+       performance_entry_names::kPaint, performance_entry_names::kResource}));
+  return supportedEntryTypes;
 }
 
 PerformanceObserver::PerformanceObserver(

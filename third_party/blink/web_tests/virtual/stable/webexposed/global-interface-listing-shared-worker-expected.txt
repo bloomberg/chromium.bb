@@ -817,6 +817,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface PerformanceObserver
+[Worker]     static getter supportedEntryTypes
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method disconnect

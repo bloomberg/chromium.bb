@@ -4530,6 +4530,7 @@ interface PerformanceNavigationTiming : PerformanceResourceTiming
     method constructor
     method toJSON
 interface PerformanceObserver
+    static getter supportedEntryTypes
     attribute @@toStringTag
     method constructor
     method disconnect

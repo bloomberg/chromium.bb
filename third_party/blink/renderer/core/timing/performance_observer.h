@@ -37,7 +37,7 @@ class CORE_EXPORT PerformanceObserver final
  public:
   static PerformanceObserver* Create(ScriptState*,
                                      V8PerformanceObserverCallback*);
-  static void ResumeSuspendedObservers();
+  static Vector<AtomicString> supportedEntryTypes();
 
   PerformanceObserver(ExecutionContext*,
                       Performance*,

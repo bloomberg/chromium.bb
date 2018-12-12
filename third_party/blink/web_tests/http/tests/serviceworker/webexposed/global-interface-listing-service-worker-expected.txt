@@ -1017,6 +1017,7 @@ interface PerformanceMeasure : PerformanceEntry
     attribute @@toStringTag
     method constructor
 interface PerformanceObserver
+    static getter supportedEntryTypes
     attribute @@toStringTag
     method constructor
     method disconnect
