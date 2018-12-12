@@ -54,8 +54,8 @@
 #import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/material_cell_catalog_view_controller.h"
+#import "ios/chrome/browser/ui/settings/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/search_engine_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
@@ -126,7 +126,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemGoogleServices,
   ItemTypeHeader,
   ItemTypeSearchEngine,
-  ItemTypeSavedPasswords,
+  ItemTypePasswords,
   ItemTypeAutofillCreditCard,
   ItemTypeAutofillProfile,
   ItemTypeVoiceSearch,
@@ -242,7 +242,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   // Updatable Items.
   LegacySettingsDetailItem* _voiceSearchDetailItem;
   LegacySettingsDetailItem* _defaultSearchEngineItem;
-  LegacySettingsDetailItem* _savePasswordsDetailItem;
+  LegacySettingsDetailItem* _passwordsDetailItem;
   LegacySettingsDetailItem* _autoFillProfileDetailItem;
   LegacySettingsDetailItem* _autoFillCreditCardDetailItem;
 
@@ -417,7 +417,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   [model addSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self searchEngineDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
-  [model addItem:[self savePasswordsDetailItem]
+  [model addItem:[self passwordsDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self AutoFillCreditCardDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
@@ -536,19 +536,19 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   return _defaultSearchEngineItem;
 }
 
-- (CollectionViewItem*)savePasswordsDetailItem {
-  BOOL savePasswordsEnabled = _browserState->GetPrefs()->GetBoolean(
+- (CollectionViewItem*)passwordsDetailItem {
+  BOOL passwordsEnabled = _browserState->GetPrefs()->GetBoolean(
       password_manager::prefs::kCredentialsEnableService);
-  NSString* passwordsDetail = savePasswordsEnabled
+  NSString* passwordsDetail = passwordsEnabled
                                   ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                   : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  _savePasswordsDetailItem =
-      [self detailItemWithType:ItemTypeSavedPasswords
+  _passwordsDetailItem =
+      [self detailItemWithType:ItemTypePasswords
                           text:l10n_util::GetNSString(IDS_IOS_PASSWORDS)
                     detailText:passwordsDetail
                  iconImageName:kSettingsPasswordsImageName];
 
-  return _savePasswordsDetailItem;
+  return _passwordsDetailItem;
 }
 
 - (CollectionViewItem*)AutoFillCreditCardDetailItem {
@@ -741,7 +741,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   if ([cell isKindOfClass:[LegacySettingsDetailCell class]]) {
     LegacySettingsDetailCell* detailCell =
         base::mac::ObjCCastStrict<LegacySettingsDetailCell>(cell);
-    if (itemType == ItemTypeSavedPasswords) {
+    if (itemType == ItemTypePasswords) {
       scoped_refptr<password_manager::PasswordStore> passwordStore =
           IOSChromePasswordStoreFactory::GetForBrowserState(
               _browserState, ServiceAccessType::EXPLICIT_ACCESS);
@@ -858,8 +858,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
       controller = [[SearchEngineTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
-    case ItemTypeSavedPasswords:
-      controller = [[SavePasswordsCollectionViewController alloc]
+    case ItemTypePasswords:
+      controller = [[PasswordsTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeAutofillCreditCard:
@@ -1260,13 +1260,13 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   }
 
   if (preferenceName == password_manager::prefs::kCredentialsEnableService) {
-    BOOL savePasswordsEnabled =
+    BOOL passwordsEnabled =
         _browserState->GetPrefs()->GetBoolean(preferenceName);
     NSString* passwordsDetail =
-        savePasswordsEnabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                             : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-    _savePasswordsDetailItem.detailText = passwordsDetail;
-    [self reconfigureCellsForItems:@[ _savePasswordsDetailItem ]];
+        passwordsEnabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+                         : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+    _passwordsDetailItem.detailText = passwordsDetail;
+    [self reconfigureCellsForItems:@[ _passwordsDetailItem ]];
   }
 
   if (preferenceName == autofill::prefs::kAutofillProfileEnabled) {
