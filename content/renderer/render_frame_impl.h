@@ -267,7 +267,6 @@ class CONTENT_EXPORT RenderFrameImpl
   using CreateRenderWidgetForChildLocalRootFunction =
       RenderWidget* (*)(int32_t,
                         CompositorDependencies*,
-                        WidgetType,
                         const ScreenInfo&,
                         blink::WebDisplayMode display_mode,
                         bool,

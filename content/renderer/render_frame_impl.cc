@@ -1501,13 +1501,13 @@ void RenderFrameImpl::CreateFrame(
       // allowing it to override the behaviour of the WebWidgetClient which
       // RenderWidget provides.
       render_widget = g_create_render_widget(
-          widget_params.routing_id, compositor_deps, WidgetType::kFrame,
+          widget_params.routing_id, compositor_deps,
           screen_info_from_main_frame, blink::kWebDisplayModeUndefined,
           /*is_frozen=*/false, widget_params.hidden,
           /*never_visible=*/false);
     } else {
       render_widget = base::MakeRefCounted<RenderWidget>(
-          widget_params.routing_id, compositor_deps, WidgetType::kFrame,
+          widget_params.routing_id, compositor_deps,
           screen_info_from_main_frame, blink::kWebDisplayModeUndefined,
           /*is_frozen=*/false, widget_params.hidden,
           /*never_visible=*/false);

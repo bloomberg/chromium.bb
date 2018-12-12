@@ -434,7 +434,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
     : RenderWidget(
           params.main_frame_widget_routing_id,
           compositor_deps,
-          WidgetType::kFrame,
           params.visual_properties.screen_info,
           params.visual_properties.display_mode,
           /*is_frozen=*/params.main_frame_routing_id == MSG_ROUTING_NONE,
@@ -1452,8 +1451,7 @@ WebWidget* RenderViewImpl::CreatePopup(blink::WebLocalFrame* creator) {
 
   auto popup_widget = base::MakeRefCounted<RenderWidget>(
       widget_routing_id, view_render_widget->compositor_deps(),
-      WidgetType::kPopup, view_render_widget->screen_info(),
-      blink::kWebDisplayModeUndefined,
+      view_render_widget->screen_info(), blink::kWebDisplayModeUndefined,
       /*is_frozen=*/false,
       /*hidden=*/false,
       /*never_visible=*/false, std::move(widget_channel_request));

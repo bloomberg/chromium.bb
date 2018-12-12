@@ -293,7 +293,6 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     mojom::WidgetRequest widget_request)
     : RenderWidget(routing_id,
                    compositor_deps,
-                   WidgetType::kFrame,
                    screen_info,
                    blink::kWebDisplayModeUndefined,
                    false,
