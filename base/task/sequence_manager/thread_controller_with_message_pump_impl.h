@@ -102,7 +102,8 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     RunLoop::NestingObserver* nesting_observer = nullptr;  // Not owned.
     std::unique_ptr<ThreadTaskRunnerHandle> thread_task_runner_handle;
 
-    // Indicates that we should yield DoWork ASAP.
+    // Indicates that we should yield DoWork between each task to let a possibly
+    // nested RunLoop exit.
     bool quit_pending = false;
 
     // Whether high resolution timing is enabled or not.

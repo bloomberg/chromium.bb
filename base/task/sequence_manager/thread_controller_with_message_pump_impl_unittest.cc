@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -380,49 +381,65 @@ TEST_F(ThreadControllerWithMessagePumpTest, EnsureWorkScheduled) {
   testing::Mock::VerifyAndClearExpectations(message_pump_);
 }
 
-TEST_F(ThreadControllerWithMessagePumpTest, NoWorkAfterQuit) {
-  // Ensure that multiple DoWork calls are no-ops after Quit() is called
-  // in the current RunLoop.
-
+TEST_F(ThreadControllerWithMessagePumpTest, WorkBatching) {
   ThreadTaskRunnerHandle handle(MakeRefCounted<FakeTaskRunner>());
 
-  std::vector<std::string> log;
+  const int kBatchSize = 5;
+  thread_controller_.SetWorkBatchSize(kBatchSize);
 
+  int task_count = 0;
   EXPECT_CALL(*message_pump_, Run(_))
-      .WillOnce(Invoke([this](MessagePump::Delegate* delegate) {
-        EXPECT_EQ(delegate, &thread_controller_);
-        base::TimeTicks next_time;
+      .WillOnce(Invoke([&](MessagePump::Delegate* delegate) {
         EXPECT_TRUE(delegate->DoWork());
-        EXPECT_FALSE(delegate->DoDelayedWork(&next_time));
-        // We still have work to do, but subsequent calls to DoWork should
-        // do nothing as we're in the process of quitting the current loop.
-        EXPECT_FALSE(delegate->DoWork());
-        EXPECT_FALSE(delegate->DoDelayedWork(&next_time));
-        EXPECT_FALSE(delegate->DoWork());
-        EXPECT_FALSE(delegate->DoDelayedWork(&next_time));
+        EXPECT_EQ(5, task_count);
+      }));
+
+  for (int i = 0; i < kBatchSize; i++) {
+    task_source_.AddTask(PendingTask(
+        FROM_HERE, BindLambdaForTesting([&] { task_count++; }), TimeTicks()));
+  }
+
+  RunLoop run_loop;
+  run_loop.Run();
+  testing::Mock::VerifyAndClearExpectations(message_pump_);
+}
+
+TEST_F(ThreadControllerWithMessagePumpTest, QuitInterruptsBatch) {
+  // This check ensures that RunLoop::Quit() makes us drop back to a work batch
+  // size of 1.
+  ThreadTaskRunnerHandle handle(MakeRefCounted<FakeTaskRunner>());
+
+  const int kBatchSize = 5;
+  thread_controller_.SetWorkBatchSize(kBatchSize);
+
+  int task_count = 0;
+  EXPECT_CALL(*message_pump_, Run(_))
+      .WillOnce(Invoke([&](MessagePump::Delegate* delegate) {
+        TimeTicks next_time;
+        EXPECT_TRUE(delegate->DoWork());
+        EXPECT_EQ(1, task_count);
+
+        // Somewhat counter-intuitive, but if the pump keeps calling us after
+        // Quit(), the delegate should still run tasks as normally. This is
+        // needed to support nested OS-level runloops that still pump
+        // application tasks (e.g., showing a popup menu on Mac).
+        EXPECT_TRUE(delegate->DoDelayedWork(&next_time));
+        EXPECT_EQ(2, task_count);
+        EXPECT_TRUE(delegate->DoWork());
+        EXPECT_EQ(3, task_count);
       }));
   EXPECT_CALL(*message_pump_, Quit());
 
   RunLoop run_loop;
-
-  task_source_.AddTask(
-      PendingTask(FROM_HERE,
-                  base::BindOnce(
-                      [](std::vector<std::string>* log, RunLoop* run_loop) {
-                        log->push_back("task1");
-                        run_loop->Quit();
-                      },
-                      &log, &run_loop),
-                  TimeTicks()));
-  task_source_.AddTask(PendingTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](std::vector<std::string>* log) { log->push_back("task2"); }, &log),
-      TimeTicks()));
+  for (int i = 0; i < kBatchSize; i++) {
+    task_source_.AddTask(PendingTask(FROM_HERE, BindLambdaForTesting([&] {
+                                       if (!task_count++)
+                                         run_loop.Quit();
+                                     }),
+                                     TimeTicks()));
+  }
 
   run_loop.Run();
-
-  EXPECT_THAT(log, ElementsAre("task1"));
   testing::Mock::VerifyAndClearExpectations(message_pump_);
 }
 
