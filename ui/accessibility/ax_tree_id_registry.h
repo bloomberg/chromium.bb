@@ -37,22 +37,29 @@ class AX_EXPORT AXTreeIDRegistry {
   // Get the single instance of this class.
   static AXTreeIDRegistry* GetInstance();
 
-  // Methods for FrameID ax tree id generation, and retrieval.
-  AXTreeID GetOrCreateAXTreeID(int process_id, int routing_id);
-  FrameID GetFrameID(AXTreeID ax_tree_id);
+  // Gets the frame id based on an ax tree id.
+  FrameID GetFrameID(const AXTreeID& ax_tree_id);
 
-  // Retrieve an |AXHostDelegate|.
+  // Gets an ax tree id from a frame id.
+  AXTreeID GetAXTreeID(FrameID frame_id);
+
+  // Retrieve an |AXHostDelegate| based on an ax tree id.
   AXHostDelegate* GetHostDelegate(AXTreeID ax_tree_id);
 
+  // Removes an ax tree id, and its associated delegate and frame id (if it
+  // exists).
   void RemoveAXTreeID(AXTreeID ax_tree_id);
+
+  // Associate a frame id with an ax tree id.
+  void SetFrameIDForAXTreeID(const FrameID& frame_id,
+                             const AXTreeID& ax_tree_id);
 
  private:
   friend struct base::DefaultSingletonTraits<AXTreeIDRegistry>;
   friend AXHostDelegate;
 
-  // Methods for AXHostDelegate ax tree id generation.
+  // Get or create a ax tree id keyed on |delegate|.
   AXTreeID GetOrCreateAXTreeID(AXHostDelegate* delegate);
-  void SetDelegateForID(AXHostDelegate* delegate, AXTreeID id);
 
   AXTreeIDRegistry();
   virtual ~AXTreeIDRegistry();

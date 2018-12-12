@@ -17,14 +17,11 @@ struct UnionTraits<ax::mojom::AXTreeIDDataView, ui::AXTreeID> {
     switch (p.type()) {
       case ax::mojom::AXTreeIDType::kUnknown:
         return ax::mojom::AXTreeIDDataView::Tag::UNKNOWN;
-      case ax::mojom::AXTreeIDType::kDesktop:
-        return ax::mojom::AXTreeIDDataView::Tag::DESKTOP;
       case ax::mojom::AXTreeIDType::kToken:
         return ax::mojom::AXTreeIDDataView::Tag::TOKEN;
     }
   }
   static uint8_t unknown(const ui::AXTreeID& p) { return 0; }
-  static uint8_t desktop(const ui::AXTreeID& p) { return 0; }
   static const base::UnguessableToken token(const ui::AXTreeID& p) {
     DCHECK_EQ(p.type(), ax::mojom::AXTreeIDType::kToken);
     return *p.token();
