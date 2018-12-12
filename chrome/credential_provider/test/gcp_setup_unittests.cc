@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <atlbase.h>
+#include <lmerr.h>
 #include <objbase.h>
 #include <unknwn.h>
 
@@ -17,6 +18,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/process/launch.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "base/test/scoped_path_override.h"
@@ -79,6 +81,7 @@ class GcpSetupTest : public ::testing::Test {
   base::FilePath module_path_;
   base::string16 product_version_;
   FakeOSUserManager fake_os_user_manager_;
+  FakeOSProcessManager fake_os_process_manager_;
   FakeScopedLsaPolicyFactory fake_scoped_lsa_policy_factory_;
   FakesForTesting fakes_;
 };
@@ -206,7 +209,8 @@ void GcpSetupTest::SetUp() {
   ASSERT_TRUE(base::CreateDirectoryAndGetError(startup_path, nullptr));
 
   // Fake factories for testing the DLL registration.
-  fakes_.os_manager_for_testing = &fake_os_user_manager_;
+  fakes_.os_user_manager_for_testing = &fake_os_user_manager_;
+  fakes_.os_process_manager_for_testing = &fake_os_process_manager_;
   fakes_.scoped_lsa_policy_creator =
       fake_scoped_lsa_policy_factory_.GetCreatorCallback();
 }
@@ -220,10 +224,13 @@ TEST_F(GcpSetupTest, DoInstall) {
   ExpectCredentialProviderToBeRegistered(true, product_version());
 
   EXPECT_FALSE(
-      fake_os_user_manager()->GetUserInfo(kGaiaAccountName).sid.empty());
+      fake_os_user_manager()->GetUserInfo(kDefaultGaiaAccountName).sid.empty());
   EXPECT_FALSE(fake_scoped_lsa_policy_factory()
                    ->private_data()[kLsaKeyGaiaPassword]
                    .empty());
+  EXPECT_EQ(
+      kDefaultGaiaAccountName,
+      fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername]);
 }
 
 TEST_F(GcpSetupTest, DoInstallOverOldInstall) {
@@ -235,10 +242,14 @@ TEST_F(GcpSetupTest, DoInstallOverOldInstall) {
   ExpectAllFilesToExist(true, old_version);
 
   FakeOSUserManager::UserInfo old_user_info =
-      fake_os_user_manager()->GetUserInfo(kGaiaAccountName);
+      fake_os_user_manager()->GetUserInfo(kDefaultGaiaAccountName);
   base::string16 old_password =
       fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaPassword];
   EXPECT_FALSE(old_password.empty());
+
+  base::string16 old_username =
+      fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername];
+  EXPECT_EQ(old_username, kDefaultGaiaAccountName);
 
   logging::ResetEventSourceForTesting();
 
@@ -252,10 +263,13 @@ TEST_F(GcpSetupTest, DoInstallOverOldInstall) {
 
   // Make sure kGaiaAccountName info and private data are unchanged.
   EXPECT_EQ(old_user_info,
-            fake_os_user_manager()->GetUserInfo(kGaiaAccountName));
+            fake_os_user_manager()->GetUserInfo(kDefaultGaiaAccountName));
   EXPECT_EQ(
       old_password,
       fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaPassword]);
+  EXPECT_EQ(
+      old_username,
+      fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername]);
 }
 
 TEST_F(GcpSetupTest, DoInstallOverOldLockedInstall) {
@@ -306,10 +320,115 @@ TEST_F(GcpSetupTest, DoUninstall) {
   ExpectAllFilesToExist(false, product_version());
   ExpectCredentialProviderToBeRegistered(false, product_version());
   EXPECT_TRUE(
-      fake_os_user_manager()->GetUserInfo(kGaiaAccountName).sid.empty());
+      fake_os_user_manager()->GetUserInfo(kDefaultGaiaAccountName).sid.empty());
   EXPECT_TRUE(fake_scoped_lsa_policy_factory()
                   ->private_data()[kLsaKeyGaiaPassword]
                   .empty());
+  EXPECT_TRUE(fake_scoped_lsa_policy_factory()
+                  ->private_data()[kLsaKeyGaiaUsername]
+                  .empty());
 }
+
+TEST_F(GcpSetupTest, ValidLsaWithNoExistingUser) {
+  // Create the default user so that name is not taken when the user is created.
+  CComBSTR sid;
+  DWORD error;
+  EXPECT_EQ(S_OK, fake_os_user_manager()->AddUser(
+                      kDefaultGaiaAccountName, L"password", L"fullname",
+                      L"comment", true, &sid, &error));
+  // Even if the LSA information is correct, if no actual user exists, a new
+  // user needs to be created.
+  fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername] =
+      L"gaia1";
+  fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaPassword] =
+      L"password";
+  logging::ResetEventSourceForTesting();
+
+  ASSERT_EQ(S_OK,
+            DoInstall(module_path(), product_version(), fakes_for_testing()));
+
+  logging::ResetEventSourceForTesting();
+
+  EXPECT_FALSE(fake_scoped_lsa_policy_factory()
+                   ->private_data()[kLsaKeyGaiaPassword]
+                   .empty());
+  base::string16 expected_gaia_username = L"gaia0";
+  EXPECT_FALSE(fake_os_user_manager()
+                   ->GetUserInfo(expected_gaia_username.c_str())
+                   .sid.empty());
+  EXPECT_EQ(
+      expected_gaia_username,
+      fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername]);
+}
+
+// This test checks the expect success / failure of DLL registration when
+// a gaia user already exists
+// Parameters:
+// int: Number of gaia users to create before trying to register the DLL.
+// bool: Whether the final user creation is expected to succeed. For
+// kMaxAttempts = 10, 0 to 8 gaia users can be created and still have the
+// test succeed. If a 9th user is create the test will fail.
+class GcpGaiaUserCreationTest
+    : public GcpSetupTest,
+      public testing::WithParamInterface<std::tuple<int, bool>> {};
+
+TEST_P(GcpGaiaUserCreationTest, ExistingGaiaUserTest) {
+  CComBSTR sid;
+  DWORD error;
+  EXPECT_EQ(S_OK, fake_os_user_manager()->AddUser(
+                      kDefaultGaiaAccountName, L"password", L"fullname",
+                      L"comment", true, &sid, &error));
+
+  int last_user_index = std::get<0>(GetParam());
+  for (int i = 0; i < last_user_index; ++i) {
+    base::string16 existing_gaia_username = kDefaultGaiaAccountName;
+    existing_gaia_username += base::NumberToString16(i);
+    EXPECT_EQ(S_OK, fake_os_user_manager()->AddUser(
+                        existing_gaia_username.c_str(), L"password",
+                        L"fullname", L"comment", true, &sid, &error));
+  }
+  logging::ResetEventSourceForTesting();
+
+  bool should_succeed = std::get<1>(GetParam());
+
+  ASSERT_EQ(should_succeed ? S_OK : E_UNEXPECTED,
+            DoInstall(module_path(), product_version(), fakes_for_testing()));
+
+  logging::ResetEventSourceForTesting();
+
+  if (should_succeed) {
+    EXPECT_FALSE(fake_scoped_lsa_policy_factory()
+                     ->private_data()[kLsaKeyGaiaPassword]
+                     .empty());
+    base::string16 expected_gaia_username = kDefaultGaiaAccountName;
+    expected_gaia_username += base::NumberToString16(last_user_index);
+    EXPECT_FALSE(fake_os_user_manager()
+                     ->GetUserInfo(expected_gaia_username.c_str())
+                     .sid.empty());
+    EXPECT_EQ(
+        expected_gaia_username,
+        fake_scoped_lsa_policy_factory()->private_data()[kLsaKeyGaiaUsername]);
+  } else {
+    EXPECT_TRUE(fake_scoped_lsa_policy_factory()
+                    ->private_data()[kLsaKeyGaiaPassword]
+                    .empty());
+    EXPECT_TRUE(fake_scoped_lsa_policy_factory()
+                    ->private_data()[kLsaKeyGaiaUsername]
+                    .empty());
+  }
+}
+
+// For a max retry of 10, it is possible to create gaia users 'gaia',
+// 'gaia0' ... 'gaia8' before failing. At 'gaia9' the test should fail.
+
+INSTANTIATE_TEST_CASE_P(AvailableGaiaUserName,
+                        GcpGaiaUserCreationTest,
+                        ::testing::Combine(::testing::Range(0, 8),
+                                           ::testing::Values(true)));
+
+INSTANTIATE_TEST_CASE_P(UnavailableGaiaUserName,
+                        GcpGaiaUserCreationTest,
+                        ::testing::Values(std::make_tuple<int, bool>(9,
+                                                                     false)));
 
 }  // namespace credential_provider

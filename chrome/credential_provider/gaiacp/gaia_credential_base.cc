@@ -18,6 +18,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/current_module.h"
@@ -218,8 +219,7 @@ HRESULT ValidateAndFixResult(base::DictionaryValue* result, BSTR* status_text) {
     return E_UNEXPECTED;
   }
 
-  // Windows supports a maximum of 20 characters plus null in username.
-  wchar_t username[21];
+  wchar_t username[kWindowsUsernameBufferLength];
   MakeUsernameForAccount(result, username, base::size(username));
   result->SetString(kKeyUsername, username);
   return S_OK;
@@ -303,55 +303,121 @@ CGaiaCredentialBase::UIProcessInfo::~UIProcessInfo() {}
 HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
   OSUserManager* manager = OSUserManager::Get();
 
-  // Generate a random password for the gaia account.
-  wchar_t password[32];
-  HRESULT hr = manager->GenerateRandomPassword(password, base::size(password));
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GenerateRandomPassword hr=" << putHR(hr);
-    return hr;
-  }
-
-  // Create the special Gaia account used to run the UI.
-
-  CComBSTR sid_string;
-  bool save_password = true;
-  base::string16 fullname(GetStringResource(IDS_GAIA_ACCOUNT_FULLNAME));
-  base::string16 comment(GetStringResource(IDS_GAIA_ACCOUNT_COMMENT));
-  hr =
-      CreateNewUser(manager, kGaiaAccountName, password, fullname.c_str(),
-                    comment.c_str(), /*add_to_users_group=*/false, &sid_string);
-  if (hr == HRESULT_FROM_WIN32(NERR_UserExists)) {
-    // If CreateNewUser() found an existing user, the password was not changed.
-    // Consider this a success but don't save the newly generated password
-    // in LSA.
-    hr = S_OK;
-    save_password = false;
-  } else if (FAILED(hr)) {
-    LOGFN(ERROR) << "CreateNewUser hr=" << putHR(hr);
-    return hr;
-  }
-
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
+
   if (!policy) {
-    hr = HRESULT_FROM_WIN32(::GetLastError());
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
     LOGFN(ERROR) << "ScopedLsaPolicy::Create hr=" << putHR(hr);
     return hr;
   }
 
-  if (save_password) {
-    // Save the password in a machine secret area.
-    hr = policy->StorePrivateData(kLsaKeyGaiaPassword, password);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "policy.StorePrivateData hr=" << putHR(hr);
-      return hr;
+  PSID sid = nullptr;
+
+  // Try to get existing username and password and then log on the user, if any
+  // step fails, assume that a new user needs to be created.
+  wchar_t gaia_username[kWindowsUsernameBufferLength];
+  HRESULT hr = policy->RetrievePrivateData(kLsaKeyGaiaUsername, gaia_username,
+                                           base::size(gaia_username));
+
+  if (SUCCEEDED(hr)) {
+    LOGFN(INFO) << "Expecting gaia user '" << gaia_username << "' to exist.";
+    wchar_t password[32];
+    HRESULT hr = policy->RetrievePrivateData(kLsaKeyGaiaPassword, password,
+                                             base::size(password));
+    if (SUCCEEDED(hr)) {
+      base::win::ScopedHandle token;
+      hr =
+          OSUserManager::Get()->CreateLogonToken(gaia_username, password,
+                                                 /*interactive=*/false, &token);
+      if (SUCCEEDED(hr)) {
+        hr = OSUserManager::Get()->GetUserSID(gaia_username, &sid);
+        if (FAILED(hr)) {
+          LOGFN(ERROR) << "GetUserSID(sid from existing user '" << gaia_username
+                       << "') hr=" << putHR(hr);
+          sid = nullptr;
+        }
+      }
     }
   }
 
-  PSID sid;
-  if (!::ConvertStringSidToSid(sid_string, &sid)) {
-    hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "ConvertStringSidToSid hr=" << putHR(hr);
-    return hr;
+  if (sid == nullptr) {
+    // No valid existing user found, reset to default name and start generating
+    // from there.
+    errno_t err = wcscpy_s(gaia_username, base::size(gaia_username),
+                           kDefaultGaiaAccountName);
+    if (err != 0) {
+      LOGFN(ERROR) << "wcscpy_s errno=" << err;
+      return E_FAIL;
+    }
+
+    // Generate a random password for the new gaia account.
+    wchar_t password[32];
+    HRESULT hr =
+        manager->GenerateRandomPassword(password, base::size(password));
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "GenerateRandomPassword hr=" << putHR(hr);
+      return hr;
+    }
+
+    constexpr int kMaxAttempts = 10;
+
+    // Keep trying to create the special Gaia account used to run the UI until
+    // an unused username can be found or kMaxAttempts has been reached.
+    for (int i = 0; sid == nullptr && i < kMaxAttempts; ++i) {
+      CComBSTR sid_string;
+      base::string16 fullname(GetStringResource(IDS_GAIA_ACCOUNT_FULLNAME));
+      base::string16 comment(GetStringResource(IDS_GAIA_ACCOUNT_COMMENT));
+      hr = CreateNewUser(manager, gaia_username, password, fullname.c_str(),
+                         comment.c_str(), /*add_to_users_group=*/false,
+                         &sid_string);
+      if (hr == HRESULT_FROM_WIN32(NERR_UserExists)) {
+        base::string16 next_username = kDefaultGaiaAccountName;
+        next_username += base::NumberToString16(i);
+        LOGFN(INFO) << "Username '" << gaia_username
+                    << "' already exists. Trying '" << next_username << "'";
+
+        errno_t err = wcscpy_s(gaia_username, base::size(gaia_username),
+                               next_username.c_str());
+        if (err != 0) {
+          LOGFN(ERROR) << "wcscpy_s errno=" << err;
+          return E_FAIL;
+        }
+
+        continue;
+      } else if (FAILED(hr)) {
+        LOGFN(ERROR) << "CreateNewUser hr=" << putHR(hr);
+        return hr;
+      }
+
+      // Save the password in a machine secret area.
+      hr = policy->StorePrivateData(kLsaKeyGaiaPassword, password);
+      if (FAILED(hr)) {
+        LOGFN(ERROR) << "Failed to store gaia user password in LSA hr="
+                     << putHR(hr);
+        return hr;
+      }
+
+      if (!::ConvertStringSidToSid(sid_string, &sid)) {
+        hr = HRESULT_FROM_WIN32(::GetLastError());
+        LOGFN(ERROR) << "ConvertStringSidToSid hr=" << putHR(hr);
+        return hr;
+      }
+
+      // Save the gaia username in a machine secret area.
+      hr = policy->StorePrivateData(kLsaKeyGaiaUsername, gaia_username);
+      if (FAILED(hr)) {
+        LOGFN(ERROR) << "Failed to store gaia user name in LSA hr="
+                     << putHR(hr);
+        return hr;
+      }
+
+      break;
+    }
+  }
+
+  if (!sid) {
+    LOGFN(ERROR) << "No valid username could be found for the gaia user.";
+    return HRESULT_FROM_WIN32(NERR_UserExists);
   }
 
   // Add "logon as batch" right.
@@ -361,7 +427,6 @@ HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
     LOGFN(ERROR) << "policy.AddAccountRights hr=" << putHR(hr);
     return hr;
   }
-
   return S_OK;
 }
 
@@ -383,23 +448,34 @@ HRESULT CGaiaCredentialBase::OnDllUnregisterServer() {
     OSUserManager* manager = OSUserManager::Get();
     PSID sid;
 
-    hr = manager->GetUserSID(kGaiaAccountName, &sid);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "manager.GetUserSID hr=" << putHR(hr);
-      sid = nullptr;
-    }
+    wchar_t gaia_username[kWindowsUsernameBufferLength];
+    hr = policy->RetrievePrivateData(kLsaKeyGaiaUsername, gaia_username,
+                                     base::size(gaia_username));
 
-    hr = manager->RemoveUser(kGaiaAccountName, password);
-    if (FAILED(hr))
-      LOGFN(ERROR) << "manager->RemoveUser hr=" << putHR(hr);
+    if (SUCCEEDED(hr)) {
+      hr = policy->RemovePrivateData(kLsaKeyGaiaUsername);
 
-    // Remove the account from LSA after the OS account is deleted.
-    if (sid != nullptr) {
-      hr = policy->RemoveAccount(sid);
-      ::LocalFree(sid);
+      hr = manager->GetUserSID(gaia_username, &sid);
+      if (FAILED(hr)) {
+        LOGFN(ERROR) << "manager.GetUserSID hr=" << putHR(hr);
+        sid = nullptr;
+      }
+
+      hr = manager->RemoveUser(gaia_username, password);
       if (FAILED(hr))
-        LOGFN(ERROR) << "policy.RemoveAccount hr=" << putHR(hr);
+        LOGFN(ERROR) << "manager->RemoveUser hr=" << putHR(hr);
+
+      // Remove the account from LSA after the OS account is deleted.
+      if (sid != nullptr) {
+        hr = policy->RemoveAccount(sid);
+        ::LocalFree(sid);
+        if (FAILED(hr))
+          LOGFN(ERROR) << "policy.RemoveAccount hr=" << putHR(hr);
+      }
+    } else {
+      LOGFN(ERROR) << "Get gaia username failed hr=" << putHR(hr);
     }
+
   } else {
     LOGFN(ERROR) << "ScopedLsaPolicy::Create failed";
   }
@@ -908,15 +984,24 @@ HRESULT CGaiaCredentialBase::CreateGaiaLogonToken(
     return E_UNEXPECTED;
   }
 
-  wchar_t password[32];
-  HRESULT hr = policy->RetrievePrivateData(kLsaKeyGaiaPassword, password,
-                                           base::size(password));
+  wchar_t gaia_username[kWindowsUsernameBufferLength];
+  HRESULT hr = policy->RetrievePrivateData(kLsaKeyGaiaUsername, gaia_username,
+                                           base::size(gaia_username));
+
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "policy.RetrievePrivateData hr=" << putHR(hr);
+    LOGFN(ERROR) << "Retrieve gaia username hr=" << putHR(hr);
+    return hr;
+  }
+  wchar_t password[32];
+  hr = policy->RetrievePrivateData(kLsaKeyGaiaPassword, password,
+                                   base::size(password));
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "Retrieve password for gaia user '" << gaia_username
+                 << "' hr=" << putHR(hr);
     return hr;
   }
 
-  hr = OSUserManager::Get()->CreateLogonToken(kGaiaAccountName, password,
+  hr = OSUserManager::Get()->CreateLogonToken(gaia_username, password,
                                               /*interactive=*/false, token);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "CreateLogonToken hr=" << putHR(hr);

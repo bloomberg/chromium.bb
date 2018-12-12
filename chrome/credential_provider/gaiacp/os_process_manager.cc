@@ -435,6 +435,11 @@ OSProcessManager* OSProcessManager::Get() {
   return *GetInstanceStorage();
 }
 
+// static
+void OSProcessManager::SetInstanceForTesting(OSProcessManager* instance) {
+  *GetInstanceStorage() = instance;
+}
+
 OSProcessManager::~OSProcessManager() {}
 
 HRESULT OSProcessManager::GetTokenLogonSID(const base::win::ScopedHandle& token,

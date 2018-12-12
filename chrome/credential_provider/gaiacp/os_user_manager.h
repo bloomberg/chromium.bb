@@ -65,9 +65,9 @@ class OSUserManager {
   // Removes the user from the machine.
   virtual HRESULT RemoveUser(const wchar_t* username, const wchar_t* password);
 
-  // This method is called either from FakeOSUserManager or from dllmain.cc when
-  // setting fakes from one module to another.
-  static void SetInstanceForTesting(OSUserManager* factory);
+  // This method is called from dllmain.cc when setting fakes from one modul
+  // to another.
+  static void SetInstanceForTesting(OSUserManager* instance);
 
  protected:
   OSUserManager() {}

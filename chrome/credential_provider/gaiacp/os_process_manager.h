@@ -53,6 +53,10 @@ class OSProcessManager {
       _STARTUPINFOW* startupinfo,
       base::win::ScopedProcessInformation* procinfo);
 
+  // This method is called from dllmain.cc when setting fakes from one module
+  // to another.
+  static void SetInstanceForTesting(OSProcessManager* instance);
+
  protected:
   OSProcessManager() {}
 

@@ -26,8 +26,9 @@ const wchar_t kUserEmail[] = L"email";
 const wchar_t kUserId[] = L"id";
 
 // Username and password key for special GAIA account to run GLS.
-const wchar_t kGaiaAccountName[] = L"gaia";
+const wchar_t kDefaultGaiaAccountName[] = L"gaia";
 // L$ prefix means this secret can only be accessed locally.
+const wchar_t kLsaKeyGaiaUsername[] = L"L$GAIA_USERNAME";
 const wchar_t kLsaKeyGaiaPassword[] = L"L$GAIA_PASSWORD";
 
 // These two variables need to remain consistent.

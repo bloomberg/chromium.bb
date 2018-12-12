@@ -306,12 +306,14 @@ GcpGaiaCredentialBaseTest::GcpGaiaCredentialBaseTest() {
 
   BSTR sid;
   DWORD error;
-  EXPECT_EQ(S_OK, fake_os_user_manager_.AddUser(kGaiaAccountName, L"password",
-                                                L"fullname", L"comment", true,
-                                                &sid, &error));
+  EXPECT_EQ(S_OK, fake_os_user_manager_.AddUser(
+                      kDefaultGaiaAccountName, L"password", L"fullname",
+                      L"comment", true, &sid, &error));
 
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
   EXPECT_EQ(S_OK, policy->StorePrivateData(kLsaKeyGaiaPassword, L"password"));
+  EXPECT_EQ(S_OK, policy->StorePrivateData(kLsaKeyGaiaUsername,
+                                           kDefaultGaiaAccountName));
 }
 
 HRESULT GcpGaiaCredentialBaseTest::StartLogonProcess(

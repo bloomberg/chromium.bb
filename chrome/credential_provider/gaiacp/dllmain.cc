@@ -31,6 +31,7 @@
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_module.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
@@ -226,7 +227,9 @@ SetFakesForTesting(const credential_provider::FakesForTesting* fakes) {
   credential_provider::ScopedLsaPolicy::SetCreatorForTesting(
       fakes->scoped_lsa_policy_creator);
   credential_provider::OSUserManager::SetInstanceForTesting(
-      fakes->os_manager_for_testing);
+      fakes->os_user_manager_for_testing);
+  credential_provider::OSProcessManager::SetInstanceForTesting(
+      fakes->os_process_manager_for_testing);
 
   _AtlModule.set_is_testing(true);
 }
