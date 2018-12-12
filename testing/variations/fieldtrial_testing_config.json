@@ -2883,9 +2883,10 @@
                         "area_rank_scale": "0",
                         "contains_image_scale": "50",
                         "is_in_iframe_scale": "0",
-                        "is_same_host_scale": "100",
+                        "is_same_host_scale": "0",
                         "is_url_incremented_scale": "100",
                         "ratio_area_scale": "100",
+                        "same_origin_preconnecting_allowed": "true",
                         "source_engagement_score_scale": "100",
                         "target_engagement_score_scale": "100"
                     },
