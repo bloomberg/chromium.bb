@@ -236,6 +236,10 @@ TEST_F(MdnsResponderServiceTest, SimultaneousFieldChanges) {
   EXPECT_CALL(observer_, OnScreenChanged(::testing::_))
       .WillOnce(::testing::Invoke([](const ScreenInfo& info) {
         EXPECT_EQ("alpha", info.friendly_name);
+        EXPECT_EQ((IPAddress{192, 168, 3, 7}), info.endpoint.address);
+      }))
+      .WillOnce(::testing::Invoke([](const ScreenInfo& info) {
+        EXPECT_EQ("alpha", info.friendly_name);
         EXPECT_EQ((IPAddress{192, 168, 3, 8}), info.endpoint.address);
       }));
   mdns_service_->HandleNewEvents({});

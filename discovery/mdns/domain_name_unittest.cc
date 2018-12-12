@@ -103,6 +103,30 @@ TEST(DomainNameTest, Equality) {
   EXPECT_TRUE(alpha != beta);
 }
 
+TEST(DomainNameTest, EndsWithLocalDomain) {
+  DomainName alpha;
+  DomainName beta;
+
+  EXPECT_FALSE(alpha.EndsWithLocalDomain());
+
+  ASSERT_TRUE(FromLabels({"alpha", "openscreen", "org"}, &alpha));
+  ASSERT_TRUE(FromLabels({"beta", "local"}, &beta));
+
+  EXPECT_FALSE(alpha.EndsWithLocalDomain());
+  EXPECT_TRUE(beta.EndsWithLocalDomain());
+}
+
+TEST(DomainNameTest, IsEmpty) {
+  DomainName alpha;
+  DomainName beta(std::vector<uint8_t>{0});
+
+  EXPECT_TRUE(alpha.IsEmpty());
+  EXPECT_TRUE(beta.IsEmpty());
+
+  ASSERT_TRUE(FromLabels({"alpha", "openscreen", "org"}, &alpha));
+  EXPECT_FALSE(alpha.IsEmpty());
+}
+
 TEST(DomainNameTest, Append) {
   const auto expected_service_type =
       std::vector<uint8_t>{11,  '_', 'o', 'p', 'e', 'n', 's', 'c', 'r', 'e',

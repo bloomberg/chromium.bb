@@ -294,7 +294,7 @@ void MdnsResponderService::MaybePushScreenInfo(
     return;
   }
   auto entry = hostname_watchers_.find(instance_info.domain_name);
-  if (entry == hostname_watchers_.end())
+  if (entry == hostname_watchers_.end() || !entry->second.address)
     return;
 
   PushScreenInfo(service_instance, instance_info, entry->second.address);
