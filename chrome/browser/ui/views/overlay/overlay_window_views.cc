@@ -246,11 +246,28 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
   if (!window_size.IsEmpty() && !natural_size_.IsEmpty()) {
     float aspect_ratio = (float)natural_size_.width() / natural_size_.height();
 
+    WindowQuadrant quadrant =
+        GetCurrentWindowQuadrant(GetBounds(), controller_);
+    views::HitTest hit_test;
+    switch (quadrant) {
+      case OverlayWindowViews::WindowQuadrant::kBottomRight:
+        hit_test = views::HitTest::kTopLeft;
+        break;
+      case OverlayWindowViews::WindowQuadrant::kBottomLeft:
+        hit_test = views::HitTest::kTopRight;
+        break;
+      case OverlayWindowViews::WindowQuadrant::kTopLeft:
+        hit_test = views::HitTest::kBottomRight;
+        break;
+      case OverlayWindowViews::WindowQuadrant::kTopRight:
+        hit_test = views::HitTest::kBottomLeft;
+        break;
+    }
+
     // Update the window size to adhere to the aspect ratio.
     gfx::Rect window_rect(GetBounds().origin(), window_size);
     views::WindowResizeUtils::SizeRectToAspectRatio(
-        views::HitTest::kBottomRight, aspect_ratio, min_size_, max_size_,
-        &window_rect);
+        hit_test, aspect_ratio, min_size_, max_size_, &window_rect);
     window_size.SetSize(window_rect.width(), window_rect.height());
 
     UpdateLayerBoundsWithLetterboxing(window_size);
