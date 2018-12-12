@@ -63,6 +63,7 @@ class VIEWS_EXPORT ViewAccessibility {
   void OverrideDescription(const base::string16& description);
   void OverrideIsLeaf(bool value);
   void OverrideIsIgnored(bool value);
+  void OverrideBounds(const gfx::RectF& bounds);
 
   virtual gfx::NativeViewAccessible GetNativeObject();
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}

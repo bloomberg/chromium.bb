@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/system/message_center/arc/arc_notification_surface.h"
 #include "base/command_line.h"
@@ -16,6 +17,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/exo/input_method_surface.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
@@ -122,6 +124,10 @@ class ArcAccessibilityHelperBridgeFactory
     // destruction in the container, which are notified to ArcAppListPrefs
     // via Mojo.
     DependsOn(ArcAppListPrefsFactory::GetInstance());
+
+    // ArcAccessibilityHelperBridge needs to track visibility change of Android
+    // keyboard to delete its accessibility tree when it becomes hidden.
+    DependsOn(ArcInputMethodManagerService::GetFactory());
   }
   ~ArcAccessibilityHelperBridgeFactory() override = default;
 };
@@ -147,6 +153,11 @@ ArcAccessibilityHelperBridge::ArcAccessibilityHelperBridge(
   auto* app_list_prefs = ArcAppListPrefs::Get(profile_);
   if (app_list_prefs)
     app_list_prefs->AddObserver(this);
+
+  auto* arc_ime_service =
+      ArcInputMethodManagerService::GetForBrowserContext(browser_context);
+  if (arc_ime_service)
+    arc_ime_service->AddObserver(this);
 }
 
 ArcAccessibilityHelperBridge::~ArcAccessibilityHelperBridge() = default;
@@ -207,6 +218,11 @@ void ArcAccessibilityHelperBridge::Shutdown() {
   if (app_list_prefs)
     app_list_prefs->RemoveObserver(this);
 
+  auto* arc_ime_service =
+      ArcInputMethodManagerService::GetForBrowserContext(profile_);
+  if (arc_ime_service)
+    arc_ime_service->RemoveObserver(this);
+
   arc_bridge_service_->accessibility_helper()->RemoveObserver(this);
   arc_bridge_service_->accessibility_helper()->SetHost(nullptr);
 }
@@ -264,6 +280,22 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
       // notification_key before this receives an accessibility event for it.
       tree_source = GetFromNotificationKey(notification_key);
       DCHECK(tree_source);
+    } else if (event_data->is_input_method_window) {
+      exo::InputMethodSurface* input_method_surface =
+          exo::InputMethodSurface::GetInputMethodSurface();
+
+      if (!input_method_surface)
+        return;
+
+      if (!input_method_tree_) {
+        input_method_tree_ = std::make_unique<AXTreeSourceArc>(this);
+
+        ui::AXTreeData tree_data;
+        input_method_tree_->GetTreeData(&tree_data);
+        input_method_surface->SetChildAxTreeId(tree_data.tree_id);
+      }
+
+      tree_source = input_method_tree_.get();
     } else {
       if (event_data->task_id == kNoTaskId)
         return;
@@ -329,7 +361,7 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
 
   CHECK_EQ(1U, event_data.get()->node_data.size());
   DispatchFocusChange(event_data.get()->node_data[0].get(), profile_);
-}
+}  // namespace arc
 
 void ArcAccessibilityHelperBridge::OnNotificationStateChanged(
     const std::string& notification_key,
@@ -703,6 +735,12 @@ void ArcAccessibilityHelperBridge::OnNotificationSurfaceAdded(
     surface->GetAttachedHost()->NotifyAccessibilityEvent(
         ax::mojom::Event::kChildrenChanged, false);
   }
+}
+
+void ArcAccessibilityHelperBridge::OnAndroidVirtualKeyboardVisibilityChanged(
+    bool visible) {
+  if (!visible)
+    input_method_tree_.reset();
 }
 
 }  // namespace arc

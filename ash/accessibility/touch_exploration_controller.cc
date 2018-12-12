@@ -7,12 +7,15 @@
 #include <utility>
 
 #include "ash/accessibility/touch_accessibility_enabler.h"
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/container_finder.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
@@ -101,25 +104,26 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
   if (event.type() == ui::ET_TOUCH_PRESSED)
     seen_press_ = true;
 
-  // Touch events come through in screen pixels.
+  // Touch event comes in un-rotated, screen pixels. Convert it to rotated DIP
+  // one.
   gfx::Point location = touch_event.location();
   gfx::Point root_location = touch_event.root_location();
   root_window_->GetHost()->ConvertPixelsToDIP(&location);
   root_window_->GetHost()->ConvertPixelsToDIP(&root_location);
 
-  if (!exclude_bounds_.IsEmpty()) {
-    bool in_exclude_area = exclude_bounds_.Contains(location);
-    if (in_exclude_area) {
-      if (state_ == NO_FINGERS_DOWN)
-        return ui::EVENT_REWRITE_CONTINUE;
-      if (touch_event.type() == ui::ET_TOUCH_MOVED ||
-          touch_event.type() == ui::ET_TOUCH_PRESSED) {
-        return ui::EVENT_REWRITE_DISCARD;
-      }
-      // Otherwise, continue handling events. Basically, we want to let
-      // CANCELLED or RELEASE events through so this can get back to
-      // the NO_FINGERS_DOWN state.
+  bool exclude =
+      IsTargetedToArcVirtualKeyboard(location) ||
+      (!exclude_bounds_.IsEmpty() && exclude_bounds_.Contains(location));
+  if (exclude) {
+    if (state_ == NO_FINGERS_DOWN)
+      return ui::EVENT_REWRITE_CONTINUE;
+    if (touch_event.type() == ui::ET_TOUCH_MOVED ||
+        touch_event.type() == ui::ET_TOUCH_PRESSED) {
+      return ui::EVENT_REWRITE_DISCARD;
     }
+    // Otherwise, continue handling events. Basically, we want to let
+    // CANCELLED or RELEASE events through so this can get back to
+    // the NO_FINGERS_DOWN state.
   }
 
   // If the tap timer should have fired by now but hasn't, run it now and
@@ -1149,6 +1153,26 @@ gfx::PointF TouchExplorationController::ConvertDIPToPixels(
   gfx::Point location(gfx::ToFlooredPoint(location_f));
   root_window_->GetHost()->ConvertDIPToPixels(&location);
   return gfx::PointF(location);
+}
+
+bool TouchExplorationController::IsTargetedToArcVirtualKeyboard(
+    const gfx::Point& location) {
+  // Copy event here as WindowTargeter::FindTargetForEvent modify touch event.
+  ui::TouchEvent event(
+      ui::ET_TOUCH_MOVED, gfx::Point(), Now(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  event.set_location(location);
+
+  // It's safe to static cast to aura::Window here. As current implementation of
+  // WindowTargeter::FindTargetForEvent only returns aura::Window.
+  aura::Window* target = static_cast<aura::Window*>(
+      root_window_->targeter()->FindTargetForEvent(root_window_, &event));
+
+  aura::Window* container = wm::GetContainerForWindow(target);
+  if (!container)
+    return false;
+
+  return container->id() == kShellWindowId_ArcVirtualKeyboardContainer;
 }
 
 }  // namespace ash

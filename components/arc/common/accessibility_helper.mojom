@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 14
+// Next MinVersion: 15
 
 module arc.mojom;
 
@@ -345,6 +345,10 @@ struct AccessibilityEventData {
   // only one node needs to be returned, for example if the event
   // filter type is AccessibilityFilterType.FOCUS.
   [MinVersion=12] array<AccessibilityWindowInfoData>? window_data;
+
+  // True if this event has happened on
+  // AccessibilityWindowInfo.TYPE_INPUT_METHOD.
+  [MinVersion=14] bool is_input_method_window;
 };
 
 // AccessibilityActionData is a struct to contain info of AccessibilityAction in

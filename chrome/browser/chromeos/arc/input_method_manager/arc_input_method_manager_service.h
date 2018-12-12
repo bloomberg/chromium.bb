@@ -11,11 +11,13 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/input_connection_impl.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "components/arc/common/input_method_manager.mojom.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
@@ -33,6 +35,11 @@ class ArcInputMethodManagerService
       public chromeos::input_method::InputMethodManager::ImeMenuObserver,
       public chromeos::input_method::InputMethodManager::Observer {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnAndroidVirtualKeyboardVisibilityChanged(bool visible) = 0;
+  };
+
   // Returns the instance for the given BrowserContext, or nullptr if the
   // browser |context| is not allowed to use ARC.
   static ArcInputMethodManagerService* GetForBrowserContext(
@@ -42,12 +49,17 @@ class ArcInputMethodManagerService
   static ArcInputMethodManagerService* GetForBrowserContextForTesting(
       content::BrowserContext* context);
 
+  static BrowserContextKeyedServiceFactory* GetFactory();
+
   ArcInputMethodManagerService(content::BrowserContext* context,
                                ArcBridgeService* bridge_service);
   ~ArcInputMethodManagerService() override;
 
   void SetInputMethodManagerBridgeForTesting(
       std::unique_ptr<ArcInputMethodManagerBridge> test_bridge);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // ArcInputMethodManagerBridge::Delegate overrides:
   void OnActiveImeChanged(const std::string& ime_id) override;
@@ -113,6 +125,7 @@ class ArcInputMethodManagerService
   bool IsVirtualKeyboardShown() const;
   void SendShowVirtualKeyboard();
   void SendHideVirtualKeyboard();
+  void NotifyVirtualKeyboardVisibilityChange(bool visible);
 
   Profile* const profile_;
 
@@ -135,6 +148,8 @@ class ArcInputMethodManagerService
 
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_status_subscription_;
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcInputMethodManagerService);
 };

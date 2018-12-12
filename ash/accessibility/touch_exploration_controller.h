@@ -331,6 +331,9 @@ class ASH_EXPORT TouchExplorationController
   // based on its root window host.
   gfx::PointF ConvertDIPToPixels(const gfx::PointF& location);
 
+  // Returns true if the touch event is targeted to Arc virtual keyboard.
+  bool IsTargetedToArcVirtualKeyboard(const gfx::Point& location_in_host);
+
   enum State {
     // No fingers are down and no events are pending.
     NO_FINGERS_DOWN,
