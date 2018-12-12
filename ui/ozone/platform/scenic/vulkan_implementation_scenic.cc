@@ -18,72 +18,12 @@
 #include "gpu/vulkan/vulkan_surface.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/ozone/platform/scenic/scenic_surface.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
 #include "ui/ozone/platform/scenic/vulkan_magma.h"
 
 namespace ui {
-
-namespace {
-
-// Holds resources necessary for presenting to a View using a VkSurfaceKHR.
-class ScenicSurface {
- public:
-  ScenicSurface(fuchsia::ui::scenic::Scenic* scenic,
-                mojom::ScenicGpuHost* gpu_host,
-                gfx::AcceleratedWidget window)
-      : scenic_(scenic),
-        parent_(&scenic_),
-        shape_(&scenic_),
-        material_(&scenic_),
-        gpu_host_(gpu_host),
-        window_(window) {
-    shape_.SetShape(scenic::Rectangle(&scenic_, 1.f, 1.f));
-    shape_.SetMaterial(material_);
-  }
-
-  // Sets the texture of the surface to a new image pipe.
-  void SetTextureToNewImagePipe(
-      fidl::InterfaceRequest<fuchsia::images::ImagePipe> image_pipe_request) {
-    uint32_t image_pipe_id = scenic_.AllocResourceId();
-    scenic_.Enqueue(scenic::NewCreateImagePipeCmd(
-        image_pipe_id, std::move(image_pipe_request)));
-    material_.SetTexture(image_pipe_id);
-    scenic_.ReleaseResource(image_pipe_id);
-  }
-
-  // Links the surface to the window in the browser process.
-  //
-  // Scenic does not care about order here; it's totally fine for imports to
-  // cause exports, and that's what's done here.
-  void LinkToParent() {
-    zx::eventpair export_token;
-    parent_.BindAsRequest(&export_token);
-    parent_.AddChild(shape_);
-    gpu_host_->ExportParent(window_,
-                            mojo::WrapPlatformHandle(
-                                mojo::PlatformHandle(std::move(export_token))));
-  }
-
-  // Flushes commands to scenic & executes them.
-  void Commit() {
-    scenic_.Present(
-        /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
-  }
-
- private:
-  scenic::Session scenic_;
-  scenic::ImportNode parent_;
-  scenic::ShapeNode shape_;
-  scenic::Material material_;
-
-  mojom::ScenicGpuHost* gpu_host_ = nullptr;
-  gfx::AcceleratedWidget window_ = gfx::kNullAcceleratedWidget;
-
-  DISALLOW_COPY_AND_ASSIGN(ScenicSurface);
-};
-
-}  // namespace
 
 VulkanImplementationScenic::VulkanImplementationScenic(
     mojom::ScenicGpuHost* scenic_gpu_host,
