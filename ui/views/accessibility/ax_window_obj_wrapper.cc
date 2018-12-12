@@ -117,6 +117,12 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
     out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
                                       *child_ax_tree_id_ptr);
   }
+
+  std::string class_name = window_->GetName();
+  if (class_name.empty())
+    class_name = "aura::Window";
+  out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
+                                    class_name);
 }
 
 int32_t AXWindowObjWrapper::GetUniqueId() const {
