@@ -54,7 +54,9 @@ std::unique_ptr<FrameOverlay> FrameOverlay::Create(
 
 FrameOverlay::FrameOverlay(LocalFrame* local_frame,
                            std::unique_ptr<FrameOverlay::Delegate> delegate)
-    : frame_(local_frame), delegate_(std::move(delegate)) {}
+    : frame_(local_frame), delegate_(std::move(delegate)) {
+  DCHECK(frame_);
+}
 
 FrameOverlay::~FrameOverlay() {
   if (!layer_)
@@ -64,9 +66,6 @@ FrameOverlay::~FrameOverlay() {
 }
 
 void FrameOverlay::Update() {
-  if (!frame_)
-    return;
-
   auto* local_root_frame_widget =
       WebLocalFrameImpl::FromFrame(frame_)->LocalRootFrameWidget();
   if (!local_root_frame_widget->IsAcceleratedCompositingActive())

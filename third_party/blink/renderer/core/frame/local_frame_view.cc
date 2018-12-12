@@ -130,7 +130,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/link_highlight.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -1786,71 +1785,6 @@ void LocalFrameView::UpdateBaseBackgroundColorRecursively(
       });
 }
 
-namespace {
-
-class FrameColorOverlay final : public FrameOverlay::Delegate {
- public:
-  explicit FrameColorOverlay(LocalFrameView* view, SkColor color)
-      : color_(color), view_(view) {}
-
- private:
-  void PaintFrameOverlay(const FrameOverlay& frame_overlay,
-                         GraphicsContext& graphics_context,
-                         const IntSize& size) const override {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(
-            graphics_context, frame_overlay, DisplayItem::kFrameOverlay))
-      return;
-    FloatRect rect(0, 0, view_->Width(), view_->Height());
-    DrawingRecorder recorder(graphics_context, frame_overlay,
-                             DisplayItem::kFrameOverlay);
-    graphics_context.FillRect(rect, color_);
-  }
-  SkColor color_;
-  Persistent<LocalFrameView> view_;
-};
-
-}  // namespace
-
-void LocalFrameView::SetMainFrameColorOverlay(SkColor color) {
-  DCHECK(frame_->IsMainFrame());
-  SetFrameColorOverlay(color);
-}
-
-void LocalFrameView::SetSubframeColorOverlay(SkColor color) {
-  DCHECK(!frame_->IsMainFrame());
-  SetFrameColorOverlay(color);
-}
-
-void LocalFrameView::SetFrameColorOverlay(SkColor color) {
-  if (frame_color_overlay_)
-    frame_color_overlay_.reset();
-
-  if (color == Color::kTransparent)
-    return;
-
-  frame_color_overlay_ = FrameOverlay::Create(
-      frame_, std::make_unique<FrameColorOverlay>(this, color));
-
-  // Update compositing which will create graphics layers so the page color
-  // update below will be able to attach to the root graphics layer.
-  UpdateLifecycleToCompositingCleanPlusScrolling();
-  frame_color_overlay_->Update();
-}
-
-void LocalFrameView::RemoveFrameColorOverlay() {
-  frame_color_overlay_.reset();
-}
-
-void LocalFrameView::UpdateFrameColorOverlay() {
-  if (frame_color_overlay_)
-    frame_color_overlay_->Update();
-}
-
-void LocalFrameView::PaintFrameColorOverlay() {
-  if (frame_color_overlay_ && frame_color_overlay_->GetGraphicsLayer())
-    frame_color_overlay_->GetGraphicsLayer()->Paint(nullptr);
-}
-
 void LocalFrameView::ScrollAndFocusFragmentAnchor() {
   Node* anchor_node = fragment_anchor_;
   if (!anchor_node)
@@ -2512,9 +2446,9 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
   });
 
   frame_->GetPage()->GetValidationMessageClient().LayoutOverlay();
-  UpdateFrameColorOverlay();
+  frame_->UpdateFrameColorOverlay();
   ForAllChildLocalFrameViews(
-      [](LocalFrameView& view) { view.UpdateFrameColorOverlay(); });
+      [](LocalFrameView& view) { view.frame_->UpdateFrameColorOverlay(); });
 
   if (target_state == DocumentLifecycle::kPaintClean) {
     ForAllNonThrottledLocalFrameViews(
@@ -2842,9 +2776,9 @@ void LocalFrameView::PaintTree() {
   }
 
   frame_->GetPage()->GetValidationMessageClient().PaintOverlay();
-  PaintFrameColorOverlay();
+  frame_->PaintFrameColorOverlay();
   ForAllChildLocalFrameViews(
-      [](LocalFrameView& view) { view.PaintFrameColorOverlay(); });
+      [](LocalFrameView& view) { view.frame_->PaintFrameColorOverlay(); });
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
@@ -3537,7 +3471,6 @@ void LocalFrameView::AttachToLayout() {
 void LocalFrameView::DetachFromLayout() {
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(is_attached_);
-  RemoveFrameColorOverlay();
   LocalFrameView* parent = ParentFrameView();
   if (!parent) {
     Frame* parent_frame = frame_->Tree().Parent();

@@ -5696,9 +5696,6 @@ crbug.com/911515 [ Mac ] transforms/shadows.html [ Pass Failure ]
 crbug.com/911634 [ Linux ] fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure ]
 crbug.com/911782 [ Mac ] paint/invalidation/forms/submit-focus-by-mouse-then-keydown.html [ Pass Failure ]
 
-#Sheriff 2018-12-06
-crbug.com/912570 [ Linux ] virtual/threaded/compositing/visibility/overlays-persist-on-navigation.html [ Failure Pass ]
-
 # ssauleau 2018-12-06
 crbug.com/v8/8319 external/wpt/wasm/jsapi/interface.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/webapi/idlharness.any.worker.html [ Pass Failure ]

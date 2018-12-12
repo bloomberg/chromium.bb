@@ -75,6 +75,7 @@ class EventHandler;
 class EventHandlerRegistry;
 class FloatSize;
 class FrameConsole;
+class FrameOverlay;
 class FrameResourceCoordinator;
 // class FrameScheduler;
 class FrameSelection;
@@ -410,6 +411,18 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
 
+  // Overlays a color on top of this LocalFrameView if it is associated with
+  // the main frame. Should not have multiple consumers.
+  void SetMainFrameColorOverlay(SkColor color);
+
+  // Overlays a color on top of this LocalFrameView if it is associated with
+  // a subframe. Should not have multiple consumers.
+  void SetSubframeColorOverlay(SkColor color);
+
+  // Called from LocalFrameView when updating document life cycle.
+  void UpdateFrameColorOverlay();
+  void PaintFrameColorOverlay();
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -452,6 +465,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Consumes and returns the transient user activation state of this frame,
   // after updating all ancestor/descendant frames.
   bool ConsumeTransientUserActivation(UserActivationUpdateSource update_source);
+
+  void SetFrameColorOverlay(SkColor color);
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
@@ -536,6 +551,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // state that get updated whenever the network state changes. That way, this
   // field would be no longer necessary.
   const bool is_save_data_enabled_;
+
+  std::unique_ptr<FrameOverlay> frame_color_overlay_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

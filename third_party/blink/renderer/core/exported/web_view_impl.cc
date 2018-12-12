@@ -3047,7 +3047,7 @@ void WebViewImpl::SetZoomFactorOverride(float zoom_factor) {
 void WebViewImpl::SetMainFrameOverlayColor(SkColor color) {
   DCHECK(page_->MainFrame());
   if (page_->MainFrame()->IsLocalFrame())
-    ToLocalFrame(page_->MainFrame())->View()->SetMainFrameColorOverlay(color);
+    ToLocalFrame(page_->MainFrame())->SetMainFrameColorOverlay(color);
 }
 
 WebPageImportanceSignals* WebViewImpl::PageImportanceSignals() {
