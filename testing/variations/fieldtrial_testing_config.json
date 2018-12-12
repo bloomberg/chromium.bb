@@ -5629,6 +5629,21 @@
             ]
         }
     ],
+    "WebViewUmaLogAppPackageName": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "WebViewUmaLogAppPackageName",
+                    "enable_features": [
+                        "WebViewUmaLogAppPackageName"
+                    ]
+                }
+            ]
+        }
+    ],
     "WinOOPSelectFileDialog": [
         {
             "platforms": [
