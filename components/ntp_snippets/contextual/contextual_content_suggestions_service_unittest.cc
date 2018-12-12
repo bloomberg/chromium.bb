@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
@@ -126,7 +126,7 @@ class ContextualContentSuggestionsServiceTest : public testing::Test {
 
  private:
   FakeContextualSuggestionsFetcher* fetcher_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<ContextualContentSuggestionsService> source_;
 
