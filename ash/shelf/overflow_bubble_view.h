@@ -27,8 +27,9 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView,
   // ShelfView containing the overflow items.
   void InitOverflowBubble(views::View* anchor, ShelfView* shelf_view);
 
-  // Scrolls the bubble contents if it is a scroll update event.
-  void ProcessGestureEvent(const ui::GestureEvent& event);
+  // Handles events for scrolling the bubble. Returns whether the event
+  // has been consumed.
+  bool ProcessGestureEvent(const ui::GestureEvent& event);
 
   // views::BubbleDialogDelegateView:
   int GetDialogButtons() const override;
