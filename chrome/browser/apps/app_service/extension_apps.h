@@ -14,6 +14,10 @@
 
 class Profile;
 
+namespace extensions {
+class ExtensionSet;
+}
+
 namespace apps {
 
 // An app publisher (in the App Service sense) of extension-backed apps,
@@ -54,7 +58,11 @@ class ExtensionApps : public apps::mojom::Publisher,
   // running.
   bool RunExtensionEnableFlow(const std::string& app_id);
 
-  apps::mojom::AppPtr Convert(const extensions::Extension* extension);
+  apps::mojom::AppPtr Convert(const extensions::Extension* extension,
+                              apps::mojom::Readiness readiness);
+  void ConvertVector(const extensions::ExtensionSet& extensions,
+                     apps::mojom::Readiness readiness,
+                     std::vector<apps::mojom::AppPtr>* apps_out);
 
   mojo::Binding<apps::mojom::Publisher> binding_;
   Profile* profile_;

@@ -43,6 +43,7 @@ enum Readiness {
   kDisabledByBlacklist,  // Disabled by SafeBrowsing.
   kDisabledByPolicy,     // Disabled by admin policy.
   kDisabledByUser,       // Disabled by explicit user action.
+  kTerminated,           // Renderer process crashed.
   kUninstalledByUser,
 };
 
