@@ -289,7 +289,6 @@
     chell-postsubmit
     cheza-postsubmit
     clapper-postsubmit
-    coral-postsubmit
     cyan-postsubmit
     daisy-postsubmit
     daisy_skate-postsubmit
@@ -1158,7 +1157,6 @@
   coral-nyc-android-pfq-tryjob
   coral-paladin-tryjob
   coral-payloads-tryjob
-  coral-postsubmit-tryjob
   coral-pre-cq
   coral-release-afdo-generate-tryjob
   coral-release-afdo-tryjob
@@ -2477,7 +2475,6 @@
     chell-postsubmit
     cheza-postsubmit
     clapper-postsubmit
-    coral-postsubmit
     cyan-postsubmit
     daisy-postsubmit
     daisy_skate-postsubmit
