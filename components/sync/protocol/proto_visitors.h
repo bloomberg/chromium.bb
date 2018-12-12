@@ -742,12 +742,6 @@ VISIT_PROTO_FIELDS(const sync_pb::SendTabToSelfSpecifics& proto) {
   VISIT(title);
   VISIT(url);
   VISIT(shared_time_usec);
-  VISIT(from_device);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::SendTabToSelfDevice& proto) {
-  VISIT(name);
-  VISIT(signin_scoped_device_id);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SessionHeader& proto) {
