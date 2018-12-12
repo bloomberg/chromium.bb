@@ -194,10 +194,6 @@ void NavigationManagerImpl::UpdateCurrentItemForReplaceState(
   current_item->SetSerializedStateObject(state_object);
   current_item->SetHasStateBeenReplaced(true);
   current_item->SetPostData(nil);
-  // If the change is to a committed item, notify interested parties.
-  if (current_item != GetPendingItem()) {
-    OnNavigationItemChanged();
-  }
 }
 
 void NavigationManagerImpl::GoToIndex(int index,

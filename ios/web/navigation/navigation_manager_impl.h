@@ -92,7 +92,6 @@ class NavigationManagerImpl : public NavigationManager {
   // TODO(stuartmorgan): Make these private once the logic triggering them moves
   // into this layer.
   virtual void OnNavigationItemsPruned(size_t pruned_item_count) = 0;
-  virtual void OnNavigationItemChanged() = 0;
   virtual void OnNavigationItemCommitted() = 0;
 
   // Prepares for the deletion of WKWebView such as caching necessary data.

@@ -1311,12 +1311,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   if (!item)
     return;
 
-  base::string16 newTitle = base::SysNSStringToUTF16(title);
-  item->SetTitle(newTitle);
-  // TODO(crbug.com/546218): See if this can be removed; it's not clear that
-  // other platforms send this (tab sync triggers need to be compared against
-  // upstream).
-  self.navigationManagerImpl->OnNavigationItemChanged();
+  item->SetTitle(base::SysNSStringToUTF16(title));
   _webStateImpl->OnTitleChanged();
 }
 

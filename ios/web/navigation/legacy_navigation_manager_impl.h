@@ -36,7 +36,6 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   void SetSessionController(CRWSessionController* session_controller) override;
   void InitializeSession() override;
   void OnNavigationItemsPruned(size_t pruned_item_count) override;
-  void OnNavigationItemChanged() override;
   void OnNavigationItemCommitted() override;
   CRWSessionController* GetSessionController() const override;
   void AddTransientItem(const GURL& url) override;

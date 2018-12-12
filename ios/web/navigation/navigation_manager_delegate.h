@@ -51,9 +51,6 @@ class NavigationManagerDelegate {
   // Informs the delegate that committed navigation items have been pruned.
   virtual void OnNavigationItemsPruned(size_t pruned_item_count) = 0;
 
-  // Informs the delegate that a navigation item has been changed.
-  virtual void OnNavigationItemChanged() = 0;
-
   // Informs the delegate that a navigation item has been committed.
   virtual void OnNavigationItemCommitted(
       const LoadCommittedDetails& load_details) = 0;

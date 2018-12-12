@@ -80,10 +80,6 @@ void WKBasedNavigationManagerImpl::OnNavigationItemsPruned(
   delegate_->OnNavigationItemsPruned(pruned_item_count);
 }
 
-void WKBasedNavigationManagerImpl::OnNavigationItemChanged() {
-  delegate_->OnNavigationItemChanged();
-}
-
 void WKBasedNavigationManagerImpl::DetachFromWebView() {
   web_view_cache_.DetachFromWebView();
 }

@@ -48,10 +48,6 @@ class TestWebStateObserver : public WebStateObserver {
   web::TestNavigationItemsPrunedInfo* navigation_items_pruned_info() {
     return navigation_items_pruned_info_.get();
   }
-  // Arguments passed to |NavigationItemChanged|.
-  web::TestNavigationItemChangedInfo* navigation_item_changed_info() {
-    return navigation_item_changed_info_.get();
-  }
   // Arguments passed to |TitleWasSet|.
   web::TestTitleWasSetInfo* title_was_set_info() {
     return title_was_set_info_.get();
@@ -102,7 +98,6 @@ class TestWebStateObserver : public WebStateObserver {
   void LoadProgressChanged(WebState* web_state, double progress) override;
   void NavigationItemsPruned(WebState* web_state,
                              size_t pruned_item_count) override;
-  void NavigationItemChanged(WebState* web_state) override;
   void DidStartNavigation(WebState* web_state,
                           NavigationContext* context) override;
   void DidFinishNavigation(WebState* web_state,
@@ -132,8 +127,6 @@ class TestWebStateObserver : public WebStateObserver {
       change_loading_progress_info_;
   std::unique_ptr<web::TestNavigationItemsPrunedInfo>
       navigation_items_pruned_info_;
-  std::unique_ptr<web::TestNavigationItemChangedInfo>
-      navigation_item_changed_info_;
   std::unique_ptr<web::TestDidStartNavigationInfo> did_start_navigation_info_;
   std::unique_ptr<web::TestDidFinishNavigationInfo> did_finish_navigation_info_;
   std::unique_ptr<web::TestTitleWasSetInfo> title_was_set_info_;

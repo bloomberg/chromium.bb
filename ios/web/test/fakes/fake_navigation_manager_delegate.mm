@@ -23,7 +23,6 @@ void FakeNavigationManagerDelegate::LoadIfNecessary() {}
 void FakeNavigationManagerDelegate::Reload() {}
 void FakeNavigationManagerDelegate::OnNavigationItemsPruned(
     size_t pruned_item_count) {}
-void FakeNavigationManagerDelegate::OnNavigationItemChanged() {}
 void FakeNavigationManagerDelegate::OnNavigationItemCommitted(
     const LoadCommittedDetails& load_details) {}
 WebState* FakeNavigationManagerDelegate::GetWebState() {

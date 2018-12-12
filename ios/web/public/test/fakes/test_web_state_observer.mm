@@ -79,13 +79,6 @@ void TestWebStateObserver::NavigationItemsPruned(WebState* web_state,
   navigation_items_pruned_info_->count = pruned_item_count;
 }
 
-void TestWebStateObserver::NavigationItemChanged(WebState* web_state) {
-  ASSERT_EQ(web_state_, web_state);
-  navigation_item_changed_info_ =
-      std::make_unique<web::TestNavigationItemChangedInfo>();
-  navigation_item_changed_info_->web_state = web_state;
-}
-
 void TestWebStateObserver::DidStartNavigation(WebState* web_state,
                                               NavigationContext* navigation) {
   ASSERT_EQ(web_state_, web_state);

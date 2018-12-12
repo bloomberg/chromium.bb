@@ -42,7 +42,6 @@ class GlobalWebStateEventTracker : public WebStateObserver {
   // WebStateObserver implementation.
   void NavigationItemsPruned(WebState* web_state,
                              size_t pruned_item_count) override;
-  void NavigationItemChanged(WebState* web_state) override;
   void NavigationItemCommitted(
       WebState* web_state,
       const LoadCommittedDetails& load_details) override;
