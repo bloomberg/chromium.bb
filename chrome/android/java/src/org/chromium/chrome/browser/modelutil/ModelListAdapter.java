@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.omnibox.suggestions;
+package org.chromium.chrome.browser.modelutil;
 
 import android.content.Context;
 import android.util.Pair;
@@ -11,17 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel.WritableFloatPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor.ViewBinder;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionViewProperties.SuggestionIcon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +24,7 @@ import java.util.List;
 /**
  * Adapter for providing data and views to the omnibox results list.
  */
-@VisibleForTesting
-public class OmniboxResultsAdapter extends BaseAdapter {
+public class ModelListAdapter extends BaseAdapter {
     /**
      * An interface to provide a means to build specific view types.
      * @param <T> The type of view that the implementor will build.
@@ -46,7 +40,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
     private final List<Pair<Integer, PropertyModel>> mSuggestionItems = new ArrayList<>();
     private final SparseArray<Pair<ViewBuilder, ViewBinder>> mViewBuilderMap = new SparseArray<>();
 
-    public OmniboxResultsAdapter(Context context) {
+    public ModelListAdapter(Context context) {
         mContext = context;
     }
 
@@ -100,9 +94,16 @@ public class OmniboxResultsAdapter extends BaseAdapter {
     @SuppressWarnings("unchecked")
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
+        if (convertView == null || convertView.getTag(R.id.view_type) == null
+                || (int) convertView.getTag(R.id.view_type) != getItemViewType(position)) {
             int suggestionTypeId = mSuggestionItems.get(position).first;
             convertView = mViewBuilderMap.get(suggestionTypeId).first.buildView();
+
+            // Since the view type returned by getView is not guaranteed to return a view of that
+            // type, we need a means of checking it. The "view_type" tag is attached to the views
+            // and identify what type the view is. This should allow lists that aren't necessarily
+            // recycler views to work correctly with heterogeneous lists.
+            convertView.setTag(R.id.view_type, suggestionTypeId);
         }
 
         PropertyModel suggestionModel = mSuggestionItems.get(position).second;
@@ -140,7 +141,6 @@ public class OmniboxResultsAdapter extends BaseAdapter {
             model = new PropertyModel(item.second.getAllProperties());
             PropertyModelChangeProcessor.create(
                     model, view, mViewBuilderMap.get(item.first).second);
-            model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.UNDEFINED);
             view.setTag(R.id.view_model, model);
         }
         return model;
