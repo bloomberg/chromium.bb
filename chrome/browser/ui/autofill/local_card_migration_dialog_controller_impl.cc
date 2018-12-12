@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -143,7 +144,11 @@ void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_CLOSED_SAVE_BUTTON_CLICKED);
 
   std::move(start_migrating_cards_callback_).Run(selected_cards_guids);
-  NotifyMigrationStarted();
+  // If flag is disabled, we don't show the credit card icon animation.
+  base::FeatureList::IsEnabled(
+      features::kAutofillLocalCardMigrationShowFeedback)
+      ? NotifyMigrationStarted()
+      : NotifyMigrationNoLongerAvailable();
 }
 
 void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
