@@ -118,4 +118,10 @@ suite('manager tests', function() {
           assertTrue(list.hidden);
         });
   });
+
+  test('loadTimeData contains isManaged and managedByOrg', function() {
+    // Check that loadTimeData contains these values.
+    loadTimeData.getBoolean('isManaged');
+    loadTimeData.getString('managedByOrg');
+  });
 });

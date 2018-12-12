@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -44,10 +45,6 @@
       #downloadsList {
         min-width: calc(
           var(--downloads-card-width) + 2 * var(--downloads-card-margin));
-        /* TODO(dbeam): we're not setting scrollTarget explicitly, yet
-         * style="overflow: auto" is still being set by <iron-list>'s JS. Weird.
-         */
-        overflow-y: overlay !important;
       }
 
       #no-downloads,
@@ -84,7 +81,25 @@
       #mainContainer {
         display: flex;
         flex: 1;
-        overflow: auto;
+        flex-direction: column;
+        height: 100%;
+        overflow-y: overlay;
+      }
+
+      managed-footnote {
+        border-top: none;
+        /* margin-bottom is needed to compensate for the next element's 21px
+         * margin at the top and 8px padding at the top. This leaves a 12px
+         * padding between this element's content and the top of the next
+         * element's text. */
+        margin-bottom: calc(-21px - 8px);
+        min-width: calc(
+            var(--downloads-card-width) + 2 * var(--downloads-card-margin));
+        padding-bottom: 12px;
+        padding-top: 12px;
+        /* The next element spills over this element. This ensures the link
+         * is clickable. */
+        z-index: 1;
       }
     </style>
 
@@ -92,9 +107,10 @@
         role="none" on-search-changed="onSearchChanged_">
     </downloads-toolbar>
     <div id="drop-shadow"></div>
-    <div id="mainContainer">
+    <div id="mainContainer" on-scroll="onScroll_">
+      <managed-footnote hidden="[[inSearchMode_]]"></managed-footnote>
       <iron-list id="downloadsList" items="[[items_]]"
-          hidden="[[!hasDownloads_]]" on-scroll="onListScroll_">
+          hidden="[[!hasDownloads_]]" scroll-target="mainContainer">
         <template>
           <downloads-item data="[[item]]"></downloads-item>
         </template>

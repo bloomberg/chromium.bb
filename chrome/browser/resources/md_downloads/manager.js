@@ -194,13 +194,15 @@ cr.define('downloads', function() {
     },
 
     /** @private */
-    onListScroll_: function() {
-      const list = this.$.downloadsList;
-      if (list.scrollHeight - list.scrollTop - list.offsetHeight <= 100) {
+    onScroll_: function() {
+      const container = this.$.downloadsList.scrollTarget;
+      const distanceToBottom =
+          container.scrollHeight - container.scrollTop - container.offsetHeight;
+      if (distanceToBottom <= 100) {
         // Approaching the end of the scrollback. Attempt to load more items.
         this.searchService_.loadMore();
       }
-      this.hasShadow_ = list.scrollTop > 0;
+      this.hasShadow_ = container.scrollTop > 0;
     },
 
     /**
@@ -226,7 +228,7 @@ cr.define('downloads', function() {
      * @private
      */
     removeItem_: function(index) {
-      let removed = this.items_.splice(index, 1);
+      const removed = this.items_.splice(index, 1);
       this.updateHideDates_(index, index);
       this.notifySplices('items_', [{
                            index: index,
@@ -235,7 +237,7 @@ cr.define('downloads', function() {
                            type: 'splice',
                            removed: removed,
                          }]);
-      this.onListScroll_();
+      this.onScroll_();
     },
 
     /**
