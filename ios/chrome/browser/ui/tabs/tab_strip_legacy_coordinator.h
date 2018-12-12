@@ -14,7 +14,6 @@
 @protocol BrowserCommands;
 @protocol PopupMenuLongPressDelegate;
 @class TabModel;
-@protocol TabStripFoldAnimation;
 @protocol TabStripPresentation;
 
 namespace ios {
@@ -44,10 +43,6 @@ class ChromeBrowserState;
 // The duration to wait before starting tab strip animations. Used to
 // synchronize animations.
 @property(nonatomic, assign) NSTimeInterval animationWaitDuration;
-
-// Used has a placeholder for the tab strip view during the tab switcher
-// controller transition animations.
-- (UIView<TabStripFoldAnimation>*)placeholderView;
 
 // Hides or shows the TabStrip.
 - (void)hideTabStrip:(BOOL)hidden;

@@ -6,7 +6,6 @@
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_controller+placeholder_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -61,11 +60,6 @@
 - (void)setHighlightsSelectedTab:(BOOL)highlightsSelectedTab {
   DCHECK(self.started);
   self.tabStripController.highlightsSelectedTab = highlightsSelectedTab;
-}
-
-- (UIView<TabStripFoldAnimation>*)placeholderView {
-  DCHECK(self.started);
-  return [self.tabStripController placeholderView];
 }
 
 - (void)hideTabStrip:(BOOL)hidden {
