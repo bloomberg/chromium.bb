@@ -383,7 +383,6 @@ bool PasswordAutofillManager::PreviewSuggestionForTest(
 // PasswordAutofillManager, private:
 
 bool PasswordAutofillManager::FillSuggestion(const base::string16& username) {
-  autofill::PasswordFormFillData fill_data;
   autofill::PasswordAndRealm password_and_realm;
   if (fill_data_ && GetPasswordAndRealmForUsername(username, *fill_data_,
                                                    &password_and_realm)) {
@@ -400,7 +399,6 @@ bool PasswordAutofillManager::FillSuggestion(const base::string16& username) {
 
 bool PasswordAutofillManager::PreviewSuggestion(
     const base::string16& username) {
-  autofill::PasswordFormFillData fill_data;
   autofill::PasswordAndRealm password_and_realm;
   if (fill_data_ && GetPasswordAndRealmForUsername(username, *fill_data_,
                                                    &password_and_realm)) {
