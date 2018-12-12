@@ -66,6 +66,9 @@ class BrowsingModeBottomToolbarMediator
     /** A provider that notifies components when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
 
+    /** A state set to {@code true} while any overlay panel is showing. */
+    private boolean mIsOverlayPanelShowing;
+
     /**
      * Build a new mediator that handles events from outside the bottom toolbar.
      * @param model The {@link BrowsingModeBottomToolbarModel} that holds all the state for the
@@ -216,11 +219,13 @@ class BrowsingModeBottomToolbarMediator
 
     @Override
     public void onOverlayPanelShown() {
+        mIsOverlayPanelShowing = true;
         mModel.set(BrowsingModeBottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
     }
 
     @Override
     public void onOverlayPanelHidden() {
+        mIsOverlayPanelShowing = false;
         tryShowingAndroidView();
     }
 
@@ -270,6 +275,7 @@ class BrowsingModeBottomToolbarMediator
      */
     private void tryShowingAndroidView() {
         if (mFullscreenManager.getBottomControlOffset() > 0) return;
+        if (mIsOverlayPanelShowing) return;
         if (mModel.get(BrowsingModeBottomToolbarModel.Y_OFFSET) != 0) return;
         mModel.set(BrowsingModeBottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
     }
