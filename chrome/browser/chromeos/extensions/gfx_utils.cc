@@ -189,11 +189,9 @@ const std::vector<std::string> GetEquivalentInstalledExtensions(
   return extension_ids;
 }
 
-bool MaybeApplyChromeBadge(content::BrowserContext* context,
-                           const std::string& extension_id,
-                           gfx::ImageSkia* icon_out) {
+bool ShouldApplyChromeBadge(content::BrowserContext* context,
+                            const std::string& extension_id) {
   DCHECK(context);
-  DCHECK(icon_out);
 
   Profile* profile = Profile::FromBrowserContext(context);
   // Only apply Chrome badge for the primary profile.
@@ -209,6 +207,12 @@ bool MaybeApplyChromeBadge(content::BrowserContext* context,
   if (!HasEquivalentInstalledArcApp(context, extension_id))
     return false;
 
+  return true;
+}
+
+void ApplyChromeBadge(gfx::ImageSkia* icon_out) {
+  DCHECK(icon_out);
+
   const gfx::ImageSkia* badge_image =
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_ARC_DUAL_ICON_BADGE);
@@ -221,7 +225,6 @@ bool MaybeApplyChromeBadge(content::BrowserContext* context,
   }
   *icon_out = gfx::ImageSkiaOperations::CreateSuperimposedImage(
       *icon_out, resized_badge_image);
-  return true;
 }
 
 }  // namespace util

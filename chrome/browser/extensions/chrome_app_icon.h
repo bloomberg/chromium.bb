@@ -33,6 +33,15 @@ class ChromeAppIcon : public IconImage::Observer {
   using ResizeFunction =
       base::RepeatingCallback<void(const gfx::Size&, gfx::ImageSkia*)>;
 
+  // Applies image processing effects to |image_skia|, such as resizing, adding
+  // badges, converting to gray and rounding corners.
+  static void ApplyEffects(int resource_size_in_dip,
+                           const ResizeFunction& resize_function,
+                           bool apply_chrome_badge,
+                           bool app_launchable,
+                           bool from_bookmark,
+                           gfx::ImageSkia* image_skia);
+
   // |resize_function| overrides icon resizing behavior if non-null. Otherwise
   // IconLoader with perform the resizing. In both cases |resource_size_in_dip|
   // is used to pick the correct icon representation from resources.
