@@ -12,8 +12,12 @@
 #include "components/account_id/account_id.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
+#include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
+
+namespace chromeos {
 
 namespace {
 
@@ -37,7 +41,7 @@ bool IsSystemModalWindowOpen() {
   return modal_open;
 }
 
-class SystemWebDialogTest : public chromeos::LoginManagerTest {
+class SystemWebDialogTest : public LoginManagerTest {
  public:
   SystemWebDialogTest()
       : LoginManagerTest(false, true /* should_initialize_webui */) {}
@@ -47,7 +51,7 @@ class SystemWebDialogTest : public chromeos::LoginManagerTest {
   DISALLOW_COPY_AND_ASSIGN(SystemWebDialogTest);
 };
 
-class MockSystemWebDialog : public chromeos::SystemWebDialogDelegate {
+class MockSystemWebDialog : public SystemWebDialogDelegate {
  public:
   MockSystemWebDialog()
       : SystemWebDialogDelegate(GURL(chrome::kChromeUIVersionURL),
@@ -64,20 +68,27 @@ class MockSystemWebDialog : public chromeos::SystemWebDialogDelegate {
 
 // Verifies that system dialogs are modal before login (e.g. during OOBE).
 IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, ModalTest) {
-  chromeos::SystemWebDialogDelegate* dialog = new MockSystemWebDialog();
+  auto* dialog = new MockSystemWebDialog();
   dialog->ShowSystemDialog();
   EXPECT_TRUE(IsSystemModalWindowOpen());
 }
 
 IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, PRE_NonModalTest) {
   RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
-  chromeos::StartupUtils::MarkOobeCompleted();
+  StartupUtils::MarkOobeCompleted();
 }
 
-// Verifies that system dialogs are not modal after login.
+// Verifies that system dialogs are not modal and always-on-top after login.
 IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, NonModalTest) {
   LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
-  chromeos::SystemWebDialogDelegate* dialog = new MockSystemWebDialog();
+  auto* dialog = new MockSystemWebDialog();
   dialog->ShowSystemDialog();
   EXPECT_FALSE(IsSystemModalWindowOpen());
+  aura::Window* window_to_test = dialog->dialog_window();
+  // In Mash, the AlwaysOnTop property will be set on the parent.
+  if (::features::IsUsingWindowService())
+    window_to_test = window_to_test->parent();
+  EXPECT_TRUE(window_to_test->GetProperty(aura::client::kAlwaysOnTopKey));
 }
+
+}  // namespace chromeos

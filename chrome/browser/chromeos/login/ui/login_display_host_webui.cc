@@ -54,6 +54,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -985,17 +986,11 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
 
   // Put the voice interaction oobe inside AlwaysOnTop container instead of
   // LockScreenContainer.
-  ash::ShellWindowId container = is_voice_interaction_oobe_
-                                     ? ash::kShellWindowId_AlwaysOnTopContainer
-                                     : ash::kShellWindowId_LockScreenContainer;
-  // The ash::Shell containers are not available in Mash
-  if (!features::IsUsingWindowService()) {
-    params.parent =
-        ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(), container);
+  if (is_voice_interaction_oobe_) {
+    params.keep_on_top = true;
   } else {
-    using ws::mojom::WindowManager;
-    params.mus_properties[WindowManager::kContainerId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(container));
+    ash_util::SetupWidgetInitParamsForContainer(
+        &params, ash::kShellWindowId_LockScreenContainer);
   }
   login_window_ = new views::Widget;
   login_window_->Init(params);

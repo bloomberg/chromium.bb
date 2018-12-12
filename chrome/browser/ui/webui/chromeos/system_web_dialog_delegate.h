@@ -13,9 +13,12 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "url/gurl.h"
 
-// ui::WebDialogDelegate for always-on-top system Web UI dialogs, e.g. dialogs
-// opened from the ash system tray. These dialogs are intentionally movable /
-// draggable so that content from other pages can be copy-pasted.
+// WebDialogDelegate for system Web UI dialogs, e.g. dialogs opened from the
+// Ash system tray. These dialogs are normally movable and draggable so that
+// content from other pages can be copy-pasted, but kept always-on-top so that
+// they do not get lost behind other windows. On screens that use an overlay
+// like the login and lock screens, the dialog must be modal to be displayed on
+// top of the overlay.
 
 namespace chromeos {
 
@@ -55,6 +58,7 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   static constexpr int kDialogHeight = 480;
 
  protected:
+  FRIEND_TEST_ALL_PREFIXES(SystemWebDialogTest, NonModalTest);
   gfx::NativeWindow dialog_window() const { return dialog_window_; }
 
  private:

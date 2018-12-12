@@ -66,13 +66,8 @@ LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
 LoginWebDialog::~LoginWebDialog() {}
 
 void LoginWebDialog::Show() {
-  if (parent_window_) {
-    dialog_window_ =
-        chrome::ShowWebDialog(parent_window_, browser_context_, this);
-  } else {
-    dialog_window_ = chrome::ShowWebDialogInContainer(
-        ash_util::GetSystemModalDialogContainerId(), browser_context_, this);
-  }
+  dialog_window_ =
+      chrome::ShowWebDialog(parent_window_, browser_context_, this);
 }
 
 void LoginWebDialog::SetDialogSize(int width, int height) {
