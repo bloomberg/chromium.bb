@@ -30,7 +30,7 @@ class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
 
   ChromePromptImpl(extensions::ExtensionService* extension_service,
                    chrome_cleaner::mojom::ChromePromptRequest request,
-                   base::Closure on_connection_closed,
+                   base::OnceClosure on_connection_closed,
                    OnPromptUser on_prompt_user);
   ~ChromePromptImpl() override;
 

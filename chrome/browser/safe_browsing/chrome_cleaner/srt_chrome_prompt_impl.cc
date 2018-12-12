@@ -29,7 +29,7 @@ using content::BrowserThread;
 ChromePromptImpl::ChromePromptImpl(
     extensions::ExtensionService* extension_service,
     ChromePromptRequest request,
-    base::RepeatingClosure on_connection_closed,
+    base::OnceClosure on_connection_closed,
     OnPromptUser on_prompt_user)
     : binding_(this, std::move(request)),
       extension_service_(extension_service),
