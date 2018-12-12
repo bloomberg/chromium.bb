@@ -11,6 +11,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.SparseIntArray;
@@ -161,6 +162,10 @@ public class MediaCaptureNotificationService extends Service {
         }
     }
 
+    private static boolean isRunningAtLeastN() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+    }
+
     /**
      * Creates a notification for the provided notificationId and mediaType.
      * @param notificationId Unique id of the notification.
@@ -210,7 +215,12 @@ public class MediaCaptureNotificationService extends Service {
         if (hideUserData) {
             builder.setSubText(ContextUtils.getApplicationContext().getResources().getString(
                     R.string.notification_incognito_tab));
-            builder.setContentTitle(descriptionText.toString());
+            // App name is automatically added to the title from Android N,
+            // but needs to be added explicitly for prior versions.
+            String appNamePrefix = isRunningAtLeastN()
+                    ? ""
+                    : (ContextUtils.getApplicationContext().getString(R.string.app_name) + " - ");
+            builder.setContentTitle(appNamePrefix + descriptionText.toString());
             contentText = ContextUtils.getApplicationContext().getResources().getString(
                     R.string.media_notification_link_text_incognito);
         } else {
