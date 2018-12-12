@@ -1,0 +1,4 @@
+[style]
+based_on_style = chromium
+split_before_bitwise_operator = false
+blank_line_before_module_docstring = true
