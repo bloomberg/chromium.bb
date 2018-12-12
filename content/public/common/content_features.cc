@@ -695,11 +695,6 @@ const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",
 const base::Feature kIOSurfaceCapturer{"IOSurfaceCapturer",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-// The V2 sandbox on MacOS removes the unsandboed warmup phase and sandboxes the
-// entire life of the process.
-const base::Feature kMacV2Sandbox{"MacV2Sandbox",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-//
 // Enables the suggested text touch bar for autocomplete in textfields.
 const base::Feature kTextSuggestionsTouchBar{"TextSuggestionsTouchBar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

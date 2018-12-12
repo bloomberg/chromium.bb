@@ -2621,21 +2621,6 @@
             ]
         }
     ],
-    "MacV2Sandbox": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MacV2Sandbox"
-                    ]
-                }
-            ]
-        }
-    ],
     "MediaFoundationH264Encoding": [
         {
             "platforms": [
