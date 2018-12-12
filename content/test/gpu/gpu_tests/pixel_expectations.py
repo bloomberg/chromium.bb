@@ -148,6 +148,8 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
         ['mac', ('amd', 0x679e)], bug=911413)
 
+    # TODO(sunnyps): Temporary suppression for rebaselining.
+    self.Fail('Pixel_CanvasLowLatency2D', bug=914206)
     # Fails on Android Nexus 5
-    self.Fail('Pixel_CanvasLowLatency2D',
-        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=914206)
+    # self.Fail('Pixel_CanvasLowLatency2D',
+    #     ['android', ('qualcomm', 'Adreno (TM) 330')], bug=914206)
