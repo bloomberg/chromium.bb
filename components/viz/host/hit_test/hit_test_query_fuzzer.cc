@@ -29,8 +29,12 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
                          ? fuzz->ConsumeIntegralInRange<uint32_t>(
                                1, std::numeric_limits<uint32_t>::max())
                          : viz::AsyncHitTestReasons::kNotAsyncHitTest;
-  gfx::Rect rect(fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>(),
-                 fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>());
+  gfx::Rect rect(
+      fuzz->ConsumeIntegralInRange<int>(std::numeric_limits<int>::min() + 1,
+                                        std::numeric_limits<int>::max()),
+      fuzz->ConsumeIntegralInRange<int>(std::numeric_limits<int>::min() + 1,
+                                        std::numeric_limits<int>::max()),
+      fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>());
   int32_t child_count =
       depth < kMaxDepthAllowed ? fuzz->ConsumeIntegralInRange(0, 10) : 0;
   gfx::Transform transform;
