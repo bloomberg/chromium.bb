@@ -208,7 +208,8 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
         ToWinCredentialExVector(exclude_list);
     std::vector<WEBAUTHN_CREDENTIAL_EX*> exclude_list_ptrs;
     std::transform(exclude_list_credentials.begin(),
-                   exclude_list_credentials.end(), exclude_list_ptrs.begin(),
+                   exclude_list_credentials.end(),
+                   std::back_inserter(exclude_list_ptrs),
                    [](auto& cred) { return &cred; });
     WEBAUTHN_CREDENTIAL_LIST exclude_credential_list{exclude_list_ptrs.size(),
                                                      exclude_list_ptrs.data()};
