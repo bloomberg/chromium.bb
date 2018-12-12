@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_style.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,12 +32,6 @@
 #include "ui/views/widget/widget.h"
 
 using views::Widget;
-
-namespace {
-bool UsingNewLoadingAnimation() {
-  return base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation);
-}
-}  // namespace
 
 class FakeTabController : public TabController {
  public:
@@ -616,12 +609,10 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  if (UsingNewLoadingAnimation()) {
-    // The post-loading animation should still be playing (loading bar fades
-    // out).
-    EXPECT_TRUE(icon->ShowingLoadingAnimation());
-    FinishRunningLoadingAnimations(icon);
-  }
+  // The post-loading animation should still be playing (loading bar fades out).
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+
+  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a tab that should hide throbber.
@@ -651,12 +642,9 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
-  if (UsingNewLoadingAnimation()) {
-    // The post-loading animation should still be playing (loading bar fades
-    // out).
-    EXPECT_TRUE(icon->ShowingLoadingAnimation());
-    FinishRunningLoadingAnimations(icon);
-  }
+  // The post-loading animation should still be playing (loading bar fades out).
+  EXPECT_TRUE(icon->ShowingLoadingAnimation());
+  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // After loading is done, simulate another resource starting to load.
@@ -725,8 +713,6 @@ TEST_F(TabTest, LoadingProgressIsFixedTo100PercentWhenNotLoading) {
 }
 
 TEST_F(TabTest, LoadingProgressMonotonicallyIncreases) {
-  if (!UsingNewLoadingAnimation())
-    return;
   Widget widget;
   InitWidget(&widget);
 
@@ -759,9 +745,6 @@ TEST_F(TabTest, LoadingProgressMonotonicallyIncreases) {
 }
 
 TEST_F(TabTest, LoadingProgressGoesTo100PercentAfterLoadingIsDone) {
-  if (!UsingNewLoadingAnimation())
-    return;
-
   Widget widget;
   InitWidget(&widget);
 
