@@ -66,6 +66,7 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/http/mock_http_cache.h"
 #include "net/http/transport_security_state_test_util.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -1282,6 +1283,39 @@ TEST_F(NetworkContextTest, MultipleClearHttpCacheCalls) {
   // If all the callbacks were invoked, we should terminate.
 }
 
+TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
+  net::MockHttpCache mock_cache;
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->http_cache_enabled = true;
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+  network_context->url_request_context()->set_http_transaction_factory(
+      mock_cache.http_cache());
+
+  std::vector<std::string> entry_urls = {
+      "http://www.google.com",    "https://www.google.com",
+      "http://www.wikipedia.com", "https://www.wikipedia.com",
+      "http://localhost:1234",    "https://localhost:1234",
+  };
+
+  // The disk cache is lazily instanitated, force it and ensure it's valid.
+  ASSERT_TRUE(mock_cache.disk_cache());
+  EXPECT_EQ(0U, mock_cache.disk_cache()->GetExternalCacheHits().size());
+
+  for (size_t i = 0; i < entry_urls.size(); i++) {
+    GURL test_url(entry_urls[i]);
+
+    network_context->NotifyExternalCacheHit(test_url, test_url.scheme());
+    EXPECT_EQ(i + 1, mock_cache.disk_cache()->GetExternalCacheHits().size());
+
+    // Potentially a brittle check as the value sent to disk_cache is a "key."
+    // This key just happens to be the same as the GURL from the test input.
+    // So if this breaks check HttpCache::GenerateCacheKey() for changes.
+    EXPECT_EQ(test_url, mock_cache.disk_cache()->GetExternalCacheHits().back());
+  }
+}
+
 TEST_F(NetworkContextTest, CountHttpCache) {
   // Just ensure that a couple of concurrent calls go through, and produce
   // the expected "it's empty!" result. More detailed testing is left to
@@ -1316,7 +1350,10 @@ TEST_F(NetworkContextTest, CountHttpCache) {
 TEST_F(NetworkContextTest, ClearHostCache) {
   // List of domains added to the host cache before running each test case.
   const char* kDomains[] = {
-      "domain0", "domain1", "domain2", "domain3",
+      "domain0",
+      "domain1",
+      "domain2",
+      "domain3",
   };
 
   // Each bit correponds to one of the 4 domains above.
