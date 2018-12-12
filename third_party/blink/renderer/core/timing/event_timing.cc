@@ -45,10 +45,8 @@ void EventTiming::WillDispatchEvent(const Event& event) {
 }
 
 void EventTiming::DidDispatchEvent(const Event& event) {
-  if (!finished_will_dispatch_event_ ||
-      (!event.executedListenerOrDefaultAction() && !event.DefaultHandled())) {
+  if (!finished_will_dispatch_event_)
     return;
-  }
 
   TimeTicks start_time;
   if (event.IsPointerEvent())
