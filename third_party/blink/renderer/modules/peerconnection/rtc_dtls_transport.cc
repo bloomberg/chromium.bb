@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event_init.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/webrtc/api/dtlstransportinterface.h"
 #include "third_party/webrtc/api/jsepicecandidate.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/p2p/base/portallocator.h"
@@ -30,12 +31,10 @@
 
 namespace blink {
 
-RTCDtlsTransport* RTCDtlsTransport::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<RTCDtlsTransport>(context);
-}
-
-RTCDtlsTransport::RTCDtlsTransport(ExecutionContext* context)
-    : ContextClient(context) {}
+RTCDtlsTransport::RTCDtlsTransport(
+    ExecutionContext* context,
+    rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_transport)
+    : ContextClient(context), native_transport_(native_transport) {}
 
 RTCDtlsTransport::~RTCDtlsTransport() {}
 
@@ -53,6 +52,10 @@ RTCIceTransport* RTCDtlsTransport::iceTransport() const {
   // TODO(crbug.com/907849): Implement returning an IceTransport
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+webrtc::DtlsTransportInterface* RTCDtlsTransport::native_transport() {
+  return native_transport_.get();
 }
 
 const AtomicString& RTCDtlsTransport::InterfaceName() const {

@@ -216,6 +216,11 @@ WebString MockWebRTCPeerConnectionHandler::Id() const {
   return WebString();
 }
 
+webrtc::PeerConnectionInterface*
+MockWebRTCPeerConnectionHandler::NativePeerConnection() {
+  return nullptr;
+}
+
 std::unique_ptr<WebRTCPeerConnectionHandler>
 TestingPlatformSupportWithWebRTC::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient*,

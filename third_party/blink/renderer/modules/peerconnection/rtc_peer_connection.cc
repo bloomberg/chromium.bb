@@ -87,6 +87,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_data_channel.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_data_channel_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_data_channel_init.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_sender.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
@@ -117,6 +118,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/webrtc/api/dtlstransportinterface.h"
 #include "third_party/webrtc/api/jsep.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/pc/sessiondescription.h"
@@ -1134,6 +1136,49 @@ bool RTCPeerConnection::HasDocumentMedia() const {
       To<Document>(GetExecutionContext())->GetFrame());
   return user_media_controller &&
          user_media_controller->HasRequestedUserMedia();
+}
+
+RTCDtlsTransport* RTCPeerConnection::LookupDtlsTransportByMid(String mid) {
+  if (mid.IsNull())
+    return nullptr;
+  webrtc::PeerConnectionInterface* native_pc =
+      peer_handler_->NativePeerConnection();
+  if (!native_pc)
+    return nullptr;
+  auto native_transport =
+      native_pc->LookupDtlsTransportByMid(std::string(mid.Utf8().data()));
+  if (!native_transport)
+    return nullptr;
+  // Check for previously created RTCDtlsTransport objects referencing
+  // this transport.
+  auto transport_iterator = dtls_transports_by_mid_.find(mid);
+  if (transport_iterator != dtls_transports_by_mid_.end()) {
+    if (transport_iterator->value->native_transport() !=
+        native_transport.get()) {
+      // The mid's transport has changed. Erase the reference to
+      // the old transport, and continue.
+      dtls_transports_by_mid_.erase(transport_iterator);
+    } else {
+      return transport_iterator->value;
+    }
+  }
+
+  // Check if the same transport has been returned for another mid.
+  for (auto const& transport_iterator : dtls_transports_by_mid_) {
+    if (transport_iterator.value->native_transport() ==
+        native_transport.get()) {
+      // insert might invalidate the iterator (or not), so be safe.
+      RTCDtlsTransport* transport = transport_iterator.value;
+      dtls_transports_by_mid_.insert(mid, transport);
+      return transport;
+    }
+  }
+  // The transport is previously unseen. Create object and hold on to
+  // a reference to it.
+  RTCDtlsTransport* transport = MakeGarbageCollected<RTCDtlsTransport>(
+      GetExecutionContext(), native_transport);
+  dtls_transports_by_mid_.insert(mid, transport);
+  return transport;
 }
 
 void RTCPeerConnection::ReportSetSdpUsage(
@@ -2337,8 +2382,8 @@ RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
   RTCRtpReceiver* receiver;
   if (receiver_it == rtp_receivers_.end()) {
     // Create new receiver.
-    receiver = MakeGarbageCollected<RTCRtpReceiver>(std::move(web_receiver),
-                                                    track, MediaStreamVector());
+    receiver = MakeGarbageCollected<RTCRtpReceiver>(
+        this, std::move(web_receiver), track, MediaStreamVector());
     // Receiving tracks should be muted by default. SetReadyState() propagates
     // the related state changes to ensure it is muted on all layers. It also
     // fires events - which is not desired - but because they fire synchronously
@@ -2574,7 +2619,7 @@ void RTCPeerConnection::DidAddReceiverPlanB(
   }
   DCHECK(FindReceiver(*web_receiver) == rtp_receivers_.end());
   RTCRtpReceiver* rtp_receiver = MakeGarbageCollected<RTCRtpReceiver>(
-      std::move(web_receiver), track, streams);
+      this, std::move(web_receiver), track, streams);
   rtp_receivers_.push_back(rtp_receiver);
   ScheduleDispatchEvent(MakeGarbageCollected<RTCTrackEvent>(
       rtp_receiver, rtp_receiver->track(), streams, nullptr));
@@ -3011,6 +3056,7 @@ void RTCPeerConnection::Trace(blink::Visitor* visitor) {
   visitor->Trace(transceivers_);
   visitor->Trace(dispatch_scheduled_event_runner_);
   visitor->Trace(scheduled_events_);
+  visitor->Trace(dtls_transports_by_mid_);
   EventTargetWithInlineData::Trace(visitor);
   PausableObject::Trace(visitor);
   MediaStreamObserver::Trace(visitor);

@@ -228,7 +228,7 @@ PASS RTCRtpSender interface: existence and properties of interface prototype obj
 PASS RTCRtpSender interface: existence and properties of interface prototype object's "constructor" property
 PASS RTCRtpSender interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCRtpSender interface: attribute track
-FAIL RTCRtpSender interface: attribute transport assert_true: The prototype object must have a property "transport" expected true got false
+PASS RTCRtpSender interface: attribute transport
 FAIL RTCRtpSender interface: attribute rtcpTransport assert_true: The prototype object must have a property "rtcpTransport" expected true got false
 PASS RTCRtpSender interface: operation getCapabilities(DOMString)
 FAIL RTCRtpSender interface: operation setParameters(RTCRtpSendParameters) assert_equals: property has wrong .length expected 1 but got 0
@@ -260,7 +260,7 @@ PASS RTCRtpReceiver interface: existence and properties of interface prototype o
 PASS RTCRtpReceiver interface: existence and properties of interface prototype object's "constructor" property
 PASS RTCRtpReceiver interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCRtpReceiver interface: attribute track
-FAIL RTCRtpReceiver interface: attribute transport assert_true: The prototype object must have a property "transport" expected true got false
+PASS RTCRtpReceiver interface: attribute transport
 FAIL RTCRtpReceiver interface: attribute rtcpTransport assert_true: The prototype object must have a property "rtcpTransport" expected true got false
 PASS RTCRtpReceiver interface: operation getCapabilities(DOMString)
 PASS RTCRtpReceiver interface: operation getParameters()
