@@ -1351,8 +1351,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
 
-  EXPECT_TRUE(overlay_window->play_pause_controls_view_for_testing()
-                  ->toggled_for_testing());
+  EXPECT_EQ(overlay_window->playback_state_for_testing(),
+            OverlayWindowViews::PlaybackState::kPlaying);
 
   ASSERT_TRUE(
       content::ExecuteScript(active_web_contents, "exitPictureInPicture();"));
@@ -1378,8 +1378,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
     OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
         window_controller()->GetWindowForTesting());
 
-    EXPECT_FALSE(overlay_window->play_pause_controls_view_for_testing()
-                     ->toggled_for_testing());
+    EXPECT_EQ(overlay_window->playback_state_for_testing(),
+              OverlayWindowViews::PlaybackState::kPaused);
   }
 }
 
