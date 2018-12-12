@@ -52,7 +52,9 @@ class VirtualFocusRow extends cr.ui.FocusRow {
  * behavior, which encapsulates focus controls of mouse and keyboards.
  * To use this behavior:
  *    - The parent element should pass a "last-focused" attribute double-bound
- *      to the row items, to track the last-focused element across rows.
+ *      to the row items, to track the last-focused element across rows, and
+ *      a "list-blurred" attribute double-bound to the row items, to track
+ *      whether the list of row items has been blurred.
  *    - There must be a container in the extending element with the
  *      [focus-row-container] attribute that contains all focusable controls.
  *    - On each of the focusable controls, there must be a [focus-row-control]
@@ -85,10 +87,12 @@ const FocusRowBehavior = {
       type: Number,
       observer: 'ironListTabIndexChanged_',
     },
-  },
 
-  /** @private {boolean} */
-  blurred_: false,
+    listBlurred: {
+      type: Boolean,
+      notify: true,
+    },
+  },
 
   /** @private {?Element} */
   firstControl_: null,
@@ -236,7 +240,8 @@ const FocusRowBehavior = {
     // focus is restored to the row from a dropdown on the last item, the last
     // child item will be focused before the row itself. Since this is the
     // desired behavior, do not shift focus to the first item in these cases.
-    const restoreFocusToFirst = this.blurred_ && e.composedPath()[0] === this;
+    const restoreFocusToFirst =
+        this.listBlurred && e.composedPath()[0] === this;
 
     if (this.lastFocused && !restoreFocusToFirst) {
       this.row_.getEquivalentElement(this.lastFocused).focus();
@@ -244,7 +249,7 @@ const FocusRowBehavior = {
       const firstFocusable = assert(this.firstControl_);
       firstFocusable.focus();
     }
-    this.blurred_ = false;
+    this.listBlurred = false;
   },
 
   /** @param {!KeyboardEvent} e */
@@ -274,6 +279,6 @@ const FocusRowBehavior = {
     const node =
         e.relatedTarget ? /** @type {!Node} */ (e.relatedTarget) : null;
     if (!this.parentNode.contains(node))
-      this.blurred_ = true;
+      this.listBlurred = true;
   },
 };

@@ -106,6 +106,9 @@ Polymer({
     lastFocused_: Object,
 
     /** @private */
+    listBlurred_: Boolean,
+
+    /** @private */
     tooltipText_: String,
   },
 

@@ -72,6 +72,9 @@ Polymer({
 
     /** @private */
     lastFocused_: Object,
+
+    /** @private */
+    listBlurred_: Boolean,
   },
 
   /** @private {settings.LocalDataBrowserProxy} */
