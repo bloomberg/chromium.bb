@@ -501,7 +501,14 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
   WaitForLoginDisplayHostShutdown();
 }
 
-IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, SimpleEndToEnd) {
+// Flaky on MSAN/ASAN/LSAN: crbug.com/891277, crbug.com/891484.
+#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(ADDRESS_SANITIZER)
+#define MAYBE_SimpleEndToEnd DISABLED_SimpleEndToEnd
+#else
+#define MAYBE_SimpleEndToEnd SimpleEndToEnd
+#endif
+IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, MAYBE_SimpleEndToEnd) {
   SimpleEndToEnd();
 }
 
