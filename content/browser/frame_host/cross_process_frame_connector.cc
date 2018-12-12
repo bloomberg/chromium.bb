@@ -119,7 +119,11 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
     // be called during nested WebContents destruction. See
     // https://crbug.com/644306.
     if (GetParentRenderWidgetHostView() &&
-        GetParentRenderWidgetHostView()->host()->delegate()) {
+        GetParentRenderWidgetHostView()->host()->delegate() &&
+        GetParentRenderWidgetHostView()
+            ->host()
+            ->delegate()
+            ->GetInputEventRouter()) {
       GetParentRenderWidgetHostView()
           ->host()
           ->delegate()
