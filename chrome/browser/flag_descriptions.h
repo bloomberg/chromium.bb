@@ -1756,9 +1756,6 @@ extern const char kEnableGpuAppcontainerDescription[];
 extern const char kGdiTextPrinting[];
 extern const char kGdiTextPrintingDescription[];
 
-extern const char kIncreaseInputAudioBufferSize[];
-extern const char kIncreaseInputAudioBufferSizeDescription[];
-
 extern const char kTraceExportEventsToEtwName[];
 extern const char kTraceExportEventsToEtwDesription[];
 
