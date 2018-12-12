@@ -324,6 +324,10 @@ TEST_F('CrExtensionsItemListTest', 'NoSearchResults', function() {
   this.runMochaTest(extension_item_list_tests.TestNames.NoSearchResultsMsg);
 });
 
+TEST_F('CrExtensionsItemListTest', 'LoadTimeData', function() {
+  this.runMochaTest(extension_item_list_tests.TestNames.LoadTimeData);
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Load Error Tests
 
