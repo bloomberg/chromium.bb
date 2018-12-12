@@ -4,6 +4,7 @@
 
 #include "net/dns/host_resolver_impl.h"
 
+#include <algorithm>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -3088,6 +3089,30 @@ const uint8_t kMdnsResponseNsec[] = {
     0x00, 0x08   // A type only
 };
 
+const uint8_t kMdnsResponseTxt[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // "myhello.local."
+    0x07, 'm', 'y', 'h', 'e', 'l', 'l', 'o', 0x05, 'l', 'o', 'c', 'a', 'l',
+    0x00,
+
+    0x00, 0x10,              // TYPE is TXT.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00, 0x00, 0x11,  // TTL is 17 (seconds)
+    0x00, 0x08,              // RDLENGTH is 8 bytes.
+
+    // "foo"
+    0x03, 0x66, 0x6f, 0x6f,
+    // "bar"
+    0x03, 0x62, 0x61, 0x72,
+};
+
 TEST_F(HostResolverImplTest, Mdns) {
   auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
   MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
@@ -3111,6 +3136,8 @@ TEST_F(HostResolverImplTest, Mdns) {
       testing::UnorderedElementsAre(
           CreateExpected("1.2.3.4", 80),
           CreateExpected("000a:0000:0000:0000:0001:0002:0003:0004", 80)));
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
 }
 
 TEST_F(HostResolverImplTest, Mdns_AaaaOnly) {
@@ -3134,6 +3161,30 @@ TEST_F(HostResolverImplTest, Mdns_AaaaOnly) {
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected(
                   "000a:0000:0000:0000:0001:0002:0003:0004", 80)));
+}
+
+TEST_F(HostResolverImplTest, Mdns_Txt) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+  // 2 socket creations for every transaction.
+  EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(2);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::TXT;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), parameters));
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseTxt,
+                                      sizeof(kMdnsResponseTxt));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_THAT(response.request()->GetTextResults(),
+              testing::Optional(testing::ElementsAre("foo", "bar")));
+  EXPECT_FALSE(response.request()->GetHostnameResults());
 }
 
 // Test multicast DNS handling of NSEC responses (used for explicit negative
@@ -3189,6 +3240,49 @@ TEST_F(HostResolverImplTest, Mdns_NoResponse) {
 
   EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+
+  test_task_runner->FastForwardUntilNoTasksRemain();
+}
+
+TEST_F(HostResolverImplTest, Mdns_WrongType) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+  // 2 socket creations for every transaction.
+  EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(2);
+
+  // Add a little bit of extra fudge to the delay to allow reasonable
+  // flexibility for time > vs >= etc.  We don't need to fail the test if we
+  // timeout at t=6001 instead of t=6000.
+  base::TimeDelta kSleepFudgeFactor = base::TimeDelta::FromMilliseconds(1);
+
+  // Override the current thread task runner, so we can simulate the passage of
+  // time to trigger the timeout.
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::ScopedClosureRunner task_runner_override_scoped_cleanup =
+      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::A;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), parameters));
+
+  // Not the requested type. Should be ignored.
+  socket_factory_ptr->SimulateReceive(kMdnsResponseTxt,
+                                      sizeof(kMdnsResponseTxt));
+
+  ASSERT_TRUE(test_task_runner->HasPendingTask());
+  test_task_runner->FastForwardBy(MDnsTransaction::kTransactionTimeout +
+                                  kSleepFudgeFactor);
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
 
   test_task_runner->FastForwardUntilNoTasksRemain();
 }
@@ -3302,55 +3396,6 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
  protected:
   // testing::Test implementation:
   void SetUp() override {
-    AddDnsRule("nodomain", dns_protocol::kTypeA, MockDnsClientRule::NODOMAIN,
-               false);
-    AddDnsRule("nodomain", dns_protocol::kTypeAAAA, MockDnsClientRule::NODOMAIN,
-               false);
-    AddDnsRule("nx", dns_protocol::kTypeA, MockDnsClientRule::FAIL, false);
-    AddDnsRule("nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL, false);
-    AddDnsRule("ok", dns_protocol::kTypeA, MockDnsClientRule::OK, false);
-    AddDnsRule("ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK, false);
-    AddDnsRule("4ok", dns_protocol::kTypeA, MockDnsClientRule::OK, false);
-    AddDnsRule("4ok", dns_protocol::kTypeAAAA, MockDnsClientRule::EMPTY, false);
-    AddDnsRule("6ok", dns_protocol::kTypeA, MockDnsClientRule::EMPTY, false);
-    AddDnsRule("6ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK, false);
-    AddDnsRule("4nx", dns_protocol::kTypeA, MockDnsClientRule::OK, false);
-    AddDnsRule("4nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL, false);
-    AddDnsRule("empty", dns_protocol::kTypeA, MockDnsClientRule::EMPTY, false);
-    AddDnsRule("empty", dns_protocol::kTypeAAAA, MockDnsClientRule::EMPTY,
-               false);
-
-    AddDnsRule("slow_nx", dns_protocol::kTypeA, MockDnsClientRule::FAIL, true);
-    AddDnsRule("slow_nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL,
-               true);
-
-    AddDnsRule("4slow_ok", dns_protocol::kTypeA, MockDnsClientRule::OK, true);
-    AddDnsRule("4slow_ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK,
-               false);
-    AddDnsRule("6slow_ok", dns_protocol::kTypeA, MockDnsClientRule::OK, false);
-    AddDnsRule("6slow_ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK,
-               true);
-    AddDnsRule("4slow_4ok", dns_protocol::kTypeA, MockDnsClientRule::OK, true);
-    AddDnsRule("4slow_4ok", dns_protocol::kTypeAAAA, MockDnsClientRule::EMPTY,
-               false);
-    AddDnsRule("4slow_4timeout", dns_protocol::kTypeA,
-               MockDnsClientRule::TIMEOUT, true);
-    AddDnsRule("4slow_4timeout", dns_protocol::kTypeAAAA, MockDnsClientRule::OK,
-               false);
-    AddDnsRule("4slow_6timeout", dns_protocol::kTypeA,
-               MockDnsClientRule::OK, true);
-    AddDnsRule("4slow_6timeout", dns_protocol::kTypeAAAA,
-               MockDnsClientRule::TIMEOUT, false);
-    AddDnsRule("4collision", dns_protocol::kTypeA, IPAddress(127, 0, 53, 53),
-               false);
-    AddDnsRule("4collision", dns_protocol::kTypeAAAA, MockDnsClientRule::EMPTY,
-               false);
-    AddDnsRule("6collision", dns_protocol::kTypeA, MockDnsClientRule::EMPTY,
-               false);
-    // This isn't the expected IP for collisions (but looks close to it).
-    AddDnsRule("6collision", dns_protocol::kTypeAAAA,
-               IPAddress(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 127, 0, 53, 53),
-               false);
     CreateResolver();
   }
 
@@ -3368,32 +3413,125 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
     options.max_concurrent_resolves = max_concurrent_resolves;
     resolver_.reset(new TestHostResolverImpl(options, NULL, ipv6_reachable));
     resolver_->set_proc_params_for_test(params);
-    dns_client_ = new MockDnsClient(DnsConfig(), dns_rules_);
-    resolver_->SetDnsClient(std::unique_ptr<DnsClient>(dns_client_));
+    UseMockDnsClient(DnsConfig(), CreateDefaultDnsRules());
   }
 
-  // Adds a rule to |dns_rules_|. Must be followed by |CreateResolver| to apply.
-  void AddDnsRule(const std::string& prefix,
-                  uint16_t qtype,
-                  MockDnsClientRule::ResultType result_type,
-                  bool delay) {
-    return AddDnsRule(prefix, qtype, MockDnsClientRule::Result(result_type),
-                      delay);
+  // Call after CreateResolver() to update the resolver with a new MockDnsClient
+  // using |config| and |rules|.
+  void UseMockDnsClient(const DnsConfig& config, MockDnsClientRuleList rules) {
+    // HostResolver expects DnsConfig to get set after setting DnsClient, so
+    // create first with an empty config and then update the config.
+    auto dns_client =
+        std::make_unique<MockDnsClient>(DnsConfig(), std::move(rules));
+    dns_client_ = dns_client.get();
+    resolver_->SetDnsClient(std::move(dns_client));
+    if (!config.Equals(DnsConfig()))
+      ChangeDnsConfig(config);
   }
 
-  void AddDnsRule(const std::string& prefix,
-                  uint16_t qtype,
-                  const IPAddress& result_ip,
-                  bool delay) {
-    return AddDnsRule(prefix, qtype, MockDnsClientRule::Result(result_ip),
-                      delay);
+  static MockDnsClientRuleList CreateDefaultDnsRules() {
+    MockDnsClientRuleList rules;
+
+    AddDnsRule(&rules, "nodomain", dns_protocol::kTypeA,
+               MockDnsClientRule::NODOMAIN, false);
+    AddDnsRule(&rules, "nodomain", dns_protocol::kTypeAAAA,
+               MockDnsClientRule::NODOMAIN, false);
+    AddDnsRule(&rules, "nx", dns_protocol::kTypeA, MockDnsClientRule::FAIL,
+               false);
+    AddDnsRule(&rules, "nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL,
+               false);
+    AddDnsRule(&rules, "ok", dns_protocol::kTypeA, MockDnsClientRule::OK,
+               false);
+    AddDnsRule(&rules, "ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK,
+               false);
+    AddDnsRule(&rules, "4ok", dns_protocol::kTypeA, MockDnsClientRule::OK,
+               false);
+    AddDnsRule(&rules, "4ok", dns_protocol::kTypeAAAA, MockDnsClientRule::EMPTY,
+               false);
+    AddDnsRule(&rules, "6ok", dns_protocol::kTypeA, MockDnsClientRule::EMPTY,
+               false);
+    AddDnsRule(&rules, "6ok", dns_protocol::kTypeAAAA, MockDnsClientRule::OK,
+               false);
+    AddDnsRule(&rules, "4nx", dns_protocol::kTypeA, MockDnsClientRule::OK,
+               false);
+    AddDnsRule(&rules, "4nx", dns_protocol::kTypeAAAA, MockDnsClientRule::FAIL,
+               false);
+    AddDnsRule(&rules, "empty", dns_protocol::kTypeA, MockDnsClientRule::EMPTY,
+               false);
+    AddDnsRule(&rules, "empty", dns_protocol::kTypeAAAA,
+               MockDnsClientRule::EMPTY, false);
+
+    AddDnsRule(&rules, "slow_nx", dns_protocol::kTypeA, MockDnsClientRule::FAIL,
+               true);
+    AddDnsRule(&rules, "slow_nx", dns_protocol::kTypeAAAA,
+               MockDnsClientRule::FAIL, true);
+
+    AddDnsRule(&rules, "4slow_ok", dns_protocol::kTypeA, MockDnsClientRule::OK,
+               true);
+    AddDnsRule(&rules, "4slow_ok", dns_protocol::kTypeAAAA,
+               MockDnsClientRule::OK, false);
+    AddDnsRule(&rules, "6slow_ok", dns_protocol::kTypeA, MockDnsClientRule::OK,
+               false);
+    AddDnsRule(&rules, "6slow_ok", dns_protocol::kTypeAAAA,
+               MockDnsClientRule::OK, true);
+    AddDnsRule(&rules, "4slow_4ok", dns_protocol::kTypeA, MockDnsClientRule::OK,
+               true);
+    AddDnsRule(&rules, "4slow_4ok", dns_protocol::kTypeAAAA,
+               MockDnsClientRule::EMPTY, false);
+    AddDnsRule(&rules, "4slow_4timeout", dns_protocol::kTypeA,
+               MockDnsClientRule::TIMEOUT, true);
+    AddDnsRule(&rules, "4slow_4timeout", dns_protocol::kTypeAAAA,
+               MockDnsClientRule::OK, false);
+    AddDnsRule(&rules, "4slow_6timeout", dns_protocol::kTypeA,
+               MockDnsClientRule::OK, true);
+    AddDnsRule(&rules, "4slow_6timeout", dns_protocol::kTypeAAAA,
+               MockDnsClientRule::TIMEOUT, false);
+    AddDnsRule(&rules, "4collision", dns_protocol::kTypeA,
+               IPAddress(127, 0, 53, 53), false);
+    AddDnsRule(&rules, "4collision", dns_protocol::kTypeAAAA,
+               MockDnsClientRule::EMPTY, false);
+    AddDnsRule(&rules, "6collision", dns_protocol::kTypeA,
+               MockDnsClientRule::EMPTY, false);
+    // This isn't the expected IP for collisions (but looks close to it).
+    AddDnsRule(&rules, "6collision", dns_protocol::kTypeAAAA,
+               IPAddress(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 127, 0, 53, 53),
+               false);
+
+    return rules;
   }
 
-  void AddDnsRule(const std::string& prefix,
-                  uint16_t qtype,
-                  MockDnsClientRule::Result result,
-                  bool delay) {
-    dns_rules_.push_back(MockDnsClientRule(prefix, qtype, result, delay));
+  // Adds a rule to |rules|.
+  static void AddDnsRule(MockDnsClientRuleList* rules,
+                         const std::string& prefix,
+                         uint16_t qtype,
+                         MockDnsClientRule::ResultType result_type,
+                         bool delay) {
+    rules->emplace_back(prefix, qtype, MockDnsClientRule::Result(result_type),
+                        delay);
+  }
+
+  static void AddDnsRule(MockDnsClientRuleList* rules,
+                         const std::string& prefix,
+                         uint16_t qtype,
+                         const IPAddress& result_ip,
+                         bool delay) {
+    rules->emplace_back(prefix, qtype,
+                        MockDnsClientRule::Result(
+                            BuildTestDnsResponse(prefix, std::move(result_ip))),
+                        delay);
+  }
+
+  static void AddDnsRule(MockDnsClientRuleList* rules,
+                         const std::string& prefix,
+                         uint16_t qtype,
+                         IPAddress result_ip,
+                         std::string cannonname,
+                         bool delay) {
+    rules->emplace_back(
+        prefix, qtype,
+        MockDnsClientRule::Result(BuildTestDnsResponse(
+            prefix, std::move(result_ip), std::move(cannonname))),
+        delay);
   }
 
   void ChangeDnsConfig(const DnsConfig& config) {
@@ -3409,7 +3547,6 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  MockDnsClientRuleList dns_rules_;
   // Owned by |resolver_|.
   MockDnsClient* dns_client_;
 };
@@ -3642,9 +3779,7 @@ TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask) {
 
   // Simulate the case when the preference or policy has disabled the DNS client
   // causing AbortDnsTasks.
-  resolver_->SetDnsClient(
-      std::unique_ptr<DnsClient>(new MockDnsClient(DnsConfig(), dns_rules_)));
-  ChangeDnsConfig(CreateValidDnsConfig());
+  UseMockDnsClient(CreateValidDnsConfig(), CreateDefaultDnsRules());
 
   // First request is resolved by MockDnsClient, others should fail due to
   // disabled fallback to ProcTask.
@@ -3696,9 +3831,7 @@ TEST_F(HostResolverImplDnsTest, NoFallbackToProcTask_ResolveHost) {
 
   // Simulate the case when the preference or policy has disabled the DNS
   // client causing AbortDnsTasks.
-  resolver_->SetDnsClient(
-      std::unique_ptr<DnsClient>(new MockDnsClient(DnsConfig(), dns_rules_)));
-  ChangeDnsConfig(CreateValidDnsConfig());
+  UseMockDnsClient(CreateValidDnsConfig(), CreateDefaultDnsRules());
 
   // First request is resolved by MockDnsClient, others should fail due to
   // disabled fallback to ProcTask.
@@ -4253,6 +4386,41 @@ TEST_F(HostResolverImplDnsTest, BypassDnsTask_ResolveHost) {
     EXPECT_THAT(responses[i]->result_error(), IsOk());
 }
 
+#if BUILDFLAG(ENABLE_MDNS)
+// Test that non-address queries for hosts ending in ".local" are resolved using
+// the MDNS resolver.
+TEST_F(HostResolverImplDnsTest, BypassDnsToMdnsWithNonAddress) {
+  // Ensure DNS task and system (proc) requests will fail.
+  MockDnsClientRuleList rules;
+  rules.emplace_back("myhello.local", dns_protocol::kTypeTXT,
+                     MockDnsClientRule::Result(MockDnsClientRule::FAIL),
+                     false /* delay */);
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+  proc_->AddRuleForAllFamilies(std::string(), std::string());
+
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+  // 2 socket creations for every transaction.
+  EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(2);
+
+  HostResolver::ResolveHostParameters dns_parameters;
+  dns_parameters.dns_query_type = DnsQueryType::TXT;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 80), NetLogWithSource(), dns_parameters));
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseTxt,
+                                      sizeof(kMdnsResponseTxt));
+  proc_->SignalMultiple(1u);
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetTextResults(),
+              testing::Optional(testing::ElementsAre("foo", "bar")));
+}
+#endif  // BUILDFLAG(ENABLE_MDNS)
+
 // Test that DNS task is always used when explicitly requested as the source,
 // even with a case that would normally bypass it eg hosts ending in ".local".
 TEST_F(HostResolverImplDnsTest, DnsNotBypassedWhenDnsSource) {
@@ -4470,8 +4638,7 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   resolver_.reset(new TestHostResolverImpl(DefaultOptions(), NULL, false));
   resolver_->set_proc_params_for_test(DefaultParams(proc.get()));
 
-  resolver_->SetDnsClient(
-      std::unique_ptr<DnsClient>(new MockDnsClient(DnsConfig(), dns_rules_)));
+  UseMockDnsClient(DnsConfig(), CreateDefaultDnsRules());
 
   // Get the expected output.
   AddressList addrlist;
@@ -4548,8 +4715,7 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost_ResolveHost) {
                                     CreateExpected("::1", 80)));
 
   // With DnsClient
-  resolver_->SetDnsClient(std::unique_ptr<DnsClient>(
-      new MockDnsClient(CreateValidDnsConfig(), dns_rules_)));
+  UseMockDnsClient(CreateValidDnsConfig(), CreateDefaultDnsRules());
   ResolveHostResponseHelper builtin_response(resolver_->CreateRequest(
       HostPortPair("localhost", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(builtin_response.result_error(), IsOk());
@@ -5608,15 +5774,16 @@ TEST_F(HostResolverImplDnsTest, NotFoundTTL_ResolveHost) {
 }
 
 TEST_F(HostResolverImplDnsTest, NoCanonicalName) {
-  AddDnsRule("alias", dns_protocol::kTypeA,
-             MockDnsClientRule::Result(IPAddress::IPv4Localhost(), "canonical"),
-             false);
-  AddDnsRule("alias", dns_protocol::kTypeAAAA,
-             MockDnsClientRule::Result(IPAddress::IPv6Localhost(), "canonical"),
-             false);
+  MockDnsClientRuleList rules;
+  AddDnsRule(&rules, "alias", dns_protocol::kTypeA, IPAddress::IPv4Localhost(),
+             "canonical", false);
+  AddDnsRule(&rules, "alias", dns_protocol::kTypeAAAA,
+             IPAddress::IPv6Localhost(), "canonical", false);
+
   CreateResolver();
-  ChangeDnsConfig(CreateValidDnsConfig());
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
   set_allow_fallback_to_proctask(false);
+
   Request* request = CreateRequest("alias", 80);
   EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
   ASSERT_THAT(request->WaitForResult(), IsOk());
@@ -5627,15 +5794,16 @@ TEST_F(HostResolverImplDnsTest, NoCanonicalName) {
 }
 
 TEST_F(HostResolverImplDnsTest, NoCanonicalName_CreateRequest) {
-  AddDnsRule("alias", dns_protocol::kTypeA,
-             MockDnsClientRule::Result(IPAddress::IPv4Localhost(), "canonical"),
-             false);
-  AddDnsRule("alias", dns_protocol::kTypeAAAA,
-             MockDnsClientRule::Result(IPAddress::IPv6Localhost(), "canonical"),
-             false);
+  MockDnsClientRuleList rules;
+  AddDnsRule(&rules, "alias", dns_protocol::kTypeA, IPAddress::IPv4Localhost(),
+             "canonical", false);
+  AddDnsRule(&rules, "alias", dns_protocol::kTypeAAAA,
+             IPAddress::IPv6Localhost(), "canonical", false);
+
   CreateResolver();
-  ChangeDnsConfig(CreateValidDnsConfig());
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
   set_allow_fallback_to_proctask(false);
+
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("alias", 80), NetLogWithSource(), base::nullopt));
   ASSERT_THAT(response.result_error(), IsOk());
@@ -5647,15 +5815,16 @@ TEST_F(HostResolverImplDnsTest, NoCanonicalName_CreateRequest) {
 }
 
 TEST_F(HostResolverImplDnsTest, CanonicalName_CreateRequest) {
-  AddDnsRule("alias", dns_protocol::kTypeA,
-             MockDnsClientRule::Result(IPAddress::IPv4Localhost(), "canonical"),
-             false);
-  AddDnsRule("alias", dns_protocol::kTypeAAAA,
-             MockDnsClientRule::Result(IPAddress::IPv6Localhost(), "canonical"),
-             false);
+  MockDnsClientRuleList rules;
+  AddDnsRule(&rules, "alias", dns_protocol::kTypeA, IPAddress::IPv4Localhost(),
+             "canonical", false);
+  AddDnsRule(&rules, "alias", dns_protocol::kTypeAAAA,
+             IPAddress::IPv6Localhost(), "canonical", false);
+
   CreateResolver();
-  ChangeDnsConfig(CreateValidDnsConfig());
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
   set_allow_fallback_to_proctask(false);
+
   HostResolver::ResolveHostParameters params;
   params.include_canonical_name = true;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -5667,15 +5836,16 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_CreateRequest) {
 }
 
 TEST_F(HostResolverImplDnsTest, CanonicalName_PreferV6_CreateRequest) {
-  AddDnsRule("alias", dns_protocol::kTypeA,
-             MockDnsClientRule::Result(IPAddress::IPv4Localhost(), "wrong"),
-             false);
-  AddDnsRule("alias", dns_protocol::kTypeAAAA,
-             MockDnsClientRule::Result(IPAddress::IPv6Localhost(), "correct"),
-             true);
+  MockDnsClientRuleList rules;
+  AddDnsRule(&rules, "alias", dns_protocol::kTypeA, IPAddress::IPv4Localhost(),
+             "wrong", false);
+  AddDnsRule(&rules, "alias", dns_protocol::kTypeAAAA,
+             IPAddress::IPv6Localhost(), "correct", true);
+
   CreateResolver();
-  ChangeDnsConfig(CreateValidDnsConfig());
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
   set_allow_fallback_to_proctask(false);
+
   HostResolver::ResolveHostParameters params;
   params.include_canonical_name = true;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -5689,12 +5859,13 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_PreferV6_CreateRequest) {
 }
 
 TEST_F(HostResolverImplDnsTest, CanonicalName_V4Only_CreateRequest) {
-  AddDnsRule("alias", dns_protocol::kTypeA,
-             MockDnsClientRule::Result(IPAddress::IPv4Localhost(), "correct"),
-             false);
+  MockDnsClientRuleList rules;
+  AddDnsRule(&rules, "alias", dns_protocol::kTypeA, IPAddress::IPv4Localhost(),
+             "correct", false);
   CreateResolver();
-  ChangeDnsConfig(CreateValidDnsConfig());
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
   set_allow_fallback_to_proctask(false);
+
   HostResolver::ResolveHostParameters params;
   params.dns_query_type = DnsQueryType::A;
   params.include_canonical_name = true;
@@ -6211,6 +6382,253 @@ TEST_F(HostResolverImplDnsTest, ModeForHistogram) {
     EXPECT_EQ(resolver_->mode_for_histogram_,
               HostResolverImpl::MODE_FOR_HISTOGRAM_SYSTEM_SUPPORTS_DOH);
   }
+}
+
+TEST_F(HostResolverImplDnsTest, TxtQuery) {
+  // Simulate two separate DNS records, each with multiple strings.
+  std::vector<std::string> foo_records = {"foo1", "foo2", "foo3"};
+  std::vector<std::string> bar_records = {"bar1", "bar2"};
+  std::vector<std::vector<std::string>> text_records = {foo_records,
+                                                        bar_records};
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     MockDnsClientRule::Result(
+                         BuildTestDnsResponse("host", std::move(text_records))),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::TXT;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetLogWithSource(), parameters));
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+
+  // Order between separate DNS records is undefined, but each record should
+  // stay in order as that order may be meaningful.
+  ASSERT_THAT(response.request()->GetTextResults(),
+              testing::Optional(testing::UnorderedElementsAre(
+                  "foo1", "foo2", "foo3", "bar1", "bar2")));
+  std::vector<std::string> results =
+      response.request()->GetTextResults().value();
+  EXPECT_NE(results.end(), std::search(results.begin(), results.end(),
+                                       foo_records.begin(), foo_records.end()));
+  EXPECT_NE(results.end(), std::search(results.begin(), results.end(),
+                                       bar_records.begin(), bar_records.end()));
+}
+
+TEST_F(HostResolverImplDnsTest, TxtQuery_NonexistentDomain) {
+  // Setup fallback to confirm it is not used for non-address results.
+  set_allow_fallback_to_proctask(true);
+  proc_->AddRuleForAllFamilies("host", "192.168.1.102");
+  proc_->SignalMultiple(1u);
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     MockDnsClientRule::Result(MockDnsClientRule::NODOMAIN),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::TXT;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetLogWithSource(), parameters));
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+}
+
+TEST_F(HostResolverImplDnsTest, TxtQuery_Failure) {
+  // Setup fallback to confirm it is not used for non-address results.
+  set_allow_fallback_to_proctask(true);
+  proc_->AddRuleForAllFamilies("host", "192.168.1.102");
+  proc_->SignalMultiple(1u);
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     MockDnsClientRule::Result(MockDnsClientRule::FAIL),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::TXT;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetLogWithSource(), parameters));
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+}
+
+TEST_F(HostResolverImplDnsTest, TxtQuery_Timeout) {
+  // Setup fallback to confirm it is not used for non-address results.
+  set_allow_fallback_to_proctask(true);
+  proc_->AddRuleForAllFamilies("host", "192.168.1.102");
+  proc_->SignalMultiple(1u);
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     MockDnsClientRule::Result(MockDnsClientRule::TIMEOUT),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::TXT;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetLogWithSource(), parameters));
+  EXPECT_THAT(response.result_error(), IsError(ERR_DNS_TIMED_OUT));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+}
+
+TEST_F(HostResolverImplDnsTest, TxtQuery_Empty) {
+  // Setup fallback to confirm it is not used for non-address results.
+  set_allow_fallback_to_proctask(true);
+  proc_->AddRuleForAllFamilies("host", "192.168.1.102");
+  proc_->SignalMultiple(1u);
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     MockDnsClientRule::Result(MockDnsClientRule::EMPTY),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::TXT;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetLogWithSource(), parameters));
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+}
+
+TEST_F(HostResolverImplDnsTest, TxtQuery_Malformed) {
+  // Setup fallback to confirm it is not used for non-address results.
+  set_allow_fallback_to_proctask(true);
+  proc_->AddRuleForAllFamilies("host", "192.168.1.102");
+  proc_->SignalMultiple(1u);
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     MockDnsClientRule::Result(MockDnsClientRule::MALFORMED),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::TXT;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetLogWithSource(), parameters));
+  EXPECT_THAT(response.result_error(), IsError(ERR_DNS_MALFORMED_RESPONSE));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+}
+
+TEST_F(HostResolverImplDnsTest, TxtQuery_MismatchedName) {
+  std::vector<std::vector<std::string>> text_records = {{"text"}};
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     MockDnsClientRule::Result(BuildTestDnsResponse(
+                         "host", std::move(text_records), "not.host")),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::TXT;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetLogWithSource(), parameters));
+  EXPECT_THAT(response.result_error(), IsError(ERR_DNS_MALFORMED_RESPONSE));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+}
+
+TEST_F(HostResolverImplDnsTest, TxtQuery_WrongType) {
+  // Respond to a TXT query with an A response.
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     MockDnsClientRule::Result(
+                         BuildTestDnsResponse("host", IPAddress(1, 2, 3, 4))),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::TXT;
+
+  // Responses for the wrong type should be ignored.
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("ok", 108), NetLogWithSource(), parameters));
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+}
+
+TEST_F(HostResolverImplDnsTest, TxtDnsQuery) {
+  // Simulate two separate DNS records, each with multiple strings.
+  std::vector<std::string> foo_records = {"foo1", "foo2", "foo3"};
+  std::vector<std::string> bar_records = {"bar1", "bar2"};
+  std::vector<std::vector<std::string>> text_records = {foo_records,
+                                                        bar_records};
+
+  MockDnsClientRuleList rules;
+  rules.emplace_back("host", dns_protocol::kTypeTXT,
+                     MockDnsClientRule::Result(
+                         BuildTestDnsResponse("host", std::move(text_records))),
+                     false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::DNS;
+  parameters.dns_query_type = DnsQueryType::TXT;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("host", 108), NetLogWithSource(), parameters));
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+
+  // Order between separate DNS records is undefined, but each record should
+  // stay in order as that order may be meaningful.
+  ASSERT_THAT(response.request()->GetTextResults(),
+              testing::Optional(testing::UnorderedElementsAre(
+                  "foo1", "foo2", "foo3", "bar1", "bar2")));
+  std::vector<std::string> results =
+      response.request()->GetTextResults().value();
+  EXPECT_NE(results.end(), std::search(results.begin(), results.end(),
+                                       foo_records.begin(), foo_records.end()));
+  EXPECT_NE(results.end(), std::search(results.begin(), results.end(),
+                                       bar_records.begin(), bar_records.end()));
 }
 
 }  // namespace net

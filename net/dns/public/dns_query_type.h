@@ -18,6 +18,7 @@ enum class DnsQueryType {
   UNSPECIFIED,
   A,
   AAAA,
+  TXT,
 };
 
 // |true| iff |dns_query_type| is an address-resulting type, convertable to and
