@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_NETWORK_DATA_PROMO_NOTIFICATION_H_
-#define CHROME_BROWSER_UI_ASH_NETWORK_DATA_PROMO_NOTIFICATION_H_
+#ifndef CHROME_BROWSER_UI_ASH_NETWORK_MOBILE_DATA_NOTIFICATIONS_H_
+#define CHROME_BROWSER_UI_ASH_NETWORK_MOBILE_DATA_NOTIFICATIONS_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -14,10 +14,10 @@
 // * "Chrome will use mobile data..." when cellular is the default network
 //   for the first time in a session.
 // * Prompt users to install data saver extension.
-class DataPromoNotification : public chromeos::NetworkStateHandlerObserver {
+class MobileDataNotifications : public chromeos::NetworkStateHandlerObserver {
  public:
-  DataPromoNotification();
-  ~DataPromoNotification() override;
+  MobileDataNotifications();
+  ~MobileDataNotifications() override;
 
  private:
   // NetworkStateHandlerObserver
@@ -35,10 +35,7 @@ class DataPromoNotification : public chromeos::NetworkStateHandlerObserver {
   // mobile notifications once per session.
   bool notifications_shown_;
 
-  // Factory for delaying showing promo notification.
-  base::WeakPtrFactory<DataPromoNotification> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DataPromoNotification);
+  DISALLOW_COPY_AND_ASSIGN(MobileDataNotifications);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_NETWORK_DATA_PROMO_NOTIFICATION_H_
+#endif  // CHROME_BROWSER_UI_ASH_NETWORK_MOBILE_DATA_NOTIFICATIONS_H_

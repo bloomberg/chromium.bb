@@ -37,11 +37,11 @@ class AshShellInit;
 class CastConfigClientMediaRouter;
 class ChromeNewWindowClient;
 class ContainedShellClient;
-class DataPromoNotification;
 class ImeControllerClient;
 class ImmersiveContextMus;
 class LoginScreenClient;
 class MediaClient;
+class MobileDataNotifications;
 class NetworkConnectDelegateChromeOS;
 class NightLightClient;
 class ScreenOrientationDelegateChromeos;
@@ -125,7 +125,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<policy::DisplaySettingsHandler> display_settings_handler_;
 
   // Initialized in PostBrowserStart in all configs:
-  std::unique_ptr<DataPromoNotification> data_promo_notification_;
+  std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
   std::unique_ptr<NightLightClient> night_light_client_;
 
   // Created for mash (both in single and multi-process).
