@@ -201,17 +201,17 @@ bool ServiceWorkerTaskQueue::ShouldEnqueueTask(BrowserContext* context,
 }
 
 void ServiceWorkerTaskQueue::AddPendingTaskToDispatchEvent(
-    const LazyContextId* context_id,
+    const LazyContextId& context_id,
     PendingTask task) {
-  DCHECK(context_id->is_for_service_worker());
+  DCHECK(context_id.is_for_service_worker());
 
   // TODO(lazyboy): Do we need to handle incognito context?
 
-  const ExtensionId& extension_id = context_id->extension_id();
+  const ExtensionId& extension_id = context_id.extension_id();
   if (pending_registrations_.count(extension_id) > 0u) {
     // If the worker hasn't finished registration, wait for it to complete.
-    pending_tasks_[extension_id].emplace_back(
-        context_id->service_worker_scope(), std::move(task));
+    pending_tasks_[extension_id].emplace_back(context_id.service_worker_scope(),
+                                              std::move(task));
     return;
   }
 
@@ -267,16 +267,16 @@ void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
 }
 
 void ServiceWorkerTaskQueue::RunTaskAfterStartWorker(
-    const LazyContextId* context_id,
+    const LazyContextId& context_id,
     PendingTask task) {
-  DCHECK(context_id->is_for_service_worker());
+  DCHECK(context_id.is_for_service_worker());
 
-  if (context_id->browser_context() != browser_context_)
+  if (context_id.browser_context() != browser_context_)
     return;
 
   content::StoragePartition* partition =
       BrowserContext::GetStoragePartitionForSite(
-          context_id->browser_context(), context_id->service_worker_scope());
+          context_id.browser_context(), context_id.service_worker_scope());
   content::ServiceWorkerContext* service_worker_context =
       partition->GetServiceWorkerContext();
 
@@ -286,8 +286,8 @@ void ServiceWorkerTaskQueue::RunTaskAfterStartWorker(
       FROM_HERE, service_worker_context,
       base::BindOnce(
           &ServiceWorkerTaskQueue::StartServiceWorkerOnIOToRunTask,
-          weak_factory_.GetWeakPtr(), context_id->service_worker_scope(),
-          context_id->extension_id(), service_worker_context, std::move(task)));
+          weak_factory_.GetWeakPtr(), context_id.service_worker_scope(),
+          context_id.extension_id(), service_worker_context, std::move(task)));
 }
 
 void ServiceWorkerTaskQueue::DidRegisterServiceWorker(
@@ -313,7 +313,7 @@ void ServiceWorkerTaskQueue::DidRegisterServiceWorker(
                              task_info.service_worker_scope);
     // TODO(lazyboy): Minimize number of GetServiceWorkerInfoOnIO calls. We
     // only need to call it for each unique service_worker_scope.
-    RunTaskAfterStartWorker(&context_id, std::move(task_info.task));
+    RunTaskAfterStartWorker(context_id, std::move(task_info.task));
   }
 
   pending_registrations_.erase(extension_id);
