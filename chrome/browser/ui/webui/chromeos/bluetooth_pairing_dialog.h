@@ -15,7 +15,7 @@ namespace chromeos {
 class BluetoothPairingDialog : public SystemWebDialogDelegate {
  public:
   // Shows a bluetooth pairing dialog. The dialog is returned for testing.
-  static BluetoothPairingDialog* ShowDialog(
+  static SystemWebDialogDelegate* ShowDialog(
       const std::string& address,
       const base::string16& name_for_display,
       bool paired,
@@ -28,11 +28,15 @@ class BluetoothPairingDialog : public SystemWebDialogDelegate {
                          bool connected);
   ~BluetoothPairingDialog() override;
 
+  // SystemWebDialogDelegate
+  const std::string& Id() override;
+
   // ui::WebDialogDelegate
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
 
  private:
+  std::string address_;
   base::DictionaryValue device_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothPairingDialog);

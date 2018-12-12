@@ -24,10 +24,23 @@ namespace chromeos {
 
 class SystemWebDialogDelegate : public ui::WebDialogDelegate {
  public:
+  // Returns the instance whose Id() matches |id|. If more than one instance
+  // matches, the first matching instance created is returned.
+  static SystemWebDialogDelegate* FindInstance(const std::string& id);
+
   // |gurl| is the HTML file path for the dialog content and must be set.
   // |title| may be empty in which case ShouldShowDialogTitle() returns false.
   SystemWebDialogDelegate(const GURL& gurl, const base::string16& title);
   ~SystemWebDialogDelegate() override;
+
+  // Returns an identifier used for matching an instance in FindInstance.
+  // By default returns gurl_.spec() which should be sufficient for dialogs
+  // that only support a single instance.
+  virtual const std::string& Id();
+
+  // Focuses the dialog window. Note: No-op for modal dialogs, see
+  // implementation for details.
+  void Focus();
 
   // ui::WebDialogDelegate
   ui::ModalType GetDialogModalType() const override;
@@ -58,7 +71,7 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   static constexpr int kDialogHeight = 480;
 
  protected:
-  FRIEND_TEST_ALL_PREFIXES(SystemWebDialogTest, NonModalTest);
+  FRIEND_TEST_ALL_PREFIXES(SystemWebDialogLoginTest, NonModalTest);
   gfx::NativeWindow dialog_window() const { return dialog_window_; }
 
  private:
