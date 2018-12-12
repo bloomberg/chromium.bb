@@ -240,9 +240,9 @@ Tree link: https://github.com/PolymerElements/paper-tabs/tree/v2.0.0
 
 Name: paper-tooltip
 Repository: https://github.com/PolymerElements/paper-tooltip.git
-Tree: v2.0.0
-Revision: d6233ee968fa0670bc7381ff358e0e4eba64d5ff
-Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v2.0.0
+Tree: v2.1.1
+Revision: 8507ec69ec4c943da4ce7ea859f55db9ab9d28f5
+Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v2.1.1
 
 Name: polymer
 Repository: https://github.com/Polymer/polymer.git
