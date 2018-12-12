@@ -5,5 +5,6 @@ per-file local_ntp_resources.grd=file://components/search/OWNERS
 per-file profile_signin_confirmation*=achuith@chromium.org
 per-file snippets_internals*=file://components/ntp_snippets/OWNERS
 per-file sync_file_system_internals_resources.*=tzik@chromium.org
+per-file policy*=file://chromeos/policy/OWNERS
 
 # COMPONENT: UI
