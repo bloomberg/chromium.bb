@@ -15,17 +15,17 @@ import java.util.List;
  */
 class ContextualSearchInternalStateControllerWrapper
         extends ContextualSearchInternalStateController {
-    static final List<InternalState> EXPECTED_TAP_RESOLVE_SEQUENCE =
+    static final List<Integer> EXPECTED_TAP_RESOLVE_SEQUENCE =
             CollectionUtil.newArrayList(InternalState.TAP_RECOGNIZED,
                     InternalState.TAP_GESTURE_COMMIT, InternalState.GATHERING_SURROUNDINGS,
                     InternalState.DECIDING_SUPPRESSION, InternalState.START_SHOWING_TAP_UI,
                     InternalState.SHOW_FULL_TAP_UI, InternalState.RESOLVING);
-    static final List<InternalState> EXPECTED_LONGPRESS_SEQUENCE =
+    static final List<Integer> EXPECTED_LONGPRESS_SEQUENCE =
             CollectionUtil.newArrayList(InternalState.LONG_PRESS_RECOGNIZED,
                     InternalState.GATHERING_SURROUNDINGS, InternalState.SHOWING_LONGPRESS_SEARCH);
 
-    private List<InternalState> mStartedStates = new ArrayList<InternalState>();
-    private List<InternalState> mFinishedStates = new ArrayList<InternalState>();
+    private List<Integer> mStartedStates = new ArrayList<Integer>();
+    private List<Integer> mFinishedStates = new ArrayList<Integer>();
 
     /**
      * Creates a wrapper around a {@link ContextualSearchInternalStateController} with the given
@@ -39,13 +39,13 @@ class ContextualSearchInternalStateControllerWrapper
     }
 
     @Override
-    void notifyStartingWorkOn(InternalState state) {
+    void notifyStartingWorkOn(@InternalState int state) {
         mStartedStates.add(state);
         super.notifyStartingWorkOn(state);
     }
 
     @Override
-    void notifyFinishedWorkOn(InternalState state) {
+    void notifyFinishedWorkOn(@InternalState int state) {
         mFinishedStates.add(state);
         super.notifyFinishedWorkOn(state);
     }
@@ -53,14 +53,14 @@ class ContextualSearchInternalStateControllerWrapper
     /**
      * @return A {@link List} of all states that were started.
      */
-    List<InternalState> getStartedStates() {
+    List<Integer> getStartedStates() {
         return mStartedStates;
     }
 
     /**
      * @return A {@link List} of all states that were finished.
      */
-    List<InternalState> getFinishedStates() {
+    List<Integer> getFinishedStates() {
         return mFinishedStates;
     }
 
