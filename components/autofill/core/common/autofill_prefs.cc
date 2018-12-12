@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/common/autofill_prefs.h"
 
+#include "base/base64.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -267,7 +268,10 @@ void SetPaymentsIntegrationEnabled(PrefService* prefs, bool enabled) {
 }
 
 std::string GetAllProfilesValidityMapsEncodedString(const PrefService* prefs) {
-  return prefs->GetString(kAutofillProfileValidity);
+  std::string value = prefs->GetString(kAutofillProfileValidity);
+  if (base::Base64Decode(value, &value))
+    return value;
+  return std::string();
 }
 
 void SetUserOptedInWalletSyncTransport(PrefService* prefs,

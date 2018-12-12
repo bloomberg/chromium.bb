@@ -613,7 +613,7 @@ class PersonalDataManager : public KeyedService,
   base::ObserverList<PersonalDataManagerObserver>::Unchecked observers_;
 
   // |profile_valditiies_need_update| whenever the profile validities are out of
-  bool profile_validities_need_update = true;
+  bool profile_validities_need_update_ = true;
 
  private:
   // Saves |imported_credit_card| to the WebDB if it exists. Returns the guid of
@@ -740,10 +740,7 @@ class PersonalDataManager : public KeyedService,
   void ApplyCardFixesAndCleanups();
 
   // Resets |synced_profile_validity_|.
-  void ResetProfileValidity() {
-    synced_profile_validity_.reset();
-    profile_validities_need_update = true;
-  }
+  void ResetProfileValidity();
 
   const std::string app_locale_;
 

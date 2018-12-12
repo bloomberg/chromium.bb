@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
@@ -2137,6 +2138,7 @@ TEST_F(PersonalDataManagerTest,
         profile_validity_map;
     ASSERT_TRUE(user_profile_validity_map.SerializeToString(
         &autofill_profile_validity));
+    base::Base64Encode(autofill_profile_validity, &autofill_profile_validity);
     personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
                                              autofill_profile_validity);
   }
@@ -6751,6 +6753,7 @@ TEST_F(PersonalDataManagerTest, RequestProfileValidity) {
   // Empty validity map.
   ASSERT_TRUE(
       user_profile_validity_map.SerializeToString(&autofill_profile_validity));
+  base::Base64Encode(autofill_profile_validity, &autofill_profile_validity);
   personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
                                            autofill_profile_validity);
 
@@ -6777,6 +6780,7 @@ TEST_F(PersonalDataManagerTest, RequestProfileValidity) {
       profile_validity_map;
   ASSERT_TRUE(
       user_profile_validity_map.SerializeToString(&autofill_profile_validity));
+  base::Base64Encode(autofill_profile_validity, &autofill_profile_validity);
   personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
                                            autofill_profile_validity);
 
@@ -6791,6 +6795,7 @@ TEST_F(PersonalDataManagerTest, RequestProfileValidity) {
       profile_validity_map;
   ASSERT_TRUE(
       user_profile_validity_map.SerializeToString(&autofill_profile_validity));
+  base::Base64Encode(autofill_profile_validity, &autofill_profile_validity);
   personal_data_->pref_service_->SetString(prefs::kAutofillProfileValidity,
                                            autofill_profile_validity);
 
