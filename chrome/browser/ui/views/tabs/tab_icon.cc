@@ -17,6 +17,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
@@ -378,9 +379,10 @@ void TabIcon::PaintLoadingProgressIndicator(gfx::Canvas* canvas,
       !animation_state_.loading_progress_fade_out) {
     return;
   }
+  const double progress = gfx::Tween::CalculateValue(
+      gfx::Tween::EASE_IN_OUT, animation_state_.loading_progress.value_or(1.0));
   bounds.set_width(bounds.height() +
-                   animation_state_.loading_progress.value_or(1.0) *
-                       (bounds.width() - bounds.height()));
+                   progress * (bounds.width() - bounds.height()));
 
   cc::PaintFlags flags;
   flags.setColor(color);
@@ -476,9 +478,11 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
     return;
 
   cc::PaintFlags flags;
-  double fade_in_progress = UseNewLoadingAnimation()
-                                ? *animation_state_.favicon_fade_in_progress
-                                : 1.0;
+  double fade_in_progress =
+      UseNewLoadingAnimation() ? gfx::Tween::CalculateValue(
+                                     gfx::Tween::FAST_OUT_SLOW_IN,
+                                     *animation_state_.favicon_fade_in_progress)
+                               : 1.0;
   flags.setAlpha(fade_in_progress * SK_AlphaOPAQUE);
   // Drop in the new favicon from the top while it's fading in.
   const int offset = round((fade_in_progress - 1.0) * 4.0);
