@@ -5,7 +5,7 @@
 <script>
 const holderElement = document.getElementById("holder");
 
-const constructedStyleSheet = document.createEmptyCSSStyleSheet();
+const constructedStyleSheet = new CSSStyleSheet();
 constructedStyleSheet.insertRule("* { color: red; }");
 window.customElements.define("element-constructed", class extends HTMLElement {
   constructor() {
