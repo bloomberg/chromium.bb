@@ -6884,6 +6884,9 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   if (enable_srgb && feature_info_->feature_flags().desktop_srgb_support) {
     state_.EnableDisableFramebufferSRGB(enable_srgb);
   }
+  if (workarounds().clamp_texture_base_level_and_max_level) {
+    tex->ApplyClampedBaseLevelAndMaxLevelToDriver();
+  }
   if (enable_srgb && workarounds().decode_encode_srgb_for_generatemipmap) {
     if (target == GL_TEXTURE_2D) {
       if (!InitializeSRGBConverter("generateMipmap")) {

@@ -348,6 +348,8 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // Marks a particular level as cleared or uncleared.
   void SetLevelCleared(GLenum target, GLint level, bool cleared);
 
+  void ApplyClampedBaseLevelAndMaxLevelToDriver();
+
   MemoryTypeTracker* GetMemTracker();
 
  private:
