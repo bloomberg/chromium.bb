@@ -543,12 +543,6 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, PostUploadIllegalFilePath) {
 // Test case to verify that redirects to data: URLs are properly disallowed,
 // even when invoked through a reload.
 // See https://crbug.com/723796.
-//
-// Note: This is PlzNavigate specific test, as the behavior of reloads in the
-// non-PlzNavigate path differs. The WebURLRequest for the reload is generated
-// based on Blink's state instead of the history state in the browser process,
-// which ends up loading the originally blocked URL. With PlzNavigate, the
-// reload uses the NavigationEntry state to create a navigation and commit it.
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
                        VerifyBlockedErrorPageURL_Reload) {
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
