@@ -33,13 +33,6 @@ class MediaStreamAudioRenderer
   // Sets the output volume.
   virtual void SetVolume(float volume) = 0;
 
-  // Returns current output device information. If the information is not
-  // available yet, this method may block until it becomes available.
-  // If the renderer is not associated with any output device, |device_status|
-  // of OutputDeviceInfo should be set to OUTPUT_DEVICE_STATUS_ERROR_INTERNAL.
-  // Must never be called on the IO thread.
-  virtual media::OutputDeviceInfo GetOutputDeviceInfo() = 0;
-
   // Attempts to switch the audio output device.
   // Once the attempt is finished, |callback| is invoked with the result of the
   // operation passed as a parameter. The result is a value from the

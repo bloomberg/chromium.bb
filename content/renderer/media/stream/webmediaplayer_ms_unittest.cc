@@ -277,9 +277,6 @@ class MockMediaStreamAudioRenderer : public MediaStreamAudioRenderer {
   void Play() override {}
   void Pause() override {}
   void SetVolume(float volume) override {}
-  media::OutputDeviceInfo GetOutputDeviceInfo() override {
-    return media::OutputDeviceInfo();
-  }
 
   void SwitchOutputDevice(const std::string& device_id,
                           media::OutputDeviceStatusCB callback) override {}

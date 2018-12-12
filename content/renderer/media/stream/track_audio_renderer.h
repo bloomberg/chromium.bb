@@ -73,7 +73,6 @@ class CONTENT_EXPORT TrackAudioRenderer
   void Play() override;
   void Pause() override;
   void SetVolume(float volume) override;
-  media::OutputDeviceInfo GetOutputDeviceInfo() override;
   base::TimeDelta GetCurrentRenderTime() override;
   bool IsLocalRenderer() override;
   void SwitchOutputDevice(const std::string& device_id,
