@@ -2281,6 +2281,13 @@ extern const char kAutofillCreditCardUploadDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
+#if defined(WEBRTC_USE_PIPEWIRE)
+
+extern const char kWebrtcPipeWireCapturerName[];
+extern const char kWebrtcPipeWireCapturerDescription[];
+
+#endif  // #if defined(WEBRTC_USE_PIPEWIRE)
+
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in
 // alphabetical order. See top instructions for more.
