@@ -166,7 +166,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="2154484045852737596">Endre kortet</translation>
 <translation id="2154710561487035718">Kopier nettadresse</translation>
 <translation id="2156074688469523661">Andre nettsteder (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2173302385160625112">Sjekk Internett-tilkoblingen</translation>
+<translation id="2173302385160625112">Sjekk internettilkoblingen</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>
 <translation id="2221802148287197464">Automatisk</translation>
 <translation id="2227444325776770048">Fortsett som <ph name="USER_FULL_NAME" /></translation>
@@ -1032,7 +1032,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> – fane</translation>
 <translation id="885701979325669005">Lagring</translation>
 <translation id="8901170036886848654">Fant ingen bokmerker</translation>
-<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d åpen fane. Trykk for å skifte fane}other{%1$d åpne faner. Trykk for å skifte fane}}</translation>
+<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d åpen fane – trykk for å skifte fane}other{%1$d åpne faner – trykk for å skifte fane}}</translation>
 <translation id="8905378131945614900">Kunne ikke installere VR-modulen</translation>
 <translation id="8909135823018751308">Del</translation>
 <translation id="8912362522468806198">Google-konto</translation>
@@ -1041,7 +1041,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Åpne i et annet vindu</translation>
 <translation id="8951232171465285730">Chrome har spart deg for <ph name="MEGABYTES" /> MB</translation>
-<translation id="8958424370300090006">Blokker informasjonskapsler for et spesifikt nettsted.</translation>
+<translation id="8958424370300090006">Blokkér informasjonskapsler for et spesifikt nettsted.</translation>
 <translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>
 <translation id="8965591936373831584">venter</translation>
 <translation id="8972098258593396643">Vil du laste ned til standardmappen?</translation>

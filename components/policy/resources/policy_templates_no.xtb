@@ -108,10 +108,10 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
           Som standard er ingen moduser for hurtigopplåsing tilgjengelige for administrerte enheter.</translation>
 <translation id="123081309365616809">Slå på casting av innhold til enheten</translation>
-<translation id="1231349879329465225">Lar deg slå Fast transition av og på.
+<translation id="1231349879329465225">Lar deg slå Fast Transition av og på.
       Dette gjelder alle brukere og alle grensesnitt på enheten.
       For at Fast Transition skal kunne brukes, må både denne innstillingen og ONC-området (for hvert nettverk) være slått på.
-      Når Fast Transition er på, forblir den på inntil regelen endres for å slå den av.
+      Når Fast Transition er på, forblir det på inntil regelen endres for å slå det av.
 
       Hvis denne regelen ikke er angitt eller er satt til «false» (usann), brukes ikke Fast Transition.
       Hvis regelen er angitt som «true» (sant), brukes Fast Transition når det støttes av det trådløse tilgangspunktet.</translation>

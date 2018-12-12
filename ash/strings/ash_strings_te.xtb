@@ -56,11 +56,11 @@
 <translation id="1836215606488044471">సహాయకం (లోడ్ అవుతోంది...)</translation>
 <translation id="1850504506766569011">Wi-Fi నిలిపివేయబడింది.</translation>
 <translation id="1864454756846565995">USB-C పరికరం (వెనుకవైపు పోర్ట్)</translation>
-<translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు దర్పణం చేస్తోంది</translation>
+<translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు మిర్రరింగ్ చేస్తోంది</translation>
 <translation id="1885785240814121742">వేలిముద్రతో అన్‌లాక్ చేయండి</translation>
 <translation id="1919743966458266018">విధి నిర్వాహికిని తెరిచే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="1923539912171292317">స్వయంచాలక క్లిక్‌లు</translation>
-<translation id="1928739107511554905">అప్‌డేట్‌ని పొందడానికి, కీబోర్డ్‌‌ని అలానే జోడించి ఉంచి మీ Chromebookని పునఃప్రారంభించడం కోసం టచ్‌స్క్రీన్‌ని ఉపయోగించండి.</translation>
+<translation id="1928739107511554905">అప్‌డేట్‌ని పొందడానికి, కీబోర్డ్‌ని అలానే జోడించి ఉంచి మీ Chromebookని పునఃప్రారంభించడం కోసం టచ్‌స్క్రీన్‌ని ఉపయోగించండి.</translation>
 <translation id="1942830294380034169">నిండిపోయిన బటన్</translation>
 <translation id="1951012854035635156">సహాయకం</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -75,7 +75,7 @@
 <translation id="2081529251031312395">ఇప్పటికీ $1 తర్వాత సైన్ ఇన్ చేయవచ్చు.</translation>
 <translation id="2127372758936585790">తక్కువ-పవర్ గల ఛార్జర్</translation>
 <translation id="2135456203358955318">డాక్ చేయబడిన మాగ్నిఫైయర్</translation>
-<translation id="2144487987174258011">Adobe Flash Playerని నవీకరించడానికి పున:ప్రారంభించండి</translation>
+<translation id="2144487987174258011">Adobe Flash Playerని అప్‌డేట్ చేయడానికి పున:ప్రారంభించండి</translation>
 <translation id="2208323208084708176">ఏకీకృత డెస్క్‌టాప్ మోడ్</translation>
 <translation id="2220572644011485463">PIN లేదా పాస్‌వర్డ్</translation>
 <translation id="225680501294068881">పరికరాల కోసం స్కాన్ చేస్తోంది...</translation>
@@ -138,7 +138,7 @@
 <translation id="3081696990447829002">మెనూని విస్తరించు</translation>
 <translation id="3087734570205094154">దిగువ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (బ్లూటూత్)</translation>
-<translation id="3126069444801937830">నవీకరించడానికి పునఃప్రారంభించండి</translation>
+<translation id="3126069444801937830">అప్‌డేట్ చేయడానికి పునఃప్రారంభించండి</translation>
 <translation id="315116470104423982">మొబైల్ డేటా</translation>
 <translation id="3151786313568798007">దృగ్విన్యాసం</translation>
 <translation id="3153444934357957346">మీరు బహుళ సైన్-ఇన్‌లో గరిష్టంగా <ph name="MULTI_PROFILE_USER_LIMIT" /> ఖాతాలను మాత్రమే కలిగి ఉండవచ్చు.</translation>
@@ -200,7 +200,7 @@
 <translation id="4261870227682513959">నోటిఫికేషన్ సెట్టింగ్‌లను చూపుతుంది. నోటిఫికేషన్‌లు ఆఫ్ చేయబడి ఉన్నాయి</translation>
 <translation id="4269883910223712419">ఈ పరికర నిర్వాహకుడికి వీటిని చేయగల సామర్థ్యం ఉంది:</translation>
 <translation id="4274921305979314545">మీ Chromebookను మీ ఫోన్‌కు కనెక్ట్ చేయండి</translation>
-<translation id="4279490309300973883">ప్రతిబింబిస్తుంది</translation>
+<translation id="4279490309300973883">మిర్రరింగ్</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> యాక్టివేట్ చేయబడుతోంది</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">మీరు అధిక కాంట్రాస్ట్‌ కోసం కీబోర్డ్ షార్ట్‌కట్‌ను నొక్కారు. మీరు దీన్ని ఆన్ చేయాలనుకుంటున్నారా?</translation>
@@ -291,7 +291,7 @@
 <translation id="5977415296283489383">హెడ్‌ఫోన్</translation>
 <translation id="5978382165065462689">రిమోట్ సహాయం విధానంలో మీ స్క్రీన్ నియంత్రణను భాగస్వామ్యం చేస్తోంది.</translation>
 <translation id="5980301590375426705">అతిథిగా నిష్క్రమించు</translation>
-<translation id="598882571027504733">అప్‌డేట్‌ని పొందడానికి, కీబోర్డ్‌‌ని అలానే జోడించి ఉంచి మీ Chromebookని పునఃప్రారంభించండి.</translation>
+<translation id="598882571027504733">అప్‌డేట్‌ని పొందడానికి, కీబోర్డ్‌ని అలానే జోడించి ఉంచి మీ Chromebookని పునఃప్రారంభించండి.</translation>
 <translation id="5992218262414051481">అధిక క్రాంటాస్ట్ మోడ్ ఆరంభించబడింది. దాన్ని ఆఫ్‌కి టోగుల్ చేయడం కోసం మళ్లీ Ctrl+Search+Hని నొక్కండి.</translation>
 <translation id="6018164090099858612">ప్రతిబింబ మోడ్ నుండి నిష్క్రమిస్తోంది</translation>
 <translation id="6043212731627905357">మీ <ph name="DEVICE_TYPE" />తో ఈ మానిటర్ పని చేయడం లేదు (మానిటర్‌కు మద్దతు లేదు).</translation>
@@ -382,13 +382,13 @@
 <translation id="7569509451529460200">బ్రెయిలీ మరియు ChromeVox ప్రారంభించబడ్డాయి</translation>
 <translation id="7593891976182323525">Search లేదా Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (యజమాని)</translation>
-<translation id="7647488630410863958">మీ నోటిఫికేషన్‌లను వీక్షించడానికి పరికరాన్ని అన్‌లాక్ చేయండి</translation>
+<translation id="7647488630410863958">మీ నోటిఫికేషన్‌లను చూడడానికి పరికరాన్ని అన్‌లాక్ చేయండి</translation>
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7654687942625752712">ప్రసంగ రూప ప్రతిస్పందనను నిలిపివేయడానికి ఒకేసారి రెండు వాల్యూమ్ కీలను ఐదు సెకన్ల పాటు నొక్కి, పట్టుకోండి.</translation>
 <translation id="7692480393933218409">కనెక్ట్ చేసిన USB-C పరికరాలను ఛార్జ్ చేస్తోంది</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 నోటిఫికేషన్‌}other{# నోటిఫికేషన్‌లు}}</translation>
-<translation id="776344839111254542">అప్‌డేట్ వివరాలను వీక్షించడం కోసం క్లిక్ చేయండి</translation>
+<translation id="776344839111254542">అప్‌డేట్ వివరాలను చూడడం కోసం క్లిక్ చేయండి</translation>
 <translation id="7780159184141939021">స్క్రీన్‌ను తిప్పండి</translation>
 <translation id="7796353162336583443">గమనికను రాయడానికి, స్క్రీన్‌షాట్‌ను తీయడానికి, సహాయకం, లేజర్ పాయింటర్ లేదా భూతద్దాన్ని ఉపయోగించడానికి అరలో స్టైలస్ బటన్‌ను నొక్కండి.</translation>
 <translation id="7798302898096527229">రద్దు చేయడానికి Search లేదా Shiftని నొక్కండి.</translation>
@@ -478,7 +478,7 @@
 <translation id="9080206825613744995">మైక్రోఫోన్ ఉపయోగంలో ఉంది.</translation>
 <translation id="9089416786594320554">ఇన్‌పుట్ పద్ధతులు</translation>
 <translation id="9091626656156419976">డిస్‌ప్లే <ph name="DISPLAY_NAME" /> తీసివేయబడింది</translation>
-<translation id="9151726767154816831">నవీకరించడానికి పునఃప్రారంభించి, పవర్‌వాష్ చేయండి</translation>
+<translation id="9151726767154816831">అప్‌డేట్ చేయడానికి పునఃప్రారంభించి, పవర్‌వాష్ చేయండి</translation>
 <translation id="9179259655489829027">ఈ ఫీచర్ ద్వారా పాస్‌వర్డ్ అవసరం లేకుండానే మీరు సైన్ ఇన్ చేసిన ఏ వినియోగదారునైనా త్వరగా యాక్సెస్ చేయగలుగుతారు. ఈ ఫీచర్‌ను మీరు విశ్వసించే ఖాతాలతో మాత్రమే ఉపయోగించండి.</translation>
 <translation id="9193626018745640770">తెలియని రిసీవర్‌లో ప్రసారం చేస్తోంది</translation>
 <translation id="9194617393863864469">మరొక వినియోగదారుగా సైన్ ఇన్ చేయండి...</translation>

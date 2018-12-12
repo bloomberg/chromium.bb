@@ -40,6 +40,7 @@
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1550523713251050646">按一下即可查看更多選項</translation>
 <translation id="1570871743947603115">切換藍牙設定。<ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">存取你在這個工作階段內的所有活動</translation>
 <translation id="1608626060424371292">移除這位使用者</translation>
 <translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">啟動語音查詢</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">新增連線</translation>
 <translation id="2961963223658824723">發生錯誤，請於幾秒後再試一次。</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">安裝應用程式、擴充功能和主題</translation>
 <translation id="2995447421581609334">顯示投放裝置。</translation>
 <translation id="2996462380875591307">停駐放大鏡已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + D 鍵即可停用。</translation>
 <translation id="3000461861112256445">單聲道音訊</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">搜尋鍵 + Shift + K 鍵</translation>
 <translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入此密碼金鑰：<ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">密碼</translation>
+<translation id="6665545700722362599">將定位服務、裝置的麥克風、相機或其他功能的使用權限授予網站、應用程式及擴充功能</translation>
 <translation id="6691659475504239918">搜尋鍵 + Shift 鍵 + H 鍵</translation>
 <translation id="6696025732084565524">你的卸除式鍵盤需安裝重大更新</translation>
 <translation id="6700713906295497288">IME 選單按鈕</translation>
