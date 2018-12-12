@@ -1,13 +1,15 @@
 export type ParamIterable = Iterable<object>;
 export type ParamIterator = IterableIterator<object>;
 
-export class PUnit implements ParamIterable {
+export function punit() { return new PUnit(); }
+class PUnit implements ParamIterable {
   * [Symbol.iterator](): ParamIterator {
     yield {};
   }
 }
 
-export class PList implements ParamIterable {
+export function poptions(name: string, values: any[]) { return new POptions(name, values); }
+class POptions implements ParamIterable {
   private name: string;
   private values: any[];
 
@@ -23,7 +25,8 @@ export class PList implements ParamIterable {
   }
 }
 
-export class PCombiner implements ParamIterable {
+export function pcombine(params: ParamIterable[]) { return new PCombine(params); }
+export class PCombine implements ParamIterable {
   private params: ParamIterable[];
 
   constructor(params: ParamIterable[]) {
@@ -31,7 +34,7 @@ export class PCombiner implements ParamIterable {
   }
 
   [Symbol.iterator](): ParamIterator {
-    return PCombiner.cartesian(this.params);
+    return PCombine.cartesian(this.params);
   }
 
   private static merge(a: object, b: object): object {
@@ -54,8 +57,8 @@ export class PCombiner implements ParamIterable {
     }
     const [as, ...rest] = iters;
     for (let a of as) {
-      for (let b of PCombiner.cartesian(rest)) {
-        yield PCombiner.merge(a, b);
+      for (let b of PCombine.cartesian(rest)) {
+        yield PCombine.merge(a, b);
       }
     }
   }
