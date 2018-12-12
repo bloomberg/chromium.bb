@@ -4974,11 +4974,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)didFinishGoToIndexSameDocumentNavigationWithType:
             (web::NavigationInitiationType)type
                                           hasUserGesture:(BOOL)hasUserGesture {
-  GURL URL = _webStateImpl->GetLastCommittedURL();
+  web::NavigationItem* item =
+      _webStateImpl->GetNavigationManager()->GetLastCommittedItem();
+  GURL URL = item->GetVirtualURL();
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(
           _webStateImpl, URL, hasUserGesture,
-          ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
+          static_cast<ui::PageTransition>(
+              item->GetTransitionType() |
+              ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK),
           type == web::NavigationInitiationType::RENDERER_INITIATED);
   context->SetIsSameDocument(true);
   _webStateImpl->SetIsLoading(true);
