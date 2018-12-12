@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/core/pref_names.h"
@@ -61,7 +60,7 @@ bool ShouldShowCookieException(Profile* profile) {
     sync_ui_util::MessageType sync_status = sync_ui_util::GetStatus(
         profile,
         ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile),
-        *SigninManagerFactory::GetForProfile(profile));
+        IdentityManagerFactory::GetForProfile(profile));
     return sync_status == sync_ui_util::SYNCED;
   }
 #endif

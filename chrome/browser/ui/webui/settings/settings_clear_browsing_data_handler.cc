@@ -20,7 +20,6 @@
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/channel_info.h"
@@ -256,7 +255,7 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion>
       scoped_data_deletion;
   sync_ui_util::MessageType sync_status = sync_ui_util::GetStatus(
-      profile_, sync_service_, *SigninManagerFactory::GetForProfile(profile_));
+      profile_, sync_service_, IdentityManagerFactory::GetForProfile(profile_));
   if (sync_status == sync_ui_util::SYNCED) {
     scoped_data_deletion = AccountReconcilorFactory::GetForProfile(profile_)
                                ->GetScopedSyncDataDeletion();

@@ -968,8 +968,8 @@ PeopleHandler::GetSyncStatusDictionary() {
   base::string16 link_label;
   sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
   bool status_has_error =
-      sync_ui_util::GetStatusLabels(profile_, service, *signin, &status_label,
-                                    &link_label,
+      sync_ui_util::GetStatusLabels(profile_, service, identity_manager,
+                                    &status_label, &link_label,
                                     &action_type) == sync_ui_util::SYNC_ERROR;
   sync_status->SetString("statusText", status_label);
   sync_status->SetString("statusActionText", link_label);
