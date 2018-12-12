@@ -73,7 +73,9 @@ Polymer({
   /** @private */
   onDotsTap_: function() {
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
-        .showAt(assert(this.$$('paper-icon-button-light button')));
+        .showAt(assert(this.$$('paper-icon-button-light button')), {
+          anchorAlignmentY: AnchorAlignment.AFTER_END,
+        });
   },
 
   /**
