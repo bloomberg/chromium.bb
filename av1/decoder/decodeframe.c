@@ -696,7 +696,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         assert(bw < 8 || bh < 8);
         ConvolveParams conv_params = get_conv_params_no_round(
             0, plane, xd->tmp_conv_dst, tmp_dst_stride, is_compound, xd->bd);
-        conv_params.use_jnt_comp_avg = 0;
+        conv_params.use_dist_wtd_comp_avg = 0;
         struct buf_2d *const dst_buf = &pd->dst;
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
 
@@ -801,9 +801,9 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
 
     ConvolveParams conv_params = get_conv_params_no_round(
         0, plane, xd->tmp_conv_dst, MAX_SB_SIZE, is_compound, xd->bd);
-    av1_jnt_comp_weight_assign(cm, mi, 0, &conv_params.fwd_offset,
-                               &conv_params.bck_offset,
-                               &conv_params.use_jnt_comp_avg, is_compound);
+    av1_dist_wtd_comp_weight_assign(
+        cm, mi, 0, &conv_params.fwd_offset, &conv_params.bck_offset,
+        &conv_params.use_dist_wtd_comp_avg, is_compound);
 
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
@@ -4518,7 +4518,7 @@ void av1_read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb,
     seq_params->enable_warped_motion = 0;
     seq_params->enable_dual_filter = 0;
     seq_params->order_hint_info.enable_order_hint = 0;
-    seq_params->order_hint_info.enable_jnt_comp = 0;
+    seq_params->order_hint_info.enable_dist_wtd_comp = 0;
     seq_params->order_hint_info.enable_ref_frame_mvs = 0;
     seq_params->force_screen_content_tools = 2;  // SELECT_SCREEN_CONTENT_TOOLS
     seq_params->force_integer_mv = 2;            // SELECT_INTEGER_MV
@@ -4530,7 +4530,7 @@ void av1_read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb,
     seq_params->enable_dual_filter = aom_rb_read_bit(rb);
 
     seq_params->order_hint_info.enable_order_hint = aom_rb_read_bit(rb);
-    seq_params->order_hint_info.enable_jnt_comp =
+    seq_params->order_hint_info.enable_dist_wtd_comp =
         seq_params->order_hint_info.enable_order_hint ? aom_rb_read_bit(rb) : 0;
     seq_params->order_hint_info.enable_ref_frame_mvs =
         seq_params->order_hint_info.enable_order_hint ? aom_rb_read_bit(rb) : 0;

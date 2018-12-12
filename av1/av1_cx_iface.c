@@ -95,7 +95,7 @@ struct av1_extracfg {
   unsigned int motion_vector_unit_test;
   unsigned int cdf_update_mode;
   int enable_order_hint;
-  int enable_jnt_comp;
+  int enable_dist_wtd_comp;
   int enable_ref_frame_mvs;     // sequence level
   int allow_ref_frame_mvs;      // frame level
   int enable_masked_comp;       // enable masked compound for sequence
@@ -679,8 +679,8 @@ static aom_codec_err_t set_encoder_config(
   oxcf->full_still_picture_hdr = cfg->full_still_picture_hdr;
   oxcf->enable_dual_filter = extra_cfg->enable_dual_filter;
   oxcf->enable_order_hint = extra_cfg->enable_order_hint;
-  oxcf->enable_jnt_comp =
-      extra_cfg->enable_jnt_comp & extra_cfg->enable_order_hint;
+  oxcf->enable_dist_wtd_comp =
+      extra_cfg->enable_dist_wtd_comp & extra_cfg->enable_order_hint;
   oxcf->enable_masked_comp = extra_cfg->enable_masked_comp;
   oxcf->enable_diff_wtd_comp =
       extra_cfg->enable_masked_comp & extra_cfg->enable_diff_wtd_comp;
@@ -1055,10 +1055,10 @@ static aom_codec_err_t ctrl_set_enable_order_hint(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-static aom_codec_err_t ctrl_set_enable_jnt_comp(aom_codec_alg_priv_t *ctx,
-                                                va_list args) {
+static aom_codec_err_t ctrl_set_enable_dist_wtd_comp(aom_codec_alg_priv_t *ctx,
+                                                     va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.enable_jnt_comp = CAST(AV1E_SET_ENABLE_JNT_COMP, args);
+  extra_cfg.enable_dist_wtd_comp = CAST(AV1E_SET_ENABLE_DIST_WTD_COMP, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1872,7 +1872,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_S_FRAME_MODE, ctrl_set_s_frame_mode },
   { AV1E_SET_ENABLE_DF, ctrl_set_enable_df },
   { AV1E_SET_ENABLE_ORDER_HINT, ctrl_set_enable_order_hint },
-  { AV1E_SET_ENABLE_JNT_COMP, ctrl_set_enable_jnt_comp },
+  { AV1E_SET_ENABLE_DIST_WTD_COMP, ctrl_set_enable_dist_wtd_comp },
   { AV1E_SET_ENABLE_REF_FRAME_MVS, ctrl_set_enable_ref_frame_mvs },
   { AV1E_SET_ALLOW_REF_FRAME_MVS, ctrl_set_allow_ref_frame_mvs },
   { AV1E_SET_ENABLE_MASKED_COMP, ctrl_set_enable_masked_comp },

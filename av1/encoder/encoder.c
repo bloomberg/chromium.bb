@@ -1130,8 +1130,8 @@ static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
   seq->delta_frame_id_length = DELTA_FRAME_ID_LENGTH;
 
   seq->enable_dual_filter = oxcf->enable_dual_filter;
-  seq->order_hint_info.enable_jnt_comp = oxcf->enable_jnt_comp;
-  seq->order_hint_info.enable_jnt_comp &=
+  seq->order_hint_info.enable_dist_wtd_comp = oxcf->enable_dist_wtd_comp;
+  seq->order_hint_info.enable_dist_wtd_comp &=
       seq->order_hint_info.enable_order_hint;
   seq->order_hint_info.enable_ref_frame_mvs = oxcf->enable_ref_frame_mvs;
   seq->order_hint_info.enable_ref_frame_mvs &=

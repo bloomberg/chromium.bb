@@ -224,9 +224,9 @@ typedef struct {
   int enable_order_hint;           // 0 - disable order hint, and related tools
   int order_hint_bits_minus_1;
                                    // jnt_comp, ref_frame_mvs, frame_sign_bias
-                                   // if 0, enable_jnt_comp and
+                                   // if 0, enable_dist_wtd_comp and
                                    // enable_ref_frame_mvs must be set zs 0.
-  int enable_jnt_comp;             // 0 - disable joint compound modes
+  int enable_dist_wtd_comp;        // 0 - disable dist-wtd compound modes
                                    // 1 - enable it
   int enable_ref_frame_mvs;        // 0 - disable ref frame mvs
                                    // 1 - enable it

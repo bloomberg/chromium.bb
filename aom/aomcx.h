@@ -730,14 +730,15 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_ORDER_HINT,
 
-  /*!\brief Codec control function to turn on / off joint compound mode
+  /*!\brief Codec control function to turn on / off dist-wtd compound mode
    * at sequence level.
    *
-   * This will enable or disable joint compound mode. The default value is 1.
-   * If AV1E_SET_ENABLE_ORDER_HINT is 0, then this flag is forced to 0.
+   * This will enable or disable distance-weighted compound mode. The default
+   * value is 1. If AV1E_SET_ENABLE_ORDER_HINT is 0, then this flag is forced
+   * to 0.
    *
    */
-  AV1E_SET_ENABLE_JNT_COMP,
+  AV1E_SET_ENABLE_DIST_WTD_COMP,
 
   /*!\brief Codec control function to turn on / off ref frame mvs (mfmv) usage
    * at sequence level.
@@ -1113,8 +1114,8 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DF, unsigned int)
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_ORDER_HINT, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_ORDER_HINT
 
-AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_JNT_COMP, unsigned int)
-#define AOM_CTRL_AV1E_SET_ENABLE_JNT_COMP
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DIST_WTD_COMP, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_DIST_WTD_COMP
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_REF_FRAME_MVS, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_REF_FRAME_MVS

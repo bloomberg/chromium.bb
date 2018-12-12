@@ -1145,7 +1145,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         if (mbmi->compound_idx)
           assert(mbmi->interinter_comp.type == COMPOUND_AVERAGE);
 
-        if (cm->seq_params.order_hint_info.enable_jnt_comp) {
+        if (cm->seq_params.order_hint_info.enable_dist_wtd_comp) {
           const int comp_index_ctx = get_comp_index_context(cm, xd);
           aom_write_symbol(w, mbmi->compound_idx,
                            ec_ctx->compound_index_cdf[comp_index_ctx], 2);
@@ -2617,7 +2617,7 @@ static void write_sequence_header(const SequenceHeader *const seq_params,
     aom_wb_write_bit(wb, seq_params->order_hint_info.enable_order_hint);
 
     if (seq_params->order_hint_info.enable_order_hint) {
-      aom_wb_write_bit(wb, seq_params->order_hint_info.enable_jnt_comp);
+      aom_wb_write_bit(wb, seq_params->order_hint_info.enable_dist_wtd_comp);
       aom_wb_write_bit(wb, seq_params->order_hint_info.enable_ref_frame_mvs);
     }
     if (seq_params->force_screen_content_tools == 2) {

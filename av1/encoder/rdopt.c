@@ -6705,7 +6705,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int p_row = ((mi_row * MI_SIZE) >> pd->subsampling_y) + 4 * ir;
 
   ConvolveParams conv_params = get_conv_params(0, plane, xd->bd);
-  conv_params.use_jnt_comp_avg = 0;
+  conv_params.use_dist_wtd_comp_avg = 0;
   WarpTypesAllowed warp_types[2];
   for (ref = 0; ref < 2; ++ref) {
     const WarpedMotionParams *const wm =
@@ -6792,9 +6792,9 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                               mi_row * MI_SIZE, xd, cm->allow_warped_motion);
 
     const int order_idx = id != 0;
-    av1_jnt_comp_weight_assign(cm, mbmi, order_idx, &xd->jcp_param.fwd_offset,
-                               &xd->jcp_param.bck_offset,
-                               &xd->jcp_param.use_jnt_comp_avg, 1);
+    av1_dist_wtd_comp_weight_assign(
+        cm, mbmi, order_idx, &xd->jcp_param.fwd_offset,
+        &xd->jcp_param.bck_offset, &xd->jcp_param.use_dist_wtd_comp_avg, 1);
 
     // Do full-pixel compound motion search on the current reference frame.
     if (id) xd->plane[plane].pre[0] = ref_yv12[id];
@@ -7326,9 +7326,9 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
                             plane, !ref_idx, MV_PRECISION_Q3, mi_col * MI_SIZE,
                             mi_row * MI_SIZE, xd, cm->allow_warped_motion);
 
-  av1_jnt_comp_weight_assign(cm, mbmi, 0, &xd->jcp_param.fwd_offset,
-                             &xd->jcp_param.bck_offset,
-                             &xd->jcp_param.use_jnt_comp_avg, 1);
+  av1_dist_wtd_comp_weight_assign(cm, mbmi, 0, &xd->jcp_param.fwd_offset,
+                                  &xd->jcp_param.bck_offset,
+                                  &xd->jcp_param.use_dist_wtd_comp_avg, 1);
 }
 
 // Search for the best mv for one component of a compound,
@@ -9701,10 +9701,10 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   inter_mode_info mode_info[MAX_REF_MV_SERCH];
 
   int comp_idx;
-  const int search_jnt_comp = is_comp_pred &
-                              cm->seq_params.order_hint_info.enable_jnt_comp &
-                              (mbmi->mode != GLOBAL_GLOBALMV) &
-                              (cpi->sf.use_jnt_comp_flag != JNT_COMP_DISABLED);
+  const int search_dist_wtd_comp =
+      is_comp_pred & cm->seq_params.order_hint_info.enable_dist_wtd_comp &
+      (mbmi->mode != GLOBAL_GLOBALMV) &
+      (cpi->sf.use_jnt_comp_flag != JNT_COMP_DISABLED);
 
   // TODO(jingning): This should be deprecated shortly.
   const int has_nearmv = have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0;
@@ -9761,8 +9761,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
 
     const RD_STATS backup_rd_stats = *rd_stats;
-    // If !search_jnt_comp, we need to force mbmi->compound_idx = 1.
-    for (comp_idx = 1; comp_idx >= !search_jnt_comp; --comp_idx) {
+    // If !search_dist_wtd_comp, we need to force mbmi->compound_idx = 1.
+    for (comp_idx = 1; comp_idx >= !search_dist_wtd_comp; --comp_idx) {
       int rs = 0;
       int compmode_interinter_cost = 0;
       mbmi->compound_idx = comp_idx;
@@ -9794,7 +9794,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           newmv_ret_val = args->single_newmv_valid[ref_mv_idx][ref0] ? 0 : 1;
           cur_mv[0] = args->single_newmv[ref_mv_idx][ref0];
           rate_mv = args->single_newmv_rate[ref_mv_idx][ref0];
-        } else if (!(search_jnt_comp &&
+        } else if (!(search_dist_wtd_comp &&
                      (cpi->sf.use_jnt_comp_flag == JNT_COMP_SKIP_MV_SEARCH) &&
                      comp_idx == 0)) {
           newmv_ret_val = handle_newmv(cpi, x, bsize, cur_mv, mi_row, mi_col,
@@ -9972,7 +9972,8 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
       rd_stats->rate += compmode_interinter_cost;
 
-      if (search_jnt_comp && cpi->sf.jnt_comp_fast_tx_search && comp_idx == 0) {
+      if (search_dist_wtd_comp && cpi->sf.jnt_comp_fast_tx_search &&
+          comp_idx == 0) {
         // TODO(chengchen): this speed feature introduces big loss.
         // Need better estimation of rate distortion.
         int dummy_rate;
