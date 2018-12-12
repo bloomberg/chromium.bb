@@ -1981,8 +1981,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   DCHECK(!_isHalted);
   _webStateImpl->ClearTransientContent();
 
-  // Reset tracked frames because JavaScript unload handler will not be called.
-  [self removeAllWebFrames];
   web::NavigationItem* item = self.currentNavItem;
   const GURL currentURL = item ? item->GetURL() : GURL::EmptyGURL();
   const bool isCurrentURLAppSpecific =
@@ -2117,7 +2115,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_webView stopLoading];
   [_pendingNavigationInfo setCancelled:YES];
   _certVerificationErrors->Clear();
-  [self removeAllWebFrames];
   [self loadCancelled];
 }
 
