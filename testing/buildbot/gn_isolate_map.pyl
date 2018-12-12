@@ -546,8 +546,9 @@
     "type": "console_test_launcher",
   },
   "dawn_end2end_tests": {
-    "label": "//third_party/dawn:dawn_end2end_tests",
+    "label": "//third_party/dawn:dawn_end2end_tests_temp_group",
     "type": "raw",
+    "label_type": "group",
     "args": [],
   },
   "dbus_unittests": {
