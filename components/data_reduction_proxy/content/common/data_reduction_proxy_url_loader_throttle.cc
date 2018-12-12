@@ -146,7 +146,7 @@ void DataReductionProxyURLLoaderThrottle::MarkProxiesAsBad(
 
   auto callback = base::BindOnce(
       &DataReductionProxyURLLoaderThrottle::OnMarkProxiesAsBadComplete,
-      base::Unretained(this));
+      weak_factory_.GetWeakPtr());
 
   waiting_for_mark_proxies_ = true;
   manager_->MarkProxiesAsBad(bypass_duration, proxy_list, std::move(callback));
