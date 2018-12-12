@@ -73,7 +73,8 @@ void InitPasswordFormFillData(
   }
 }
 
-PasswordFormFillData ClearPasswordValues(const PasswordFormFillData& data) {
+PasswordFormFillData MaybeClearPasswordValues(
+    const PasswordFormFillData& data) {
   // In case when there is a username on a page (for example in a hidden field),
   // credentials from |additional_logins| could be used for filling on load. So
   // in case of filling on load nor |password_field| nor |additional_logins|

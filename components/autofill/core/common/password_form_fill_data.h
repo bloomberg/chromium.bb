@@ -91,9 +91,9 @@ void InitPasswordFormFillData(
     bool wait_for_username_before_autofill,
     PasswordFormFillData* result);
 
-// Renderer needs to have only a password that should be autofilled, all other
-// passwords might be safety erased.
-PasswordFormFillData ClearPasswordValues(const PasswordFormFillData& data);
+// If |data.wait_for_username| is set, the renderer does not need to receive
+// passwords, yet, and this function clears the password values from |data|.
+PasswordFormFillData MaybeClearPasswordValues(const PasswordFormFillData& data);
 
 }  // namespace autofill
 

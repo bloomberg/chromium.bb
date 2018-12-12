@@ -69,7 +69,7 @@ void ContentPasswordManagerDriver::FillPasswordForm(
     const autofill::PasswordFormFillData& form_data) {
   password_autofill_manager_.OnAddPasswordFillData(form_data);
   GetPasswordAutofillAgent()->FillPasswordForm(
-      autofill::ClearPasswordValues(form_data));
+      autofill::MaybeClearPasswordValues(form_data));
 }
 
 void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
