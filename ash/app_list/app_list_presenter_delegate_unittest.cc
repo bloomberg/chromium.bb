@@ -33,6 +33,7 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -1105,6 +1106,33 @@ TEST_F(AppListPresenterDelegateTest, SearchBoxShownOnSmallDisplay) {
 TEST_F(AppListPresenterDelegateTest, ShowInInvalidDisplay) {
   GetAppListTestHelper()->ShowAndRunLoop(display::kInvalidDisplayId);
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+}
+
+// Tests that tap the status area of auto-hide shelf with app list opened should
+// open the corresponding tray bubble but dismiss the app list.
+TEST_F(AppListPresenterDelegateTest,
+       TapStatusAreaOfAutoHideShelfWithAppListOpened) {
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  // Create a normal unmaximized window; the shelf should be hidden.
+  std::unique_ptr<views::Widget> window = CreateTestWidget();
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Tap the system tray should open system tray bubble and keep shelf visible.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureTapAt(
+      GetPrimaryUnifiedSystemTray()->GetBoundsInScreen().CenterPoint());
+  EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }
 
 // Test a variety of behaviors for home launcher (app list in tablet mode).
