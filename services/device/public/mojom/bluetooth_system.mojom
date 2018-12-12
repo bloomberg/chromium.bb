@@ -170,6 +170,10 @@ interface BluetoothSystem {
   //     there is one in progress already.
   //  2. Return more detailed error codes.
   StopScan() => (StopScanResult result);
+
+  // Returns a list of devices we consider to be active. This includes
+  // recently seen devices, paired devices, and connected devices.
+  GetAvailableDevices() => (array<BluetoothDeviceInfo> devices);
 };
 
 // Interface used by clients of BluetoothSystem to get notified of events
