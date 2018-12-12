@@ -327,7 +327,7 @@ jumbo_component("events") {
       "fuchsia/input_event_dispatcher_delegate.h",
     ]
     sources += [ "fuchsia/input_event_dispatcher.cc" ]
-    public_deps += [ "//third_party/fuchsia-sdk/sdk:input" ]
+    public_deps += [ "//third_party/fuchsia-sdk/sdk:ui_input" ]
   }
 }
 
@@ -618,7 +618,7 @@ if (!is_ios) {
 
     if (is_fuchsia) {
       sources += [ "fuchsia/input_event_dispatcher_unittest.cc" ]
-      deps += [ "//third_party/fuchsia-sdk/sdk:input" ]
+      deps += [ "//third_party/fuchsia-sdk/sdk:ui_input" ]
     }
   }
 }
