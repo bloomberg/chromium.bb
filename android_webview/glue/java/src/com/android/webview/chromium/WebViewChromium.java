@@ -198,7 +198,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
                     mFactory.createWebViewContentsClientAdapter(mWebView, mContext);
             try (ScopedSysTraceEvent e2 =
                             ScopedSysTraceEvent.scoped("WebViewChromium.ContentSettingsAdapter")) {
-                mWebSettings = new ContentSettingsAdapter(new AwSettings(mContext,
+                mWebSettings = mFactory.createContentSettingsAdapter(new AwSettings(mContext,
                         isAccessFromFileURLsGrantedByDefault, areLegacyQuirksEnabled,
                         allowEmptyDocumentPersistence, allowGeolocationOnInsecureOrigins,
                         doNotUpdateSelectionOnMutatingSelectionRange));
