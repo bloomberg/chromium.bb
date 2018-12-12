@@ -170,9 +170,8 @@ TEST_F(AXTreeSourceAuraTest, Serialize) {
   // This is the initial serialization.
   ax_serializer.SerializeChanges(ax_tree.GetRoot(), &out_update);
 
-  // The update should just be the desktop node and the fake alert window we use
-  // to handle posting text alerts.
-  ASSERT_EQ(2U, out_update.nodes.size());
+  // The update should just be the desktop node.
+  ASSERT_EQ(1U, out_update.nodes.size());
 
   // Try removing some child views and re-adding which should fire some events.
   content_->RemoveAllChildViews(false /* delete_children */);
