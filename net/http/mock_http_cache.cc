@@ -575,6 +575,7 @@ void MockDiskCache::GetStats(base::StringPairs* stats) {
 }
 
 void MockDiskCache::OnExternalCacheHit(const std::string& key) {
+  external_cache_hits_.push_back(key);
 }
 
 size_t MockDiskCache::DumpMemoryStats(
@@ -634,6 +635,10 @@ scoped_refptr<MockDiskEntry> MockDiskCache::GetDiskEntryRef(
   if (it == entries_.end())
     return nullptr;
   return it->second;
+}
+
+const std::vector<std::string>& MockDiskCache::GetExternalCacheHits() const {
+  return external_cache_hits_;
 }
 
 //-----------------------------------------------------------------------------

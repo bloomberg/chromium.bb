@@ -146,6 +146,8 @@ class TestNetworkContext : public mojom::NetworkContext {
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
       mojom::HostResolverRequest request) override {}
+  void NotifyExternalCacheHit(const GURL& url,
+                              const std::string& http_method) override {}
   void WriteCacheMetadata(const GURL& url,
                           net::RequestPriority priority,
                           base::Time expected_response_time,

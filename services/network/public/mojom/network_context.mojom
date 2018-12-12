@@ -482,6 +482,12 @@ interface NetworkContext {
                        mojo_base.mojom.Time end_time)
       => (bool is_upper_bound, int64 size_or_error);
 
+  // Notifies the HttpCache of a renderer-level cache hit with |url|
+  // and |http_method|.
+  // This is being proxied by the browser because the renderer is unable to
+  // directly interact with the cache.
+  NotifyExternalCacheHit(url.mojom.Url url, string http_method);
+
   // Caches |data| associated with |url| and |expected_response_time| in the
   // HttpCache related to this NetworkContext.
   WriteCacheMetadata(url.mojom.Url url,

@@ -1336,6 +1336,14 @@ void NetworkContext::VerifyCertForSignedExchange(
     OnCertVerifyForSignedExchangeComplete(cert_verify_id, result);
 }
 
+void NetworkContext::NotifyExternalCacheHit(const GURL& url,
+                                            const std::string& http_method) {
+  net::HttpCache* cache =
+      url_request_context_->http_transaction_factory()->GetCache();
+  if (cache)
+    cache->OnExternalCacheHit(url, http_method);
+}
+
 void NetworkContext::WriteCacheMetadata(const GURL& url,
                                         net::RequestPriority priority,
                                         base::Time expected_response_time,

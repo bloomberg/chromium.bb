@@ -235,6 +235,9 @@ class MockDiskCache : public disk_cache::Backend {
   // Returns a reference to the disk entry with the given |key|.
   scoped_refptr<MockDiskEntry> GetDiskEntryRef(const std::string& key);
 
+  // Returns a reference to the vector storing all keys for external cache hits.
+  const std::vector<std::string>& GetExternalCacheHits() const;
+
  private:
   using EntryMap = std::map<std::string, MockDiskEntry*>;
   class NotImplementedIterator;
@@ -242,6 +245,7 @@ class MockDiskCache : public disk_cache::Backend {
   void CallbackLater(CompletionOnceCallback callback, int result);
 
   EntryMap entries_;
+  std::vector<std::string> external_cache_hits_;
   int open_count_;
   int create_count_;
   int doomed_count_;

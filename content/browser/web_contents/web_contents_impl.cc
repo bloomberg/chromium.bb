@@ -4385,17 +4385,22 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   for (auto& observer : observers_)
     observer.DidLoadResourceFromMemoryCache(url, mime_type, resource_type);
 
-  if (url.is_valid() && url.SchemeIsHTTPOrHTTPS() &&
-      // http://crbug.com/893323: get this working with network service.
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     StoragePartition* partition = source->GetProcess()->GetStoragePartition();
-    scoped_refptr<net::URLRequestContextGetter> request_context(
-        resource_type == RESOURCE_TYPE_MEDIA
-            ? partition->GetMediaURLRequestContext()
-            : partition->GetURLRequestContext());
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&NotifyCacheOnIO, request_context, url, http_method));
+
+    // We require different paths here because there is no NetworkContext
+    // for media cache.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      partition->GetNetworkContext()->NotifyExternalCacheHit(url, http_method);
+    } else {
+      scoped_refptr<net::URLRequestContextGetter> request_context(
+          resource_type == RESOURCE_TYPE_MEDIA
+              ? partition->GetMediaURLRequestContext()
+              : partition->GetURLRequestContext());
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
+          base::BindOnce(&NotifyCacheOnIO, request_context, url, http_method));
+    }
   }
 }
 
