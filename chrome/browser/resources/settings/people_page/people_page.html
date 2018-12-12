@@ -151,7 +151,7 @@
               </div>
               <div class="middle two-line no-min-width" on-click="onProfileTap_"
                   actionable>
-                <div class="flex text-elide">
+                <div class="flex text-elide settings-box-text">
                   <span id="profile-name">[[profileName_]]</span>
                   <div class="secondary" hidden="[[!syncStatus.signedIn]]">
                     [[syncStatus.signedInUsername]]
@@ -199,7 +199,7 @@
 </if>
             <div class="settings-box two-line" id="sync-overview"
                 hidden="[[!syncStatus.signinAllowed]]">
-              <div class="start">
+              <div class="start settings-box-text">
                 $i18n{syncOverview}
                 <a target="_blank" href="$i18n{syncLearnMoreUrl}">
                   $i18n{learnMore}
@@ -217,7 +217,7 @@
             <div class="icon-container">
               <iron-icon icon="cr20:domain"></iron-icon>
             </div>
-            <div class="middle"
+            <div class="middle settings-box-text"
                 inner-h-t-m-l="[[getDomainHtml_(syncStatus.domain)]]">
             </div>
           </div>
@@ -235,7 +235,7 @@
               <iron-icon id="sync-icon" icon$="[[getSyncIcon_(syncStatus)]]">
               </iron-icon>
             </div>
-            <div class="middle">
+            <div class="middle settings-box-text">
               $i18n{sync}
               <div class="secondary" id="syncSecondary">
                 [[syncStatus.statusText]]
@@ -265,7 +265,9 @@
 
           <div class="settings-box" id="edit-profile" on-click="onProfileTap_"
               actionable>
-            <div class="start">$i18n{profileNameAndPicture}</div>
+            <div class="start settings-box-text">
+              $i18n{profileNameAndPicture}
+            </div>
             <paper-icon-button-light class="subpage-arrow">
               <button aria-label="$i18n{editPerson}"></button>
             </paper-icon-button-light>
@@ -276,7 +278,7 @@
 <if expr="chromeos">
         <div id="lock-screen-subpage-trigger" class="settings-box two-line"
             actionable on-click="onConfigureLockTap_">
-          <div class="start">
+          <div class="start settings-box-text">
             [[selectLockScreenTitleString(hasPinLogin)]]
             <div class="secondary" id="lockScreenSecondary">
               [[getPasswordState_(hasPin,
@@ -293,7 +295,9 @@
         <template is="dom-if" if="[[isAccountManagerEnabled_]]">
           <div id="account-manager-subpage-trigger" class="settings-box"
               actionable on-click="onAccountManagerTap_">
-            <div class="start">$i18n{accountManagerSubMenuLabel}</div>
+            <div class="start settings-box-text">
+              $i18n{accountManagerSubMenuLabel}
+            </div>
             <paper-icon-button-light class="subpage-arrow">
               <button aria-label="$i18n{accountManagerSubMenuLabel}"></button>
             </paper-icon-button-light>
@@ -307,7 +311,9 @@
 
 <if expr="not chromeos">
         <div class="settings-box" on-click="onImportDataTap_" actionable>
-          <div class="start">$i18n{importTitle}</div>
+          <div class="start settings-box-text">
+            $i18n{importTitle}
+          </div>
           <paper-icon-button-light class="subpage-arrow">
             <button id="importDataDialogTrigger"
                 aria-label="$i18n{importTitle}">

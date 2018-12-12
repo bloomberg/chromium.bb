@@ -109,14 +109,16 @@
 
     <div class="settings-box first" hidden="[[!syncStatus.managed]]">
       <iron-icon id="disabled-by-admin-icon" icon="cr20:domain"></iron-icon>
-      <div class="middle">$i18n{syncDisabledByAdministrator}</div>
+      <div class="middle settings-box-text">
+        $i18n{syncDisabledByAdministrator}
+      </div>
     </div>
 
     <template is="dom-if" if="[[shouldShowExistingPassphraseBelowAccount_(
       unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
       <div id="existingPassphrase" class="list-frame">
         <div id="existingPassphraseTitle" class="list-item">
-            <div class="start">
+            <div class="start settings-box-text">
               <div>$i18n{existingPassphraseTitle}</div>
               <div class="secondary">
                 [[enterPassphrasePrompt_(syncPrefs.passphraseTypeIsCustom)]]
@@ -140,7 +142,7 @@
           </cr-input>
         </div>
         <div id="passphraseRecoverHint" class="list-item">
-          <span>$i18nRaw{passphraseRecover}</span>
+          <div class="settings-box-text">$i18nRaw{passphraseRecover}</div>
         </div>
       </div>
     </template>
@@ -150,11 +152,11 @@
     </div>
 
     <div id="sync-section" hidden="[[syncSectionDisabled_]]">
-      <div id="[[pages_.SPINNER]]" class="settings-box first"
+      <div id="[[pages_.SPINNER]]" class="settings-box first settings-box-text"
           hidden$="[[!isStatus_(pages_.SPINNER, pageStatus_)]]">
         $i18n{syncLoading}
       </div>
-      <div id="[[pages_.TIMEOUT]]" class="settings-box first"
+      <div id="[[pages_.TIMEOUT]]" class="settings-box first settings-box-text"
           hidden$="[[!isStatus_(pages_.TIMEOUT, pageStatus_)]]">
         $i18n{syncTimeout}
       </div>
@@ -166,12 +168,12 @@
             unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
           <div id="existingPassphrase" class="list-frame">
             <div class="list-item">
-              <span>
+              <div class="settings-box-text">
                 [[enterPassphrasePrompt_(syncPrefs.passphraseTypeIsCustom)]]
                 <a href="$i18nRaw{syncErrorHelpUrl}" target="_blank">
                   $i18n{learnMore}
                 </a>
-              </span>
+              </div>
             </div>
             <div id="existingPassphraseContainer" class="list-item">
               <cr-input id="existingPassphraseInput" type="password"
@@ -209,7 +211,7 @@
               [[getListItemClass_(unifiedConsentEnabled)]]" tabindex="-1"
               target="_blank" href="$i18n{activityControlsUrl}"
               on-click="onActivityControlsTap_">
-            <div class="start">
+            <div class="start settings-box-text">
               $i18n{personalizeGoogleServicesTitle}
             </div>
             <paper-icon-button-light actionable class="icon-external">
@@ -220,7 +222,7 @@
           <a class$="inherit-color no-outline
               [[getListItemClass_(unifiedConsentEnabled)]]" tabindex="-1"
               target="_blank" href="$i18n{syncDashboardUrl}">
-            <div class="start">
+            <div class="start settings-box-text">
               $i18n{manageSyncedDataTitle}
             </div>
             <paper-icon-button-light actionable class="icon-external">
@@ -230,7 +232,7 @@
 
           <div id="encryptionDescription"
               hidden="[[syncPrefs.passphraseRequired]]"
-              class$="single-column
+              class$="single-column settings-box-text
                   [[getPassphraseHintLines_(syncPrefs.encryptAllData)]]
                   [[getListItemClass_(unifiedConsentEnabled)]]">
             $i18n{encryptionOptionsTitle}
