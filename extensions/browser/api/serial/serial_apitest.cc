@@ -50,30 +50,9 @@ using testing::Return;
 namespace extensions {
 namespace {
 
-class FakeSerialPortManager : public device::mojom::SerialPortManager {
- public:
-  FakeSerialPortManager() = default;
-  ~FakeSerialPortManager() override = default;
-
- private:
-  // device::mojom::SerialPortManager methods:
-  void GetDevices(GetDevicesCallback callback) override {
-    std::vector<device::mojom::SerialPortInfoPtr> devices;
-    auto device0 = device::mojom::SerialPortInfo::New();
-    device0->path = "/dev/fakeserialmojo";
-    auto device1 = device::mojom::SerialPortInfo::New();
-    device1->path = "\\\\COM800\\";
-    devices.push_back(std::move(device0));
-    devices.push_back(std::move(device1));
-    std::move(callback).Run(std::move(devices));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSerialPortManager);
-};
-
 class FakeSerialPort : public device::mojom::SerialPort {
  public:
-  FakeSerialPort() {
+  FakeSerialPort(const std::string& path) : path_(path) {
     options_.bitrate = 9600;
     options_.data_bits = device::mojom::SerialDataBits::EIGHT;
     options_.parity_bit = device::mojom::SerialParityBit::NO_PARITY;
@@ -85,8 +64,7 @@ class FakeSerialPort : public device::mojom::SerialPort {
 
  private:
   // device::mojom::SerialPort methods:
-  void Open(const std::string& port,
-            device::mojom::SerialConnectionOptionsPtr options,
+  void Open(device::mojom::SerialConnectionOptionsPtr options,
             OpenCallback callback) override {
     DoConfigurePort(*options);
     std::move(callback).Run(true);
@@ -111,8 +89,7 @@ class FakeSerialPort : public device::mojom::SerialPort {
       std::move(pending_read_callback_).Run(std::vector<uint8_t>(), reason);
     }
   }
-  void CancelWrite(device::mojom::SerialSendError reason) override {
-  }
+  void CancelWrite(device::mojom::SerialSendError reason) override {}
   void Flush(FlushCallback callback) override { std::move(callback).Run(true); }
   void GetControlSignals(GetControlSignalsCallback callback) override {
     auto signals = device::mojom::SerialPortControlSignals::New();
@@ -182,11 +159,39 @@ class FakeSerialPort : public device::mojom::SerialPort {
 
   // Currently applied connection options.
   device::mojom::SerialConnectionOptions options_;
+  std::string path_;
   std::vector<uint8_t> buffer_;
   FakeSerialPort::ReadCallback pending_read_callback_;
   uint32_t pending_read_bytes_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSerialPort);
+};
+
+class FakeSerialPortManager : public device::mojom::SerialPortManager {
+ public:
+  FakeSerialPortManager() = default;
+  ~FakeSerialPortManager() override = default;
+
+ private:
+  // device::mojom::SerialPortManager methods:
+  void GetDevices(GetDevicesCallback callback) override {
+    std::vector<device::mojom::SerialPortInfoPtr> devices;
+    auto device0 = device::mojom::SerialPortInfo::New();
+    device0->path = "/dev/fakeserialmojo";
+    auto device1 = device::mojom::SerialPortInfo::New();
+    device1->path = "\\\\COM800\\";
+    devices.push_back(std::move(device0));
+    devices.push_back(std::move(device1));
+    std::move(callback).Run(std::move(devices));
+  }
+
+  void GetPort(const std::string& path,
+               device::mojom::SerialPortRequest request) override {
+    mojo::MakeStrongBinding(std::make_unique<FakeSerialPort>(path),
+                            std::move(request));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(FakeSerialPortManager);
 };
 
 class SerialApiTest : public ExtensionApiTest {
@@ -200,9 +205,6 @@ class SerialApiTest : public ExtensionApiTest {
         device::mojom::kServiceName,
         base::BindRepeating(&SerialApiTest::BindSerialPortManager,
                             base::Unretained(this)));
-    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
-        device::mojom::kServiceName,
-        base::BindRepeating(&SerialApiTest::BindSerialPort));
 #endif
   }
 
@@ -233,11 +235,6 @@ class SerialApiTest : public ExtensionApiTest {
       return;
 
     mojo::MakeStrongBinding(std::make_unique<FakeSerialPortManager>(),
-                            std::move(request));
-  }
-
-  static void BindSerialPort(device::mojom::SerialPortRequest request) {
-    mojo::MakeStrongBinding(std::make_unique<FakeSerialPort>(),
                             std::move(request));
   }
 

@@ -161,8 +161,6 @@ class DeviceService : public service_manager::Service {
 
   void BindSerialPortManagerRequest(mojom::SerialPortManagerRequest request);
 
-  void BindSerialPortRequest(mojom::SerialPortRequest request);
-
   void BindUsbDeviceManagerRequest(mojom::UsbDeviceManagerRequest request);
 
   service_manager::ServiceBinding service_binding_;

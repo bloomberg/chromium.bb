@@ -22,7 +22,6 @@
 #include "services/device/geolocation/public_ip_address_location_notifier.h"
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
-#include "services/device/serial/serial_port_impl.h"
 #include "services/device/serial/serial_port_manager_impl.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
 #include "services/device/wake_lock/wake_lock_provider.h"
@@ -145,8 +144,6 @@ void DeviceService::OnStart() {
       &DeviceService::BindWakeLockProviderRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::SerialPortManager>(base::Bind(
       &DeviceService::BindSerialPortManagerRequest, base::Unretained(this)));
-  registry_.AddInterface<mojom::SerialPort>(base::Bind(
-      &DeviceService::BindSerialPortRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::UsbDeviceManager>(base::Bind(
       &DeviceService::BindUsbDeviceManagerRequest, base::Unretained(this)));
 
@@ -312,17 +309,6 @@ void DeviceService::BindSerialPortManagerRequest(
 #if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
     defined(OS_MACOSX)
   SerialPortManagerImpl::Create(std::move(request));
-#endif
-}
-
-void DeviceService::BindSerialPortRequest(mojom::SerialPortRequest request) {
-#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
-    defined(OS_MACOSX)
-  if (io_task_runner_) {
-    io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&SerialPortImpl::Create, base::Passed(&request),
-                              base::ThreadTaskRunnerHandle::Get()));
-  }
 #endif
 }
 

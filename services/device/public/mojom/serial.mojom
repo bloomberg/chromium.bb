@@ -87,12 +87,13 @@ struct SerialPortControlSignals {
 // Discovers and enumerates serial devices available to the host.
 interface SerialPortManager {
   GetDevices() => (array<SerialPortInfo> devices);
+  GetPort(string path, SerialPort& port_request);
 };
 
 // Performs asynchronous I/O on serial devices.
 interface SerialPort {
   // Initiates an Open of the device then returns result.
-  Open(string port, SerialConnectionOptions options) => (bool success);
+  Open(SerialConnectionOptions options) => (bool success);
 
   // Performs a Read operation then returns retrieved data and the
   // result. Note that the Read may succeed partially, means that even if

@@ -13,22 +13,25 @@ namespace device {
 
 // static
 void SerialPortImpl::Create(
+    const std::string& path,
     mojom::SerialPortRequest request,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  mojo::MakeStrongBinding(std::make_unique<SerialPortImpl>(ui_task_runner),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      std::make_unique<SerialPortImpl>(path, ui_task_runner),
+      std::move(request));
 }
 
 SerialPortImpl::SerialPortImpl(
+    const std::string& path,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : io_handler_(device::SerialIoHandler::Create(ui_task_runner)) {}
+    : path_(path),
+      io_handler_(device::SerialIoHandler::Create(ui_task_runner)) {}
 
 SerialPortImpl::~SerialPortImpl() = default;
 
-void SerialPortImpl::Open(const std::string& port,
-                          mojom::SerialConnectionOptionsPtr options,
+void SerialPortImpl::Open(mojom::SerialConnectionOptionsPtr options,
                           OpenCallback callback) {
-  io_handler_->Open(port, *options, std::move(callback));
+  io_handler_->Open(path_, *options, std::move(callback));
 }
 
 void SerialPortImpl::Read(uint32_t bytes, ReadCallback callback) {

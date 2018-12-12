@@ -46,8 +46,7 @@ class ViscaWebcam : public Webcam {
   // Private because WebCam is base::RefCounted.
   ~ViscaWebcam() override;
 
-  void OpenOnIOThread(const std::string& path,
-                      const std::string& extension_id,
+  void OpenOnIOThread(const std::string& extension_id,
                       device::mojom::SerialPortPtrInfo port_ptr_info,
                       const OpenCompleteCallback& open_callback);
 

@@ -52,7 +52,7 @@ class SerialGetDevicesFunction : public UIThreadExtensionFunction {
  private:
   void OnGotDevices(std::vector<device::mojom::SerialPortInfoPtr> devices);
 
-  device::mojom::SerialPortManagerPtr enumerator_;
+  device::mojom::SerialPortManagerPtr port_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialGetDevicesFunction);
 };
@@ -86,7 +86,7 @@ class SerialConnectFunction : public SerialAsyncApiFunction {
   // ApiResourceManager<SerialConnection> upon success.
   std::unique_ptr<SerialConnection> connection_;
 
-  device::mojom::SerialPortPtrInfo io_handler_info_;
+  device::mojom::SerialPortPtrInfo serial_port_info_;
 };
 
 class SerialUpdateFunction : public SerialAsyncApiFunction {
