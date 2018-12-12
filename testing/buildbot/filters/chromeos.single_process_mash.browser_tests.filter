@@ -1,16 +1,6 @@
 # These tests currently fail with SingleProcessMash enabled.
 # Bug: crbug.com/877118
 
-# Changing the Chrome keyboard window size does not change the Ash keyboard
-# window size. These tests may require a test mojo interface for Mash.
-# https://crbug.com/843332.
--KeyboardControllerAppWindowTest.DisableOverscrollForImeWindow
--KeyboardEndToEndOverscrollTest.ToggleKeyboardOnMaximizedWindowAffectsViewport
-
-# Keyboard window does not move browser windows. https://crbug.com/906888.
--KeyboardEndToEndOverscrollTest.ToggleKeyboardOnShortOverlappingWindowMovesWindowUpwards
--KeyboardEndToEndOverscrollTest.ToggleKeyboardOnTallOverlappingWindowMovesWindowUpwardsAndAffectsViewport
-
 # Mouse move events are not handled correctly in tests.
 # TODO(stevenjb): Determine why this works in practice but fails in the test.
 -KeyboardControllerWebContentTest.CanDragFloatingKeyboardWithMouse
