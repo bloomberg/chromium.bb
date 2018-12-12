@@ -52685,7 +52685,7 @@ Full version information for the fingerprint enum values:
   <int value="66" label=".gslides"/>
 </enum>
 
-<enum name="ViewsTextServicesContextMenu">
+<enum name="ViewsTextServicesContextMenuItem">
   <int value="0" label="EMOJI"/>
 </enum>
 
