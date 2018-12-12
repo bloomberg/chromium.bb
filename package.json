@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node_modules/typescript/bin/tsc",
     "clean": "rm -rf out/",
-    "test": "node_modules/ts-node/dist/bin.js framework/unittests"
+    "test": "ts-node framework/unittests",
+    "cts": "ts-node node_modules/jasmine/bin/jasmine"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,8 @@
   "homepage": "https://github.com/kainino0x/cts-experiment#readme",
   "dependencies": {},
   "devDependencies": {
+    "@types/jasmine": "^3.3.1",
+    "jasmine": "^3.3.1",
     "ts-node": "^7.0.1",
     "typescript": "^3.2.1"
   }
