@@ -170,8 +170,8 @@ VkFormat SkColorTypeToVkFormat(SkColorType color_type) {
       return VK_FORMAT_B4G4R4A4_UNORM_PACK16;
     case kRGBA_8888_SkColorType:
       return VK_FORMAT_R8G8B8A8_UNORM;  // or VK_FORMAT_R8G8B8A8_SRGB
-    case kRGB_888x_SkColorType:  // Skia doesn't support it yet.
-      break;
+    case kRGB_888x_SkColorType:
+      return VK_FORMAT_R8G8B8_UNORM;
     case kBGRA_8888_SkColorType:
       return VK_FORMAT_B8G8R8A8_UNORM;  // or VK_FORMAT_B8G8R8A8_SRGB
     case kRGBA_1010102_SkColorType:
