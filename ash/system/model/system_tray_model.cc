@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/enterprise_domain_model.h"
+#include "ash/system/model/locale_model.h"
 #include "ash/system/model/session_length_limit_model.h"
 #include "ash/system/model/tracing_model.h"
 #include "ash/system/model/update_model.h"
@@ -21,6 +22,7 @@ namespace ash {
 SystemTrayModel::SystemTrayModel()
     : clock_(std::make_unique<ClockModel>()),
       enterprise_domain_(std::make_unique<EnterpriseDomainModel>()),
+      locale_(std::make_unique<LocaleModel>()),
       session_length_limit_(std::make_unique<SessionLengthLimitModel>()),
       tracing_(std::make_unique<TracingModel>()),
       update_model_(std::make_unique<UpdateModel>()),
@@ -70,8 +72,7 @@ void SystemTrayModel::SetPerformanceTracingIconVisible(bool visible) {
 void SystemTrayModel::SetLocaleList(
     std::vector<mojom::LocaleInfoPtr> locale_list,
     const std::string& current_locale_iso_code) {
-  locale_list_ = std::move(locale_list);
-  current_locale_iso_code_ = current_locale_iso_code;
+  locale()->SetLocaleList(std::move(locale_list), current_locale_iso_code);
 }
 
 void SystemTrayModel::ShowUpdateIcon(mojom::UpdateSeverity severity,
