@@ -38,7 +38,7 @@ void AssistantSettingsManagerImpl::GetSettings(const std::string& selector,
                                                GetSettingsCallback callback) {
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(service_->main_task_runner()->BelongsToCurrentThread());
 
   // Wraps the callback into a repeating callback since the server side
   // interface requires the callback to be copyable.
@@ -70,7 +70,7 @@ void AssistantSettingsManagerImpl::UpdateSettings(
     GetSettingsCallback callback) {
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(service_->main_task_runner()->BelongsToCurrentThread());
   // Wraps the callback into a repeating callback since the server side
   // interface requires the callback to be copyable.
   std::string serialized_proto = SerializeUpdateSettingsUiRequest(update);
@@ -101,7 +101,7 @@ void AssistantSettingsManagerImpl::StartSpeakerIdEnrollment(
     mojom::SpeakerIdEnrollmentClientPtr client) {
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(service_->main_task_runner()->BelongsToCurrentThread());
 
   speaker_id_enrollment_client_ = std::move(client);
 
@@ -126,7 +126,6 @@ void AssistantSettingsManagerImpl::StopSpeakerIdEnrollment(
     StopSpeakerIdEnrollmentCallback callback) {
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
   assistant_manager_service_->assistant_manager_internal()
       ->StopSpeakerIdEnrollment([repeating_callback =
                                      base::AdaptCallbackForRepeating(
@@ -143,7 +142,6 @@ void AssistantSettingsManagerImpl::StopSpeakerIdEnrollment(
 
 void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentUpdate(
     const assistant_client::SpeakerIdEnrollmentUpdate& update) {
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
   switch (update.state) {
     case SpeakerIdEnrollmentState::LISTEN:
       speaker_id_enrollment_client_->OnListeningHotword();
@@ -172,7 +170,6 @@ void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentUpdate(
 
 void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentStatusSync(
     const assistant_client::SpeakerIdEnrollmentUpdate& update) {
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
   switch (update.state) {
     case SpeakerIdEnrollmentState::LISTEN:
       speaker_id_enrollment_done_ = false;
@@ -197,13 +194,12 @@ void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentStatusSync(
 
 void AssistantSettingsManagerImpl::HandleStopSpeakerIdEnrollment(
     base::RepeatingCallback<void()> callback) {
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
   speaker_id_enrollment_client_.reset();
   callback.Run();
 }
 
 void AssistantSettingsManagerImpl::SyncSpeakerIdEnrollmentStatus() {
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(service_->main_task_runner()->BelongsToCurrentThread());
   if (speaker_id_enrollment_client_) {
     // Speaker id enrollment is in progress.
     return;
@@ -229,7 +225,7 @@ void AssistantSettingsManagerImpl::SyncSpeakerIdEnrollmentStatus() {
 }
 
 void AssistantSettingsManagerImpl::UpdateServerDeviceSettings() {
-  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
+  DCHECK(service_->main_task_runner()->BelongsToCurrentThread());
 
   const std::string device_id =
       assistant_manager_service_->assistant_manager()->GetDeviceId();
