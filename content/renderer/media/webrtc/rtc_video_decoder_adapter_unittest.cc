@@ -28,6 +28,7 @@
 #include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/api/video_codecs/video_codec.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -141,8 +142,10 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
     EXPECT_CALL(*video_decoder_, Initialize(_, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<4>(&output_cb_),
                         media::RunCallback<3>(init_cb_result)));
-    rtc_video_decoder_adapter_ =
-        RTCVideoDecoderAdapter::Create(&gpu_factories_, webrtc::kVideoCodecVP9);
+    rtc_video_decoder_adapter_ = RTCVideoDecoderAdapter::Create(
+        &gpu_factories_,
+        webrtc::SdpVideoFormat(
+            webrtc::CodecTypeToPayloadString(webrtc::kVideoCodecVP9)));
     return !!rtc_video_decoder_adapter_;
   }
 

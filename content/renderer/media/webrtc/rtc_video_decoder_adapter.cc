@@ -26,6 +26,7 @@
 #include "media/base/video_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/webrtc/api/video/video_frame.h"
+#include "third_party/webrtc/media/base/vp9_profile.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/rtc_base/bind.h"
 #include "third_party/webrtc/rtc_base/refcount.h"
@@ -75,14 +76,27 @@ media::VideoCodec ToVideoCodec(webrtc::VideoCodecType video_codec_type) {
   }
 }
 
-// Map webrtc::VideoCodecType to a guess for media::VideoCodecProfile.
+// Map webrtc::SdpVideoFormat to a guess for media::VideoCodecProfile.
 media::VideoCodecProfile GuessVideoCodecProfile(
-    webrtc::VideoCodecType video_codec_type) {
+    const webrtc::SdpVideoFormat& format) {
+  const webrtc::VideoCodecType video_codec_type =
+      webrtc::PayloadStringToCodecType(format.name);
   switch (video_codec_type) {
     case webrtc::kVideoCodecVP8:
       return media::VP8PROFILE_ANY;
-    case webrtc::kVideoCodecVP9:
+    case webrtc::kVideoCodecVP9: {
+      const webrtc::VP9Profile vp9_profile =
+          webrtc::ParseSdpForVP9Profile(format.parameters)
+              .value_or(webrtc::VP9Profile::kProfile0);
+      switch (vp9_profile) {
+        case webrtc::VP9Profile::kProfile2:
+          return media::VP9PROFILE_PROFILE2;
+        case webrtc::VP9Profile::kProfile0:
+        default:
+          return media::VP9PROFILE_PROFILE0;
+      }
       return media::VP9PROFILE_PROFILE0;
+    }
     case webrtc::kVideoCodecH264:
       return media::H264PROFILE_BASELINE;
     default:
@@ -108,9 +122,11 @@ void OnRequestOverlayInfo(bool decoder_requires_restart_for_overlay,
 // static
 std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
     media::GpuVideoAcceleratorFactories* gpu_factories,
-    webrtc::VideoCodecType video_codec_type) {
-  DVLOG(1) << __func__ << "(" << video_codec_type << ")";
+    const webrtc::SdpVideoFormat& format) {
+  DVLOG(1) << __func__ << "(" << format.name << ")";
 
+  const webrtc::VideoCodecType video_codec_type =
+      webrtc::PayloadStringToCodecType(format.name);
 #if defined(OS_WIN)
   // Do not use hardware decoding for H.264 on Win7, due to high latency.
   // See https://crbug.com/webrtc/5717.
@@ -128,8 +144,7 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
     return nullptr;
 
   std::unique_ptr<RTCVideoDecoderAdapter> rtc_video_decoder_adapter =
-      base::WrapUnique(
-          new RTCVideoDecoderAdapter(gpu_factories, video_codec_type));
+      base::WrapUnique(new RTCVideoDecoderAdapter(gpu_factories, format));
 
   // Synchronously verify that the decoder can be initialized.
   if (!rtc_video_decoder_adapter->InitializeSync()) {
@@ -143,10 +158,10 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
 
 RTCVideoDecoderAdapter::RTCVideoDecoderAdapter(
     media::GpuVideoAcceleratorFactories* gpu_factories,
-    webrtc::VideoCodecType video_codec_type)
+    const webrtc::SdpVideoFormat& format)
     : media_task_runner_(gpu_factories->GetTaskRunner()),
       gpu_factories_(gpu_factories),
-      video_codec_type_(video_codec_type),
+      format_(format),
       weak_this_factory_(this) {
   DVLOG(1) << __func__;
   DETACH_FROM_THREAD(decoding_thread_checker_);
@@ -181,7 +196,8 @@ int32_t RTCVideoDecoderAdapter::InitDecode(
     int32_t number_of_cores) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(decoding_thread_checker_);
-  DCHECK_EQ(video_codec_type_, codec_settings->codecType);
+  DCHECK_EQ(webrtc::PayloadStringToCodecType(format_.name),
+            codec_settings->codecType);
 
   base::AutoLock auto_lock(lock_);
   UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoDecoderInitDecodeSuccess", !has_error_);
@@ -292,8 +308,8 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
 
   // We don't know much about the media that is coming.
   media::VideoDecoderConfig config(
-      ToVideoCodec(video_codec_type_),
-      GuessVideoCodecProfile(video_codec_type_), kDefaultPixelFormat,
+      ToVideoCodec(webrtc::PayloadStringToCodecType(format_.name)),
+      GuessVideoCodecProfile(format_), kDefaultPixelFormat,
       media::VideoColorSpace(), media::VIDEO_ROTATION_0, kDefaultSize,
       gfx::Rect(kDefaultSize), kDefaultSize, media::EmptyExtraData(),
       media::Unencrypted());

@@ -16,6 +16,7 @@
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/common_video/h264/profile_level_id.h"
 #include "third_party/webrtc/media/base/codec.h"
+#include "third_party/webrtc/media/base/vp9_profile.h"
 
 namespace content {
 
@@ -32,7 +33,21 @@ base::Optional<webrtc::SdpVideoFormat> VDAToWebRTCFormat(
     return webrtc::SdpVideoFormat("VP8");
   } else if (profile.profile >= media::VP9PROFILE_MIN &&
              profile.profile <= media::VP9PROFILE_MAX) {
-    return webrtc::SdpVideoFormat("VP9");
+    webrtc::VP9Profile vp9_profile;
+    switch (profile.profile) {
+      case media::VP9PROFILE_PROFILE0:
+        vp9_profile = webrtc::VP9Profile::kProfile0;
+        break;
+      case media::VP9PROFILE_PROFILE2:
+        vp9_profile = webrtc::VP9Profile::kProfile2;
+        break;
+      default:
+        // Unsupported H264 profile in WebRTC.
+        return base::nullopt;
+    }
+    return webrtc::SdpVideoFormat(
+        "VP9",
+        {{webrtc::kVP9FmtpProfileId, webrtc::VP9ProfileToString(vp9_profile)}});
   } else if (profile.profile >= media::H264PROFILE_MIN &&
              profile.profile <= media::H264PROFILE_MAX) {
     webrtc::H264::Profile h264_profile;
@@ -168,11 +183,9 @@ RTCVideoDecoderFactory::CreateVideoDecoder(
   DVLOG(2) << __func__;
   std::unique_ptr<webrtc::VideoDecoder> decoder;
   if (base::FeatureList::IsEnabled(media::kRTCVideoDecoderAdapter)) {
-    decoder = RTCVideoDecoderAdapter::Create(
-        gpu_factories_, webrtc::PayloadStringToCodecType(format.name));
+    decoder = RTCVideoDecoderAdapter::Create(gpu_factories_, format);
   } else {
-    decoder = RTCVideoDecoder::Create(
-        webrtc::PayloadStringToCodecType(format.name), gpu_factories_);
+    decoder = RTCVideoDecoder::Create(format, gpu_factories_);
   }
   // ScopedVideoDecoder uses the task runner to make sure the decoder is
   // destructed on the correct thread.

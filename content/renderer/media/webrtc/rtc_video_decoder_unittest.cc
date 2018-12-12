@@ -17,6 +17,7 @@
 #include "media/video/mock_video_decode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/webrtc/media/base/vp9_profile.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -70,7 +71,9 @@ class RTCVideoDecoderTest
     capabilities_.supported_profiles.push_back(supported_profile);
     supported_profile.profile = media::VP8PROFILE_ANY;
     capabilities_.supported_profiles.push_back(supported_profile);
-    supported_profile.profile = media::VP9PROFILE_MIN;
+    supported_profile.profile = media::VP9PROFILE_PROFILE0;
+    capabilities_.supported_profiles.push_back(supported_profile);
+    supported_profile.profile = media::VP9PROFILE_PROFILE2;
     capabilities_.supported_profiles.push_back(supported_profile);
 
     EXPECT_CALL(*mock_gpu_factories_.get(), GetTaskRunner())
@@ -108,11 +111,15 @@ class RTCVideoDecoderTest
     return WEBRTC_VIDEO_CODEC_OK;
   }
 
-  void CreateDecoder(webrtc::VideoCodecType codec_type) {
+  void CreateDecoder(const webrtc::SdpVideoFormat& format) {
     DVLOG(2) << "CreateDecoder";
-    codec_.codecType = codec_type;
-    rtc_decoder_ =
-        RTCVideoDecoder::Create(codec_type, mock_gpu_factories_.get());
+    codec_.codecType = webrtc::PayloadStringToCodecType(format.name);
+    rtc_decoder_ = RTCVideoDecoder::Create(format, mock_gpu_factories_.get());
+  }
+
+  void CreateDecoder(webrtc::VideoCodecType codec_type) {
+    CreateDecoder(
+        webrtc::SdpVideoFormat(webrtc::CodecTypeToPayloadString(codec_type)));
   }
 
   void Initialize() {
@@ -196,7 +203,9 @@ class RTCVideoDecoderTest
 TEST_F(RTCVideoDecoderTest, CreateReturnsNullOnUnsupportedCodec) {
   CreateDecoder(webrtc::kVideoCodecVP8);
   std::unique_ptr<RTCVideoDecoder> null_rtc_decoder(RTCVideoDecoder::Create(
-      webrtc::kVideoCodecI420, mock_gpu_factories_.get()));
+      webrtc::SdpVideoFormat(
+          webrtc::CodecTypeToPayloadString(webrtc::kVideoCodecI420)),
+      mock_gpu_factories_.get()));
   EXPECT_EQ(nullptr, null_rtc_decoder.get());
 }
 
@@ -340,6 +349,14 @@ TEST_F(RTCVideoDecoderTest, MultipleTexturesPerBuffer) {
     EXPECT_EQ(kSize, pb.size());
     EXPECT_EQ(kTexturesPerBuffer, pb.client_texture_ids().size());
   }
+}
+
+TEST_F(RTCVideoDecoderTest, ParsesVP9CodecProfile) {
+  webrtc::SdpVideoFormat sdp_format(
+      "VP9", {{webrtc::kVP9FmtpProfileId,
+               webrtc::VP9ProfileToString(webrtc::VP9Profile::kProfile2)}});
+  CreateDecoder(sdp_format);
+  EXPECT_EQ(media::VP9PROFILE_PROFILE2, rtc_decoder_->vda_codec_profile_);
 }
 
 // Tests/Verifies that |rtc_encoder_| drops incoming frames and its error

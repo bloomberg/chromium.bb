@@ -20,6 +20,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/webrtc/api/video/video_frame.h"
+#include "third_party/webrtc/media/base/vp9_profile.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/rtc_base/bind.h"
 #include "third_party/webrtc/rtc_base/refcount.h"
@@ -91,8 +92,10 @@ RTCVideoDecoder::~RTCVideoDecoder() {
 
 // static
 std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
-    webrtc::VideoCodecType type,
+    const webrtc::SdpVideoFormat& format,
     media::GpuVideoAcceleratorFactories* factories) {
+  const webrtc::VideoCodecType type =
+      webrtc::PayloadStringToCodecType(format.name);
   std::unique_ptr<RTCVideoDecoder> decoder;
 // See https://bugs.chromium.org/p/webrtc/issues/detail?id=5717.
 #if defined(OS_WIN)
@@ -110,9 +113,21 @@ std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
     case webrtc::kVideoCodecVP8:
       profile = media::VP8PROFILE_ANY;
       break;
-    case webrtc::kVideoCodecVP9:
-      profile = media::VP9PROFILE_MIN;
+    case webrtc::kVideoCodecVP9: {
+      const webrtc::VP9Profile vp9_profile =
+          webrtc::ParseSdpForVP9Profile(format.parameters)
+              .value_or(webrtc::VP9Profile::kProfile0);
+      switch (vp9_profile) {
+        case webrtc::VP9Profile::kProfile2:
+          profile = media::VP9PROFILE_PROFILE2;
+          break;
+        case webrtc::VP9Profile::kProfile0:
+        default:
+          profile = media::VP9PROFILE_PROFILE0;
+          break;
+      }
       break;
+    }
     case webrtc::kVideoCodecH264:
       profile = media::H264PROFILE_MAIN;
       break;

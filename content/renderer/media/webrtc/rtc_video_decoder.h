@@ -25,6 +25,7 @@
 #include "media/base/video_decoder.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
+#include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -57,7 +58,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Creates a RTCVideoDecoder on the message loop of |factories|. Returns NULL
   // if failed. The video decoder will run on the message loop of |factories|.
   static std::unique_ptr<RTCVideoDecoder> Create(
-      webrtc::VideoCodecType type,
+      const webrtc::SdpVideoFormat& format,
       media::GpuVideoAcceleratorFactories* factories);
   // Destroys |decoder| on the loop of |factories|
   static void Destroy(webrtc::VideoDecoder* decoder,
@@ -116,6 +117,7 @@ class CONTENT_EXPORT RTCVideoDecoder
                            GetVDAErrorCounterForRunningOutOfPendingBuffers);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest,
                            GetVDAErrorCounterForSendingFramesWithoutSize);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, ParsesVP9CodecProfile);
 
   RTCVideoDecoder(webrtc::VideoCodecType type,
                   media::GpuVideoAcceleratorFactories* factories);

@@ -1945,6 +1945,7 @@ test("content_unittests") {
     "//third_party/webrtc/api/video:video_frame_i420",
     "//third_party/webrtc/api/video_codecs:video_codecs_api",
     "//third_party/webrtc/media:rtc_media",
+    "//third_party/webrtc/media:rtc_vp9_profile",
     "//third_party/webrtc/modules/desktop_capture:primitives",
     "//third_party/webrtc/modules/video_capture",
     "//third_party/webrtc/modules/video_coding:video_codec_interface",
