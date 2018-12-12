@@ -51,11 +51,9 @@ bool AddressListOnlyContainsIPv6(const AddressList& list) {
 TransportSocketParams::TransportSocketParams(
     const HostPortPair& host_port_pair,
     bool disable_resolver_cache,
-    const OnHostResolutionCallback& host_resolution_callback,
-    CombineConnectAndWritePolicy combine_connect_and_write_if_supported)
+    const OnHostResolutionCallback& host_resolution_callback)
     : destination_(host_port_pair),
-      host_resolution_callback_(host_resolution_callback),
-      combine_connect_and_write_(combine_connect_and_write_if_supported) {
+      host_resolution_callback_(host_resolution_callback) {
   if (disable_resolver_cache)
     destination_.set_allow_cached_response(false);
 }
@@ -298,15 +296,6 @@ int TransportConnectJob::DoTransportConnect() {
   bool try_ipv6_connect_with_ipv4_fallback =
       addresses_.front().GetFamily() == ADDRESS_FAMILY_IPV6 &&
       !AddressListOnlyContainsIPv6(addresses_);
-
-  // Enable TCP FastOpen if indicated by transport socket params.
-  // Note: We currently do not turn on TCP FastOpen for destinations where
-  // we try a TCP connect over IPv6 with fallback to IPv4.
-  if (!try_ipv6_connect_with_ipv4_fallback &&
-      params_->combine_connect_and_write() ==
-          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DESIRED) {
-    transport_socket_->EnableTCPFastOpenIfSupported();
-  }
 
   transport_socket_->ApplySocketTag(socket_tag());
 

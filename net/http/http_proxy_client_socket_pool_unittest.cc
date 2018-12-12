@@ -148,21 +148,16 @@ class HttpProxyClientSocketPoolTest
   scoped_refptr<TransportSocketParams> CreateHttpProxyParams() const {
     if (GetParam() != HTTP)
       return NULL;
-    return new TransportSocketParams(
-        HostPortPair(kHttpProxyHost, 80),
-        false,
-        OnHostResolutionCallback(),
-        TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
+    return new TransportSocketParams(HostPortPair(kHttpProxyHost, 80), false,
+                                     OnHostResolutionCallback());
   }
 
   scoped_refptr<SSLSocketParams> CreateHttpsProxyParams() const {
     if (GetParam() == HTTP)
       return NULL;
     return new SSLSocketParams(
-        new TransportSocketParams(
-            HostPortPair(kHttpsProxyHost, 443), false,
-            OnHostResolutionCallback(),
-            TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT),
+        new TransportSocketParams(HostPortPair(kHttpsProxyHost, 443), false,
+                                  OnHostResolutionCallback()),
         NULL, NULL, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
         PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */);
   }

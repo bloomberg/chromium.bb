@@ -33,32 +33,17 @@ typedef base::Callback<int(const AddressList&, const NetLogWithSource& net_log)>
 class NET_EXPORT_PRIVATE TransportSocketParams
     : public base::RefCounted<TransportSocketParams> {
  public:
-  // CombineConnectAndWrite currently translates to using TCP FastOpen.
-  // TCP FastOpen should not be used if the first write to the socket may
-  // be non-idempotent, as the underlying socket could retransmit the data
-  // on failure of the first transmission.
-  enum CombineConnectAndWritePolicy {
-    COMBINE_CONNECT_AND_WRITE_DEFAULT,  // Default policy, don't combine.
-    COMBINE_CONNECT_AND_WRITE_DESIRED,  // Combine if supported by socket.
-  };
-
   // |host_resolution_callback| will be invoked after the the hostname is
   // resolved.  If |host_resolution_callback| does not return OK, then the
-  // connection will be aborted with that value. |combine_connect_and_write|
-  // defines the policy for use of TCP FastOpen on this socket.
+  // connection will be aborted with that value.
   TransportSocketParams(
       const HostPortPair& host_port_pair,
       bool disable_resolver_cache,
-      const OnHostResolutionCallback& host_resolution_callback,
-      CombineConnectAndWritePolicy combine_connect_and_write);
+      const OnHostResolutionCallback& host_resolution_callback);
 
   const HostResolver::RequestInfo& destination() const { return destination_; }
   const OnHostResolutionCallback& host_resolution_callback() const {
     return host_resolution_callback_;
-  }
-
-  CombineConnectAndWritePolicy combine_connect_and_write() const {
-    return combine_connect_and_write_;
   }
 
  private:
@@ -67,7 +52,6 @@ class NET_EXPORT_PRIVATE TransportSocketParams
 
   HostResolver::RequestInfo destination_;
   const OnHostResolutionCallback host_resolution_callback_;
-  CombineConnectAndWritePolicy combine_connect_and_write_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSocketParams);
 };

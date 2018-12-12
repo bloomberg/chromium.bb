@@ -274,9 +274,8 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
   mock_quic_data_.AddSocketDataToFactory(&socket_factory_);
 
   scoped_refptr<TransportSocketParams> transport_params =
-      new TransportSocketParams(
-          proxy_host_port_, false, OnHostResolutionCallback(),
-          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
+      new TransportSocketParams(proxy_host_port_, false,
+                                OnHostResolutionCallback());
 
   scoped_refptr<SSLSocketParams> ssl_params = new SSLSocketParams(
       transport_params, nullptr, nullptr, proxy_host_port_, SSLConfig(),
@@ -332,9 +331,8 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
   mock_quic_data_.AddSocketDataToFactory(&socket_factory_);
 
   scoped_refptr<TransportSocketParams> transport_params =
-      new TransportSocketParams(
-          proxy_host_port_, false, OnHostResolutionCallback(),
-          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
+      new TransportSocketParams(proxy_host_port_, false,
+                                OnHostResolutionCallback());
 
   scoped_refptr<SSLSocketParams> ssl_params = new SSLSocketParams(
       transport_params, nullptr, nullptr, proxy_host_port_, SSLConfig(),

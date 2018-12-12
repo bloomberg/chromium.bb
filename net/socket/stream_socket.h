@@ -133,10 +133,6 @@ class NET_EXPORT StreamSocket : public Socket {
   // Write() methods had been called, not the underlying transport's.
   virtual bool WasEverUsed() const = 0;
 
-  // TODO(jri): Clean up -- rename to a more general EnableAutoConnectOnWrite.
-  // Enables use of TCP FastOpen for the underlying transport socket.
-  virtual void EnableTCPFastOpenIfSupported() {}
-
   // Returns true if ALPN was negotiated during the connection of this socket.
   virtual bool WasAlpnNegotiated() const = 0;
 

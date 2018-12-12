@@ -56,9 +56,8 @@ void TestLoadTimingInfo(const ClientSocketHandle& handle) {
 
 
 scoped_refptr<TransportSocketParams> CreateProxyHostParams() {
-  return new TransportSocketParams(
-      HostPortPair("proxy", 80), false, OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
+  return new TransportSocketParams(HostPortPair("proxy", 80), false,
+                                   OnHostResolutionCallback());
 }
 
 scoped_refptr<SOCKSSocketParams> CreateSOCKSv4Params() {
@@ -407,8 +406,7 @@ TEST_F(SOCKSClientSocketPoolTest, Tag) {
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
   SocketTag tag2(getuid(), 0x87654321);
   scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
-      HostPortPair("proxy", 80), false, OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+      HostPortPair("proxy", 80), false, OnHostResolutionCallback()));
   scoped_refptr<SOCKSSocketParams> params(new SOCKSSocketParams(
       tcp_params, true /* socks_v5 */, HostPortPair("host", 80),
       TRAFFIC_ANNOTATION_FOR_TESTS));

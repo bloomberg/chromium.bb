@@ -39,9 +39,6 @@ namespace {
 // Map from name to value for all parameters associate with a field trial.
 using VariationParameters = std::map<std::string, std::string>;
 
-const char kTCPFastOpenFieldTrialName[] = "TCPFastOpen";
-const char kTCPFastOpenHttpsEnabledGroupName[] = "HttpsEnabled";
-
 const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
 const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
@@ -71,18 +68,6 @@ const std::string& GetVariationParam(
     return base::EmptyString();
 
   return it->second;
-}
-
-void ConfigureTCPFastOpenParams(const base::CommandLine& command_line,
-                                base::StringPiece tfo_trial_group,
-                                net::HttpNetworkSession::Params* params) {
-  if (command_line.HasSwitch(switches::kEnableTcpFastOpen)) {
-    params->tcp_fast_open_mode =
-        net::HttpNetworkSession::Params::TcpFastOpenMode::ENABLED_FOR_ALL;
-  } else if (tfo_trial_group == kTCPFastOpenHttpsEnabledGroupName) {
-    params->tcp_fast_open_mode =
-        net::HttpNetworkSession::Params::TcpFastOpenMode::ENABLED_FOR_SSL_ONLY;
-  }
 }
 
 spdy::SettingsMap GetHttp2Settings(
@@ -573,10 +558,6 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
     http2_trial_params.clear();
   ConfigureHttp2Params(command_line, http2_trial_group, http2_trial_params,
                        params);
-
-  const std::string tfo_trial_group =
-      base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);
-  ConfigureTCPFastOpenParams(command_line, tfo_trial_group, params);
 
   // Command line flags override field trials.
   if (command_line.HasSwitch(switches::kDisableHttp2))

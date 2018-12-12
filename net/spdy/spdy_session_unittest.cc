@@ -3481,9 +3481,8 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
-  scoped_refptr<TransportSocketParams> params2(new TransportSocketParams(
-      host_port2, false, OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+  scoped_refptr<TransportSocketParams> params2(
+      new TransportSocketParams(host_port2, false, OnHostResolutionCallback()));
   auto connection2 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(
       ERR_IO_PENDING,
@@ -3566,9 +3565,8 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback3;
   HostPortPair host_port3("3.com", 80);
-  scoped_refptr<TransportSocketParams> params3(new TransportSocketParams(
-      host_port3, false, OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+  scoped_refptr<TransportSocketParams> params3(
+      new TransportSocketParams(host_port3, false, OnHostResolutionCallback()));
   auto connection3 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(
       ERR_IO_PENDING,
@@ -3645,9 +3643,8 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
-  scoped_refptr<TransportSocketParams> params2(new TransportSocketParams(
-      host_port2, false, OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+  scoped_refptr<TransportSocketParams> params2(
+      new TransportSocketParams(host_port2, false, OnHostResolutionCallback()));
   auto connection2 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(
       ERR_IO_PENDING,

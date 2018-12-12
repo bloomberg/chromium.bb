@@ -482,8 +482,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
 
   auto transport_params = base::MakeRefCounted<TransportSocketParams>(
       key.host_port_pair(), /* disable_resolver_cache = */ false,
-      OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT);
+      OnHostResolutionCallback());
 
   auto connection = std::make_unique<ClientSocketHandle>();
   TestCompletionCallback callback;

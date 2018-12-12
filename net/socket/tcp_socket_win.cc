@@ -95,9 +95,6 @@ bool SetNonBlockingAndGetError(int fd, int* os_error) {
 
 //-----------------------------------------------------------------------------
 
-// Nothing to do for Windows since it doesn't support TCP FastOpen.
-bool IsTCPFastOpenSupported() { return false; }
-
 // This class encapsulates all the state that has to be preserved as long as
 // there is a network IO operation in progress. If the owner TCPSocketWin is
 // destroyed while an operation is in progress, the Core is detached and it

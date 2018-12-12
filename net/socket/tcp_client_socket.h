@@ -68,7 +68,6 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
   int GetLocalAddress(IPEndPoint* address) const override;
   const NetLogWithSource& NetLog() const override;
   bool WasEverUsed() const override;
-  void EnableTCPFastOpenIfSupported() override;
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
