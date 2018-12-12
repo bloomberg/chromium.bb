@@ -23,6 +23,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -42,11 +43,11 @@ static PowerStatus* g_power_status = nullptr;
 const int kMinVisualChargeLevel = 1;
 
 // The color of the battery's badge (bolt, unreliable, X).
-const SkColor kBatteryBadgeColor = SkColorSetA(SK_ColorBLACK, 0xB2);
+const SkColor kBatteryBadgeColor = gfx::kGoogleGrey900;
 
 // The color used for the battery's badge and charged color when the battery
 // charge level is critically low and the device is not plugged in.
-const SkColor kBatteryAlertColor = SkColorSetRGB(0xDA, 0x27, 0x12);
+const SkColor kBatteryAlertColor = gfx::kGoogleRedDark600;
 
 class BatteryImageSource : public gfx::CanvasImageSource {
  public:
