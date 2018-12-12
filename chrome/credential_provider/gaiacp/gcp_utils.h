@@ -32,6 +32,9 @@ class FilePath;
 
 namespace credential_provider {
 
+// Windows supports a maximum of 20 characters plus null in username.
+constexpr int kWindowsUsernameBufferLength = 21;
+
 // Because of some strange dependency problems with windows header files,
 // define STATUS_SUCCESS here instead of including ntstatus.h or SubAuth.h
 #define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
@@ -196,6 +199,7 @@ std::string GetDictStringUTF8(
     const char* name);
 
 class OSUserManager;
+class OSProcessManager;
 
 // This structure is used in tests to set fake objects in the credential
 // provider dll.  See the function SetFakesForTesting() for details.
@@ -204,7 +208,8 @@ struct FakesForTesting {
   ~FakesForTesting();
 
   ScopedLsaPolicy::CreatorCallback scoped_lsa_policy_creator;
-  OSUserManager* os_manager_for_testing = nullptr;
+  OSUserManager* os_user_manager_for_testing = nullptr;
+  OSProcessManager* os_process_manager_for_testing = nullptr;
 };
 
 // DLL entrypoint signature for settings testing fakes.  This is used by

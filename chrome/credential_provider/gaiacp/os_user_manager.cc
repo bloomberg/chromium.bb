@@ -200,7 +200,7 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
   } else if (nsts == NERR_UserExists) {
     // TODO: If adding the special "gaia" account might want to check that
     // account permissions are not too permissive.
-    LOGFN(INFO) << "Using existing gaia user";
+    LOGFN(INFO) << "Using existing user '" << username << "'";
     user_found = true;
   } else {
     LOGFN(ERROR) << "NetUserAdd nsts=" << nsts;

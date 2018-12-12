@@ -27,7 +27,8 @@ extern const wchar_t kUserEmail[];
 extern const wchar_t kUserId[];
 
 // Username and password key for special GAIA account to run GLS.
-extern const wchar_t kGaiaAccountName[];
+extern const wchar_t kDefaultGaiaAccountName[];
+extern const wchar_t kLsaKeyGaiaUsername[];
 extern const wchar_t kLsaKeyGaiaPassword[];
 
 // Name of the desktop used on the Window welcome screen for interactive
