@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -21,7 +22,8 @@ class VirtualDeviceEnabledDeviceFactory;
 
 class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
  public:
-  DeviceFactoryProviderImpl();
+  explicit DeviceFactoryProviderImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~DeviceFactoryProviderImpl() override;
 
   void SetServiceRef(
@@ -43,6 +45,8 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
   std::unique_ptr<VirtualDeviceEnabledDeviceFactory> device_factory_;
   std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   std::unique_ptr<GpuDependenciesContext> gpu_dependencies_context_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceFactoryProviderImpl);
 };

@@ -8,5 +8,6 @@
 
 void ServiceMain(service_manager::mojom::ServiceRequest request) {
   base::MessageLoop message_loop;
-  video_capture::ServiceImpl(std::move(request)).RunUntilTermination();
+  video_capture::ServiceImpl(std::move(request), message_loop.task_runner())
+      .RunUntilTermination();
 }

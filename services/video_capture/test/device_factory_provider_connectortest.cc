@@ -35,6 +35,7 @@ class DeviceFactoryProviderConnectorTest : public ::testing::Test {
         switches::kUseFakeDeviceForMediaStream);
     service_impl_ = std::make_unique<ServiceImpl>(
         connector_factory_.RegisterInstance(video_capture::mojom::kServiceName),
+        scoped_task_environment_.GetMainThreadTaskRunner(),
         DeviceFactoryProviderConnectorTestTraits::shutdown_delay());
     service_impl_->set_termination_closure(
         base::BindOnce(&DeviceFactoryProviderConnectorTest::OnServiceQuit,

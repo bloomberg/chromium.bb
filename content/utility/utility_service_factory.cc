@@ -142,7 +142,8 @@ bool UtilityServiceFactory::HandleServiceRequest(
                        base::SequencedTaskRunnerHandle::Get()));
     return true;
   } else if (name == video_capture::mojom::kServiceName) {
-    service = std::make_unique<video_capture::ServiceImpl>(std::move(request));
+    service = std::make_unique<video_capture::ServiceImpl>(
+        std::move(request), base::ThreadTaskRunnerHandle::Get());
   } else if (name == viz::mojom::kVizServiceName) {
     service = std::make_unique<viz::Service>(std::move(request));
   }

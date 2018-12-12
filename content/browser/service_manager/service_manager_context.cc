@@ -35,6 +35,7 @@
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/grit/content_resources.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
@@ -417,7 +418,9 @@ void RegisterInProcessService(
 
 std::unique_ptr<service_manager::Service> CreateVideoCaptureService(
     service_manager::mojom::ServiceRequest request) {
-  return std::make_unique<video_capture::ServiceImpl>(std::move(request));
+  return std::make_unique<video_capture::ServiceImpl>(
+      std::move(request), base::CreateSingleThreadTaskRunnerWithTraits(
+                              {content::BrowserThread::UI}));
 }
 
 void CreateInProcessAudioService(
