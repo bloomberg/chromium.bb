@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
@@ -29,8 +28,10 @@ namespace {
 
 std::unique_ptr<IDBValue> ConvertReturnValue(
     const mojom::blink::IDBReturnValuePtr& input) {
-  if (!input)
-    return IDBValue::Create(WebData(), WebVector<WebBlobInfo>());
+  if (!input) {
+    return IDBValue::Create(scoped_refptr<SharedBuffer>(),
+                            WebVector<WebBlobInfo>());
+  }
 
   std::unique_ptr<IDBValue> output =
       IndexedDBCallbacksImpl::ConvertValue(input->value);
@@ -49,8 +50,10 @@ WebIDBNameAndVersion ConvertNameVersion(
 // static
 std::unique_ptr<IDBValue> IndexedDBCallbacksImpl::ConvertValue(
     const mojom::blink::IDBValuePtr& input) {
-  if (!input || input->bits.IsEmpty())
-    return IDBValue::Create(WebData(), WebVector<WebBlobInfo>());
+  if (!input || input->bits.IsEmpty()) {
+    return IDBValue::Create(scoped_refptr<SharedBuffer>(),
+                            WebVector<WebBlobInfo>());
+  }
 
   WebVector<WebBlobInfo> local_blob_info;
   local_blob_info.reserve(input->blob_or_file_info.size());
@@ -69,11 +72,11 @@ std::unique_ptr<IDBValue> IndexedDBCallbacksImpl::ConvertValue(
   }
 
   // TODO(crbug.com/902498): Use mojom traits to map directly to WebData.
-  WebData web_data(reinterpret_cast<const char*>(input->bits.data()),
-                   input->bits.size());
+  scoped_refptr<blink::SharedBuffer> value_buffer = blink::SharedBuffer::Create(
+      reinterpret_cast<const char*>(input->bits.data()), input->bits.size());
   // Release input->bits std::vector.
   input->bits.clear();
-  return IDBValue::Create(std::move(web_data), std::move(local_blob_info));
+  return IDBValue::Create(std::move(value_buffer), std::move(local_blob_info));
 }
 
 IndexedDBCallbacksImpl::IndexedDBCallbacksImpl(

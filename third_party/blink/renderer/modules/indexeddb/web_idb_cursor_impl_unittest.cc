@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_callbacks.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -168,7 +167,8 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
         blob_info.emplace_back(WebBlobInfo::BlobForTesting(
             WebString("blobuuid"), "text/plain", 123));
       }
-      values.emplace_back(IDBValue::Create(WebData(), std::move(blob_info)));
+      values.emplace_back(IDBValue::Create(scoped_refptr<SharedBuffer>(),
+                                           std::move(blob_info)));
     }
     cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
                              std::move(values));
@@ -239,7 +239,8 @@ TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
       blob_info.emplace_back(WebBlobInfo::BlobForTesting(WebString("blobuuid"),
                                                          "text/plain", 123));
     }
-    values.emplace_back(IDBValue::Create(WebData(), std::move(blob_info)));
+    values.emplace_back(
+        IDBValue::Create(scoped_refptr<SharedBuffer>(), std::move(blob_info)));
   }
   cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
                            std::move(values));
@@ -322,8 +323,10 @@ TEST_F(WebIDBCursorImplTest, PrefetchReset) {
   Vector<std::unique_ptr<IDBKey>> keys(prefetch_count);
   Vector<std::unique_ptr<IDBKey>> primary_keys(prefetch_count);
   Vector<std::unique_ptr<IDBValue>> values;
-  for (int i = 0; i < prefetch_count; ++i)
-    values.emplace_back(IDBValue::Create(WebData(), WebVector<WebBlobInfo>()));
+  for (int i = 0; i < prefetch_count; ++i) {
+    values.emplace_back(IDBValue::Create(scoped_refptr<SharedBuffer>(),
+                                         WebVector<WebBlobInfo>()));
+  }
   cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
                            std::move(values));
 

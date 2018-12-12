@@ -30,7 +30,6 @@
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
-#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -38,7 +37,7 @@
 namespace blink {
 
 class IDBKeyRange;
-class WebData;
+class WebBlobInfo;
 class WebIDBCallbacks;
 class WebIDBKeyPath;
 
@@ -106,7 +105,7 @@ class MODULES_EXPORT WebIDBDatabase {
                       WebIDBCallbacks*) = 0;
   virtual void Put(long long transaction_id,
                    long long object_store_id,
-                   const WebData& value,
+                   const scoped_refptr<SharedBuffer>& value,
                    const Vector<WebBlobInfo>&,
                    std::unique_ptr<IDBKey> primary_key,
                    mojom::IDBPutMode,
