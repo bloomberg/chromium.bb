@@ -228,6 +228,8 @@ void AutofillAction::OnWaitForElement(ActionDelegate* delegate,
     // TODO(crbug.com/806868): Consider refactoring SelfDeleteFullCardRequester
     // so as to unit test it.
     DCHECK(delegate->GetClientMemory()->selected_card());
+    // User might be asked to provide the cvc, enable the keyboard.
+    delegate->AllowShowingSoftKeyboard(true);
     (new SelfDeleteFullCardRequester())
         ->GetFullCard(delegate->GetWebContents(),
                       delegate->GetClientMemory()->selected_card(),
@@ -248,6 +250,7 @@ void AutofillAction::OnWaitForElement(ActionDelegate* delegate,
 void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
                                    std::unique_ptr<autofill::CreditCard> card,
                                    const base::string16& cvc) {
+  delegate->AllowShowingSoftKeyboard(false);
   if (!card) {
     // Gracefully shutdown the script. The empty message forces the use of the
     // default message.

@@ -144,6 +144,11 @@ void UiControllerAndroid::HideOverlay() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
+void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
+  Java_AutofillAssistantUiController_onAllowShowingSoftKeyboard(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_, enabled);
+}
+
 void UiControllerAndroid::Shutdown() {
   Java_AutofillAssistantUiController_onShutdown(
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);

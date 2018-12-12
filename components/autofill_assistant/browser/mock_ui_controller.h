@@ -26,6 +26,7 @@ class MockUiController : public UiController {
   MOCK_METHOD0(GetStatusMessage, std::string());
   MOCK_METHOD0(ShowOverlay, void());
   MOCK_METHOD0(HideOverlay, void());
+  MOCK_METHOD1(AllowShowingSoftKeyboard, void(bool));
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(ShutdownGracefully, void());
   MOCK_METHOD0(Close, void());
