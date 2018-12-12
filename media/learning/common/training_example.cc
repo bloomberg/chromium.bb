@@ -39,6 +39,17 @@ bool TrainingExample::operator!=(const TrainingExample& rhs) const {
   return !((*this) == rhs);
 }
 
+bool TrainingExample::operator<(const TrainingExample& rhs) const {
+  // Impose a somewhat arbitrary ordering.
+  if (target_value != rhs.target_value)
+    return target_value < rhs.target_value;
+
+  // Note that we could short-circuit this if the feature vector lengths are
+  // unequal, since we don't particularly care how they compare as long as it's
+  // stable.  In particular, we don't have any notion of a "prefix".
+  return features < rhs.features;
+}
+
 TrainingExample& TrainingExample::operator=(const TrainingExample& rhs) =
     default;
 

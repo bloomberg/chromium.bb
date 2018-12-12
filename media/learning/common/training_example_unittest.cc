@@ -54,6 +54,9 @@ TEST_F(LearnerTrainingExampleTest, EqualExamplesCompareAsEqual) {
   // Verify both that == and != work.
   EXPECT_EQ(example_1, example_2);
   EXPECT_FALSE(example_1 != example_2);
+  // Also insist that equal examples are not less.
+  EXPECT_FALSE(example_1 < example_2);
+  EXPECT_FALSE(example_2 < example_1);
 }
 
 TEST_F(LearnerTrainingExampleTest, UnequalFeaturesCompareAsUnequal) {
@@ -64,8 +67,11 @@ TEST_F(LearnerTrainingExampleTest, UnequalFeaturesCompareAsUnequal) {
                             target);
   TrainingExample example_2({FeatureValue(kFeature2), FeatureValue(kFeature2)},
                             target);
-  EXPECT_NE(example_1, example_2);
+  EXPECT_TRUE(example_1 != example_2);
   EXPECT_FALSE(example_1 == example_2);
+  // We don't care which way is <, but we do care that one is less than the
+  // other but not both.
+  EXPECT_NE((example_1 < example_2), (example_2 < example_1));
 }
 
 TEST_F(LearnerTrainingExampleTest, UnequalTargetsCompareAsUnequal) {
@@ -75,8 +81,38 @@ TEST_F(LearnerTrainingExampleTest, UnequalTargetsCompareAsUnequal) {
                             TargetValue(789));
   TrainingExample example_2({FeatureValue(kFeature2), FeatureValue(kFeature2)},
                             TargetValue(987));
-  EXPECT_NE(example_1, example_2);
+  EXPECT_TRUE(example_1 != example_2);
   EXPECT_FALSE(example_1 == example_2);
+  // Exactly one should be less than the other, but we don't care which one.
+  EXPECT_TRUE((example_1 < example_2) ^ (example_2 < example_1));
+}
+
+TEST_F(LearnerTrainingExampleTest, OrderingIsTransitive) {
+  // Verify that ordering is transitive.  We don't particularly care what the
+  // ordering is, otherwise.
+
+  const FeatureValue kFeature1(123);
+  const FeatureValue kFeature2(456);
+  const FeatureValue kTarget1(789);
+  const FeatureValue kTarget2(987);
+  std::vector<TrainingExample> examples;
+  examples.push_back(TrainingExample({kFeature1}, kTarget1));
+  examples.push_back(TrainingExample({kFeature1}, kTarget2));
+  examples.push_back(TrainingExample({kFeature2}, kTarget1));
+  examples.push_back(TrainingExample({kFeature2}, kTarget2));
+  examples.push_back(TrainingExample({kFeature1, kFeature2}, kTarget1));
+  examples.push_back(TrainingExample({kFeature1, kFeature2}, kTarget2));
+  examples.push_back(TrainingExample({kFeature2, kFeature1}, kTarget1));
+  examples.push_back(TrainingExample({kFeature2, kFeature1}, kTarget2));
+
+  // Sort, and make sure that it ends up totally ordered.
+  std::sort(examples.begin(), examples.end());
+  for (auto outer = examples.begin(); outer != examples.end(); outer++) {
+    for (auto inner = outer + 1; inner != examples.end(); inner++) {
+      EXPECT_TRUE(*outer < *inner);
+      EXPECT_FALSE(*inner < *outer);
+    }
+  }
 }
 
 TEST_F(LearnerTrainingExampleTest, StoragePushBack) {
