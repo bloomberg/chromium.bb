@@ -43,6 +43,8 @@ public final class MultiprocessTestClientLauncher {
     private static final SparseArray<MultiprocessTestClientLauncher> sPidToLauncher =
             new SparseArray<>();
 
+    private static final SparseArray<Boolean> sPidToCleanExit = new SparseArray<>();
+
     private static final SparseArray<Integer> sPidToMainResult = new SparseArray<>();
 
     private static final Object sLauncherHandlerInitLock = new Object();
@@ -105,6 +107,7 @@ public final class MultiprocessTestClientLauncher {
                     assert isRunningOnLauncherThread();
                     assert sPidToLauncher.get(connection.getPid())
                             == MultiprocessTestClientLauncher.this;
+                    sPidToCleanExit.put(connection.getPid(), connection.hasCleanExit());
                     sPidToLauncher.remove(connection.getPid());
                 }
             };
@@ -336,7 +339,7 @@ public final class MultiprocessTestClientLauncher {
 
         MultiprocessTestClientLauncher launcher = sPidToLauncher.get(pid);
         if (launcher == null) {
-            return false;
+            return sPidToCleanExit.get(pid, false);
         }
         return launcher.mLauncher.getConnection().hasCleanExit();
     }
