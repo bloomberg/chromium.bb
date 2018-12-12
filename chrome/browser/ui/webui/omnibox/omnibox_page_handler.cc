@@ -77,7 +77,8 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     // At this time, we're not bothering to send along the long vector that
     // represents description classification.  i.e., for each character, what
     // type of text it is.
-    result->transition = input.transition;
+    result->transition =
+        ui::PageTransitionGetCoreTransitionString(input.transition);
     result->allowed_to_be_default_match = input.allowed_to_be_default_match;
     result->type = AutocompleteMatchType::ToString(input.type);
     result->has_tab_match = input.has_tab_match;
