@@ -1979,7 +1979,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
         base_config,
     )
 
-    if config.active_waterfall:
+    if board in _paladin_active:
       master_config.AddSlave(config)
 
   # N.B. The ordering of columns here is coupled to the ordering of
