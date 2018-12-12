@@ -882,15 +882,15 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
       // Touch pinch zoom and scroll on the page (outside of a popup) must hide
       // the popup. In case of a touch scroll or pinch zoom, this function is
       // called with GestureTapDown rather than a GSB/GSU/GSE or GPB/GPU/GPE.
-      // WebViewImpl takes additional steps to avoid the following GestureTap
-      // from re-opening the popup being closed here, but since GestureTap will
-      // unconditionally close the current popup here, it is not used/needed.
-      // TODO(wjmaclean): We should maybe mirror what WebViewImpl does, the
-      // HandleGestureEvent() needs to happen inside or before the GestureTap
-      // case to do so.
+      // When we close a popup because of a GestureTapDown, we also save it so
+      // we can prevent the following GestureTap from immediately reopening the
+      // same popup.
+      view_impl->SetLastHiddenPagePopup(view_impl->GetPagePopup());
       View()->HidePopups();
-      break;
+      FALLTHROUGH;
     case WebInputEvent::kGestureTapCancel:
+      View()->SetLastHiddenPagePopup(nullptr);
+      break;
     case WebInputEvent::kGestureShowPress:
       break;
     case WebInputEvent::kGestureDoubleTap:
