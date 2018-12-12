@@ -47,29 +47,58 @@ class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
     util_path: path to use for finding losetup and friends.
     (unique to LoopbackPartitionsMock)
     dev: Path for the base loopback device.
-    part_count: How many partition device files to make up.
-    part_overrides: A dict which is used to update self.parts.
+    part_count: How many partition device files to make up.  Default: normal
+        partition table.
   """
   # pylint: disable=dangerous-default-value
   # pylint: disable=super-init-not-called
   def __init__(self, path, destination=None, util_path=None,
-               dev=LOOP_DEV, part_count=LOOP_PART_COUNT, part_overrides={}):
+               dev=LOOP_DEV, part_count=0):
     self.path = path
     self.dev = dev
     if destination:
       self.destination = destination
     else:
       self.destination = osutils.TempDir()
-    self._gpt_table = [
-        cros_build_lib.PartitionInfo(num, 0, 0, 0, '', 'my-%d' % num, '')
-        for num in range(1, part_count + 1)
-    ]
+    if part_count:
+      self._gpt_table = [
+          cros_build_lib.PartitionInfo(num, 0, 0, 0, '', 'my-%d' % num, '')
+          for num in range(1, part_count + 1)]
+    else:
+      self._gpt_table = [
+          cros_build_lib.PartitionInfo(
+              1, 2928640, 2957311, 28672, 14680064, 'STATE', ''),
+          cros_build_lib.PartitionInfo(
+              2, 20480, 53247, 32768, 16777216, 'KERN-A', ''),
+          cros_build_lib.PartitionInfo(
+              3, 286720, 2928639, 2641920, 1352663040, 'ROOT-A', ''),
+          cros_build_lib.PartitionInfo(
+              4, 53248, 86015, 32768, 16777216, 'KERN-B', ''),
+          cros_build_lib.PartitionInfo(
+              5, 282624, 286719, 4096, 2097152, 'ROOT-B', ''),
+          cros_build_lib.PartitionInfo(
+              6, 16448, 16448, 1, 512, 'KERN-C', ''),
+          cros_build_lib.PartitionInfo(
+              7, 16449, 16449, 1, 512, 'ROOT-C', ''),
+          cros_build_lib.PartitionInfo(
+              8, 86016, 118783, 32768, 16777216, 'OEM', ''),
+          cros_build_lib.PartitionInfo(
+              9, 16450, 16450, 1, 512, 'reserved', ''),
+          cros_build_lib.PartitionInfo(
+              10, 16451, 16451, 1, 512, 'reserved', ''),
+          cros_build_lib.PartitionInfo(
+              11, 64, 16447, 16384, 8388608, 'RWFW', ''),
+          cros_build_lib.PartitionInfo(
+              12, 249856, 282623, 32768, 16777216, 'EFI-SYSTEM', ''),
+      ]
     self.parts = {p.number: '%sp%s' % (dev, p.number)
                   for p in self._gpt_table}
-    self.parts.update(part_overrides)
 
   def _Mount(self, part, mount_opts):
     """Stub out mount operations."""
+    dest_number, _ = self._GetMountPointAndSymlink(part)
+    # Don't actually even try to mount it, let alone mark it mounted.
+    return dest_number
 
   def _Unmount(self, part):
     """Stub out unmount operations."""
@@ -181,6 +210,16 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
       self.retry_mock.assert_any_call(
           cros_build_lib.RunCommandError, 60, osutils.RmDir,
           '%s/dir-%d' % (self.tempdir, p), sudo=True, sleep=1)
+
+  def testMountingMountedPartReturnsName(self):
+    """Test that Mount returns the directory name even when already mounted."""
+    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
+    lb = image_lib.LoopbackPartitions(FAKE_PATH, destination=self.tempdir)
+    dirname = '%s/dir-%d' % (self.tempdir, lb._gpt_table[0].number)
+    # First make sure we get the directory name when we actually mount.
+    self.assertEqual(dirname, lb._Mount(lb._gpt_table[0], ('ro',)))
+    # Then make sure we get it when we call it again.
+    self.assertEqual(dirname, lb._Mount(lb._gpt_table[0], ('ro',)))
 
   def testGetPartitionDevName(self):
     """Test GetPartitionDevName()."""

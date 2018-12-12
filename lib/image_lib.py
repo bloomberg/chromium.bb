@@ -161,13 +161,14 @@ class LoopbackPartitions(object):
         raise KeyError(repr(part_id))
 
   def _Mount(self, part, mount_opts):
+    dest_number, dest_label = self._GetMountPointAndSymlink(part)
     if part in self._mounted:
-      return
+      return dest_number
+
     if not self.destination:
       self.destination = osutils.TempDir()
       self._destination_created = True
 
-    dest_number, dest_label = self._GetMountPointAndSymlink(part)
     osutils.MountDir(self.GetPartitionDevName(part.number), dest_number,
                      makedirs=True, skip_mtab=False, sudo=True,
                      mount_opts=mount_opts)
