@@ -328,6 +328,7 @@
     novato-arc64-postsubmit
     novato-postsubmit
     nyan_big-postsubmit
+    nyan_blaze-postsubmit
     nyan_kitty-postsubmit
     oak-postsubmit
     octopus-postsubmit
@@ -2514,6 +2515,7 @@
     novato-arc64-postsubmit
     novato-postsubmit
     nyan_big-postsubmit
+    nyan_blaze-postsubmit
     nyan_kitty-postsubmit
     oak-postsubmit
     octopus-postsubmit
@@ -2903,6 +2905,7 @@
   nyan_blaze-no-vmtest-pre-cq
   nyan_blaze-paladin-tryjob
   nyan_blaze-payloads-tryjob
+  nyan_blaze-postsubmit-tryjob
   nyan_blaze-pre-cq
   nyan_blaze-release-afdo-generate-tryjob
   nyan_blaze-release-afdo-tryjob
