@@ -16,9 +16,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/leveldb_proto/leveldb_database.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,17 +27,17 @@
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
-using base::MessageLoop;
 using base::ScopedTempDir;
+using base::test::ScopedTaskEnvironment;
 using leveldb_env::Options;
+using testing::_;
 using testing::Invoke;
 using testing::MakeMatcher;
-using testing::MatchResultListener;
 using testing::Matcher;
 using testing::MatcherInterface;
+using testing::MatchResultListener;
 using testing::Return;
 using testing::UnorderedElementsAre;
-using testing::_;
 
 namespace leveldb_proto {
 
@@ -184,19 +185,18 @@ class UniqueProtoDatabaseTest : public testing::Test {
   UniqueProtoDatabaseTest()
       : options_(MakeMatcher(new OptionsEqMatcher(CreateSimpleOptions()))) {}
   void SetUp() override {
-    main_loop_.reset(new MessageLoop());
-    db_.reset(new UniqueProtoDatabase<TestProto>(main_loop_->task_runner()));
+    db_.reset(new UniqueProtoDatabase<TestProto>(
+        base::ThreadTaskRunnerHandle::Get()));
   }
 
   void TearDown() override {
     db_.reset();
     base::RunLoop().RunUntilIdle();
-    main_loop_.reset();
   }
 
   const Matcher<const Options&> options_;
+  ScopedTaskEnvironment task_environment_;
   std::unique_ptr<UniqueProtoDatabase<TestProto>> db_;
-  std::unique_ptr<MessageLoop> main_loop_;
 };
 
 // Test that UniqueProtoDatabase calls Init on the underlying database and that
@@ -406,15 +406,10 @@ TEST_F(UniqueProtoDatabaseTest, TestDBGetSuccess) {
 
 class UniqueProtoDatabaseLevelDBTest : public testing::Test {
  public:
-  void SetUp() override { main_loop_.reset(new MessageLoop()); }
-
-  void TearDown() override {
-    base::RunLoop().RunUntilIdle();
-    main_loop_.reset();
-  }
+  void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
  private:
-  std::unique_ptr<MessageLoop> main_loop_;
+  ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBSaveAndLoadKeys) {
@@ -647,7 +642,7 @@ TEST_F(UniqueProtoDatabaseTest, TestDBRemoveFailure) {
 // This tests that normal usage of the real database does not cause any
 // threading violations.
 TEST(UniqueProtoDatabaseThreadingTest, TestDBDestruction) {
-  base::MessageLoop main_loop;
+  ScopedTaskEnvironment scoped_task_environment;
 
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -682,7 +677,7 @@ TEST(UniqueProtoDatabaseThreadingTest, TestDBDestruction) {
 // This tests that normal usage of the real database does not cause any
 // threading violations.
 TEST(UniqueProtoDatabaseThreadingTest, TestDBDestroy) {
-  base::MessageLoop main_loop;
+  ScopedTaskEnvironment scoped_task_environment;
 
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
