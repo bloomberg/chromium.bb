@@ -123,6 +123,17 @@ MouseButton StringToMouseButton(std::string button_type) {
     return kNoneMouseButton;
 }
 
+TouchEventType StringToTouchEventType(std::string action_type) {
+  if (action_type == "pointerDown")
+    return kTouchStart;
+  else if (action_type == "pointerUp")
+    return kTouchEnd;
+  else if (action_type == "pointerMove")
+    return kTouchMove;
+  else
+    return kTouchStart;
+}
+
 struct Cookie {
   Cookie(const std::string& name,
          const std::string& value,
@@ -1004,18 +1015,20 @@ Status ProcessInputActionSequence(
 
       action->SetString("type", subtype);
       if (subtype == "pointerDown" || subtype == "pointerUp") {
-        int button;
-        if (!action_item->GetInteger("button", &button) || button < 0 ||
-            button > 4) {
-          return Status(
-              kInvalidArgument,
-              "'button' must be a non-negative int and between 0 and 4");
+        if (pointer_type == "mouse") {
+          int button;
+          if (!action_item->GetInteger("button", &button) || button < 0 ||
+              button > 4) {
+            return Status(
+                kInvalidArgument,
+                "'button' must be a non-negative int and between 0 and 4");
+          }
+          std::string button_str;
+          Status status = IntToStringButton(button, button_str);
+          if (status.IsError())
+            return status;
+          action->SetString("button", button_str);
         }
-        std::string button_str;
-        Status status = IntToStringButton(button, button_str);
-        if (status.IsError())
-          return status;
-        action->SetString("button", button_str);
       } else if (subtype == "pointerMove") {
         int x;
         if (!action_item->GetInteger("x", &x))
@@ -1186,6 +1199,7 @@ Status ExecutePerformActions(Session* session,
     } else if (type == "pointer") {
       std::string pointer_type;
       action_sequence->GetString("pointerType", &pointer_type);
+
       if (input_pointer_type.empty())
         input_pointer_type = pointer_type;
 
@@ -1206,70 +1220,88 @@ Status ExecutePerformActions(Session* session,
         return Status(kInvalidArgument, "'id' already exists");
       pointer_id_set.insert(pointer_id);
 
-      std::list<MouseEvent> events;
-      if (pointer_type == "mouse") {
-        double x = 0;
-        double y = 0;
-        for (size_t j = 0; j < actions->GetSize(); j++) {
-          const base::DictionaryValue* mouse_action;
-          actions->GetDictionary(j, &mouse_action);
-          std::string action_type;
-          mouse_action->GetString("type", &action_type);
-          if (action_type == "pointerMove") {
-            mouse_action->GetDouble("x", &x);
-            mouse_action->GetDouble("y", &y);
-            const base::DictionaryValue* origin_dict;
-            if (mouse_action->HasKey("origin") &&
-                mouse_action->GetDictionary("origin", &origin_dict)) {
-              std::string element_id;
-              origin_dict->GetString(GetElementKey(), &element_id);
-              WebRect region;
-              Status status =
-                  GetElementRegion(session, web_view, element_id, &region);
-              if (status.IsError())
-                return status;
-              WebPoint region_offset;
-              status = ScrollElementRegionIntoView(
-                  session, web_view, element_id, region, true /* center */,
-                  std::string(), &region_offset);
-              if (status.IsError())
-                return status;
-              int innerWidth, innerHeight;
-              status = WindowViewportSize(session, web_view, &innerWidth,
-                                          &innerHeight);
-              if (status.IsError())
-                return status;
-              int left = std::max(
-                  0,
-                  std::min(region_offset.x, region_offset.x + region.Width()));
-              int right = std::min(
-                  innerWidth,
-                  std::max(region_offset.x, region_offset.x + region.Width()));
-              int top = std::max(
-                  0,
-                  std::min(region_offset.y, region_offset.y + region.Height()));
-              int bottom = std::min(
-                  innerHeight,
-                  std::max(region_offset.y, region_offset.y + region.Height()));
-              x += (left + right) / 2;
-              y += (top + bottom) / 2;
-            }
-          }
+      std::list<MouseEvent> mouse_events;
+      std::list<TouchEvent> touch_events;
 
+      double x = 0;
+      double y = 0;
+      bool has_touch_start = false;
+      for (size_t j = 0; j < actions->GetSize(); j++) {
+        const base::DictionaryValue* mouse_action;
+        actions->GetDictionary(j, &mouse_action);
+        std::string action_type;
+        mouse_action->GetString("type", &action_type);
+        if (action_type == "pointerMove") {
+          mouse_action->GetDouble("x", &x);
+          mouse_action->GetDouble("y", &y);
+          const base::DictionaryValue* origin_dict;
+          if (mouse_action->HasKey("origin") &&
+              mouse_action->GetDictionary("origin", &origin_dict)) {
+            std::string element_id;
+            origin_dict->GetString(GetElementKey(), &element_id);
+            WebRect region;
+            Status status =
+                GetElementRegion(session, web_view, element_id, &region);
+            if (status.IsError())
+              return status;
+            WebPoint region_offset;
+            status = ScrollElementRegionIntoView(session, web_view, element_id,
+                                                 region, true /* center */,
+                                                 std::string(), &region_offset);
+            if (status.IsError())
+              return status;
+            int innerWidth, innerHeight;
+            status = WindowViewportSize(session, web_view, &innerWidth,
+                                        &innerHeight);
+            if (status.IsError())
+              return status;
+            int left = std::max(
+                0, std::min(region_offset.x, region_offset.x + region.Width()));
+            int right = std::min(
+                innerWidth,
+                std::max(region_offset.x, region_offset.x + region.Width()));
+            int top = std::max(0, std::min(region_offset.y,
+                                           region_offset.y + region.Height()));
+            int bottom = std::min(
+                innerHeight,
+                std::max(region_offset.y, region_offset.y + region.Height()));
+            x += (left + right) / 2;
+            y += (top + bottom) / 2;
+          }
+        }
+
+        if (pointer_type == "mouse") {
           std::string button_type;
           int click_count = 0;
           if (action_type == "pointerDown" || action_type == "pointerUp") {
             mouse_action->GetString("button", &button_type);
             click_count = 1;
           }
-          events.push_back(MouseEvent(StringToMouseEventType(action_type),
-                                      StringToMouseButton(button_type), x, y, 0,
-                                      click_count));
+          mouse_events.push_back(MouseEvent(StringToMouseEventType(action_type),
+                                            StringToMouseButton(button_type), x,
+                                            y, 0, click_count));
+        } else if (pointer_type == "touch") {
+          if (action_type == "pointerDown")
+            has_touch_start = true;
+          else if (action_type == "pointerUp")
+            has_touch_start = false;
+
+          if (action_type != "pointerMove" || has_touch_start) {
+            touch_events.push_back(
+                TouchEvent(StringToTouchEventType(action_type), x, y));
+          }
         }
-        Status status =
-            web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
-        return status;
       }
+
+      Status status(kOk);
+      if (pointer_type == "mouse") {
+        status = web_view->DispatchMouseEvents(mouse_events,
+                                               session->GetCurrentFrameId());
+      } else if (pointer_type == "touch") {
+        status = web_view->DispatchTouchEvents(touch_events);
+      }
+      if (status.IsError())
+        return status;
     }
   }
   return Status(kOk);
