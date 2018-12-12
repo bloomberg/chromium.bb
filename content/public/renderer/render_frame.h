@@ -55,6 +55,7 @@ namespace content {
 class ContextMenuClient;
 class PluginInstanceThrottler;
 class RenderAccessibility;
+struct RenderFrameMediaPlaybackOptions;
 class RenderFrameVisitor;
 class RenderView;
 struct ContextMenuParams;
@@ -280,6 +281,12 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
+
+  // Per-frame media playback options passed to each WebMediaPlayer.
+  virtual const RenderFrameMediaPlaybackOptions&
+  GetRenderFrameMediaPlaybackOptions() = 0;
+  virtual void SetRenderFrameMediaPlaybackOptions(
+      const RenderFrameMediaPlaybackOptions& opts) = 0;
 
  protected:
   ~RenderFrame() override {}

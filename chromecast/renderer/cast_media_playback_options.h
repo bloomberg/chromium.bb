@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/sequence_checker.h"
 #include "chromecast/common/mojom/media_playback_options.mojom.h"
+#include "content/public/renderer/render_frame_media_playback_options.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
@@ -52,7 +53,7 @@ class CastMediaPlaybackOptions
       chromecast::shell::mojom::MediaPlaybackOptionsAssociatedRequest request);
 
   bool render_frame_action_blocked_;
-  bool background_suspend_enabled_;
+  content::RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
 
   std::vector<base::OnceClosure> pending_closures_;
 

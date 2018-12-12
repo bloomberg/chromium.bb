@@ -20,8 +20,14 @@ CastMediaPlaybackOptions::CastMediaPlaybackOptions(
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<CastMediaPlaybackOptions>(
           render_frame),
-      render_frame_action_blocked_(false),
-      background_suspend_enabled_(true) {
+      render_frame_action_blocked_(false) {
+  // Override default content MediaPlaybackOptions
+  renderer_media_playback_options_.is_background_suspend_enabled = true;
+  renderer_media_playback_options_
+      .is_background_video_track_optimization_supported = false;
+  render_frame->SetRenderFrameMediaPlaybackOptions(
+      renderer_media_playback_options_);
+
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::BindRepeating(
           &CastMediaPlaybackOptions::OnMediaPlaybackOptionsAssociatedRequest,
@@ -49,11 +55,6 @@ bool CastMediaPlaybackOptions::RunWhenInForeground(base::OnceClosure closure) {
   return true;
 }
 
-bool CastMediaPlaybackOptions::IsBackgroundSuspendEnabled() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return background_suspend_enabled_;
-}
-
 void CastMediaPlaybackOptions::SetMediaLoadingBlocked(bool blocked) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   render_frame_action_blocked_ = blocked;
@@ -72,7 +73,9 @@ void CastMediaPlaybackOptions::SetMediaLoadingBlocked(bool blocked) {
 }
 
 void CastMediaPlaybackOptions::SetBackgroundSuspendEnabled(bool enabled) {
-  background_suspend_enabled_ = enabled;
+  renderer_media_playback_options_.is_background_suspend_enabled = enabled;
+  render_frame()->SetRenderFrameMediaPlaybackOptions(
+      renderer_media_playback_options_);
 }
 
 void CastMediaPlaybackOptions::OnMediaPlaybackOptionsAssociatedRequest(

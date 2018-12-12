@@ -186,10 +186,6 @@ class WebMediaPlayerDelegate {
       int player_id,
       blink::WebFullscreenVideoStatus fullscreen_video_status) = 0;
 
-  // Returns |true| if player should be suspended automatically when tab is
-  // in background.
-  virtual bool IsBackgroundMediaSuspendEnabled() = 0;
-
  protected:
   WebMediaPlayerDelegate() = default;
   virtual ~WebMediaPlayerDelegate() = default;

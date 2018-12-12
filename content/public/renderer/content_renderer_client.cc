@@ -251,15 +251,6 @@ bool ContentRendererClient::IsIdleMediaSuspendEnabled() {
   return true;
 }
 
-bool ContentRendererClient::IsBackgroundMediaSuspendEnabled(
-    RenderFrame* render_frame) {
-#if defined(OS_ANDROID)
-  return true;
-#else
-  return false;
-#endif
-}
-
 bool ContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
     const GURL& url,
     std::string* console_messsage) {

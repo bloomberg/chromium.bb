@@ -369,7 +369,11 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           base::BindOnce(&blink::WebSurfaceLayerBridge::Create,
                          layer_tree_view),
           RenderThreadImpl::current()->SharedMainThreadContextProvider(),
-          GetVideoSurfaceLayerMode()));
+          GetVideoSurfaceLayerMode(),
+          render_frame_->GetRenderFrameMediaPlaybackOptions()
+              .is_background_suspend_enabled,
+          render_frame_->GetRenderFrameMediaPlaybackOptions()
+              .is_background_video_track_optimization_supported));
 
   std::unique_ptr<media::VideoFrameCompositor> vfc =
       std::make_unique<media::VideoFrameCompositor>(

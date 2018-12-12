@@ -259,10 +259,6 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
 
   bool IsFrameClosed() override { return is_closed_; }
 
-  bool IsBackgroundMediaSuspendEnabled() override {
-    return is_background_media_suspend_enabled_;
-  }
-
   void SetIdleForTesting(bool is_idle) { is_idle_ = is_idle; }
 
   void SetStaleForTesting(bool is_stale) {
@@ -284,10 +280,6 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
 
   void SetFrameClosedForTesting(bool is_closed) { is_closed_ = is_closed; }
 
-  void SetBackgroundMediaSuspendEnabledForTesting(bool enable) {
-    is_background_media_suspend_enabled_ = enable;
-  }
-
   int player_id() { return player_id_; }
 
  private:
@@ -297,7 +289,6 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
   bool is_stale_ = false;
   bool is_hidden_ = false;
   bool is_closed_ = false;
-  bool is_background_media_suspend_enabled_ = false;
 };
 
 class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
@@ -398,7 +389,8 @@ class WebMediaPlayerImplTest : public testing::Test {
         viz::TestContextProvider::Create(),
         base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)
             ? blink::WebMediaPlayer::SurfaceLayerMode::kAlways
-            : blink::WebMediaPlayer::SurfaceLayerMode::kNever);
+            : blink::WebMediaPlayer::SurfaceLayerMode::kNever,
+        is_background_suspend_enabled_, true);
 
     auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
@@ -556,7 +548,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   void SetUpMediaSuspend(bool enable) {
-    delegate_.SetBackgroundMediaSuspendEnabledForTesting(enable);
+    is_background_suspend_enabled_ = enable;
   }
 
   bool IsVideoLockedWhenPausedWhenHidden() const {
@@ -699,6 +691,8 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   // Audio hardware configuration.
   AudioParameters audio_parameters_;
+
+  bool is_background_suspend_enabled_ = false;
 
   // The client interface used by |wmpi_|.
   NiceMock<MockWebMediaPlayerClient> client_;

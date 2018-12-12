@@ -49,6 +49,7 @@
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/widget_type.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_media_playback_options.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "content/renderer/content_security_policy_util.h"
 #include "content/renderer/frame_blame_context.h"
@@ -509,6 +510,10 @@ class CONTENT_EXPORT RenderFrameImpl
   int GetEnabledBindings() override;
   void SetAccessibilityModeForTest(ui::AXMode new_mode) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  const RenderFrameMediaPlaybackOptions& GetRenderFrameMediaPlaybackOptions()
+      override;
+  void SetRenderFrameMediaPlaybackOptions(
+      const RenderFrameMediaPlaybackOptions& opts) override;
 
   // blink::mojom::AutoplayConfigurationClient implementation:
   void AddAutoplayFlags(const url::Origin& origin,
@@ -1604,6 +1609,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(dgozman): should be temporary until we stop using
   // WebURLRequest for this.
   bool replaying_main_response_ = false;
+
+  RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

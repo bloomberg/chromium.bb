@@ -56,6 +56,7 @@ target(link_target_type, "renderer_sources") {
     "plugin_instance_throttler.h",
     "render_accessibility.h",
     "render_frame.h",
+    "render_frame_media_playback_options.h",
     "render_frame_observer.cc",
     "render_frame_observer.h",
     "render_frame_observer_tracker.h",
