@@ -43,7 +43,6 @@ aggregate_vector_icons("components_vector_icons") {
     "play_arrow.icon",
     "protocol_handler.icon",
     "reload.icon",
-    "replay.icon",
     "screen_share.icon",
     "search.icon",
     "usb.icon",
