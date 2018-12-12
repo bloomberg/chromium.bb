@@ -1516,6 +1516,11 @@
                   '|chrome/browser/.*managed_user'\
                   '|chrome/browser/.*supervised_user',
     },
+    'surface_layer_for_video': {
+      'filepath': 'cc/layers/surface_layer*'\
+                  '|third_party/blink/renderer/platform/graphics/video_frame_*'\
+                  '|third_party/blink/renderer/platform/graphics/surface_layer_bridge*',
+    },
     'sync': {
       'filepath': '^chrome/browser/ui/sync/'\
                   '|^chrome/browser/ui/views/sync/'\
@@ -2432,6 +2437,8 @@
                           'wnwen+watch@chromium.org'],
     'subresource_filter': ['subresource-filter-reviews@chromium.org'],
     'supervised_users': [],
+    'surface_layer_for_video': [ 'lethalantidote@chromium.org',
+                                 'liberato@chromium.org'],
     'sync': ['sync-reviews@chromium.org'],
     'syncfs': ['kinuko+fileapi@chromium.org',
                'nhiroki@chromium.org',
