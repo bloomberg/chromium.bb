@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/process/process_handle.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/common/mac/app_shim.mojom.h"
@@ -29,6 +30,7 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   void OnLaunchAppFailed(apps::AppShimLaunchResult result);
 
   chrome::mojom::AppShimHostRequest GetLaunchAppShimHostRequest();
+  base::ProcessId GetAppShimPid() const { return pid_; }
   const std::string& GetAppId() const { return app_id_; }
   const base::FilePath& GetProfilePath() const { return profile_path_; }
 
@@ -59,6 +61,7 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   // The arguments from the LaunchApp call, and whether or not it has happened
   // yet.
   bool has_received_launch_app_ = false;
+  base::ProcessId pid_ = 0;
   chrome::mojom::AppShimHostRequest app_shim_host_request_;
   base::FilePath profile_path_;
   std::string app_id_;
