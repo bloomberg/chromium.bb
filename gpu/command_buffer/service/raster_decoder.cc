@@ -767,7 +767,7 @@ ContextResult RasterDecoderImpl::Initialize(
     const gles2::DisallowedFeatures& disallowed_features,
     const ContextCreationAttribs& attrib_helper) {
   TRACE_EVENT0("gpu", "RasterDecoderImpl::Initialize");
-  DCHECK(context->IsCurrent(surface.get()));
+  DCHECK(raster_decoder_context_state_->IsCurrent(surface.get()));
   DCHECK(!context_.get());
 
   set_initialized();

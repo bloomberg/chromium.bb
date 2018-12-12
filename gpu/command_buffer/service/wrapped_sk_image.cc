@@ -31,7 +31,7 @@ class WrappedSkImage : public SharedImageBacking {
  public:
   ~WrappedSkImage() override {
     DCHECK(context_state_->context_lost() ||
-           context_state_->context()->IsCurrent(nullptr));
+           context_state_->IsCurrent(nullptr));
     if (!context_state_->context_lost())
       context_state_->need_context_state_reset = true;
   }
@@ -72,7 +72,7 @@ class WrappedSkImage : public SharedImageBacking {
                                 const SkSurfaceProps& surface_props) {
     if (context_state_->context_lost())
       return nullptr;
-    DCHECK(context_state_->context()->IsCurrent(nullptr));
+    DCHECK(context_state_->IsCurrent(nullptr));
     GrBackendTexture gr_texture =
         image_->getBackendTexture(/*flushPendingGrContextIO=*/true);
     DCHECK(gr_texture.isValid());
@@ -115,7 +115,7 @@ class WrappedSkImage : public SharedImageBacking {
   bool Initialize(const SkImageInfo& info) {
     if (context_state_->context_lost())
       return false;
-    DCHECK(context_state_->context()->IsCurrent(nullptr));
+    DCHECK(context_state_->IsCurrent(nullptr));
 
     context_state_->need_context_state_reset = true;
 
