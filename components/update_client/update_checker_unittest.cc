@@ -341,10 +341,7 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
     EXPECT_EQ("Omaha", updater->FindKey("name")->GetString());
     EXPECT_TRUE(updater->FindKey("autoupdatecheckenabled")->is_bool());
     EXPECT_TRUE(updater->FindKey("ismachine")->is_bool());
-    EXPECT_TRUE(updater->FindKey("lastchecked")->is_int());
-    EXPECT_TRUE(updater->FindKey("laststarted")->is_int());
     EXPECT_TRUE(updater->FindKey("updatepolicy")->is_int());
-    EXPECT_TRUE(updater->FindKey("version")->is_string());
 #endif  // GOOGLE_CHROME_BUILD
 #endif  // OS_WINDOWS
   } else {
