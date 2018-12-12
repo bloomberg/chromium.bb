@@ -413,6 +413,7 @@
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/ui/passwords/google_password_manager_navigation_throttle.h"
 #include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "components/services/patch/public/interfaces/constants.mojom.h"
@@ -4238,6 +4239,13 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       NewTabPageNavigationThrottle::MaybeCreateThrottleFor(handle);
   if (new_tab_page_throttle)
     throttles.push_back(std::move(new_tab_page_throttle));
+
+  std::unique_ptr<content::NavigationThrottle>
+      google_password_manager_throttle =
+          GooglePasswordManagerNavigationThrottle::MaybeCreateThrottleFor(
+              handle);
+  if (google_password_manager_throttle)
+    throttles.push_back(std::move(google_password_manager_throttle));
 #endif
 
   std::unique_ptr<content::NavigationThrottle> previews_lite_page_throttle =
