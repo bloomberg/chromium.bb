@@ -4015,99 +4015,90 @@ TEST(HeapTest, Comparisons) {
   EXPECT_TRUE(bar_persistent == foo_persistent);
 }
 
-#if DCHECK_IS_ON()
 namespace {
 
-static size_t g_check_mark_count = 0;
+void ExpectObjectMarkedAndUnmark(MarkingWorklist* worklist, void* expected) {
+  MarkingItem item;
+  CHECK(worklist->Pop(0, &item));
+  CHECK_EQ(expected, item.object);
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(item.object);
+  CHECK(header->IsMarked());
+  header->Unmark();
+  CHECK(worklist->IsGlobalEmpty());
+}
 
-bool ReportMarkedPointer(HeapObjectHeader*) {
-  g_check_mark_count++;
-  // Do not try to mark the located heap object.
-  return true;
-}
-}
-#endif
+}  // namespace
 
 TEST(HeapTest, CheckAndMarkPointer) {
-#if DCHECK_IS_ON()
+  // This test ensures that conservative marking primitives can use any address
+  // contained within an object to mark the corresponding object.
+
   ThreadHeap& heap = ThreadState::Current()->Heap();
   ClearOutOldGarbage();
 
   Vector<Address> object_addresses;
   Vector<Address> end_addresses;
-  Address large_object_address;
-  Address large_object_end_address;
   for (int i = 0; i < 10; i++) {
     SimpleObject* object = SimpleObject::Create();
     Address object_address = reinterpret_cast<Address>(object);
     object_addresses.push_back(object_address);
     end_addresses.push_back(object_address + sizeof(SimpleObject) - 1);
   }
-  LargeHeapObject* large_object = LargeHeapObject::Create();
-  large_object_address = reinterpret_cast<Address>(large_object);
-  large_object_end_address = large_object_address + sizeof(LargeHeapObject) - 1;
+  Address large_object_address =
+      reinterpret_cast<Address>(LargeHeapObject::Create());
+  Address large_object_end_address =
+      large_object_address + sizeof(LargeHeapObject) - 1;
 
-  // This is a low-level test where we call checkAndMarkPointer. This method
-  // causes the object start bitmap to be computed which requires the heap
-  // to be in a consistent state (e.g. the free allocation area must be put
-  // into a free list header). However when we call makeConsistentForGC it
-  // also clears out the freelists so we have to rebuild those before trying
-  // to allocate anything again. We do this by forcing a GC after doing the
-  // checkAndMarkPointer tests.
   {
     TestGCScope scope(BlinkGC::kHeapPointersOnStack);
     MarkingVisitor visitor(ThreadState::Current(),
                            MarkingVisitor::kGlobalMarking);
     heap.address_cache()->EnableLookup();
     heap.address_cache()->Flush();
+
+    // Conservative marker should find the interesting objects by using anything
+    // between object start and end.
+    MarkingWorklist* worklist = heap.GetMarkingWorklist();
+    CHECK(worklist->IsGlobalEmpty());
     for (wtf_size_t i = 0; i < object_addresses.size(); i++) {
-      EXPECT_TRUE(heap.CheckAndMarkPointer(&visitor, object_addresses[i],
-                                           ReportMarkedPointer));
-      EXPECT_TRUE(heap.CheckAndMarkPointer(&visitor, end_addresses[i],
-                                           ReportMarkedPointer));
+      heap.CheckAndMarkPointer(&visitor, object_addresses[i]);
+      ExpectObjectMarkedAndUnmark(worklist, object_addresses[i]);
+      heap.CheckAndMarkPointer(&visitor, end_addresses[i]);
+      ExpectObjectMarkedAndUnmark(worklist, object_addresses[i]);
     }
-    EXPECT_EQ(object_addresses.size() * 2, g_check_mark_count);
-    g_check_mark_count = 0;
-    EXPECT_TRUE(heap.CheckAndMarkPointer(&visitor, large_object_address,
-                                         ReportMarkedPointer));
-    EXPECT_TRUE(heap.CheckAndMarkPointer(&visitor, large_object_end_address,
-                                         ReportMarkedPointer));
-    EXPECT_EQ(2ul, g_check_mark_count);
-    g_check_mark_count = 0ul;
+    heap.CheckAndMarkPointer(&visitor, large_object_address);
+    ExpectObjectMarkedAndUnmark(worklist, large_object_address);
+    heap.CheckAndMarkPointer(&visitor, large_object_end_address);
+    ExpectObjectMarkedAndUnmark(worklist, large_object_address);
   }
+
   // This forces a GC without stack scanning which results in the objects
   // being collected. This will also rebuild the above mentioned freelists,
   // however we don't rely on that below since we don't have any allocations.
   ClearOutOldGarbage();
+
   {
     TestGCScope scope(BlinkGC::kHeapPointersOnStack);
     MarkingVisitor visitor(ThreadState::Current(),
                            MarkingVisitor::kGlobalMarking);
     heap.address_cache()->EnableLookup();
     heap.address_cache()->Flush();
+
+    // After collecting all interesting objects the conservative marker should
+    // not find them anymore.
+    MarkingWorklist* worklist = heap.GetMarkingWorklist();
+    CHECK(worklist->IsGlobalEmpty());
     for (wtf_size_t i = 0; i < object_addresses.size(); i++) {
-      // We would like to assert that checkAndMarkPointer returned false
-      // here because the pointers no longer point into a valid object
-      // (it's been freed by the GCs. But checkAndMarkPointer will return
-      // true for any pointer that points into a heap page, regardless of
-      // whether it points at a valid object (this ensures the
-      // correctness of the page-based on-heap address caches), so we
-      // can't make that assert.
-      heap.CheckAndMarkPointer(&visitor, object_addresses[i],
-                               ReportMarkedPointer);
-      heap.CheckAndMarkPointer(&visitor, end_addresses[i], ReportMarkedPointer);
+      heap.CheckAndMarkPointer(&visitor, object_addresses[i]);
+      CHECK(worklist->IsGlobalEmpty());
+      heap.CheckAndMarkPointer(&visitor, end_addresses[i]);
+      CHECK(worklist->IsGlobalEmpty());
     }
-    EXPECT_EQ(0ul, g_check_mark_count);
-    heap.CheckAndMarkPointer(&visitor, large_object_address,
-                             ReportMarkedPointer);
-    heap.CheckAndMarkPointer(&visitor, large_object_end_address,
-                             ReportMarkedPointer);
-    EXPECT_EQ(0ul, g_check_mark_count);
+    heap.CheckAndMarkPointer(&visitor, large_object_address);
+    CHECK(worklist->IsGlobalEmpty());
+    heap.CheckAndMarkPointer(&visitor, large_object_end_address);
+    CHECK(worklist->IsGlobalEmpty());
   }
-  // This round of GC is important to make sure that the object start
-  // bitmap are cleared out and that the free lists are rebuild.
-  ClearOutOldGarbage();
-#endif
 }
 
 TEST(HeapTest, CollectionNesting) {

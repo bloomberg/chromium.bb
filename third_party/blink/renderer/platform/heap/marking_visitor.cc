@@ -66,23 +66,6 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   ConservativelyMarkHeader(header);
 }
 
-#if DCHECK_IS_ON()
-void MarkingVisitor::ConservativelyMarkAddress(
-    BasePage* page,
-    Address address,
-    MarkedPointerCallbackForTesting callback) {
-  DCHECK(page->Contains(address));
-  HeapObjectHeader* const header =
-      page->IsLargeObjectPage()
-          ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
-          : static_cast<NormalPage*>(page)->FindHeaderFromAddress(address);
-  if (!header)
-    return;
-  if (!callback(header))
-    ConservativelyMarkHeader(header);
-}
-#endif  // DCHECK_IS_ON
-
 namespace {
 
 #if DCHECK_IS_ON()
