@@ -10,7 +10,7 @@ This file describes only the post-onion-souped version of the code, where
 `features::kOnionSoupDOMStorage` is turned on. This is not yet the default.
 
 ## Class Responsibilities
-### [`DOMWindowStorage`](dom_storage_window.h)
+### [`DOMWindowStorage`](dom_window_storage.h)
 This implements the partial `Window` interface in
 [window_storage.idl](window_storage.idl), and provides bindings for
 `window.localStorage` and `window.sessionStorage` to the web platform. This
