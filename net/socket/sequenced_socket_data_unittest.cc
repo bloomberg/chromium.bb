@@ -244,11 +244,9 @@ SequencedSocketDataTest::SequencedSocketDataTest()
     : sock_(nullptr),
       connect_data_(SYNCHRONOUS, OK),
       endpoint_("www.google.com", 443),
-      tcp_params_(new TransportSocketParams(
-          endpoint_,
-          false,
-          OnHostResolutionCallback(),
-          TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
+      tcp_params_(new TransportSocketParams(endpoint_,
+                                            false,
+                                            OnHostResolutionCallback())),
       socket_pool_(10, 10, &socket_factory_),
       expect_eof_(true) {}
 

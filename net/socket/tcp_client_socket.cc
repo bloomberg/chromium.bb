@@ -298,10 +298,6 @@ bool TCPClientSocket::WasEverUsed() const {
   return was_ever_used_;
 }
 
-void TCPClientSocket::EnableTCPFastOpenIfSupported() {
-  socket_->EnableTCPFastOpenIfSupported();
-}
-
 bool TCPClientSocket::WasAlpnNegotiated() const {
   return false;
 }

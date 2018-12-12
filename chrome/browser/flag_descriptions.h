@@ -1121,9 +1121,6 @@ extern const char kTabHoverCardsDescription[];
 extern const char kTabsInCbdName[];
 extern const char kTabsInCbdDescription[];
 
-extern const char kTcpFastOpenName[];
-extern const char kTcpFastOpenDescription[];
-
 extern const char kTintGlCompositedContentName[];
 extern const char kTintGlCompositedContentDescription[];
 

@@ -1838,10 +1838,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSimpleCacheBackendDescription,
      kOsWin | kOsMac | kOsLinux | kOsCrOS,
      MULTI_VALUE_TYPE(kSimpleCacheBackendChoices)},
-    {"enable-tcp-fast-open", flag_descriptions::kTcpFastOpenName,
-     flag_descriptions::kTcpFastOpenDescription,
-     kOsLinux | kOsCrOS | kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableTcpFastOpen)},
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     {"device-discovery-notifications",
      flag_descriptions::kDeviceDiscoveryNotificationsName,

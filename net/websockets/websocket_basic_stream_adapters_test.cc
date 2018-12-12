@@ -73,8 +73,7 @@ class WebSocketClientSocketHandleAdapterTest
         transport_params_(base::MakeRefCounted<TransportSocketParams>(
             host_port_pair_,
             false,
-            OnHostResolutionCallback(),
-            TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
+            OnHostResolutionCallback())),
         ssl_params_(base::MakeRefCounted<SSLSocketParams>(transport_params_,
                                                           nullptr,
                                                           nullptr,

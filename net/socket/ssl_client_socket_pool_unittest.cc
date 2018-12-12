@@ -99,19 +99,17 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
             HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
         http_server_properties_(new HttpServerPropertiesImpl),
         session_(CreateNetworkSession()),
-        direct_transport_socket_params_(new TransportSocketParams(
-            HostPortPair("host", 443),
-            false,
-            OnHostResolutionCallback(),
-            TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
+        direct_transport_socket_params_(
+            new TransportSocketParams(HostPortPair("host", 443),
+                                      false,
+                                      OnHostResolutionCallback())),
         transport_socket_pool_(kMaxSockets,
                                kMaxSocketsPerGroup,
                                &socket_factory_),
-        proxy_transport_socket_params_(new TransportSocketParams(
-            HostPortPair("proxy", 443),
-            false,
-            OnHostResolutionCallback(),
-            TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT)),
+        proxy_transport_socket_params_(
+            new TransportSocketParams(HostPortPair("proxy", 443),
+                                      false,
+                                      OnHostResolutionCallback())),
         socks_socket_params_(
             new SOCKSSocketParams(proxy_transport_socket_params_,
                                   true,
@@ -1006,8 +1004,7 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
   int32_t tag_val2 = 0x87654321;
   SocketTag tag2(getuid(), tag_val2);
   scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
-      test_server.host_port_pair(), false, OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+      test_server.host_port_pair(), false, OnHostResolutionCallback()));
   scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
       tcp_params, NULL, NULL, test_server.host_port_pair(), ssl_config_,
       PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */));
@@ -1076,8 +1073,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
   int32_t tag_val2 = 0x87654321;
   SocketTag tag2(getuid(), tag_val2);
   scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
-      test_server.host_port_pair(), false, OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+      test_server.host_port_pair(), false, OnHostResolutionCallback()));
   scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
       tcp_params, NULL, NULL, test_server.host_port_pair(), ssl_config_,
       PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */));
@@ -1140,8 +1136,7 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
   int32_t tag_val2 = 0x87654321;
   SocketTag tag2(getuid(), tag_val2);
   scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
-      test_server.host_port_pair(), false, OnHostResolutionCallback(),
-      TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+      test_server.host_port_pair(), false, OnHostResolutionCallback()));
   scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
       tcp_params, NULL, NULL, test_server.host_port_pair(), ssl_config_,
       PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */));

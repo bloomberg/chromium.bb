@@ -95,22 +95,11 @@ class NET_EXPORT HttpNetworkSession {
     Params(const Params& other);
     ~Params();
 
-    enum class TcpFastOpenMode {
-      DISABLED,
-      // If true, TCP fast open will be used for all HTTPS connections.
-      ENABLED_FOR_SSL_ONLY,
-      // TCP fast open will be used for all HTTP/HTTPS connections.
-      // TODO(mmenke): With 0-RTT session resumption, does this option make
-      // sense?
-      ENABLED_FOR_ALL,
-    };
-
     bool enable_server_push_cancellation;
     HostMappingRules host_mapping_rules;
     bool ignore_certificate_errors;
     uint16_t testing_fixed_http_port;
     uint16_t testing_fixed_https_port;
-    TcpFastOpenMode tcp_fast_open_mode;
     bool enable_user_alternate_protocol_ports;
 
     // Use SPDY ping frames to test for connection health after idle.

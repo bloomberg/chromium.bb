@@ -1870,12 +1870,6 @@ const char kTabsInCbdName[] = "Enable tabs for the Clear Browsing Data dialog.";
 const char kTabsInCbdDescription[] =
     "Enables a basic and an advanced tab for the Clear Browsing Data dialog.";
 
-const char kTcpFastOpenName[] = "TCP Fast Open";
-const char kTcpFastOpenDescription[] =
-    "Enable the option to send extra authentication information in the initial "
-    "SYN packet for a previously connected client, allowing faster data send "
-    "start.";
-
 const char kTintGlCompositedContentName[] = "Tint GL-composited content";
 const char kTintGlCompositedContentDescription[] =
     "Tint contents composited using GL with a shade of red to help debug and "
