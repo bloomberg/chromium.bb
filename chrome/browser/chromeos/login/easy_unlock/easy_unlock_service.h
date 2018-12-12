@@ -180,10 +180,6 @@ class EasyUnlockService : public KeyedService {
   // not be allowed if common tests fail (e.g. if Bluetooth is not available).
   virtual bool IsAllowedInternal() const = 0;
 
-  // Called while processing a user gesture to unlock the screen using Easy
-  // Unlock, just before the screen is unlocked.
-  virtual void OnWillFinalizeUnlock(bool success) = 0;
-
   // Called when the local device resumes after a suspend.
   virtual void OnSuspendDoneInternal() = 0;
 
@@ -231,7 +227,21 @@ class EasyUnlockService : public KeyedService {
       const multidevice::RemoteDeviceRefList& remote_devices,
       base::Optional<multidevice::RemoteDeviceRef> local_device);
 
+  bool will_authenticate_using_easy_unlock() const {
+    return will_authenticate_using_easy_unlock_;
+  }
+
+  void set_will_authenticate_using_easy_unlock(
+      bool will_authenticate_using_easy_unlock) {
+    will_authenticate_using_easy_unlock_ = will_authenticate_using_easy_unlock;
+  }
+
  private:
+  // True if the user just authenticated using Easy Unlock. Reset once
+  // the screen signs in/unlocks. Used to distinguish Easy Unlock-powered
+  // signins/unlocks from password-based unlocks for metrics.
+  bool will_authenticate_using_easy_unlock_ = false;
+
   // A class to detect whether a bluetooth adapter is present.
   class BluetoothDetector;
 

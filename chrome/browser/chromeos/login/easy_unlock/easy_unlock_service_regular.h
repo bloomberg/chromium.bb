@@ -100,7 +100,6 @@ class EasyUnlockServiceRegular
   // TODO(crbug.com/894585): Remove this legacy special case after M71.
   bool IsInLegacyHostMode() const override;
 
-  void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDoneInternal() override;
 
   // device_sync::DeviceSyncClient::Observer:
@@ -140,11 +139,6 @@ class EasyUnlockServiceRegular
   void RefreshCryptohomeKeysIfPossible();
 
   multidevice::RemoteDeviceRefList GetUnlockKeys();
-
-  // True if the user just unlocked the screen using Easy Unlock. Reset once
-  // the screen unlocks. Used to distinguish Easy Unlock-powered unlocks from
-  // password-based unlocks for metrics.
-  bool will_unlock_using_easy_unlock_;
 
   // The timestamp for the most recent time when the lock screen was shown. The
   // lock screen is typically shown when the user awakens their computer from

@@ -103,7 +103,6 @@ class EasyUnlockServiceSignin
   bool IsAllowedInternal() const override;
   bool IsEnabled() const override;
   bool IsChromeOSLoginEnabled() const override;
-  void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDoneInternal() override;
   void OnBluetoothAdapterPresentChanged() override;
 

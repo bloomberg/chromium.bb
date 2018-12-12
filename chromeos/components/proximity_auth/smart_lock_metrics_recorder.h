@@ -47,6 +47,17 @@ class SmartLockMetricsRecorder {
     kMaxValue = kUserControllerSignInFailure
   };
 
+  enum class SmartLockAuthMethodChoice {
+    kSmartLock = 0,
+    kOther = 1,
+    kMaxValue = kOther
+  };
+
+  static void RecordSmartLockUnlockAuthMethodChoice(
+      SmartLockAuthMethodChoice auth_method_choice);
+  static void RecordSmartLockSignInAuthMethodChoice(
+      SmartLockAuthMethodChoice auth_method_choice);
+
   static void RecordAuthResultUnlockSuccess(bool success = true);
   static void RecordAuthResultUnlockFailure(
       SmartLockAuthResultFailureReason failure_reason);

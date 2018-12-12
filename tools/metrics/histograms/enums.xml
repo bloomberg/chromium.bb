@@ -47319,6 +47319,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Large Downscale"/>
 </enum>
 
+<enum name="SmartLockAuthMethodChoice">
+  <int value="0" label="Smart Lock"/>
+  <int value="1" label="Other"/>
+</enum>
+
 <enum name="SmartLockAuthResultFailureReason">
   <int value="0" label="Unlock not allowed"/>
   <int value="1" label="Already attempting auth"/>

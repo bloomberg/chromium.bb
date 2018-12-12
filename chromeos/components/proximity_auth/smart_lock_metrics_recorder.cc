@@ -11,6 +11,18 @@ SmartLockMetricsRecorder::SmartLockMetricsRecorder() = default;
 
 SmartLockMetricsRecorder::~SmartLockMetricsRecorder() {}
 
+void SmartLockMetricsRecorder::RecordSmartLockUnlockAuthMethodChoice(
+    SmartLockAuthMethodChoice auth_method_choice) {
+  UMA_HISTOGRAM_ENUMERATION("SmartLock.AuthMethodChoice.Unlock",
+                            auth_method_choice);
+}
+
+void SmartLockMetricsRecorder::RecordSmartLockSignInAuthMethodChoice(
+    SmartLockAuthMethodChoice auth_method_choice) {
+  UMA_HISTOGRAM_ENUMERATION("SmartLock.AuthMethodChoice.SignIn",
+                            auth_method_choice);
+}
+
 void SmartLockMetricsRecorder::RecordAuthResultUnlockSuccess(bool success) {
   UMA_HISTOGRAM_BOOLEAN("SmartLock.AuthResult.Unlock", success);
 }

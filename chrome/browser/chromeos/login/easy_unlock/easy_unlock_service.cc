@@ -416,7 +416,7 @@ void EasyUnlockService::FinalizeUnlock(bool success) {
   if (!auth_attempt_)
     return;
 
-  this->OnWillFinalizeUnlock(success);
+  set_will_authenticate_using_easy_unlock(true);
   auth_attempt_->FinalizeUnlock(GetAccountId(), success);
   auth_attempt_.reset();
   // TODO(isherman): If observing screen unlock events, is there a race
@@ -442,8 +442,12 @@ void EasyUnlockService::FinalizeSignin(const std::string& key) {
   // Processing empty key is equivalent to auth cancellation. In this case the
   // signin request will not actually be processed by login stack, so the lock
   // screen state should be set from here.
-  if (key.empty())
+  if (key.empty()) {
     HandleAuthFailure(GetAccountId());
+    return;
+  }
+
+  set_will_authenticate_using_easy_unlock(true);
 }
 
 void EasyUnlockService::HandleAuthFailure(const AccountId& account_id) {
