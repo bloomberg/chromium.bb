@@ -23,6 +23,9 @@ namespace {
 constexpr CGFloat kTableViewSeparatorInset = 16;
 }
 
+NSString* const kSettingsToolbarDeleteButtonId =
+    @"PasswordsToolbarDeleteButtonId";
+
 @interface SettingsRootTableViewController ()
 
 // Delete button for the toolbar.
@@ -65,6 +68,7 @@ constexpr CGFloat kTableViewSeparatorInset = 16;
                 style:UIBarButtonItemStylePlain
                target:self
                action:@selector(deleteButtonCallback)];
+    _deleteButton.accessibilityIdentifier = kSettingsToolbarDeleteButtonId;
     _deleteButton.tintColor = [UIColor redColor];
   }
   return _deleteButton;

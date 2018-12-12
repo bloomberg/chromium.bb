@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
+#import "ios/chrome/browser/ui/settings/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
@@ -96,7 +97,7 @@ id<GREYMatcher> UsernameButtonMatcher() {
 
 // Returns a matcher for the password settings collection view.
 id<GREYMatcher> PasswordSettingsMatcher() {
-  return grey_accessibilityID(@"SavePasswordsCollectionViewController");
+  return grey_accessibilityID(kPasswordsTableViewId);
 }
 
 // Returns a matcher for the search bar in password settings.

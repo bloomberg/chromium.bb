@@ -1,11 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
-
-#include <memory>
-#include <utility>
+#import "ios/chrome/browser/ui/settings/passwords_table_view_controller.h"
 
 #include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,12 +15,13 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/save_passwords_consumer.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/password_details_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#include "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +35,8 @@ using password_manager::MockPasswordStore;
 
 // Declaration to conformance to SavePasswordsConsumerDelegate and keep tests in
 // this file working.
-@interface SavePasswordsCollectionViewController (
-    Test)<SettingsSearchItemDelegate, SavePasswordsConsumerDelegate>
+@interface PasswordsTableViewController (Test) <UISearchBarDelegate,
+                                                SavePasswordsConsumerDelegate>
 - (void)updateExportPasswordsButton;
 @end
 
@@ -49,15 +47,14 @@ typedef struct {
   int section_offset;
 } ExportPasswordsFeatureStatus;
 
-class SavePasswordsCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
  protected:
-  SavePasswordsCollectionViewControllerTest() = default;
+  PasswordsTableViewControllerTest() = default;
 
   void SetUp() override {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
-    CollectionViewControllerTest::SetUp();
+    ChromeTableViewControllerTest::SetUp();
     IOSChromePasswordStoreFactory::GetInstance()->SetTestingFactory(
         chrome_browser_state_.get(),
         base::BindRepeating(
@@ -73,18 +70,18 @@ class SavePasswordsCollectionViewControllerTest
             .get());
   }
 
-  CollectionViewController* InstantiateController() override {
-    return [[SavePasswordsCollectionViewController alloc]
+  ChromeTableViewController* InstantiateController() override {
+    return [[PasswordsTableViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
-  // Adds a form to SavePasswordsTableViewController.
+  // Adds a form to PasswordsTableViewController.
   void AddPasswordForm(std::unique_ptr<autofill::PasswordForm> form) {
-    SavePasswordsCollectionViewController* save_password_controller =
-        static_cast<SavePasswordsCollectionViewController*>(controller());
+    PasswordsTableViewController* passwords_controller =
+        static_cast<PasswordsTableViewController*>(controller());
     std::vector<std::unique_ptr<autofill::PasswordForm>> passwords;
     passwords.push_back(std::move(form));
-    [save_password_controller onGetPasswordStoreResults:passwords];
+    [passwords_controller onGetPasswordStoreResults:passwords];
   }
 
   // Creates and adds a saved password form.
@@ -157,168 +154,162 @@ class SavePasswordsCollectionViewControllerTest
     AddPasswordForm(std::move(form));
   }
 
+  // Deletes the item at (row, section) and wait util condition returns true or
+  // timeout.
+  bool deleteItemAndWait(int section, int row, ConditionBlock condition) {
+    PasswordsTableViewController* passwords_controller =
+        static_cast<PasswordsTableViewController*>(controller());
+    [passwords_controller
+        deleteItems:@[ [NSIndexPath indexPathForRow:row inSection:section] ]];
+    return base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForUIElementTimeout, condition);
+  }
+
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 
 // Tests default case has no saved sites and no blacklisted sites.
-TEST_F(SavePasswordsCollectionViewControllerTest, TestInitialization) {
+TEST_F(PasswordsTableViewControllerTest, TestInitialization) {
   CheckController();
-  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_EQ(2, NumberOfSections());
 }
 
 // Tests adding one item in saved password section.
-TEST_F(SavePasswordsCollectionViewControllerTest, AddSavedPasswords) {
+TEST_F(PasswordsTableViewControllerTest, AddSavedPasswords) {
   AddSavedForm1();
 
-  EXPECT_EQ(5, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(3));
+  EXPECT_EQ(4, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 }
 
 // Tests adding one item in blacklisted password section.
-TEST_F(SavePasswordsCollectionViewControllerTest, AddBlacklistedPasswords) {
+TEST_F(PasswordsTableViewControllerTest, AddBlacklistedPasswords) {
   AddBlacklistedForm1();
 
-  EXPECT_EQ(5, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(3));
+  EXPECT_EQ(4, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 }
 
 // Tests adding one item in saved password section, and two items in blacklisted
 // password section.
-TEST_F(SavePasswordsCollectionViewControllerTest, AddSavedAndBlacklisted) {
+TEST_F(PasswordsTableViewControllerTest, AddSavedAndBlacklisted) {
   AddSavedForm1();
   AddBlacklistedForm1();
   AddBlacklistedForm2();
 
   // There should be two sections added.
-  EXPECT_EQ(6, NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
 
   // There should be 1 row in saved password section.
-  EXPECT_EQ(1, NumberOfItemsInSection(3));
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
   // There should be 2 rows in blacklisted password section.
-  EXPECT_EQ(2, NumberOfItemsInSection(4));
+  EXPECT_EQ(2, NumberOfItemsInSection(3));
 }
 
 // Tests the order in which the saved passwords are displayed.
-TEST_F(SavePasswordsCollectionViewControllerTest, TestSavedPasswordsOrder) {
+TEST_F(PasswordsTableViewControllerTest, TestSavedPasswordsOrder) {
   AddSavedForm2();
 
-  CheckTextCellTitleAndSubtitle(@"example2.com", @"test@egmail.com", 3, 0);
+  CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 2, 0);
 
   AddSavedForm1();
-  CheckTextCellTitleAndSubtitle(@"example.com", @"test@egmail.com", 3, 0);
-  CheckTextCellTitleAndSubtitle(@"example2.com", @"test@egmail.com", 3, 1);
+  CheckTextCellTextAndDetailText(@"example.com", @"test@egmail.com", 2, 0);
+  CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 2, 1);
 }
 
 // Tests the order in which the blacklisted passwords are displayed.
-TEST_F(SavePasswordsCollectionViewControllerTest,
-       TestBlacklistedPasswordsOrder) {
+TEST_F(PasswordsTableViewControllerTest, TestBlacklistedPasswordsOrder) {
   AddBlacklistedForm2();
-  CheckTextCellTitle(@"secret2.com", 3, 0);
+  CheckTextCellText(@"secret2.com", 2, 0);
 
   AddBlacklistedForm1();
-  CheckTextCellTitle(@"secret.com", 3, 0);
-  CheckTextCellTitle(@"secret2.com", 3, 1);
+  CheckTextCellText(@"secret.com", 2, 0);
+  CheckTextCellText(@"secret2.com", 2, 1);
 }
 
 // Tests displaying passwords in the saved passwords section when there are
 // duplicates in the password store.
-TEST_F(SavePasswordsCollectionViewControllerTest, AddSavedDuplicates) {
+TEST_F(PasswordsTableViewControllerTest, AddSavedDuplicates) {
   AddSavedForm1();
   AddSavedForm1();
 
-  EXPECT_EQ(5, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(3));
+  EXPECT_EQ(4, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 }
 
 // Tests displaying passwords in the blacklisted passwords section when there
 // are duplicates in the password store.
-TEST_F(SavePasswordsCollectionViewControllerTest, AddBlacklistedDuplicates) {
+TEST_F(PasswordsTableViewControllerTest, AddBlacklistedDuplicates) {
   AddBlacklistedForm1();
   AddBlacklistedForm1();
 
-  EXPECT_EQ(5, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(3));
+  EXPECT_EQ(4, NumberOfSections());
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 }
 
 // Tests deleting items from saved passwords and blacklisted passwords sections.
-TEST_F(SavePasswordsCollectionViewControllerTest, DeleteItems) {
+TEST_F(PasswordsTableViewControllerTest, DeleteItems) {
   AddSavedForm1();
   AddBlacklistedForm1();
   AddBlacklistedForm2();
 
-  void (^deleteItemWithWait)(int, int) = ^(int i, int j) {
-    __block BOOL completionCalled = NO;
-    this->DeleteItem(i, j, ^{
-      completionCalled = YES;
-    });
-    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-        base::test::ios::kWaitForUIElementTimeout, ^bool() {
-          return completionCalled;
-        }));
-  };
-
   // Delete item in save passwords section.
-  deleteItemWithWait(3, 0);
-  EXPECT_EQ(5, NumberOfSections());
-  // Section 3 should now be the blacklisted passwords section, and should still
+  ASSERT_TRUE(deleteItemAndWait(2, 0, ^{
+    return NumberOfSections() == 4;
+  }));
+  // Section 2 should now be the blacklisted passwords section, and should still
   // have both its items.
-  EXPECT_EQ(2, NumberOfItemsInSection(3));
+  EXPECT_EQ(2, NumberOfItemsInSection(2));
 
   // Delete item in blacklisted passwords section.
-  deleteItemWithWait(3, 0);
-  EXPECT_EQ(1, NumberOfItemsInSection(3));
-  deleteItemWithWait(3, 0);
+  ASSERT_TRUE(deleteItemAndWait(2, 0, ^{
+    return NumberOfItemsInSection(2) == 1;
+  }));
   // There should be no password sections remaining and no search bar.
-  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_TRUE(deleteItemAndWait(2, 0, ^{
+    return NumberOfSections() == 2;
+  }));
 }
 
 // Tests deleting items from saved passwords and blacklisted passwords sections
 // when there are duplicates in the store.
-TEST_F(SavePasswordsCollectionViewControllerTest, DeleteItemsWithDuplicates) {
+TEST_F(PasswordsTableViewControllerTest, DeleteItemsWithDuplicates) {
   AddSavedForm1();
   AddSavedForm1();
   AddBlacklistedForm1();
   AddBlacklistedForm1();
   AddBlacklistedForm2();
 
-  void (^deleteItemWithWait)(int, int) = ^(int i, int j) {
-    __block BOOL completionCalled = NO;
-    this->DeleteItem(i, j, ^{
-      completionCalled = YES;
-    });
-    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-        base::test::ios::kWaitForUIElementTimeout, ^bool() {
-          return completionCalled;
-        }));
-  };
-
   // Delete item in save passwords section.
-  deleteItemWithWait(3, 0);
-  EXPECT_EQ(5, NumberOfSections());
-  // Section 3 should now be the blacklisted passwords section, and should still
+  ASSERT_TRUE(deleteItemAndWait(2, 0, ^{
+    return NumberOfSections() == 4;
+  }));
+  // Section 2 should now be the blacklisted passwords section, and should still
   // have both its items.
-  EXPECT_EQ(2, NumberOfItemsInSection(3));
+  EXPECT_EQ(2, NumberOfItemsInSection(2));
 
   // Delete item in blacklisted passwords section.
-  deleteItemWithWait(3, 0);
-  EXPECT_EQ(1, NumberOfItemsInSection(3));
-  deleteItemWithWait(3, 0);
+  ASSERT_TRUE(deleteItemAndWait(2, 0, ^{
+    return NumberOfItemsInSection(2) == 1;
+  }));
   // There should be no password sections remaining and no search bar.
-  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_TRUE(deleteItemAndWait(2, 0, ^{
+    return NumberOfSections() == 2;
+  }));
 }
 
-TEST_F(SavePasswordsCollectionViewControllerTest,
+TEST_F(PasswordsTableViewControllerTest,
        TestExportButtonDisabledNoSavedPasswords) {
-  SavePasswordsCollectionViewController* save_password_controller =
-      static_cast<SavePasswordsCollectionViewController*>(controller());
-  [save_password_controller updateExportPasswordsButton];
+  PasswordsTableViewController* passwords_controller =
+      static_cast<PasswordsTableViewController*>(controller());
+  [passwords_controller updateExportPasswordsButton];
 
-  SettingsTextItem* exportButton = GetCollectionViewItem(2, 0);
-  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 2, 0);
+  TableViewDetailTextItem* exportButton = GetTableViewItem(1, 0);
+  CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 1, 0);
 
-  UIColor* disabledColor = [[MDCPalette greyPalette] tint500];
-  EXPECT_NSEQ(disabledColor, exportButton.textColor);
+  EXPECT_NSEQ(UIColorFromRGB(kTableViewTextLabelColorLightGrey),
+              exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
               UIAccessibilityTraitNotEnabled);
 
@@ -326,70 +317,71 @@ TEST_F(SavePasswordsCollectionViewControllerTest,
   AddBlacklistedForm1();
   // The export button should still be disabled as exporting blacklisted forms
   // is not currently supported.
-  EXPECT_NSEQ(disabledColor, exportButton.textColor);
+  EXPECT_NSEQ(UIColorFromRGB(kTableViewTextLabelColorLightGrey),
+              exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
               UIAccessibilityTraitNotEnabled);
 }
 
-TEST_F(SavePasswordsCollectionViewControllerTest,
+TEST_F(PasswordsTableViewControllerTest,
        TestExportButtonEnabledWithSavedPasswords) {
-  SavePasswordsCollectionViewController* save_password_controller =
-      static_cast<SavePasswordsCollectionViewController*>(controller());
+  PasswordsTableViewController* passwords_controller =
+      static_cast<PasswordsTableViewController*>(controller());
   AddSavedForm1();
-  [save_password_controller updateExportPasswordsButton];
+  [passwords_controller updateExportPasswordsButton];
 
-  SettingsTextItem* exportButton = GetCollectionViewItem(4, 0);
+  TableViewDetailTextItem* exportButton = GetTableViewItem(3, 0);
 
-  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 4, 0);
-  EXPECT_NSEQ([[MDCPalette greyPalette] tint900], exportButton.textColor);
+  CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
+
+  EXPECT_NSEQ(UIColorFromRGB(kTableViewTextLabelColorBlue),
+              exportButton.textColor);
   EXPECT_FALSE(exportButton.accessibilityTraits &
                UIAccessibilityTraitNotEnabled);
 }
 
 // Tests that the "Export Passwords..." button is greyed out in edit mode.
-TEST_F(SavePasswordsCollectionViewControllerTest,
-       TestExportButtonDisabledEditMode) {
-  SavePasswordsCollectionViewController* save_password_controller =
-      static_cast<SavePasswordsCollectionViewController*>(controller());
+TEST_F(PasswordsTableViewControllerTest, TestExportButtonDisabledEditMode) {
+  PasswordsTableViewController* passwords_controller =
+      static_cast<PasswordsTableViewController*>(controller());
   AddSavedForm1();
-  [save_password_controller updateExportPasswordsButton];
+  [passwords_controller updateExportPasswordsButton];
 
-  SettingsTextItem* exportButton = GetCollectionViewItem(4, 0);
-  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 4, 0);
+  TableViewDetailTextItem* exportButton = GetTableViewItem(3, 0);
+  CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
 
-  [save_password_controller
-      collectionViewWillBeginEditing:save_password_controller.collectionView];
+  [passwords_controller setEditing:YES animated:NO];
 
-  EXPECT_NSEQ([[MDCPalette greyPalette] tint500], exportButton.textColor);
+  EXPECT_NSEQ(UIColorFromRGB(kTableViewTextLabelColorLightGrey),
+              exportButton.textColor);
   EXPECT_TRUE(exportButton.accessibilityTraits &
               UIAccessibilityTraitNotEnabled);
 }
 
 // Tests that the "Export Passwords..." button is enabled after exiting
 // edit mode.
-TEST_F(SavePasswordsCollectionViewControllerTest,
+TEST_F(PasswordsTableViewControllerTest,
        TestExportButtonEnabledWhenEdittingFinished) {
-  SavePasswordsCollectionViewController* save_password_controller =
-      static_cast<SavePasswordsCollectionViewController*>(controller());
+  PasswordsTableViewController* passwords_controller =
+      static_cast<PasswordsTableViewController*>(controller());
   AddSavedForm1();
-  [save_password_controller updateExportPasswordsButton];
+  [passwords_controller updateExportPasswordsButton];
 
-  SettingsTextItem* exportButton = GetCollectionViewItem(4, 0);
-  CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 4, 0);
+  TableViewDetailTextItem* exportButton = GetTableViewItem(3, 0);
+  CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
 
-  [save_password_controller
-      collectionViewWillBeginEditing:save_password_controller.collectionView];
-  [save_password_controller
-      collectionViewWillEndEditing:save_password_controller.collectionView];
+  [passwords_controller setEditing:YES animated:NO];
+  [passwords_controller setEditing:NO animated:NO];
 
-  EXPECT_NSEQ([[MDCPalette greyPalette] tint900], exportButton.textColor);
+  EXPECT_NSEQ(UIColorFromRGB(kTableViewTextLabelColorBlue),
+              exportButton.textColor);
   EXPECT_FALSE(exportButton.accessibilityTraits &
                UIAccessibilityTraitNotEnabled);
 }
 
-TEST_F(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {
-  SavePasswordsCollectionViewController* save_password_controller =
-      static_cast<SavePasswordsCollectionViewController*>(controller());
+TEST_F(PasswordsTableViewControllerTest, PropagateDeletionToStore) {
+  PasswordsTableViewController* passwords_controller =
+      static_cast<PasswordsTableViewController*>(controller());
   autofill::PasswordForm form;
   form.origin = GURL("http://www.example.com/accounts/LoginAuth");
   form.action = GURL("http://www.example.com/accounts/Login");
@@ -405,51 +397,60 @@ TEST_F(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {
   AddPasswordForm(std::make_unique<autofill::PasswordForm>(form));
 
   EXPECT_CALL(GetMockStore(), RemoveLogin(form));
-  [save_password_controller passwordDetailsTableViewController:nil
-                                                deletePassword:form];
+  [passwords_controller passwordDetailsTableViewController:nil
+                                            deletePassword:form];
 }
 
 // Tests filtering of items.
-TEST_F(SavePasswordsCollectionViewControllerTest, FilterItems) {
+TEST_F(PasswordsTableViewControllerTest, FilterItems) {
   AddSavedForm1();
   AddSavedForm2();
   AddBlacklistedForm1();
   AddBlacklistedForm2();
 
-  EXPECT_EQ(6, NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
 
-  SavePasswordsCollectionViewController* save_password_controller =
-      static_cast<SavePasswordsCollectionViewController*>(controller());
+  PasswordsTableViewController* passwords_controller =
+      static_cast<PasswordsTableViewController*>(controller());
+  // TODO(crbug.com/894791): Remove this comment when SettingsSearchItem is
+  // removed.
+  //   Currently |bar| is not actually the UISearchBar displayed on screen, the
+  //   displayed one is from SettingsSearchItem. Once MDC navigation bar gets
+  //   deprecated in Settings, PasswordsTableViewController will use
+  //   UISearchController instead and |bar| will be the real UISearchBar on
+  //   screen.
+  UISearchBar* bar =
+      passwords_controller.navigationItem.searchController.searchBar;
 
   // Force the initial data to be rendered into view first, before doing any
   // new filtering (avoids mismatch when reloadSections is called).
-  [save_password_controller didRequestSearchForTerm:@""];
+  [passwords_controller searchBar:bar textDidChange:@""];
 
   // Search item in save passwords section.
-  [save_password_controller didRequestSearchForTerm:@"example.com"];
+  [passwords_controller searchBar:bar textDidChange:@"example.com"];
   // Only one item in saved passwords should remain.
-  EXPECT_EQ(1, NumberOfItemsInSection(3));
-  EXPECT_EQ(0, NumberOfItemsInSection(4));
-  CheckTextCellTitleAndSubtitle(@"example.com", @"test@egmail.com", 3, 0);
-
-  [save_password_controller didRequestSearchForTerm:@"test@egmail.com"];
-  // Only two items in saved passwords should remain.
-  EXPECT_EQ(2, NumberOfItemsInSection(3));
-  EXPECT_EQ(0, NumberOfItemsInSection(4));
-  CheckTextCellTitleAndSubtitle(@"example.com", @"test@egmail.com", 3, 0);
-  CheckTextCellTitleAndSubtitle(@"example2.com", @"test@egmail.com", 3, 1);
-
-  [save_password_controller didRequestSearchForTerm:@"secret"];
-  // Only two items in blacklisted should remain.
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
   EXPECT_EQ(0, NumberOfItemsInSection(3));
-  EXPECT_EQ(2, NumberOfItemsInSection(4));
-  CheckTextCellTitle(@"secret.com", 4, 0);
-  CheckTextCellTitle(@"secret2.com", 4, 1);
+  CheckTextCellTextAndDetailText(@"example.com", @"test@egmail.com", 2, 0);
 
-  [save_password_controller didRequestSearchForTerm:@""];
-  // All items should be back.
+  [passwords_controller searchBar:bar textDidChange:@"test@egmail.com"];
+  // Only two items in saved passwords should remain.
+  EXPECT_EQ(2, NumberOfItemsInSection(2));
+  EXPECT_EQ(0, NumberOfItemsInSection(3));
+  CheckTextCellTextAndDetailText(@"example.com", @"test@egmail.com", 2, 0);
+  CheckTextCellTextAndDetailText(@"example2.com", @"test@egmail.com", 2, 1);
+
+  [passwords_controller searchBar:bar textDidChange:@"secret"];
+  // Only two items in blacklisted should remain.
+  EXPECT_EQ(0, NumberOfItemsInSection(2));
   EXPECT_EQ(2, NumberOfItemsInSection(3));
-  EXPECT_EQ(2, NumberOfItemsInSection(4));
+  CheckTextCellText(@"secret.com", 3, 0);
+  CheckTextCellText(@"secret2.com", 3, 1);
+
+  [passwords_controller searchBar:bar textDidChange:@""];
+  // All items should be back.
+  EXPECT_EQ(2, NumberOfItemsInSection(2));
+  EXPECT_EQ(2, NumberOfItemsInSection(3));
 }
 
 }  // namespace

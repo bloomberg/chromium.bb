@@ -7,22 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 
-// Delegate for SettingsSearchItem. Used to pass on search interactions.
-@protocol SettingsSearchItemDelegate<NSObject>
-
-// Called when the search term changes.
-- (void)didRequestSearchForTerm:(NSString*)searchTerm;
-
-@end
-
-// View for displaying a search.
-@interface SettingsSearchItem : CollectionViewItem
-
-// Delegate for forwarding interactions with the search item.
-@property(nonatomic, weak) id<SettingsSearchItemDelegate> delegate;
+// Item for displaying a search.
+@interface SettingsSearchItem : TableViewHeaderFooterItem
 
 // The placeholder for the search input field.
 @property(nonatomic, copy) NSString* placeholder;
@@ -33,13 +21,10 @@
 @end
 
 // Cell representation for SettingsSearchItem.
-@interface SettingsSearchCell : MDCCollectionViewCell
+@interface SettingsSearchView : UITableViewHeaderFooterView
 
-// Text field for the search view.
-@property(nonatomic, strong) UITextField* textField;
-
-// Delegate for forwarding interactions with the search item.
-@property(nonatomic, weak) id<SettingsSearchItemDelegate> delegate;
+// Search bar of the cell.
+@property(nonatomic, readonly, strong) UISearchBar* searchBar;
 
 @end
 
