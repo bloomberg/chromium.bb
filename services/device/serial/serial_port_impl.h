@@ -23,17 +23,18 @@ namespace device {
 class SerialPortImpl : public mojom::SerialPort {
  public:
   static void Create(
+      const std::string& path,
       mojom::SerialPortRequest request,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   explicit SerialPortImpl(
+      const std::string& path,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialPortImpl() override;
 
  private:
   // mojom::SerialPort methods:
-  void Open(const std::string& port,
-            mojom::SerialConnectionOptionsPtr options,
+  void Open(mojom::SerialConnectionOptionsPtr options,
             OpenCallback callback) override;
   void Read(uint32_t bytes, ReadCallback callback) override;
   void Write(const std::vector<uint8_t>& data, WriteCallback callback) override;
@@ -49,6 +50,7 @@ class SerialPortImpl : public mojom::SerialPort {
   void SetBreak(SetBreakCallback callback) override;
   void ClearBreak(ClearBreakCallback callback) override;
 
+  std::string path_;
   scoped_refptr<device::SerialIoHandler> io_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialPortImpl);

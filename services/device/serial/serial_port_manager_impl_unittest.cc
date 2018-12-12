@@ -22,12 +22,12 @@ class SerialPortManagerImplTest : public DeviceServiceTestBase {
  protected:
   void SetUp() override {
     DeviceServiceTestBase::SetUp();
-    connector()->BindInterface(mojom::kServiceName, &enumerator_);
+    connector()->BindInterface(mojom::kServiceName, &port_manager_);
   }
 
-  void TearDown() override { enumerator_.reset(); }
+  void TearDown() override { port_manager_.reset(); }
 
-  mojom::SerialPortManagerPtr enumerator_;
+  mojom::SerialPortManagerPtr port_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialPortManagerImplTest);
 };
@@ -37,7 +37,7 @@ class SerialPortManagerImplTest : public DeviceServiceTestBase {
 // correctly.
 // TODO(leonhsl): figure out how to add more robust tests.
 TEST_F(SerialPortManagerImplTest, SimpleConnectTest) {
-  enumerator_.FlushForTesting();
+  port_manager_.FlushForTesting();
 }
 
 }  // namespace

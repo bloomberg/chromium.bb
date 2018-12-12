@@ -87,11 +87,11 @@ ExtensionFunction::ResponseAction SerialGetDevicesFunction::Run() {
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&enumerator_));
-  enumerator_.set_connection_error_handler(
+                      mojo::MakeRequest(&port_manager_));
+  port_manager_.set_connection_error_handler(
       base::BindOnce(&SerialGetDevicesFunction::OnGotDevices, this,
                      std::vector<device::mojom::SerialPortInfoPtr>()));
-  enumerator_->GetDevices(
+  port_manager_->GetDevices(
       base::BindOnce(&SerialGetDevicesFunction::OnGotDevices, this));
   return RespondLater();
 }
@@ -102,7 +102,7 @@ void SerialGetDevicesFunction::OnGotDevices(
       serial::GetDevices::Results::Create(
           mojo::ConvertTo<std::vector<serial::DeviceInfo>>(devices));
   Respond(ArgumentList(std::move(results)));
-  enumerator_.reset();
+  port_manager_.reset();
 }
 
 SerialConnectFunction::SerialConnectFunction() {}
@@ -134,10 +134,12 @@ bool SerialConnectFunction::Prepare() {
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(content::ServiceManagerConnection::GetForProcess());
+  device::mojom::SerialPortManagerPtr port_manager;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&io_handler_info_));
+                      mojo::MakeRequest(&port_manager));
+  port_manager->GetPort(params_->path, mojo::MakeRequest(&serial_port_info_));
 
   serial_event_dispatcher_ = SerialEventDispatcher::Get(browser_context());
   DCHECK(serial_event_dispatcher_);
@@ -148,7 +150,7 @@ bool SerialConnectFunction::Prepare() {
 void SerialConnectFunction::AsyncWorkStart() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   connection_ = std::make_unique<SerialConnection>(
-      params_->path, extension_->id(), std::move(io_handler_info_));
+      extension_->id(), std::move(serial_port_info_));
   connection_->Open(*params_->options,
                     base::BindOnce(&SerialConnectFunction::OnConnected, this));
 }

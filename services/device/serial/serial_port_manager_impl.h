@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "device/serial/serial_device_enumerator.h"
 #include "services/device/public/mojom/serial.mojom.h"
+#include "services/device/serial/serial_port_impl.h"
 
 namespace device {
 
@@ -20,14 +22,19 @@ class SerialPortManagerImpl : public mojom::SerialPortManager {
  public:
   static void Create(mojom::SerialPortManagerRequest request);
 
-  SerialPortManagerImpl();
+  SerialPortManagerImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialPortManagerImpl() override;
 
  private:
   // mojom::SerialPortManager methods:
   void GetDevices(GetDevicesCallback callback) override;
+  void GetPort(const std::string& path,
+               mojom::SerialPortRequest request) override;
 
   std::unique_ptr<device::SerialDeviceEnumerator> enumerator_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialPortManagerImpl);
 };

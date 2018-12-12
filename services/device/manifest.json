@@ -21,10 +21,7 @@
         "device:nfc": [ "device.mojom.NFCProvider" ],
         "device:power_monitor": [ "device.mojom.PowerMonitor" ],
         "device:screen_orientation": [ "device.mojom.ScreenOrientationListener" ],
-        "device:serial": [
-          "device.mojom.SerialPortManager",
-          "device.mojom.SerialPort"
-        ],
+        "device:serial": [ "device.mojom.SerialPortManager" ],
         "device:time_zone_monitor": [ "device.mojom.TimeZoneMonitor" ],
         "device:usb": [ "device.mojom.UsbDeviceManager" ],
         "device:vibration": [ "device.mojom.VibrationManager" ],

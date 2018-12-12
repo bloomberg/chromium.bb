@@ -12,9 +12,12 @@ namespace device {
 
 namespace {
 
-void CreateAndBindOnBlockableRunner(mojom::SerialPortManagerRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<SerialPortManagerImpl>(),
-                          std::move(request));
+void CreateAndBindOnBlockableRunner(
+    mojom::SerialPortManagerRequest request,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+  mojo::MakeStrongBinding(
+      std::make_unique<SerialPortManagerImpl>(std::move(ui_task_runner)),
+      std::move(request));
 }
 
 }  // namespace
@@ -28,17 +31,26 @@ void SerialPortManagerImpl::Create(mojom::SerialPortManagerRequest request) {
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   blockable_sequence_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&CreateAndBindOnBlockableRunner, std::move(request)));
+      base::BindOnce(&CreateAndBindOnBlockableRunner, std::move(request),
+                     base::ThreadTaskRunnerHandle::Get()));
 }
 
-SerialPortManagerImpl::SerialPortManagerImpl()
-    : enumerator_(device::SerialDeviceEnumerator::Create()) {}
+// SerialPortManagerImpl must be created in a blockable runner.
+SerialPortManagerImpl::SerialPortManagerImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : enumerator_(device::SerialDeviceEnumerator::Create()),
+      ui_task_runner_(std::move(ui_task_runner)) {}
 
 SerialPortManagerImpl::~SerialPortManagerImpl() = default;
 
 void SerialPortManagerImpl::GetDevices(GetDevicesCallback callback) {
   DCHECK(enumerator_);
   std::move(callback).Run(enumerator_->GetDevices());
+}
+
+void SerialPortManagerImpl::GetPort(const std::string& path,
+                                    mojom::SerialPortRequest request) {
+  SerialPortImpl::Create(path, std::move(request), ui_task_runner_);
 }
 
 }  // namespace device

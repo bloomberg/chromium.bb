@@ -65,9 +65,8 @@ class SerialConnection : public ApiResource {
   using ClearBreakCompleteCallback =
       device::mojom::SerialPort::ClearBreakCallback;
 
-  SerialConnection(const std::string& port,
-                   const std::string& owner_extension_id,
-                   device::mojom::SerialPortPtrInfo io_handler_info);
+  SerialConnection(const std::string& owner_extension_id,
+                   device::mojom::SerialPortPtrInfo serial_port_info);
   ~SerialConnection() override;
 
   // ApiResource override.
@@ -154,19 +153,16 @@ class SerialConnection : public ApiResource {
   // Handles a send timeout.
   void OnSendTimeout();
 
-  // Receives read completion notification from the |io_handler_|.
+  // Receives read completion notification from the |serial_port_|.
   void OnAsyncReadComplete(const std::vector<uint8_t>& data,
                            device::mojom::SerialReceiveError error);
 
-  // Receives write completion notification from the |io_handler_|.
+  // Receives write completion notification from the |serial_port_|.
   void OnAsyncWriteComplete(uint32_t bytes_sent,
                             device::mojom::SerialSendError error);
 
-  // Handles |io_handler_| connection error.
+  // Handles |serial_port_| connection error.
   void OnConnectionError();
-
-  // The pathname of the serial device.
-  std::string port_;
 
   // Flag indicating whether or not the connection should persist when
   // its host app is suspended.
@@ -205,8 +201,8 @@ class SerialConnection : public ApiResource {
   base::CancelableClosure send_timeout_task_;
 
   // Mojo interface ptr corresponding with remote asynchronous I/O handler.
-  device::mojom::SerialPortPtr io_handler_;
-  // Closure which is set by client and will be called when |io_handler_|
+  device::mojom::SerialPortPtr serial_port_;
+  // Closure which is set by client and will be called when |serial_port_|
   // connection encountered an error.
   base::OnceClosure connection_error_handler_;
 

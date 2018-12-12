@@ -19,7 +19,7 @@ namespace {
 class TestSerialConnection : public SerialConnection {
  public:
   TestSerialConnection(device::mojom::SerialPortPtrInfo port_ptr_info)
-      : SerialConnection("dummy_path", "dummy_id", std::move(port_ptr_info)) {}
+      : SerialConnection("dummy_id", std::move(port_ptr_info)) {}
   ~TestSerialConnection() override {}
 
   void SetReceiveBuffer(const std::vector<uint8_t>& receive_buffer) {

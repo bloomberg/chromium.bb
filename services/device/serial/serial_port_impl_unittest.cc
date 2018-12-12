@@ -19,7 +19,15 @@ class SerialPortImplTest : public DeviceServiceTestBase {
   SerialPortImplTest() = default;
   ~SerialPortImplTest() override = default;
 
- private:
+ protected:
+  void SetUp() override {
+    DeviceServiceTestBase::SetUp();
+    connector()->BindInterface(mojom::kServiceName, &port_manager_);
+  }
+
+  void TearDown() override { port_manager_.reset(); }
+
+  mojom::SerialPortManagerPtr port_manager_;
   DISALLOW_COPY_AND_ASSIGN(SerialPortImplTest);
 };
 
@@ -27,9 +35,9 @@ class SerialPortImplTest : public DeviceServiceTestBase {
 // Device Service and bind the serial SerialPort interface correctly.
 // TODO(leonhsl): figure out how to add more robust tests.
 TEST_F(SerialPortImplTest, SimpleConnectTest) {
-  mojom::SerialPortPtr io_handler;
-  connector()->BindInterface(mojom::kServiceName, &io_handler);
-  io_handler.FlushForTesting();
+  mojom::SerialPortPtr serial_port;
+  port_manager_->GetPort("", mojo::MakeRequest(&serial_port));
+  serial_port.FlushForTesting();
 }
 
 }  // namespace

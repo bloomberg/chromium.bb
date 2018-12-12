@@ -163,11 +163,9 @@ ApiResourceManager<SerialConnection>::GetFactoryInstance() {
 }
 
 SerialConnection::SerialConnection(
-    const std::string& port,
     const std::string& owner_extension_id,
-    device::mojom::SerialPortPtrInfo io_handler_info)
+    device::mojom::SerialPortPtrInfo serial_port_info)
     : ApiResource(owner_extension_id),
-      port_(port),
       persistent_(false),
       buffer_size_(kDefaultBufferSize),
       receive_timeout_(0),
@@ -175,15 +173,15 @@ SerialConnection::SerialConnection(
       paused_(false),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_handler_info.is_valid());
-  io_handler_.Bind(std::move(io_handler_info));
-  io_handler_.set_connection_error_handler(base::BindOnce(
+  DCHECK(serial_port_info.is_valid());
+  serial_port_.Bind(std::move(serial_port_info));
+  serial_port_.set_connection_error_handler(base::BindOnce(
       &SerialConnection::OnConnectionError, base::Unretained(this)));
 }
 
 SerialConnection::~SerialConnection() {
-  io_handler_->CancelRead(device::mojom::SerialReceiveError::DISCONNECTED);
-  io_handler_->CancelWrite(device::mojom::SerialSendError::DISCONNECTED);
+  serial_port_->CancelRead(device::mojom::SerialReceiveError::DISCONNECTED);
+  serial_port_->CancelWrite(device::mojom::SerialSendError::DISCONNECTED);
 }
 
 bool SerialConnection::IsPersistent() const {
@@ -203,16 +201,16 @@ void SerialConnection::set_send_timeout(int send_timeout) {
 }
 
 void SerialConnection::set_paused(bool paused) {
-  DCHECK(io_handler_);
+  DCHECK(serial_port_);
   paused_ = paused;
   if (paused) {
-    io_handler_->CancelRead(device::mojom::SerialReceiveError::NONE);
+    serial_port_->CancelRead(device::mojom::SerialReceiveError::NONE);
   }
 }
 
 void SerialConnection::set_connection_error_handler(
     base::OnceClosure connection_error_handler) {
-  if (io_handler_.encountered_error()) {
+  if (serial_port_.encountered_error()) {
     // Already being disconnected, run client's error handler immediatelly.
     std::move(connection_error_handler).Run();
     return;
@@ -223,7 +221,7 @@ void SerialConnection::set_connection_error_handler(
 void SerialConnection::Open(const api::serial::ConnectionOptions& options,
                             OpenCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_handler_);
+  DCHECK(serial_port_);
 
   if (options.persistent.get())
     set_persistent(*options.persistent);
@@ -235,8 +233,8 @@ void SerialConnection::Open(const api::serial::ConnectionOptions& options,
     set_receive_timeout(*options.receive_timeout);
   if (options.send_timeout.get())
     set_send_timeout(*options.send_timeout);
-  io_handler_->Open(
-      port_, device::mojom::SerialConnectionOptions::From(options),
+  serial_port_->Open(
+      device::mojom::SerialConnectionOptions::From(options),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
@@ -244,14 +242,14 @@ bool SerialConnection::Receive(ReceiveCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (receive_complete_)
     return false;
-  DCHECK(io_handler_);
+  DCHECK(serial_port_);
   receive_complete_ = std::move(callback);
-  io_handler_->Read(buffer_size_,
-                    mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-                        base::BindOnce(&SerialConnection::OnAsyncReadComplete,
-                                       weak_factory_.GetWeakPtr()),
-                        std::vector<uint8_t>(),
-                        device::mojom::SerialReceiveError::DISCONNECTED));
+  serial_port_->Read(buffer_size_,
+                     mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+                         base::BindOnce(&SerialConnection::OnAsyncReadComplete,
+                                        weak_factory_.GetWeakPtr()),
+                         std::vector<uint8_t>(),
+                         device::mojom::SerialReceiveError::DISCONNECTED));
   receive_timeout_task_.Cancel();
   if (receive_timeout_ > 0) {
     receive_timeout_task_.Reset(base::Bind(&SerialConnection::OnReceiveTimeout,
@@ -268,14 +266,14 @@ bool SerialConnection::Send(const std::vector<uint8_t>& data,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (send_complete_)
     return false;
-  DCHECK(io_handler_);
+  DCHECK(serial_port_);
   send_complete_ = std::move(callback);
-  io_handler_->Write(data,
-                     mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-                         base::BindOnce(&SerialConnection::OnAsyncWriteComplete,
-                                        weak_factory_.GetWeakPtr()),
-                         static_cast<uint32_t>(0),
-                         device::mojom::SerialSendError::DISCONNECTED));
+  serial_port_->Write(
+      data, mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+                base::BindOnce(&SerialConnection::OnAsyncWriteComplete,
+                               weak_factory_.GetWeakPtr()),
+                static_cast<uint32_t>(0),
+                device::mojom::SerialSendError::DISCONNECTED));
   send_timeout_task_.Cancel();
   if (send_timeout_ > 0) {
     send_timeout_task_.Reset(base::Bind(&SerialConnection::OnSendTimeout,
@@ -290,7 +288,7 @@ bool SerialConnection::Send(const std::vector<uint8_t>& data,
 void SerialConnection::Configure(const api::serial::ConnectionOptions& options,
                                  ConfigureCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_handler_);
+  DCHECK(serial_port_);
   if (options.persistent.get())
     set_persistent(*options.persistent);
   if (options.name.get())
@@ -301,15 +299,15 @@ void SerialConnection::Configure(const api::serial::ConnectionOptions& options,
     set_receive_timeout(*options.receive_timeout);
   if (options.send_timeout.get())
     set_send_timeout(*options.send_timeout);
-  io_handler_->ConfigurePort(
+  serial_port_->ConfigurePort(
       device::mojom::SerialConnectionOptions::From(options),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
-  io_handler_->CancelRead(device::mojom::SerialReceiveError::NONE);
+  serial_port_->CancelRead(device::mojom::SerialReceiveError::NONE);
 }
 
 void SerialConnection::GetInfo(GetInfoCompleteCallback callback) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_handler_);
+  DCHECK(serial_port_);
 
   auto info = std::make_unique<api::serial::ConnectionInfo>();
   info->paused = paused_;
@@ -337,19 +335,19 @@ void SerialConnection::GetInfo(GetInfoCompleteCallback callback) const {
         std::move(callback).Run(true, std::move(info));
       },
       std::move(callback), std::move(info));
-  io_handler_->GetPortInfo(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+  serial_port_->GetPortInfo(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(resp_callback), nullptr));
 }
 
 void SerialConnection::Flush(FlushCompleteCallback callback) const {
-  DCHECK(io_handler_);
-  return io_handler_->Flush(
+  DCHECK(serial_port_);
+  return serial_port_->Flush(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
 void SerialConnection::GetControlSignals(
     GetControlSignalsCompleteCallback callback) const {
-  DCHECK(io_handler_);
+  DCHECK(serial_port_);
   auto resp_callback = base::BindOnce(
       [](GetControlSignalsCompleteCallback callback,
          device::mojom::SerialPortControlSignalsPtr signals) {
@@ -366,41 +364,41 @@ void SerialConnection::GetControlSignals(
         std::move(callback).Run(std::move(control_signals));
       },
       std::move(callback));
-  io_handler_->GetControlSignals(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+  serial_port_->GetControlSignals(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(resp_callback), nullptr));
 }
 
 void SerialConnection::SetControlSignals(
     const api::serial::HostControlSignals& control_signals,
     SetControlSignalsCompleteCallback callback) {
-  DCHECK(io_handler_);
-  io_handler_->SetControlSignals(
+  DCHECK(serial_port_);
+  serial_port_->SetControlSignals(
       device::mojom::SerialHostControlSignals::From(control_signals),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
 void SerialConnection::SetBreak(SetBreakCompleteCallback callback) {
-  DCHECK(io_handler_);
-  io_handler_->SetBreak(
+  DCHECK(serial_port_);
+  serial_port_->SetBreak(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
 void SerialConnection::ClearBreak(ClearBreakCompleteCallback callback) {
-  DCHECK(io_handler_);
-  io_handler_->ClearBreak(
+  DCHECK(serial_port_);
+  serial_port_->ClearBreak(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
 void SerialConnection::OnReceiveTimeout() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_handler_);
-  io_handler_->CancelRead(device::mojom::SerialReceiveError::TIMEOUT);
+  DCHECK(serial_port_);
+  serial_port_->CancelRead(device::mojom::SerialReceiveError::TIMEOUT);
 }
 
 void SerialConnection::OnSendTimeout() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_handler_);
-  io_handler_->CancelWrite(device::mojom::SerialSendError::TIMEOUT);
+  DCHECK(serial_port_);
+  serial_port_->CancelWrite(device::mojom::SerialSendError::TIMEOUT);
 }
 
 void SerialConnection::OnAsyncReadComplete(
