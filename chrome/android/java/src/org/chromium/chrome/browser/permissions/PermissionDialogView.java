@@ -5,21 +5,28 @@
 package org.chromium.chrome.browser.permissions;
 
 import android.content.DialogInterface;
+import android.os.Build;
 import android.support.v4.widget.TextViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+
+import java.lang.reflect.Field;
 
 /**
  * The Permission dialog that is either app modal or tab modal.
  */
 public class PermissionDialogView {
+    private static final String TAG = "PermissionDialogView";
+
     private AlertDialog mDialog;
     private PermissionDialogDelegate mDialogDelegate;
 
@@ -44,7 +51,7 @@ public class PermissionDialogView {
      * @param dismissListener is called when user dismissed the dialog.
      */
     public void createView(DialogInterface.OnClickListener positiveClickListener,
-            DialogInterface.OnClickListener negativeCliclListener,
+            DialogInterface.OnClickListener negativeClickListener,
             DialogInterface.OnDismissListener dismissListener) {
         ChromeActivity activity = mDialogDelegate.getTab().getActivity();
         LayoutInflater inflater = LayoutInflater.from(activity);
@@ -61,15 +68,14 @@ public class PermissionDialogView {
         mDialog.setButton(DialogInterface.BUTTON_POSITIVE, mDialogDelegate.getPrimaryButtonText(),
                 positiveClickListener);
         mDialog.setButton(DialogInterface.BUTTON_NEGATIVE, mDialogDelegate.getSecondaryButtonText(),
-                negativeCliclListener);
+                negativeClickListener);
         mDialog.setOnDismissListener(dismissListener);
     }
 
     /* Shows the dialog */
     public void show() {
         mDialog.show();
-        getButton(DialogInterface.BUTTON_POSITIVE).setFilterTouchesWhenObscured(true);
-        getButton(DialogInterface.BUTTON_NEGATIVE).setFilterTouchesWhenObscured(true);
+        filterTouchForSecurity();
     }
 
     /* Dismiss the dialog */
@@ -84,5 +90,32 @@ public class PermissionDialogView {
      */
     public Button getButton(int whichButton) {
         return mDialog.getButton(whichButton);
+    }
+
+    /**
+     * Filter touch events on buttons when there is an overlay window overlaps the permission dialog
+     * window.
+     */
+    private void filterTouchForSecurity() {
+        Button positiveButton = getButton(DialogInterface.BUTTON_POSITIVE);
+        Button negativeButton = getButton(DialogInterface.BUTTON_NEGATIVE);
+        View.OnTouchListener onTouchListener = (View v, MotionEvent ev) -> {
+            // Filter touch events based MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED which is
+            // introduced on M+.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
+
+            try {
+                Field field = MotionEvent.class.getField("FLAG_WINDOW_IS_PARTIALLY_OBSCURED");
+                if ((ev.getFlags() & field.getInt(null)) != 0) return true;
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                Log.e(TAG, "Reflection failure: " + e);
+            }
+            return false;
+        };
+
+        positiveButton.setFilterTouchesWhenObscured(true);
+        positiveButton.setOnTouchListener(onTouchListener);
+        negativeButton.setFilterTouchesWhenObscured(true);
+        negativeButton.setOnTouchListener(onTouchListener);
     }
 }
