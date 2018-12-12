@@ -14,6 +14,7 @@
 #include "base/auto_reset.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 
@@ -75,6 +76,8 @@ void MessagePumpFuchsia::ZxHandleWatchController::HandleSignal(
     async_wait_t* wait,
     zx_status_t status,
     const zx_packet_signal_t* signal) {
+  TRACE_EVENT0("toplevel", "ZxHandleSignal");
+
   if (status != ZX_OK) {
     ZX_LOG(WARNING, status) << "async wait failed";
     return;
