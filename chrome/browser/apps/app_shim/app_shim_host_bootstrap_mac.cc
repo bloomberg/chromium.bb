@@ -4,6 +4,9 @@
 
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 
+#include <sys/socket.h>
+#include <sys/un.h>
+
 #include <memory>
 #include <utility>
 
@@ -28,6 +31,15 @@ AppShimHostBootstrap::~AppShimHostBootstrap() {
 void AppShimHostBootstrap::ServeChannel(
     mojo::PlatformChannelEndpoint endpoint) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  DCHECK(endpoint.platform_handle().is_fd());
+  socklen_t pid_size = sizeof(pid_);
+  if (getsockopt(endpoint.platform_handle().GetFD().get(), SOL_LOCAL,
+                 LOCAL_PEERPID, &pid_, &pid_size)) {
+    LOG(ERROR) << "Failed to get peer pid for app shim.";
+    return;
+  }
+
   mojo::ScopedMessagePipeHandle message_pipe =
       bootstrap_mojo_connection_.Connect(std::move(endpoint));
   host_bootstrap_binding_.Bind(
