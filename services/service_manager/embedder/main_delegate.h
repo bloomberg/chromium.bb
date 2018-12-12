@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/core/embedder/configuration.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/embedder/process_type.h"
-#include "services/service_manager/embedder/service_manager_embedder_export.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -31,7 +31,7 @@ namespace service_manager {
 // An interface which must be implemented by Service Manager embedders to
 // control basic process initialization and shutdown, as well as early branching
 // to run specific types of subprocesses.
-class SERVICE_MANAGER_EMBEDDER_EXPORT MainDelegate {
+class COMPONENT_EXPORT(SERVICE_MANAGER_EMBEDDER) MainDelegate {
  public:
   // Extra parameters passed to MainDelegate::Initialize.
   struct InitializeParams {
