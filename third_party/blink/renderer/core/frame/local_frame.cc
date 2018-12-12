@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/frame_overlay.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -100,8 +101,10 @@
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
@@ -349,9 +352,10 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   // Starting here, the code must be safe against re-entrancy. Dispatching
   // events, et cetera can run Javascript, which can reenter Detach().
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
   if (this == UserActivationNotifierFrame())
     UserActivationNotifierFrame().Clear();
+
+  frame_color_overlay_.reset();
 
   if (IsLocalRoot()) {
     performance_monitor_->Shutdown();
@@ -1618,6 +1622,75 @@ bool LocalFrame::ConsumeTransientUserActivation(
   if (update_source == UserActivationUpdateSource::kRenderer)
     Client()->ConsumeUserActivation();
   return ConsumeTransientUserActivationInLocalTree();
+}
+
+namespace {
+
+class FrameColorOverlay final : public FrameOverlay::Delegate {
+ public:
+  explicit FrameColorOverlay(LocalFrame* frame, SkColor color)
+      : color_(color), frame_(frame) {}
+
+ private:
+  void PaintFrameOverlay(const FrameOverlay& frame_overlay,
+                         GraphicsContext& graphics_context,
+                         const IntSize& size) const override {
+    const auto* view = frame_->View();
+    DCHECK(view);
+    ScopedPaintChunkProperties properties(
+        graphics_context.GetPaintController(),
+        view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties(),
+        frame_overlay, DisplayItem::kFrameOverlay);
+    if (DrawingRecorder::UseCachedDrawingIfPossible(
+            graphics_context, frame_overlay, DisplayItem::kFrameOverlay))
+      return;
+    DrawingRecorder recorder(graphics_context, frame_overlay,
+                             DisplayItem::kFrameOverlay);
+    FloatRect rect(0, 0, view->Width(), view->Height());
+    graphics_context.FillRect(rect, color_);
+  }
+
+  SkColor color_;
+  Persistent<LocalFrame> frame_;
+};
+
+}  // namespace
+
+void LocalFrame::SetMainFrameColorOverlay(SkColor color) {
+  DCHECK(IsMainFrame());
+  SetFrameColorOverlay(color);
+}
+
+void LocalFrame::SetSubframeColorOverlay(SkColor color) {
+  DCHECK(!IsMainFrame());
+  SetFrameColorOverlay(color);
+}
+
+void LocalFrame::SetFrameColorOverlay(SkColor color) {
+  frame_color_overlay_.reset();
+
+  if (color == Color::kTransparent)
+    return;
+
+  frame_color_overlay_ = FrameOverlay::Create(
+      this, std::make_unique<FrameColorOverlay>(this, color));
+
+  // Update compositing which will create graphics layers so the page color
+  // update below will be able to attach to the root graphics layer.
+  if (View()) {
+    View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+    UpdateFrameColorOverlay();
+  }
+}
+
+void LocalFrame::UpdateFrameColorOverlay() {
+  if (frame_color_overlay_)
+    frame_color_overlay_->Update();
+}
+
+void LocalFrame::PaintFrameColorOverlay() {
+  if (frame_color_overlay_ && frame_color_overlay_->GetGraphicsLayer())
+    frame_color_overlay_->GetGraphicsLayer()->Paint(nullptr);
 }
 
 }  // namespace blink
