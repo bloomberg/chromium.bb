@@ -28,6 +28,13 @@ class MockExportedObject : public ExportedObject {
                     const std::string& method_name,
                     MethodCallCallback method_call_callback,
                     OnExportedCallback on_exported_callback));
+  MOCK_METHOD2(UnexportMethodAndBlock,
+               bool(const std::string& interface_name,
+                    const std::string& method_name));
+  MOCK_METHOD3(UnexportMethod,
+               void(const std::string& interface_name,
+                    const std::string& method_name,
+                    OnUnexportedCallback on_unexported_callback));
   MOCK_METHOD1(SendSignal, void(Signal* signal));
   MOCK_METHOD0(Unregister, void());
 
