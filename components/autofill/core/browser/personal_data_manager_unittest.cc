@@ -1108,7 +1108,6 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
   WaitForOnPersonalDataChanged();
 
   ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
-
   if (!OfferStoreUnmaskedCards()) {
     for (CreditCard* card : personal_data_->GetCreditCards()) {
       EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, card->record_type());
@@ -1125,8 +1124,6 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
   CreditCard* unmasked_card = &server_cards.front();
   unmasked_card->set_record_type(CreditCard::FULL_SERVER_CARD);
   unmasked_card->SetNumber(base::ASCIIToUTF16("4234567890123456"));
-  EXPECT_NE(0, server_cards.front().Compare(
-                   *personal_data_->GetCreditCards().front()));
   personal_data_->UpdateServerCreditCard(*unmasked_card);
 
   WaitForOnPersonalDataChanged();
@@ -1137,8 +1134,6 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
   CreditCard* remasked_card = &server_cards.back();
   remasked_card->set_record_type(CreditCard::MASKED_SERVER_CARD);
   remasked_card->SetNumber(base::ASCIIToUTF16("0005"));
-  EXPECT_NE(
-      0, server_cards.back().Compare(*personal_data_->GetCreditCards().back()));
   personal_data_->UpdateServerCreditCard(*remasked_card);
 
   WaitForOnPersonalDataChanged();
@@ -3357,8 +3352,6 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCardUsageStats) {
   CreditCard* unmasked_card = &server_cards.front();
   unmasked_card->set_record_type(CreditCard::FULL_SERVER_CARD);
   unmasked_card->SetNumber(base::ASCIIToUTF16("4234567890123456"));
-  EXPECT_NE(0,
-            unmasked_card->Compare(*personal_data_->GetCreditCards().front()));
   personal_data_->UpdateServerCreditCard(*unmasked_card);
 
   WaitForOnPersonalDataChanged();

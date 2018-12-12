@@ -154,7 +154,8 @@ class CreditCard : public AutofillDataModel {
   // duplicates.  The ordering is based on collation order of the textual
   // contents of the fields.
   // GUIDs, origins, labels, and unique IDs are not compared, only the values of
-  // the cards themselves.
+  // the cards themselves. A full card is equivalent to its corresponding masked
+  // card.
   int Compare(const CreditCard& credit_card) const;
 
   // Determines if |this| is a local version of the server card |other|.

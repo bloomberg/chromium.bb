@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
@@ -23,6 +24,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
@@ -39,9 +41,9 @@ using base::ASCIIToUTF16;
 using wallet_helper::CreateDefaultSyncPaymentsCustomerData;
 using wallet_helper::CreateDefaultSyncWalletAddress;
 using wallet_helper::CreateDefaultSyncWalletCard;
-using wallet_helper::CreateSyncWalletCard;
-using wallet_helper::CreateSyncWalletAddress;
 using wallet_helper::CreateSyncPaymentsCustomerData;
+using wallet_helper::CreateSyncWalletAddress;
+using wallet_helper::CreateSyncWalletCard;
 using wallet_helper::ExpectDefaultCreditCardValues;
 using wallet_helper::ExpectDefaultProfileValues;
 using wallet_helper::GetAccountWebDataService;
@@ -51,6 +53,7 @@ using wallet_helper::GetProfileWebDataService;
 using wallet_helper::kDefaultBillingAddressID;
 using wallet_helper::kDefaultCardID;
 using wallet_helper::kDefaultCustomerID;
+using wallet_helper::UnmaskServerCard;
 
 namespace {
 
@@ -585,6 +588,117 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, EmptyUpdatesAreIgnored) {
   // No histograms for initial sync, nor for an empty update.
   ExpectNoHistogramsForCardsDiff();
   ExpectNoHistogramsForAddressesDiff();
+}
+
+// If the server sends the same cards and addresses again, they should not
+// change on the client.
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, SameUpdatesAreIgnored) {
+  InitWithDefaultFeatures();
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // No histograms for initial sync.
+  ExpectNoHistogramsForCardsDiff();
+  ExpectNoHistogramsForAddressesDiff();
+
+  // Keep the same data (only change the customer data to force the FakeServer
+  // to send the full update).
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateSyncPaymentsCustomerData("different")});
+
+  // Constructing the checker captures the current progress marker. Make sure to
+  // do that before triggering the fetch.
+  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
+  // Trigger a sync and wait for the new data to arrive.
+  TriggerSyncForModelTypes(0,
+                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  ASSERT_TRUE(checker.Wait());
+
+  // Refresh the pdm so that it gets cards from autofill table.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+  RefreshAndWaitForOnPersonalDataChanged(pdm);
+
+  // Make sure the data is present on the client.
+  std::vector<CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
+  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  EXPECT_EQ("Company-1", TruncateUTF8(base::UTF16ToUTF8(
+                             profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
+  EXPECT_EQ("different", pdm->GetPaymentsCustomerData()->customer_id);
+
+  // Expect correct histograms for the (no) update.
+  ExpectCardsDiffInHistograms(/*added=*/0, /*removed=*/0);
+  ExpectAddressesDiffInHistograms(/*added=*/0, /*removed=*/0);
+}
+
+// If the server sends the same cards again, they should not change on the
+// client even if the cards on the client are unmasked.
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
+                       SameUpdatesAreIgnoredWhenLocalCardsUnmasked) {
+// We need to allow storing full server cards for this test to work properly.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      autofill::switches::kEnableOfferStoreUnmaskedWalletCards);
+#endif
+  InitWithDefaultFeatures();
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // No histograms for initial sync.
+  ExpectNoHistogramsForCardsDiff();
+
+  // Check we have the card locally.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+  std::vector<CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
+  EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, cards[0]->record_type());
+
+  // Unmask the card (the full card number has to start with "34" to match the
+  // type of the masked card which is by default AMEX in the tests).
+  UnmaskServerCard(0, *cards[0], base::UTF8ToUTF16("3404000300020001"));
+
+  // Keep the same data (only change the customer data to force the FakeServer
+  // to send the full update).
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncPaymentsCustomerData("different")});
+
+  // Constructing the checker captures the current progress marker. Make sure to
+  // do that before triggering the fetch.
+  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
+  // Trigger a sync and wait for the new data to arrive.
+  TriggerSyncForModelTypes(0,
+                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  ASSERT_TRUE(checker.Wait());
+
+  // Refresh the pdm so that it gets cards from autofill table.
+  RefreshAndWaitForOnPersonalDataChanged(pdm);
+
+  // Make sure the data is present on the client.
+  cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  EXPECT_EQ(ASCIIToUTF16("0001"), cards[0]->LastFourDigits());
+  EXPECT_EQ(CreditCard::FULL_SERVER_CARD, cards[0]->record_type());
+  EXPECT_EQ("different", pdm->GetPaymentsCustomerData()->customer_id);
+
+  // Expect correct histograms for the (no) update.
+  ExpectCardsDiffInHistograms(/*added=*/0, /*removed=*/0);
 }
 
 // Wallet data should get cleared from the database when the wallet sync type

@@ -578,6 +578,19 @@ TEST(CreditCardTest, Compare) {
   b.set_origin("banana");
   EXPECT_EQ(0, a.Compare(b));
 
+  // Different types of server cards don't count.
+  a.set_record_type(MASKED_SERVER_CARD);
+  b.set_record_type(FULL_SERVER_CARD);
+  EXPECT_EQ(0, a.Compare(b));
+
+  // Local is different from server.
+  a.set_record_type(LOCAL_CARD);
+  b.set_record_type(FULL_SERVER_CARD);
+  EXPECT_GT(0, a.Compare(b));
+  a.set_record_type(MASKED_SERVER_CARD);
+  b.set_record_type(LOCAL_CARD);
+  EXPECT_LT(0, a.Compare(b));
+
   // Different values produce non-zero results.
   test::SetCreditCardInfo(&a, "Jimmy", nullptr, nullptr, nullptr, "");
   test::SetCreditCardInfo(&b, "Ringo", nullptr, nullptr, nullptr, "");
