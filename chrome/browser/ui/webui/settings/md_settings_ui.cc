@@ -340,9 +340,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   // For AOSP images we don't have the Play Store app. In last case we Android
   // apps settings consists only from root link to Android settings and only
   // visible once settings app is registered.
-  const bool androidAppsVisible = arc::IsArcAllowedForProfile(profile) &&
-                                  !arc::IsArcOptInVerificationDisabled();
-  html_source->AddBoolean("androidAppsVisible", androidAppsVisible);
+  html_source->AddBoolean("androidAppsVisible",
+                          arc::IsArcAllowedForProfile(profile));
   html_source->AddBoolean("havePlayStoreApp", arc::IsPlayStoreAvailable());
 
   // TODO(mash): Support Chrome power settings in Mash. https://crbug.com/644348
