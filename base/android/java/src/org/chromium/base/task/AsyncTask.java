@@ -6,6 +6,7 @@ package org.chromium.base.task;
 
 import android.os.Binder;
 import android.os.Process;
+import android.support.annotation.IntDef;
 import android.support.annotation.MainThread;
 import android.support.annotation.WorkerThread;
 
@@ -13,6 +14,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.DoNotInline;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -47,7 +50,7 @@ public abstract class AsyncTask<Result> {
     private final Callable<Result> mWorker;
     private final FutureTask<Result> mFuture;
 
-    private volatile Status mStatus = Status.PENDING;
+    private volatile @Status int mStatus = Status.PENDING;
 
     private final AtomicBoolean mCancelled = new AtomicBoolean();
     private final AtomicBoolean mTaskInvoked = new AtomicBoolean();
@@ -63,19 +66,21 @@ public abstract class AsyncTask<Result> {
      * Indicates the current status of the task. Each status will be set only once
      * during the lifetime of a task.
      */
-    public enum Status {
+    @IntDef({Status.PENDING, Status.RUNNING, Status.FINISHED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Status {
         /**
          * Indicates that the task has not been executed yet.
          */
-        PENDING,
+        int PENDING = 0;
         /**
          * Indicates that the task is running.
          */
-        RUNNING,
+        int RUNNING = 1;
         /**
          * Indicates that {@link AsyncTask#onPostExecute} has finished.
          */
-        FINISHED,
+        int FINISHED = 2;
     }
 
     @SuppressWarnings("NoAndroidAsyncTaskCheck")
@@ -127,7 +132,7 @@ public abstract class AsyncTask<Result> {
      *
      * @return The current status.
      */
-    public final Status getStatus() {
+    public final @Status int getStatus() {
         return mStatus;
     }
 
@@ -283,10 +288,10 @@ public abstract class AsyncTask<Result> {
     private void executionPreamble() {
         if (mStatus != Status.PENDING) {
             switch (mStatus) {
-                case RUNNING:
+                case Status.RUNNING:
                     throw new IllegalStateException("Cannot execute task:"
                             + " the task is already running.");
-                case FINISHED:
+                case Status.FINISHED:
                     throw new IllegalStateException("Cannot execute task:"
                             + " the task has already been executed "
                             + "(a task can be executed only once)");
