@@ -277,6 +277,38 @@ ALWAYS_INLINE void ShimFreeDefiniteSize(void* ptr, size_t size, void* context) {
                                                  context);
 }
 
+ALWAYS_INLINE void* ShimAlignedMalloc(size_t size,
+                                      size_t alignment,
+                                      void* context) {
+  const allocator::AllocatorDispatch* const chain_head = GetChainHead();
+  void* ptr = nullptr;
+  do {
+    ptr = chain_head->aligned_malloc_function(chain_head, size, alignment,
+                                              context);
+  } while (!ptr && g_call_new_handler_on_malloc_failure &&
+           CallNewHandler(size));
+  return ptr;
+}
+
+ALWAYS_INLINE void* ShimAlignedRealloc(void* address,
+                                       size_t size,
+                                       size_t alignment,
+                                       void* context) {
+  const allocator::AllocatorDispatch* const chain_head = GetChainHead();
+  void* ptr = nullptr;
+  do {
+    ptr = chain_head->aligned_realloc_function(chain_head, address, size,
+                                               alignment, context);
+  } while (!ptr && g_call_new_handler_on_malloc_failure &&
+           CallNewHandler(size));
+  return ptr;
+}
+
+ALWAYS_INLINE void ShimAlignedFree(void* address, void* context) {
+  const allocator::AllocatorDispatch* const chain_head = GetChainHead();
+  return chain_head->aligned_free_function(chain_head, address, context);
+}
+
 }  // extern "C"
 
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
