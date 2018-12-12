@@ -175,7 +175,7 @@ void AshKeyboardUI::OnWindowBoundsChanged(aura::Window* window,
                                           const gfx::Rect& old_bounds,
                                           const gfx::Rect& new_bounds,
                                           ui::PropertyChangeReason reason) {
-  DVLOG(1) << "OnWindowBoundsChanged: " << window << ": "
+  DVLOG(1) << "OnWindowBoundsChanged: " << window->GetName() << ": "
            << new_bounds.ToString();
 
   // Normally OnKeyboardVisibleBoundsChanged is triggered from
