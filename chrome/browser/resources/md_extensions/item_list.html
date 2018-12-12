@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -62,8 +63,23 @@
         padding-bottom: 4px;
         padding-top: 8px;
       }
+
+      managed-footnote {
+        border-top: none;
+        /* #content-wrapper has a 24px margin-top. This overrides that
+         * margin-top, so the only space left is this element's 12px
+         * padding-bottom.
+         */
+        margin-bottom: -24px;
+        padding-bottom: 12px;
+         padding-top: 12px;
+        /* The next element spills over this element. This ensures the link
+         * is clickable. */
+        z-index: 1;
+      }
     </style>
     <div id="container">
+      <managed-footnote hidden="[[filter]]"></managed-footnote>
       <div id="content-wrapper">
         <div id="no-items" class="empty-list-message"
             hidden$="[[!shouldShowEmptyItemsMessage_(

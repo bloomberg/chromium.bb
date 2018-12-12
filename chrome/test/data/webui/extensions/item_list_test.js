@@ -9,6 +9,7 @@ cr.define('extension_item_list_tests', function() {
     Filtering: 'item list filtering',
     NoItemsMsg: 'empty item list',
     NoSearchResultsMsg: 'empty item list filtering results',
+    LoadTimeData: 'loadTimeData contains isManaged and managedByOrg',
   };
 
   const suiteName = 'ExtensionItemListTest';
@@ -100,6 +101,12 @@ cr.define('extension_item_list_tests', function() {
       Polymer.dom.flush();
       testVisible('#no-items', false);
       testVisible('#no-search-results', true);
+    });
+
+    test(assert(TestNames.LoadTimeData), function() {
+      // Check that loadTimeData contains these values.
+      loadTimeData.getBoolean('isManaged');
+      loadTimeData.getString('managedByOrg');
     });
   });
 
