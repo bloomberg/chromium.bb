@@ -49,6 +49,50 @@
 
 namespace blink {
 
+namespace {
+
+// CheckSameOriginEnforcement() functions return non-null String on error.
+//
+// WorkerGlobalScope's SecurityOrigin is initialized to request URL's
+// origin at the construction of WorkerGlobalScope, while
+// WorkerGlobalScope's URL is set to response URL
+// (ResourceResponse::ResponseURL()).
+// These functions are used to ensure the SecurityOrigin and the URL to be
+// consistent. https://crbug.com/861564
+//
+// TODO(hiroshige): Merge with similar code in other places.
+String CheckSameOriginEnforcement(const KURL& request_url,
+                                  const KURL& response_url) {
+  if (request_url != response_url &&
+      !SecurityOrigin::AreSameSchemeHostPort(request_url, response_url)) {
+    return "Refused to load the top-level worker script from '" +
+           response_url.ElidedString() +
+           "' because it doesn't match the origin of the request URL '" +
+           request_url.ElidedString() + "'";
+  }
+  return String();
+}
+
+String CheckSameOriginEnforcement(const KURL& request_url,
+                                  const ResourceResponse& response) {
+  // While this check is not strictly necessary as CurrentRequestUrl() is not
+  // used as WorkerGlobalScope's URL, it is probably safer to reject cases like
+  // Origin A(request_url)
+  //   =(cross-origin redirects)=> Origin B(CurrentRequestUrl())
+  //   =(ServiceWorker interception)=> Origin A(ResponseUrl())
+  // which doesn't seem to have valid use cases.
+  String error =
+      CheckSameOriginEnforcement(request_url, response.CurrentRequestUrl());
+  if (!error.IsNull())
+    return error;
+
+  // This check is directly required to ensure the consistency between
+  // WorkerGlobalScope's SecurityOrigin and URL.
+  return CheckSameOriginEnforcement(request_url, response.ResponseUrl());
+}
+
+}  // namespace
+
 WorkerClassicScriptLoader::WorkerClassicScriptLoader()
     : response_address_space_(mojom::IPAddressSpace::kPublic) {}
 
@@ -142,16 +186,14 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
     return;
   }
 
-  if (forbid_cross_origin_redirects_ && url_ != response.CurrentRequestUrl() &&
-      !SecurityOrigin::AreSameSchemeHostPort(url_,
-                                             response.CurrentRequestUrl())) {
-    // Forbid cross-origin redirects to ensure the request and response URLs
-    // have the same SecurityOrigin.
-    fetch_client_settings_object_fetcher_->Context().AddErrorConsoleMessage(
-        "Refused to cross-origin redirects of the top-level worker script.",
-        FetchContext::kSecuritySource);
-    NotifyError();
-    return;
+  if (forbid_cross_origin_redirects_) {
+    String error = CheckSameOriginEnforcement(url_, response);
+    if (!error.IsNull()) {
+      fetch_client_settings_object_fetcher_->Context().AddErrorConsoleMessage(
+          error, FetchContext::kSecuritySource);
+      NotifyError();
+      return;
+    }
   }
 
   identifier_ = identifier;
