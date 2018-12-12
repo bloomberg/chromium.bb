@@ -2964,15 +2964,17 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   const std::string kResult = "1.2.3.4";
   net::IPAddress result;
   CHECK(result.AssignFromIPLiteral(kResult));
-  net::MockDnsClientRuleList rules{
-      net::MockDnsClientRule(kQueryHostname, net::dns_protocol::kTypeA,
-                             net::MockDnsClientRule::Result(result), false),
-      net::MockDnsClientRule(kQueryHostname, net::dns_protocol::kTypeAAAA,
-                             net::MockDnsClientRule::Result(
-                                 net::MockDnsClientRule::ResultType::EMPTY),
-                             false)};
+  net::MockDnsClientRuleList rules;
+  rules.emplace_back(kQueryHostname, net::dns_protocol::kTypeA,
+                     net::MockDnsClientRule::Result(
+                         net::BuildTestDnsResponse(kQueryHostname, result)),
+                     false);
+  rules.emplace_back(
+      kQueryHostname, net::dns_protocol::kTypeAAAA,
+      net::MockDnsClientRule::Result(net::MockDnsClientRule::ResultType::EMPTY),
+      false);
   auto mock_dns_client =
-      std::make_unique<net::MockDnsClient>(net::DnsConfig(), rules);
+      std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
   auto* mock_dns_client_ptr = mock_dns_client.get();
   internal_resolver->SetDnsClient(std::move(mock_dns_client));
 

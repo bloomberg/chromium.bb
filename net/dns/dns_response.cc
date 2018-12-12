@@ -4,10 +4,10 @@
 
 #include "net/dns/dns_response.h"
 
+#include <algorithm>
 #include <limits>
 #include <numeric>
 #include <utility>
-#include <vector>
 
 #include "base/big_endian.h"
 #include "base/logging.h"
@@ -237,8 +237,10 @@ DnsResponse::DnsResponse(
     uint16_t id,
     bool is_authoritative,
     const std::vector<DnsResourceRecord>& answers,
+    const std::vector<DnsResourceRecord>& authority_records,
     const std::vector<DnsResourceRecord>& additional_records,
-    const base::Optional<DnsQuery>& query) {
+    const base::Optional<DnsQuery>& query,
+    uint8_t rcode) {
   bool has_query = query.has_value();
   dns_protocol::Header header;
   header.id = id;
@@ -252,8 +254,11 @@ DnsResponse::DnsResponse(
   header.flags |= dns_protocol::kFlagResponse;
   if (is_authoritative)
     header.flags |= dns_protocol::kFlagAA;
+  DCHECK_EQ(0, rcode & ~kRcodeMask);
+  header.flags |= rcode;
 
   header.ancount = answers.size();
+  header.nscount = authority_records.size();
   header.arcount = additional_records.size();
 
   // Response starts with the header and the question section (if any).
@@ -266,6 +271,9 @@ DnsResponse::DnsResponse(
   };
   response_size = std::accumulate(answers.begin(), answers.end(), response_size,
                                   do_accumulation);
+  response_size =
+      std::accumulate(authority_records.begin(), authority_records.end(),
+                      response_size, do_accumulation);
   response_size =
       std::accumulate(additional_records.begin(), additional_records.end(),
                       response_size, do_accumulation);
@@ -282,6 +290,11 @@ DnsResponse::DnsResponse(
   // Start the Answer section.
   for (const auto& answer : answers) {
     success &= WriteAnswer(&writer, answer, query);
+    DCHECK(success);
+  }
+  // Start the Authority section.
+  for (const auto& record : authority_records) {
+    success &= WriteRecord(&writer, record);
     DCHECK(success);
   }
   // Start the Additional section.
@@ -553,7 +566,10 @@ bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
 bool DnsResponse::WriteAnswer(base::BigEndianWriter* writer,
                               const DnsResourceRecord& answer,
                               const base::Optional<DnsQuery>& query) {
-  if (query.has_value() && answer.type != query.value().qtype()) {
+  // Generally assumed to be a mistake if we write answers that don't match the
+  // query type, except CNAME answers which can always be added.
+  if (query.has_value() && answer.type != query.value().qtype() &&
+      answer.type != dns_protocol::kTypeCNAME) {
     VLOG(1) << "Mismatched answer resource record type and qtype.";
     return false;
   }

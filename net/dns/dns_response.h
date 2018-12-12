@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -16,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/dns/public/dns_protocol.h"
 
 namespace base {
 class BigEndianWriter;
@@ -134,8 +136,10 @@ class NET_EXPORT_PRIVATE DnsResponse {
   DnsResponse(uint16_t id,
               bool is_authoritative,
               const std::vector<DnsResourceRecord>& answers,
+              const std::vector<DnsResourceRecord>& authority_records,
               const std::vector<DnsResourceRecord>& additional_records,
-              const base::Optional<DnsQuery>& query);
+              const base::Optional<DnsQuery>& query,
+              uint8_t rcode = dns_protocol::kRcodeNOERROR);
 
   // Constructs a response buffer of given length. Used for TCP transactions.
   explicit DnsResponse(size_t length);

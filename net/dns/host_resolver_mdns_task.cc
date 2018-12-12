@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/dns/public/dns_protocol.h"
@@ -86,7 +87,16 @@ class HostResolverMdnsTask::Transaction {
     }
 
     if (error == net::OK) {
+      // Expected to be validated by MDnsClient.
+      DCHECK_EQ(DnsQueryTypeToQtype(query_type_), parsed->type());
+      DCHECK(
+          base::EqualsCaseInsensitiveASCII(task_->hostname_, parsed->name()));
+
       switch (query_type_) {
+        case DnsQueryType::UNSPECIFIED:
+          // Should create two separate transactions with specified type.
+          NOTREACHED();
+          break;
         case DnsQueryType::A:
           results_ = HostCache::Entry(
               OK,
@@ -101,9 +111,11 @@ class HostResolverMdnsTask::Transaction {
                   parsed->rdata<net::AAAARecordRdata>()->address(), 0)),
               HostCache::Entry::SOURCE_UNKNOWN);
           break;
-        default:
-          // TODO(crbug.com/846423): Add result parsing for non-address types.
-          NOTIMPLEMENTED();
+        case DnsQueryType::TXT:
+          results_ = HostCache::Entry(
+              OK, parsed->rdata<net::TxtRecordRdata>()->texts(),
+              HostCache::Entry::SOURCE_UNKNOWN);
+          break;
       }
     } else {
       results_ = HostCache::Entry(error, HostCache::Entry::SOURCE_UNKNOWN);

@@ -69,6 +69,7 @@
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/record_parsed.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -1121,6 +1122,9 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       case DnsQueryType::AAAA:
         parse_result = ParseAddressDnsResponse(response, &results);
         break;
+      case DnsQueryType::TXT:
+        parse_result = ParseTxtDnsResponse(response, &results);
+        break;
     }
     DCHECK_LT(parse_result, DnsResponse::DNS_PARSE_RESULT_MAX);
 
@@ -1198,6 +1202,57 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
                                       HostCache::Entry::SOURCE_DNS, ttl);
     }
     return parse_result;
+  }
+
+  DnsResponse::Result ParseTxtDnsResponse(const DnsResponse* response,
+                                          HostCache::Entry* out_results) {
+    DnsRecordParser parser = response->Parser();
+
+    // Expected to be validated by DnsTransaction.
+    DCHECK_EQ(dns_protocol::kTypeTXT, response->qtype());
+
+    std::vector<std::string> text_records;
+    base::TimeDelta response_ttl = base::TimeDelta::Max();
+    for (unsigned i = 0; i < response->answer_count(); ++i) {
+      std::unique_ptr<const RecordParsed> record =
+          RecordParsed::CreateFrom(&parser, base::Time::Now());
+
+      static const base::NoDestructor<HostCache::Entry> bad_response_result(
+          ERR_DNS_MALFORMED_RESPONSE, std::vector<std::string>(),
+          HostCache::Entry::SOURCE_DNS);
+      if (!record) {
+        *out_results = *bad_response_result;
+        return DnsResponse::DNS_MALFORMED_RESPONSE;
+      }
+      if (!base::EqualsCaseInsensitiveASCII(record->name(),
+                                            response->GetDottedName())) {
+        *out_results = *bad_response_result;
+        return DnsResponse::DNS_NAME_MISMATCH;
+      }
+
+      // Ignore any non-internet and non-text records.
+      if (record->klass() == dns_protocol::kClassIN &&
+          record->type() == dns_protocol::kTypeTXT) {
+        const TxtRecordRdata* rdata = record->rdata<net::TxtRecordRdata>();
+
+        text_records.insert(text_records.end(), rdata->texts().begin(),
+                            rdata->texts().end());
+
+        base::TimeDelta ttl = base::TimeDelta::FromSeconds(record->ttl());
+        response_ttl = std::min(response_ttl, ttl);
+      }
+    }
+
+    if (response_ttl < base::TimeDelta::Max()) {
+      *out_results = HostCache::Entry(
+          text_records.empty() ? ERR_NAME_NOT_RESOLVED : OK,
+          std::move(text_records), HostCache::Entry::SOURCE_DNS, response_ttl);
+    } else {
+      *out_results = HostCache::Entry(
+          text_records.empty() ? ERR_NAME_NOT_RESOLVED : OK,
+          std::move(text_records), HostCache::Entry::SOURCE_DNS);
+    }
+    return DnsResponse::DNS_PARSE_OK;
   }
 
   void OnSortComplete(base::TimeTicks sort_start_time,
@@ -1543,10 +1598,17 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     switch (key_.host_resolver_source) {
       case HostResolverSource::ANY:
+        // Default to DnsTask (with allowed fallback to ProcTask for address
+        // queries). But if hostname appears to be an MDNS name (ends in
+        // *.local), go with ProcTask for address queries and MdnsTask for non-
+        // address queries.
         if (!ResemblesMulticastDNSName(key_.hostname)) {
-          StartDnsTask(true /* allow_fallback_resolution */);
-        } else {
+          StartDnsTask(IsAddressType(
+              key_.dns_query_type) /* allow_fallback_resolution */);
+        } else if (IsAddressType(key_.dns_query_type)) {
           StartProcTask();
+        } else {
+          StartMdnsTask();
         }
         break;
       case HostResolverSource::SYSTEM:
@@ -1569,6 +1631,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   // PrioritizedDispatcher with tighter limits.
   void StartProcTask() {
     DCHECK(!is_running());
+    DCHECK(IsAddressType(key_.dns_query_type));
+
     proc_task_ = std::make_unique<ProcTask>(
         key_, resolver_->proc_params_,
         base::BindOnce(&Job::OnProcTaskComplete, base::Unretained(this),

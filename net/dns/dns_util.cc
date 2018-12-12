@@ -231,6 +231,8 @@ uint16_t DnsQueryTypeToQtype(DnsQueryType dns_query_type) {
       return dns_protocol::kTypeA;
     case DnsQueryType::AAAA:
       return dns_protocol::kTypeAAAA;
+    case DnsQueryType::TXT:
+      return dns_protocol::kTypeTXT;
   }
 }
 

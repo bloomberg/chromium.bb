@@ -4,26 +4,58 @@
 
 #include "net/dns/dns_test_util.h"
 
-#include <string>
-
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/dns/address_sorter.h"
 #include "net/dns/dns_query.h"
-#include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace {
+
+const uint8_t kMalformedResponseHeader[] = {
+    // Header
+    0x00, 0x14,  // Arbitrary ID
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x01,  // 1 question
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+};
+
+// Create a response containing a valid question (as would normally be validated
+// in DnsTransaction) but completely missing a header-declared answer.
+std::unique_ptr<DnsResponse> CreateMalformedResponse(std::string hostname,
+                                                     uint16_t type) {
+  std::string dns_name;
+  CHECK(DNSDomainFromDot(hostname, &dns_name));
+  DnsQuery query(0x14 /* id */, dns_name, type);
+
+  // Build response to simulate the barebones validation DnsResponse applies to
+  // responses received from the network.
+  auto buffer = base::MakeRefCounted<IOBufferWithSize>(
+      sizeof(kMalformedResponseHeader) + query.question().size());
+  memcpy(buffer->data(), kMalformedResponseHeader,
+         sizeof(kMalformedResponseHeader));
+  memcpy(buffer->data() + sizeof(kMalformedResponseHeader),
+         query.question().data(), query.question().size());
+
+  auto response = std::make_unique<DnsResponse>(buffer, buffer->size());
+  CHECK(response->InitParseWithoutQuery(buffer->size()));
+
+  return response;
+}
 
 class MockAddressSorter : public AddressSorter {
  public:
@@ -33,6 +65,75 @@ class MockAddressSorter : public AddressSorter {
     std::move(callback).Run(true, list);
   }
 };
+
+DnsResourceRecord BuildAddressRecord(std::string name, const IPAddress& ip) {
+  DCHECK(!name.empty());
+  DCHECK(ip.IsValid());
+
+  DnsResourceRecord record;
+  record.name = std::move(name);
+  record.type = ip.IsIPv4() ? dns_protocol::kTypeA : dns_protocol::kTypeAAAA;
+  record.klass = dns_protocol::kClassIN;
+  record.ttl = base::TimeDelta::FromDays(1).InSeconds();
+  record.SetOwnedRdata(net::IPAddressToPackedString(ip));
+
+  return record;
+}
+
+DnsResourceRecord BuildCannonnameRecord(std::string name,
+                                        std::string cannonname) {
+  DCHECK(!name.empty());
+  DCHECK(!cannonname.empty());
+
+  DnsResourceRecord record;
+  record.name = std::move(name);
+  record.type = dns_protocol::kTypeCNAME;
+  record.klass = dns_protocol::kClassIN;
+  record.ttl = base::TimeDelta::FromDays(1).InSeconds();
+  CHECK(DNSDomainFromDot(cannonname, &record.owned_rdata));
+  record.rdata = record.owned_rdata;
+
+  return record;
+}
+
+// Note: This is not a fully compliant SOA record, merely the bare amount needed
+// in DnsRecord::ParseToAddressList() processessing. This record will not pass
+// RecordParsed validation.
+DnsResourceRecord BuildSoaRecord(std::string name) {
+  DCHECK(!name.empty());
+
+  DnsResourceRecord record;
+  record.name = std::move(name);
+  record.type = dns_protocol::kTypeSOA;
+  record.klass = dns_protocol::kClassIN;
+  record.ttl = base::TimeDelta::FromDays(1).InSeconds();
+  record.SetOwnedRdata("fake_rdata");
+
+  return record;
+}
+
+DnsResourceRecord BuildTextRecord(std::string name,
+                                  std::vector<std::string> text_strings) {
+  DCHECK(!name.empty());
+  DCHECK(!text_strings.empty());
+
+  DnsResourceRecord record;
+  record.name = std::move(name);
+  record.type = dns_protocol::kTypeTXT;
+  record.klass = dns_protocol::kClassIN;
+  record.ttl = base::TimeDelta::FromDays(1).InSeconds();
+
+  std::string rdata;
+  for (std::string text_string : text_strings) {
+    DCHECK(!text_string.empty());
+
+    rdata += base::checked_cast<char>(text_string.size());
+    rdata += std::move(text_string);
+  }
+  record.SetOwnedRdata(std::move(rdata));
+
+  return record;
+}
 
 // A DnsTransaction which uses MockDnsClientRuleList to determine the response.
 class MockTransaction : public DnsTransaction,
@@ -51,18 +152,62 @@ class MockTransaction : public DnsTransaction,
     // Find the relevant rule which matches |qtype| and prefix of |hostname|.
     for (size_t i = 0; i < rules.size(); ++i) {
       const std::string& prefix = rules[i].prefix;
-      if ((rules[i].qtype == qtype) &&
-          (hostname.size() >= prefix.size()) &&
+      if ((rules[i].qtype == qtype) && (hostname.size() >= prefix.size()) &&
           (hostname.compare(0, prefix.size(), prefix) == 0)) {
-        result_ = rules[i].result;
+        const MockDnsClientRule::Result* result = &rules[i].result;
+        result_ = MockDnsClientRule::Result(result->type);
         delayed_ = rules[i].delay;
 
-        // Fill in an IP address for the result if one was not specified.
-        if (result_.ip.empty() && result_.type == MockDnsClientRule::OK) {
-          result_.ip = qtype_ == dns_protocol::kTypeA
-                           ? IPAddress::IPv4Localhost()
-                           : IPAddress::IPv6Localhost();
+        // Generate a DnsResponse when not provided with the rule.
+        std::vector<DnsResourceRecord> authority_records;
+        std::string dns_name;
+        CHECK(DNSDomainFromDot(hostname_, &dns_name));
+        base::Optional<DnsQuery> query(base::in_place, 22 /* id */, dns_name,
+                                       qtype_);
+        switch (result->type) {
+          case MockDnsClientRule::NODOMAIN:
+          case MockDnsClientRule::EMPTY:
+            DCHECK(!result->response);  // Not expected to be provided.
+            authority_records = {BuildSoaRecord(hostname_)};
+            result_.response = std::make_unique<DnsResponse>(
+                22 /* id */, false /* is_authoritative */,
+                std::vector<DnsResourceRecord>() /* answers */,
+                authority_records,
+                std::vector<DnsResourceRecord>() /* additional_records */,
+                query,
+                result->type == MockDnsClientRule::NODOMAIN
+                    ? dns_protocol::kRcodeNXDOMAIN
+                    : 0);
+            break;
+          case MockDnsClientRule::FAIL:
+          case MockDnsClientRule::TIMEOUT:
+            DCHECK(!result->response);  // Not expected to be provided.
+            break;
+          case MockDnsClientRule::OK:
+            if (result->response) {
+              // Copy response in case |rules| are destroyed before the
+              // transaction completes.
+              result_.response = std::make_unique<DnsResponse>(
+                  result->response->io_buffer(),
+                  result->response->io_buffer_size());
+              CHECK(result_.response->InitParseWithoutQuery(
+                  result->response->io_buffer_size()));
+            } else {
+              // Generated response only available for address types.
+              DCHECK(qtype_ == dns_protocol::kTypeA ||
+                     qtype_ == dns_protocol::kTypeAAAA);
+              result_.response = BuildTestDnsResponse(
+                  hostname_, qtype_ == dns_protocol::kTypeA
+                                 ? IPAddress::IPv4Localhost()
+                                 : IPAddress::IPv6Localhost());
+            }
+            break;
+          case MockDnsClientRule::MALFORMED:
+            DCHECK(!result->response);  // Not expected to be provided.
+            result_.response = CreateMalformedResponse(hostname_, qtype_);
+            break;
         }
+
         break;
       }
     }
@@ -94,112 +239,17 @@ class MockTransaction : public DnsTransaction,
   void Finish() {
     switch (result_.type) {
       case MockDnsClientRule::NODOMAIN:
-      case MockDnsClientRule::EMPTY:
-      case MockDnsClientRule::OK: {
-        std::string qname;
-        DNSDomainFromDot(hostname_, &qname);
-        DnsQuery query(0, qname, qtype_);
-
-        DnsResponse response;
-        char* buffer = response.io_buffer()->data();
-        int nbytes = query.io_buffer()->size();
-        memcpy(buffer, query.io_buffer()->data(), nbytes);
-        dns_protocol::Header* header =
-            reinterpret_cast<dns_protocol::Header*>(buffer);
-        header->flags |= base::HostToNet16(dns_protocol::kFlagResponse);
-        if (MockDnsClientRule::NODOMAIN == result_.type) {
-          header->flags |= base::HostToNet16(dns_protocol::kRcodeNXDOMAIN);
-        }
-
-        const uint16_t kPointerToQueryName =
-            static_cast<uint16_t>(0xc000 | sizeof(*header));
-
-        const uint32_t kTTL = 86400;  // One day.
-
-        // Size of RDATA which is a IPv4 or IPv6 address.
-        if (MockDnsClientRule::OK == result_.type)
-          EXPECT_TRUE(result_.ip.IsValid());
-        size_t rdata_size = result_.ip.size();
-
-        if (MockDnsClientRule::OK == result_.type) {
-          // Write the answer using the expected IP address.
-          // 12 is the sum of sizes of the compressed name reference, TYPE,
-          // CLASS, TTL and RDLENGTH.
-          size_t answer_size = 12 + rdata_size;
-          uint16_t answer_count = 1;
-
-          // Compressed name reference for the owner of the current RR.
-          uint16_t last_owner_ptr = kPointerToQueryName;
-
-          std::string cname_as_labels;
-
-          // There are two modes of operation distinguished based on whether
-          // |result_.canonical_name| is empty or not. If it's empty, then the
-          // resource records presented are of the form:
-          //
-          //     <question>       86400 IN <question type> <answer>
-          //
-          // However, if the canonical name is not empty, then:
-          //
-          //     <question>       86400 IN CNAME <canonical name>
-          //     <canonical name> 86400 IN <question type> <answer>
-          if (!result_.canonical_name.empty()) {
-            DNSDomainFromDot(result_.canonical_name, &cname_as_labels);
-            EXPECT_FALSE(cname_as_labels.empty());
-            answer_size += 12 + cname_as_labels.size();
-            ++answer_count;
-          }
-          header->ancount = base::HostToNet16(answer_count);
-
-          base::BigEndianWriter writer(buffer + nbytes, answer_size);
-
-          // CNAME record goes first.
-          if (!result_.canonical_name.empty()) {
-            writer.WriteU16(last_owner_ptr);
-            writer.WriteU16(dns_protocol::kTypeCNAME);
-            writer.WriteU16(dns_protocol::kClassIN);
-            writer.WriteU32(kTTL);
-            writer.WriteU16(static_cast<uint16_t>(cname_as_labels.size()));
-            writer.WriteBytes(cname_as_labels.data(), cname_as_labels.size());
-            last_owner_ptr = static_cast<uint16_t>(0xc000 | (nbytes + 12));
-          }
-
-          writer.WriteU16(last_owner_ptr);
-          writer.WriteU16(qtype_);
-          writer.WriteU16(dns_protocol::kClassIN);
-          writer.WriteU32(kTTL);
-          writer.WriteU16(static_cast<uint16_t>(rdata_size));
-          writer.WriteBytes(result_.ip.bytes().data(), rdata_size);
-
-          nbytes += answer_size;
-        } else {
-          // authority will be 12 bytes.
-          size_t authority_size = 12;
-          header->ancount = base::HostToNet16(0);
-          header->nscount = base::HostToNet16(1);
-          base::BigEndianWriter writer(buffer + nbytes, authority_size);
-          writer.WriteU16(kPointerToQueryName);
-          writer.WriteU16(dns_protocol::kTypeSOA);
-          writer.WriteU16(dns_protocol::kClassIN);
-          writer.WriteU32(kTTL);
-          writer.WriteU16(static_cast<uint16_t>(rdata_size));
-          nbytes += authority_size;
-        }
-        EXPECT_TRUE(response.InitParse(nbytes, query));
-        if (MockDnsClientRule::NODOMAIN == result_.type) {
-          std::move(callback_).Run(this, ERR_NAME_NOT_RESOLVED, &response);
-        } else {
-          std::move(callback_).Run(this, OK, &response);
-        }
-      } break;
       case MockDnsClientRule::FAIL:
-        std::move(callback_).Run(this, ERR_NAME_NOT_RESOLVED, NULL);
+        std::move(callback_).Run(this, ERR_NAME_NOT_RESOLVED,
+                                 result_.response.get());
+        break;
+      case MockDnsClientRule::EMPTY:
+      case MockDnsClientRule::OK:
+      case MockDnsClientRule::MALFORMED:
+        std::move(callback_).Run(this, OK, result_.response.get());
         break;
       case MockDnsClientRule::TIMEOUT:
-        std::move(callback_).Run(this, ERR_DNS_TIMED_OUT, NULL);
-        break;
-      default:
-        NOTREACHED();
+        std::move(callback_).Run(this, ERR_DNS_TIMED_OUT, nullptr);
         break;
     }
   }
@@ -217,11 +267,82 @@ class MockTransaction : public DnsTransaction,
 
 }  // namespace
 
+std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
+                                                  const IPAddress& ip) {
+  DCHECK(ip.IsValid());
+
+  std::vector<DnsResourceRecord> answers = {BuildAddressRecord(name, ip)};
+  std::string dns_name;
+  CHECK(DNSDomainFromDot(name, &dns_name));
+  base::Optional<DnsQuery> query(
+      base::in_place, 0, dns_name,
+      ip.IsIPv4() ? dns_protocol::kTypeA : dns_protocol::kTypeAAAA);
+  return std::make_unique<DnsResponse>(
+      0, false, std::move(answers),
+      std::vector<DnsResourceRecord>() /* authority_records */,
+      std::vector<DnsResourceRecord>() /* additional_records */, query);
+}
+
+std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
+                                                  const IPAddress& ip,
+                                                  std::string cannonname) {
+  DCHECK(ip.IsValid());
+  DCHECK(!cannonname.empty());
+
+  std::vector<DnsResourceRecord> answers = {
+      BuildCannonnameRecord(name, cannonname),
+      BuildAddressRecord(cannonname, ip)};
+  std::string dns_name;
+  CHECK(DNSDomainFromDot(name, &dns_name));
+  base::Optional<DnsQuery> query(
+      base::in_place, 0, dns_name,
+      ip.IsIPv4() ? dns_protocol::kTypeA : dns_protocol::kTypeAAAA);
+  return std::make_unique<DnsResponse>(
+      0, false, std::move(answers),
+      std::vector<DnsResourceRecord>() /* authority_records */,
+      std::vector<DnsResourceRecord>() /* additional_records */, query);
+}
+
+std::unique_ptr<DnsResponse> BuildTestDnsResponse(
+    std::string name,
+    std::vector<std::vector<std::string>> text_records,
+    std::string answer_name) {
+  if (answer_name.empty())
+    answer_name = name;
+
+  std::vector<DnsResourceRecord> answers;
+  for (std::vector<std::string> text_record : text_records) {
+    answers.push_back(BuildTextRecord(answer_name, std::move(text_record)));
+  }
+
+  std::string dns_name;
+  CHECK(DNSDomainFromDot(name, &dns_name));
+  base::Optional<DnsQuery> query(base::in_place, 0, dns_name,
+                                 dns_protocol::kTypeTXT);
+
+  return std::make_unique<DnsResponse>(
+      0, false, std::move(answers),
+      std::vector<DnsResourceRecord>() /* authority_records */,
+      std::vector<DnsResourceRecord>() /* additional_records */, query);
+}
+
+MockDnsClientRule::Result::Result(ResultType type) : type(type) {}
+
+MockDnsClientRule::Result::Result(std::unique_ptr<DnsResponse> response)
+    : type(OK), response(std::move(response)) {}
+
+MockDnsClientRule::Result::Result(Result&& result) = default;
+
+MockDnsClientRule::Result::~Result() = default;
+
+MockDnsClientRule::Result& MockDnsClientRule::Result::operator=(
+    Result&& result) = default;
+
 // A DnsTransactionFactory which creates MockTransaction.
-class MockTransactionFactory : public DnsTransactionFactory {
+class MockDnsClient::MockTransactionFactory : public DnsTransactionFactory {
  public:
-  explicit MockTransactionFactory(const MockDnsClientRuleList& rules)
-      : rules_(rules) {}
+  explicit MockTransactionFactory(MockDnsClientRuleList rules)
+      : rules_(std::move(rules)) {}
 
   ~MockTransactionFactory() override = default;
 
@@ -253,18 +374,17 @@ class MockTransactionFactory : public DnsTransactionFactory {
   }
 
  private:
-  typedef std::vector<base::WeakPtr<MockTransaction> > DelayedTransactionList;
+  typedef std::vector<base::WeakPtr<MockTransaction>> DelayedTransactionList;
 
   MockDnsClientRuleList rules_;
   DelayedTransactionList delayed_transactions_;
 };
 
 MockDnsClient::MockDnsClient(const DnsConfig& config,
-                             const MockDnsClientRuleList& rules)
-      : config_(config),
-        factory_(new MockTransactionFactory(rules)),
-        address_sorter_(new MockAddressSorter()) {
-}
+                             MockDnsClientRuleList rules)
+    : config_(config),
+      factory_(new MockTransactionFactory(std::move(rules))),
+      address_sorter_(new MockAddressSorter()) {}
 
 MockDnsClient::~MockDnsClient() = default;
 
