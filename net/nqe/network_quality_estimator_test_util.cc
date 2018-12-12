@@ -324,8 +324,10 @@ void TestNetworkQualityEstimator::
   }
 }
 
-void TestNetworkQualityEstimator::NotifyObserversOfEffectiveConnectionType(
-    EffectiveConnectionType type) {
+void TestNetworkQualityEstimator::
+    SetAndNotifyObserversOfEffectiveConnectionType(
+        EffectiveConnectionType type) {
+  set_effective_connection_type(type);
   for (auto& observer : effective_connection_type_observer_list_)
     observer.OnEffectiveConnectionTypeChanged(type);
 }

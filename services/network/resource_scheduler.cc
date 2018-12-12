@@ -28,6 +28,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_server_properties.h"
 #include "net/log/net_log.h"
+#include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -373,9 +374,9 @@ void ResourceScheduler::RequestQueue::Insert(
 }
 
 // Each client represents a tab.
-class ResourceScheduler::Client {
+class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
  public:
-  Client(const net::NetworkQualityEstimator* const network_quality_estimator,
+  Client(net::NetworkQualityEstimator* network_quality_estimator,
          ResourceScheduler* resource_scheduler,
          const base::TickClock* tick_clock)
       : deprecated_is_loaded_(false),
@@ -396,9 +397,15 @@ class ResourceScheduler::Client {
     DCHECK(!params_for_network_quality_
                 .delay_requests_on_multiplexed_connections ||
            !resource_scheduler->head_priority_requests_delayable());
+
+    if (network_quality_estimator_)
+      network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
   }
 
-  ~Client() {}
+  ~Client() override {
+    if (network_quality_estimator_)
+      network_quality_estimator_->RemoveEffectiveConnectionTypeObserver(this);
+  }
 
   void ScheduleRequest(const net::URLRequest& url_request,
                        ScheduledResourceRequestImpl* request) {
@@ -458,7 +465,6 @@ class ResourceScheduler::Client {
 
   void DeprecatedOnNavigate() {
     deprecated_is_loaded_ = false;
-    UpdateParamsForNetworkQuality();
   }
 
   void ReprioritizeRequest(ScheduledResourceRequestImpl* request,
@@ -506,6 +512,12 @@ class ResourceScheduler::Client {
     DO_NOT_START_REQUEST_AND_KEEP_SEARCHING,
     START_REQUEST
   };
+
+  // net::EffectiveConnectionTypeObserver implementation:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType effective_connection_type) override {
+    UpdateParamsForNetworkQuality();
+  }
 
   // Records the metrics related to number of requests in flight.
   void RecordRequestCountMetrics() const {
@@ -922,7 +934,7 @@ class ResourceScheduler::Client {
 
   // Network quality estimator for network aware resource scheudling. This may
   // be null.
-  const net::NetworkQualityEstimator* const network_quality_estimator_;
+  net::NetworkQualityEstimator* network_quality_estimator_;
 
   // Resource scheduling params computed for the current network quality.
   // These are recomputed every time an |OnNavigate| event is triggered.
@@ -1014,7 +1026,7 @@ void ResourceScheduler::RemoveRequest(ScheduledResourceRequestImpl* request) {
 void ResourceScheduler::OnClientCreated(
     int child_id,
     int route_id,
-    const net::NetworkQualityEstimator* const network_quality_estimator) {
+    net::NetworkQualityEstimator* network_quality_estimator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ClientId client_id = MakeClientId(child_id, route_id);
   DCHECK(!base::ContainsKey(client_map_, client_id));
@@ -1175,8 +1187,9 @@ void ResourceScheduler::ReprioritizeRequest(net::URLRequest* request,
   ReprioritizeRequest(request, new_priority, current_intra_priority);
 }
 
-ResourceScheduler::ClientId ResourceScheduler::MakeClientId(int child_id,
-                                                            int route_id) {
+ResourceScheduler::ClientId ResourceScheduler::MakeClientId(
+    int child_id,
+    int route_id) const {
   return (static_cast<ResourceScheduler::ClientId>(child_id) << 32) | route_id;
 }
 

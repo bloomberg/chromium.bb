@@ -209,9 +209,11 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   void NotifyObserversOfRTTOrThroughputEstimatesComputed(
       const net::nqe::internal::NetworkQuality& network_quality);
 
-  // Notifies the registered observers that the network quality estimate has
-  // changed to |network_quality|.
-  void NotifyObserversOfEffectiveConnectionType(EffectiveConnectionType type);
+  // Updates the computed effective connection type to |type| and notifies the
+  // registered observers that the effective connection type has changed to
+  // |type|.
+  void SetAndNotifyObserversOfEffectiveConnectionType(
+      EffectiveConnectionType type);
 
   void SetTransportRTTAtastECTSampleCount(size_t count) {
     transport_rtt_observation_count_last_ect_computation_ = count;
