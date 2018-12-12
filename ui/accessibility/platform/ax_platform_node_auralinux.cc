@@ -1680,12 +1680,14 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     // ax_platform_node_win.cc code does this.
     case ax::mojom::Role::kListBoxOption:
       return ATK_ROLE_LIST_ITEM;
+    case ax::mojom::Role::kListGrid:
+      return ATK_ROLE_TABLE;
+    case ax::mojom::Role::kListItem:
+      return ATK_ROLE_LIST_ITEM;
     case ax::mojom::Role::kListMarker:
       // TODO(Accessibility) Having a separate accessible object for the marker
       // is inconsistent with other implementations. http://crbug.com/873144.
       return kStaticRole;
-    case ax::mojom::Role::kListItem:
-      return ATK_ROLE_LIST_ITEM;
     case ax::mojom::Role::kLog:
       return ATK_ROLE_LOG;
     case ax::mojom::Role::kMain:

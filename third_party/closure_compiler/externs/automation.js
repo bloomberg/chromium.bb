@@ -192,6 +192,7 @@ chrome.automation.RoleType = {
   LIST: 'list',
   LIST_BOX: 'listBox',
   LIST_BOX_OPTION: 'listBoxOption',
+  LIST_GRID: 'listGrid',
   LIST_ITEM: 'listItem',
   LIST_MARKER: 'listMarker',
   LOG: 'log',
@@ -298,6 +299,7 @@ chrome.automation.ActionType = {
   DO_DEFAULT: 'doDefault',
   FOCUS: 'focus',
   GET_IMAGE_DATA: 'getImageData',
+  GET_TEXT_LOCATION: 'getTextLocation',
   HIT_TEST: 'hitTest',
   INCREMENT: 'increment',
   LOAD_INLINE_TEXT_BOXES: 'loadInlineTextBoxes',
@@ -537,18 +539,16 @@ chrome.automation.AutomationNode.prototype.state;
 chrome.automation.AutomationNode.prototype.location;
 
 /**
- * Computes the bounding box of a subrange of this node in global screen
- * coordinates. The start and end indices are zero-based offsets into the node's
- * "name" string attribute. A callback will also be provided, which will
- * be called if node bounds are available, and called with undefined when
- * boundsForRange is not available.
+ * Determines the location of the text within the node specified by |startIndex|
+ * and |endIndex|, inclusively. Invokes |callback| with the bounding rectangle,
+ * in screen coordinates. |callback| can be invoked either synchronously or
+ * asynchronously.
  * @param {number} startIndex
  * @param {number} endIndex
  * @param {function(!chrome.automation.Rect):void} callback
  * @see https://developer.chrome.com/extensions/automation#method-boundsForRange
  */
-chrome.automation.AutomationNode.prototype.boundsForRange = function(
-    startIndex, endIndex, callback) {};
+chrome.automation.AutomationNode.prototype.boundsForRange = function(startIndex, endIndex, callback) {};
 
 /**
  * The location (as a bounding box) of this node in global screen coordinates without applying any clipping from ancestors.

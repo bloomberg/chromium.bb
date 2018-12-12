@@ -834,19 +834,22 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kLink:
       message_id = IDS_AX_ROLE_LINK;
       break;
-    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kList:
       // No role description.
       break;
     case ax::mojom::Role::kListBox:
       message_id = IDS_AX_ROLE_LIST_BOX;
       break;
+    case ax::mojom::Role::kListBoxOption:
+      // No role description.
+      break;
+    case ax::mojom::Role::kListGrid:
+      message_id = IDS_AX_ROLE_TABLE;
+      break;
     case ax::mojom::Role::kListItem:
       // No role description.
       break;
     case ax::mojom::Role::kListMarker:
-      // No role description.
-      break;
-    case ax::mojom::Role::kList:
       // No role description.
       break;
     case ax::mojom::Role::kLog:
