@@ -73,7 +73,6 @@ const char kChromeUIFaviconHost[] = "favicon";
 const char kChromeUIFaviconURL[] = "chrome://favicon/";
 const char kChromeUIFlagsHost[] = "flags";
 const char kChromeUIFlagsURL[] = "chrome://flags/";
-const char kChromeUIFlashHost[] = "flash";
 const char kChromeUIGCMInternalsHost[] = "gcm-internals";
 const char kChromeUIHangUIHost[] = "uithreadhang";
 const char kChromeUIHelpHost[] = "help";
@@ -386,7 +385,6 @@ const char* const kChromeHostURLs[] = {
 #endif
     kChromeUIBookmarksHost,
     kChromeUIDownloadsHost,
-    kChromeUIFlashHost,
     kChromeUIHelpHost,
     kChromeUIInspectHost,
     kChromeUISettingsHost,
