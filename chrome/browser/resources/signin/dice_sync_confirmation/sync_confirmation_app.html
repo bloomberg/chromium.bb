@@ -87,22 +87,13 @@
       }
 
       .message-container {
-        color: var(--paper-grey-800);
         display: flex;
         line-height: 20px;
         margin-bottom: 16px;
         padding: 0 24px;
       }
 
-      .footer::before {
-        border-top: 2px solid var(--paper-grey-200);
-        content: '';
-        display: block;
-        height: 1;
-        margin: 24px 0 24px 56px;
-      }
-
-      .footer .message-container {
+      .secondary {
         color: var(--paper-grey-600);
       }
 
@@ -116,31 +107,16 @@
         width: 16px;
       }
 
-      #personalize-logo {
-        /* Need the following rules to adjust for white spacing in the svg. */
+      #sync-logo {
+        fill: var(--google-green-700);
+      }
+
+      #spellcheck-logo {
         fill: var(--google-blue-700);
-        height: 18px;
-        margin-inline-end: 14px;
-        width: 18px;
       }
 
-      #sync-logo-container {
-        align-items: center;
-        background: green;
-        border-radius: 50%;
-        display: flex;
-      }
-
-      #sync-logo-container iron-icon {
-        fill: white;
-        height: 12px;
-        margin: auto;
-        width: 12px;
-      }
-
-      #googleg-logo {
-        background-image: -webkit-image-set(url(./images/ic_google.png) 1x,
-                                            url(./images/ic_google_2x.png) 2x);
+      #lock-logo {
+        fill: var(--google-yellow-700);
       }
 
       #grey-banner {
@@ -178,46 +154,52 @@
         $i18n{syncConfirmationTitle}
       </h1>
       <div class="message-container">
-        <!-- Container needed to contain the icon in a green circle. -->
-        <div id="sync-logo-container" class="logo">
-          <iron-icon icon="cr:sync" class="logo"></iron-icon>
-        </div>
-        <div consent-description>$i18n{syncConfirmationChromeSyncBody}</div>
-      </div>
-      <div class="message-container">
-        <iron-icon icon="sync-confirmation:assistant" id="personalize-logo"
-            class="logo">
-        </iron-icon>
-        <div consent-description>
-          $i18n{syncConfirmationPersonalizeServicesBody}
-        </div>
-      </div>
-      <div class="message-container">
-        <div id="googleg-logo" class="logo"></div>
-        <div consent-description>$i18n{syncConfirmationGoogleServicesBody}</div>
-      </div>
-      <div class="footer">
-        <div class="message-container">
-          <iron-icon icon="sync-confirmation:settings" class="logo"></iron-icon>
-          <div consent-description>
-            $i18n{syncConfirmationSyncSettingsDescription}
+        <iron-icon icon="cr:sync" id="sync-logo" class="logo"></iron-icon>
+        <div>
+          <div consent-description>$i18n{syncConfirmationSyncInfoTitle}</div>
+          <div class="secondary" consent-description>
+            $i18n{syncConfirmationSyncInfoDesc}
           </div>
         </div>
-        <div class="action-container">
-          <paper-button class="action-button" id="confirmButton"
-              on-click="onConfirm_" consent-confirmation>
-            $i18n{syncConfirmationConfirmLabel}
-          </paper-button>
-          <paper-button on-click="onUndo_">
-            $i18n{syncConfirmationUndoLabel}
-          </paper-button>
-          <paper-button id="settingsButton" on-click="onGoToSettings_"
-              consent-confirmation>
-            $i18n{syncConfirmationSettingsLabel}
-          </paper-button>
+      </div>
+      <div class="message-container">
+        <iron-icon icon="sync-confirmation:spellcheck" id="spellcheck-logo"
+            class="logo">
+        </iron-icon>
+        <div>
+          <div consent-description>
+            $i18n{syncConfirmationSpellcheckInfoTitle}
+          </div>
+          <div class="secondary" consent-description>
+            $i18n{syncConfirmationSpellcheckInfoDesc}
+          </div>
         </div>
       </div>
-
+      <div class="message-container">
+        <iron-icon icon="sync-confirmation:lock" id="lock-logo" class="logo">
+        </iron-icon>
+        <div>
+          <div consent-description>
+            $i18n{syncConfirmationImproveChromeInfoTitle}
+          </div>
+          <div class="secondary" consent-description>
+            $i18n{syncConfirmationImproveChromeInfoDesc}
+          </div>
+        </div>
+      </div>
+      <div class="action-container">
+        <paper-button class="action-button" id="confirmButton"
+            on-click="onConfirm_" consent-confirmation>
+          $i18n{syncConfirmationConfirmLabel}
+        </paper-button>
+        <paper-button on-click="onUndo_">
+          $i18n{syncConfirmationUndoLabel}
+        </paper-button>
+        <paper-button id="settingsButton" on-click="onGoToSettings_"
+            consent-confirmation>
+          $i18n{syncConfirmationSettingsLabel}
+        </paper-button>
+      </div>
     </div>
   </template>
   <script src="sync_confirmation_app.js"></script>
