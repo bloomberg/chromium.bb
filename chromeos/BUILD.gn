@@ -431,10 +431,6 @@ if (is_cros_chrome_sdk) {
     disabled_tests = [
       # Disabled due to flake. https://crbug.com/909736
       "ui.MashLogin",
-
-      # Disabled due to DCHECK failures. https://crbug.com/909975
-      "video.WebRTCCamera",
-      "video.WebRTCPeerConnCameraVP8",
     ]
     tast_conditional = "!disabled && !\"group:*\" && !informational" +
                        " && (\"dep:chrome\" || \"dep:chrome_login\")"
