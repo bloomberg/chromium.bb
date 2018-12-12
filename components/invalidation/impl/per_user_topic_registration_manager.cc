@@ -202,6 +202,10 @@ void PerUserTopicRegistrationManager::UpdateRegisteredTopics(
               base::Unretained(this)),
           PerUserTopicRegistrationRequest::UNSUBSCRIBE);
       it = topic_to_private_topic_.erase(it);
+      // The descision to unregister from the invalidations for the |topic| was
+      // made, the preferences should be cleaned up immediatelly.
+      DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
+      update->RemoveKey(topic);
     } else {
       ++it;
     }
@@ -248,19 +252,12 @@ void PerUserTopicRegistrationManager::RegistrationFinishedForTopic(
   if (code.IsSuccess()) {
     auto it = registration_statuses_.find(topic);
     registration_statuses_.erase(it);
-    DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
-    switch (type) {
-      case PerUserTopicRegistrationRequest::SUBSCRIBE: {
-        update->SetKey(topic, base::Value(private_topic_name));
-        topic_to_private_topic_[topic] = private_topic_name;
-        break;
-      }
-      case PerUserTopicRegistrationRequest::UNSUBSCRIBE: {
-        update->RemoveKey(topic);
-        break;
-      }
+    if (type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
+      DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
+      update->SetKey(topic, base::Value(private_topic_name));
+      topic_to_private_topic_[topic] = private_topic_name;
+      local_state_->CommitPendingWrite();
     }
-    local_state_->CommitPendingWrite();
   } else {
     if (code.IsAuthFailure()) {
       // Re-request access token and fire registrations again.
