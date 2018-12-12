@@ -169,6 +169,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const blink::WebRTCDataChannelInit& init) override;
   void Stop() override;
   blink::WebString Id() const override;
+  webrtc::PeerConnectionInterface* NativePeerConnection() override;
 
   // Delegate functions to allow for mocking of WebKit interfaces.
   // getStats takes ownership of request parameter.
