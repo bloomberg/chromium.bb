@@ -36,6 +36,8 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
+#include "third_party/blink/public/web/web_page_popup.h"
+#include "third_party/blink/public/web/web_widget.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/rect.h"
@@ -130,16 +132,20 @@ class MockHandledEventCallback {
   DISALLOW_COPY_AND_ASSIGN(MockHandledEventCallback);
 };
 
-class StubWebWidget : public blink::WebWidget {
+class StubWebPagePopup : public blink::WebPagePopup {
  public:
+  // WebWidget implementation.
   void SetLayerTreeView(blink::WebLayerTreeView*) override {}
   blink::WebURL GetURLForDebugTrace() override { return {}; }
   blink::WebHitTestResult HitTestResultAt(const gfx::Point&) override {
     return {};
   }
+
+  // WebPagePopup implementation.
+  blink::WebPoint PositionRelativeToOwner() override { return {}; }
 };
 
-class MockWebWidget : public StubWebWidget {
+class MockWebPagePopup : public StubWebPagePopup {
  public:
   MOCK_METHOD0(DispatchBufferedTouchEvents, blink::WebInputEventResult());
   MOCK_METHOD1(
@@ -154,14 +160,13 @@ class InteractiveRenderWidget : public RenderWidget {
   explicit InteractiveRenderWidget(CompositorDependencies* compositor_deps)
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
-                     WidgetType::kFrame,
                      ScreenInfo(),
                      blink::kWebDisplayModeUndefined,
                      false,
                      false,
                      false),
         always_overscroll_(false) {
-    Init(RenderWidget::ShowCallback(), mock_webwidget());
+    InitForPopup(base::NullCallback(), &mock_page_popup_);
 
     mojom::WidgetInputHandlerHostPtr widget_input_handler;
     mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>(
@@ -185,7 +190,7 @@ class InteractiveRenderWidget : public RenderWidget {
 
   IPC::TestSink* sink() { return &sink_; }
 
-  MockWebWidget* mock_webwidget() { return &mock_webwidget_; }
+  MockWebPagePopup* mock_webwidget() { return &mock_page_popup_; }
 
   MockWidgetInputHandlerHost* mock_input_handler_host() {
     return mock_input_handler_host_.get();
@@ -226,7 +231,7 @@ class InteractiveRenderWidget : public RenderWidget {
  private:
   IPC::TestSink sink_;
   bool always_overscroll_;
-  MockWebWidget mock_webwidget_;
+  MockWebPagePopup mock_page_popup_;
   std::unique_ptr<MockWidgetInputHandlerHost> mock_input_handler_host_;
   static int next_routing_id_;
 
@@ -425,18 +430,15 @@ class PopupRenderWidget : public RenderWidget {
   explicit PopupRenderWidget(CompositorDependencies* compositor_deps)
       : RenderWidget(routing_id_++,
                      compositor_deps,
-                     WidgetType::kPopup,
                      ScreenInfo(),
                      blink::kWebDisplayModeUndefined,
                      false,
                      false,
                      false) {
-    Init(RenderWidget::ShowCallback(), mock_webwidget());
+    InitForPopup(RenderWidget::ShowCallback(), &stub_page_popup_);
   }
 
   IPC::TestSink* sink() { return &sink_; }
-
-  MockWebWidget* mock_webwidget() { return &mock_webwidget_; }
 
   void SetScreenMetricsEmulationParameters(
       bool,
@@ -461,7 +463,7 @@ class PopupRenderWidget : public RenderWidget {
  private:
   bool shutdown_ = false;
   IPC::TestSink sink_;
-  MockWebWidget mock_webwidget_;
+  StubWebPagePopup stub_page_popup_;
   static int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupRenderWidget);

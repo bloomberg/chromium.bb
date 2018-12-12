@@ -37,7 +37,6 @@
 #include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
-#include "content/public/common/widget_type.h"
 #include "content/renderer/compositor/layer_tree_view_delegate.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator_delegate.h"
 #include "content/renderer/input/main_thread_event_queue.h"
@@ -163,7 +162,6 @@ class CONTENT_EXPORT RenderWidget
   // Close().
   RenderWidget(int32_t widget_routing_id,
                CompositorDependencies* compositor_deps,
-               WidgetType widget_type,
                const ScreenInfo& screen_info,
                blink::WebDisplayMode display_mode,
                bool is_frozen,
@@ -777,6 +775,13 @@ class CONTENT_EXPORT RenderWidget
   // want to do this before calling it as this method does no verification.
   void DoRequestNewLayerTreeFrameSink(LayerTreeFrameSinkCallback callback);
 
+  // Whether this widget is for a frame. This excludes widgets that are not for
+  // a frame (eg popups, pepper), but includes both the main frame
+  // (via owner_delegate_) and subframes (via for_child_local_root_frame_).
+  bool for_frame() const {
+    return owner_delegate_ || for_child_local_root_frame_;
+  }
+
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost.
   const int32_t routing_id_;
@@ -886,9 +891,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Stores the current composition range.
   gfx::Range composition_range_;
-
-  // The kind of popup this widget represents, NONE if not a popup.
-  WidgetType widget_type_;
 
   // While we are waiting for the browser to update window sizes, we track the
   // pending size temporarily.

@@ -378,7 +378,6 @@ static bool PreferCompositingToLCDText(CompositorDependencies* compositor_deps,
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
-                           WidgetType widget_type,
                            const ScreenInfo& screen_info,
                            blink::WebDisplayMode display_mode,
                            bool is_frozen,
@@ -404,7 +403,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
       can_compose_inline_(true),
       composition_range_(gfx::Range::InvalidRange()),
-      widget_type_(widget_type),
       pending_window_rect_count_(0),
       screen_info_(screen_info),
       monitor_composition_info_(false),
@@ -505,20 +503,12 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   blink::scheduler::WebThreadScheduler* compositor_thread_scheduler =
       blink::scheduler::WebThreadScheduler::CompositorThreadScheduler();
   scoped_refptr<base::SingleThreadTaskRunner> compositor_input_task_runner;
-  // The |compositor_thread_scheduler| can be null in tests without a compositor
-  // thread.
-  if (compositor_thread_scheduler) {
-    // When the RenderWidget is for a frame (ie for a local root) then it uses
-    // the compositor thread task runner. When it is for a popup or other such
-    // widgets, it does not.
-    // TODO(danakj): The |web_widget| given here should become a WebFrameWidget
-    // in the case the RenderWidget is for a RenderViewImpl, but currently the
-    // WebFrameWidget gets attached after RenderWidget init. So we have to check
-    // IsWebView() as well.
-    if (web_widget->IsWebFrameWidget() || web_widget->IsWebView()) {
-      compositor_input_task_runner =
-          compositor_thread_scheduler->InputTaskRunner();
-    }
+  // Use the compositor thread task runner unless this is a popup or other such
+  // non-frame widgets. The |compositor_thread_scheduler| can be null in tests
+  // without a compositor thread.
+  if (for_frame() && compositor_thread_scheduler) {
+    compositor_input_task_runner =
+        compositor_thread_scheduler->InputTaskRunner();
   }
 
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
@@ -650,13 +640,19 @@ void RenderWidget::SendOrCrash(IPC::Message* message) {
 }
 
 bool RenderWidget::ShouldHandleImeEvents() const {
-  // TODO(ekaramad): We track page focus in all RenderViews on the page but the
-  // RenderWidgets corresponding to OOPIFs do not get the update. For now, this
-  // method returns true when the RenderWidget is for an OOPIF, i.e., IME events
-  // will be processed regardless of page focus. We should revisit this after
-  // page focus for OOPIFs has been fully resolved (https://crbug.com/689777).
-  return GetWebWidget() && GetWebWidget()->IsWebFrameWidget() &&
-         (has_focus_ || for_child_local_root_frame_);
+  if (owner_delegate_)
+    return has_focus_;
+  if (for_child_local_root_frame_) {
+    // TODO(ekaramad): We track page focus in all RenderViews on the page but
+    // the RenderWidgets corresponding to child local roots do not get the
+    // update. For now, this method returns true when the RenderWidget is for a
+    // child local frame, i.e., IME events will be processed regardless of page
+    // focus. We should revisit this after page focus for OOPIFs has been fully
+    // resolved (https://crbug.com/689777).
+    return true;
+  }
+  // Not a frame widget.
+  return false;
 }
 
 void RenderWidget::OnClose() {
@@ -894,17 +890,15 @@ void RenderWidget::OnSetActive(bool active) {
 }
 
 void RenderWidget::OnSetBackgroundOpaque(bool opaque) {
+  // This IPC never sent when frozen.
+  DCHECK(!is_frozen_);
   // Background opaque-ness modification is only supported for the main frame.
   // The |owner_delegate_| is used as proxy for this RenderWidget being attached
   // to the main frame.
   if (!owner_delegate_)
     return;
 
-  blink::WebWidget* web_widget = GetWebWidget();
-  // This is true since we only do this for RenderWidgets attached to the main
-  // frame.
-  DCHECK(web_widget->IsWebFrameWidget());
-  auto* web_frame_widget = static_cast<blink::WebFrameWidget*>(web_widget);
+  blink::WebFrameWidget* web_frame_widget = GetFrameWidget();
   if (opaque) {
     web_frame_widget->ClearBaseBackgroundColorOverride();
     web_frame_widget->ClearBackgroundColorOverride();
@@ -1785,21 +1779,28 @@ void RenderWidget::UpdateWebViewWithDeviceScaleFactor() {
 }
 
 blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
-  blink::WebWidget* web_widget = GetWebWidget();
-  if (!web_widget)
+  // TODO(danakj): Remove this check and don't call this method for non-frames.
+  if (!for_frame())
+    return nullptr;
+  // TODO(danakj): Is this needed? IPCs stop after closing, but code used to
+  // check for a null WebWidget.
+  if (closing_)
     return nullptr;
 
-  if (!web_widget->IsWebFrameWidget()) {
-    // TODO(ekaramad): This should not happen. If we have a WebWidget and we
-    // need a WebFrameWidget then we should be getting a WebFrameWidget. But
-    // unfortunately this does not seem to be the case in some scenarios --
-    // specifically when a RenderViewImpl swaps out during navigation the
-    // WebViewImpl loses its WebViewFrameWidget but sometimes we receive IPCs
-    // which are destined for WebFrameWidget (https://crbug.com/669219).
-    return nullptr;
+  blink::WebWidget* widget;
+  if (owner_delegate_) {
+    // Main frame WebFrameWidgets are held by the delegate, the internal widget
+    // points directly to the WebView.
+    // TODO(ekaramad): We should drop IPCs when |is_frozen_| instead of
+    // handling them and finding a null here. However there is also the case
+    // of the frame being detached without the widget being frozen to be
+    // resolved (https://crbug.com/906340). So for now this can return null.
+    widget = owner_delegate_->GetWebWidgetForWidget();
+  } else {
+    // Subframes always have a WebFrameWidget themselves.
+    widget = webwidget_internal_;
   }
-
-  return static_cast<blink::WebFrameWidget*>(web_widget);
+  return static_cast<blink::WebFrameWidget*>(widget);
 }
 
 void RenderWidget::ScreenRectToEmulatedIfNeeded(WebRect* window_rect) const {
@@ -1892,7 +1893,7 @@ void RenderWidget::SetPendingWindowRect(const WebRect& rect) {
 
   // Popups don't get size updates back from the browser so just store the set
   // values.
-  if (widget_type_ != WidgetType::kFrame) {
+  if (!for_frame()) {
     window_screen_rect_ = rect;
     widget_screen_rect_ = rect;
   }
@@ -2102,7 +2103,6 @@ void RenderWidget::OnSetViewportIntersection(
     const gfx::Rect& compositor_visible_rect,
     bool occluded_or_obscured) {
   if (auto* frame_widget = GetFrameWidget()) {
-    DCHECK_EQ(widget_type_, WidgetType::kFrame);
     compositor_visible_rect_ = compositor_visible_rect;
     frame_widget->SetRemoteViewportIntersection(viewport_intersection,
                                                 occluded_or_obscured);
@@ -2111,26 +2111,20 @@ void RenderWidget::OnSetViewportIntersection(
 }
 
 void RenderWidget::OnSetIsInert(bool inert) {
-  if (auto* frame_widget = GetFrameWidget()) {
-    DCHECK_EQ(widget_type_, WidgetType::kFrame);
+  if (auto* frame_widget = GetFrameWidget())
     frame_widget->SetIsInert(inert);
-  }
 }
 
 void RenderWidget::OnSetInheritedEffectiveTouchAction(
     cc::TouchAction touch_action) {
-  if (auto* frame_widget = GetFrameWidget()) {
-    DCHECK_EQ(widget_type_, WidgetType::kFrame);
+  if (auto* frame_widget = GetFrameWidget())
     frame_widget->SetInheritedEffectiveTouchAction(touch_action);
-  }
 }
 
 void RenderWidget::OnUpdateRenderThrottlingStatus(bool is_throttled,
                                                   bool subtree_throttled) {
-  if (auto* frame_widget = GetFrameWidget()) {
-    DCHECK_EQ(widget_type_, WidgetType::kFrame);
+  if (auto* frame_widget = GetFrameWidget())
     frame_widget->UpdateRenderThrottlingStatus(is_throttled, subtree_throttled);
-  }
 }
 
 void RenderWidget::OnDragTargetDragEnter(
