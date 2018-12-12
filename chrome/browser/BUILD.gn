@@ -278,6 +278,8 @@ jumbo_split_static_library("browser") {
     "chrome_service.h",
     "client_hints/client_hints.cc",
     "client_hints/client_hints.h",
+    "client_hints/client_hints_factory.cc",
+    "client_hints/client_hints_factory.h",
     "client_hints/client_hints_observer.cc",
     "client_hints/client_hints_observer.h",
     "clipboard/clipboard_read_permission_context.cc",

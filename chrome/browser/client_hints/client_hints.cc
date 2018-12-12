@@ -210,10 +210,14 @@ double RoundKbpsToMbps(const std::string& host,
 
 }  // namespace internal
 
+ClientHints::ClientHints(content::BrowserContext* context)
+    : context_(context) {}
+
+ClientHints::~ClientHints() = default;
+
 std::unique_ptr<net::HttpRequestHeaders>
-GetAdditionalNavigationRequestClientHintsHeaders(
-    content::BrowserContext* context,
-    const GURL& url) {
+ClientHints::GetAdditionalNavigationRequestClientHintsHeaders(
+    const GURL& url) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
             net::EFFECTIVE_CONNECTION_TYPE_4G + 1u);
@@ -233,7 +237,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
   DCHECK(url.SchemeIs(url::kHttpsScheme) ||
          (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url)));
 
-  Profile* profile = Profile::FromBrowserContext(context);
+  Profile* profile = Profile::FromBrowserContext(context_);
   if (!profile)
     return nullptr;
 
@@ -274,7 +278,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
   if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kDpr)) {
     double device_scale_factor = GetDeviceScaleFactor();
 
-    double zoom_factor = GetZoomFactor(context, url);
+    double zoom_factor = GetZoomFactor(context_, url);
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kDpr)],
@@ -293,7 +297,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
                           ->GetPrimaryDisplay()
                           .GetSizeInPixel()
                           .width()) /
-                     GetZoomFactor(context, url) / device_scale_factor;
+                     GetZoomFactor(context_, url) / device_scale_factor;
 #endif  // !OS_ANDROID
     DCHECK_LT(0, viewport_width);
     if (viewport_width > 0) {
