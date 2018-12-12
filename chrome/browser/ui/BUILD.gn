@@ -925,6 +925,8 @@ jumbo_split_static_library("ui") {
       "page_info/page_info_infobar_delegate.h",
       "page_info/permission_menu_model.cc",
       "page_info/permission_menu_model.h",
+      "passwords/google_password_manager_navigation_throttle.cc",
+      "passwords/google_password_manager_navigation_throttle.h",
       "passwords/manage_passwords_bubble_model.cc",
       "passwords/manage_passwords_bubble_model.h",
       "passwords/manage_passwords_icon_view.h",
