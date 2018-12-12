@@ -280,8 +280,35 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     ScrollOffset delta = ToScrollDelta(physical_direction, 1);
     delta.Scale(scrollable_area->ScrollStep(granularity, kHorizontalScrollbar),
                 scrollable_area->ScrollStep(granularity, kVerticalScrollbar));
-    if (snap_coordinator->SnapForDirection(*box, delta))
-      return true;
+    // Pressing the arrow key is considered as a scroll with intended direction
+    // only. Pressing the PgUp/PgDn key is considered as a scroll with intended
+    // direction and end position. Pressing the Home/End key is considered as a
+    // scroll with intended end position only.
+    switch (granularity) {
+      case kScrollByLine: {
+        if (snap_coordinator->SnapForDirection(*box, delta))
+          return true;
+        break;
+      }
+      case kScrollByPage: {
+        if (snap_coordinator->SnapForEndAndDirection(*box, delta))
+          return true;
+        break;
+      }
+      case kScrollByDocument: {
+        FloatPoint end_position = scrollable_area->ScrollPosition() + delta;
+        bool scrolled_x = physical_direction == kScrollLeft ||
+                          physical_direction == kScrollRight;
+        bool scrolled_y = physical_direction == kScrollUp ||
+                          physical_direction == kScrollDown;
+        if (snap_coordinator->SnapForEndPosition(*box, end_position, scrolled_x,
+                                                 scrolled_y))
+          return true;
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
 
     ScrollResult result = scrollable_area->UserScroll(
         granularity, ToScrollDelta(physical_direction, 1));
@@ -656,9 +683,9 @@ void ScrollManager::SnapAtGestureScrollEnd() {
   if (!snap_coordinator || !layout_box)
     return;
 
-  snap_coordinator->SnapForEndPosition(*layout_box,
-                                       did_scroll_x_for_scroll_gesture_,
-                                       did_scroll_y_for_scroll_gesture_);
+  snap_coordinator->SnapAtCurrentPosition(*layout_box,
+                                          did_scroll_x_for_scroll_gesture_,
+                                          did_scroll_y_for_scroll_gesture_);
 }
 
 bool ScrollManager::GetSnapFlingInfo(

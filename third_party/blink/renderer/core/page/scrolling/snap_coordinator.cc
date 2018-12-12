@@ -255,16 +255,24 @@ base::Optional<FloatPoint> SnapCoordinator::GetSnapPosition(
   return base::nullopt;
 }
 
-bool SnapCoordinator::SnapForEndPosition(const LayoutBox& snap_container,
-                                         bool scrolled_x,
-                                         bool scrolled_y) const {
+bool SnapCoordinator::SnapAtCurrentPosition(const LayoutBox& snap_container,
+                                            bool scrolled_x,
+                                            bool scrolled_y) const {
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
   if (!scrollable_area)
     return false;
   FloatPoint current_position = scrollable_area->ScrollPosition();
+  return SnapForEndPosition(snap_container, current_position, scrolled_x,
+                            scrolled_y);
+}
+
+bool SnapCoordinator::SnapForEndPosition(const LayoutBox& snap_container,
+                                         const FloatPoint& end_position,
+                                         bool scrolled_x,
+                                         bool scrolled_y) const {
   std::unique_ptr<SnapSelectionStrategy> strategy =
       SnapSelectionStrategy::CreateForEndPosition(
-          gfx::ScrollOffset(current_position), scrolled_x, scrolled_y);
+          gfx::ScrollOffset(end_position), scrolled_x, scrolled_y);
   return PerformSnapping(snap_container, *strategy);
 }
 
@@ -276,6 +284,19 @@ bool SnapCoordinator::SnapForDirection(const LayoutBox& snap_container,
   FloatPoint current_position = scrollable_area->ScrollPosition();
   std::unique_ptr<SnapSelectionStrategy> strategy =
       SnapSelectionStrategy::CreateForDirection(
+          gfx::ScrollOffset(current_position),
+          gfx::ScrollOffset(delta.Width(), delta.Height()));
+  return PerformSnapping(snap_container, *strategy);
+}
+
+bool SnapCoordinator::SnapForEndAndDirection(const LayoutBox& snap_container,
+                                             const ScrollOffset& delta) const {
+  ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
+  if (!scrollable_area)
+    return false;
+  FloatPoint current_position = scrollable_area->ScrollPosition();
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndAndDirection(
           gfx::ScrollOffset(current_position),
           gfx::ScrollOffset(delta.Width(), delta.Height()));
   return PerformSnapping(snap_container, *strategy);
@@ -295,7 +316,7 @@ bool SnapCoordinator::PerformSnapping(
 
   scrollable_area->CancelScrollAnimation();
   scrollable_area->CancelProgrammaticScrollAnimation();
-  if (gfx::ScrollOffset(snap_point.value()) != strategy.current_position()) {
+  if (snap_point.value() != scrollable_area->ScrollPosition()) {
     scrollable_area->SetScrollOffset(
         scrollable_area->ScrollPositionToOffset(snap_point.value()),
         kProgrammaticScroll, kScrollBehaviorSmooth);

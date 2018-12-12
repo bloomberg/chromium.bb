@@ -53,13 +53,22 @@ class CORE_EXPORT SnapCoordinator final
   void UpdateAllSnapContainerData();
   void UpdateSnapContainerData(const LayoutBox&);
 
-  // SnapForEndPosition() and SnapForDirection() return true if snapping was
-  // performed, and false otherwise.
+  // SnapAtCurrentPosition(), SnapForEndPosition(), SnapForDirection(), and
+  // SnapForEndAndDirection() return true if snapping was performed, and false
+  // otherwise.
+  // SnapAtCurrentPosition() calls SnapForEndPosition() with the current scroll
+  // position.
+  bool SnapAtCurrentPosition(const LayoutBox& snap_container,
+                             bool scrolled_x,
+                             bool scrolled_y) const;
   bool SnapForEndPosition(const LayoutBox& snap_container,
+                          const FloatPoint& end_position,
                           bool scrolled_x,
                           bool scrolled_y) const;
   bool SnapForDirection(const LayoutBox& snap_container,
                         const ScrollOffset& delta) const;
+  bool SnapForEndAndDirection(const LayoutBox& snap_container,
+                              const ScrollOffset& delta) const;
 
   base::Optional<FloatPoint> GetSnapPosition(
       const LayoutBox& snap_container,
