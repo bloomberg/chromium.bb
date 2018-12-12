@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "components/leveldb_proto/proto_leveldb_wrapper.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,7 +110,12 @@ TEST_F(SharedProtoDatabaseTest, CreateClient_SucceedsWithCreate) {
   ASSERT_TRUE(success);
 }
 
+// TODO(912117): Fix flaky test!
+#if !defined(OS_ANDROID)
+TEST_F(SharedProtoDatabaseTest, DISABLED_CreateClient_FailsWithoutCreate) {
+#else
 TEST_F(SharedProtoDatabaseTest, CreateClient_FailsWithoutCreate) {
+#endif
   bool success = false;
   GetClientAndWait<TestProto>(db(), kDefaultNamespace, kDefaultTypePrefix,
                               false /* create_if_missing */, &success);
