@@ -24,6 +24,7 @@ source_set("popup") {
     "//components/image_fetcher/ios",
     "//components/omnibox/browser",
     "//components/open_from_clipboard",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui:ui",
