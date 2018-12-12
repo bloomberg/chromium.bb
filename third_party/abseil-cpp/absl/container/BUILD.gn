@@ -99,6 +99,7 @@ source_set("flat_hash_map") {
     ":container_memory",
     ":hash_function_defaults",
     ":raw_hash_map",
+    "../algorithm:container",
     "../memory",
   ]
 }
@@ -117,6 +118,7 @@ source_set("flat_hash_set") {
     ":container_memory",
     ":hash_function_defaults",
     ":raw_hash_set",
+    "../algorithm:container",
     "../base:core_headers",
     "../memory",
   ]
@@ -137,6 +139,7 @@ source_set("node_hash_map") {
     ":hash_function_defaults",
     ":node_hash_policy",
     ":raw_hash_map",
+    "../algorithm:container",
     "../memory",
   ]
 }
@@ -156,6 +159,7 @@ source_set("node_hash_set") {
     ":hash_function_defaults",
     ":node_hash_policy",
     ":raw_hash_set",
+    "../algorithm:container",
     "../memory",
   ]
 }

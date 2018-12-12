@@ -242,6 +242,7 @@ class TempFile {
   std::string ReadFile() {
     std::fseek(file_, 0, SEEK_END);
     int size = std::ftell(file_);
+    EXPECT_GT(size, 0);
     std::rewind(file_);
     std::string str(2 * size, ' ');
     int read_bytes = std::fread(&str[0], 1, str.size(), file_);
@@ -270,7 +271,7 @@ TEST_F(FormatEntryPointTest, FPrintFError) {
   EXPECT_EQ(errno, EBADF);
 }
 
-#if __GNUC__
+#if __GLIBC__
 TEST_F(FormatEntryPointTest, FprintfTooLarge) {
   std::FILE* f = std::fopen("/dev/null", "w");
   int width = 2000000000;
@@ -297,7 +298,7 @@ TEST_F(FormatEntryPointTest, PrintF) {
   EXPECT_EQ(result, 30);
   EXPECT_EQ(tmp.ReadFile(), "STRING: ABC NUMBER: -000000019");
 }
-#endif  // __GNUC__
+#endif  // __GLIBC__
 
 TEST_F(FormatEntryPointTest, SNPrintF) {
   char buffer[16];
@@ -605,35 +606,21 @@ TEST_F(ParsedFormatTest, RegressionMixPositional) {
 // Some codegen thunks that we can use to easily dump the generated assembly for
 // different StrFormat calls.
 
-inline std::string CodegenAbslStrFormatInt(int i) {
+std::string CodegenAbslStrFormatInt(int i) { // NOLINT
   return absl::StrFormat("%d", i);
 }
 
-inline std::string CodegenAbslStrFormatIntStringInt64(int i, const std::string& s,
-                                                 int64_t i64) {
+std::string CodegenAbslStrFormatIntStringInt64(int i, const std::string& s,
+                                                 int64_t i64) { // NOLINT
   return absl::StrFormat("%d %s %d", i, s, i64);
 }
 
-inline void CodegenAbslStrAppendFormatInt(std::string* out, int i) {
+void CodegenAbslStrAppendFormatInt(std::string* out, int i) { // NOLINT
   absl::StrAppendFormat(out, "%d", i);
 }
 
-inline void CodegenAbslStrAppendFormatIntStringInt64(std::string* out, int i,
+void CodegenAbslStrAppendFormatIntStringInt64(std::string* out, int i,
                                                      const std::string& s,
-                                                     int64_t i64) {
+                                                     int64_t i64) { // NOLINT
   absl::StrAppendFormat(out, "%d %s %d", i, s, i64);
 }
-
-auto absl_internal_str_format_force_codegen_funcs = std::make_tuple(
-    CodegenAbslStrFormatInt, CodegenAbslStrFormatIntStringInt64,
-    CodegenAbslStrAppendFormatInt, CodegenAbslStrAppendFormatIntStringInt64);
-
-bool absl_internal_str_format_force_codegen_always_false;
-// Force the compiler to generate the functions by making it look like we
-// escape the function pointers.
-// It can't statically know that
-// absl_internal_str_format_force_codegen_always_false is not changed by someone
-// else.
-bool absl_internal_str_format_force_codegen =
-    absl_internal_str_format_force_codegen_always_false &&
-    printf("%p", &absl_internal_str_format_force_codegen_funcs) == 0;

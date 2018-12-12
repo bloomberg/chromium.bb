@@ -95,7 +95,6 @@ source_set("core_headers") {
   ]
   deps = [
     ":config",
-    ":dynamic_annotations",
   ]
 }
 
@@ -136,6 +135,7 @@ source_set("base_internal") {
     "internal/identity.h",
     "internal/inline_variable.h",
     "internal/invoke.h",
+    "internal/scheduling_mode.h",
   ]
   visibility = []
   visibility += [ "../*" ]
@@ -196,7 +196,6 @@ source_set("throw_delegate") {
   deps = [
     ":base",
     ":config",
-    ":core_headers",
   ]
   visibility = []
   visibility += [ "../*" ]
@@ -251,13 +250,12 @@ source_set("pretty_function") {
 #     "internal/exception_safety_testing.h",
 #   ]
 #   deps = [
-#     ":base",
 #     ":config",
 #     ":pretty_function",
 #     "../memory",
 #     "../meta:type_traits",
 #     "../strings",
-#     "../types:optional",
+#     "../utility",
 #     "//testing/gtest",
 #   ]
 # }

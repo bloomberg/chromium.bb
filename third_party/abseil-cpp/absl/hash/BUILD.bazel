@@ -15,7 +15,7 @@
 #
 
 load(
-    "//absl:copts.bzl",
+    "//absl:copts/configure_copts.bzl",
     "ABSL_DEFAULT_COPTS",
     "ABSL_TEST_COPTS",
 )
@@ -93,7 +93,6 @@ cc_library(
     srcs = ["internal/city.cc"],
     hdrs = [
         "internal/city.h",
-        "internal/city_crc.h",
     ],
     copts = ABSL_DEFAULT_COPTS,
     deps = [

@@ -14,7 +14,6 @@
 
 #include "absl/container/internal/raw_hash_set.h"
 
-#include <array>
 #include <cmath>
 #include <cstdint>
 #include <deque>
@@ -130,45 +129,50 @@ TEST(Group, EmptyGroup) {
   for (h2_t h = 0; h != 128; ++h) EXPECT_FALSE(Group{EmptyGroup()}.Match(h));
 }
 
-#if SWISSTABLE_HAVE_SSE2
 TEST(Group, Match) {
-  ctrl_t group[] = {kEmpty, 1, kDeleted, 3, kEmpty, 5, kSentinel, 7,
-                    7,      5, 3,        1, 1,      1, 1,         1};
-  EXPECT_THAT(Group{group}.Match(0), ElementsAre());
-  EXPECT_THAT(Group{group}.Match(1), ElementsAre(1, 11, 12, 13, 14, 15));
-  EXPECT_THAT(Group{group}.Match(3), ElementsAre(3, 10));
-  EXPECT_THAT(Group{group}.Match(5), ElementsAre(5, 9));
-  EXPECT_THAT(Group{group}.Match(7), ElementsAre(7, 8));
+  if (Group::kWidth == 16) {
+    ctrl_t group[] = {kEmpty, 1, kDeleted, 3, kEmpty, 5, kSentinel, 7,
+                      7,      5, 3,        1, 1,      1, 1,         1};
+    EXPECT_THAT(Group{group}.Match(0), ElementsAre());
+    EXPECT_THAT(Group{group}.Match(1), ElementsAre(1, 11, 12, 13, 14, 15));
+    EXPECT_THAT(Group{group}.Match(3), ElementsAre(3, 10));
+    EXPECT_THAT(Group{group}.Match(5), ElementsAre(5, 9));
+    EXPECT_THAT(Group{group}.Match(7), ElementsAre(7, 8));
+  } else if (Group::kWidth == 8) {
+    ctrl_t group[] = {kEmpty, 1, 2, kDeleted, 2, 1, kSentinel, 1};
+    EXPECT_THAT(Group{group}.Match(0), ElementsAre());
+    EXPECT_THAT(Group{group}.Match(1), ElementsAre(1, 5, 7));
+    EXPECT_THAT(Group{group}.Match(2), ElementsAre(2, 4));
+  } else {
+    FAIL() << "No test coverage for Group::kWidth==" << Group::kWidth;
+  }
 }
 
 TEST(Group, MatchEmpty) {
-  ctrl_t group[] = {kEmpty, 1, kDeleted, 3, kEmpty, 5, kSentinel, 7,
-                    7,      5, 3,        1, 1,      1, 1,         1};
-  EXPECT_THAT(Group{group}.MatchEmpty(), ElementsAre(0, 4));
+  if (Group::kWidth == 16) {
+    ctrl_t group[] = {kEmpty, 1, kDeleted, 3, kEmpty, 5, kSentinel, 7,
+                      7,      5, 3,        1, 1,      1, 1,         1};
+    EXPECT_THAT(Group{group}.MatchEmpty(), ElementsAre(0, 4));
+  } else if (Group::kWidth == 8) {
+    ctrl_t group[] = {kEmpty, 1, 2, kDeleted, 2, 1, kSentinel, 1};
+    EXPECT_THAT(Group{group}.MatchEmpty(), ElementsAre(0));
+  } else {
+    FAIL() << "No test coverage for Group::kWidth==" << Group::kWidth;
+  }
 }
 
 TEST(Group, MatchEmptyOrDeleted) {
-  ctrl_t group[] = {kEmpty, 1, kDeleted, 3, kEmpty, 5, kSentinel, 7,
-                    7,      5, 3,        1, 1,      1, 1,         1};
-  EXPECT_THAT(Group{group}.MatchEmptyOrDeleted(), ElementsAre(0, 2, 4));
+  if (Group::kWidth == 16) {
+    ctrl_t group[] = {kEmpty, 1, kDeleted, 3, kEmpty, 5, kSentinel, 7,
+                      7,      5, 3,        1, 1,      1, 1,         1};
+    EXPECT_THAT(Group{group}.MatchEmptyOrDeleted(), ElementsAre(0, 2, 4));
+  } else if (Group::kWidth == 8) {
+    ctrl_t group[] = {kEmpty, 1, 2, kDeleted, 2, 1, kSentinel, 1};
+    EXPECT_THAT(Group{group}.MatchEmptyOrDeleted(), ElementsAre(0, 3));
+  } else {
+    FAIL() << "No test coverage for Group::kWidth==" << Group::kWidth;
+  }
 }
-#else
-TEST(Group, Match) {
-  ctrl_t group[] = {kEmpty, 1, 2, kDeleted, 2, 1, kSentinel, 1};
-  EXPECT_THAT(Group{group}.Match(0), ElementsAre());
-  EXPECT_THAT(Group{group}.Match(1), ElementsAre(1, 5, 7));
-  EXPECT_THAT(Group{group}.Match(2), ElementsAre(2, 4));
-}
-TEST(Group, MatchEmpty) {
-  ctrl_t group[] = {kEmpty, 1, 2, kDeleted, 2, 1, kSentinel, 1};
-  EXPECT_THAT(Group{group}.MatchEmpty(), ElementsAre(0));
-}
-
-TEST(Group, MatchEmptyOrDeleted) {
-  ctrl_t group[] = {kEmpty, 1, 2, kDeleted, 2, 1, kSentinel, 1};
-  EXPECT_THAT(Group{group}.MatchEmptyOrDeleted(), ElementsAre(0, 3));
-}
-#endif
 
 TEST(Batch, DropDeletes) {
   constexpr size_t kCapacity = 63;
@@ -386,7 +390,8 @@ TEST(Table, Prefetch) {
     !defined(UNDEFINED_BEHAVIOR_SANITIZER)
   const auto now = [] { return absl::base_internal::CycleClock::Now(); };
 
-  static constexpr int size = 1000000;
+  // Make size enough to not fit in L2 cache (16.7 Mb)
+  static constexpr int size = 1 << 22;
   for (int i = 0; i < size; ++i) t.insert(i);
 
   int64_t no_prefetch = 0, prefetch = 0;
@@ -687,7 +692,7 @@ TEST(Table, RehashWithNoResize) {
   Modulo1000HashTable t;
   // Adding the same length (and the same hash) strings
   // to have at least kMinFullGroups groups
-  // with Group::kWidth collisions. Then feel upto MaxDensitySize;
+  // with Group::kWidth collisions. Then fill up to MaxDensitySize;
   const size_t kMinFullGroups = 7;
   std::vector<int> keys;
   for (size_t i = 0; i < MaxDensitySize(Group::kWidth * kMinFullGroups); ++i) {
@@ -1029,7 +1034,6 @@ ExpectedStats XorSeedExpectedStats() {
           {{0.95, 0.1}},
           {{0.95, 0}, {0.99, 2}, {0.999, 4}, {0.9999, 10}}};
       }
-      break;
     case 16:
       if (kRandomizesInserts) {
         return {0.1,
@@ -1042,10 +1046,8 @@ ExpectedStats XorSeedExpectedStats() {
                 {{0.95, 0.05}},
                 {{0.95, 0}, {0.99, 1}, {0.999, 4}, {0.9999, 10}}};
       }
-      break;
-    default:
-      ABSL_RAW_LOG(FATAL, "%s", "Unknown Group width");
   }
+  ABSL_RAW_LOG(FATAL, "%s", "Unknown Group width");
   return {};
 }
 TEST(Table, DISABLED_EnsureNonQuadraticTopNXorSeedByProbeSeqLength) {
@@ -1125,7 +1127,6 @@ ExpectedStats LinearTransformExpectedStats() {
                 {{0.95, 0.3}},
                 {{0.95, 0}, {0.99, 3}, {0.999, 15}, {0.9999, 25}}};
       }
-      break;
     case 16:
       if (kRandomizesInserts) {
         return {0.1,
@@ -1138,10 +1139,8 @@ ExpectedStats LinearTransformExpectedStats() {
                 {{0.95, 0.1}},
                 {{0.95, 0}, {0.99, 1}, {0.999, 6}, {0.9999, 10}}};
       }
-      break;
-    default:
-      ABSL_RAW_LOG(FATAL, "%s", "Unknown Group width");
   }
+  ABSL_RAW_LOG(FATAL, "%s", "Unknown Group width");
   return {};
 }
 TEST(Table, DISABLED_EnsureNonQuadraticTopNLinearTransformByProbeSeqLength) {
@@ -1781,138 +1780,6 @@ TEST(Table, IterationOrderChangesForSmallTables) {
     garbage.push_back(std::move(t));
   }
   FAIL() << "Iteration order remained the same across many attempts.";
-}
-
-// Fill the table to 3 different load factors (min, median, max) and evaluate
-// the percentage of perfect hits using the debug API.
-template <class Table, class AddFn>
-std::vector<double> CollectPerfectRatios(Table t, AddFn add) {
-  using Key = typename Table::key_type;
-
-  // First, fill enough to have a good distribution.
-  constexpr size_t kMinSize = 10000;
-  std::vector<Key> keys;
-  while (t.size() < kMinSize) keys.push_back(add(t));
-  // Then, insert until we reach min load factor.
-  double lf = t.load_factor();
-  while (lf <= t.load_factor()) keys.push_back(add(t));
-
-  // We are now at min load factor. Take a snapshot.
-  size_t perfect = 0;
-  auto update_perfect = [&](Key k) {
-    perfect += GetHashtableDebugNumProbes(t, k) == 0;
-  };
-  for (const auto& k : keys) update_perfect(k);
-
-  std::vector<double> perfect_ratios;
-  // Keep going until we hit max load factor.
-  while (t.load_factor() < .6) {
-    perfect_ratios.push_back(1.0 * perfect / t.size());
-    update_perfect(add(t));
-  }
-  while (t.load_factor() > .5) {
-    perfect_ratios.push_back(1.0 * perfect / t.size());
-    update_perfect(add(t));
-  }
-  return perfect_ratios;
-}
-
-std::vector<std::pair<double, double>> StringTablePefectRatios() {
-  constexpr bool kRandomizesInserts =
-#if NDEBUG
-      false;
-#else   // NDEBUG
-      true;
-#endif  // NDEBUG
-
-  // The effective load factor is larger in non-opt mode because we insert
-  // elements out of order.
-  switch (container_internal::Group::kWidth) {
-    case 8:
-      if (kRandomizesInserts) {
-        return {{0.986, 0.02}, {0.95, 0.02}, {0.89, 0.02}};
-      } else {
-        return {{0.995, 0.01}, {0.97, 0.01}, {0.89, 0.02}};
-      }
-      break;
-    case 16:
-      if (kRandomizesInserts) {
-        return {{0.973, 0.01}, {0.965, 0.01}, {0.92, 0.02}};
-      } else {
-        return {{0.995, 0.005}, {0.99, 0.005}, {0.94, 0.01}};
-      }
-      break;
-    default:
-      // Ignore anything else.
-      return {};
-  }
-}
-
-// This is almost a change detector, but it allows us to know how we are
-// affecting the probe distribution.
-TEST(Table, EffectiveLoadFactorStrings) {
-  std::vector<double> perfect_ratios =
-      CollectPerfectRatios(StringTable(), [](StringTable& t) {
-        return t.emplace(std::to_string(t.size()), "").first->first;
-      });
-
-  auto ratios = StringTablePefectRatios();
-  if (ratios.empty()) return;
-
-  EXPECT_THAT(perfect_ratios.front(),
-              DoubleNear(ratios[0].first, ratios[0].second));
-  EXPECT_THAT(perfect_ratios[perfect_ratios.size() / 2],
-              DoubleNear(ratios[1].first, ratios[1].second));
-  EXPECT_THAT(perfect_ratios.back(),
-              DoubleNear(ratios[2].first, ratios[2].second));
-}
-
-std::vector<std::pair<double, double>> IntTablePefectRatios() {
-  constexpr bool kRandomizesInserts =
-#ifdef NDEBUG
-      false;
-#else   // NDEBUG
-      true;
-#endif  // NDEBUG
-
-  // The effective load factor is larger in non-opt mode because we insert
-  // elements out of order.
-  switch (container_internal::Group::kWidth) {
-    case 8:
-      if (kRandomizesInserts) {
-        return {{0.99, 0.02}, {0.985, 0.02}, {0.95, 0.05}};
-      } else {
-        return {{0.99, 0.01}, {0.99, 0.01}, {0.95, 0.02}};
-      }
-      break;
-    case 16:
-      if (kRandomizesInserts) {
-        return {{0.98, 0.02}, {0.978, 0.02}, {0.96, 0.02}};
-      } else {
-        return {{0.998, 0.003}, {0.995, 0.01}, {0.975, 0.02}};
-      }
-      break;
-    default:
-      // Ignore anything else.
-      return {};
-  }
-}
-
-// This is almost a change detector, but it allows us to know how we are
-// affecting the probe distribution.
-TEST(Table, EffectiveLoadFactorInts) {
-  std::vector<double> perfect_ratios = CollectPerfectRatios(
-      IntTable(), [](IntTable& t) { return *t.emplace(t.size()).first; });
-
-  auto ratios = IntTablePefectRatios();
-  if (ratios.empty()) return;
-
-  EXPECT_THAT(perfect_ratios.front(),
-              DoubleNear(ratios[0].first, ratios[0].second));
-  EXPECT_THAT(perfect_ratios[perfect_ratios.size() / 2],
-              DoubleNear(ratios[1].first, ratios[1].second));
-  EXPECT_THAT(perfect_ratios.back(),
-              DoubleNear(ratios[2].first, ratios[2].second));
 }
 
 // Confirm that we assert if we try to erase() end().
