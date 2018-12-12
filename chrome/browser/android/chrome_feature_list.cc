@@ -33,6 +33,7 @@
 #include "jni/ChromeFeatureList_jni.h"
 #include "media/base/media_switches.h"
 #include "services/device/public/cpp/device_features.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/ui_base_features.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -150,6 +151,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTrustedWebActivityPostMessage,
     &kVideoPersistence,
     &kVrBrowsingFeedback,
+    &network::features::kNetworkService,
     &payments::features::kReturnGooglePayInBasicCard,
     &payments::features::kWebPaymentsMethodSectionOrderV2,
     &payments::features::kWebPaymentsModifiers,
