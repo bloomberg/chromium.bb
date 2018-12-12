@@ -161,6 +161,7 @@ void BrowserActionsContainer::AddViewForAction(
   toolbar_action_views_.insert(toolbar_action_views_.begin() + index,
                                base::WrapUnique(view));
   AddChildViewAt(view, index);
+  PreferredSizeChanged();
 }
 
 void BrowserActionsContainer::RemoveViewForAction(
@@ -174,10 +175,12 @@ void BrowserActionsContainer::RemoveViewForAction(
       break;
     }
   }
+  PreferredSizeChanged();
 }
 
 void BrowserActionsContainer::RemoveAllViews() {
   toolbar_action_views_.clear();
+  PreferredSizeChanged();
 }
 
 void BrowserActionsContainer::Redraw(bool order_changed) {
