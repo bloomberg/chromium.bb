@@ -18,6 +18,7 @@
 #include "media/base/decode_status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
+#include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -49,11 +50,11 @@ namespace content {
 class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
  public:
   // Creates and initializes an RTCVideoDecoderAdapter. Returns nullptr if
-  // |video_codec_type| cannot be supported.
+  // |format| cannot be supported.
   // Called on the worker thread.
   static std::unique_ptr<RTCVideoDecoderAdapter> Create(
       media::GpuVideoAcceleratorFactories* gpu_factories,
-      webrtc::VideoCodecType video_codec_type);
+      const webrtc::SdpVideoFormat& format);
 
   // Called on |media_task_runner_|.
   ~RTCVideoDecoderAdapter() override;
@@ -82,7 +83,7 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
 
   // Called on the worker thread.
   RTCVideoDecoderAdapter(media::GpuVideoAcceleratorFactories* gpu_factories,
-                         webrtc::VideoCodecType video_codec_type);
+                         const webrtc::SdpVideoFormat& format);
 
   bool InitializeSync();
   void InitializeOnMediaThread(media::VideoDecoder::InitCB init_cb);
@@ -93,7 +94,7 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // Construction parameters.
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   media::GpuVideoAcceleratorFactories* gpu_factories_;
-  webrtc::VideoCodecType video_codec_type_;
+  webrtc::SdpVideoFormat format_;
 
   // Media thread members.
   // |media_log_| must outlive |video_decoder_| because it is passed as a raw
