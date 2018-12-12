@@ -259,6 +259,7 @@ Output.ROLE_INFO_ = {
   popUpButton: {msgId: 'role_button', earconId: 'POP_UP_BUTTON'},
   radioButton: {msgId: 'role_radio'},
   radioGroup: {msgId: 'role_radiogroup', inherits: 'abstractContainer'},
+  region: {msgId: 'role_region', inherits: 'abstractContainer'},
   rootWebArea: {outputContextFirst: true},
   row: {msgId: 'role_row', inherits: 'abstractContainer'},
   rowHeader: {msgId: 'role_rowheader', inherits: 'cell'},
@@ -400,8 +401,10 @@ Output.RULES = {
     },
     cell: {
       enter: {
-        speak: `$cellIndexText $node(tableCellColumnHeaders) $state`,
-        braille: `$state $cellIndexText $node(tableCellColumnHeaders)`,
+        speak: `$cellIndexText $node(tableCellColumnHeaders) $nameFromNode
+            $state`,
+        braille: `$state $cellIndexText $node(tableCellColumnHeaders)
+            $nameFromNode`,
       },
       speak: `$name $cellIndexText $node(tableCellColumnHeaders)
           $state $description`,
