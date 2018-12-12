@@ -2392,21 +2392,6 @@
             ]
         }
     ],
-    "IncreaseInputAudioBufferSize": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IncreaseInputAudioBufferSize"
-                    ]
-                }
-            ]
-        }
-    ],
     "InstanceID": [
         {
             "platforms": [

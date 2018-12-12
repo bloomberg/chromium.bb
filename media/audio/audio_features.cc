@@ -22,12 +22,6 @@ const base::Feature kCrOSSystemAECDeactivatedGroups{
     "CrOSSystemAECDeactivatedGroups", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_WIN)
-// Increases the input audio endpoint buffer size. http://crbug.com/830624.
-const base::Feature kIncreaseInputAudioBufferSize{
-    "IncreaseInputAudioBufferSize", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 const base::Feature kForceEnableSystemAec{"ForceEnableSystemAec",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

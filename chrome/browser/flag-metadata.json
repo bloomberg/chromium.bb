@@ -2331,11 +2331,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "increase-input-audio-buffer-size",
-    "owners": [ "grunell" ],
-    "expiry_milestone": 73
-  },
-  {
     "name": "infinite-session-restore",
     "owners": [ "catan-team@chromium.org" ],
     "expiry_milestone": 76

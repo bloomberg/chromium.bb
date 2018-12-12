@@ -3761,13 +3761,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppsGridGapFeature)},
 #endif  // OS_CHROMEOS
 
-#if defined(OS_WIN)
-    {"increase-input-audio-buffer-size",
-     flag_descriptions::kIncreaseInputAudioBufferSize,
-     flag_descriptions::kIncreaseInputAudioBufferSizeDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kIncreaseInputAudioBufferSize)},
-#endif  // OS_WIN
-
     {"enable-layered-api", flag_descriptions::kLayeredAPIName,
      flag_descriptions::kLayeredAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kLayeredAPI)},
