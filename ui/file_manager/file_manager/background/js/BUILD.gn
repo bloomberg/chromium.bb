@@ -374,6 +374,8 @@ js_library("mock_media_scanner") {
     ":test_import_history",
   ]
   externs_list = [ "../../../externs/background/media_scanner.js" ]
+  visibility = []
+  visibility = [ "//ui/file_manager/file_manager/*" ]
 }
 
 js_library("media_scanner") {
