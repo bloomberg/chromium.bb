@@ -67,7 +67,9 @@ class DeviceFactoryProviderImpl::GpuDependenciesContext {
   base::WeakPtrFactory<GpuDependenciesContext> weak_factory_for_gpu_io_thread_;
 };
 
-DeviceFactoryProviderImpl::DeviceFactoryProviderImpl() {
+DeviceFactoryProviderImpl::DeviceFactoryProviderImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : ui_task_runner_(std::move(ui_task_runner)) {
   // Unretained |this| is safe because |factory_bindings_| is owned by
   // |this|.
   factory_bindings_.set_connection_error_handler(base::BindRepeating(
@@ -123,8 +125,7 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
   // happen on a "UI thread equivalent", e.g. obtaining screen rotation on
   // Chrome OS.
   std::unique_ptr<media::VideoCaptureDeviceFactory> media_device_factory =
-      media::CreateVideoCaptureDeviceFactory(
-          base::ThreadTaskRunnerHandle::Get());
+      media::CreateVideoCaptureDeviceFactory(ui_task_runner_);
   DCHECK(media_device_factory);
 
   auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(

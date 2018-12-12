@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -23,16 +24,22 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace video_capture {
 
 class ServiceImpl : public service_manager::Service,
                     public service_manager::ServiceKeepalive::Observer {
  public:
-  explicit ServiceImpl(service_manager::mojom::ServiceRequest request);
+  ServiceImpl(service_manager::mojom::ServiceRequest request,
+              scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   // Constructs a service instance which overrides the default idle timeout
   // behavior.
   ServiceImpl(service_manager::mojom::ServiceRequest request,
+              scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
               base::Optional<base::TimeDelta> idle_timeout);
 
   ~ServiceImpl() override;
@@ -66,6 +73,7 @@ class ServiceImpl : public service_manager::Service,
 
   service_manager::ServiceBinding binding_;
   service_manager::ServiceKeepalive keepalive_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
 #if defined(OS_WIN)
   // COM must be initialized in order to access the video capture devices.

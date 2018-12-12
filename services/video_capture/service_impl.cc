@@ -27,12 +27,20 @@ constexpr base::Optional<base::TimeDelta> kDefaultIdleTimeout =
 
 }  // namespace
 
-ServiceImpl::ServiceImpl(service_manager::mojom::ServiceRequest request)
-    : ServiceImpl(std::move(request), kDefaultIdleTimeout) {}
+ServiceImpl::ServiceImpl(
+    service_manager::mojom::ServiceRequest request,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : ServiceImpl(std::move(request),
+                  std::move(ui_task_runner),
+                  kDefaultIdleTimeout) {}
 
-ServiceImpl::ServiceImpl(service_manager::mojom::ServiceRequest request,
-                         base::Optional<base::TimeDelta> idle_timeout)
-    : binding_(this, std::move(request)), keepalive_(&binding_, idle_timeout) {
+ServiceImpl::ServiceImpl(
+    service_manager::mojom::ServiceRequest request,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    base::Optional<base::TimeDelta> idle_timeout)
+    : binding_(this, std::move(request)),
+      keepalive_(&binding_, idle_timeout),
+      ui_task_runner_(std::move(ui_task_runner)) {
   keepalive_.AddObserver(this);
 }
 
@@ -136,7 +144,8 @@ void ServiceImpl::LazyInitializeDeviceFactoryProvider() {
   if (device_factory_provider_)
     return;
 
-  device_factory_provider_ = std::make_unique<DeviceFactoryProviderImpl>();
+  device_factory_provider_ =
+      std::make_unique<DeviceFactoryProviderImpl>(ui_task_runner_);
 }
 
 void ServiceImpl::OnProviderClientDisconnected() {
