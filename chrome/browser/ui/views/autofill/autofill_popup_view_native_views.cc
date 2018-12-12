@@ -918,13 +918,6 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   RemoveAllChildViews(true /* delete_children */);
   rows_.clear();
 
-  // Create one container to wrap the "regular" (non-footer) rows.
-  views::View* body_container = new views::View();
-  views::BoxLayout* body_layout = body_container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  body_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-
   int line_number = 0;
   bool has_footer = false;
 
@@ -967,29 +960,39 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
     if (has_footer)
       break;
-    body_container->AddChildView(rows_.back());
     line_number++;
   }
 
-  scroll_view_ = new views::ScrollView();
-  scroll_view_->set_hide_horizontal_scrollbar(true);
-  scroll_view_->SetContents(body_container);
-  scroll_view_->set_draw_overflow_indicator(false);
-  scroll_view_->ClipHeightTo(0, body_container->GetPreferredSize().height());
+  if (rows_.size()) {
+    // Create a container to wrap the "regular" (non-footer) rows.
+    views::View* body_container = new views::View();
+    views::BoxLayout* body_layout = body_container->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    body_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+    for (auto* row : rows_) {
+      body_container->AddChildView(row);
+    }
 
-  // Use an additional container to apply padding outside the scroll view, so
-  // that the padding area is stationary. This ensures that the rounded corners
-  // appear properly; on Mac, the clipping path will not apply properly to a
-  // scrollable area.
-  // NOTE: GetContentsVerticalPadding is guaranteed to return a size which
-  // accommodates the rounded corners.
-  views::View* padding_wrapper = new views::View();
-  padding_wrapper->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(GetContentsVerticalPadding(), 0)));
-  padding_wrapper->SetLayoutManager(std::make_unique<views::FillLayout>());
-  padding_wrapper->AddChildView(scroll_view_);
-  AddChildView(padding_wrapper);
-  layout_->SetFlexForView(padding_wrapper, 1);
+    scroll_view_ = new views::ScrollView();
+    scroll_view_->set_hide_horizontal_scrollbar(true);
+    scroll_view_->SetContents(body_container);
+    scroll_view_->set_draw_overflow_indicator(false);
+    scroll_view_->ClipHeightTo(0, body_container->GetPreferredSize().height());
+
+    // Use an additional container to apply padding outside the scroll view, so
+    // that the padding area is stationary. This ensures that the rounded
+    // corners appear properly; on Mac, the clipping path will not apply
+    // properly to a scrollable area. NOTE: GetContentsVerticalPadding is
+    // guaranteed to return a size which accommodates the rounded corners.
+    views::View* padding_wrapper = new views::View();
+    padding_wrapper->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets(GetContentsVerticalPadding(), 0)));
+    padding_wrapper->SetLayoutManager(std::make_unique<views::FillLayout>());
+    padding_wrapper->AddChildView(scroll_view_);
+    AddChildView(padding_wrapper);
+    layout_->SetFlexForView(padding_wrapper, 1);
+  }
 
   // All the remaining rows (where index >= |line_number|) are part of the
   // footer. This needs to be in its own container because it should not be

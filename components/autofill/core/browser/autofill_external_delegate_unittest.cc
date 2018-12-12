@@ -109,6 +109,15 @@ class MockAutofillManager : public AutofillManager {
   MOCK_METHOD2(ShouldShowCreditCardSigninPromo,
                bool(const FormData& form, const FormFieldData& field));
 
+  bool ShouldShowCardsFromAccountOption(const FormData& form,
+                                        const FormFieldData& field) {
+    return should_show_cards_from_account_option_;
+  }
+
+  void ShowCardsFromAccountOption() {
+    should_show_cards_from_account_option_ = true;
+  }
+
   MOCK_METHOD5(FillOrPreviewForm,
                void(AutofillDriver::RendererFormDataAction action,
                     int query_id,
@@ -124,6 +133,7 @@ class MockAutofillManager : public AutofillManager {
                     const base::string16& cvc));
 
  private:
+  bool should_show_cards_from_account_option_ = false;
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManager);
 };
 
@@ -172,6 +182,17 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
   std::unique_ptr<testing::NiceMock<MockAutofillDriver>> autofill_driver_;
   std::unique_ptr<MockAutofillManager> autofill_manager_;
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
+};
+
+// Variant for use in cases when we expect the AutofillManager would normally
+// set the |should_show_cards_from_account_option_| bit.
+class AutofillExternalDelegateCardsFromAccountTest
+    : public AutofillExternalDelegateUnitTest {
+ protected:
+  void SetUp() override {
+    AutofillExternalDelegateUnitTest::SetUp();
+    autofill_manager_->ShowCardsFromAccountOption();
+  }
 };
 
 // Test that our external delegate called the virtual methods at the right time.
@@ -826,6 +847,47 @@ TEST_F(AutofillExternalDelegateUnitTest, ShouldUseNewSettingName) {
   // This should call ShowAutofillPopup.
   external_delegate_->OnSuggestionsReturned(
       kQueryId, autofill_item, /*autoselect_first_suggestion=*/false);
+}
+
+// Tests that the prompt to show account cards shows up when the corresponding
+// bit is set, including any suggestions that are passed along and the "Manage"
+// row in the footer.
+TEST_F(AutofillExternalDelegateCardsFromAccountTest,
+       ShouldShowCardsFromAccountOptionWithCards) {
+  IssueOnQuery(kQueryId);
+
+  auto element_values = testing::ElementsAre(
+      base::string16(),
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ACCOUNT_CARDS),
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE));
+  EXPECT_CALL(autofill_client_,
+              ShowAutofillPopup(_, _, SuggestionVectorValuesAre(element_values),
+                                false, _));
+
+  std::vector<Suggestion> autofill_item;
+  autofill_item.push_back(Suggestion());
+  autofill_item[0].frontend_id = kAutofillProfileId;
+
+  external_delegate_->OnSuggestionsReturned(
+      kQueryId, autofill_item, /*autoselect_first_suggestion=*/false);
+}
+
+// Tests that the prompt to show account cards shows up when the corresponding
+// bit is set, even if no suggestions are passed along. The "Manage" row should
+// *not* show up in this case.
+TEST_F(AutofillExternalDelegateCardsFromAccountTest,
+       ShouldShowCardsFromAccountOptionWithoutCards) {
+  IssueOnQuery(kQueryId);
+
+  auto element_values = testing::ElementsAre(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ACCOUNT_CARDS));
+  EXPECT_CALL(autofill_client_,
+              ShowAutofillPopup(_, _, SuggestionVectorValuesAre(element_values),
+                                false, _));
+
+  external_delegate_->OnSuggestionsReturned(
+      kQueryId, std::vector<Suggestion>(),
+      /*autoselect_first_suggestion=*/false);
 }
 
 #if !defined(OS_ANDROID)

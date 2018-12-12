@@ -43,14 +43,7 @@ bool IsAutofillWarningEntry(int frontend_id) {
 
 AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
                                                    AutofillDriver* driver)
-    : manager_(manager),
-      driver_(driver),
-      query_id_(0),
-      has_autofill_suggestions_(false),
-      should_show_scan_credit_card_(false),
-      popup_type_(PopupType::kUnspecified),
-      should_show_cc_signin_promo_(false),
-      weak_ptr_factory_(this) {
+    : manager_(manager), driver_(driver) {
   DCHECK(manager);
 }
 
@@ -72,6 +65,8 @@ void AutofillExternalDelegate::OnQuery(int query_id,
   popup_type_ = manager_->GetPopupType(query_form_, query_field_);
   should_show_cc_signin_promo_ =
       manager_->ShouldShowCreditCardSigninPromo(query_form_, query_field_);
+  should_show_cards_from_account_option_ =
+      manager_->ShouldShowCardsFromAccountOption(query_form_, query_field_);
 }
 
 void AutofillExternalDelegate::OnSuggestionsReturned(
@@ -114,6 +109,13 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
       has_autofill_suggestions_ = true;
       break;
     }
+  }
+
+  if (should_show_cards_from_account_option_) {
+    suggestions.emplace_back(
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ACCOUNT_CARDS));
+    suggestions.back().frontend_id = POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS;
+    suggestions.back().icon = base::ASCIIToUTF16("google");
   }
 
   if (has_autofill_suggestions_)
@@ -245,6 +247,8 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
         &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
   } else if (identifier == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
     manager_->client()->ExecuteCommand(identifier);
+  } else if (identifier == POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS) {
+    // TODO(crbug.com/905052): Handle this event.
   } else {
     if (identifier > 0)  // Denotes an Autofill suggestion.
       AutofillMetrics::LogAutofillSuggestionAcceptedIndex(position);

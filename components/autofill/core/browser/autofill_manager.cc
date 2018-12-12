@@ -301,6 +301,20 @@ bool AutofillManager::ShouldShowCreditCardSigninPromo(
   return false;
 }
 
+bool AutofillManager::ShouldShowCardsFromAccountOption(
+    const FormData& form,
+    const FormFieldData& field) {
+  // Check whether we are dealing with a credit card field.
+  AutofillField* autofill_field = GetAutofillField(form, field);
+  if (!autofill_field || autofill_field->Type().group() != CREDIT_CARD)
+    return false;
+
+  if (IsFormNonSecure(form))
+    return false;
+
+  return personal_data_->ShouldShowCardsFromAccountOption();
+}
+
 bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms,
                                        const base::TimeTicks timestamp) {
   bool enabled = IsAutofillEnabled();
