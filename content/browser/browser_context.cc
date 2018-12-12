@@ -332,6 +332,8 @@ class BrowserContextServiceManagerConnectionHolder
     return service_manager_connection_.get();
   }
 
+  void DestroyRunningServices() { running_services_.clear(); }
+
  private:
   void OnServiceRequest(const std::string& service_name,
                         service_manager::mojom::ServiceRequest request) {
@@ -576,6 +578,17 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
   // therefore explicitly tear down embedded Content Service instances now to
   // ensure that all their WebContents (and therefore RPHs) are torn down too.
   browser_context->RemoveUserData(kContentServiceDelegateKey);
+
+  // Tear down all running service instances which were started on behalf of
+  // this BrowserContext. Note that we leave the UserData itself in place
+  // because it's possible for someone to call
+  // |GetServiceManagerConnectionFor()| between now and actual BrowserContext
+  // destruction.
+  BrowserContextServiceManagerConnectionHolder* connection_holder =
+      static_cast<BrowserContextServiceManagerConnectionHolder*>(
+          browser_context->GetUserData(kServiceManagerConnection));
+  if (connection_holder)
+    connection_holder->DestroyRunningServices();
 
   // Service Workers must shutdown before the browser context is destroyed,
   // since they keep render process hosts alive and the codebase assumes that
