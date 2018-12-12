@@ -114,9 +114,10 @@ public class FeedRefreshTaskTest {
     @SmallTest
     public void testCancelWakeUp() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(0, mTaskScheduler.getCanceledTaskIds().size());
+            int initialCanceledTasks = mTaskScheduler.getCanceledTaskIds().size();
             FeedRefreshTask.cancelWakeUp();
-            Assert.assertEquals(1, mTaskScheduler.getCanceledTaskIds().size());
+            Assert.assertEquals(
+                    initialCanceledTasks + 1, mTaskScheduler.getCanceledTaskIds().size());
         });
     }
 
