@@ -29,14 +29,15 @@ class TrayInfoLabel;
 class TriView;
 
 namespace tray {
+class NetworkSectionHeaderView;
+class MobileSectionHeaderView;
+class WifiSectionHeaderView;
 
 // A list of available networks of a given type. This class is used for all
 // network types except VPNs. For VPNs, see the |VPNList| class.
 class NetworkListView : public NetworkStateListDetailedView,
                         public network_icon::AnimationObserver {
  public:
-  class SectionHeaderRowView;
-
   NetworkListView(DetailedViewDelegate* delegate, LoginStatus login);
   ~NetworkListView() override;
 
@@ -114,15 +115,15 @@ class NetworkListView : public NetworkStateListDetailedView,
                        int insertion_index,
                        TrayInfoLabel** info_label_ptr);
 
-  // Creates a cellular/tether/Wi-Fi header row |view| and adds it to
-  // |scroll_content()| if necessary and reorders the |scroll_content()| placing
-  // the |view| at |child_index|. Returns the index where the next child should
-  // be inserted, i.e., the index directly after the last inserted child.
-  int UpdateSectionHeaderRow(chromeos::NetworkTypePattern pattern,
-                             bool enabled,
-                             int child_index,
-                             SectionHeaderRowView** view,
-                             views::Separator** separator_view);
+  // Updates a cellular/Wi-Fi header row |view| and reorders the
+  // |scroll_content()| placing the |view| at |child_index|. Returns the index
+  // where the next child should be inserted, i.e., the index directly after the
+  // last inserted child.
+  int UpdateNetworkSectionHeader(chromeos::NetworkTypePattern pattern,
+                                 bool enabled,
+                                 int child_index,
+                                 NetworkSectionHeaderView* view,
+                                 views::Separator** separator_view);
 
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
@@ -131,14 +132,16 @@ class NetworkListView : public NetworkStateListDetailedView,
   // otherwise false.
   bool NeedUpdateViewForNetwork(const NetworkInfo& info) const;
 
-  bool needs_relayout_;
+  bool needs_relayout_ = false;
 
-  TrayInfoLabel* no_wifi_networks_view_;
-  SectionHeaderRowView* mobile_header_view_;
-  SectionHeaderRowView* wifi_header_view_;
-  views::Separator* mobile_separator_view_;
-  views::Separator* wifi_separator_view_;
-  TriView* connection_warning_;
+  // Owned by the views heirarchy.
+  TrayInfoLabel* mobile_status_message_ = nullptr;
+  TrayInfoLabel* wifi_status_message_ = nullptr;
+  MobileSectionHeaderView* mobile_header_view_ = nullptr;
+  WifiSectionHeaderView* wifi_header_view_ = nullptr;
+  views::Separator* mobile_separator_view_ = nullptr;
+  views::Separator* wifi_separator_view_ = nullptr;
+  TriView* connection_warning_ = nullptr;
 
   // An owned list of network info.
   std::vector<std::unique_ptr<NetworkInfo>> network_list_;
