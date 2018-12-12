@@ -20,16 +20,16 @@ import java.util.List;
 public class Promise<T> {
     // TODO(peconn): Implement rejection handlers that can recover from rejection.
 
+    @IntDef({PromiseState.UNFULFILLED, PromiseState.FULFILLED, PromiseState.REJECTED})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({UNFULFILLED, FULFILLED, REJECTED})
-    private @interface PromiseState {}
-
-    private static final int UNFULFILLED = 0;
-    private static final int FULFILLED = 1;
-    private static final int REJECTED = 2;
+    private @interface PromiseState {
+        int UNFULFILLED = 0;
+        int FULFILLED = 1;
+        int REJECTED = 2;
+    }
 
     @PromiseState
-    private int mState = UNFULFILLED;
+    private int mState = PromiseState.UNFULFILLED;
 
     private T mResult;
     private final List<Callback<T>> mFulfillCallbacks = new LinkedList<>();
@@ -124,9 +124,9 @@ public class Promise<T> {
     }
 
     private void thenInner(Callback<T> onFulfill) {
-        if (mState == FULFILLED) {
+        if (mState == PromiseState.FULFILLED) {
             postCallbackToLooper(onFulfill, mResult);
-        } else if (mState == UNFULFILLED) {
+        } else if (mState == PromiseState.UNFULFILLED) {
             mFulfillCallbacks.add(onFulfill);
         }
     }
@@ -135,9 +135,9 @@ public class Promise<T> {
         assert !mThrowingRejectionHandler : "Do not add an exception handler to a Promise you have "
             + "called the single argument Promise.then(Callback) on.";
 
-        if (mState == REJECTED) {
+        if (mState == PromiseState.REJECTED) {
             postCallbackToLooper(onReject, mRejectReason);
-        } else if (mState == UNFULFILLED) {
+        } else if (mState == PromiseState.UNFULFILLED) {
             mRejectCallbacks.add(onReject);
         }
     }
@@ -207,9 +207,9 @@ public class Promise<T> {
      */
     public void fulfill(final T result) {
         checkThread();
-        assert mState == UNFULFILLED;
+        assert mState == PromiseState.UNFULFILLED;
 
-        mState = FULFILLED;
+        mState = PromiseState.FULFILLED;
         mResult = result;
 
         for (final Callback<T> callback : mFulfillCallbacks) {
@@ -228,9 +228,9 @@ public class Promise<T> {
      */
     public void reject(final Exception reason) {
         checkThread();
-        assert mState == UNFULFILLED;
+        assert mState == PromiseState.UNFULFILLED;
 
-        mState = REJECTED;
+        mState = PromiseState.REJECTED;
         mRejectReason = reason;
 
         for (final Callback<Exception> callback : mRejectCallbacks) {
@@ -251,7 +251,7 @@ public class Promise<T> {
      */
     public boolean isFulfilled() {
         checkThread();
-        return mState == FULFILLED;
+        return mState == PromiseState.FULFILLED;
     }
 
     /**
@@ -259,7 +259,7 @@ public class Promise<T> {
      */
     public boolean isRejected() {
         checkThread();
-        return mState == REJECTED;
+        return mState == PromiseState.REJECTED;
     }
 
     /**
