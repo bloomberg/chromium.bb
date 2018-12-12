@@ -133,7 +133,11 @@ PerformanceMark* UserTiming::MarkInternal(ScriptState* script_state,
                                           const DOMHighResTimeStamp& start_time,
                                           const ScriptValue& detail,
                                           ExceptionState& exception_state) {
-  if (GetRestrictedKeyMap().Contains(mark_name)) {
+  DCHECK(performance_);
+  bool is_worker_global_scope =
+      performance_->GetExecutionContext() &&
+      performance_->GetExecutionContext()->IsWorkerGlobalScope();
+  if (!is_worker_global_scope && GetRestrictedKeyMap().Contains(mark_name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "'" + mark_name +
