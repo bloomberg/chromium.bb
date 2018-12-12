@@ -78,15 +78,16 @@ void ExtensionApps::Connect(apps::mojom::SubscriberPtr subscriber,
                             apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
   if (profile_) {
-    // TODO(crbug.com/826982): consider disabled and terminated extensions, not
-    // just enabled ones, as per AppListControllerDelegate::GetApps in
-    // https://cs.chromium.org/chromium/src/chrome/browser/ui/app_list/app_list_controller_delegate.cc?g=0&l=193
-    for (const auto& extension :
-         extensions::ExtensionRegistry::Get(profile_)->enabled_extensions()) {
-      if (extension->is_app()) {
-        apps.push_back(Convert(extension.get()));
-      }
-    }
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile_);
+    ConvertVector(registry->enabled_extensions(),
+                  apps::mojom::Readiness::kReady, &apps);
+    ConvertVector(registry->disabled_extensions(),
+                  apps::mojom::Readiness::kDisabledByUser, &apps);
+    ConvertVector(registry->terminated_extensions(),
+                  apps::mojom::Readiness::kTerminated, &apps);
+    // blacklisted_extensions and blocked_extensions, corresponding to
+    // kDisabledByBlacklist and kDisabledByPolicy, are deliberately ignored.
   }
   subscriber->OnApps(std::move(apps));
   subscribers_.AddPtr(std::move(subscriber));
@@ -144,12 +145,13 @@ void ExtensionApps::Launch(const std::string& app_id,
 }
 
 apps::mojom::AppPtr ExtensionApps::Convert(
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    apps::mojom::Readiness readiness) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
 
   app->app_type = apps::mojom::AppType::kExtension;
   app->app_id = extension->id();
-  app->readiness = apps::mojom::Readiness::kReady;
+  app->readiness = readiness;
   app->name = extension->name();
 
   app->icon_key = apps::mojom::IconKey::New();
@@ -164,6 +166,16 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->show_in_search = show;
 
   return app;
+}
+
+void ExtensionApps::ConvertVector(const extensions::ExtensionSet& extensions,
+                                  apps::mojom::Readiness readiness,
+                                  std::vector<apps::mojom::AppPtr>* apps_out) {
+  for (const auto& extension : extensions) {
+    if (extension->is_app()) {
+      apps_out->push_back(Convert(extension.get(), readiness));
+    }
+  }
 }
 
 bool ExtensionApps::RunExtensionEnableFlow(const std::string& app_id) {
