@@ -108,7 +108,7 @@ class PLATFORM_EXPORT FetchContext
 
   virtual void Trace(blink::Visitor*);
 
-  virtual bool IsFrameFetchContext() { return false; }
+  virtual bool IsFrameFetchContext() const { return false; }
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
 

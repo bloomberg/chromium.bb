@@ -45,6 +45,7 @@ n * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -77,7 +78,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   FrameFetchContext(DocumentLoader*, Document*);
   ~FrameFetchContext() override;
 
-  bool IsFrameFetchContext() override { return true; }
+  bool IsFrameFetchContext() const override { return true; }
 
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
@@ -276,6 +277,13 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   // Non-null only when detached.
   Member<const FrozenState> frozen_state_;
+};
+
+template <>
+struct DowncastTraits<FrameFetchContext> {
+  static bool AllowFrom(const FetchContext& context) {
+    return context.IsFrameFetchContext();
+  }
 };
 
 }  // namespace blink
