@@ -22,7 +22,7 @@
     {fg: 'rgba(255, 255, 255, 1)', bg: 'rgba(157, 83, 95, 1)'}
   ];
 
-  function logLineForColorPair(fgColorString, bgColorString) {
+  function logLineForColorPair(fgColorString, bgColorString, level) {
     var contrastInfoData = {
       backgroundColors: [bgColorString],
       computedFontSize: '16px',
@@ -32,17 +32,19 @@
     contrastInfo.update(contrastInfoData);
     var fgColor = Common.Color.parse(fgColorString);
     contrastInfo.setColor(fgColor.hsva(), fgColorString);
-    var d = contrastLineBuilder.drawContrastRatioLine(100, 100);
+    var d = contrastLineBuilder.drawContrastRatioLine(100, 100, level);
 
     TestRunner.addResult('');
     TestRunner.addResult(
-        'For fgColor ' + fgColorString + ', bgColor ' + bgColorString + ', path was' + (d.length ? '' : ' empty.'));
-    if (d.length)
+        'For fgColor ' + fgColorString + ', bgColor ' + bgColorString + ', ' + level + ' path was' + (d ? '' : ' empty.'));
+    if (d)
       TestRunner.addResult(d);
   }
 
-  for (var pair of colorPairs)
-    logLineForColorPair(pair.fg, pair.bg);
+  for (let level of ['aa', 'aaa']) {
+    for (var pair of colorPairs)
+      logLineForColorPair(pair.fg, pair.bg, level);
+  }
 
   TestRunner.completeTest();
 })();
