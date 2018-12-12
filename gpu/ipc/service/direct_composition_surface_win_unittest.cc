@@ -901,9 +901,10 @@ TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(
-      new gl::GLImageDXGIHandle(texture_size, 0, gfx::BufferFormat::RGBA_8888));
-  ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
+                                           gfx::BufferFormat::RGBA_8888));
 
   ui::DCRendererLayerParams params;
   params.y_image = image_dxgi;
@@ -951,9 +952,10 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyBoundsRect) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(
-      new gl::GLImageDXGIHandle(texture_size, 0, gfx::BufferFormat::RGBA_8888));
-  ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
+                                           gfx::BufferFormat::RGBA_8888));
 
   // Layer with empty bounds rect.
   ui::DCRendererLayerParams params;
@@ -1006,9 +1008,10 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(
-      new gl::GLImageDXGIHandle(texture_size, 0, gfx::BufferFormat::RGBA_8888));
-  ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
+                                           gfx::BufferFormat::RGBA_8888));
 
   // Layer with empty content rect.
   ui::DCRendererLayerParams params;
@@ -1060,9 +1063,10 @@ TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(
-      new gl::GLImageDXGIHandle(texture_size, 0, gfx::BufferFormat::RGBA_8888));
-  ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
+                                           gfx::BufferFormat::RGBA_8888));
 
   // Pass content rect with odd with and height.  Surface should round up width
   // and height when creating swap chain.
@@ -1125,9 +1129,10 @@ TEST_F(DirectCompositionPixelTest, NonZeroBoundsOffset) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(
-      new gl::GLImageDXGIHandle(texture_size, 0, gfx::BufferFormat::RGBA_8888));
-  ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
+                                           gfx::BufferFormat::RGBA_8888));
 
   ui::DCRendererLayerParams params;
   params.y_image = image_dxgi;
@@ -1192,9 +1197,10 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
   // The format doesn't matter, since we aren't binding.
-  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(
-      new gl::GLImageDXGIHandle(texture_size, 0, gfx::BufferFormat::RGBA_8888));
-  ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  ASSERT_TRUE(image_dxgi->InitializeHandle(base::win::ScopedHandle(handle), 0,
+                                           gfx::BufferFormat::RGBA_8888));
 
   {
     ui::DCRendererLayerParams params;

@@ -511,7 +511,7 @@ class DCLayerTree::SwapChainPresenter {
   // Present to a decode swap chain created from compatible video decoder
   // buffers using given |image_dxgi| with destination size |swap_chain_size|.
   // Sets |needs_commit| to true if a commit is needed. Returns true on success.
-  bool PresentToDecodeSwapChain(gl::GLImageDXGIBase* image_dxgi,
+  bool PresentToDecodeSwapChain(gl::GLImageDXGI* image_dxgi,
                                 const gfx::Rect& content_rect,
                                 const gfx::Size& swap_chain_size,
                                 bool* needs_commit);
@@ -947,7 +947,7 @@ bool DCLayerTree::SwapChainPresenter::UpdateVisuals(
 }
 
 bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
-    gl::GLImageDXGIBase* image_dxgi,
+    gl::GLImageDXGI* image_dxgi,
     const gfx::Rect& content_rect,
     const gfx::Size& swap_chain_size,
     bool* needs_commit) {
@@ -1052,8 +1052,8 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     bool* needs_commit) {
   *needs_commit = false;
 
-  gl::GLImageDXGIBase* image_dxgi =
-      gl::GLImageDXGIBase::FromGLImage(params.y_image.get());
+  gl::GLImageDXGI* image_dxgi =
+      gl::GLImageDXGI::FromGLImage(params.y_image.get());
   gl::GLImageMemory* y_image_memory =
       gl::GLImageMemory::FromGLImage(params.y_image.get());
   gl::GLImageMemory* uv_image_memory =
