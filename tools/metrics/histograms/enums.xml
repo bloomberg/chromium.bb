@@ -21043,6 +21043,7 @@ Called by update_net_error_codes.py.-->
   <int value="28" label="DocumentWrite"/>
   <int value="29" label="LazyLoad"/>
   <int value="30" label="LayoutAnimations"/>
+  <int value="31" label="WakeLock"/>
 </enum>
 
 <enum name="FeedbackSource">

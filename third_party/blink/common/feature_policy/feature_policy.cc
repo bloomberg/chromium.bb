@@ -313,6 +313,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
         FeaturePolicy::FeatureDefault::EnableForSelf},
        {mojom::FeaturePolicyFeature::kVerticalScroll,
         FeaturePolicy::FeatureDefault::EnableForAll},
+       {mojom::FeaturePolicyFeature::kWakeLock,
+        FeaturePolicy::FeatureDefault::EnableForSelf},
        {mojom::FeaturePolicyFeature::kWebVr,
         FeaturePolicy::FeatureDefault::EnableForSelf}});
   return *default_feature_list;

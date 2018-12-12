@@ -48,7 +48,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
     Document* document) {
   ParsedFeaturePolicy allowlists;
   BitVector features_specified(
-      static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue));
+      static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 1);
 
   // RFC2616, section 4.2 specifies that headers appearing multiple times can be
   // combined with a comma. Walk the header string, and parse each comma
@@ -276,6 +276,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
     ASSERT_ORIGIN_TRIAL(WebVR);
     ASSERT_ORIGIN_TRIAL(WebXR);
     default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
+    default_feature_name_map.Set("wake-lock",
+                                 mojom::FeaturePolicyFeature::kWakeLock);
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
       default_feature_name_map.Set(
           "layout-animations", mojom::FeaturePolicyFeature::kLayoutAnimations);
