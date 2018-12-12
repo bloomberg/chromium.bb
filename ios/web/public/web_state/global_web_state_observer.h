@@ -33,12 +33,6 @@ class GlobalWebStateObserver {
   virtual void NavigationItemsPruned(WebState* web_state,
                                      size_t pruned_item_count) {}
 
-  // Called when a navigation item has changed in |web_state|.
-  // DEPRECATED. Use WebStateObserver's |TitleWasSet| to listen for title
-  // changes and |DidFinishNavigation| for |window.location.replace|.
-  // TODO(crbug.com/782269): Remove this method.
-  virtual void NavigationItemChanged(WebState* web_state) {}
-
   // Called when a navigation item has been committed in |web_state|.
   // DEPRECATED. Use WebStateObserver's |DidFinishNavigation| instead.
   // TODO(crbug.com/782269): Remove this method.

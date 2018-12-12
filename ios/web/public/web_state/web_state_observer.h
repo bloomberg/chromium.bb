@@ -42,13 +42,6 @@ class WebStateObserver {
   virtual void NavigationItemsPruned(WebState* web_state,
                                      size_t pruned_item_count) {}
 
-  // This method is invoked either when NavigationItem's titile did change or
-  // when window.location.replace JavaScript API was called.
-  // DEPRECATED. Use |TitleWasSet| to listen for title changes and
-  // |DidFinishNavigation| for |window.location.replace|.
-  // TODO(crbug.com/720786): Remove this method.
-  virtual void NavigationItemChanged(WebState* web_state) {}
-
   // This method is invoked when a new non-pending navigation item is created.
   // This corresponds to one NavigationManager item being created
   // (in the case of new navigations) or renavigated to (for back/forward

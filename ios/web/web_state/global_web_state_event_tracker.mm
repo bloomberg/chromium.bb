@@ -45,11 +45,6 @@ void GlobalWebStateEventTracker::NavigationItemsPruned(
     observer.NavigationItemsPruned(web_state, pruned_item_count);
 }
 
-void GlobalWebStateEventTracker::NavigationItemChanged(WebState* web_state) {
-  for (auto& observer : observer_list_)
-    observer.NavigationItemChanged(web_state);
-}
-
 void GlobalWebStateEventTracker::NavigationItemCommitted(
     WebState* web_state,
     const LoadCommittedDetails& load_details) {

@@ -67,11 +67,6 @@ struct TestNavigationItemsPrunedInfo {
   int count;
 };
 
-// Arguments passed to |NavigationItemChanged|.
-struct TestNavigationItemChangedInfo {
-  WebState* web_state = nullptr;
-};
-
 // Arguments passed to |TitleWasSet|.
 struct TestTitleWasSetInfo {
   WebState* web_state = nullptr;

@@ -844,11 +844,6 @@ void WebStateImpl::OnNavigationItemsPruned(size_t pruned_item_count) {
     observer.NavigationItemsPruned(this, pruned_item_count);
 }
 
-void WebStateImpl::OnNavigationItemChanged() {
-  for (auto& observer : observers_)
-    observer.NavigationItemChanged(this);
-}
-
 void WebStateImpl::OnNavigationItemCommitted(
     const LoadCommittedDetails& load_details) {
   if (wk_navigation_util::IsWKInternalUrl(load_details.item->GetURL()))

@@ -54,10 +54,6 @@ void LegacyNavigationManagerImpl::OnNavigationItemsPruned(
   delegate_->OnNavigationItemsPruned(pruned_item_count);
 }
 
-void LegacyNavigationManagerImpl::OnNavigationItemChanged() {
-  delegate_->OnNavigationItemChanged();
-}
-
 void LegacyNavigationManagerImpl::OnNavigationItemCommitted() {
   LoadCommittedDetails details;
   details.item = GetLastCommittedItemInCurrentOrRestoredSession();

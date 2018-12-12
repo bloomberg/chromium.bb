@@ -73,7 +73,6 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
   TestGlobalWebStateObserver()
       : GlobalWebStateObserver(),
         navigation_items_pruned_called_(false),
-        navigation_item_changed_called_(false),
         navigation_item_committed_called_(false),
         did_start_loading_called_(false),
         did_stop_loading_called_(false),
@@ -85,9 +84,6 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
   // has been called.
   bool navigation_items_pruned_called() const {
     return navigation_items_pruned_called_;
-  }
-  bool navigation_item_changed_called() const {
-    return navigation_item_changed_called_;
   }
   bool navigation_item_committed_called() const {
     return navigation_item_committed_called_;
@@ -109,9 +105,6 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
   void NavigationItemsPruned(WebState* web_state,
                              size_t pruned_item_count) override {
     navigation_items_pruned_called_ = true;
-  }
-  void NavigationItemChanged(WebState* web_state) override {
-    navigation_item_changed_called_ = true;
   }
   void NavigationItemCommitted(
       WebState* web_state,
@@ -139,7 +132,6 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
   }
 
   bool navigation_items_pruned_called_;
-  bool navigation_item_changed_called_;
   bool navigation_item_committed_called_;
   bool did_start_loading_called_;
   bool did_stop_loading_called_;
@@ -455,13 +447,6 @@ TEST_P(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(web_state_.get(),
             observer->navigation_items_pruned_info()->web_state);
 
-  // Test that NavigationItemChanged() is called.
-  ASSERT_FALSE(observer->navigation_item_changed_info());
-  web_state_->OnNavigationItemChanged();
-  ASSERT_TRUE(observer->navigation_item_changed_info());
-  EXPECT_EQ(web_state_.get(),
-            observer->navigation_item_changed_info()->web_state);
-
   // Test that NavigationItemCommitted() is called.
   ASSERT_FALSE(observer->commit_navigation_info());
   LoadCommittedDetails details;
@@ -655,11 +640,6 @@ TEST_P(WebStateImplTest, GlobalObserverTest) {
   EXPECT_FALSE(observer->navigation_items_pruned_called());
   web_state_->OnNavigationItemsPruned(1);
   EXPECT_TRUE(observer->navigation_items_pruned_called());
-
-  // Test that NavigationItemChanged() is called.
-  EXPECT_FALSE(observer->navigation_item_changed_called());
-  web_state_->OnNavigationItemChanged();
-  EXPECT_TRUE(observer->navigation_item_changed_called());
 
   // Test that NavigationItemCommitted() is called.
   EXPECT_FALSE(observer->navigation_item_committed_called());
