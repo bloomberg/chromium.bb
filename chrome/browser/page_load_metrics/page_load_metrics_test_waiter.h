@@ -40,6 +40,9 @@ class PageLoadMetricsTestWaiter
   // Add a subframe-level expectation.
   void AddSubFrameExpectation(TimingField field);
 
+  // Add a single WebFeature expectation.
+  void AddWebFeatureExpectation(blink::mojom::WebFeature web_feature);
+
   // Add a minimum completed resource expectation.
   void AddMinimumCompleteResourcesExpectation(
       int expected_minimum_complete_resources);
@@ -91,6 +94,9 @@ class PageLoadMetricsTestWaiter
     void OnResourceDataUseObserved(
         const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
             resources) override;
+
+    void OnFeaturesUsageObserved(const mojom::PageLoadFeatures& features,
+                                 const PageLoadExtraInfo& extra_info) override;
 
    private:
     const base::WeakPtr<PageLoadMetricsTestWaiter> waiter_;
@@ -153,18 +159,29 @@ class PageLoadMetricsTestWaiter
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources);
 
+  // Updates |observed_web_features_| to record any new feature observed.
+  // Stops waiting if expectations are satisfied after update.
+  void OnFeaturesUsageObserved(const mojom::PageLoadFeatures& features,
+                               const PageLoadExtraInfo& extra_info);
+
   void OnTrackerCreated(page_load_metrics::PageLoadTracker* tracker) override;
 
   void OnCommit(page_load_metrics::PageLoadTracker* tracker) override;
 
   bool ResourceUseExpectationsSatisfied() const;
 
+  bool WebFeaturesExpectationsSatisfied() const;
+
   std::unique_ptr<base::RunLoop> run_loop_;
 
   TimingFieldBitSet page_expected_fields_;
   TimingFieldBitSet subframe_expected_fields_;
+  std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
+      expected_web_features_;
 
   TimingFieldBitSet observed_page_fields_;
+  std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
+      observed_web_features_;
 
   int current_complete_resources_ = 0;
   int64_t current_network_bytes_ = 0;

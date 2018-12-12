@@ -2090,6 +2090,8 @@ enum WebFeature {
   kOpenerNavigationDownloadCrossOriginNoGesture = 2649,
   kV8RegExpMatchIsTrueishOnNonJSRegExp = 2650,
   kV8RegExpMatchIsFalseishOnJSRegExp = 2651,
+  kDownloadInAdFrameWithUserGesture = 2652,
+  kDownloadInAdFrameWithoutUserGesture = 2653,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
