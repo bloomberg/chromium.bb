@@ -951,10 +951,6 @@ message BrowserReport {
 
   // Profile specific reports, one per profile.
   repeated ChromeUserProfileReport chrome_user_profile_reports = 4;
-
-  // The device serial number (this might differ with the client ID, depending
-  // on the platform)
-  optional string serial_number = 5;
 }
 
 // Report the status of a Chrome installation on non-Chrome OS platform.
@@ -970,6 +966,9 @@ message ChromeDesktopReportRequest {
   optional string os_user = 3;
   // Browser related info.
   optional BrowserReport browser_report = 4;
+  // The device serial number (this might differ with the client ID, depending
+  // on the platform)
+  optional string serial_number = 5;
 }
 
 // A validation issue from validating a policy value that was contained in

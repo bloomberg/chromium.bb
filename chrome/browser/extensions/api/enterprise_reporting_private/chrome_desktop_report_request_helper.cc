@@ -82,11 +82,6 @@ void AppendAdditionalBrowserInformation(em::ChromeDesktopReportRequest* request,
                                         Profile* profile) {
   const PrefService* prefs = profile->GetPrefs();
 
-#if defined(OS_WIN)
-  request->mutable_browser_report()->set_serial_number(
-      policy::BrowserDMTokenStorage::Get()->RetrieveSerialNumber());
-#endif
-
   // Set Chrome version number
   request->mutable_browser_report()->set_browser_version(
       version_info::GetVersionNumber());
@@ -167,6 +162,11 @@ void AppendPlatformInformation(em::ChromeDesktopReportRequest* request,
   base::Value os_user = base::Value(base::Value::Type::DICTIONARY);
   os_user.SetKey(kUsername, base::Value(policy::GetOSUsername()));
   base::JSONWriter::Write(os_user, request->mutable_os_user());
+
+#if defined(OS_WIN)
+  request->set_serial_number(
+      policy::BrowserDMTokenStorage::Get()->RetrieveSerialNumber());
+#endif
 }
 
 std::unique_ptr<em::ChromeUserProfileReport>
