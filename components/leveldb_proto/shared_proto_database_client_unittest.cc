@@ -31,9 +31,8 @@ class SharedProtoDatabaseClientTest : public testing::Test {
   void SetUp() override {
     temp_dir_.reset(new base::ScopedTempDir());
     ASSERT_TRUE(temp_dir_->CreateUniqueTempDir());
-    db_ = base::WrapRefCounted(new SharedProtoDatabase(
-        scoped_task_environment_.GetMainThreadTaskRunner(), "client",
-        temp_dir_->GetPath()));
+    db_ = base::WrapRefCounted(
+        new SharedProtoDatabase("client", temp_dir_->GetPath()));
   }
 
   void TearDown() override {
@@ -51,12 +50,13 @@ class SharedProtoDatabaseClientTest : public testing::Test {
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
-      ProtoLevelDBWrapper::InitCallback callback) {
+      Callbacks::InitStatusCallback callback) {
     return db_->GetClient<T>(
         client_namespace, type_prefix, create_if_missing,
-        base::BindOnce([](ProtoLevelDBWrapper::InitCallback callback,
-                          bool success) { std::move(callback).Run(success); },
-                       std::move(callback)));
+        base::BindOnce(
+            [](Callbacks::InitStatusCallback callback,
+               Enums::InitStatus status) { std::move(callback).Run(status); },
+            std::move(callback)));
   }
 
   template <typename T>
@@ -64,16 +64,17 @@ class SharedProtoDatabaseClientTest : public testing::Test {
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
-      bool* success) {
+      Enums::InitStatus* status) {
     base::RunLoop loop;
     auto client = GetClient<T>(
         client_namespace, type_prefix, create_if_missing,
         base::BindOnce(
-            [](bool* success_out, base::OnceClosure closure, bool success) {
-              *success_out = success;
+            [](Enums::InitStatus* status_out, base::OnceClosure closure,
+               Enums::InitStatus status) {
+              *status_out = status;
               std::move(closure).Run();
             },
-            success, loop.QuitClosure()));
+            status, loop.QuitClosure()));
     loop.Run();
     return client;
   }
@@ -242,35 +243,37 @@ class SharedProtoDatabaseClientTest : public testing::Test {
 };
 
 TEST_F(SharedProtoDatabaseClientTest, InitSuccess) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   auto client =
       GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 
-  client->Init("client",
-               base::BindOnce([](bool success) { ASSERT_TRUE(success); }));
+  client->Init("client", base::BindOnce([](Enums::InitStatus status) {
+                 ASSERT_EQ(status, Enums::InitStatus::kOK);
+               }));
 }
 
 TEST_F(SharedProtoDatabaseClientTest, InitFail) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   auto client =
       GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  false /* create_if_missing */, &success);
-  ASSERT_FALSE(success);
+                                  false /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kInvalidOperation);
 
-  client->Init("client",
-               base::BindOnce([](bool success) { ASSERT_FALSE(success); }));
+  client->Init("client", base::BindOnce([](Enums::InitStatus status) {
+                 ASSERT_EQ(status, Enums::InitStatus::kError);
+               }));
 }
 
 // Ensure that our LevelDB contains the properly prefixed entries and also
 // removes prefixed entries correctly.
 TEST_F(SharedProtoDatabaseClientTest, UpdateEntriesAppropriatePrefix) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   auto client =
       GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 
   std::vector<std::string> key_list = {"entry1", "entry2", "entry3"};
   UpdateEntries(client.get(), key_list, leveldb_proto::KeyVector(), true);
@@ -296,15 +299,15 @@ TEST_F(SharedProtoDatabaseClientTest, UpdateEntriesAppropriatePrefix) {
 
 TEST_F(SharedProtoDatabaseClientTest,
        UpdateEntries_DeletesCorrectClientEntries) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   auto client_a =
       GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
   auto client_b =
       GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 
   std::vector<std::string> key_list = {"entry1", "entry2", "entry3"};
   UpdateEntries(client_a.get(), key_list, leveldb_proto::KeyVector(), true);
@@ -330,11 +333,11 @@ TEST_F(SharedProtoDatabaseClientTest,
 
 TEST_F(SharedProtoDatabaseClientTest,
        UpdateEntriesWithRemoveFilter_DeletesCorrectEntries) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   auto client =
       GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 
   std::vector<std::string> key_list = {"entry1", "entry2", "testentry3"};
   UpdateEntries(client.get(), key_list, leveldb_proto::KeyVector(), true);
@@ -361,15 +364,15 @@ TEST_F(SharedProtoDatabaseClientTest,
 }
 
 TEST_F(SharedProtoDatabaseClientTest, LoadEntriesWithFilter) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   auto client_a =
       GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
   auto client_b =
       GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 
   std::vector<std::string> key_list_a = {"entry123", "entry2123", "testentry3"};
   UpdateEntries(client_a.get(), key_list_a, leveldb_proto::KeyVector(), true);
@@ -404,15 +407,15 @@ TEST_F(SharedProtoDatabaseClientTest, LoadEntriesWithFilter) {
 }
 
 TEST_F(SharedProtoDatabaseClientTest, LoadKeys) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   auto client_a =
       GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
   auto client_b =
       GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 
   std::vector<std::string> key_list_a = {"entry123", "entry2123", "testentry3",
                                          "testing"};
@@ -431,15 +434,15 @@ TEST_F(SharedProtoDatabaseClientTest, LoadKeys) {
 }
 
 TEST_F(SharedProtoDatabaseClientTest, GetEntry) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   auto client_a =
       GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
   auto client_b =
       GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 
   std::vector<std::string> key_list = {"a", "b", "c"};
   // Add the same entries to both because we want to make sure we only get the
@@ -461,15 +464,15 @@ TEST_F(SharedProtoDatabaseClientTest, GetEntry) {
 }
 
 TEST_F(SharedProtoDatabaseClientTest, TestDestroy) {
-  bool success = false;
+  auto status = Enums::InitStatus::kError;
   auto client_a =
       GetClientAndWait<TestProto>(kDefaultNamespace, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
   auto client_b =
       GetClientAndWait<TestProto>(kDefaultNamespace2, kDefaultTypePrefix,
-                                  true /* create_if_missing */, &success);
-  ASSERT_TRUE(success);
+                                  true /* create_if_missing */, &status);
+  ASSERT_EQ(status, Enums::InitStatus::kOK);
 
   std::vector<std::string> key_list = {"a", "b", "c"};
   // Add the same entries to both because we want to make sure we only destroy

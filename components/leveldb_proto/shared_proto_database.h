@@ -20,12 +20,20 @@
 
 namespace leveldb_proto {
 
+template <typename T>
+void GetClientInitCallback(
+    base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient<T>>)>
+        callback,
+    std::unique_ptr<SharedProtoDatabaseClient<T>> client,
+    Enums::InitStatus status);
+
 // Controls a single LevelDB database to be used by many clients, and provides
 // a way to get SharedProtoDatabaseClients that allow shared access to the
 // underlying single database.
-class SharedProtoDatabase : public base::RefCounted<SharedProtoDatabase> {
+class SharedProtoDatabase
+    : public base::RefCountedThreadSafe<SharedProtoDatabase> {
  public:
-  void GetDatabaseInitStateAsync(ProtoLevelDBWrapper::InitCallback callback);
+  void GetDatabaseInitStatusAsync(Callbacks::InitStatusCallback callback);
 
   // Always returns a SharedProtoDatabaseClient pointer, but that should ONLY
   // be used if the callback returns success.
@@ -34,12 +42,13 @@ class SharedProtoDatabase : public base::RefCounted<SharedProtoDatabase> {
       const std::string& client_namespace,
       const std::string& type_prefix,
       bool create_if_missing,
-      ProtoLevelDBWrapper::InitCallback callback);
+      Callbacks::InitStatusCallback callback);
 
  private:
-  friend class base::RefCounted<SharedProtoDatabase>;
+  friend class base::RefCountedThreadSafe<SharedProtoDatabase>;
   friend class ProtoDatabaseProvider;
 
+  friend class ProtoDatabaseWrapperTest;
   friend class SharedProtoDatabaseTest;
   friend class SharedProtoDatabaseClientTest;
 
@@ -52,26 +61,33 @@ class SharedProtoDatabase : public base::RefCounted<SharedProtoDatabase> {
 
   // Private since we only want to create a singleton of it.
   SharedProtoDatabase(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const std::string& client_name,
       const base::FilePath& db_dir);
 
   virtual ~SharedProtoDatabase();
 
+  void ProcessInitRequests(Enums::InitStatus status);
+
+  template <typename T>
+  std::unique_ptr<SharedProtoDatabaseClient<T>> GetClientInternal(
+      const std::string& client_namespace,
+      const std::string& type_prefix);
+
   // |callback_task_runner| should be the same sequence that Init was called
   // from.
   void Init(bool create_if_missing,
-            ProtoLevelDBWrapper::InitCallback callback,
+            Callbacks::InitStatusCallback callback,
             scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
   void OnDatabaseInit(
-      ProtoLevelDBWrapper::InitCallback callback,
+      Callbacks::InitStatusCallback callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-      bool success);
-  void RunInitCallback(ProtoLevelDBWrapper::InitCallback callback);
+      Enums::InitStatus status);
+  void RunInitCallback(
+      Callbacks::InitStatusCallback callback,
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
 
   LevelDB* GetLevelDBForTesting() const;
 
-  SEQUENCE_CHECKER(on_creation_sequence_);
   SEQUENCE_CHECKER(on_task_runner_);
 
   InitState init_state_ = InitState::kNone;
@@ -84,6 +100,14 @@ class SharedProtoDatabase : public base::RefCounted<SharedProtoDatabase> {
   std::unique_ptr<ProtoLevelDBWrapper> db_wrapper_;
   std::unique_ptr<LevelDB> db_;
 
+  // Used to return to the Init callback in the case of an error, so we can
+  // report corruptions.
+  Enums::InitStatus init_status_ = Enums::InitStatus::kNotInitialized;
+
+  std::queue<std::pair<Callbacks::InitStatusCallback,
+                       scoped_refptr<base::SequencedTaskRunner>>>
+      outstanding_init_requests_;
+
   base::WeakPtrFactory<SharedProtoDatabase> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedProtoDatabase);
@@ -94,7 +118,7 @@ std::unique_ptr<SharedProtoDatabaseClient<T>> SharedProtoDatabase::GetClient(
     const std::string& client_namespace,
     const std::string& type_prefix,
     bool create_if_missing,
-    ProtoLevelDBWrapper::InitCallback callback) {
+    Callbacks::InitStatusCallback callback) {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
   task_runner_->PostTask(
@@ -102,6 +126,13 @@ std::unique_ptr<SharedProtoDatabaseClient<T>> SharedProtoDatabase::GetClient(
       base::BindOnce(&SharedProtoDatabase::Init, weak_factory_.GetWeakPtr(),
                      create_if_missing, std::move(callback),
                      std::move(current_task_runner)));
+  return GetClientInternal<T>(client_namespace, type_prefix);
+}
+
+template <typename T>
+std::unique_ptr<SharedProtoDatabaseClient<T>>
+SharedProtoDatabase::GetClientInternal(const std::string& client_namespace,
+                                       const std::string& type_prefix) {
   return base::WrapUnique(new SharedProtoDatabaseClient<T>(
       std::make_unique<ProtoLevelDBWrapper>(task_runner_, db_.get()),
       client_namespace, type_prefix, this));

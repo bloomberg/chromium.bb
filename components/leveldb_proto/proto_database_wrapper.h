@@ -21,8 +21,6 @@ namespace leveldb_proto {
 template <typename T>
 class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
  public:
-  using InitCallback = base::OnceCallback<void(bool success)>;
-
   ProtoDatabaseWrapper(
       const std::string& client_namespace,
       const std::string& type_prefix,
@@ -36,73 +34,75 @@ class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
   void Init(const char* client_name,
             const base::FilePath& database_dir,
             const leveldb_env::Options& options,
-            typename ProtoDatabase<T>::InitCallback callback) override;
+            Callbacks::InitCallback callback) override;
 
   void Init(const std::string& client_name,
-            typename ProtoDatabase<T>::InitCallback callback) override;
+            Callbacks::InitStatusCallback callback) override;
 
-  void InitWithDatabase(
-      LevelDB* database,
-      const base::FilePath& database_dir,
-      const leveldb_env::Options& options,
-      typename ProtoDatabase<T>::InitCallback callback) override;
+  void InitWithDatabase(LevelDB* database,
+                        const base::FilePath& database_dir,
+                        const leveldb_env::Options& options,
+                        Callbacks::InitStatusCallback callback) override;
 
-  void UpdateEntries(
-      std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
-          entries_to_save,
-      std::unique_ptr<std::vector<std::string>> keys_to_remove,
-      typename ProtoDatabase<T>::UpdateCallback callback) override;
+  void UpdateEntries(std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
+                         entries_to_save,
+                     std::unique_ptr<std::vector<std::string>> keys_to_remove,
+                     Callbacks::UpdateCallback callback) override;
 
   void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
       const LevelDB::KeyFilter& delete_key_filter,
-      typename ProtoDatabase<T>::UpdateCallback callback) override;
+      Callbacks::UpdateCallback callback) override;
   void UpdateEntriesWithRemoveFilter(
       std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
           entries_to_save,
       const LevelDB::KeyFilter& delete_key_filter,
       const std::string& target_prefix,
-      typename ProtoDatabase<T>::UpdateCallback callback) override;
+      Callbacks::UpdateCallback callback) override;
 
-  void LoadEntries(typename ProtoDatabase<T>::LoadCallback callback) override;
+  void LoadEntries(
+      typename Callbacks::Internal<T>::LoadCallback callback) override;
 
   void LoadEntriesWithFilter(
       const LevelDB::KeyFilter& filter,
-      typename ProtoDatabase<T>::LoadCallback callback) override;
+      typename Callbacks::Internal<T>::LoadCallback callback) override;
   void LoadEntriesWithFilter(
       const LevelDB::KeyFilter& key_filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
-      typename ProtoDatabase<T>::LoadCallback callback) override;
+      typename Callbacks::Internal<T>::LoadCallback callback) override;
 
   void LoadKeysAndEntries(
-      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) override;
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
+      override;
 
   void LoadKeysAndEntriesWithFilter(
       const LevelDB::KeyFilter& filter,
-      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) override;
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
+      override;
   void LoadKeysAndEntriesWithFilter(
       const LevelDB::KeyFilter& filter,
       const leveldb::ReadOptions& options,
       const std::string& target_prefix,
-      typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) override;
+      typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback)
+      override;
 
-  void LoadKeys(typename ProtoDatabase<T>::LoadKeysCallback callback) override;
+  void LoadKeys(Callbacks::LoadKeysCallback callback) override;
   void LoadKeys(const std::string& target_prefix,
-                typename ProtoDatabase<T>::LoadKeysCallback callback) override;
+                Callbacks::LoadKeysCallback callback) override;
 
   void GetEntry(const std::string& key,
-                typename ProtoDatabase<T>::GetCallback callback) override;
+                typename Callbacks::Internal<T>::GetCallback callback) override;
 
-  void Destroy(typename ProtoDatabase<T>::DestroyCallback callback) override;
+  void Destroy(Callbacks::DestroyCallback callback) override;
 
   void RunCallbackOnCallingSequence(base::OnceClosure callback);
 
  private:
   void OnInitUniqueDB(std::unique_ptr<ProtoDatabase<T>> db,
-                      InitCallback callback,
-                      bool success);
+                      Callbacks::InitStatusCallback callback,
+                      Enums::InitStatus status);
 
   std::string client_namespace_;
   std::string type_prefix_;
@@ -139,11 +139,10 @@ ProtoDatabaseWrapper<T>::ProtoDatabaseWrapper(
 }
 
 template <typename T>
-void ProtoDatabaseWrapper<T>::Init(
-    const char* client_name,
-    const base::FilePath& database_dir,
-    const leveldb_env::Options& options,
-    typename ProtoDatabase<T>::InitCallback callback) {
+void ProtoDatabaseWrapper<T>::Init(const char* client_name,
+                                   const base::FilePath& database_dir,
+                                   const leveldb_env::Options& options,
+                                   Callbacks::InitCallback callback) {
   // We shouldn't be calling this on the wrapper. This function is purely for
   // compatibility right now.
   NOTREACHED();
@@ -152,17 +151,20 @@ void ProtoDatabaseWrapper<T>::Init(
 template <typename T>
 void ProtoDatabaseWrapper<T>::OnInitUniqueDB(
     std::unique_ptr<ProtoDatabase<T>> db,
-    InitCallback callback,
-    bool success) {
+    Callbacks::InitStatusCallback callback,
+    Enums::InitStatus status) {
+  // The DB is still technically usable after corruption, so treat that as
+  // success.
+  bool success =
+      status == Enums::InitStatus::kOK || status == Enums::InitStatus::kCorrupt;
   if (success)
     db_ = std::move(db);
-  RunCallbackOnCallingSequence(base::BindOnce(std::move(callback), success));
+  RunCallbackOnCallingSequence(base::BindOnce(std::move(callback), status));
 }
 
 template <typename T>
-void ProtoDatabaseWrapper<T>::Init(
-    const std::string& client_name,
-    typename ProtoDatabase<T>::InitCallback callback) {
+void ProtoDatabaseWrapper<T>::Init(const std::string& client_name,
+                                   Callbacks::InitStatusCallback callback) {
   auto unique_db = std::make_unique<UniqueProtoDatabase<T>>(
       db_dir_, CreateSimpleOptions(), this->task_runner_);
   unique_db->Init(client_name,
@@ -176,9 +178,10 @@ void ProtoDatabaseWrapper<T>::InitWithDatabase(
     LevelDB* database,
     const base::FilePath& database_dir,
     const leveldb_env::Options& options,
-    typename ProtoDatabase<T>::InitCallback callback) {
+    Callbacks::InitStatusCallback callback) {
   if (!db_) {
-    RunCallbackOnCallingSequence(base::BindOnce(std::move(callback), false));
+    RunCallbackOnCallingSequence(
+        base::BindOnce(std::move(callback), Enums::InitStatus::kError));
     return;
   }
 
@@ -189,7 +192,7 @@ template <typename T>
 void ProtoDatabaseWrapper<T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<std::vector<std::string>> keys_to_remove,
-    typename ProtoDatabase<T>::UpdateCallback callback) {
+    Callbacks::UpdateCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(base::BindOnce(std::move(callback), false));
     return;
@@ -203,7 +206,7 @@ template <typename T>
 void ProtoDatabaseWrapper<T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     const LevelDB::KeyFilter& delete_key_filter,
-    typename ProtoDatabase<T>::UpdateCallback callback) {
+    Callbacks::UpdateCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(base::BindOnce(std::move(callback), false));
     return;
@@ -218,7 +221,7 @@ void ProtoDatabaseWrapper<T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     const LevelDB::KeyFilter& delete_key_filter,
     const std::string& target_prefix,
-    typename ProtoDatabase<T>::UpdateCallback callback) {
+    Callbacks::UpdateCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(base::BindOnce(std::move(callback), false));
     return;
@@ -231,7 +234,7 @@ void ProtoDatabaseWrapper<T>::UpdateEntriesWithRemoveFilter(
 
 template <typename T>
 void ProtoDatabaseWrapper<T>::LoadEntries(
-    typename ProtoDatabase<T>::LoadCallback callback) {
+    typename Callbacks::Internal<T>::LoadCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(base::BindOnce(
         std::move(callback), false, std::make_unique<std::vector<T>>()));
@@ -244,7 +247,7 @@ void ProtoDatabaseWrapper<T>::LoadEntries(
 template <typename T>
 void ProtoDatabaseWrapper<T>::LoadEntriesWithFilter(
     const LevelDB::KeyFilter& filter,
-    typename ProtoDatabase<T>::LoadCallback callback) {
+    typename Callbacks::Internal<T>::LoadCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(base::BindOnce(
         std::move(callback), false, std::make_unique<std::vector<T>>()));
@@ -259,7 +262,7 @@ void ProtoDatabaseWrapper<T>::LoadEntriesWithFilter(
     const LevelDB::KeyFilter& key_filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
-    typename ProtoDatabase<T>::LoadCallback callback) {
+    typename Callbacks::Internal<T>::LoadCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(base::BindOnce(
         std::move(callback), false, std::make_unique<std::vector<T>>()));
@@ -272,7 +275,7 @@ void ProtoDatabaseWrapper<T>::LoadEntriesWithFilter(
 
 template <typename T>
 void ProtoDatabaseWrapper<T>::LoadKeysAndEntries(
-    typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) {
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(
         base::BindOnce(std::move(callback), false,
@@ -286,7 +289,7 @@ void ProtoDatabaseWrapper<T>::LoadKeysAndEntries(
 template <typename T>
 void ProtoDatabaseWrapper<T>::LoadKeysAndEntriesWithFilter(
     const LevelDB::KeyFilter& filter,
-    typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) {
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(
         base::BindOnce(std::move(callback), false,
@@ -302,7 +305,7 @@ void ProtoDatabaseWrapper<T>::LoadKeysAndEntriesWithFilter(
     const LevelDB::KeyFilter& filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
-    typename ProtoDatabase<T>::LoadKeysAndEntriesCallback callback) {
+    typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(
         base::BindOnce(std::move(callback), false,
@@ -315,8 +318,7 @@ void ProtoDatabaseWrapper<T>::LoadKeysAndEntriesWithFilter(
 }
 
 template <typename T>
-void ProtoDatabaseWrapper<T>::LoadKeys(
-    typename ProtoDatabase<T>::LoadKeysCallback callback) {
+void ProtoDatabaseWrapper<T>::LoadKeys(Callbacks::LoadKeysCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(
         base::BindOnce(std::move(callback), false,
@@ -328,9 +330,8 @@ void ProtoDatabaseWrapper<T>::LoadKeys(
 }
 
 template <typename T>
-void ProtoDatabaseWrapper<T>::LoadKeys(
-    const std::string& target_prefix,
-    typename ProtoDatabase<T>::LoadKeysCallback callback) {
+void ProtoDatabaseWrapper<T>::LoadKeys(const std::string& target_prefix,
+                                       Callbacks::LoadKeysCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(
         base::BindOnce(std::move(callback), false,
@@ -344,7 +345,7 @@ void ProtoDatabaseWrapper<T>::LoadKeys(
 template <typename T>
 void ProtoDatabaseWrapper<T>::GetEntry(
     const std::string& key,
-    typename ProtoDatabase<T>::GetCallback callback) {
+    typename Callbacks::Internal<T>::GetCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(
         base::BindOnce(std::move(callback), false, std::make_unique<T>()));
@@ -355,8 +356,7 @@ void ProtoDatabaseWrapper<T>::GetEntry(
 }
 
 template <typename T>
-void ProtoDatabaseWrapper<T>::Destroy(
-    typename ProtoDatabase<T>::DestroyCallback callback) {
+void ProtoDatabaseWrapper<T>::Destroy(Callbacks::DestroyCallback callback) {
   if (!db_) {
     RunCallbackOnCallingSequence(base::BindOnce(std::move(callback), false));
     return;

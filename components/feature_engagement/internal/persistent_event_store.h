@@ -34,7 +34,8 @@ class PersistentEventStore : public EventStore {
   void DeleteEvent(const std::string& event_name) override;
 
  private:
-  void OnInitComplete(const OnLoadedCallback& callback, bool success);
+  void OnInitComplete(const OnLoadedCallback& callback,
+                      leveldb_proto::Enums::InitStatus status);
   void OnLoadComplete(const OnLoadedCallback& callback,
                       bool success,
                       std::unique_ptr<std::vector<Event>> entries);

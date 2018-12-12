@@ -14,11 +14,17 @@
 
 namespace leveldb_proto {
 
-SharedProtoDatabase::SharedProtoDatabase(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const std::string& client_name,
-    const base::FilePath& db_dir)
-    : task_runner_(task_runner),
+inline void RunCallbackOnCallingSequence(
+    Callbacks::InitCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+    bool success) {
+  callback_task_runner->PostTask(FROM_HERE,
+                                 base::BindOnce(std::move(callback), success));
+}
+
+SharedProtoDatabase::SharedProtoDatabase(const std::string& client_name,
+                                         const base::FilePath& db_dir)
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
       db_dir_(db_dir),
       db_wrapper_(std::make_unique<ProtoLevelDBWrapper>(task_runner_)),
       db_(std::make_unique<LevelDB>(client_name.c_str())),
@@ -30,17 +36,21 @@ SharedProtoDatabase::SharedProtoDatabase(
 // this after a database Init will receive the correct status of the database.
 // PostTaskAndReply is used to ensure that we call the Init callback on its
 // original calling thread.
-void SharedProtoDatabase::GetDatabaseInitStateAsync(
-    ProtoLevelDBWrapper::InitCallback callback) {
-  task_runner_->PostTaskAndReply(
-      FROM_HERE, base::DoNothing(),
-      base::BindOnce(&SharedProtoDatabase::RunInitCallback,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+void SharedProtoDatabase::GetDatabaseInitStatusAsync(
+    Callbacks::InitStatusCallback callback) {
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SharedProtoDatabase::RunInitCallback,
+                                weak_factory_.GetWeakPtr(), std::move(callback),
+                                std::move(current_task_runner)));
 }
 
 void SharedProtoDatabase::RunInitCallback(
-    ProtoLevelDBWrapper::InitCallback callback) {
-  std::move(callback).Run(init_state_ == InitState::kSuccess);
+    Callbacks::InitStatusCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
+  callback_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), init_status_));
 }
 
 // Setting |create_if_missing| to false allows us to test whether or not the
@@ -52,7 +62,7 @@ void SharedProtoDatabase::RunInitCallback(
 // with this set to true, and others false.
 void SharedProtoDatabase::Init(
     bool create_if_missing,
-    ProtoLevelDBWrapper::InitCallback callback,
+    Callbacks::InitStatusCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
 
@@ -60,7 +70,14 @@ void SharedProtoDatabase::Init(
   // continue to try initialization for every new request.
   if (init_state_ == InitState::kSuccess) {
     callback_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), true /* success */));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  Enums::InitStatus::kOK /* status */));
+    return;
+  }
+
+  if (init_state_ == InitState::kInProgress) {
+    outstanding_init_requests_.emplace(
+        std::make_pair(std::move(callback), std::move(callback_task_runner)));
     return;
   }
 
@@ -78,23 +95,31 @@ void SharedProtoDatabase::Init(
                      callback_task_runner));
 }
 
+void SharedProtoDatabase::ProcessInitRequests(Enums::InitStatus status) {
+  // The pairs are stored as (callback, callback_task_runner).
+  while (!outstanding_init_requests_.empty()) {
+    auto request = std::move(outstanding_init_requests_.front());
+    auto task_runner = std::move(request.second);
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce(std::move(request.first), status));
+    outstanding_init_requests_.pop();
+  }
+}
+
 void SharedProtoDatabase::OnDatabaseInit(
-    ProtoLevelDBWrapper::InitCallback callback,
+    Callbacks::InitStatusCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-    bool success) {
+    Enums::InitStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
-  init_state_ = success ? InitState::kSuccess : InitState::kFailure;
+  init_state_ = status == Enums::InitStatus::kOK ? InitState::kSuccess
+                                                 : InitState::kFailure;
 
-  // TODO(thildebr): Check the db_wrapper_->IsCorrupt() and store corruption
-  // information to inform clients they may have lost data.
-
+  ProcessInitRequests(status);
   callback_task_runner->PostTask(FROM_HERE,
-                                 base::BindOnce(std::move(callback), success));
+                                 base::BindOnce(std::move(callback), status));
 }
 
-SharedProtoDatabase::~SharedProtoDatabase() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(on_creation_sequence_);
-}
+SharedProtoDatabase::~SharedProtoDatabase() = default;
 
 LevelDB* SharedProtoDatabase::GetLevelDBForTesting() const {
   return db_.get();
