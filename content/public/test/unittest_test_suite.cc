@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/test/test_suite.h"
@@ -34,7 +35,14 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
       command_line->GetSwitchValueASCII(switches::kEnableFeatures);
   std::string disabled =
       command_line->GetSwitchValueASCII(switches::kDisableFeatures);
-  feature_list_.InitFromCommandLine(enabled, disabled);
+
+  // The TaskScheduler created by the test launcher is never destroyed.
+  // Similarly, the FeatureList created here is never destroyed so it
+  // can safely be accessed by the TaskScheduler.
+  std::unique_ptr<base::FeatureList> feature_list =
+      std::make_unique<base::FeatureList>();
+  feature_list->InitializeFromCommandLine(enabled, disabled);
+  base::FeatureList::SetInstance(std::move(feature_list));
 
 #if defined(OS_FUCHSIA)
   // Use headless ozone platform on Fuchsia by default.

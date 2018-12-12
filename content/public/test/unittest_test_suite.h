@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 
 #if defined(USE_AURA)
@@ -39,8 +38,6 @@ class UnitTestTestSuite {
 
  private:
   std::unique_ptr<base::TestSuite> test_suite_;
-
-  base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
 #if defined(USE_AURA)
