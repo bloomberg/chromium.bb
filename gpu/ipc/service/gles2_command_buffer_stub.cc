@@ -125,18 +125,11 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   // only a single context. See crbug.com/510243 for details.
   use_virtualized_gl_context_ |= manager->mailbox_manager()->UsesSync();
 
-  const auto& gpu_feature_info = manager->gpu_feature_info();
-  const bool use_oop_rasterization =
-      gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-      gpu::kGpuFeatureStatusEnabled;
-
-  // With OOP-R and SkiaRenderer, we will only have one GLContext
-  // and share it with RasterDecoders and DisplayCompositor. So it is not
-  // necessary to use virtualized gl context anymore.
-  // TODO(penghuang): Make virtualized gl context work with SkiaRenderer + DDL +
-  // OOPR. https://crbug.com/838899
-  if (features::IsUsingSkiaRenderer() && use_oop_rasterization)
-    use_virtualized_gl_context_ = false;
+#if defined(OS_MACOSX)
+  // TODO(penghuang): remove below line when the framebuffer issue is fixed in
+  // skia. https://crbug.com/914495
+  use_virtualized_gl_context_ &= !features::IsUsingSkiaRenderer();
+#endif
 
   bool offscreen = (surface_handle_ == kNullSurfaceHandle);
   gl::GLSurface* default_surface = manager->default_offscreen_surface();

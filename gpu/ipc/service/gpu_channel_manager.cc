@@ -375,17 +375,11 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
   // only a single context. See crbug.com/510243 for details.
   use_virtualized_gl_contexts |= mailbox_manager_->UsesSync();
 
-  const bool use_oop_rasterization =
-      gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-      gpu::kGpuFeatureStatusEnabled;
-
-  // With OOP-R and SkiaRenderer, we will only have one GLContext
-  // and share it with RasterDecoders and DisplayCompositor. So it is not
-  // necessary to use virtualized gl context anymore.
-  // TODO(penghuang): Make virtualized gl context work with SkiaRenderer + DDL +
-  // OOPR. https://crbug.com/838899
-  if (features::IsUsingSkiaRenderer() && use_oop_rasterization)
-    use_virtualized_gl_contexts = false;
+#if defined(OS_MACOSX)
+  // TODO(penghuang): remove below line when the framebuffer issue is fixed in
+  // skia. https://crbug.com/914495
+  use_virtualized_gl_contexts &= !features::IsUsingSkiaRenderer();
+#endif
 
   const bool use_passthrough_decoder =
       gles2::PassthroughCommandDecoderSupported() &&

@@ -13,6 +13,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
+#include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -39,7 +40,6 @@
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_implementation.h"
 #endif
-
 namespace viz {
 namespace {
 
@@ -124,7 +124,6 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
       LOG(FATAL) << "Failed to resize.";
       // TODO(penghuang): Handle the failure.
     }
-    DCHECK(gl_context()->IsCurrent(gl_surface_.get()));
     DCHECK(gr_context());
 
     SkSurfaceProps surface_props =
@@ -466,14 +465,17 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
   if (!MakeCurrent())
     return;
 
-  gl_version_info_ = gl_context()->GetVersionInfo();
+  auto* context = context_state_->real_context();
+  gl_version_info_ = context->GetVersionInfo();
 
   capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
 
   // Get stencil bits from the default frame buffer.
-  auto* current_gl = gl_context()->GetCurrentGL();
+  auto* current_gl = context->GetCurrentGL();
   const auto* version = current_gl->Version;
   auto* api = current_gl->Api;
+  api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, 0);
+  gr_context()->resetContext(kRenderTarget_GrGLBackendState);
   GLint stencil_bits = 0;
   if (version->is_desktop_core_profile) {
     api->glGetFramebufferAttachmentParameterivEXTFn(
@@ -482,7 +484,7 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
   } else {
     api->glGetIntegervFn(GL_STENCIL_BITS, &stencil_bits);
   }
-
+  CHECK_GL_ERROR();
   capabilities_.supports_stencil = stencil_bits > 0;
 }
 

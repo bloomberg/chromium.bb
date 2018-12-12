@@ -140,7 +140,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   bool MakeCurrent();
 
   GrContext* gr_context() { return context_state_->gr_context; }
-  gl::GLContext* gl_context() { return context_state_->context(); }
 
   const gpu::CommandBufferId command_buffer_id_;
   GpuServiceImpl* const gpu_service_;
