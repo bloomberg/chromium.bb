@@ -46,7 +46,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill_assistant.ui.BottomBarAnimations;
 import org.chromium.chrome.browser.autofill_assistant.ui.TouchEventFilter;
 import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -657,7 +657,7 @@ class AutofillAssistantUiDelegate {
             mDetailsPulseAnimation.setEvaluator(new ArgbEvaluator());
             mDetailsPulseAnimation.setRepeatCount(ValueAnimator.INFINITE);
             mDetailsPulseAnimation.setRepeatMode(ValueAnimator.REVERSE);
-            mDetailsPulseAnimation.setInterpolator(ChromeAnimation.getAccelerateInterpolator());
+            mDetailsPulseAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
             mDetailsPulseAnimation.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationCancel(Animator animation) {

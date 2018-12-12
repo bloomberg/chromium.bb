@@ -16,6 +16,7 @@ import android.view.animation.Interpolator;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
@@ -178,7 +179,7 @@ public abstract class Stack implements ChromeAnimation.Animatable {
     private final Interpolator mOverScrollAngleInterpolator =
             new AccelerateDecelerateInterpolator();
     private final Interpolator mUnderScrollAngleInterpolator =
-            ChromeAnimation.getDecelerateInterpolator();
+            CompositorAnimator.DECELERATE_INTERPOLATOR;
     private final Interpolator mOverscrollSlideInterpolator =
             new AccelerateDecelerateInterpolator();
 

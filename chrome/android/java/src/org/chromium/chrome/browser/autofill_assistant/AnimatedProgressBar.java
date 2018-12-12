@@ -10,7 +10,7 @@ import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.view.View;
 
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.widget.MaterialProgressBar;
 
 import java.util.ArrayDeque;
@@ -56,7 +56,7 @@ public class AnimatedProgressBar {
         if (progress > mLastProgress) {
             ValueAnimator progressAnimation = ValueAnimator.ofInt(mLastProgress, progress);
             progressAnimation.setDuration(PROGRESS_BAR_SPEED_MS * (progress - mLastProgress) / 100);
-            progressAnimation.setInterpolator(ChromeAnimation.getAccelerateInterpolator());
+            progressAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
             progressAnimation.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
@@ -88,7 +88,7 @@ public class AnimatedProgressBar {
             mPulseAnimation.setEvaluator(new ArgbEvaluator());
             mPulseAnimation.setRepeatCount(ValueAnimator.INFINITE);
             mPulseAnimation.setRepeatMode(ValueAnimator.REVERSE);
-            mPulseAnimation.setInterpolator(ChromeAnimation.getAccelerateInterpolator());
+            mPulseAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
             mPulseAnimation.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationCancel(Animator animation) {

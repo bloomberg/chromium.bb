@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 
 /**
  * Wrapper around the different {@code AutofillAssistantUiDelegate} views to animate between states.
@@ -188,7 +188,7 @@ public class BottomBarAnimations {
                         onAnimationEnd.onResult(false);
                     }
                 })
-                .setInterpolator(ChromeAnimation.getLinearInterpolator())
+                .setInterpolator(CompositorAnimator.LINEAR_INTERPOLATOR)
                 .start();
     }
 
@@ -211,7 +211,7 @@ public class BottomBarAnimations {
                                 * Math.abs(currentVerticalMargin - targetVerticalMargin)
                                 / (mDetailsVerticalMarginWithoutCarousel
                                           - mDetailsVerticalMarginWithCarousel));
-        mCurrentDetailsAnimation.setInterpolator(ChromeAnimation.getDecelerateInterpolator());
+        mCurrentDetailsAnimation.setInterpolator(CompositorAnimator.DECELERATE_INTERPOLATOR);
         mCurrentDetailsAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation, boolean isReverse) {

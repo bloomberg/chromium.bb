@@ -21,6 +21,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -1554,7 +1555,7 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
     protected void addToAnimation(
             Animatable object, int prop, float start, float end, long duration, long startTime) {
         ChromeAnimation.Animation<Animatable> component = createAnimation(object, prop, start, end,
-                duration, startTime, false, ChromeAnimation.getDecelerateInterpolator());
+                duration, startTime, false, CompositorAnimator.DECELERATE_INTERPOLATOR);
         if (mLayoutAnimations == null || mLayoutAnimations.finished()) {
             mLayoutAnimations = new ChromeAnimation<Animatable>();
             mLayoutAnimations.start();

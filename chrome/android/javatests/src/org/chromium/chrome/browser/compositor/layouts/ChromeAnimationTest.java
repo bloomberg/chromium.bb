@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -83,7 +84,7 @@ public class ChromeAnimationTest implements Animatable {
     private void addToAnimation(
             Animatable object, int prop, float start, float end, long duration, long startTime) {
         ChromeAnimation.Animation<Animatable> component = createAnimation(object, prop, start, end,
-                duration, startTime, false, ChromeAnimation.getDecelerateInterpolator());
+                duration, startTime, false, CompositorAnimator.DECELERATE_INTERPOLATOR);
         addToAnimation(component);
     }
 
