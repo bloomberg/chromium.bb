@@ -794,18 +794,6 @@
       ]
     },
     {
-      "name": "kukui",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "lakitu",
       "configs": [
         {
@@ -1916,6 +1904,21 @@
         {
           "board_name": "kalista",
           "name": "karma",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "kukui",
+      "reference_board_name": "kukui",
+      "arch": "ARM_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "kukui",
+          "name": "kukui",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
