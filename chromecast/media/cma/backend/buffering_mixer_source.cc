@@ -233,6 +233,12 @@ float BufferingMixerSource::SetAvSyncPlaybackRate(float rate) {
   return locked->audio_resampler_.SetMediaClockRate(rate);
 }
 
+BufferingMixerSource::RenderingDelay
+BufferingMixerSource::GetMixerRenderingDelay() {
+  auto locked = locked_members_.Lock();
+  return locked->mixer_rendering_delay_;
+}
+
 BufferingMixerSource::~BufferingMixerSource() {
   LOG(INFO) << "Destroy " << device_id_ << " (" << this << ")";
 }

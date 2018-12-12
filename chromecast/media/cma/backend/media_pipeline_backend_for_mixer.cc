@@ -23,7 +23,11 @@
 #endif  // defined(OS_FUCHSIA)
 
 namespace {
-int64_t kSyncedPlaybackStartDelayUs = 50000;
+
+// Delay video playback to achieve AV sync when video starts.
+// This value is based on experimental calculation.
+int64_t kSyncedPlaybackStartDelayUs = 20000;
+
 }  // namespace
 
 namespace chromecast {
@@ -295,7 +299,8 @@ void MediaPipelineBackendForMixer::TryStartPlayback() {
   }
 
   start_playback_timestamp_us_ =
-      MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
+      MonotonicClockNow() + kSyncedPlaybackStartDelayUs +
+      audio_decoder_->GetMixerRenderingDelay().delay_microseconds;
   LOG(INFO) << "Starting playback at=" << start_playback_timestamp_us_;
 
   video_decoder_->SetPts(start_playback_timestamp_us_, start_playback_pts_us_);

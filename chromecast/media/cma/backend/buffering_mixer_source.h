@@ -110,6 +110,10 @@ class BufferingMixerSource : public MixerInput::Source,
   // (supposedly) imperceptible.
   float SetAvSyncPlaybackRate(float rate);
 
+  // Returns the rendering delay from the mixer (ie, ignores any buffering in
+  // this class).
+  RenderingDelay GetMixerRenderingDelay();
+
  private:
   enum class State {
     kUninitialized,   // Not initialized by the mixer yet.
