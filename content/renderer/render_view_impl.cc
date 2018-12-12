@@ -921,8 +921,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->SetDataSaverHoldbackWebApi(
       prefs.data_saver_holdback_web_api_enabled);
-  settings->SetDataSaverHoldbackMediaApi(
-      prefs.data_saver_holdback_media_api_enabled);
 
   settings->SetLazyLoadEnabled(prefs.lazy_load_enabled);
 

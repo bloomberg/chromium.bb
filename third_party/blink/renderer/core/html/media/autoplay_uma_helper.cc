@@ -167,25 +167,12 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
     }
   }
 
-  // Record if it will be blocked by Data Saver or Autoplay setting.
+  // Record if it will be blocked by the Autoplay setting.
   if (element_->IsHTMLVideoElement() && element_->muted() &&
       AutoplayPolicy::DocumentShouldAutoplayMutedVideos(
-          element_->GetDocument())) {
-    bool data_saver_enabled_for_autoplay =
-        GetNetworkStateNotifier().SaveDataEnabled() &&
-        element_->GetDocument().GetSettings() &&
-        !element_->GetDocument().GetSettings()->GetDataSaverHoldbackMediaApi();
-    bool blocked_by_setting =
-        !element_->GetAutoplayPolicy().IsAutoplayAllowedPerSettings();
-
-    if (data_saver_enabled_for_autoplay && blocked_by_setting) {
-      blocked_muted_video_histogram.Count(
-          kAutoplayBlockedReasonDataSaverAndSetting);
-    } else if (data_saver_enabled_for_autoplay) {
-      blocked_muted_video_histogram.Count(kAutoplayBlockedReasonDataSaver);
-    } else if (blocked_by_setting) {
-      blocked_muted_video_histogram.Count(kAutoplayBlockedReasonSetting);
-    }
+          element_->GetDocument()) &&
+      !element_->GetAutoplayPolicy().IsAutoplayAllowedPerSettings()) {
+    blocked_muted_video_histogram.Count(kAutoplayBlockedReasonSetting);
   }
 
   element_->addEventListener(event_type_names::kPlaying, this, false);

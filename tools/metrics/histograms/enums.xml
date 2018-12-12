@@ -3332,9 +3332,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AutoplayBlockedReason">
-  <int value="0" label="Data Saver enabled"/>
+  <int value="0" label="[Deprecated] Data Saver enabled"/>
   <int value="1" label="Disabled by setting"/>
-  <int value="2" label="Data Saver and setting"/>
+  <int value="2" label="[Deprecated] Data Saver and setting"/>
 </enum>
 
 <enum name="AutoplaySource">
