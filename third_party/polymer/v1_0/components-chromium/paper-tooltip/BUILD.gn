@@ -7,9 +7,4 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_library("paper-tooltip-extracted") {
-  deps = [
-    "../neon-animation:neon-animation-runner-behavior-extracted",
-    "../neon-animation/animations:fade-in-animation-extracted",
-    "../neon-animation/animations:fade-out-animation-extracted",
-  ]
 }
