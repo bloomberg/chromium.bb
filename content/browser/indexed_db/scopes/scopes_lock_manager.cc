@@ -4,58 +4,37 @@
 
 #include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
 
-#include <ostream>
+#include <memory>
+#include <utility>
+
+#include "base/barrier_closure.h"
+#include "base/bind.h"
 
 namespace content {
 
-ScopesLockManager::LockRange::LockRange(std::string begin, std::string end)
-    : begin(std::move(begin)), end(std::move(end)) {}
+ScopesLockManager::ScopesLockManager() : weak_factory_(this) {}
+ScopesLockManager::~ScopesLockManager() = default;
 
-ScopesLockManager::ScopeLock::ScopeLock() = default;
-ScopesLockManager::ScopeLock::ScopeLock(ScopeLock&& other) noexcept {
-  DCHECK(!this->is_locked_) << "Cannot move a lock onto an active lock.";
-  this->is_locked_ = other.is_locked_;
-  this->range_ = std::move(other.range_);
-  this->level_ = other.level_;
-  this->closure_runner_ = std::move(other.closure_runner_);
-  other.is_locked_ = false;
-}
-ScopesLockManager::ScopeLock::ScopeLock(LockRange range,
-                                        int level,
-                                        base::OnceClosure closure)
-    : is_locked_(!closure.is_null()),
-      range_(std::move(range)),
-      level_(level),
-      closure_runner_(std::move(closure)) {}
+ScopesLockManager::ScopeLockRequest::ScopeLockRequest(int level,
+                                                      ScopeLockRange range,
+                                                      LockType type)
+    : level(level), range(std::move(range)), type(type) {}
 
-ScopesLockManager::ScopeLock& ScopesLockManager::ScopeLock::operator=(
-    ScopesLockManager::ScopeLock&& other) noexcept {
-  DCHECK(!this->is_locked_);
-  this->is_locked_ = other.is_locked_;
-  this->range_ = std::move(other.range_);
-  this->level_ = other.level_;
-  this->closure_runner_ = std::move(other.closure_runner_);
-  other.is_locked_ = false;
-  return *this;
-};
-
-void ScopesLockManager::ScopeLock::Release() {
-  is_locked_ = false;
-  closure_runner_.RunAndReset();
+bool operator<(const ScopesLockManager::ScopeLockRequest& x,
+               const ScopesLockManager::ScopeLockRequest& y) {
+  if (x.level != y.level)
+    return x.level < y.level;
+  return x.range < y.range;
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         const ScopesLockManager::LockRange& range) {
-  return out << "<ScopesLockManager::ScopeLock>{begin: " << range.begin
-             << ", end: " << range.end << "}";
+bool operator==(const ScopesLockManager::ScopeLockRequest& x,
+                const ScopesLockManager::ScopeLockRequest& y) {
+  return x.level == y.level && x.range == y.range && x.type == y.type;
 }
 
-bool operator==(const ScopesLockManager::LockRange& x,
-                const ScopesLockManager::LockRange& y) {
-  return x.begin == y.begin && x.end == y.end;
-}
-bool operator!=(const ScopesLockManager::LockRange& x,
-                const ScopesLockManager::LockRange& y) {
+bool operator!=(const ScopesLockManager::ScopeLockRequest& x,
+                const ScopesLockManager::ScopeLockRequest& y) {
   return !(x == y);
 }
+
 }  // namespace content

@@ -4,14 +4,20 @@
 
 #include "content/browser/indexed_db/scopes/scopes_lock_manager.h"
 
+#include <vector>
+
+#include "base/bind.h"
+#include "base/test/bind_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+namespace {
 
 TEST(ScopesLockManager, TestRangePopulation) {
-  ScopesLockManager::LockRange range("a", "b");
+  ScopeLockRange range("a", "b");
   EXPECT_EQ("a", range.begin);
   EXPECT_EQ("b", range.end);
 }
 
+}  // namespace
 }  // namespace content
