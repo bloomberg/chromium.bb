@@ -116,6 +116,12 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
                  void** object_slot,
                  TraceDescriptor desc,
                  WeakCallback callback) final {
+    // Filter out already marked values. The write barrier for WeakMember
+    // ensures that any newly set value after this point is kept alive and does
+    // not require the callback.
+    if (desc.base_object_payload != BlinkGC::kNotFullyConstructedObject &&
+        HeapObjectHeader::FromPayload(desc.base_object_payload)->IsMarked())
+      return;
     RegisterWeakCallback(object_slot, callback);
   }
 
