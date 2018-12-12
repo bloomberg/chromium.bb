@@ -108,6 +108,10 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
                 ThreadUtils.postOnUiThread(startWithNativeRunnable);
             }
             @Override
+            public boolean startServiceManagerOnly() {
+                return supportsServiceManagerOnly();
+            }
+            @Override
             public void onStartupFailure() {
                 ThreadUtils.postOnUiThread(rescheduleRunnable);
             }
@@ -132,6 +136,19 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
                 }
             }
         });
+    }
+
+    /**
+     * Descendant classes should override this method if they support running in service manager
+     * only mode.
+     *
+     * TODO(https://crbug.com/913480): implement in a subclass once it can support running in
+     * ServiceManager only mode.
+     *
+     * @return if the task supports running in service manager only mode.
+     */
+    protected boolean supportsServiceManagerOnly() {
+        return false;
     }
 
     /**
