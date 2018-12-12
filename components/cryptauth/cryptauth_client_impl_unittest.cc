@@ -13,7 +13,6 @@
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
 #include "components/cryptauth/cryptauth_api_call_flow.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/switches.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
