@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/network/data_promo_notification.h"
+#include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
+
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -54,10 +58,10 @@ class NetworkConnectTestDelegate : public chromeos::NetworkConnect::Delegate {
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectTestDelegate);
 };
 
-class DataPromoNotificationTest : public testing::Test {
+class MobileDataNotificationsTest : public testing::Test {
  public:
-  DataPromoNotificationTest() {}
-  ~DataPromoNotificationTest() override {}
+  MobileDataNotificationsTest() {}
+  ~MobileDataNotificationsTest() override {}
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -65,7 +69,7 @@ class DataPromoNotificationTest : public testing::Test {
         chromeos::switches::kEnableDataSaverPrompt);
     DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
-    data_promo_notification_.reset(new DataPromoNotification);
+    mobile_data_notifications_.reset(new MobileDataNotifications);
     SetupUser();
     SetupNetworkShillState();
     base::RunLoop().RunUntilIdle();
@@ -79,7 +83,7 @@ class DataPromoNotificationTest : public testing::Test {
     LoginState::Shutdown();
     profile_manager_.reset();
     user_manager_enabler_.reset();
-    data_promo_notification_.reset();
+    mobile_data_notifications_.reset();
     chromeos::NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
     testing::Test::TearDown();
@@ -142,17 +146,17 @@ class DataPromoNotificationTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<DataPromoNotification> data_promo_notification_;
+  std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
   std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DataPromoNotificationTest);
+  DISALLOW_COPY_AND_ASSIGN(MobileDataNotificationsTest);
 };
 
-TEST_F(DataPromoNotificationTest, DataSaverNotification) {
+TEST_F(MobileDataNotificationsTest, DataSaverNotification) {
   // Network setup shouldn't be enough to activate notification.
   EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
 

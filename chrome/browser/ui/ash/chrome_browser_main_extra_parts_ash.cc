@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/media_client.h"
-#include "chrome/browser/ui/ash/network/data_promo_notification.h"
+#include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
 #include "chrome/browser/ui/ash/network/network_connect_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
 #include "chrome/browser/ui/ash/screen_orientation_delegate_chromeos.h"
@@ -304,7 +304,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
-  data_promo_notification_ = std::make_unique<DataPromoNotification>();
+  mobile_data_notifications_ = std::make_unique<MobileDataNotifications>();
 
   if (ash::features::IsNightLightEnabled()) {
     night_light_client_ = std::make_unique<NightLightClient>(
@@ -321,7 +321,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 #endif
 
   night_light_client_.reset();
-  data_promo_notification_.reset();
+  mobile_data_notifications_.reset();
   chrome_launcher_controller_initializer_.reset();
 
   wallpaper_controller_client_.reset();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/network/data_promo_notification.h"
+#include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
 
 #include <memory>
 #include <string>
@@ -139,21 +139,21 @@ void DisplayNotification(const std::string& notification_id,
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// DataPromoNotification
+// MobileDataNotifications
 
-DataPromoNotification::DataPromoNotification()
-    : notifications_shown_(false), weak_ptr_factory_(this) {
+MobileDataNotifications::MobileDataNotifications()
+    : notifications_shown_(false) {
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
 }
 
-DataPromoNotification::~DataPromoNotification() {
+MobileDataNotifications::~MobileDataNotifications() {
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
                                                                    FROM_HERE);
   }
 }
 
-void DataPromoNotification::NetworkPropertiesUpdated(
+void MobileDataNotifications::NetworkPropertiesUpdated(
     const NetworkState* network) {
   if (!network ||
       (network->type() != shill::kTypeCellular && !DataSaverSwitchDemoMode()))
@@ -161,13 +161,14 @@ void DataPromoNotification::NetworkPropertiesUpdated(
   ShowOptionalMobileDataNotification();
 }
 
-void DataPromoNotification::DefaultNetworkChanged(const NetworkState* network) {
+void MobileDataNotifications::DefaultNetworkChanged(
+    const NetworkState* network) {
   // Call NetworkPropertiesUpdated in case the Cellular network became the
   // default network.
   NetworkPropertiesUpdated(network);
 }
 
-void DataPromoNotification::ShowOptionalMobileDataNotification() {
+void MobileDataNotifications::ShowOptionalMobileDataNotification() {
   if (notifications_shown_)
     return;
 
@@ -216,7 +217,7 @@ void DataPromoNotification::ShowOptionalMobileDataNotification() {
   }
 }
 
-bool DataPromoNotification::ShouldShowDataSaverNotification() {
+bool MobileDataNotifications::ShouldShowDataSaverNotification() {
   if (!DataSaverSwitchEnabled())
     return false;
 
