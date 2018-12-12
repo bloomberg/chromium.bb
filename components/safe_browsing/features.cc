@@ -36,6 +36,9 @@ const base::Feature kCheckByURLLoaderThrottle{
     "S13nSafeBrowsingCheckByURLLoaderThrottle",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCommittedSBInterstitials{
+    "SafeBrowsingCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kForceEnableResetPasswordWebUI{
     "ForceEnableResetPasswordWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -67,6 +70,7 @@ constexpr struct {
     {&kAdSamplerTriggerFeature, false},
     {&kBillingInterstitial, true},
     {&kCheckByURLLoaderThrottle, true},
+    {&kCommittedSBInterstitials, true},
     {&kForceEnableResetPasswordWebUI, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},

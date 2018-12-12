@@ -4,12 +4,14 @@
 
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/common/utils.h"
+#include "components/safe_browsing/features.h"
 #include "net/log/net_log_event_type.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -144,8 +146,11 @@ void BrowserURLLoaderThrottle::OnCompleteCheck(bool slow_check,
     url_checker_.reset();
     pending_checks_ = 0;
     pending_slow_checks_ = 0;
-    delegate_->CancelWithError(net::ERR_ABORTED,
-                               kCustomCancelReasonForURLLoader);
+    delegate_->CancelWithError(
+        base::FeatureList::IsEnabled(kCommittedSBInterstitials)
+            ? net::ERR_BLOCKED_BY_CLIENT
+            : net::ERR_ABORTED,
+        kCustomCancelReasonForURLLoader);
   }
 }
 
