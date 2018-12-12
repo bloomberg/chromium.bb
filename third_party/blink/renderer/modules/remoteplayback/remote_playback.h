@@ -46,16 +46,19 @@ class MODULES_EXPORT RemotePlayback final
       public ActiveScriptWrappable<RemotePlayback>,
       public WebRemotePlaybackClient,
       public PresentationAvailabilityObserver,
-      public mojom::blink::PresentationConnection {
+      public mojom::blink::PresentationConnection,
+      public Supplement<HTMLMediaElement> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 
  public:
+  static const char kSupplementName[];
+
   // Result of WatchAvailabilityInternal that means availability is not
   // supported.
   static const int kWatchAvailabilityNotSupported = -1;
 
-  static RemotePlayback* Create(HTMLMediaElement&);
+  static RemotePlayback& From(HTMLMediaElement&);
 
   explicit RemotePlayback(HTMLMediaElement&);
 

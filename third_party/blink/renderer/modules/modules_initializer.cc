@@ -266,7 +266,7 @@ std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
 
 WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(
     HTMLMediaElement& html_media_element) const {
-  return HTMLMediaElementRemotePlayback::remote(html_media_element);
+  return &RemotePlayback::From(html_media_element);
 }
 
 void ModulesInitializer::ProvideModulesToPage(Page& page,
