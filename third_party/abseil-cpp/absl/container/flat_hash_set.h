@@ -32,6 +32,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/algorithm/container.h"
 #include "absl/base/macros.h"
 #include "absl/container/internal/container_memory.h"
 #include "absl/container/internal/hash_function_defaults.h"  // IWYU pragma: export
@@ -66,7 +67,7 @@ struct FlatHashSetPolicy;
 // By default, `flat_hash_set` uses the `absl::Hash` hashing framework. All
 // fundamental and Abseil types that support the `absl::Hash` framework have a
 // compatible equality operator for comparing insertions into `flat_hash_map`.
-// If your type is not yet supported by the `asbl::Hash` framework, see
+// If your type is not yet supported by the `absl::Hash` framework, see
 // absl/hash/hash.h for information on extending Abseil hashing to user-defined
 // types.
 //
@@ -84,7 +85,7 @@ struct FlatHashSetPolicy;
 //     {"huey", "dewey", "louie"};
 //
 //  // Insert a new element into the flat hash set
-//  ducks.insert("donald"};
+//  ducks.insert("donald");
 //
 //  // Force a rehash of the flat hash set
 //  ducks.rehash(0);
@@ -102,6 +103,46 @@ class flat_hash_set
   using Base = typename flat_hash_set::raw_hash_set;
 
  public:
+  // Constructors and Assignment Operators
+  //
+  // A flat_hash_set supports the same overload set as `std::unordered_map`
+  // for construction and assignment:
+  //
+  // *  Default constructor
+  //
+  //    // No allocation for the table's elements is made.
+  //    absl::flat_hash_set<std::string> set1;
+  //
+  // * Initializer List constructor
+  //
+  //   absl::flat_hash_set<std::string> set2 =
+  //       {{"huey"}, {"dewey"}, {"louie"},};
+  //
+  // * Copy constructor
+  //
+  //   absl::flat_hash_set<std::string> set3(set2);
+  //
+  // * Copy assignment operator
+  //
+  //  // Hash functor and Comparator are copied as well
+  //  absl::flat_hash_set<std::string> set4;
+  //  set4 = set3;
+  //
+  // * Move constructor
+  //
+  //   // Move is guaranteed efficient
+  //   absl::flat_hash_set<std::string> set5(std::move(set4));
+  //
+  // * Move assignment operator
+  //
+  //   // May be efficient if allocators are compatible
+  //   absl::flat_hash_set<std::string> set6;
+  //   set6 = std::move(set5);
+  //
+  // * Range constructor
+  //
+  //   std::vector<std::string> v = {"a", "b"};
+  //   absl::flat_hash_set<std::string> set7(v.begin(), v.end());
   flat_hash_set() {}
   using Base::Base;
 
@@ -238,8 +279,7 @@ class flat_hash_set
   //
   // The element may be constructed even if there already is an element with the
   // key in the container, in which case the newly constructed element will be
-  // destroyed immediately. Prefer `try_emplace()` unless your key is not
-  // copyable or moveable.
+  // destroyed immediately.
   //
   // If rehashing occurs due to the insertion, all iterators are invalidated.
   using Base::emplace;
@@ -253,8 +293,7 @@ class flat_hash_set
   //
   // The element may be constructed even if there already is an element with the
   // key in the container, in which case the newly constructed element will be
-  // destroyed immediately. Prefer `try_emplace()` unless your key is not
-  // copyable or moveable.
+  // destroyed immediately.
   //
   // If rehashing occurs due to the insertion, all iterators are invalidated.
   using Base::emplace_hint;
@@ -435,5 +474,16 @@ struct FlatHashSetPolicy {
   static size_t space_used(const T*) { return 0; }
 };
 }  // namespace container_internal
+
+namespace container_algorithm_internal {
+
+// Specialization of trait in absl/algorithm/container.h
+template <class Key, class Hash, class KeyEqual, class Allocator>
+struct IsUnorderedContainer<absl::flat_hash_set<Key, Hash, KeyEqual, Allocator>>
+    : std::true_type {};
+
+}  // namespace container_algorithm_internal
+
 }  // namespace absl
+
 #endif  // ABSL_CONTAINER_FLAT_HASH_SET_H_

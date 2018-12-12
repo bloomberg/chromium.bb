@@ -67,7 +67,7 @@ list(APPEND STRINGS_SRC
   ${STRINGS_PUBLIC_HEADERS}
   ${STRINGS_INTERNAL_HEADERS}
 )
-set(STRINGS_PUBLIC_LIBRARIES absl::base absl_throw_delegate)
+set(STRINGS_PUBLIC_LIBRARIES absl::base absl_internal_throw_delegate)
 
 absl_library(
   TARGET
@@ -113,7 +113,7 @@ absl_library(
     absl::strings
     absl::base
     absl::numeric
-    absl::container
+    absl::inlined_vector
     absl::span
 )
 
@@ -129,6 +129,15 @@ absl_library(
   PUBLIC_LIBRARIES
     absl::base
     absl::strings
+)
+
+# pow10_helper
+absl_library(
+  TARGET
+    pow10_helper
+  SOURCES
+    "internal/pow10_helper.cc"
+    "internal/pow10_helper.h"
 )
 
 #
@@ -207,7 +216,7 @@ absl_test(
 
 # test string_view_test
 set(STRING_VIEW_TEST_SRC "string_view_test.cc")
-set(STRING_VIEW_TEST_PUBLIC_LIBRARIES absl::strings absl_throw_delegate absl::base)
+set(STRING_VIEW_TEST_PUBLIC_LIBRARIES absl::strings absl_internal_throw_delegate absl::base)
 
 absl_test(
   TARGET
@@ -235,7 +244,7 @@ absl_test(
 
 # test str_replace_test
 set(STR_REPLACE_TEST_SRC "str_replace_test.cc")
-set(STR_REPLACE_TEST_PUBLIC_LIBRARIES absl::strings absl::base absl_throw_delegate)
+set(STR_REPLACE_TEST_PUBLIC_LIBRARIES absl::strings absl::base absl_internal_throw_delegate)
 
 absl_test(
   TARGET
@@ -249,7 +258,7 @@ absl_test(
 
 # test str_split_test
 set(STR_SPLIT_TEST_SRC "str_split_test.cc")
-set(STR_SPLIT_TEST_PUBLIC_LIBRARIES absl::strings absl::base absl_throw_delegate)
+set(STR_SPLIT_TEST_PUBLIC_LIBRARIES absl::strings absl::base absl_internal_throw_delegate)
 
 absl_test(
   TARGET
@@ -316,7 +325,7 @@ absl_test(
 
 # test numbers_test
 set(NUMBERS_TEST_SRC "numbers_test.cc")
-set(NUMBERS_TEST_PUBLIC_LIBRARIES absl::strings)
+set(NUMBERS_TEST_PUBLIC_LIBRARIES absl::strings pow10_helper)
 
 absl_test(
   TARGET
@@ -358,7 +367,7 @@ absl_test(
 
 # test charconv_test
 set(CHARCONV_TEST_SRC "charconv_test.cc")
-set(CHARCONV_TEST_PUBLIC_LIBRARIES absl::strings)
+set(CHARCONV_TEST_PUBLIC_LIBRARIES absl::strings absl::str_format pow10_helper)
 
 absl_test(
   TARGET
@@ -460,4 +469,13 @@ absl_test(
     absl::base
 )
 
-
+# test pow10_helper_test
+absl_test(
+  TARGET
+    pow10_helper_test
+  SOURCES
+    "internal/pow10_helper_test.cc"
+  PUBLIC_LIBRARIES
+    pow10_helper
+    absl::str_format
+)

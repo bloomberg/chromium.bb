@@ -37,6 +37,11 @@
 #include "absl/base/macros.h"
 #include "absl/base/port.h"
 
+#if defined(_MSC_VER) && defined(_WIN64)
+#include <intrin.h>
+#pragma intrinsic(_umul128)
+#endif  // defined(_MSC_VER) && defined(_WIN64)
+
 namespace absl {
 
 
@@ -227,8 +232,8 @@ std::ostream& operator<<(std::ostream& os, uint128 v);
 // TODO(strel) add operator>>(std::istream&, uint128)
 
 constexpr uint128 Uint128Max() {
-  return uint128(std::numeric_limits<uint64_t>::max(),
-                 std::numeric_limits<uint64_t>::max());
+  return uint128((std::numeric_limits<uint64_t>::max)(),
+                 (std::numeric_limits<uint64_t>::max)());
 }
 
 }  // namespace absl
@@ -266,9 +271,9 @@ class numeric_limits<absl::uint128> {
 #endif  // ABSL_HAVE_INTRINSIC_INT128
   static constexpr bool tinyness_before = false;
 
-  static constexpr absl::uint128 min() { return 0; }
+  static constexpr absl::uint128 (min)() { return 0; }
   static constexpr absl::uint128 lowest() { return 0; }
-  static constexpr absl::uint128 max() { return absl::Uint128Max(); }
+  static constexpr absl::uint128 (max)() { return absl::Uint128Max(); }
   static constexpr absl::uint128 epsilon() { return 0; }
   static constexpr absl::uint128 round_error() { return 0; }
   static constexpr absl::uint128 infinity() { return 0; }
@@ -384,13 +389,13 @@ constexpr uint128::uint128(uint64_t high, uint64_t low)
 
 constexpr uint128::uint128(int v)
     : lo_{static_cast<uint64_t>(v)},
-      hi_{v < 0 ? std::numeric_limits<uint64_t>::max() : 0} {}
+      hi_{v < 0 ? (std::numeric_limits<uint64_t>::max)() : 0} {}
 constexpr uint128::uint128(long v)  // NOLINT(runtime/int)
     : lo_{static_cast<uint64_t>(v)},
-      hi_{v < 0 ? std::numeric_limits<uint64_t>::max() : 0} {}
+      hi_{v < 0 ? (std::numeric_limits<uint64_t>::max)() : 0} {}
 constexpr uint128::uint128(long long v)  // NOLINT(runtime/int)
     : lo_{static_cast<uint64_t>(v)},
-      hi_{v < 0 ? std::numeric_limits<uint64_t>::max() : 0} {}
+      hi_{v < 0 ? (std::numeric_limits<uint64_t>::max)() : 0} {}
 
 constexpr uint128::uint128(unsigned int v) : lo_{v}, hi_{0} {}
 // NOLINTNEXTLINE(runtime/int)
@@ -413,13 +418,13 @@ constexpr uint128::uint128(uint64_t high, uint64_t low)
     : hi_{high}, lo_{low} {}
 
 constexpr uint128::uint128(int v)
-    : hi_{v < 0 ? std::numeric_limits<uint64_t>::max() : 0},
+    : hi_{v < 0 ? (std::numeric_limits<uint64_t>::max)() : 0},
       lo_{static_cast<uint64_t>(v)} {}
 constexpr uint128::uint128(long v)  // NOLINT(runtime/int)
-    : hi_{v < 0 ? std::numeric_limits<uint64_t>::max() : 0},
+    : hi_{v < 0 ? (std::numeric_limits<uint64_t>::max)() : 0},
       lo_{static_cast<uint64_t>(v)} {}
 constexpr uint128::uint128(long long v)  // NOLINT(runtime/int)
-    : hi_{v < 0 ? std::numeric_limits<uint64_t>::max() : 0},
+    : hi_{v < 0 ? (std::numeric_limits<uint64_t>::max)() : 0},
       lo_{static_cast<uint64_t>(v)} {}
 
 constexpr uint128::uint128(unsigned int v) : hi_{0}, lo_{v} {}
@@ -661,6 +666,12 @@ inline uint128 operator*(uint128 lhs, uint128 rhs) {
   // can be used for uint128 storage.
   return static_cast<unsigned __int128>(lhs) *
          static_cast<unsigned __int128>(rhs);
+#elif defined(_MSC_VER) && defined(_WIN64)
+  uint64_t carry;
+  uint64_t low = _umul128(Uint128Low64(lhs), Uint128Low64(rhs), &carry);
+  return MakeUint128(Uint128Low64(lhs) * Uint128High64(rhs) +
+                         Uint128High64(lhs) * Uint128Low64(rhs) + carry,
+                     low);
 #else   // ABSL_HAVE_INTRINSIC128
   uint64_t a32 = Uint128Low64(lhs) >> 32;
   uint64_t a00 = Uint128Low64(lhs) & 0xffffffff;

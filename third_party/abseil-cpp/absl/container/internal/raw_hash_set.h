@@ -92,7 +92,9 @@
 #define ABSL_CONTAINER_INTERNAL_RAW_HASH_SET_H_
 
 #ifndef SWISSTABLE_HAVE_SSE2
-#ifdef __SSE2__
+#if defined(__SSE2__) ||  \
+    (defined(_MSC_VER) && \
+     (defined(_M_X64) || (defined(_M_IX86) && _M_IX86_FP >= 2)))
 #define SWISSTABLE_HAVE_SSE2 1
 #else
 #define SWISSTABLE_HAVE_SSE2 0
@@ -112,7 +114,11 @@
 #endif
 
 #if SWISSTABLE_HAVE_SSE2
-#include <x86intrin.h>
+#include <emmintrin.h>
+#endif
+
+#if SWISSTABLE_HAVE_SSSE3
+#include <tmmintrin.h>
 #endif
 
 #include <algorithm>
@@ -202,14 +208,17 @@ constexpr bool IsNoThrowSwappable() {
 
 template <typename T>
 int TrailingZeros(T x) {
-  return sizeof(T) == 8 ? base_internal::CountTrailingZerosNonZero64(x)
-                        : base_internal::CountTrailingZerosNonZero32(x);
+  return sizeof(T) == 8 ? base_internal::CountTrailingZerosNonZero64(
+                              static_cast<uint64_t>(x))
+                        : base_internal::CountTrailingZerosNonZero32(
+                              static_cast<uint32_t>(x));
 }
 
 template <typename T>
 int LeadingZeros(T x) {
-  return sizeof(T) == 8 ? base_internal::CountLeadingZeros64(x)
-                        : base_internal::CountLeadingZeros32(x);
+  return sizeof(T) == 8
+             ? base_internal::CountLeadingZeros64(static_cast<uint64_t>(x))
+             : base_internal::CountLeadingZeros32(static_cast<uint32_t>(x));
 }
 
 // An abstraction over a bitmask. It provides an easy way to iterate through the
@@ -337,10 +346,27 @@ inline bool IsDeleted(ctrl_t c) { return c == kDeleted; }
 inline bool IsEmptyOrDeleted(ctrl_t c) { return c < kSentinel; }
 
 #if SWISSTABLE_HAVE_SSE2
-struct Group {
+
+// https://github.com/abseil/abseil-cpp/issues/209
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87853
+// _mm_cmpgt_epi8 is broken under GCC with -funsigned-char
+// Work around this by using the portable implementation of Group
+// when using -funsigned-char under GCC.
+inline __m128i _mm_cmpgt_epi8_fixed(__m128i a, __m128i b) {
+#if defined(__GNUC__) && !defined(__clang__)
+  if (std::is_unsigned<char>::value) {
+    const __m128i mask = _mm_set1_epi8(0x80);
+    const __m128i diff = _mm_subs_epi8(b, a);
+    return _mm_cmpeq_epi8(_mm_and_si128(diff, mask), mask);
+  }
+#endif
+  return _mm_cmpgt_epi8(a, b);
+}
+
+struct GroupSse2Impl {
   static constexpr size_t kWidth = 16;  // the number of slots per group
 
-  explicit Group(const ctrl_t* pos) {
+  explicit GroupSse2Impl(const ctrl_t* pos) {
     ctrl = _mm_loadu_si128(reinterpret_cast<const __m128i*>(pos));
   }
 
@@ -366,23 +392,24 @@ struct Group {
   BitMask<uint32_t, kWidth> MatchEmptyOrDeleted() const {
     auto special = _mm_set1_epi8(kSentinel);
     return BitMask<uint32_t, kWidth>(
-        _mm_movemask_epi8(_mm_cmpgt_epi8(special, ctrl)));
+        _mm_movemask_epi8(_mm_cmpgt_epi8_fixed(special, ctrl)));
   }
 
   // Returns the number of trailing empty or deleted elements in the group.
   uint32_t CountLeadingEmptyOrDeleted() const {
     auto special = _mm_set1_epi8(kSentinel);
-    return TrailingZeros(_mm_movemask_epi8(_mm_cmpgt_epi8(special, ctrl)) + 1);
+    return TrailingZeros(
+        _mm_movemask_epi8(_mm_cmpgt_epi8_fixed(special, ctrl)) + 1);
   }
 
   void ConvertSpecialToEmptyAndFullToDeleted(ctrl_t* dst) const {
-    auto msbs = _mm_set1_epi8(0x80);
+    auto msbs = _mm_set1_epi8(static_cast<char>(-128));
     auto x126 = _mm_set1_epi8(126);
 #if SWISSTABLE_HAVE_SSSE3
     auto res = _mm_or_si128(_mm_shuffle_epi8(x126, ctrl), msbs);
 #else
     auto zero = _mm_setzero_si128();
-    auto special_mask = _mm_cmpgt_epi8(zero, ctrl);
+    auto special_mask = _mm_cmpgt_epi8_fixed(zero, ctrl);
     auto res = _mm_or_si128(msbs, _mm_andnot_si128(special_mask, x126));
 #endif
     _mm_storeu_si128(reinterpret_cast<__m128i*>(dst), res);
@@ -390,11 +417,13 @@ struct Group {
 
   __m128i ctrl;
 };
-#else
-struct Group {
+#endif  // SWISSTABLE_HAVE_SSE2
+
+struct GroupPortableImpl {
   static constexpr size_t kWidth = 8;
 
-  explicit Group(const ctrl_t* pos) : ctrl(little_endian::Load64(pos)) {}
+  explicit GroupPortableImpl(const ctrl_t* pos)
+      : ctrl(little_endian::Load64(pos)) {}
 
   BitMask<uint64_t, kWidth, 3> Match(h2_t hash) const {
     // For the technique, see:
@@ -441,11 +470,15 @@ struct Group {
 
   uint64_t ctrl;
 };
-#endif  // SWISSTABLE_HAVE_SSE2
+
+#if SWISSTABLE_HAVE_SSE2
+using Group = GroupSse2Impl;
+#else
+using Group = GroupPortableImpl;
+#endif
 
 template <class Policy, class Hash, class Eq, class Alloc>
 class raw_hash_set;
-
 
 inline bool IsValidCapacity(size_t n) {
   return ((n + 1) & n) == 0 && n >= Group::kWidth - 1;
@@ -477,7 +510,7 @@ inline size_t NormalizeCapacity(size_t n) {
   constexpr size_t kMinCapacity = Group::kWidth - 1;
   return n <= kMinCapacity
              ? kMinCapacity
-             : std::numeric_limits<size_t>::max() >> LeadingZeros(n);
+             : (std::numeric_limits<size_t>::max)() >> LeadingZeros(n);
 }
 
 // The node_handle concept from C++17.
@@ -662,7 +695,7 @@ class raw_hash_set {
       allocator_type>::template rebind_traits<value_type>::const_pointer;
 
   // Alias used for heterogeneous lookup functions.
-  // `key_arg<K>` evaluates to `K` when the functors are tranparent and to
+  // `key_arg<K>` evaluates to `K` when the functors are transparent and to
   // `key_type` otherwise. It permits template argument deduction on `K` for the
   // transparent case.
   template <class K>
@@ -1022,7 +1055,7 @@ class raw_hash_set {
   bool empty() const { return !size(); }
   size_t size() const { return size_; }
   size_t capacity() const { return capacity_; }
-  size_t max_size() const { return std::numeric_limits<size_t>::max(); }
+  size_t max_size() const { return (std::numeric_limits<size_t>::max)(); }
 
   void clear() {
     // Iterating over this container is O(bucket_count()). When bucket_count()
@@ -1330,7 +1363,7 @@ class raw_hash_set {
   void rehash(size_t n) {
     if (n == 0 && capacity_ == 0) return;
     if (n == 0 && size_ == 0) return destroy_slots();
-    auto m = NormalizeCapacity(std::max(n, NumSlotsFast(size())));
+    auto m = NormalizeCapacity((std::max)(n, NumSlotsFast(size())));
     // n == 0 unconditionally rehashes as per the standard.
     if (n == 0 || m > capacity_) {
       resize(m);

@@ -91,7 +91,6 @@ source_set("city") {
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   public = [
     "internal/city.h",
-    "internal/city_crc.h",
   ]
   sources = [
     "internal/city.cc",
