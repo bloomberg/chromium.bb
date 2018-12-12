@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -79,8 +80,8 @@ bool GetAbsoluteDimensionValue(const AtomicString& attribute_value,
   return false;
 }
 
-bool IsLazyLoadingImageAllowed(const LocalFrame* frame,
-                               HTMLImageElement* html_image) {
+bool IsLazyLoadableImage(const LocalFrame* frame,
+                         HTMLImageElement* html_image) {
   // Minimum width or height attribute of the image to start lazyloading.
   const unsigned kMinDimensionToLazyLoad = 10;
 
@@ -121,9 +122,7 @@ bool IsLazyLoadingImageAllowed(const LocalFrame* frame,
       }
     }
   }
-  return frame->GetDocument()->GetSettings() &&
-         frame->GetDocument()->GetSettings()->GetLazyLoadEnabled() &&
-         frame->IsLazyLoadingImageAllowed();
+  return true;
 }
 
 }  // namespace
@@ -538,11 +537,15 @@ void ImageLoader::DoUpdateFromElement(
       if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
         params.SetClientLoFiPlaceholder();
       } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        if (IsLazyLoadingImageAllowed(frame, html_image)) {
-          params.SetLazyImagePlaceholder();
-          lazy_image_load_state_ = LazyImageLoadState::kDeferred;
+        if (IsLazyLoadableImage(frame, html_image)) {
+          if (frame->GetDocument()->GetSettings()->GetLazyLoadEnabled() &&
+              frame->IsLazyLoadingImageAllowed()) {
+            params.SetLazyImagePlaceholder();
+            lazy_image_load_state_ = LazyImageLoadState::kDeferred;
+          }
+          if (!frame->Owner() || frame->Owner()->ShouldLazyLoadChildren())
+            LazyLoadImageObserver::StartTrackingVisibilityMetrics(html_image);
         }
-        LazyLoadImageObserver::StartTrackingVisibilityMetrics(html_image);
       }
     }
 
