@@ -107,8 +107,8 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   AppShimHostManagerBrowserTest() : binding_(this) {}
 
  protected:
-  // Wait for OnShimLaunch, then send a quit, and wait for the response. Used to
-  // test launch behavior.
+  // Wait for OnShimProcessConnected, then send a quit, and wait for the
+  // response. Used to test launch behavior.
   void RunAndExitGracefully();
 
   // InProcessBrowserTest overrides:
@@ -116,7 +116,8 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   void TearDownOnMainThread() override;
 
   // AppShimHandler overrides:
-  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
   void OnShimClose(::AppShimHost* host) override {}
   void OnShimFocus(::AppShimHost* host,
                    apps::AppShimFocusType focus_type,
@@ -151,7 +152,7 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
 void AppShimHostManagerBrowserTest::RunAndExitGracefully() {
   runner_ = std::make_unique<base::RunLoop>();
   EXPECT_EQ(0, launch_count_);
-  runner_->Run();  // Will stop in OnShimLaunch().
+  runner_->Run();  // Will stop in OnShimProcessConnected().
   EXPECT_EQ(1, launch_count_);
 
   runner_ = std::make_unique<base::RunLoop>();
@@ -172,7 +173,7 @@ void AppShimHostManagerBrowserTest::TearDownOnMainThread() {
   apps::AppShimHandler::RemoveHandler(kTestAppMode);
 }
 
-void AppShimHostManagerBrowserTest::OnShimLaunch(
+void AppShimHostManagerBrowserTest::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   ++launch_count_;
   binding_.Bind(bootstrap->GetLaunchAppShimHostRequest());

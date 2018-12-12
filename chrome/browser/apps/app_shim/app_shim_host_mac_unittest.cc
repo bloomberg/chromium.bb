@@ -139,7 +139,8 @@ class AppShimHostTest : public testing::Test,
   void SimulateDisconnect() { host_ptr_.reset(); }
 
  protected:
-  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
     ++launch_count_;
     if (bootstrap->GetLaunchType() == apps::APP_SHIM_LAUNCH_NORMAL)
       ++launch_now_count_;
