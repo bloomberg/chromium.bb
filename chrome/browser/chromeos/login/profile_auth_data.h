@@ -30,11 +30,13 @@ class ProfileAuthData {
   // * The authentication cookies set by a SAML IdP, if
   //   |transfer_saml_auth_cookies_on_subsequent_login| is true and
   //   |to_partition|'s cookie jar is not empty.
+  // |from_partition| and |to_partition| must live until |completion_callback|
+  // is called.
   static void Transfer(content::StoragePartition* from_partition,
                        content::StoragePartition* to_partition,
                        bool transfer_auth_cookies_on_first_login,
                        bool transfer_saml_auth_cookies_on_subsequent_login,
-                       const base::Closure& completion_callback);
+                       base::OnceClosure completion_callback);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ProfileAuthData);

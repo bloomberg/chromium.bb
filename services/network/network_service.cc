@@ -39,6 +39,7 @@
 #include "services/network/crl_set_distributor.h"
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/dns_config_change_manager.h"
+#include "services/network/http_auth_cache_copier.h"
 #include "services/network/net_log_capture_mode_type_converter.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_context.h"
@@ -207,6 +208,9 @@ NetworkService::NetworkService(
   host_resolver_ = CreateHostResolver(net_log_);
 
   network_usage_accumulator_ = std::make_unique<NetworkUsageAccumulator>();
+
+  http_auth_cache_copier_ = std::make_unique<HttpAuthCacheCopier>();
+
 #if BUILDFLAG(IS_CT_SUPPORTED)
   sth_distributor_ =
       std::make_unique<certificate_transparency::STHDistributor>();

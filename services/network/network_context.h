@@ -328,6 +328,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       AddDomainReliabilityContextForTestingCallback callback) override;
   void ForceDomainReliabilityUploadsForTesting(
       ForceDomainReliabilityUploadsForTestingCallback callback) override;
+  void SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) override;
+  void LoadHttpAuthCache(const base::UnguessableToken& cache_key,
+                         LoadHttpAuthCacheCallback callback) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);

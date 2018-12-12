@@ -202,6 +202,9 @@ class TestNetworkContext : public mojom::NetworkContext {
       AddDomainReliabilityContextForTestingCallback callback) override {}
   void ForceDomainReliabilityUploadsForTesting(
       ForceDomainReliabilityUploadsForTestingCallback callback) override {}
+  void SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) override {}
+  void LoadHttpAuthCache(const base::UnguessableToken& cache_key,
+                         LoadHttpAuthCacheCallback callback) override {}
 };
 
 }  // namespace network

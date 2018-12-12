@@ -64,6 +64,7 @@
 #include "services/network/cookie_manager.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/host_resolver.h"
+#include "services/network/http_auth_cache_copier.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
 #include "services/network/net_log_exporter.h"
@@ -1593,6 +1594,28 @@ void NetworkContext::AddDomainReliabilityContextForTesting(
 void NetworkContext::ForceDomainReliabilityUploadsForTesting(
     ForceDomainReliabilityUploadsForTestingCallback callback) {
   domain_reliability_monitor_->ForceUploadsForTesting();
+  std::move(callback).Run();
+}
+
+void NetworkContext::SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) {
+  net::HttpAuthCache* http_auth_cache =
+      url_request_context_->http_transaction_factory()
+          ->GetSession()
+          ->http_auth_cache();
+  base::UnguessableToken cache_key =
+      network_service_->http_auth_cache_copier()->SaveHttpAuthCache(
+          *http_auth_cache);
+  std::move(callback).Run(cache_key);
+}
+
+void NetworkContext::LoadHttpAuthCache(const base::UnguessableToken& cache_key,
+                                       LoadHttpAuthCacheCallback callback) {
+  net::HttpAuthCache* http_auth_cache =
+      url_request_context_->http_transaction_factory()
+          ->GetSession()
+          ->http_auth_cache();
+  network_service_->http_auth_cache_copier()->LoadHttpAuthCache(
+      cache_key, http_auth_cache);
   std::move(callback).Run();
 }
 

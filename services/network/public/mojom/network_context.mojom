@@ -795,6 +795,21 @@ interface NetworkContext {
   // See net::TransportSecurityState::DeleteDynamicDataForHost for more detail.
   DeleteDynamicDataForHost(string host) => (bool result);
 
+  // Copies the contents of this NetworkContext's HttpAuthCache and returns a
+  // key that can be used by LoadHttpAuthCache to restore the contents.
+  // The data referenced by the returned key is not associated with this
+  // NetworkContext, and can be loaded by any NetworkContext.
+  // If there is no corresponding LoadHttpAuthCache call, the saved
+  // HttpAuthCache data will leak.
+  //
+  // TODO(crbug.com/914082): Return a scoped handle that can automatically free
+  // the cache when it goes out of scope.
+  SaveHttpAuthCache() => (mojo_base.mojom.UnguessableToken cache_key);
+
+  // Loads an HttpAuthCache previously saved by SaveHttpAuthCache, and
+  // copies its contents into this NetworkContext's HttpAuthCache.
+  LoadHttpAuthCache(mojo_base.mojom.UnguessableToken cache_key) => ();
+
   [Sync]
   // Enables the checking of static PKP records.
   EnableStaticKeyPinningForTesting() => ();
