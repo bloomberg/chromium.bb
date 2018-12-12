@@ -140,6 +140,7 @@ source_set("unit_tests") {
     "authentication_service_unittest.mm",
     "chrome_identity_service_observer_bridge_unittest.mm",
     "gaia_auth_fetcher_ios_unittest.mm",
+    "signin_browser_state_info_updater_unittest.mm",
   ]
   deps = [
     ":signin",
@@ -151,10 +152,12 @@ source_set("unit_tests") {
     "//components/signin/core/browser",
     "//components/signin/core/browser:test_support",
     "//components/signin/ios/browser",
+    "//components/signin/ios/browser:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//google_apis",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state:browser_state_impl",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/prefs:browser_prefs",

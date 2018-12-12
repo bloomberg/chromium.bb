@@ -29,6 +29,9 @@ class SigninBrowserStateInfoUpdater : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
+  // Updates the browser state info on signin and signout events.
+  void UpdateBrowserStateInfo();
+
   // SigninErrorController::Observer:
   void OnErrorChanged() override;
 
@@ -37,6 +40,7 @@ class SigninBrowserStateInfoUpdater : public KeyedService,
   void GoogleSignedOut(const AccountInfo& account_info) override;
 
   SigninErrorController* signin_error_controller_ = nullptr;
+  SigninManagerBase* signin_manager_ = nullptr;
   const base::FilePath browser_state_path_;
   ScopedObserver<SigninErrorController, SigninBrowserStateInfoUpdater>
       signin_error_controller_observer_;

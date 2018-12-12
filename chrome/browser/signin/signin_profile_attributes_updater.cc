@@ -18,10 +18,18 @@ SigninProfileAttributesUpdater::SigninProfileAttributesUpdater(
     SigninErrorController* signin_error_controller,
     const base::FilePath& profile_path)
     : signin_error_controller_(signin_error_controller),
+      signin_manager_(signin_manager),
       profile_path_(profile_path),
       signin_error_controller_observer_(this),
       signin_manager_observer_(this) {
+  // Some tests don't have a ProfileManager, disable this service.
+  if (!g_browser_process->profile_manager())
+    return;
+
+  signin_manager_observer_.Add(signin_manager_);
   signin_error_controller_observer_.Add(signin_error_controller);
+
+  UpdateProfileAttributes();
   // TODO(crbug.com/908457): Call OnErrorChanged() here, to catch any change
   // that happened since the construction of SigninErrorController. Profile
   // metrics depend on this bug and must be fixed first.
@@ -34,11 +42,31 @@ void SigninProfileAttributesUpdater::Shutdown() {
   signin_manager_observer_.RemoveAll();
 }
 
-void SigninProfileAttributesUpdater::OnErrorChanged() {
-  // Some tests don't have a ProfileManager.
-  if (g_browser_process->profile_manager() == nullptr)
+void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
+  ProfileAttributesEntry* entry;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager->GetProfileAttributesStorage()
+           .GetProfileAttributesWithPath(profile_path_, &entry)) {
     return;
+  }
 
+  std::string old_gaia_id = entry->GetGAIAId();
+
+  if (signin_manager_->IsAuthenticated()) {
+    AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
+    entry->SetAuthInfo(account_info.gaia,
+                       base::UTF8ToUTF16(account_info.email));
+  } else {
+    entry->SetLocalAuthCredentials(std::string());
+    entry->SetAuthInfo(std::string(), base::string16());
+    entry->SetIsSigninRequired(false);
+  }
+
+  if (old_gaia_id != entry->GetGAIAId())
+    ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
+}
+
+void SigninProfileAttributesUpdater::OnErrorChanged() {
   ProfileAttributesEntry* entry;
   if (!g_browser_process->profile_manager()
            ->GetProfileAttributesStorage()
@@ -49,34 +77,12 @@ void SigninProfileAttributesUpdater::OnErrorChanged() {
   entry->SetIsAuthError(signin_error_controller_->HasError());
 }
 
-#if !defined(OS_CHROMEOS)
 void SigninProfileAttributesUpdater::GoogleSigninSucceeded(
     const AccountInfo& account_info) {
-  ProfileAttributesEntry* entry;
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager->GetProfileAttributesStorage()
-           .GetProfileAttributesWithPath(profile_path_, &entry)) {
-    return;
-  }
-
-  entry->SetAuthInfo(account_info.gaia, base::UTF8ToUTF16(account_info.email));
-  ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
+  UpdateProfileAttributes();
 }
 
 void SigninProfileAttributesUpdater::GoogleSignedOut(
     const AccountInfo& account_info) {
-  ProfileAttributesEntry* entry;
-  bool has_entry = g_browser_process->profile_manager()
-                       ->GetProfileAttributesStorage()
-                       .GetProfileAttributesWithPath(profile_path_, &entry);
-
-  // If sign out occurs because Sync setup was in progress and the Profile got
-  // deleted, then the profile's no longer in the ProfileAttributesStorage.
-  if (!has_entry)
-    return;
-
-  entry->SetLocalAuthCredentials(std::string());
-  entry->SetAuthInfo(std::string(), base::string16());
-  entry->SetIsSigninRequired(false);
+  UpdateProfileAttributes();
 }
-#endif  // !defined(OS_CHROMEOS)
