@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -109,6 +110,8 @@ ToolbarView::DisplayMode GetDisplayMode(Browser* browser) {
     return ToolbarView::DisplayMode::NORMAL;
 
   if (browser->hosted_app_controller() &&
+      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser) &&
       base::FeatureList::IsEnabled(features::kDesktopPWAsCustomTabUI))
     return ToolbarView::DisplayMode::CUSTOM_TAB;
 
@@ -164,7 +167,7 @@ void ToolbarView::Init() {
     location_bar_->Init();
 
     if (display_mode_ == DisplayMode::CUSTOM_TAB) {
-      custom_tab_bar_ = new CustomTabBarView(browser_, this);
+      custom_tab_bar_ = new CustomTabBarView(browser_view_, this);
       AddChildView(custom_tab_bar_);
     }
 

@@ -183,7 +183,7 @@ void OpaqueBrowserFrameView::InitViews() {
 
   window_title_ = new views::Label(browser_view()->GetWindowTitle());
   window_title_->SetVisible(browser_view()->ShouldShowWindowTitle());
-  // Readability is ensured by |GetReadableFrameForegroundColor()|.
+  // Readability is ensured by GetFrameForegroundColor().
   window_title_->SetAutoColorReadabilityEnabled(false);
   window_title_->SetSubpixelRenderingEnabled(false);
   window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -194,8 +194,8 @@ void OpaqueBrowserFrameView::InitViews() {
       browser_view()->browser()->hosted_app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
     set_hosted_app_button_container(new HostedAppButtonContainer(
-        frame(), browser_view(), GetReadableFrameForegroundColor(kActive),
-        GetReadableFrameForegroundColor(kInactive)));
+        frame(), browser_view(), GetFrameForegroundColor(kActive),
+        GetFrameForegroundColor(kInactive)));
     AddChildView(hosted_app_button_container());
   }
 }
@@ -501,9 +501,9 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   if (frame()->IsFullscreen())
     return;  // Nothing is visible, so don't bother to paint.
 
-  const SkColor frame_color = GetFrameColor();
   const bool active = ShouldPaintAsActive();
-  window_title_->SetEnabledColor(GetReadableFrameForegroundColor(kUseCurrent));
+  SkColor frame_color = GetFrameColor();
+  window_title_->SetEnabledColor(GetFrameForegroundColor(kUseCurrent));
   frame_background_->set_frame_color(frame_color);
   frame_background_->set_use_custom_frame(frame()->UseCustomFrame());
   frame_background_->set_is_active(active);
@@ -700,7 +700,7 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
       IsMaximized());
 }
 
-SkColor OpaqueBrowserFrameView::GetReadableFrameForegroundColor(
+SkColor OpaqueBrowserFrameView::GetFrameForegroundColor(
     ActiveState active_state) const {
   const SkColor frame_color = GetFrameColor(active_state);
   if (browser_view()->IsBrowserTypeHostedApp()) {

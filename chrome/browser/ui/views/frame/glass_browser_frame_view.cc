@@ -116,11 +116,11 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
   extensions::HostedAppBrowserController* controller =
       browser_view->browser()->hosted_app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
-    // TODO(alancutter): Avoid snapshotting GetTitlebarFeatureColor() values
+    // TODO(alancutter): Avoid snapshotting GetFrameForegroundColor() values
     // here and call it on demand in
     // HostedAppButtonContainer::UpdateIconsColor() via a delegate interface.
-    SkColor active_color = GetTitlebarFeatureColor(kActive);
-    SkColor inactive_color = GetTitlebarFeatureColor(kInactive);
+    SkColor active_color = GetFrameForegroundColor(kActive);
+    SkColor inactive_color = GetFrameForegroundColor(kInactive);
 
     set_hosted_app_button_container(new HostedAppButtonContainer(
         frame, browser_view, active_color, inactive_color));
@@ -238,6 +238,15 @@ bool GlassBrowserFrameView::IsSingleTabModeAvailable() const {
   // custom-drawing the titlebar.
   return ShouldCustomDrawSystemTitlebar() &&
          BrowserNonClientFrameView::IsSingleTabModeAvailable();
+}
+
+SkColor GlassBrowserFrameView::GetFrameForegroundColor(
+    ActiveState active_state) const {
+  const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
+                                  ? SK_AlphaOPAQUE
+                                  : kInactiveTitlebarFeatureAlpha;
+  return SkColorSetA(GetReadableFeatureColor(GetFrameColor(active_state)),
+                     title_alpha);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -519,15 +528,6 @@ int GlassBrowserFrameView::TitlebarHeight(bool restored) const {
   return TitlebarMaximizedVisualHeight() + FrameTopBorderThickness(false);
 }
 
-SkColor GlassBrowserFrameView::GetTitlebarFeatureColor(
-    ActiveState active_state) const {
-  const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
-                                  ? SK_AlphaOPAQUE
-                                  : kInactiveTitlebarFeatureAlpha;
-  return SkColorSetA(GetReadableFeatureColor(GetFrameColor(active_state)),
-                     title_alpha);
-}
-
 int GlassBrowserFrameView::WindowTopY() const {
   // The window top is SM_CYSIZEFRAME pixels when maximized (see the comment in
   // FrameTopBorderThickness()) and floor(system dsf) pixels when restored.
@@ -658,7 +658,7 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   }
 
   if (ShowCustomTitle())
-    window_title_->SetEnabledColor(GetTitlebarFeatureColor(kUseCurrent));
+    window_title_->SetEnabledColor(GetFrameForegroundColor(kUseCurrent));
 }
 
 void GlassBrowserFrameView::LayoutTitleBar() {

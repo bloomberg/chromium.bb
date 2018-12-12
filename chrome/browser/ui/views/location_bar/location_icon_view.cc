@@ -31,6 +31,9 @@ LocationIconView::LocationIconView(const gfx::FontList& font_list,
   set_id(VIEW_ID_LOCATION_ICON);
   Update(true);
   SetUpForInOutAnimation();
+
+  // Readability is guaranteed by the omnibox theme.
+  label()->SetAutoColorReadabilityEnabled(false);
 }
 
 LocationIconView::~LocationIconView() {

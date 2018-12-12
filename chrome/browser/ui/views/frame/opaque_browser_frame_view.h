@@ -63,6 +63,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
+  SkColor GetFrameForegroundColor(ActiveState active_state) const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -183,10 +184,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Returns true if the view should draw its own custom title bar.
   bool ShouldShowWindowTitleBar() const;
-
-  // Returns the color to use for text and other title bar elements given the
-  // frame background color for |active_state|.
-  SkColor GetReadableFrameForegroundColor(ActiveState active_state) const;
 
   // Paint various sub-components of this view.  The *FrameBorder() functions
   // also paint the background of the titlebar area, since the top frame border

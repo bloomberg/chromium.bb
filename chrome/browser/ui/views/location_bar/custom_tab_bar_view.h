@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CUSTOM_TAB_BAR_VIEW_H_
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 
 class CustomTabBarTitleOriginView;
+class BrowserView;
 
 // A CustomTabBarView displays a read only title and origin for the current page
 // and a security status icon. This is visible if the hosted app window is
@@ -22,7 +24,8 @@ class CustomTabBarView : public views::View,
  public:
   static const char kViewClassName[];
 
-  CustomTabBarView(Browser* browser, LocationBarView::Delegate* delegate);
+  CustomTabBarView(BrowserView* browser_view,
+                   LocationBarView::Delegate* delegate);
   ~CustomTabBarView() override;
 
   LocationIconView* location_icon_view() { return location_icon_view_; }
@@ -50,12 +53,16 @@ class CustomTabBarView : public views::View,
   base::string16 location_for_testing() const { return last_location_; }
 
  private:
+  SkColor theme_color_;
+  SkColor text_color_;
+
   base::string16 last_title_;
   base::string16 last_location_;
 
   LocationBarView::Delegate* delegate_ = nullptr;
   LocationIconView* location_icon_view_ = nullptr;
   CustomTabBarTitleOriginView* title_origin_view_ = nullptr;
+  ScopedObserver<TabStripModel, CustomTabBarView> tab_strip_model_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomTabBarView);
 };
