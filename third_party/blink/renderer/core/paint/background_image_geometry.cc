@@ -677,9 +677,12 @@ void BackgroundImageGeometry::ComputePositioningArea(
     // Apply the adjustments.
     snapped_dest_rect_ = unsnapped_dest_rect_;
     snapped_dest_rect_.Contract(snapped_dest_adjust);
+    snapped_dest_rect_ = LayoutRect(PixelSnappedIntRect(snapped_dest_rect_));
     unsnapped_dest_rect_.Contract(unsnapped_dest_adjust);
     snapped_positioning_area = unsnapped_positioning_area;
     snapped_positioning_area.Contract(snapped_box_outset);
+    snapped_positioning_area =
+        LayoutRect(PixelSnappedIntRect(snapped_positioning_area));
     unsnapped_positioning_area.Contract(unsnapped_box_outset);
 
     // Offset of the positioning area from the corner of the
