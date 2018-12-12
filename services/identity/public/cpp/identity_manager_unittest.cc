@@ -155,9 +155,7 @@ class TestTokenServiceObserver : public OAuth2TokenService::Observer,
       : token_service_(token_service) {
     token_service_->AddObserver(this);
   }
-  ~TestTokenServiceObserver() override {
-    token_service_->RemoveObserver(this);
-  }
+  ~TestTokenServiceObserver() override { token_service_->RemoveObserver(this); }
 
   void set_identity_manager(IdentityManager* identity_manager) {
     identity_manager_ = identity_manager;
@@ -387,7 +385,8 @@ class IdentityManagerTest : public testing::Test {
       : signin_client_(&pref_service_),
         token_service_(&pref_service_),
         gaia_cookie_manager_service_(&token_service_,
-                                     &signin_client_) {
+                                     &signin_client_,
+                                     &test_url_loader_factory_) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
@@ -496,6 +495,7 @@ class IdentityManagerTest : public testing::Test {
   AccountTrackerServiceForTest account_tracker_;
   TestSigninClient signin_client_;
   CustomFakeProfileOAuth2TokenService token_service_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   std::unique_ptr<SigninManagerForTest> signin_manager_;
   std::unique_ptr<IdentityManager> identity_manager_;
