@@ -564,7 +564,6 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 960,
           "shards": 3
         }
       }
