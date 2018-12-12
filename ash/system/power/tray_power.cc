@@ -109,9 +109,9 @@ void PowerTrayView::UpdateImage() {
   info_ = info;
   icon_session_state_color_ = session_state;
 
-  SkColor color = TrayIconColor(session_state);
   image_view()->SetImage(PowerStatus::GetBatteryImage(
-      info, TrayConstants::GetTrayIconSize(), SkColorSetA(color, 0x4C), color));
+      info, TrayConstants::GetTrayIconSize(), kTrayIconBackgroundColor,
+      TrayIconColor(session_state)));
 }
 
 }  // namespace tray

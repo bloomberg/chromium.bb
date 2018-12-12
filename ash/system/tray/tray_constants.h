@@ -96,6 +96,7 @@ extern const SkColor kMenuSeparatorColor;
 // system tray.
 constexpr int kTrayIconSize = 16;
 extern const SkColor kTrayIconColor;
+extern const SkColor kTrayIconBackgroundColor;
 extern const SkColor kOobeTrayIconColor;
 
 // The padding around network tray icon in dip.
