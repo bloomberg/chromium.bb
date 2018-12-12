@@ -10,97 +10,39 @@
 cr.define('bookmarks', function() {
   /**
    * @polymerBehavior
-   * @implements {StoreObserver}
    */
-  const StoreClient = {
-    created: function() {
-      /**
-       * @type {!Array<{
-       *   localProperty: string,
-       *   valueGetter: function(!BookmarksPageState)
-       * }>}
-       */
-      this.watches_ = [];
-    },
-
-    attached: function() {
-      bookmarks.Store.getInstance().addObserver(this);
-    },
-
-    detached: function() {
-      bookmarks.Store.getInstance().removeObserver(this);
-    },
-
+  const BookmarksStoreClientImpl = {
     /**
-     * Watches a particular part of the state tree, updating |localProperty|
-     * to the return value of |valueGetter| whenever the state changes. Eg, to
-     * keep |this.item| updated with the value of a node:
-     *   watch('item', (state) => state.nodes[this.itemId]);
-     *
-     * Note that object identity is used to determine if the value has changed
-     * before updating the UI, rather than Polymer-style deep equality. If the
-     * getter function returns |undefined|, no changes will propagate to the UI.
-     *
-     * Typechecking is supressed because this conflicts with
-     * Object.prototype.watch, which is a Gecko-only method that is recognized
-     * by Closure.
-     * @suppress {checkTypes}
      * @param {string} localProperty
      * @param {function(!BookmarksPageState)} valueGetter
      */
     watch: function(localProperty, valueGetter) {
-      this.watches_.push({
-        localProperty: localProperty,
-        valueGetter: valueGetter,
-      });
+      this.watch_(localProperty, valueGetter);
     },
 
     /**
-     * Helper to dispatch an action to the store, which will update the store
-     * data and then (possibly) flow through to the UI.
-     * @param {?Action} action
+     * @return {BookmarksPageState}
      */
-    dispatch: function(action) {
-      bookmarks.Store.getInstance().dispatch(action);
-    },
-
-    /**
-     * Helper to dispatch a DeferredAction to the store, which will
-     * asynchronously perform updates to the store data and UI.
-     * @param {DeferredAction} action
-     */
-    dispatchAsync: function(action) {
-      bookmarks.Store.getInstance().dispatchAsync(action);
-    },
-
-    /** @param {string} newState */
-    onStateChanged: function(newState) {
-      this.watches_.forEach((watch) => {
-        const oldValue = this[watch.localProperty];
-        const newValue = watch.valueGetter(newState);
-
-        // Avoid poking Polymer unless something has actually changed. Reducers
-        // must return new objects rather than mutating existing objects, so
-        // any real changes will pass through correctly.
-        if (oldValue === newValue || newValue === undefined)
-          return;
-
-        this[watch.localProperty] = newValue;
-      });
-    },
-
-    updateFromStore: function() {
-      if (bookmarks.Store.getInstance().isInitialized())
-        this.onStateChanged(bookmarks.Store.getInstance().data);
-    },
-
-    /** @return {!BookmarksPageState} */
     getState: function() {
-      return bookmarks.Store.getInstance().data;
+      return this.getStore().data;
+    },
+
+    /**
+     * @return {bookmarks.Store}
+     */
+    getStore: function() {
+      return bookmarks.Store.getInstance();
     },
   };
 
+  /**
+   * @polymerBehavior
+   * @implements {cr.ui.StoreObserver<BookmarksPageState>}
+   */
+  const StoreClient = [cr.ui.StoreClient, BookmarksStoreClientImpl];
+
   return {
+    BookmarksStoreClientImpl: BookmarksStoreClientImpl,
     StoreClient: StoreClient,
   };
 });

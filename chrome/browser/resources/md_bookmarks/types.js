@@ -78,12 +78,6 @@ let PreferencesState;
  */
 let BookmarksPageState;
 
-/** @typedef {{name: string}} */
-let Action;
-
-/** @typedef {function(function(?Action))} */
-let DeferredAction;
-
 /** @typedef {{element: BookmarkElement, position: DropPosition}} */
 let DropDestination;
 
@@ -106,9 +100,3 @@ function DragData() {
   /** @type {boolean} */
   this.sameProfile = false;
 }
-
-/** @interface */
-function StoreObserver() {}
-
-/** @param {!BookmarksPageState} newState */
-StoreObserver.prototype.onStateChanged = function(newState) {};

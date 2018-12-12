@@ -7,7 +7,7 @@ suiteSetup(function() {
     class TestStore extends bookmarks.Store {
       constructor(data) {
         super();
-        this.data_ = Object.assign(bookmarks.util.createEmptyState(), data);
+        this.data = Object.assign(bookmarks.util.createEmptyState(), data);
         this.initialized_ = true;
 
         this.lastAction_ = null;
@@ -32,14 +32,6 @@ suiteSetup(function() {
 
       resetLastAction() {
         this.lastAction_ = null;
-      }
-
-      get data() {
-        return this.data_;
-      }
-
-      set data(newData) {
-        this.data_ = newData;
       }
 
       /** Replace the global store instance with this TestStore. */
