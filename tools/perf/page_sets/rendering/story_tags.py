@@ -22,6 +22,8 @@ USE_FAKE_CAMERA_DEVICE = Tag(
 
 # Below are tags for filtering by page sets
 
+BACKDROP_FILTER = Tag(
+    'backdrop_filter', 'Backdrop filter stories')
 IMAGE_DECODING = Tag(
     'image_decoding', 'Stories with accelerated jpeg decoding')
 KEY_DESKTOP_MOVE = Tag(
