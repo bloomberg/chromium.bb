@@ -15,6 +15,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 
 namespace exo {
 namespace {
@@ -246,6 +248,44 @@ TEST_F(SeatTest, SetSelection_NullSource) {
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
       ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard);
   EXPECT_EQ(clipboard, "");
+}
+
+TEST_F(SeatTest, PressedKeys) {
+  Seat seat;
+  ui::KeyEvent press_a(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A, 0);
+  ui::KeyEvent release_a(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::DomCode::US_A, 0);
+  ui::KeyEvent press_b(ui::ET_KEY_PRESSED, ui::VKEY_B, ui::DomCode::US_B, 0);
+  ui::KeyEvent release_b(ui::ET_KEY_RELEASED, ui::VKEY_B, ui::DomCode::US_B, 0);
+
+  // Press A, it should be in the map.
+  seat.WillProcessEvent(&press_a);
+  seat.OnKeyEvent(press_a.AsKeyEvent());
+  seat.DidProcessEvent(&press_a);
+  base::flat_map<ui::DomCode, ui::DomCode> pressed_keys;
+  pressed_keys[ui::CodeFromNative(&press_a)] = press_a.code();
+  EXPECT_EQ(pressed_keys, seat.pressed_keys());
+
+  // Press B, then A & B should be in the map.
+  seat.WillProcessEvent(&press_b);
+  seat.OnKeyEvent(press_b.AsKeyEvent());
+  seat.DidProcessEvent(&press_b);
+  pressed_keys[ui::CodeFromNative(&press_b)] = press_b.code();
+  EXPECT_EQ(pressed_keys, seat.pressed_keys());
+
+  // Release A, with the normal order where DidProcessEvent is after OnKeyEvent,
+  // only B should be in the map.
+  seat.WillProcessEvent(&release_a);
+  seat.OnKeyEvent(release_a.AsKeyEvent());
+  seat.DidProcessEvent(&release_a);
+  pressed_keys.erase(ui::CodeFromNative(&press_a));
+  EXPECT_EQ(pressed_keys, seat.pressed_keys());
+
+  // Release B, do it out of order so DidProcessEvent is before OnKeyEvent, the
+  // map should then be empty.
+  seat.WillProcessEvent(&release_b);
+  seat.DidProcessEvent(&release_b);
+  seat.OnKeyEvent(release_b.AsKeyEvent());
+  EXPECT_TRUE(seat.pressed_keys().empty());
 }
 
 }  // namespace
