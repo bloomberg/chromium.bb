@@ -35,6 +35,7 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) TrainingExample {
 
   bool operator==(const TrainingExample& rhs) const;
   bool operator!=(const TrainingExample& rhs) const;
+  bool operator<(const TrainingExample& rhs) const;
 
   TrainingExample& operator=(const TrainingExample& rhs);
   TrainingExample& operator=(TrainingExample&& rhs);
