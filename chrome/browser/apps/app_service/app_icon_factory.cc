@@ -14,7 +14,11 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "chrome/browser/extensions/chrome_app_icon.h"
+#include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -25,6 +29,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/gfx_utils.h"
+#endif
 
 namespace {
 
@@ -70,12 +78,29 @@ void RunCallbackWithUncompressedImageSkia(
   std::move(callback).Run(std::move(iv));
 }
 
-// Runs |callback| passing an IconValuePtr with an uncompressed image.
+// Runs |callback| passing an IconValuePtr with a filtered, uncompressed image.
 void RunCallbackWithUncompressedImage(
+    base::OnceCallback<void(gfx::ImageSkia*)> image_filter,
     apps::mojom::Publisher::LoadIconCallback callback,
     const gfx::Image& image) {
-  RunCallbackWithUncompressedImageSkia(std::move(callback),
-                                       image.AsImageSkia());
+  gfx::ImageSkia image_skia = image.AsImageSkia();
+  std::move(image_filter).Run(&image_skia);
+  RunCallbackWithUncompressedImageSkia(std::move(callback), image_skia);
+}
+
+// Forwards to extensions::ChromeAppIcon::ApplyEffects, with subtle differences
+// in argument types. For example, resize_function is a "ResizeFunction" here,
+// but a "const ResizeFunction&" in extensions::ChromeAppIcon::ApplyEffects.
+void ChromeAppIconApplyEffects(
+    int resource_size_in_dip,
+    extensions::ChromeAppIconLoader::ResizeFunction resize_function,
+    bool apply_chrome_badge,
+    bool app_launchable,
+    bool from_bookmark,
+    gfx::ImageSkia* image_skia) {
+  extensions::ChromeAppIcon::ApplyEffects(resource_size_in_dip, resize_function,
+                                          apply_chrome_badge, app_launchable,
+                                          from_bookmark, image_skia);
 }
 
 }  // namespace
@@ -98,40 +123,43 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
         extensions::IconsInfo::GetIconResource(extension, size_hint_in_px,
                                                ExtensionIconSet::MATCH_BIGGER);
 
-    // TODO(crbug.com/826982): at some point near here, we should call into
-    // chrome/browser/extensions/chrome_app_icon.h code to get e.g. graying out
-    // disabled icons, or rounding off corners. It's not entirely trivial. The
-    // ChromeAppIcon object expects to be long-lived, calling back into the
-    // ChromeAppIconDelegate e.g. when the extension's underlying icon changes,
-    // or when an enabled/disabled state change means graying or un-graying an
-    // extension's icon.
-    //
-    // For example, in chrome/browser/ui/app_list, ExtensionAppItem implements
-    // ChromeAppIconDelegate, as the ExtensionAppItem is a long-lived object.
-    // It is a model, in the model-view-controller sense.
-    //
-    // In contrast, this API here (a Mojo IPC API) is a request-response IPC,
-    // with nothing long-lived enough to be the ChromeAppIconDelegate.
-
     switch (icon_compression) {
       case apps::mojom::IconCompression::kUnknown:
         break;
 
-      case apps::mojom::IconCompression::kUncompressed:
+      case apps::mojom::IconCompression::kUncompressed: {
+        bool apply_chrome_badge = false;
+#if defined(OS_CHROMEOS)
+        apply_chrome_badge =
+            extensions::util::ShouldApplyChromeBadge(context, extension_id);
+#endif
+
         extensions::ImageLoader::Get(context)->LoadImageAsync(
             extension, std::move(ext_resource),
             gfx::Size(size_hint_in_px, size_hint_in_px),
-            base::BindOnce(&RunCallbackWithUncompressedImage,
-                           std::move(callback)));
+            base::BindOnce(
+                &RunCallbackWithUncompressedImage,
+                base::BindOnce(
+                    &ChromeAppIconApplyEffects, size_hint_in_dip,
+                    base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd),
+                    apply_chrome_badge,
+                    extensions::util::IsAppLaunchable(extension_id, context),
+                    extension->from_bookmark()),
+                std::move(callback)));
         return;
+      }
 
-      case apps::mojom::IconCompression::kCompressed:
+      case apps::mojom::IconCompression::kCompressed: {
+        // TODO(crbug.com/826982): do we also want to apply the
+        // ChromeAppIconApplyEffects image filter here? This will require
+        // decoding from and re-encoding to PNG before and after the filter.
         base::PostTaskWithTraitsAndReplyWithResult(
             FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
             base::BindOnce(&ReadExtensionResource, std::move(ext_resource)),
             base::BindOnce(&RunCallbackWithCompressedData,
                            std::move(callback)));
         return;
+      }
     }
   }
 
