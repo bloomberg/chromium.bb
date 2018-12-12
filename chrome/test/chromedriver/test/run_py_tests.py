@@ -748,6 +748,28 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.PerformActions(actions)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
+  def testActionsTouchStart(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'div.style["width"] = "100px";'
+        'div.style["height"] = "100px";'
+        'div.addEventListener("touchstart", function() {'
+        '  var div = document.getElementsByTagName("div")[0];'
+        '  div.innerHTML="new<br>";'
+        '});'
+        'return div;')
+    actions = ({"actions": [{
+      "type":"pointer",
+      "actions":[{"type": "pointerMove", "x": 10, "y": 10},
+                 {"type": "pointerDown"},
+                 {"type": "pointerUp"}],
+      "parameters": {"pointerType": "touch"},
+      "id": "pointer1"}]})
+    self._driver.PerformActions(actions)
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
   def testPageLoadStrategyIsNormalByDefault(self):
     self.assertEquals('normal',
                       self._driver.capabilities['pageLoadStrategy'])
