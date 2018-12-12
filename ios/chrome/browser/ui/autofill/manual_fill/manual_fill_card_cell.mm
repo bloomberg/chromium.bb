@@ -163,14 +163,18 @@
   UIView* guide = self.contentView;
   CreateGraySeparatorForContainer(guide);
 
+  NSMutableArray<NSLayoutConstraint*>* staticConstraints =
+      [[NSMutableArray alloc] init];
+
   self.cardLabel = CreateLabel();
   [self.contentView addSubview:self.cardLabel];
 
   self.cardIcon = [[UIImageView alloc] init];
   self.cardIcon.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentView addSubview:self.cardIcon];
-  HorizontalConstraintsForViewsOnGuideWithMargin(
-      @[ self.cardLabel, self.cardIcon ], guide, ButtonHorizontalMargin, YES);
+  AppendHorizontalConstraintsForViews(
+      staticConstraints, @[ self.cardLabel, self.cardIcon ], guide,
+      ButtonHorizontalMargin, AppendConstraintsHorizontalExtraSpaceLeft);
   [NSLayoutConstraint activateConstraints:@[
     [self.cardIcon.bottomAnchor
         constraintEqualToAnchor:self.cardLabel.firstBaselineAnchor]
@@ -179,14 +183,14 @@
   self.cardNumberButton =
       CreateButtonWithSelectorAndTarget(@selector(userDidTapCardNumber:), self);
   [self.contentView addSubview:self.cardNumberButton];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.cardNumberButton ],
-                                                 guide, 0);
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.cardNumberButton ], guide);
 
   self.cardholderButton =
       CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
   [self.contentView addSubview:self.cardholderButton];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.cardholderButton ],
-                                                 guide, 0);
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.cardholderButton ], guide);
 
   // Expiration line.
   self.expirationMonthButton =
@@ -198,22 +202,23 @@
   UILabel* expirationSeparatorLabel = CreateLabel();
   expirationSeparatorLabel.text = @"/";
   [self.contentView addSubview:expirationSeparatorLabel];
-  SyncBaselinesForViewsOnView(
-      @[ expirationSeparatorLabel, self.expirationYearButton ],
-      self.expirationMonthButton);
-  HorizontalConstraintsForViewsOnGuideWithMargin(
+  AppendHorizontalConstraintsForViews(
+      staticConstraints,
       @[
         self.expirationMonthButton, expirationSeparatorLabel,
         self.expirationYearButton
       ],
-      guide, 0);
+      guide, 0, AppendConstraintsHorizontalSyncBaselines);
 
-  VerticalConstraintsSpacingForViewsInContainer(
+  AppendVerticalConstraintsSpacingForViews(
+      staticConstraints,
       @[
         self.cardLabel, self.cardNumberButton, self.expirationMonthButton,
         self.cardholderButton
       ],
       self.contentView);
+
+  [NSLayoutConstraint activateConstraints:staticConstraints];
 }
 
 - (void)userDidTapCardNumber:(UIButton*)sender {

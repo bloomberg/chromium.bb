@@ -81,8 +81,9 @@ static const CGFloat NoMultiplier = 1.0;
 // The credential this cell is showing.
 @property(nonatomic, strong) ManualFillCredential* manualFillCredential;
 
-// The vertical constraints for all the lines.
-@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* verticalConstraints;
+// The dynamic constraints for all the lines (i.e. not set in createView).
+@property(nonatomic, strong)
+    NSMutableArray<NSLayoutConstraint*>* dynamicConstraints;
 
 // The label with the site name and host.
 @property(nonatomic, strong) UILabel* siteNameLabel;
@@ -107,8 +108,8 @@ static const CGFloat NoMultiplier = 1.0;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  [NSLayoutConstraint deactivateConstraints:self.verticalConstraints];
-  self.verticalConstraints = @[];
+  [NSLayoutConstraint deactivateConstraints:self.dynamicConstraints];
+  [self.dynamicConstraints removeAllObjects];
 
   self.siteNameLabel.text = @"";
 
@@ -201,10 +202,12 @@ static const CGFloat NoMultiplier = 1.0;
   CGFloat bottomSystemSpacingMultiplier =
       isConnectedToNextCell ? NoMultiplier : BottomSystemSpacingMultiplier;
 
-  self.verticalConstraints =
-      VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
-          verticalLeadViews, self.contentView, topSystemSpacingMultiplier,
-          MiddleSystemSpacingMultiplier, bottomSystemSpacingMultiplier);
+  self.dynamicConstraints = [[NSMutableArray alloc] init];
+  AppendVerticalConstraintsSpacingForViews(
+      self.dynamicConstraints, verticalLeadViews, self.contentView,
+      topSystemSpacingMultiplier, MiddleSystemSpacingMultiplier,
+      bottomSystemSpacingMultiplier);
+  [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
 #pragma mark - Private
@@ -215,25 +218,30 @@ static const CGFloat NoMultiplier = 1.0;
 
   UIView* guide = self.contentView;
   self.grayLine = CreateGraySeparatorForContainer(guide);
+  NSMutableArray<NSLayoutConstraint*>* staticConstraints =
+      [[NSMutableArray alloc] init];
 
   self.siteNameLabel = CreateLabel();
   self.siteNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
   self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
   [self.contentView addSubview:self.siteNameLabel];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.siteNameLabel ], guide,
-                                                 ButtonHorizontalMargin);
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.siteNameLabel ], guide,
+                                      ButtonHorizontalMargin);
 
   self.usernameButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapUsernameButton:), self);
   [self.contentView addSubview:self.usernameButton];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.usernameButton ],
-                                                 guide, 0);
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.usernameButton ], guide);
 
   self.passwordButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapPasswordButton:), self);
   [self.contentView addSubview:self.passwordButton];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.passwordButton ],
-                                                 guide, 0);
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.passwordButton ], guide);
+
+  [NSLayoutConstraint activateConstraints:staticConstraints];
 }
 
 - (void)userDidTapUsernameButton:(UIButton*)button {

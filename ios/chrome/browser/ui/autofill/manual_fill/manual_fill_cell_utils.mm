@@ -35,29 +35,28 @@ UIButton* CreateButtonWithSelectorAndTarget(SEL action, id target) {
   return button;
 }
 
-NSArray<NSLayoutConstraint*>* VerticalConstraintsSpacingForViewsInContainer(
+void AppendVerticalConstraintsSpacingForViews(
+    NSMutableArray<NSLayoutConstraint*>* constraints,
     NSArray<UIView*>* views,
     UIView* container) {
-  return VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
-      views, container, TopSystemSpacingMultiplier,
+  AppendVerticalConstraintsSpacingForViews(
+      constraints, views, container, TopSystemSpacingMultiplier,
       MiddleSystemSpacingMultiplier, BottomSystemSpacingMultiplier);
 }
 
-NSArray<NSLayoutConstraint*>*
-VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
+void AppendVerticalConstraintsSpacingForViews(
+    NSMutableArray<NSLayoutConstraint*>* constraints,
     NSArray<UIView*>* views,
     UIView* container,
     CGFloat topSystemSpacingMultiplier,
     CGFloat middleSystemSpacingMultiplier,
     CGFloat bottomSystemSpacingMultiplier) {
-  NSMutableArray* verticalConstraints = [[NSMutableArray alloc] init];
-
   // Multipliers of these constraints are calculated based on a 24 base
   // system spacing.
   NSLayoutYAxisAnchor* previousAnchor = container.topAnchor;
   CGFloat multiplier = topSystemSpacingMultiplier;
   for (UIView* view in views) {
-    [verticalConstraints
+    [constraints
         addObject:[view.firstBaselineAnchor
                       constraintEqualToSystemSpacingBelowAnchor:previousAnchor
                                                      multiplier:multiplier]];
@@ -65,40 +64,49 @@ VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
     previousAnchor = view.lastBaselineAnchor;
   }
   multiplier = bottomSystemSpacingMultiplier;
-  [verticalConstraints
+  [constraints
       addObject:[container.bottomAnchor
                     constraintEqualToSystemSpacingBelowAnchor:previousAnchor
                                                    multiplier:multiplier]];
-
-  [NSLayoutConstraint activateConstraints:verticalConstraints];
-  return verticalConstraints;
 }
 
-NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithMargin(
+void AppendHorizontalConstraintsForViews(
+    NSMutableArray<NSLayoutConstraint*>* constraints,
+    NSArray<UIView*>* views,
+    UIView* guide) {
+  AppendHorizontalConstraintsForViews(constraints, views, guide, 0);
+}
+
+void AppendHorizontalConstraintsForViews(
+    NSMutableArray<NSLayoutConstraint*>* constraints,
     NSArray<UIView*>* views,
     UIView* guide,
     CGFloat margin) {
-  return HorizontalConstraintsForViewsOnGuideWithMargin(views, guide, margin,
-                                                        NO);
+  AppendHorizontalConstraintsForViews(constraints, views, guide, margin, 0);
 }
 
-NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithMargin(
+void AppendHorizontalConstraintsForViews(
+    NSMutableArray<NSLayoutConstraint*>* constraints,
     NSArray<UIView*>* views,
     UIView* guide,
     CGFloat margin,
-    BOOL useExtraSpaceAtLeft) {
-  NSMutableArray* horizontalConstraints = [[NSMutableArray alloc] init];
+    AppendConstraints options) {
+  if (views.count == 0)
+    return;
+
   NSLayoutXAxisAnchor* previousAnchor = guide.leadingAnchor;
-  UILayoutPriority firstPriority = useExtraSpaceAtLeft
-                                       ? UILayoutPriorityDefaultHigh
-                                       : UILayoutPriorityDefaultLow;
-  UILayoutPriority lastPriority = useExtraSpaceAtLeft
-                                      ? UILayoutPriorityDefaultLow
-                                      : UILayoutPriorityDefaultHigh;
+  UILayoutPriority firstPriority =
+      options & AppendConstraintsHorizontalExtraSpaceLeft
+          ? UILayoutPriorityDefaultHigh
+          : UILayoutPriorityDefaultLow;
+  UILayoutPriority lastPriority =
+      options & AppendConstraintsHorizontalExtraSpaceLeft
+          ? UILayoutPriorityDefaultLow
+          : UILayoutPriorityDefaultHigh;
 
   CGFloat shift = margin;
   for (UIView* view in views) {
-    [horizontalConstraints
+    [constraints
         addObject:[view.leadingAnchor constraintEqualToAnchor:previousAnchor
                                                      constant:shift]];
     [view setContentCompressionResistancePriority:firstPriority
@@ -109,35 +117,35 @@ NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithMargin(
     previousAnchor = view.trailingAnchor;
     shift = 0;
   }
-  if (views.count > 0) {
-    [horizontalConstraints
-        addObject:[views.lastObject.trailingAnchor
-                      constraintEqualToAnchor:guide.trailingAnchor
-                                     constant:-margin]];
-    // Give all remaining space to the last button, minus margin, as per UX.
-    [views.lastObject
-        setContentCompressionResistancePriority:lastPriority
-                                        forAxis:
-                                            UILayoutConstraintAxisHorizontal];
-    [views.lastObject
-        setContentHuggingPriority:firstPriority
-                          forAxis:UILayoutConstraintAxisHorizontal];
+
+  [constraints addObject:[views.lastObject.trailingAnchor
+                             constraintEqualToAnchor:guide.trailingAnchor
+                                            constant:-margin]];
+  // Give all remaining space to the last button, minus margin, as per UX.
+  [views.lastObject
+      setContentCompressionResistancePriority:lastPriority
+                                      forAxis:UILayoutConstraintAxisHorizontal];
+  [views.lastObject setContentHuggingPriority:firstPriority
+                                      forAxis:UILayoutConstraintAxisHorizontal];
+
+  if (options & AppendConstraintsHorizontalSyncBaselines) {
+    AppendEqualBaselinesConstraints(constraints, views);
   }
-  [NSLayoutConstraint activateConstraints:horizontalConstraints];
-  return horizontalConstraints;
 }
 
-NSArray<NSLayoutConstraint*>* SyncBaselinesForViewsOnView(
-    NSArray<UIView*>* views,
-    UIView* onView) {
-  NSMutableArray* baselinesConstraints = [[NSMutableArray alloc] init];
+void AppendEqualBaselinesConstraints(
+    NSMutableArray<NSLayoutConstraint*>* constraints,
+    NSArray<UIView*>* views) {
+  UIView* leadingView = views.firstObject;
   for (UIView* view in views) {
-    [baselinesConstraints
-        addObject:[view.firstBaselineAnchor
-                      constraintEqualToAnchor:onView.firstBaselineAnchor]];
+    DCHECK([view isKindOfClass:[UIButton class]] ||
+           [view isKindOfClass:[UILabel class]]);
+    if (view == leadingView)
+      continue;
+    [constraints
+        addObject:[view.lastBaselineAnchor
+                      constraintEqualToAnchor:leadingView.lastBaselineAnchor]];
   }
-  [NSLayoutConstraint activateConstraints:baselinesConstraints];
-  return baselinesConstraints;
 }
 
 UILabel* CreateLabel() {
