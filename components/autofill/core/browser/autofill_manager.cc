@@ -1573,6 +1573,23 @@ void AutofillManager::OnFormsParsed(
     else
       non_queryable_forms.push_back(form_structure);
 
+    // Log the type of form that was parsed.
+    bool card_form = false;
+    bool address_form = false;
+    for (const auto& field : *form_structure) {
+      if (field->Type().group() == CREDIT_CARD) {
+        card_form = true;
+      } else {
+        address_form = true;
+      }
+    }
+    if (card_form) {
+      credit_card_form_event_logger_->OnDidParseForm();
+    }
+    if (address_form) {
+      address_form_event_logger_->OnDidParseForm();
+    }
+
     // If a form with the same name was previously filled, and there has not
     // been a refill attempt on that form yet, start the process of triggering a
     // refill.
