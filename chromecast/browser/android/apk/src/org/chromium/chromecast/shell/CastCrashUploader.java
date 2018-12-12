@@ -5,7 +5,6 @@
 package org.chromium.chromecast.shell;
 
 import org.chromium.base.Log;
-import org.chromium.components.minidump_uploader.CrashReportMimeWriter;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -45,19 +44,17 @@ public final class CastCrashUploader {
     private final ScheduledExecutorService mExecutorService;
     private final ElidedLogcatProvider mLogcatProvider;
     private final String mCrashDumpPath;
-    private final String mCrashReportPath;
     private final String mCrashReportUploadUrl;
     private final String mUuid;
     private final String mApplicationFeedback;
     private final Runnable mQueueAllCrashDumpUploadsRunnable = () -> checkForCrashDumps();
 
     public CastCrashUploader(ScheduledExecutorService executorService,
-            ElidedLogcatProvider logcatProvider, String crashDumpPath, String crashReportPath,
-            String uuid, String applicationFeedback, boolean uploadCrashToStaging) {
+            ElidedLogcatProvider logcatProvider, String crashDumpPath, String uuid,
+            String applicationFeedback, boolean uploadCrashToStaging) {
         mExecutorService = executorService;
         mLogcatProvider = logcatProvider;
         mCrashDumpPath = crashDumpPath;
-        mCrashReportPath = crashReportPath;
         mUuid = uuid;
         mApplicationFeedback = applicationFeedback;
         mCrashReportUploadUrl = uploadCrashToStaging
@@ -72,8 +69,8 @@ public final class CastCrashUploader {
 
     public void removeCrashDumps() {
         Log.i(TAG, "Remove crash dumps");
-        File crashReportDirectory = new File(mCrashReportPath);
-        for (File potentialDump : crashReportDirectory.listFiles()) {
+        File crashDumpDirectory = new File(mCrashDumpPath);
+        for (File potentialDump : crashDumpDirectory.listFiles()) {
             if (potentialDump.getName().matches(DUMP_FILE_REGEX)) {
                 potentialDump.delete();
             }
@@ -92,19 +89,12 @@ public final class CastCrashUploader {
 
         Log.i(TAG, "Checking for crash dumps");
         File crashDumpDirectory = new File(mCrashDumpPath);
-        File crashReportDirectory = new File(mCrashReportPath);
 
-        if (!crashDumpDirectory.isDirectory() || !crashReportDirectory.isDirectory()) {
-            return;
-        }
-
-        CrashReportMimeWriter.rewriteMinidumpsAsMIMEs(crashDumpDirectory, crashReportDirectory);
-
-        int numCrashDumps = crashReportDirectory.listFiles().length;
+        int numCrashDumps = crashDumpDirectory.listFiles().length;
         if (numCrashDumps > 0) {
             Log.i(TAG, numCrashDumps + " crash dumps found");
             mLogcatProvider.getElidedLogcat(
-                    (String logs) -> queueAllCrashDumpUploadsWithLogs(crashReportDirectory, logs));
+                    (String logs) -> queueAllCrashDumpUploadsWithLogs(crashDumpDirectory, logs));
         }
     }
 

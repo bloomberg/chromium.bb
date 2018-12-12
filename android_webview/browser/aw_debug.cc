@@ -11,20 +11,12 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/crash/content/app/crash_reporter_client.h"
-#include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/crash_key.h"
-#include "components/minidump_uploader/rewrite_minidumps_as_mimes.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
 #include "jni/AwDebug_jni.h"
-#include "third_party/crashpad/crashpad/client/crash_report_database.h"
-#include "third_party/crashpad/crashpad/util/net/http_body.h"
-#include "third_party/crashpad/crashpad/util/net/http_multipart_builder.h"
-
-#include <memory>
 
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
@@ -70,59 +62,6 @@ class AwDebugCrashReporterClient
   DISALLOW_COPY_AND_ASSIGN(AwDebugCrashReporterClient);
 };
 
-// Writes the most recent report in the database as a MIME to fd. Finishes by
-// deleting all reports from the database. Returns `true` if a report was
-// successfully found and written the file descriptor.
-bool WriteLastReportToFd(crashpad::CrashReportDatabase* db, int fd) {
-  std::vector<crashpad::CrashReportDatabase::Report> reports;
-  if (db->GetPendingReports(&reports) !=
-          crashpad::CrashReportDatabase::kNoError ||
-      !reports.size()) {
-    LOG(ERROR) << "no reports";
-    return false;
-  }
-
-  size_t most_recent_index = 0;
-  time_t most_recent_time = reports[0].creation_time;
-  for (size_t index = 1; index < reports.size(); ++index) {
-    if (reports[index].creation_time > most_recent_time) {
-      most_recent_index = index;
-      most_recent_time = reports[index].creation_time;
-    }
-  }
-
-  {
-    std::unique_ptr<const crashpad::CrashReportDatabase::UploadReport>
-        upload_report;
-    if (db->GetReportForUploading(reports[most_recent_index].uuid,
-                                  &upload_report,
-                                  /* report_metrics= */ false) !=
-        crashpad::CrashReportDatabase::kNoError) {
-      return false;
-    }
-
-    crashpad::HTTPMultipartBuilder builder;
-    pid_t pid;
-    if (!minidump_uploader::MimeifyReport(*upload_report.get(), &builder,
-                                          &pid)) {
-      return false;
-    }
-
-    crashpad::WeakFileHandleFileWriter writer(fd);
-    if (!minidump_uploader::WriteBodyToFile(builder.GetBodyStream().get(),
-                                            &writer)) {
-      return false;
-    }
-  }
-
-  for (size_t index = 0; index < reports.size(); ++index) {
-    db->DeleteReport(reports[index].uuid);
-  }
-  db->CleanDatabase(0);
-
-  return true;
-}
-
 }  // namespace
 
 static jboolean JNI_AwDebug_DumpWithoutCrashing(
@@ -137,28 +76,8 @@ static jboolean JNI_AwDebug_DumpWithoutCrashing(
                         base::File::FLAG_WRITE);
   if (!target.IsValid())
     return false;
-
-  AwDebugCrashReporterClient client;
-  base::FilePath database_path;
-  if (!client.GetCrashDumpLocation(&database_path)) {
-    return false;
-  }
-
-  if (!base::CreateDirectory(database_path)) {
-    return false;
-  }
-
-  std::unique_ptr<crashpad::CrashReportDatabase> database =
-      crashpad::CrashReportDatabase::Initialize(database_path);
-  if (!database) {
-    return false;
-  }
-
-  if (!::crash_reporter::DumpWithoutCrashingForClient(&client)) {
-    return false;
-  }
-
-  return WriteLastReportToFd(database.get(), target.GetPlatformFile());
+  // breakpad_linux::HandleCrashDump will close this fd once it is done.
+  return crash_reporter::DumpWithoutCrashingToFd(target.TakePlatformFile());
 }
 
 static void JNI_AwDebug_InitCrashKeysForWebViewTesting(JNIEnv* env) {

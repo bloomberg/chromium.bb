@@ -34,6 +34,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/services/heap_profiling/public/cpp/allocator_shim.h"
@@ -240,6 +241,7 @@ void AwMainDelegate::PreSandboxStartup() {
         command_line.GetSwitchValueASCII(switches::kLang));
   }
 
+  int crash_signal_fd = -1;
   if (process_type == switches::kRendererProcess) {
     auto* global_descriptors = base::GlobalDescriptors::GetInstance();
     int pak_fd = global_descriptors->Get(kAndroidWebViewLocalePakDescriptor);
@@ -258,9 +260,19 @@ void AwMainDelegate::PreSandboxStartup() {
       ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
           base::File(pak_fd), pak_region, pak_info.second);
     }
+
+    crash_signal_fd =
+        global_descriptors->Get(kAndroidWebViewCrashSignalDescriptor);
+  }
+  if (is_browser_process) {
+    if (command_line.HasSwitch(switches::kWebViewSandboxedRenderer)) {
+      process_type = breakpad::kBrowserProcessType;
+    } else {
+      process_type = breakpad::kWebViewSingleProcessType;
+    }
   }
 
-  crash_reporter::EnableCrashReporter(process_type);
+  crash_reporter::EnableCrashReporter(process_type, crash_signal_fd);
 
   base::android::BuildInfo* android_build_info =
       base::android::BuildInfo::GetInstance();
@@ -285,6 +297,12 @@ int AwMainDelegate::RunProcess(
     browser_runner_.reset(content::BrowserMainRunner::Create());
     int exit_code = browser_runner_->Initialize(main_function_params);
     DCHECK_LT(exit_code, 0);
+
+    // At this point the content client has received the GPU info required
+    // to create a GPU fingerpring, and we can pass it to the microdump
+    // crash handler on the same thread as the crash handler was initialized.
+    crash_reporter::AddGpuFingerprintToMicrodumpCrashHandler(
+        content_client_.gpu_fingerprint());
 
     // Return 0 so that we do NOT trigger the default behavior. On Android, the
     // UI message loop is managed by the Java application.

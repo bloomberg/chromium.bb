@@ -19,7 +19,7 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!base::android::GetCacheDirectory(&cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("WebView"))
-                .Append(FILE_PATH_LITERAL("Crashpad"));
+                .Append(FILE_PATH_LITERAL("Crash Reports"));
       break;
     case DIR_SAFE_BROWSING:
       if (!base::android::GetCacheDirectory(&cur))

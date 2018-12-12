@@ -25,6 +25,17 @@ CastCrashReporterClientAndroid::~CastCrashReporterClientAndroid() {
 }
 
 void CastCrashReporterClientAndroid::GetProductNameAndVersion(
+    const char** product_name,
+    const char** version) {
+  *product_name = "media_shell";
+  *version = PRODUCT_VERSION
+#if CAST_IS_DEBUG_BUILD()
+      ".debug"
+#endif
+      "." CAST_BUILD_REVISION;
+}
+
+void CastCrashReporterClientAndroid::GetProductNameAndVersion(
     std::string* product_name,
     std::string* version,
     std::string* channel) {
@@ -43,7 +54,7 @@ base::FilePath CastCrashReporterClientAndroid::GetReporterLogFilename() {
 }
 
 // static
-bool CastCrashReporterClientAndroid::GetCrashReportsLocation(
+bool CastCrashReporterClientAndroid::GetCrashDumpLocation(
     const std::string& process_type,
     base::FilePath* crash_dir) {
   base::FilePath crash_dir_local;
@@ -68,13 +79,8 @@ bool CastCrashReporterClientAndroid::GetCrashReportsLocation(
 
 bool CastCrashReporterClientAndroid::GetCrashDumpLocation(
     base::FilePath* crash_dir) {
-  base::FilePath app_data;
-  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &app_data)) {
-    return false;
-  }
-
-  *crash_dir = app_data.Append("Crashpad");
-  return true;
+  return CastCrashReporterClientAndroid::GetCrashDumpLocation(process_type_,
+                                                              crash_dir);
 }
 
 bool CastCrashReporterClientAndroid::GetCollectStatsConsent() {

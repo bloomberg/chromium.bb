@@ -50,7 +50,7 @@ ChromeCrashReporterClient::ChromeCrashReporterClient() {}
 
 ChromeCrashReporterClient::~ChromeCrashReporterClient() {}
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX)
 void ChromeCrashReporterClient::SetCrashReporterClientIdFromGUID(
     const std::string& client_guid) {
   crash_keys::SetMetricsClientIdFromGUID(client_guid);

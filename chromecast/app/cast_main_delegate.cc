@@ -99,7 +99,7 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
   if (process_type.empty()) {
     // Get a listing of all of the crash dump files.
     base::FilePath crash_directory;
-    if (CastCrashReporterClientAndroid::GetCrashReportsLocation(
+    if (CastCrashReporterClientAndroid::GetCrashDumpLocation(
             process_type, &crash_directory)) {
       base::FileEnumerator crash_directory_list(crash_directory, false,
                                                 base::FileEnumerator::FILES);
