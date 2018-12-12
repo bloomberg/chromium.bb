@@ -8179,4 +8179,195 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(url1, shell()->web_contents()->GetLastCommittedURL());
 }
 
+// Tests that the navigation entry is marked as skippable on back/forward button
+// if it does a renderer initiated navigation without ever getting a user
+// activation.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NoUserActivationSetSkipOnBackForward) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Navigate to a new same-site document from the renderer without a user
+  // gesture.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURLFromRendererWithoutUserGesture(shell(), url));
+
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  EXPECT_EQ(controller.GetCurrentEntryIndex(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+
+  // Last entry should have been marked as skippable.
+  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
+
+  // TODO(shivanisha): Test that the site actually gets skipped when the
+  // intervention logic is implemented.
+}
+
+// Same as the above test except the navigation is cross-site in this case.
+// Tests that the navigation entry is marked as skippable on back/forward button
+// if it does a renderer initiated cross-site navigation without ever getting a
+// user activation.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NoUserActivationSetSkipOnBackForwardCrossSite) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Navigate to a new cross-site document from the renderer with a user
+  // gesture.
+  GURL url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURLFromRendererWithoutUserGesture(shell(), url));
+
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  EXPECT_EQ(controller.GetCurrentEntryIndex(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+
+  // Last entry should have been marked as skippable.
+  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
+  // TODO(shivanisha): Test that the site actually gets skipped when the
+  // intervention logic is implemented.
+}
+
+// Tests that if an entry is marked as skippable, it will be reset if there is a
+// navigation to this entry again.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       ResetSkipOnBackForward) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Navigate to a new same-site document from the renderer without a user
+  // gesture.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURLFromRendererWithoutUserGesture(shell(), url));
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(controller.GetCurrentEntryIndex(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+
+  // Last entry should have been marked as skippable.
+  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
+
+  // Go back to the last entry.
+  {
+    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
+    controller.GoToIndex(0);
+    back_nav_load_observer.Wait();
+  }
+  // Going back again to an entry should reset its skippable flag.
+  EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+}
+
+// Tests that the navigation entry is not marked as skippable on back/forward
+// button if it does a renderer initiated navigation after getting a user
+// activation.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       UserActivationDoNotSkipOnBackForward) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Navigate to a new same-site document from the renderer.
+  // Note that NavigateToURLFromRenderer also simulates a user gesture.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url));
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(controller.GetCurrentEntryIndex(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+
+  // Last entry should not have been marked as skippable.
+  EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
+
+  // Nothing should get skipped when back button is clicked.
+  {
+    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
+    controller.GoBack();
+    back_nav_load_observer.Wait();
+  }
+  EXPECT_EQ(controller.GetLastCommittedEntry()->GetURL(), main_url);
+}
+
+// Tests that the navigation entry should not be marked as skippable on
+// back/forward button if it is navigated away using a browser initiated
+// navigation.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BrowserInitiatedNavigationDoNotSkipOnBackForward) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+
+  // Note that NavigateToURL simulates a browser initiated navigation.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(controller.GetCurrentEntryIndex(), 1);
+  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
+
+  // Last entry should not have been marked as skippable.
+  EXPECT_FALSE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
+  // Nothing should get skipped when back button is clicked.
+  {
+    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
+    controller.GoBack();
+    back_nav_load_observer.Wait();
+  }
+  EXPECT_EQ(controller.GetLastCommittedEntry()->GetURL(), main_url);
+}
+
 }  // namespace content
