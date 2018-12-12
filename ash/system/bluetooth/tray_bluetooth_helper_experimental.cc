@@ -77,9 +77,7 @@ bool TrayBluetoothHelperExperimental::HasBluetoothDiscoverySession() {
 
 void TrayBluetoothHelperExperimental::GetBluetoothDevices(
     GetBluetoothDevicesCallback callback) const {
-  NOTIMPLEMENTED();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), BluetoothDeviceList()));
+  bluetooth_system_ptr_->GetAvailableDevices(std::move(callback));
 }
 
 void TrayBluetoothHelperExperimental::OnStateChanged(

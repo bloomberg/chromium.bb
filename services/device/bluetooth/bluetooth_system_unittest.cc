@@ -27,16 +27,42 @@
 
 namespace device {
 
+namespace {
+
+// Adapter object paths
 constexpr const char kDefaultAdapterObjectPathStr[] = "fake/hci0";
 constexpr const char kAlternateAdapterObjectPathStr[] = "fake/hci1";
 
-namespace {
+// Device object paths
+constexpr const char kDefaultDeviceObjectPathStr[] =
+    "fake/hci0/dev_00_11_22_AA_BB_CC";
+
+// Device addresses
+constexpr const char kDefaultDeviceAddressStr[] = "00:11:22:AA:BB:CC";
+constexpr const char kAlternateDeviceAddressStr[] = "AA:BB:CC:DD:EE:FF";
+
+constexpr const std::array<uint8_t, 6> kDefaultDeviceAddressArray = {
+    0x00, 0x11, 0x22, 0xAA, 0xBB, 0xCC};
 
 bool GetValueAndReset(base::Optional<bool>* opt) {
   base::Optional<bool> tmp;
   tmp.swap(*opt);
   return tmp.value();
 }
+
+struct FakeDeviceOptions {
+  explicit FakeDeviceOptions(
+      const std::string& object_path = kDefaultDeviceObjectPathStr)
+      : object_path(object_path) {}
+
+  dbus::ObjectPath object_path;
+
+  std::string address{kDefaultDeviceAddressStr};
+  dbus::ObjectPath adapter_object_path{kDefaultAdapterObjectPathStr};
+  base::Optional<std::string> name;
+  bool paired = false;
+  bool connected = false;
+};
 
 // Exposes high-level methods to simulate Bluetooth events e.g. a new adapter
 // was added, adapter power state changed, etc.
@@ -459,6 +485,36 @@ class DEVICE_BLUETOOTH_EXPORT TestBluetoothDeviceClient
   TestBluetoothDeviceClient() = default;
   ~TestBluetoothDeviceClient() override = default;
 
+  void SimulateDeviceAdded(const FakeDeviceOptions& options) {
+    ObjectPathToProperties::iterator it;
+    bool was_inserted;
+    std::tie(it, was_inserted) = device_object_paths_to_properties_.emplace(
+        options.object_path,
+        std::make_unique<Properties>(
+            base::BindLambdaForTesting([&](const std::string& property_name) {
+              for (auto& observer : observers_)
+                observer.DevicePropertyChanged(options.object_path,
+                                               property_name);
+            })));
+
+    DCHECK(was_inserted);
+
+    auto* properties = GetProperties(options.object_path);
+    properties->address.ReplaceValue(options.address);
+
+    if (options.name) {
+      properties->name.set_valid(true);
+      properties->name.ReplaceValue(options.name.value());
+    }
+
+    properties->paired.ReplaceValue(options.paired);
+    properties->connected.ReplaceValue(options.connected);
+    properties->adapter.ReplaceValue(options.adapter_object_path);
+
+    for (auto& observer : observers_)
+      observer.DeviceAdded(options.object_path);
+  }
+
   // bluez::BluetoothDeviceClient
   void Init(dbus::Bus* bus,
             const std::string& bluetooth_service_name) override {}
@@ -642,6 +698,16 @@ class BluetoothSystemTest : public DeviceServiceTestBase,
     async_waiter.StopScan(&result);
 
     return result;
+  }
+
+  std::vector<mojom::BluetoothDeviceInfoPtr> GetAvailableDevicesAndWait(
+      const mojom::BluetoothSystemPtr& system) {
+    mojom::BluetoothSystemAsyncWaiter async_waiter(system.get());
+
+    std::vector<mojom::BluetoothDeviceInfoPtr> devices;
+    async_waiter.GetAvailableDevices(&devices);
+
+    return devices;
   }
 
   // mojom::BluetoothSystemClient
@@ -1593,6 +1659,104 @@ TEST_F(BluetoothSystemTest, Scan_PowerOffWhileScanning) {
             GetScanStateAndWait(system));
   EXPECT_EQ(ScanStateVector({mojom::BluetoothSystem::ScanState::kNotScanning}),
             on_scan_state_changed_states_);
+}
+
+// Tests addresses are parsed correctly.
+TEST_F(BluetoothSystemTest, GetAvailableDevices_AddressParser) {
+  test_bluetooth_adapter_client_->SimulatePoweredOnAdapter();
+  auto system = CreateBluetoothSystem();
+
+  static const struct {
+    std::string object_path;
+    std::string address;
+  } device_cases[] = {
+      // Invalid addresses
+      {"1", "00:11"},                 // Too short
+      {"2", "00:11:22:AA:BB:CC:DD"},  // Too long
+      {"3", "00-11-22-AA-BB-CC"},     // Invalid separator
+      {"4", "00:11:22:XX:BB:CC"},     // Invalid character
+      // Valid addresses
+      {"5", "00:11:22:aa:bb:cc"},  // Lowercase
+      {"6", "00:11:22:AA:BB:CC"},  // Uppercase
+  };
+
+  for (const auto& device : device_cases) {
+    FakeDeviceOptions fake_options(device.object_path);
+    fake_options.address = device.address;
+    test_bluetooth_device_client_->SimulateDeviceAdded(fake_options);
+  }
+
+  auto devices = GetAvailableDevicesAndWait(system);
+  ASSERT_EQ(2u, devices.size());
+
+  const std::array<uint8_t, 6> expected_address = {0x00, 0x11, 0x22,
+                                                   0xAA, 0xBB, 0xCC};
+  EXPECT_EQ(expected_address, devices[0]->address);
+  EXPECT_EQ(expected_address, devices[1]->address);
+}
+
+// Tests all properties of devices are returned correctly.
+TEST_F(BluetoothSystemTest, GetAvailableDevices) {
+  test_bluetooth_adapter_client_->SimulatePoweredOnAdapter();
+  auto system = CreateBluetoothSystem();
+
+  {
+    FakeDeviceOptions fake_options("1");
+    fake_options.address = kDefaultDeviceAddressStr;
+    fake_options.name = "Fake Device";
+    fake_options.paired = true;
+    fake_options.connected = true;
+    test_bluetooth_device_client_->SimulateDeviceAdded(fake_options);
+  }
+  {
+    FakeDeviceOptions fake_options("2");
+    fake_options.address = kAlternateDeviceAddressStr;
+    fake_options.name = base::nullopt;
+    fake_options.paired = false;
+    fake_options.connected = false;
+    test_bluetooth_device_client_->SimulateDeviceAdded(fake_options);
+  }
+
+  auto devices = GetAvailableDevicesAndWait(system);
+  ASSERT_EQ(2u, devices.size());
+
+  mojom::BluetoothDeviceInfoPtr device_with_name;
+  mojom::BluetoothDeviceInfoPtr device_without_name;
+  if (devices[0]->address == kDefaultDeviceAddressArray) {
+    device_with_name = std::move(devices[0]);
+    device_without_name = std::move(devices[1]);
+  } else {
+    device_with_name = std::move(devices[1]);
+    device_without_name = std::move(devices[0]);
+  }
+
+  EXPECT_EQ(device_with_name->name.value(), "Fake Device");
+  EXPECT_TRUE(device_with_name->is_paired);
+  EXPECT_EQ(device_with_name->connection_state,
+            mojom::BluetoothDeviceInfo::ConnectionState::kConnected);
+
+  EXPECT_FALSE(!!device_without_name->name);
+  EXPECT_FALSE(device_without_name->is_paired);
+  EXPECT_EQ(device_without_name->connection_state,
+            mojom::BluetoothDeviceInfo::ConnectionState::kNotConnected);
+}
+
+// Tests that if a device existed before BluetoothSystem was created, the
+// device is still returned when calling GetAvailableDevices().
+TEST_F(BluetoothSystemTest, GetAvailableDevices_ExistingDevice) {
+  test_bluetooth_adapter_client_->SimulatePoweredOnAdapter();
+  test_bluetooth_device_client_->SimulateDeviceAdded(FakeDeviceOptions());
+
+  auto system = CreateBluetoothSystem();
+
+  auto devices = GetAvailableDevicesAndWait(system);
+  ASSERT_EQ(1u, devices.size());
+
+  EXPECT_EQ(kDefaultDeviceAddressArray, devices[0]->address);
+  EXPECT_FALSE(devices[0]->name);
+  EXPECT_EQ(mojom::BluetoothDeviceInfo::ConnectionState::kNotConnected,
+            devices[0]->connection_state);
+  EXPECT_FALSE(devices[0]->is_paired);
 }
 
 }  // namespace device
