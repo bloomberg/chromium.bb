@@ -2179,6 +2179,12 @@ int64_t AutofillMetrics::FormTypesToBitVector(
   return form_type_bv;
 }
 
+void AutofillMetrics::LogServerCardLinkClicked(
+    AutofillSyncSigninState sync_state) {
+  UMA_HISTOGRAM_ENUMERATION("Autofill.ServerCardLinkClicked", sync_state,
+                            AutofillSyncSigninState::kNumSyncStates);
+}
+
 void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
     bool is_for_credit_card,
     const std::set<FormType>& form_types,

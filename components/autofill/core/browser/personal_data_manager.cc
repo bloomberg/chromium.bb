@@ -2104,6 +2104,10 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
       pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id);
 }
 
+void PersonalDataManager::LogServerCardLinkClicked() const {
+  AutofillMetrics::LogServerCardLinkClicked(GetSyncSigninState());
+}
+
 std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
     const AutofillType& type,
     const base::string16& field_contents,

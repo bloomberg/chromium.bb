@@ -8345,4 +8345,23 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetric_BySyncState) {
   }
 }
 
+TEST_F(AutofillMetricsTest, LogServerCardLinkClicked) {
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogServerCardLinkClicked(
+        AutofillSyncSigninState::kSignedIn);
+    histogram_tester.ExpectTotalCount("Autofill.ServerCardLinkClicked", 1);
+    histogram_tester.ExpectBucketCount("Autofill.ServerCardLinkClicked",
+                                       AutofillSyncSigninState::kSignedIn, 1);
+  }
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogServerCardLinkClicked(
+        AutofillSyncSigninState::kSignedOut);
+    histogram_tester.ExpectTotalCount("Autofill.ServerCardLinkClicked", 1);
+    histogram_tester.ExpectBucketCount("Autofill.ServerCardLinkClicked",
+                                       AutofillSyncSigninState::kSignedOut, 1);
+  }
+}
+
 }  // namespace autofill

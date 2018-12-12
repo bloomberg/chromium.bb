@@ -6,6 +6,8 @@
 
 namespace autofill {
 
+// Since these values are persisted to logs, they should not be re-numbered or
+// removed.
 enum AutofillSyncSigninState {
   // The user is not signed in to Chromium.
   kSignedOut,

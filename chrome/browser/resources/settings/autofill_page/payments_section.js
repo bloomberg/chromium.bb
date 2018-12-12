@@ -46,6 +46,11 @@ class PaymentsManager {
    * Migrate the local credit cards.
    */
   migrateCreditCards() {}
+
+  /**
+   * Logs that the server cards edit link was clicked.
+   */
+  logServerCardLinkClicked() {}
 }
 
 /** @typedef {chrome.autofillPrivate.CreditCardEntry} */
@@ -89,6 +94,11 @@ class PaymentsManagerImpl {
   /** @override */
   migrateCreditCards() {
     chrome.autofillPrivate.migrateCreditCards();
+  }
+
+  /** @override */
+  logServerCardLinkClicked() {
+    chrome.autofillPrivate.logServerCardLinkClicked();
   }
 }
 
@@ -343,6 +353,7 @@ Polymer({
 
   /** @private */
   onRemoteEditCreditCardTap_: function() {
+    this.paymentsManager_.logServerCardLinkClicked();
     window.open(loadTimeData.getString('manageCreditCardsUrl'));
   },
 

@@ -595,4 +595,27 @@ AutofillPrivateMigrateCreditCardsFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateLogServerCardLinkClickedFunction
+
+AutofillPrivateLogServerCardLinkClickedFunction::
+    AutofillPrivateLogServerCardLinkClickedFunction()
+    : chrome_details_(this) {}
+
+AutofillPrivateLogServerCardLinkClickedFunction::
+    ~AutofillPrivateLogServerCardLinkClickedFunction() {}
+
+ExtensionFunction::ResponseAction
+AutofillPrivateLogServerCardLinkClickedFunction::Run() {
+  autofill::PersonalDataManager* personal_data =
+      autofill::PersonalDataManagerFactory::GetForProfile(
+          chrome_details_.GetProfile());
+
+  if (!personal_data || !personal_data->IsDataLoaded())
+    return RespondNow(Error(kErrorDataUnavailable));
+
+  personal_data->LogServerCardLinkClicked();
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions
