@@ -167,6 +167,9 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   }
 
   data->relative_bounds.bounds = gfx::RectF(view_->GetBoundsInScreen());
+  if (!custom_data_.relative_bounds.bounds.IsEmpty())
+    data->relative_bounds.bounds = custom_data_.relative_bounds.bounds;
+
   data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
                            view_->GetClassName());
 
@@ -216,6 +219,10 @@ void ViewAccessibility::OverrideIsLeaf(bool value) {
 
 void ViewAccessibility::OverrideIsIgnored(bool value) {
   is_ignored_ = value;
+}
+
+void ViewAccessibility::OverrideBounds(const gfx::RectF& bounds) {
+  custom_data_.relative_bounds.bounds = bounds;
 }
 
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {

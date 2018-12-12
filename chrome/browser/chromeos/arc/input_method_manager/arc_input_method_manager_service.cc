@@ -135,8 +135,7 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
     owner_->OnArcImeDeactivated();
   }
   void OnCompositionBoundsChanged(
-      const std::vector<gfx::Rect>& bounds) override {
-  }
+      const std::vector<gfx::Rect>& bounds) override {}
   bool IsInterestedInKeyEvent() const override { return true; }
   void OnSurroundingTextChanged(const std::string& engine_id,
                                 const std::string& text,
@@ -219,6 +218,11 @@ ArcInputMethodManagerService::GetForBrowserContextForTesting(
       context);
 }
 
+// static
+BrowserContextKeyedServiceFactory* ArcInputMethodManagerService::GetFactory() {
+  return ArcInputMethodManagerServiceFactory::GetInstance();
+}
+
 ArcInputMethodManagerService::ArcInputMethodManagerService(
     content::BrowserContext* context,
     ArcBridgeService* bridge_service)
@@ -277,6 +281,14 @@ ArcInputMethodManagerService::~ArcInputMethodManagerService() {
 void ArcInputMethodManagerService::SetInputMethodManagerBridgeForTesting(
     std::unique_ptr<ArcInputMethodManagerBridge> test_bridge) {
   imm_bridge_ = std::move(test_bridge);
+}
+
+void ArcInputMethodManagerService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ArcInputMethodManagerService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void ArcInputMethodManagerService::OnActiveImeChanged(
@@ -707,12 +719,22 @@ void ArcInputMethodManagerService::SendShowVirtualKeyboard() {
   imm_bridge_->SendShowVirtualKeyboard();
   // TODO(yhanada): Should observe IME window size changes.
   is_virtual_keyboard_shown_ = true;
+
+  NotifyVirtualKeyboardVisibilityChange(true);
 }
 
 void ArcInputMethodManagerService::SendHideVirtualKeyboard() {
   imm_bridge_->SendHideVirtualKeyboard();
   // TODO(yhanada): Should observe IME window size changes.
   is_virtual_keyboard_shown_ = false;
+
+  NotifyVirtualKeyboardVisibilityChange(false);
+}
+
+void ArcInputMethodManagerService::NotifyVirtualKeyboardVisibilityChange(
+    bool visible) {
+  for (auto& observer : observers_)
+    observer.OnAndroidVirtualKeyboardVisibilityChanged(visible);
 }
 
 }  // namespace arc

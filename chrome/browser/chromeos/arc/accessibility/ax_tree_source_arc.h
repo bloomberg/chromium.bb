@@ -83,6 +83,8 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
 
   bool is_notification() { return is_notification_; }
 
+  bool is_input_method_window() { return is_input_method_window_; }
+
  private:
   friend class arc::AXTreeSourceArcTest;
   class FocusStealer;
@@ -122,6 +124,7 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   int32_t window_id_;
   int32_t focused_id_;
   bool is_notification_;
+  bool is_input_method_window_;
 
   // A delegate that handles accessibility actions on behalf of this tree. The
   // delegate is valid during the lifetime of this tree.

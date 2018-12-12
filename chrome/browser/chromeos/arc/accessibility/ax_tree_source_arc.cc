@@ -34,6 +34,7 @@ AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
       window_id_(-1),
       focused_id_(-1),
       is_notification_(false),
+      is_input_method_window_(false),
       delegate_(delegate) {}
 
 AXTreeSourceArc::~AXTreeSourceArc() {
@@ -48,6 +49,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   window_id_ = event_data->window_id;
   is_notification_ = event_data->notification_key.has_value();
+  is_input_method_window_ = event_data->is_input_method_window;
 
   // The following loops perform caching to prepare for AXTreeSerializer.
   // First, we need to cache parent links, which are implied by a node's child
@@ -250,45 +252,43 @@ void AXTreeSourceArc::GetChildren(
 
   // Sort children based on their enclosing bounding rectangles, based on their
   // descendants.
-  std::sort(out_children->begin(), out_children->end(),
-            [this, id_to_index](auto left, auto right) {
-              auto left_bounds = ComputeEnclosingBounds(left);
-              auto right_bounds = ComputeEnclosingBounds(right);
+  std::sort(
+      out_children->begin(), out_children->end(),
+      [this, id_to_index](auto left, auto right) {
+        auto left_bounds = ComputeEnclosingBounds(left);
+        auto right_bounds = ComputeEnclosingBounds(right);
 
-              if (left_bounds.IsEmpty() || right_bounds.IsEmpty()) {
-                return id_to_index.at(left->GetId()) <
-                       id_to_index.at(right->GetId());
-              }
+        if (left_bounds.IsEmpty() || right_bounds.IsEmpty()) {
+          return id_to_index.at(left->GetId()) < id_to_index.at(right->GetId());
+        }
 
-              // Top to bottom sort (non-overlapping).
-              if (!left_bounds.Intersects(right_bounds))
-                return left_bounds.y() < right_bounds.y();
+        // Top to bottom sort (non-overlapping).
+        if (!left_bounds.Intersects(right_bounds))
+          return left_bounds.y() < right_bounds.y();
 
-              // Overlapping
-              // Left to right.
-              int left_difference = left_bounds.x() - right_bounds.x();
-              if (left_difference != 0)
-                return left_difference < 0;
+        // Overlapping
+        // Left to right.
+        int left_difference = left_bounds.x() - right_bounds.x();
+        if (left_difference != 0)
+          return left_difference < 0;
 
-              // Top to bottom.
-              int top_difference = left_bounds.y() - right_bounds.y();
-              if (top_difference != 0)
-                return top_difference < 0;
+        // Top to bottom.
+        int top_difference = left_bounds.y() - right_bounds.y();
+        if (top_difference != 0)
+          return top_difference < 0;
 
-              // Larger to smaller.
-              int height_difference =
-                  left_bounds.height() - right_bounds.height();
-              if (height_difference != 0)
-                return height_difference > 0;
+        // Larger to smaller.
+        int height_difference = left_bounds.height() - right_bounds.height();
+        if (height_difference != 0)
+          return height_difference > 0;
 
-              int width_difference = left_bounds.width() - right_bounds.width();
-              if (width_difference != 0)
-                return width_difference > 0;
+        int width_difference = left_bounds.width() - right_bounds.width();
+        if (width_difference != 0)
+          return width_difference > 0;
 
-              // The rects are equal.
-              return id_to_index.at(left->GetId()) <
-                     id_to_index.at(right->GetId());
-            });
+        // The rects are equal.
+        return id_to_index.at(left->GetId()) < id_to_index.at(right->GetId());
+      });
 }
 
 ArcAccessibilityInfoData* AXTreeSourceArc::GetParent(
