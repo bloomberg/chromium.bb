@@ -1773,17 +1773,6 @@ bool RenderProcessHostImpl::Init() {
         std::move(service_request));
   }
 
-#if !defined(OS_MACOSX)
-  if (!BrowserMainLoop::GetInstance()->AudioServiceOutOfProcess()) {
-    DCHECK(BrowserMainLoop::GetInstance()->audio_manager());
-    // Intentionally delay the hang monitor creation after the first renderer
-    // is created. On Mac audio thread is the UI thread, a hang monitor is not
-    // necessary or recommended.
-    media::AudioManager::StartHangMonitorIfNeeded(
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-  }
-#endif  // !defined(OS_MACOSX)
-
 #if defined(OS_ANDROID)
   // Initialize the java audio manager so that media session tests will pass.
   // See internal b/29872494.
