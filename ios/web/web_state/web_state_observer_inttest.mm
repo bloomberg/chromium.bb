@@ -1013,8 +1013,9 @@ TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
 
   bool has_user_gesture = true;
-  ui::PageTransition expected_transition =
-      ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK;
+  ui::PageTransition expected_transition = static_cast<ui::PageTransition>(
+      ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK |
+      ui::PageTransition::PAGE_TRANSITION_TYPED);
   if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // TODO(crbug.com/913052): propagate |has_user_gesture| on back/forward
     // navigation in slim nav.
