@@ -149,7 +149,8 @@ void TapOnWebElementWithID(const std::string& elementID) {
 }
 
 // Tests that when the keyboard actually dismiss the right callback is done.
-- (void)testKeyboardDidHide {
+// TODO(crbug.com/914374): Address flakiness and reenable.
+- (void)DISABLED_testKeyboardDidHide {
   // Brings up the keyboard by tapping on one of the form's field.
   TapOnWebElementWithID(kFormElementID1);
 
