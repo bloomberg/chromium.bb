@@ -56,16 +56,19 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     source->AddResourcePath("sync_confirmation.js",
                             IDR_DICE_SYNC_CONFIRMATION_JS);
 
-    AddStringResource(source, "syncConfirmationChromeSyncBody",
-                      IDS_SYNC_CONFIRMATION_DICE_CHROME_SYNC_MESSAGE);
-    AddStringResource(source, "syncConfirmationPersonalizeServicesBody",
-                      IDS_SYNC_CONFIRMATION_DICE_PERSONALIZE_SERVICES_BODY);
-    AddStringResource(source, "syncConfirmationGoogleServicesBody",
-                      IDS_SYNC_CONFIRMATION_DICE_GOOGLE_SERVICES_BODY);
-    AddStringResource(source, "syncConfirmationSyncSettingsLinkBody",
-                      IDS_SYNC_CONFIRMATION_DICE_SYNC_SETTINGS_LINK_BODY);
-    AddStringResource(source, "syncConfirmationSyncSettingsDescription",
-                      IDS_SYNC_CONFIRMATION_DICE_SYNC_SETTINGS_DESCRIPTION);
+    AddStringResource(source, "syncConfirmationSyncInfoTitle",
+                      IDS_SYNC_CONFIRMATION_UNITY_SYNC_INFO_TITLE);
+    AddStringResource(source, "syncConfirmationSyncInfoDesc",
+                      IDS_SYNC_CONFIRMATION_UNITY_SYNC_INFO_DESC);
+    AddStringResource(source, "syncConfirmationSpellcheckInfoTitle",
+                      IDS_SYNC_CONFIRMATION_UNITY_SPELLCHECK_INFO_TITLE);
+    AddStringResource(source, "syncConfirmationSpellcheckInfoDesc",
+                      IDS_SYNC_CONFIRMATION_UNITY_SPELLCHECK_INFO_DESC);
+    AddStringResource(source, "syncConfirmationImproveChromeInfoTitle",
+                      IDS_SYNC_CONFIRMATION_UNITY_IMPROVE_CHROME_INFO_TITLE);
+    AddStringResource(source, "syncConfirmationImproveChromeInfoDesc",
+                      IDS_SYNC_CONFIRMATION_UNITY_IMPROVE_CHROME_INFO_DESC);
+
     AddStringResource(source, "syncConfirmationSettingsLabel",
                       IDS_SYNC_CONFIRMATION_DICE_SETTINGS_BUTTON_LABEL);
 
