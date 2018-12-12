@@ -253,9 +253,9 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, SerialNumberNotEmpty) {
       GenerateChromeDesktopReportRequest(base::DictionaryValue(), &profile_);
   ASSERT_TRUE(request);
 #if defined(OS_WIN)
-  EXPECT_NE(request->browser_report().serial_number(), std::string());
+  EXPECT_NE(request->serial_number(), std::string());
 #else
-  EXPECT_TRUE(request->browser_report().serial_number().empty());
+  EXPECT_TRUE(request->serial_number().empty());
 #endif
 }
 
