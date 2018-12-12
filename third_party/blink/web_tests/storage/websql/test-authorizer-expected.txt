@@ -14,6 +14,7 @@ SQLITE_DELETE statement succeeded.
 SQLITE_INSERT statement succeeded.
 SQLITE_UPDATE statement succeeded.
 SQLITE_PRAGMA statement failed: could not prepare statement (23 not authorized)
+SQLITE_PRAGMA_FUNCTION statement failed: could not execute statement (23 not authorized)
 SQLITE_ALTER_TABLE statement succeeded.
 SQLITE_ALTER_TABLE statement succeeded.
 SQLITE_ALTER_TABLE statement succeeded.
@@ -53,6 +54,7 @@ SQLITE_DELETE statement failed: could not prepare statement (23 not authorized)
 SQLITE_INSERT statement failed: could not prepare statement (23 not authorized)
 SQLITE_UPDATE statement failed: could not prepare statement (23 not authorized)
 SQLITE_PRAGMA statement failed: could not prepare statement (23 not authorized)
+SQLITE_PRAGMA_FUNCTION statement failed: could not execute statement (23 not authorized)
 SQLITE_ALTER_TABLE statement failed: could not prepare statement (23 not authorized)
 SQLITE_ALTER_TABLE statement failed: could not prepare statement (1 no such table: TestTable)
 SQLITE_ALTER_TABLE statement failed: could not prepare statement (23 not authorized)
