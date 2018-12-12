@@ -29,7 +29,7 @@ source_set("platform_window") {
     ]
 
     public_deps = [
-      "//third_party/fuchsia-sdk/sdk:policy",
+      "//third_party/fuchsia-sdk/sdk:ui_policy",
       "//third_party/fuchsia-sdk/sdk:zx",
     ]
   }

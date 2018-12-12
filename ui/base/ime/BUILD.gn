@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
-import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/jumbo.gni")
+import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
@@ -245,7 +245,7 @@ jumbo_component("ime") {
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk/sdk:input",
+      "//third_party/fuchsia-sdk/sdk:ui_input",
       "//ui/events",
       "//ui/events:dom_keycode_converter",
     ]
