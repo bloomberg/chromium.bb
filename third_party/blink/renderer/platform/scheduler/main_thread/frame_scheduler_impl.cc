@@ -423,6 +423,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kInternalDefault:
     case TaskType::kMiscPlatformAPI:
     case TaskType::kFontLoading:
+    case TaskType::kApplicationLifeCycle:
+    case TaskType::kBackgroundFetch:
+    case TaskType::kPermission:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.
       return DeferrableTaskQueueTraits();
     // PostedMessage can be used for navigation, so we shouldn't defer it

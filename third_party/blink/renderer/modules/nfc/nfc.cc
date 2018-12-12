@@ -645,11 +645,15 @@ NFC::NFC(LocalFrame* frame)
   if (!IsSupportedInContext(GetExecutionContext(), error_message))
     return;
 
-  frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&nfc_));
+  // A specific task source should be defined but not.
+  // See https://w3c.github.io/web-nfc/.
+  auto task_runner = frame->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  frame->GetInterfaceProvider().GetInterface(
+      mojo::MakeRequest(&nfc_, task_runner));
   nfc_.set_connection_error_handler(
       WTF::Bind(&NFC::OnConnectionError, WrapWeakPersistent(this)));
   device::mojom::blink::NFCClientPtr client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
   nfc_->SetClient(std::move(client));
 }
 

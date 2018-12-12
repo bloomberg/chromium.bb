@@ -88,11 +88,13 @@ String PermissionStatus::state() const {
 void PermissionStatus::StartListening() {
   DCHECK(!binding_.is_bound());
   mojom::blink::PermissionObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kPermission);
+  binding_.Bind(mojo::MakeRequest(&observer, task_runner), task_runner);
 
   mojom::blink::PermissionServicePtr service;
   ConnectToPermissionService(GetExecutionContext(),
-                             mojo::MakeRequest(&service));
+                             mojo::MakeRequest(&service, task_runner));
   service->AddPermissionObserver(descriptor_->Clone(), status_,
                                  std::move(observer));
 }

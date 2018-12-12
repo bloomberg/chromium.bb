@@ -1158,14 +1158,17 @@ PaymentRequest::PaymentRequest(
   DCHECK(shipping_type_.IsNull() || shipping_type_ == "shipping" ||
          shipping_type_ == "delivery" || shipping_type_ == "pickup");
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      execution_context->GetTaskRunner(TaskType::kUserInteraction);
+
   GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&payment_provider_));
+      mojo::MakeRequest(&payment_provider_, task_runner));
   payment_provider_.set_connection_error_handler(
       WTF::Bind(&PaymentRequest::OnError, WrapWeakPersistent(this),
                 PaymentErrorReason::UNKNOWN));
 
   payments::mojom::blink::PaymentRequestClientPtr client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
   payment_provider_->Init(std::move(client), std::move(validated_method_data),
                           std::move(validated_details),
                           payments::mojom::blink::PaymentOptions::From(

@@ -292,15 +292,19 @@ void USB::EnsureServiceConnection() {
 
   DCHECK(IsContextSupported());
   DCHECK(GetFeatureEnabledState() != FeatureEnabledState::kDisabled);
+  // A specific task source should be defined but not.
+  // See https://wicg.github.io/webusb/.
+  auto task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kInternalDefault);
   GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&service_));
+      mojo::MakeRequest(&service_, task_runner));
   service_.set_connection_error_handler(
       WTF::Bind(&USB::OnServiceConnectionError, WrapWeakPersistent(this)));
 
   DCHECK(!client_binding_.is_bound());
 
   device::mojom::blink::UsbDeviceManagerClientAssociatedPtrInfo client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  client_binding_.Bind(mojo::MakeRequest(&client), task_runner);
   service_->SetClient(std::move(client));
 }
 

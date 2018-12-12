@@ -963,7 +963,8 @@ void ResourceLoader::DidStartLoadingResponseBody(
   AtomicString mime_type = response.MimeType();
 
   mojom::blink::ProgressClientAssociatedPtrInfo progress_client_ptr;
-  progress_binding_.Bind(MakeRequest(&progress_client_ptr));
+  progress_binding_.Bind(MakeRequest(&progress_client_ptr),
+                         GetLoadingTaskRunner());
 
   // Callback is bound to a WeakPersistent, as ResourceLoader is kept alive by
   // ResourceFetcher as long as we still care about the result of the load.

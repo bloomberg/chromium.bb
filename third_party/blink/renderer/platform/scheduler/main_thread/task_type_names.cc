@@ -67,6 +67,12 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "ExperimentalWebSchedulingBackground";
     case TaskType::kFontLoading:
       return "FontLoading";
+    case TaskType::kApplicationLifeCycle:
+      return "ApplicationLifeCycle";
+    case TaskType::kBackgroundFetch:
+      return "BackgroundFetch";
+    case TaskType::kPermission:
+      return "Permission";
     case TaskType::kInternalDefault:
       return "InternalDefault";
     case TaskType::kInternalLoading:

@@ -22,7 +22,9 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     : Event(name, Bubbles::kNo, Cancelable::kYes),
       ContextClient(&frame),
       banner_service_(std::move(service_ptr)),
-      binding_(this, std::move(event_request)),
+      binding_(this,
+               std::move(event_request),
+               frame.GetTaskRunner(TaskType::kApplicationLifeCycle)),
       platforms_(platforms),
       user_choice_(MakeGarbageCollected<UserChoiceProperty>(
           frame.GetDocument(),
