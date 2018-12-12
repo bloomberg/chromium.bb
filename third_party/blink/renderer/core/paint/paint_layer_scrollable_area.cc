@@ -563,7 +563,7 @@ IntSize PaintLayerScrollableArea::MinimumScrollOffsetInt() const {
 }
 
 IntSize PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
-  if (!GetLayoutBox()->HasOverflowClip())
+  if (!GetLayoutBox() || !GetLayoutBox()->HasOverflowClip())
     return ToIntSize(-ScrollOrigin());
 
   IntSize content_size = ContentsSize();
