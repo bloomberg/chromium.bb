@@ -25,13 +25,5 @@ message SendTabToSelfSpecifics {
   // the windows epoch.
   // Required
   optional int64 shared_time_usec = 3;
-  // The device where this tab originated.
-  optional SendTabToSelfDevice from_device = 4;
 }
 
-message SendTabToSelfDevice {
-  // A non-unique but human readable name to describe this client, used in UI.
-  optional string name = 1;
-  // Device_id that is stable until user signs out to avoid round tripping.
-  optional string signin_scoped_device_id = 2;
-}
