@@ -704,7 +704,24 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
-       OpacityAnimationCreatesTransformAndFilterNodes) {
+       OpacityAnimationDoesNotCreateTransformNode) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    return;
+  }
+
+  LoadTestData("opacity-animation.html");
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Transform());
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Filter());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       BGPTOpacityAnimationCreatesTransformAndFilterNodes) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    return;
+  }
+
   LoadTestData("opacity-animation.html");
   // TODO(flackr): Verify that after https://crbug.com/900241 is fixed we no
   // longer create transform or filter nodes for opacity animations.
