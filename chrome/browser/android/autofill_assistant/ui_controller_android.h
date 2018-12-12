@@ -41,6 +41,7 @@ class UiControllerAndroid : public UiController,
   std::string GetStatusMessage() override;
   void ShowOverlay() override;
   void HideOverlay() override;
+  void AllowShowingSoftKeyboard(bool enabled) override;
   void Shutdown() override;
   void ShutdownGracefully() override;
   void Close() override;

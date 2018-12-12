@@ -227,6 +227,7 @@ void Controller::ExecuteScript(const std::string& script_path) {
 
   GetUiController()->ShowOverlay();
   touchable_element_area_.ClearElements();
+  GetUiController()->AllowShowingSoftKeyboard(false);
 
   StopPeriodicScriptChecks();
   // Runnable scripts will be checked and reported if necessary after executing
@@ -253,6 +254,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
     return;
   }
   touchable_element_area_.SetElements(result.touchable_elements);
+  GetUiController()->AllowShowingSoftKeyboard(true);
   switch (result.at_end) {
     case ScriptExecutor::SHUTDOWN:
       GetUiController()->Shutdown();  // indirectly deletes this
