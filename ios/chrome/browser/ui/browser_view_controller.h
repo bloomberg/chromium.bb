@@ -25,7 +25,6 @@ class GURL;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
 @class TabModel;
-@protocol TabStripFoldAnimation;
 @protocol ToolbarCommands;
 
 namespace ios {
@@ -118,11 +117,6 @@ class ChromeBrowserState;
 
 // Shows the voice search UI.
 - (void)startVoiceSearch;
-
-// Returns a tab strip placeholder view created from the current state of the
-// tab strip. It is used to animate the transition from the browser view
-// controller to the tab switcher.
-- (UIView<TabStripFoldAnimation>*)tabStripPlaceholderView;
 
 // Shows the activity overlay to inform users and prevent users from
 // interacting. This method should only be used for clear browsing data.

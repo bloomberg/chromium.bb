@@ -36,8 +36,6 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_controller+placeholder_view.h"
-#include "ios/chrome/browser/ui/tabs/tab_strip_placeholder_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 #include "ios/chrome/browser/ui/tabs/target_frame_cache.h"
@@ -1704,46 +1702,6 @@ UIColor* BackgroundColor() {
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_GENERATED;
   tab.navigationManager->LoadURLWithParams(params);
-}
-
-@end
-
-#pragma mark - PlaceholderView
-
-@implementation TabStripController (PlaceholderView)
-
-- (UIView<TabStripFoldAnimation>*)placeholderView {
-  TabStripPlaceholderView* placeholderView =
-      [[TabStripPlaceholderView alloc] initWithFrame:self.view.bounds];
-  CGFloat xOffset = [_tabStripView contentOffset].x;
-  UIView* previousView = nil;
-  const NSUInteger selectedModelIndex =
-      [_tabModel indexOfTab:[_tabModel currentTab]];
-  const NSUInteger selectedArrayIndex =
-      [self indexForModelIndex:selectedModelIndex];
-  [self updateContentSizeAndRepositionViews];
-  [self layoutTabStripSubviews];
-  for (NSUInteger tabArrayIndex = 0; tabArrayIndex < [_tabArray count];
-       ++tabArrayIndex) {
-    UIView* tabView = _tabArray[tabArrayIndex];
-    UIView* tabSnapshotView = snapshot_util::GenerateSnapshot(tabView);
-    tabSnapshotView.frame = CGRectOffset(tabView.frame, -xOffset, 0);
-    tabSnapshotView.transform = tabView.transform;
-    // Order views of the tabs in a pyramid fashion, culminating with
-    // the selected tab.
-    // For example, if _tabArray has views [0..6], and 3 is the selected index,
-    // they will be arranged in the order [0, 1, 2, 6, 5, 4, 3].
-    if (previousView && tabArrayIndex > selectedArrayIndex) {
-      [placeholderView insertSubview:tabSnapshotView belowSubview:previousView];
-    } else {
-      [placeholderView addSubview:tabSnapshotView];
-    }
-    previousView = tabSnapshotView;
-  }
-  UIView* buttonSnapshot = snapshot_util::GenerateSnapshot(_buttonNewTab);
-  buttonSnapshot.frame = CGRectOffset(_buttonNewTab.frame, -xOffset, 0);
-  [placeholderView addSubview:buttonSnapshot];
-  return placeholderView;
 }
 
 @end

@@ -1295,10 +1295,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.dispatcher cancelOmniboxEdit];
 }
 
-- (UIView<TabStripFoldAnimation>*)tabStripPlaceholderView {
-  return [self.tabStripCoordinator placeholderView];
-}
-
 - (void)resetNTP {
   for (const auto& element : _ntpCoordinatorsForWebStates)
     [element.second stop];
