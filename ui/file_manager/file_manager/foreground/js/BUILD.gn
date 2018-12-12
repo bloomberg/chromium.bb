@@ -360,6 +360,7 @@ js_library("file_manager_commands") {
     "ui:file_manager_ui",
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
   ]
+  externs_list = [ "//ui/file_manager/externs/command_handler_deps.js" ]
 }
 
 js_library("file_selection") {
@@ -460,6 +461,7 @@ js_library("import_controller") {
     "ui:directory_tree",
     "ui:file_manager_ui",
   ]
+  externs_list = [ "//ui/file_manager/externs/command_handler_deps.js" ]
 }
 
 js_library("last_modified_controller") {
