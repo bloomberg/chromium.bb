@@ -56,10 +56,10 @@ class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
   bool TestUsesSelfNotifications() override { return false; }
 
   bool SetupSync() override {
+    test_clock_.SetNow(kArbitraryDefaultTime);
     if (!SyncTest::SetupSync()) {
       return false;
     }
-    test_clock_.SetNow(kArbitraryDefaultTime);
 
     // Plug in SyncService into PDM so that it can check we use full sync.
     GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
