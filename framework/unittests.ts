@@ -15,7 +15,7 @@ import {
   tests.add("async_callback",
       punit(),
       async (p: any) => console.log(p));
-  
+
   function add(name: string, params: ParamIterable) {
     tests.add(name, params, console.log);
   }
@@ -24,16 +24,16 @@ import {
   add("unit", punit());
   add("combine_none", pcombine([]));
   add("combine_unit_unit", pcombine([punit(), punit()]));
-  add("combiner_lists", pcombine([
+  add("combine_lists", pcombine([
     poptions('x', [1, 2]),
     poptions('y', ['a', 'b']),
     punit(),
   ]));
-  add("combiner_arrays", pcombine([
+  add("combine_arrays", pcombine([
     [{x: 1, y: 2}, {x: 10, y: 20}],
     [{z: 'z'}, {w: 'w'}],
   ]));
-  add("combiner_mixed", pcombine([
+  add("combine_mixed", pcombine([
     poptions('x', [1, 2]),
     [{z: 'z'}, {w: 'w'}],
   ]));

@@ -6,8 +6,7 @@
   "scripts": {
     "build": "node_modules/typescript/bin/tsc",
     "clean": "rm -rf out/",
-    "test": "node_modules/ts-node/dist/bin.js framework/unittests",
-    "cts": "node_modules/ts-node/dist/bin.js cts"
+    "test": "node_modules/ts-node/dist/bin.js framework/unittests"
   },
   "repository": {
     "type": "git",
