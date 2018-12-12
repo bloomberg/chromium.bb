@@ -341,12 +341,6 @@ bool EasyUnlockServiceSignin::IsChromeOSLoginEnabled() const {
   return pref_manager_ && pref_manager_->IsChromeOSLoginEnabled();
 }
 
-void EasyUnlockServiceSignin::OnWillFinalizeUnlock(bool success) {
-  // This code path should only be exercised for the lock screen, not for the
-  // sign-in screen.
-  NOTREACHED();
-}
-
 void EasyUnlockServiceSignin::OnSuspendDoneInternal() {
   // Ignored.
 }
@@ -403,6 +397,11 @@ void EasyUnlockServiceSignin::OnScreenDidUnlock(
                   kUserEnteredPasswordWhileBluetoothDisabled);
     }
   }
+
+  SmartLockMetricsRecorder::RecordSmartLockSignInAuthMethodChoice(
+      will_authenticate_using_easy_unlock()
+          ? SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kSmartLock
+          : SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kOther);
 
   Shutdown();
 }

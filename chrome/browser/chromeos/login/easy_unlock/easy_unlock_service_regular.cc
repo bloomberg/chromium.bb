@@ -111,7 +111,6 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(
     device_sync::DeviceSyncClient* device_sync_client,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client)
     : EasyUnlockService(profile, secure_channel_client),
-      will_unlock_using_easy_unlock_(false),
       lock_screen_last_shown_timestamp_(base::TimeTicks::Now()),
       deferring_device_load_(false),
       notification_controller_(std::move(notification_controller)),
@@ -475,10 +474,6 @@ bool EasyUnlockServiceRegular::IsInLegacyHostMode() const {
   return has_supported_easy_unlock_host;
 }
 
-void EasyUnlockServiceRegular::OnWillFinalizeUnlock(bool success) {
-  will_unlock_using_easy_unlock_ = success;
-}
-
 void EasyUnlockServiceRegular::OnSuspendDoneInternal() {
   lock_screen_last_shown_timestamp_ = base::TimeTicks::Now();
 }
@@ -596,7 +591,7 @@ void EasyUnlockServiceRegular::OnForceSyncCompleted(bool success) {
 
 void EasyUnlockServiceRegular::OnScreenDidLock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
-  will_unlock_using_easy_unlock_ = false;
+  set_will_authenticate_using_easy_unlock(false);
   lock_screen_last_shown_timestamp_ = base::TimeTicks::Now();
 }
 
@@ -631,12 +626,12 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
 
   // Only record metrics for users who have enabled the feature.
   if (IsEnabled()) {
-    EasyUnlockAuthEvent event = will_unlock_using_easy_unlock_
+    EasyUnlockAuthEvent event = will_authenticate_using_easy_unlock()
                                     ? EASY_UNLOCK_SUCCESS
                                     : GetPasswordAuthEvent();
     RecordEasyUnlockScreenUnlockEvent(event);
 
-    if (will_unlock_using_easy_unlock_ ||
+    if (will_authenticate_using_easy_unlock() ||
         event == PASSWORD_ENTRY_PHONE_LOCKED ||
         event == PASSWORD_ENTRY_PHONE_NOT_LOCKABLE ||
         event == PASSWORD_ENTRY_RSSI_TOO_LOW ||
@@ -645,11 +640,15 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
       SmartLockMetricsRecorder::RecordGetRemoteStatusResultUnlockSuccess();
     }
 
-    if (will_unlock_using_easy_unlock_) {
+    if (will_authenticate_using_easy_unlock()) {
+      SmartLockMetricsRecorder::RecordSmartLockUnlockAuthMethodChoice(
+          SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kSmartLock);
       SmartLockMetricsRecorder::RecordAuthResultUnlockSuccess();
       RecordEasyUnlockScreenUnlockDuration(base::TimeTicks::Now() -
                                            lock_screen_last_shown_timestamp_);
     } else {
+      SmartLockMetricsRecorder::RecordSmartLockUnlockAuthMethodChoice(
+          SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kOther);
       OnUserEnteredPassword();
     }
 
@@ -666,7 +665,7 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
     }
   }
 
-  will_unlock_using_easy_unlock_ = false;
+  set_will_authenticate_using_easy_unlock(false);
 }
 
 void EasyUnlockServiceRegular::OnFocusedUserChanged(
