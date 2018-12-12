@@ -51,6 +51,36 @@ bool VrTabHelper::IsInVr(content::WebContents* contents) {
   return vr_tab_helper->is_in_vr();
 }
 
+/* static */
+bool VrTabHelper::IsContentDisplayedInHeadset(content::WebContents* contents) {
+  if (!contents)
+    return false;
+
+  VrTabHelper* vr_tab_helper = VrTabHelper::FromWebContents(contents);
+  if (!vr_tab_helper) {
+    VrTabHelper::CreateForWebContents(contents);
+    vr_tab_helper = VrTabHelper::FromWebContents(contents);
+  }
+  return vr_tab_helper->is_content_displayed_in_headset();
+}
+
+/* static */
+void VrTabHelper::SetIsContentDisplayedInHeadset(content::WebContents* contents,
+                                                 bool state) {
+  if (!contents)
+    return;
+  VrTabHelper* vr_tab_helper = VrTabHelper::FromWebContents(contents);
+  if (!vr_tab_helper) {
+    VrTabHelper::CreateForWebContents(contents);
+    vr_tab_helper = VrTabHelper::FromWebContents(contents);
+  }
+  vr_tab_helper->SetIsContentDisplayedInHeadset(state);
+}
+
+void VrTabHelper::SetIsContentDisplayedInHeadset(bool state) {
+  is_content_displayed_in_headset_ = state;
+}
+
 bool VrTabHelper::IsUiSuppressedInVr(content::WebContents* contents,
                                      UiSuppressedElement element) {
   if (!IsInVr(contents))
