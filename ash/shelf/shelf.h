@@ -51,25 +51,29 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // widget may not exist, or the shelf may not be visible.
   static Shelf* ForWindow(aura::Window* window);
 
+  // Launch a 0-indexed shelf item in the shelf. A negative index launches the
+  // last shelf item in the shelf.
+  static void LaunchShelfItem(int item_index);
+
+  // Activates the shelf item specified by the index in the list of shelf items.
+  static void ActivateShelfItem(int item_index);
+
+  // Activates the shelf item specified by the index in the list of shelf items
+  // on the display identified by |display_id|.
+  static void ActivateShelfItemOnDisplay(int item_index, int64_t display_id);
+
   void CreateShelfWidget(aura::Window* root);
   void ShutdownShelfWidget();
   void DestroyShelfWidget();
-
-  ShelfLayoutManager* shelf_layout_manager() const {
-    return shelf_layout_manager_;
-  }
 
   // Returns true if the shelf is visible. Shelf can be visible in 1)
   // SHELF_VISIBLE or 2) SHELF_AUTO_HIDE but in SHELF_AUTO_HIDE_SHOWN. See
   // details in ShelfLayoutManager::IsVisible.
   bool IsVisible() const;
 
-  ShelfWidget* shelf_widget() { return shelf_widget_.get(); }
-
   // Returns the window showing the shelf.
   aura::Window* GetWindow();
 
-  ShelfAlignment alignment() const { return alignment_; }
   void SetAlignment(ShelfAlignment alignment);
 
   // Returns true if the shelf alignment is horizontal (i.e. at the bottom).
@@ -81,9 +85,6 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Returns |horizontal| if shelf is horizontal, otherwise |vertical|.
   int PrimaryAxisValue(int horizontal, int vertical) const;
 
-  ShelfAutoHideBehavior auto_hide_behavior() const {
-    return auto_hide_behavior_;
-  }
   void SetAutoHideBehavior(ShelfAutoHideBehavior behavior);
 
   ShelfAutoHideState GetAutoHideState() const;
@@ -115,17 +116,6 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // no item for the specified window an empty rect is returned.
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
 
-  // Launch a 0-indexed shelf item in the shelf. A negative index launches the
-  // last shelf item in the shelf.
-  static void LaunchShelfItem(int item_index);
-
-  // Activates the shelf item specified by the index in the list of shelf items.
-  static void ActivateShelfItem(int item_index);
-
-  // Activates the shelf item specified by the index in the list of shelf items
-  // on the display identified by |display_id|.
-  static void ActivateShelfItemOnDisplay(int item_index, int64_t display_id);
-
   // Handles a gesture |event| coming from a source outside the shelf widget
   // (e.g. the status area widget). Allows support for behaviors like toggling
   // auto-hide with a swipe, even if that gesture event hits another window.
@@ -151,13 +141,6 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // See also: BubbleDialogDelegateView::GetBubbleBounds()
   gfx::Rect GetSystemTrayAnchorRect() const;
 
-  void set_is_tablet_mode_animation_running(bool value) {
-    is_tablet_mode_animation_running_ = value;
-  }
-  bool is_tablet_mode_animation_running() const {
-    return is_tablet_mode_animation_running_;
-  }
-
   // Returns whether this shelf should be hidden on secondary display in a given
   // |state|.
   bool ShouldHideOnSecondaryDisplay(session_manager::SessionState state);
@@ -165,6 +148,21 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds);
   ShelfLockingManager* GetShelfLockingManagerForTesting();
   ShelfView* GetShelfViewForTesting();
+
+  ShelfLayoutManager* shelf_layout_manager() const {
+    return shelf_layout_manager_;
+  }
+  ShelfWidget* shelf_widget() const { return shelf_widget_.get(); }
+  ShelfAlignment alignment() const { return alignment_; }
+  ShelfAutoHideBehavior auto_hide_behavior() const {
+    return auto_hide_behavior_;
+  }
+  void set_is_tablet_mode_animation_running(bool value) {
+    is_tablet_mode_animation_running_ = value;
+  }
+  bool is_tablet_mode_animation_running() const {
+    return is_tablet_mode_animation_running_;
+  }
 
  protected:
   // ShelfLayoutManagerObserver:
