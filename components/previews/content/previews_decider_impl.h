@@ -116,7 +116,7 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   void SetIgnoreLongTermBlackListForServerPreviews(
       bool ignore_long_term_blacklist_for_server_previews);
 
-  void LoadResourceHints(const GURL& url) override;
+  bool LoadResourceHints(const GURL& url) override;
 
   void LogHintCacheMatch(const GURL& url, bool is_committed) const override;
 

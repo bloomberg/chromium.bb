@@ -25,7 +25,9 @@ bool TestPreviewsDecider::ShouldCommitPreview(PreviewsUserData* previews_data,
   return allow_previews_;
 }
 
-void TestPreviewsDecider::LoadResourceHints(const GURL& url) {}
+bool TestPreviewsDecider::LoadResourceHints(const GURL& url) {
+  return true;
+}
 
 void TestPreviewsDecider::LogHintCacheMatch(const GURL& url,
                                             bool is_committed) const {}

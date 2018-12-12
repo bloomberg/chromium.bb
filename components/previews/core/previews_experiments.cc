@@ -184,6 +184,11 @@ bool LitePagePreviewsTriggerOnLocalhost() {
       features::kLitePageServerPreviews, "trigger_on_localhost", false);
 }
 
+bool LitePagePreviewsOverridePageHints() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "override_pagehints", false);
+}
+
 GURL GetLitePagePreviewsDomainURL() {
   // Command line override takes priority.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
