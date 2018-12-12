@@ -4082,6 +4082,10 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collap
 crbug.com/850662 external/wpt/workers/baseurl/alpha/sharedworker-in-worker.html [ Failure ]
 crbug.com/850662 virtual/omt-worker-fetch/external/wpt/workers/baseurl/alpha/sharedworker-in-worker.html [ Failure ]
 
+# Android doesn't support SharedWorker.
+crbug.com/154571 [ Android ] external/wpt/workers/semantics/reporting-errors/002.html [ Skip ]
+crbug.com/154571 [ Android ] virtual/omt-worker-fetch/external/wpt/workers/semantics/reporting-errors/002.html [ Skip ]
+
 # crbug.com/861564 is ongoing for module dedicated workers.
 crbug.com/861564 external/wpt/workers/baseurl/alpha/xhr-in-moduleworker.html [ Failure ]
 crbug.com/861564 external/wpt/workers/interfaces/WorkerGlobalScope/location/redirect-module.html [ Failure ]
