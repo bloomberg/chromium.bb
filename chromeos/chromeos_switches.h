@@ -152,6 +152,7 @@ CHROMEOS_EXPORT extern const char kShowAndroidFilesInFilesApp[];
 CHROMEOS_EXPORT extern const char kShowLoginDevOverlay[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
 CHROMEOS_EXPORT extern const char kTestEncryptionMigrationUI[];
+CHROMEOS_EXPORT extern const char kTestWallpaperServer[];
 CHROMEOS_EXPORT extern const char kTetherStub[];
 CHROMEOS_EXPORT extern const char kTetherHostScansIgnoreWiredConnections[];
 CHROMEOS_EXPORT extern const char kVoiceInteractionLocales[];

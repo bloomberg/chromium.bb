@@ -553,6 +553,9 @@ const char kStubCrosSettings[] = "stub-cros-settings";
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 
+// Enables the wallpaper picker to fetch images from the test server.
+const char kTestWallpaperServer[] = "test-wallpaper-server";
+
 // Overrides Tether with stub service. Provide integer arguments for the number
 // of fake networks desired, e.g. 'tether-stub=2'.
 const char kTetherStub[] = "tether-stub";
