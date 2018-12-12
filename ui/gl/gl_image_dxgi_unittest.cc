@@ -66,9 +66,9 @@ class GLImageDXGITestDelegate : public GLImageTestDelegateBase {
         nullptr, &handle);
     EXPECT_HRESULT_SUCCEEDED(hr);
 
-    scoped_refptr<GLImageDXGIHandle> image(
-        new GLImageDXGIHandle(size, 0, format));
-    bool rv = image->Initialize(base::win::ScopedHandle(handle));
+    scoped_refptr<GLImageDXGI> image(new GLImageDXGI(size, nullptr));
+    bool rv =
+        image->InitializeHandle(base::win::ScopedHandle(handle), 0, format);
 
     EXPECT_TRUE(rv);
     return image;

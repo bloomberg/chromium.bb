@@ -106,11 +106,11 @@ GpuMemoryBufferFactoryDXGI::CreateImageForGpuMemoryBuffer(
     SurfaceHandle surface_handle) {
   if (handle.type != gfx::DXGI_SHARED_HANDLE)
     return nullptr;
-  // Transfer ownership of handle to GLImageDXGIHandle.
+  // Transfer ownership of handle to GLImageDXGI.
   base::win::ScopedHandle handle_owner;
   handle_owner.Set(handle.dxgi_handle.GetHandle());
-  auto image = base::MakeRefCounted<gl::GLImageDXGIHandle>(size, 0, format);
-  if (!image->Initialize(std::move(handle_owner)))
+  auto image = base::MakeRefCounted<gl::GLImageDXGI>(size, nullptr);
+  if (!image->InitializeHandle(std::move(handle_owner), 0, format))
     return nullptr;
   return image;
 }

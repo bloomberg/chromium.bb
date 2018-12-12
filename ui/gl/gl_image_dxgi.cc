@@ -138,40 +138,97 @@ EGLSurface CreatePbuffer(const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texture,
 
 }  // namespace
 
-GLImageDXGIBase::GLImageDXGIBase(const gfx::Size& size) : size_(size) {}
+GLImageDXGI::GLImageDXGI(const gfx::Size& size, EGLStreamKHR stream)
+    : size_(size), stream_(stream) {}
 
 // static
-GLImageDXGIBase* GLImageDXGIBase::FromGLImage(GLImage* image) {
+GLImageDXGI* GLImageDXGI::FromGLImage(GLImage* image) {
   if (!image || image->GetType() != Type::DXGI_IMAGE)
     return nullptr;
-  return static_cast<GLImageDXGIBase*>(image);
+  return static_cast<GLImageDXGI*>(image);
 }
 
-gfx::Size GLImageDXGIBase::GetSize() {
+bool GLImageDXGI::BindTexImage(unsigned target) {
+  if (!handle_.Get())
+    return true;
+
+  DCHECK(texture_);
+  DCHECK(keyed_mutex_);
+  if (!SupportedBindFormat(buffer_format_))
+    return false;
+
+  // Lazy-initialize surface_, as it is only used for binding.
+  if (surface_ == EGL_NO_SURFACE) {
+    EGLConfig config = ChooseCompatibleConfig(buffer_format_);
+    if (!config)
+      return false;
+    surface_ = CreatePbuffer(texture_, buffer_format_, config, target);
+    if (surface_ == EGL_NO_SURFACE)
+      return false;
+  }
+
+  // We don't wait, just return immediately.
+  HRESULT hrWait = keyed_mutex_->AcquireSync(KEY_BIND, 0);
+
+  if (hrWait == WAIT_TIMEOUT || hrWait == WAIT_ABANDONED || FAILED(hrWait)) {
+    NOTREACHED();
+    return false;
+  }
+
+  return eglBindTexImage(gl::GLSurfaceEGL::GetHardwareDisplay(), surface_,
+                         EGL_BACK_BUFFER) == EGL_TRUE;
+}
+
+bool GLImageDXGI::CopyTexImage(unsigned target) {
+  return false;
+}
+
+bool GLImageDXGI::CopyTexSubImage(unsigned target,
+                                  const gfx::Point& offset,
+                                  const gfx::Rect& rect) {
+  return false;
+}
+
+void GLImageDXGI::Flush() {}
+
+unsigned GLImageDXGI::GetInternalFormat() {
+  if (!handle_.Get())
+    return GL_BGRA_EXT;
+  else
+    return HasAlpha(buffer_format_) ? GL_RGBA : GL_RGB;
+}
+
+gfx::Size GLImageDXGI::GetSize() {
   return size_;
 }
 
-unsigned GLImageDXGIBase::GetInternalFormat() {
-  return GL_BGRA_EXT;
+GLImage::Type GLImageDXGI::GetType() const {
+  return Type::DXGI_IMAGE;
 }
 
-bool GLImageDXGIBase::BindTexImage(unsigned target) {
-  return false;
+void GLImageDXGI::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                               uint64_t process_tracing_id,
+                               const std::string& dump_name) {}
+
+void GLImageDXGI::ReleaseTexImage(unsigned target) {
+  if (!handle_.Get())
+    return;
+
+  DCHECK(texture_);
+  DCHECK(keyed_mutex_);
+
+  Microsoft::WRL::ComPtr<ID3D11Device> device =
+      QueryD3D11DeviceObjectFromANGLE();
+  Microsoft::WRL::ComPtr<ID3D11Device1> device1;
+  device.CopyTo(device1.GetAddressOf());
+
+  keyed_mutex_->ReleaseSync(KEY_RELEASE);
+
+  eglReleaseTexImage(gl::GLSurfaceEGL::GetHardwareDisplay(), surface_,
+                     EGL_BACK_BUFFER);
 }
 
-void GLImageDXGIBase::ReleaseTexImage(unsigned target) {}
-
-bool GLImageDXGIBase::CopyTexImage(unsigned target) {
-  return false;
-}
-
-bool GLImageDXGIBase::CopyTexSubImage(unsigned target,
-                                      const gfx::Point& offset,
-                                      const gfx::Rect& rect) {
-  return false;
-}
-
-bool GLImageDXGIBase::ScheduleOverlayPlane(
+bool GLImageDXGI::ScheduleOverlayPlane(
     gfx::AcceleratedWidget widget,
     int z_order,
     gfx::OverlayTransform transform,
@@ -182,26 +239,36 @@ bool GLImageDXGIBase::ScheduleOverlayPlane(
   return false;
 }
 
-void GLImageDXGIBase::SetColorSpace(const gfx::ColorSpace& color_space) {
+void GLImageDXGI::SetColorSpace(const gfx::ColorSpace& color_space) {
   color_space_ = color_space;
 }
 
-void GLImageDXGIBase::Flush() {}
+bool GLImageDXGI::InitializeHandle(base::win::ScopedHandle handle,
+                                   uint32_t level,
+                                   gfx::BufferFormat format) {
+  level_ = level;
+  buffer_format_ = format;
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device)
+    return false;
 
-void GLImageDXGIBase::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                                   uint64_t process_tracing_id,
-                                   const std::string& dump_name) {}
+  Microsoft::WRL::ComPtr<ID3D11Device1> d3d11_device1;
+  if (FAILED(d3d11_device.CopyTo(d3d11_device1.GetAddressOf())))
+    return false;
 
-GLImage::Type GLImageDXGIBase::GetType() const {
-  return Type::DXGI_IMAGE;
-}
+  if (FAILED(d3d11_device1->OpenSharedResource1(
+          handle.Get(), IID_PPV_ARGS(texture_.GetAddressOf())))) {
+    return false;
+  }
+  D3D11_TEXTURE2D_DESC desc;
+  texture_->GetDesc(&desc);
+  if (desc.ArraySize <= level_)
+    return false;
+  if (FAILED(texture_.CopyTo(keyed_mutex_.GetAddressOf())))
+    return false;
 
-GLImageDXGIBase::~GLImageDXGIBase() {}
-
-GLImageDXGI::GLImageDXGI(const gfx::Size& size, EGLStreamKHR stream)
-    : GLImageDXGIBase(size), stream_(stream) {}
-
-bool GLImageDXGI::BindTexImage(unsigned target) {
+  handle_ = std::move(handle);
   return true;
 }
 
@@ -213,8 +280,14 @@ void GLImageDXGI::SetTexture(
 }
 
 GLImageDXGI::~GLImageDXGI() {
-  EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
-  eglDestroyStreamKHR(egl_display, stream_);
+  if (handle_.Get()) {
+    if (surface_ != EGL_NO_SURFACE) {
+      eglDestroySurface(gl::GLSurfaceEGL::GetHardwareDisplay(), surface_);
+    }
+  } else if (stream_) {
+    EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
+    eglDestroyStreamKHR(egl_display, stream_);
+  }
 }
 
 CopyingGLImageDXGI::CopyingGLImageDXGI(
@@ -342,90 +415,5 @@ bool CopyingGLImageDXGI::BindTexImage(unsigned target) {
 }
 
 CopyingGLImageDXGI::~CopyingGLImageDXGI() {}
-
-GLImageDXGIHandle::~GLImageDXGIHandle() {
-  if (surface_ != EGL_NO_SURFACE) {
-    eglDestroySurface(gl::GLSurfaceEGL::GetHardwareDisplay(), surface_);
-  }
-}
-
-GLImageDXGIHandle::GLImageDXGIHandle(const gfx::Size& size,
-                                     uint32_t level,
-                                     gfx::BufferFormat format)
-    : GLImageDXGIBase(size), format_(format) {
-  level_ = level;
-}
-
-bool GLImageDXGIHandle::Initialize(base::win::ScopedHandle handle) {
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
-  if (!d3d11_device)
-    return false;
-
-  Microsoft::WRL::ComPtr<ID3D11Device1> d3d11_device1;
-  if (FAILED(d3d11_device.CopyTo(d3d11_device1.GetAddressOf())))
-    return false;
-
-  if (FAILED(d3d11_device1->OpenSharedResource1(
-          handle.Get(), IID_PPV_ARGS(texture_.GetAddressOf())))) {
-    return false;
-  }
-  D3D11_TEXTURE2D_DESC desc;
-  texture_->GetDesc(&desc);
-  if (desc.ArraySize <= level_)
-    return false;
-  if (FAILED(texture_.CopyTo(keyed_mutex_.GetAddressOf())))
-    return false;
-
-  handle_ = std::move(handle);
-  return true;
-}
-
-unsigned GLImageDXGIHandle::GetInternalFormat() {
-  return HasAlpha(format_) ? GL_RGBA : GL_RGB;
-}
-
-bool GLImageDXGIHandle::BindTexImage(unsigned target) {
-  DCHECK(texture_);
-  DCHECK(keyed_mutex_);
-  if (!SupportedBindFormat(format_))
-    return false;
-
-  // Lazy-initialize surface_, as it is only used for binding.
-  if (surface_ == EGL_NO_SURFACE) {
-    EGLConfig config = ChooseCompatibleConfig(format_);
-    if (!config)
-      return false;
-    surface_ = CreatePbuffer(texture_, format_, config, target);
-    if (surface_ == EGL_NO_SURFACE)
-      return false;
-  }
-
-  // We don't wait, just return immediately.
-  HRESULT hrWait = keyed_mutex_->AcquireSync(KEY_BIND, 0);
-
-  if (hrWait == WAIT_TIMEOUT || hrWait == WAIT_ABANDONED || FAILED(hrWait)) {
-    NOTREACHED();
-    return false;
-  }
-
-  return eglBindTexImage(gl::GLSurfaceEGL::GetHardwareDisplay(), surface_,
-                         EGL_BACK_BUFFER) == EGL_TRUE;
-}
-
-void GLImageDXGIHandle::ReleaseTexImage(unsigned target) {
-  DCHECK(texture_);
-  DCHECK(keyed_mutex_);
-
-  Microsoft::WRL::ComPtr<ID3D11Device> device =
-      QueryD3D11DeviceObjectFromANGLE();
-  Microsoft::WRL::ComPtr<ID3D11Device1> device1;
-  device.CopyTo(device1.GetAddressOf());
-
-  keyed_mutex_->ReleaseSync(KEY_RELEASE);
-
-  eglReleaseTexImage(gl::GLSurfaceEGL::GetHardwareDisplay(), surface_,
-                     EGL_BACK_BUFFER);
-}
 
 }  // namespace gl
