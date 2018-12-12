@@ -124,7 +124,9 @@ bool IsValidStateChange(LifecycleUnitState from,
         //   - The freeze timeout expires, or,
         //   - The renderer notifies the browser that the page has been frozen.
         case LifecycleUnitState::DISCARDED:
-          return reason == StateChangeReason::BROWSER_INITIATED;
+          return reason == StateChangeReason::BROWSER_INITIATED ||
+                 reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
+                 reason == StateChangeReason::EXTENSION_INITIATED;
         // The WebContents is focused.
         case LifecycleUnitState::PENDING_FREEZE:
           return reason == StateChangeReason::USER_INITIATED;
