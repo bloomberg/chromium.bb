@@ -10,6 +10,7 @@
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_serializer.h"
+#include "ui/accessibility/ax_tree_source_checker.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
@@ -62,6 +63,11 @@ class TestAXAuraWindowUtils : public AXAuraWindowUtils {
 using AuraAXTreeSerializer = ui::
     AXTreeSerializer<views::AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>;
 
+using AuraAXTreeSourceChecker =
+    ui::AXTreeSourceChecker<views::AXAuraObjWrapper*,
+                            ui::AXNodeData,
+                            ui::AXTreeData>;
+
 class AXAuraWindowUtilsTest : public ViewsTestBase {
  public:
   AXAuraWindowUtilsTest() = default;
@@ -112,6 +118,10 @@ class AXAuraWindowUtilsTest : public ViewsTestBase {
     AuraAXTreeSerializer serializer(&tree_source);
     ui::AXTreeUpdate serialized_tree;
     serializer.SerializeChanges(tree_source.GetRoot(), &serialized_tree);
+
+    AuraAXTreeSourceChecker checker(&tree_source);
+    if (!checker.Check())
+      return std::make_unique<ui::AXTree>();
 
     // For debugging, run with --v=1.
     VLOG(1) << serialized_tree.ToString();
