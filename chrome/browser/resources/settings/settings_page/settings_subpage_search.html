@@ -12,6 +12,7 @@
   <template>
     <style include="cr-shared-style">
       :host {
+        display: flex;
         user-select: none;
       }
 
@@ -24,18 +25,26 @@
 
       cr-input {
         --cr-input-background-color: white;
+        --cr-input-row-container: {
+          height: 100%;
+        }
         --cr-input-container: {
           border-radius: 0;
+          height: 100%;
+        }
+        --cr-input-inner-container: {
+          height: 100%;
         }
         --cr-input-error-display: none;
         --cr-input-input: {
+          height: 100%;
           border-bottom: 1px solid var(--google-grey-900);
         }
         --cr-input-padding-end: 0;
         --cr-input-padding-start: 0;
         --cr-input-padding-bottom: 2px;
         --cr-input-padding-top: 2px;
-        display: inline-block;
+        display: block;
         vertical-align: middle;
         width: 160px;  /* Special width for search input. */
       }
