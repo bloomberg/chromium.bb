@@ -2,7 +2,11 @@
 # Lead. See comment in whitelist.h
 set noparent
 
+# For Component Extensions
 rdevlin.cronin@chromium.org
+
+# For Component Apps
+benwells@chromium.org
 
 # TEAM: extensions-dev@chromium.org
 # COMPONENT: Platform>Extensions
