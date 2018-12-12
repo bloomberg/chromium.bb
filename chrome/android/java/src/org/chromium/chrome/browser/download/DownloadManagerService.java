@@ -32,6 +32,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
+import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaBackgroundDownload;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -122,6 +123,7 @@ public class DownloadManagerService
             "application/x-wifi-config"));
 
     private static final Set<String> sFirstSeenDownloadIds = new HashSet<String>();
+    private static final Set<String> sBackgroundDownloadIds = new HashSet<String>();
 
     private static DownloadManagerService sDownloadManagerService;
     private static boolean sIsNetworkListenerDisabled;
@@ -352,6 +354,8 @@ public class DownloadManagerService
         DownloadItem item = new DownloadItem(false, downloadInfo);
         if (!downloadInfo.isResumable()) {
             status = DownloadStatus.FAILED;
+            maybeRecordBackgroundDownload(
+                    UmaBackgroundDownload.FAILED, downloadInfo.getDownloadGuid());
         } else if (isAutoResumable) {
             addAutoResumableDownload(item.getId());
         }
@@ -535,6 +539,8 @@ public class DownloadManagerService
                     mDownloadNotifier.notifyDownloadSuccessful(
                             info, result.first, result.second, isSupportedMimeType);
                     broadcastDownloadSuccessful(info);
+                    maybeRecordBackgroundDownload(
+                            UmaBackgroundDownload.COMPLETED, info.getDownloadGuid());
                 } else {
                     info = DownloadInfo.Builder.fromDownloadInfo(info)
                                    .setFailState(FailState.CANNOT_DOWNLOAD)
@@ -542,6 +548,8 @@ public class DownloadManagerService
                     mDownloadNotifier.notifyDownloadFailed(info);
                     // TODO(qinmin): get the failure message from native.
                     onDownloadFailed(item, DownloadManager.ERROR_UNKNOWN);
+                    maybeRecordBackgroundDownload(
+                            UmaBackgroundDownload.FAILED, info.getDownloadGuid());
                 }
             }
         };
@@ -1030,6 +1038,7 @@ public class DownloadManagerService
             mDownloadNotifier.notifyDownloadCanceled(id);
         }
         recordDownloadFinishedUMA(DownloadStatus.CANCELLED, id.id, 0);
+        maybeRecordBackgroundDownload(UmaBackgroundDownload.CANCELLED, id.id);
     }
 
     /**
@@ -1859,6 +1868,28 @@ public class DownloadManagerService
             mAutoResumptionLimit = nativeGetAutoResumptionLimit();
         }
         return mAutoResumptionLimit;
+    }
+
+    /**
+     * Called when a background download is started.
+     * @param downloadGuid Download GUID
+     */
+    public void onBackgroundDownloadStarted(String downloadGuid) {
+        DownloadNotificationUmaHelper.recordBackgroundDownloadHistogram(
+                UmaBackgroundDownload.STARTED);
+        sBackgroundDownloadIds.add(downloadGuid);
+    }
+
+    /**
+     * Record metrics for a download if it was started in background.
+     * @param event UmaBackgroundDownload event to log
+     * @param downloadGuid Download GUID
+     */
+    private void maybeRecordBackgroundDownload(
+            @UmaBackgroundDownload int event, String downloadGuid) {
+        if (sBackgroundDownloadIds.remove(downloadGuid)) {
+            DownloadNotificationUmaHelper.recordBackgroundDownloadHistogram(event);
+        }
     }
 
     /**
