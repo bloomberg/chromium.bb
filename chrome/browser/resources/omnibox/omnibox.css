@@ -75,7 +75,7 @@ thead tr {
 }
 
 tbody tr {
-  height: 44px;
+  height: 42px;
   transition-duration: 300ms;
 }
 
@@ -90,8 +90,8 @@ td {
 }
 
 th {
-  padding-bottom: 10px;
-  padding-top: 20px;
+  padding-bottom: 6px;
+  padding-top: 12px;
 }
 
 .filtered-highlighted {
