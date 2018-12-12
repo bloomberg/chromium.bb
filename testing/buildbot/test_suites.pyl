@@ -1821,7 +1821,6 @@
         'test': 'ash_unittests',
         'args': [
           '--enable-features=SingleProcessMash',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.ash_unittests.filter',
         ],
       },
       'single_process_mash_browser_tests': {
