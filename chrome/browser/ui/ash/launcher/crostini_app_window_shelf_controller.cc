@@ -69,17 +69,28 @@ CrostiniAppWindowShelfController::CrostiniAppWindowShelfController(
   // https://crbug.com/887156
   if (!features::IsMultiProcessMash())
     ash::Shell::Get()->aura_env()->AddObserver(this);
+  // When window service is enabled, aura::Env::GetInstance() is a different
+  // instance from ash::Shell::Get()->aura_env(), and it needs to be observed
+  // for the Crostini terminal, which is a Chrome app window. Note that it still
+  // needs to observe ash::Shell::Get()->aura_env() too for other crostini apps,
+  // which are hosted by exo.
+  // TODO(mukai): clean this up. https://crbug.com/887156
+  if (features::IsUsingWindowService())
+    aura::Env::GetInstance()->AddObserver(this);
 }
 
 CrostiniAppWindowShelfController::~CrostiniAppWindowShelfController() {
   for (auto* window : observed_windows_)
     window->RemoveObserver(this);
+  if (features::IsUsingWindowService())
+    aura::Env::GetInstance()->RemoveObserver(this);
   if (!features::IsMultiProcessMash())
     ash::Shell::Get()->aura_env()->RemoveObserver(this);
 }
 
 void CrostiniAppWindowShelfController::AddToShelf(aura::Window* window,
                                                   AppWindowBase* app_window) {
+  window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_APP);
   ash::ShelfID shelf_id = app_window->shelf_id();
   AppWindowLauncherItemController* item_controller =
       owner()->shelf_model()->GetAppWindowLauncherItemController(shelf_id);
