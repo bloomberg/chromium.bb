@@ -18,6 +18,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
+import org.chromium.chrome.browser.modelutil.ModelListAdapter;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
@@ -142,7 +143,7 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
                 // Start with visibility GONE to ensure that show() is called.
                 // http://crbug.com/517438
                 list.setVisibility(View.GONE);
-                OmniboxResultsAdapter adapter = new OmniboxResultsAdapter(context);
+                ModelListAdapter adapter = new ModelListAdapter(context);
                 list.setAdapter(adapter);
                 list.setClipToPadding(false);
 
