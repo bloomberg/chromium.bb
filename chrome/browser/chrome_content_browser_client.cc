@@ -40,6 +40,7 @@
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/client_hints/client_hints.h"
+#include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -2272,9 +2273,9 @@ void ChromeContentBrowserClient::NavigationRequestStarted(
   WebContents* web_contents =
       WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-  *extra_headers =
-      client_hints::GetAdditionalNavigationRequestClientHintsHeaders(
-          browser_context, url);
+
+  *extra_headers = ClientHintsFactory::GetForBrowserContext(browser_context)
+                       ->GetAdditionalNavigationRequestClientHintsHeaders(url);
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(web_contents);
   if (prerender_contents &&
@@ -2318,8 +2319,8 @@ void ChromeContentBrowserClient::NavigationRequestRedirected(
   }
 
   std::unique_ptr<net::HttpRequestHeaders> client_hints_extra_headers =
-      client_hints::GetAdditionalNavigationRequestClientHintsHeaders(
-          browser_context, url);
+      ClientHintsFactory::GetForBrowserContext(browser_context)
+          ->GetAdditionalNavigationRequestClientHintsHeaders(url);
   if (client_hints_extra_headers) {
     if (!modified_request_headers->has_value())
       *modified_request_headers = net::HttpRequestHeaders();
