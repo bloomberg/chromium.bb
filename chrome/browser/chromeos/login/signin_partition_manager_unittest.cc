@@ -22,9 +22,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/cookies/cookie_store.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/network_context.h"
+#include "services/network/network_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -41,11 +42,9 @@ void StorePartitionNameAndQuitLoop(base::RunLoop* loop,
   loop->Quit();
 }
 
-void AddEntryToHttpAuthCache(
-    net::URLRequestContextGetter* url_request_context_getter) {
+void AddEntryToHttpAuthCache(net::URLRequestContext* url_request_context) {
   net::HttpAuthCache* http_auth_cache =
-      url_request_context_getter->GetURLRequestContext()
-          ->http_transaction_factory()
+      url_request_context->http_transaction_factory()
           ->GetSession()
           ->http_auth_cache();
   http_auth_cache->Add(GURL("http://whatever.com/"), "",
@@ -76,14 +75,18 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    system_request_context_getter_ = new net::TestURLRequestContextGetter(
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::IO}));
-
     signin_browser_context_ = std::make_unique<TestingProfile>();
 
     signin_ui_web_contents_ = content::WebContentsTester::CreateTestWebContents(
         GetSigninProfile(), content::SiteInstance::Create(GetSigninProfile()));
+
+    // Let Profile creation finish, which creates the NetworkService instance.
+    base::RunLoop().RunUntilIdle();
+    network::mojom::NetworkContextParamsPtr params =
+        network::mojom::NetworkContextParams::New();
+    system_network_context_ = std::make_unique<network::NetworkContext>(
+        network::NetworkService::GetNetworkServiceForTesting(),
+        mojo::MakeRequest(&system_network_context_ptr_), std::move(params));
 
     GURL url(kEmbedderUrl);
     content::WebContentsTester::For(signin_ui_web_contents())
@@ -92,9 +95,9 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     GetSigninPartitionManager()->SetClearStoragePartitionTaskForTesting(
         base::Bind(&SigninPartitionManagerTest::ClearStoragePartitionTask,
                    base::Unretained(this)));
-    GetSigninPartitionManager()
-        ->SetGetSystemURLRequestContextGetterTaskForTesting(base::BindRepeating(
-            &SigninPartitionManagerTest::GetSystemURLRequestContextGetter,
+    GetSigninPartitionManager()->SetGetSystemNetworkContextForTesting(
+        base::BindRepeating(
+            &SigninPartitionManagerTest::GetSystemNetworkContext,
             base::Unretained(this)));
   }
 
@@ -102,11 +105,6 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     signin_ui_web_contents_.reset();
 
     signin_browser_context_.reset();
-
-    // ChromeRenderViewHostTestHarness::TearDown() simulates shutdown and
-    // ~URLRequestContextGetter() assumes BrowserThreads are still up so this
-    // must happen first.
-    system_request_context_getter_ = nullptr;
 
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -149,8 +147,12 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     return partition_name;
   }
 
-  net::URLRequestContextGetter* GetSystemURLRequestContextGetter() {
-    return system_request_context_getter_.get();
+  net::URLRequestContext* GetSystemURLRequestContext() {
+    return system_network_context_->url_request_context();
+  }
+
+  network::mojom::NetworkContext* GetSystemNetworkContext() {
+    return system_network_context_.get();
   }
 
  private:
@@ -159,8 +161,8 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     pending_clear_tasks_.push_back({partition, std::move(clear_done_closure)});
   }
 
-  scoped_refptr<net::TestURLRequestContextGetter>
-      system_request_context_getter_;
+  std::unique_ptr<network::NetworkContext> system_network_context_;
+  network::mojom::NetworkContextPtr system_network_context_ptr_;
 
   std::unique_ptr<TestingProfile> signin_browser_context_;
 
@@ -222,7 +224,7 @@ TEST_F(SigninPartitionManagerTest, HttpAuthCacheTransferred) {
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(AddEntryToHttpAuthCache,
-                     base::RetainedRef(GetSystemURLRequestContextGetter())),
+                     base::Unretained(GetSystemURLRequestContext())),
       loop_prepare.QuitClosure());
   loop_prepare.Run();
 
