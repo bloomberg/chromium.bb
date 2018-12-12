@@ -55,8 +55,12 @@ class JSChecker {
   void GetIntImpl(const std::string& expression, int* result);
   void GetStringImpl(const std::string& expression, std::string* result);
 
-  content::WebContents* web_contents_;
+  content::WebContents* web_contents_ = nullptr;
 };
+
+// Helper method to create the JSChecker instance from the login/oobe
+// web-contents.
+JSChecker OobeJS();
 
 }  // namespace test
 }  // namespace chromeos

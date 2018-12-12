@@ -467,11 +467,12 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_SamlUI) {
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Saml flow UI expectations.
-  JsExpect("$('gaia-signin').classList.contains('full-width')");
-  JsExpect("!$('saml-notice-container').hidden");
+  test::OobeJS().ExpectTrue(
+      "$('gaia-signin').classList.contains('full-width')");
+  test::OobeJS().ExpectTrue("!$('saml-notice-container').hidden");
   std::string js = "$('saml-notice-message').textContent.indexOf('$Host') > -1";
   base::ReplaceSubstringsAfterOffset(&js, 0, "$Host", kIdPHost);
-  JsExpect(js);
+  test::OobeJS().ExpectTrue(js);
 
   SetupAuthFlowChangeListener();
 
@@ -487,7 +488,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_SamlUI) {
   } while (message != "\"GaiaLoaded\"");
 
   // Saml flow is gone.
-  JsExpect("!$('gaia-signin').classList.contains('full-width')");
+  test::OobeJS().ExpectTrue(
+      "!$('gaia-signin').classList.contains('full-width')");
 }
 
 // Tests the sign-in flow when the credentials passing API is used.
@@ -613,12 +615,12 @@ IN_PROC_BROWSER_TEST_F(SamlTest, DISABLED_ScrapedMultiple) {
 
   // Lands on confirm password screen.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  JsExpect("!$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
 
   // Entering an unknown password should go back to the confirm password screen.
   SendConfirmPassword("wrong_password");
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  JsExpect("!$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
 
   // Either scraped password should be able to sign-in.
   content::WindowedNotificationObserver session_start_waiter(
@@ -639,12 +641,12 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
 
   // Lands on confirm password screen with manual input state.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  JsExpect("$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectTrue("$('saml-confirm-password').manualInput");
   // Entering passwords that don't match will make us land again in the same
   // page.
   SetManualPasswords("Test1", "Test2");
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  JsExpect("$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectTrue("$('saml-confirm-password').manualInput");
 
   // Two matching passwords should let the user to sign in.
   content::WindowedNotificationObserver session_start_waiter(
@@ -725,15 +727,17 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_PasswordConfirmFlow) {
 
   // Lands on confirm password screen with no error message.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  JsExpect("!$('saml-confirm-password').manualInput");
-  JsExpect("!$('saml-confirm-password').$.passwordInput.isInvalid");
+  test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectTrue(
+      "!$('saml-confirm-password').$.passwordInput.isInvalid");
 
   // Enter an unknown password for the first time should go back to confirm
   // password screen with error message.
   SendConfirmPassword("wrong_password");
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  JsExpect("!$('saml-confirm-password').manualInput");
-  JsExpect("$('saml-confirm-password').$.passwordInput.isInvalid");
+  test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectTrue(
+      "$('saml-confirm-password').$.passwordInput.isInvalid");
 
   // Enter an unknown password 2nd time should go back fatal error message.
   SendConfirmPassword("wrong_password");
@@ -794,7 +798,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_NoticeUpdatedOnRedirect) {
       GetLoginUI()->GetWebContents(), js, &dummy));
 
   // Verify that the notice is visible.
-  JsExpect("!$('saml-notice-container').hidden");
+  test::OobeJS().ExpectTrue("!$('saml-notice-container').hidden");
 }
 
 // Verifies that when GAIA attempts to redirect to a SAML IdP served over http,
@@ -1325,7 +1329,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, NoSAML) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is allowed.
-  JsExpect(
+  test::OobeJS().ExpectTrue(
       "window.getComputedStyle(document.querySelector("
       "    '#pod-row .reauth-hint-container')).display == 'none'");
 }
@@ -1342,7 +1346,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLNoLimit) {
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLNoLimit) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is allowed.
-  JsExpect(
+  test::OobeJS().ExpectTrue(
       "window.getComputedStyle(document.querySelector("
       "    '#pod-row .reauth-hint-container')).display == 'none'");
 }
@@ -1359,7 +1363,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLZeroLimit) {
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLZeroLimit) {
   login_screen_load_observer_->Wait();
   // Verify that offline login is not allowed.
-  JsExpect(
+  test::OobeJS().ExpectTrue(
       "window.getComputedStyle(document.querySelector("
       "    '#pod-row .reauth-hint-container')).display != 'none'");
 }
@@ -1459,18 +1463,18 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
   WaitForSigninScreen();
 
   ShowSAMLInterstitial();
-  JsExpect("$('signin-frame').hidden == true");
-  JsExpect("$('offline-gaia').hidden == true");
-  JsExpect("$('saml-interstitial').hidden == false");
+  test::OobeJS().ExpectTrue("$('signin-frame').hidden == true");
+  test::OobeJS().ExpectTrue("$('offline-gaia').hidden == true");
+  test::OobeJS().ExpectTrue("$('saml-interstitial').hidden == false");
 
   // Click the "change account" link on the SAML interstitial page.
   ClickChangeAccountOnSAMLInterstitialPage();
 
   // Expects that only the gaia signin frame is visible and shown.
-  JsExpect("$('signin-frame').classList.contains('show')");
-  JsExpect("$('signin-frame').hidden == false");
-  JsExpect("$('offline-gaia').hidden == true");
-  JsExpect("$('saml-interstitial').hidden == true");
+  test::OobeJS().ExpectTrue("$('signin-frame').classList.contains('show')");
+  test::OobeJS().ExpectTrue("$('signin-frame').hidden == false");
+  test::OobeJS().ExpectTrue("$('offline-gaia').hidden == true");
+  test::OobeJS().ExpectTrue("$('saml-interstitial').hidden == true");
 }
 
 // Tests that clicking "Next" in the SAML interstitial page successfully

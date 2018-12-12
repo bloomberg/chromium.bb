@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, PRE_CheckPODScreenDefault) {
 // Check default IME initialization, when there is no IME configuration in
 // local_state.
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, CheckPODScreenDefault) {
-  js_checker().ExpectEQ("$('pod-row').pods.length", 2);
+  test::OobeJS().ExpectEQ("$('pod-row').pods.length", 2);
 
   std::vector<std::string> expected_input_methods;
   Append_en_US_InputMethods(&expected_input_methods);
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, PRE_CheckPODScreenWithUsers) {
 
 // TODO(crbug.com/602951): Test is flaky.
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, DISABLED_CheckPODScreenWithUsers) {
-  js_checker().ExpectEQ("$('pod-row').pods.length", 2);
+  test::OobeJS().ExpectEQ("$('pod-row').pods.length", 2);
 
   EXPECT_EQ(user_input_methods[0], input_method::InputMethodManager::Get()
                                        ->GetActiveIMEState()
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, DISABLED_CheckPODScreenWithUsers) {
                                         ->GetActiveInputMethodIds());
 
   FocusPODWaiter waiter;
-  js_checker().Evaluate("$('pod-row').focusPod($('pod-row').pods[1])");
+  test::OobeJS().Evaluate("$('pod-row').focusPod($('pod-row').pods[1])");
   waiter.Wait();
 
   EXPECT_EQ(user_input_methods[1], input_method::InputMethodManager::Get()
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
 
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
                        CheckPODScreenKeyboard) {
-  js_checker().ExpectEQ("$('pod-row').pods.length", 3);
+  test::OobeJS().ExpectEQ("$('pod-row').pods.length", 3);
 
   std::vector<std::string> expected_input_methods;
   // Owner input method.
@@ -268,12 +268,12 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
                                         ->GetActiveInputMethodIds());
 
   // Switch to Gaia.
-  js_checker().Evaluate("$('add-user-button').click()");
+  test::OobeJS().Evaluate("$('add-user-button').click()");
   OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   CheckGaiaKeyboard();
 
   // Switch back.
-  js_checker().Evaluate("$('gaia-signin').cancel()");
+  test::OobeJS().Evaluate("$('gaia-signin').cancel()");
   OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
 
   EXPECT_EQ(expected_input_methods, input_method::InputMethodManager::Get()

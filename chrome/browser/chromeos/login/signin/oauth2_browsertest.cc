@@ -279,8 +279,8 @@ class OAuth2Test : public OobeBaseTest {
         content::NotificationService::AllSources())
         .Wait();
 
-    JsExpect("!!document.querySelector('#account-picker')");
-    JsExpect("!!document.querySelector('#pod-row')");
+    test::OobeJS().ExpectTrue("!!document.querySelector('#account-picker')");
+    test::OobeJS().ExpectTrue("!!document.querySelector('#pod-row')");
 
     std::string account_id = PickAccountId(
         ProfileManager::GetPrimaryUserProfile(), kTestGaiaId, kTestEmail);
@@ -553,8 +553,8 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_MergeSession) {
       content::NotificationService::AllSources())
       .Wait();
 
-  JsExpect("!!document.querySelector('#account-picker')");
-  JsExpect("!!document.querySelector('#pod-row')");
+  test::OobeJS().ExpectTrue("!!document.querySelector('#account-picker')");
+  test::OobeJS().ExpectTrue("!!document.querySelector('#pod-row')");
 
   std::string account_id = PickAccountId(profile(), kTestGaiaId, kTestEmail);
   EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),

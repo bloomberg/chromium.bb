@@ -125,8 +125,8 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   }
 
   void ClosePasswordChangeScreen() {
-    js_checker().Evaluate(JSElement(kAdPasswordChangeId, kCloseButtonId) +
-                          ".click()");
+    test::OobeJS().Evaluate(JSElement(kAdPasswordChangeId, kCloseButtonId) +
+                            ".click()");
   }
 
   // Checks if Active Directory login is visible.
@@ -134,18 +134,23 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_GAIA_SIGNIN);
     screen_waiter.Wait();
     // Checks if Gaia signin is hidden.
-    JSExpect("document.querySelector('#signin-frame').hidden");
+    test::OobeJS().ExpectTrue("document.querySelector('#signin-frame').hidden");
 
     // Checks if Active Directory signin is visible.
-    JSExpect("!document.querySelector('#offline-ad-auth').hidden");
-    JSExpect(JSElement(kAdOfflineAuthId, kAdMachineInput) + ".hidden");
-    JSExpect(JSElement(kAdOfflineAuthId, kAdMoreOptionsButton) + ".hidden");
-    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdUserInput) + ".hidden");
-    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".hidden");
+    test::OobeJS().ExpectTrue(
+        "!document.querySelector('#offline-ad-auth').hidden");
+    test::OobeJS().ExpectTrue(JSElement(kAdOfflineAuthId, kAdMachineInput) +
+                              ".hidden");
+    test::OobeJS().ExpectTrue(
+        JSElement(kAdOfflineAuthId, kAdMoreOptionsButton) + ".hidden");
+    test::OobeJS().ExpectTrue("!" + JSElement(kAdOfflineAuthId, kAdUserInput) +
+                              ".hidden");
+    test::OobeJS().ExpectTrue(
+        "!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".hidden");
 
     std::string autocomplete_domain_ui;
     base::TrimString(
-        js_checker().GetString(
+        test::OobeJS().GetString(
             JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) + ".innerText"),
         base::kWhitespaceASCII, &autocomplete_domain_ui);
     // Checks if realm is set to autocomplete username.
@@ -157,53 +162,61 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   // Checks if Active Directory password change screen is shown.
   void TestPasswordChangeVisible() {
     // Checks if Gaia signin is hidden.
-    JSExpect("document.querySelector('#signin-frame').hidden");
+    test::OobeJS().ExpectTrue("document.querySelector('#signin-frame').hidden");
     // Checks if Active Directory signin is visible.
-    JSExpect("!document.querySelector('#ad-password-change').hidden");
-    JSExpect(JSElement(kAdPasswordChangeId, kAdAnimatedPages) +
-             ".selected == 0");
-    JSExpect("!" + JSElement(kAdPasswordChangeId, kCloseButtonId) + ".hidden");
+    test::OobeJS().ExpectTrue(
+        "!document.querySelector('#ad-password-change').hidden");
+    test::OobeJS().ExpectTrue(JSElement(kAdPasswordChangeId, kAdAnimatedPages) +
+                              ".selected == 0");
+    test::OobeJS().ExpectTrue(
+        "!" + JSElement(kAdPasswordChangeId, kCloseButtonId) + ".hidden");
   }
 
   // Checks if user input is marked as invalid.
   void TestUserError() {
     TestLoginVisible();
-    JSExpect(JSElement(kAdOfflineAuthId, kAdUserInput) + ".invalid");
+    test::OobeJS().ExpectTrue(JSElement(kAdOfflineAuthId, kAdUserInput) +
+                              ".invalid");
   }
 
   void SetUserInput(const std::string& value) {
-    js_checker().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdUserInput) +
-                              ".value='" + value + "'");
+    test::OobeJS().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdUserInput) +
+                                ".value='" + value + "'");
   }
 
   void TestUserInput(const std::string& value) {
-    js_checker().ExpectEQ(JSElement(kAdOfflineAuthId, kAdUserInput) + ".value",
-                          value);
+    test::OobeJS().ExpectEQ(
+        JSElement(kAdOfflineAuthId, kAdUserInput) + ".value", value);
   }
 
   // Checks if password input is marked as invalid.
   void TestPasswordError() {
     TestLoginVisible();
-    JSExpect(JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".invalid");
+    test::OobeJS().ExpectTrue(JSElement(kAdOfflineAuthId, kAdPasswordInput) +
+                              ".invalid");
   }
 
   // Checks that machine, password and user inputs are valid.
   void TestNoError() {
     TestLoginVisible();
-    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdMachineInput) + ".invalid");
-    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdUserInput) + ".invalid");
-    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".invalid");
+    test::OobeJS().ExpectTrue(
+        "!" + JSElement(kAdOfflineAuthId, kAdMachineInput) + ".invalid");
+    test::OobeJS().ExpectTrue("!" + JSElement(kAdOfflineAuthId, kAdUserInput) +
+                              ".invalid");
+    test::OobeJS().ExpectTrue(
+        "!" + JSElement(kAdOfflineAuthId, kAdPasswordInput) + ".invalid");
   }
 
   // Checks if autocomplete domain is visible for the user input.
   void TestDomainVisible() {
-    JSExpect("!" + JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) +
-             ".hidden");
+    test::OobeJS().ExpectTrue(
+        "!" + JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) + ".hidden");
   }
 
   // Checks if autocomplete domain is hidden for the user input.
   void TestDomainHidden() {
-    JSExpect(JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) + ".hidden");
+    test::OobeJS().ExpectTrue(
+        JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) + ".hidden");
   }
 
   // Checks if Active Directory password change screen is shown. Also checks if
@@ -216,19 +229,19 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
           JSElement(kAdPasswordChangeId, element) + ".isInvalid";
       if (element != invalid_element)
         js_assertion = "!" + js_assertion;
-      JSExpect(js_assertion);
+      test::OobeJS().ExpectTrue(js_assertion);
     }
   }
 
   // Sets username and password for the Active Directory login and submits it.
   void SubmitActiveDirectoryCredentials(const std::string& username,
                                         const std::string& password) {
-    js_checker().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdUserInput) +
-                              ".value='" + username + "'");
-    js_checker().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdPasswordInput) +
-                              ".value='" + password + "'");
-    js_checker().Evaluate(JSElement(kAdOfflineAuthId, kAdCredsButton) +
-                          ".click()");
+    test::OobeJS().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdUserInput) +
+                                ".value='" + username + "'");
+    test::OobeJS().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdPasswordInput) +
+                                ".value='" + password + "'");
+    test::OobeJS().Evaluate(JSElement(kAdOfflineAuthId, kAdCredsButton) +
+                            ".click()");
   }
 
   // Sets username and password for the Active Directory login and submits it.
@@ -236,21 +249,21 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
       const std::string& old_password,
       const std::string& new_password1,
       const std::string& new_password2) {
-    js_checker().ExecuteAsync(
+    test::OobeJS().ExecuteAsync(
         JSElement(kAdPasswordChangeId, kAdOldPasswordInput) + ".value='" +
         old_password + "'");
-    js_checker().ExecuteAsync(
+    test::OobeJS().ExecuteAsync(
         JSElement(kAdPasswordChangeId, kAdNewPassword1Input) + ".value='" +
         new_password1 + "'");
-    js_checker().ExecuteAsync(
+    test::OobeJS().ExecuteAsync(
         JSElement(kAdPasswordChangeId, kAdNewPassword2Input) + ".value='" +
         new_password2 + "'");
-    js_checker().Evaluate(
+    test::OobeJS().Evaluate(
         JSElement(kAdPasswordChangeId, kAdPasswordChangeButton) + ".click()");
   }
 
   void SetupActiveDirectoryJSNotifications() {
-    js_checker().Evaluate(
+    test::OobeJS().Evaluate(
         "var testInvalidateAd = login.GaiaSigninScreen.invalidateAd;"
         "login.GaiaSigninScreen.invalidateAd = function(user, errorState) {"
         "  testInvalidateAd(user, errorState);"

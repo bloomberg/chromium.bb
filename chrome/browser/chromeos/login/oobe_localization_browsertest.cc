@@ -233,7 +233,6 @@ class OobeLocalizationTest
 
  private:
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
-  test::JSChecker checker;
 
   DISALLOW_COPY_AND_ASSIGN(OobeLocalizationTest);
 };
@@ -264,7 +263,7 @@ bool OobeLocalizationTest::VerifyInitialOptions(const char* select_id,
       "  return correct;\n"
       "})()",
       GetGetSelectStatement(select_id).c_str(), values, check_separator);
-  const bool execute_status = checker.GetBool(expression);
+  const bool execute_status = test::OobeJS().GetBool(expression);
   EXPECT_TRUE(execute_status) << expression;
   return execute_status;
 }
@@ -283,7 +282,7 @@ bool OobeLocalizationTest::VerifyOptionExists(const char* select_id,
       "  return false;\n"
       "})()",
       GetGetSelectStatement(select_id).c_str(), value);
-  const bool execute_status = checker.GetBool(expression);
+  const bool execute_status = test::OobeJS().GetBool(expression);
   EXPECT_TRUE(execute_status) << expression;
   return execute_status;
 }
@@ -331,7 +330,7 @@ std::string OobeLocalizationTest::DumpOptions(const char* select_id) {
       "  return result;\n"
       "})()\n",
       GetGetSelectStatement(select_id).c_str(), select_id);
-  return checker.GetString(expression);
+  return test::OobeJS().GetString(expression);
 }
 
 std::string TranslateXKB2Extension(const std::string& src) {
@@ -388,11 +387,6 @@ void OobeLocalizationTest::RunLocalizationTest() {
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       LoginDisplayHost::default_host()->GetOobeUI()->web_ui()->GetWebContents(),
       waiting_script, &done));
-
-  checker.set_web_contents(LoginDisplayHost::default_host()
-                               ->GetOobeUI()
-                               ->web_ui()
-                               ->GetWebContents());
 
   if (!VerifyInitialOptions(kLanguageSelect, expected_locale.c_str(), true)) {
     LOG(ERROR) << "Actual value of " << kLanguageSelect << ":\n"

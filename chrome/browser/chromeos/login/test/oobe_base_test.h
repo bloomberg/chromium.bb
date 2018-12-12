@@ -77,11 +77,6 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   base::Closure SimulateNetworkOnlineClosure();
   base::Closure SimulateNetworkPortalClosure();
 
-  // Checks JavaScript |expression| in login screen.
-  void JsExpect(const std::string& expression);
-
-  test::JSChecker& JS() { return js_checker_; }
-
   bool initialize_fake_merge_session() {
     return initialize_fake_merge_session_;
   }
@@ -124,7 +119,6 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   HTTPSForwarder gaia_https_forwarder_;
   std::string gaia_frame_parent_;
   bool initialize_fake_merge_session_;
-  test::JSChecker js_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeBaseTest);
 };

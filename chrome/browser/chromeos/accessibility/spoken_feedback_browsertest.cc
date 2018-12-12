@@ -784,7 +784,7 @@ IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
 
   // We expect to be in the language select dropdown for this test to work,
   // so make sure that's the case.
-  js_checker().ExecuteAsync("$('language-select').focus()");
+  test::OobeJS().ExecuteAsync("$('language-select').focus()");
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
   ASSERT_TRUE(speech_monitor_.SkipChromeVoxEnabledMessage());
   // There's no guarantee that ChromeVox speaks anything when injected after
