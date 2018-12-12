@@ -123,7 +123,7 @@ class DeviceIDTest : public OobeBaseTest,
   void SignInOffline(const std::string& user_id, const std::string& password) {
     WaitForSigninScreen();
 
-    JS().ExecuteAsync(base::StringPrintf(
+    test::OobeJS().ExecuteAsync(base::StringPrintf(
         "chrome.send('authenticateUser', ['%s', '%s', false])", user_id.c_str(),
         password.c_str()));
     WaitForSessionStart();
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_PRE_NewUsers) {
 // Add the second user.
 IN_PROC_BROWSER_TEST_F(DeviceIDTest, PRE_PRE_NewUsers) {
   WaitForSigninScreen();
-  JS().ExecuteAsync("chrome.send('showAddUser')");
+  test::OobeJS().ExecuteAsync("chrome.send('showAddUser')");
   SignInOnline(kSecondUserEmail, kSecondUserPassword, kSecondUserRefreshToken1,
                kSecondUserGaiaId);
   CheckDeviceIDIsConsistent(AccountId::FromUserEmail(kSecondUserEmail),

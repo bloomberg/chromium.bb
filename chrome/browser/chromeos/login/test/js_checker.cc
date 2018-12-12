@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -22,7 +23,7 @@ std::string WrapSend(const std::string& expression) {
 namespace chromeos {
 namespace test {
 
-JSChecker::JSChecker() : web_contents_(NULL) {}
+JSChecker::JSChecker() = default;
 
 JSChecker::JSChecker(content::WebContents* web_contents)
     : web_contents_(web_contents) {}
@@ -108,6 +109,10 @@ void JSChecker::GetStringImpl(const std::string& expression,
   CHECK(web_contents_);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents_, WrapSend(expression), result));
+}
+
+JSChecker OobeJS() {
+  return JSChecker(LoginDisplayHost::default_host()->GetOobeWebContents());
 }
 
 }  // namespace test

@@ -35,17 +35,13 @@ class JsConditionWaiter {
  public:
   enum class Options {
     kNone,
-    kSatisifyIfOobeDestroyed,
+    kSatisfyIfOobeDestroyed,
   };
 
   // If |options| is true, we are waiting for the end condition, so it is
   // automatically fullfilled if LoginDisplayHost is already destroyed.
-  JsConditionWaiter(const test::JSChecker& js_checker,
-                    const std::string& js_condition,
-                    Options options)
-      : js_checker_(js_checker),
-        js_condition_(js_condition),
-        options_(options) {}
+  JsConditionWaiter(const std::string& js_condition, Options options)
+      : js_condition_(js_condition), options_(options) {}
 
   ~JsConditionWaiter() = default;
 
@@ -60,9 +56,9 @@ class JsConditionWaiter {
 
  private:
   bool IsConditionFulfilled() {
-    return (options_ == Options::kSatisifyIfOobeDestroyed &&
+    return (options_ == Options::kSatisfyIfOobeDestroyed &&
             !LoginDisplayHost::default_host()) ||
-           js_checker_.GetBool(js_condition_);
+           test::OobeJS().GetBool(js_condition_);
   }
 
   void CheckCondition() {
@@ -72,7 +68,6 @@ class JsConditionWaiter {
     }
   }
 
-  test::JSChecker js_checker_;
   const std::string js_condition_;
   const Options options_;
 
@@ -209,8 +204,7 @@ class OobeInteractiveUITest
         content::NotificationService::AllSources());
     observer.Wait();
 
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id == 'connect'",
+    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'connect'",
                       JsConditionWaiter::Options::kNone)
         .Wait();
   }
@@ -222,12 +216,13 @@ class OobeInteractiveUITest
     constexpr int kNumberOfVideosPlaying = 0;
 #endif
 
-    js_checker_.ExpectTrue("!$('oobe-welcome-md').$.welcomeScreen.hidden");
-    js_checker_.ExpectTrue("$('oobe-welcome-md').$.accessibilityScreen.hidden");
-    js_checker_.ExpectTrue("$('oobe-welcome-md').$.languageScreen.hidden");
-    js_checker_.ExpectTrue("$('oobe-welcome-md').$.timezoneScreen.hidden");
+    test::OobeJS().ExpectTrue("!$('oobe-welcome-md').$.welcomeScreen.hidden");
+    test::OobeJS().ExpectTrue(
+        "$('oobe-welcome-md').$.accessibilityScreen.hidden");
+    test::OobeJS().ExpectTrue("$('oobe-welcome-md').$.languageScreen.hidden");
+    test::OobeJS().ExpectTrue("$('oobe-welcome-md').$.timezoneScreen.hidden");
 
-    js_checker_.ExpectEQ(
+    test::OobeJS().ExpectEQ(
         "(() => {let cnt = 0; for (let v of "
         "$('oobe-welcome-md').$.welcomeScreen.root.querySelectorAll('video')) "
         "{  cnt += v.paused ? 0 : 1; }; return cnt; })()",
@@ -235,13 +230,12 @@ class OobeInteractiveUITest
   }
 
   void TapWelcomeNext() {
-    js_checker_.ExecuteAsync(
+    test::OobeJS().ExecuteAsync(
         "$('oobe-welcome-md').$.welcomeScreen.$.welcomeNextButton.click()");
   }
 
   void WaitForNetworkSelectionScreen() {
     JsConditionWaiter(
-        js_checker_,
         "Oobe.getInstance().currentScreen.id == 'network-selection'",
         JsConditionWaiter::Options::kNone)
         .Wait();
@@ -250,20 +244,19 @@ class OobeInteractiveUITest
   }
 
   void RunNetworkSelectionScreenChecks() {
-    js_checker_.ExpectTrue(
+    test::OobeJS().ExpectTrue(
         "!$('oobe-network-md').$.networkDialog.querySelector('oobe-next-button'"
         ").disabled");
   }
 
   void TapNetworkSelectionNext() {
-    js_checker_.ExecuteAsync(
+    test::OobeJS().ExecuteAsync(
         "$('oobe-network-md').$.networkDialog.querySelector('oobe-next-button')"
         ".click()");
   }
 
   void WaitForEulaScreen() {
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id == 'eula'",
+    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'eula'",
                       JsConditionWaiter::Options::kNone)
         .Wait();
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'eula' screen.";
@@ -271,23 +264,21 @@ class OobeInteractiveUITest
 
   void RunEulaScreenChecks() {
     // Wait for actual EULA to appear.
-    JsConditionWaiter(js_checker_, "!$('oobe-eula-md').$.eulaDialog.hidden",
+    JsConditionWaiter("!$('oobe-eula-md').$.eulaDialog.hidden",
                       JsConditionWaiter::Options::kNone)
         .Wait();
-    js_checker_.ExpectTrue("!$('oobe-eula-md').$.acceptButton.disabled");
+    test::OobeJS().ExpectTrue("!$('oobe-eula-md').$.acceptButton.disabled");
   }
 
   void TapEulaAccept() {
-    js_checker_.ExecuteAsync("$('oobe-eula-md').$.acceptButton.click();");
+    test::OobeJS().ExecuteAsync("$('oobe-eula-md').$.acceptButton.click();");
   }
 
   void WaitForUpdateScreen() {
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id == 'update'",
+    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'update'",
                       JsConditionWaiter::Options::kNone)
         .Wait();
-    JsConditionWaiter(js_checker_, "!$('update').hidden",
-                      JsConditionWaiter::Options::kNone)
+    JsConditionWaiter("!$('update').hidden", JsConditionWaiter::Options::kNone)
         .Wait();
 
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'update' screen.";
@@ -303,8 +294,7 @@ class OobeInteractiveUITest
   }
 
   void WaitForGaiaSignInScreen() {
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id == 'gaia-signin'",
+    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'gaia-signin'",
                       JsConditionWaiter::Options::kNone)
         .Wait();
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'gaia-signin' screen.";
@@ -322,8 +312,7 @@ class OobeInteractiveUITest
 
   void WaitForSyncConsentScreen() {
     LOG(INFO) << "OobeInteractiveUITest: Waiting for 'sync-consent' screen.";
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id == 'sync-consent'",
+    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'sync-consent'",
                       JsConditionWaiter::Options::kNone)
         .Wait();
   }
@@ -337,9 +326,8 @@ class OobeInteractiveUITest
     screen->OnStateChanged(nullptr);
     LOG(INFO) << "OobeInteractiveUITest: Waiting for 'sync-consent' screen "
                  "to close.";
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id != 'sync-consent'",
-                      JsConditionWaiter::Options::kSatisifyIfOobeDestroyed)
+    JsConditionWaiter("Oobe.getInstance().currentScreen.id != 'sync-consent'",
+                      JsConditionWaiter::Options::kSatisfyIfOobeDestroyed)
         .Wait();
   }
 
@@ -347,77 +335,74 @@ class OobeInteractiveUITest
     LOG(INFO)
         << "OobeInteractiveUITest: Waiting for 'fingerprint-setup' screen.";
     JsConditionWaiter(
-        js_checker_,
         "Oobe.getInstance().currentScreen.id == 'fingerprint-setup'",
         JsConditionWaiter::Options::kNone)
         .Wait();
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to show.";
-    JsConditionWaiter(js_checker_, "!$('fingerprint-setup').hidden",
+    JsConditionWaiter("!$('fingerprint-setup').hidden",
                       JsConditionWaiter::Options::kNone)
         .Wait();
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to initializes.";
-    JsConditionWaiter(js_checker_, "!$('fingerprint-setup-impl').hidden",
+    JsConditionWaiter("!$('fingerprint-setup-impl').hidden",
                       JsConditionWaiter::Options::kNone)
         .Wait();
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to show setupFingerprint.";
-    JsConditionWaiter(js_checker_,
-                      "!$('fingerprint-setup-impl').$.setupFingerprint.hidden",
+    JsConditionWaiter("!$('fingerprint-setup-impl').$.setupFingerprint.hidden",
                       JsConditionWaiter::Options::kNone)
         .Wait();
   }
 
   void RunFingerprintScreenChecks() {
-    js_checker_.ExpectTrue("!$('fingerprint-setup').hidden");
-    js_checker_.ExpectTrue("!$('fingerprint-setup-impl').hidden");
-    js_checker_.ExpectTrue(
+    test::OobeJS().ExpectTrue("!$('fingerprint-setup').hidden");
+    test::OobeJS().ExpectTrue("!$('fingerprint-setup-impl').hidden");
+    test::OobeJS().ExpectTrue(
         "!$('fingerprint-setup-impl').$.setupFingerprint.hidden");
-    js_checker_.ExecuteAsync(
+    test::OobeJS().ExecuteAsync(
         "$('fingerprint-setup-impl').$.showSensorLocationButton.click()");
-    js_checker_.ExpectTrue(
+    test::OobeJS().ExpectTrue(
         "$('fingerprint-setup-impl').$.setupFingerprint.hidden");
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup "
                  "to switch to placeFinger.";
-    JsConditionWaiter(js_checker_,
-                      "!$('fingerprint-setup-impl').$.placeFinger.hidden",
+    JsConditionWaiter("!$('fingerprint-setup-impl').$.placeFinger.hidden",
                       JsConditionWaiter::Options::kNone)
         .Wait();
   }
 
   void ExitFingerprintPinSetupScreen() {
-    js_checker_.ExpectTrue("!$('fingerprint-setup-impl').$.placeFinger.hidden");
+    test::OobeJS().ExpectTrue(
+        "!$('fingerprint-setup-impl').$.placeFinger.hidden");
     // This might be the last step in flow. Synchronious execute gets stuck as
     // WebContents may be destroyed in the process. So it may never return.
     // So we use ExecuteAsync() here.
-    js_checker_.ExecuteAsync(
+    test::OobeJS().ExecuteAsync(
         "$('fingerprint-setup-impl').$.setupFingerprintLater.click()");
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to close.";
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id !="
-                      "'fingerprint-setup'",
-                      JsConditionWaiter::Options::kSatisifyIfOobeDestroyed)
+    JsConditionWaiter(
+        "Oobe.getInstance().currentScreen.id !="
+        "'fingerprint-setup'",
+        JsConditionWaiter::Options::kSatisfyIfOobeDestroyed)
         .Wait();
     LOG(INFO) << "OobeInteractiveUITest: 'fingerprint-setup' screen done.";
   }
 
   void WaitForDiscoverScreen() {
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id == 'discover'",
+    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'discover'",
                       JsConditionWaiter::Options::kNone)
         .Wait();
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'discover' screen.";
   }
 
   void RunDiscoverScreenChecks() {
-    js_checker_.ExpectTrue("!$('discover').hidden");
-    js_checker_.ExpectTrue("!$('discover-impl').hidden");
-    js_checker_.ExpectTrue(
+    test::OobeJS().ExpectTrue("!$('discover').hidden");
+    test::OobeJS().ExpectTrue("!$('discover-impl').hidden");
+    test::OobeJS().ExpectTrue(
         "!$('discover-impl').root.querySelector('discover-pin-setup-module')."
         "hidden");
-    js_checker_.ExpectTrue(
+    test::OobeJS().ExpectTrue(
         "!$('discover-impl').root.querySelector('discover-pin-setup-module').$."
         "setup.hidden");
     EXPECT_TRUE(quick_unlock_private_get_auth_token_password_.has_value());
@@ -429,19 +414,17 @@ class OobeInteractiveUITest
     // This might be the last step in flow. Synchronious execute gets stuck as
     // WebContents may be destroyed in the process. So it may never return.
     // So we use ExecuteAsync() here.
-    js_checker_.ExecuteAsync(
+    test::OobeJS().ExecuteAsync(
         "$('discover-impl').root.querySelector('discover-pin-setup-module')."
         "$.setupSkipButton.click()");
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id != 'discover'",
-                      JsConditionWaiter::Options::kSatisifyIfOobeDestroyed)
+    JsConditionWaiter("Oobe.getInstance().currentScreen.id != 'discover'",
+                      JsConditionWaiter::Options::kSatisfyIfOobeDestroyed)
         .Wait();
     LOG(INFO) << "OobeInteractiveUITest: 'discover' screen done.";
   }
 
   void WaitForUserImageScreen() {
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id == 'user-image'",
+    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'user-image'",
                       JsConditionWaiter::Options::kNone)
         .Wait();
 

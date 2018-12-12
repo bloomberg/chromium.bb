@@ -225,10 +225,6 @@ std::string LoginManagerTest::GetGaiaIDForUserID(const std::string& user_id) {
   return "gaia-id-" + user_id;
 }
 
-void LoginManagerTest::JSExpect(const std::string& expression) {
-  js_checker_.ExpectTrue(expression);
-}
-
 void LoginManagerTest::InitializeWebContents() {
   LoginDisplayHost* host = LoginDisplayHost::default_host();
   EXPECT_TRUE(host != NULL);
@@ -236,7 +232,6 @@ void LoginManagerTest::InitializeWebContents() {
   content::WebContents* web_contents = host->GetOobeWebContents();
   EXPECT_TRUE(web_contents != NULL);
   set_web_contents(web_contents);
-  js_checker_.set_web_contents(web_contents);
 }
 
 }  // namespace chromeos

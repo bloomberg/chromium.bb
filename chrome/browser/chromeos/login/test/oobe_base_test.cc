@@ -114,9 +114,6 @@ void OobeBaseTest::SetUpOnMainThread() {
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()));
 
-  js_checker_.set_web_contents(
-      LoginDisplayHost::default_host()->GetOobeWebContents());
-
   test::UserSessionManagerTestApi session_manager_test_api(
       UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
@@ -208,10 +205,6 @@ base::Closure OobeBaseTest::SimulateNetworkPortalClosure() {
                     base::Unretained(this));
 }
 
-void OobeBaseTest::JsExpect(const std::string& expression) {
-  JS().ExpectTrue(expression);
-}
-
 content::WebUI* OobeBaseTest::GetLoginUI() {
   return LoginDisplayHost::default_host()->GetOobeUI()->web_ui();
 }
@@ -243,16 +236,17 @@ void OobeBaseTest::WaitForGaiaPageEvent(const std::string& event) {
   // Starts listening to message before executing the JS code that generates
   // the message below.
   content::DOMMessageQueue message_queue;
-
-  JS().Evaluate(
-      "(function() {"
-      "  var authenticator = $('gaia-signin').gaiaAuthHost_;"
-      "  var f = function() {"
-      "    authenticator.removeEventListener('" + event + "', f);"
-      "    window.domAutomationController.send('Done');"
-      "  };"
-      "  authenticator.addEventListener('" + event + "', f);"
-      "})();");
+  std::string js =
+      R"((function() {
+            var authenticator = $('gaia-signin').gaiaAuthHost_;
+            var f = function() {
+              authenticator.removeEventListener('$Event', f);
+              window.domAutomationController.send('Done');
+            };
+            authenticator.addEventListener('$Event', f);
+          })();)";
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$Event", event);
+  test::OobeJS().Evaluate(js);
 
   std::string message;
   do {
@@ -271,8 +265,9 @@ void OobeBaseTest::WaitForSigninScreen() {
 }
 
 void OobeBaseTest::ExecuteJsInSigninFrame(const std::string& js) {
-  content::RenderFrameHost* frame =
-      signin::GetAuthFrame(GetLoginUI()->GetWebContents(), gaia_frame_parent_);
+  content::RenderFrameHost* frame = signin::GetAuthFrame(
+      LoginDisplayHost::default_host()->GetOobeWebContents(),
+      gaia_frame_parent_);
   ASSERT_TRUE(content::ExecuteScript(frame, js));
 }
 

@@ -178,19 +178,21 @@ class WebviewLoginTest : public OobeBaseTest {
   void ExpectIdentifierPage() {
     // First page: no back button, no close button, refresh button, #identifier
     // input field.
-    JsExpect("!$('gaia-navigation').backVisible");
-    JsExpect("!$('gaia-navigation').closeVisible");
-    JsExpect("$('gaia-navigation').refreshVisible");
-    JsExpect("$('signin-frame').src.indexOf('#identifier') != -1");
+    test::OobeJS().ExpectTrue("!$('gaia-navigation').backVisible");
+    test::OobeJS().ExpectTrue("!$('gaia-navigation').closeVisible");
+    test::OobeJS().ExpectTrue("$('gaia-navigation').refreshVisible");
+    test::OobeJS().ExpectTrue(
+        "$('signin-frame').src.indexOf('#identifier') != -1");
   }
 
   void ExpectPasswordPage() {
     // Second page: back button, close button, no refresh button,
     // #challengepassword input field.
-    JsExpect("$('gaia-navigation').backVisible");
-    JsExpect("$('gaia-navigation').closeVisible");
-    JsExpect("!$('gaia-navigation').refreshVisible");
-    JsExpect("$('signin-frame').src.indexOf('#challengepassword') != -1");
+    test::OobeJS().ExpectTrue("$('gaia-navigation').backVisible");
+    test::OobeJS().ExpectTrue("$('gaia-navigation').closeVisible");
+    test::OobeJS().ExpectTrue("!$('gaia-navigation').refreshVisible");
+    test::OobeJS().ExpectTrue(
+        "$('signin-frame').src.indexOf('#challengepassword') != -1");
   }
 
   bool WebViewVisited(content::BrowserContext* browser_context,
@@ -271,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
   ExpectPasswordPage();
 
   // Click back to identifier page.
-  JS().Evaluate("$('gaia-navigation').$.backButton.click();");
+  test::OobeJS().Evaluate("$('gaia-navigation').$.backButton.click();");
   WaitForGaiaPageBackButtonUpdate();
   ExpectIdentifierPage();
 
@@ -298,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowNewUser) {
 
   std::string frame_url = "$('gaia-signin').gaiaAuthHost_.reloadUrl_";
   // New users are allowed.
-  JsExpect(frame_url + ".search('flow=nosignup') == -1");
+  test::OobeJS().ExpectTrue(frame_url + ".search('flow=nosignup') == -1");
 
   // Disallow new users - we also need to set a whitelist due to weird logic.
   settings_helper_.Set(kAccountsPrefUsers, base::ListValue());
@@ -306,12 +308,12 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowNewUser) {
   WaitForGaiaPageReload();
 
   // flow=nosignup indicates that user creation is not allowed.
-  JsExpect(frame_url + ".search('flow=nosignup') != -1");
+  test::OobeJS().ExpectTrue(frame_url + ".search('flow=nosignup') != -1");
 }
 
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, EmailPrefill) {
   WaitForGaiaPageLoad();
-  JS().ExecuteAsync("Oobe.showSigninUI('user@example.com')");
+  test::OobeJS().ExecuteAsync("Oobe.showSigninUI('user@example.com')");
   WaitForGaiaPageReload();
   EXPECT_EQ(fake_gaia_->prefilled_email(), "user@example.com");
 }
@@ -327,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
 
   std::string signin_frame_partition_name_1 =
-      JS().GetString("$('signin-frame').partition");
+      test::OobeJS().GetString("$('signin-frame').partition");
   content::StoragePartition* signin_frame_partition_1 =
       login::GetSigninPartition();
 
@@ -344,14 +346,14 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
 
   // Press the back button at a sign-in screen without pre-existing users to
   // start a new sign-in attempt.
-  JS().Evaluate("$('signin-back-button').fire('tap')");
+  test::OobeJS().Evaluate("$('signin-back-button').fire('tap')");
   WaitForGaiaPageBackButtonUpdate();
   // Expect that we got back to the identifier page, as there are no known users
   // so the sign-in screen will not display user pods.
   ExpectIdentifierPage();
 
   std::string signin_frame_partition_name_2 =
-      JS().GetString("$('signin-frame').partition");
+      test::OobeJS().GetString("$('signin-frame').partition");
   content::StoragePartition* signin_frame_partition_2 =
       login::GetSigninPartition();
 
@@ -503,8 +505,8 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
     else
       navigation_observer.WatchExistingWebContents();
 
-    JS().Evaluate(base::StringPrintf("$('%s').src='%s'", webview_id.c_str(),
-                                     url.spec().c_str()));
+    test::OobeJS().Evaluate(base::StringPrintf(
+        "$('%s').src='%s'", webview_id.c_str(), url.spec().c_str()));
 
     navigation_observer.Wait();
 
@@ -1036,7 +1038,7 @@ IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, DISABLED_ProxyAuthTransfer) {
   // start a new sign-in attempt.
   // This will re-load gaia, rotating the StoragePartition. The new
   // StoragePartition must also have the proxy auth details.
-  JS().Evaluate("$('signin-back-button').fire('tap')");
+  test::OobeJS().Evaluate("$('signin-back-button').fire('tap')");
   WaitForGaiaPageBackButtonUpdate();
   // Expect that we got back to the identifier page, as there are no known users
   // so the sign-in screen will not display user pods.

@@ -101,7 +101,7 @@ class EulaTest : public OobeBaseTest {
     // would not hit the embedded test server.
     const GURL fake_eula_url =
         embedded_test_server()->base_url().Resolve(kFakeOnlineEulaPath);
-    JS().Evaluate(
+    test::OobeJS().Evaluate(
         base::StringPrintf("loadTimeData.overrideValues({eulaOnlineUrl: '%s'});"
                            "Oobe.updateLocalizedContent();",
                            fake_eula_url.spec().c_str()));
@@ -132,7 +132,7 @@ class EulaTest : public OobeBaseTest {
   content::WebContents* FindEulaContents() {
     // Tag the Eula webview in use with a unique name.
     constexpr char kUniqueEulaWebviewName[] = "unique-eula-webview-name";
-    JS().Evaluate(base::StringPrintf(
+    test::OobeJS().Evaluate(base::StringPrintf(
         "(function(){"
         "  var eulaWebView = $('oobe-eula-md').$.crosEulaFrame;"
         "  eulaWebView.name = '%s';"

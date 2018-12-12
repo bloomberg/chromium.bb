@@ -65,13 +65,7 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   // Add user with |user_id| to session.
   void AddUser(const AccountId& user_id);
 
-  // Executes given JS |expression| in |web_contents_| and checks
-  // that it is true.
-  void JSExpect(const std::string& expression);
-
   content::WebContents* web_contents() { return web_contents_; }
-
-  test::JSChecker& js_checker() { return js_checker_; }
 
   static std::string GetGaiaIDForUserID(const std::string& user_id);
 
@@ -103,7 +97,6 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   const bool should_launch_browser_;
   const bool should_initialize_webui_;
   content::WebContents* web_contents_;
-  test::JSChecker js_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerTest);
 };

@@ -140,8 +140,9 @@ class LoginTest : public LoginManagerTest {
         " /deep/ #button')";
 
     content::DOMMessageQueue message_queue;
-    JSExpect("!document.querySelector('#offline-gaia').hidden");
-    JSExpect("document.querySelector('#signin-frame').hidden");
+    test::OobeJS().ExpectTrue(
+        "!document.querySelector('#offline-gaia').hidden");
+    test::OobeJS().ExpectTrue("document.querySelector('#signin-frame').hidden");
     const std::string js =
         animated_pages +
         ".addEventListener('neon-animation-finish',"

@@ -194,11 +194,11 @@ class DemoSetupTest : public LoginManagerTest {
     const std::string query = base::StrCat(
         {"!!document.querySelector('#", screen_name,
          "') && !document.querySelector('#", screen_name, "').hidden"});
-    return js_checker().GetBool(query);
+    return test::OobeJS().GetBool(query);
   }
 
   bool IsConfirmationDialogShown() {
-    return !js_checker().GetBool(kIsConfirmationDialogHiddenQuery);
+    return !test::OobeJS().GetBool(kIsConfirmationDialogHiddenQuery);
   }
 
   bool IsScreenDialogElementShown(OobeScreen screen,
@@ -209,7 +209,7 @@ class DemoSetupTest : public LoginManagerTest {
          ".querySelector('", element_selector, "')"});
     const std::string query =
         base::StrCat({"!!", element, " && !", element, ".hidden"});
-    return js_checker().GetBool(query);
+    return test::OobeJS().GetBool(query);
   }
 
   bool IsScreenDialogElementEnabled(OobeScreen screen,
@@ -220,7 +220,7 @@ class DemoSetupTest : public LoginManagerTest {
          ".querySelector('", element_selector, "')"});
     const std::string query =
         base::StrCat({"!!", element, " && !", element, ".disabled"});
-    return js_checker().GetBool(query);
+    return test::OobeJS().GetBool(query);
   }
 
   // Returns whether a custom item with |custom_item_name| is shown as a first
@@ -233,7 +233,7 @@ class DemoSetupTest : public LoginManagerTest {
         base::StrCat({"!!", element_selector, " && ", element_selector,
                       ".item.customItemName == '", custom_item_name, "' && !",
                       element_selector, ".hidden"});
-    return js_checker().GetBool(query);
+    return test::OobeJS().GetBool(query);
   }
 
   // Returns whether error message is shown on demo setup error screen and
@@ -249,7 +249,7 @@ class DemoSetupTest : public LoginManagerTest {
          l10n_util::GetStringUTF8(error_message_id), " ",
          l10n_util::GetStringUTF8(recovery_message_id), "' && !",
          element_selector, ".hidden"});
-    return js_checker().GetBool(query);
+    return test::OobeJS().GetBool(query);
   }
 
   void SetPlayStoreTermsForTesting() {
@@ -378,7 +378,7 @@ class DemoSetupTest : public LoginManagerTest {
     const std::string query =
         base::StrCat({"!", ScreenToContentQuery(screen), ".$.",
                       DialogToStringId(dialog), ".hidden"});
-    JsConditionWaiter(js_checker(), query).Wait();
+    JsConditionWaiter(test::OobeJS(), query).Wait();
   }
 
   void SkipToScreen(OobeScreen screen) {
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndProceed) {
 
   ClickOkOnConfirmationDialog();
 
-  JsConditionWaiter(js_checker(), kIsConfirmationDialogHiddenQuery).Wait();
+  JsConditionWaiter(test::OobeJS(), kIsConfirmationDialogHiddenQuery).Wait();
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
 }
 
@@ -507,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, MAYBE_ShowConfirmationDialogAndCancel) {
 
   ClickCancelOnConfirmationDialog();
 
-  JsConditionWaiter(js_checker(), kIsConfirmationDialogHiddenQuery).Wait();
+  JsConditionWaiter(test::OobeJS(), kIsConfirmationDialogHiddenQuery).Wait();
   EXPECT_FALSE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
 }
 

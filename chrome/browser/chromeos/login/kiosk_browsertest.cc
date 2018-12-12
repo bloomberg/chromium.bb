@@ -758,7 +758,7 @@ class KioskTest : public OobeBaseTest {
     WaitForAppLaunchNetworkTimeout();
 
     // Configure network link should be visible.
-    JsExpect("$('splash-config-network').hidden == false");
+    test::OobeJS().ExpectTrue("$('splash-config-network').hidden == false");
 
     // Set up fake user manager with an owner for the test.
     LoginDisplayHost::default_host()->GetOobeUI()->ShowOobeUI(false);
@@ -770,7 +770,7 @@ class KioskTest : public OobeBaseTest {
     lock_screen_waiter.Wait();
 
     // There should be only one owner pod on this screen.
-    JsExpect("$('pod-row').alwaysFocusSinglePod");
+    test::OobeJS().ExpectTrue("$('pod-row').alwaysFocusSinglePod");
 
     // A network error screen should be shown after authenticating.
     OobeScreenWaiter error_screen_waiter(OobeScreen::SCREEN_ERROR_MESSAGE);
@@ -942,7 +942,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest,
   ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
 
   // Continue button should be visible since we are online.
-  JsExpect("$('error-message-md-continue-button').hidden == false");
+  test::OobeJS().ExpectTrue(
+      "$('error-message-md-continue-button').hidden == false");
 
   // Let app launching resume.
   AppLaunchController::SetBlockAppLaunchForTesting(false);
@@ -969,7 +970,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDownConfigureNotAllowed) {
   WaitForAppLaunchNetworkTimeout();
 
   // Configure network link should not be visible.
-  JsExpect("$('splash-config-network').hidden == true");
+  test::OobeJS().ExpectTrue("$('splash-config-network').hidden == true");
 
   // Network becomes online and app launch is resumed.
   SimulateNetworkOnline();
