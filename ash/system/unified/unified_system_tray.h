@@ -18,6 +18,7 @@ namespace tray {
 class TimeTrayItemView;
 }  // namespace tray
 
+class CurrentLocaleView;
 class ImeModeView;
 class ManagedDeviceView;
 class NotificationCounterView;
@@ -126,6 +127,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
 
   const std::unique_ptr<NetworkIconPurger> network_icon_purger_;
 
+  CurrentLocaleView* const current_locale_view_;
   ImeModeView* const ime_mode_view_;
   ManagedDeviceView* const managed_device_view_;
   NotificationCounterView* const notification_counter_item_;
