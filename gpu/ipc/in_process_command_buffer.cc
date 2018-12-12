@@ -426,18 +426,11 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   use_virtualized_gl_context_ |=
       context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
 
-  const auto& gpu_feature_info = task_executor_->gpu_feature_info();
-  const bool use_oop_rasterization =
-      gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-      gpu::kGpuFeatureStatusEnabled;
-
-  // With OOP-R and SkiaRenderer, we will only have one GLContext
-  // and share it with RasterDecoders and DisplayCompositor. So it is not
-  // necessary to use virtualized gl context anymore.
-  // TODO(penghuang): Make virtualized gl context work with SkiaRenderer + DDL +
-  // OOPR. https://crbug.com/838899
-  if (features::IsUsingSkiaRenderer() && use_oop_rasterization)
-    use_virtualized_gl_context_ = false;
+#if defined(OS_MACOSX)
+  // TODO(penghuang): remove below line when the framebuffer issue is fixed in
+  // skia. https://crbug.com/914495
+  use_virtualized_gl_context_ &= !features::IsUsingSkiaRenderer();
+#endif
 
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"

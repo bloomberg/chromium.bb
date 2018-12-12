@@ -300,7 +300,6 @@ GpuServiceImpl::GetContextStateForGLSurface(gl::GLSurface* surface) {
   // compatible.
   DCHECK_EQ(surface->GetCompatibilityKey(),
             context_state->surface()->GetCompatibilityKey());
-  DCHECK(!context_state->use_virtualized_gl_contexts);
   return context_state;
 }
 
