@@ -141,4 +141,35 @@ TEST(StackContainer, BufferAlignment) {
 template class StackVector<int, 2>;
 template class StackVector<scoped_refptr<Dummy>, 2>;
 
+template <typename T, size_t size>
+void CheckStackVectorElements(const StackVector<T, size>& vec,
+                              std::initializer_list<T> expected) {
+  auto expected_it = expected.begin();
+  EXPECT_EQ(vec->size(), expected.size());
+  for (T t : vec) {
+    EXPECT_NE(expected.end(), expected_it);
+    EXPECT_EQ(*expected_it, t);
+    ++expected_it;
+  }
+  EXPECT_EQ(expected.end(), expected_it);
+}
+
+TEST(StackContainer, Iteration) {
+  StackVector<int, 3> vect;
+  vect->push_back(7);
+  vect->push_back(11);
+
+  CheckStackVectorElements(vect, {7, 11});
+  for (int& i : vect) {
+    ++i;
+  }
+  CheckStackVectorElements(vect, {8, 12});
+  vect->push_back(13);
+  CheckStackVectorElements(vect, {8, 12, 13});
+  vect->resize(5);
+  CheckStackVectorElements(vect, {8, 12, 13, 0, 0});
+  vect->resize(1);
+  CheckStackVectorElements(vect, {8});
+}
+
 }  // namespace base
