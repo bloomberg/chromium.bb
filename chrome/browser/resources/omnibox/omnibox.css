@@ -170,9 +170,13 @@ tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
   font-size: 0;
 }
 
-.cell-contents-and-description .pair-container {
+.cell-contents-and-description .pair-container,
+.cell-fill-and-inline .pair-container {
   display: flex;
   flex-wrap: wrap;
+}
+
+.cell-contents-and-description .pair-container {
   margin-right: -15px;
 }
 
@@ -184,14 +188,13 @@ tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
   color: blue;
 }
 
-.cell-fill-and-inline .pair-item {
-  display: inline-block;
-  vertical-align: middle;
-  word-break: break-all;
+.cell-fill-and-inline .pair-container {
+  align-items: center;
+  margin-right: -1px;
 }
 
-.cell-fill-and-inline .pair-item:first-child {
-  border: 1px solid white;
+.cell-fill-and-inline .pair-item {
+  margin-right: 1px;
 }
 
 .cell-fill-and-inline .pair-item:nth-child(2):not(:empty) {
