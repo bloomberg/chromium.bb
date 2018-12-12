@@ -8,12 +8,12 @@ library chromium.web;
 // Context resources.
 [Discoverable]
 interface ContextProvider {
-   // Creates a new browser Context whose state is wholly independent and
-   // isolated from other Contexts.
-   //
-   // context: An interface request which will receive a bound Context
-   //          service.
-   1: Create(CreateContextParams params, request<Context> context);
+  // Creates a new browser Context whose state is wholly independent and
+  // isolated from other Contexts.
+  //
+  // context: An interface request which will receive a bound Context
+  //          service.
+  Create(CreateContextParams params, request<Context> context);
 };
 
 struct CreateContextParams {

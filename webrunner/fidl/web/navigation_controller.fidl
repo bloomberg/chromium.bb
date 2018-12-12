@@ -12,16 +12,16 @@ interface NavigationController {
   // |url|:    The address to navigate to.
   // |params|: Additional parameters that affect how the resource will be
   //           loaded (e.g. cookies, HTTP headers, etc.)
-  1: LoadUrl(string url, LoadUrlParams? params);
+  LoadUrl(string url, LoadUrlParams? params);
 
-  50: GoBack();
-  51: GoForward();
-  52: Stop();
-  53: Reload(ReloadType type);
+  GoBack();
+  GoForward();
+  Stop();
+  Reload(ReloadType type);
 
   // Returns information for the currently visible content regardless of
   // loading state, or a null entry if no content is being displayed.
-  100: GetVisibleEntry() -> (NavigationEntry? entry);
+  GetVisibleEntry() -> (NavigationEntry? entry);
 };
 
 // Additional parameters for modifying the behavior of LoadUrl().

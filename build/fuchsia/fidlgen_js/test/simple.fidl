@@ -101,42 +101,42 @@ struct AfterPreviousReference {
 };
 
 interface AnotherInterface {
-  1: TimesTwo(int32 a) -> (int32 b);
+  TimesTwo(int32 a) -> (int32 b);
 };
 
 interface Testola {
-  1: DoSomething();
+  DoSomething();
 
-  2: PrintInt(int32 num);
+  PrintInt(int32 num);
 
-  3: PrintMsg(string msg);
+  PrintMsg(string msg);
 
-  4: VariousArgs(Blorp blorp, string:32 msg, vector<uint32> stuff);
+  VariousArgs(Blorp blorp, string:32 msg, vector<uint32> stuff);
 
-  5: WithResponse(int32 a, int32 b) -> (int32 sum);
+  WithResponse(int32 a, int32 b) -> (int32 sum);
 
-  6: SendAStruct(BasicStruct basic);
+  SendAStruct(BasicStruct basic);
 
-  7: NestedStructsWithResponse(BasicStruct basic) -> (StuffAndThings resp);
+  NestedStructsWithResponse(BasicStruct basic) -> (StuffAndThings resp);
 
-  8: PassHandles(handle<job> job) -> (handle<debuglog> debuglog);
+  PassHandles(handle<job> job) -> (handle<debuglog> debuglog);
 
-  9: ReceiveUnions(StructOfMultipleUnions somu);
+  ReceiveUnions(StructOfMultipleUnions somu);
 
-  10: SendUnions() -> (StructOfMultipleUnions somu);
+  SendUnions() -> (StructOfMultipleUnions somu);
 
-  11: SendVectorsOfString(vector<string> unsized,
-                          vector<string?> nullable,
-                          vector<string:10> max_strlen);
+  SendVectorsOfString(vector<string> unsized,
+                      vector<string?> nullable,
+                      vector<string:10> max_strlen);
 
-  12: VectorOfStruct(vector<StructWithUint> stuff)
-        -> (vector<StructWithUint> result);
+  VectorOfStruct(vector<StructWithUint> stuff)
+    -> (vector<StructWithUint> result);
 
-  13: PassVectorOfPrimitives(VectorsOfPrimitives input)
-        -> (VectorsOfPrimitives output);
+  PassVectorOfPrimitives(VectorsOfPrimitives input)
+    -> (VectorsOfPrimitives output);
 
-  14: PassVectorOfVMO(VectorOfHandleToVMO input)
-        -> (VectorOfHandleToVMO output);
+  PassVectorOfVMO(VectorOfHandleToVMO input)
+    -> (VectorOfHandleToVMO output);
 
-  15: GetAnother(request<AnotherInterface> another);
+  GetAnother(request<AnotherInterface> another);
 };

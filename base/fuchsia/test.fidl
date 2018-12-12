@@ -6,5 +6,5 @@ library base.fuchsia.testfidl;
 
 [Discoverable]
 interface TestInterface {
-    1: Add(int32 a, int32 b) -> (int32 sum);
+  Add(int32 a, int32 b) -> (int32 sum);
 };
