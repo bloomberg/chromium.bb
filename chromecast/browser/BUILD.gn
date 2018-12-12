@@ -87,8 +87,6 @@ cast_source_set("browser") {
     "metrics/cast_metrics_service_client.h",
     "metrics/cast_stability_metrics_provider.cc",
     "metrics/cast_stability_metrics_provider.h",
-    "network_context_manager.cc",
-    "network_context_manager.h",
     "pref_service_helper.cc",
     "pref_service_helper.h",
     "renderer_prelauncher.cc",
@@ -166,7 +164,6 @@ cast_source_set("browser") {
     "//ipc",
     "//media",
     "//net",
-    "//services/network:network_service",
     "//ui/base",
     "//ui/compositor",
     "//ui/display",
@@ -357,6 +354,20 @@ cast_source_set("browser") {
   configs += [ "//media/audio:platform_config" ]
 }
 
+cast_source_set("network_context_manager") {
+  sources = [
+    "network_context_manager.cc",
+    "network_context_manager.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/browser",
+    "//net",
+    "//services/network:network_service",
+  ]
+}
+
 # Lightweight target for Cast interfaces that wrap //content/public/browser.
 # This target should only include interfaces which are required for unit tests.
 cast_source_set("public") {
@@ -517,6 +528,7 @@ cast_source_set("unittests") {
 
   deps = [
     ":browser",
+    ":network_context_manager",
     "//base",
     "//chromecast/base",
     "//content/public/browser",
