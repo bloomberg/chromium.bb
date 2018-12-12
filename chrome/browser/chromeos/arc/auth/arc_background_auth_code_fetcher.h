@@ -23,10 +23,6 @@ class AccessTokenFetcher;
 struct AccessTokenInfo;
 }  // namespace identity
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
@@ -57,7 +53,7 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher {
 
  private:
   void ResetFetchers();
-  void OnPrepared(net::URLRequestContextGetter* request_context_getter);
+  void OnPrepared(bool success);
 
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
                                   identity::AccessTokenInfo token_info);
