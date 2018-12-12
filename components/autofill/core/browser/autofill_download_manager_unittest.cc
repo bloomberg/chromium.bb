@@ -1521,6 +1521,7 @@ TEST_P(AutofillUploadTest, RichMetadata) {
 
   AutofillDownloadManager download_manager(driver_.get(), this);
   FormStructure form_structure(form);
+  form_structure.set_page_language("fr-ca");
 
   for (int i = 0; i < 8; ++i) {
     SCOPED_TRACE(base::StringPrintf("submission source = %d", i));
@@ -1551,6 +1552,7 @@ TEST_P(AutofillUploadTest, RichMetadata) {
     ASSERT_EQ(1u, payloads_.size());
     AutofillUploadContents upload;
     ASSERT_TRUE(upload.ParseFromString(payloads_.front()));
+    EXPECT_EQ(upload.language(), form_structure.page_language());
     ASSERT_TRUE(upload.has_randomized_form_metadata());
     EXPECT_TRUE(upload.randomized_form_metadata().has_id());
     EXPECT_TRUE(upload.randomized_form_metadata().has_name());

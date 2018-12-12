@@ -174,6 +174,9 @@ class AutofillClient : public RiskDataLoader {
   // context if possible, SECURITY_LEVEL_COUNT otherwise.
   virtual security_state::SecurityLevel GetSecurityLevelForUmaHistograms() = 0;
 
+  // Returns the current best guess as to the page's display language.
+  virtual std::string GetPageLanguage() const;
+
   // Causes the Autofill settings UI to be shown. If |show_credit_card_settings|
   // is true, will show the credit card specific subpage.
   virtual void ShowAutofillSettings(bool show_credit_card_settings) = 0;

@@ -87,6 +87,7 @@ class IOSChromePasswordManagerClient
   void NotifyStorePasswordCalled() override;
   bool IsSavingAndFillingEnabledForCurrentPage() const override;
   const GURL& GetLastCommittedEntryURL() const override;
+  std::string GetPageLanguage() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
   const password_manager::LogManager* GetLogManager() const override;

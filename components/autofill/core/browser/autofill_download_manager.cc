@@ -527,8 +527,9 @@ bool AutofillDownloadManager::StartUploadRequest(
   AutofillUploadContents upload;
   if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
                                 login_form_signature, observed_submission,
-                                &upload))
+                                &upload)) {
     return false;
+  }
 
   // Get the POST payload that contains upload data.
   std::string payload;

@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/store_metrics_reporter.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -25,6 +26,7 @@
 #include "ios/chrome/browser/passwords/password_manager_internals_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
@@ -168,6 +170,12 @@ bool IOSChromePasswordManagerClient::IsSavingAndFillingEnabledForCurrentPage()
 
 const GURL& IOSChromePasswordManagerClient::GetLastCommittedEntryURL() const {
   return delegate_.lastCommittedURL;
+}
+
+std::string IOSChromePasswordManagerClient::GetPageLanguage() const {
+  // TODO(crbug.com/912597): Add WebState to the IOSChromePasswordManagerClient
+  // to be able to get the pages LanguageState from the TranslateManager.
+  return std::string();
 }
 
 const password_manager::CredentialsFilter*
