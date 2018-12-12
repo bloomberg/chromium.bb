@@ -11,9 +11,6 @@ union AXTreeID {
   // Placeholder for an unknown AXTreeID. The value of this field is not used.
   uint8 unknown;
 
-  // Placeholder for the desktop AXTreeID. The value of this field is not used.
-  uint8 desktop;
-
-  // Any AXTreeID that's not unknown or the desktop must be an UnguessableToken.
+  // Any AXTreeID that's not unknown must be an UnguessableToken.
   mojo_base.mojom.UnguessableToken token;
 };

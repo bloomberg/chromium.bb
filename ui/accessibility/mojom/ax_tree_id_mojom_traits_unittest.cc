@@ -25,13 +25,6 @@ TEST(AXTreeIDMojomTraitsTest, TestSerializeAndDeserializeAXTreeID) {
   EXPECT_EQ(unknown_input, unknown_output);
   EXPECT_EQ("", unknown_output.ToString());
 
-  ui::AXTreeID desktop_input = ui::DesktopAXTreeID();
-  ui::AXTreeID desktop_output;
-  EXPECT_TRUE(SerializeAndDeserialize<ax::mojom::AXTreeID>(&desktop_input,
-                                                           &desktop_output));
-  EXPECT_EQ(desktop_input, desktop_output);
-  EXPECT_EQ("0", desktop_output.ToString());
-
   ui::AXTreeID token_input = ui::AXTreeID::CreateNewAXTreeID();
   ui::AXTreeID token_output;
   EXPECT_TRUE(SerializeAndDeserialize<ax::mojom::AXTreeID>(&token_input,

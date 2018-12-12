@@ -316,6 +316,10 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   return true;
 }
 
+bool AutomationAXTreeWrapper::IsDesktopTree() const {
+  return tree_.root()->data().role == ax::mojom::Role::kDesktop;
+}
+
 void AutomationAXTreeWrapper::OnNodeDataWillChange(
     ui::AXTree* tree,
     const ui::AXNodeData& old_node_data,

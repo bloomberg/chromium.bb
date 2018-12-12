@@ -201,7 +201,7 @@ void AXPositionTest::SetUp() {
   initial_state.nodes.push_back(static_text2_);
   initial_state.nodes.push_back(inline_box2_);
   initial_state.has_tree_data = true;
-  initial_state.tree_data.tree_id = AXTreeID::FromString("0");
+  initial_state.tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
   initial_state.tree_data.title = "Dialog title";
   AXSerializableTree src_tree(initial_state);
 
@@ -1691,22 +1691,22 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=6 "
+                  {"TextPosition anchor_id=1 text_offset=6 "
                    "affinity=downstream annotated_text=Button<C>heck boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=12 "
+                   "TextPosition anchor_id=1 text_offset=12 "
                    "affinity=downstream annotated_text=ButtonCheck <b>oxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=downstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=20 "
+                   "TextPosition anchor_id=1 text_offset=20 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "<1>\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=22 "
+                   "TextPosition anchor_id=1 text_offset=22 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=27 "
+                   "TextPosition anchor_id=1 text_offset=27 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine <2>",
                    "NullPosition"}},
@@ -1716,11 +1716,11 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=5 "
+                  {"TextPosition anchor_id=4 text_offset=5 "
                    "affinity=downstream annotated_text=Line <1>\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=7 "
+                   "TextPosition anchor_id=4 text_offset=7 "
                    "affinity=downstream annotated_text=Line 1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=12 "
+                   "TextPosition anchor_id=4 text_offset=12 "
                    "affinity=downstream annotated_text=Line 1\nLine <2>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -1729,11 +1729,11 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=5 "
+                  {"TextPosition anchor_id=5 text_offset=5 "
                    "affinity=downstream annotated_text=Line <1>",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                   "TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=5 "
+                   "TextPosition anchor_id=9 text_offset=5 "
                    "affinity=downstream annotated_text=Line <2>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -1742,7 +1742,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=5 "
+                  {"TextPosition anchor_id=9 text_offset=5 "
                    "affinity=downstream annotated_text=Line <2>",
                    "NullPosition"}}));
 
@@ -1756,25 +1756,25 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=6 "
+                  {"TextPosition anchor_id=1 text_offset=6 "
                    "affinity=downstream annotated_text=Button<C>heck boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=12 "
+                   "TextPosition anchor_id=1 text_offset=12 "
                    "affinity=downstream annotated_text=ButtonCheck <b>oxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=downstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=20 "
+                   "TextPosition anchor_id=1 text_offset=20 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "<1>\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=22 "
+                   "TextPosition anchor_id=1 text_offset=22 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=27 "
+                   "TextPosition anchor_id=1 text_offset=27 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine <2>",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=28 "
+                   "TextPosition anchor_id=1 text_offset=28 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine 2<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -1783,13 +1783,13 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=5 "
+                  {"TextPosition anchor_id=4 text_offset=5 "
                    "affinity=downstream annotated_text=Line <1>\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=7 "
+                   "TextPosition anchor_id=4 text_offset=7 "
                    "affinity=downstream annotated_text=Line 1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=12 "
+                   "TextPosition anchor_id=4 text_offset=12 "
                    "affinity=downstream annotated_text=Line 1\nLine <2>",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=13 "
+                   "TextPosition anchor_id=4 text_offset=13 "
                    "affinity=downstream annotated_text=Line 1\nLine 2<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextWordStartPosition(
@@ -1797,9 +1797,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=5 "
+                  {"TextPosition anchor_id=5 text_offset=5 "
                    "affinity=downstream annotated_text=Line <1>",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=6 "
+                   "TextPosition anchor_id=5 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextWordStartPosition(
@@ -1807,9 +1807,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=5 "
+                  {"TextPosition anchor_id=9 text_offset=5 "
                    "affinity=downstream annotated_text=Line <2>",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                   "TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -1822,10 +1822,10 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                  {"TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                   "TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -1834,9 +1834,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                  {"TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                   "TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextWordStartPosition(
@@ -1844,9 +1844,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=5 "
+                  {"TextPosition anchor_id=5 text_offset=5 "
                    "affinity=downstream annotated_text=Line <1>",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=5 "
+                   "TextPosition anchor_id=5 text_offset=5 "
                    "affinity=downstream annotated_text=Line <1>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextWordStartPosition(
@@ -1854,9 +1854,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=5 "
+                  {"TextPosition anchor_id=9 text_offset=5 "
                    "affinity=downstream annotated_text=Line <2>",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=5 "
+                   "TextPosition anchor_id=9 text_offset=5 "
                    "affinity=downstream annotated_text=Line <2>"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -1869,25 +1869,25 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=27 "
+                  {"TextPosition anchor_id=1 text_offset=27 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine <2>",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=22 "
+                   "TextPosition anchor_id=1 text_offset=22 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=20 "
+                   "TextPosition anchor_id=1 text_offset=20 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "<1>\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=downstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=12 "
+                   "TextPosition anchor_id=1 text_offset=12 "
                    "affinity=downstream annotated_text=ButtonCheck <b>oxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=6 "
+                   "TextPosition anchor_id=1 text_offset=6 "
                    "affinity=downstream annotated_text=Button<C>heck boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                   "TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2",
                    "NullPosition"}},
@@ -1897,19 +1897,19 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=12 "
+                  {"TextPosition anchor_id=4 text_offset=12 "
                    "affinity=downstream annotated_text=Line 1\nLine <2>",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=7 "
+                   "TextPosition anchor_id=4 text_offset=7 "
                    "affinity=downstream annotated_text=Line 1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=5 "
+                   "TextPosition anchor_id=4 text_offset=5 "
                    "affinity=downstream annotated_text=Line <1>\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                   "TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=6 "
+                   "TextPosition anchor_id=3 text_offset=6 "
                    "affinity=downstream annotated_text=Check <b>ox",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=0 "
+                   "TextPosition anchor_id=3 text_offset=0 "
                    "affinity=downstream annotated_text=<C>heck box",
-                   "TextPosition tree_id=0 anchor_id=2 text_offset=0 "
+                   "TextPosition anchor_id=2 text_offset=0 "
                    "affinity=downstream annotated_text=<B>utton",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -1918,13 +1918,13 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   5 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=0 "
+                  {"TextPosition anchor_id=5 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=6 "
+                   "TextPosition anchor_id=3 text_offset=6 "
                    "affinity=downstream annotated_text=Check <b>ox",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=0 "
+                   "TextPosition anchor_id=3 text_offset=0 "
                    "affinity=downstream annotated_text=<C>heck box",
-                   "TextPosition tree_id=0 anchor_id=2 text_offset=0 "
+                   "TextPosition anchor_id=2 text_offset=0 "
                    "affinity=downstream annotated_text=<B>utton",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -1933,17 +1933,17 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=6 text_offset=5 "
+                   "TextPosition anchor_id=6 text_offset=5 "
                    "affinity=downstream annotated_text=Line <1>",
-                   "TextPosition tree_id=0 anchor_id=6 text_offset=0 "
+                   "TextPosition anchor_id=6 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=6 "
+                   "TextPosition anchor_id=3 text_offset=6 "
                    "affinity=downstream annotated_text=Check <b>ox",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=0 "
+                   "TextPosition anchor_id=3 text_offset=0 "
                    "affinity=downstream annotated_text=<C>heck box",
-                   "TextPosition tree_id=0 anchor_id=2 text_offset=0 "
+                   "TextPosition anchor_id=2 text_offset=0 "
                    "affinity=downstream annotated_text=<B>utton",
                    "NullPosition"}}));
 
@@ -1957,28 +1957,28 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=27 "
+                  {"TextPosition anchor_id=1 text_offset=27 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine <2>",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=22 "
+                   "TextPosition anchor_id=1 text_offset=22 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=20 "
+                   "TextPosition anchor_id=1 text_offset=20 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "<1>\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=downstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=12 "
+                   "TextPosition anchor_id=1 text_offset=12 "
                    "affinity=downstream annotated_text=ButtonCheck <b>oxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=6 "
+                   "TextPosition anchor_id=1 text_offset=6 "
                    "affinity=downstream annotated_text=Button<C>heck boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                   "TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                   "TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -1987,15 +1987,15 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=12 "
+                  {"TextPosition anchor_id=4 text_offset=12 "
                    "affinity=downstream annotated_text=Line 1\nLine <2>",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=7 "
+                   "TextPosition anchor_id=4 text_offset=7 "
                    "affinity=downstream annotated_text=Line 1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=5 "
+                   "TextPosition anchor_id=4 text_offset=5 "
                    "affinity=downstream annotated_text=Line <1>\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                   "TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                   "TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousWordStartPosition(
@@ -2003,9 +2003,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   5 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=0 "
+                  {"TextPosition anchor_id=5 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=0 "
+                   "TextPosition anchor_id=5 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousWordStartPosition(
@@ -2013,9 +2013,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                   "TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2028,10 +2028,10 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=27 "
+                  {"TextPosition anchor_id=1 text_offset=27 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine <2>",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=27 "
+                   "TextPosition anchor_id=1 text_offset=27 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine <2>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2040,9 +2040,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=12 "
+                  {"TextPosition anchor_id=4 text_offset=12 "
                    "affinity=downstream annotated_text=Line 1\nLine <2>",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=12 "
+                   "TextPosition anchor_id=4 text_offset=12 "
                    "affinity=downstream annotated_text=Line 1\nLine <2>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousWordStartPosition(
@@ -2050,7 +2050,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   5 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=5 "
+                  {"TextPosition anchor_id=5 text_offset=5 "
                    "affinity=downstream annotated_text=Line <1>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousWordStartPosition(
@@ -2058,9 +2058,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                   "TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2073,25 +2073,25 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=6 "
+                  {"TextPosition anchor_id=1 text_offset=6 "
                    "affinity=downstream annotated_text=Button<C>heck boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=11 "
+                   "TextPosition anchor_id=1 text_offset=11 "
                    "affinity=downstream annotated_text=ButtonCheck< >boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=upstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=19 "
+                   "TextPosition anchor_id=1 text_offset=19 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine< "
                    ">1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                   "TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=26 "
+                   "TextPosition anchor_id=1 text_offset=26 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine< >2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=28 "
+                   "TextPosition anchor_id=1 text_offset=28 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine 2<>",
                    "NullPosition"}},
@@ -2101,13 +2101,13 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=4 "
+                  {"TextPosition anchor_id=4 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                   "TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=11 "
+                   "TextPosition anchor_id=4 text_offset=11 "
                    "affinity=downstream annotated_text=Line 1\nLine< >2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=13 "
+                   "TextPosition anchor_id=4 text_offset=13 "
                    "affinity=downstream annotated_text=Line 1\nLine 2<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2116,13 +2116,13 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=4 "
+                  {"TextPosition anchor_id=5 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=6 "
+                   "TextPosition anchor_id=5 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=4 "
+                   "TextPosition anchor_id=9 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >2",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                   "TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2131,7 +2131,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                  {"TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>",
                    "NullPosition"}}));
 
@@ -2145,28 +2145,28 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=6 "
+                  {"TextPosition anchor_id=1 text_offset=6 "
                    "affinity=downstream annotated_text=Button<C>heck boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=11 "
+                   "TextPosition anchor_id=1 text_offset=11 "
                    "affinity=downstream annotated_text=ButtonCheck< >boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=upstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=19 "
+                   "TextPosition anchor_id=1 text_offset=19 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine< "
                    ">1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                   "TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=26 "
+                   "TextPosition anchor_id=1 text_offset=26 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine< >2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=28 "
+                   "TextPosition anchor_id=1 text_offset=28 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine 2<>",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=28 "
+                   "TextPosition anchor_id=1 text_offset=28 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine 2<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2175,15 +2175,15 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=4 "
+                  {"TextPosition anchor_id=4 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                   "TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=11 "
+                   "TextPosition anchor_id=4 text_offset=11 "
                    "affinity=downstream annotated_text=Line 1\nLine< >2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=13 "
+                   "TextPosition anchor_id=4 text_offset=13 "
                    "affinity=downstream annotated_text=Line 1\nLine 2<>",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=13 "
+                   "TextPosition anchor_id=4 text_offset=13 "
                    "affinity=downstream annotated_text=Line 1\nLine 2<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextWordEndPosition(
@@ -2191,11 +2191,11 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=4 "
+                  {"TextPosition anchor_id=5 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=6 "
+                   "TextPosition anchor_id=5 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=6 "
+                   "TextPosition anchor_id=5 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextWordEndPosition(
@@ -2203,9 +2203,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                  {"TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                   "TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2218,10 +2218,10 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   7 /* text_offset after the first character of "Check". */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=11 "
+                  {"TextPosition anchor_id=1 text_offset=11 "
                    "affinity=downstream annotated_text=ButtonCheck< >boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=11 "
+                   "TextPosition anchor_id=1 text_offset=11 "
                    "affinity=downstream annotated_text=ButtonCheck< >boxLine "
                    "1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2230,9 +2230,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=4 "
+                  {"TextPosition anchor_id=4 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=4 "
+                   "TextPosition anchor_id=4 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextWordEndPosition(
@@ -2240,9 +2240,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=4 "
+                  {"TextPosition anchor_id=5 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=4 "
+                   "TextPosition anchor_id=5 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextWordEndPosition(
@@ -2250,7 +2250,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=4 "
+                  {"TextPosition anchor_id=9 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >2"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2263,22 +2263,22 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=26 "
+                  {"TextPosition anchor_id=1 text_offset=26 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine< >2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                   "TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=19 "
+                   "TextPosition anchor_id=1 text_offset=19 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine< "
                    ">1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=upstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=11 "
+                   "TextPosition anchor_id=1 text_offset=11 "
                    "affinity=downstream annotated_text=ButtonCheck< >boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=6 "
+                   "TextPosition anchor_id=1 text_offset=6 "
                    "affinity=downstream annotated_text=Button<C>heck boxLine "
                    "1\nLine 2",
                    "NullPosition"}},
@@ -2288,17 +2288,17 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=11 "
+                  {"TextPosition anchor_id=4 text_offset=11 "
                    "affinity=downstream annotated_text=Line 1\nLine< >2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                   "TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=4 "
+                   "TextPosition anchor_id=4 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=9 "
+                   "TextPosition anchor_id=3 text_offset=9 "
                    "affinity=downstream annotated_text=Check box<>",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=5 "
+                   "TextPosition anchor_id=3 text_offset=5 "
                    "affinity=downstream annotated_text=Check< >box",
-                   "TextPosition tree_id=0 anchor_id=2 text_offset=6 "
+                   "TextPosition anchor_id=2 text_offset=6 "
                    "affinity=downstream annotated_text=Button<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2307,13 +2307,13 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   5 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=4 "
+                  {"TextPosition anchor_id=5 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=9 "
+                   "TextPosition anchor_id=3 text_offset=9 "
                    "affinity=downstream annotated_text=Check box<>",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=5 "
+                   "TextPosition anchor_id=3 text_offset=5 "
                    "affinity=downstream annotated_text=Check< >box",
-                   "TextPosition tree_id=0 anchor_id=2 text_offset=6 "
+                   "TextPosition anchor_id=2 text_offset=6 "
                    "affinity=downstream annotated_text=Button<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2322,15 +2322,15 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=6 text_offset=6 "
+                  {"TextPosition anchor_id=6 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>",
-                   "TextPosition tree_id=0 anchor_id=6 text_offset=4 "
+                   "TextPosition anchor_id=6 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=9 "
+                   "TextPosition anchor_id=3 text_offset=9 "
                    "affinity=downstream annotated_text=Check box<>",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=5 "
+                   "TextPosition anchor_id=3 text_offset=5 "
                    "affinity=downstream annotated_text=Check< >box",
-                   "TextPosition tree_id=0 anchor_id=2 text_offset=6 "
+                   "TextPosition anchor_id=2 text_offset=6 "
                    "affinity=downstream annotated_text=Button<>",
                    "NullPosition"}}));
 
@@ -2344,25 +2344,25 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=26 "
+                  {"TextPosition anchor_id=1 text_offset=26 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine< >2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                   "TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=19 "
+                   "TextPosition anchor_id=1 text_offset=19 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine< "
                    ">1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=upstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=11 "
+                   "TextPosition anchor_id=1 text_offset=11 "
                    "affinity=downstream annotated_text=ButtonCheck< >boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=6 "
+                   "TextPosition anchor_id=1 text_offset=6 "
                    "affinity=downstream annotated_text=Button<C>heck boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                   "TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2371,13 +2371,13 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=11 "
+                  {"TextPosition anchor_id=4 text_offset=11 "
                    "affinity=downstream annotated_text=Line 1\nLine< >2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                   "TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=4 "
+                   "TextPosition anchor_id=4 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                   "TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousWordEndPosition(
@@ -2385,9 +2385,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   5 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=4 "
+                  {"TextPosition anchor_id=5 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=0 "
+                   "TextPosition anchor_id=5 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousWordEndPosition(
@@ -2395,7 +2395,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2408,7 +2408,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=28 "
+                  {"TextPosition anchor_id=1 text_offset=28 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine 2<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2417,7 +2417,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=13 "
+                  {"TextPosition anchor_id=4 text_offset=13 "
                    "affinity=downstream annotated_text=Line 1\nLine 2<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousWordEndPosition(
@@ -2425,9 +2425,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   5 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=4 "
+                  {"TextPosition anchor_id=5 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=4 "
+                   "TextPosition anchor_id=5 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >1"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousWordEndPosition(
@@ -2435,7 +2435,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=4 "
+                  {"TextPosition anchor_id=9 text_offset=4 "
                    "affinity=downstream annotated_text=Line< >2"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2448,10 +2448,10 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                  {"TextPosition anchor_id=1 text_offset=15 "
                    "affinity=downstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=22 "
+                   "TextPosition anchor_id=1 text_offset=22 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\n<L>ine 2",
                    "NullPosition"}},
@@ -2461,7 +2461,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=7 "
+                  {"TextPosition anchor_id=4 text_offset=7 "
                    "affinity=downstream annotated_text=Line 1\n<L>ine 2",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2470,7 +2470,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2491,13 +2491,13 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                  {"TextPosition anchor_id=1 text_offset=15 "
                    "affinity=downstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=22 "
+                   "TextPosition anchor_id=1 text_offset=22 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=28 "
+                   "TextPosition anchor_id=1 text_offset=28 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine 2<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2506,9 +2506,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=7 "
+                  {"TextPosition anchor_id=4 text_offset=7 "
                    "affinity=downstream annotated_text=Line 1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=13 "
+                   "TextPosition anchor_id=4 text_offset=13 "
                    "affinity=downstream annotated_text=Line 1\nLine 2<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextLineStartPosition(
@@ -2516,7 +2516,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=6 "
+                  {"TextPosition anchor_id=5 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextLineStartPosition(
@@ -2524,7 +2524,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                  {"TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2537,7 +2537,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                  {"TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2546,7 +2546,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                  {"TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextLineStartPosition(
@@ -2554,9 +2554,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                   "TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextLineStartPosition(
@@ -2576,13 +2576,13 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at the end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=22 "
+                  {"TextPosition anchor_id=1 text_offset=22 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=downstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                   "TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2",
                    "NullPosition"}},
@@ -2592,11 +2592,11 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=7 "
+                  {"TextPosition anchor_id=4 text_offset=7 "
                    "affinity=downstream annotated_text=Line 1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                   "TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=2 text_offset=0 "
+                   "TextPosition anchor_id=2 text_offset=0 "
                    "affinity=downstream annotated_text=<B>utton",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2605,9 +2605,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   5 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=0 "
+                  {"TextPosition anchor_id=5 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1",
-                   "TextPosition tree_id=0 anchor_id=2 text_offset=0 "
+                   "TextPosition anchor_id=2 text_offset=0 "
                    "affinity=downstream annotated_text=<B>utton",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2616,11 +2616,11 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=6 text_offset=0 "
+                   "TextPosition anchor_id=6 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1",
-                   "TextPosition tree_id=0 anchor_id=2 text_offset=0 "
+                   "TextPosition anchor_id=2 text_offset=0 "
                    "affinity=downstream annotated_text=<B>utton",
                    "NullPosition"}}));
 
@@ -2634,16 +2634,16 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at the end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=22 "
+                  {"TextPosition anchor_id=1 text_offset=22 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=downstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                   "TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                   "TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2652,11 +2652,11 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=7 "
+                  {"TextPosition anchor_id=4 text_offset=7 "
                    "affinity=downstream annotated_text=Line 1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                   "TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                   "TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineStartPosition(
@@ -2664,9 +2664,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   5 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=0 "
+                  {"TextPosition anchor_id=5 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=0 "
+                   "TextPosition anchor_id=5 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineStartPosition(
@@ -2674,9 +2674,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                   "TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2689,10 +2689,10 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at the end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=22 "
+                  {"TextPosition anchor_id=1 text_offset=22 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=22 "
+                   "TextPosition anchor_id=1 text_offset=22 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\n<L>ine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2701,9 +2701,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=7 "
+                  {"TextPosition anchor_id=4 text_offset=7 "
                    "affinity=downstream annotated_text=Line 1\n<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=7 "
+                   "TextPosition anchor_id=4 text_offset=7 "
                    "affinity=downstream annotated_text=Line 1\n<L>ine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineStartPosition(
@@ -2711,9 +2711,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   5 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=0 "
+                  {"TextPosition anchor_id=5 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=0 "
+                   "TextPosition anchor_id=5 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineStartPosition(
@@ -2721,9 +2721,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                   "TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2736,13 +2736,13 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                  {"TextPosition anchor_id=1 text_offset=15 "
                    "affinity=upstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                   "TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine 1"
                    "<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=28 "
+                   "TextPosition anchor_id=1 text_offset=28 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine 2<>",
                    "NullPosition"}},
@@ -2752,9 +2752,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                  {"TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=13 "
+                   "TextPosition anchor_id=4 text_offset=13 "
                    "affinity=downstream annotated_text=Line 1\nLine 2<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2763,9 +2763,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=6 "
+                  {"TextPosition anchor_id=5 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                   "TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2774,7 +2774,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                  {"TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>",
                    "NullPosition"}}));
 
@@ -2788,16 +2788,16 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                  {"TextPosition anchor_id=1 text_offset=15 "
                    "affinity=upstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                   "TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine 1"
                    "<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=28 "
+                   "TextPosition anchor_id=1 text_offset=28 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine 2<>",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=28 "
+                   "TextPosition anchor_id=1 text_offset=28 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1\nLine 2<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2806,11 +2806,11 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                  {"TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=13 "
+                   "TextPosition anchor_id=4 text_offset=13 "
                    "affinity=downstream annotated_text=Line 1\nLine 2<>",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=13 "
+                   "TextPosition anchor_id=4 text_offset=13 "
                    "affinity=downstream annotated_text=Line 1\nLine 2<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextLineEndPosition(
@@ -2818,9 +2818,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=6 "
+                  {"TextPosition anchor_id=5 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=6 "
+                   "TextPosition anchor_id=5 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextLineEndPosition(
@@ -2828,9 +2828,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                  {"TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                   "TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2843,10 +2843,10 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                  {"TextPosition anchor_id=1 text_offset=15 "
                    "affinity=upstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                   "TextPosition anchor_id=1 text_offset=15 "
                    "affinity=upstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2855,9 +2855,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                  {"TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                   "TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextLineEndPosition(
@@ -2865,9 +2865,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   STATIC_TEXT1_ID,
                   1 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=5 text_offset=6 "
+                  {"TextPosition anchor_id=5 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>",
-                   "TextPosition tree_id=0 anchor_id=5 text_offset=6 "
+                   "TextPosition anchor_id=5 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreateNextLineEndPosition(
@@ -2875,9 +2875,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                  {"TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>",
-                   "TextPosition tree_id=0 anchor_id=9 text_offset=6 "
+                   "TextPosition anchor_id=9 text_offset=6 "
                    "affinity=downstream annotated_text=Line 2<>"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -2894,10 +2894,10 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                  {"TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                   "TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1<\n>Line 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2906,9 +2906,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                  {"TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                   "TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -2916,7 +2916,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   20 /* text_offset on the last character of "line 1". */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                  {"TextPosition anchor_id=1 text_offset=15 "
                    "affinity=upstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
                    "NullPosition"}},
@@ -2926,7 +2926,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   5 /* text_offset on the last character of "Line 1". */,
-                  {"TextPosition tree_id=0 anchor_id=3 text_offset=9 "
+                  {"TextPosition anchor_id=3 text_offset=9 "
                    "affinity=downstream annotated_text=Check box<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2935,11 +2935,11 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=7 text_offset=0 "
+                  {"TextPosition anchor_id=7 text_offset=0 "
                    "affinity=downstream annotated_text=<\n>",
-                   "TextPosition tree_id=0 anchor_id=6 text_offset=6 "
+                   "TextPosition anchor_id=6 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=9 "
+                   "TextPosition anchor_id=3 text_offset=9 "
                    "affinity=downstream annotated_text=Check box<>",
                    "NullPosition"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2948,11 +2948,11 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=7 text_offset=0 "
+                  {"TextPosition anchor_id=7 text_offset=0 "
                    "affinity=downstream annotated_text=<\n>",
-                   "TextPosition tree_id=0 anchor_id=6 text_offset=6 "
+                   "TextPosition anchor_id=6 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<>",
-                   "TextPosition tree_id=0 anchor_id=3 text_offset=9 "
+                   "TextPosition anchor_id=3 text_offset=9 "
                    "affinity=downstream annotated_text=Check box<>",
                    "NullPosition"}}));
 
@@ -2970,10 +2970,10 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   28 /* text_offset at end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                  {"TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                   "TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1<\n>Line 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -2982,9 +2982,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   13 /* text_offset at end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                  {"TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                   "TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -2992,10 +2992,10 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   20 /* text_offset on the last character of "line 1". */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=15 "
+                  {"TextPosition anchor_id=1 text_offset=15 "
                    "affinity=upstream annotated_text=ButtonCheck box<L>ine "
                    "1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=0 "
+                   "TextPosition anchor_id=1 text_offset=0 "
                    "affinity=downstream annotated_text=<B>uttonCheck boxLine "
                    "1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -3004,9 +3004,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   5 /* text_offset on the last character of "Line 1". */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                  {"TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=0 "
+                   "TextPosition anchor_id=4 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 1\nLine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -3014,7 +3014,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -3022,7 +3022,7 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=9 text_offset=0 "
+                  {"TextPosition anchor_id=9 text_offset=0 "
                    "affinity=downstream annotated_text=<L>ine 2"}}));
 
 INSTANTIATE_TEST_CASE_P(
@@ -3035,10 +3035,10 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   ROOT_ID,
                   27 /* text_offset one before the end of root. */,
-                  {"TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                  {"TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=1 text_offset=21 "
+                   "TextPosition anchor_id=1 text_offset=21 "
                    "affinity=downstream annotated_text=ButtonCheck boxLine "
                    "1<\n>Line 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
@@ -3047,9 +3047,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   TEXT_FIELD_ID,
                   12 /* text_offset one before the end of text field */,
-                  {"TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                  {"TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2",
-                   "TextPosition tree_id=0 anchor_id=4 text_offset=6 "
+                   "TextPosition anchor_id=4 text_offset=6 "
                    "affinity=downstream annotated_text=Line 1<\n>Line 2"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -3057,9 +3057,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   4 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=7 text_offset=0 "
+                  {"TextPosition anchor_id=7 text_offset=0 "
                    "affinity=downstream annotated_text=<\n>",
-                   "TextPosition tree_id=0 anchor_id=7 text_offset=0 "
+                   "TextPosition anchor_id=7 text_offset=0 "
                    "affinity=downstream annotated_text=<\n>"}},
         TestParam{base::BindRepeating([](const TestPositionType& position) {
                     return position->CreatePreviousLineEndPosition(
@@ -3067,9 +3067,9 @@ INSTANTIATE_TEST_CASE_P(
                   }),
                   INLINE_BOX2_ID,
                   0 /* text_offset */,
-                  {"TextPosition tree_id=0 anchor_id=7 text_offset=0 "
+                  {"TextPosition anchor_id=7 text_offset=0 "
                    "affinity=downstream annotated_text=<\n>",
-                   "TextPosition tree_id=0 anchor_id=7 text_offset=0 "
+                   "TextPosition anchor_id=7 text_offset=0 "
                    "affinity=downstream annotated_text=<\n>"}}));
 
 //

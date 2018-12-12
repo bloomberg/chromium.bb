@@ -37,7 +37,7 @@ window.automationUtil = function() {};
 // TODO(aboxhall): Look into using WeakMap
 var idToCallback = {};
 
-var DESKTOP_TREE_ID = "0";
+var desktopId = undefined;
 
 automationUtil.storeTreeCallback = function(id, callback) {
   if (!callback)
@@ -79,7 +79,10 @@ automationUtil.focusedNode = null;
  * @return {AutomationNode}
  */
 automationUtil.getFocus = function() {
-  var focusedNodeInfo = GetFocusNative(DESKTOP_TREE_ID);
+  if (desktopId === undefined)
+    return;
+
+  var focusedNodeInfo = GetFocusNative(desktopId);
   if (!focusedNodeInfo)
     return null;
   var tree = AutomationRootNode.getOrCreate(focusedNodeInfo.treeId);
@@ -130,21 +133,22 @@ automation.registerCustomHook(function(bindingsAPI) {
   var desktopTree = null;
   apiFunctions.setHandleRequest('getDesktop', function(callback) {
     StartCachingAccessibilityTrees();
-    desktopTree = AutomationRootNode.get(DESKTOP_TREE_ID);
+    if (desktopId !== undefined)
+      desktopTree = AutomationRootNode.get(desktopId);
     if (!desktopTree) {
-      if (DESKTOP_TREE_ID in idToCallback)
-        idToCallback[DESKTOP_TREE_ID].push(callback);
-      else
-        idToCallback[DESKTOP_TREE_ID] = [callback];
-
-      // TODO(dtseng): Disable desktop tree once desktop object goes out of
-      // scope.
-      automationInternal.enableDesktop(function() {
+      automationInternal.enableDesktop(function(treeId) {
         if (hasLastError()) {
-          AutomationRootNode.destroy(DESKTOP_TREE_ID);
+          AutomationRootNode.destroy(treeId);
+          desktopId = undefined;
           callback();
           return;
         }
+        desktopId = treeId;
+        desktopTree = AutomationRootNode.getOrCreate(desktopId);
+        callback(desktopTree);
+
+        // TODO(dtseng): Disable desktop tree once desktop object goes out of
+        // scope.
       });
     } else {
       callback(desktopTree);
@@ -184,7 +188,7 @@ automation.registerCustomHook(function(bindingsAPI) {
     var focusNodeImpl = privates(params.focusObject).impl;
     if (anchorNodeImpl.treeID !== focusNodeImpl.treeID)
       throw new Error('Selection anchor and focus must be in the same tree.');
-    if (anchorNodeImpl.treeID === DESKTOP_TREE_ID) {
+    if (anchorNodeImpl.treeID === desktopId) {
       throw new Error('Use AutomationNode.setSelection to set the selection ' +
           'in the desktop tree.');
     }
@@ -309,8 +313,7 @@ automationInternal.onAccessibilityEvent.addListener(function(eventParams) {
   // attribute or child nodes. If we've got that, wait for the full tree before
   // calling the callback.
   // TODO(dmazzoni): Don't send down placeholder (crbug.com/397553)
-  if (id != DESKTOP_TREE_ID && !targetTree.url &&
-      targetTree.children.length == 0)
+  if (id != desktopId && !targetTree.url && targetTree.children.length == 0)
     return;
 
   // If the tree wasn't available when getTree() was called, the callback will

@@ -161,7 +161,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   }
 
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
-  event_bundle.tree_id = tree_id();
+  event_bundle.tree_id = ax_tree_id();
 
   event_bundle.events.emplace_back();
   ui::AXEvent& event = event_bundle.events.back();
@@ -195,7 +195,7 @@ void AXTreeSourceArc::NotifyGetTextLocationDataResult(
 }
 
 bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
-  data->tree_id = tree_id();
+  data->tree_id = ax_tree_id();
   if (focused_id_ >= 0) {
     data->focus_id = focused_id_;
   } else if (root_id_ >= 0) {
@@ -431,7 +431,7 @@ void AXTreeSourceArc::Reset() {
   if (!router)
     return;
 
-  router->DispatchTreeDestroyedEvent(tree_id(), nullptr);
+  router->DispatchTreeDestroyedEvent(ax_tree_id(), nullptr);
 }
 
 }  // namespace arc

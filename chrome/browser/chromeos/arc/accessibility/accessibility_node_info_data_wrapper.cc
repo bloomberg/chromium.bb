@@ -324,7 +324,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     if (GetProperty(AXStringProperty::PACKAGE_NAME, &package_name)) {
       const std::string& url =
           base::StringPrintf("%s/%s", package_name.c_str(),
-                             tree_source_->tree_id().ToString().c_str());
+                             tree_source_->ax_tree_id().ToString().c_str());
       out_data->AddStringAttribute(ax::mojom::StringAttribute::kUrl, url);
     }
   }
