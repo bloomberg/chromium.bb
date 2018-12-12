@@ -878,13 +878,10 @@ void AutofillProfile::SetValidityState(
 void AutofillProfile::UpdateServerValidityMap(
     const ProfileValidityMap& validity_map) const {
   server_validity_states_.clear();
-
   const auto& field_validity_states = validity_map.field_validity_states();
-  for (auto current_pair = field_validity_states.begin();
-       current_pair != field_validity_states.end(); ++current_pair) {
-    const auto& field_type = static_cast<ServerFieldType>(current_pair->first);
-    const auto& field_validity =
-        static_cast<ValidityState>(current_pair->second);
+  for (const auto& current_pair : field_validity_states) {
+    const auto field_type = static_cast<ServerFieldType>(current_pair.first);
+    const auto field_validity = static_cast<ValidityState>(current_pair.second);
     server_validity_states_[field_type] = field_validity;
   }
 }

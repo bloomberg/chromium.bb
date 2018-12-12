@@ -1149,9 +1149,9 @@ std::vector<AutofillProfile*> PersonalDataManager::GetProfiles() const {
 
 void PersonalDataManager::UpdateProfilesValidityMapsIfNeeded(
     const std::vector<AutofillProfile*>& profiles) {
-  if (!profile_validities_need_update)
+  if (!profile_validities_need_update_)
     return;
-  profile_validities_need_update = false;
+  profile_validities_need_update_ = false;
   for (auto* profile : profiles) {
     profile->UpdateServerValidityMap(GetProfileValidityByGUID(profile->guid()));
   }
@@ -1230,7 +1230,7 @@ void PersonalDataManager::Refresh() {
   LoadProfiles();
   LoadCreditCards();
   LoadPaymentsCustomerData();
-  profile_validities_need_update = true;
+  profile_validities_need_update_ = true;
 }
 
 std::vector<AutofillProfile*> PersonalDataManager::GetProfilesToSuggest()
@@ -1590,12 +1590,13 @@ const ProfileValidityMap& PersonalDataManager::GetProfileValidityByGUID(
     const std::string& guid) {
   static const ProfileValidityMap& empty_validity_map = ProfileValidityMap();
   if (!synced_profile_validity_) {
-    profile_validities_need_update = true;
+    profile_validities_need_update_ = true;
     synced_profile_validity_ = std::make_unique<UserProfileValidityMap>();
     if (!synced_profile_validity_->ParseFromString(
             ::autofill::prefs::GetAllProfilesValidityMapsEncodedString(
-                pref_service_)))
+                pref_service_))) {
       return empty_validity_map;
+    }
   }
 
   auto it = synced_profile_validity_->profile_validity().find(guid);
@@ -2706,6 +2707,11 @@ void PersonalDataManager::ApplyCardFixesAndCleanups() {
   DeleteDisusedCreditCards();
   MaybeCreateTestCreditCards();  // Once per user profile startup.
   ClearCreditCardNonSettingsOrigins();  // Ran everytime it is called.
+}
+
+void PersonalDataManager::ResetProfileValidity() {
+  synced_profile_validity_.reset();
+  profile_validities_need_update_ = true;
 }
 
 }  // namespace autofill
