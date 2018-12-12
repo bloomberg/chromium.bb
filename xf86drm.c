@@ -3014,7 +3014,7 @@ static int drmParseSubsystemType(int maj, int min)
     }
 
     return -EINVAL;
-#elif defined(__OpenBSD__)
+#elif defined(__OpenBSD__) || defined(__DragonFly__)
     return DRM_BUS_PCI;
 #else
 #warning "Missing implementation of drmParseSubsystemType"
