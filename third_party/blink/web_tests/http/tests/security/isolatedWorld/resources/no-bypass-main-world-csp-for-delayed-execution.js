@@ -40,8 +40,8 @@ function test(message) {
             if (message != "done") {
                 testRunner.setIsolatedWorldContentSecurityPolicy(1, permissiveCSP);
                 document.clickMessage = "PASS: Case " + tests + " was not evaluated in main world.";
-                // The listener defined inline by injectButtonWithInlineClickHandler should be evaluated in isolated world.
-                testRunner.evaluateScriptInIsolatedWorld(1, String(injectButtonWithInlineClickHandler) + "\ninjectButtonWithInlineClickHandler('document.clickMessage =\"PASS: Case " + tests + " was evaluated in isolated world.\"');");
+                // The listener defined inline by injectButtonWithInlineClickHandler should be evaluated in the main world instead of an isolated world.
+                testRunner.evaluateScriptInIsolatedWorld(1, String(injectButtonWithInlineClickHandler) + "\ninjectButtonWithInlineClickHandler('document.clickMessage =\"FAIL: Case " + tests + " was evaluated in isolated world.\"');");
             } else {
                 document.getElementById("button").click();
                 alert(document.clickMessage);
