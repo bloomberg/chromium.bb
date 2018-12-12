@@ -366,6 +366,7 @@ TEST_F(OmniboxViewViewsTest, ScheduledTextEditCommand) {
 // Test that Shift+Up and Shift+Down are not captured and let selection mode
 // take over. Test for crbug.com/863543 and crbug.com/892216.
 TEST_F(OmniboxViewViewsTest, SelectWithShift_863543) {
+  location_bar_model()->set_url(GURL("http://www.example.com/?query=1"));
   const base::string16 text =
       base::ASCIIToUTF16("http://www.example.com/?query=1");
   static_cast<OmniboxView*>(omnibox_view())
