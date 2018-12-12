@@ -223,8 +223,6 @@ bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     base::TimeTicks* next_run_time) {
   if (!main_thread_only().task_execution_allowed)
     return false;
-  if (main_thread_only().quit_pending)
-    return false;
 
   DCHECK(main_thread_only().task_source);
   bool task_ran = false;
