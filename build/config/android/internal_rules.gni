@@ -43,6 +43,7 @@ _java_target_blacklist = [ "*:*_unpack_aar" ]
 _default_proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
 _r8_path = "//third_party/r8/lib/r8.jar"
 
+_dexdump_path = "$android_sdk_build_tools/dexdump"
 _dexlayout_path = "//third_party/android_build_tools/art/dexlayout"
 _profman_path = "//third_party/android_build_tools/art/profman"
 _art_lib_file_names = [
@@ -1288,13 +1289,23 @@ if (enable_java_templates) {
             rebase_path(_dexlayout_path, root_build_dir),
             "--profman-path",
             rebase_path(_profman_path, root_build_dir),
+            "--dexdump-path",
+            rebase_path(_dexdump_path, root_build_dir),
           ]
           inputs += [
             _dexlayout_path,
             _profman_path,
+            _dexdump_path,
             invoker.dexlayout_profile,
           ]
           inputs += _default_art_libs
+          if (_proguard_enabled) {
+            args += [
+              "--proguard-mapping-path",
+              rebase_path(invoker.proguard_mapping_path, root_build_dir),
+            ]
+            inputs += [ invoker.proguard_mapping_path ]
+          }
         }
 
         if (!is_java_debug) {
