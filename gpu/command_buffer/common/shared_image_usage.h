@@ -24,6 +24,8 @@ enum SharedImageUsage : uint32_t {
   // TODO(backer): Fold back into SHARED_IMAGE_USAGE_RASTER once RasterInterface
   // can CPU raster (CopySubImage?) to SkImage.
   SHARED_IMAGE_USAGE_OOP_RASTERIZATION = 1 << 5,
+  // Image will be used for RGB emulation in WebGL on Mac.
+  SHARED_IMAGE_USAGE_RGB_EMULATION = 1 << 6,
 };
 
 }  // namespace gpu

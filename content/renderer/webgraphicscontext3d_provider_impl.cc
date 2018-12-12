@@ -104,4 +104,9 @@ cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache(
   return cache_iterator->second.get();
 }
 
+gpu::SharedImageInterface*
+WebGraphicsContext3DProviderImpl::SharedImageInterface() {
+  return provider_->SharedImageInterface();
+}
+
 }  // namespace content
