@@ -16,11 +16,6 @@
 #include "services/identity/public/cpp/identity_manager.h"
 
 class Profile;
-
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace arc {
 
 class ArcAuthContext : public UbertokenConsumer,
@@ -36,10 +31,9 @@ class ArcAuthContext : public UbertokenConsumer,
 
   // Prepares the context. Calling while an inflight operation exists will
   // cancel the inflight operation.
-  // On completion, |context| is passed to the callback. On error, |context|
-  // is nullptr.
-  using PrepareCallback =
-      base::Callback<void(net::URLRequestContextGetter* context)>;
+  // On completion, |true| is passed to the callback. On error, |false|
+  // is passed.
+  using PrepareCallback = base::Callback<void(bool success)>;
   void Prepare(const PrepareCallback& callback);
 
   // Creates and starts a request to fetch an access token for the given

@@ -71,7 +71,7 @@ ArcAuthContext::~ArcAuthContext() {
 
 void ArcAuthContext::Prepare(const PrepareCallback& callback) {
   if (context_prepared_) {
-    callback.Run(profile_->GetRequestContext());
+    callback.Run(true);
     return;
   }
 
@@ -123,7 +123,7 @@ void ArcAuthContext::OnRefreshTokensLoaded() {
 void ArcAuthContext::OnRefreshTokenTimeout() {
   LOG(WARNING) << "Failed to wait for refresh token.";
   identity_manager_->RemoveObserver(this);
-  std::move(callback_).Run(nullptr);
+  std::move(callback_).Run(false);
 }
 
 void ArcAuthContext::StartFetchers() {
@@ -162,7 +162,7 @@ void ArcAuthContext::OnFetcherError(const GoogleServiceAuthError& error) {
     }
     LOG(WARNING) << "Too many transient errors. Stop retrying.";
   }
-  std::move(callback_).Run(nullptr);
+  std::move(callback_).Run(false);
 }
 
 void ArcAuthContext::OnUbertokenSuccess(const std::string& token) {
@@ -182,7 +182,7 @@ void ArcAuthContext::OnMergeSessionSuccess(const std::string& data) {
       << "Auth context was successfully prepared after retry.";
   context_prepared_ = true;
   ResetFetchers();
-  std::move(callback_).Run(profile_->GetRequestContext());
+  std::move(callback_).Run(true);
 }
 
 void ArcAuthContext::OnMergeSessionFailure(
