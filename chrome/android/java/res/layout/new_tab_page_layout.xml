@@ -39,8 +39,7 @@
         android:addStatesFromChildren="true"
         android:background="@drawable/ntp_search_box"
         android:orientation="horizontal"
-        android:paddingStart="@dimen/location_bar_lateral_padding"
-        android:paddingEnd="@dimen/location_bar_lateral_padding" >
+        android:paddingStart="@dimen/location_bar_lateral_padding" >
         <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
         <EditText
             tools:ignore="Autofill,LabelFor"
@@ -57,12 +56,20 @@
             android:gravity="center_vertical"
             android:inputType="text"
             android:singleLine="true" />
+        <!-- Padding start is applied so that microphone icon appears in the same location as it
+             does in the main url bar. The microphone button in the url bar is
+             location_bar_icon_width (28dp) wide with 4dp start padding. It is placed
+             location_bar_lateral_padding (10dp) from the edge of the omnibox background.
+             The 4dp start padding effectively leaves 44dp for a 24dp icon, so it will end up
+             10dp from the edge as well ((44 - 24) / 2). -->
         <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/voice_search_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:paddingStart="4dp"
             android:contentDescription="@string/accessibility_toolbar_btn_mic"
             android:src="@drawable/btn_mic"
+            android:scaleType="centerInside"
             app:tint="@color/dark_mode_tint" />
     </view>
 

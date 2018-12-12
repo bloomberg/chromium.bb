@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -772,6 +773,12 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      */
     void updateVoiceSearchButtonVisibility() {
         mVoiceSearchButton.setVisibility(mManager.isVoiceSearchEnabled() ? VISIBLE : GONE);
+        ViewCompat.setPaddingRelative(mSearchBoxView, ViewCompat.getPaddingStart(mSearchBoxView),
+                mSearchBoxView.getPaddingTop(),
+                mManager.isVoiceSearchEnabled() ? 0
+                                                : getResources().getDimensionPixelSize(
+                                                        R.dimen.location_bar_lateral_padding),
+                mSearchBoxView.getPaddingBottom());
     }
 
     @Override
