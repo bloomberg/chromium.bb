@@ -16,6 +16,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@class BrowserContainerViewController;
 @class BrowserViewControllerDependencyFactory;
 @class CommandDispatcher;
 class GURL;
@@ -44,12 +45,15 @@ class ChromeBrowserState;
 // webUsageSuspended property for this BVC will be based on |model|, and future
 // changes to |model|'s suspension state should be made through this BVC
 // instead of directly on the model.
-- (instancetype)
-          initWithTabModel:(TabModel*)model
-              browserState:(ios::ChromeBrowserState*)browserState
-         dependencyFactory:(BrowserViewControllerDependencyFactory*)factory
-applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
-         commandDispatcher:(CommandDispatcher*)commandDispatcher
+- (instancetype)initWithTabModel:(TabModel*)model
+                      browserState:(ios::ChromeBrowserState*)browserState
+                 dependencyFactory:
+                     (BrowserViewControllerDependencyFactory*)factory
+        applicationCommandEndpoint:
+            (id<ApplicationCommands>)applicationCommandEndpoint
+                 commandDispatcher:(CommandDispatcher*)commandDispatcher
+    browserContainerViewController:
+        (BrowserContainerViewController*)browserContainerViewController
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil

@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
+#import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
@@ -55,6 +56,10 @@
 
 // Handles command dispatching.
 @property(nonatomic, strong) CommandDispatcher* dispatcher;
+
+// The coordinator managing the container view controller.
+@property(nonatomic, strong)
+    BrowserContainerCoordinator* browserContainerCoordinator;
 
 // =================================================
 // Child Coordinators, listed in alphabetical order.
@@ -121,6 +126,7 @@
   DCHECK(self.browserState);
   DCHECK(!self.viewController);
   self.dispatcher = [[CommandDispatcher alloc] init];
+  [self startBrowserContainer];
   [self createViewController];
   [self startChildCoordinators];
   [self.dispatcher
@@ -141,6 +147,7 @@
   [self.dispatcher stopDispatchingToTarget:self];
   [self stopChildCoordinators];
   [self destroyViewController];
+  [self stopBrowserContainer];
   self.dispatcher = nil;
   self.started = NO;
 }
@@ -172,16 +179,19 @@
 
 // Instantiates a BrowserViewController.
 - (void)createViewController {
+  DCHECK(self.browserContainerCoordinator.viewController);
   BrowserViewControllerDependencyFactory* factory =
       [[BrowserViewControllerDependencyFactory alloc]
           initWithBrowserState:self.browserState
                   webStateList:self.tabModel.webStateList];
   _viewController = [[BrowserViewController alloc]
-                initWithTabModel:self.tabModel
-                    browserState:self.browserState
-               dependencyFactory:factory
-      applicationCommandEndpoint:self.applicationCommandHandler
-               commandDispatcher:self.dispatcher];
+                    initWithTabModel:self.tabModel
+                        browserState:self.browserState
+                   dependencyFactory:factory
+          applicationCommandEndpoint:self.applicationCommandHandler
+                   commandDispatcher:self.dispatcher
+      browserContainerViewController:self.browserContainerCoordinator
+                                         .viewController];
 }
 
 // Shuts down the BrowserViewController.
@@ -189,6 +199,20 @@
   [self.viewController browserStateDestroyed];
   [self.viewController shutdown];
   _viewController = nil;
+}
+
+// Starts the browser container.
+- (void)startBrowserContainer {
+  self.browserContainerCoordinator = [[BrowserContainerCoordinator alloc]
+      initWithBaseViewController:nil
+                    browserState:self.browserState];
+  [self.browserContainerCoordinator start];
+}
+
+// Stops the browser container.
+- (void)stopBrowserContainer {
+  [self.browserContainerCoordinator stop];
+  self.browserContainerCoordinator = nil;
 }
 
 // Starts child coordinators.

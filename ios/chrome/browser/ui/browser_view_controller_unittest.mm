@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/ui/activity_services/share_protocol.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -208,11 +209,13 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     id mockApplicationCommandHandler =
         OCMProtocolMock(@protocol(ApplicationCommands));
     bvc_ = [[BrowserViewController alloc]
-                  initWithTabModel:tabModel_
-                      browserState:chrome_browser_state_.get()
-                 dependencyFactory:factory
-        applicationCommandEndpoint:mockApplicationCommandHandler
-                 commandDispatcher:command_dispatcher_];
+                      initWithTabModel:tabModel_
+                          browserState:chrome_browser_state_.get()
+                     dependencyFactory:factory
+            applicationCommandEndpoint:mockApplicationCommandHandler
+                     commandDispatcher:command_dispatcher_
+        browserContainerViewController:[[BrowserContainerViewController alloc]
+                                           init]];
 
     // Stub methods for TabModel.
     NSUInteger tabCount = 1;

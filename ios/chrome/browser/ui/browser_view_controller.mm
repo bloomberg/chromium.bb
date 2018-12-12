@@ -110,7 +110,6 @@
 #import "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
-#import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller_helper.h"
@@ -552,9 +551,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // is used to determine whether the pre-rendering animation should be played
   // or not.
   BOOL _insertedTabWasPrerenderedTab;
-
-  // The coordinator managing the container view controller.
-  BrowserContainerCoordinator* _browserContainerCoordinator;
 }
 
 // Activates/deactivates the object. This will enable/disable the ability for
@@ -562,6 +558,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // not active, the UI will not react to changes in the tab model, so generally
 // an inactive BVC should not be visible.
 @property(nonatomic, assign, getter=isActive) BOOL active;
+// Browser container view controller.
+@property(nonatomic, strong)
+    BrowserContainerViewController* browserContainerViewController;
 // Command dispatcher.
 @property(nonatomic, weak) CommandDispatcher* commandDispatcher;
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -810,16 +809,20 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - Object lifecycle
 
-- (instancetype)
-          initWithTabModel:(TabModel*)model
-              browserState:(ios::ChromeBrowserState*)browserState
-         dependencyFactory:(BrowserViewControllerDependencyFactory*)factory
-applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
-         commandDispatcher:(CommandDispatcher*)commandDispatcher {
+- (instancetype)initWithTabModel:(TabModel*)model
+                      browserState:(ios::ChromeBrowserState*)browserState
+                 dependencyFactory:
+                     (BrowserViewControllerDependencyFactory*)factory
+        applicationCommandEndpoint:
+            (id<ApplicationCommands>)applicationCommandEndpoint
+                 commandDispatcher:(CommandDispatcher*)commandDispatcher
+    browserContainerViewController:
+        (BrowserContainerViewController*)browserContainerViewController {
   self = [super initWithNibName:nil bundle:base::mac::FrameworkBundle()];
   if (self) {
     DCHECK(factory);
 
+    _browserContainerViewController = browserContainerViewController;
     _dependencyFactory = factory;
     _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
                                         presentingViewController:self];
@@ -856,14 +859,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
         [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
     self.toolbarInterface = _toolbarCoordinatorAdaptor;
 
-    // DownloadManagerCoordinator must be created before
-    // DownloadManagerTabHelper.
-    _browserContainerCoordinator = [[BrowserContainerCoordinator alloc]
-        initWithBaseViewController:self
-                      browserState:browserState];
-    [_browserContainerCoordinator start];
     _downloadManagerCoordinator = [[DownloadManagerCoordinator alloc]
-        initWithBaseViewController:_browserContainerCoordinator.viewController];
+        initWithBaseViewController:_browserContainerViewController];
     _downloadManagerCoordinator.presenter =
         [[VerticalAnimationContainer alloc] init];
 
@@ -911,7 +908,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (UIView*)contentArea {
-  return _browserContainerCoordinator.viewController.view;
+  return self.browserContainerViewController.view;
 }
 
 - (BOOL)isPlayingTTS {
@@ -1554,10 +1551,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   // The WebView is overflowing its bounds to be displayed below the toolbars.
   self.view.clipsToBounds = YES;
 
-  UIViewController* containerViewController =
-      _browserContainerCoordinator.viewController;
-  [self addChildViewController:containerViewController];
-
   self.contentArea.frame = initialViewsRect;
   self.typingShield = [[UIButton alloc] initWithFrame:initialViewsRect];
   self.typingShield.autoresizingMask = initialViewAutoresizing;
@@ -1569,8 +1562,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
               forControlEvents:UIControlEventTouchUpInside];
   self.view.autoresizingMask = initialViewAutoresizing;
   self.view.backgroundColor = [UIColor colorWithWhite:0.75 alpha:1.0];
+
+  [self addChildViewController:self.browserContainerViewController];
   [self.view addSubview:self.contentArea];
-  [containerViewController didMoveToParentViewController:self];
+  [self.browserContainerViewController didMoveToParentViewController:self];
   [self.view addSubview:self.typingShield];
   [super viewDidLoad];
 
@@ -1706,8 +1701,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   if (![self isViewLoaded]) {
     // Do not release |_infobarContainerCoordinator|, as this must have the same
     // lifecycle as the BrowserViewController.
-    [_browserContainerCoordinator stop];
-    _browserContainerCoordinator = nil;
     self.typingShield = nil;
     if (_voiceSearchController)
       _voiceSearchController->SetDispatcher(nil);
@@ -2277,7 +2270,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
   if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
     SadTabCoordinator* sadTabCoordinator = [[SadTabCoordinator alloc]
-        initWithBaseViewController:_browserContainerCoordinator.viewController
+        initWithBaseViewController:self.browserContainerViewController
                       browserState:_browserState];
     sadTabCoordinator.dispatcher = self.dispatcher;
     sadTabCoordinator.delegate = self;
@@ -2464,11 +2457,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
       UIViewController* viewController =
           _ntpCoordinatorsForWebStates[tab.webState].viewController;
       viewController.view.frame = [self ntpFrameForWebState:tab.webState];
-      _browserContainerCoordinator.viewController.contentViewController =
+      self.browserContainerViewController.contentViewController =
           viewController;
     } else {
-      _browserContainerCoordinator.viewController.contentView =
-          [self viewForTab:tab];
+      self.browserContainerViewController.contentView = [self viewForTab:tab];
     }
   }
   [self updateToolbar];
@@ -3753,7 +3745,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
                 browserState:_browserState
              toolbarDelegate:self.toolbarInterface
                     tabModel:self.tabModel
-        parentViewController:_browserContainerCoordinator.viewController
+        parentViewController:self.browserContainerViewController
                   dispatcher:self.dispatcher
                safeAreaInset:safeAreaInset];
     pageController.swipeRecognizerProvider = self.sideSwipeController;
@@ -4026,7 +4018,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (void)updateBrowserSafeAreaForTopToolbarHeight:(CGFloat)topToolbarHeight
                              bottomToolbarHeight:(CGFloat)bottomToolbarHeight {
   UIViewController* containerViewController =
-      _browserContainerCoordinator.viewController;
+      self.browserContainerViewController;
   containerViewController.additionalSafeAreaInsets = UIEdgeInsetsMake(
       topToolbarHeight - self.view.safeAreaInsets.top -
           self.currentWebState->GetWebViewProxy().contentOffset.y,
@@ -4828,7 +4820,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (void)tabModel:(TabModel*)model willRemoveTab:(Tab*)tab {
   if (tab == [model currentTab]) {
-    _browserContainerCoordinator.viewController.contentView = nil;
+    self.browserContainerViewController.contentView = nil;
   }
 
   [_paymentRequestManager stopTrackingWebState:tab.webState];
