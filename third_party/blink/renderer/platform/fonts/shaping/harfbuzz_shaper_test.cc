@@ -114,7 +114,7 @@ class HarfBuzzShaperTest : public testing::Test {
 class ScopedSubpixelOverride {
  public:
   ScopedSubpixelOverride(bool b) {
-    prev_layout_test_ = WebTestSupport::IsRunningWebTest();
+    prev_web_test_ = WebTestSupport::IsRunningWebTest();
     prev_subpixel_allowed_ =
         WebTestSupport::IsTextSubpixelPositioningAllowedForTest();
     prev_antialias_ = WebTestSupport::IsFontAntialiasingEnabledForTest();
@@ -147,7 +147,7 @@ class ScopedSubpixelOverride {
     WebTestSupport::SetFontAntialiasingEnabledForTest(prev_antialias_);
     WebTestSupport::SetTextSubpixelPositioningAllowedForTest(
         prev_subpixel_allowed_);
-    WebTestSupport::SetIsRunningWebTest(prev_layout_test_);
+    WebTestSupport::SetIsRunningWebTest(prev_web_test_);
 
     // Fonts cached with a different subpixel positioning state are not
     // automatically invalidated and need to be cleared between test
@@ -156,7 +156,7 @@ class ScopedSubpixelOverride {
   }
 
  private:
-  bool prev_layout_test_;
+  bool prev_web_test_;
   bool prev_subpixel_allowed_;
   bool prev_antialias_;
   bool prev_fd_subpixel_;

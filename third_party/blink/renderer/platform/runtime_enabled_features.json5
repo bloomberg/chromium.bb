@@ -850,7 +850,7 @@
       settable_from_internals: true,
     },
     {
-      name: "NoIdleEncodingForLayoutTests",
+      name: "NoIdleEncodingForWebTests",
       status: "test",
     },
     {

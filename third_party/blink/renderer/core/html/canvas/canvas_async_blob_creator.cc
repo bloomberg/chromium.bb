@@ -305,7 +305,7 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
   bool use_idle_encoding =
       (mime_type_ != kMimeTypeWebp) &&
       (enforce_idle_encoding_for_test_ ||
-       !RuntimeEnabledFeatures::NoIdleEncodingForLayoutTestsEnabled());
+       !RuntimeEnabledFeatures::NoIdleEncodingForWebTestsEnabled());
 
   if (!use_idle_encoding) {
     if (!IsMainThread()) {
