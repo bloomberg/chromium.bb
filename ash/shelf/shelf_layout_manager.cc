@@ -1063,6 +1063,10 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (visibility_state != SHELF_AUTO_HIDE)
     return SHELF_AUTO_HIDE_HIDDEN;
 
+  // Don't update the auto hide state if it is locked.
+  if (shelf_->auto_hide_lock())
+    return state_.auto_hide_state;
+
   if (shelf_widget_->IsShowingAppList() && !IsHomeLauncherEnabledInTabletMode())
     return SHELF_AUTO_HIDE_SHOWN;
 

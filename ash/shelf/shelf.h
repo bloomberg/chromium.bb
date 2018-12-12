@@ -44,6 +44,22 @@ class TrayBackgroundView;
 // root window controller.
 class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
  public:
+  // Used to maintain a lock for the auto-hide shelf. If lock, then we should
+  // not update the state of the auto-hide shelf.
+  class ScopedAutoHideLock {
+   public:
+    explicit ScopedAutoHideLock(Shelf* shelf) : shelf_(shelf) {
+      ++shelf_->auto_hide_lock_;
+    }
+    ~ScopedAutoHideLock() {
+      --shelf_->auto_hide_lock_;
+      DCHECK_GE(shelf_->auto_hide_lock_, 0);
+    }
+
+   private:
+    Shelf* shelf_;
+  };
+
   Shelf();
   ~Shelf() override;
 
@@ -163,6 +179,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   bool is_tablet_mode_animation_running() const {
     return is_tablet_mode_animation_running_;
   }
+  int auto_hide_lock() const { return auto_hide_lock_; }
 
  protected:
   // ShelfLayoutManagerObserver:
@@ -204,6 +221,10 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // OnBoundsChanged is called because of tablet mode. Use this value to sync
   // the animation for AppListButton.
   bool is_tablet_mode_animation_running_ = false;
+
+  // Used by ScopedAutoHideLock to maintain the state of the lock for auto-hide
+  // shelf.
+  int auto_hide_lock_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Shelf);
 };
