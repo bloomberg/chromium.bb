@@ -543,6 +543,57 @@ void HookFreeDefiniteSize(const AllocatorDispatch* self,
   }
 }
 
+void* HookAlignedMalloc(const AllocatorDispatch* self,
+                        size_t size,
+                        size_t alignment,
+                        void* context) {
+  ScopedAllowAlloc allow_logging;
+
+  const AllocatorDispatch* const next = self->next;
+  void* ptr = next->aligned_malloc_function(next, size, alignment, context);
+
+  if (LIKELY(allow_logging)) {
+    AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
+  }
+
+  return ptr;
+}
+
+void* HookAlignedRealloc(const AllocatorDispatch* self,
+                         void* address,
+                         size_t size,
+                         size_t alignment,
+                         void* context) {
+  ScopedAllowRealloc allow_logging;
+
+  const AllocatorDispatch* const next = self->next;
+  void* ptr =
+      next->aligned_realloc_function(next, address, size, alignment, context);
+
+  if (LIKELY(allow_logging.allow_free())) {
+    AllocatorShimLogFree(address);
+
+    // _aligned_realloc(size == 0) means _aligned_free()
+    if (size > 0 && LIKELY(allow_logging.allow_alloc()))
+      AllocatorShimLogAlloc(AllocatorType::kMalloc, ptr, size, nullptr);
+  }
+
+  return ptr;
+}
+
+void HookAlignedFree(const AllocatorDispatch* self,
+                     void* address,
+                     void* context) {
+  ScopedAllowFree allow_logging;
+
+  const AllocatorDispatch* const next = self->next;
+  next->aligned_free_function(next, address, context);
+
+  if (LIKELY(allow_logging)) {
+    AllocatorShimLogFree(address);
+  }
+}
+
 AllocatorDispatch g_hooks = {
     &HookAlloc,             // alloc_function
     &HookZeroInitAlloc,     // alloc_zero_initialized_function
@@ -553,6 +604,9 @@ AllocatorDispatch g_hooks = {
     &HookBatchMalloc,       // batch_malloc_function
     &HookBatchFree,         // batch_free_function
     &HookFreeDefiniteSize,  // free_definite_size_function
+    &HookAlignedMalloc,     // aligned_malloc_function
+    &HookAlignedRealloc,    // aligned_realloc_function
+    &HookAlignedFree,       // aligned_free_function
     nullptr,                // next
 };
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
