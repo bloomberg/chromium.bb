@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_FIRST_RUN_FIRST_RUN_INTERNAL_H_
 #define CHROME_BROWSER_FIRST_RUN_FIRST_RUN_INTERNAL_H_
 
+#include "build/build_config.h"
+
 class Profile;
 
 namespace base {
@@ -61,6 +63,14 @@ base::FilePath MasterPrefsPath();
 FirstRunState DetermineFirstRunState(bool has_sentinel,
                                      bool force_first_run,
                                      bool no_first_run);
+
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// For testing, forces the first run dialog to either be shown or not. If not
+// called, the decision to show the dialog or not will be made by Chrome based
+// on a number of factors (such as install type, whether it's a Chrome-branded
+// build, etc).
+void ForceFirstRunDialogShownForTesting(bool shown);
+#endif  // defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
 }  // namespace internal
 }  // namespace first_run
