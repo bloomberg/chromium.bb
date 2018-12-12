@@ -35,16 +35,23 @@ base::OnceClosure& GetBeforeShowFirstRunDialogHookForTesting() {
 namespace internal {
 namespace {
 
+enum class ForcedShowDialogState {
+  kNotForced,
+  kForceShown,
+  kForceSuppressed,
+};
+
+ForcedShowDialogState g_forced_show_dialog_state =
+    ForcedShowDialogState::kNotForced;
+
 #if !defined(OS_CHROMEOS)
 // Returns whether the first run dialog should be shown. This is only true for
 // certain builds, and only if the user has not already set preferences. In a
 // real, official-build first run, initializes the default metrics reporting if
 // the dialog should be shown.
 bool ShouldShowFirstRunDialog() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceFirstRunDialog)) {
-    return true;
-  }
+  if (g_forced_show_dialog_state != ForcedShowDialogState::kNotForced)
+    return g_forced_show_dialog_state == ForcedShowDialogState::kForceShown;
 
 #if !defined(GOOGLE_CHROME_BUILD)
   // On non-official builds, only --force-first-run-dialog will show the dialog.
@@ -79,6 +86,13 @@ bool ShouldShowFirstRunDialog() {
 #endif  // !OS_CHROMEOS
 
 }  // namespace
+
+void ForceFirstRunDialogShownForTesting(bool shown) {
+  if (shown)
+    g_forced_show_dialog_state = ForcedShowDialogState::kForceShown;
+  else
+    g_forced_show_dialog_state = ForcedShowDialogState::kForceSuppressed;
+}
 
 void DoPostImportPlatformSpecificTasks(Profile* profile) {
 #if !defined(OS_CHROMEOS)
