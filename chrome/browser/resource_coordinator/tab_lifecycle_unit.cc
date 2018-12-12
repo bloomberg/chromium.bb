@@ -29,6 +29,7 @@
 #include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
+#include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -779,8 +780,12 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
 bool TabLifecycleUnitSource::TabLifecycleUnit::DiscardImpl(
     LifecycleUnitDiscardReason reason) {
   // Can't discard a tab when it isn't in a tabstrip.
-  if (!tab_strip_model_)
+  if (!tab_strip_model_) {
+    // Logs are used to diagnose user feedback reports.
+    MEMORY_LOG(ERROR) << "Skipped discarding " << GetTitle()
+                      << " because it isn't in a tab strip.";
     return false;
+  }
 
   const LifecycleUnitState target_state =
       reason == LifecycleUnitDiscardReason::PROACTIVE &&
@@ -789,6 +794,10 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::DiscardImpl(
           : LifecycleUnitState::DISCARDED;
   if (!IsValidStateChange(GetState(), target_state,
                           DiscardReasonToStateChangeReason(reason))) {
+    // Logs are used to diagnose user feedback reports.
+    MEMORY_LOG(ERROR) << "Skipped discarding " << GetTitle()
+                      << " because a transition from " << GetState() << " to "
+                      << target_state << " is not allowed.";
     return false;
   }
 
