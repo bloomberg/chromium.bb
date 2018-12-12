@@ -887,6 +887,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     LoadCommittedDetails* details,
     bool is_same_document_navigation,
+    bool previous_page_was_activated,
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
   is_initial_navigation_ = false;
@@ -960,9 +961,9 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   switch (details->type) {
     case NAVIGATION_TYPE_NEW_PAGE:
-      RendererDidNavigateToNewPage(rfh, params, details->is_same_document,
-                                   details->did_replace_entry,
-                                   navigation_handle);
+      RendererDidNavigateToNewPage(
+          rfh, params, details->is_same_document, details->did_replace_entry,
+          previous_page_was_activated, navigation_handle);
       break;
     case NAVIGATION_TYPE_EXISTING_PAGE:
       RendererDidNavigateToExistingPage(rfh, params, details->is_same_document,
@@ -1045,6 +1046,11 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // Once it is committed, we no longer need to track several pieces of state on
   // the entry.
   active_entry->ResetForCommit(frame_entry);
+
+  // It is possible that we are re-using this entry and it was marked to be
+  // skipped on back/forward UI in its previous navigation. Reset it here so
+  // that it is set afresh, if applicable, for this navigation.
+  active_entry->set_should_skip_on_back_forward_ui(false);
 
   // The active entry's SiteInstance should match our SiteInstance.
   // TODO(creis): This check won't pass for subframes until we create entries
@@ -1211,6 +1217,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool is_same_document,
     bool replace_entry,
+    bool previous_page_was_activated,
     NavigationHandleImpl* handle) {
   std::unique_ptr<NavigationEntryImpl> new_entry;
   bool update_virtual_url = false;
@@ -1362,6 +1369,16 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   if (replace_entry && pending_entry_index_ != -1 &&
       pending_entry_->GetUniqueID() == params.nav_entry_id) {
     last_committed_entry_index_ = pending_entry_index_;
+  }
+
+  // The previous page that started this navigation needs to be skipped in
+  // subsequent back/forward UI navigations if it never received any user
+  // gesture. This is to intervene against pages that manipulate the history
+  // such that the user is not able to go back to the last site they interacted
+  // with (crbug.com/907167).
+  if (!replace_entry && !previous_page_was_activated &&
+      last_committed_entry_index_ != -1 && handle->IsRendererInitiated()) {
+    GetLastCommittedEntry()->set_should_skip_on_back_forward_ui(true);
   }
 
   InsertOrReplaceEntry(std::move(new_entry), replace_entry);

@@ -291,7 +291,8 @@ NavigationEntryImpl::NavigationEntryImpl(
       has_user_gesture_(false),
       reload_type_(ReloadType::NONE),
       started_from_context_menu_(false),
-      ssl_error_(false) {}
+      ssl_error_(false),
+      should_skip_on_back_forward_ui_(false) {}
 
 NavigationEntryImpl::~NavigationEntryImpl() {
 }
@@ -678,6 +679,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   // ResetForCommit: reload_type_
   copy->extra_data_ = extra_data_;
   copy->replaced_entry_data_ = replaced_entry_data_;
+  copy->should_skip_on_back_forward_ui_ = should_skip_on_back_forward_ui_;
 
   return copy;
 }

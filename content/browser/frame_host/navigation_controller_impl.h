@@ -158,11 +158,17 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   //
   // In the case that nothing has changed, the details structure is undefined
   // and it will return false.
+  //
+  // |previous_page_was_activated| is true if the previous page had user
+  // interaction. This is used for a new renderer-initiated navigation to decide
+  // if the page that initiated the navigation should be skipped on
+  // back/forward button.
   bool RendererDidNavigate(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       LoadCommittedDetails* details,
       bool is_same_document_navigation,
+      bool previous_page_was_activated,
       NavigationRequest* navigation_request);
 
   // Notifies us that we just became active. This is used by the WebContentsImpl
@@ -365,6 +371,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_same_document,
       bool replace_entry,
+      bool previous_page_was_activated,
       NavigationHandleImpl* handle);
   void RendererDidNavigateToExistingPage(
       RenderFrameHostImpl* rfh,

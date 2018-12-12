@@ -415,6 +415,15 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     replaced_entry_data_ = data;
   }
 
+  // See comment for should_skip_on_back_forward_ui_.
+  bool should_skip_on_back_forward_ui() const {
+    return should_skip_on_back_forward_ui_;
+  }
+
+  void set_should_skip_on_back_forward_ui(bool should_skip) {
+    should_skip_on_back_forward_ui_ = should_skip;
+  }
+
  private:
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
   // Session/Tab restore save portions of this class so that it can be recreated
@@ -541,6 +550,18 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // subframe navigations but we only need to track it for main frames, that's
   // why the field is listed here.
   base::Optional<ReplacedNavigationEntryData> replaced_entry_data_;
+
+  // Set to true if this page does a navigation without ever receiving a user
+  // gesture. If true, it will be skipped on subsequent back/forward button
+  // clicks. This is to intervene against pages that manipulate the history such
+  // that the user is not able to go back to the last site they interacted with.
+  // Navigation here implies both client side redirects and history.pushState
+  // calls.
+  // It is always false the first time an entry's navigation is committed and
+  // is also reset to false if an entry is reused for any subsequent
+  // navigations.
+  // TODO(shivanisha): Persist this field once the intervention is stable.
+  bool should_skip_on_back_forward_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationEntryImpl);
 };
