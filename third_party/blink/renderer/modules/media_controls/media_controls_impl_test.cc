@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_volume_slider_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_download_in_product_help_manager.h"
-#include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
@@ -122,7 +121,7 @@ class StubLocalFrameClientForImpl : public EmptyLocalFrameClient {
 
   WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement& element) override {
-    return HTMLMediaElementRemotePlayback::remote(element);
+    return &RemotePlayback::From(element);
   }
 };
 
@@ -291,8 +290,8 @@ class MediaControlsImplTest : public PageTestBase,
   void MouseMoveTo(WebFloatPoint pos);
   void MouseUpAt(WebFloatPoint pos);
 
-  bool HasAvailabilityCallbacks(RemotePlayback* remote_playback) {
-    return !remote_playback->availability_callbacks_.IsEmpty();
+  bool HasAvailabilityCallbacks(RemotePlayback& remote_playback) {
+    return !remote_playback.availability_callbacks_.IsEmpty();
   }
 
   virtual bool EnableDownloadInProductHelp() { return false; }
@@ -1178,10 +1177,9 @@ TEST_F(MediaControlsImplTest,
       HTMLVideoElement::Create(page_holder->GetDocument());
   page_holder->GetDocument().body()->AppendChild(element);
 
-  RemotePlayback* remote_playback =
-      HTMLMediaElementRemotePlayback::remote(*element);
+  RemotePlayback& remote_playback = RemotePlayback::From(*element);
 
-  EXPECT_TRUE(remote_playback->HasEventListeners());
+  EXPECT_TRUE(remote_playback.HasEventListeners());
   EXPECT_TRUE(HasAvailabilityCallbacks(remote_playback));
 
   WeakPersistent<HTMLMediaElement> weak_persistent_video = element;
@@ -1191,7 +1189,7 @@ TEST_F(MediaControlsImplTest,
 
     // When removed from the document, the event listeners should have been
     // dropped.
-    EXPECT_FALSE(remote_playback->HasEventListeners());
+    EXPECT_FALSE(remote_playback.HasEventListeners());
     EXPECT_FALSE(HasAvailabilityCallbacks(remote_playback));
   }
 
@@ -1211,8 +1209,7 @@ TEST_F(MediaControlsImplTest,
       HTMLVideoElement::Create(page_holder->GetDocument());
   page_holder->GetDocument().body()->AppendChild(element);
 
-  RemotePlayback* remote_playback =
-      HTMLMediaElementRemotePlayback::remote(*element);
+  RemotePlayback& remote_playback = RemotePlayback::From(*element);
 
   // This should be a no-op. We keep a reference on the media element to avoid
   // an unexpected GC.
@@ -1220,7 +1217,7 @@ TEST_F(MediaControlsImplTest,
     Persistent<HTMLMediaElement> video_holder = element;
     page_holder->GetDocument().body()->RemoveChild(element);
     page_holder->GetDocument().body()->AppendChild(video_holder.Get());
-    EXPECT_TRUE(remote_playback->HasEventListeners());
+    EXPECT_TRUE(remote_playback.HasEventListeners());
     EXPECT_TRUE(HasAvailabilityCallbacks(remote_playback));
   }
 }

@@ -16,16 +16,10 @@ class HTMLMediaElement;
 class QualifiedName;
 class RemotePlayback;
 
-// Class used to implement the Remote Playback API. It is a supplement to
-// HTMLMediaElement.
-class MODULES_EXPORT HTMLMediaElementRemotePlayback final
-    : public GarbageCollected<HTMLMediaElementRemotePlayback>,
-      public Supplement<HTMLMediaElement> {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementRemotePlayback);
-
+// Collection of static methods only used for bindings in the context of the
+// Remote Playback API.
+class MODULES_EXPORT HTMLMediaElementRemotePlayback final {
  public:
-  static const char kSupplementName[];
-
   static bool FastHasAttribute(const QualifiedName&, const HTMLMediaElement&);
   static void SetBooleanAttribute(const QualifiedName&,
                                   HTMLMediaElement&,
@@ -33,11 +27,6 @@ class MODULES_EXPORT HTMLMediaElementRemotePlayback final
 
   static HTMLMediaElementRemotePlayback& From(HTMLMediaElement&);
   static RemotePlayback* remote(HTMLMediaElement&);
-
-  void Trace(blink::Visitor*) override;
-
- private:
-  Member<RemotePlayback> remote_;
 };
 
 }  // namespace blink

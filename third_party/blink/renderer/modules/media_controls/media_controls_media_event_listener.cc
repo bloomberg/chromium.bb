@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/remoteplayback/availability_callback_wrapper.h"
-#include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -80,22 +79,20 @@ void MediaControlsMediaEventListener::Attach() {
         event_type_names::kKeypress, this, false);
   }
 
-  RemotePlayback* remote = GetRemotePlayback();
-  if (remote) {
-    remote->addEventListener(event_type_names::kConnect, this);
-    remote->addEventListener(event_type_names::kConnecting, this);
-    remote->addEventListener(event_type_names::kDisconnect, this);
+  RemotePlayback& remote = RemotePlayback::From(GetMediaElement());
+  remote.addEventListener(event_type_names::kConnect, this);
+  remote.addEventListener(event_type_names::kConnecting, this);
+  remote.addEventListener(event_type_names::kDisconnect, this);
 
-    // TODO(avayvod, mlamouri): Attach can be called twice. See
-    // https://crbug.com/713275.
-    if (!remote_playback_availability_callback_id_.has_value()) {
-      remote_playback_availability_callback_id_ =
-          base::make_optional(remote->WatchAvailabilityInternal(
-              MakeGarbageCollected<AvailabilityCallbackWrapper>(
-                  WTF::BindRepeating(&MediaControlsMediaEventListener::
-                                         OnRemotePlaybackAvailabilityChanged,
-                                     WrapWeakPersistent(this)))));
-    }
+  // TODO(avayvod, mlamouri): Attach can be called twice. See
+  // https://crbug.com/713275.
+  if (!remote_playback_availability_callback_id_.has_value()) {
+    remote_playback_availability_callback_id_ =
+        base::make_optional(remote.WatchAvailabilityInternal(
+            MakeGarbageCollected<AvailabilityCallbackWrapper>(
+                WTF::BindRepeating(&MediaControlsMediaEventListener::
+                                       OnRemotePlaybackAvailabilityChanged,
+                                   WrapWeakPersistent(this)))));
   }
 }
 
@@ -115,21 +112,19 @@ void MediaControlsMediaEventListener::Detach() {
         event_type_names::kKeypress, this, false);
   }
 
-  RemotePlayback* remote = GetRemotePlayback();
-  if (remote) {
-    remote->removeEventListener(event_type_names::kConnect, this);
-    remote->removeEventListener(event_type_names::kConnecting, this);
-    remote->removeEventListener(event_type_names::kDisconnect, this);
+  RemotePlayback& remote = RemotePlayback::From(GetMediaElement());
+  remote.removeEventListener(event_type_names::kConnect, this);
+  remote.removeEventListener(event_type_names::kConnecting, this);
+  remote.removeEventListener(event_type_names::kDisconnect, this);
 
-    // TODO(avayvod): apparently Detach() can be called without a previous
-    // Attach() call. See https://crbug.com/713275 for more details.
-    if (remote_playback_availability_callback_id_.has_value() &&
-        remote_playback_availability_callback_id_.value() !=
-            RemotePlayback::kWatchAvailabilityNotSupported) {
-      remote->CancelWatchAvailabilityInternal(
-          remote_playback_availability_callback_id_.value());
-      remote_playback_availability_callback_id_.reset();
-    }
+  // TODO(avayvod): apparently Detach() can be called without a previous
+  // Attach() call. See https://crbug.com/713275 for more details.
+  if (remote_playback_availability_callback_id_.has_value() &&
+      remote_playback_availability_callback_id_.value() !=
+          RemotePlayback::kWatchAvailabilityNotSupported) {
+    remote.CancelWatchAvailabilityInternal(
+        remote_playback_availability_callback_id_.value());
+    remote_playback_availability_callback_id_.reset();
   }
 }
 
@@ -140,10 +135,6 @@ bool MediaControlsMediaEventListener::operator==(
 
 HTMLMediaElement& MediaControlsMediaEventListener::GetMediaElement() {
   return media_controls_->MediaElement();
-}
-
-RemotePlayback* MediaControlsMediaEventListener::GetRemotePlayback() {
-  return HTMLMediaElementRemotePlayback::remote(GetMediaElement());
 }
 
 void MediaControlsMediaEventListener::Invoke(

@@ -72,8 +72,17 @@ bool IsBackgroundAvailabilityMonitoringDisabled() {
 }  // anonymous namespace
 
 // static
-RemotePlayback* RemotePlayback::Create(HTMLMediaElement& element) {
-  return MakeGarbageCollected<RemotePlayback>(element);
+const char RemotePlayback::kSupplementName[] = "RemotePlayback";
+
+// static
+RemotePlayback& RemotePlayback::From(HTMLMediaElement& element) {
+  RemotePlayback* self =
+      Supplement<HTMLMediaElement>::From<RemotePlayback>(element);
+  if (!self) {
+    self = MakeGarbageCollected<RemotePlayback>(element);
+    ProvideTo(element, self);
+  }
+  return *self;
 }
 
 RemotePlayback::RemotePlayback(HTMLMediaElement& element)
@@ -625,6 +634,7 @@ void RemotePlayback::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_element_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
+  Supplement<HTMLMediaElement>::Trace(visitor);
 }
 
 }  // namespace blink

@@ -84,7 +84,6 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_rotate_to_fullscreen_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_download_in_product_help_manager.h"
-#include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -211,9 +210,7 @@ bool ShouldShowCastButton(HTMLMediaElement& media_element) {
     return false;
   }
 
-  RemotePlayback* remote =
-      HTMLMediaElementRemotePlayback::remote(media_element);
-  return remote && remote->RemotePlaybackAvailable();
+  return RemotePlayback::From(media_element).RemotePlaybackAvailable();
 }
 
 bool PreferHiddenVolumeControls(const Document& document) {
@@ -1065,10 +1062,10 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
     return false;
   }
 
-  RemotePlayback* remote =
-      HTMLMediaElementRemotePlayback::remote(MediaElement());
-  if (remote && remote->GetState() != WebRemotePlaybackState::kDisconnected)
+  if (RemotePlayback::From(MediaElement()).GetState() !=
+      WebRemotePlaybackState::kDisconnected) {
     return false;
+  }
 
   // Keep the controls visible as long as the timer is running.
   const bool ignore_wait_for_timer = behavior_flags & kIgnoreWaitForTimer;
