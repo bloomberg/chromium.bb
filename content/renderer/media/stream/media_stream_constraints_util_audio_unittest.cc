@@ -1236,9 +1236,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, AdvancedConflictingLastConstraint) {
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   CheckDeviceDefaults(result);
-  // TODO(crbug.com/736309): Fold this local when clang is fixed.
-  auto hotword_enabled = &AudioCaptureSettings::hotword_enabled;
-  CheckBoolDefaults({hotword_enabled},
+  CheckBoolDefaults({&AudioCaptureSettings::hotword_enabled},
                     {&AudioProcessingProperties::goog_audio_mirroring,
                      &AudioProcessingProperties::goog_highpass_filter},
                     result);
