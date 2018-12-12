@@ -16,10 +16,13 @@
 #include "chromecast/app/android/cast_crash_reporter_client_android.h"
 #include "chromecast/base/chromecast_config_android.h"
 #include "chromecast/base/version.h"
+#include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/app/crash_reporter_client.h"
-#include "components/crash/content/app/crashpad.h"
 #include "content/public/common/content_switches.h"
 #include "jni/CastCrashHandler_jni.h"
+#include "services/service_manager/embedder/switches.h"
+#include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
+#include "third_party/breakpad/breakpad/src/client/linux/handler/minidump_descriptor.h"
 
 namespace {
 
@@ -44,13 +47,6 @@ bool CrashHandler::GetCrashDumpLocation(base::FilePath* crash_dir) {
       crash_dir);
 }
 
-// static
-bool CrashHandler::GetCrashReportsLocation(base::FilePath* reports_dir) {
-  DCHECK(g_crash_handler);
-  return g_crash_handler->crash_reporter_client_->GetCrashReportsLocation(
-      g_crash_handler->process_type_, reports_dir);
-}
-
 CrashHandler::CrashHandler(const std::string& process_type,
                            const base::FilePath& log_file_path)
     : log_file_path_(log_file_path),
@@ -68,19 +64,22 @@ CrashHandler::~CrashHandler() {
 }
 
 void CrashHandler::Initialize() {
-  crash_reporter::InitializeCrashpad(process_type_.empty(), process_type_);
+  if (process_type_.empty()) {
+    breakpad::InitCrashReporter(process_type_);
+    return;
+  }
+  if (process_type_ != service_manager::switches::kZygoteProcess) {
+    breakpad::InitNonBrowserCrashReporterForAndroid(process_type_);
+  }
 }
 
 // static
 void CrashHandler::UploadDumps(const base::FilePath& crash_dump_path,
-                               const base::FilePath& reports_path,
                                const std::string& uuid,
                                const std::string& application_feedback) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> crash_dump_path_java =
       base::android::ConvertUTF8ToJavaString(env, crash_dump_path.value());
-  base::android::ScopedJavaLocalRef<jstring> reports_path_java =
-      base::android::ConvertUTF8ToJavaString(env, reports_path.value());
   base::android::ScopedJavaLocalRef<jstring> uuid_java =
       base::android::ConvertUTF8ToJavaString(env, uuid);
   base::android::ScopedJavaLocalRef<jstring> application_feedback_java =
@@ -91,13 +90,11 @@ void CrashHandler::UploadDumps(const base::FilePath& crash_dump_path,
       android::ChromecastConfigAndroid::GetInstance()->CanSendUsageStats();
 
   if (can_send_usage_stats) {
-    Java_CastCrashHandler_uploadOnce(env, crash_dump_path_java,
-                                     reports_path_java, uuid_java,
+    Java_CastCrashHandler_uploadOnce(env, crash_dump_path_java, uuid_java,
                                      application_feedback_java,
                                      /* UploadToStaging = */ false);
   } else {
-    Java_CastCrashHandler_removeCrashDumps(env, crash_dump_path_java,
-                                           reports_path_java, uuid_java,
+    Java_CastCrashHandler_removeCrashDumps(env, crash_dump_path_java, uuid_java,
                                            application_feedback_java,
                                            /* UploadToStaging = */ false);
   }

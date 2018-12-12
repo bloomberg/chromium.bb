@@ -24,17 +24,9 @@ class CrashHandler {
   static void Initialize(const std::string& process_type,
                          const base::FilePath& log_file_path);
 
-  // Returns the directory location to use for a crashpad::CrashReportDatabase
-  // of raw minidump files. Prior to upload, these files are re-written as MIME
-  // multipart messages allowing upload metadata and attachments to be included
-  // as parts of the message.
+  // Returns the directory location for crash dumps.
   static bool GetCrashDumpLocation(base::FilePath* crash_dir);
-
-  // Returns the directory of crash reports re-written as MIME messages.
-  static bool GetCrashReportsLocation(base::FilePath* reports_dir);
-
   static void UploadDumps(const base::FilePath& crash_dump_path,
-                          const base::FilePath& reports_path,
                           const std::string& uuid,
                           const std::string& application_feedback);
 

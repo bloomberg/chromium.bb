@@ -68,7 +68,7 @@
 #include "content/shell/android/shell_descriptors.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #include "components/crash/content/app/crashpad.h"  // nogncheck
 #endif
 
@@ -85,7 +85,7 @@
 #include "content/shell/common/v8_crashpad_support_win.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "components/crash/content/app/breakpad_linux.h"
 #endif
 
@@ -328,13 +328,18 @@ void ShellMainDelegate::PreSandboxStartup() {
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kProcessType);
     crash_reporter::SetCrashReporterClient(g_shell_crash_client.Pointer());
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_MACOSX) || defined(OS_WIN)
     crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
 #elif defined(OS_LINUX)
     // Reporting for sub-processes will be initialized in ZygoteForked.
     if (process_type != service_manager::switches::kZygoteProcess)
       breakpad::InitCrashReporter(process_type);
-#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
+#elif defined(OS_ANDROID)
+    if (process_type.empty())
+      breakpad::InitCrashReporter(process_type);
+    else
+      breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
+#endif  // defined(OS_ANDROID)
   }
 #endif  // !defined(OS_FUCHSIA)
 

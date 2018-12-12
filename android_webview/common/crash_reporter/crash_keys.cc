@@ -4,7 +4,7 @@
 
 #include "android_webview/common/crash_reporter/crash_keys.h"
 
-#include "components/crash/core/common/crash_key.h"
+#include "components/crash/content/app/breakpad_linux.h"
 
 namespace android_webview {
 namespace crash_keys {
@@ -55,7 +55,7 @@ const char* const kWebViewCrashKeyWhiteList[] = {
 // clang-format on
 
 void InitCrashKeysForWebViewTesting() {
-  crash_reporter::InitializeCrashKeys();
+  breakpad::InitCrashKeysForTesting();
 }
 
 }  // namespace crash_keys

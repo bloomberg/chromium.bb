@@ -130,12 +130,6 @@ void RequestSingleCrashUpload(const std::string& local_id);
 
 void DumpWithoutCrashing();
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-// Logs message and immediately crashes the current process without triggering a
-// crash dump.
-void CrashWithoutDumping(const std::string& message);
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
 // Returns the Crashpad database path, only valid in the browser.
 base::FilePath GetCrashpadDatabasePath();
 

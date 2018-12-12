@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/minidump_uploader/rewrite_minidumps_as_mimes.h"
-
 #include <utility>
 
 #include "base/android/jni_string.h"
@@ -11,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "jni/CrashReportMimeWriter_jni.h"
+#include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/handler/minidump_to_upload_parameters.h"
 #include "third_party/crashpad/crashpad/snapshot/minidump/process_snapshot_minidump.h"
 #include "third_party/crashpad/crashpad/util/file/file_writer.h"
@@ -18,6 +17,13 @@
 #include "third_party/crashpad/crashpad/util/net/http_multipart_builder.h"
 
 namespace minidump_uploader {
+
+bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport& report,
+                   crashpad::HTTPMultipartBuilder* http_multipart_builder,
+                   pid_t* pid);
+
+bool WriteBodyToFile(crashpad::HTTPBodyStream* body,
+                     crashpad::FileWriterInterface* writer);
 
 namespace {
 
