@@ -9,6 +9,7 @@ proto_library("proto") {
     "example_preprocessor.proto",
     "generic_logistic_regression_model.proto",
     "nn_classifier.proto",
+    "quantized_nn_classifier.proto",
     "ranker_example.proto",
     "ranker_model.proto",
     "translate_ranker_model.proto",
