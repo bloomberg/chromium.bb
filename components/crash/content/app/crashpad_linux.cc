@@ -200,6 +200,7 @@ void SetBuildInfoAnnotations(std::map<std::string, std::string>* annotations) {
 
   (*annotations)["android_build_id"] = info->android_build_id();
   (*annotations)["android_build_fp"] = info->android_build_fp();
+  (*annotations)["sdk"] = base::StringPrintf("%d", info->sdk_int());
   (*annotations)["device"] = info->device();
   (*annotations)["model"] = info->model();
   (*annotations)["brand"] = info->brand();
