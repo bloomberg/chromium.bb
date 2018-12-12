@@ -97,10 +97,6 @@
 #include "jni/ContentNfcDelegate_jni.h"
 #endif
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
-
 #if defined(OS_LINUX)
 #include "components/services/font/font_service_app.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"
@@ -357,16 +353,6 @@ class DeviceServiceURLLoaderFactory : public network::SharedURLLoaderFactory {
 
   DISALLOW_COPY_AND_ASSIGN(DeviceServiceURLLoaderFactory);
 };
-
-bool ShouldEnableVizService() {
-#if defined(USE_AURA)
-  // aura::Env can be null in tests.
-  return aura::Env::HasInstance() &&
-         aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
-#else
-  return false;
-#endif
-}
 
 std::unique_ptr<service_manager::Service> CreateNetworkService(
     service_manager::mojom::ServiceRequest service_request) {
@@ -766,7 +752,7 @@ ServiceManagerContext::ServiceManagerContext(
 #endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif
 
-  if (ShouldEnableVizService()) {
+  if (features::IsMultiProcessMash() && features::IsMashOopVizEnabled()) {
     out_of_process_services[viz::mojom::kVizServiceName] =
         base::BindRepeating(&base::ASCIIToUTF16, "Visuals Service");
   }
