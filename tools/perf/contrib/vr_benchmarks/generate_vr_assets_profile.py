@@ -41,6 +41,8 @@ def main():
   profile_dir = os.path.join(args.output, 'vr_assets_profile')
   if os.path.isdir(profile_dir):
     shutil.rmtree(profile_dir)
+  os.makedirs(profile_dir)
+
   # Check whether there are actually files to copy - if not, the lack of a
   # directory will cause Telemetry to fail if we actually try to use the profile
   # directory. This is a workaround for not being able to check whether we
