@@ -296,4 +296,45 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   }
 }
 
+TEST_F(PerUserTopicRegistrationManagerTest,
+       ShouldDeletTopicsFromPrefsWhenRequestFails) {
+  TopicSet ids = GetSequenceOfTopics(kInvalidationObjectIdsCount);
+
+  AddCorrectSubscriptionResponce();
+
+  auto per_user_topic_registration_manager = BuildRegistrationManager();
+  EXPECT_TRUE(per_user_topic_registration_manager->GetRegisteredIds().empty());
+
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      ids, kFakeInstanceIdToken);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ids, per_user_topic_registration_manager->GetRegisteredIds());
+
+  // Disable some ids.
+  TopicSet disabled_ids = GetSequenceOfTopics(3);
+  TopicSet enabled_ids =
+      GetSequenceOfTopicsStartingAt(3, kInvalidationObjectIdsCount - 3);
+  // Without configuring the responce, the request will not happen.
+  per_user_topic_registration_manager->UpdateRegisteredTopics(
+      enabled_ids, kFakeInstanceIdToken);
+  base::RunLoop().RunUntilIdle();
+
+  // Ids should still be removed from prefs.
+  for (const auto& id : disabled_ids) {
+    const base::DictionaryValue* topics =
+        pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
+    const base::Value* private_topic_value = topics->FindKey(id);
+    ASSERT_EQ(private_topic_value, nullptr);
+  }
+
+  // Check that enable ids are still in the prefs.
+  for (const auto& id : enabled_ids) {
+    const base::DictionaryValue* topics =
+        pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
+    const base::Value* private_topic_value =
+        topics->FindKeyOfType(id, base::Value::Type::STRING);
+    ASSERT_NE(private_topic_value, nullptr);
+  }
+}
+
 }  // namespace syncer
