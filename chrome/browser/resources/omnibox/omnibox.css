@@ -202,3 +202,8 @@ tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
 .cell-fill-and-inline .overlap-warning {
   color: red;
 }
+
+.accesskey {
+  text-decoration: underline;
+  text-transform: capitalize;
+}
