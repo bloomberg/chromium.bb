@@ -12,7 +12,6 @@
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -705,15 +704,13 @@ IN_PROC_BROWSER_TEST_F(AndroidNoConfigUsbTest, TestDeviceNoConfig) {
   runner_->Run();
 }
 
-// Test is flaky. See: http://crbug.com/883680
 IN_PROC_BROWSER_TEST_F(AndroidUsbCountTest,
-                       DISABLED_TestNoMultipleCallsRemoveInCallback) {
+                       TestNoMultipleCallsRemoveInCallback) {
   MockCountListener listener(adb_bridge_);
   adb_bridge_->AddDeviceCountListener(&listener);
   runner_->Run();
   EXPECT_EQ(1, listener.invoked_);
   EXPECT_EQ(listener.invoked_ - 1, scheduler_invoked_);
-  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
 }
 
 IN_PROC_BROWSER_TEST_F(AndroidUsbCountTest,
@@ -723,7 +720,6 @@ IN_PROC_BROWSER_TEST_F(AndroidUsbCountTest,
   runner_->Run();
   EXPECT_EQ(3, listener.invoked_);
   EXPECT_EQ(listener.invoked_ - 1, scheduler_invoked_);
-  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
 }
 
 IN_PROC_BROWSER_TEST_F(AndroidUsbCountTest,
@@ -735,7 +731,6 @@ IN_PROC_BROWSER_TEST_F(AndroidUsbCountTest,
   runner_->Run();
   EXPECT_EQ(1, listener.invoked_);
   EXPECT_EQ(listener.invoked_ - 1, scheduler_invoked_);
-  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
 }
 
 IN_PROC_BROWSER_TEST_F(AndroidUsbCountTest,
@@ -745,7 +740,6 @@ IN_PROC_BROWSER_TEST_F(AndroidUsbCountTest,
   runner_->Run();
   EXPECT_EQ(2, listener.invoked_);
   EXPECT_EQ(listener.invoked_ - 1, scheduler_invoked_);
-  EXPECT_TRUE(base::MessageLoopCurrent::Get()->IsIdleForTesting());
 }
 
 IN_PROC_BROWSER_TEST_F(AndroidUsbTraitsTest, TestDeviceCounting) {
