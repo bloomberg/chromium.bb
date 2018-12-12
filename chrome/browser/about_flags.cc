@@ -1516,6 +1516,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"new-tab-button-position", flag_descriptions::kNewTabButtonPosition,
      flag_descriptions::kNewTabButtonPositionDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kNewTabButtonPositionChoices)},
+#if !defined(OS_ANDROID)
+    {"new-tab-loading-animation", flag_descriptions::kNewTabLoadingAnimation,
+     flag_descriptions::kNewTabLoadingAnimationDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kNewTabLoadingAnimation)},
+#endif  // !defined(OS_ANDROID)
     {"single-tab-mode", flag_descriptions::kSingleTabMode,
      flag_descriptions::kSingleTabModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSingleTabMode)},

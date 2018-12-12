@@ -2511,6 +2511,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "new-tab-loading-animation",
+    "owners": [ "pbos@chromium.org" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "new-usb-backend",
     "owners": [ "reillyg@chromium.org" ],
     "expiry_milestone": 76
