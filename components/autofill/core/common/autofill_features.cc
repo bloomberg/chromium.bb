@@ -113,7 +113,7 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics{
 // crowd-sourced field type predictions are queried for a form.
 const base::Feature kAutofillEnforceMinRequiredFieldsForQuery{
     "AutofillEnforceMinRequiredFieldsForQuery",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether or not a minimum number of fields is required before
 // field type votes are uploaded to the crowd-sourcing server.
