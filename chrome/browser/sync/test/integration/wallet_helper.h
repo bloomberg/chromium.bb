@@ -62,6 +62,10 @@ void UpdateServerAddressMetadata(
     int profile,
     const autofill::AutofillProfile& server_address);
 
+void UnmaskServerCard(int profile,
+                      const autofill::CreditCard& credit_card,
+                      const base::string16& full_number);
+
 sync_pb::SyncEntity CreateDefaultSyncWalletCard();
 
 sync_pb::SyncEntity CreateSyncWalletCard(const std::string& name,
