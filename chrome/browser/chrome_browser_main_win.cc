@@ -29,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
@@ -328,6 +329,9 @@ bool TryGetModuleTimeDateStamp(void* module_load_address,
 // Used as the callback for ModuleWatcher events in this process. Dispatches
 // them to the ModuleDatabase.
 void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
+  TRACE_EVENT1("browser", "OnModuleEvent", "module_path",
+               event.module_path.BaseName().AsUTF8Unsafe());
+
   auto* module_database = ModuleDatabase::GetInstance();
 
   switch (event.event_type) {
