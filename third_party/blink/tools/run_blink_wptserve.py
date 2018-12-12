@@ -8,7 +8,7 @@
 The main HTTP server is run on 8001, while the main HTTPS server is run on 8444.
 
 URL paths are relative to the web-platform-tests root, e.g. the test:
-    LayoutTests/external/wpt/referrer-policy/origin/http-rp/same-origin/http-http/img-tag/generic.no-redirect.http.html
+    web_tests/external/wpt/referrer-policy/origin/http-rp/same-origin/http-http/img-tag/generic.no-redirect.http.html
 Could be tried by running this scrip then navigating to:
     http://localhost:8001/referrer-policy/origin/http-rp/same-origin/http-http/img-tag/generic.no-redirect.http.html
 """

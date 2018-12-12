@@ -13,7 +13,7 @@ class _FakeOptimizer(BaselineOptimizer):
 
     def read_results_by_directory(self, baseline_name):
         if baseline_name.endswith('txt'):
-            return {'LayoutTests/passes/text.html': '123456'}
+            return {'web_tests/passes/text.html': '123456'}
         return {}
 
 

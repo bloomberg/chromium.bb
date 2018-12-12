@@ -29,7 +29,7 @@
 """A utility module for making standalone scripts to start servers.
 
 Scripts in tools/ can use this module to start servers that are normally used
-for layout tests, outside of the layout test runner.
+for web tests, outside of the web test runner.
 """
 
 import logging

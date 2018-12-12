@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""A helper class for reading in and dealing with tests expectations for layout tests."""
+"""A helper class for reading in and dealing with tests expectations for web tests."""
 
 from collections import defaultdict
 
@@ -880,7 +880,7 @@ class TestExpectationsModel(object):
 
 class TestExpectations(object):
     """Test expectations consist of lines with specifications of what
-    to expect from layout test cases. The test cases can be directories
+    to expect from web test cases. The test cases can be directories
     in which case the expectations apply to all test cases in that
     directory and any subdirectory. The format is along the lines of:
 

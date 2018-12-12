@@ -87,7 +87,7 @@ class WebTestResultsTest(unittest.TestCase):
     },
     "skipped": 450,
     "num_regressions": 15,
-    "layout_tests_dir": "/b/build/slave/Webkit_Mac10_5/build/src/third_party/WebKit/LayoutTests",
+    "layout_tests_dir": "/b/build/slave/Webkit_Mac10_5/build/src/third_party/blink/web_tests",
     "version": 3,
     "num_passes": 77,
     "fixable": 1220,

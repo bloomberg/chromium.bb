@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Classes for merging layout tests results directories together.
+"""Classes for merging web tests results directories together.
 
 This is split into three parts:
 
  * Generic code to merge JSON data together.
  * Generic code to merge directories together.
- * Code to specifically merge the layout tests result data together.
+ * Code to specifically merge the web tests result data together.
 
 The JSON data merger will recursively merge dictionaries by default.
 
@@ -518,7 +518,7 @@ class DirMerger(Merger):
                 break
 
 
-# Classes specific to merging LayoutTest results directory.
+# Classes specific to merging web test results directory.
 # ------------------------------------------------------------------------
 
 
@@ -577,7 +577,7 @@ class JSONTestResultsMerger(JSONMerger):
             NameRegexMatch(':interrupted$'),
             lambda o, name=None: bool(sum(o)))
 
-        # Layout test directory value is randomly created on each shard, so
+        # Web test directory value is randomly created on each shard, so
         # clear it.
         self.add_helper(
             NameRegexMatch(':layout_tests_dir$'),
@@ -596,8 +596,8 @@ class JSONTestResultsMerger(JSONMerger):
         return JSONMerger.fallback_matcher(self, objs, name)
 
 
-class LayoutTestDirMerger(DirMerger):
-    """Merge layout test result directory."""
+class WebTestDirMerger(DirMerger):
+    """Merge web test result directory."""
 
     def __init__(self, filesystem=None,
                  results_json_value_overrides=None,
@@ -674,7 +674,7 @@ def main(argv):
 
     parser = argparse.ArgumentParser()
     parser.description = """\
-Merges sharded layout test results into a single output directory.
+Merges sharded web test results into a single output directory.
 """
     parser.epilog = """\
 
@@ -812,7 +812,7 @@ directory. The script will be given the arguments plus
             results_json_value_overrides[result_key] = build_properties[build_prop_key]
         logging.debug('results_json_value_overrides: %r', results_json_value_overrides)
 
-    merger = LayoutTestDirMerger(
+    merger = WebTestDirMerger(
         results_json_value_overrides=results_json_value_overrides,
         results_json_allow_unknown_if_matching=args.results_json_allow_unknown_if_matching)
 

@@ -29,10 +29,10 @@
 import unittest
 
 from blinkpy.common.host_mock import MockHost
-from blinkpy.web_tests.print_layout_test_times import main
+from blinkpy.web_tests.print_web_test_times import main
 
 
-class PrintLayoutTestTimesTest(unittest.TestCase):
+class PrintWebTestTimesTest(unittest.TestCase):
 
     def check(self, args, expected_output, files=None):
         host = MockHost()

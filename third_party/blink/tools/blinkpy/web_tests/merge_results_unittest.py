@@ -541,7 +541,7 @@ class JSONTestResultsMerger(unittest.TestCase):
             merger.merge([{'seconds_since_epoch': 12}, {}]))
 
 
-class LayoutTestDirMergerTests(unittest.TestCase):
+class WebTestDirMergerTests(unittest.TestCase):
 
     # JSON files for shard 1
     # Shard1 has the following tests;
@@ -555,7 +555,7 @@ class LayoutTestDirMergerTests(unittest.TestCase):
   "chromium_revision": "123",
   "fixable": 1,
   "interrupted": false,
-  "layout_tests_dir": "/b/s/w/irJ1McdS/third_party/WebKit/LayoutTests",
+  "layout_tests_dir": "/b/s/w/irJ1McdS/third_party/blink/web_tests",
   "num_failures_by_type": {
     "AUDIO": 2,
     "CRASH": 3
@@ -677,7 +677,7 @@ ADD_RESULTS({
   "chromium_revision": "123",
   "fixable": 9,
   "interrupted": false,
-  "layout_tests_dir": "/b/s/w/sadfa124/third_party/WebKit/LayoutTests",
+  "layout_tests_dir": "/b/s/w/sadfa124/third_party/blink/web_tests",
   "num_failures_by_type": {
     "AUDIO": 10,
     "CRASH": 11
@@ -772,7 +772,7 @@ ADD_RESULTS({
 [Wed Mar 01 22:20:07.400802 2017] [ssl:warn] [pid 15010] AH01909: RSA certificate configured for 127.0.0.1:443 does NOT include an ID which matches the server name
 """
 
-    layout_test_filesystem = {
+    web_test_filesystem = {
         # Files for shard0
         '/shards/0/layout-test-results/access_log.txt': shard0_access_log,
         '/shards/0/layout-test-results/archived_results.json': shard0_archived_results_json,
@@ -1008,7 +1008,7 @@ ADD_RESULTS({
 [Wed Mar 01 22:20:07.400802 2017] [ssl:warn] [pid 15010] AH01909: RSA certificate configured for 127.0.0.1:443 does NOT include an ID which matches the server name
 """
 
-    layout_test_output_filesystem = {
+    web_test_output_filesystem = {
         '/out/layout-test-results/access_log.txt': output_access_log,
         '/out/layout-test-results/archived_results.json': output_archived_results_json,
         '/out/layout-test-results/error_log.txt': output_error_log,
@@ -1040,11 +1040,11 @@ ADD_RESULTS({
     }
 
     def test(self):
-        fs = MockFileSystem(self.layout_test_filesystem)
+        fs = MockFileSystem(self.web_test_filesystem)
 
-        merger = merge_results.LayoutTestDirMerger(fs, results_json_value_overrides={'layout_tests_dir': 'src'})
+        merger = merge_results.WebTestDirMerger(fs, results_json_value_overrides={'layout_tests_dir': 'src'})
         merger.merge('/out', ['/shards/0', '/shards/1'])
 
-        for fname, contents in self.layout_test_output_filesystem.items():
+        for fname, contents in self.web_test_output_filesystem.items():
             self.assertIn(fname, fs.files)
             self.assertMultiLineEqual(contents, fs.files[fname])
