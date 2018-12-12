@@ -18,7 +18,7 @@
 #include "base/process/process.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_chrome_prompt_impl.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_chrome_prompt_impl_win.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"

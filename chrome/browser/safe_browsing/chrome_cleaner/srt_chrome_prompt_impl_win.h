@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_CHROME_PROMPT_IMPL_H_
-#define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_CHROME_PROMPT_IMPL_H_
+#ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_CHROME_PROMPT_IMPL_WIN_H_
+#define CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_CHROME_PROMPT_IMPL_WIN_H_
 
 #include <memory>
 #include <set>
@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -57,4 +57,4 @@ class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_CHROME_PROMPT_IMPL_H_
+#endif  // CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_SRT_CHROME_PROMPT_IMPL_WIN_H_

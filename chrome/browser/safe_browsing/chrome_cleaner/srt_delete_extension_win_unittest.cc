@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_chrome_prompt_impl.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_chrome_prompt_impl_win.h"
 
 #include <vector>
 

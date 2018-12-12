@@ -257,8 +257,8 @@ class ChromeCleanerRunnerTest
   ~ChromeCleanerRunnerTest() override {}
 
   void SetUp() override {
-    // Set up the testing profile, so chrome_cleaner_scanner_results can get the
-    // extensions registry from it.
+    // Set up the testing profile, so chrome_cleaner_scanner_results_win can get
+    // the extensions registry from it.
     ASSERT_TRUE(profile_manager_.SetUp());
     testing_profile_ = profile_manager_.CreateTestingProfile("Profile 1");
     MockChromeCleanerProcess::AddMockExtensionsToProfile(testing_profile_);
