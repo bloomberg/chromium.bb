@@ -115,7 +115,7 @@ base::Time GetLastModificationTime(const base::FilePath& file_path) {
 constexpr int kLid = 478;
 constexpr size_t kWebAppId = 42;
 
-PeerConnectionKey GetPeerConnectionKey(const RenderProcessHost* rph, int lid) {
+PeerConnectionKey GetPeerConnectionKey(RenderProcessHost* rph, int lid) {
   const BrowserContext* browser_context = rph->GetBrowserContext();
   const auto browser_context_id = GetBrowserContextId(browser_context);
   return PeerConnectionKey(rph->GetID(), lid, browser_context_id);

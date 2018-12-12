@@ -297,7 +297,7 @@ GURL WebViewGuest::GetSiteForGuestPartitionConfig(
 
 // static
 std::string WebViewGuest::GetPartitionID(
-    const RenderProcessHost* render_process_host) {
+    RenderProcessHost* render_process_host) {
   WebViewRendererState* renderer_state = WebViewRendererState::GetInstance();
   int process_id = render_process_host->GetID();
   std::string partition_id;

@@ -41,7 +41,7 @@ ProcessResourceUsage* CreateRendererResourcesSampler(
 // Gets the profile name associated with the browser context of the given
 // |render_process_host| from the profile info cache.
 base::string16 GetRendererProfileName(
-    const content::RenderProcessHost* render_process_host) {
+    content::RenderProcessHost* render_process_host) {
   Profile* profile =
       Profile::FromBrowserContext(render_process_host->GetBrowserContext());
   return Task::GetProfileNameFromProfile(profile);
