@@ -7,10 +7,9 @@
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/array_traits_web_vector.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
-#include "third_party/blink/public/common/indexeddb/indexed_db_default_mojom_traits.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
-#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/platform/mojo/string16_mojom_traits.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -179,6 +178,87 @@ bool StructTraits<
     std::unique_ptr<blink::IDBKey>>::Read(blink::mojom::IDBKeyDataView data,
                                           std::unique_ptr<blink::IDBKey>* out) {
   return data.ReadData(out);
+}
+
+// static
+Vector<uint8_t>
+StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
+    bits(const std::unique_ptr<blink::IDBValue>& input) {
+  return input->Data()->CopyAs<Vector<uint8_t>>();
+}
+
+// static
+Vector<blink::mojom::blink::IDBBlobInfoPtr>
+StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
+    blob_or_file_info(const std::unique_ptr<blink::IDBValue>& input) {
+  Vector<blink::mojom::blink::IDBBlobInfoPtr> blob_or_file_info;
+  blob_or_file_info.ReserveInitialCapacity(input->BlobInfo().size());
+  for (const blink::WebBlobInfo& info : input->BlobInfo()) {
+    auto blob_info = blink::mojom::blink::IDBBlobInfo::New();
+    if (info.IsFile()) {
+      blob_info->file = blink::mojom::blink::IDBFileInfo::New();
+      blob_info->file->path = blink::WebStringToFilePath(info.FilePath());
+      String name = info.FileName();
+      if (name.IsNull())
+        name = g_empty_string;
+      blob_info->file->name = name;
+      blob_info->file->last_modified =
+          base::Time::FromDoubleT(info.LastModified());
+    }
+    blob_info->size = info.size();
+    blob_info->uuid = info.Uuid();
+    DCHECK(!blob_info->uuid.IsEmpty());
+    String mime_type = info.GetType();
+    if (mime_type.IsNull())
+      mime_type = g_empty_string;
+    blob_info->mime_type = mime_type;
+    blob_info->blob = blink::mojom::blink::BlobPtrInfo(
+        info.CloneBlobHandle(), blink::mojom::blink::Blob::Version_);
+    blob_or_file_info.push_back(std::move(blob_info));
+  }
+  return blob_or_file_info;
+}
+
+// static
+bool StructTraits<blink::mojom::IDBValueDataView,
+                  std::unique_ptr<blink::IDBValue>>::
+    Read(blink::mojom::IDBValueDataView data,
+         std::unique_ptr<blink::IDBValue>* out) {
+  Vector<uint8_t> value_bits;
+  if (!data.ReadBits(&value_bits))
+    return false;
+
+  if (value_bits.IsEmpty()) {
+    *out = blink::IDBValue::Create(scoped_refptr<blink::SharedBuffer>(),
+                                   blink::WebVector<blink::WebBlobInfo>());
+    return true;
+  }
+
+  scoped_refptr<blink::SharedBuffer> value_buffer = blink::SharedBuffer::Create(
+      reinterpret_cast<const char*>(value_bits.data()), value_bits.size());
+
+  Vector<blink::mojom::blink::IDBBlobInfoPtr> blob_or_file_info;
+  if (!data.ReadBlobOrFileInfo(&blob_or_file_info))
+    return false;
+
+  blink::WebVector<blink::WebBlobInfo> value_blob_info;
+  value_blob_info.reserve(blob_or_file_info.size());
+  for (const auto& info : blob_or_file_info) {
+    if (info->file) {
+      value_blob_info.emplace_back(info->uuid,
+                                   blink::FilePathToWebString(info->file->path),
+                                   info->file->name, info->mime_type,
+                                   info->file->last_modified.ToDoubleT(),
+                                   info->size, info->blob.PassHandle());
+    } else {
+      value_blob_info.emplace_back(info->uuid, info->mime_type, info->size,
+                                   info->blob.PassHandle());
+    }
+  }
+
+  *out = blink::IDBValue::Create(std::move(value_buffer),
+                                 std::move(value_blob_info));
+  return true;
 }
 
 // static

@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h"
 
-using blink::IndexedDBDatabaseMetadata;
 using blink::WebBlobInfo;
 using blink::WebIDBCallbacks;
 using blink::WebIDBDatabase;
@@ -33,8 +32,7 @@ std::unique_ptr<IDBValue> ConvertReturnValue(
                             WebVector<WebBlobInfo>());
   }
 
-  std::unique_ptr<IDBValue> output =
-      IndexedDBCallbacksImpl::ConvertValue(input->value);
+  std::unique_ptr<IDBValue> output = std::move(input->value);
   output->SetInjectedPrimaryKey(std::move(input->primary_key), input->key_path);
   return output;
 }
@@ -46,38 +44,6 @@ WebIDBNameAndVersion ConvertNameVersion(
 }
 
 }  // namespace
-
-// static
-std::unique_ptr<IDBValue> IndexedDBCallbacksImpl::ConvertValue(
-    const mojom::blink::IDBValuePtr& input) {
-  if (!input || input->bits.IsEmpty()) {
-    return IDBValue::Create(scoped_refptr<SharedBuffer>(),
-                            WebVector<WebBlobInfo>());
-  }
-
-  WebVector<WebBlobInfo> local_blob_info;
-  local_blob_info.reserve(input->blob_or_file_info.size());
-  for (const auto& info : input->blob_or_file_info) {
-    if (info->file) {
-      local_blob_info.emplace_back(
-          WebString(info->uuid), FilePathToWebString(info->file->path),
-          WebString(info->file->name), WebString(info->mime_type),
-          info->file->last_modified.ToDoubleT(), info->size,
-          info->blob.PassHandle());
-    } else {
-      local_blob_info.emplace_back(WebString(info->uuid),
-                                   WebString(info->mime_type), info->size,
-                                   info->blob.PassHandle());
-    }
-  }
-
-  // TODO(crbug.com/902498): Use mojom traits to map directly to WebData.
-  scoped_refptr<blink::SharedBuffer> value_buffer = blink::SharedBuffer::Create(
-      reinterpret_cast<const char*>(input->bits.data()), input->bits.size());
-  // Release input->bits std::vector.
-  input->bits.clear();
-  return IDBValue::Create(std::move(value_buffer), std::move(local_blob_info));
-}
 
 IndexedDBCallbacksImpl::IndexedDBCallbacksImpl(
     std::unique_ptr<WebIDBCallbacks> callbacks,
@@ -148,11 +114,19 @@ void IndexedDBCallbacksImpl::SuccessCursor(
     mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
     std::unique_ptr<IDBKey> key,
     std::unique_ptr<IDBKey> primary_key,
-    mojom::blink::IDBValuePtr value) {
+    base::Optional<std::unique_ptr<IDBValue>> optional_value) {
   WebIDBCursorImpl* cursor =
       new WebIDBCursorImpl(std::move(cursor_info), transaction_id_);
+  std::unique_ptr<IDBValue> value;
+  if (optional_value.has_value()) {
+    value = std::move(optional_value.value());
+  } else {
+    value = IDBValue::Create(scoped_refptr<SharedBuffer>(),
+                             WebVector<WebBlobInfo>());
+  }
+  DCHECK(value);
   callbacks_->OnSuccess(cursor, std::move(key), std::move(primary_key),
-                        ConvertValue(value));
+                        std::move(value));
   callbacks_.reset();
 }
 
@@ -165,24 +139,27 @@ void IndexedDBCallbacksImpl::SuccessValue(
 void IndexedDBCallbacksImpl::SuccessCursorContinue(
     std::unique_ptr<IDBKey> key,
     std::unique_ptr<IDBKey> primary_key,
-    mojom::blink::IDBValuePtr value) {
+    base::Optional<std::unique_ptr<IDBValue>> optional_value) {
+  std::unique_ptr<IDBValue> value;
+  if (optional_value.has_value()) {
+    value = std::move(optional_value.value());
+  } else {
+    value = IDBValue::Create(scoped_refptr<SharedBuffer>(),
+                             WebVector<WebBlobInfo>());
+  }
+  DCHECK(value);
   callbacks_->OnSuccess(std::move(key), std::move(primary_key),
-                        ConvertValue(value));
+                        std::move(value));
   callbacks_.reset();
 }
 
 void IndexedDBCallbacksImpl::SuccessCursorPrefetch(
     Vector<std::unique_ptr<IDBKey>> keys,
     Vector<std::unique_ptr<IDBKey>> primary_keys,
-    Vector<mojom::blink::IDBValuePtr> values) {
-  Vector<std::unique_ptr<IDBValue>> idb_values;
-  idb_values.ReserveInitialCapacity(values.size());
-  for (const mojom::blink::IDBValuePtr& value : values)
-    idb_values.emplace_back(ConvertValue(value));
-
+    Vector<std::unique_ptr<IDBValue>> values) {
   if (cursor_) {
     cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
-                             std::move(idb_values));
+                             std::move(values));
     cursor_->CachedContinue(callbacks_.get());
   }
   callbacks_.reset();

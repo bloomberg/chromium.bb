@@ -8,9 +8,14 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/base/file_path_mojom_traits.h"
+#include "mojo/public/cpp/base/string16_mojom_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
+#include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/platform/mojo/string16_mojom_traits.h"
 
 namespace blink {
@@ -34,6 +39,37 @@ TEST(IDBMojomTraitsTest, IDBKeyBinary) {
   ASSERT_TRUE(mojom::blink::IDBKey::DeserializeFromMessage(
       std::move(mojo_message), &output));
   scoped_refptr<SharedBuffer> output_data = output->Binary();
+  Vector<uint8_t> output_vector = output_data->CopyAs<Vector<uint8_t>>();
+
+  // Verify expectations.
+  ASSERT_EQ(input_data->size(), test_data_size);
+  ASSERT_EQ(input_vector.size(), test_data_size);
+  ASSERT_EQ(output_data->size(), test_data_size);
+  ASSERT_EQ(output_vector.size(), test_data_size);
+  ASSERT_EQ(input_vector, output_vector);
+}
+
+TEST(IDBMojomTraitsTest, IDBValue) {
+  // Generate test data.
+  std::mt19937 rng(5);
+  size_t test_data_size = 10000;
+  Vector<char> test_data(test_data_size);
+  std::generate(test_data.begin(), test_data.end(), rng);
+
+  // Create IDBValue mojom message.
+  scoped_refptr<SharedBuffer> input_data =
+      SharedBuffer::Create(test_data.data(), test_data.size());
+  std::unique_ptr<IDBValue> input =
+      IDBValue::Create(input_data, WebVector<WebBlobInfo>());
+  Vector<uint8_t> input_vector = input_data->CopyAs<Vector<uint8_t>>();
+  mojo::Message mojo_message =
+      mojom::blink::IDBValue::SerializeAsMessage(&input);
+
+  // Deserialize the mojo message.
+  std::unique_ptr<IDBValue> output;
+  ASSERT_TRUE(mojom::blink::IDBValue::DeserializeFromMessage(
+      std::move(mojo_message), &output));
+  scoped_refptr<SharedBuffer> output_data = output->Data();
   Vector<uint8_t> output_vector = output_data->CopyAs<Vector<uint8_t>>();
 
   // Verify expectations.
