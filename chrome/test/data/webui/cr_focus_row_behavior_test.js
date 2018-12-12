@@ -47,15 +47,28 @@ suite('cr-focus-row-behavior-test', function() {
     });
   });
 
-  setup(function(done) {
+  /**
+   * @param {!HTMLElement} element
+   * @return {!Promise} Promise that resolves when an afterNextRender()
+   *     callback on |element| is run.
+   */
+  function afterNextRender(element) {
+    return new Promise(resolve => {
+      Polymer.RenderStatus.afterNextRender(element, resolve);
+    });
+  }
+
+  setup(function() {
     PolymerTest.clearBody();
 
     testElement = document.createElement('focus-row-element');
     document.body.appendChild(testElement);
 
-    // Block until FocusRowBehavior.attached finishes running async setup.
-    Polymer.RenderStatus.afterNextRender(this, function() {
-      done();
+    // Block so that FocusRowBehavior.attached can run.
+    return afterNextRender(testElement).then(() => {
+      // Wait one more time to ensure that async setup in FocusRowBehavior has
+      // executed.
+      return afterNextRender(testElement);
     });
   });
 
