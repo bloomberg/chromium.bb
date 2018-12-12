@@ -4986,6 +4986,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="On Battery"/>
 </enum>
 
+<enum name="BooleanOptedIn">
+  <int value="0" label="Not opted-in"/>
+  <int value="1" label="Opted-in"/>
+</enum>
+
 <enum name="BooleanOriginHeaderSameAsRequestOrigin">
   <int value="0" label="Headers differ"/>
   <int value="1" label="Headers match"/>

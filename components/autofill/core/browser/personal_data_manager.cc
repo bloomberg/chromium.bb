@@ -2099,9 +2099,13 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
   DCHECK(base::FeatureList::IsEnabled(
       features::kAutofillEnableAccountWalletStorage));
 
-  // The option should only be shown if the user has not already accepted it.
-  return !prefs::IsUserOptedInWalletSyncTransport(
+  bool is_opted_in = prefs::IsUserOptedInWalletSyncTransport(
       pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id);
+
+  AutofillMetrics::LogWalletSyncTransportCardsOptIn(is_opted_in);
+
+  // The option should only be shown if the user has not already opted-in.
+  return !is_opted_in;
 }
 
 void PersonalDataManager::LogServerCardLinkClicked() const {
