@@ -33,6 +33,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void UpdateFullscreenTopUI(bool needs_check_tab_fullscreen) override;
   bool ShouldHideTopUIForFullscreen() const override;
   void UpdateThrobber(bool running) override;
+  SkColor GetFrameForegroundColor(ActiveState active_state) const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -63,10 +64,6 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
                                           int title_width);
 
   void PaintThemedFrame(gfx::Canvas* canvas);
-
-  // Returns the color to use for text and other title bar elements given the
-  // frame background color for |active_state|.
-  SkColor GetReadableFrameForegroundColor(ActiveState active_state) const;
 
   CGFloat FullscreenBackingBarHeight() const;
 

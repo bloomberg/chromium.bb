@@ -43,6 +43,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
   bool IsSingleTabModeAvailable() const override;
+  SkColor GetFrameForegroundColor(ActiveState active_state) const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -120,8 +121,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   Windows10CaptionButton* CreateCaptionButton(ViewID button_type,
                                               int accessible_name_resource_id);
-
-  SkColor GetTitlebarFeatureColor(ActiveState active_state) const;
 
   // Paint various sub-components of this view.
   void PaintTitlebar(gfx::Canvas* canvas) const;
