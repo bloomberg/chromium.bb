@@ -267,8 +267,8 @@ void TabIcon::UpdatePendingAnimationState() {
   }
 
   if (pending_animation_state_.favicon_placeholder_alpha) {
-    if (network_state_ == TabNetworkState::kWaiting ||
-        pending_animation_state_.loading_progress_animation_pending) {
+    // Fade in until the favicon fade-in starts. Then fade out.
+    if (!pending_animation_state_.favicon_fade_in_progress) {
       pending_animation_state_.favicon_placeholder_alpha =
           std::min(*pending_animation_state_.favicon_placeholder_alpha +
                        animation_delta_ms / kFaviconPlaceholderFadeInMs,
