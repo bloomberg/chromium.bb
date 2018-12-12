@@ -220,9 +220,10 @@ void ChromeCleanerRunner::CreateChromePromptImpl(
   // std::unique_ptrs with custom deleters.
   chrome_prompt_impl_.reset(new ChromePromptImpl(
       extension_service_, std::move(chrome_prompt_request),
-      base::Bind(&ChromeCleanerRunner::OnConnectionClosed,
-                 base::RetainedRef(this)),
-      base::Bind(&ChromeCleanerRunner::OnPromptUser, base::RetainedRef(this))));
+      base::BindOnce(&ChromeCleanerRunner::OnConnectionClosed,
+                     base::RetainedRef(this)),
+      base::BindOnce(&ChromeCleanerRunner::OnPromptUser,
+                     base::RetainedRef(this))));
 }
 
 void ChromeCleanerRunner::OnPromptUser(
