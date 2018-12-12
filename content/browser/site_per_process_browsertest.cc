@@ -63,6 +63,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -441,7 +442,6 @@ class TestInterstitialDelegate : public InterstitialPageDelegate {
   std::string GetHTMLContents() override { return "<p>Interstitial</p>"; }
 };
 
-#if defined(OS_ANDROID)
 bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
   if (!value)
@@ -458,7 +458,6 @@ bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
   point->set_y(y);
   return true;
 }
-#endif  // defined (OS_ANDROID)
 
 void OpenURLBlockUntilNavigationComplete(Shell* shell, const GURL& url) {
   WaitForLoadStop(shell->web_contents());
@@ -10749,6 +10748,163 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
   ShutdownTest();
 }
 #endif  // defined(OS_ANDROID)
+
+class TouchEventObserver : public RenderWidgetHost::InputEventObserver {
+ public:
+  TouchEventObserver(std::vector<uint32_t>* outgoing_touch_event_ids,
+                     std::vector<uint32_t>* acked_touch_event_ids)
+      : outgoing_touch_event_ids_(outgoing_touch_event_ids),
+        acked_touch_event_ids_(acked_touch_event_ids) {}
+
+  void OnInputEvent(const blink::WebInputEvent& event) override {
+    if (!blink::WebInputEvent::IsTouchEventType(event.GetType()))
+      return;
+
+    const auto& touch_event = static_cast<const blink::WebTouchEvent&>(event);
+    outgoing_touch_event_ids_->push_back(touch_event.unique_touch_event_id);
+  }
+
+  void OnInputEventAck(InputEventAckSource source,
+                       InputEventAckState state,
+                       const blink::WebInputEvent& event) override {
+    if (!blink::WebInputEvent::IsTouchEventType(event.GetType()))
+      return;
+
+    const auto& touch_event = static_cast<const blink::WebTouchEvent&>(event);
+    acked_touch_event_ids_->push_back(touch_event.unique_touch_event_id);
+  }
+
+ private:
+  std::vector<uint32_t>* outgoing_touch_event_ids_;
+  std::vector<uint32_t>* acked_touch_event_ids_;
+  DISALLOW_COPY_AND_ASSIGN(TouchEventObserver);
+};
+
+// This test verifies the ability of the TouchEventAckQueue to send TouchEvent
+// acks to the root view in the correct order in the event of a slow renderer.
+// This test uses a main-frame which acks instantly (no touch handler), and a
+// child frame which acks very slowly. A synthetic gesture tap is sent to the
+// child first, then the main frame. In this scenario, we expect the touch
+// events sent to the main-frame to ack first, which will be problematic if
+// the events are acked to the GestureRecognizer out of order.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchEventAckQueueOrdering) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1u, root->child_count());
+  FrameTreeNode* child_node = root->child_at(0);
+
+  // Add a *slow* & passive touch event handler in the child. It needs to be
+  // passive to ensure TouchStart doesn't get acked until after the touch
+  // handler completes.
+  EXPECT_TRUE(ExecuteScript(child_node,
+                            "touch_event_count = 0;\
+       function touch_handler(ev) {\
+         var start = Date.now();\
+         while (Date.now() < start + 1000) {}\
+         touch_event_count++;\
+       }\
+       document.body.addEventListener('touchstart', touch_handler,\
+                                      { passive : false });\
+       document.body.addEventListener('touchend', touch_handler,\
+                                      { passive : false });"));
+
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+
+  auto* root_host = static_cast<RenderWidgetHostImpl*>(
+      root->current_frame_host()->GetRenderWidgetHost());
+  auto* child_host = static_cast<RenderWidgetHostImpl*>(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+
+  // Create InputEventObserver for both, with access to common queue for
+  // logging.
+  std::vector<uint32_t> outgoing_touch_event_ids;
+  std::vector<uint32_t> acked_touch_event_ids;
+
+  TouchEventObserver parent_touch_event_observer(&outgoing_touch_event_ids,
+                                                 &acked_touch_event_ids);
+  TouchEventObserver child_touch_event_observer(&outgoing_touch_event_ids,
+                                                &acked_touch_event_ids);
+
+  root_host->AddInputEventObserver(&parent_touch_event_observer);
+  child_host->AddInputEventObserver(&child_touch_event_observer);
+
+  InputEventAckWaiter root_ack_waiter(root_host,
+                                      blink::WebInputEvent::kTouchEnd);
+  InputEventAckWaiter child_ack_waiter(child_host,
+                                       blink::WebInputEvent::kTouchEnd);
+  InputEventAckWaiter child_gesture_tap_ack_waiter(
+      child_host, blink::WebInputEvent::kGestureTap);
+
+  // Create GestureTap for child.
+  gfx::PointF child_tap_point;
+  {
+    // We need to know the center of the child's body, but in root view
+    // coordinates.
+    std::string str;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        child_node,
+        "var rect = document.body.getBoundingClientRect();\
+         var point = {\
+           x: rect.left + rect.width / 2,\
+           y: rect.top + rect.height / 2\
+         };\
+         window.domAutomationController.send(JSON.stringify(point));",
+        &str));
+    ConvertJSONToPoint(str, &child_tap_point);
+    child_tap_point = child_node->current_frame_host()
+                          ->GetView()
+                          ->TransformPointToRootCoordSpaceF(child_tap_point);
+  }
+  SyntheticTapGestureParams child_tap_params;
+  child_tap_params.position = child_tap_point;
+  child_tap_params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  child_tap_params.duration_ms = 300.f;
+  auto child_tap_gesture =
+      std::make_unique<SyntheticTapGesture>(child_tap_params);
+
+  // Create GestureTap for root.
+  SyntheticTapGestureParams root_tap_params;
+  root_tap_params.position = gfx::PointF(5.f, 5.f);
+  root_tap_params.duration_ms = 300.f;
+  root_tap_params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  auto root_tap_gesture =
+      std::make_unique<SyntheticTapGesture>(root_tap_params);
+
+  // Queue both GestureTaps, child first.
+  root_host->QueueSyntheticGesture(
+      std::move(child_tap_gesture),
+      base::BindOnce([](SyntheticGesture::Result result) {
+        EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+      }));
+  root_host->QueueSyntheticGesture(
+      std::move(root_tap_gesture),
+      base::BindOnce([](SyntheticGesture::Result result) {
+        EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+      }));
+
+  root_ack_waiter.Wait();
+  child_ack_waiter.Wait();
+
+  // Verify the child did receive two touch events.
+  int child_touch_event_count = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      child_node, "window.domAutomationController.send(touch_event_count);",
+      &child_touch_event_count));
+  EXPECT_EQ(2, child_touch_event_count);
+
+  // Verify Acks from parent arrive first.
+  EXPECT_EQ(4u, outgoing_touch_event_ids.size());
+  EXPECT_EQ(4u, acked_touch_event_ids.size());
+  EXPECT_EQ(outgoing_touch_event_ids[2], acked_touch_event_ids[0]);
+  EXPECT_EQ(outgoing_touch_event_ids[3], acked_touch_event_ids[1]);
+
+  // Verify no DCHECKs from GestureRecognizer, indicating acks happened in
+  // order.
+  child_gesture_tap_ack_waiter.Wait();
+}
 
 // This test verifies that the main-frame's page scale factor propagates to
 // the compositor layertrees in each of the child processes.

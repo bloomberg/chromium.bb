@@ -149,6 +149,10 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // flinging.
   void StopFling();
 
+  // Returns true if |view| is currently registered in the router's owners map.
+  bool IsViewInMap(const RenderWidgetHostViewBase* view) const;
+  bool ViewMapIsEmpty() const;
+
   // TouchEmulatorClient:
   void ForwardEmulatedGestureEvent(
       const blink::WebGestureEvent& event) override;
@@ -199,7 +203,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       viz::EventSource source,
       gfx::PointF* transformed_point) const;
 
-  bool IsViewInMap(const RenderWidgetHostViewBase* view) const;
   void RouteTouchscreenGestureEvent(RenderWidgetHostViewBase* root_view,
                                     const blink::WebGestureEvent* event,
                                     const ui::LatencyInfo& latency);
