@@ -4891,6 +4891,32 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedKnownKnown) {
   EXPECT_FALSE(sock_->IsConnected());
 }
 
+// Test downgrade enforcement allows valid connections with known roots when
+// configured to.
+TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedKnownValid) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kEnforceTLS13Downgrade, {{"known_roots_only", "true"}});
+
+  ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
+
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted and chains to a public root.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = server_cert;
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  SSLConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(sock_->IsConnected());
+}
+
 // Test downgrade enforcement ignores unknown roots when configured to.
 TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedKnownUnknown) {
   base::test::ScopedFeatureList feature_list;
