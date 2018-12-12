@@ -101,7 +101,7 @@ class CommandMarshal {
     return index;
   }
 
-  // Reads the next parameter as an string.
+  // Reads the next parameter as a string.
   virtual std::string ReadString() = 0;
 
   // Reads the next parameter from stdin as string.

@@ -905,7 +905,7 @@ message AppStatus {
 
 // Chrome user profile level status.
 message ChromeUserProfileReport {
-  // An string to uniquely identify this profile within the browser.
+  // A string to uniquely identify this profile within the browser.
   optional string id = 1;
   // A JSON encoded string containing both the “email” and “id” (obfuscated
   // GaiaID) of the user signed in to the Chrome browser, if any.

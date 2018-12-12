@@ -170,7 +170,7 @@ class PolicyOpcode {
     *reinterpret_cast<T*>(&arguments_[index].mem) = argument;
   }
 
-  // Retrieves the actual address of an string argument. When using
+  // Retrieves the actual address of a string argument. When using
   // GetArgument() to retrieve an index that contains a string, the returned
   // value is just an offset to the actual string.
   // index: the stored string index. Valid values are from 0
