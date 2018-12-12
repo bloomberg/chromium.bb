@@ -1573,3 +1573,5 @@ crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/r
 crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/response-form-data-gc-crash.html [ Slow ]
 crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/response-json-gc-crash.html [ Slow ]
 crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/response-text-gc-crash.html [ Slow ]
+
+crbug.com/912364 [ Mac ] virtual/user-activation-v2/fast/events/no-fake-mousemove.html [ Slow ]
