@@ -112,6 +112,10 @@ class ProfileNetworkContextService : public KeyedService,
       bool in_memory,
       const base::FilePath& relative_partition_path);
 
+  // Returns the path for a given storage partition.
+  base::FilePath GetPartitionPath(
+      const base::FilePath& relative_partition_path);
+
   // content_settings::Observer:
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
