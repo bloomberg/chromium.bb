@@ -288,10 +288,8 @@ void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {
 }
 
 void StorageHandler::UpdateAndroidSize() {
-  if (!arc::IsArcPlayStoreEnabledForProfile(profile_) ||
-      arc::IsArcOptInVerificationDisabled()) {
+  if (!arc::IsArcPlayStoreEnabledForProfile(profile_))
     return;
-  }
 
   if (updating_android_size_)
     return;
