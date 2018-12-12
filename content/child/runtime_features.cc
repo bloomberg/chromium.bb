@@ -102,9 +102,9 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     const base::CommandLine& command_line) {
-  bool enableExperimentalWebPlatformFeatures = command_line.HasSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-  if (enableExperimentalWebPlatformFeatures)
+  bool enable_experimental_web_platform_features =
+      command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures);
+  if (enable_experimental_web_platform_features)
     WebRuntimeFeatures::EnableExperimentalFeatures(true);
 
   SetRuntimeFeatureDefaultsForPlatform();
@@ -216,7 +216,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnablePrintBrowser(true);
 
   if (command_line.HasSwitch(switches::kEnableNetworkInformationDownlinkMax) ||
-      enableExperimentalWebPlatformFeatures) {
+      enable_experimental_web_platform_features) {
     WebRuntimeFeatures::EnableNetInfoDownlinkMax(true);
   }
 
@@ -254,7 +254,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableSecMetadata(
       base::FeatureList::IsEnabled(features::kSecMetadata) ||
-      enableExperimentalWebPlatformFeatures);
+      enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableUserActivationV2(
       base::FeatureList::IsEnabled(features::kUserActivationV2));
@@ -373,7 +373,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableWebAuthGetTransports(
       base::FeatureList::IsEnabled(features::kWebAuthGetTransports) ||
-      enableExperimentalWebPlatformFeatures);
+      enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableClientPlaceholdersForServerLoFi(
       base::GetFieldTrialParamValue("PreviewsClientLoFi",
@@ -515,17 +515,19 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableBackgroundFetchAccessActiveFetches(
       base::FeatureList::IsEnabled(
-          features::kBackgroundFetchAccessActiveFetches));
+          features::kBackgroundFetchAccessActiveFetches) ||
+      enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableBackgroundFetchUploads(
-      base::FeatureList::IsEnabled(features::kBackgroundFetchUploads));
+      base::FeatureList::IsEnabled(features::kBackgroundFetchUploads) ||
+      enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableNoHoverAfterLayoutChange(
       base::FeatureList::IsEnabled(features::kNoHoverAfterLayoutChange));
 
   WebRuntimeFeatures::EnableJankTracking(
       base::FeatureList::IsEnabled(blink::features::kJankTracking) ||
-      enableExperimentalWebPlatformFeatures);
+      enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableFirstContentfulPaintPlusPlus(
       base::FeatureList::IsEnabled(
