@@ -1306,7 +1306,7 @@ void AddCorbExceptionForPluginOnIOThread(int process_id) {
       base::BindOnce(&AddCorbExceptionForPluginOnUIThread, process_id));
 }
 
-service_manager::Connector* MaybeGetConnectorForProcess() {
+service_manager::Connector* MaybeGetProcessResourceCoordinator() {
   auto* connection = ServiceManagerConnection::GetForProcess();
   if (!connection)
     return nullptr;
@@ -1594,7 +1594,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       channel_connected_(false),
       sent_render_process_ready_(false),
       renderer_host_binding_(this),
-      process_resource_coordinator_(MaybeGetConnectorForProcess()),
+      process_resource_coordinator_(MaybeGetProcessResourceCoordinator()),
       instance_weak_factory_(
           new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
       frame_sink_provider_(id_),

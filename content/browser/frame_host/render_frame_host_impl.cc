@@ -446,7 +446,7 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactory(
   return url::Origin::Create(target_url);
 }
 
-service_manager::Connector* MaybeGetConnectorForProcess() {
+service_manager::Connector* MaybeGetFrameResourceCoordinator() {
   auto* connection = ServiceManagerConnection::GetForProcess();
   if (!connection)
     return nullptr;
@@ -778,7 +778,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       accessibility_reset_count_(0),
       browser_plugin_embedder_ax_tree_id_(ui::AXTreeIDUnknown()),
       no_create_browser_accessibility_manager_for_testing_(false),
-      frame_resource_coordinator_(MaybeGetConnectorForProcess()),
+      frame_resource_coordinator_(MaybeGetFrameResourceCoordinator()),
       web_ui_type_(WebUI::kNoWebUI),
       pending_web_ui_type_(WebUI::kNoWebUI),
       should_reuse_web_ui_(false),
