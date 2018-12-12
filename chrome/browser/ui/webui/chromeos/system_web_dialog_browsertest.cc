@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "components/account_id/account_id.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -41,45 +42,50 @@ bool IsSystemModalWindowOpen() {
   return modal_open;
 }
 
-class SystemWebDialogTest : public LoginManagerTest {
- public:
-  SystemWebDialogTest()
-      : LoginManagerTest(false, true /* should_initialize_webui */) {}
-  ~SystemWebDialogTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SystemWebDialogTest);
-};
-
 class MockSystemWebDialog : public SystemWebDialogDelegate {
  public:
-  MockSystemWebDialog()
+  explicit MockSystemWebDialog(const char* id = nullptr)
       : SystemWebDialogDelegate(GURL(chrome::kChromeUIVersionURL),
-                                base::string16()) {}
+                                base::string16()) {
+    if (id)
+      id_ = std::string(id);
+  }
   ~MockSystemWebDialog() override = default;
 
+  const std::string& Id() override { return id_; }
   std::string GetDialogArgs() const override { return std::string(); }
 
  private:
+  std::string id_;
   DISALLOW_COPY_AND_ASSIGN(MockSystemWebDialog);
 };
 
 }  // namespace
 
+class SystemWebDialogLoginTest : public LoginManagerTest {
+ public:
+  SystemWebDialogLoginTest()
+      : LoginManagerTest(false, true /* should_initialize_webui */) {}
+  ~SystemWebDialogLoginTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SystemWebDialogLoginTest);
+};
+
 // Verifies that system dialogs are modal before login (e.g. during OOBE).
-IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, ModalTest) {
+IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, ModalTest) {
   auto* dialog = new MockSystemWebDialog();
   dialog->ShowSystemDialog();
   EXPECT_TRUE(IsSystemModalWindowOpen());
 }
 
-IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, PRE_NonModalTest) {
+IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, PRE_NonModalTest) {
   RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
   StartupUtils::MarkOobeCompleted();
 }
 
 // Verifies that system dialogs are not modal and always-on-top after login.
-IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, NonModalTest) {
+IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, NonModalTest) {
   LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
   auto* dialog = new MockSystemWebDialog();
   dialog->ShowSystemDialog();
@@ -89,6 +95,20 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, NonModalTest) {
   if (::features::IsUsingWindowService())
     window_to_test = window_to_test->parent();
   EXPECT_TRUE(window_to_test->GetProperty(aura::client::kAlwaysOnTopKey));
+}
+
+using SystemWebDialogTest = InProcessBrowserTest;
+
+IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, InstanceTest) {
+  const char* kDialogId = "dialog_id";
+  SystemWebDialogDelegate* dialog = new MockSystemWebDialog(kDialogId);
+  dialog->ShowSystemDialog();
+  SystemWebDialogDelegate* found_dialog =
+      SystemWebDialogDelegate::FindInstance(kDialogId);
+  EXPECT_EQ(dialog, found_dialog);
+  // Closing (deleting) the dialog causes a crash in WebDialogView when the main
+  // loop is run. TODO(stevenjb): Investigate, fix, and test closing the dialog.
+  // https://crbug.com/855344.
 }
 
 }  // namespace chromeos
