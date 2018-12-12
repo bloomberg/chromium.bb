@@ -21007,6 +21007,8 @@ Called by update_net_error_codes.py.-->
   <int value="2649" label="OpenerNavigationDownloadCrossOriginNoGesture"/>
   <int value="2650" label="V8RegExpMatchIsTrueishOnNonJSRegExp"/>
   <int value="2651" label="V8RegExpMatchIsFalseishOnJSRegExp"/>
+  <int value="2652" label="DownloadInAdFrameWithUserGesture"/>
+  <int value="2653" label="DownloadInAdFrameWithoutUserGesture"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

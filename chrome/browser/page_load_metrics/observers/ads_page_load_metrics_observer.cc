@@ -247,14 +247,27 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
       value |= blink::DownloadStats::kGestureBit;
     blink::DownloadStats::RecordSubframeSandboxOriginAdGesture(value);
 
+    std::vector<blink::mojom::WebFeature> web_features;
+    if (ad_types.any()) {
+      // Note: Here it covers download due to navigations to non-web-renderable
+      // content. These two features can also be logged from blink for download
+      // originated from clicking on <a download> link that results in direct
+      // download.
+      web_features.push_back(
+          gesture
+              ? blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture
+              : blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture);
+    }
     if (sandboxed) {
-      blink::mojom::WebFeature web_feature =
+      web_features.push_back(
           gesture ? blink::mojom::WebFeature::
                         kNavigationDownloadInSandboxWithUserGesture
                   : blink::mojom::WebFeature::
-                        kNavigationDownloadInSandboxWithoutUserGesture;
+                        kNavigationDownloadInSandboxWithoutUserGesture);
+    }
+    if (!web_features.empty()) {
       page_load_metrics::mojom::PageLoadFeatures page_load_features(
-          {web_feature}, {} /* css_properties */,
+          web_features, {} /* css_properties */,
           {} /* animated_css_properties */);
       page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
           ad_host, page_load_features);

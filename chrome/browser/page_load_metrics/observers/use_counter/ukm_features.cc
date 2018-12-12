@@ -80,6 +80,8 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kHTMLAnchorElementDownloadInSandboxWithoutUserGesture,
           WebFeature::kNavigationDownloadInSandboxWithUserGesture,
           WebFeature::kNavigationDownloadInSandboxWithoutUserGesture,
+          WebFeature::kDownloadInAdFrameWithUserGesture,
+          WebFeature::kDownloadInAdFrameWithoutUserGesture,
       }));
   return opt_in_features->count(feature);
 }

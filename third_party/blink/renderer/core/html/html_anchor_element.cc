@@ -404,6 +404,16 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   if (hasAttribute(kDownloadAttr) &&
       NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
       GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
+    if (frame->IsAdSubframe()) {
+      // Note: Here it covers download originated from clicking on <a download>
+      // link that results in direct download. These two features can also be
+      // logged from browser for download due to navigations to
+      // non-web-renderable content.
+      UseCounter::Count(GetDocument(),
+                        LocalFrame::HasTransientUserActivation(frame)
+                            ? WebFeature::kDownloadInAdFrameWithUserGesture
+                            : WebFeature::kDownloadInAdFrameWithoutUserGesture);
+    }
     if (GetDocument().IsSandboxed(kSandboxDownloads)) {
       if (RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled())
         return;

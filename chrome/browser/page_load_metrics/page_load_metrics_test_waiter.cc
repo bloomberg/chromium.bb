@@ -38,6 +38,14 @@ void PageLoadMetricsTestWaiter::AddSubFrameExpectation(TimingField field) {
     page_expected_fields_.Set(field);
 }
 
+void PageLoadMetricsTestWaiter::AddWebFeatureExpectation(
+    blink::mojom::WebFeature web_feature) {
+  size_t feature_idx = static_cast<size_t>(web_feature);
+  if (!expected_web_features_.test(feature_idx)) {
+    expected_web_features_.set(feature_idx);
+  }
+}
+
 void PageLoadMetricsTestWaiter::AddMinimumCompleteResourcesExpectation(
     int expected_minimum_complete_resources) {
   expected_minimum_complete_resources_ = expected_minimum_complete_resources;
@@ -128,6 +136,23 @@ void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
     run_loop_->Quit();
 }
 
+void PageLoadMetricsTestWaiter::OnFeaturesUsageObserved(
+    const mojom::PageLoadFeatures& features,
+    const PageLoadExtraInfo& extra_info) {
+  if (WebFeaturesExpectationsSatisfied())
+    return;
+
+  for (blink::mojom::WebFeature feature : features.features) {
+    size_t feature_idx = static_cast<size_t>(feature);
+    if (observed_web_features_.test(feature_idx))
+      continue;
+    observed_web_features_.set(feature_idx);
+  }
+
+  if (ExpectationsSatisfied() && run_loop_)
+    run_loop_->Quit();
+}
+
 bool PageLoadMetricsTestWaiter::IsPageLevelField(TimingField field) {
   switch (field) {
     case TimingField::kFirstPaint:
@@ -193,9 +218,19 @@ bool PageLoadMetricsTestWaiter::ResourceUseExpectationsSatisfied() const {
           current_network_bytes_ >= expected_minimum_network_bytes_);
 }
 
+bool PageLoadMetricsTestWaiter::WebFeaturesExpectationsSatisfied() const {
+  // We are only interested to see if all features being set in
+  // |expected_web_features_| are observed, but don't care about whether extra
+  // features are observed.
+  return (expected_web_features_ & observed_web_features_ ^
+          expected_web_features_)
+      .none();
+}
+
 bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
   return subframe_expected_fields_.Empty() && page_expected_fields_.Empty() &&
-         ResourceUseExpectationsSatisfied();
+         ResourceUseExpectationsSatisfied() &&
+         WebFeaturesExpectationsSatisfied();
 }
 
 PageLoadMetricsTestWaiter::WaiterMetricsObserver::~WaiterMetricsObserver() {}
@@ -225,6 +260,13 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
             resources) {
   if (waiter_)
     waiter_->OnResourceDataUseObserved(resources);
+}
+
+void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnFeaturesUsageObserved(
+    const mojom::PageLoadFeatures& features,
+    const PageLoadExtraInfo& extra_info) {
+  if (waiter_)
+    waiter_->OnFeaturesUsageObserved(features, extra_info);
 }
 
 }  // namespace page_load_metrics

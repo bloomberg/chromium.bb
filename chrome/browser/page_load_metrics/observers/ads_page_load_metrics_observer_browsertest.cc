@@ -667,6 +667,10 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
               sandbox_option == SandboxOption::kSandboxDisallowDownloads
           ? 0
           : 1;
+  bool expected_sandbox_bit =
+      enable_blocking_downloads_in_sandbox
+          ? sandbox_option == SandboxOption::kSandboxDisallowDownloads
+          : sandbox_option != SandboxOption::kNoSandbox;
 
   std::unique_ptr<content::DownloadTestObserver> download_observer(
       new content::DownloadTestObserverTerminal(
@@ -678,8 +682,38 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
       "chrome/test/data/ad_tagging");
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
+
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+
+  std::unique_ptr<AdsPageLoadMetricsTestWaiter> waiter;
+  if (expected_download_count > 0) {
+    if (ad_frame) {
+      if (!waiter)
+        waiter = std::make_unique<AdsPageLoadMetricsTestWaiter>(contents);
+      blink::mojom::WebFeature feature =
+          gesture
+              ? blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture
+              : blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture;
+      waiter->AddWebFeatureExpectation(feature);
+    }
+    if (expected_sandbox_bit) {
+      if (!waiter)
+        waiter = std::make_unique<AdsPageLoadMetricsTestWaiter>(contents);
+      blink::mojom::WebFeature feature =
+          origin == Origin::kNavigation
+              ? gesture ? blink::mojom::WebFeature::
+                              kNavigationDownloadInSandboxWithUserGesture
+                        : blink::mojom::WebFeature::
+                              kNavigationDownloadInSandboxWithoutUserGesture
+              : gesture
+                    ? blink::mojom::WebFeature::
+                          kHTMLAnchorElementDownloadInSandboxWithUserGesture
+                    : blink::mojom::WebFeature::
+                          kHTMLAnchorElementDownloadInSandboxWithoutUserGesture;
+      waiter->AddWebFeatureExpectation(feature);
+    }
+  }
 
   std::string host_name = "foo.com";
   ui_test_utils::NavigateToURL(
@@ -715,6 +749,8 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
   OpenLinkInFrame(rfh, link_id, gesture);
 
   download_observer->WaitForFinished();
+  if (waiter)
+    waiter->Wait();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   if (expected_download_count == 0) {
@@ -724,10 +760,6 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
   }
 
   unsigned expected_value = 0;
-  bool expected_sandbox_bit =
-      enable_blocking_downloads_in_sandbox
-          ? sandbox_option == SandboxOption::kSandboxDisallowDownloads
-          : sandbox_option != SandboxOption::kNoSandbox;
   if (expected_sandbox_bit)
     expected_value |= blink::DownloadStats::kSandboxBit;
   if (cross_origin)
@@ -740,16 +772,6 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Download.Subframe.SandboxOriginAdGesture", expected_value,
       1 /* expected_count */);
-
-  if (expected_sandbox_bit && origin == Origin::kNavigation) {
-    blink::mojom::WebFeature feature =
-        gesture ? blink::mojom::WebFeature::
-                      kNavigationDownloadInSandboxWithUserGesture
-                : blink::mojom::WebFeature::
-                      kNavigationDownloadInSandboxWithoutUserGesture;
-    histogram_tester.ExpectBucketCount(internal::kFeaturesHistogramName,
-                                       feature, 1 /* expected_count */);
-  }
 }
 
 INSTANTIATE_TEST_CASE_P(
