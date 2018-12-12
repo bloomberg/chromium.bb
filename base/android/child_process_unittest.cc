@@ -22,8 +22,7 @@ MULTIPROCESS_TEST_MAIN(WaitingMain) {
 
 class ChildProcessTest : public MultiProcessTest {};
 
-// TODO(http://crbug.com/911716): Test has been flaky.
-TEST_F(ChildProcessTest, DISABLED_ChildHasCleanExit) {
+TEST_F(ChildProcessTest, ChildHasCleanExit) {
   Process process = SpawnChild("BasicMain");
   int exit_code = 0;
   EXPECT_TRUE(WaitForMultiprocessTestChildExit(
