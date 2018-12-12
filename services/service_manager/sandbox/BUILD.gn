@@ -18,9 +18,6 @@ component("sandbox") {
     "sandbox_type.h",
     "switches.cc",
     "switches.h",
-
-    # Duplicated here to keep private.
-    "//services/service_manager/embedder/service_manager_embedder_export.h",
   ]
   defines = [ "SERVICE_MANAGER_SANDBOX_IMPL" ]
   public_deps = [

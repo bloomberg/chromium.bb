@@ -5,7 +5,7 @@
 #ifndef SERVICES_SERVICE_MANAGER_EMBEDDER_SET_PROCESS_TITLE_H_
 #define SERVICES_SERVICE_MANAGER_EMBEDDER_SET_PROCESS_TITLE_H_
 
-#include "services/service_manager/embedder/service_manager_embedder_export.h"
+#include "base/component_export.h"
 
 namespace service_manager {
 
@@ -23,7 +23,7 @@ namespace service_manager {
 // makes the process name that shows up in "ps" etc. for the child processes
 // show as "exe" instead of "chrome" or something reasonable. This function
 // will try to fix it so the "effective" command line shows up instead.
-SERVICE_MANAGER_EMBEDDER_EXPORT
+COMPONENT_EXPORT(SERVICE_MANAGER_EMBEDDER)
 void SetProcessTitleFromCommandLine(const char** main_argv);
 
 }  // namespace service_manager
