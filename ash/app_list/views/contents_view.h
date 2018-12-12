@@ -150,6 +150,14 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void Layout() override;
   const char* GetClassName() const override;
 
+  // Starts the fade out animation when the app list is closed. This
+  // prevents the contents from being visible behind the shelf.
+  void FadeOutOnClose(base::TimeDelta animation_duration);
+
+  // Starts the fade in animation when the app list is opened. This prevents the
+  // contents from being visible behind the shelf.
+  void FadeInOnOpen(base::TimeDelta animation_duration);
+
   // Overridden from PaginationModelObserver:
   void TotalPagesChanged() override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
