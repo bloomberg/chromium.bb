@@ -53,7 +53,7 @@ void AutomationEventRouter::RegisterListenerForOneTree(
 void AutomationEventRouter::RegisterListenerWithDesktopPermission(
     const ExtensionId& extension_id,
     int listener_process_id) {
-  Register(extension_id, listener_process_id, ui::AXTreeIDUnknown(), true);
+  Register(extension_id, listener_process_id, ui::DesktopAXTreeID(), true);
 }
 
 void AutomationEventRouter::DispatchAccessibilityEvents(
@@ -125,18 +125,16 @@ void AutomationEventRouter::Register(const ExtensionId& extension_id,
     listener.extension_id = extension_id;
     listener.process_id = listener_process_id;
     listener.desktop = desktop;
-    if (!desktop)
-      listener.tree_ids.insert(ax_tree_id);
+    listener.tree_ids.insert(ax_tree_id);
     listeners_.push_back(listener);
     return;
   }
 
   // We have an entry with that process so update the set of tree ids it wants
   // to listen to, and update its desktop permission.
+  iter->tree_ids.insert(ax_tree_id);
   if (desktop)
     iter->desktop = true;
-  else
-    iter->tree_ids.insert(ax_tree_id);
 }
 
 void AutomationEventRouter::Observe(

@@ -11,7 +11,6 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -415,7 +414,10 @@ void WebView::UpdateCrashedOverlayView() {
 void WebView::NotifyAccessibilityWebContentsChanged() {
   content::RenderFrameHost* rfh =
       web_contents() ? web_contents()->GetMainFrame() : nullptr;
-  child_ax_tree_id_ = rfh ? rfh->GetAXTreeID() : ui::AXTreeIDUnknown();
+  if (rfh)
+    child_ax_tree_id_ = rfh->GetAXTreeID();
+  else
+    child_ax_tree_id_ = ui::AXTreeIDUnknown();
   NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
 }
 

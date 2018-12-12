@@ -15,33 +15,25 @@ AXTreeIDRegistry* AXTreeIDRegistry::GetInstance() {
   return base::Singleton<AXTreeIDRegistry>::get();
 }
 
-void AXTreeIDRegistry::SetFrameIDForAXTreeID(const FrameID& frame_id,
-                                             const AXTreeID& ax_tree_id) {
+AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(int process_id, int routing_id) {
+  FrameID frame_id(process_id, routing_id);
   auto it = frame_to_ax_tree_id_map_.find(frame_id);
-  if (it != frame_to_ax_tree_id_map_.end()) {
-    NOTREACHED();
-    return;
-  }
+  if (it != frame_to_ax_tree_id_map_.end())
+    return it->second;
 
-  frame_to_ax_tree_id_map_[frame_id] = ax_tree_id;
-  ax_tree_to_frame_id_map_[ax_tree_id] = frame_id;
+  AXTreeID new_id = AXTreeID::CreateNewAXTreeID();
+  frame_to_ax_tree_id_map_[frame_id] = new_id;
+  ax_tree_to_frame_id_map_[new_id] = frame_id;
+
+  return new_id;
 }
 
-AXTreeIDRegistry::FrameID AXTreeIDRegistry::GetFrameID(
-    const AXTreeID& ax_tree_id) {
+AXTreeIDRegistry::FrameID AXTreeIDRegistry::GetFrameID(AXTreeID ax_tree_id) {
   auto it = ax_tree_to_frame_id_map_.find(ax_tree_id);
   if (it != ax_tree_to_frame_id_map_.end())
     return it->second;
 
   return FrameID(-1, -1);
-}
-
-AXTreeID AXTreeIDRegistry::GetAXTreeID(AXTreeIDRegistry::FrameID frame_id) {
-  auto it = frame_to_ax_tree_id_map_.find(frame_id);
-  if (it != frame_to_ax_tree_id_map_.end())
-    return it->second;
-
-  return ui::AXTreeIDUnknown();
 }
 
 AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(AXHostDelegate* delegate) {
@@ -61,11 +53,16 @@ AXHostDelegate* AXTreeIDRegistry::GetHostDelegate(AXTreeID ax_tree_id) {
   return it->second;
 }
 
+void AXTreeIDRegistry::SetDelegateForID(AXHostDelegate* delegate, AXTreeID id) {
+  id_to_host_delegate_[id] = delegate;
+}
+
 void AXTreeIDRegistry::RemoveAXTreeID(AXTreeID ax_tree_id) {
   auto frame_it = ax_tree_to_frame_id_map_.find(ax_tree_id);
   if (frame_it != ax_tree_to_frame_id_map_.end()) {
     frame_to_ax_tree_id_map_.erase(frame_it->second);
     ax_tree_to_frame_id_map_.erase(frame_it);
+    return;
   }
 
   auto action_it = id_to_host_delegate_.find(ax_tree_id);
@@ -74,6 +71,8 @@ void AXTreeIDRegistry::RemoveAXTreeID(AXTreeID ax_tree_id) {
 }
 
 AXTreeIDRegistry::AXTreeIDRegistry() {
+  // Always populate default desktop tree value (0 -> 0, 0).
+  GetOrCreateAXTreeID(0, 0);
 }
 
 AXTreeIDRegistry::~AXTreeIDRegistry() {}

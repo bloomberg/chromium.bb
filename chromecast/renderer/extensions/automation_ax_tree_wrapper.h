@@ -39,9 +39,6 @@ class AutomationAXTreeWrapper : public ui::AXTreeObserver {
       const ExtensionMsg_AccessibilityEventBundleParams& events,
       bool is_active_profile);
 
-  // Returns true if this is the desktop tree.
-  bool IsDesktopTree() const;
-
  private:
   // AXTreeObserver overrides.
   void OnNodeDataWillChange(ui::AXTree* tree,

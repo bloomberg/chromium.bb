@@ -8,6 +8,7 @@
 
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "content/public/browser/render_frame_host.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -158,7 +159,10 @@ void AutomationManagerAura::OnEvent(views::AXAuraObjWrapper* aura_obj,
 }
 
 AutomationManagerAura::AutomationManagerAura()
-    : enabled_(false), processing_events_(false), weak_ptr_factory_(this) {
+    : AXHostDelegate(ui::DesktopAXTreeID()),
+      enabled_(false),
+      processing_events_(false),
+      weak_ptr_factory_(this) {
   views::AXEventManager::Get()->AddObserver(this);
 }
 
@@ -170,7 +174,7 @@ void AutomationManagerAura::Reset(bool reset_serializer) {
   if (!current_tree_) {
     desktop_root_ = std::make_unique<AXRootObjWrapper>(this);
     current_tree_ = std::make_unique<views::AXTreeSourceViews>(
-        desktop_root_.get(), ax_tree_id());
+        desktop_root_.get(), ui::DesktopAXTreeID());
   }
   reset_serializer ? current_tree_serializer_.reset()
                    : current_tree_serializer_.reset(
@@ -223,7 +227,7 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
 
   if (event_bundle_sink_) {
     event_bundle_sink_->DispatchAccessibilityEvents(
-        ax_tree_id(), std::move(tree_updates),
+        ui::DesktopAXTreeID(), std::move(tree_updates),
         aura::Env::GetInstance()->last_mouse_location(), std::move(events));
   }
 
@@ -259,18 +263,22 @@ void AutomationManagerAura::PerformHitTest(
     child_ax_tree_id = ui::AXTreeID::FromString(*child_ax_tree_id_ptr);
 
   // If the window has a child AX tree ID, forward the action to the
-  // associated AXHostDelegate.
+  // associated AXHostDelegate or RenderFrameHost.
   if (child_ax_tree_id != ui::AXTreeIDUnknown()) {
     ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
     ui::AXHostDelegate* delegate = registry->GetHostDelegate(child_ax_tree_id);
+    if (delegate) {
+      delegate->PerformAction(action);
+      return;
+    }
 
-    CHECK(delegate);
-
-    // Convert to pixels for the RenderFrameHost HitTest, if required.
-    if (delegate->RequiresPerformActionPointInPixels())
+    content::RenderFrameHost* rfh =
+        content::RenderFrameHost::FromAXTreeID(child_ax_tree_id);
+    if (rfh) {
+      // Convert to pixels for the RenderFrameHost HitTest.
       window->GetHost()->ConvertDIPToPixels(&action.target_point);
-
-    delegate->PerformAction(action);
+      rfh->AccessibilityPerformAction(action);
+    }
     return;
   }
 

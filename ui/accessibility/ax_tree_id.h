@@ -70,6 +70,9 @@ AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXTreeID& value);
 // The value to use when an AXTreeID is unknown.
 AX_EXPORT extern const AXTreeID& AXTreeIDUnknown();
 
+// The AXTreeID of the desktop.
+AX_EXPORT extern const AXTreeID& DesktopAXTreeID();
+
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_TREE_ID_H_

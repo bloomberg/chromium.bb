@@ -23,19 +23,19 @@ class AX_EXPORT AXHostDelegate {
   virtual ~AXHostDelegate();
 
   // Handle an action from an accessibility client.
-  virtual void PerformAction(const AXActionData& data) = 0;
-
-  // Returns whether this delegate expects points in pixels (true) or dips
-  // (false) for data passed to |PerformAction|.
-  virtual bool RequiresPerformActionPointInPixels() const;
+  virtual void PerformAction(const ui::AXActionData& data) = 0;
 
   // A tree id appropriate for annotating events sent to an accessibility
   // client.
-  const AXTreeID& ax_tree_id() const { return tree_id_; };
+  AXTreeID tree_id() const { return tree_id_; }
 
  protected:
   // A delegate with an automatically assigned tree id.
   AXHostDelegate();
+
+  // A delegate with an explicit tree id. The caller is responsible for ensuring
+  // the uniqueness of the id.
+  explicit AXHostDelegate(AXTreeID tree_id);
 
  private:
   // Register or unregister this class with |AXTreeIDRegistry|.
