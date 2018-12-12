@@ -218,11 +218,6 @@ void TrackAudioRenderer::SetVolume(float volume) {
     sink_->SetVolume(volume);
 }
 
-media::OutputDeviceInfo TrackAudioRenderer::GetOutputDeviceInfo() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return sink_ ? sink_->GetOutputDeviceInfo() : media::OutputDeviceInfo();
-}
-
 base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(thread_lock_);

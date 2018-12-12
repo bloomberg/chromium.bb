@@ -120,11 +120,6 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
-  media::OutputDeviceInfo GetOutputDeviceInfo() override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    return delegate_->GetOutputDeviceInfo();
-  }
-
   void SwitchOutputDevice(const std::string& device_id,
                           media::OutputDeviceStatusCB callback) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -347,11 +342,6 @@ void WebRtcAudioRenderer::SetVolume(float volume) {
 
   playing_state_.set_volume(volume);
   OnPlayStateChanged(media_stream_, &playing_state_);
-}
-
-media::OutputDeviceInfo WebRtcAudioRenderer::GetOutputDeviceInfo() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return sink_ ? sink_->GetOutputDeviceInfo() : media::OutputDeviceInfo();
 }
 
 base::TimeDelta WebRtcAudioRenderer::GetCurrentRenderTime() {
