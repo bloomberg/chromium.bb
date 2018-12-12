@@ -19,9 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -32,9 +30,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -42,6 +38,7 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "url/gurl.h"
 
 using extension_function_test_utils::RunFunctionAndReturnError;
@@ -414,24 +411,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, Syncing) {
   // Set a Gaia cookie.
   ASSERT_TRUE(SetGaiaCookieForProfile(profile));
   // Set a Sync account and a secondary account.
-  const char kPrimaryAccountId[] = "primary_account_id";
-  const char kSecondaryAccountId[] = "secondary_account_id";
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  token_service->UpdateCredentials(kPrimaryAccountId, "token");
-  ASSERT_TRUE(token_service->RefreshTokenIsAvailable(kPrimaryAccountId));
-  token_service->UpdateCredentials(kSecondaryAccountId, "token");
-  ASSERT_TRUE(token_service->RefreshTokenIsAvailable(kSecondaryAccountId));
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
-  signin_manager->SetAuthenticatedAccountInfo(kPrimaryAccountId,
-                                              "user@gmail.com");
+  const char kPrimaryAccountEmail[] = "primary@email.com";
+  const char kSecondaryAccountEmail[] = "secondary@email.com";
+
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  AccountInfo primary_account_info = identity::MakePrimaryAccountAvailable(
+      identity_manager, kPrimaryAccountEmail);
+  AccountInfo secondary_account_info =
+      identity::MakeAccountAvailable(identity_manager, kSecondaryAccountEmail);
+
   // Sync is running.
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   sync_service->GetUserSettings()->SetFirstSetupComplete();
 
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
   sync_ui_util::MessageType sync_status =
       sync_ui_util::GetStatus(profile, sync_service, identity_manager);
   ASSERT_EQ(sync_ui_util::SYNCED, sync_status);
@@ -441,10 +435,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, Syncing) {
   EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
                       function.get(), kRemoveEverythingArguments, browser()));
   // Check that the Sync token was not revoked.
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kPrimaryAccountId));
-  EXPECT_FALSE(token_service->RefreshTokenHasError(kPrimaryAccountId));
+  EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(
+      primary_account_info.account_id));
+  EXPECT_FALSE(
+      identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account_info.account_id));
   // Check that the secondary token was revoked.
-  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(kSecondaryAccountId));
+  EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
+      secondary_account_info.account_id));
 }
 
 // Test that Sync is paused when browsing data is cleared if Sync was in
@@ -454,20 +452,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SyncError) {
   // Set a Gaia cookie.
   ASSERT_TRUE(SetGaiaCookieForProfile(profile));
   // Set a Sync account with authentication error.
-  const char kAccountId[] = "account_id";
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  token_service->UpdateCredentials(kAccountId, "token");
-  ASSERT_TRUE(token_service->RefreshTokenIsAvailable(kAccountId));
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
-  signin_manager->SetAuthenticatedAccountInfo(kAccountId, "user@gmail.com");
-  token_service->GetDelegate()->UpdateAuthError(
-      kAccountId, GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-                      GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                          CREDENTIALS_REJECTED_BY_SERVER));
-  // Sync is not running.
+  const char kAccountEmail[] = "account@email.com";
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
+  AccountInfo account_info =
+      identity::MakePrimaryAccountAvailable(identity_manager, kAccountEmail);
+  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+      identity_manager, account_info.account_id,
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_SERVER));
+
+  // Sync is not running.
   sync_ui_util::MessageType sync_status = sync_ui_util::GetStatus(
       profile, ProfileSyncServiceFactory::GetForProfile(profile),
       identity_manager);
@@ -478,10 +474,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SyncError) {
   EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
                       function.get(), kRemoveEverythingArguments, browser()));
   // Check that the account was not removed and Sync was paused.
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kAccountId));
+  EXPECT_TRUE(
+      identity_manager->HasAccountWithRefreshToken(account_info.account_id));
   EXPECT_EQ(GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                 CREDENTIALS_REJECTED_BY_CLIENT,
-            token_service->GetAuthError(kAccountId)
+            identity_manager
+                ->GetErrorStateOfRefreshTokenForAccount(account_info.account_id)
                 .GetInvalidGaiaCredentialsReason());
 }
 
@@ -492,18 +490,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, NotSyncing) {
   // Set a Gaia cookie.
   ASSERT_TRUE(SetGaiaCookieForProfile(profile));
   // Set a non-Sync account.
-  const char kAccountId[] = "account_id";
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  token_service->UpdateCredentials(kAccountId, "token");
-  ASSERT_TRUE(token_service->RefreshTokenIsAvailable(kAccountId));
+  const char kAccountEmail[] = "account@email.com";
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  AccountInfo account_info =
+      identity::MakeAccountAvailable(identity_manager, kAccountEmail);
   // Clear browsing data.
   scoped_refptr<BrowsingDataRemoveFunction> function =
       new BrowsingDataRemoveFunction();
   EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
                       function.get(), kRemoveEverythingArguments, browser()));
   // Check that the account was removed.
-  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(kAccountId));
+  EXPECT_FALSE(
+      identity_manager->HasAccountWithRefreshToken(account_info.account_id));
 }
 #endif
 
