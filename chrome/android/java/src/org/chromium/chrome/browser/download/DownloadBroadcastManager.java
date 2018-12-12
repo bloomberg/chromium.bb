@@ -189,6 +189,11 @@ public class DownloadBroadcastManager extends Service {
                     DownloadNotificationUmaHelper.recordDownloadResumptionHistogram(browserStarted
                                     ? UmaDownloadResumption.BROWSER_RUNNING
                                     : UmaDownloadResumption.BROWSER_NOT_RUNNING);
+                    if (!browserStarted) {
+                        final ContentId id = getContentIdFromIntent(intent);
+                        DownloadManagerService.getDownloadManagerService()
+                                .onBackgroundDownloadStarted(id.id);
+                    }
                 }
                 propagateInteraction(intent);
             }
