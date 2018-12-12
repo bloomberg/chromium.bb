@@ -1983,6 +1983,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-homepage-tile", flag_descriptions::kHomepageTileName,
      flag_descriptions::kHomepageTileDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kHomepageTile)},
+    {"enable-search-ready-omnibox", flag_descriptions::kSearchReadyOmniboxName,
+     flag_descriptions::kSearchReadyOmniboxDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kSearchReadyOmniboxFeature)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
     {"enable-modal-permission-dialog-view",

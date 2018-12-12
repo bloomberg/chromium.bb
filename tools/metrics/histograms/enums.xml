@@ -29724,6 +29724,7 @@ from previous Chrome versions.
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1529907580" label="ImeServiceConnectable:disabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
+  <int value="-1520952503" label="SearchReadyOmnibox:enabled"/>
   <int value="-1520855274" label="PWAFullCodeCache:disabled"/>
   <int value="-1517518406" label="force-update-menu-type"/>
   <int value="-1515415104" label="top-document-isolation:disabled"/>
@@ -30663,6 +30664,7 @@ from previous Chrome versions.
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
+  <int value="149914698" label="SearchReadyOmnibox:disabled"/>
   <int value="151022756" label="ArcAvailableForChildAccount:disabled"/>
   <int value="151101719" label="HtmlBaseUsernameDetector:enabled"/>
   <int value="157217034" label="enable-tab-for-desktop-share"/>
