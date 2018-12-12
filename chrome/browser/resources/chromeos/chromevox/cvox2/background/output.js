@@ -236,6 +236,7 @@ Output.ROLE_INFO_ = {
   list: {msgId: 'role_list'},
   listBox: {msgId: 'role_listbox', earconId: 'LISTBOX'},
   listBoxOption: {msgId: 'role_listitem', earconId: 'LIST_ITEM'},
+  listGrid: {msgId: 'role_list_grid', inherits: 'table'},
   listItem:
       {msgId: 'role_listitem', earconId: 'LIST_ITEM', inherits: 'abstractItem'},
   log: {msgId: 'role_log', inherits: 'abstractNameFromContents'},

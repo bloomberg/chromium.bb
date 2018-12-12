@@ -340,8 +340,9 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kLegend, "Legend"},
     {ax::mojom::Role::kLink, "Link"},
     {ax::mojom::Role::kLineBreak, "LineBreak"},
-    {ax::mojom::Role::kListBoxOption, "ListBoxOption"},
     {ax::mojom::Role::kListBox, "ListBox"},
+    {ax::mojom::Role::kListBoxOption, "ListBoxOption"},
+    {ax::mojom::Role::kListGrid, "ListGrid"},
     {ax::mojom::Role::kListItem, "ListItem"},
     {ax::mojom::Role::kListMarker, "ListMarker"},
     {ax::mojom::Role::kList, "List"},
@@ -386,11 +387,11 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kStaticText, "StaticText"},
     {ax::mojom::Role::kStatus, "Status"},
     {ax::mojom::Role::kSwitch, "Switch"},
+    {ax::mojom::Role::kTab, "Tab"},
     {ax::mojom::Role::kTabList, "TabList"},
     {ax::mojom::Role::kTabPanel, "TabPanel"},
-    {ax::mojom::Role::kTab, "Tab"},
-    {ax::mojom::Role::kTableHeaderContainer, "TableHeaderContainer"},
     {ax::mojom::Role::kTable, "Table"},
+    {ax::mojom::Role::kTableHeaderContainer, "TableHeaderContainer"},
     {ax::mojom::Role::kTerm, "Term"},
     {ax::mojom::Role::kTextField, "TextField"},
     {ax::mojom::Role::kTextFieldWithComboBox, "ComboBox"},
@@ -3319,6 +3320,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kInputTime:
     case ax::mojom::Role::kKeyboard:
     case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kListGrid:
     case ax::mojom::Role::kLog:
     case ax::mojom::Role::kMain:
     case ax::mojom::Role::kMarquee:

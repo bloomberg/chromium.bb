@@ -3710,6 +3710,9 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kListBoxOption:
       return ROLE_SYSTEM_LISTITEM;
 
+    case ax::mojom::Role::kListGrid:
+      return ROLE_SYSTEM_LIST;
+
     case ax::mojom::Role::kListItem:
       return ROLE_SYSTEM_LISTITEM;
 
@@ -4501,14 +4504,17 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
     case ax::mojom::Role::kList:
       return L"list";
 
-    case ax::mojom::Role::kListItem:
-      return L"listitem";
-
     case ax::mojom::Role::kListBox:
       return L"listbox";
 
     case ax::mojom::Role::kListBoxOption:
       return L"option";
+
+    case ax::mojom::Role::kListGrid:
+      return L"listview";
+
+    case ax::mojom::Role::kListItem:
+      return L"listitem";
 
     case ax::mojom::Role::kLog:
       return L"log";
@@ -5119,13 +5125,16 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
     case ax::mojom::Role::kList:
       return UIA_ListControlTypeId;
 
-    case ax::mojom::Role::kListItem:
-      return UIA_ListItemControlTypeId;
-
     case ax::mojom::Role::kListBox:
       return UIA_ListControlTypeId;
 
     case ax::mojom::Role::kListBoxOption:
+      return UIA_ListItemControlTypeId;
+
+    case ax::mojom::Role::kListGrid:
+      return UIA_DataGridControlTypeId;
+
+    case ax::mojom::Role::kListItem:
       return UIA_ListItemControlTypeId;
 
     case ax::mojom::Role::kLog:

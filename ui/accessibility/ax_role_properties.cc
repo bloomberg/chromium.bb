@@ -249,6 +249,7 @@ bool IsMenuRelated(const ax::mojom::Role role) {
 bool IsRowContainer(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kListGrid:
     case ax::mojom::Role::kTable:
     case ax::mojom::Role::kTree:
     case ax::mojom::Role::kTreeGrid:
@@ -291,6 +292,7 @@ bool IsTableHeader(ax::mojom::Role role) {
 bool IsTableLike(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kListGrid:
     case ax::mojom::Role::kTable:
     case ax::mojom::Role::kTreeGrid:
       return true;

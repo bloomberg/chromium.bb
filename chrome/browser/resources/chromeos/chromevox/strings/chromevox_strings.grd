@@ -1486,6 +1486,12 @@
       <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'list' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_LIST_BRL">
         lst
       </message>
+      <message desc="Describes an element with the internal role of listGrid. This is similar to an ARIA grid." name="IDS_CHROMEVOX_ROLE_LIST_GRID">
+        List grid
+      </message>
+      <message desc="This is the name of an internal role shown on a braille display. When translating, try to find a contracted form of the translation for 'list grid' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_LIST_GRID_BRL">
+        lstgrd
+      </message>
       <message desc="Describes an element with the ARIA role listitem." name="IDS_CHROMEVOX_ROLE_LISTITEM">
         List item
       </message>
