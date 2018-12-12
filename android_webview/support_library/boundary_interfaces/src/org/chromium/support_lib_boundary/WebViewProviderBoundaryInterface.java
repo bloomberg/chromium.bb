@@ -20,4 +20,7 @@ public interface WebViewProviderBoundaryInterface {
     WebViewClient getWebViewClient();
     WebChromeClient getWebChromeClient();
     /* WebViewRenderer */ InvocationHandler getWebViewRenderer();
+    /* WebViewRendererClient */ InvocationHandler getWebViewRendererClient();
+    void setWebViewRendererClient(
+            /* WebViewRendererClient */ InvocationHandler webViewRendererClient);
 }

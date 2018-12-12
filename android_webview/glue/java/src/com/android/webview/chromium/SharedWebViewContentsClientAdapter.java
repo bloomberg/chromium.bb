@@ -6,6 +6,7 @@ package com.android.webview.chromium;
 
 import android.content.Context;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -13,6 +14,7 @@ import android.webkit.WebViewClient;
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.AwRenderProcess;
 import org.chromium.android_webview.AwSafeBrowsingResponse;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.SafeBrowsingAction;
@@ -42,6 +44,9 @@ abstract class SharedWebViewContentsClientAdapter extends AwContentsClient {
     protected WebViewClient mWebViewClient = SharedWebViewChromium.sNullWebViewClient;
     // Some callbacks will be forwarded to this client for apps using the support library.
     private final SupportLibWebViewContentsClientAdapter mSupportLibClient;
+
+    private @Nullable SharedWebViewRendererClientAdapter mWebViewRendererClientAdapter;
+
     /**
      * Adapter constructor.
      *
@@ -215,5 +220,26 @@ abstract class SharedWebViewContentsClientAdapter extends AwContentsClient {
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onReceivedHttpError");
         }
+    }
+
+    void setWebViewRendererClientAdapter(
+            SharedWebViewRendererClientAdapter webViewRendererClientAdapter) {
+        mWebViewRendererClientAdapter = webViewRendererClientAdapter;
+    }
+
+    SharedWebViewRendererClientAdapter getWebViewRendererClientAdapter() {
+        return mWebViewRendererClientAdapter;
+    }
+
+    @Override
+    public void onRendererUnresponsive(final AwRenderProcess renderProcess) {
+        if (mWebViewRendererClientAdapter != null)
+            mWebViewRendererClientAdapter.onRendererUnresponsive(mWebView, renderProcess);
+    }
+
+    @Override
+    public void onRendererResponsive(final AwRenderProcess renderProcess) {
+        if (mWebViewRendererClientAdapter != null)
+            mWebViewRendererClientAdapter.onRendererResponsive(mWebView, renderProcess);
     }
 }

@@ -117,6 +117,34 @@ public class SharedWebViewChromium {
         mAwContents.postMessageToFrame(null, message, targetOrigin, sentPorts);
     }
 
+    public void setWebViewRendererClientAdapter(
+            SharedWebViewRendererClientAdapter webViewRendererClientAdapter) {
+        if (checkNeedsPost()) {
+            mRunQueue.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    setWebViewRendererClientAdapter(webViewRendererClientAdapter);
+                }
+            });
+            return;
+        }
+        mContentsClientAdapter.setWebViewRendererClientAdapter(webViewRendererClientAdapter);
+    }
+
+    public SharedWebViewRendererClientAdapter getWebViewRendererClientAdapter() {
+        mAwInit.startYourEngines(true);
+        if (checkNeedsPost()) {
+            return mRunQueue.runOnUiThreadBlocking(
+                    new Callable<SharedWebViewRendererClientAdapter>() {
+                        @Override
+                        public SharedWebViewRendererClientAdapter call() {
+                            return getWebViewRendererClientAdapter();
+                        }
+                    });
+        }
+        return mContentsClientAdapter.getWebViewRendererClientAdapter();
+    }
+
     protected boolean checkNeedsPost() {
         boolean needsPost = !mRunQueue.chromiumHasStarted() || !ThreadUtils.runningOnUiThread();
         if (!needsPost && mAwContents == null) {
