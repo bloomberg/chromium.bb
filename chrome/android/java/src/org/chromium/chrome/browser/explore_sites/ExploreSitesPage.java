@@ -170,7 +170,14 @@ public class ExploreSitesPage extends BasicNativePage {
         mModel.set(STATUS_KEY, CatalogLoadingState.SUCCESS);
 
         ListModel<ExploreSitesCategory> categoryListModel = mModel.get(CATEGORY_LIST_KEY);
-        categoryListModel.set(categoryList);
+
+        // Filter empty categories and categories with fewer sites originally than would fill a row.
+        for (ExploreSitesCategory category : categoryList) {
+            if ((category.getNumDisplayed() > 0) && (category.getMaxRows() > 0)) {
+                categoryListModel.add(category);
+            }
+        }
+
         Parcelable savedScrollPosition = getLayoutManagerStateFromNavigationEntry();
         if (savedScrollPosition != null) {
             mLayoutManager.onRestoreInstanceState(savedScrollPosition);

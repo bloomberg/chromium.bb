@@ -539,7 +539,9 @@ TEST_F(ExploreSitesServiceImplTest, BlacklistNonCanonicalUrls) {
       &ExploreSitesServiceImplTest::CatalogCallback, base::Unretained(this)));
   PumpLoop();
 
-  EXPECT_EQ(1U, database_categories()->at(0).sites.size());
+  EXPECT_EQ(2U, database_categories()->at(0).sites.size());
+  EXPECT_TRUE(database_categories()->at(0).sites.at(0).is_blacklisted);
+  EXPECT_FALSE(database_categories()->at(0).sites.at(1).is_blacklisted);
 }
 
 }  // namespace explore_sites
