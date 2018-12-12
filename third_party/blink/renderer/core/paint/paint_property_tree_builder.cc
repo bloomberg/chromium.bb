@@ -589,14 +589,21 @@ static CompositingReasons CompositingReasonsForTransform(const LayoutBox& box) {
   if (CompositingReasonFinder::RequiresCompositingForTransform(box))
     compositing_reasons |= CompositingReason::k3DTransform;
 
-  // Currently, we create transform nodes for an element whenever any property
-  // is being animated so that the existence of the effect node implies the
-  // existence of all nodes.
-  // TODO(flackr): Check for nodes for each KeyframeModel target
-  // property instead of creating all nodes and only create a transform node
-  // if needed, https://crbug.com/900241
-  compositing_reasons |=
-      CompositingReasonFinder::CompositingReasonsForAnimation(style);
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    // Currently, we create transform nodes for an element whenever any property
+    // is being animated so that the existence of the effect node implies the
+    // existence of all nodes.
+    // TODO(flackr): Check for nodes for each KeyframeModel target
+    // property instead of creating all nodes and only create a transform node
+    // if needed, https://crbug.com/900241
+    compositing_reasons |=
+        CompositingReasonFinder::CompositingReasonsForAnimation(style);
+  } else {
+    if (CompositingReasonFinder::RequiresCompositingForTransformAnimation(
+            style))
+      compositing_reasons |= CompositingReason::kActiveTransformAnimation;
+  }
 
   if (style.HasWillChangeCompositingHint() &&
       !style.SubtreeWillChangeContents())
@@ -783,8 +790,14 @@ static bool NeedsEffect(const LayoutObject& object) {
   // TODO(flackr): Check for nodes for each KeyframeModel target
   // property instead of creating all nodes and only create an effect node
   // if needed, https://crbug.com/900241
-  if (CompositingReasonFinder::CompositingReasonsForAnimation(style))
-    return true;
+  if ((RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())) {
+    if (CompositingReasonFinder::CompositingReasonsForAnimation(style))
+      return true;
+  } else {
+    if (CompositingReasonFinder::RequiresCompositingForOpacityAnimation(style))
+      return true;
+  }
 
   if (object.StyleRef().HasMask())
     return true;
@@ -1025,15 +1038,25 @@ static bool NeedsFilter(const LayoutObject& object) {
   // Currently, we create filter nodes for an element whenever any property
   // is being animated so that the existence of the effect node implies the
   // existence of all animation nodes.
+  if (!object.IsBoxModelObject() || !ToLayoutBoxModelObject(object).Layer())
+    return false;
+
+  // TODO(trchen): SVG caches filters in SVGResources. Implement it.
+  if (object.StyleRef().HasFilter() || object.HasReflection() ||
+      object.HasBackdropFilter())
+    return true;
+
   // TODO(flackr): Check for nodes for each KeyframeModel target
   // property instead of creating all nodes and only create a filter node
   // if needed, https://crbug.com/900241
-  // TODO(trchen): SVG caches filters in SVGResources. Implement it.
-  return (object.IsBoxModelObject() && ToLayoutBoxModelObject(object).Layer() &&
-          (object.StyleRef().HasFilter() || object.HasReflection() ||
-           object.HasBackdropFilter() ||
-           CompositingReasonFinder::CompositingReasonsForAnimation(
-               object.StyleRef())));
+  bool needs_compositing_for_animation =
+      (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+          ? CompositingReasonFinder::CompositingReasonsForAnimation(
+                object.StyleRef())
+          : CompositingReasonFinder::RequiresCompositingForFilterAnimation(
+                object.StyleRef());
+  return needs_compositing_for_animation;
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
