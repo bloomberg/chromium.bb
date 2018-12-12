@@ -90,7 +90,7 @@ Configuration example:
 gn gen out/libfuzzer "--args=use_libfuzzer=true is_asan=true is_debug=false is_component_build=false" --check
 ```
 
-On Windows you must use `is_component_build=true` as libFuzzer does not support
+On Windows you must use `is_component_build=false` as libFuzzer does not support
 component builds on Windows. If you are using `is_asan=true` then you must use
 `is_debug=false` as ASan does not support debug builds on Windows.
 You may also want to consider using `symbol_level=1` which will reduce build
