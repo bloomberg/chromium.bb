@@ -3042,6 +3042,17 @@
       "features": [
         "exit_on_context_lost"
       ]
+    },
+    {
+      "id": 284,
+      "cr_bugs": [913301],
+      "description": "Clamp texture's BASE_LEVEL/MAX_LEVEL for GenerateMipmap",
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "clamp_texture_base_level_and_max_level"
+      ]
     }
   ]
 }

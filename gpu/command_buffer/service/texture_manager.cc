@@ -1177,6 +1177,15 @@ void Texture::UpdateNumMipLevels() {
   UpdateCanRenderCondition();
 }
 
+void Texture::ApplyClampedBaseLevelAndMaxLevelToDriver() {
+  if (base_level_ != unclamped_base_level_) {
+    glTexParameteri(target_, GL_TEXTURE_BASE_LEVEL, base_level_);
+  }
+  if (max_level_ != unclamped_max_level_) {
+    glTexParameteri(target_, GL_TEXTURE_MAX_LEVEL, max_level_);
+  }
+}
+
 void Texture::SetLevelInfo(GLenum target,
                            GLint level,
                            GLenum internal_format,
