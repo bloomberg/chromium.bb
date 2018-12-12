@@ -298,6 +298,7 @@ class AccountReconcilorTest : public ::testing::Test {
   DiceTestSigninClient test_signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   FakeGaiaCookieManagerService cookie_manager_service_;
   FakeSigninManagerForTesting signin_manager_;
   identity::IdentityTestEnvironment identity_test_env_;
@@ -349,7 +350,8 @@ AccountReconcilorTest::AccountReconcilorTest()
       test_signin_client_(&pref_service_),
       token_service_(&pref_service_),
       cookie_manager_service_(&token_service_,
-                              &test_signin_client_),
+                              &test_signin_client_,
+                              &test_url_loader_factory_),
 #if defined(OS_CHROMEOS)
       signin_manager_(&test_signin_client_, &account_tracker_),
 #else
