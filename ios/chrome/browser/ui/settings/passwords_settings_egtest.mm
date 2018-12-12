@@ -1601,6 +1601,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordEntry(@"exclude2.com")
       assertWithMatcher:grey_notNil()];
 
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
   [[EarlGrey selectElementWithMatcher:SearchTextField()]
       performAction:grey_typeText(@"2")];
 
