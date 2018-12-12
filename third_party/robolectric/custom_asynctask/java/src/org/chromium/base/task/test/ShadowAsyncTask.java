@@ -20,7 +20,7 @@ public class ShadowAsyncTask<Result> {
 
     private final FutureTask<Result> future;
     private final Callable<Result> worker;
-    private AsyncTask.Status status = AsyncTask.Status.PENDING;
+    private @AsyncTask.Status int status = AsyncTask.Status.PENDING;
 
     public ShadowAsyncTask() {
         worker = new Callable<Result>() {
@@ -119,7 +119,7 @@ public class ShadowAsyncTask<Result> {
     }
 
     @Implementation
-    public AsyncTask.Status getStatus() {
+    public @AsyncTask.Status int getStatus() {
         return status;
     }
 
