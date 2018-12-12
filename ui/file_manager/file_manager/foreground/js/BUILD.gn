@@ -384,6 +384,7 @@ js_library("file_tasks") {
     "metadata:metadata_model",
     "ui:file_manager_ui",
   ]
+  externs_list = [ "../../../externs/background/crostini.js" ]
 }
 
 js_unittest("file_tasks_unittest") {
