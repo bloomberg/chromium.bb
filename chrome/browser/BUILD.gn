@@ -1836,6 +1836,7 @@ jumbo_split_static_library("browser") {
     "//components/security_interstitials/core",
     "//components/security_state/content",
     "//components/security_state/core",
+    "//components/send_tab_to_self",
     "//components/services/patch/public/interfaces",
     "//components/services/unzip/public/interfaces",
     "//components/sessions",
