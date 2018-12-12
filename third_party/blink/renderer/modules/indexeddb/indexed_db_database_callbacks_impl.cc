@@ -52,9 +52,16 @@ void IndexedDBDatabaseCallbacksImpl::Changes(
   web_observations.reserve(changes->observations.size());
   for (const auto& observation : changes->observations) {
     IDBKeyRange* key_range = observation->key_range.To<IDBKeyRange*>();
-    web_observations.emplace_back(
-        observation->object_store_id, observation->type, key_range,
-        IndexedDBCallbacksImpl::ConvertValue(observation->value));
+    std::unique_ptr<IDBValue> value;
+    if (observation->value.has_value())
+      value = std::move(observation->value.value());
+    if (!value || value->Data()->IsEmpty()) {
+      value = IDBValue::Create(scoped_refptr<SharedBuffer>(),
+                               WebVector<WebBlobInfo>());
+    }
+    web_observations.emplace_back(observation->object_store_id,
+                                  observation->type, key_range,
+                                  std::move(value));
   }
 
   std::unordered_map<int32_t, WebVector<int32_t>> observation_index_map;

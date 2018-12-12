@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/web/web_heap.h"

@@ -12,8 +12,6 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
-#include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -131,36 +129,8 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
                              Vector<IDBIndexKeys> index_keys) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
-  auto mojo_value = mojom::blink::IDBValue::New();
-
-  // mojo_value->bits initialization.
-  mojo_value->bits = value->CopyAs<Vector<uint8_t>>();
-
-  // mojo_value->blob_or_file_info initialization.
-  mojo_value->blob_or_file_info.ReserveInitialCapacity(web_blob_info.size());
-  for (const WebBlobInfo& info : web_blob_info) {
-    auto blob_info = mojom::blink::IDBBlobInfo::New();
-    if (info.IsFile()) {
-      blob_info->file = mojom::blink::IDBFileInfo::New();
-      blob_info->file->path = WebStringToFilePath(info.FilePath());
-      String name = info.FileName();
-      if (name.IsNull())
-        name = g_empty_string;
-      blob_info->file->name = name;
-      blob_info->file->last_modified =
-          base::Time::FromDoubleT(info.LastModified());
-    }
-    blob_info->size = info.size();
-    blob_info->uuid = info.Uuid();
-    DCHECK(!blob_info->uuid.IsEmpty());
-    String mime_type = info.GetType();
-    if (mime_type.IsNull())
-      mime_type = g_empty_string;
-    blob_info->mime_type = mime_type;
-    blob_info->blob = mojom::blink::BlobPtrInfo(info.CloneBlobHandle(),
-                                                mojom::blink::Blob::Version_);
-    mojo_value->blob_or_file_info.push_back(std::move(blob_info));
-  }
+  std::unique_ptr<IDBValue> idb_value =
+      IDBValue::Create(std::move(value), std::move(web_blob_info));
 
   size_t index_keys_size = 0;
   for (const auto& index_key : index_keys) {
@@ -171,7 +141,7 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   }
 
   size_t arg_size =
-      mojo_value->bits.size() + primary_key->SizeEstimate() + index_keys_size;
+      value->size() + primary_key->SizeEstimate() + index_keys_size;
   if (arg_size >= max_put_value_size_) {
     callbacks->OnError(blink::WebIDBDatabaseError(
         blink::kWebIDBDatabaseExceptionUnknownError,
@@ -184,7 +154,7 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr);
-  database_->Put(transaction_id, object_store_id, std::move(mojo_value),
+  database_->Put(transaction_id, object_store_id, std::move(idb_value),
                  std::move(primary_key), put_mode, std::move(index_keys),
                  GetCallbacksProxy(std::move(callbacks_impl)));
 }

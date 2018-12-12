@@ -8,9 +8,6 @@
 #include <stdint.h>
 
 #include "mojo/public/cpp/bindings/map_traits_wtf_hash_map.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
@@ -123,6 +120,16 @@ struct MODULES_EXPORT
       const std::unique_ptr<blink::IDBKey>& key);
   static bool Read(blink::mojom::IDBKeyDataView data,
                    std::unique_ptr<blink::IDBKey>* out);
+};
+
+template <>
+struct MODULES_EXPORT StructTraits<blink::mojom::IDBValueDataView,
+                                   std::unique_ptr<blink::IDBValue>> {
+  static Vector<uint8_t> bits(const std::unique_ptr<blink::IDBValue>& input);
+  static Vector<blink::mojom::blink::IDBBlobInfoPtr> blob_or_file_info(
+      const std::unique_ptr<blink::IDBValue>& input);
+  static bool Read(blink::mojom::IDBValueDataView data,
+                   std::unique_ptr<blink::IDBValue>* out);
 };
 
 template <>

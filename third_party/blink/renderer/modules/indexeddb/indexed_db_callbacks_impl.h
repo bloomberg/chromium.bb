@@ -12,8 +12,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 
@@ -31,9 +29,6 @@ class IndexedDBCallbacksImpl : public mojom::blink::IDBCallbacks {
   // an IndexedDBCallbacksImpl instance.  See web_idb_factory_impl.cc for those
   // cases.
   enum : int64_t { kNoTransaction = -1 };
-
-  static std::unique_ptr<IDBValue> ConvertValue(
-      const mojom::blink::IDBValuePtr& input);
 
   IndexedDBCallbacksImpl(std::unique_ptr<WebIDBCallbacks> callbacks,
                          int64_t transaction_id,
@@ -56,14 +51,15 @@ class IndexedDBCallbacksImpl : public mojom::blink::IDBCallbacks {
   void SuccessCursor(mojom::blink::IDBCursorAssociatedPtrInfo cursor,
                      std::unique_ptr<IDBKey> key,
                      std::unique_ptr<IDBKey> primary_key,
-                     mojom::blink::IDBValuePtr value) override;
+                     base::Optional<std::unique_ptr<IDBValue>> value) override;
   void SuccessValue(mojom::blink::IDBReturnValuePtr value) override;
-  void SuccessCursorContinue(std::unique_ptr<IDBKey> key,
-                             std::unique_ptr<IDBKey> primary_key,
-                             mojom::blink::IDBValuePtr value) override;
+  void SuccessCursorContinue(
+      std::unique_ptr<IDBKey> key,
+      std::unique_ptr<IDBKey> primary_key,
+      base::Optional<std::unique_ptr<IDBValue>> value) override;
   void SuccessCursorPrefetch(Vector<std::unique_ptr<IDBKey>> keys,
                              Vector<std::unique_ptr<IDBKey>> primary_keys,
-                             Vector<mojom::blink::IDBValuePtr> values) override;
+                             Vector<std::unique_ptr<IDBValue>> values) override;
   void SuccessArray(Vector<mojom::blink::IDBReturnValuePtr> values) override;
   void SuccessKey(std::unique_ptr<IDBKey> key) override;
   void SuccessInteger(int64_t value) override;
