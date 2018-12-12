@@ -274,7 +274,7 @@ class ResourceSchedulerTest : public testing::Test {
     // to be done before initializing the scheduler because the client is
     // created on the call to |InitializeScheduler|, which is where the initial
     // limits for the delayable requests in flight are computed.
-    network_quality_estimator_.set_effective_connection_type(
+    network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
         net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
     // Initialize the scheduler.
     InitializeScheduler();
@@ -397,7 +397,7 @@ class ResourceSchedulerTest : public testing::Test {
     const int kDefaultMaxNumDelayableRequestsPerClient = 8;
     // Initialize the experiment.
     InitializeThrottleDelayableExperiment(false, non_delayable_weight);
-    network_quality_estimator_.set_effective_connection_type(
+    network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
         net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
     InitializeScheduler();
@@ -869,7 +869,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
 TEST_F(ResourceSchedulerTest,
        NewDelayableSpdyHostInDelayableRequestsSlowConnection) {
   ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
   InitializeScheduler();
 
@@ -1025,7 +1025,8 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
         net::EFFECTIVE_CONNECTION_TYPE_4G}) {
     // Set the effective connection type to a value for which the experiment
     // should not be run.
-    network_quality_estimator_.set_effective_connection_type(ect);
+    network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+        ect);
 
     // The limit will matter only once the page has a body, since delayable
     // requests are not loaded before that.
@@ -1065,7 +1066,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
   base::test::ScopedFeatureList scoped_feature_list;
   InitializeThrottleDelayableExperiment(true, 0.0);
   // ECT value is in range for which the limit is overridden to 2.
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   InitializeScheduler();
 
@@ -1102,19 +1103,19 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
   EXPECT_TRUE(second_last_singlehost->started());
 
   // Change the ECT to go outside the experiment buckets and change the network
-  // type to 4G. This should not affect the limit calculated at the beginning of
+  // type to 4G. This should affect the limit calculated at the beginning of
   // the page load.
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_4G);
   base::RunLoop().RunUntilIdle();
 
   std::unique_ptr<TestRequest> last_singlehost(
       NewRequest("http://host/last", net::LOWEST));
 
-  // Last should not start because the limit should not have changed.
-  EXPECT_FALSE(last_singlehost->started());
+  // Last should start because the limit should have changed.
+  EXPECT_TRUE(last_singlehost->started());
 
-  // The limit should change when there is a new page navigation.
+  // The limit should not change when there is a new page navigation.
   scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
   std::unique_ptr<TestRequest> high2(
       NewRequest("http://host/high2", net::HIGHEST));
@@ -1132,7 +1133,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   base::test::ScopedFeatureList scoped_feature_list;
   InitializeThrottleDelayableExperiment(true, 0.0);
   // ECT value is in range for which the limit is overridden to 4.
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_3G);
   InitializeScheduler();
 
@@ -1162,7 +1163,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   // Change the network quality so that the ECT value is in range for which the
   // limit is overridden to 2. The effective connection type is set to
   // Slow-2G.
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   // Trigger a navigation event which will recompute limits. Also insert a body,
   // because the limit matters only after the body exists.
@@ -1234,7 +1235,7 @@ TEST_F(ResourceSchedulerTest, ThrottleDelayableDisabled) {
   scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
   InitializeScheduler();
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
   scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
   // Insert one non-delayable request. This should not affect the number of
@@ -1273,7 +1274,7 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableOutsideECT) {
   InitializeThrottleDelayableExperiment(false, kNonDelayableWeight);
   // Experiment should not run when the effective connection type is faster
   // than 2G.
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_3G);
   // Limit will only trigger after the page has a body.
 
@@ -1304,7 +1305,7 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableVaryNonDelayable) {
   // Initialize the experiment with |kNonDelayableWeight| as the weight of
   // non-delayable requests.
   InitializeThrottleDelayableExperiment(false, kNonDelayableWeight);
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
   InitializeScheduler();
@@ -1472,7 +1473,7 @@ TEST_F(ResourceSchedulerTest, MultipleInstances_2) {
 TEST_F(ResourceSchedulerTest,
        MaxRequestsPerHostForSpdyWhenDelayableSlowConnections) {
   ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   InitializeScheduler();
@@ -1512,7 +1513,7 @@ TEST_F(ResourceSchedulerTest,
 TEST_F(ResourceSchedulerTest,
        MaxRequestsPerHostForSpdyWhenDelayableFastConnections) {
   ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_4G);
 
   InitializeScheduler();
@@ -1541,7 +1542,7 @@ TEST_F(ResourceSchedulerTest,
 TEST_F(ResourceSchedulerTest,
        MaxRequestsPerHostForNonSpdyWhenDelayableSlowConnections) {
   ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   InitializeScheduler();
@@ -1565,7 +1566,7 @@ TEST_F(ResourceSchedulerTest,
 TEST_F(ResourceSchedulerTest,
        DelayableRequestLimitSpdyDelayableSlowConnections) {
   ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   InitializeScheduler();
@@ -1608,7 +1609,7 @@ TEST_F(ResourceSchedulerTest,
 TEST_F(ResourceSchedulerTest, MaxQueuingDelaySet) {
   base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
   InitializeMaxQueuingDelayExperiment(max_queuing_time);
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
   InitializeScheduler();
@@ -1658,7 +1659,7 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelaySet) {
 // duration are not dispatched to the network.
 TEST_F(ResourceSchedulerTest, MaxQueuingDelayNotSet) {
   base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
   InitializeScheduler();
@@ -1710,7 +1711,7 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayNotSet) {
 TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerFires) {
   base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
   InitializeMaxQueuingDelayExperiment(max_queuing_time);
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
   InitializeScheduler();
@@ -1761,7 +1762,7 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerFires) {
 TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerNotFired) {
   base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
   InitializeMaxQueuingDelayExperiment(max_queuing_time);
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
   InitializeScheduler();
@@ -1815,7 +1816,7 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerRunsOnRequestSchedule) {
       features::kUnthrottleRequestsAfterLongQueuingDelay.name, "");
   base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
   InitializeMaxQueuingDelayExperiment(max_queuing_time);
-  network_quality_estimator_.set_effective_connection_type(
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   // Should be in sync with resource_scheduler.cc for effective connection type
   // (ECT) 2G. For ECT of 2G, number of low priority requests allowed are:

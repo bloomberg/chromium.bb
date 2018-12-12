@@ -100,10 +100,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
 
   // Called when a renderer is created. |network_quality_estimator| is allowed
   // to be null.
-  void OnClientCreated(
-      int child_id,
-      int route_id,
-      const net::NetworkQualityEstimator* const network_quality_estimator);
+  void OnClientCreated(int child_id,
+                       int route_id,
+                       net::NetworkQualityEstimator* network_quality_estimator);
 
   // Called when a renderer is destroyed.
   void OnClientDeleted(int child_id, int route_id);
@@ -182,7 +181,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   void RemoveRequest(ScheduledResourceRequestImpl* request);
 
   // Returns the client ID for the given |child_id| and |route_id| combo.
-  ClientId MakeClientId(int child_id, int route_id);
+  ClientId MakeClientId(int child_id, int route_id) const;
 
   // Returns the client for the given |child_id| and |route_id| combo.
   Client* GetClient(int child_id, int route_id);
