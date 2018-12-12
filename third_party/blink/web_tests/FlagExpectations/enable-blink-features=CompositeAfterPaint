@@ -346,10 +346,11 @@ Bug(none) fast/forms/suggestion-picker/month-suggestion-picker-mouse-operations.
 Bug(none) fast/forms/suggestion-picker/time-suggestion-picker-mouse-operations.html [ Failure ]
 Bug(none) fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Failure ]
 
-Bug(none) fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure ]
-Bug(none) fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Failure ]
-Bug(none) fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Failure ]
-Bug(none) fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure ]
+crbug.com/913955 fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Failure ]
+crbug.com/913955 fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Failure ]
+crbug.com/913955 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Failure ]
+crbug.com/913955 fast/scroll-snap/snaps-for-different-key-granularity.html [ Failure ]
+crbug.com/913955 fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure ]
 Bug(none) fast/events/remove-child-onscroll.html [ Timeout ]
 
 # Text failures due to layerization differences

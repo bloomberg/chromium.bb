@@ -1626,9 +1626,9 @@ void PaintLayerScrollableArea::SnapAfterScrollbarScrolling(
   if (!snap_coordinator)
     return;
 
-  snap_coordinator->SnapForEndPosition(*GetLayoutBox(),
-                                       orientation == kHorizontalScrollbar,
-                                       orientation == kVerticalScrollbar);
+  snap_coordinator->SnapAtCurrentPosition(*GetLayoutBox(),
+                                          orientation == kHorizontalScrollbar,
+                                          orientation == kVerticalScrollbar);
 }
 
 void PaintLayerScrollableArea::PositionOverflowControls() {
