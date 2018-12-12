@@ -20,7 +20,7 @@ namespace views {
 namespace {
 
 const char kViewsTextServicesContextMenuHistogram[] =
-    "ViewsTextServicesContextMenu.Used";
+    "ContextMenu.ViewsTextServices.Used";
 
 // Do not change the values in this enum as they are used by UMA.
 enum class Command { kEmoji = 0, kMaxValue = kEmoji };
