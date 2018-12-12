@@ -39,9 +39,9 @@ enum class AutoplayUnmuteActionStatus {
 
 // These values are used for histograms. Do not reorder.
 enum AutoplayBlockedReason {
-  kAutoplayBlockedReasonDataSaver = 0,
+  kAutoplayBlockedReasonDataSaver_DEPRECATED = 0,
   kAutoplayBlockedReasonSetting = 1,
-  kAutoplayBlockedReasonDataSaverAndSetting = 2,
+  kAutoplayBlockedReasonDataSaverAndSetting_DEPRECATED = 2,
   // Keey at the end.
   kAutoplayBlockedReasonMax = 3
 };

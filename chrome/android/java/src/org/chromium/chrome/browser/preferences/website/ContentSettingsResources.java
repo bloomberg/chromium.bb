@@ -327,14 +327,6 @@ public class ContentSettingsResources {
     }
 
     /**
-     * Returns the summary for Autoplay content settings when it is disabled because of Data Saver
-     * being enabled.
-     */
-    public static int getAutoplayDisabledByDataSaverSummary() {
-        return R.string.website_settings_category_autoplay_disabled_data_saver;
-    }
-
-    /**
      * Returns the blocked summary for the ads permission which should be used for display in the
      * site settings list only.
      */

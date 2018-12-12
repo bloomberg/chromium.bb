@@ -91,7 +91,6 @@ WebPreferences::WebPreferences()
       dns_prefetching_enabled(true),
       data_saver_enabled(false),
       data_saver_holdback_web_api_enabled(false),
-      data_saver_holdback_media_api_enabled(false),
       local_storage_enabled(false),
       databases_enabled(false),
       application_cache_enabled(false),

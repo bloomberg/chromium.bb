@@ -2348,12 +2348,10 @@ WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
     return WebMediaPlayer::kPreloadNone;
   }
 
-  // If the source scheme is requires network, force preload to 'none' on Data
-  // Saver and for low end devices.
+  // If the source scheme is requires network, force preload to 'none' for low
+  // end devices.
   if (GetDocument().GetSettings() &&
-      ((GetNetworkStateNotifier().SaveDataEnabled() &&
-        !GetDocument().GetSettings()->GetDataSaverHoldbackMediaApi()) ||
-       GetDocument().GetSettings()->GetForcePreloadNoneForMediaElements()) &&
+      GetDocument().GetSettings()->GetForcePreloadNoneForMediaElements() &&
       (current_src_.Protocol() != "blob" && current_src_.Protocol() != "data" &&
        current_src_.Protocol() != "file")) {
     UseCounter::Count(GetDocument(),
