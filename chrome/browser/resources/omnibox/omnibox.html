@@ -18,30 +18,30 @@
   <template id="omnibox-inputs-template">
     <link rel="stylesheet" href="omnibox.css">
     <p>
-      <input id="input-text" type="text" size="60" placeholder="Enter omnibox input text" autofocus>
+      <input id="input-text" type="text" size="60" placeholder="Enter omnibox input text [alt+shift+l]" accesskey="l" autofocus>
     </p>
     <p>Input parameters:</p>
     <p>
       <label>
-        <input id="lock-cursor-position" type="checkbox">
-        Lock cursor position to end of input
+        <input id="lock-cursor-position" type="checkbox" accesskey="c">
+        Lock <span class="accesskey">c</span>ursor position to end of input
       </label>
     </p>
     <p>
       <label>
-        <input id="prevent-inline-autocomplete" type="checkbox">
-        Prevent inline autocomplete
+        <input id="prevent-inline-autocomplete" type="checkbox" accesskey="a">
+        Prevent inline <span class="accesskey">a</span>utocomplete
       </label>
     </p>
     <p>
       <label>
-        <input id="prefer-keyword" type="checkbox">
-        In keyword mode
+        <input id="prefer-keyword" type="checkbox" accesskey="k">
+        In <span class="accesskey">k</span>eyword mode
       </label>
     </p>
     <p>
-      Current page context:
-      <select id="page-classification">
+      C<span class="accesskey">u</span>rrent page context:
+      <select id="page-classification" accesskey="u">
         <option value="0">Invalid spec</option>
         <option value="2">about:blank</option>
         <option value="3">user's home page</option>
@@ -56,20 +56,20 @@
     <p>Display parameters:</p>
     <p>
       <label>
-        <input id="show-incomplete-results" type="checkbox">
-        Show incomplete results
+        <input id="show-incomplete-results" type="checkbox" accesskey="i">
+        Show <span class="accesskey">i</span>ncomplete results
       </label>
     </p>
     <p>
       <label>
-        <input id="show-details" type="checkbox">
-        Show all details
+        <input id="show-details" type="checkbox" accesskey="d">
+        Show all <span class="accesskey">d</span>etails
       </label>
     </p>
     <p>
       <label>
-        <input id="show-all-providers" type="checkbox">
-        Show results per provider, not just merged results
+        <input id="show-all-providers" type="checkbox" accesskey="p">
+        Show results per <span class="accesskey">p</span>rovider, not just merged results
       </label>
     </p>
     <div class="section">
@@ -78,7 +78,7 @@
     </div>
 
     <div class="section">
-      <input id="filter-text" type="text" size="60" placeholder="Enter filter text (e.g. 'google', 'is:starred', 'not:deletable')" title="Checks each cell individually; i.e. filter text should not span multiple columns. Supports fuzzyness; each character of filter text must be present in the cell, either adjacent to the previous matched character, or at the start of a new word. Words are defined as being delimited by either capital letters, groups of digits, or non alpha characters. E.g. 'abc' matches 'abc', 'a big cat', 'a-bigCat', 'a very big cat', and 'an amBer cat'; but does not match 'abigcat' or 'an amber cat'. 'green rainbow' is matched by 'gre rain', but not by 'gre bow'. One exception is the first character, which may be matched mid-word. E.g. 'een rain' can also match 'green rainbow'. Boolean properties can be searched for via the property name prefixed by 'is:' or 'not:'. Boolean property names are: 'Can Be Default', 'Starred', 'Has Tab Match', 'Del', 'Prev', and 'Done'.">
+      <input id="filter-text" type="text" size="60" placeholder="Enter filter text (e.g. 'google', 'is:star', 'not:del') [alt+shift+f]" accesskey="f" title="Checks each cell individually; i.e. filter text should not span multiple columns. Supports fuzzyness; each character of filter text must be present in the cell, either adjacent to the previous matched character, or at the start of a new word. Words are defined as being delimited by either capital letters, groups of digits, or non alpha characters. E.g. 'abc' matches 'abc', 'a big cat', 'a-bigCat', 'a very big cat', and 'an amBer cat'; but does not match 'abigcat' or 'an amber cat'. 'green rainbow' is matched by 'gre rain', but not by 'gre bow'. One exception is the first character, which may be matched mid-word. E.g. 'een rain' can also match 'green rainbow'. Boolean properties can be searched for via the property name prefixed by 'is:' or 'not:'. Boolean property names are: 'Can Be Default', 'Starred', 'Has Tab Match', 'Del', 'Prev', and 'Done'.">
       <label class="toggle left-20">
         <input id="filter-hide" type="checkbox">
         <span class="toggle-off">Highlight</span>
