@@ -182,6 +182,8 @@ GURL GetGooglePasswordManagerURL(ManagePasswordsReferrer referrer) {
         return "password_generation_confirmation";
       case ManagePasswordsReferrer::kProfileChooser:
         return "profile_chooser";
+      case ManagePasswordsReferrer::kPasswordsAccessorySheet:
+        NOTREACHED();
     }
 
     NOTREACHED();

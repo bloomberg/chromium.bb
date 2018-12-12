@@ -272,6 +272,14 @@ jumbo_static_library("browser") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
+if (is_android) {
+  java_cpp_enum("password_manager_java_enums_srcjar") {
+    sources = [
+      "manage_passwords_referrer.h",
+    ]
+  }
+}
+
 fuzzable_proto_library("proto") {
   sources = [
     "android_affiliation/affiliation_api.proto",
