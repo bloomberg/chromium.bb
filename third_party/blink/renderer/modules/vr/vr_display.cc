@@ -750,7 +750,7 @@ scoped_refptr<Image> VRDisplay::GetFrameImage(
   // path.
   if (!image_ref.get() || !image_ref->IsTextureBacked()) {
     TRACE_EVENT0("gpu", "VRDisplay::GetImage_SlowFallback");
-    // We get a non-texture-backed image when running layout tests
+    // We get a non-texture-backed image when running web tests
     // on desktop builds. Add a slow fallback so that these continue
     // working.
     image_ref = rendering_context_->GetImage(kPreferAcceleration);

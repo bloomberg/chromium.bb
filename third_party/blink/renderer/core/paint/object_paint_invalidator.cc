@@ -178,7 +178,7 @@ bool IsClientNGPaintFragmentForObject(const DisplayItemClient& client,
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return false;
   // TODO(crbug.com/880519): This hack only makes current invalidation tracking
-  // layout tests pass with LayoutNG. More work is needed if we want to launch
+  // web tests pass with LayoutNG. More work is needed if we want to launch
   // the invalidation tracking feature.
   return object.IsLayoutBlockFlow() &&
          &client == ToLayoutBlockFlow(object).PaintFragment();

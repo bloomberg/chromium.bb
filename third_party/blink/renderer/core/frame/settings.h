@@ -73,7 +73,7 @@ class CORE_EXPORT Settings {
   void SetBypassCSP(bool enabled) { bypass_csp_ = enabled; }
   bool BypassCSP() const { return bypass_csp_; }
 
-  // Only set by Layout Tests, and only used if textAutosizingEnabled() returns
+  // Only set by web tests, and only used if TextAutosizingEnabled() returns
   // true.
   void SetTextAutosizingWindowSizeOverride(const IntSize&);
   const IntSize& TextAutosizingWindowSizeOverride() const {

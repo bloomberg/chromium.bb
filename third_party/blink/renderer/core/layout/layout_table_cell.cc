@@ -491,14 +491,14 @@ void LayoutTableCell::StyleDidChange(StyleDifference diff,
   if (LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *table, diff,
                                                      *old_style)) {
     if (PreviousCell()) {
-      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is
-      // needed instead of setNeedsLayout.
+      // TODO(dgrogan) Add a web test showing that SetChildNeedsLayout is
+      // needed instead of SetNeedsLayout.
       PreviousCell()->SetChildNeedsLayout();
       PreviousCell()->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
     }
     if (NextCell()) {
-      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is
-      // needed instead of setNeedsLayout.
+      // TODO(dgrogan) Add a web test showing that SetChildNeedsLayout is
+      // needed instead of SetNeedsLayout.
       NextCell()->SetChildNeedsLayout();
       NextCell()->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
     }

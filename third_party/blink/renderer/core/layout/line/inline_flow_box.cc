@@ -168,7 +168,7 @@ void InlineFlowBox::AddToLine(InlineBox* child) {
         should_clear_descendants_have_same_line_height_and_baseline = true;
     } else {
       if (child->GetLineLayoutItem().IsBR()) {
-        // FIXME: This is dumb. We only turn off because current layout test
+        // FIXME: This is dumb. We only turn off because current web test
         // results expect the <br> to be 0-height on the baseline.
         // Other than making a zillion tests have to regenerate results, there's
         // no reason to ditch the optimization here.

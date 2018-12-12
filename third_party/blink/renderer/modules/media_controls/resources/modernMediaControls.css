@@ -1160,7 +1160,7 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-contr
 }
 
 /**
- * Test mode styles to remove animations/transitions to make layout tests
+ * Test mode styles to remove animations/transitions to make web tests
  * simpler.
  */
 /* Hide the loading panel. */

@@ -20,7 +20,7 @@ namespace blink {
 AnimationWorkletMutatorDispatcherImpl::AnimationWorkletMutatorDispatcherImpl(
     bool main_thread_task_runner)
     : client_(nullptr), weak_factory_(this) {
-  // By default layout tests run without threaded compositing. See
+  // By default web tests run without threaded compositing. See
   // https://crbug.com/770028 For these situations we run on the Main thread.
   host_queue_ = main_thread_task_runner || !Thread::CompositorThread()
                     ? Thread::MainThread()->GetTaskRunner()

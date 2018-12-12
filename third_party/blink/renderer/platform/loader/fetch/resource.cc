@@ -350,7 +350,7 @@ static bool NeedsSynchronousCacheHit(ResourceType type,
   if (options.synchronous_policy == kRequestSynchronously)
     return true;
   // Some resources types default to return data synchronously. For most of
-  // these, it's because there are layout tests that expect data to return
+  // these, it's because there are web tests that expect data to return
   // synchronously in case of cache hit. In the case of fonts, there was a
   // performance regression.
   // FIXME: Get to the point where we don't need to special-case sync/async

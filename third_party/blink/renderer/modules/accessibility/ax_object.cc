@@ -2526,7 +2526,7 @@ AXObject* AXObject::CellForColumnAndRow(unsigned target_column_index,
   // i.e. it's an ARIA grid/table.
   //
   // TODO(dmazzoni): delete this code or rename it "for testing only"
-  // since it's only needed for Blink layout tests and not for production.
+  // since it's only needed for Blink web tests and not for production.
   unsigned row_index = 0;
   for (const auto& row : TableRowChildren()) {
     unsigned column_index = 0;

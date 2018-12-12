@@ -3914,7 +3914,7 @@ TEST_F(WebViewTest, HasTouchEventHandlers) {
 // This test checks that deleting nodes which have only non-JS-registered touch
 // handlers also removes them from the event handler registry. Note that this
 // is different from detaching and re-attaching the same node, which is covered
-// by layout tests under fast/events/.
+// by web tests under fast/events/.
 TEST_F(WebViewTest, DeleteElementWithRegisteredHandler) {
   std::string url = RegisterMockedHttpURLLoad("simple_div.html");
   WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(url);

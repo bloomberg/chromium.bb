@@ -298,8 +298,8 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
     return;
   }
   // Webp encoder does not support progressive encoding. We also don't use idle
-  // encoding for layout tests, since the idle task start and completition
-  // deadlines (6.7s or 13s) bypass the layout test running deadline (6s)
+  // encoding for web tests, since the idle task start and completition
+  // deadlines (6.7s or 13s) bypass the web test running deadline (6s)
   // and result in timeouts on different tests. We use
   // enforce_idle_encoding_for_test_ to test idle encoding in unit tests.
   bool use_idle_encoding =

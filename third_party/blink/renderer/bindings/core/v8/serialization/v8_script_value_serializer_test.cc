@@ -1843,7 +1843,7 @@ TEST(V8ScriptValueSerializerTest, DecodeWithInefficientVersionEnvelope) {
 }
 
 // Sanity check for transferring ReadableStreams. This is mostly tested via
-// layout tests.
+// web tests.
 TEST(V8ScriptValueSerializerTest, RoundTripReadableStream) {
   ScopedTransferableStreamsForTest enable_transferable_streams(true);
 

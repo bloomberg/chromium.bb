@@ -49,7 +49,7 @@ class WebFrameContentDumper {
   BLINK_EXPORT static WebString DumpAsMarkup(WebLocalFrame*);
 
   // Returns a text representation of the render tree.  This method is used
-  // to support layout tests.
+  // to support web tests.
   BLINK_EXPORT static WebString DumpLayoutTreeAsText(
       WebLocalFrame*,
       LayoutAsTextControls to_show = kLayoutAsTextNormal);

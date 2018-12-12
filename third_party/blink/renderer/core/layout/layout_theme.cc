@@ -680,7 +680,7 @@ void LayoutTheme::SetCaretBlinkInterval(TimeDelta interval) {
 }
 
 TimeDelta LayoutTheme::CaretBlinkInterval() const {
-  // Disable the blinking caret in layout test mode, as it introduces
+  // Disable the blinking caret in web test mode, as it introduces
   // a race condition for the pixel tests. http://b/1198440
   return WebTestSupport::IsRunningWebTest() ? TimeDelta()
                                             : caret_blink_interval_;

@@ -519,7 +519,7 @@
       // No status, as the web platform runtime enabled feature is controlled by
       // a Chromium level feature.
     },
-    // For simulating Android's overlay fullscreen video in layout tests on Linux.
+    // For simulating Android's overlay fullscreen video in web tests on Linux.
     {
       name: "ForceOverlayFullscreenVideo",
     },
@@ -900,7 +900,7 @@
       status: "stable",
     },
     // Define a sample API for testing integration with the Origin Trials
-    // Framework. The sample API is used in both unit and layout tests for the
+    // Framework. The sample API is used in both unit and web tests for the
     // Origin Trials Framework. Do not change this flag to stable, as it exists
     // solely to generate code used by the sample API implementation.
     {
@@ -908,7 +908,7 @@
       origin_trial_feature_name: "Frobulate",
     },
     // Define a sample API for testing integration with the Origin Trials
-    // Framework. The sample API is used in both unit and layout tests for the
+    // Framework. The sample API is used in both unit and web tests for the
     // Origin Trials Framework. Do not change this flag to stable, as it exists
     // solely to generate code used by the sample API implementation.
     {

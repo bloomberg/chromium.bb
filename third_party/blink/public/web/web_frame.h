@@ -144,7 +144,7 @@ class BLINK_EXPORT WebFrame {
   void SetOpener(WebFrame*);
 
   // Reset the frame that opened this frame to 0.
-  // This is executed between layout tests runs
+  // This is executed between web tests runs
   void ClearOpener();
 
   // Returns the parent frame or 0 if this is a top-most frame.

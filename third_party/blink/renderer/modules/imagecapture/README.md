@@ -123,7 +123,7 @@ of modifying it can only be seen after taking a picture.
 
 ## Testing
 
-Image Capture layout tests are located in [web_tests/imagecapture],
+Image Capture web tests are located in [web_tests/imagecapture],
 [web_tests/fast/imagecapture] and [web_tests/external/mediacapture-image].
 
 [web_tests/imagecapture]: https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/web_tests/imagecapture

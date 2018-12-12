@@ -48,7 +48,7 @@ void CollapsedBorderPainter::SetupBorders() {
   }
 
   // At first, let all borders paint the joints. This is to keep the current
-  // behavior for layout tests e.g. css2.1/t170602-bdr-conflict-w-01-d.html.
+  // behavior for web tests e.g. css2.1/t170602-bdr-conflict-w-01-d.html.
   // TODO(crbug.com/672216): Determine the best way to deal with this.
   if (start_.value && before_.value) {
     start_.begin_outset = before_.outer_width;

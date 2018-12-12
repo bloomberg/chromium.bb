@@ -468,7 +468,7 @@ void Element::SynchronizeAttribute(const AtomicString& local_name) const {
     // animated SVG Attribute. It would seem we should only call this method
     // if SVGElement::isAnimatableAttribute is true, but the list of
     // animatable attributes in isAnimatableAttribute does not suffice to
-    // pass all layout tests. Also, animated_svg_attributes_are_dirty_ stays
+    // pass all web tests. Also, animated_svg_attributes_are_dirty_ stays
     // dirty unless SynchronizeAnimatedSVGAttribute is called with
     // AnyQName(). This means that even if Element::SynchronizeAttribute()
     // is called on all attributes, animated_svg_attributes_are_dirty_ remains

@@ -170,7 +170,7 @@ class CORE_EXPORT ScrollingCoordinator final
   void DidScroll(const gfx::ScrollOffset&, const CompositorElementId&);
 
   // For testing purposes only. This ScrollingCoordinator is reused between
-  // layout test, and must be reset for the results to be valid.
+  // web tests, and must be reset for the results to be valid.
   void Reset(LocalFrame*);
 
  protected:

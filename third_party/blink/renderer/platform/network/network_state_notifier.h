@@ -223,7 +223,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   // When called, successive setWebConnectionType/setOnLine calls are stored,
   // and supplied overridden values are used instead until clearOverride() is
-  // called.  This is used for layout tests (see crbug.com/377736) and inspector
+  // called.  This is used for web tests (see crbug.com/377736) and inspector
   // emulation.
   // If |effective_type| is null, its value is computed using |http_rtt_msec|.
   // |max_bandwidth_mbps| is used to override both the |max_bandwidth_mbps| and

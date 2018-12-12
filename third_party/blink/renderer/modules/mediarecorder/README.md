@@ -91,7 +91,7 @@ alternative is to use a Javascript library to reconstruct the Cues (see the
 
 ## Testing
 
-Media Recorder layout tests are located in [web_tests/fast/mediarecorder], and
+Media Recorder web tests are located in [web_tests/fast/mediarecorder], and
 [web_tests/external/mediacapture-record], unittests in [content] and [media]
 and [browsertests].
 

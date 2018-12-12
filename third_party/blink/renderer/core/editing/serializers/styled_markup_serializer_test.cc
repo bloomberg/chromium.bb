@@ -21,7 +21,7 @@ static size_t Mismatch(const std::string& input1, const std::string& input2) {
 }
 
 // This is smoke test of |StyledMarkupSerializer|. Full testing will be done
-// in layout tests.
+// in web tests.
 class StyledMarkupSerializerTest : public EditingTestBase {
  protected:
   template <typename Strategy>
