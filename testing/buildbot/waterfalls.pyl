@@ -1506,7 +1506,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',
-          'isolated_scripts': 'chromium_code_coverage_isolated_scripts',
+          'isolated_scripts': 'chromium_code_coverage_isolated_scripts_and_fuzzers',
         }
       },
       'linux-gtest-hackathon-dbg': {
