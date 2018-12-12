@@ -94,7 +94,7 @@ TEST_F(AXTreeSourceAuraTest, Accessors) {
   // Focus the textfield so the cursor does not disappear.
   textfield_->RequestFocus();
 
-  AXTreeSourceViews ax_tree(&root_wrapper_, ui::AXTreeID::CreateNewAXTreeID());
+  AXTreeSourceViews ax_tree(&root_wrapper_, ui::DesktopAXTreeID());
   ASSERT_TRUE(ax_tree.GetRoot());
 
   // ID's should be > 0.
@@ -131,7 +131,7 @@ TEST_F(AXTreeSourceAuraTest, Accessors) {
 }
 
 TEST_F(AXTreeSourceAuraTest, DoDefault) {
-  AXTreeSourceViews ax_tree(&root_wrapper_, ui::AXTreeID::CreateNewAXTreeID());
+  AXTreeSourceViews ax_tree(&root_wrapper_, ui::DesktopAXTreeID());
 
   // Grab a wrapper to |DoDefault| (click).
   AXAuraObjWrapper* textfield_wrapper =
@@ -147,7 +147,7 @@ TEST_F(AXTreeSourceAuraTest, DoDefault) {
 }
 
 TEST_F(AXTreeSourceAuraTest, Focus) {
-  AXTreeSourceViews ax_tree(&root_wrapper_, ui::AXTreeID::CreateNewAXTreeID());
+  AXTreeSourceViews ax_tree(&root_wrapper_, ui::DesktopAXTreeID());
 
   // Grab a wrapper to focus.
   AXAuraObjWrapper* textfield_wrapper =
@@ -163,7 +163,7 @@ TEST_F(AXTreeSourceAuraTest, Focus) {
 }
 
 TEST_F(AXTreeSourceAuraTest, Serialize) {
-  AXTreeSourceViews ax_tree(&root_wrapper_, ui::AXTreeID::CreateNewAXTreeID());
+  AXTreeSourceViews ax_tree(&root_wrapper_, ui::DesktopAXTreeID());
   AuraAXTreeSerializer ax_serializer(&ax_tree);
   ui::AXTreeUpdate out_update;
 
@@ -204,7 +204,7 @@ TEST_F(AXTreeSourceAuraTest, Serialize) {
 }
 
 TEST_F(AXTreeSourceAuraTest, SerializeWindowSetsClipsChildren) {
-  AXTreeSourceViews ax_tree(&root_wrapper_, ui::AXTreeID::CreateNewAXTreeID());
+  AXTreeSourceViews ax_tree(&root_wrapper_, ui::DesktopAXTreeID());
   AuraAXTreeSerializer ax_serializer(&ax_tree);
   AXAuraObjWrapper* widget_wrapper =
       AXAuraObjCache::GetInstance()->GetOrCreate(widget_);

@@ -81,7 +81,6 @@
 #include "third_party/blink/public/web/commit_result.mojom.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
-#include "ui/accessibility/ax_host_delegate.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
@@ -167,8 +166,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public BrowserAccessibilityDelegate,
       public SiteInstanceImpl::Observer,
       public service_manager::mojom::InterfaceProvider,
-      public CSPContext,
-      public ui::AXHostDelegate {
+      public CSPContext {
  public:
   using AXTreeSnapshotCallback =
       base::OnceCallback<void(const ui::AXTreeUpdate&)>;
@@ -295,10 +293,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       CSPDirective::Name directive,
       GURL* blocked_url,
       SourceLocation* source_location) const override;
-
-  // ui::AXHostDelegate:
-  void PerformAction(const ui::AXActionData& data) override;
-  bool RequiresPerformActionPointInPixels() const override;
 
   mojom::FrameInputHandler* GetFrameInputHandler();
 
@@ -1532,6 +1526,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The last AXContentTreeData for this frame received from the RenderFrame.
   AXContentTreeData ax_content_tree_data_;
+
+  // The AX tree ID of this frame.
+  ui::AXTreeID ax_tree_id_ = ui::AXTreeIDUnknown();
 
   // The AX tree ID of the embedder, if this is a browser plugin guest.
   ui::AXTreeID browser_plugin_embedder_ax_tree_id_;

@@ -863,9 +863,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
   }
   ResetFeaturePolicy();
 
-  ui::AXTreeIDRegistry::GetInstance()->SetFrameIDForAXTreeID(
-      ui::AXTreeIDRegistry::FrameID(GetProcess()->GetID(), routing_id_),
-      GetAXTreeID());
+  ax_tree_id_ = ui::AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
+      GetProcess()->GetID(), routing_id_);
 
   // Content-Security-Policy: The CSP source 'self' is usually the origin of the
   // current document, set by SetLastCommittedOrigin(). However, before a new
@@ -972,6 +971,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // the corresponding RenderViewHost if it is no longer needed.
   frame_tree_->ReleaseRenderViewHostRef(render_view_host_);
 
+  ui::AXTreeIDRegistry::GetInstance()->RemoveAXTreeID(ax_tree_id_);
+
   // If another frame is waiting for a beforeunload ACK from this frame,
   // simulate it now.
   RenderFrameHostImpl* beforeunload_initiator = GetBeforeUnloadInitiator();
@@ -989,7 +990,7 @@ int RenderFrameHostImpl::GetRoutingID() {
 }
 
 ui::AXTreeID RenderFrameHostImpl::GetAXTreeID() {
-  return ax_tree_id();
+  return ax_tree_id_;
 }
 
 const base::UnguessableToken& RenderFrameHostImpl::GetOverlayRoutingToken() {
@@ -1569,14 +1570,6 @@ void RenderFrameHostImpl::SanitizeDataForUseInCspViolation(
     *source_location =
         SourceLocation(source_location_url.GetOrigin().spec(), 0u, 0u);
   }
-}
-
-void RenderFrameHostImpl::PerformAction(const ui::AXActionData& data) {
-  AccessibilityPerformAction(data);
-}
-
-bool RenderFrameHostImpl::RequiresPerformActionPointInPixels() const {
-  return true;
 }
 
 bool RenderFrameHostImpl::SchemeShouldBypassCSP(

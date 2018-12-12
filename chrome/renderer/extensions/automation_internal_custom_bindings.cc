@@ -95,8 +95,8 @@ static gfx::Rect ComputeGlobalNodeBounds(AutomationAXTreeWrapper* tree_wrapper,
     // All trees other than the desktop tree are scaled by the device
     // scale factor. When crossing out of another tree into the desktop
     // tree, unscale the bounds by the device scale factor.
-    if (!previous_tree_wrapper->IsDesktopTree() &&
-        tree_wrapper->IsDesktopTree()) {
+    if (previous_tree_wrapper->tree_id() != ui::DesktopAXTreeID() &&
+        tree_wrapper->tree_id() == ui::DesktopAXTreeID()) {
       float scale_factor = tree_wrapper->owner()->GetDeviceScaleFactor();
       if (scale_factor > 0)
         bounds.Scale(1.0 / scale_factor);
@@ -1081,7 +1081,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
           node = next(node, target_tree_wrapper);
 
           // We explicitly disallow searches in the desktop tree.
-          if ((*target_tree_wrapper)->IsDesktopTree())
+          if ((*target_tree_wrapper)->tree_id() == ui::DesktopAXTreeID())
             return;
 
           if (!node)
@@ -1301,7 +1301,7 @@ bool AutomationInternalCustomBindings::GetFocusInternal(
     ui::AXTreeID focused_tree_id =
         child_tree_wrapper->tree()->data().focused_tree_id;
     if (focused_tree_id != ui::AXTreeIDUnknown() &&
-        !child_tree_wrapper->IsDesktopTree()) {
+        focused_tree_id != ui::DesktopAXTreeID()) {
       AutomationAXTreeWrapper* focused_tree_wrapper =
           GetAutomationAXTreeWrapperFromTreeID(
               child_tree_wrapper->tree()->data().focused_tree_id);
@@ -1402,12 +1402,11 @@ void AutomationInternalCustomBindings::GetState(
     state_shifter = state_shifter >> 1;
     state_pos++;
   }
-  AutomationAXTreeWrapper* top_tree_wrapper = nullptr;
-  AutomationAXTreeWrapper* walker = tree_wrapper;
-  while (walker && walker != top_tree_wrapper) {
-    top_tree_wrapper = walker;
-    GetParent(walker->tree()->root(), &walker);
-  }
+
+  AutomationAXTreeWrapper* top_tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(ui::DesktopAXTreeID());
+  if (!top_tree_wrapper)
+    top_tree_wrapper = tree_wrapper;
   AutomationAXTreeWrapper* focused_tree_wrapper = nullptr;
   ui::AXNode* focused_node = nullptr;
   const bool focused =

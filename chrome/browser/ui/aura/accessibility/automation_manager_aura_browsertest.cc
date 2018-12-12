@@ -11,7 +11,6 @@
 #include "chrome/test/views/accessibility_checker.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension_messages.h"
@@ -46,13 +45,6 @@ void FindAllHostsOfWebContentsWithAXTreeID(
     FindAllHostsOfWebContentsWithAXTreeID(tree, child, target_ax_tree_id,
                                           web_hosts);
   }
-}
-
-// A helper to retrieve an ax tree id given a RenderFrameHost.
-ui::AXTreeID GetAXTreeIDFromRenderFrameHost(content::RenderFrameHost* rfh) {
-  auto* registry = ui::AXTreeIDRegistry::GetInstance();
-  return registry->GetAXTreeID(ui::AXTreeIDRegistry::FrameID(
-      rfh->GetProcess()->GetID(), rfh->GetRoutingID()));
 }
 
 // A class that installs itself as the sink to handle automation event bundles
@@ -134,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, WebAppearsOnce) {
   WaitForAccessibilityTreeToContainNodeWithName(web_contents, "Click me");
 
   auto* frame_host = web_contents->GetMainFrame();
-  ui::AXTreeID ax_tree_id = GetAXTreeIDFromRenderFrameHost(frame_host);
+  ui::AXTreeID ax_tree_id = frame_host->GetAXTreeID();
   ASSERT_NE(ax_tree_id, ui::AXTreeIDUnknown());
 
   std::vector<views::AXAuraObjWrapper*> web_hosts;
