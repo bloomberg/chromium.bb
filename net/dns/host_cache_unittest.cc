@@ -733,7 +733,7 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   EXPECT_EQ(1u, result4->addresses().value().size());
   EXPECT_EQ(address_ipv4, result4->addresses().value().front().address());
 
-  EXPECT_EQ(3u, restored_cache.last_restore_size());
+  EXPECT_EQ(2u, restored_cache.last_restore_size());
 }
 
 TEST(HostCacheTest, SerializeAndDeserialize_Text) {

@@ -524,7 +524,15 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
 }
 
 bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
+  // Reset the restore size to 0.
+  restore_size_ = 0;
+
   for (auto it = old_cache.begin(); it != old_cache.end(); it++) {
+    // If the cache is already full, don't bother prioritizing what to evict,
+    // just stop restoring.
+    if (size() == max_entries_)
+      break;
+
     const base::DictionaryValue* entry_dict;
     if (!it->GetAsDictionary(&entry_dict))
       return false;
@@ -634,16 +642,15 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
             static_cast<HostResolverSource>(host_resolver_source));
 
     // If the key is already in the cache, assume it's more recent and don't
-    // replace the entry. If the cache is already full, don't bother
-    // prioritizing what to evict, just stop restoring.
+    // replace the entry.
     auto found = entries_.find(key);
-    if (found == entries_.end() && size() < max_entries_) {
+    if (found == entries_.end()) {
       AddEntry(key, Entry(error, address_list, std::move(text_records),
                           std::move(hostname_records), Entry::SOURCE_UNKNOWN,
                           expiration_time, network_changes_ - 1));
+      restore_size_++;
     }
   }
-  restore_size_ = old_cache.GetSize();
   return true;
 }
 
