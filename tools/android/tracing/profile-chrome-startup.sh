@@ -205,6 +205,9 @@ case $browser in
     stable)
     browser_package="com.android.chrome"
     ;;
+    chromium)
+    browser_package="org.chromium.chrome"
+    ;;
     *)
     echo "Unknown browser $browser"
     exit 1
@@ -251,8 +254,13 @@ if [ $checktabs = true ] || [ $killg = true ] || [ ! -z "$taburl" ]; then
 fi
 
 # Make sure Chrome can write the trace file.
-$adb shell "pm grant $browser_package android.permission.READ_EXTERNAL_STORAGE"
-$adb shell "pm grant $browser_package android.permission.WRITE_EXTERNAL_STORAGE"
+# These commands may fail with a security exception on some Android devices that
+# don't allow changing permissions. Chrome likely already has these permissions
+# so the script should still work.
+$adb shell "pm grant $browser_package \
+                android.permission.READ_EXTERNAL_STORAGE" || true
+$adb shell "pm grant $browser_package \
+                android.permission.WRITE_EXTERNAL_STORAGE" || true
 
 if [ ! -z "$taburl" ]; then
     echo "Opening $taburl in a single tab..."
