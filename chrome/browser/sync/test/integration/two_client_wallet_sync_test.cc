@@ -82,7 +82,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest, UpdateCreditCardMetadata) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
-       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
 
