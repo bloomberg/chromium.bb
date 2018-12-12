@@ -414,6 +414,7 @@ js_library("file_transfer_controller") {
     "ui:multi_profile_share_dialog",
     "ui:progress_center_panel",
   ]
+  externs_list = [ "../../../externs/background/progress_center.js" ]
 }
 
 js_library("file_watcher") {
