@@ -5,29 +5,26 @@
 #ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLER_FACTORY_IMPL_H_
 #define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_ENROLLER_FACTORY_IMPL_H_
 
-#include "components/cryptauth/cryptauth_enroller.h"
-
-namespace cryptauth {
-class CryptAuthClientFactory;
-}  // namespace cryptauth
+#include "chromeos/services/device_sync/cryptauth_enroller.h"
 
 namespace chromeos {
 
 namespace device_sync {
 
+class CryptAuthClientFactory;
+
 // CryptAuthEnrollerFactory implementation which utilizes IdentityManager.
-class CryptAuthEnrollerFactoryImpl
-    : public cryptauth::CryptAuthEnrollerFactory {
+class CryptAuthEnrollerFactoryImpl : public CryptAuthEnrollerFactory {
  public:
   CryptAuthEnrollerFactoryImpl(
-      cryptauth::CryptAuthClientFactory* cryptauth_client_factory);
+      CryptAuthClientFactory* cryptauth_client_factory);
   ~CryptAuthEnrollerFactoryImpl() override;
 
-  // cryptauth::CryptAuthEnrollerFactory:
-  std::unique_ptr<cryptauth::CryptAuthEnroller> CreateInstance() override;
+  // CryptAuthEnrollerFactory:
+  std::unique_ptr<CryptAuthEnroller> CreateInstance() override;
 
  private:
-  cryptauth::CryptAuthClientFactory* cryptauth_client_factory_;
+  CryptAuthClientFactory* cryptauth_client_factory_;
 };
 
 }  // namespace device_sync

@@ -43,7 +43,7 @@ MultiDeviceSetupService::MultiDeviceSetupService(
         android_sms_app_helper_delegate,
     std::unique_ptr<AndroidSmsPairingStateTracker>
         android_sms_pairing_state_tracker,
-    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
     : service_binding_(this, std::move(request)),
       multidevice_setup_(
           MultiDeviceSetupInitializer::Factory::Get()->BuildInstance(

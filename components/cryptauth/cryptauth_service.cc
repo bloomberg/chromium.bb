@@ -4,17 +4,17 @@
 
 #include "components/cryptauth/cryptauth_service.h"
 
-#include "components/cryptauth/cryptauth_device_manager.h"
-#include "components/cryptauth/cryptauth_enrollment_manager.h"
-#include "components/cryptauth/cryptauth_gcm_manager.h"
+#include "chromeos/services/device_sync/cryptauth_device_manager.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
+#include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
 
 namespace cryptauth {
 
 // static
 void CryptAuthService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  CryptAuthGCMManager::RegisterPrefs(registry);
-  CryptAuthDeviceManager::RegisterPrefs(registry);
-  CryptAuthEnrollmentManager::RegisterPrefs(registry);
+  chromeos::device_sync::CryptAuthGCMManager::RegisterPrefs(registry);
+  chromeos::device_sync::CryptAuthDeviceManager::RegisterPrefs(registry);
+  chromeos::device_sync::CryptAuthEnrollmentManager::RegisterPrefs(registry);
 }
 
 }  // namespace cryptauth

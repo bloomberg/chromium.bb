@@ -16,11 +16,11 @@
 
 class PrefService;
 
-namespace cryptauth {
-class GcmDeviceInfoProvider;
-}  // namespace cryptauth
-
 namespace chromeos {
+
+namespace device_sync {
+class GcmDeviceInfoProvider;
+}  // namespace device_sync
 
 namespace multidevice_setup {
 
@@ -50,7 +50,7 @@ class MultiDeviceSetupInitializer
             android_sms_app_helper_delegate,
         std::unique_ptr<AndroidSmsPairingStateTracker>
             android_sms_pairing_state_tracker,
-        const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
+        const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider);
 
    private:
     static Factory* test_factory_;
@@ -88,7 +88,7 @@ class MultiDeviceSetupInitializer
           android_sms_app_helper_delegate,
       std::unique_ptr<AndroidSmsPairingStateTracker>
           android_sms_pairing_state_tracker,
-      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
+      const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider);
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
@@ -130,7 +130,7 @@ class MultiDeviceSetupInitializer
   std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
   std::unique_ptr<AndroidSmsPairingStateTracker>
       android_sms_pairing_state_tracker_;
-  const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider_;
+  const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider_;
 
   std::unique_ptr<MultiDeviceSetupBase> multidevice_setup_impl_;
 

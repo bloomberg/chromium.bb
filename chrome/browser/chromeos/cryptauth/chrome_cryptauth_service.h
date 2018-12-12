@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -18,17 +18,17 @@
 
 class Profile;
 
-namespace cryptauth {
-class CryptAuthGCMManager;
-}  // namespace cryptauth
-
 namespace chromeos {
+
+namespace device_sync {
+class CryptAuthGCMManager;
+}  // namespace device_sync
 
 // Implementation of cryptauth::CryptAuthService.
 class ChromeCryptAuthService
     : public KeyedService,
       public cryptauth::CryptAuthService,
-      public cryptauth::CryptAuthEnrollmentManager::Observer,
+      public device_sync::CryptAuthEnrollmentManager::Observer,
       public identity::IdentityManager::Observer {
  public:
   static std::unique_ptr<ChromeCryptAuthService> Create(Profile* profile);
@@ -38,25 +38,26 @@ class ChromeCryptAuthService
   void Shutdown() override;
 
   // cryptauth::CryptAuthService:
-  cryptauth::CryptAuthDeviceManager* GetCryptAuthDeviceManager() override;
-  cryptauth::CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager()
+  device_sync::CryptAuthDeviceManager* GetCryptAuthDeviceManager() override;
+  device_sync::CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager()
       override;
   cryptauth::DeviceClassifier GetDeviceClassifier() override;
   std::string GetAccountId() override;
-  std::unique_ptr<cryptauth::CryptAuthClientFactory>
+  std::unique_ptr<device_sync::CryptAuthClientFactory>
   CreateCryptAuthClientFactory() override;
 
-  // cryptauth::CryptAuthEnrollmentManager::Observer:
+  // device_sync::CryptAuthEnrollmentManager::Observer:
   void OnEnrollmentFinished(bool success) override;
 
  protected:
   // Note: ChromeCryptAuthServiceFactory DependsOn(OAuth2TokenServiceFactory),
   // so |token_service| is guaranteed to outlast this service.
   ChromeCryptAuthService(
-      std::unique_ptr<cryptauth::CryptAuthClientFactory> client_factory,
-      std::unique_ptr<cryptauth::CryptAuthGCMManager> gcm_manager,
-      std::unique_ptr<cryptauth::CryptAuthDeviceManager> device_manager,
-      std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager,
+      std::unique_ptr<device_sync::CryptAuthClientFactory> client_factory,
+      std::unique_ptr<device_sync::CryptAuthGCMManager> gcm_manager,
+      std::unique_ptr<device_sync::CryptAuthDeviceManager> device_manager,
+      std::unique_ptr<device_sync::CryptAuthEnrollmentManager>
+          enrollment_manager,
       Profile* profile,
       identity::IdentityManager* identity_manager);
 
@@ -70,10 +71,10 @@ class ChromeCryptAuthService
   void PerformEnrollmentAndDeviceSyncIfPossible();
   void OnPrefsChanged();
 
-  std::unique_ptr<cryptauth::CryptAuthClientFactory> client_factory_;
-  std::unique_ptr<cryptauth::CryptAuthGCMManager> gcm_manager_;
-  std::unique_ptr<cryptauth::CryptAuthEnrollmentManager> enrollment_manager_;
-  std::unique_ptr<cryptauth::CryptAuthDeviceManager> device_manager_;
+  std::unique_ptr<device_sync::CryptAuthClientFactory> client_factory_;
+  std::unique_ptr<device_sync::CryptAuthGCMManager> gcm_manager_;
+  std::unique_ptr<device_sync::CryptAuthEnrollmentManager> enrollment_manager_;
+  std::unique_ptr<device_sync::CryptAuthDeviceManager> device_manager_;
   Profile* profile_;
   identity::IdentityManager* identity_manager_;
   PrefChangeRegistrar registrar_;

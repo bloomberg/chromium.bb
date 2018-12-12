@@ -82,7 +82,7 @@ MultiDeviceSetupImpl::Factory::BuildInstance(
         android_sms_app_helper_delegate,
     std::unique_ptr<AndroidSmsPairingStateTracker>
         android_sms_pairing_state_tracker,
-    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider) {
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider) {
   return base::WrapUnique(new MultiDeviceSetupImpl(
       pref_service, device_sync_client, auth_token_validator,
       oobe_completion_tracker, std::move(android_sms_app_helper_delegate),
@@ -98,7 +98,7 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
         android_sms_app_helper_delegate,
     std::unique_ptr<AndroidSmsPairingStateTracker>
         android_sms_pairing_state_tracker,
-    const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
+    const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
     : eligible_host_devices_provider_(
           EligibleHostDevicesProviderImpl::Factory::Get()->BuildInstance(
               device_sync_client)),

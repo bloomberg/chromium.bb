@@ -13,6 +13,8 @@ proto_library("proto") {
 
 static_library("util") {
   sources = [
+    "device_classifier_util.cc",
+    "device_classifier_util.h",
     "enum_util.cc",
     "enum_util.h",
   ]
@@ -23,5 +25,6 @@ static_library("util") {
 
   deps = [
     "//base",
+    "//components/version_info",
   ]
 }

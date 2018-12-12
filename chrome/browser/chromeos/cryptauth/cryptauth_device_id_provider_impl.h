@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "components/cryptauth/cryptauth_device_id_provider.h"
+#include "chromeos/services/device_sync/public/cpp/cryptauth_device_id_provider.h"
 
 class PrefRegistrySimple;
 
@@ -17,7 +17,8 @@ namespace cryptauth {
 
 // Concrete CryptAuthDeviceIdProvider implementation which stores the device ID
 // in the browser process' local state PrefStore.
-class CryptAuthDeviceIdProviderImpl : public CryptAuthDeviceIdProvider {
+class CryptAuthDeviceIdProviderImpl
+    : public chromeos::device_sync::CryptAuthDeviceIdProvider {
  public:
   // Registers the prefs used by this class. |registry| must be associated
   // with browser local storage, not an individual profile.

@@ -3,10 +3,12 @@ include_rules = [
   "+components/gcm_driver",
   "+components/proximity_auth/logging",
   "+components/signin/core/browser",
+  "+components/version_info",
   "+google_apis/gaia",
   "+mojo/public/cpp",
-  "+net/url_request",
   "+services/identity",
+  "+services/network/public",
+  "+services/network/test",
   "+services/preferences/public",
   "+services/service_manager/public/cpp",
   "+components/cryptauth"

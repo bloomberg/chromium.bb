@@ -4,17 +4,44 @@
 
 #include "chrome/browser/chromeos/cryptauth/gcm_device_info_provider_impl.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string>
+
 #include "base/linux_util.h"
+#include "base/md5.h"
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
 #include "chromeos/chromeos_features.h"
-#include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/version_info/version_info.h"
 
 namespace chromeos {
+
+namespace {
+
+int64_t HashStringToInt64(const std::string& string) {
+  base::MD5Context context;
+  base::MD5Init(&context);
+  base::MD5Update(&context, string);
+
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &context);
+
+  // Fold the digest into an int64_t value. |digest.a| is a 16-byte array, so we
+  // sum the two 8-byte halves of the digest to create the hash.
+  int64_t hash = 0;
+  for (size_t i = 0; i < sizeof(digest.a); ++i) {
+    uint8_t byte = digest.a[i];
+    hash += static_cast<int64_t>(byte) << (i % sizeof(int64_t));
+  }
+
+  return hash;
+}
+
+}  // namespace
 
 // static
 const GcmDeviceInfoProviderImpl* GcmDeviceInfoProviderImpl::GetInstance() {
@@ -26,7 +53,7 @@ const cryptauth::GcmDeviceInfo& GcmDeviceInfoProviderImpl::GetGcmDeviceInfo()
     const {
   static const base::NoDestructor<cryptauth::GcmDeviceInfo> gcm_device_info([] {
     static const google::protobuf::int64 kSoftwareVersionCode =
-        cryptauth::HashStringToInt64(version_info::GetLastChange());
+        HashStringToInt64(version_info::GetLastChange());
 
     cryptauth::GcmDeviceInfo gcm_device_info;
 

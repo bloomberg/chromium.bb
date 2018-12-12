@@ -9,10 +9,12 @@
 
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace device_sync {
 
 std::ostream& operator<<(std::ostream& stream,
-                         const SoftwareFeature& software_fature);
+                         const cryptauth::SoftwareFeature& software_fature);
 
 // Converts the string representation of a SoftwareFeature to its associated
 // Proto enum value. Some Proto messages are sent to Apiary endpoints, which
@@ -36,7 +38,8 @@ std::string SoftwareFeatureEnumToString(
 std::string SoftwareFeatureEnumToStringAllCaps(
     cryptauth::SoftwareFeature software_feature);
 
-std::ostream& operator<<(std::ostream& stream, const DeviceType& device_type);
+std::ostream& operator<<(std::ostream& stream,
+                         const cryptauth::DeviceType& device_type);
 
 // Converts the string representation of a DeviceType to its associated
 // Proto enum value. Some Proto messages are sent to Apiary endpoints, which
@@ -53,6 +56,8 @@ cryptauth::DeviceType DeviceTypeStringToEnum(
 // strings to enums after receiving them.
 std::string DeviceTypeEnumToString(cryptauth::DeviceType device_type);
 
-}  // namespace cryptauth
+}  // namespace device_sync
+
+}  // namespace chromeos
 
 #endif  // CHROMEOS_SERVICES_DEVICE_SYNC_PROTO_ENUM_UTIL_H_

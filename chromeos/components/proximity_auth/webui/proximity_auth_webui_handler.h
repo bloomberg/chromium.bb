@@ -16,7 +16,6 @@
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
-#include "components/cryptauth/network_request_error.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {

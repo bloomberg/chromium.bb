@@ -8,6 +8,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "chromeos/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_feature_state_observer.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_observer.h"
@@ -20,7 +21,6 @@
 #include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/fake_gcm_device_info_provider.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +44,7 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
       FakeAndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate,
       FakeAndroidSmsPairingStateTracker*
           expected_android_sms_pairing_state_tracker,
-      const cryptauth::FakeGcmDeviceInfoProvider*
+      const device_sync::FakeGcmDeviceInfoProvider*
           expected_gcm_device_info_provider)
       : expected_testing_pref_service_(expected_testing_pref_service),
         expected_device_sync_client_(expected_device_sync_client),
@@ -70,7 +70,7 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
           android_sms_app_helper_delegate,
       std::unique_ptr<AndroidSmsPairingStateTracker>
           android_sms_pairing_state_tracker,
-      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider)
+      const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider)
       override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(expected_testing_pref_service_, pref_service);
@@ -95,7 +95,7 @@ class FakeMultiDeviceSetupFactory : public MultiDeviceSetupImpl::Factory {
   FakeAndroidSmsAppHelperDelegate* expected_android_sms_app_helper_delegate_;
   FakeAndroidSmsPairingStateTracker*
       expected_android_sms_pairing_state_tracker_;
-  const cryptauth::FakeGcmDeviceInfoProvider*
+  const device_sync::FakeGcmDeviceInfoProvider*
       expected_gcm_device_info_provider_;
 
   FakeMultiDeviceSetup* instance_ = nullptr;
@@ -129,7 +129,7 @@ class MultiDeviceSetupServiceTest : public testing::Test {
     fake_android_sms_pairing_state_tracker_ =
         fake_android_sms_pairing_state_tracker.get();
     fake_gcm_device_info_provider_ =
-        std::make_unique<cryptauth::FakeGcmDeviceInfoProvider>(
+        std::make_unique<device_sync::FakeGcmDeviceInfoProvider>(
             cryptauth::GcmDeviceInfo());
 
     fake_multidevice_setup_factory_ =
@@ -215,7 +215,7 @@ class MultiDeviceSetupServiceTest : public testing::Test {
   std::unique_ptr<OobeCompletionTracker> fake_oobe_completion_tracker_;
   FakeAndroidSmsAppHelperDelegate* fake_android_sms_app_helper_delegate_;
   FakeAndroidSmsPairingStateTracker* fake_android_sms_pairing_state_tracker_;
-  std::unique_ptr<cryptauth::FakeGcmDeviceInfoProvider>
+  std::unique_ptr<device_sync::FakeGcmDeviceInfoProvider>
       fake_gcm_device_info_provider_;
 
   std::unique_ptr<FakeMultiDeviceSetupFactory> fake_multidevice_setup_factory_;

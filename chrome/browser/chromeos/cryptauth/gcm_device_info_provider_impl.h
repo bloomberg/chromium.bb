@@ -8,16 +8,16 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/gcm_device_info_provider.h"
+#include "chromeos/services/device_sync/public/cpp/gcm_device_info_provider.h"
 
 namespace chromeos {
 
 // Concrete GcmDeviceInfoProvider implementation.
-class GcmDeviceInfoProviderImpl : public cryptauth::GcmDeviceInfoProvider {
+class GcmDeviceInfoProviderImpl : public device_sync::GcmDeviceInfoProvider {
  public:
   static const GcmDeviceInfoProviderImpl* GetInstance();
 
-  // cryptauth::GcmDeviceInfoProvider:
+  // device_sync::GcmDeviceInfoProvider:
   const cryptauth::GcmDeviceInfo& GetGcmDeviceInfo() const override;
 
  private:
