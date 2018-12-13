@@ -23,6 +23,15 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name = "transform_quic_trace",
+    srcs = ["transform_quic_trace.cc"],
+    deps = [
+        "//lib:quic_trace_cc_proto",
+        "@com_github_gflags_gflags//:gflags",
+    ],
+)
+
 sh_binary(
     name = "time_sequence_gnuplot",
     srcs = ["time_sequence_gnuplot.sh"],
