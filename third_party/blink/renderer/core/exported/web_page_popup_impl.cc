@@ -594,7 +594,7 @@ WebPoint WebPagePopupImpl::PositionRelativeToOwner() {
 
 void WebPagePopupImpl::Cancel() {
   if (popup_client_)
-    popup_client_->ClosePopup();
+    popup_client_->CancelPopup();
 }
 
 WebRect WebPagePopupImpl::WindowRectInScreen() const {

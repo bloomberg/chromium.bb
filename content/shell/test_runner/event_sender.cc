@@ -2305,7 +2305,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
       HandleInputEventOnViewOrPopup(pointer_event);
     }
   }
-  WebPagePopup* popup = widget()->GetPagePopup();
+  WebPagePopup* popup = view()->GetPagePopup();
   if (popup)
     popup->DispatchBufferedTouchEvents();
   else
@@ -2783,7 +2783,7 @@ WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
     const WebInputEvent& raw_event) {
   last_event_timestamp_ = raw_event.TimeStamp();
 
-  WebPagePopup* popup = widget()->GetPagePopup();
+  WebPagePopup* popup = view()->GetPagePopup();
   if (popup && !WebInputEvent::IsKeyboardEventType(raw_event.GetType())) {
     // ui::ScaleWebInputEvent returns nullptr when the scale is 1.0f as the
     // event does not have to be converted.

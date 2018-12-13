@@ -72,7 +72,7 @@ class CORE_EXPORT PagePopupClient {
   virtual void SetValue(const String&) = 0;
 
   // This is called by the content HTML of a PagePopup.
-  virtual void ClosePopup() = 0;
+  virtual void CancelPopup() = 0;
 
   // This is called whenever a PagePopup was closed.
   virtual void DidClosePopup() = 0;

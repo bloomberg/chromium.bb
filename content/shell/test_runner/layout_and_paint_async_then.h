@@ -9,15 +9,17 @@
 #include "content/shell/test_runner/test_runner_export.h"
 
 namespace blink {
+class WebPagePopup;
 class WebWidget;
 }  // namespace blink
 
 namespace test_runner {
 
-// Triggers a layout and paint of |web_widget| and its popup (if any).
-// Calls |callback| after the layout and paint happens (for both the
-// |web_widget| and its popup (if any)).
-TEST_RUNNER_EXPORT void LayoutAndPaintAsyncThen(blink::WebWidget* web_widget,
+// Triggers a layout and paint of WebWidget and the active popup (if any).
+// Calls |callback| after the layout and paint happens for both the
+// widget and the popup.
+TEST_RUNNER_EXPORT void LayoutAndPaintAsyncThen(blink::WebPagePopup* popup,
+                                                blink::WebWidget* web_widget,
                                                 base::OnceClosure callback);
 
 }  // namespace test_runner

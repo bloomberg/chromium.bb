@@ -110,10 +110,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // they should be rendered by WebKit (which is the default).
   static bool UseExternalPopupMenus();
 
-  // WebWidget methods:
-  // TODO(danakj): Make private or move to WebView API.
-  WebPagePopupImpl* GetPagePopup() const override;
-
   // WebView methods:
   bool IsWebView() const override { return true; }
   void SetPrerendererClient(WebPrerendererClient*) override;
@@ -190,7 +186,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                           unsigned inactive_foreground_color) override;
   void PerformCustomContextMenuAction(unsigned action) override;
   void DidCloseContextMenu() override;
-  void HidePopups() override;
+  void CancelPagePopup() override;
+  WebPagePopupImpl* GetPagePopup() const override { return page_popup_.get(); }
   void SetMainFrameOverlayColor(SkColor) override;
   WebPageImportanceSignals* PageImportanceSignals() override;
   void SetShowPaintRects(bool) override;
@@ -298,8 +295,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void UpdateMainFrameLayoutSize();
   void UpdatePageDefinedViewportConstraints(const ViewportDescription&);
 
-  PagePopup* OpenPagePopup(PagePopupClient*);
+  WebPagePopupImpl* OpenPagePopup(PagePopupClient*);
+  bool HasOpenedPopup() const { return page_popup_.get(); }
   void ClosePagePopup(PagePopup*);
+  // Callback from PagePopup when it is closed, which it can be done directly
+  // without coming through WebViewImpl.
   void CleanupPagePopup();
   LocalDOMWindow* PagePopupWindow() const;
 
@@ -310,8 +310,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   PageScheduler* Scheduler() const override;
   void SetIsHidden(bool hidden, bool is_initial_state) override;
   bool IsHidden() override;
-
-  bool HasOpenedPopup() const { return page_popup_.get(); }
 
   // Called by a full frame plugin inside this view to inform it that its
   // zoom level has been updated.  The plugin should only call this function
@@ -397,10 +395,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // focused frame, or if the there is one but it belongs to a different local
   // root.
   WebInputMethodController* GetActiveWebInputMethodController() const;
-
-  void SetLastHiddenPagePopup(WebPagePopupImpl* page_popup) {
-    last_hidden_page_popup_ = page_popup;
-  }
 
   bool ShouldZoomToLegibleScale(const Element&);
   void ZoomAndScrollToFocusedEditableElementRect(
@@ -489,8 +483,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
               WebViewImpl* opener);
   ~WebViewImpl() override;
 
-  void HideSelectPopup();
-
   HitTestResult HitTestResultForRootFramePos(const LayoutPoint&);
 
   void ConfigureAutoResizeMode();
@@ -522,8 +514,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void EnablePopupMouseWheelEventListener(WebLocalFrameImpl* local_root);
   void DisablePopupMouseWheelEventListener();
-
-  void CancelPagePopup();
 
   float DeviceScaleFactor() const;
 

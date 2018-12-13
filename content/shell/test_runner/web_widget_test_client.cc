@@ -17,13 +17,16 @@
 #include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/web/web_page_popup.h"
+#include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 
 namespace test_runner {
 
 WebWidgetTestClient::WebWidgetTestClient(
+    bool main_frame_widget,
     WebWidgetTestProxyBase* web_widget_test_proxy_base)
-    : web_widget_test_proxy_base_(web_widget_test_proxy_base),
+    : main_frame_widget_(main_frame_widget),
+      web_widget_test_proxy_base_(web_widget_test_proxy_base),
       animation_scheduled_(false),
       weak_factory_(this) {
   DCHECK(web_widget_test_proxy_base_);
@@ -52,9 +55,19 @@ void WebWidgetTestClient::AnimateNow() {
   blink::WebWidget* web_widget = web_widget_test_proxy_base_->web_widget();
   web_widget->UpdateAllLifecyclePhasesAndCompositeForTesting(
       animation_requires_raster);
-  if (blink::WebPagePopup* popup = web_widget->GetPagePopup()) {
-    popup->UpdateAllLifecyclePhasesAndCompositeForTesting(
-        animation_requires_raster);
+
+  // If this is the main frame, we composite the current PagePopup with the
+  // widget.
+  // TODO(danakj): This means that an OOPIF's popup, which is attached to a
+  // WebView without a main frame, would have no opportunity to execute this
+  // method call.
+  if (main_frame_widget_) {
+    blink::WebView* view =
+        web_widget_test_proxy_base_->web_view_test_proxy_base()->web_view();
+    if (blink::WebPagePopup* popup = view->GetPagePopup()) {
+      popup->UpdateAllLifecyclePhasesAndCompositeForTesting(
+          animation_requires_raster);
+    }
   }
 }
 

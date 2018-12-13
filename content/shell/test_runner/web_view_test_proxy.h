@@ -206,7 +206,6 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl,
   // RenderViewImpl has no public destructor.
   ~WebViewTestProxy() override;
 
-  std::unique_ptr<ProxyWebWidgetClient> proxy_widget_client_;
   std::unique_ptr<WebViewTestClient> view_test_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestProxy);

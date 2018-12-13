@@ -12,11 +12,12 @@
 
 namespace test_runner {
 
-void LayoutAndPaintAsyncThen(blink::WebWidget* web_widget,
+void LayoutAndPaintAsyncThen(blink::WebPagePopup* popup,
+                             blink::WebWidget* web_widget,
                              base::OnceClosure callback) {
   TRACE_EVENT0("shell", "LayoutAndPaintAsyncThen");
 
-  if (blink::WebPagePopup* popup = web_widget->GetPagePopup()) {
+  if (popup) {
     auto barrier = base::BarrierClosure(2, std::move(callback));
     web_widget->LayoutAndPaintAsync(barrier);
     popup->LayoutAndPaintAsync(barrier);

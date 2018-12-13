@@ -221,8 +221,10 @@ void TestRunnerForSpecificView::LayoutAndPaintAsync() {
   // TODO(lfg, lukasza): TestRunnerForSpecificView assumes that there's a single
   // WebWidget for the entire view, but with out-of-process iframes there may be
   // multiple WebWidgets, one for each local root. We should look into making
-  // this structure more generic.
+  // this structure more generic. Also the PagePopup for an OOPIF would be
+  // attached to a WebView without a main frame, which should be handled.
   test_runner::LayoutAndPaintAsyncThen(
+      web_view()->GetPagePopup(),
       web_view()->MainFrame()->ToWebLocalFrame()->FrameWidget(),
       base::DoNothing());
 }
@@ -230,6 +232,7 @@ void TestRunnerForSpecificView::LayoutAndPaintAsync() {
 void TestRunnerForSpecificView::LayoutAndPaintAsyncThen(
     v8::Local<v8::Function> callback) {
   test_runner::LayoutAndPaintAsyncThen(
+      web_view()->GetPagePopup(),
       web_view()->MainFrame()->ToWebLocalFrame()->FrameWidget(),
       CreateClosureThatPostsV8Callback(callback));
 }

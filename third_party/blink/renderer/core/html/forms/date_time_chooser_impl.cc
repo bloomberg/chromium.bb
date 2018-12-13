@@ -234,7 +234,7 @@ void DateTimeChooserImpl::SetValue(const String& value) {
   client_->DidChooseValue(value);
 }
 
-void DateTimeChooserImpl::ClosePopup() {
+void DateTimeChooserImpl::CancelPopup() {
   EndChooser();
 }
 

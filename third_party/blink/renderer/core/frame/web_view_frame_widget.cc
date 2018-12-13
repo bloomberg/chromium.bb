@@ -133,10 +133,6 @@ SkColor WebViewFrameWidget::BackgroundColor() const {
   return web_view_->BackgroundColor();
 }
 
-WebPagePopup* WebViewFrameWidget::GetPagePopup() const {
-  return web_view_->GetPagePopup();
-}
-
 WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
 }

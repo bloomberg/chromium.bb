@@ -480,7 +480,7 @@ Locale& InternalPopupMenu::GetLocale() {
   return Locale::DefaultLocale();
 }
 
-void InternalPopupMenu::ClosePopup() {
+void InternalPopupMenu::CancelPopup() {
   if (popup_)
     chrome_client_->ClosePagePopup(popup_);
   if (owner_element_)
@@ -498,7 +498,7 @@ void InternalPopupMenu::Show() {
 }
 
 void InternalPopupMenu::Hide() {
-  ClosePopup();
+  CancelPopup();
 }
 
 void InternalPopupMenu::UpdateFromElement(UpdateReason) {

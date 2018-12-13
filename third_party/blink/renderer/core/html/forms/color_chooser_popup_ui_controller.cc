@@ -55,7 +55,7 @@ ColorChooserPopupUIController::~ColorChooserPopupUIController() = default;
 
 void ColorChooserPopupUIController::Dispose() {
   // Finalized earlier so as to access chrome_client_ while alive.
-  ClosePopup();
+  CancelPopup();
   // ~ColorChooserUIController calls EndChooser().
 }
 
@@ -73,7 +73,7 @@ void ColorChooserPopupUIController::OpenUI() {
 
 void ColorChooserPopupUIController::EndChooser() {
   ColorChooserUIController::EndChooser();
-  ClosePopup();
+  CancelPopup();
 }
 
 AXObject* ColorChooserPopupUIController::RootAXObject() {
@@ -122,7 +122,7 @@ void ColorChooserPopupUIController::SetValueAndClosePopup(
     SetValue(string_value);
   if (num_value == kColorPickerPopupActionChooseOtherColor)
     OpenColorChooser();
-  ClosePopup();
+  CancelPopup();
 }
 
 void ColorChooserPopupUIController::SetValue(const String& value) {
@@ -149,7 +149,7 @@ void ColorChooserPopupUIController::OpenPopup() {
   popup_ = chrome_client_->OpenPagePopup(this);
 }
 
-void ColorChooserPopupUIController::ClosePopup() {
+void ColorChooserPopupUIController::CancelPopup() {
   if (!popup_)
     return;
   chrome_client_->ClosePagePopup(popup_);

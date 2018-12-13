@@ -69,7 +69,7 @@ class CORE_EXPORT ColorChooserPopupUIController final
   Locale& GetLocale() override;
   void SetValueAndClosePopup(int, const String&) override;
   void SetValue(const String&) override;
-  void ClosePopup() override;
+  void CancelPopup() override;
   Element& OwnerElement() override;
   void DidClosePopup() override;
 
