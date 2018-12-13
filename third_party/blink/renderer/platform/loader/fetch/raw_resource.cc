@@ -75,7 +75,8 @@ RawResource* RawResource::FetchMainResource(
     FetchParameters& params,
     ResourceFetcher* fetcher,
     RawResourceClient* client,
-    const SubstituteData& substitute_data) {
+    const SubstituteData& substitute_data,
+    unsigned long identifier) {
   DCHECK_NE(params.GetResourceRequest().GetFrameType(),
             network::mojom::RequestContextFrameType::kNone);
   DCHECK(params.GetResourceRequest().GetRequestContext() ==
@@ -93,7 +94,7 @@ RawResource* RawResource::FetchMainResource(
 
   return ToRawResource(fetcher->RequestResource(
       params, RawResourceFactory(ResourceType::kMainResource), client,
-      substitute_data));
+      substitute_data, identifier));
 }
 
 RawResource* RawResource::FetchMedia(FetchParameters& params,

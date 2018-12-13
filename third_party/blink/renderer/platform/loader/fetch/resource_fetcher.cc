@@ -514,16 +514,10 @@ Resource* ResourceFetcher::ResourceForStaticData(
   const KURL& url = params.GetResourceRequest().Url();
   DCHECK(url.ProtocolIsData() || substitute_data.IsValid() || archive_);
 
-  // TODO(japhet): We only send main resource data: urls through WebURLLoader
-  // for the benefit of a service worker test
-  // (RenderViewImplTest.ServiceWorkerNetworkProviderSetup), which is at a layer
-  // where it isn't easy to mock out a network load. It uses data: urls to
-  // emulate the behavior it wants to test, which would otherwise be reserved
-  // for network loads.
   if (!archive_ && !substitute_data.IsValid() &&
-      (factory.GetType() == ResourceType::kMainResource ||
-       factory.GetType() == ResourceType::kRaw))
+      factory.GetType() == ResourceType::kRaw) {
     return nullptr;
+  }
 
   const String cache_identifier = GetCacheIdentifier();
   // Most off-main-thread resource fetches use Resource::kRaw and don't reach
@@ -804,8 +798,10 @@ Resource* ResourceFetcher::RequestResource(
     FetchParameters& params,
     const ResourceFactory& factory,
     ResourceClient* client,
-    const SubstituteData& substitute_data) {
-  unsigned long identifier = CreateUniqueIdentifier();
+    const SubstituteData& substitute_data,
+    unsigned long identifier) {
+  if (!identifier)
+    identifier = CreateUniqueIdentifier();
   ResourceRequest& resource_request = params.MutableResourceRequest();
   network_instrumentation::ScopedResourceLoadTracker
       scoped_resource_load_tracker(identifier, resource_request);

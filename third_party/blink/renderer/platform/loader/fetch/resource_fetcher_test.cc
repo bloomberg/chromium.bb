@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_resource.h"
@@ -228,8 +229,9 @@ TEST_F(ResourceFetcherTest, NavigationTimingInfo) {
   resource_request.SetRequestContext(mojom::RequestContextType::FORM);
   FetchParameters fetch_params(resource_request);
   platform_->GetURLLoaderMockFactory()->RegisterURL(url, WebURLResponse(), "");
-  Resource* resource = RawResource::FetchMainResource(
-      fetch_params, fetcher, nullptr, SubstituteData());
+  Resource* resource = RawResource::FetchMainResource(fetch_params, fetcher,
+                                                      nullptr, SubstituteData(),
+                                                      CreateUniqueIdentifier());
   resource->ResponseReceived(response, nullptr);
   EXPECT_EQ(resource->GetType(), ResourceType::kMainResource);
 
@@ -858,7 +860,8 @@ TEST_F(ResourceFetcherTest, ContentIdURL) {
         network::mojom::RequestContextFrameType::kNested);
     FetchParameters fetch_params(resource_request);
     RawResource* resource = RawResource::FetchMainResource(
-        fetch_params, fetcher, nullptr, SubstituteData());
+        fetch_params, fetcher, nullptr, SubstituteData(),
+        CreateUniqueIdentifier());
     ASSERT_NE(nullptr, resource);
     EXPECT_FALSE(resource->ErrorOccurred());
   }

@@ -417,6 +417,7 @@ class CORE_EXPORT DocumentLoader
   bool had_transient_activation_;
 
   bool listing_ftp_directory_ = false;
+  unsigned long main_resource_identifier_ = 0;
 
   // This UseCounter tracks feature usage associated with the lifetime of the
   // document load. Features recorded prior to commit will be recorded locally.
