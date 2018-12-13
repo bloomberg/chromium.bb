@@ -15,6 +15,63 @@ config("webrunner_implementation") {
   defines = [ "WEBRUNNER_IMPLEMENTATION" ]
 }
 
+fuchsia_package("app_config_manager_pkg") {
+  binary = ":app_config_manager_exe"
+  package_name_override = "application_config_manager"
+  sandbox_policy = "app/cast/application_config_manager/sandbox_policy"
+}
+
+fuchsia_package_runner("app_config_manager_runner") {
+  package = ":app_config_manager_pkg"
+  package_name_override = "application_config_manager"
+  install_only = true
+}
+
+source_set("app_config_manager_common") {
+  sources = [
+    "app/cast/application_config_manager/application_config_manager.cc",
+    "app/cast/application_config_manager/application_config_manager.h",
+  ]
+  public_deps = [
+    ":cast_fidl",
+    "//base",
+  ]
+}
+
+source_set("app_config_manager_test_support") {
+  testonly = true
+  sources = [
+    "app/cast/application_config_manager/test/fake_application_config_manager.cc",
+    "app/cast/application_config_manager/test/fake_application_config_manager.h",
+  ]
+  public_deps = [
+    ":cast_fidl",
+    "//base",
+    "//net:test_support",
+  ]
+}
+
+executable("app_config_manager_exe") {
+  sources = [
+    "app/cast/application_config_manager/main.cc",
+  ]
+  deps = [
+    ":app_config_manager_common",
+  ]
+}
+
+test("app_config_manager_unittest") {
+  sources = [
+    "app/cast/application_config_manager/application_config_manager_unittest.cc",
+  ]
+  deps = [
+    ":app_config_manager_common",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}
+
 fuchsia_package("castrunner_pkg") {
   binary = ":castrunner_exe"
   package_name_override = "cast_runner"
@@ -28,6 +85,8 @@ fuchsia_package_runner("castrunner") {
   package_deps = [ [
         ":service_pkg",
         "chromium",
+        ":app_config_manager_pkg",
+        "application_config_manager",
       ] ]
 }
 
@@ -42,6 +101,7 @@ source_set("castrunner_common") {
     "//url",
   ]
   public_deps = [
+    ":cast_fidl",
     ":webrunner_common",
   ]
 }
@@ -64,10 +124,12 @@ test("castrunner_tests") {
     "app/cast/cast_runner_unittest.cc",
   ]
   deps = [
+    ":app_config_manager_test_support",
     ":castrunner_common",
     ":test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -348,6 +410,15 @@ fidl_library("web_fidl") {
   ]
 }
 
+fidl_library("cast_fidl") {
+  library_name = "cast"
+  namespace = "chromium"
+
+  sources = [
+    "fidl/cast/application_config.fidl",
+  ]
+}
+
 # gn binary location.
 if (host_os == "mac") {
   _gn_path = "//buildtools/mac/gn"
@@ -396,6 +467,7 @@ process_version("build_id") {
 # Puts copies of files at the top level of the CIPD archive's structure.
 copy("restaged_packages") {
   sources = [
+    "$root_gen_dir/webrunner/application_config_manager/application_config_manager.far",
     "$root_gen_dir/webrunner/cast_runner/cast_runner.far",
     "$root_gen_dir/webrunner/chromium/chromium.far",
     "$root_gen_dir/webrunner/net_http/http/http.far",
@@ -405,6 +477,7 @@ copy("restaged_packages") {
     "$_artifact_root/{{source_file_part}}",
   ]
   deps = [
+    ":app_config_manager_pkg",
     ":castrunner_pkg",
     ":service_pkg",
     ":webrunner_pkg",

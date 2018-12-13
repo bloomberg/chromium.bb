@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "webrunner/app/common/web_content_runner.h"
+#include "webrunner/fidl/chromium/cast/cpp/fidl.h"
 #include "webrunner/fidl/chromium/web/cpp/fidl.h"
 
 namespace castrunner {
@@ -17,8 +18,16 @@ class CastRunner : public webrunner::WebContentRunner {
  public:
   CastRunner(base::fuchsia::ServiceDirectory* service_directory,
              chromium::web::ContextPtr context,
+             chromium::cast::ApplicationConfigManagerPtr app_config_manager,
              base::OnceClosure on_idle_closure);
+
   ~CastRunner() override;
+
+  void GetConfigCallback(
+      fuchsia::sys::StartupInfo startup_info,
+      fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+          controller_request,
+      chromium::cast::ApplicationConfigPtr app_config);
 
   // fuchsia::sys::Runner implementation.
   void StartComponent(fuchsia::sys::Package package,
@@ -27,6 +36,8 @@ class CastRunner : public webrunner::WebContentRunner {
                           controller_request) override;
 
  private:
+  chromium::cast::ApplicationConfigManagerPtr app_config_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(CastRunner);
 };
 

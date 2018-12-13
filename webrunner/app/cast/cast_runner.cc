@@ -10,45 +10,64 @@
 #include "base/logging.h"
 #include "url/gurl.h"
 #include "webrunner/app/common/web_component.h"
-#include "webrunner/fidl/chromium/web/cpp/fidl.h"
 
 namespace castrunner {
 
-CastRunner::CastRunner(base::fuchsia::ServiceDirectory* service_directory,
-                       chromium::web::ContextPtr context,
-                       base::OnceClosure on_idle_closure)
+CastRunner::CastRunner(
+    base::fuchsia::ServiceDirectory* service_directory,
+    chromium::web::ContextPtr context,
+    chromium::cast::ApplicationConfigManagerPtr app_config_manager,
+    base::OnceClosure on_idle_closure)
     : webrunner::WebContentRunner(service_directory,
                                   std::move(context),
-                                  std::move(on_idle_closure)) {}
+                                  std::move(on_idle_closure)),
+      app_config_manager_(std::move(app_config_manager)) {}
 
 CastRunner::~CastRunner() = default;
+
+void CastRunner::GetConfigCallback(
+    fuchsia::sys::StartupInfo startup_info,
+    fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+        controller_request,
+    chromium::cast::ApplicationConfigPtr app_config) {
+  // If a config was returned then use it to launch a component.
+  if (!app_config)
+    return;
+
+  GURL cast_app_url(*app_config->web_url);
+  RegisterComponent(webrunner::WebComponent::ForUrlRequest(
+      this, std::move(cast_app_url), std::move(startup_info),
+      std::move(controller_request)));
+}
 
 void CastRunner::StartComponent(
     fuchsia::sys::Package package,
     fuchsia::sys::StartupInfo startup_info,
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request) {
-  // TODO(https://crbug.com/893229): Define a CastAppConfig FIDL and dummy
-  // service implementation to hold this logic.
+  // Verify that |package| specifies a Cast URI, and pull the app-Id from it.
   constexpr char kCastPresentationUrlScheme[] = "cast";
+  constexpr char kCastSecurePresentationUrlScheme[] = "casts";
+
   GURL cast_url(*package.resolved_url);
-  if (!cast_url.is_valid() || !cast_url.SchemeIs(kCastPresentationUrlScheme) ||
+  if (!cast_url.is_valid() ||
+      (!cast_url.SchemeIs(kCastPresentationUrlScheme) &&
+       !cast_url.SchemeIs(kCastSecurePresentationUrlScheme)) ||
       cast_url.GetContent().empty()) {
     LOG(ERROR) << "Rejected invalid URL: " << cast_url;
     return;
   }
 
-  constexpr char kTestCastAppId[] = "00000000";
+  // Fetch the Cast application configuration for the specified Id.
   const std::string cast_app_id(cast_url.GetContent());
-  if (cast_app_id != kTestCastAppId) {
-    LOG(ERROR) << "Unknown Cast app Id: " << cast_app_id;
-    return;
-  }
-
-  GURL cast_app_url("https://www.google.com");
-  RegisterComponent(webrunner::WebComponent::ForUrlRequest(
-      this, std::move(cast_app_url), std::move(startup_info),
-      std::move(controller_request)));
+  app_config_manager_->GetConfig(
+      cast_app_id,
+      [this, startup_info = std::move(startup_info),
+       controller_request = std::move(controller_request)](
+          chromium::cast::ApplicationConfigPtr app_config) mutable {
+        GetConfigCallback(std::move(startup_info),
+                          std::move(controller_request), std::move(app_config));
+      });
 }
 
 }  // namespace castrunner
