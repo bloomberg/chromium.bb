@@ -174,7 +174,7 @@ bool RemoteTestServer::Stop() {
             std::string());
 
     if (!kill_request->WaitForCompletion(nullptr))
-      LOG(ERROR) << "Failed stopping RemoteTestServer";
+      LOG(FATAL) << "Failed stopping RemoteTestServer";
 
     remote_port_ = 0;
   }
