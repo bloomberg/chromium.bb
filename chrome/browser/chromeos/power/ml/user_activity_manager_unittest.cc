@@ -98,6 +98,8 @@ class TestingUserActivityUkmLogger : public UserActivityUkmLogger {
 };
 
 // Testing smart dim model.
+// TODO(crbug.com/914640): This is single-threaded, unlike the production
+// implementation. Convert it to multi-threaded.
 class FakeSmartDimModel : public SmartDimModel {
  public:
   FakeSmartDimModel() = default;
@@ -112,8 +114,8 @@ class FakeSmartDimModel : public SmartDimModel {
   }
 
   // SmartDimModel overrides:
-  UserActivityEvent::ModelPrediction ShouldDim(
-      const UserActivityEvent::Features& features) override {
+  void RequestDimDecision(const UserActivityEvent::Features& features,
+                          DimDecisionCallback dim_callback) override {
     UserActivityEvent::ModelPrediction model_prediction;
     // If either of these two values are set outside of the legal range [0,100],
     // return an error code.
@@ -123,17 +125,20 @@ class FakeSmartDimModel : public SmartDimModel {
         decision_threshold_ < 0 || decision_threshold_ > 100) {
       model_prediction.set_response(
           UserActivityEvent::ModelPrediction::MODEL_ERROR);
-      return model_prediction;
-    }
-    model_prediction.set_decision_threshold(decision_threshold_);
-    model_prediction.set_inactivity_score(inactivity_score_);
-    if (inactivity_score_ < decision_threshold_) {
-      model_prediction.set_response(UserActivityEvent::ModelPrediction::NO_DIM);
     } else {
-      model_prediction.set_response(UserActivityEvent::ModelPrediction::DIM);
+      model_prediction.set_decision_threshold(decision_threshold_);
+      model_prediction.set_inactivity_score(inactivity_score_);
+      if (inactivity_score_ < decision_threshold_) {
+        model_prediction.set_response(
+            UserActivityEvent::ModelPrediction::NO_DIM);
+      } else {
+        model_prediction.set_response(UserActivityEvent::ModelPrediction::DIM);
+      }
     }
-    return model_prediction;
+    std::move(dim_callback).Run(model_prediction);
   }
+
+  void CancelPreviousRequest() override{};
 
  private:
   int inactivity_score_ = -1;

@@ -112,6 +112,10 @@ class UserActivityManager : public ui::UserActivityObserver,
   void OnIdleEventObserved(
       const IdleEventNotifier::ActivityData& data) override;
 
+  // Decides whether or not to instruct the power manager to dim the screen
+  // given a |prediction| from the Smart Dim predictor.
+  void ApplyDimDecision(UserActivityEvent::ModelPrediction prediction);
+
   // session_manager::SessionManagerObserver overrides:
   void OnSessionStateChanged() override;
 
@@ -153,6 +157,9 @@ class UserActivityManager : public ui::UserActivityObserver,
   void PopulatePreviousEventData(const base::TimeDelta& now);
 
   void ResetAfterLogging();
+
+  // Cancel any pending request to |smart_dim_model_| to get a dim decision.
+  void CancelDimDecisionRequest();
 
   // Time when an idle event is received and we start logging. Null if an idle
   // event hasn't been observed.
@@ -231,12 +238,18 @@ class UserActivityManager : public ui::UserActivityObserver,
   // set to true after we've received an idle event, but haven't received final
   // action to log the event.
   bool waiting_for_final_action_ = false;
+  // Whether we are waiting for a decision from the |smart_dim_model_|
+  // regarding whether to proceed with a dim or not. It is only set
+  // to true in OnIdleEventObserved() when we request a dim decision.
+  bool waiting_for_model_decision_ = false;
 
   // Model prediction for the current ScreenDimImminent event. Unset if
   // model prediction is disabled by an experiment.
   base::Optional<UserActivityEvent::ModelPrediction> model_prediction_;
 
   std::unique_ptr<PreviousIdleEventData> previous_idle_event_data_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<UserActivityManager> weak_ptr_factory_;
 
