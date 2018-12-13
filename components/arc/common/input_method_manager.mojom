@@ -81,6 +81,9 @@ interface InputConnection {
   SetComposingText@4(mojo_base.mojom.String16 text,
                      int32 new_cursor_pos,
                      [MinVersion=3] Range? new_selection_range);
+
+  // Selects the given UTF-16 based character range.
+  SetSelection@5(Range new_selection_range);
 };
 
 // This interface is called by container when Android's InputMethodManager state

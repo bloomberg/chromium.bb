@@ -97,6 +97,7 @@ bool DummyTextInputClient::GetSelectionRange(gfx::Range* range) const {
 }
 
 bool DummyTextInputClient::SetSelectionRange(const gfx::Range& range) {
+  selection_history_.push_back(range);
   return false;
 }
 
