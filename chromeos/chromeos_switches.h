@@ -165,6 +165,9 @@ CHROMEOS_EXPORT extern const base::Feature kAccountManager;
 // Controls whether to enable Google Assistant feature.
 CHROMEOS_EXPORT extern const base::Feature kAssistantFeature;
 
+// Controls whether to show the system tray language toggle in Demo Mode.
+CHROMEOS_EXPORT extern const base::Feature kShowLanguageToggleInDemoMode;
+
 // Controls whether to show the Play Store icon in Demo Mode.
 CHROMEOS_EXPORT extern const base::Feature kShowPlayInDemoMode;
 
