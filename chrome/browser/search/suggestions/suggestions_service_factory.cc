@@ -14,7 +14,6 @@
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -58,8 +57,8 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
 
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
 
   std::unique_ptr<SuggestionsStore> suggestions_store(
       new SuggestionsStore(profile->GetPrefs()));

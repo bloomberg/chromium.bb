@@ -20,11 +20,8 @@
 
 class Browser;
 
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
-
 namespace syncer {
+class SyncService;
 class SyncSetupInProgressHandle;
 }  // namespace syncer
 
@@ -197,15 +194,11 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // signin is completed.
   void UntrustedSigninConfirmed(StartSyncMode response);
 
-  // GetProfileSyncService returns non-NULL pointer if sync is enabled.
-  // There is a scenario when when ProfileSyncService discovers that sync is
-  // disabled during setup. In this case GetProfileSyncService will return NULL,
-  // but we still need to call PSS::SetSetupInProgress(false). For this purpose
-  // call FinishProfileSyncServiceSetup() function.
-  browser_sync::ProfileSyncService* GetProfileSyncService();
+  // GetSyncService returns non-NULL pointer if sync is enabled.
+  syncer::SyncService* GetSyncService();
 
   // Finishes the setup of the profile sync service.
-  void FinishProfileSyncServiceSetup();
+  void FinishSyncServiceSetup();
 
   // Shows the post-signin confirmation bubble. If |custom_message| is empty,
   // the default "You are signed in" message is displayed.

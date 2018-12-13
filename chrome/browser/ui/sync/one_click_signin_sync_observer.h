@@ -11,12 +11,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
-namespace browser_sync {
-class ProfileSyncService;
-}
-
 namespace content {
 class WebContents;
+}
+
+namespace syncer {
+class SyncService;
 }
 
 class OneClickSigninSyncObserver : public content::WebContentsObserver,
@@ -42,10 +42,9 @@ class OneClickSigninSyncObserver : public content::WebContentsObserver,
   // Loads the |continue_url_| in the |web_contents()|.
   void LoadContinueUrl();
 
-  // Returns the ProfileSyncService associated with the |web_contents|.
+  // Returns the SyncService associated with the |web_contents|.
   // The returned value may be NULL.
-  browser_sync::ProfileSyncService* GetSyncService(
-      content::WebContents* web_contents);
+  syncer::SyncService* GetSyncService(content::WebContents* web_contents);
 
   // Deletes the |observer|. Intended to be used as a callback for base::Bind.
   static void DeleteObserver(

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/avatar_button_error_controller.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/engine/sync_status.h"
+#include "components/sync/protocol/sync_protocol_error.h"
 
 AvatarButtonErrorController::AvatarButtonErrorController(
     AvatarButtonErrorControllerDelegate* delegate,
@@ -67,8 +70,8 @@ AvatarButtonErrorController::SyncErrorObserver::SyncErrorObserver(
     : profile_(profile),
       avatar_button_error_controller_(avatar_button_error_controller),
       sync_observer_(this) {
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
   if (sync_service)
     sync_observer_.Add(sync_service);
 }
@@ -81,8 +84,8 @@ void AvatarButtonErrorController::SyncErrorObserver::OnStateChanged(
 }
 
 bool AvatarButtonErrorController::SyncErrorObserver::HasSyncError() {
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
   if (sync_service) {
     syncer::SyncStatus status;
     sync_service->QueryDetailedSyncStatus(&status);

@@ -7,24 +7,17 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 
 class Profile;
 
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
-
 // Shows sync-related errors as notifications in Ash.
 class SyncErrorNotifier : public syncer::SyncServiceObserver,
                           public KeyedService {
  public:
-  SyncErrorNotifier(browser_sync::ProfileSyncService* sync_service,
-                    Profile* profile);
+  SyncErrorNotifier(syncer::SyncService* sync_service, Profile* profile);
   ~SyncErrorNotifier() override;
 
   // KeyedService:
@@ -35,7 +28,7 @@ class SyncErrorNotifier : public syncer::SyncServiceObserver,
 
  private:
   // The sync service to query for error details.
-  browser_sync::ProfileSyncService* sync_service_;
+  syncer::SyncService* sync_service_;
 
   // The Profile this service belongs to.
   Profile* profile_;

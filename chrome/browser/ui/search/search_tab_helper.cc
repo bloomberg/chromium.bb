@@ -27,13 +27,14 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search/search.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -95,8 +96,8 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
 // disable a feature that should not be shown to users who prefer not to sync
 // their history.
 bool IsHistorySyncEnabled(Profile* profile) {
-  browser_sync::ProfileSyncService* sync =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+  syncer::SyncService* sync =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
   return sync && sync->IsSyncFeatureEnabled() &&
          sync->GetUserSettings()->GetChosenDataTypes().Has(syncer::TYPED_URLS);
 }

@@ -37,18 +37,17 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using browser_sync::ProfileSyncService;
 
 namespace {
 
@@ -132,9 +131,9 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
 
   // Let the sync service know that setup is in progress so it doesn't start
   // syncing until the user has finished any configuration.
-  ProfileSyncService* profile_sync_service = GetProfileSyncService();
-  if (profile_sync_service)
-    sync_blocker_ = profile_sync_service->GetSetupInProgressHandle();
+  syncer::SyncService* sync_service = GetSyncService();
+  if (sync_service)
+    sync_blocker_ = sync_service->GetSetupInProgressHandle();
 
   // Make sure the syncing is requested, otherwise the SigninManager
   // will not be able to complete successfully.
@@ -342,7 +341,7 @@ void OneClickSigninSyncStarter::CopyCredentialsToNewProfileAndFinishSignin(
   // Copy credentials from the old profile to the just-created profile,
   // and switch over to tracking that profile.
   new_signin_manager->CopyCredentialsFrom(*old_signin_manager);
-  FinishProfileSyncServiceSetup();
+  FinishSyncServiceSetup();
   Initialize(new_profile, nullptr);
   DCHECK_EQ(profile_, new_profile);
 
@@ -451,19 +450,19 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
       ShowSyncSetupSettingsSubpage();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
-      ProfileSyncService* sync_service = GetProfileSyncService();
+      syncer::SyncService* sync_service = GetSyncService();
       if (sync_service)
         sync_service->GetUserSettings()->SetFirstSetupComplete();
       if (consent_service)
         consent_service->EnableGoogleServices();
-      FinishProfileSyncServiceSetup();
+      FinishSyncServiceSetup();
       break;
     }
     case LoginUIService::ABORT_SIGNIN:
       SigninManagerFactory::GetForProfile(profile_)->SignOut(
           signin_metrics::ABORT_SIGNIN,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
-      FinishProfileSyncServiceSetup();
+      FinishSyncServiceSetup();
       break;
   }
 
@@ -475,7 +474,7 @@ void OneClickSigninSyncStarter::SigninFailed(
   if (!sync_setup_completed_callback_.is_null())
     sync_setup_completed_callback_.Run(SYNC_SETUP_FAILURE);
 
-  FinishProfileSyncServiceSetup();
+  FinishSyncServiceSetup();
   if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
     switch (error.state()) {
       case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
@@ -551,13 +550,12 @@ void OneClickSigninSyncStarter::ShowSyncSetupSettingsSubpage() {
   chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
 }
 
-ProfileSyncService* OneClickSigninSyncStarter::GetProfileSyncService() {
-  ProfileSyncService* service = nullptr;
-  if (profile_->IsSyncAllowed())
-    service = ProfileSyncServiceFactory::GetForProfile(profile_);
-  return service;
+syncer::SyncService* OneClickSigninSyncStarter::GetSyncService() {
+  if (!profile_->IsSyncAllowed())
+    return nullptr;
+  return ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
 }
 
-void OneClickSigninSyncStarter::FinishProfileSyncServiceSetup() {
+void OneClickSigninSyncStarter::FinishSyncServiceSetup() {
   sync_blocker_.reset();
 }

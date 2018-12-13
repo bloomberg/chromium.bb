@@ -49,9 +49,8 @@ void ShowSyncSetup(Profile* profile) {
 
 }  // namespace
 
-SyncErrorNotifier::SyncErrorNotifier(
-    browser_sync::ProfileSyncService* sync_service,
-    Profile* profile)
+SyncErrorNotifier::SyncErrorNotifier(syncer::SyncService* sync_service,
+                                     Profile* profile)
     : sync_service_(sync_service),
       profile_(profile),
       notification_displayed_(false) {
