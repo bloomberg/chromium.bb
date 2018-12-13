@@ -18,7 +18,6 @@
 
 namespace blink {
 class IndexedDBCallbacksImpl;
-class WebBlobInfo;
 class WebIDBCallbacks;
 
 class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
@@ -68,8 +67,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
               WebIDBCallbacks*) override;
   void Put(long long transaction_id,
            long long object_store_id,
-           const scoped_refptr<SharedBuffer>& value,
-           const Vector<WebBlobInfo>&,
+           std::unique_ptr<IDBValue> value,
            std::unique_ptr<IDBKey> primary_key,
            mojom::IDBPutMode,
            WebIDBCallbacks*,

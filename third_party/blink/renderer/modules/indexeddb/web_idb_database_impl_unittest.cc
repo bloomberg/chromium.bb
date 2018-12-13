@@ -31,21 +31,22 @@ TEST_F(WebIDBDatabaseImplTest, ValueSizeTest) {
   const size_t kMaxValueSizeForTesting = 10 * 1024 * 1024;  // 10 MB
 
   const std::vector<char> data(kMaxValueSizeForTesting + 1);
-  const scoped_refptr<SharedBuffer> value =
+  const scoped_refptr<SharedBuffer> value_data =
       SharedBuffer::Create(&data.front(), data.size());
   const Vector<WebBlobInfo> blob_info;
+  std::unique_ptr<IDBValue> value = IDBValue::Create(value_data, blob_info);
   std::unique_ptr<IDBKey> key = IDBKey::CreateNumber(0);
   const int64_t transaction_id = 1;
   const int64_t object_store_id = 2;
   StrictMock<MockWebIDBCallbacks> callbacks;
 
-  ASSERT_GT(value->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
+  ASSERT_GT(value_data->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_CALL(callbacks, OnError(_)).Times(1);
 
   WebIDBDatabaseImpl database_impl(nullptr);
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
-  database_impl.Put(transaction_id, object_store_id, value, blob_info,
+  database_impl.Put(transaction_id, object_store_id, std::move(value),
                     std::move(key), mojom::IDBPutMode::AddOrUpdate, &callbacks,
                     Vector<IDBIndexKeys>());
 }
@@ -57,9 +58,10 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
   const size_t kKeySize = 1024 * 1024;
 
   const std::vector<char> data(kMaxValueSizeForTesting - kKeySize);
-  const scoped_refptr<SharedBuffer> value =
+  const scoped_refptr<SharedBuffer> value_data =
       SharedBuffer::Create(&data.front(), data.size());
   const Vector<WebBlobInfo> blob_info;
+  std::unique_ptr<IDBValue> value = IDBValue::Create(value_data, blob_info);
   const int64_t transaction_id = 1;
   const int64_t object_store_id = 2;
   StrictMock<MockWebIDBCallbacks> callbacks;
@@ -76,16 +78,16 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
   DCHECK_EQ(key_string.length(), number_of_chars);
 
   std::unique_ptr<IDBKey> key = IDBKey::CreateString(key_string);
-  DCHECK_EQ(value->size(), kMaxValueSizeForTesting - kKeySize);
+  DCHECK_EQ(value_data->size(), kMaxValueSizeForTesting - kKeySize);
   DCHECK_GT(key->SizeEstimate() - kKeySize, static_cast<unsigned long>(0));
-  DCHECK_GT(value->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
+  DCHECK_GT(value_data->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
 
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_CALL(callbacks, OnError(_)).Times(1);
 
   WebIDBDatabaseImpl database_impl(nullptr);
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
-  database_impl.Put(transaction_id, object_store_id, value, blob_info,
+  database_impl.Put(transaction_id, object_store_id, std::move(value),
                     std::move(key), mojom::IDBPutMode::AddOrUpdate, &callbacks,
                     Vector<IDBIndexKeys>());
 }
