@@ -61,21 +61,11 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
 }  // namespace
 
 MediaDevices* MediaDevices::Create(ExecutionContext* context) {
-  MediaDevices* media_devices = MakeGarbageCollected<MediaDevices>(context);
-  media_devices->PauseIfNeeded();
-  return media_devices;
+  return MakeGarbageCollected<MediaDevices>(context);
 }
 
 MediaDevices::MediaDevices(ExecutionContext* context)
-    : PausableObject(context),
-      stopped_(false),
-      dispatch_scheduled_event_runner_(
-          context ? AsyncMethodRunner<MediaDevices>::Create(
-                        this,
-                        &MediaDevices::DispatchScheduledEvent,
-                        context->GetTaskRunner(TaskType::kMediaElementEvent))
-                  : nullptr),
-      binding_(this) {}
+    : ContextLifecycleObserver(context), stopped_(false), binding_(this) {}
 
 MediaDevices::~MediaDevices() = default;
 
@@ -171,7 +161,7 @@ const AtomicString& MediaDevices::InterfaceName() const {
 }
 
 ExecutionContext* MediaDevices::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
 void MediaDevices::RemoveAllEventListeners() {
@@ -212,16 +202,6 @@ void MediaDevices::ContextDestroyed(ExecutionContext*) {
   dispatcher_host_.reset();
 }
 
-void MediaDevices::Pause() {
-  DCHECK(dispatch_scheduled_event_runner_);
-  dispatch_scheduled_event_runner_->Pause();
-}
-
-void MediaDevices::Unpause() {
-  DCHECK(dispatch_scheduled_event_runner_);
-  dispatch_scheduled_event_runner_->Unpause();
-}
-
 void MediaDevices::OnDevicesChanged(
     MediaDeviceType type,
     Vector<mojom::blink::MediaDeviceInfoPtr> device_infos) {
@@ -237,11 +217,19 @@ void MediaDevices::OnDevicesChanged(
 
 void MediaDevices::ScheduleDispatchEvent(Event* event) {
   scheduled_events_.push_back(event);
-  DCHECK(dispatch_scheduled_event_runner_);
-  dispatch_scheduled_event_runner_->RunAsync();
+  if (dispatch_scheduled_events_task_handle_.IsActive())
+    return;
+
+  auto* context = GetExecutionContext();
+  DCHECK(context);
+  dispatch_scheduled_events_task_handle_ = PostCancellableTask(
+      *context->GetTaskRunner(TaskType::kMediaElementEvent), FROM_HERE,
+      WTF::Bind(&MediaDevices::DispatchScheduledEvents, WrapPersistent(this)));
 }
 
-void MediaDevices::DispatchScheduledEvent() {
+void MediaDevices::DispatchScheduledEvents() {
+  if (stopped_)
+    return;
   HeapVector<Member<Event>> events;
   events.swap(scheduled_events_);
 
@@ -367,11 +355,10 @@ void MediaDevices::SetDispatcherHostForTesting(
 }
 
 void MediaDevices::Trace(blink::Visitor* visitor) {
-  visitor->Trace(dispatch_scheduled_event_runner_);
   visitor->Trace(scheduled_events_);
   visitor->Trace(requests_);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink
