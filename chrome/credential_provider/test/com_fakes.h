@@ -97,6 +97,7 @@ class FakeGaiaCredentialProvider : public IGaiaCredentialProvider,
   const CComBSTR& username() const { return username_; }
   const CComBSTR& password() const { return password_; }
   const CComBSTR& sid() const { return sid_; }
+  bool credentials_changed_fired() const { return credentials_changed_fired_; }
 
   // IGaiaCredentialProvider
   IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
@@ -105,11 +106,11 @@ class FakeGaiaCredentialProvider : public IGaiaCredentialProvider,
   IFACEMETHODIMP OnUserAuthenticated(IUnknown* credential,
                                      BSTR username,
                                      BSTR password,
-                                     BSTR sid) override;
+                                     BSTR sid,
+                                     BOOL password_stale) override;
   IFACEMETHODIMP HasInternetConnection() override;
 
   // IGaiaCredentialProviderForTesting
-  IFACEMETHODIMP SetReauthCheckDoneEvent(INT_PTR event) override;
   IFACEMETHODIMP SetHasInternetConnection(
       HasInternetConnectionCheckType has_internet_connection) override;
 
@@ -117,6 +118,7 @@ class FakeGaiaCredentialProvider : public IGaiaCredentialProvider,
   CComBSTR username_;
   CComBSTR password_;
   CComBSTR sid_;
+  BOOL credentials_changed_fired_ = FALSE;
   HasInternetConnectionCheckType has_internet_connection_ = kHicForceYes;
 };
 

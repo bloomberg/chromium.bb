@@ -137,7 +137,7 @@
         A user could not be created.
       </message>
       <message name="IDS_INVALID_PASSWORD" desc="">
-        Sorry, your password couldn't be verified. Please try again.
+        Sorry, your Windows password couldn't be verified. Please try again.
       </message>
       <message name="IDS_INTERNAL_ERROR" desc="">
         An internal error occurred.
@@ -157,20 +157,17 @@
       <message name="IDS_AUTH_FID_PROVIDER_LABEL" desc="">
         Add person
       </message>
-      <message name="IDS_REAUTH_FID_DESCRIPTION" desc="">
-        Sign in using your updated Google Account password.
-      </message>
-      <message name="IDS_REAUTH_FID_PROVIDER_LABEL" desc="">
-        Update password
-      </message>
-      <message name="IDS_ERROR_DIALOG_TITLE" desc="">
-        Google Account sign-in
+      <message name="IDS_EXISTING_AUTH_FID_PROVIDER_LABEL" desc="">
+        Sign in using your Google Account
       </message>
       <message name="IDS_USER_ACCOUNT_COMMENT" desc="">
         Google user
       </message>
       <message name="IDS_NO_NETWORK" desc="">
         Make sure you have a network connection and try again.
+      </message>
+      <message name="IDS_PASSWORD_UPDATE_NEEDED" desc="">
+        Your password has changed on Google. Please enter your current Windows password in order to sync your Windows Account with your Google Account.
       </message>
     </messages>
   </release>

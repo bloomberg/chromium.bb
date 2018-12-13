@@ -36,12 +36,8 @@ class ATL_NO_VTABLE CGaiaCredential
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-  // IGaiaCredential
-  IFACEMETHODIMP FinishAuthentication(BSTR username,
-                                      BSTR password,
-                                      BSTR fullname,
-                                      BSTR* sid,
-                                      BSTR* error_text) override;
+  // CGaiaCredentialBase
+  void ResetInternalState() override;
 };
 
 }  // namespace credential_provider

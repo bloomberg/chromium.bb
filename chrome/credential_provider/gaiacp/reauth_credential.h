@@ -24,6 +24,9 @@ class ATL_NO_VTABLE CReauthCredential
   HRESULT FinalConstruct();
   void FinalRelease();
 
+ protected:
+  HRESULT GetEmailForReauth(wchar_t* email, size_t length) override;
+
  private:
   // This class does not say it implements ICredentialProviderCredential2.
   // It only implements ICredentialProviderCredential.  Otherwise the
@@ -38,27 +41,10 @@ class ATL_NO_VTABLE CReauthCredential
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-  HRESULT GetEmailForReauth(wchar_t* email, size_t length) override;
-
-  // ICredentialProviderCredential2
-  IFACEMETHODIMP GetStringValue(DWORD dwFieldID, wchar_t** ppsz) override;
-  IFACEMETHODIMP GetUserSid(wchar_t** sid) override;
-
-  // IGaiaCredential
-  IFACEMETHODIMP FinishAuthentication(BSTR username,
-                                      BSTR password,
-                                      BSTR fullname,
-                                      BSTR* sid,
-                                      BSTR* error_text) override;
-  IFACEMETHODIMP OnUserAuthenticated(BSTR username,
-                                     BSTR password,
-                                     BSTR sid) override;
-
   // IReauthCredential
-  IFACEMETHODIMP SetUserInfo(BSTR sid, BSTR username) override;
+  IFACEMETHODIMP SetUserInfo(BSTR sid, BSTR username, BSTR email) override;
 
-  CComBSTR user_sid_;
-  CComBSTR user_email_;
+  CComBSTR email_for_reauth_;
 };
 
 }  // namespace credential_provider
