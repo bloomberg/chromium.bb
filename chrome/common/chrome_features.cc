@@ -439,6 +439,11 @@ const base::Feature kPolicyTool{"PolicyTool",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Allows prediction operations (e.g., prefetching) on all connection types.
+const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
+    "PredictivePrefetchingAllowedOnAllConnectionTypes",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Prefer HTML content by hiding Flash from the list of plugins.
 // https://crbug.com/626728
