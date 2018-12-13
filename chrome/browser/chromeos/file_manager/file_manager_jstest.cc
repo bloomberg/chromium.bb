@@ -175,6 +175,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileListSelectionModelTest) {
   RunGeneratedTest("/foreground/js/ui/file_list_selection_model_unittest.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMenu) {
+  RunGeneratedTest("/foreground/js/ui/multi_menu_unittest.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesAppEntryTypes) {
   RunGeneratedTest("/common/js/files_app_entry_types_unittest.html");
 }
