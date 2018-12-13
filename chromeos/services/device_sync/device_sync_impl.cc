@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/time/default_clock.h"
+#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_client_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_manager_impl.h"
@@ -21,7 +22,6 @@
 #include "chromeos/services/device_sync/public/cpp/gcm_device_info_provider.h"
 #include "chromeos/services/device_sync/remote_device_provider_impl.h"
 #include "chromeos/services/device_sync/software_feature_manager_impl.h"
-#include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -581,7 +581,7 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
           clock_,
           std::make_unique<CryptAuthEnrollerFactoryImpl>(
               cryptauth_client_factory_.get()),
-          cryptauth::SecureMessageDelegateImpl::Factory::NewInstance(),
+          multidevice::SecureMessageDelegateImpl::Factory::NewInstance(),
           gcm_device_info_provider_->GetGcmDeviceInfo(),
           cryptauth_gcm_manager_.get(), pref_service_.get());
   cryptauth_enrollment_manager_->AddObserver(this);

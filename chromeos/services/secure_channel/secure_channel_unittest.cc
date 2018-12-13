@@ -10,14 +10,14 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/services/secure_channel/fake_authenticator.h"
 #include "chromeos/services/secure_channel/fake_connection.h"
 #include "chromeos/services/secure_channel/fake_secure_context.h"
 #include "chromeos/services/secure_channel/wire_message.h"
-#include "components/cryptauth/fake_secure_message_delegate.h"
-#include "components/cryptauth/secure_message_delegate_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -44,11 +44,11 @@ struct ReceivedMessage {
 };
 
 class FakeSecureMessageDelegateFactory
-    : public cryptauth::SecureMessageDelegateImpl::Factory {
+    : public multidevice::SecureMessageDelegateImpl::Factory {
  public:
-  // cryptauth::SecureMessageDelegateImpl::Factory:
-  std::unique_ptr<cryptauth::SecureMessageDelegate> BuildInstance() override {
-    return std::make_unique<cryptauth::FakeSecureMessageDelegate>();
+  // multidevice::SecureMessageDelegateImpl::Factory:
+  std::unique_ptr<multidevice::SecureMessageDelegate> BuildInstance() override {
+    return std::make_unique<multidevice::FakeSecureMessageDelegate>();
   }
 };
 
@@ -135,8 +135,8 @@ class TestAuthenticatorFactory final
   std::unique_ptr<Authenticator> BuildInstance(
       Connection* connection,
       const std::string& account_id,
-      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate)
-      override {
+      std::unique_ptr<multidevice::SecureMessageDelegate>
+          secure_message_delegate) override {
     last_instance_ = new FakeAuthenticator();
     return base::WrapUnique(last_instance_);
   }
@@ -167,7 +167,7 @@ class SecureChannelConnectionTest : public testing::Test {
 
     fake_secure_message_delegate_factory_ =
         std::make_unique<FakeSecureMessageDelegateFactory>();
-    cryptauth::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
         fake_secure_message_delegate_factory_.get());
 
     fake_secure_context_ = nullptr;
@@ -197,7 +197,7 @@ class SecureChannelConnectionTest : public testing::Test {
     if (secure_channel_)
       VerifyNoMessageBeingSent();
 
-    cryptauth::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
         nullptr);
   }
 

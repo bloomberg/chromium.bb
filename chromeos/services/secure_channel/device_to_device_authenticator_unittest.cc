@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/authenticator.h"
 #include "chromeos/services/secure_channel/connection.h"
@@ -21,7 +22,6 @@
 #include "chromeos/services/secure_channel/secure_context.h"
 #include "chromeos/services/secure_channel/session_keys.h"
 #include "chromeos/services/secure_channel/wire_message.h"
-#include "components/cryptauth/fake_secure_message_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,7 +112,8 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
  public:
   DeviceToDeviceAuthenticatorForTest(
       Connection* connection,
-      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate)
+      std::unique_ptr<multidevice::SecureMessageDelegate>
+          secure_message_delegate)
       : DeviceToDeviceAuthenticator(connection,
                                     kAccountId,
                                     std::move(secure_message_delegate)),
@@ -142,7 +143,7 @@ class SecureChannelDeviceToDeviceAuthenticatorTest : public testing::Test {
   SecureChannelDeviceToDeviceAuthenticatorTest()
       : remote_device_(chromeos::multidevice::CreateRemoteDeviceRefForTest()),
         connection_(remote_device_),
-        secure_message_delegate_(new cryptauth::FakeSecureMessageDelegate),
+        secure_message_delegate_(new multidevice::FakeSecureMessageDelegate),
         authenticator_(&connection_,
                        base::WrapUnique(secure_message_delegate_)) {}
   ~SecureChannelDeviceToDeviceAuthenticatorTest() override {}
@@ -231,7 +232,7 @@ class SecureChannelDeviceToDeviceAuthenticatorTest : public testing::Test {
 
   // The SecureMessageDelegate used by the authenticator.
   // Owned by |authenticator_|.
-  cryptauth::FakeSecureMessageDelegate* secure_message_delegate_;
+  multidevice::FakeSecureMessageDelegate* secure_message_delegate_;
 
   // The DeviceToDeviceAuthenticator under test.
   DeviceToDeviceAuthenticatorForTest authenticator_;

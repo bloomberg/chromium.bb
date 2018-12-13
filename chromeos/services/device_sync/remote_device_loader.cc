@@ -12,10 +12,10 @@
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/multidevice/remote_device.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
-#include "components/cryptauth/secure_message_delegate.h"
 
 namespace chromeos {
 
@@ -64,7 +64,8 @@ std::unique_ptr<RemoteDeviceLoader> RemoteDeviceLoader::Factory::NewInstance(
     const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
     const std::string& user_id,
     const std::string& user_private_key,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate) {
+    std::unique_ptr<multidevice::SecureMessageDelegate>
+        secure_message_delegate) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
@@ -82,7 +83,8 @@ std::unique_ptr<RemoteDeviceLoader> RemoteDeviceLoader::Factory::BuildInstance(
     const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
     const std::string& user_id,
     const std::string& user_private_key,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate) {
+    std::unique_ptr<multidevice::SecureMessageDelegate>
+        secure_message_delegate) {
   return base::WrapUnique(
       new RemoteDeviceLoader(device_info_list, user_id, user_private_key,
                              std::move(secure_message_delegate)));
@@ -92,7 +94,7 @@ RemoteDeviceLoader::RemoteDeviceLoader(
     const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
     const std::string& user_id,
     const std::string& user_private_key,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate)
+    std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate)
     : remaining_devices_(device_info_list),
       user_id_(user_id),
       user_private_key_(user_private_key),

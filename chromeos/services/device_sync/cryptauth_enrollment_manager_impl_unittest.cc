@@ -14,11 +14,11 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/services/device_sync/cryptauth_enroller.h"
 #include "chromeos/services/device_sync/fake_cryptauth_gcm_manager.h"
 #include "chromeos/services/device_sync/mock_sync_scheduler.h"
 #include "chromeos/services/device_sync/pref_names.h"
-#include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,7 +104,8 @@ class TestCryptAuthEnrollmentManager : public CryptAuthEnrollmentManagerImpl {
   TestCryptAuthEnrollmentManager(
       base::Clock* clock,
       std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
-      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
+      std::unique_ptr<multidevice::SecureMessageDelegate>
+          secure_message_delegate,
       const cryptauth::GcmDeviceInfo& device_info,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service)
@@ -148,7 +149,7 @@ class DeviceSyncCryptAuthEnrollmentManagerImplTest
   DeviceSyncCryptAuthEnrollmentManagerImplTest()
       : public_key_(kUserPublicKey),
         enroller_factory_(new MockCryptAuthEnrollerFactory()),
-        secure_message_delegate_(new cryptauth::FakeSecureMessageDelegate()),
+        secure_message_delegate_(new multidevice::FakeSecureMessageDelegate()),
         gcm_manager_(kGCMRegistrationId),
         enrollment_manager_(&clock_,
                             base::WrapUnique(enroller_factory_),
@@ -249,7 +250,7 @@ class DeviceSyncCryptAuthEnrollmentManagerImplTest
   MockCryptAuthEnrollerFactory* enroller_factory_;
 
   // Ownered by |enrollment_manager_|.
-  cryptauth::FakeSecureMessageDelegate* secure_message_delegate_;
+  multidevice::FakeSecureMessageDelegate* secure_message_delegate_;
 
   cryptauth::GcmDeviceInfo device_info_;
 
@@ -307,7 +308,7 @@ TEST_F(DeviceSyncCryptAuthEnrollmentManagerImplTest, InitWithDefaultPrefs) {
 
   TestCryptAuthEnrollmentManager enrollment_manager(
       &clock, std::make_unique<MockCryptAuthEnrollerFactory>(),
-      std::make_unique<cryptauth::FakeSecureMessageDelegate>(), device_info_,
+      std::make_unique<multidevice::FakeSecureMessageDelegate>(), device_info_,
       &gcm_manager_, &pref_service);
 
   EXPECT_CALL(

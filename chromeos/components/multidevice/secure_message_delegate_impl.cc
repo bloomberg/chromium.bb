@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/secure_message_delegate_impl.h"
+#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -12,9 +12,10 @@
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using cryptauth::SecureMessageDelegate;
+namespace chromeos {
 
-namespace cryptauth {
+namespace multidevice {
+
 namespace {
 
 // Converts encryption type to a string representation used by EasyUnlock dbus
@@ -176,4 +177,6 @@ void SecureMessageDelegateImpl::UnwrapSecureMessage(
       base::BindOnce(&HandleUnwrapResult, callback));
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

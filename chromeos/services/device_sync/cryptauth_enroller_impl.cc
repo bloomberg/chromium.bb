@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_client_impl.h"
-#include "components/cryptauth/secure_message_delegate.h"
 #include "crypto/sha2.h"
 
 namespace chromeos {
@@ -62,7 +62,7 @@ void RecordEnrollmentResult(bool success) {
 
 CryptAuthEnrollerImpl::CryptAuthEnrollerImpl(
     CryptAuthClientFactory* client_factory,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate)
+    std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate)
     : client_factory_(client_factory),
       secure_message_delegate_(std::move(secure_message_delegate)),
       weak_ptr_factory_(this) {}
@@ -167,7 +167,7 @@ void CryptAuthEnrollerImpl::OnKeyDerived(const std::string& symmetric_key) {
   PA_LOG(VERBOSE) << "Using access token: " << device_info_.oauth_token();
 
   symmetric_key_ = symmetric_key;
-  cryptauth::SecureMessageDelegate::CreateOptions options;
+  multidevice::SecureMessageDelegate::CreateOptions options;
   options.encryption_scheme = securemessage::NONE;
   options.signature_scheme = securemessage::ECDSA_P256_SHA256;
   options.verification_key_id = user_public_key_;
@@ -188,7 +188,7 @@ void CryptAuthEnrollerImpl::OnInnerSecureMessageCreated(
     return;
   }
 
-  cryptauth::SecureMessageDelegate::CreateOptions options;
+  multidevice::SecureMessageDelegate::CreateOptions options;
   options.encryption_scheme = securemessage::AES_256_CBC;
   options.signature_scheme = securemessage::HMAC_SHA256;
   options.public_metadata = CreateEnrollmentPublicMetadata();

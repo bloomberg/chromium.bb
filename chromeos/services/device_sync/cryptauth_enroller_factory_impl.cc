@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/services/device_sync/cryptauth_enroller_impl.h"
-#include "components/cryptauth/secure_message_delegate_impl.h"
 
 namespace chromeos {
 
@@ -23,7 +23,7 @@ std::unique_ptr<CryptAuthEnroller>
 CryptAuthEnrollerFactoryImpl::CreateInstance() {
   return std::make_unique<CryptAuthEnrollerImpl>(
       cryptauth_client_factory_,
-      cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
+      multidevice::SecureMessageDelegateImpl::Factory::NewInstance());
 }
 
 }  // namespace device_sync

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/fake_secure_message_delegate.h"
+#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 namespace {
 
@@ -204,4 +206,6 @@ TEST_F(CryptAuthFakeSecureMessageDelegateTest, GetPrivateKeyForPublicKey) {
   EXPECT_EQ(private_key, delegate_.GetPrivateKeyForPublicKey(kTestPublicKey));
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

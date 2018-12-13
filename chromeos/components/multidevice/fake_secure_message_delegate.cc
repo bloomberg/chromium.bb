@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cryptauth/fake_secure_message_delegate.h"
+#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 
 #include <stddef.h>
 
@@ -12,7 +12,9 @@
 #include "base/md5.h"
 #include "base/strings/string_util.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 namespace {
 
@@ -90,11 +92,9 @@ bool Verify(const std::string& signature,
 }  // namespace
 
 FakeSecureMessageDelegate::FakeSecureMessageDelegate()
-    : next_public_key_(std::string(kKeyPrefix) + "0") {
-}
+    : next_public_key_(std::string(kKeyPrefix) + "0") {}
 
-FakeSecureMessageDelegate::~FakeSecureMessageDelegate() {
-}
+FakeSecureMessageDelegate::~FakeSecureMessageDelegate() = default;
 
 void FakeSecureMessageDelegate::GenerateKeyPair(
     const GenerateKeyPairCallback& callback) {
@@ -197,4 +197,6 @@ std::string FakeSecureMessageDelegate::GetPrivateKeyForPublicKey(
   return kPrivateKeyPrefix + public_key;
 }
 
-}  // namespace cryptauth
+}  // namespace multidevice
+
+}  // namespace chromeos

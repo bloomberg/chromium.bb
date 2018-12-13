@@ -226,7 +226,8 @@ class FakeCryptAuthEnrollmentManagerFactory
   std::unique_ptr<CryptAuthEnrollmentManager> BuildInstance(
       base::Clock* clock,
       std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
-      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
+      std::unique_ptr<multidevice::SecureMessageDelegate>
+          secure_message_delegate,
       const cryptauth::GcmDeviceInfo& device_info,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service) override {

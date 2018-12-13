@@ -14,11 +14,11 @@
 #include "chromeos/components/multidevice/remote_device.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
-namespace cryptauth {
-class SecureMessageDelegate;
-}  // namespace cryptauth
-
 namespace chromeos {
+
+namespace multidevice {
+class SecureMessageDelegate;
+}  // namespace multidevice
 
 namespace device_sync {
 
@@ -34,7 +34,7 @@ class RemoteDeviceLoader {
         const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
         const std::string& user_id,
         const std::string& user_private_key,
-        std::unique_ptr<cryptauth::SecureMessageDelegate>
+        std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate);
 
     static void SetInstanceForTesting(Factory* factory);
@@ -44,7 +44,7 @@ class RemoteDeviceLoader {
         const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
         const std::string& user_id,
         const std::string& user_private_key,
-        std::unique_ptr<cryptauth::SecureMessageDelegate>
+        std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate);
 
    private:
@@ -61,7 +61,7 @@ class RemoteDeviceLoader {
       const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
       const std::string& user_id,
       const std::string& user_private_key,
-      std::unique_ptr<cryptauth::SecureMessageDelegate>
+      std::unique_ptr<multidevice::SecureMessageDelegate>
           secure_message_delegate);
 
   virtual ~RemoteDeviceLoader();
@@ -88,7 +88,7 @@ class RemoteDeviceLoader {
   const std::string user_private_key_;
 
   // Performs the PSK key derivation.
-  std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate_;
 
   // Invoked when the chromeos::multidevice::RemoteDevices are loaded.
   RemoteDeviceCallback callback_;

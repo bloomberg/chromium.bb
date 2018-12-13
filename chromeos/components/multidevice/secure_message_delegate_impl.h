@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_SECURE_MESSAGE_DELEGATE_IMPL_H_
-#define COMPONENTS_CRYPTAUTH_SECURE_MESSAGE_DELEGATE_IMPL_H_
+#ifndef CHROMEOS_COMPONENTS_MULTIDEVICE_SECURE_MESSAGE_DELEGATE_IMPL_H_
+#define CHROMEOS_COMPONENTS_MULTIDEVICE_SECURE_MESSAGE_DELEGATE_IMPL_H_
 
 #include "base/macros.h"
-#include "components/cryptauth/secure_message_delegate.h"
+#include "chromeos/components/multidevice/secure_message_delegate.h"
 
 namespace chromeos {
-class EasyUnlockClient;
-}  // namespace chromeos
 
-namespace cryptauth {
+class EasyUnlockClient;
+
+namespace multidevice {
 
 // Concrete SecureMessageDelegate implementation.
 class SecureMessageDelegateImpl : public SecureMessageDelegate {
@@ -56,6 +56,8 @@ class SecureMessageDelegateImpl : public SecureMessageDelegate {
   DISALLOW_COPY_AND_ASSIGN(SecureMessageDelegateImpl);
 };
 
-}  // namespace cryptauth
+}  // namespace multidevice
 
-#endif  // COMPONENTS_CRYPTAUTH_SECURE_MESSAGE_DELEGATE_IMPL_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_COMPONENTS_MULTIDEVICE_SECURE_MESSAGE_DELEGATE_IMPL_H_
