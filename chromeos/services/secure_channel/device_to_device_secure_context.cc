@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/proto/securemessage.pb.h"
-#include "components/cryptauth/secure_message_delegate.h"
 
 namespace chromeos {
 
@@ -33,7 +33,7 @@ const int kAuthenticationDecodeSequenceNumber = 1;
 }  // namespace
 
 DeviceToDeviceSecureContext::DeviceToDeviceSecureContext(
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
+    std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate,
     const SessionKeys& session_keys,
     const std::string& responder_auth_message,
     ProtocolVersion protocol_version)
@@ -50,7 +50,7 @@ DeviceToDeviceSecureContext::~DeviceToDeviceSecureContext() {}
 
 void DeviceToDeviceSecureContext::Decode(const std::string& encoded_message,
                                          const MessageCallback& callback) {
-  cryptauth::SecureMessageDelegate::UnwrapOptions unwrap_options;
+  multidevice::SecureMessageDelegate::UnwrapOptions unwrap_options;
   unwrap_options.encryption_scheme = securemessage::AES_256_CBC;
   unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
 
@@ -72,7 +72,7 @@ void DeviceToDeviceSecureContext::Encode(const std::string& message,
   device_to_device_message.set_sequence_number(++last_encode_sequence_number_);
   device_to_device_message.set_message(message);
 
-  cryptauth::SecureMessageDelegate::CreateOptions create_options;
+  multidevice::SecureMessageDelegate::CreateOptions create_options;
   create_options.encryption_scheme = securemessage::AES_256_CBC;
   create_options.signature_scheme = securemessage::HMAC_SHA256;
   gcm_metadata.SerializeToString(&create_options.public_metadata);

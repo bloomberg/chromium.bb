@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H_
-#define COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H_
+#ifndef CHROMEOS_COMPONENTS_MULTIDEVICE_SECURE_MESSAGE_DELEGATE_H_
+#define CHROMEOS_COMPONENTS_MULTIDEVICE_SECURE_MESSAGE_DELEGATE_H_
 
 #include <memory>
 #include <string>
@@ -11,7 +11,9 @@
 #include "base/callback_forward.h"
 #include "chromeos/services/device_sync/proto/securemessage.pb.h"
 
-namespace cryptauth {
+namespace chromeos {
+
+namespace multidevice {
 
 // Interface of delegate responsible for cryptographic operations based on the
 // secure message library. This interface is asynchronous as the current
@@ -98,6 +100,8 @@ class SecureMessageDelegate {
       const UnwrapSecureMessageCallback& callback) = 0;
 };
 
-}  // namespace cryptauth
+}  // namespace multidevice
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_SECURE_MESSAGE_DELEGATE_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_COMPONENTS_MULTIDEVICE_SECURE_MESSAGE_DELEGATE_H_

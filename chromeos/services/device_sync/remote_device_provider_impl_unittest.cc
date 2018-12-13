@@ -10,13 +10,13 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_manager.h"
 #include "chromeos/services/device_sync/fake_cryptauth_device_manager.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/remote_device_loader.h"
-#include "components/cryptauth/fake_secure_message_delegate.h"
-#include "components/cryptauth/secure_message_delegate_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,18 +35,18 @@ const char kTestUserId[] = "testUserId";
 const char kTestUserPrivateKey[] = "kTestUserPrivateKey";
 
 class FakeSecureMessageDelegateFactory
-    : public cryptauth::SecureMessageDelegateImpl::Factory {
+    : public multidevice::SecureMessageDelegateImpl::Factory {
  public:
-  // cryptauth::SecureMessageDelegateImpl::Factory:
-  std::unique_ptr<cryptauth::SecureMessageDelegate> BuildInstance() override {
-    cryptauth::FakeSecureMessageDelegate* delegate =
-        new cryptauth::FakeSecureMessageDelegate();
+  // multidevice::SecureMessageDelegateImpl::Factory:
+  std::unique_ptr<multidevice::SecureMessageDelegate> BuildInstance() override {
+    multidevice::FakeSecureMessageDelegate* delegate =
+        new multidevice::FakeSecureMessageDelegate();
     created_delegates_.push_back(delegate);
     return base::WrapUnique(delegate);
   }
 
  private:
-  std::vector<cryptauth::FakeSecureMessageDelegate*> created_delegates_;
+  std::vector<multidevice::FakeSecureMessageDelegate*> created_delegates_;
 };
 
 std::vector<cryptauth::ExternalDeviceInfo>
@@ -96,7 +96,7 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
         const std::vector<cryptauth::ExternalDeviceInfo>& device_info_list,
         const std::string& user_id,
         const std::string& user_private_key,
-        std::unique_ptr<cryptauth::SecureMessageDelegate>
+        std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate) override {
       EXPECT_EQ(std::string(kTestUserId), user_id);
       EXPECT_EQ(std::string(kTestUserPrivateKey), user_private_key);
@@ -159,7 +159,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public testing::Test {
     fake_device_manager_ = std::make_unique<FakeCryptAuthDeviceManager>();
     fake_secure_message_delegate_factory_ =
         std::make_unique<FakeSecureMessageDelegateFactory>();
-    cryptauth::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
         fake_secure_message_delegate_factory_.get());
     test_device_loader_factory_ =
         std::make_unique<FakeDeviceLoader::TestRemoteDeviceLoaderFactory>();
@@ -169,7 +169,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public testing::Test {
   }
 
   void TearDown() override {
-    cryptauth::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
+    multidevice::SecureMessageDelegateImpl::Factory::SetInstanceForTesting(
         nullptr);
   }
 

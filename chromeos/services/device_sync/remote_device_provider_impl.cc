@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/services/device_sync/remote_device_loader.h"
-#include "components/cryptauth/secure_message_delegate_impl.h"
 
 namespace chromeos {
 
@@ -58,7 +58,7 @@ RemoteDeviceProviderImpl::RemoteDeviceProviderImpl(
   device_manager_->AddObserver(this);
   remote_device_loader_ = RemoteDeviceLoader::Factory::NewInstance(
       device_manager->GetSyncedDevices(), user_id, user_private_key,
-      cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
+      multidevice::SecureMessageDelegateImpl::Factory::NewInstance());
   remote_device_loader_->Load(
       base::Bind(&RemoteDeviceProviderImpl::OnRemoteDevicesLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -76,7 +76,7 @@ void RemoteDeviceProviderImpl::OnSyncFinished(
           CryptAuthDeviceManager::DeviceChangeResult::CHANGED) {
     remote_device_loader_ = RemoteDeviceLoader::Factory::NewInstance(
         device_manager_->GetSyncedDevices(), user_id_, user_private_key_,
-        cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
+        multidevice::SecureMessageDelegateImpl::Factory::NewInstance());
 
     remote_device_loader_->Load(
         base::Bind(&RemoteDeviceProviderImpl::OnRemoteDevicesLoaded,

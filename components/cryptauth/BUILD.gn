@@ -15,7 +15,6 @@ static_library("cryptauth") {
   ]
 
   deps = [
-    ":secure_message",
     "//base",
     "//chromeos",
     "//chromeos/components/multidevice",
@@ -37,37 +36,6 @@ static_library("cryptauth") {
   ]
 }
 
-static_library("secure_message") {
-  sources = [
-    "secure_message_delegate.cc",
-    "secure_message_delegate.h",
-    "secure_message_delegate_impl.cc",
-    "secure_message_delegate_impl.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromeos",
-    "//chromeos/components/proximity_auth/logging",
-  ]
-
-  public_deps = [
-    "//chromeos/services/device_sync/proto",
-  ]
-}
-
-static_library("secure_message_test_support") {
-  sources = [
-    "fake_secure_message_delegate.cc",
-    "fake_secure_message_delegate.h",
-  ]
-
-  deps = [
-    ":secure_message",
-    "//base",
-  ]
-}
-
 static_library("test_support") {
   testonly = true
 
@@ -83,34 +51,9 @@ static_library("test_support") {
   ]
 
   deps = [
-    ":secure_message",
     "//base",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/device_sync:test_support",
     "//testing/gmock",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "fake_secure_message_delegate_unittest.cc",
-  ]
-
-  deps = [
-    ":cryptauth",
-    ":secure_message",
-    ":secure_message_test_support",
-    ":test_support",
-    "//base/test:test_support",
-    "//chromeos/components/multidevice",
-    "//chromeos/components/multidevice:test_support",
-    "//chromeos/services/device_sync/proto:util",
-    "//components/gcm_driver:test_support",
-    "//components/prefs:test_support",
-    "//google_apis:test_support",
-    "//net:test_support",
-    "//services/identity/public/cpp:test_support",
-    "//testing/gtest",
   ]
 }

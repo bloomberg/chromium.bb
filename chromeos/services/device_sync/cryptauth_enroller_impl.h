@@ -14,11 +14,11 @@
 #include "chromeos/services/device_sync/network_request_error.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
-namespace cryptauth {
-class SecureMessageDelegate;
-}  // namespace cryptauth
-
 namespace chromeos {
+
+namespace multidevice {
+class SecureMessageDelegate;
+}  // namespace multidevice
 
 namespace device_sync {
 
@@ -38,7 +38,7 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   // |client_factory| creates CryptAuthClient instances for making API calls.
   // |crypto_delegate| is responsible for SecureMessage operations.
   CryptAuthEnrollerImpl(CryptAuthClientFactory* client_factory,
-                        std::unique_ptr<cryptauth::SecureMessageDelegate>
+                        std::unique_ptr<multidevice::SecureMessageDelegate>
                             secure_message_delegate);
   ~CryptAuthEnrollerImpl() override;
 
@@ -71,7 +71,7 @@ class CryptAuthEnrollerImpl : public CryptAuthEnroller {
   CryptAuthClientFactory* client_factory_;
 
   // Handles SecureMessage operations.
-  std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate_;
 
   // The CryptAuthClient for the latest request.
   std::unique_ptr<CryptAuthClient> cryptauth_client_;

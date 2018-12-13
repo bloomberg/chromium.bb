@@ -121,7 +121,6 @@ source_set("chromeos") {
     "//components/crash/content/app",
     "//components/crx_file",
     "//components/cryptauth",
-    "//components/cryptauth:secure_message",
     "//components/device_event_log",
     "//components/download/content/public",
     "//components/drive",

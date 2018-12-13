@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/proto/securemessage.pb.h"
-#include "components/cryptauth/secure_message_delegate.h"
 
 namespace chromeos {
 
@@ -54,7 +54,7 @@ struct CreateResponderAuthMessageContext {
   std::string session_private_key;
   std::string persistent_private_key;
   std::string persistent_symmetric_key;
-  cryptauth::SecureMessageDelegate* secure_message_delegate;
+  multidevice::SecureMessageDelegate* secure_message_delegate;
   DeviceToDeviceResponderOperations::MessageCallback callback;
   std::string hello_public_key;
   std::string middle_message;
@@ -94,7 +94,7 @@ void OnHelloMessageValidatedForResponderAuth(
   gcm_metadata.set_type(cryptauth::UNLOCK_KEY_SIGNED_CHALLENGE);
   gcm_metadata.set_version(kGcmMetadataVersion);
 
-  cryptauth::SecureMessageDelegate::CreateOptions create_options;
+  multidevice::SecureMessageDelegate::CreateOptions create_options;
   create_options.encryption_scheme = securemessage::NONE;
   create_options.signature_scheme = securemessage::ECDSA_P256_SHA256;
   gcm_metadata.SerializeToString(&create_options.public_metadata);
@@ -116,7 +116,7 @@ void OnInnerMessageCreatedForResponderAuth(
   }
 
   // Create the middle message.
-  cryptauth::SecureMessageDelegate::CreateOptions create_options;
+  multidevice::SecureMessageDelegate::CreateOptions create_options;
   create_options.encryption_scheme = securemessage::AES_256_CBC;
   create_options.signature_scheme = securemessage::HMAC_SHA256;
   create_options.associated_data = context.hello_message;
@@ -175,7 +175,7 @@ void OnSessionSymmetricKeyDerivedForResponderAuth(
   device_to_device_message.set_message(context.middle_message);
   device_to_device_message.set_sequence_number(1);
 
-  cryptauth::SecureMessageDelegate::CreateOptions create_options;
+  multidevice::SecureMessageDelegate::CreateOptions create_options;
   create_options.encryption_scheme = securemessage::AES_256_CBC;
   create_options.signature_scheme = securemessage::HMAC_SHA256;
   create_options.public_metadata = gcm_metadata.SerializeAsString();
@@ -192,7 +192,7 @@ void OnSessionSymmetricKeyDerivedForResponderAuth(
 struct ValidateInitiatorAuthMessageContext {
   std::string persistent_symmetric_key;
   std::string responder_auth_message;
-  cryptauth::SecureMessageDelegate* secure_message_delegate;
+  multidevice::SecureMessageDelegate* secure_message_delegate;
   DeviceToDeviceResponderOperations::ValidationCallback callback;
 };
 
@@ -229,7 +229,7 @@ void OnOuterMessageUnwrappedForInitiatorAuth(
   }
 
   // Unwrap the inner message of [Initiator Auth].
-  cryptauth::SecureMessageDelegate::UnwrapOptions unwrap_options;
+  multidevice::SecureMessageDelegate::UnwrapOptions unwrap_options;
   unwrap_options.encryption_scheme = securemessage::AES_256_CBC;
   unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
   unwrap_options.associated_data = context.responder_auth_message;
@@ -245,7 +245,7 @@ void OnOuterMessageUnwrappedForInitiatorAuth(
 void DeviceToDeviceResponderOperations::ValidateHelloMessage(
     const std::string& hello_message,
     const std::string& persistent_symmetric_key,
-    cryptauth::SecureMessageDelegate* secure_message_delegate,
+    multidevice::SecureMessageDelegate* secure_message_delegate,
     const ValidateHelloCallback& callback) {
   // The [Hello] message has the structure:
   // {
@@ -253,7 +253,7 @@ void DeviceToDeviceResponderOperations::ValidateHelloMessage(
   //           Sig(<session_public_key>, persistent_symmetric_key)
   //   payload: ""
   // }
-  cryptauth::SecureMessageDelegate::UnwrapOptions unwrap_options;
+  multidevice::SecureMessageDelegate::UnwrapOptions unwrap_options;
   unwrap_options.encryption_scheme = securemessage::NONE;
   unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
   secure_message_delegate->UnwrapSecureMessage(
@@ -268,7 +268,7 @@ void DeviceToDeviceResponderOperations::CreateResponderAuthMessage(
     const std::string& session_private_key,
     const std::string& persistent_private_key,
     const std::string& persistent_symmetric_key,
-    cryptauth::SecureMessageDelegate* secure_message_delegate,
+    multidevice::SecureMessageDelegate* secure_message_delegate,
     const MessageCallback& callback) {
   // The [Responder Auth] message has the structure:
   // {
@@ -308,7 +308,7 @@ void DeviceToDeviceResponderOperations::ValidateInitiatorAuthMessage(
     const SessionKeys& session_keys,
     const std::string& persistent_symmetric_key,
     const std::string& responder_auth_message,
-    cryptauth::SecureMessageDelegate* secure_message_delegate,
+    multidevice::SecureMessageDelegate* secure_message_delegate,
     const ValidationCallback& callback) {
   // The [Initiator Auth] message has the structure:
   // {
@@ -326,7 +326,7 @@ void DeviceToDeviceResponderOperations::ValidateInitiatorAuthMessage(
       persistent_symmetric_key, responder_auth_message, secure_message_delegate,
       callback};
 
-  cryptauth::SecureMessageDelegate::UnwrapOptions unwrap_options;
+  multidevice::SecureMessageDelegate::UnwrapOptions unwrap_options;
   unwrap_options.encryption_scheme = securemessage::AES_256_CBC;
   unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
   secure_message_delegate->UnwrapSecureMessage(

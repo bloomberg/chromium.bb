@@ -20,11 +20,11 @@ namespace base {
 class OneShotTimer;
 };
 
-namespace cryptauth {
-class SecureMessageDelegate;
-}  // namespace cryptauth
-
 namespace chromeos {
+
+namespace multidevice {
+class SecureMessageDelegate;
+}  // namespace multidevice
 
 namespace secure_channel {
 
@@ -54,7 +54,7 @@ class DeviceToDeviceAuthenticator : public Authenticator,
     static std::unique_ptr<Authenticator> NewInstance(
         Connection* connection,
         const std::string& account_id,
-        std::unique_ptr<cryptauth::SecureMessageDelegate>
+        std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate);
 
     static void SetInstanceForTesting(Factory* factory);
@@ -63,7 +63,7 @@ class DeviceToDeviceAuthenticator : public Authenticator,
     virtual std::unique_ptr<Authenticator> BuildInstance(
         Connection* connection,
         const std::string& account_id,
-        std::unique_ptr<cryptauth::SecureMessageDelegate>
+        std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate);
 
    private:
@@ -76,10 +76,11 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   // |account_id|: The canonical account id of the user who is the owner of both
   //     the local and remote devices.
   // |secure_message_delegate|: Handles the SecureMessage crypto operations.
-  DeviceToDeviceAuthenticator(Connection* connection,
-                              const std::string& account_id,
-                              std::unique_ptr<cryptauth::SecureMessageDelegate>
-                                  secure_message_delegate);
+  DeviceToDeviceAuthenticator(
+      Connection* connection,
+      const std::string& account_id,
+      std::unique_ptr<multidevice::SecureMessageDelegate>
+          secure_message_delegate);
 
   ~DeviceToDeviceAuthenticator() override;
 
@@ -153,7 +154,7 @@ class DeviceToDeviceAuthenticator : public Authenticator,
   const std::string account_id_;
 
   // Handles SecureMessage crypto operations.
-  std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate_;
 
   // Performs authentication handshake.
   std::unique_ptr<DeviceToDeviceInitiatorHelper> helper_;

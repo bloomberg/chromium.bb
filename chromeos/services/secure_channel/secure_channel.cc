@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/wire_message.h"
-#include "components/cryptauth/secure_message_delegate_impl.h"
 
 namespace chromeos {
 
@@ -249,7 +249,7 @@ void SecureChannel::Authenticate() {
 
   authenticator_ = DeviceToDeviceAuthenticator::Factory::NewInstance(
       connection_.get(), connection_->remote_device().user_id(),
-      cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
+      multidevice::SecureMessageDelegateImpl::Factory::NewInstance());
   authenticator_->Authenticate(base::Bind(
       &SecureChannel::OnAuthenticationResult, weak_ptr_factory_.GetWeakPtr()));
 

@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
-#include "components/cryptauth/fake_secure_message_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,7 +56,7 @@ cryptauth::ExternalDeviceInfo CreateDeviceInfo(const std::string& suffix) {
 class DeviceSyncRemoteDeviceLoaderTest : public testing::Test {
  public:
   DeviceSyncRemoteDeviceLoaderTest()
-      : secure_message_delegate_(new cryptauth::FakeSecureMessageDelegate()),
+      : secure_message_delegate_(new multidevice::FakeSecureMessageDelegate()),
         user_private_key_(secure_message_delegate_->GetPrivateKeyForPublicKey(
             kUserPublicKey)) {}
 
@@ -73,7 +73,7 @@ class DeviceSyncRemoteDeviceLoaderTest : public testing::Test {
  protected:
   // Handles deriving the PSK. Ownership will be passed to the
   // chromeos::multidevice::RemoteDeviceLoader under test.
-  std::unique_ptr<cryptauth::FakeSecureMessageDelegate>
+  std::unique_ptr<multidevice::FakeSecureMessageDelegate>
       secure_message_delegate_;
 
   // The private key of the user local device.

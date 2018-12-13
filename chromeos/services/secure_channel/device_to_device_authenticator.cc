@@ -10,13 +10,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/authenticator.h"
 #include "chromeos/services/secure_channel/connection.h"
 #include "chromeos/services/secure_channel/device_to_device_secure_context.h"
 #include "chromeos/services/secure_channel/secure_context.h"
 #include "chromeos/services/secure_channel/wire_message.h"
-#include "components/cryptauth/secure_message_delegate.h"
 
 namespace chromeos {
 
@@ -40,7 +40,8 @@ std::unique_ptr<Authenticator>
 DeviceToDeviceAuthenticator::Factory::NewInstance(
     Connection* connection,
     const std::string& account_id,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate) {
+    std::unique_ptr<multidevice::SecureMessageDelegate>
+        secure_message_delegate) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
@@ -58,7 +59,8 @@ std::unique_ptr<Authenticator>
 DeviceToDeviceAuthenticator::Factory::BuildInstance(
     Connection* connection,
     const std::string& account_id,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate) {
+    std::unique_ptr<multidevice::SecureMessageDelegate>
+        secure_message_delegate) {
   return base::WrapUnique(new DeviceToDeviceAuthenticator(
       connection, account_id, std::move(secure_message_delegate)));
 }
@@ -66,7 +68,7 @@ DeviceToDeviceAuthenticator::Factory::BuildInstance(
 DeviceToDeviceAuthenticator::DeviceToDeviceAuthenticator(
     Connection* connection,
     const std::string& account_id,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate)
+    std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate)
     : connection_(connection),
       account_id_(account_id),
       secure_message_delegate_(std::move(secure_message_delegate)),

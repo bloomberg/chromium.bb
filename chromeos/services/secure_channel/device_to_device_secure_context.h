@@ -12,15 +12,15 @@
 #include "chromeos/services/secure_channel/secure_context.h"
 #include "chromeos/services/secure_channel/session_keys.h"
 
-namespace cryptauth {
-class SecureMessageDelegate;
-}  // namespace cryptauth
-
 namespace securemessage {
 class Header;
 }  // namespace securemessage
 
 namespace chromeos {
+
+namespace multidevice {
+class SecureMessageDelegate;
+}  // namespace multidevice
 
 namespace secure_channel {
 
@@ -28,7 +28,8 @@ namespace secure_channel {
 class DeviceToDeviceSecureContext : public SecureContext {
  public:
   DeviceToDeviceSecureContext(
-      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
+      std::unique_ptr<multidevice::SecureMessageDelegate>
+          secure_message_delegate,
       const SessionKeys& session_keys,
       const std::string& responder_auth_message_,
       ProtocolVersion protocol_version);
@@ -54,7 +55,7 @@ class DeviceToDeviceSecureContext : public SecureContext {
       const securemessage::Header& header);
 
   // Delegate for handling the creation and unwrapping of SecureMessages.
-  std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate_;
 
   // The symmetric key used for encryption.
   const std::string encryption_key_;

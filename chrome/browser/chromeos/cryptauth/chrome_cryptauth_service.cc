@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_client_impl.h"
@@ -29,7 +30,6 @@
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/proto/device_classifier_util.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
-#include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -58,7 +58,7 @@ class CryptAuthEnrollerFactoryImpl
   std::unique_ptr<device_sync::CryptAuthEnroller> CreateInstance() override {
     return std::make_unique<device_sync::CryptAuthEnrollerImpl>(
         client_factory_,
-        cryptauth::SecureMessageDelegateImpl::Factory::NewInstance());
+        multidevice::SecureMessageDelegateImpl::Factory::NewInstance());
   }
 
  private:
@@ -87,7 +87,7 @@ std::unique_ptr<ChromeCryptAuthService> ChromeCryptAuthService::Create(
       device_sync::CryptAuthEnrollmentManagerImpl::Factory::NewInstance(
           base::DefaultClock::GetInstance(),
           std::make_unique<CryptAuthEnrollerFactoryImpl>(client_factory.get()),
-          cryptauth::SecureMessageDelegateImpl::Factory::NewInstance(),
+          multidevice::SecureMessageDelegateImpl::Factory::NewInstance(),
           GcmDeviceInfoProviderImpl::GetInstance()->GetGcmDeviceInfo(),
           gcm_manager.get(), profile->GetPrefs());
 

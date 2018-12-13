@@ -16,6 +16,10 @@ static_library("multidevice") {
     "remote_device_cache.h",
     "remote_device_ref.cc",
     "remote_device_ref.h",
+    "secure_message_delegate.cc",
+    "secure_message_delegate.h",
+    "secure_message_delegate_impl.cc",
+    "secure_message_delegate_impl.h",
     "software_feature.cc",
     "software_feature.h",
     "software_feature_state.cc",
@@ -26,6 +30,7 @@ static_library("multidevice") {
     "//base",
     "//base:i18n",
     "//chromeos",
+    "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/device_sync/proto",
     "//chromeos/services/device_sync/proto:util",
     "//components/prefs",
@@ -36,6 +41,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_secure_message_delegate.cc",
+    "fake_secure_message_delegate.h",
     "remote_device_test_util.cc",
     "remote_device_test_util.h",
   ]
@@ -55,6 +62,7 @@ source_set("unit_tests") {
 
   sources = [
     "expiring_remote_device_cache_unittest.cc",
+    "fake_secure_message_delegate_unittest.cc",
     "remote_device_cache_unittest.cc",
     "remote_device_ref_unittest.cc",
   ]

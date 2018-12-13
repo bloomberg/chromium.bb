@@ -69,11 +69,11 @@ static_library("device_sync") {
 
   deps = [
     "//base",
+    "//chromeos/components/multidevice",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/device_sync/proto:util",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
-    "//components/cryptauth:secure_message",
     "//components/gcm_driver",
     "//net",
     "//services/identity/public/cpp",
@@ -154,8 +154,6 @@ source_set("unit_tests") {
     "//chromeos/services/device_sync/public/cpp:test_support",
     "//chromeos/services/device_sync/public/cpp:unit_tests",
     "//chromeos/services/device_sync/public/mojom",
-    "//components/cryptauth:secure_message",
-    "//components/cryptauth:secure_message_test_support",
     "//components/gcm_driver:test_support",
     "//components/prefs:test_support",
     "//net/traffic_annotation:test_support",

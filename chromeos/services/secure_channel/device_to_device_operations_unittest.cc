@@ -7,10 +7,10 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/services/secure_channel/device_to_device_initiator_helper.h"
 #include "chromeos/services/secure_channel/device_to_device_responder_operations.h"
 #include "chromeos/services/secure_channel/session_keys.h"
-#include "components/cryptauth/fake_secure_message_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -139,7 +139,7 @@ class SecureChannelDeviceToDeviceOperationsTest : public testing::Test {
     return local_auth_message;
   }
 
-  cryptauth::FakeSecureMessageDelegate secure_message_delegate_;
+  multidevice::FakeSecureMessageDelegate secure_message_delegate_;
 
   std::string persistent_symmetric_key_;
   std::string local_session_public_key_;

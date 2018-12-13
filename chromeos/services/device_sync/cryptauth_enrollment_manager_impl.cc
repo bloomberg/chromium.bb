@@ -12,12 +12,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_enroller.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
 #include "chromeos/services/device_sync/sync_scheduler_impl.h"
-#include "components/cryptauth/secure_message_delegate.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -84,7 +84,7 @@ std::unique_ptr<CryptAuthEnrollmentManager>
 CryptAuthEnrollmentManagerImpl::Factory::NewInstance(
     base::Clock* clock,
     std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
+    std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate,
     const cryptauth::GcmDeviceInfo& device_info,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service) {
@@ -108,7 +108,7 @@ std::unique_ptr<CryptAuthEnrollmentManager>
 CryptAuthEnrollmentManagerImpl::Factory::BuildInstance(
     base::Clock* clock,
     std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
+    std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate,
     const cryptauth::GcmDeviceInfo& device_info,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service) {
@@ -120,7 +120,7 @@ CryptAuthEnrollmentManagerImpl::Factory::BuildInstance(
 CryptAuthEnrollmentManagerImpl::CryptAuthEnrollmentManagerImpl(
     base::Clock* clock,
     std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
-    std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
+    std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate,
     const cryptauth::GcmDeviceInfo& device_info,
     CryptAuthGCMManager* gcm_manager,
     PrefService* pref_service)

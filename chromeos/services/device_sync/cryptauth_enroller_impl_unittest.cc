@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/services/device_sync/mock_cryptauth_client.h"
 #include "chromeos/services/device_sync/network_request_error.h"
-#include "components/cryptauth/fake_secure_message_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -107,7 +107,7 @@ class DeviceSyncCryptAuthEnrollerTest
   DeviceSyncCryptAuthEnrollerTest()
       : client_factory_(std::make_unique<MockCryptAuthClientFactory>(
             MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS)),
-        secure_message_delegate_(new cryptauth::FakeSecureMessageDelegate()),
+        secure_message_delegate_(new multidevice::FakeSecureMessageDelegate()),
         enroller_(client_factory_.get(),
                   base::WrapUnique(secure_message_delegate_)) {
     client_factory_->AddObserver(this);
@@ -146,7 +146,7 @@ class DeviceSyncCryptAuthEnrollerTest
       // Unwrap the outer message.
       bool verified;
       securemessage::Header header;
-      cryptauth::SecureMessageDelegate::UnwrapOptions unwrap_options;
+      multidevice::SecureMessageDelegate::UnwrapOptions unwrap_options;
       unwrap_options.encryption_scheme = securemessage::AES_256_CBC;
       unwrap_options.signature_scheme = securemessage::HMAC_SHA256;
       secure_message_delegate_->UnwrapSecureMessage(
@@ -164,7 +164,7 @@ class DeviceSyncCryptAuthEnrollerTest
       // Unwrap inner message.
       bool verified;
       securemessage::Header header;
-      cryptauth::SecureMessageDelegate::UnwrapOptions unwrap_options;
+      multidevice::SecureMessageDelegate::UnwrapOptions unwrap_options;
       unwrap_options.encryption_scheme = securemessage::NONE;
       unwrap_options.signature_scheme = securemessage::ECDSA_P256_SHA256;
       secure_message_delegate_->UnwrapSecureMessage(
@@ -247,7 +247,7 @@ class DeviceSyncCryptAuthEnrollerTest
   // Owned by |enroller_|.
   std::unique_ptr<MockCryptAuthClientFactory> client_factory_;
   // Owned by |enroller_|.
-  cryptauth::FakeSecureMessageDelegate* secure_message_delegate_;
+  multidevice::FakeSecureMessageDelegate* secure_message_delegate_;
   // The CryptAuthEnroller under test.
   CryptAuthEnrollerImpl enroller_;
 

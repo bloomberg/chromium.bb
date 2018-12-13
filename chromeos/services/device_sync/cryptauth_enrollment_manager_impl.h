@@ -22,11 +22,11 @@ namespace base {
 class Clock;
 }
 
-namespace cryptauth {
-class SecureMessageDelegate;
-}  // namespace cryptauth
-
 namespace chromeos {
+
+namespace multidevice {
+class SecureMessageDelegate;
+}  // namespace multidevice
 
 namespace device_sync {
 
@@ -43,7 +43,7 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
     static std::unique_ptr<CryptAuthEnrollmentManager> NewInstance(
         base::Clock* clock,
         std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
-        std::unique_ptr<cryptauth::SecureMessageDelegate>
+        std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate,
         const cryptauth::GcmDeviceInfo& device_info,
         CryptAuthGCMManager* gcm_manager,
@@ -56,7 +56,7 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
     virtual std::unique_ptr<CryptAuthEnrollmentManager> BuildInstance(
         base::Clock* clock,
         std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
-        std::unique_ptr<cryptauth::SecureMessageDelegate>
+        std::unique_ptr<multidevice::SecureMessageDelegate>
             secure_message_delegate,
         const cryptauth::GcmDeviceInfo& device_info,
         CryptAuthGCMManager* gcm_manager,
@@ -97,7 +97,8 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
   CryptAuthEnrollmentManagerImpl(
       base::Clock* clock,
       std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
-      std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate,
+      std::unique_ptr<multidevice::SecureMessageDelegate>
+          secure_message_delegate,
       const cryptauth::GcmDeviceInfo& device_info,
       CryptAuthGCMManager* gcm_manager,
       PrefService* pref_service);
@@ -136,7 +137,7 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
 
   // The SecureMessageDelegate used to generate the user's keypair if it does
   // not already exist.
-  std::unique_ptr<cryptauth::SecureMessageDelegate> secure_message_delegate_;
+  std::unique_ptr<multidevice::SecureMessageDelegate> secure_message_delegate_;
 
   // The local device information to upload to CryptAuth.
   const cryptauth::GcmDeviceInfo device_info_;
