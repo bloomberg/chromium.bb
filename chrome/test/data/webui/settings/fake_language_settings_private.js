@@ -300,8 +300,8 @@ cr.define('settings', function() {
      * Removes a word from the custom dictionary.
      * @param {string} word
      */
-    removeSpellcheckWord() {
-      assertNotReached('Not implemented in fake: removeSpellcheckWord');
+    removeSpellcheckWord(word) {
+      this.onCustomDictionaryChanged.callListeners([], [word]);
     }
 
     /**
