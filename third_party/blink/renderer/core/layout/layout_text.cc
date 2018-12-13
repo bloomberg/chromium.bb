@@ -802,11 +802,17 @@ PositionWithAffinity LayoutText::PositionForPoint(
         ShouldAffinityBeDownstream should_affinity_be_downstream;
         if (LineDirectionPointFitsInBox(point_line_direction.ToInt(), box,
                                         should_affinity_be_downstream)) {
+          const int offset = box->OffsetForPosition(
+              point_line_direction, IncludePartialGlyphs, BreakGlyphs);
+          if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled()) {
+            return CreatePositionWithAffinityForBox(
+                box, offset + box->Start(),
+                static_cast<unsigned>(offset) == box->Len()
+                    ? kAlwaysUpstream
+                    : kAlwaysDownstream);
+          }
           return CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
-              box,
-              box->OffsetForPosition(point_line_direction, IncludePartialGlyphs,
-                                     BreakGlyphs),
-              should_affinity_be_downstream);
+              box, offset, should_affinity_be_downstream);
         }
       }
     }
@@ -814,14 +820,20 @@ PositionWithAffinity LayoutText::PositionForPoint(
   }
 
   if (last_box) {
+    const int offset = last_box->OffsetForPosition(
+        point_line_direction, IncludePartialGlyphs, BreakGlyphs);
+    if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled()) {
+      return CreatePositionWithAffinityForBox(
+          last_box, offset + last_box->Start(),
+          static_cast<unsigned>(offset) == last_box->Len() ? kAlwaysUpstream
+                                                           : kAlwaysDownstream);
+    }
+
     ShouldAffinityBeDownstream should_affinity_be_downstream;
     LineDirectionPointFitsInBox(point_line_direction.ToInt(), last_box,
                                 should_affinity_be_downstream);
     return CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
-        last_box,
-        last_box->OffsetForPosition(point_line_direction, IncludePartialGlyphs,
-                                    BreakGlyphs),
-        should_affinity_be_downstream);
+        last_box, offset, should_affinity_be_downstream);
   }
   return CreatePositionWithAffinity(0);
 }

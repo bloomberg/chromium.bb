@@ -774,6 +774,8 @@ PositionWithAffinity NGPaintFragment::PositionForPointInText(
   const unsigned text_offset = text_fragment.TextOffsetForPoint(point);
   const NGCaretPosition unadjusted_position{
       this, NGCaretPositionType::kAtTextOffset, text_offset};
+  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+    return unadjusted_position.ToPositionInDOMTreeWithAffinity();
   if (text_offset > text_fragment.StartOffset() &&
       text_offset < text_fragment.EndOffset()) {
     return unadjusted_position.ToPositionInDOMTreeWithAffinity();

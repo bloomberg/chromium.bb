@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -87,6 +88,23 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::Create(
       deep_position);
   if (position_with_affinity.Affinity() == TextAffinity::kDownstream)
     return VisiblePositionTemplate<Strategy>(downstream_position);
+
+  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled()) {
+    // When not at a line wrap or bidi boundary, make sure to end up with
+    // |TextAffinity::Downstream| affinity.
+    const PositionWithAffinityTemplate<Strategy> upstream_position(
+        deep_position, TextAffinity::kUpstream);
+
+    // Check if the upstream and downstream positions are visually the same.
+    // If so, canonicalize affinity to downstream.
+    // TODO(xiaochengh): Check upstream and downstream difference in a more
+    // direct way, instead of checking caret bounds.
+    const IntRect downstream_rect = AbsoluteCaretBoundsOf(downstream_position);
+    const IntRect upstream_rect = AbsoluteCaretBoundsOf(upstream_position);
+    if (downstream_rect != upstream_rect)
+      return VisiblePositionTemplate<Strategy>(upstream_position);
+    return VisiblePositionTemplate<Strategy>(downstream_position);
+  }
 
   // When not at a line wrap, make sure to end up with
   // |TextAffinity::Downstream| affinity.

@@ -57,6 +57,8 @@ bool CanResolveCaretPositionBeforeFragment(const NGPaintFragment& fragment,
                                            TextAffinity affinity) {
   if (affinity == TextAffinity::kDownstream)
     return true;
+  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+    return false;
   const NGPaintFragment* current_line_paint = fragment.ContainerLineBox();
   const NGPhysicalLineBoxFragment& current_line =
       ToNGPhysicalLineBoxFragment(current_line_paint->PhysicalFragment());
@@ -74,6 +76,8 @@ bool CanResolveCaretPositionAfterFragment(const NGPaintFragment& fragment,
                                           TextAffinity affinity) {
   if (affinity == TextAffinity::kUpstream)
     return true;
+  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+    return false;
   const NGPaintFragment* current_line_paint = fragment.ContainerLineBox();
   const NGPhysicalLineBoxFragment& current_line =
       ToNGPhysicalLineBoxFragment(current_line_paint->PhysicalFragment());
@@ -208,6 +212,8 @@ CaretPositionResolution TryResolveCaretPositionWithFragment(
 }
 
 bool NeedsBidiAdjustment(const NGCaretPosition& caret_position) {
+  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+    return false;
   if (caret_position.IsNull())
     return false;
   if (caret_position.position_type != NGCaretPositionType::kAtTextOffset)

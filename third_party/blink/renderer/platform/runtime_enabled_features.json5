@@ -134,6 +134,9 @@
       status: "experimental",
     },
     {
+      name: "BidiCaretAffinity",
+    },
+    {
       name: "BlinkGenPropertyTrees",
       status: "experimental",
     },
