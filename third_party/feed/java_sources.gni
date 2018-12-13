@@ -252,6 +252,7 @@ feed_lib_java_sources = [
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/publicapi/menumeasurer/MenuMeasurer.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/publicapi/menumeasurer/Size.java",
   "src/src/main/java/com/google/android/libraries/feed/sharedstream/removetrackingfactory/StreamRemoveTrackingFactory.java",
+  "src/src/main/java/com/google/android/libraries/feed/sharedstream/scroll/ScrollRestoreHelper.java",
 ]
 
 feed_conformance_test_lib_sources = [
