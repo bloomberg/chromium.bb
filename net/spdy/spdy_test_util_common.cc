@@ -178,7 +178,8 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
                  spdy::SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
-                 spdy::SpdyHeaderBlock headers) override {
+                 spdy::SpdyHeaderBlock headers,
+                 base::TimeTicks recv_first_byte_time) override {
     if (has_priority) {
       priority_ = spdy::Http2WeightToSpdy3Priority(weight);
     }

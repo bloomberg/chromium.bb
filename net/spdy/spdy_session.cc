@@ -1002,8 +1002,8 @@ void SpdySession::InitializeWithSocket(
   auto it = initial_settings_.find(spdy::SETTINGS_MAX_HEADER_LIST_SIZE);
   uint32_t spdy_max_header_list_size =
       (it == initial_settings_.end()) ? kSpdyMaxHeaderListSize : it->second;
-  buffered_spdy_framer_ =
-      std::make_unique<BufferedSpdyFramer>(spdy_max_header_list_size, net_log_);
+  buffered_spdy_framer_ = std::make_unique<BufferedSpdyFramer>(
+      spdy_max_header_list_size, net_log_, time_func_);
   buffered_spdy_framer_->set_visitor(this);
   buffered_spdy_framer_->set_debug_visitor(this);
   buffered_spdy_framer_->UpdateHeaderDecoderTableSize(max_header_table_size_);
@@ -3164,7 +3164,8 @@ void SpdySession::OnHeaders(spdy::SpdyStreamId stream_id,
                             spdy::SpdyStreamId parent_stream_id,
                             bool exclusive,
                             bool fin,
-                            spdy::SpdyHeaderBlock headers) {
+                            spdy::SpdyHeaderBlock headers,
+                            base::TimeTicks recv_first_byte_time) {
   CHECK(in_io_loop_);
 
   if (net_log().IsCapturing()) {
@@ -3205,7 +3206,6 @@ void SpdySession::OnHeaders(spdy::SpdyStreamId stream_id,
   }
 
   base::Time response_time = base::Time::Now();
-  base::TimeTicks recv_first_byte_time = time_func_();
   // May invalidate |stream|.
   stream->OnHeadersReceived(headers, response_time, recv_first_byte_time);
 }
