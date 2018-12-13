@@ -472,7 +472,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             // background thread) then make sure to call the relevant methods belatedly.
             if (mStarted) {
                 mCompositorViewHolder.onStart();
-                mSnackbarManager.onStart();
             }
         }
     }
@@ -1215,7 +1214,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             });
         }
         if (mCompositorViewHolder != null) mCompositorViewHolder.onStart();
-        if (mSnackbarManager != null) mSnackbarManager.onStart();
 
         // Explicitly call checkAccessibility() so things are initialized correctly when Chrome has
         // been re-started after closing due to the last tab being closed when homepage is enabled.
@@ -1241,7 +1239,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // We want to refresh partner browser provider every onStart().
         mPartnerBrowserRefreshNeeded = true;
         if (mCompositorViewHolder != null) mCompositorViewHolder.onStop();
-        if (mSnackbarManager != null) mSnackbarManager.onStop();
 
         // If postInflationStartup hasn't been called yet (because inflation was done asynchronously
         // and has not yet completed), it no longer needs to do the belated onStart code since we

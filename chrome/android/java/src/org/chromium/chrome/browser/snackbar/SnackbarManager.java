@@ -11,6 +11,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -27,11 +30,10 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
  * {@link SnackbarController#onDismissNoAction(Object)}. Note, snackbars of
  * {@link Snackbar#TYPE_PERSISTENT} do not get automatically dismissed after a timeout.
  */
-public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBarContainerObserver {
+public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBarContainerObserver,
+                                        ActivityStateListener {
     /**
-     * Interface that shows the ability to provide a snackbar manager. Activities implementing this
-     * interface must call {@link SnackbarManager#onStart()} and {@link SnackbarManager#onStop()} in
-     * corresponding lifecycle events.
+     * Interface that shows the ability to provide a snackbar manager.
      */
     public interface SnackbarManageable {
         /**
@@ -90,19 +92,34 @@ public class SnackbarManager implements OnClickListener, InfoBarContainer.InfoBa
         mActivity = activity;
         mUIThreadHandler = new Handler();
         mSnackbarParentView = snackbarParentView;
+
+        ApplicationStatus.registerStateListenerForActivity(this, mActivity);
+        if (ApplicationStatus.getStateForActivity(mActivity) == ActivityState.STARTED) {
+            onStart();
+        }
+    }
+
+    @Override
+    public void onActivityStateChange(Activity activity, @ActivityState int newState) {
+        assert activity == mActivity;
+        if (newState == ActivityState.STARTED) {
+            onStart();
+        } else if (newState == ActivityState.STOPPED) {
+            onStop();
+        }
     }
 
     /**
      * Notifies the snackbar manager that the activity is running in foreground now.
      */
-    public void onStart() {
+    private void onStart() {
         mActivityInForeground = true;
     }
 
     /**
      * Notifies the snackbar manager that the activity has been pushed to background.
      */
-    public void onStop() {
+    private void onStop() {
         mSnackbars.clear();
         updateView();
         mActivityInForeground = false;
