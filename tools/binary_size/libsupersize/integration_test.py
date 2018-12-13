@@ -6,10 +6,8 @@
 import cStringIO
 import contextlib
 import copy
-import difflib
 import glob
 import itertools
-import logging
 import os
 import unittest
 import re
@@ -24,6 +22,7 @@ import describe
 import diff
 import file_format
 import models
+import test_util
 
 
 _SCRIPT_DIR = os.path.dirname(__file__)
@@ -51,15 +50,6 @@ _TEST_APK_DEX_PATH = 'test.dex'
 _TEST_APK_OTHER_FILE_PATH = 'assets/icudtl.dat'
 _TEST_APK_RES_FILE_PATH = 'res/drawable-v13/test.xml'
 
-update_goldens = False
-
-
-def _AssertGolden(expected_lines, actual_lines, golden_path):
-  expected = list(expected_lines)
-  actual = list(l + '\n' for l in actual_lines)
-  assert actual == expected, (('Did not match %s.\n' % golden_path) +
-      ''.join(difflib.unified_diff(expected, actual, 'expected', 'actual')))
-
 
 def _CompareWithGolden(name=None):
   def real_decorator(func):
@@ -74,14 +64,8 @@ def _CompareWithGolden(name=None):
                       for l in actual_lines)
       actual_lines = (re.sub(r'(Loaded from ).*', r'\1{redacted}', l)
                       for l in actual_lines)
+      test_util.Golden.CheckOrUpdate(golden_path, actual_lines)
 
-      if update_goldens:
-        with open(golden_path, 'w') as file_obj:
-          describe.WriteLines(actual_lines, file_obj.write)
-        logging.info('Wrote %s', golden_path)
-      else:
-        with open(golden_path) as file_obj:
-          _AssertGolden(file_obj, actual_lines, golden_path)
     return inner
   return real_decorator
 
@@ -516,8 +500,7 @@ def main():
   argv = sys.argv
   if len(argv) > 1 and argv[1] == '--update':
     argv.pop(0)
-    global update_goldens
-    update_goldens = True
+    test_util.Golden.EnableUpdate()
     for f in glob.glob(os.path.join(_TEST_DATA_DIR, '*.golden')):
       os.unlink(f)
 
