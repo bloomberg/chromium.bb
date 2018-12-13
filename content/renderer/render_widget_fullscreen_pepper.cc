@@ -276,11 +276,14 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     mojom::WidgetRequest widget_request) {
   DCHECK_NE(MSG_ROUTING_NONE, routing_id);
   DCHECK(show_callback);
-  scoped_refptr<RenderWidgetFullscreenPepper> widget(
+  scoped_refptr<RenderWidgetFullscreenPepper> widget =
       new RenderWidgetFullscreenPepper(routing_id, compositor_deps, plugin,
-                                       screen_info, std::move(widget_request)));
+                                       screen_info, std::move(widget_request));
   widget->Init(std::move(show_callback),
                new PepperWidget(widget.get(), local_main_frame_url));
+  // Init() makes |this| self-referencing for the RenderWidget. But this class
+  // is also a FullscreenContainer which is also self-referencing. So we leave
+  // here with 2 self-references.
   widget->AddRef();
   return widget.get();
 }
