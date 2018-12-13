@@ -59,13 +59,13 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
   void OnWriteError(int error_code) override;
   void OnWriteUnblocked() override;
 
-  // Starts probe |network| to |peer_address|. |this| will take ownership of
-  // |socket|, |writer| and |reader|. |writer| and |reader| should be bound
-  // to |socket| and |writer| will be used to send connectivity probing packets.
-  // Connectivity probing packets will be resent after initial timeout. Mutilple
-  // trials will be attempted with exponential backoff until a connectivity
-  // probing packet response is received from the peer by |reader| or final
-  // time out.
+  // Starts probing |peer_address| on |network|.
+  // |this| will take the ownership of |socket|, |writer| and |reader|.
+  // |writer| and |reader| should be bound to |socket|. |writer| will be used
+  // to send connectivity probes. Connectivity probes will be resent after
+  // |initial_timeout|. Mutilple trials will be attempted with exponential
+  // backoff until a connectivity probe response is received from by |reader|
+  // or the final timeout is reached.
   void StartProbing(NetworkChangeNotifier::NetworkHandle network,
                     const quic::QuicSocketAddress& peer_address,
                     std::unique_ptr<DatagramClientSocket> socket,
@@ -74,9 +74,10 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
                     base::TimeDelta initial_timeout,
                     const NetLogWithSource& net_log);
 
-  // Cancels undergoing probing if the current |network_| being probed is the
-  // same as |network|.
-  void CancelProbing(NetworkChangeNotifier::NetworkHandle network);
+  // Cancels undergoing probing if |this| is currently probing |peer_address|
+  // on |network|.
+  void CancelProbing(NetworkChangeNotifier::NetworkHandle network,
+                     const quic::QuicSocketAddress& peer_address);
 
   // Called when a connectivity probing packet has been received from
   // |peer_address| on a socket with |self_address|.
@@ -84,8 +85,8 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
       const quic::QuicSocketAddress& self_address,
       const quic::QuicSocketAddress& peer_address);
 
-  // Returns true if the manager is currently probing |network| to
-  // |peer_address|.
+  // Returns true if the manager is currently probing |peer_address| on
+  // |network|.
   bool IsUnderProbing(NetworkChangeNotifier::NetworkHandle network,
                       const quic::QuicSocketAddress& peer_address) {
     return (network == network_ && peer_address == peer_address_);
@@ -95,13 +96,12 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
   // Cancels undergoing probing.
   void CancelProbingIfAny();
 
-  // Called when a connectivity probing needs to be sent to |peer_address_| and
-  // set a timer to resend a connectivity probing packet to peer after
-  // |timeout|.
+  // Called when a connectivity probe needs to be sent and set a timer to
+  // resend a connectivity probing packet to peer after |timeout|.
   void SendConnectivityProbingPacket(base::TimeDelta timeout);
 
-  // Called when no connectivity probing packet response has been received on
-  // the currrent probing path after timeout.
+  // Called when no connectivity probe response has been received on the
+  // currrent probing path after some timeout.
   void MaybeResendConnectivityProbingPacket();
 
   void NotifyDelegateProbeFailed();
