@@ -41,4 +41,4 @@ class TestKeyboardUI : public KeyboardUI {
 
 }  // namespace keyboard
 
-#endif
+#endif  // UI_KEYBOARD_TEST_TEST_KEYBOARD_UI_H_
