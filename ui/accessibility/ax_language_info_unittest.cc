@@ -67,4 +67,58 @@ TEST(AXLanguageInfoTest, TestGetLanguageNoLangAttr) {
   EXPECT_EQ(item4_lang, "");
 }
 
+TEST(AXLanguageInfoTest, TestGetLanguageLangAttrInheritance) {
+  /* build tree including parenting, this is to exercise the code paths within
+   * AXNode::GetLanguage() which scan up the tree to handle lang inheritance.
+   *        1
+   *      2   3
+   *    4
+   *  5
+   *
+   *  1 - English
+   *  2 - French
+   *  all other nodes are unspecified
+   */
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(5);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.resize(2);
+  initial_state.nodes[0].child_ids[0] = 2;
+  initial_state.nodes[0].child_ids[1] = 3;
+  initial_state.nodes[0].AddStringAttribute(
+      ax::mojom::StringAttribute::kLanguage, "en");
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].child_ids.resize(1);
+  initial_state.nodes[1].child_ids[0] = 4;
+  initial_state.nodes[1].AddStringAttribute(
+      ax::mojom::StringAttribute::kLanguage, "fr");
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].child_ids.resize(1);
+  initial_state.nodes[3].child_ids[0] = 5;
+  initial_state.nodes[4].id = 5;
+  AXTree tree(initial_state);
+
+  AXNode* item1 = tree.GetFromId(1);
+  std::string item1_lang = item1->GetLanguage();
+  EXPECT_EQ(item1_lang, "en");
+
+  AXNode* item2 = tree.GetFromId(2);
+  std::string item2_lang = item2->GetLanguage();
+  EXPECT_EQ(item2_lang, "fr");
+
+  AXNode* item3 = tree.GetFromId(3);
+  std::string item3_lang = item3->GetLanguage();
+  EXPECT_EQ(item3_lang, "en");
+
+  AXNode* item4 = tree.GetFromId(4);
+  std::string item4_lang = item4->GetLanguage();
+  EXPECT_EQ(item4_lang, "fr");
+
+  AXNode* item5 = tree.GetFromId(5);
+  std::string item5_lang = item5->GetLanguage();
+  EXPECT_EQ(item5_lang, "fr");
+}
+
 }  // namespace ui
