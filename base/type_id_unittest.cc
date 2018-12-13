@@ -75,7 +75,12 @@ TEST(TypeId, TypesInAnonymousNameSpacesDontCollide) {
             TypeIdTestSupportB::GetTypeIdForTypeInAnonymousNameSpace());
 }
 
+// See http://crbug.com/914734
+#if defined(ADDRESS_SANITIZER)
+TEST(TypeId, DISABLED_IdenticalTypesFromDifferentCompilationUnitsMatch) {
+#else
 TEST(TypeId, IdenticalTypesFromDifferentCompilationUnitsMatch) {
+#endif
   EXPECT_EQ(TypeIdTestSupportA::GetTypeIdForUniquePtrInt(),
             TypeIdTestSupportB::GetTypeIdForUniquePtrInt());
 }
