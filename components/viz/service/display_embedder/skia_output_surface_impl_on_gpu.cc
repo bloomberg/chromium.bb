@@ -28,6 +28,7 @@
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "gpu/vulkan/buildflags.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/private/SkDeferredDisplayList.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_bindings.h"
@@ -325,31 +326,62 @@ void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
 void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     RenderPassId id,
     const gfx::Rect& copy_rect,
+    const gfx::Rect& result_rect,
     std::unique_ptr<CopyOutputRequest> request) {
+  // TODO(crbug.com/914502): Do this on the GPU instead of CPU with GL.
+  // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!MakeCurrent()) {
-    request->SendResult(
-        std::make_unique<CopyOutputSkBitmapResult>(gfx::Rect(), SkBitmap()));
+  if (!MakeCurrent())
     return;
-  }
-
-  // TODO(crbug.com/644851): Complete the implementation for all request types,
-  // scaling, etc.
-  DCHECK_EQ(request->result_format(), CopyOutputResult::Format::RGBA_BITMAP);
-  DCHECK(!request->is_scaled());
-  DCHECK(!request->has_result_selection() ||
-         request->result_selection() == gfx::Rect(copy_rect.size()));
 
   DCHECK(!id || offscreen_surfaces_.find(id) != offscreen_surfaces_.end());
   auto* surface = id ? offscreen_surfaces_[id].get() : sk_surface_.get();
 
-  sk_sp<SkImage> copy_image =
-      surface->makeImageSnapshot()->makeSubset(RectToSkIRect(copy_rect));
-  // Send copy request by copying into a bitmap.
   SkBitmap bitmap;
-  copy_image->asLegacyBitmap(&bitmap);
-  request->SendResult(
-      std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
+  if (request->is_scaled()) {
+    // Resolve the source for the scaling input: Initialize a SkPixmap that
+    // selects the current RenderPass's output rect within the current canvas
+    // and provides access to its pixels.
+    SkBitmap render_pass_output;
+    sk_sp<SkImage> copy_image =
+        surface->makeImageSnapshot(RectToSkIRect(copy_rect));
+    copy_image->asLegacyBitmap(&render_pass_output);
+
+    // Execute the scaling: For downscaling, use the RESIZE_BETTER strategy
+    // (appropriate for thumbnailing); and, for upscaling, use the RESIZE_BEST
+    // strategy. Note that processing is only done on the subset of the
+    // RenderPass output that contributes to the result.
+    using skia::ImageOperations;
+    const bool is_downscale_in_both_dimensions =
+        request->scale_to().x() < request->scale_from().x() &&
+        request->scale_to().y() < request->scale_from().y();
+    const ImageOperations::ResizeMethod method =
+        is_downscale_in_both_dimensions ? ImageOperations::RESIZE_BETTER
+                                        : ImageOperations::RESIZE_BEST;
+    bitmap = ImageOperations::Resize(
+        render_pass_output, method, result_rect.width(), result_rect.height(),
+        SkIRect{result_rect.x(), result_rect.y(), result_rect.right(),
+                result_rect.bottom()});
+  } else /* if (!request->is_scaled()) */ {
+    sk_sp<SkImage> copy_image =
+        surface->makeImageSnapshot(RectToSkIRect(copy_rect));
+    copy_image->asLegacyBitmap(&bitmap);
+  }
+
+  // Deliver the result. SkiaRenderer supports RGBA_BITMAP and I420_PLANES
+  // only. For legacy reasons, if a RGBA_TEXTURE request is being made, clients
+  // are prepared to accept RGBA_BITMAP results.
+  //
+  // TODO(crbug/754872): Get rid of the legacy behavior and send empty results
+  // for RGBA_TEXTURE requests once tab capture is moved into VIZ.
+  const CopyOutputResult::Format result_format =
+      (request->result_format() == CopyOutputResult::Format::RGBA_TEXTURE)
+          ? CopyOutputResult::Format::RGBA_BITMAP
+          : request->result_format();
+  // Note: The CopyOutputSkBitmapResult automatically provides I420 format
+  // conversion, if needed.
+  request->SendResult(std::make_unique<CopyOutputSkBitmapResult>(
+      result_format, result_rect, bitmap));
 }
 
 void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(

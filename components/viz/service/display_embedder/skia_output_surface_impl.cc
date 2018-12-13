@@ -563,6 +563,7 @@ void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
 void SkiaOutputSurfaceImpl::CopyOutput(
     RenderPassId id,
     const gfx::Rect& copy_rect,
+    const gfx::Rect& result_rect,
     std::unique_ptr<CopyOutputRequest> request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!request->has_result_task_runner())
@@ -570,7 +571,7 @@ void SkiaOutputSurfaceImpl::CopyOutput(
   auto sequence_id = gpu_service_->skia_output_surface_sequence_id();
   auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CopyOutput,
                                  base::Unretained(impl_on_gpu_.get()), id,
-                                 copy_rect, std::move(request));
+                                 copy_rect, result_rect, std::move(request));
   gpu_service_->scheduler()->ScheduleTask(gpu::Scheduler::Task(
       sequence_id, std::move(callback), std::vector<gpu::SyncToken>()));
 }
