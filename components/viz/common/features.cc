@@ -26,12 +26,12 @@ const base::Feature kEnableSurfaceSynchronization{
 // Enables running the display compositor as part of the viz service in the GPU
 // process. This is also referred to as out-of-process display compositor
 // (OOP-D).
-#if defined(OS_ANDROID)
-const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-#else
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
 const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#else
+const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables running the Viz-assisted hit-test logic.
