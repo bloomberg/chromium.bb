@@ -21,13 +21,17 @@ namespace net {
 namespace test {
 namespace {
 
+const NetworkChangeNotifier::NetworkHandle testNetworkHandle = 1;
+
 const IPEndPoint kIpEndPoint =
     IPEndPoint(IPAddress::IPv4AllZeros(), quic::test::kTestPort);
-
-const NetworkChangeNotifier::NetworkHandle testNetworkHandle = 1;
 const quic::QuicSocketAddress testPeerAddress =
     quic::QuicSocketAddress(quic::QuicSocketAddressImpl(kIpEndPoint));
 
+const IPEndPoint newIpEndPoint =
+    IPEndPoint(IPAddress::IPv4AllZeros(), quic::test::kTestPort + 1);
+const quic::QuicSocketAddress newPeerAddress =
+    quic::QuicSocketAddress(quic::QuicSocketAddressImpl(newIpEndPoint));
 }  // anonymous namespace
 
 class MockQuicChromiumClientSession
@@ -297,12 +301,47 @@ TEST_F(QuicConnectivityProbingManagerTest, CancelProbing) {
       base::TimeDelta::FromMilliseconds(initial_timeout_ms));
   EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
 
-  // Request cancel probing, manager will no longer send connectivity probing
-  // packet for this probing.
+  // Request cancel probing, manager will no longer send connectivity probes.
   EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, _)).Times(0);
   EXPECT_CALL(session_, OnProbeFailed(_, _)).Times(0);
-  probing_manager_.CancelProbing(testNetworkHandle);
+  probing_manager_.CancelProbing(testNetworkHandle, testPeerAddress);
   test_task_runner_->RunUntilIdle();
+}
+
+TEST_F(QuicConnectivityProbingManagerTest, DoNotCancelProbing) {
+  int initial_timeout_ms = 100;
+
+  EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
+      .WillOnce(Return(true));
+  // Start probing |testPeerAddress| on |testNetworkHandle|.
+  probing_manager_.StartProbing(
+      testNetworkHandle, testPeerAddress, std::move(socket_),
+      std::move(writer_), std::move(reader_),
+      base::TimeDelta::FromMilliseconds(initial_timeout_ms),
+      bound_test_net_log_.bound());
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  // Request cancel probing for |newPeerAddress| on |testNetworkHandle| doesn't
+  // affect the exisiting probing.
+  probing_manager_.CancelProbing(testNetworkHandle, newPeerAddress);
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  for (int retry_count = 0; retry_count < 4; retry_count++) {
+    EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
+        .WillOnce(Return(true));
+    int timeout_ms = (1 << retry_count) * initial_timeout_ms;
+    test_task_runner_->FastForwardBy(
+        base::TimeDelta::FromMilliseconds(timeout_ms));
+    EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+  }
+
+  EXPECT_CALL(session_, OnProbeFailed(testNetworkHandle, testPeerAddress))
+      .Times(1);
+  EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, _)).Times(0);
+  int timeout_ms = (1 << 4) * initial_timeout_ms;
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(timeout_ms));
+  EXPECT_EQ(0u, test_task_runner_->GetPendingTaskCount());
 }
 
 TEST_F(QuicConnectivityProbingManagerTest, ProbingWriterError) {

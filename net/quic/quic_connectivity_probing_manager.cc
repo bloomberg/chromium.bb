@@ -79,8 +79,9 @@ void QuicConnectivityProbingManager::OnWriteError(int error_code) {
 void QuicConnectivityProbingManager::OnWriteUnblocked() {}
 
 void QuicConnectivityProbingManager::CancelProbing(
-    NetworkChangeNotifier::NetworkHandle network) {
-  if (network == network_)
+    NetworkChangeNotifier::NetworkHandle network,
+    const quic::QuicSocketAddress& peer_address) {
+  if (network == network_ && peer_address == peer_address_)
     CancelProbingIfAny();
 }
 

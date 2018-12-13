@@ -680,16 +680,17 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void NotifyRequestsOfConfirmation(int net_error);
 
   ProbingResult StartProbeNetwork(NetworkChangeNotifier::NetworkHandle network,
-                                  IPEndPoint peer_address,
+                                  const quic::QuicSocketAddress& peer_address,
                                   const NetLogWithSource& migration_net_log);
 
   // Called when there is only one possible working network: |network|, If any
-  // error encountered, this session will be cloed. When the migration succeeds:
-  //  - If we are no longer on the default interface, migrate back to default
-  //    network timer will be set.
-  //  - If we are now on the default interface, migrate back to default network
-  //    timer will be cancelled.
-  void MigrateImmediately(NetworkChangeNotifier::NetworkHandle network);
+  // error encountered, this session will be closed.
+  // When the migration succeeds:
+  //  - If no longer on the default network, set timer to migrate back to the
+  //    default network;
+  //  - If now on the default network, cancel timer to migrate back to default
+  //    network.
+  void MigrateNetworkImmediately(NetworkChangeNotifier::NetworkHandle network);
 
   void StartMigrateBackToDefaultNetworkTimer(base::TimeDelta delay);
   void CancelMigrateBackToDefaultNetworkTimer();
