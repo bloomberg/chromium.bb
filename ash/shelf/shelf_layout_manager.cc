@@ -1381,6 +1381,10 @@ void ShelfLayoutManager::CompleteAppListDrag(
     }
   }
 
+  // Keep auto-hide shelf visible if failed to open the app list.
+  base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
+  if (app_list_state == AppListViewState::CLOSED)
+    auto_hide_lock.emplace(shelf_);
   Shell::Get()->app_list_controller()->EndDragFromShelf(app_list_state);
 
   gesture_drag_status_ = GESTURE_DRAG_NONE;
