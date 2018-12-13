@@ -208,7 +208,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableLazyInitializeMediaControls(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaEngagementBypassAutoplayPolicies(
       bool);
-  BLINK_PLATFORM_EXPORT static void EnableV8ContextSnapshot(bool);
   BLINK_PLATFORM_EXPORT static void EnableAutomationControlled(bool);
   BLINK_PLATFORM_EXPORT static void EnableWorkStealingInScriptRunner(bool);
   BLINK_PLATFORM_EXPORT static void EnableScheduledScriptStreaming(bool);

@@ -29433,7 +29433,6 @@ from previous Chrome versions.
   <int value="-2047822258" label="enable-avfoundation"/>
   <int value="-2047190657" label="SyncUserConsentSeparateType:enabled"/>
   <int value="-2043128632" label="enable-tab-switcher-in-document-mode"/>
-  <int value="-2041668231" label="V8ContextSnapshot:disabled"/>
   <int value="-2040471724" label="CrOSComponent:disabled"/>
   <int value="-2040115518" label="load-media-router-component-extension"/>
   <int value="-2039343702"
@@ -31133,7 +31132,6 @@ from previous Chrome versions.
       label="AutofillSaveCreditCardUsesStrikeSystem:disabled"/>
   <int value="996643125" label="EnableAppShortcutSearch:disabled"/>
   <int value="996701528" label="SystemKeyboardLock:enabled"/>
-  <int value="996797157" label="V8ContextSnapshot:enabled"/>
   <int value="1000587036" label="OfflinePagesDescriptiveFailStatus:disabled"/>
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>

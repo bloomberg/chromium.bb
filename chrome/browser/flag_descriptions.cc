@@ -2016,10 +2016,6 @@ const char kV8CacheOptionsDescription[] =
     "Caching mode for the V8 JavaScript engine.";
 const char kV8CacheOptionsCode[] = "Cache V8 compiler data.";
 
-const char kV8ContextSnapshotName[] = "Use a snapshot to create V8 contexts.";
-const char kV8ContextSnapshotDescription[] =
-    "Sets to use a snapshot to create V8 contexts in frame creation.";
-
 const char kV8VmFutureName[] = "Future V8 VM features";
 const char kV8VmFutureDescription[] =
     "This enables upcoming and experimental V8 VM features. "

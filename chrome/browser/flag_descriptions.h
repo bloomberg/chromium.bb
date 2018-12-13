@@ -1207,9 +1207,6 @@ extern const char kV8CacheOptionsDescription[];
 extern const char kV8CacheOptionsParse[];
 extern const char kV8CacheOptionsCode[];
 
-extern const char kV8ContextSnapshotName[];
-extern const char kV8ContextSnapshotDescription[];
-
 extern const char kV8VmFutureName[];
 extern const char kV8VmFutureDescription[];
 

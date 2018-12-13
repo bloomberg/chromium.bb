@@ -434,9 +434,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
           features::kLazyFrameLoading,
           "restrict-lazy-load-images-to-data-saver-only", false));
 
-  WebRuntimeFeatures::EnableV8ContextSnapshot(
-      base::FeatureList::IsEnabled(features::kV8ContextSnapshot));
-
   WebRuntimeFeatures::EnablePictureInPicture(
       base::FeatureList::IsEnabled(media::kPictureInPicture));
 

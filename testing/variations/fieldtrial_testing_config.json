@@ -5004,30 +5004,6 @@
             ]
         }
     ],
-    "V8ContextSnapshot": [
-        {
-            "platforms": [
-                "android",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "V8ContextSnapshot"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "V8ContextSnapshot"
-                    ]
-                }
-            ]
-        }
-    ],
     "V8Ignition": [
         {
             "platforms": [
