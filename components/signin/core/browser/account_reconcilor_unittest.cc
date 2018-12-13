@@ -1830,7 +1830,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, TokensNotLoaded) {
   const std::string account_id =
       ConnectProfileToAccount("user@gmail.com").account_id;
   cookie_manager_service()->SetListAccountsResponseNoAccounts();
-  token_service()->set_all_credentials_loaded_for_testing(false);
+  identity_test_env()->ResetToAccountsNotYetLoadedFromDiskState();
 
   AccountReconcilor* reconcilor = GetMockReconcilor();
   reconcilor->StartReconcile();

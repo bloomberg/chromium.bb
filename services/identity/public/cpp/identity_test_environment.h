@@ -227,6 +227,9 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // account.
   void UpdateAccountInfoForAccount(AccountInfo account_info);
 
+  // Resets to the state where accounts have not yet been loaded from disk.
+  void ResetToAccountsNotYetLoadedFromDiskState();
+
  private:
   friend class ::IdentityTestEnvironmentChromeBrowserStateAdaptor;
   friend class ::IdentityTestEnvironmentProfileAdaptor;
