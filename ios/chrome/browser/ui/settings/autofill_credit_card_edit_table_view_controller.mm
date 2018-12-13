@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/autofill_credit_card_edit_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_credit_card_edit_table_view_controller.h"
 
 #include "base/format_macros.h"
 #import "base/ios/block_types.h"
@@ -19,16 +19,14 @@
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
-#import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/settings/autofill_edit_table_view_controller+protected.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
-#import "ios/chrome/browser/ui/settings/legacy_autofill_edit_collection_view_controller+protected.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -39,8 +37,8 @@
 namespace {
 using ::AutofillTypeFromAutofillUIType;
 
-NSString* const kAutofillCreditCardEditCollectionViewId =
-    @"kAutofillCreditCardEditCollectionViewId";
+NSString* const kAutofillCreditCardEditTableViewId =
+    @"kAutofillCreditCardEditTableViewId";
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierFields = kSectionIdentifierEnumZero,
@@ -57,7 +55,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@implementation AutofillCreditCardEditCollectionViewController {
+@implementation AutofillCreditCardEditTableViewController {
   autofill::PersonalDataManager* _personalDataManager;  // weak
   autofill::CreditCard _creditCard;
 }
@@ -66,27 +64,32 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithCreditCard:(const autofill::CreditCard&)creditCard
                personalDataManager:(autofill::PersonalDataManager*)dataManager {
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     DCHECK(dataManager);
 
     _personalDataManager = dataManager;
     _creditCard = creditCard;
 
-    [self setCollectionViewAccessibilityIdentifier:
-              kAutofillCreditCardEditCollectionViewId];
     [self setTitle:l10n_util::GetNSString(IDS_IOS_AUTOFILL_EDIT_CREDIT_CARD)];
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
 
   return self;
 }
 
-#pragma mark - SettingsRootCollectionViewController
+#pragma mark - UIViewController
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  self.tableView.allowsSelectionDuringEditing = YES;
+  self.tableView.accessibilityIdentifier = kAutofillCreditCardEditTableViewId;
+  [self loadModel];
+}
+
+#pragma mark - SettingsRootTableViewController
 
 - (void)editButtonPressed {
   // In the case of server cards, open the Payments editing page instead.
@@ -104,8 +107,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [super editButtonPressed];
 
-  if (!self.editor.editing) {
-    CollectionViewModel* model = self.collectionViewModel;
+  if (!self.tableView.editing) {
+    TableViewModel* model = self.tableViewModel;
     NSInteger itemCount =
         [model numberOfItemsInSection:
                    [model sectionForSectionIdentifier:SectionIdentifierFields]];
@@ -115,11 +118,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     NSInteger section =
         [model sectionForSectionIdentifier:SectionIdentifierFields];
     for (NSInteger itemIndex = 0; itemIndex < itemCount; ++itemIndex) {
-      NSIndexPath* path =
-          [NSIndexPath indexPathForItem:itemIndex inSection:section];
-      LegacyAutofillEditItem* item =
-          base::mac::ObjCCastStrict<LegacyAutofillEditItem>(
-              [model itemAtIndexPath:path]);
+      NSIndexPath* path = [NSIndexPath indexPathForItem:itemIndex
+                                              inSection:section];
+      AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
+          [model itemAtIndexPath:path]);
       _creditCard.SetInfo(autofill::AutofillType(AutofillTypeFromAutofillUIType(
                               item.autofillUIType)),
                           base::SysNSStringToUTF16(item.textFieldValue),
@@ -133,20 +135,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self loadModel];
   // Update the cells.
   [self reconfigureCellsForItems:
-            [self.collectionViewModel
+            [self.tableViewModel
                 itemsInSectionWithIdentifier:SectionIdentifierFields]];
 }
 
+#pragma mark - ChromeTableViewController
+
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
-  BOOL isEditing = self.editor.editing;
+  BOOL isEditing = self.tableView.editing;
 
   [model addSectionWithIdentifier:SectionIdentifierFields];
-  LegacyAutofillEditItem* cardholderNameitem =
-      [[LegacyAutofillEditItem alloc] initWithType:ItemTypeCardholderName];
-  cardholderNameitem.cellStyle = CollectionViewCellStyle::kUIKit;
+  AutofillEditItem* cardholderNameitem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeCardholderName];
   cardholderNameitem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARDHOLDER);
   cardholderNameitem.textFieldValue = autofill::GetCreditCardName(
@@ -157,9 +160,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierFields];
 
   // Card number (PAN).
-  LegacyAutofillEditItem* cardNumberItem =
-      [[LegacyAutofillEditItem alloc] initWithType:ItemTypeCardNumber];
-  cardNumberItem.cellStyle = CollectionViewCellStyle::kUIKit;
+  AutofillEditItem* cardNumberItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeCardNumber];
   cardNumberItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARD_NUMBER);
   // Never show full card number for Wallet cards, even if copied locally.
@@ -177,9 +179,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierFields];
 
   // Expiration month.
-  LegacyAutofillEditItem* expirationMonthItem =
-      [[LegacyAutofillEditItem alloc] initWithType:ItemTypeExpirationMonth];
-  expirationMonthItem.cellStyle = CollectionViewCellStyle::kUIKit;
+  AutofillEditItem* expirationMonthItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeExpirationMonth];
   expirationMonthItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_MONTH);
   expirationMonthItem.textFieldValue =
@@ -191,9 +192,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierFields];
 
   // Expiration year.
-  LegacyAutofillEditItem* expirationYearItem =
-      [[LegacyAutofillEditItem alloc] initWithType:ItemTypeExpirationYear];
-  expirationYearItem.cellStyle = CollectionViewCellStyle::kUIKit;
+  AutofillEditItem* expirationYearItem =
+      [[AutofillEditItem alloc] initWithType:ItemTypeExpirationYear];
   expirationYearItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_YEAR);
   expirationYearItem.textFieldValue =
@@ -228,9 +228,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Find the respective item for the text field.
   NSIndexPath* indexPath = [self indexPathForCurrentTextField];
   DCHECK(indexPath);
-  LegacyAutofillEditItem* item =
-      base::mac::ObjCCastStrict<LegacyAutofillEditItem>(
-          [self.collectionViewModel itemAtIndexPath:indexPath]);
+  AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
+      [self.tableViewModel itemAtIndexPath:indexPath]);
 
   // If the user is typing in the credit card number field, update the card type
   // icon (e.g. "Visa") to reflect the number being typed.
@@ -249,33 +248,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return YES;
 }
 
-#pragma mark - MDCCollectionViewEditingDelegate
+#pragma mark - UITableViewDataSource
 
-- (BOOL)collectionViewAllowsEditing:(UICollectionView*)collectionView {
-  // The collection view needs to allow editing in order to respond to the Edit
-  // button.
-  return YES;
-}
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    canEditItemAtIndexPath:(NSIndexPath*)indexPath {
-  // Items in this collection view are not deletable, so should not be seen
-  // as editable by the collection view.
-  return NO;
-}
-
-#pragma mark - UICollectionViewDataSource
-
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
-
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  LegacyAutofillEditCell* textFieldCell =
-      base::mac::ObjCCast<LegacyAutofillEditCell>(cell);
-  textFieldCell.textField.delegate = self;
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+  AutofillEditCell* editCell = base::mac::ObjCCast<AutofillEditCell>(cell);
+  editCell.textField.delegate = self;
   switch (itemType) {
     case ItemTypeCardholderName:
     case ItemTypeCardNumber:
@@ -295,6 +278,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   return cell;
+}
+
+- (BOOL)tableView:(UITableView*)tableView
+    canEditRowAtIndexPath:(NSIndexPath*)indexPath {
+  // Items in this table view are not deletable, so should not be seen as
+  // editable by the table view.
+  return NO;
+}
+
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.tableView.editing) {
+    UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    AutofillEditCell* textFieldCell =
+        base::mac::ObjCCastStrict<AutofillEditCell>(cell);
+    [textFieldCell.textField becomeFirstResponder];
+  }
 }
 
 #pragma mark - Actions
