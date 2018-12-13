@@ -310,13 +310,12 @@ bool AXLayoutObject::IsDefault() const {
     return false;
 
   // Checks for any kind of disabled, including aria-disabled.
-  if (Restriction() == kDisabled)
+  if (Restriction() == kDisabled || RoleValue() != ax::mojom::Role::kButton)
     return false;
 
-  const HTMLFormControlElement* control =
-      ToHTMLFormControlElementOrNull(GetNode());
-  // This does not check for disabled or whether it is the first submit button.
-  return control && control->CanBeSuccessfulSubmitButton();
+  // Will only match :default pseudo class if it's the first default button in
+  // a form.
+  return GetElement()->MatchesDefaultPseudoClass();
 }
 
 // Requires layoutObject to be present because it relies on style
