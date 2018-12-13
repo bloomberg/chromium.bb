@@ -43,6 +43,43 @@ class FaceDetectionImplWinTest : public testing::Test {
     ASSERT_TRUE(scoped_com_initializer_->Succeeded());
   }
 
+  mojom::FaceDetectionPtr ConnectToFaceDetector() {
+    mojom::FaceDetectionProviderPtr provider;
+    mojom::FaceDetectionPtr face_service;
+
+    auto request = mojo::MakeRequest(&provider);
+    FaceDetectionProviderWin::Create(std::move(request));
+
+    auto options = shape_detection::mojom::FaceDetectorOptions::New();
+    provider->CreateFaceDetection(mojo::MakeRequest(&face_service),
+                                  std::move(options));
+
+    return face_service;
+  }
+
+  std::unique_ptr<SkBitmap> LoadTestImage() {
+    // Load image data from test directory.
+    base::FilePath image_path;
+    EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &image_path));
+    image_path = image_path.Append(FILE_PATH_LITERAL("services"))
+                     .Append(FILE_PATH_LITERAL("test"))
+                     .Append(FILE_PATH_LITERAL("data"))
+                     .Append(FILE_PATH_LITERAL("mona_lisa.jpg"));
+    EXPECT_TRUE(base::PathExists(image_path));
+    std::string image_data;
+    EXPECT_TRUE(base::ReadFileToString(image_path, &image_data));
+
+    std::unique_ptr<SkBitmap> image = gfx::JPEGCodec::Decode(
+        reinterpret_cast<const uint8_t*>(image_data.data()), image_data.size());
+    if (image) {
+      const gfx::Size size(image->width(), image->height());
+      const uint32_t num_bytes = size.GetArea() * 4 /* bytes per pixel */;
+      EXPECT_EQ(num_bytes, image->computeByteSize());
+    }
+
+    return image;
+  }
+
  private:
   std::unique_ptr<base::win::ScopedCOMInitializer> scoped_com_initializer_;
 
@@ -56,42 +93,13 @@ TEST_F(FaceDetectionImplWinTest, ScanOneFace) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10)
     return;
 
-  mojom::FaceDetectionProviderPtr provider;
-  mojom::FaceDetectionPtr face_service;
-
-  auto request = mojo::MakeRequest(&provider);
-  auto provider_win = std::make_unique<FaceDetectionProviderWin>();
-  auto* provider_ptr = provider_win.get();
-  // A raw pointer is obtained because ownership is passed to MakeStrongBinding.
-  provider_ptr->binding_ =
-      mojo::MakeStrongBinding(std::move(provider_win), std::move(request));
-
-  auto options = shape_detection::mojom::FaceDetectorOptions::New();
-  provider->CreateFaceDetection(mojo::MakeRequest(&face_service),
-                                std::move(options));
-
-  // Load image data from test directory.
-  base::FilePath image_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &image_path));
-  image_path = image_path.Append(FILE_PATH_LITERAL("services"))
-                   .Append(FILE_PATH_LITERAL("test"))
-                   .Append(FILE_PATH_LITERAL("data"))
-                   .Append(FILE_PATH_LITERAL("mona_lisa.jpg"));
-  ASSERT_TRUE(base::PathExists(image_path));
-  std::string image_data;
-  ASSERT_TRUE(base::ReadFileToString(image_path, &image_data));
-
-  std::unique_ptr<SkBitmap> image = gfx::JPEGCodec::Decode(
-      reinterpret_cast<const uint8_t*>(image_data.data()), image_data.size());
+  mojom::FaceDetectionPtr face_detector = ConnectToFaceDetector();
+  std::unique_ptr<SkBitmap> image = LoadTestImage();
   ASSERT_TRUE(image);
-
-  const gfx::Size size(image->width(), image->height());
-  const uint32_t num_bytes = size.GetArea() * 4 /* bytes per pixel */;
-  ASSERT_EQ(num_bytes, image->computeByteSize());
 
   base::RunLoop run_loop;
   uint32_t num_faces = 0;
-  face_service->Detect(
+  face_detector->Detect(
       *image,
       base::BindOnce(&DetectCallback, run_loop.QuitClosure(), &num_faces));
   run_loop.Run();

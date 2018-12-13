@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/win/post_async_results.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
-#include "device/bluetooth/event_utils_winrt.h"
 
 namespace device {
 
@@ -129,7 +129,7 @@ void BluetoothGattDiscovererWinrt::StartGattDiscovery(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(get_gatt_services_op),
       base::BindOnce(&BluetoothGattDiscovererWinrt::OnGetGattServices,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -213,7 +213,7 @@ void BluetoothGattDiscovererWinrt::OnGetGattServices(
       return;
     }
 
-    hr = PostAsyncResults(
+    hr = base::win::PostAsyncResults(
         std::move(get_characteristics_op),
         base::BindOnce(&BluetoothGattDiscovererWinrt::OnGetCharacteristics,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -285,7 +285,7 @@ void BluetoothGattDiscovererWinrt::OnGetCharacteristics(
       return;
     }
 
-    hr = PostAsyncResults(
+    hr = base::win::PostAsyncResults(
         std::move(get_descriptors_op),
         base::BindOnce(&BluetoothGattDiscovererWinrt::OnGetDescriptors,
                        weak_ptr_factory_.GetWeakPtr(),
