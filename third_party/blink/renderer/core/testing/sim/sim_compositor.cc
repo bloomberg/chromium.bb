@@ -72,11 +72,12 @@ SimCanvas::Commands SimCompositor::PaintFrame() {
   auto* frame = web_view_->MainFrameImpl()->GetFrame();
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       frame->GetDocument()->Lifecycle());
+  frame->View()->UpdateAllLifecyclePhases(DocumentLifecycle::kTest);
   PaintRecordBuilder builder;
-  auto infinite_rect = LayoutRect::InfiniteIntRect();
-  frame->View()->Paint(builder.Context(), kGlobalPaintFlattenCompositingLayers,
-                       CullRect(infinite_rect));
+  frame->View()->PaintOutsideOfLifecycle(builder.Context(),
+                                         kGlobalPaintFlattenCompositingLayers);
 
+  auto infinite_rect = LayoutRect::InfiniteIntRect();
   SimCanvas canvas(infinite_rect.Width(), infinite_rect.Height());
   builder.EndRecording()->Playback(&canvas);
   return canvas.GetCommands();

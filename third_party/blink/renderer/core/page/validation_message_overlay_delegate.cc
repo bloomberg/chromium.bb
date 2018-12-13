@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
@@ -100,10 +101,9 @@ void ValidationMessageOverlayDelegate::PaintFrameOverlay(
     return;
   const_cast<ValidationMessageOverlayDelegate*>(this)->UpdateFrameViewState(
       overlay, view_size);
-  LocalFrameView& view = FrameView();
-  view.PaintWithLifecycleUpdate(
-      context, kGlobalPaintNormalPhase,
-      CullRect(IntRect(0, 0, view.Width(), view.Height())));
+  // TODO(wangxianzhu): Implement fast path for CompositeAfterPaint.
+  DisplayItemCacheSkipper cache_skipper(context);
+  FrameView().PaintOutsideOfLifecycle(context, kGlobalPaintNormalPhase);
 }
 
 void ValidationMessageOverlayDelegate::UpdateFrameViewState(

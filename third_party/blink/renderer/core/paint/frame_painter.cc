@@ -25,25 +25,25 @@ bool FramePainter::in_paint_contents_ = false;
 
 void FramePainter::Paint(GraphicsContext& context,
                          const GlobalPaintFlags global_paint_flags,
-                         const CullRect& rect) {
+                         const CullRect& cull_rect) {
   if (GetFrameView().ShouldThrottleRendering())
     return;
 
   GetFrameView().NotifyPageThatContentAreaWillPaint();
 
-  IntRect document_dirty_rect(rect.Rect());
-  document_dirty_rect.Intersect(GetFrameView().FrameRect());
-  document_dirty_rect.MoveBy(-GetFrameView().Location());
+  CullRect document_cull_rect(
+      Intersection(cull_rect.Rect(), GetFrameView().FrameRect()));
+  document_cull_rect.MoveBy(-GetFrameView().Location());
 
-  if (document_dirty_rect.IsEmpty())
+  if (document_cull_rect.Rect().IsEmpty())
     return;
 
-  PaintContents(context, global_paint_flags, document_dirty_rect);
+  PaintContents(context, global_paint_flags, document_cull_rect);
 }
 
 void FramePainter::PaintContents(GraphicsContext& context,
                                  const GlobalPaintFlags global_paint_flags,
-                                 const IntRect& rect) {
+                                 const CullRect& cull_rect) {
   Document* document = GetFrameView().GetFrame().GetDocument();
 
   if (GetFrameView().ShouldThrottleRendering() || !document->IsActive())
@@ -66,9 +66,9 @@ void FramePainter::PaintContents(GraphicsContext& context,
          DocumentLifecycle::kCompositingClean);
 
   FramePaintTiming frame_paint_timing(context, &GetFrameView().GetFrame());
-  TRACE_EVENT1(
-      "devtools.timeline,rail", "Paint", "data",
-      inspector_paint_event::Data(layout_view, LayoutRect(rect), nullptr));
+  TRACE_EVENT1("devtools.timeline,rail", "Paint", "data",
+               inspector_paint_event::Data(
+                   layout_view, LayoutRect(cull_rect.Rect()), nullptr));
 
   bool is_top_level_painter = !in_paint_contents_;
   in_paint_contents_ = true;
@@ -101,11 +101,11 @@ void FramePainter::PaintContents(GraphicsContext& context,
       root_layer->GetLayoutObject().GetFrame());
   context.SetDeviceScaleFactor(device_scale_factor);
 
-  layer_painter.Paint(context, CullRect(rect), updated_global_paint_flags,
+  layer_painter.Paint(context, cull_rect, updated_global_paint_flags,
                       root_layer_paint_flags);
 
   if (root_layer->ContainsDirtyOverlayScrollbars()) {
-    layer_painter.PaintOverlayScrollbars(context, CullRect(rect),
+    layer_painter.PaintOverlayScrollbars(context, cull_rect,
                                          updated_global_paint_flags);
   }
 
@@ -121,7 +121,8 @@ void FramePainter::PaintContents(GraphicsContext& context,
     in_paint_contents_ = false;
   }
 
-  probe::didPaint(layout_view->GetFrame(), nullptr, context, LayoutRect(rect));
+  probe::didPaint(layout_view->GetFrame(), nullptr, context,
+                  LayoutRect(cull_rect.Rect()));
 }
 
 const LocalFrameView& FramePainter::GetFrameView() {

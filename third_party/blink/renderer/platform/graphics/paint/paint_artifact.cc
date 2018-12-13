@@ -122,12 +122,17 @@ void PaintArtifact::Replay(cc::PaintCanvas& canvas,
                            const PropertyTreeState& replay_state,
                            const IntPoint& offset) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-  scoped_refptr<cc::DisplayItemList> display_item_list =
-      PaintChunksToCcLayer::Convert(
-          PaintChunks(), replay_state, gfx::Vector2dF(offset.X(), offset.Y()),
-          GetDisplayItemList(),
-          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer);
-  canvas.drawPicture(display_item_list->ReleaseAsRecord());
+  canvas.drawPicture(GetPaintRecord(replay_state, offset));
+}
+
+sk_sp<PaintRecord> PaintArtifact::GetPaintRecord(
+    const PropertyTreeState& replay_state,
+    const IntPoint& offset) const {
+  return PaintChunksToCcLayer::Convert(
+             PaintChunks(), replay_state,
+             gfx::Vector2dF(offset.X(), offset.Y()), GetDisplayItemList(),
+             cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+      ->ReleaseAsRecord();
 }
 
 void PaintArtifact::FinishCycle() {

@@ -48,11 +48,9 @@ PaintRecordBuilder::~PaintRecordBuilder() = default;
 
 sk_sp<PaintRecord> PaintRecordBuilder::EndRecording(
     const PropertyTreeState& replay_state) {
-  context_->BeginRecording(FloatRect());
   paint_controller_->CommitNewDisplayItems();
   paint_controller_->FinishCycle();
-  paint_controller_->GetPaintArtifact().Replay(*context_, replay_state);
-  return context_->EndRecording();
+  return paint_controller_->GetPaintArtifact().GetPaintRecord(replay_state);
 }
 
 void PaintRecordBuilder::EndRecording(cc::PaintCanvas& canvas,

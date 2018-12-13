@@ -91,8 +91,8 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
     PaintRecordBuilder builder;
     GraphicsContext& context = builder.Context();
     context.SetPrinting(true);
-    GetDocument().View()->PaintContents(context, kGlobalPaintPrinting,
-                                        page_rect);
+    GetDocument().View()->PaintContentsOutsideOfLifecycle(
+        context, kGlobalPaintPrinting, CullRect(page_rect));
     {
       DrawingRecorder recorder(
           context, *GetDocument().GetLayoutView(),

@@ -37,6 +37,8 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   // transient PaintController is used for the duration of the picture building,
   // which therefore has no caching. It also resets paint chunk state to
   // PropertyTreeState::Root() before beginning to record.
+  // TODO(wangxianzhu): Remove the input PaintController feature for
+  // CompositeAfterPaint.
   PaintRecordBuilder(SkMetaData* metadata = nullptr,
                      GraphicsContext* containing_context = nullptr,
                      PaintController* = nullptr);

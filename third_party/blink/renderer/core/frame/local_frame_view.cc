@@ -3685,10 +3685,40 @@ void LocalFrameView::Paint(GraphicsContext& context,
   PaintInternal(context, global_paint_flags, cull_rect);
 }
 
-void LocalFrameView::PaintWithLifecycleUpdate(
+void LocalFrameView::PaintInternal(GraphicsContext& context,
+                                   const GlobalPaintFlags global_paint_flags,
+                                   const CullRect& cull_rect) const {
+  FramePainter(*this).Paint(context, global_paint_flags, cull_rect);
+}
+
+static bool PaintOutsideOfLifecycleIsAllowed(GraphicsContext& context,
+                                             const LocalFrameView& frame_view) {
+  // A paint outside of lifecycle should not conflict about paint controller
+  // caching with the default painting executed during lifecycle update,
+  // otherwise the caller should either use a transient paint controller or
+  // explicitly skip cache.
+  if (context.GetPaintController().IsSkippingCache())
+    return true;
+  // For CompositeAfterPaint, they always conflict because we always paint into
+  // paint_controller_ during lifecycle update.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return false;
+  // For pre-CompositeAfterPaint, they conflict if the local frame root has a
+  // a root graphics layer.
+  return !frame_view.GetFrame()
+              .LocalFrameRoot()
+              .View()
+              ->GetLayoutView()
+              ->Compositor()
+              ->PaintRootGraphicsLayer();
+}
+
+void LocalFrameView::PaintOutsideOfLifecycle(
     GraphicsContext& context,
     const GlobalPaintFlags global_paint_flags,
     const CullRect& cull_rect) {
+  DCHECK(PaintOutsideOfLifecycleIsAllowed(context, *this));
+
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
   });
@@ -3700,24 +3730,30 @@ void LocalFrameView::PaintWithLifecycleUpdate(
   });
 }
 
-void LocalFrameView::PaintInternal(GraphicsContext& context,
-                                   const GlobalPaintFlags global_paint_flags,
-                                   const CullRect& cull_rect) const {
-  FramePainter(*this).Paint(context, global_paint_flags, cull_rect);
-}
+void LocalFrameView::PaintContentsOutsideOfLifecycle(
+    GraphicsContext& context,
+    const GlobalPaintFlags global_paint_flags,
+    const CullRect& cull_rect) {
+  DCHECK(PaintOutsideOfLifecycleIsAllowed(context, *this));
 
-void LocalFrameView::PaintContents(GraphicsContext& context,
-                                   const GlobalPaintFlags global_paint_flags,
-                                   const IntRect& damage_rect) {
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
   });
 
-  FramePainter(*this).PaintContents(context, global_paint_flags, damage_rect);
+  FramePainter(*this).PaintContents(context, global_paint_flags, cull_rect);
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
   });
+}
+
+sk_sp<PaintRecord> LocalFrameView::GetPaintRecord() const {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  DCHECK_EQ(DocumentLifecycle::kPaintClean, Lifecycle().GetState());
+  DCHECK(frame_->IsLocalRoot());
+  DCHECK(paint_controller_);
+  return paint_controller_->GetPaintArtifact().GetPaintRecord(
+      PropertyTreeState::Root());
 }
 
 IntRect LocalFrameView::ConvertToRootFrame(const IntRect& local_rect) const {

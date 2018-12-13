@@ -41,6 +41,8 @@
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -67,7 +69,6 @@ class JankTracker;
 class KURL;
 class LayoutAnalyzer;
 class LayoutBox;
-class LayoutEmbeddedContent;
 class LayoutEmbeddedObject;
 class LayoutObject;
 class LayoutRect;
@@ -105,7 +106,6 @@ class CORE_EXPORT LocalFrameView final
 
   friend class PaintControllerPaintTestBase;
   friend class Internals;
-  friend class LayoutEmbeddedContent;  // for invalidateTreeIfNeeded
 
  public:
   static LocalFrameView* Create(LocalFrame&);
@@ -533,19 +533,24 @@ class CORE_EXPORT LocalFrameView final
   LayoutPoint FrameToDocument(const LayoutPoint&) const;
   LayoutRect FrameToDocument(const LayoutRect&) const;
 
-  // Handles painting of the contents of the view as well as the scrollbars.
-  void Paint(GraphicsContext&,
-             const GlobalPaintFlags,
-             const CullRect&,
-             const IntSize& paint_offset = IntSize()) const override;
-  // Paints, and also updates the lifecycle to in-paint and paint clean
-  // beforehand.  Call this for painting use-cases outside of the lifecycle.
-  void PaintWithLifecycleUpdate(GraphicsContext&,
-                                const GlobalPaintFlags,
-                                const CullRect&);
-  void PaintContents(GraphicsContext&,
-                     const GlobalPaintFlags,
-                     const IntRect& damage_rect);
+  // Normally a LocalFrameView synchronously paints during full lifecycle
+  // updates, into the local frame root's PaintController (CompositeAfterPaint)
+  // or the PaintControllers of GraphicsLayers (pre-CompositeAfterPaint)
+  // However, in some cases (e.g. when printing) we need to paint the frame view
+  // into a PaintController other than the default one(s). The following
+  // functions are provided for these cases. This frame view must be in
+  // PrePaintClean or PaintClean state when these functions are called.
+  void PaintOutsideOfLifecycle(
+      GraphicsContext&,
+      const GlobalPaintFlags,
+      const CullRect& cull_rect = CullRect::Infinite());
+  void PaintContentsOutsideOfLifecycle(GraphicsContext&,
+                                       const GlobalPaintFlags,
+                                       const CullRect&);
+
+  // Get the PaintRecord based on the cached paint artifact generated during
+  // the last paint in lifecycle update. For CompositeAfterPaint only.
+  sk_sp<PaintRecord> GetPaintRecord() const;
 
   void Show() override;
   void Hide() override;
@@ -725,6 +730,12 @@ class CORE_EXPORT LocalFrameView final
     UntracedMember<LocalFrameView> local_frame_view_;
   };
 #endif
+
+  // EmbeddedContentView implementation
+  void Paint(GraphicsContext&,
+             const GlobalPaintFlags,
+             const CullRect&,
+             const IntSize& = IntSize()) const final;
 
   void PaintInternal(GraphicsContext&,
                      const GlobalPaintFlags,
