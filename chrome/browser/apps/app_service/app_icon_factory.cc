@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -32,6 +31,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
+#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #endif
 
 namespace {
@@ -128,8 +128,11 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
         break;
 
       case apps::mojom::IconCompression::kUncompressed: {
+        extensions::ChromeAppIconLoader::ResizeFunction resize_function;
         bool apply_chrome_badge = false;
 #if defined(OS_CHROMEOS)
+        resize_function =
+            base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd),
         apply_chrome_badge =
             extensions::util::ShouldApplyChromeBadge(context, extension_id);
 #endif
@@ -141,8 +144,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                 &RunCallbackWithUncompressedImage,
                 base::BindOnce(
                     &ChromeAppIconApplyEffects, size_hint_in_dip,
-                    base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd),
-                    apply_chrome_badge,
+                    resize_function, apply_chrome_badge,
                     extensions::util::IsAppLaunchable(extension_id, context),
                     extension->from_bookmark()),
                 std::move(callback)));
