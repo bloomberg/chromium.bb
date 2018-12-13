@@ -1046,7 +1046,7 @@ void ChromeMainDelegate::ZygoteStarting(
     std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*
         delegates) {
 #if defined(OS_CHROMEOS)
-    chromeos::ReloadElfTextInHugePages();
+    chromeos::InitHugepagesAndMlockSelf();
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
