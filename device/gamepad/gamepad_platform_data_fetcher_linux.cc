@@ -304,40 +304,47 @@ void GamepadPlatformDataFetcherLinux::PlayEffect(
     int pad_id,
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
-    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   if (pad_id < 0 || pad_id >= static_cast<int>(Gamepads::kItemsLengthCap)) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
   GamepadDeviceLinux* device = GetDeviceWithJoydevIndex(pad_id);
   if (!device) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
-  device->PlayEffect(type, std::move(params), std::move(callback));
+  device->PlayEffect(type, std::move(params), std::move(callback),
+                     std::move(callback_runner));
 }
 
 void GamepadPlatformDataFetcherLinux::ResetVibration(
     int pad_id,
-    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   if (pad_id < 0 || pad_id >= static_cast<int>(Gamepads::kItemsLengthCap)) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
   GamepadDeviceLinux* device = GetDeviceWithJoydevIndex(pad_id);
   if (!device) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
-  device->ResetVibration(std::move(callback));
+  device->ResetVibration(std::move(callback), std::move(callback_runner));
 }
 
 }  // namespace device

@@ -291,31 +291,37 @@ void GamepadPlatformDataFetcherMac::PlayEffect(
     int source_id,
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
-    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   size_t slot = GetSlotForLocation(source_id);
   if (slot == Gamepads::kItemsLengthCap) {
     // No connected gamepad with this location. Probably the effect was issued
     // while the gamepad was still connected, so handle this as if it were
     // preempted by a disconnect.
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
     return;
   }
-  devices_[slot]->PlayEffect(type, std::move(params), std::move(callback));
+  devices_[slot]->PlayEffect(type, std::move(params), std::move(callback),
+                             std::move(callback_runner));
 }
 
 void GamepadPlatformDataFetcherMac::ResetVibration(
     int source_id,
-    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   size_t slot = GetSlotForLocation(source_id);
   if (slot == Gamepads::kItemsLengthCap) {
     // No connected gamepad with this location. Since the gamepad is already
     // disconnected, allow the reset to report success.
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultComplete);
     return;
   }
-  devices_[slot]->ResetVibration(std::move(callback));
+  devices_[slot]->ResetVibration(std::move(callback),
+                                 std::move(callback_runner));
 }
 
 }  // namespace device

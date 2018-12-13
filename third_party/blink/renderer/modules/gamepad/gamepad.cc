@@ -29,14 +29,20 @@
 
 namespace blink {
 
-Gamepad::Gamepad()
-    : index_(0),
+Gamepad::Gamepad(ExecutionContext* context)
+    : ContextClient(context),
+      index_(0),
       timestamp_(0.0),
       display_id_(0),
       is_axis_data_dirty_(true),
       is_button_data_dirty_(true) {}
 
 Gamepad::~Gamepad() = default;
+
+// static
+Gamepad* Gamepad::Create(ExecutionContext* context) {
+  return MakeGarbageCollected<Gamepad>(context);
+}
 
 const Gamepad::DoubleVector& Gamepad::axes() {
   is_axis_data_dirty_ = false;
@@ -89,8 +95,10 @@ void Gamepad::SetVibrationActuator(
     return;
   }
 
-  if (!vibration_actuator_)
-    vibration_actuator_ = GamepadHapticActuator::Create(index_);
+  if (!vibration_actuator_) {
+    vibration_actuator_ =
+        GamepadHapticActuator::Create(GetExecutionContext(), index_);
+  }
 
   vibration_actuator_->SetType(actuator.type);
 }
@@ -129,6 +137,7 @@ void Gamepad::Trace(blink::Visitor* visitor) {
   visitor->Trace(vibration_actuator_);
   visitor->Trace(pose_);
   ScriptWrappable::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

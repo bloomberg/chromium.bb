@@ -39,14 +39,15 @@ class RawInputDataFetcher : public GamepadDataFetcher,
 
   void GetGamepadData(bool devices_changed_hint) override;
   void PauseHint(bool paused) override;
-  void PlayEffect(
-      int source_id,
-      mojom::GamepadHapticEffectType,
-      mojom::GamepadEffectParametersPtr,
-      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback) override;
+  void PlayEffect(int source_id,
+                  mojom::GamepadHapticEffectType,
+                  mojom::GamepadEffectParametersPtr,
+                  mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback,
+                  scoped_refptr<base::SequencedTaskRunner>) override;
   void ResetVibration(
       int source_id,
-      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback) override;
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback,
+      scoped_refptr<base::SequencedTaskRunner>) override;
 
  private:
   void OnAddedToProvider() override;

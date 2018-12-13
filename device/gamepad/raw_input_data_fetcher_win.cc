@@ -242,40 +242,47 @@ void RawInputDataFetcher::PlayEffect(
     int source_id,
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
-    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   RawInputGamepadDeviceWin* device = DeviceFromSourceId(source_id);
   if (!device) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
   if (!device->SupportsVibration()) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
     return;
   }
 
-  device->PlayEffect(type, std::move(params), std::move(callback));
+  device->PlayEffect(type, std::move(params), std::move(callback),
+                     std::move(callback_runner));
 }
 
 void RawInputDataFetcher::ResetVibration(
     int source_id,
-    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   RawInputGamepadDeviceWin* device = DeviceFromSourceId(source_id);
   if (!device) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
   if (!device->SupportsVibration()) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
     return;
   }
 
-  device->ResetVibration(std::move(callback));
+  device->ResetVibration(std::move(callback), std::move(callback_runner));
 }
 
 LRESULT RawInputDataFetcher::OnInput(HRAWINPUT input_handle) {

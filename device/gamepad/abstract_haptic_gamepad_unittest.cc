@@ -8,13 +8,27 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
 
 namespace {
+
+// Use 1 ms for all non-zero effect durations. There is no reason to test longer
+// delays as they will be skipped anyway.
+constexpr double kDurationMillis = 1.0;
+constexpr double kNonZeroStartDelayMillis = 1.0;
+// Setting |start_delay| to zero can cause additional reports to be sent.
+constexpr double kZeroStartDelayMillis = 0.0;
+// Vibration magnitudes for the strong and weak channels of a typical
+// dual-rumble vibration effect.
+constexpr double kStrongMagnitude = 1.0;  // 100% intensity
+constexpr double kWeakMagnitude = 0.5;    // 50% intensity
+
+constexpr base::TimeDelta kPendingTaskDuration =
+    base::TimeDelta::FromMillisecondsD(kDurationMillis);
 
 // An implementation of AbstractHapticGamepad that records how many times its
 // SetVibration and SetZeroVibration methods have been called.
@@ -28,11 +42,6 @@ class FakeHapticGamepad : public AbstractHapticGamepad {
   }
 
   void SetZeroVibration() override { set_zero_vibration_count_++; }
-
-  base::TimeDelta TaskDelayFromMilliseconds(double delay_millis) override {
-    // Remove delays for testing.
-    return base::TimeDelta();
-  }
 
   int set_vibration_count_;
   int set_zero_vibration_count_;
@@ -48,8 +57,7 @@ class AbstractHapticGamepadTest : public testing::Test {
             mojom::GamepadHapticsResult::GamepadHapticsResultError),
         second_callback_result_(
             mojom::GamepadHapticsResult::GamepadHapticsResultError),
-        gamepad_(std::make_unique<FakeHapticGamepad>()),
-        task_runner_(new base::TestSimpleTaskRunner) {}
+        gamepad_(std::make_unique<FakeHapticGamepad>()) {}
 
   void TearDown() override { gamepad_->Shutdown(); }
 
@@ -58,30 +66,28 @@ class AbstractHapticGamepadTest : public testing::Test {
       double duration,
       double start_delay,
       mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&FakeHapticGamepad::PlayEffect,
-                       base::Unretained(gamepad_.get()), type,
-                       mojom::GamepadEffectParameters::New(
-                           duration, start_delay, 1.0, 1.0),
-                       std::move(callback)),
-        base::TimeDelta());
+    gamepad_->PlayEffect(
+        type,
+        mojom::GamepadEffectParameters::New(duration, start_delay,
+                                            kStrongMagnitude, kWeakMagnitude),
+        std::move(callback), base::ThreadTaskRunnerHandle::Get());
   }
 
   void PostResetVibration(
       mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&FakeHapticGamepad::ResetVibration,
-                       base::Unretained(gamepad_.get()), std::move(callback)),
-        base::TimeDelta());
+    gamepad_->ResetVibration(std::move(callback),
+                             base::ThreadTaskRunnerHandle::Get());
   }
 
+  // Callback for the first PlayEffect or ResetVibration call in a test.
   void FirstCallback(mojom::GamepadHapticsResult result) {
     first_callback_count_++;
     first_callback_result_ = result;
   }
 
+  // Callback for the second PlayEffect or ResetVibration call in a test. Use
+  // this when multiple callbacks may be received and the test should check the
+  // result codes for each.
   void SecondCallback(mojom::GamepadHapticsResult result) {
     second_callback_count_++;
     second_callback_result_ = result;
@@ -92,7 +98,8 @@ class AbstractHapticGamepadTest : public testing::Test {
   mojom::GamepadHapticsResult first_callback_result_;
   mojom::GamepadHapticsResult second_callback_result_;
   std::unique_ptr<FakeHapticGamepad> gamepad_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
 
   DISALLOW_COPY_AND_ASSIGN(AbstractHapticGamepadTest);
 };
@@ -103,38 +110,30 @@ TEST_F(AbstractHapticGamepadTest, PlayEffectTest) {
   EXPECT_EQ(0, first_callback_count_);
 
   PostPlayEffect(
-      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble, 1.0,
-      0.0,
+      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble,
+      kDurationMillis, kZeroStartDelayMillis,
       base::BindOnce(&AbstractHapticGamepadTest::FirstCallback,
                      base::Unretained(this)));
 
-  // Run the queued task, but stop before executing any new tasks queued by that
-  // task. This should pause before calling SetVibration.
-  task_runner_->RunPendingTasks();
-
-  EXPECT_EQ(0, gamepad_->set_vibration_count_);
-  EXPECT_EQ(0, gamepad_->set_zero_vibration_count_);
-  EXPECT_EQ(0, first_callback_count_);
-  EXPECT_TRUE(task_runner_->HasPendingTask());
-
-  // Run the next task, but pause before completing the effect.
-  task_runner_->RunPendingTasks();
+  // Run the queued task to start the effect.
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1, gamepad_->set_vibration_count_);
   EXPECT_EQ(0, gamepad_->set_zero_vibration_count_);
   EXPECT_EQ(0, first_callback_count_);
-  EXPECT_TRUE(task_runner_->HasPendingTask());
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
 
-  // Complete the effect and issue the callback. After this, there should be no
-  // more pending tasks.
-  task_runner_->RunPendingTasks();
+  // Finish the effect.
+  scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
 
+  // SetZeroVibration is not called. Typically, the renderer would issue a call
+  // to SetZeroVibration once the callback receives a success result.
   EXPECT_EQ(1, gamepad_->set_vibration_count_);
-  EXPECT_EQ(1, gamepad_->set_zero_vibration_count_);
+  EXPECT_EQ(0, gamepad_->set_zero_vibration_count_);
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             first_callback_result_);
-  EXPECT_FALSE(task_runner_->HasPendingTask());
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
 }
 
 TEST_F(AbstractHapticGamepadTest, ResetVibrationTest) {
@@ -145,15 +144,15 @@ TEST_F(AbstractHapticGamepadTest, ResetVibrationTest) {
   PostResetVibration(base::BindOnce(&AbstractHapticGamepadTest::FirstCallback,
                                     base::Unretained(this)));
 
-  task_runner_->RunUntilIdle();
+  // Run the queued task to reset vibration.
+  scoped_task_environment_.RunUntilIdle();
 
-  // ResetVibration should return a "complete" result without calling
-  // SetVibration or SetZeroVibration.
   EXPECT_EQ(0, gamepad_->set_vibration_count_);
-  EXPECT_EQ(0, gamepad_->set_zero_vibration_count_);
+  EXPECT_EQ(1, gamepad_->set_zero_vibration_count_);
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             first_callback_result_);
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
 }
 
 TEST_F(AbstractHapticGamepadTest, UnsupportedEffectTypeTest) {
@@ -163,11 +162,13 @@ TEST_F(AbstractHapticGamepadTest, UnsupportedEffectTypeTest) {
 
   mojom::GamepadHapticEffectType unsupported_effect_type =
       static_cast<mojom::GamepadHapticEffectType>(123);
-  PostPlayEffect(unsupported_effect_type, 1.0, 0.0,
+  PostPlayEffect(unsupported_effect_type, kDurationMillis,
+                 kZeroStartDelayMillis,
                  base::BindOnce(&AbstractHapticGamepadTest::FirstCallback,
                                 base::Unretained(this)));
 
-  task_runner_->RunUntilIdle();
+  // Run the queued task to start the effect.
+  scoped_task_environment_.RunUntilIdle();
 
   // An unsupported effect should return a "not-supported" result without
   // calling SetVibration or SetZeroVibration.
@@ -176,6 +177,7 @@ TEST_F(AbstractHapticGamepadTest, UnsupportedEffectTypeTest) {
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported,
             first_callback_result_);
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
 }
 
 TEST_F(AbstractHapticGamepadTest, StartDelayTest) {
@@ -183,39 +185,38 @@ TEST_F(AbstractHapticGamepadTest, StartDelayTest) {
   EXPECT_EQ(0, gamepad_->set_zero_vibration_count_);
   EXPECT_EQ(0, first_callback_count_);
 
-  // This test establishes the behavior for the start_delay parameter when
-  // PlayEffect is called without preempting an existing effect.
+  // Issue PlayEffect with non-zero |start_delay|.
   PostPlayEffect(
-      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble, 1.0,
-      0.0,
+      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble,
+      kDurationMillis, kNonZeroStartDelayMillis,
       base::BindOnce(&AbstractHapticGamepadTest::FirstCallback,
                      base::Unretained(this)));
 
-  task_runner_->RunUntilIdle();
+  // Run the queued task to start the effect.
+  scoped_task_environment_.RunUntilIdle();
 
-  // With zero start_delay, SetVibration and SetZeroVibration should be called
-  // exactly once each, to start and stop the effect.
+  EXPECT_EQ(0, gamepad_->set_vibration_count_);
+  EXPECT_EQ(1, gamepad_->set_zero_vibration_count_);
+  EXPECT_EQ(0, first_callback_count_);
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+
+  // Start vibration.
+  scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
+
+  EXPECT_EQ(1, gamepad_->set_vibration_count_);
+  EXPECT_EQ(1, gamepad_->set_zero_vibration_count_);
+  EXPECT_EQ(0, first_callback_count_);
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+
+  // Finish the effect.
+  scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
+
   EXPECT_EQ(1, gamepad_->set_vibration_count_);
   EXPECT_EQ(1, gamepad_->set_zero_vibration_count_);
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             first_callback_result_);
-
-  PostPlayEffect(
-      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble, 1.0,
-      1.0,
-      base::BindOnce(&AbstractHapticGamepadTest::FirstCallback,
-                     base::Unretained(this)));
-
-  task_runner_->RunUntilIdle();
-
-  // With non-zero start_delay, we still SetVibration and SetZeroVibration to be
-  // called exactly once each.
-  EXPECT_EQ(2, gamepad_->set_vibration_count_);
-  EXPECT_EQ(2, gamepad_->set_zero_vibration_count_);
-  EXPECT_EQ(2, first_callback_count_);
-  EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
-            first_callback_result_);
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
 }
 
 TEST_F(AbstractHapticGamepadTest, ZeroStartDelayPreemptionTest) {
@@ -226,40 +227,43 @@ TEST_F(AbstractHapticGamepadTest, ZeroStartDelayPreemptionTest) {
 
   // Start an ongoing effect. We'll preempt this one with another effect.
   PostPlayEffect(
-      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble, 1.0,
-      0.0,
+      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble,
+      kDurationMillis, kZeroStartDelayMillis,
       base::BindOnce(&AbstractHapticGamepadTest::FirstCallback,
                      base::Unretained(this)));
 
-  // Start a second effect with zero start_delay. This should cause the first
+  // Start a second effect with zero |start_delay|. This should cause the first
   // effect to be preempted before it calls SetVibration.
   PostPlayEffect(
-      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble, 1.0,
-      0.0,
+      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble,
+      kDurationMillis, kZeroStartDelayMillis,
       base::BindOnce(&AbstractHapticGamepadTest::SecondCallback,
                      base::Unretained(this)));
 
-  // Execute the pending tasks, but stop before executing any newly queued
-  // tasks.
-  task_runner_->RunPendingTasks();
+  // Run the queued task to start the effect.
+  scoped_task_environment_.RunUntilIdle();
 
   // The first effect should have already returned with a "preempted" result.
-  EXPECT_EQ(0, gamepad_->set_vibration_count_);
+  // The second effect should have started vibration.
+  EXPECT_EQ(1, gamepad_->set_vibration_count_);
   EXPECT_EQ(0, gamepad_->set_zero_vibration_count_);
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(0, second_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultPreempted,
             first_callback_result_);
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
 
-  task_runner_->RunUntilIdle();
+  // Finish the effect.
+  scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
 
   // Now the second effect should have returned with a "complete" result.
   EXPECT_EQ(1, gamepad_->set_vibration_count_);
-  EXPECT_EQ(1, gamepad_->set_zero_vibration_count_);
+  EXPECT_EQ(0, gamepad_->set_zero_vibration_count_);
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(1, second_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             second_callback_result_);
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
 }
 
 TEST_F(AbstractHapticGamepadTest, NonZeroStartDelayPreemptionTest) {
@@ -270,44 +274,54 @@ TEST_F(AbstractHapticGamepadTest, NonZeroStartDelayPreemptionTest) {
 
   // Start an ongoing effect. We'll preempt this one with another effect.
   PostPlayEffect(
-      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble, 1.0,
-      0.0,
+      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble,
+      kDurationMillis, kZeroStartDelayMillis,
       base::BindOnce(&AbstractHapticGamepadTest::FirstCallback,
                      base::Unretained(this)));
 
-  // Start a second effect with non-zero start_delay. This should cause the
+  // Start a second effect with non-zero |start_delay|. This should cause the
   // first effect to be preempted before it calls SetVibration.
   PostPlayEffect(
-      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble, 1.0,
-      1.0,
+      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble,
+      kDurationMillis, kNonZeroStartDelayMillis,
       base::BindOnce(&AbstractHapticGamepadTest::SecondCallback,
                      base::Unretained(this)));
 
-  // Execute the pending tasks, but stop before executing any newly queued
-  // tasks.
-  task_runner_->RunPendingTasks();
+  // Run the queued tasks.
+  scoped_task_environment_.RunUntilIdle();
 
   // The first effect should have already returned with a "preempted" result.
-  // Because the second effect has a non-zero start_delay and is preempting
-  // another effect, it will call SetZeroVibration to ensure no vibration
-  // occurs during its start_delay period.
+  // Because the second effect has a non-zero |start_delay|, it will call
+  // SetZeroVibration to ensure no vibration occurs during the delay.
   EXPECT_EQ(0, gamepad_->set_vibration_count_);
   EXPECT_EQ(1, gamepad_->set_zero_vibration_count_);
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(0, second_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultPreempted,
             first_callback_result_);
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
 
-  task_runner_->RunUntilIdle();
+  // Start vibration.
+  scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
 
   EXPECT_EQ(1, gamepad_->set_vibration_count_);
-  EXPECT_EQ(2, gamepad_->set_zero_vibration_count_);
+  EXPECT_EQ(1, gamepad_->set_zero_vibration_count_);
+  EXPECT_EQ(1, first_callback_count_);
+  EXPECT_EQ(0, second_callback_count_);
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+
+  // Finish the effect.
+  scoped_task_environment_.FastForwardBy(kPendingTaskDuration);
+
+  EXPECT_EQ(1, gamepad_->set_vibration_count_);
+  EXPECT_EQ(1, gamepad_->set_zero_vibration_count_);
   EXPECT_EQ(1, first_callback_count_);
   EXPECT_EQ(1, second_callback_count_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultPreempted,
             first_callback_result_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             second_callback_result_);
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
 }
 
 TEST_F(AbstractHapticGamepadTest, ResetVibrationPreemptionTest) {
@@ -318,8 +332,8 @@ TEST_F(AbstractHapticGamepadTest, ResetVibrationPreemptionTest) {
 
   // Start an ongoing effect. We'll preempt it with a reset.
   PostPlayEffect(
-      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble, 1.0,
-      0.0,
+      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble,
+      kDurationMillis, kZeroStartDelayMillis,
       base::BindOnce(&AbstractHapticGamepadTest::FirstCallback,
                      base::Unretained(this)));
 
@@ -328,7 +342,7 @@ TEST_F(AbstractHapticGamepadTest, ResetVibrationPreemptionTest) {
   PostResetVibration(base::BindOnce(&AbstractHapticGamepadTest::SecondCallback,
                                     base::Unretained(this)));
 
-  task_runner_->RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(0, gamepad_->set_vibration_count_);
   EXPECT_EQ(1, gamepad_->set_zero_vibration_count_);
@@ -338,6 +352,7 @@ TEST_F(AbstractHapticGamepadTest, ResetVibrationPreemptionTest) {
             first_callback_result_);
   EXPECT_EQ(mojom::GamepadHapticsResult::GamepadHapticsResultComplete,
             second_callback_result_);
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
 }
 
 }  // namespace

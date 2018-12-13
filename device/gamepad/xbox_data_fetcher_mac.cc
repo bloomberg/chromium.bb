@@ -66,28 +66,33 @@ void XboxDataFetcher::PlayEffect(
     int source_id,
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
-    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   XboxControllerMac* controller = ControllerForLocation(source_id);
   if (!controller) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
-  controller->PlayEffect(type, std::move(params), std::move(callback));
+  controller->PlayEffect(type, std::move(params), std::move(callback),
+                         std::move(callback_runner));
 }
 
 void XboxDataFetcher::ResetVibration(
     int source_id,
-    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   XboxControllerMac* controller = ControllerForLocation(source_id);
   if (!controller) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
-  controller->ResetVibration(std::move(callback));
+  controller->ResetVibration(std::move(callback), std::move(callback_runner));
 }
 
 void XboxDataFetcher::OnAddedToProvider() {

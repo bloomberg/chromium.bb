@@ -38,13 +38,14 @@
 
 namespace blink {
 
-class Gamepad final : public ScriptWrappable {
+class Gamepad final : public ScriptWrappable, public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(Gamepad);
 
  public:
-  static Gamepad* Create() { return MakeGarbageCollected<Gamepad>(); }
+  static Gamepad* Create(ExecutionContext* context);
 
-  Gamepad();
+  explicit Gamepad(ExecutionContext*);
   ~Gamepad() override;
 
   typedef Vector<double> DoubleVector;
