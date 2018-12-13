@@ -1493,7 +1493,13 @@ error::Error RasterDecoderImpl::HandleBeginQueryEXT(
 
   switch (target) {
     case GL_COMMANDS_ISSUED_CHROMIUM:
+      break;
     case GL_COMMANDS_COMPLETED_CHROMIUM:
+      if (!features().chromium_sync_query) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginQueryEXT",
+                           "not enabled for commands completed queries");
+        return error::kNoError;
+      }
       break;
     default:
       LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glBeginQueryEXT",
