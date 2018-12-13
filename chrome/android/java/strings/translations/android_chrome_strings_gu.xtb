@@ -1032,7 +1032,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ટેબ</translation>
 <translation id="885701979325669005">સ્ટોરેજ</translation>
 <translation id="8901170036886848654">કોઇ બુકમાર્ક્સ મળ્યાં નથી</translation>
-<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d ખુલ્લો ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}one{%1$d ખુલ્લો ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}other{%1$d ખુલ્લા ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}}</translation>
+<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}one{%1$d ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}other{%1$d ખુલ્લી ટૅબ, ટૅબને સ્વિચ કરવા માટે ટૅપ કરો}}</translation>
 <translation id="8905378131945614900">VR મૉડ્યૂલ ઇન્સ્ટૉલ કરવું નિષ્ફ્ળ રહ્યું</translation>
 <translation id="8909135823018751308">શેર કરો…</translation>
 <translation id="8912362522468806198">Google એકાઉન્ટ</translation>
@@ -1060,7 +1060,7 @@
 <translation id="9070377983101773829">વૉઇસ શોધ પ્રારંભ કરો</translation>
 <translation id="9071742570345586758">વર્ચ્યુઅલ રિયાલિટી કન્ટેન્ટ જોવા માટે, Google VR સેવાઓ ઇન્સ્ટૉલ કરો</translation>
 <translation id="9074336505530349563">Google દ્વારા સૂચવેલ વ્યક્તિગત કરેલ કન્ટેન્ટ મેળવવા માટે, સાઇન ઇન કરો અને સિંક કરવાનું ચાલુ કરો</translation>
-<translation id="9079796397681444569">તમારી સ્ક્રીનમાં નીચે આવેલા બટનનો ઉપયોગ કરીને Chromeમાં ગમે-ત્યાં સહેલાઈથી નૅવિગેટ કરો</translation>
+<translation id="9079796397681444569">તમારી સ્ક્રીનમાં નીચે આવેલા બટનનો ઉપયોગ કરીને Chromeમાં ગમે ત્યાં સહેલાઈથી નૅવિગેટ કરો</translation>
 <translation id="9080642952018487277">ખાનગી મોડમાં પ્રવેશ કરો</translation>
 <translation id="9086455579313502267">નેટવર્ક ઍક્સેસ કરવામાં અક્ષમ છે</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB ડાઉનલોડ કરેલ</translation>

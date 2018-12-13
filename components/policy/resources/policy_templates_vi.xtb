@@ -122,7 +122,7 @@
 <translation id="1231349879329465225">Cho phép bật hoặc tắt tính năng Chuyển đổi nhanh.
       Tính năng này áp dụng cho tất cả người dùng và tất cả giao diện trên thiết bị.
       Để sử dụng tính năng Chuyển đổi nhanh, bạn cần phải bật cả tùy chọn cài đặt này và thuộc tính ONC trên mỗi mạng.
-      Sau khi bạn đặt, tính năng Chuyển đổi nhanh sẽ tiếp tục cho đến khi bạn thay đổi chính sách này thành tắt tính năng Chuyển đổi nhanh.
+      Sau khi bạn đặt, tính năng Chuyển đổi nhanh sẽ tiếp tục cho đến khi bạn thay đổi chính sách thành tắt tính năng này.
 
       Nếu không đặt hoặc đặt chính sách này thành false, bạn không thể sử dụng tính năng Chuyển đổi nhanh.
       Nếu đặt chính sách này thành true, bạn có thể sử dụng tính năng Chuyển đổi nhanh khi điểm truy cập không dây hỗ trợ tính năng này.</translation>

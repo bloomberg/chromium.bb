@@ -1032,7 +1032,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8853345339104747198">Tab <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Bộ nhớ</translation>
 <translation id="8901170036886848654">Không tìm thấy dấu trang</translation>
-<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d tab đang mở, hãy nhấn để chuyển đổi các tab}other{%1$d tab đang mở, hãy nhấn để chuyển đổi các tab}}</translation>
+<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d tab đang mở, nhấn để chuyển đổi các tab}other{%1$d tab đang mở, nhấn để chuyển đổi các tab}}</translation>
 <translation id="8905378131945614900">Không cài đặt được mô-đun thực tế ảo</translation>
 <translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>
@@ -1041,7 +1041,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Mở trong cửa sổ khác</translation>
 <translation id="8951232171465285730">Chrome đã tiết kiệm <ph name="MEGABYTES" /> MB cho bạn</translation>
-<translation id="8958424370300090006">Chặn cookie cho một trang web cụ thể.</translation>
+<translation id="8958424370300090006">Chặn cookie của một trang web cụ thể.</translation>
 <translation id="8959122750345127698">Không thể tiếp cận điều hướng: <ph name="URL" /></translation>
 <translation id="8965591936373831584">đang chờ xử lý</translation>
 <translation id="8972098258593396643">Tải xuống thư mục mặc định?</translation>
@@ -1060,7 +1060,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9070377983101773829">Bắt đầu tìm kiếm bằng giọng nói</translation>
 <translation id="9071742570345586758">Để xem nội dung thực tế ảo, hãy cài đặt Dịch vụ VR của Google</translation>
 <translation id="9074336505530349563">Để nhận nội dung do Google đề xuất riêng cho bạn, hãy đăng nhập và bật tính năng đồng bộ hóa</translation>
-<translation id="9079796397681444569">Dễ dàng di chuyển ở bất cứ đâu trong Chrome bằng các nút ở cuối màn hình</translation>
+<translation id="9079796397681444569">Dễ dàng di chuyển đến mọi nơi trong Chrome bằng các nút ở cuối màn hình</translation>
 <translation id="9080642952018487277">Vào chế độ riêng tư</translation>
 <translation id="9086455579313502267">Không thể truy cập mạng</translation>
 <translation id="9099018167121903954">Đã tải xuống <ph name="KILOBYTES" /> KB</translation>

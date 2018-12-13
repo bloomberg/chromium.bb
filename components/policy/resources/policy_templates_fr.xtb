@@ -125,7 +125,7 @@
       La transition rapide reste active jusqu'à ce que vous la désactiviez en modifiant la règle.
 
       Si cette règle n'est pas configurée, la transition rapide n'est pas utilisée.
-      Si elle est définie sur "True", la transition rapide est utilisée lorsque le point d'accès sans fil est compatible.</translation>
+      Si elle est définie sur "True", la transition rapide est utilisée lorsque le point d'accès sans fil accepte cette fonctionnalité.</translation>
 <translation id="1243570869342663665">Contrôler le filtrage SafeSites des contenus réservés aux adultes.</translation>
 <translation id="1257550411839719984">Définir le répertoire de téléchargement par défaut</translation>
 <translation id="1265053460044691532">Limiter la durée pendant laquelle un utilisateur authentifié via SAML peut se connecter hors connexion</translation>

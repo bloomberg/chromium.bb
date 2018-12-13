@@ -1321,7 +1321,7 @@
 <translation id="2986010903908656993">MIDI ডিভাইসগুলির সম্পূর্ণ নিয়ন্ত্রণ থেকে এই পৃষ্ঠাটিকে অবরুদ্ধ করা হয়েছে৷</translation>
 <translation id="2989474696604907455">সংযুক্ত নয়</translation>
 <translation id="2989786307324390836">DER-এনকোডেড বাইনারি, একক শংসাপত্র</translation>
-<translation id="2992931425024192067">সমস্ত বিজ্ঞপ্তির কন্টেন্ট দেখান</translation>
+<translation id="2992931425024192067">সব বিজ্ঞপ্তি দেখতে চাই</translation>
 <translation id="2993517869960930405">অ্যাপ্লিকেশানের তথ্য</translation>
 <translation id="2994669386200004489"><ph name="FILE_NAME" /> ব্যাক-আপ নেওয়া যায়নি</translation>
 <translation id="299483336428448530">আপনার পিতামাতার দ্বারা এটি ইনস্টল করা হয়েছে।</translation>
@@ -3002,7 +3002,7 @@
 <translation id="5585912436068747822">ফরম্যাটিং ব্যর্থ হয়েছে</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">অ্যাপ্লিকেশানগুলি লোড হচ্ছে...</translation>
-<translation id="5592010267127539419"><ph name="URL_HOST" /> ডিভাইস যোগ করতে চায়</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> ডিভাইসের সঙ্গে পেয়ার করতে চায়</translation>
 <translation id="5592595402373377407">এখনও যথেষ্ট ডেটা উপলব্ধ নেই৷</translation>
 <translation id="5593357315997824387">আমার ফাইল সিঙ্ক করুন</translation>
 <translation id="5595152862129936745">অনেক দূরে</translation>
@@ -3036,7 +3036,7 @@
 <translation id="5627676517703583263">Chrome দিয়ে স্মার্টভাবে ব্রাউজ করুন</translation>
 <translation id="562935524653278697">আপনার প্রশাসক বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংসের সিঙ্ক করা অক্ষম করেছে।</translation>
 <translation id="5632566673632479864">আপনার <ph name="EMAIL" /> অ্যাকাউন্ট আর প্রাথমিক অ্যাকাউন্ট হিসেবে ব্যবহার করা যাবে না। যেহেতু <ph name="DOMAIN" /> আপনার এই অ্যাকাউন্ট ম্যানেজ করে তাই আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস এই ডিভাইস থেকে মুছে ফেলা হবে।</translation>
-<translation id="5632592977009207922">ডাউনলোড করা হচ্ছে <ph name="PERCENT_REMAINING" />% বাকি আছে</translation>
+<translation id="5632592977009207922">ডাউনলোড হচ্ছে, <ph name="PERCENT_REMAINING" />% বাকি আছে</translation>
 <translation id="563535393368633106">অ্যাক্সেস করার আগে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> ব্যবহার করতে গেলে আপনাকে প্রথমে <ph name="LINK_START" />নেটওয়ার্কের সাইন-ইন পৃষ্ঠায় যেতে হবে<ph name="LINK_END" />, যা কয়েক সেকেন্ডের মধ্যে স্বয়ংক্রিয়ভাবে খুলবে৷ যদি এমন না হয়, তাহলে নেটওয়ার্কটি ব্যবহার করা যেতে পারে৷</translation>
 <translation id="5637476008227280525">মোবাইল ডেটা সক্ষম করুন</translation>
@@ -4337,7 +4337,7 @@
 <translation id="763632859238619983">কোনও সাইটকে পেমেন্ট হ্যান্ডলার ইনস্টল করার অনুমতি দেবেন না</translation>
 <translation id="7639178625568735185">বুঝেছি!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> স্বয়ংক্রিয়ভাবে আপনার সংরক্ষণ করা পাসওয়ার্ড দিয়ে উপযুক্ত সাইটগুলিতে আপনাকে প্রবেশ করায়।</translation>
-<translation id="7642778300616172920">সংবেদনশীল কন্টেন্ট লুকান</translation>
+<translation id="7642778300616172920">ব্যক্তিগত কোনও কিছু দেখতে চাই না</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (মালিক)</translation>
 <translation id="7647403192093989392">সাম্প্রতিক কোনও অ্যাক্টিভিটি নেই</translation>
 <translation id="7648992873808071793">এই ডিভাইসে ফাইলগুলি জমা করুন</translation>
@@ -4523,7 +4523,7 @@
 <translation id="7885253890047913815">সাম্প্রতিক গন্তব্যস্থল</translation>
 <translation id="7887334752153342268">ডুপ্লিকেট</translation>
 <translation id="7887864092952184874">ব্লুটুথ মাউস যুক্ত হয়েছে</translation>
-<translation id="7889565820482017512">ডিসপ্লের মাপ</translation>
+<translation id="7889565820482017512">ডিসপ্লে সাইজ</translation>
 <translation id="7889966925761734854">খুঁজে নিন</translation>
 <translation id="7893008570150657497">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্য মিডিয়াতে অ্যাক্সেস করুন</translation>
 <translation id="7893153962594818789"><ph name="DEVICE_TYPE" /> এ ব্লুটুথ বন্ধ করা আছে৷ আপনার পাসওয়ার্ড লিখুন এবং ব্লুটুথ চালু করুন৷</translation>
@@ -4557,7 +4557,7 @@
 <translation id="7934414805353235750"><ph name="URL" /> সুরক্ষিত কন্টেন্ট চালাতে চায়। আপনার ডিভাইসের পরিচয় Google দ্বারা যাচাই করা হবে।</translation>
 <translation id="793531125873261495">ভার্চুয়াল মেশিন ডাউনলোড করার সময় সমস্যা হয়েছে। আবার চেষ্টা করুন।</translation>
 <translation id="7938594894617528435">বর্তমানে অফলাইন</translation>
-<translation id="7939062555109487992">অগ্রণী বিকল্পসমূহ</translation>
+<translation id="7939062555109487992">উন্নত বিকল্প</translation>
 <translation id="7939412583708276221">যে কোনও অবস্থাতেই রাখুন</translation>
 <translation id="7939997691108949385">পরিচালক <ph name="MANAGEMENT_URL" /> এ এই তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য বিধিনিষেধ এবং সেটিংস কনফিগার করতে সক্ষম হবেন৷</translation>
 <translation id="7943837619101191061">লোকেশন যোগ করুন...</translation>
@@ -4973,7 +4973,7 @@
 <translation id="8584280235376696778">ভিডিও নতুন ট্যাবে &amp;খুলুন</translation>
 <translation id="8588866096426746242">প্রোফাইল পরিসংখ্যান দেখান</translation>
 <translation id="8590375307970699841">স্বয়ংক্রিয় আপডেটগুলো সেটআপ করুন</translation>
-<translation id="8592141010104017453">কোনও বিজ্ঞপ্তি দেখাবেন না</translation>
+<translation id="8592141010104017453">কোনও বিজ্ঞপ্তি দেখতে চাই না</translation>
 <translation id="8594908476761052472">ভিডিও ক্যাপচার করুন</translation>
 <translation id="8596540852772265699">নিজের পছন্দমত ফাইলগুলি</translation>
 <translation id="8597845839771543242">প্রপার্টি ফর্ম্যাট:</translation>
@@ -5362,7 +5362,7 @@
 <translation id="9188441292293901223">এই <ph name="DEVICE_TYPE" /> আনলক করতে দয়া করে আপনার ফোনকে একটি আরও নতুন সংস্করণের Android এ আপডেট করুন৷</translation>
 <translation id="9190063653747922532">L2TP/IPসেকে + পূর্বে-শেয়ার করা কী</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> এ খুঁজুন</translation>
-<translation id="9201220332032049474">স্ক্রিন লক এর বিকল্পগুলি</translation>
+<translation id="9201220332032049474">স্ক্রিন লক-এর বিকল্পগুলি</translation>
 <translation id="9203398526606335860">&amp;প্রোফাইলিং সক্ষমিত</translation>
 <translation id="9203478404496196495">ট্যাব সশব্দ করুন</translation>
 <translation id="9203904171912129171">একটি ডিভাইস বেছে নিন</translation>

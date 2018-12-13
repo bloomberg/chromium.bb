@@ -2071,7 +2071,7 @@
 <translation id="4104163789986725820">X&amp;uất...</translation>
 <translation id="4107048419833779140">Nhận dạng và ngắt kết nối thiết bị lưu trữ</translation>
 <translation id="4109135793348361820">Di chuyển cửa sổ đến <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
-<translation id="4110490973560452005">Quá trình tải xuống hoàn tất: <ph name="FILE_NAME" />. Nhấn tổ hợp phím Shift + F6 để chuyển tới khu vực thanh Tài nguyên đã tải xuống.</translation>
+<translation id="4110490973560452005">Đã tải xuống xong: <ph name="FILE_NAME" />. Nhấn tổ hợp phím Shift + F6 để chuyển tới khu vực thanh Tài nguyên đã tải xuống.</translation>
 <translation id="4110895898888439383">Duyệt web trong chế độ tương phản cao</translation>
 <translation id="4115002065223188701">Mạng nằm ngoài phạm vi</translation>
 <translation id="4115080753528843955">Một số dịch vụ nội dung sử dụng số nhận dạng duy nhất nhằm mục đích cho phép truy cập vào nội dung được bảo vệ</translation>
@@ -2328,7 +2328,7 @@
 <translation id="4568213207643490790">Rất tiếc, không được phép đăng nhập tài khoản Google trên thiết bị này.</translation>
 <translation id="4568854179928172494">Thời gian sửa đổi</translation>
 <translation id="4569747168316751899">Khi không hoạt động</translation>
-<translation id="4570387585180509432">Địa chỉ, số điện thoại, v.v.</translation>
+<translation id="4570387585180509432">Địa chỉ, số điện thoại và nhiều thông tin khác</translation>
 <translation id="4572659312570518089">Đã hủy xác thực trong khi kết nối với "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Tệp <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Thêm...</translation>
@@ -4258,7 +4258,7 @@
 <translation id="7497215489070763236">Chứng chỉ CA máy chủ</translation>
 <translation id="7497981768003291373">Bạn không ghi nhật ký văn bản WebRTC nào gần đây.</translation>
 <translation id="7502658306369382406">Địa chỉ IPv6</translation>
-<translation id="7503127198245469314">Tháo bộ tai nghe để chặn hoặc cho phép trên màn hình nền</translation>
+<translation id="7503127198245469314">Tháo thiết bị đội đầu để chặn hoặc cho phép trên màn hình nền</translation>
 <translation id="7503191893372251637">Loại Chứng chỉ Netscape</translation>
 <translation id="7503821294401948377">Không thể tải biểu tượng '<ph name="ICON" />' cho tác vụ của trình duyệt.</translation>
 <translation id="750509436279396091">Mở thư mục tải xuống</translation>

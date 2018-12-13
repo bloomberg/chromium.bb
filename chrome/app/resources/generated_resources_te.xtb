@@ -369,7 +369,7 @@
 <translation id="152234381334907219">ఎప్పటికి సేవ్ చెయ్యబడవు</translation>
 <translation id="1524430321211440688">కీబోర్డ్</translation>
 <translation id="1524563461097350801">వద్దు, ధన్యవాదాలు</translation>
-<translation id="1525740877599838384">స్థానాన్ని గుర్తించడానికి Wi-Fiని మాత్రమే ఉపయోగించండి</translation>
+<translation id="1525740877599838384">స్థానాన్ని గుర్తించడానికి Wi-Fiని మాత్రమే ఉపయోగించు</translation>
 <translation id="1526560967942511387">శీర్షికలేని పత్రం</translation>
 <translation id="1529891865407786369">పవర్ సోర్స్</translation>
 <translation id="1529899284660134226">షేర్ చేసిన ఫైల్‌లు &amp; ఫోల్డర్‌లను నిర్వహించండి</translation>
@@ -398,7 +398,7 @@
 <translation id="1567993339577891801">JavaScript కన్సోల్</translation>
 <translation id="1568067597247500137">సైట్‌ని మ్యూట్ చేయండి</translation>
 <translation id="1568323446248056064">ప్రదర్శన పరికరం సెట్టింగ్‌లను తెరవండి</translation>
-<translation id="1572266655485775982">Wi-Fiను ప్రారంభించు</translation>
+<translation id="1572266655485775982">Wi-Fiని ప్రారంభించు</translation>
 <translation id="1572585716423026576">వాల్‌పేపర్‌గా సెట్ చేయి</translation>
 <translation id="1572876035008611720">మీ ఇమెయిల్‌ను నమోదు చేయండి</translation>
 <translation id="1573150740912592860">మీ ప్రోగ్రెస్‌ను సేవ్ చేసుకోండి</translation>
@@ -456,7 +456,7 @@
     నిర్దిష్ట వెబ్‌సైట్‌లను <ph name="BEGIN_BOLD" />అనుమతించడం లేదా నిషేధించడం<ph name="END_BOLD" />,
     పర్యవేక్షించబడే వినియోగదారు సందర్శించిన వెబ్‌సైట్‌లను <ph name="BEGIN_BOLD" />సమీక్షించడం<ph name="END_BOLD" /> మరియు
     ఇతర సెట్టింగ్‌లను <ph name="BEGIN_BOLD" />నిర్వహించడం<ph name="END_BOLD" />.</translation>
-<translation id="1648528859488547844">స్థానాన్ని గుర్తించడానికి Wi‑Fi లేదా మొబైల్ నెట్‌వర్క్‌లను ఉపయోగించండి</translation>
+<translation id="1648528859488547844">స్థానాన్ని గుర్తించడానికి Wi‑Fi లేదా మొబైల్ నెట్‌వర్క్‌లను ఉపయోగించు</translation>
 <translation id="1648943974594387137">సైన్-ఇన్ వివరాలు పాతవి</translation>
 <translation id="1650371550981945235">ఇన్‌పుట్ ఎంపికలను చూపు</translation>
 <translation id="1651008383952180276">మీరు తప్పనిసరిగా ఒకే రహస్య పదబంధాన్ని రెండుసార్లు నమోదు చేయాలి</translation>
@@ -1107,7 +1107,7 @@
 <translation id="2654166010170466751">చెల్లింపు హ్యాండ్లర్‌లను ఇన్‌స్టాల్ చేయడానికి సైట్‌లను అనుమతించండి</translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />పరికరాన్ని బట్టి ఫీచర్‌లు మారతాయి</translation>
 <translation id="2660779039299703961">ఈవెంట్</translation>
-<translation id="266079277508604648">ప్రింటర్‌కి కనెక్ట్ చేయడం సాధ్యం కాదు. ప్రింటర్‌ని ఆన్ చేసినట్లు, దానిని Wi-Fi లేదా USB ద్వారా మీ Chromebookకి కనెక్ట్ చేసినట్లు నిర్ధారించుకోండి.</translation>
+<translation id="266079277508604648">ప్రింటర్‌కి కనెక్ట్ చేయడం సాధ్యం కాలేదు. ప్రింటర్‌ని ఆన్ చేసినట్లు, దానిని Wi-Fi లేదా USB ద్వారా మీ Chromebookకి కనెక్ట్ చేసినట్లు నిర్ధారించుకోండి.</translation>
 <translation id="2661146741306740526">16x9</translation>
 <translation id="2662876636500006917">Chrome Web Store</translation>
 <translation id="2663302507110284145">భాష</translation>
@@ -1384,7 +1384,7 @@
 <translation id="3075874217500066906">పవర్‌వాష్ ప్రక్రియను మొదలుపెట్టడానికి పునఃప్రారంభించడం అవసరం. పునఃప్రారంభించిన తర్వాత మీరు కొనసాగించాలనుకుంటున్నారో లేదో నిర్ధారించమని మిమ్మల్ని అడగడం జరుగుతుంది.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" />తో భాగస్వామ్యం చేయండి</translation>
-<translation id="3081564097391116951">ఈథర్‌నెట్ లేదా Wi-Fiలో మాత్రమే స్వయంచాలక నవీకరణలు జరుగుతాయి.</translation>
+<translation id="3081564097391116951">ఈథర్‌నెట్ లేదా Wi-Fiలో మాత్రమే ఆటోమేటిక్ అప్‌డేట్‌లు జరుగుతాయి.</translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE" /> - <ph name="PAGE_URL" /></translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">ఈ ట్యాబ్ మీ కెమెరా లేదా మైక్రోఫోన్‌ను ఉపయోగిస్తోంది.</translation>
@@ -1504,7 +1504,7 @@
 <translation id="3282568296779691940">Chromeకు సైన్ ఇన్ చేయండి</translation>
 <translation id="3285322247471302225">క్రొత్త &amp;టాబ్</translation>
 <translation id="3288047731229977326">డెవలపర్ మోడ్‌లో అమలవుతున్న ఎక్స్‌టెన్షన్‌లు మీ కంప్యూటర్‌కు హాని కలిగించవచ్చు. మీరు డెవలపర్ కాకపోతే, సురక్షితంగా ఉంచడానికి డెవలపర్ మోడ్‌లో అమలవుతున్న ఈ ఎక్స్‌టెన్షన్‌లను నిలిపివేయాలి.</translation>
-<translation id="3289856944988573801">నవీకరణల కోసం తనిఖీ చేయడానికి, దయచేసి ఈథర్‌నెట్ లేదా Wi-Fiని ఉపయోగించండి.</translation>
+<translation id="3289856944988573801">అప్‌డేట్‌ల కోసం తనిఖీ చేయడానికి, దయచేసి ఈథర్‌నెట్ లేదా Wi-Fiని ఉపయోగించండి.</translation>
 <translation id="32939749466444286">Linux కంటైనర్ ప్రారంభించబడలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="3294437725009624529">అతిథి</translation>
 <translation id="329703603001918157">షార్ట్‌కట్‌ని సవరించడం సాధ్యపడదు</translation>
@@ -2155,7 +2155,7 @@
 <translation id="4258348331913189841">ఫైల్ సిస్టమ్‌లు</translation>
 <translation id="4261901459838235729">Google ప్రెజెంటేషన్</translation>
 <translation id="4263757076580287579">ప్రింటర్ నమోదు రద్దు చేయబడింది.</translation>
-<translation id="426564820080660648">నవీకరణల కోసం తనిఖీ చేయడానికి, దయచేసి ఈథర్‌నెట్, Wi-Fi లేదా మొబైల్ డేటాను ఉపయోగించండి.</translation>
+<translation id="426564820080660648">అప్‌డేట్‌ల కోసం తనిఖీ చేయడానికి, దయచేసి ఈథర్‌నెట్, Wi-Fi లేదా మొబైల్ డేటాను ఉపయోగించండి.</translation>
 <translation id="4268025649754414643">కీ గుప్తీకరణ</translation>
 <translation id="4270393598798225102">సంస్కరణ <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">సరిపోలికలు లేవు</translation>
@@ -2256,7 +2256,7 @@
 <translation id="4444304522807523469">USB ద్వారా లేదా స్థానిక నెట్‌వర్క్‌లో జోడించిన పత్రం స్కానర్‌లను ప్రాప్యత చేయండి</translation>
 <translation id="4444512841222467874">స్థలం ఖాళీ చేయకపోతే, వినియోగదారులు మరియు డేటా స్వయంచాలకంగా తీసివేయబడవచ్చు.</translation>
 <translation id="4446933390699670756">ప్రతిబింబితం</translation>
-<translation id="4448844063988177157">Wi-Fi నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
+<translation id="4448844063988177157">Wi-Fi నెట్‌వర్క్‌ల కోసం వెతుకుతోంది...</translation>
 <translation id="4449996769074858870">ఈ ట్యాబ్ ఆడియో‌ను ప్లే చేస్తోంది.</translation>
 <translation id="4450974146388585462">విశ్లేషించు</translation>
 <translation id="4451757071857432900">అనుచితమైన లేదా తప్పుదారి పట్టించే ప్రకటనలను చూపించే సైట్‌లలో బ్లాక్ చేయబడింది (సిఫార్సు చేయబడింది)</translation>
@@ -2345,7 +2345,7 @@
 <translation id="4595560905247879544">అనువర్తనాలు మరియు పొడిగింపులను నిర్వాహకుడు (<ph name="CUSTODIAN_NAME" />) మాత్రమే సవరించగలరు.</translation>
 <translation id="4596295440756783523">మీకు ఫైల్‌లో ఈ సర్వర్‌లను గుర్తించే ప్రమాణపత్రాలు ఉన్నాయి</translation>
 <translation id="4598556348158889687">నిల్వ నిర్వహణ</translation>
-<translation id="4598776695426288251">బహుళ డివైజ్‌ల ద్వారా Wi-Fi అందుబాటులో ఉంది</translation>
+<translation id="4598776695426288251">బహుళ పరికరాల ద్వారా Wi-Fi అందుబాటులో ఉంది</translation>
 <translation id="4602466770786743961">మీ కెమెరా మరియు మైక్రోఫోన్‌ను ప్రాప్యత చేయడానికి <ph name="HOST" />ను ఎల్లప్పుడూ అనుమతించండి</translation>
 <translation id="4608500690299898628">&amp;కనుగొను...</translation>
 <translation id="4608520674724523647">విజయవంతమైన నమోదు ఉదాహరణ</translation>

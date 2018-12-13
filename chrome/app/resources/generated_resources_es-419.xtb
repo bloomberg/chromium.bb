@@ -3037,7 +3037,7 @@
 <translation id="5627676517703583263">Navega de forma inteligente con Chrome</translation>
 <translation id="562935524653278697">Tu administrador inhabilitó la sincronización de tus favoritos, historial, contraseñas y otras opciones de configuración.</translation>
 <translation id="5632566673632479864">Ya no es posible usar tu cuenta <ph name="EMAIL" /> como la principal. Como <ph name="DOMAIN" /> administra esta cuenta, se borrarán tus favoritos, historial, contraseñas y otras opciones de configuración de este dispositivo.</translation>
-<translation id="5632592977009207922">Descargando, falta <ph name="PERCENT_REMAINING" />%</translation>
+<translation id="5632592977009207922">Descargando. Falta <ph name="PERCENT_REMAINING" />%</translation>
 <translation id="563535393368633106">Preguntar antes de acceder (recomendado)</translation>
 <translation id="5636996382092289526">Para utilizar la red <ph name="NETWORK_ID" />, es posible que primero debas <ph name="LINK_START" />ingresar a la página de acceso a la red<ph name="LINK_END" />, que se abrirá de forma automática en unos segundos. Si no se abre, no podrás utilizar la red.</translation>
 <translation id="5637476008227280525">Habilitar o inhabilitar datos móviles</translation>

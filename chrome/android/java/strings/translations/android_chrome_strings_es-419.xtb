@@ -344,7 +344,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="3712575778697986964">¿Deseas restablecer Ahorro de datos?</translation>
 <translation id="3714981814255182093">Abrir la barra de búsqueda</translation>
 <translation id="3716182511346448902">Chrome pausó esta página porque usa demasiada memoria.</translation>
-<translation id="3724958268700778519">El Asistente de Google ahorra tiempo ya que acelera la confirmación de la compra en el sitio web.</translation>
+<translation id="3724958268700778519">El Asistente de Google ahorra tiempo, ya que acelera la confirmación de la compra en el sitio web.</translation>
 <translation id="3739899004075612870">Agregado a favoritos en <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Otras apps: <ph name="MEGABYTES" /> megabytes</translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
@@ -1032,7 +1032,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8853345339104747198">Pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Almacenamiento</translation>
 <translation id="8901170036886848654">No se encontraron favoritos</translation>
-<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d pestaña abierta, presiona para cambiar de pestaña}other{%1$d pestañas abiertas, presiona para cambiar de pestaña}}</translation>
+<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d pestaña abierta; presiona para cambiar de pestaña}other{%1$d pestañas abiertas; presiona para cambiar de pestaña}}</translation>
 <translation id="8905378131945614900">No se pudo instalar el módulo de RV</translation>
 <translation id="8909135823018751308">Compartir…</translation>
 <translation id="8912362522468806198">Cuenta de Google</translation>

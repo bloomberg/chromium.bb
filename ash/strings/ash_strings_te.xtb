@@ -54,7 +54,7 @@
 <translation id="1812997170047690955">నా స్క్రీన్‌పై ఏమి ఉన్నాయి?</translation>
 <translation id="1823873187264960516">ఈథర్‌నెట్: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">సహాయకం (లోడ్ అవుతోంది...)</translation>
-<translation id="1850504506766569011">Wi-Fi నిలిపివేయబడింది.</translation>
+<translation id="1850504506766569011">Wi-Fi ఆఫ్ చేయబడింది.</translation>
 <translation id="1864454756846565995">USB-C పరికరం (వెనుకవైపు పోర్ట్)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు మిర్రరింగ్ చేస్తోంది</translation>
 <translation id="1885785240814121742">వేలిముద్రతో అన్‌లాక్ చేయండి</translation>
@@ -436,7 +436,7 @@
 <translation id="8433186206711564395">నెట్‌వర్క్ సెట్టింగ్‌లు</translation>
 <translation id="8433977262951327081">అరలో ఇన్‌పుట్ ఎంపికల మెను బబుల్‌ని చూపడానికి ఉపయోగించే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="8452135315243592079">SIM కార్డ్ లేదు</translation>
-<translation id="8454013096329229812">Wi-Fi ప్రారంభించబడింది.</translation>
+<translation id="8454013096329229812">Wi-Fi ఆన్ చేయబడింది.</translation>
 <translation id="847056008324733326">స్కేల్ సెట్టింగ్‌లను ప్రదర్శించండి</translation>
 <translation id="8477270416194247200">రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: మళ్లీ కనెక్ట్ చేస్తోంది...</translation>

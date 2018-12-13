@@ -125,8 +125,8 @@
       Als je Fast Transition wilt gebruiken, moeten deze instelling en de ONC-property van het netwerk zijn ingeschakeld.
       Zodra Fast Transition is ingesteld, wordt deze instelling gehandhaafd totdat het beleid wordt gewijzigd en de instelling wordt uitgeschakeld.
 
-      Als er geen beleid is ingesteld of het beleid is ingesteld op 'false', wordt Fast Transition niet gebruikt.
-      Als het beleid is ingesteld op 'true', wordt Fast Transition gebruikt wanneer dit wordt ondersteund door het draadloze toegangspunt.</translation>
+      Als er geen beleid is ingesteld of het beleid is ingesteld op 'False', wordt Fast Transition niet gebruikt.
+      Als het beleid is ingesteld op 'True', wordt Fast Transition gebruikt wanneer dit wordt ondersteund door het draadloze toegangspunt.</translation>
 <translation id="1243570869342663665">SafeSites-filters voor content voor volwassenen beheren.</translation>
 <translation id="1257550411839719984">Standaardmap voor downloads instellen</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>

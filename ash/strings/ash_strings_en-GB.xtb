@@ -443,7 +443,7 @@
 <translation id="8517041960877371778">Your <ph name="DEVICE_TYPE" /> may not charge while it is turned on.</translation>
 <translation id="8627191004499078455">Connected to <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> remaining</translation>
-<translation id="8649101189709089199">Select-to-Speak</translation>
+<translation id="8649101189709089199">Select to Speak</translation>
 <translation id="8652175077544655965">Close settings</translation>
 <translation id="8653151467777939995">Show notification settings. Notifications are on</translation>
 <translation id="8664753092453405566">Show network list. <ph name="STATE_TEXT" /></translation>
