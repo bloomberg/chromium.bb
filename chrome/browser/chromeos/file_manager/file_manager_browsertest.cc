@@ -536,7 +536,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("driveBackupPhotos").DisableDriveFs(),
         TestCase("driveBackupPhotos").EnableDriveFs(),
         TestCase("driveAvailableOfflineGearMenu").DisableDriveFs(),
-        TestCase("driveAvailableOfflineGearMenu").EnableDriveFs()));
+        TestCase("driveAvailableOfflineGearMenu").EnableDriveFs(),
+        TestCase("driveAvailableOfflineDirectoryGearMenu")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Transfer, /* transfer.js */
