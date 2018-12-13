@@ -314,18 +314,6 @@
       ]
     },
     {
-      "name": "cheza-freedreno",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "clapper",
       "configs": [
         {
@@ -1214,18 +1202,6 @@
       ]
     },
     {
-      "name": "scarlet-arcnext",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "scarlet",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "sentry",
       "configs": [
         {
@@ -1544,6 +1520,21 @@
       ]
     },
     {
+      "name": "cheza-freedreno",
+      "reference_board_name": "cheza-freedreno",
+      "arch": "ARM_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "cheza-freedreno",
+          "name": "cheza",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
       "name": "coral",
       "reference_board_name": "coral",
       "arch": "X86_INTERNAL",
@@ -1745,6 +1736,12 @@
       "builder": "RELEASE",
       "experimental": false,
       "models": [
+        {
+          "board_name": "fizz",
+          "name": "jax",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
         {
           "board_name": "fizz",
           "name": "kench",
@@ -2302,6 +2299,33 @@
         },
         {
           "board_name": "scarlet",
+          "name": "dumo",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "scarlet-arcnext",
+      "reference_board_name": "scarlet-arcnext",
+      "arch": "ARM_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "scarlet-arcnext",
+          "name": "dru",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "scarlet-arcnext",
+          "name": "druwl",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "scarlet-arcnext",
           "name": "dumo",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
