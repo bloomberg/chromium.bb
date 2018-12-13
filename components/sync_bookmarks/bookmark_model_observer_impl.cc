@@ -118,6 +118,7 @@ void BookmarkModelObserverImpl::OnWillRemoveBookmarks(
   if (!model->client()->CanSyncNode(node)) {
     return;
   }
+  bookmark_tracker_->CheckAllNodesTracked(model);
   ProcessDelete(parent, node);
   nudge_for_commit_closure_.Run();
 }
@@ -130,6 +131,7 @@ void BookmarkModelObserverImpl::BookmarkNodeRemoved(
     const std::set<GURL>& removed_urls) {
   // All the work should have already been done in OnWillRemoveBookmarks.
   DCHECK(bookmark_tracker_->GetEntityForBookmarkNode(node) == nullptr);
+  bookmark_tracker_->CheckAllNodesTracked(model);
 }
 
 void BookmarkModelObserverImpl::OnWillRemoveAllUserBookmarks(
