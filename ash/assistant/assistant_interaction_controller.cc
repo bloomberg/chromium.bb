@@ -333,9 +333,18 @@ void AssistantInteractionController::OnInteractionFinished(
   model_.SetInteractionState(InteractionState::kInactive);
   model_.SetMicState(MicState::kClosed);
 
+  // The mic timeout resolution is delivered inconsistently by LibAssistant. To
+  // account for this, we need to check if the interaction resolved normally
+  // with an empty voice query and, if so, also treat this as a mic timeout.
+  const bool is_mic_timeout =
+      resolution == AssistantInteractionResolution::kMicTimeout ||
+      (resolution == AssistantInteractionResolution::kNormal &&
+       model_.pending_query().type() == AssistantQueryType::kVoice &&
+       model_.pending_query().Empty());
+
   // If the interaction was finished due to mic timeout, we only want to clear
   // the pending query/response state for that interaction.
-  if (resolution == AssistantInteractionResolution::kMicTimeout) {
+  if (is_mic_timeout) {
     model_.ClearPendingQuery();
     model_.ClearPendingResponse();
     return;
@@ -596,20 +605,17 @@ void AssistantInteractionController::OnUiVisible(
   DCHECK_EQ(AssistantVisibility::kVisible,
             assistant_controller_->ui_controller()->model()->visibility());
 
+  const bool launch_with_mic_open =
+      Shell::Get()->voice_interaction_controller()->launch_with_mic_open();
+
   switch (entry_point) {
     case AssistantEntryPoint::kHotkey:
     case AssistantEntryPoint::kLauncherSearchBox:
     case AssistantEntryPoint::kLongPressLauncher: {
       // When the user prefers it or when we are in tablet mode, launching
       // Assistant UI will immediately start a voice interaction.
-      const bool launch_with_mic_open =
-          Shell::Get()->voice_interaction_controller()->launch_with_mic_open();
       if (launch_with_mic_open || IsTabletMode()) {
         StartVoiceInteraction();
-        // TODO(yileili): Currently WW is only allowed when user logins and the
-        // entrypoint does not automatically start a user interaction, e.g.
-        // stylus or hotword, to avoid WW interrupts the user interaction.
-        // Need further UX design if to attempt WW after the first interaction.
         should_attempt_warmer_welcome_ = false;
       }
       break;
@@ -627,6 +633,10 @@ void AssistantInteractionController::OnUiVisible(
       break;
   }
 
+  // TODO(yileili): Currently WW is only triggered when the first Assistant
+  // launch of the user session does not automatically start an interaction that
+  // would otherwise cause us to interrupt the user. Need further UX design to
+  // attempt WW after the first interaction.
   if (should_attempt_warmer_welcome_) {
     if (chromeos::assistant::features::IsWarmerWelcomeEnabled()) {
       auto* pref_service =
@@ -637,11 +647,11 @@ void AssistantInteractionController::OnUiVisible(
       auto num_warmer_welcome_triggered =
           pref_service->GetInteger(prefs::kAssistantNumWarmerWelcomeTriggered);
       if (num_warmer_welcome_triggered < kWarmerWelcomesMaxTimesTriggered) {
-        // TODO(b/120242181): If allow_tts is true, Assistant response updates
-        // mic and starts a new voice interaction automatically. A void voice
-        // input could return a communication error or empty response.
-        assistant_->StartWarmerWelcomeInteraction(num_warmer_welcome_triggered,
-                                                  /*allow_tts=*/false);
+        // If the user has opted to launch Assistant with the mic open, we can
+        // reasonably assume there is an expectation of TTS.
+        assistant_->StartWarmerWelcomeInteraction(
+            num_warmer_welcome_triggered,
+            /*allow_tts=*/launch_with_mic_open);
         pref_service->SetInteger(prefs::kAssistantNumWarmerWelcomeTriggered,
                                  ++num_warmer_welcome_triggered);
       }
