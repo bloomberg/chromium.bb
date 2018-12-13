@@ -134,6 +134,38 @@ TouchEventType StringToTouchEventType(std::string action_type) {
     return kTouchStart;
 }
 
+int StringToModifierMouseButton(std::string button_type) {
+  if (button_type == "left")
+    return 1;
+  else if (button_type == "right")
+    return 2;
+  else if (button_type == "middle")
+    return 4;
+  else if (button_type == "back")
+    return 8;
+  else if (button_type == "forward")
+    return 16;
+  else
+    return 0;
+}
+
+int MouseButtonToButtons(MouseButton button) {
+  switch (button) {
+    case kLeftMouseButton:
+      return 1;
+    case kRightMouseButton:
+      return 2;
+    case kMiddleMouseButton:
+      return 4;
+    case kBackMouseButton:
+      return 8;
+    case kForwardMouseButton:
+      return 16;
+    default:
+      return 0;
+  }
+}
+
 struct Cookie {
   Cookie(const std::string& name,
          const std::string& value,
@@ -696,9 +728,9 @@ Status ExecuteMouseMoveTo(Session* session,
   }
 
   std::list<MouseEvent> events;
-  events.push_back(
-      MouseEvent(kMovedMouseEventType, session->pressed_mouse_button,
-                 location.x, location.y, session->sticky_modifiers, 0));
+  events.push_back(MouseEvent(kMovedMouseEventType,
+                              session->pressed_mouse_button, location.x,
+                              location.y, session->sticky_modifiers, 0, 0));
   Status status =
       web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
   if (status.IsOk())
@@ -717,13 +749,12 @@ Status ExecuteMouseClick(Session* session,
     return status;
   std::list<MouseEvent> events;
   events.push_back(
-      MouseEvent(kPressedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y,
-                 session->sticky_modifiers, 1));
+      MouseEvent(kPressedMouseEventType, button, session->mouse_position.x,
+                 session->mouse_position.y, session->sticky_modifiers, 0, 1));
   events.push_back(
-      MouseEvent(kReleasedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y,
-                 session->sticky_modifiers, 1));
+      MouseEvent(kReleasedMouseEventType, button, session->mouse_position.x,
+                 session->mouse_position.y, session->sticky_modifiers,
+                 MouseButtonToButtons(button), 1));
   session->pressed_mouse_button = kNoneMouseButton;
   return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
@@ -739,9 +770,8 @@ Status ExecuteMouseButtonDown(Session* session,
     return status;
   std::list<MouseEvent> events;
   events.push_back(
-      MouseEvent(kPressedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y,
-                 session->sticky_modifiers, 1));
+      MouseEvent(kPressedMouseEventType, button, session->mouse_position.x,
+                 session->mouse_position.y, session->sticky_modifiers, 0, 1));
   session->pressed_mouse_button = button;
   return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
@@ -757,9 +787,9 @@ Status ExecuteMouseButtonUp(Session* session,
     return status;
   std::list<MouseEvent> events;
   events.push_back(
-      MouseEvent(kReleasedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y,
-                 session->sticky_modifiers, 1));
+      MouseEvent(kReleasedMouseEventType, button, session->mouse_position.x,
+                 session->mouse_position.y, session->sticky_modifiers,
+                 MouseButtonToButtons(button), 1));
   session->pressed_mouse_button = kNoneMouseButton;
   return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
@@ -775,13 +805,12 @@ Status ExecuteMouseDoubleClick(Session* session,
     return status;
   std::list<MouseEvent> events;
   events.push_back(
-      MouseEvent(kPressedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y,
-                 session->sticky_modifiers, 2));
+      MouseEvent(kPressedMouseEventType, button, session->mouse_position.x,
+                 session->mouse_position.y, session->sticky_modifiers, 0, 2));
   events.push_back(
-      MouseEvent(kReleasedMouseEventType, button,
-                 session->mouse_position.x, session->mouse_position.y,
-                 session->sticky_modifiers, 2));
+      MouseEvent(kReleasedMouseEventType, button, session->mouse_position.x,
+                 session->mouse_position.y, session->sticky_modifiers,
+                 MouseButtonToButtons(button), 2));
   session->pressed_mouse_button = kNoneMouseButton;
   return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
@@ -1225,6 +1254,8 @@ Status ExecutePerformActions(Session* session,
       double x = 0;
       double y = 0;
       bool has_touch_start = false;
+      int buttons = 0;
+      std::string button_type;
       for (size_t j = 0; j < actions->GetSize(); j++) {
         const base::DictionaryValue* mouse_action;
         actions->GetDictionary(j, &mouse_action);
@@ -1270,7 +1301,6 @@ Status ExecutePerformActions(Session* session,
         }
 
         if (pointer_type == "mouse") {
-          std::string button_type;
           int click_count = 0;
           if (action_type == "pointerDown" || action_type == "pointerUp") {
             mouse_action->GetString("button", &button_type);
@@ -1278,7 +1308,11 @@ Status ExecutePerformActions(Session* session,
           }
           mouse_events.push_back(MouseEvent(StringToMouseEventType(action_type),
                                             StringToMouseButton(button_type), x,
-                                            y, 0, click_count));
+                                            y, 0, buttons, click_count));
+          if (action_type == "pointerDown")
+            buttons |= StringToModifierMouseButton(button_type);
+          else if (action_type == "pointerUp")
+            buttons &= ~StringToModifierMouseButton(button_type);
         } else if (pointer_type == "touch") {
           if (action_type == "pointerDown")
             has_touch_start = true;

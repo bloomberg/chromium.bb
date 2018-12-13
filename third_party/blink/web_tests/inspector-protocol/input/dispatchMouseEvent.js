@@ -11,6 +11,7 @@
       log('-----Event-----');
       log('type: ' + event.type);
       log('button: ' + event.button);
+      log('buttons: ' + event.buttons);
       if (event.shiftKey)
         log('shiftKey');
       log('x: ' + event.x);
@@ -37,6 +38,23 @@
   dumpError(await dp.Input.dispatchMouseEvent({
     type: 'mousePressed',
     button: 'left',
+    buttons: 0,
+    clickCount: 1,
+    x: 100,
+    y: 200
+  }));
+  dumpError(await dp.Input.dispatchMouseEvent({
+    type: 'mousePressed',
+    button: 'middle',
+    buttons: 1,
+    clickCount: 1,
+    x: 100,
+    y: 200
+  }));
+  dumpError(await dp.Input.dispatchMouseEvent({
+    type: 'mouseReleased',
+    button: 'middle',
+    buttons: 5,
     clickCount: 1,
     x: 100,
     y: 200
@@ -44,6 +62,7 @@
   dumpError(await dp.Input.dispatchMouseEvent({
     type: 'mouseReleased',
     button: 'left',
+    buttons: 1,
     clickCount: 1,
     x: 100,
     y: 200
@@ -51,12 +70,14 @@
   dumpError(await dp.Input.dispatchMouseEvent({
     type: 'mouseMoved',
     modifiers: 8, // shift
+    buttons: 0,
     x: 50,
     y: 150
   }));
   dumpError(await dp.Input.dispatchMouseEvent({
     type: 'mousePressed',
     button: 'right',
+    buttons: 0,
     clickCount: 1,
     x: 100,
     y: 200
@@ -64,6 +85,7 @@
   dumpError(await dp.Input.dispatchMouseEvent({
     type: 'mouseReleased',
     button: 'right',
+    buttons: 2,
     clickCount: 1,
     x: 100,
     y: 200

@@ -96,6 +96,10 @@ const char* GetAsString(MouseButton button) {
       return "middle";
     case kRightMouseButton:
       return "right";
+    case kBackMouseButton:
+      return "back";
+    case kForwardMouseButton:
+      return "forward";
     case kNoneMouseButton:
       return "none";
     default:
@@ -459,6 +463,7 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
     params.SetInteger("y", it->y * page_scale_factor);
     params.SetInteger("modifiers", it->modifiers);
     params.SetString("button", GetAsString(it->button));
+    params.SetInteger("buttons", it->buttons);
     params.SetInteger("clickCount", it->click_count);
     Status status = client_->SendCommand("Input.dispatchMouseEvent", params);
     if (status.IsError())

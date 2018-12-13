@@ -34,6 +34,7 @@ struct MouseEvent {
              int x,
              int y,
              int modifiers,
+             int buttons,
              int click_count);
   ~MouseEvent();
 
@@ -42,6 +43,7 @@ struct MouseEvent {
   int x;
   int y;
   int modifiers;
+  int buttons;
   // |click_count| should not be negative.
   int click_count;
 };
