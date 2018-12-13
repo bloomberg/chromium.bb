@@ -107,9 +107,8 @@ WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapFromSkBitmap(
           : ABI::Windows::Graphics::Imaging::BitmapPixelFormat_Bgra8;
   // Create ISoftwareBitmap from SKBitmap that is kN32_SkColorType and copy the
   // IBuffer into it.
-  hr = bitmap_factory->CreateCopyFromBuffer(buffer.Get(), pixelFormat,
-                                            bitmap.width(), bitmap.height(),
-                                            win_bitmap.GetAddressOf());
+  hr = bitmap_factory->CreateCopyFromBuffer(
+      buffer.Get(), pixelFormat, bitmap.width(), bitmap.height(), &win_bitmap);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Create ISoftwareBitmap from buffer failed: "
                 << logging::SystemErrorCodeToString(hr);
@@ -127,15 +126,16 @@ WRL::ComPtr<ISoftwareBitmap> CreateWinBitmapWithPixelFormat(
       CreateWinBitmapFromSkBitmap(bitmap, bitmap_factory);
 
   // Convert Rgba8/Bgra8 to Gray8/Nv12 SoftwareBitmap.
+  WRL::ComPtr<ISoftwareBitmap> converted_bitmap;
   const HRESULT hr = bitmap_factory->Convert(win_bitmap.Get(), pixel_format,
-                                             win_bitmap.GetAddressOf());
+                                             &converted_bitmap);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Convert Rgba8/Bgra8 to Gray8/Nv12 failed: "
                 << logging::SystemErrorCodeToString(hr);
     return nullptr;
   }
 
-  return win_bitmap;
+  return converted_bitmap;
 }
 
 }  // namespace shape_detection
