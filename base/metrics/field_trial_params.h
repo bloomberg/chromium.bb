@@ -201,7 +201,7 @@ BASE_EXPORT void LogInvalidEnumValue(const Feature& feature,
 
 // Feature param declaration for an enum, with associated options. Example:
 //
-//     constexpr FeatureParam<ShapeEnum>::Option[] kShapeParamOptions[] = {
+//     constexpr FeatureParam<ShapeEnum>::Option kShapeParamOptions[] = {
 //         {SHAPE_CIRCLE, "circle"},
 //         {SHAPE_CYLINDER, "cylinder"},
 //         {SHAPE_PAPERCLIP, "paperclip"}};
