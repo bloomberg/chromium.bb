@@ -26,7 +26,8 @@ public interface CachedImageFetcher {
      * @param url The url to fetch the image from.
      * @param width The new bitmap's desired width (in pixels).
      * @param height The new bitmap's desired height (in pixels).
-     * @param callback The function which will be called when the image is ready.
+     * @param callback The function which will be called when the image is ready; will be called
+     * with null result if fetching fails;
      */
     void fetchImage(String url, int width, int height, Callback<Bitmap> callback);
 
@@ -34,7 +35,8 @@ public interface CachedImageFetcher {
      * Alias of fetchImage that ignores scaling.
      *
      * @param url The url to fetch the image from.
-     * @param callback The function which will be called when the image is ready.
+     * @param callback The function which will be called when the image is ready; will be called
+     * with null result if fetching fails;
      */
     void fetchImage(String url, Callback<Bitmap> callback);
 

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.cached_image_fetcher;
 
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
@@ -63,7 +64,7 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
                 return;
             }
 
-            mCachedImageFetcher.fetchImage(url, width, height, (Bitmap bitmap) -> {
+            mCachedImageFetcher.fetchImage(url, width, height, (@Nullable Bitmap bitmap) -> {
                 bitmap = tryToResizeImage(bitmap, width, height);
                 storeBitmap(bitmap, url, width, height);
                 callback.onResult(bitmap);
@@ -101,7 +102,7 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
      * @param width The width (in pixels) of the image.
      * @param height The height (in pixels) of the image.
      */
-    private void storeBitmap(Bitmap bitmap, String url, int width, int height) {
+    private void storeBitmap(@Nullable Bitmap bitmap, String url, int width, int height) {
         if (bitmap == null || mBitmapCache == null) {
             return;
         }
@@ -152,8 +153,8 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
      * @return The resized image, or the original image if the  conditions aren't met.
      */
     @VisibleForTesting
-    Bitmap tryToResizeImage(Bitmap bitmap, int width, int height) {
-        if (width != 0 && height != 0 && bitmap.getWidth() != width
+    Bitmap tryToResizeImage(@Nullable Bitmap bitmap, int width, int height) {
+        if (bitmap != null && width != 0 && height != 0 && bitmap.getWidth() != width
                 && bitmap.getHeight() != height) {
             /* The resizing rules are the as follows:
                (1) The image will be scaled up (if smaller) in a way that maximizes the area of the
