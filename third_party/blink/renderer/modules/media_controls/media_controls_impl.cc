@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -1655,9 +1656,13 @@ void MediaControlsImpl::HandleTouchEvent(Event* event) {
     is_mouse_over_controls_ = false;
     is_touch_interaction_ = true;
 
-    if (event->type() == event_type_names::kClick &&
+    if (event->type() == event_type_names::kGesturetap &&
         !ContainsRelatedTarget(event)) {
       event->SetDefaultHandled();
+
+      // Since handling the gesturetap event will prevent the click event from
+      // happening, we need to manually hide any popups.
+      HidePopupMenu();
 
       // In immersive mode we don't use double-tap features, so instead of
       // waiting 300 ms for a potential second tap, we just immediately toggle
@@ -1723,16 +1728,14 @@ void MediaControlsImpl::MaybeJump(int seconds) {
 }
 
 bool MediaControlsImpl::IsOnLeftSide(Event* event) {
-  if (!event->IsMouseEvent())
+  if (!event->IsGestureEvent())
     return false;
 
-  MouseEvent* mouse_event = ToMouseEvent(event);
-  if (!mouse_event->HasPosition())
-    return false;
+  float tap_x = ToGestureEvent(event)->NativeEvent().PositionInWidget().x;
 
   DOMRect* rect = getBoundingClientRect();
   double middle = rect->x() + (rect->width() / 2);
-  return mouse_event->clientX() < middle;
+  return tap_x < middle;
 }
 
 void MediaControlsImpl::TapTimerFired(TimerBase*) {
@@ -2253,6 +2256,14 @@ void MediaControlsImpl::ToggleOverflowMenu() {
   DCHECK(overflow_list_);
 
   overflow_list_->SetIsWanted(!overflow_list_->IsWanted());
+}
+
+void MediaControlsImpl::HidePopupMenu() {
+  if (OverflowMenuVisible())
+    ToggleOverflowMenu();
+
+  if (TextTrackListIsWanted())
+    ToggleTextTrackList();
 }
 
 void MediaControlsImpl::StartHideMediaControlsIfNecessary() {

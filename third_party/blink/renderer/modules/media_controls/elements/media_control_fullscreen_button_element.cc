@@ -49,7 +49,8 @@ const char* MediaControlFullscreenButtonElement::GetNameForHistograms() const {
 }
 
 void MediaControlFullscreenButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == event_type_names::kClick) {
+  if (event.type() == event_type_names::kClick ||
+      event.type() == event_type_names::kGesturetap) {
     RecordClickMetrics();
     if (MediaElement().IsFullscreen())
       GetMediaControls().ExitFullscreen();

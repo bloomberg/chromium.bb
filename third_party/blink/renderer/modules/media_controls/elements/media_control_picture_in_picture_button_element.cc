@@ -66,7 +66,8 @@ const char* MediaControlPictureInPictureButtonElement::GetNameForHistograms()
 
 void MediaControlPictureInPictureButtonElement::DefaultEventHandler(
     Event& event) {
-  if (event.type() == event_type_names::kClick) {
+  if (event.type() == event_type_names::kClick ||
+      event.type() == event_type_names::kGesturetap) {
     PictureInPictureControllerImpl& controller =
         PictureInPictureControllerImpl::From(MediaElement().GetDocument());
 

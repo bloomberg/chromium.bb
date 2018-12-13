@@ -24,7 +24,8 @@ bool MediaControlElementsHelper::IsUserInteractionEvent(const Event& event) {
          type == event_type_names::kMousedown ||
          type == event_type_names::kMouseup ||
          type == event_type_names::kClick ||
-         type == event_type_names::kDblclick || event.IsKeyboardEvent() ||
+         type == event_type_names::kDblclick ||
+         type == event_type_names::kGesturetap || event.IsKeyboardEvent() ||
          event.IsTouchEvent();
 }
 

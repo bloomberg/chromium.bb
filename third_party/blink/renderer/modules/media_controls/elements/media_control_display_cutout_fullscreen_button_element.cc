@@ -31,7 +31,8 @@ bool MediaControlDisplayCutoutFullscreenButtonElement::
 
 void MediaControlDisplayCutoutFullscreenButtonElement::DefaultEventHandler(
     Event& event) {
-  if (event.type() == event_type_names::kClick) {
+  if (event.type() == event_type_names::kClick ||
+      event.type() == event_type_names::kGesturetap) {
     // The button shouldn't be visible if not in fullscreen.
     DCHECK(MediaElement().IsFullscreen());
 
