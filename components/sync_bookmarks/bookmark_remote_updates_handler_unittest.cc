@@ -40,6 +40,8 @@ const char kBookmarkBarId[] = "bookmark_bar_id";
 const char kBookmarkBarTag[] = "bookmark_bar";
 const char kMobileBookmarksId[] = "synced_bookmarks_id";
 const char kMobileBookmarksTag[] = "synced_bookmarks";
+const char kOtherBookmarksId[] = "other_bookmarks_id";
+const char kOtherBookmarksTag[] = "other_bookmarks";
 
 syncer::UpdateResponseData CreateUpdateResponseData(
     const std::string& server_id,
@@ -108,6 +110,12 @@ syncer::UpdateResponseData CreatePermanentFolderUpdateData(
   // Similar to what's done in the loopback_server.
   response_data.response_version = 0;
   return response_data;
+}
+
+syncer::UpdateResponseDataList CreateBookmarkBarAndOtherBookmarksUpdates() {
+  return {
+      CreatePermanentFolderUpdateData(kBookmarkBarId, kBookmarkBarTag),
+      CreatePermanentFolderUpdateData(kOtherBookmarksId, kOtherBookmarksTag)};
 }
 
 std::unique_ptr<sync_pb::EntityMetadata> CreateEntityMetadata(
@@ -198,19 +206,19 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
 
 TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
      ShouldProcessMobileBookmarksNodeCreation) {
-  // Init the processor to have only the bookmark bar.
+  // Init the processor to have only the bookmark bar and other bookmarks.
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
       bookmarks::TestBookmarkClient::CreateModel();
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
-  const syncer::UpdateResponseDataList bookmark_bar_updates = {
-      CreatePermanentFolderUpdateData(kBookmarkBarId, kBookmarkBarTag)};
+  const syncer::UpdateResponseDataList bookmarkbar_otherbookmarks_updates =
+      CreateBookmarkBarAndOtherBookmarksUpdates();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+  BookmarkModelMerger(&bookmarkbar_otherbookmarks_updates, bookmark_model.get(),
                       &favicon_service, &tracker)
       .Merge();
-  // Bookmark bar node should be tracked now.
-  ASSERT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(1U));
+  // Bookmark bar and other bookmarks nodes should be tracked now.
+  ASSERT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(2U));
 
   // Construct the updates list to have mobile bookmarks node remote creation.
   syncer::UpdateResponseDataList updates;
@@ -220,8 +228,9 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
                                                &favicon_service, &tracker);
   updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
 
-  // Both the bookmark bar and mobile bookmarks nodes should be tracked.
-  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(2U));
+  // Bookmark bar, other bookmarks, and mobile bookmarks nodes should be
+  // tracked.
+  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(3U));
   EXPECT_THAT(tracker.GetEntityForBookmarkNode(bookmark_model->mobile_node()),
               NotNull());
 }
@@ -238,12 +247,12 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       bookmarks::TestBookmarkClient::CreateModel();
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
-  const syncer::UpdateResponseDataList bookmark_bar_updates = {
-      CreatePermanentFolderUpdateData(kBookmarkBarId, kBookmarkBarTag)};
+  const syncer::UpdateResponseDataList bookmarkbar_otherbookmarks_updates =
+      CreateBookmarkBarAndOtherBookmarksUpdates();
   // TODO(crbug.com/516866): Create a test fixture that would encapsulate
   // the merge functionality for all relevant tests.
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+  BookmarkModelMerger(&bookmarkbar_otherbookmarks_updates, bookmark_model.get(),
                       &favicon_service, &tracker)
       .Merge();
 
@@ -267,8 +276,9 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
                                                &favicon_service, &tracker);
   updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
 
-  // All nodes should be tracked including the bookmark_bar.
-  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(4U));
+  // All nodes should be tracked including the "bookmark bar" and the "other
+  // bookmarks" node.
+  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(5U));
 
   // All nodes should have been added to the model.
   const bookmarks::BookmarkNode* bookmark_bar_node =
@@ -314,6 +324,13 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   const std::string kId2 = "id2";
 
   std::vector<NodeMetadataPair> node_metadata_pairs;
+
+  // Add the bookmark bar and other bookmarks entries.
+  node_metadata_pairs.emplace_back(bookmark_bar_node,
+                                   CreateEntityMetadata(kBookmarkBarId));
+  node_metadata_pairs.emplace_back(bookmark_model->other_node(),
+                                   CreateEntityMetadata(kOtherBookmarksId));
+
   node_metadata_pairs.emplace_back(node0,
                                    CreateEntityMetadata(/*server_id=*/kId0));
   node_metadata_pairs.emplace_back(node1,
@@ -340,8 +357,8 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
                                                &favicon_service, &tracker);
   updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
 
-  // |tracker| should be empty now.
-  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(0U));
+  // |tracker| should have only permanent nodes now.
+  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(2U));
 }
 
 TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
@@ -356,10 +373,10 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       bookmarks::TestBookmarkClient::CreateModel();
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
-  const syncer::UpdateResponseDataList bookmark_bar_updates = {
-      CreatePermanentFolderUpdateData(kBookmarkBarId, kBookmarkBarTag)};
+  const syncer::UpdateResponseDataList bookmarkbar_otherbookmarks_updates =
+      CreateBookmarkBarAndOtherBookmarksUpdates();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+  BookmarkModelMerger(&bookmarkbar_otherbookmarks_updates, bookmark_model.get(),
                       &favicon_service, &tracker)
       .Merge();
 
@@ -376,8 +393,6 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
 
   // Constuct the updates list to have creations randomly ordered.
   syncer::UpdateResponseDataList updates;
-  updates.push_back(
-      CreatePermanentFolderUpdateData(kBookmarkBarId, kBookmarkBarTag));
   updates.push_back(CreateUpdateResponseData(
       /*server_id=*/kId2, /*parent_id=*/kBookmarkBarId,
       /*is_deletion=*/false, /*unique_position=*/pos2));
@@ -424,14 +439,16 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   std::vector<const bookmarks::BookmarkNode*> nodes;
   std::vector<syncer::UniquePosition> positions;
   std::vector<NodeMetadataPair> node_metadata_pairs;
-  // Add the bookmark bar entry.
+  // Add the bookmark bar and other bookmarks entries.
   node_metadata_pairs.emplace_back(bookmark_bar_node,
                                    CreateEntityMetadata(kBookmarkBarId));
+  node_metadata_pairs.emplace_back(bookmark_model->other_node(),
+                                   CreateEntityMetadata(kOtherBookmarksId));
   syncer::UniquePosition position = syncer::UniquePosition::InitialPosition(
       syncer::UniquePosition::RandomSuffix());
   for (int i = 0; i < 5; i++) {
     ids.push_back("node" + base::NumberToString(i));
-    // Use ids as node titles for simplcity and to match CreateEntityMetadata()
+    // Use ids as node titles for simplicity and to match CreateEntityMetadata()
     // implementation.
     nodes.push_back(bookmark_model->AddFolder(
         /*parent=*/bookmark_bar_node, /*index=*/i, base::UTF8ToUTF16(ids[i])));
@@ -490,9 +507,11 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   std::vector<const bookmarks::BookmarkNode*> nodes;
   std::vector<syncer::UniquePosition> positions;
   std::vector<NodeMetadataPair> node_metadata_pairs;
-  // Add the bookmark bar entry.
+  // Add the bookmark bar and other bookmarks entries.
   node_metadata_pairs.emplace_back(bookmark_bar_node,
                                    CreateEntityMetadata(kBookmarkBarId));
+  node_metadata_pairs.emplace_back(bookmark_model->other_node(),
+                                   CreateEntityMetadata(kOtherBookmarksId));
   syncer::UniquePosition position = syncer::UniquePosition::InitialPosition(
       syncer::UniquePosition::RandomSuffix());
   for (int i = 0; i < 5; i++) {
@@ -557,9 +576,11 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   std::vector<const bookmarks::BookmarkNode*> nodes;
   std::vector<syncer::UniquePosition> positions;
   std::vector<NodeMetadataPair> node_metadata_pairs;
-  // Add the bookmark bar entry.
+  // Add the bookmark bar and other bookmarks entries.
   node_metadata_pairs.emplace_back(bookmark_bar_node,
                                    CreateEntityMetadata(kBookmarkBarId));
+  node_metadata_pairs.emplace_back(bookmark_model->other_node(),
+                                   CreateEntityMetadata(kOtherBookmarksId));
   syncer::UniquePosition position = syncer::UniquePosition::InitialPosition(
       syncer::UniquePosition::RandomSuffix());
   for (int i = 0; i < 5; i++) {
@@ -616,12 +637,12 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       bookmarks::TestBookmarkClient::CreateModel();
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
-  const syncer::UpdateResponseDataList bookmark_bar_updates = {
-      CreatePermanentFolderUpdateData(kBookmarkBarId, kBookmarkBarTag)};
+  const syncer::UpdateResponseDataList bookmarkbar_otherbookmarks_updates =
+      CreateBookmarkBarAndOtherBookmarksUpdates();
   // TODO(crbug.com/516866): Create a test fixture that would encapsulate
   // the merge functionality for all relevant tests.
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+  BookmarkModelMerger(&bookmarkbar_otherbookmarks_updates, bookmark_model.get(),
                       &favicon_service, &tracker)
       .Merge();
   const std::string kTitle = "Title";
@@ -668,12 +689,12 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
       bookmarks::TestBookmarkClient::CreateModel();
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
-  const syncer::UpdateResponseDataList bookmark_bar_updates = {
-      CreatePermanentFolderUpdateData(kBookmarkBarId, kBookmarkBarTag)};
+  const syncer::UpdateResponseDataList bookmarkbar_otherbookmarks_updates =
+      CreateBookmarkBarAndOtherBookmarksUpdates();
   // TODO(crbug.com/516866): Create a test fixture that would encapsulate
   // the merge functionality for all relevant tests.
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+  BookmarkModelMerger(&bookmarkbar_otherbookmarks_updates, bookmark_model.get(),
                       &favicon_service, &tracker)
       .Merge();
   const std::string kTitle = "Title";
@@ -723,8 +744,17 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   model_type_state.set_cache_guid(kCacheGuid);
   model_type_state.set_initial_sync_done(true);
 
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  std::vector<NodeMetadataPair> node_metadata_pairs;
+  // Add the bookmark bar and other bookmarks entries.
+  node_metadata_pairs.emplace_back(bookmark_model->bookmark_bar_node(),
+                                   CreateEntityMetadata(kBookmarkBarId));
+  node_metadata_pairs.emplace_back(bookmark_model->other_node(),
+                                   CreateEntityMetadata(kOtherBookmarksId));
+
   SyncedBookmarkTracker tracker(
-      std::vector<NodeMetadataPair>(),
+      std::move(node_metadata_pairs),
       std::make_unique<sync_pb::ModelTypeState>(model_type_state));
   const sync_pb::UniquePosition unique_position;
   sync_pb::EntitySpecifics specifics;
@@ -759,8 +789,6 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   response_data.response_version = 0;
   updates.push_back(response_data);
 
-  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
-      bookmarks::TestBookmarkClient::CreateModel();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
   BookmarkRemoteUpdatesHandler updates_handler(bookmark_model.get(),
                                                &favicon_service, &tracker);
@@ -784,10 +812,10 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::move(model_type_state));
 
-  const syncer::UpdateResponseDataList bookmark_bar_updates = {
-      CreatePermanentFolderUpdateData(kBookmarkBarId, kBookmarkBarTag)};
+  const syncer::UpdateResponseDataList bookmarkbar_otherbookmarks_updates =
+      CreateBookmarkBarAndOtherBookmarksUpdates();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+  BookmarkModelMerger(&bookmarkbar_otherbookmarks_updates, bookmark_model.get(),
                       &favicon_service, &tracker)
       .Merge();
 
@@ -814,10 +842,10 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
 
-  const syncer::UpdateResponseDataList bookmark_bar_updates = {
-      CreatePermanentFolderUpdateData(kBookmarkBarId, kBookmarkBarTag)};
+  const syncer::UpdateResponseDataList bookmarkbar_otherbookmarks_updates =
+      CreateBookmarkBarAndOtherBookmarksUpdates();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+  BookmarkModelMerger(&bookmarkbar_otherbookmarks_updates, bookmark_model.get(),
                       &favicon_service, &tracker)
       .Merge();
 
@@ -848,10 +876,10 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
 
-  const syncer::UpdateResponseDataList bookmark_bar_updates = {
-      CreatePermanentFolderUpdateData(kBookmarkBarId, kBookmarkBarTag)};
+  const syncer::UpdateResponseDataList bookmarkbar_otherbookmarks_updates =
+      CreateBookmarkBarAndOtherBookmarksUpdates();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&bookmark_bar_updates, bookmark_model.get(),
+  BookmarkModelMerger(&bookmarkbar_otherbookmarks_updates, bookmark_model.get(),
                       &favicon_service, &tracker)
       .Merge();
 
