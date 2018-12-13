@@ -2057,43 +2057,6 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   *out_dist_sum = dist_sum;
 }
 
-static void check_block_skip(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
-                             MACROBLOCK *x, MACROBLOCKD *xd, int plane_from,
-                             int plane_to, int *skip_txfm_sb) {
-  *skip_txfm_sb = 1;
-  for (int plane = plane_from; plane <= plane_to; ++plane) {
-    struct macroblock_plane *const p = &x->plane[plane];
-    struct macroblockd_plane *const pd = &xd->plane[plane];
-    const BLOCK_SIZE bs =
-        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
-    unsigned int sse;
-
-    if (x->skip_chroma_rd && plane) continue;
-
-    // Since fast HBD variance functions scale down sse by 4 bit, we first use
-    // fast vf implementation to rule out blocks with non-zero scaled sse. Then,
-    // only if the source is HBD and the scaled sse is 0, accurate sse
-    // computation is applied to determine if the sse is really 0. This step is
-    // necessary for HBD lossless coding.
-    cpi->fn_ptr[bs].vf(p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
-                       &sse);
-    if (sse) {
-      *skip_txfm_sb = 0;
-      return;
-    } else if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      uint64_t sse64 = aom_highbd_sse_odd_size(
-          p->src.buf, p->src.stride, pd->dst.buf, pd->dst.stride,
-          block_size_wide[bs], block_size_high[bs]);
-
-      if (sse64) {
-        *skip_txfm_sb = 0;
-        return;
-      }
-    }
-  }
-  return;
-}
-
 int64_t av1_block_error_c(const tran_low_t *coeff, const tran_low_t *dqcoeff,
                           intptr_t block_size, int64_t *ssz) {
   int i;
@@ -8626,7 +8589,6 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  int skip_txfm_sb = 0;
   const int num_planes = av1_num_planes(cm);
   const int ref_frame_1 = mbmi->ref_frame[1];
   const int64_t mode_rd = RDCOST(x->rdmult, mode_rate, 0);
@@ -8650,129 +8612,105 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   av1_init_rd_stats(rd_stats_uv);
   rd_stats->rate = mode_rate;
 
-  if (!cpi->common.all_lossless)
-    check_block_skip(cpi, bsize, x, xd, 0, num_planes - 1, &skip_txfm_sb);
-  if (!skip_txfm_sb) {
-    int64_t non_skip_rdcosty = INT64_MAX;
-    int64_t skip_rdcosty = INT64_MAX;
-    int64_t min_rdcosty = INT64_MAX;
-    int is_cost_valid_uv = 0;
+  int64_t non_skip_rdcosty = INT64_MAX;
+  int64_t skip_rdcosty = INT64_MAX;
+  int64_t min_rdcosty = INT64_MAX;
+  int is_cost_valid_uv = 0;
 
-    // cost and distortion
-    av1_subtract_plane(x, bsize, 0);
-    if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
-      // Motion mode
-      select_tx_type_yrd(cpi, x, rd_stats_y, bsize, mi_row, mi_col, rd_thresh);
+  // cost and distortion
+  av1_subtract_plane(x, bsize, 0);
+  if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
+    // Motion mode
+    select_tx_type_yrd(cpi, x, rd_stats_y, bsize, mi_row, mi_col, rd_thresh);
 #if CONFIG_COLLECT_RD_STATS == 2
-      PrintPredictionUnitStats(cpi, x, rd_stats_y, bsize);
+    PrintPredictionUnitStats(cpi, x, rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 2
-    } else {
-      super_block_yrd(cpi, x, rd_stats_y, bsize, rd_thresh);
-      memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
-      for (int i = 0; i < xd->n4_h * xd->n4_w; ++i)
-        set_blk_skip(x, 0, i, rd_stats_y->skip);
-    }
-
-    if (rd_stats_y->rate == INT_MAX) {
-      av1_invalid_rd_stats(rd_stats);
-      // TODO(angiebird): check if we need this
-      // restore_dst_buf(xd, *orig_dst, num_planes);
-      mbmi->ref_frame[1] = ref_frame_1;
-      return 0;
-    }
-
-    av1_merge_rd_stats(rd_stats, rd_stats_y);
-
-    non_skip_rdcosty = RDCOST(
-        x->rdmult, rd_stats->rate + x->skip_cost[skip_ctx][0], rd_stats->dist);
-    skip_rdcosty =
-        RDCOST(x->rdmult, mode_rate + x->skip_cost[skip_ctx][1], rd_stats->sse);
-    min_rdcosty = AOMMIN(non_skip_rdcosty, skip_rdcosty);
-
-    if (min_rdcosty > ref_best_rd) {
-      int64_t tokenonly_rdy =
-          AOMMIN(RDCOST(x->rdmult, rd_stats_y->rate, rd_stats_y->dist),
-                 RDCOST(x->rdmult, 0, rd_stats_y->sse));
-      // Invalidate rd_stats_y to skip the rest of the motion modes search
-      if (tokenonly_rdy - (tokenonly_rdy >> cpi->sf.prune_motion_mode_level) >
-          rd_thresh)
-        av1_invalid_rd_stats(rd_stats_y);
-      mbmi->ref_frame[1] = ref_frame_1;
-      return 0;
-    }
-
-    if (num_planes > 1) {
-      /* clang-format off */
-      is_cost_valid_uv =
-          inter_block_uvrd(cpi, x, rd_stats_uv, bsize,
-                           ref_best_rd - non_skip_rdcosty,
-                           ref_best_rd - skip_rdcosty, FTXS_NONE);
-      if (!is_cost_valid_uv) {
-        mbmi->ref_frame[1] = ref_frame_1;
-        return 0;
-      }
-      /* clang-format on */
-      av1_merge_rd_stats(rd_stats, rd_stats_uv);
-    } else {
-      av1_init_rd_stats(rd_stats_uv);
-    }
-    if (rd_stats->skip) {
-      rd_stats->rate -= rd_stats_uv->rate + rd_stats_y->rate;
-      rd_stats_y->rate = 0;
-      rd_stats_uv->rate = 0;
-      rd_stats->rate += x->skip_cost[skip_ctx][1];
-      mbmi->skip = 0;
-      // here mbmi->skip temporarily plays a role as what this_skip2 does
-
-      int64_t tmprd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-      if (tmprd > ref_best_rd) {
-        mbmi->ref_frame[1] = ref_frame_1;
-        return 0;
-      }
-#if CONFIG_ONE_PASS_SVM
-      av1_reg_stat_skipmode_update(rd_stats_y, x->rdmult);
-#endif
-    } else if (!xd->lossless[mbmi->segment_id] &&
-               (RDCOST(x->rdmult,
-                       rd_stats_y->rate + rd_stats_uv->rate +
-                           x->skip_cost[skip_ctx][0],
-                       rd_stats->dist) >=
-                RDCOST(x->rdmult, x->skip_cost[skip_ctx][1], rd_stats->sse))) {
-      rd_stats->rate -= rd_stats_uv->rate + rd_stats_y->rate;
-      rd_stats->rate += x->skip_cost[skip_ctx][1];
-      rd_stats->dist = rd_stats->sse;
-      rd_stats_y->rate = 0;
-      rd_stats_uv->rate = 0;
-      mbmi->skip = 1;
-#if CONFIG_ONE_PASS_SVM
-      av1_reg_stat_skipmode_update(rd_stats_y, x->rdmult);
-#endif
-    } else {
-      rd_stats->rate += x->skip_cost[skip_ctx][0];
-      mbmi->skip = 0;
-    }
   } else {
-    x->skip = 1;
-    mbmi->tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode);
-    // The cost of skip bit needs to be added.
-    mbmi->skip = 0;
-    rd_stats->rate += x->skip_cost[skip_ctx][1];
+    super_block_yrd(cpi, x, rd_stats_y, bsize, rd_thresh);
+    memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
+    for (int i = 0; i < xd->n4_h * xd->n4_w; ++i)
+      set_blk_skip(x, 0, i, rd_stats_y->skip);
+  }
 
-    rd_stats->dist = 0;
-    rd_stats->sse = 0;
+  if (rd_stats_y->rate == INT_MAX) {
+    av1_invalid_rd_stats(rd_stats);
+    // TODO(angiebird): check if we need this
+    // restore_dst_buf(xd, *orig_dst, num_planes);
+    mbmi->ref_frame[1] = ref_frame_1;
+    return 0;
+  }
+
+  av1_merge_rd_stats(rd_stats, rd_stats_y);
+
+  non_skip_rdcosty = RDCOST(
+      x->rdmult, rd_stats->rate + x->skip_cost[skip_ctx][0], rd_stats->dist);
+  skip_rdcosty =
+      RDCOST(x->rdmult, mode_rate + x->skip_cost[skip_ctx][1], rd_stats->sse);
+  min_rdcosty = AOMMIN(non_skip_rdcosty, skip_rdcosty);
+
+  if (min_rdcosty > ref_best_rd) {
+    int64_t tokenonly_rdy =
+        AOMMIN(RDCOST(x->rdmult, rd_stats_y->rate, rd_stats_y->dist),
+               RDCOST(x->rdmult, 0, rd_stats_y->sse));
+    // Invalidate rd_stats_y to skip the rest of the motion modes search
+    if (tokenonly_rdy - (tokenonly_rdy >> cpi->sf.prune_motion_mode_level) >
+        rd_thresh)
+      av1_invalid_rd_stats(rd_stats_y);
+    mbmi->ref_frame[1] = ref_frame_1;
+    return 0;
+  }
+
+  if (num_planes > 1) {
+    /* clang-format off */
+    is_cost_valid_uv =
+        inter_block_uvrd(cpi, x, rd_stats_uv, bsize,
+                         ref_best_rd - non_skip_rdcosty,
+                         ref_best_rd - skip_rdcosty, FTXS_NONE);
+    if (!is_cost_valid_uv) {
+      mbmi->ref_frame[1] = ref_frame_1;
+      return 0;
+    }
+    /* clang-format on */
+    av1_merge_rd_stats(rd_stats, rd_stats_uv);
+  } else {
+    av1_init_rd_stats(rd_stats_uv);
+  }
+  if (rd_stats->skip) {
+    rd_stats->rate -= rd_stats_uv->rate + rd_stats_y->rate;
     rd_stats_y->rate = 0;
     rd_stats_uv->rate = 0;
-    rd_stats->skip = 1;
+    rd_stats->rate += x->skip_cost[skip_ctx][1];
+    mbmi->skip = 0;
+    // here mbmi->skip temporarily plays a role as what this_skip2 does
+
     int64_t tmprd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
     if (tmprd > ref_best_rd) {
       mbmi->ref_frame[1] = ref_frame_1;
       return 0;
     }
 #if CONFIG_ONE_PASS_SVM
-    av1_add_reg_stat(rd_stats, 0, 0, 0, 0, 0, bsize, bsize);
-    av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
+    av1_reg_stat_skipmode_update(rd_stats_y, x->rdmult);
 #endif
+  } else if (!xd->lossless[mbmi->segment_id] &&
+             (RDCOST(x->rdmult,
+                     rd_stats_y->rate + rd_stats_uv->rate +
+                         x->skip_cost[skip_ctx][0],
+                     rd_stats->dist) >=
+              RDCOST(x->rdmult, x->skip_cost[skip_ctx][1], rd_stats->sse))) {
+    rd_stats->rate -= rd_stats_uv->rate + rd_stats_y->rate;
+    rd_stats->rate += x->skip_cost[skip_ctx][1];
+    rd_stats->dist = rd_stats->sse;
+    rd_stats_y->rate = 0;
+    rd_stats_uv->rate = 0;
+    mbmi->skip = 1;
+#if CONFIG_ONE_PASS_SVM
+    av1_reg_stat_skipmode_update(rd_stats_y, x->rdmult);
+#endif
+  } else {
+    rd_stats->rate += x->skip_cost[skip_ctx][0];
+    mbmi->skip = 0;
   }
+
   return 1;
 }
 
@@ -9004,7 +8942,6 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     int64_t tmp_rd = INT64_MAX;
     int tmp_rate2 = rate2_nocoeff;
     int is_interintra_mode = mode_index > (int)last_motion_mode_allowed;
-    int skip_txfm_sb = 0;
     int tmp_rate_mv = rate_mv0;
 
     *mbmi = base_mbmi;
@@ -9135,11 +9072,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       if (ret < 0) continue;
     }
 
-    if (!cpi->common.all_lossless)
-      check_block_skip(cpi, bsize, x, xd, 0, num_planes - 1, &skip_txfm_sb);
-
     x->skip = 0;
-
     rd_stats->dist = 0;
     rd_stats->sse = 0;
     rd_stats->skip = 1;
@@ -9170,8 +9103,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
     }
 
-    if (!skip_txfm_sb) {
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
+    {
       int64_t est_rd = 0;
       int est_skip = 0;
       if (cpi->sf.inter_mode_rd_model_estimation && cm->tile_cols == 1 &&
@@ -9192,10 +9125,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
           }
         }
       }
-#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
     }
 
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
     if (!do_tx_search) {
       const int64_t curr_sse = get_sse(cpi, x);
       int est_residue_cost = 0;
@@ -9218,7 +9149,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
                               rd_stats->rdcost, mbmi);
       }
     } else {
-#endif
+#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
       if (!txfm_search(cpi, x, bsize, mi_row, mi_col, rd_stats, rd_stats_y,
                        rd_stats_uv, rd_stats->rate, ref_best_rd)) {
         if (rd_stats_y->rate == INT_MAX && mode_index == 0) {
@@ -9227,28 +9158,22 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
         }
         continue;
       }
-      if (!skip_txfm_sb) {
-        const int64_t curr_rd =
-            RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-        if (curr_rd < ref_best_rd) {
-          ref_best_rd = curr_rd;
-        }
-        *disable_skip = 0;
-#if CONFIG_COLLECT_INTER_MODE_RD_STATS
-        if (cpi->sf.inter_mode_rd_model_estimation) {
-          const int skip_ctx = av1_get_skip_context(xd);
-          inter_mode_data_push(tile_data, mbmi->sb_type, rd_stats->sse,
-                               rd_stats->dist,
-                               rd_stats_y->rate + rd_stats_uv->rate +
-                                   x->skip_cost[skip_ctx][mbmi->skip]);
-        }
-#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
-      } else {
-        *disable_skip = 1;
+
+      const int64_t curr_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+      if (curr_rd < ref_best_rd) {
+        ref_best_rd = curr_rd;
       }
+      *disable_skip = 0;
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
+      if (cpi->sf.inter_mode_rd_model_estimation) {
+        const int skip_ctx = av1_get_skip_context(xd);
+        inter_mode_data_push(tile_data, mbmi->sb_type, rd_stats->sse,
+                             rd_stats->dist,
+                             rd_stats_y->rate + rd_stats_uv->rate +
+                                 x->skip_cost[skip_ctx][mbmi->skip]);
+      }
     }
-#endif
+#endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
 
     if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
       if (is_nontrans_global_motion(xd, xd->mi[0])) {
