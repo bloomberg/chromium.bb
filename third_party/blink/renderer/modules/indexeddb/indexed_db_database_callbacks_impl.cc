@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_observation.h"
 
-using blink::WebVector;
 using blink::WebIDBDatabaseCallbacks;
 using blink::WebIDBObservation;
 
@@ -48,8 +48,8 @@ void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
 
 void IndexedDBDatabaseCallbacksImpl::Changes(
     mojom::blink::IDBObserverChangesPtr changes) {
-  WebVector<WebIDBObservation> web_observations;
-  web_observations.reserve(changes->observations.size());
+  Vector<WebIDBObservation> web_observations;
+  web_observations.ReserveInitialCapacity(changes->observations.size());
   for (const auto& observation : changes->observations) {
     IDBKeyRange* key_range = observation->key_range.To<IDBKeyRange*>();
     std::unique_ptr<IDBValue> value;
@@ -57,20 +57,20 @@ void IndexedDBDatabaseCallbacksImpl::Changes(
       value = std::move(observation->value.value());
     if (!value || value->Data()->IsEmpty()) {
       value = IDBValue::Create(scoped_refptr<SharedBuffer>(),
-                               WebVector<WebBlobInfo>());
+                               Vector<WebBlobInfo>());
     }
     web_observations.emplace_back(observation->object_store_id,
                                   observation->type, key_range,
                                   std::move(value));
   }
 
-  std::unordered_map<int32_t, WebVector<int32_t>> observation_index_map;
+  std::unordered_map<int32_t, Vector<int32_t>> observation_index_map;
   for (const auto& observation_pair : changes->observation_index_map) {
     observation_index_map[observation_pair.key] =
-        WebVector<int32_t>(observation_pair.value);
+        Vector<int32_t>(observation_pair.value);
   }
 
-  std::unordered_map<int32_t, std::pair<int64_t, WebVector<int64_t>>>
+  std::unordered_map<int32_t, std::pair<int64_t, Vector<int64_t>>>
       observer_transactions;
   for (const auto& transaction_pair : changes->transaction_map) {
     // Moving an int64_t is rather silly. Sadly, std::make_pair's overloads

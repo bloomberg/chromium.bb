@@ -56,8 +56,8 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
 
   // Pointers transfer ownership.
   void OnError(const WebIDBDatabaseError&) override;
-  void OnSuccess(const WebVector<WebIDBNameAndVersion>&) override;
-  void OnSuccess(const WebVector<WebString>&) override;
+  void OnSuccess(const Vector<WebIDBNameAndVersion>&) override;
+  void OnSuccess(const Vector<String>&) override;
   void OnSuccess(WebIDBCursor*,
                  std::unique_ptr<IDBKey>,
                  std::unique_ptr<IDBKey> primary_key,
@@ -76,7 +76,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
                        WebIDBDatabase*,
                        const IDBDatabaseMetadata&,
                        mojom::IDBDataLoss data_loss,
-                       WebString data_loss_message) override;
+                       String data_loss_message) override;
   void Detach() override;
 
  private:

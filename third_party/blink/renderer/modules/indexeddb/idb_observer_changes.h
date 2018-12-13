@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OBSERVER_CHANGES_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OBSERVER_CHANGES_H_
 
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
@@ -24,16 +23,15 @@ class IDBObserverChanges final : public ScriptWrappable {
   static IDBObserverChanges* Create(
       IDBDatabase*,
       IDBTransaction*,
-      const WebVector<WebIDBObservation>& web_observations,
+      const Vector<WebIDBObservation>& web_observations,
       const HeapVector<Member<IDBObservation>>& observations,
-      const WebVector<int32_t>& observation_indices);
+      const Vector<int32_t>& observation_indices);
 
   IDBObserverChanges(IDBDatabase*,
                      IDBTransaction*,
-
-                     const WebVector<WebIDBObservation>& web_observations,
+                     const Vector<WebIDBObservation>& web_observations,
                      const HeapVector<Member<IDBObservation>>& observations,
-                     const WebVector<int32_t>& observation_indices);
+                     const Vector<int32_t>& observation_indices);
 
   void Trace(blink::Visitor*) override;
 
@@ -43,9 +41,9 @@ class IDBObserverChanges final : public ScriptWrappable {
   ScriptValue records(ScriptState*);
 
  private:
-  void ExtractChanges(const WebVector<WebIDBObservation>& web_observations,
+  void ExtractChanges(const Vector<WebIDBObservation>& web_observations,
                       const HeapVector<Member<IDBObservation>>& observations,
-                      const WebVector<int32_t>& observation_indices);
+                      const Vector<int32_t>& observation_indices);
 
   Member<IDBDatabase> database_;
   Member<IDBTransaction> transaction_;

@@ -36,12 +36,15 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace WTF {
+class String;
+}
+
 namespace blink {
 
 class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
 class WebSecurityOrigin;
-class WebString;
 
 class MODULES_EXPORT WebIDBFactory {
  public:
@@ -54,14 +57,14 @@ class MODULES_EXPORT WebIDBFactory {
       WebIDBCallbacks*,
       const WebSecurityOrigin&,
       scoped_refptr<base::SingleThreadTaskRunner>) = 0;
-  virtual void Open(const WebString& name,
+  virtual void Open(const WTF::String& name,
                     long long version,
                     long long transaction_id,
                     WebIDBCallbacks*,
                     WebIDBDatabaseCallbacks*,
                     const WebSecurityOrigin&,
                     scoped_refptr<base::SingleThreadTaskRunner>) = 0;
-  virtual void DeleteDatabase(const WebString& name,
+  virtual void DeleteDatabase(const WTF::String& name,
                               WebIDBCallbacks*,
                               const WebSecurityOrigin&,
                               bool force_close,

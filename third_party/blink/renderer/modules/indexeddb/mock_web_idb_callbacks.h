@@ -30,8 +30,8 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
                     const std::unique_ptr<IDBKey>& primaryKey,
                     const std::unique_ptr<IDBValue>& value));
 
-  MOCK_METHOD1(OnSuccess, void(const WebVector<WebIDBNameAndVersion>&));
-  MOCK_METHOD1(OnSuccess, void(const WebVector<WebString>&));
+  MOCK_METHOD1(OnSuccess, void(const Vector<WebIDBNameAndVersion>&));
+  MOCK_METHOD1(OnSuccess, void(const Vector<String>&));
 
   void OnSuccess(WebIDBCursor* cursor,
                  std::unique_ptr<IDBKey> key,
@@ -61,7 +61,7 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
                     WebIDBDatabase*,
                     const IDBDatabaseMetadata&,
                     mojom::IDBDataLoss dataLoss,
-                    WebString dataLossMessage));
+                    String dataLossMessage));
   MOCK_METHOD0(Detach, void());
 
  private:

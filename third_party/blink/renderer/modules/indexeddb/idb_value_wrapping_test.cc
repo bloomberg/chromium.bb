@@ -483,23 +483,24 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
   scoped_refptr<SharedBuffer> wrapped_marker_buffer = wrapper.TakeWireBytes();
   IDBKeyPath key_path(String("primaryKey"));
 
-  std::unique_ptr<IDBValue> wrapped_value =
-      IDBValue::Create(wrapped_marker_buffer, blob_infos);
-  wrapped_value->SetIsolate(scope.GetIsolate());
-  EXPECT_TRUE(IDBValueUnwrapper::IsWrapped(wrapped_value.get()));
-
   Vector<char> wrapped_marker_bytes(
       static_cast<wtf_size_t>(wrapped_marker_buffer->size()));
   ASSERT_TRUE(wrapped_marker_buffer->GetBytes(wrapped_marker_bytes.data(),
                                               wrapped_marker_bytes.size()));
+
+  std::unique_ptr<IDBValue> wrapped_value =
+      IDBValue::Create(std::move(wrapped_marker_buffer), std::move(blob_infos));
+  wrapped_value->SetIsolate(scope.GetIsolate());
+  EXPECT_TRUE(IDBValueUnwrapper::IsWrapped(wrapped_value.get()));
 
   // IsWrapped() looks at the first 3 bytes in the value's byte array.
   // Truncating the array to fewer than 3 bytes should cause IsWrapped() to
   // return false.
   ASSERT_LT(3U, wrapped_marker_bytes.size());
   for (wtf_size_t i = 0; i < 3; ++i) {
-    std::unique_ptr<IDBValue> mutant_value = IDBValue::Create(
-        SharedBuffer::Create(wrapped_marker_bytes.data(), i), blob_infos);
+    std::unique_ptr<IDBValue> mutant_value =
+        IDBValue::Create(SharedBuffer::Create(wrapped_marker_bytes.data(), i),
+                         std::move(blob_infos));
     mutant_value->SetIsolate(scope.GetIsolate());
 
     EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
@@ -515,7 +516,7 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
       std::unique_ptr<IDBValue> mutant_value =
           IDBValue::Create(SharedBuffer::Create(wrapped_marker_bytes.data(),
                                                 wrapped_marker_bytes.size()),
-                           blob_infos);
+                           std::move(blob_infos));
       mutant_value->SetIsolate(scope.GetIsolate());
       EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
 

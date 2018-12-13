@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/platform/mojo/string16_mojom_traits.h"
@@ -26,12 +27,16 @@ TEST(IDBMojomTraitsTest, IDBKeyBinary) {
   size_t test_data_size = 10000;
   Vector<char> test_data(test_data_size);
   std::generate(test_data.begin(), test_data.end(), rng);
-
-  // Create IDBKey binary key type mojom message.
   scoped_refptr<SharedBuffer> input_data =
       SharedBuffer::Create(test_data.data(), test_data.size());
-  std::unique_ptr<IDBKey> input = IDBKey::CreateBinary(input_data);
   Vector<uint8_t> input_vector = input_data->CopyAs<Vector<uint8_t>>();
+
+  // Verify expectations.
+  ASSERT_EQ(input_data->size(), test_data_size);
+  ASSERT_EQ(input_vector.size(), test_data_size);
+
+  // Create IDBKey binary key type mojom message.
+  std::unique_ptr<IDBKey> input = IDBKey::CreateBinary(input_data);
   mojo::Message mojo_message = mojom::blink::IDBKey::SerializeAsMessage(&input);
 
   // Deserialize the mojo message.
@@ -42,8 +47,6 @@ TEST(IDBMojomTraitsTest, IDBKeyBinary) {
   Vector<uint8_t> output_vector = output_data->CopyAs<Vector<uint8_t>>();
 
   // Verify expectations.
-  ASSERT_EQ(input_data->size(), test_data_size);
-  ASSERT_EQ(input_vector.size(), test_data_size);
   ASSERT_EQ(output_data->size(), test_data_size);
   ASSERT_EQ(output_vector.size(), test_data_size);
   ASSERT_EQ(input_vector, output_vector);
@@ -55,13 +58,17 @@ TEST(IDBMojomTraitsTest, IDBValue) {
   size_t test_data_size = 10000;
   Vector<char> test_data(test_data_size);
   std::generate(test_data.begin(), test_data.end(), rng);
-
-  // Create IDBValue mojom message.
   scoped_refptr<SharedBuffer> input_data =
       SharedBuffer::Create(test_data.data(), test_data.size());
-  std::unique_ptr<IDBValue> input =
-      IDBValue::Create(input_data, WebVector<WebBlobInfo>());
   Vector<uint8_t> input_vector = input_data->CopyAs<Vector<uint8_t>>();
+
+  // Verify expectations.
+  ASSERT_EQ(input_data->size(), test_data_size);
+  ASSERT_EQ(input_vector.size(), test_data_size);
+
+  // Create IDBValue mojom message.
+  std::unique_ptr<IDBValue> input =
+      IDBValue::Create(std::move(input_data), Vector<WebBlobInfo>());
   mojo::Message mojo_message =
       mojom::blink::IDBValue::SerializeAsMessage(&input);
 
@@ -73,8 +80,6 @@ TEST(IDBMojomTraitsTest, IDBValue) {
   Vector<uint8_t> output_vector = output_data->CopyAs<Vector<uint8_t>>();
 
   // Verify expectations.
-  ASSERT_EQ(input_data->size(), test_data_size);
-  ASSERT_EQ(input_vector.size(), test_data_size);
   ASSERT_EQ(output_data->size(), test_data_size);
   ASSERT_EQ(output_vector.size(), test_data_size);
   ASSERT_EQ(input_vector, output_vector);

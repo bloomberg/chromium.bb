@@ -5,11 +5,9 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
 
 #include "base/stl_util.h"
-#include "mojo/public/cpp/bindings/array_traits_web_vector.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/platform/mojo/string16_mojom_traits.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -131,7 +129,7 @@ bool UnionTraits<
       String string;
       if (!data.ReadString(&string))
         return false;
-      *out = blink::IDBKey::CreateString(blink::WebString(string));
+      *out = blink::IDBKey::CreateString(String(string));
       return true;
     }
     case blink::mojom::IDBKeyDataDataView::Tag::DATE:
@@ -230,7 +228,7 @@ bool StructTraits<blink::mojom::IDBValueDataView,
 
   if (value_bits.IsEmpty()) {
     *out = blink::IDBValue::Create(scoped_refptr<blink::SharedBuffer>(),
-                                   blink::WebVector<blink::WebBlobInfo>());
+                                   Vector<blink::WebBlobInfo>());
     return true;
   }
 
@@ -241,8 +239,8 @@ bool StructTraits<blink::mojom::IDBValueDataView,
   if (!data.ReadBlobOrFileInfo(&blob_or_file_info))
     return false;
 
-  blink::WebVector<blink::WebBlobInfo> value_blob_info;
-  value_blob_info.reserve(blob_or_file_info.size());
+  Vector<blink::WebBlobInfo> value_blob_info;
+  value_blob_info.ReserveInitialCapacity(blob_or_file_info.size());
   for (const auto& info : blob_or_file_info) {
     if (info->file) {
       value_blob_info.emplace_back(info->uuid,

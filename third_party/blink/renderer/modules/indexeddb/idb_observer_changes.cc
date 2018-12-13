@@ -32,9 +32,9 @@ ScriptValue IDBObserverChanges::records(ScriptState* script_state) {
 IDBObserverChanges* IDBObserverChanges::Create(
     IDBDatabase* database,
     IDBTransaction* transaction,
-    const WebVector<WebIDBObservation>& web_observations,
+    const Vector<WebIDBObservation>& web_observations,
     const HeapVector<Member<IDBObservation>>& observations,
-    const WebVector<int32_t>& observation_indices) {
+    const Vector<int32_t>& observation_indices) {
   DCHECK_EQ(web_observations.size(), observations.size());
   return MakeGarbageCollected<IDBObserverChanges>(
       database, transaction, web_observations, observations,
@@ -44,18 +44,18 @@ IDBObserverChanges* IDBObserverChanges::Create(
 IDBObserverChanges::IDBObserverChanges(
     IDBDatabase* database,
     IDBTransaction* transaction,
-    const WebVector<WebIDBObservation>& web_observations,
+    const Vector<WebIDBObservation>& web_observations,
     const HeapVector<Member<IDBObservation>>& observations,
-    const WebVector<int32_t>& observation_indices)
+    const Vector<int32_t>& observation_indices)
     : database_(database), transaction_(transaction) {
   DCHECK_EQ(web_observations.size(), observations.size());
   ExtractChanges(web_observations, observations, observation_indices);
 }
 
 void IDBObserverChanges::ExtractChanges(
-    const WebVector<WebIDBObservation>& web_observations,
+    const Vector<WebIDBObservation>& web_observations,
     const HeapVector<Member<IDBObservation>>& observations,
-    const WebVector<int32_t>& observation_indices) {
+    const Vector<int32_t>& observation_indices) {
   DCHECK_EQ(web_observations.size(), observations.size());
 
   // TODO(dmurph): Avoid getting and setting repeated times.

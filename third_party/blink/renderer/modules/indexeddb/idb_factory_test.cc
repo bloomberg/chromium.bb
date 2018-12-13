@@ -82,7 +82,7 @@ TEST_F(IDBFactoryTest, WebIDBGetDBInfoCallbacksResolvesPromise) {
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);
 
-  const WebVector<WebIDBNameAndVersion> wv;
+  const Vector<WebIDBNameAndVersion> wv;
   wc->OnSuccess(wv);
 
   EXPECT_FALSE(on_fulfilled);
@@ -117,7 +117,7 @@ TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksRejectsPromise) {
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);
 
-  const WebVector<WebIDBNameAndVersion> wv;
+  const Vector<WebIDBNameAndVersion> wv;
   wc->OnError(WebIDBDatabaseError(1));
 
   EXPECT_FALSE(on_fulfilled);

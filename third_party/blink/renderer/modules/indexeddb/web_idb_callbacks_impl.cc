@@ -49,7 +49,6 @@ using blink::WebIDBDatabase;
 using blink::WebIDBDatabaseError;
 using blink::WebIDBKeyPath;
 using blink::WebIDBNameAndVersion;
-using blink::WebVector;
 
 namespace blink {
 
@@ -85,19 +84,15 @@ void WebIDBCallbacksImpl::OnError(const WebIDBDatabaseError& error) {
 }
 
 void WebIDBCallbacksImpl::OnSuccess(
-    const WebVector<WebIDBNameAndVersion>& web_name_and_version_list) {
+    const Vector<WebIDBNameAndVersion>& name_and_version_list) {
   // Only implemented in idb_factory.cc for the promise-based databases() call.
   NOTREACHED();
 }
 
-void WebIDBCallbacksImpl::OnSuccess(
-    const WebVector<WebString>& web_string_list) {
+void WebIDBCallbacksImpl::OnSuccess(const Vector<String>& string_list) {
   if (!request_)
     return;
 
-  Vector<String> string_list;
-  for (size_t i = 0; i < web_string_list.size(); ++i)
-    string_list.push_back(web_string_list[i]);
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "success");
 #if DCHECK_IS_ON()
   DCHECK(!request_->TransactionHasQueuedResults());
@@ -204,7 +199,7 @@ void WebIDBCallbacksImpl::OnUpgradeNeeded(long long old_version,
                                           WebIDBDatabase* database,
                                           const IDBDatabaseMetadata& metadata,
                                           mojom::IDBDataLoss data_loss,
-                                          WebString data_loss_message) {
+                                          String data_loss_message) {
   std::unique_ptr<WebIDBDatabase> db = base::WrapUnique(database);
   if (request_) {
     probe::AsyncTask async_task(request_->GetExecutionContext(), this,

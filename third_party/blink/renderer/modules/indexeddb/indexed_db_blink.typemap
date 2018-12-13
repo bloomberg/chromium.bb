@@ -13,7 +13,6 @@ public_headers = [
 ]
 traits_headers = [
   "//mojo/public/cpp/base/string16_mojom_traits.h",
-  "//mojo/public/cpp/bindings/array_traits_web_vector.h",
   "//mojo/public/cpp/bindings/array_traits_wtf_vector.h",
   "//third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h",
   "//third_party/blink/renderer/platform/mojo/string16_mojom_traits.h",

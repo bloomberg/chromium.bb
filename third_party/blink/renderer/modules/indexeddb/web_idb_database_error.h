@@ -29,8 +29,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_ERROR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_ERROR_H_
 
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -38,8 +38,8 @@ class WebIDBDatabaseError {
  public:
   explicit WebIDBDatabaseError(unsigned short code) : code_(code) {}
 
-  WebIDBDatabaseError(unsigned short code, const WebString& message)
-      : code_(code), message_(message) {}
+  WebIDBDatabaseError(unsigned short code, String message)
+      : code_(code), message_(std::move(message)) {}
 
   WebIDBDatabaseError(const WebIDBDatabaseError& error) = default;
 
@@ -48,11 +48,11 @@ class WebIDBDatabaseError {
   WebIDBDatabaseError& operator=(const WebIDBDatabaseError& error) = default;
 
   unsigned short Code() const { return code_; }
-  const WebString& Message() const { return message_; }
+  const String& Message() const { return message_; }
 
  private:
   unsigned short code_;
-  WebString message_;
+  String message_;
 };
 
 }  // namespace blink
