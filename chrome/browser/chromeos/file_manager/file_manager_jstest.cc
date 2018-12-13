@@ -83,8 +83,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DuplicateFinderTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImportControllerTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/import_controller_unittest.html")));
+  RunGeneratedTest("/foreground/js/import_controller_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, AsyncUtilTest) {
