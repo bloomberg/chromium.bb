@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
@@ -39,6 +41,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/optimization_guide/hints_component_info.h"
@@ -1028,6 +1031,66 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   clock->Advance(base::TimeDelta::FromSeconds(31));
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
+}
+
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC(LitePageURLNotReportedToHistory)) {
+  base::CancelableTaskTracker tracker_;
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(browser()->profile(),
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+
+  // Verify the lite pages URL doesn't make it into the History Service via
+  // the committed URL.
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+  {
+    base::RunLoop loop;
+    history_service->QueryURL(
+        HttpsLitePageURL(kSuccess), false /* want_visits */,
+        base::BindLambdaForTesting([&](bool success, const history::URLRow& row,
+                                       const history::VisitVector&) {
+          EXPECT_TRUE(success);
+          loop.Quit();
+        }),
+        &tracker_);
+    loop.Run();
+  }
+  {
+    base::RunLoop loop;
+    history_service->QueryURL(
+        PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
+            HttpsLitePageURL(kSuccess)),
+        false /* want_visits */,
+        base::BindLambdaForTesting([&](bool success, const history::URLRow& row,
+                                       const history::VisitVector&) {
+          EXPECT_FALSE(success);
+          loop.Quit();
+        }),
+        &tracker_);
+    loop.Run();
+  }
+
+  // Verify the lite pages URL doesn't make it into the History Service via the
+  // redirect chain.
+  ui_test_utils::NavigateToURL(browser(),
+                               HttpsLitePageURL(kRedirectNonPreview));
+  VerifyPreviewNotLoaded();
+  {
+    base::RunLoop loop;
+    history_service->QueryRedirectsFrom(
+        HttpsLitePageURL(kRedirectNonPreview),
+        base::BindLambdaForTesting([&](const history::RedirectList* redirects) {
+          EXPECT_FALSE(redirects->empty());
+          for (const GURL& url : *redirects) {
+            EXPECT_FALSE(previews::IsLitePageRedirectPreviewURL(url));
+          }
+          loop.Quit();
+        }),
+        &tracker_);
+    loop.Run();
+  }
+  ClearDeciderState();
 }
 
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
