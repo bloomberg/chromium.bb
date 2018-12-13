@@ -22,3 +22,6 @@
 
 # Flaky https://crbug.com/913577
 -AdaptiveScreenBrightnessManagerTest.SingleBrowser
+
+# use-after-free https://crbug.com/914823
+-LockScreenAppStateTest.AppWindowClosedBeforeBeingShown
