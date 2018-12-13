@@ -19,15 +19,17 @@ CardNameFixFlowViewDelegateMobile::CardNameFixFlowViewDelegateMobile(
     const base::string16& inferred_cardholder_name,
     base::OnceCallback<void(const base::string16&)> upload_save_card_callback)
     : inferred_cardholder_name_(inferred_cardholder_name),
-      upload_save_card_callback_(std::move(upload_save_card_callback)) {
+      upload_save_card_callback_(std::move(upload_save_card_callback)),
+      shown_(false),
+      had_user_interaction_(false) {
   DCHECK(!upload_save_card_callback_.is_null());
   AutofillMetrics::LogSaveCardCardholderNamePrefilled(
       !inferred_cardholder_name_.empty());
 }
 
 CardNameFixFlowViewDelegateMobile::~CardNameFixFlowViewDelegateMobile() {
-  if (!had_user_interaction_)
-    LogUserAction(
+  if (shown_ && !had_user_interaction_)
+    AutofillMetrics::LogCardholderNameFixFlowPromptEvent(
         AutofillMetrics::
             CARDHOLDER_NAME_FIX_FLOW_PROMPT_CLOSED_WITHOUT_INTERACTION);
 }
@@ -52,24 +54,23 @@ base::string16 CardNameFixFlowViewDelegateMobile::GetSaveButtonLabel() const {
 
 void CardNameFixFlowViewDelegateMobile::Accept(const base::string16& name) {
   std::move(upload_save_card_callback_).Run(name);
-  LogUserAction(AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_ACCEPTED);
+  AutofillMetrics::LogCardholderNameFixFlowPromptEvent(
+      AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_ACCEPTED);
+  had_user_interaction_ = true;
   AutofillMetrics::LogSaveCardCardholderNameWasEdited(
       inferred_cardholder_name_ != name);
 }
 
 void CardNameFixFlowViewDelegateMobile::Dismissed() {
-  LogUserAction(AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_DISMISSED);
+  AutofillMetrics::LogCardholderNameFixFlowPromptEvent(
+      AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_DISMISSED);
+  had_user_interaction_ = true;
 }
 
 void CardNameFixFlowViewDelegateMobile::Shown() {
-  LogUserAction(AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_SHOWN);
-}
-
-void CardNameFixFlowViewDelegateMobile::LogUserAction(
-    AutofillMetrics::CardholderNameFixFlowPromptEvent user_action) {
-  DCHECK(!had_user_interaction_);
-  AutofillMetrics::LogCardholderNameFixFlowPromptEvent(user_action);
-  had_user_interaction_ = true;
+  AutofillMetrics::LogCardholderNameFixFlowPromptEvent(
+      AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_SHOWN);
+  shown_ = true;
 }
 
 }  // namespace autofill

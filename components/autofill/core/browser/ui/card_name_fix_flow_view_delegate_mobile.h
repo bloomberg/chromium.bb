@@ -34,8 +34,6 @@ class CardNameFixFlowViewDelegateMobile {
   void Shown();
 
  private:
-  void LogUserAction(
-      AutofillMetrics::CardholderNameFixFlowPromptEvent user_action);
 
   // Inferred cardholder name from Gaia account.
   base::string16 inferred_cardholder_name_;
@@ -43,6 +41,9 @@ class CardNameFixFlowViewDelegateMobile {
   // The callback to save the credit card to Google Payments once user accepts
   // fix flow.
   base::OnceCallback<void(const base::string16&)> upload_save_card_callback_;
+
+  // Whether the prompt was shown to the user.
+  bool shown_;
 
   // Did the user ever explicitly accept or dismiss this prompt?
   bool had_user_interaction_;
