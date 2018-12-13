@@ -131,7 +131,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
   // From here on out, results must be returned asynchronously.
   StartAsyncRun();
 
-  GetIdentityManager()->GetPrimaryAccountInfo(base::BindOnce(
+  GetMojoIdentityManager()->GetPrimaryAccountInfo(base::BindOnce(
       &IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo, this, scopes,
       gaia_id));
 
@@ -160,7 +160,7 @@ void IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo(
     }
 
     // Get the AccountInfo for the account that the extension wishes to use.
-    identity_manager_->GetAccountInfoFromGaiaId(
+    mojo_identity_manager_->GetAccountInfoFromGaiaId(
         extension_gaia_id,
         base::BindOnce(
             &IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo, this,
@@ -302,7 +302,7 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
 
   // Start listening for the primary account being available and display a
   // login prompt.
-  GetIdentityManager()->GetPrimaryAccountWhenAvailable(
+  GetMojoIdentityManager()->GetPrimaryAccountWhenAvailable(
       base::BindOnce(&IdentityGetAuthTokenFunction::OnPrimaryAccountAvailable,
                      base::Unretained(this)));
 
@@ -623,7 +623,7 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
 void IdentityGetAuthTokenFunction::OnIdentityAPIShutdown() {
   gaia_web_auth_flow_.reset();
   login_token_request_.reset();
-  identity_manager_.reset();
+  mojo_identity_manager_.reset();
 
   // Note that if |token_key_| hasn't yet been populated then this instance has
   // definitely not made a request with the MintQueue.
@@ -686,7 +686,7 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
   }
 #endif
 
-  GetIdentityManager()->GetAccessToken(
+  GetMojoIdentityManager()->GetAccessToken(
       token_key_->account_id, ::identity::ScopeSet(), "extensions_identity_api",
       base::BindOnce(&IdentityGetAuthTokenFunction::OnGetAccessTokenComplete,
                      base::Unretained(this)));
@@ -763,13 +763,13 @@ std::string IdentityGetAuthTokenFunction::GetOAuth2ClientId() const {
 }
 
 ::identity::mojom::IdentityManager*
-IdentityGetAuthTokenFunction::GetIdentityManager() {
-  if (!identity_manager_.is_bound()) {
+IdentityGetAuthTokenFunction::GetMojoIdentityManager() {
+  if (!mojo_identity_manager_.is_bound()) {
     content::BrowserContext::GetConnectorFor(GetProfile())
         ->BindInterface(::identity::mojom::kServiceName,
-                        mojo::MakeRequest(&identity_manager_));
+                        mojo::MakeRequest(&mojo_identity_manager_));
   }
-  return identity_manager_.get();
+  return mojo_identity_manager_.get();
 }
 
 }  // namespace extensions
