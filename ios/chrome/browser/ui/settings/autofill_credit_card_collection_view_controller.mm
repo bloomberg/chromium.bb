@@ -21,7 +21,7 @@
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/settings/autofill_credit_card_edit_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_credit_card_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
@@ -320,8 +320,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   const std::vector<autofill::CreditCard*>& creditCards =
       _personalDataManager->GetCreditCards();
-  AutofillCreditCardEditCollectionViewController* controller =
-      [[AutofillCreditCardEditCollectionViewController alloc]
+  AutofillCreditCardEditTableViewController* controller =
+      [[AutofillCreditCardEditTableViewController alloc]
            initWithCreditCard:*creditCards[indexPath.item]
           personalDataManager:_personalDataManager];
   controller.dispatcher = self.dispatcher;
