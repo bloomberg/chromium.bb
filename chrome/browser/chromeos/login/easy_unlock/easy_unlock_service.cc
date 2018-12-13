@@ -35,7 +35,6 @@
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_auth_system.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
-#include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -587,6 +586,82 @@ void EasyUnlockService::SetHardlockStateForUser(
 
   if (GetAccountId() == account_id)
     SetScreenlockHardlockedState(state);
+}
+
+SmartLockMetricsRecorder::SmartLockAuthEventPasswordState
+EasyUnlockService::GetSmartUnlockPasswordAuthEvent() const {
+  DCHECK(IsEnabled());
+
+  if (GetHardlockState() != EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
+    switch (GetHardlockState()) {
+      case EasyUnlockScreenlockStateHandler::NO_PAIRING:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kNoPairing;
+      case EasyUnlockScreenlockStateHandler::USER_HARDLOCK:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kUserHardlock;
+      case EasyUnlockScreenlockStateHandler::PAIRING_CHANGED:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kPairingChanged;
+      case EasyUnlockScreenlockStateHandler::LOGIN_FAILED:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kLoginFailed;
+      case EasyUnlockScreenlockStateHandler::PAIRING_ADDED:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kPairingAdded;
+      case EasyUnlockScreenlockStateHandler::PASSWORD_REQUIRED_FOR_LOGIN:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kRequiredForLogin;
+      default:
+        NOTREACHED();
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kUnknownState;
+    }
+  } else if (!screenlock_state_handler()) {
+    return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+        kUnknownState;
+  } else {
+    switch (screenlock_state_handler()->state()) {
+      case ScreenlockState::INACTIVE:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kServiceNotActive;
+      case ScreenlockState::NO_BLUETOOTH:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kNoBluetooth;
+      case ScreenlockState::BLUETOOTH_CONNECTING:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kBluetoothConnecting;
+      case ScreenlockState::NO_PHONE:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kCouldNotConnectToPhone;
+      case ScreenlockState::PHONE_NOT_AUTHENTICATED:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kNotAuthenticated;
+      case ScreenlockState::PHONE_LOCKED:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kPhoneLocked;
+      case ScreenlockState::RSSI_TOO_LOW:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kRssiTooLow;
+      case ScreenlockState::PHONE_LOCKED_AND_RSSI_TOO_LOW:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kPhoneLockedAndRssiTooLow;
+      case ScreenlockState::AUTHENTICATED:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kAuthenticatedPhone;
+      case ScreenlockState::PASSWORD_REAUTH:
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kForcedReauth;
+      default:
+        NOTREACHED();
+        return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+            kUnknownState;
+    }
+  }
+
+  NOTREACHED();
+  return SmartLockMetricsRecorder::SmartLockAuthEventPasswordState::
+      kUnknownState;
 }
 
 EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {

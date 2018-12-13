@@ -47327,6 +47327,27 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Large Downscale"/>
 </enum>
 
+<enum name="SmartLockAuthEventPasswordState">
+  <int value="0" label="Unknown state"/>
+  <int value="1" label="No pairing"/>
+  <int value="2" label="Pairing changed"/>
+  <int value="3" label="User hardlock"/>
+  <int value="4" label="Service not active"/>
+  <int value="5" label="No Bluetooth"/>
+  <int value="6" label="Bluetooth connecting"/>
+  <int value="7" label="Could not connect to phone"/>
+  <int value="8" label="Phone not authenticated"/>
+  <int value="9" label="Phone locked"/>
+  <int value="10" label="RSSI too low"/>
+  <int value="11" label="Phone authenticated"/>
+  <int value="12" label="Sign-in failed"/>
+  <int value="13" label="Pairing added"/>
+  <int value="14" label="No screenlock state handler"/>
+  <int value="15" label="RSSI too low"/>
+  <int value="16" label="Forced Reauthentication"/>
+  <int value="17" label="Required for login"/>
+</enum>
+
 <enum name="SmartLockAuthMethodChoice">
   <int value="0" label="Smart Lock"/>
   <int value="1" label="Other"/>
