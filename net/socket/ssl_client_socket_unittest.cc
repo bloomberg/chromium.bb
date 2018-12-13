@@ -4710,7 +4710,8 @@ TEST_F(SSLClientSocketTest, Tag) {
 // Test downgrade enforcement works for the 1.3 to 1.2 downgrade.
 TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS12) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kEnforceTLS13Downgrade);
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kEnforceTLS13Downgrade, {{"known_roots_only", "false"}});
 
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.simulate_tls13_downgrade = true;
@@ -4729,7 +4730,8 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS12) {
 // Test downgrade enforcement works for the 1.3 to 1.1 downgrade.
 TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS11) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kEnforceTLS13Downgrade);
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kEnforceTLS13Downgrade, {{"known_roots_only", "false"}});
 
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.simulate_tls12_downgrade = true;
@@ -4748,7 +4750,8 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS11) {
 // Test downgrade enforcement works for the 1.3 to 1.0 downgrade.
 TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS10) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kEnforceTLS13Downgrade);
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kEnforceTLS13Downgrade, {{"known_roots_only", "false"}});
 
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.simulate_tls12_downgrade = true;

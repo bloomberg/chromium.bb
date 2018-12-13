@@ -20,7 +20,7 @@ const base::Feature kIsolatedCodeCache = {"IsolatedCodeCache",
 // This is a MUST-level requirement of TLS 1.3, but has compatibility issues
 // with some buggy non-compliant TLS-terminating proxies.
 const base::Feature kEnforceTLS13Downgrade{"EnforceTLS13Downgrade",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSplitCacheByTopFrameOrigin{
     "SplitCacheByTopFrameOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
