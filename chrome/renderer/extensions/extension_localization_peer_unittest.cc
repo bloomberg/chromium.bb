@@ -11,10 +11,13 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "extensions/common/message_bundle.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_status.h"
@@ -60,7 +63,9 @@ class MockIpcMessageSender : public IPC::Sender {
 
 class MockRequestPeer : public content::RequestPeer {
  public:
-  MockRequestPeer() {}
+  MockRequestPeer()
+      : body_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC) {
+  }
   ~MockRequestPeer() override {}
 
   MOCK_METHOD2(OnUploadProgress, void(uint64_t position, uint64_t size));
@@ -70,7 +75,15 @@ class MockRequestPeer : public content::RequestPeer {
   MOCK_METHOD1(OnReceivedResponse,
                void(const network::ResourceResponseInfo& info));
   void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override {}
+      mojo::ScopedDataPipeConsumerHandle body) override {
+    body_handle_ = std::move(body);
+    body_watcher_.Watch(
+        body_handle_.get(),
+        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+        base::BindRepeating(&MockRequestPeer::OnReadable,
+                            base::Unretained(this)));
+  }
   MOCK_METHOD2(OnDownloadedData, void(int len, int encoded_data_length));
   void OnReceivedData(
       std::unique_ptr<RequestPeer::ReceivedData> data) override {
@@ -85,7 +98,41 @@ class MockRequestPeer : public content::RequestPeer {
     return nullptr;
   }
 
+  void RunUntilBodyBecomesReady() {
+    base::RunLoop loop;
+    EXPECT_FALSE(wait_for_body_callback_);
+    wait_for_body_callback_ = loop.QuitClosure();
+    loop.Run();
+  }
+
  private:
+  void OnReadable(MojoResult, const mojo::HandleSignalsState&) {
+    uint32_t available_bytes = 64 * 1024;
+    std::vector<char> buffer(available_bytes);
+    MojoResult result = body_handle_->ReadData(buffer.data(), &available_bytes,
+                                               MOJO_READ_DATA_FLAG_NONE);
+
+    if (result == MOJO_RESULT_SHOULD_WAIT)
+      return;
+
+    if (result == MOJO_RESULT_FAILED_PRECONDITION) {
+      body_watcher_.Cancel();
+      OnReceivedDataInternal(body_.data(), body_.size());
+      DCHECK(wait_for_body_callback_);
+      std::move(wait_for_body_callback_).Run();
+      return;
+    }
+
+    ASSERT_EQ(MOJO_RESULT_OK, result);
+    buffer.resize(available_bytes);
+    body_.append(buffer.begin(), buffer.end());
+  }
+
+  std::string body_;
+  mojo::SimpleWatcher body_watcher_;
+  mojo::ScopedDataPipeConsumerHandle body_handle_;
+  base::OnceClosure wait_for_body_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(MockRequestPeer);
 };
 
@@ -101,22 +148,24 @@ class ExtensionLocalizationPeerTest : public testing::Test {
                                       const GURL& request_url) {
     std::unique_ptr<MockRequestPeer> original_peer(new MockRequestPeer());
     original_peer_ = original_peer.get();
-    filter_peer_ = ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-        std::move(original_peer), sender_.get(), mime_type, request_url);
-    ASSERT_TRUE(filter_peer_);
+    auto extension_peer =
+        ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
+            std::move(original_peer), sender_.get(), mime_type, request_url);
+    filter_peer_.reset(
+        static_cast<ExtensionLocalizationPeer*>(extension_peer.release()));
   }
 
-  std::string GetData() {
-    return static_cast<ExtensionLocalizationPeer*>(filter_peer_.get())->data_;
-  }
+  std::string GetData() { return filter_peer_->data_; }
 
   void SetData(const std::string& data) {
-    static_cast<ExtensionLocalizationPeer*>(filter_peer_.get())->data_ = data;
+    filter_peer_->OnReceivedData(
+        std::make_unique<content::FixedReceivedData>(data.data(), data.size()));
   }
 
+  base::test::ScopedTaskEnvironment scoped_environment_;
   std::unique_ptr<MockIpcMessageSender> sender_;
   MockRequestPeer* original_peer_;
-  std::unique_ptr<content::RequestPeer> filter_peer_;
+  std::unique_ptr<ExtensionLocalizationPeer> filter_peer_;
 };
 
 TEST_F(ExtensionLocalizationPeerTest, CreateWithWrongMimeType) {
@@ -200,7 +249,8 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
   filter_peer_->OnCompletedRequest(status);
 }
 
-TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
+TEST_F(ExtensionLocalizationPeerTest,
+       OnCompletedRequestWithCatalogs_WithNonDataPipe) {
   SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_2));
 
   extensions::L10nMessagesMap messages;
@@ -224,6 +274,42 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
   EXPECT_CALL(*original_peer_, OnCompletedRequest(status));
 
   filter_peer_->OnCompletedRequest(status);
+}
+
+TEST_F(ExtensionLocalizationPeerTest,
+       OnCompletedRequestWithCatalogs_WithDataPipe) {
+  SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_2));
+
+  extensions::L10nMessagesMap messages;
+  messages.insert(std::make_pair("text", "new text"));
+  extensions::ExtensionToL10nMessagesMap& l10n_messages_map =
+      *extensions::GetExtensionToL10nMessagesMap();
+  l10n_messages_map["some_id2"] = messages;
+
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  mojo::ScopedDataPipeProducerHandle producer;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            mojo::CreateDataPipe(nullptr, &producer, &consumer));
+  filter_peer_->OnStartLoadingResponseBody(std::move(consumer));
+
+  // We already have messages in memory, Send will be skipped.
+  EXPECT_CALL(*sender_, Send(_)).Times(0);
+
+  // __MSG_text__ gets replaced with "new text".
+  std::string data("some new text");
+  EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
+  EXPECT_CALL(*original_peer_,
+              OnReceivedDataInternal(StrEq(data.c_str()), data.length()));
+
+  network::URLLoaderCompletionStatus status(net::OK);
+  EXPECT_CALL(*original_peer_, OnCompletedRequest(status));
+
+  // When the entire body is ready and also OnCompletedRequest() is called, the
+  // replaced body will be streamed to the original peer.
+  mojo::BlockingCopyFromString("some __MSG_text__", producer);
+  producer.reset();
+  filter_peer_->OnCompletedRequest(status);
+  original_peer_->RunUntilBodyBecomesReady();
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
