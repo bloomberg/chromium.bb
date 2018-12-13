@@ -409,25 +409,10 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
         hashes,
         keysets=gen.PAYLOAD_SIGNATURE_KEYSETS)
 
-  def testWriteSignaturesToFile(self):
-    """Test writing signatures into files."""
-    gen = self._GetStdGenerator(payload=self.delta_payload)
-    signatures = ('0' * 256, '1' * 256)
-
-    file_names = gen._WriteSignaturesToFile(signatures)
-    self.assertEqual(len(file_names), len(signatures))
-    self.assertExists(file_names[0])
-    self.assertExists(file_names[1])
-    with open(file_names[0]) as file:
-      self.assertEqual(file.read(), signatures[0])
-    with open(file_names[1]) as file:
-      self.assertEqual(file.read(), signatures[1])
-
-  def testInsertSignaturesIntoPayload(self):
-    """Test inserting payload and metadata signatures."""
+  def testInsertPayloadSignatures(self):
+    """Test inserting payload signatures."""
     gen = self._GetStdGenerator(payload=self.delta_payload)
     payload_signatures = ('0' * 256,)
-    metadata_signatures = ('0' * 256,)
 
     # Stub out the required functions.
     run_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
@@ -435,13 +420,12 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     read_mock = self.PatchObject(gen, '_ReadMetadataSizeFile')
 
     # Run the test.
-    gen._InsertSignaturesIntoPayload(payload_signatures, metadata_signatures)
+    gen._InsertPayloadSignatures(payload_signatures)
 
     # Check the expected function calls.
     cmd = ['delta_generator',
            '--in_file=' + gen.payload_file,
            partial_mock.HasString('payload_signature_file'),
-           partial_mock.HasString('metadata_signature_file'),
            '--out_file=' + gen.signed_payload_file,
            '--out_metadata_size_file=' + gen.metadata_size_file]
     run_mock.assert_called_once_with(cmd)
@@ -571,9 +555,8 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     sign_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
                                  '_SignHashes',
                                  return_value=(payload_sigs, metadata_sigs))
-
     ins_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
-                                '_InsertSignaturesIntoPayload')
+                                '_InsertPayloadSignatures')
     store_mock = self.PatchObject(paygen_payload_lib._PaygenPayload,
                                   '_StoreMetadataSignatures')
 
@@ -586,7 +569,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # Check expected calls.
     gen_mock.assert_called_once_with()
     sign_mock.assert_called_once_with([payload_hash, metadata_hash])
-    ins_mock.assert_called_once_with(payload_sigs, metadata_sigs)
+    ins_mock.assert_called_once_with(payload_sigs)
     store_mock.assert_called_once_with(metadata_sigs)
 
   def testCreateSignedDelta(self):

@@ -25,6 +25,7 @@ from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import signer_payloads_client
 from chromite.lib.paygen import urilib
+from chromite.lib.paygen import utils
 
 
 DESCRIPTION_FILE_VERSION = 2
@@ -390,50 +391,33 @@ class _PaygenPayload(object):
 
     return hashes_sigs
 
-  def _WriteSignaturesToFile(self, signatures):
-    """Write each signature into a temp file in the chroot.
+  def _InsertPayloadSignatures(self, signatures):
+    """Put payload signatures into the payload they sign.
 
     Args:
-      signatures: A list of signaturs to write into file.
-
-    Returns:
-      The list of files in the chroot with the same order as signatures.
+      signatures: List of signatures for the payload.
     """
-    file_paths = []
-    for signature in signatures:
-      path = tempfile.NamedTemporaryFile(dir=self.work_dir, delete=False).name
-      osutils.WriteFile(path, signature)
-      file_paths.append(path_util.ToChrootPath(path))
-
-    return file_paths
-
-  def _InsertSignaturesIntoPayload(self, payload_signatures,
-                                   metadata_signatures):
-    """Put payload and metadta signatures into the payload we sign.
-
-    Args:
-      payload_signatures: List of signatures for the payload.
-      metadata_signatures: List of signatures for the metadata.
-    """
-    logging.info('Inserting payload and metadata signatures into %s.',
+    logging.info('Inserting payload signatures into %s.',
                  self.signed_payload_file)
 
-    payload_signature_file_names = self._WriteSignaturesToFile(
-        payload_signatures)
-    metadata_signature_file_names = self._WriteSignaturesToFile(
-        metadata_signatures)
+    signature_files = [utils.CreateTempFileWithContents(s,
+                                                        base_dir=self.work_dir)
+                       for s in signatures]
+    signature_file_names = [path_util.ToChrootPath(f.name)
+                            for f in signature_files]
 
     cmd = ['delta_generator',
            '--in_file=' + path_util.ToChrootPath(self.payload_file),
-           '--payload_signature_file=' + ':'.join(payload_signature_file_names),
-           '--metadata_signature_file=' +
-           ':'.join(metadata_signature_file_names),
+           '--payload_signature_file=' + ':'.join(signature_file_names),
            '--out_file=' + path_util.ToChrootPath(self.signed_payload_file),
            '--out_metadata_size_file=' +
            path_util.ToChrootPath(self.metadata_size_file)]
 
     self._RunGeneratorCmd(cmd)
     self._ReadMetadataSizeFile()
+
+    for f in signature_files:
+      f.close()
 
   def _StoreMetadataSignatures(self, signatures):
     """Store metadata signatures related to the payload.
@@ -535,10 +519,10 @@ class _PaygenPayload(object):
         [payload_hash, metadata_hash])
     # pylint: enable=unpacking-non-sequence
 
-    # Insert payload and metadata signature(s).
-    self._InsertSignaturesIntoPayload(payload_signatures, metadata_signatures)
+    # Insert payload signature(s).
+    self._InsertPayloadSignatures(payload_signatures)
 
-    # Store metadata signature(s).
+    # Store Metadata signature(s).
     self._StoreMetadataSignatures(metadata_signatures)
 
     return (payload_signatures, metadata_signatures)
