@@ -3,4 +3,4 @@
 // found in the LICENSE file.
 
 /** @const {number} */
-const NUMBER_OF_APP_DISPLAYED_DEFAULT = 4;
+const NUMBER_OF_APPS_DISPLAYED_DEFAULT = 4;
