@@ -11,6 +11,7 @@ import os
 
 import mock
 
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
@@ -24,6 +25,35 @@ from chromite.signing.image_signing import imagefile
 
 # pylint: disable=protected-access
 
+DEFAULT_VB_PATH = os.path.join(
+    constants.SOURCE_ROOT, 'src/platform/vboot_reference/scripts/image_signing')
+
+class TestPathForVbootSigningScripts(cros_test_lib.MockTestCase):
+  """Tests for _PathForVbootSigningScripts"""
+
+  def testDefault(self):
+    """Test default value for path works."""
+    path = imagefile._PathForVbootSigningScripts()
+    self.assertEqual(DEFAULT_VB_PATH, path['PATH'].split(':')[0])
+
+  def testPathPassed(self):
+    """Test that passed path is used."""
+    path = imagefile._PathForVbootSigningScripts(path='F/G')
+    self.assertEqual('F/G', path['PATH'].split(':')[0])
+
+  def testDefaultPathAlreadyPresent(self):
+    """Test no change when path is already present."""
+    os.environ['PATH'] += ':' + DEFAULT_VB_PATH
+    path = imagefile._PathForVbootSigningScripts()
+    self.assertEqual(os.environ['PATH'], path['PATH'])
+
+  def testPathAlreadyPresent(self):
+    """Test no change when path is already present."""
+    value = os.environ['PATH'].split(':')
+    path = imagefile._PathForVbootSigningScripts(path=value[1])
+    self.assertEqual(os.environ['PATH'], path['PATH'])
+
+
 class TestSignImage(cros_test_lib.RunCommandTempDirTestCase):
   """Test SignImage function."""
 
@@ -35,37 +65,35 @@ class TestSignImage(cros_test_lib.RunCommandTempDirTestCase):
     self.fw_mock = self.PatchObject(firmware, 'ResignImageFirmware')
     self.android_mock = self.PatchObject(imagefile, 'SignAndroidImage')
     self.uefi_mock = self.PatchObject(imagefile, 'SignUefiBinaries')
-    self.keyset_return = mock.Mock()
-    self.keyset_mock = self.PatchObject(keys, 'Keyset',
-                                        return_value=self.keyset_return)
+    self.PatchObject(imagefile, '_PathForVbootSigningScripts',
+                     return_value={'PATH': 'path'})
 
   def testSimple(self):
     """Test that USB case works, and strips boot."""
-    self.assertTrue(
-        imagefile.SignImage('USB', 'infile', 'outfile', 2, '/keydir'))
-    self.fw_mock.assert_called_once_with('outfile', self.keyset_return)
+    imagefile.SignImage('USB', 'infile', 'outfile', 2, '/keydir')
+    self.android_mock.assert_called_once()
+    rootfs_dir, keyset = self.android_mock.call_args[0]
+    self.fw_mock.assert_called_once_with('outfile', keyset)
     expected_rc = [
         mock.call(['cp', '--sparse=always', 'infile', 'outfile']),
         mock.call(['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
                   capture_output=True, print_cmd=False),
-        mock.call(['strip_boot_from_image.sh', '--image', '/dev/loop9999p3'])
+        mock.call(['strip_boot_from_image.sh', '--image', '/dev/loop9999p3'],
+                  extra_env={'PATH': 'path'}),
     ]
     self.assertEqual(expected_rc, self.rc.call_args_list)
-    self.android_mock.assert_called_once()
-    rootfs_dir, keyset = self.android_mock.call_args[0]
     self.assertTrue(rootfs_dir.startswith(self.tempdir + '/'))
     self.assertTrue(rootfs_dir.endswith('/dir-3'))
-    self.assertEqual(self.keyset_return, keyset)
-    self.uefi_mock.assert_called_once_with(self.image, rootfs_dir,
-                                           self.keyset_return)
+    self.assertEqual('/keydir', keyset.key_dir)
+    self.uefi_mock.assert_called_once_with(
+        self.image, rootfs_dir, keyset, vboot_path=None)
 
   def testNoStripOnNonFactrory(self):
     """Verify that strip is not called on factory installs."""
-    self.assertTrue(
-        imagefile.SignImage(
-            'factory_install', 'infile', 'outfile', 2, '/keydir'))
+    imagefile.SignImage('factory_install', 'infile', 'outfile', 2, '/keydir')
     self.assertNotIn(
-        mock.call(['strip_boot_from_image.sh', '--image', '/dev/loop9999p3']),
+        mock.call(['strip_boot_from_image.sh', '--image', '/dev/loop9999p3'],
+                  extra_env={'PATH': 'path'}),
         self.rc.call_args_list)
 
   def testNoStripOnLegacy(self):
@@ -73,11 +101,10 @@ class TestSignImage(cros_test_lib.RunCommandTempDirTestCase):
     self.rc.AddCmdResult(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
         output=' cros_legacy ')
-    self.assertTrue(
-        imagefile.SignImage(
-            'USB', 'infile', 'outfile', 2, '/keydir'))
+    imagefile.SignImage('USB', 'infile', 'outfile', 2, '/keydir')
     self.assertNotIn(
-        mock.call(['strip_boot_from_image.sh', '--image', '/dev/loop9999p3']),
+        mock.call(['strip_boot_from_image.sh', '--image', '/dev/loop9999p3'],
+                  extra_env={'PATH': 'path'}),
         self.rc.call_args_list)
 
   def testNoStripOnEFI(self):
@@ -85,11 +112,10 @@ class TestSignImage(cros_test_lib.RunCommandTempDirTestCase):
     self.rc.AddCmdResult(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p2'],
         output=' cros_efi ')
-    self.assertTrue(
-        imagefile.SignImage(
-            'USB', 'infile', 'outfile', 2, '/keydir'))
+    imagefile.SignImage('USB', 'infile', 'outfile', 2, '/keydir')
     self.assertNotIn(
-        mock.call(['strip_boot_from_image.sh', '--image', '/dev/loop9999p3']),
+        mock.call(['strip_boot_from_image.sh', '--image', '/dev/loop9999p3'],
+                  extra_env={'PATH': 'path'}),
         self.rc.call_args_list)
 
 
@@ -102,6 +128,8 @@ class TestSignAndroidImage(cros_test_lib.RunCommandTempDirTestCase):
     self.info_mock = self.PatchObject(logging, 'info')
     self.warn_mock = self.PatchObject(logging, 'warning')
     self.rc.SetDefaultCmdResult()
+    self.PatchObject(imagefile, '_PathForVbootSigningScripts',
+                     return_value={'PATH': 'path'})
 
   def testNoImage(self):
     """Test with no Android image."""
@@ -146,7 +174,8 @@ class TestSignAndroidImage(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(expected_info, self.info_mock.call_args_list)
     self.assertEqual(
         self.rc.call_args_list,
-        [mock.call(['sign_android_image.sh', self.tempdir, android_keydir])])
+        [mock.call(['sign_android_image.sh', self.tempdir, android_keydir],
+                   extra_env={'PATH': 'path'})])
 
 
 class TestSignUefiBinaries(cros_test_lib.RunCommandTempDirTestCase):
@@ -159,6 +188,8 @@ class TestSignUefiBinaries(cros_test_lib.RunCommandTempDirTestCase):
     self.warn_mock = self.PatchObject(logging, 'warning')
     self.rc.SetDefaultCmdResult()
     self.image = image_lib_unittest.LoopbackPartitionsMock('meh', self.tempdir)
+    self.PatchObject(imagefile, '_PathForVbootSigningScripts',
+                     return_value={'PATH': 'path'})
 
   def testUefiKeydir(self):
     """Test with no uefi keys."""
@@ -188,10 +219,13 @@ class TestSignUefiBinaries(cros_test_lib.RunCommandTempDirTestCase):
     isdir_mock.assert_called_once_with(uefi_keydir)
     uefi_fsdir = os.path.join(self.tempdir, 'dir-12')
     expected_rc = [
-        mock.call(['install_gsetup_certs.sh', uefi_fsdir, uefi_keydir]),
-        mock.call(['sign_uefi.sh', uefi_fsdir, uefi_keydir]),
+        mock.call(['install_gsetup_certs.sh', uefi_fsdir, uefi_keydir],
+                  extra_env={'PATH': 'path'}),
+        mock.call(['sign_uefi.sh', uefi_fsdir, uefi_keydir],
+                  extra_env={'PATH': 'path'}),
         mock.call([
-            'sign_uefi.sh', os.path.join(self.tempdir, 'boot'), uefi_keydir]),
+            'sign_uefi.sh', os.path.join(self.tempdir, 'boot'), uefi_keydir],
+                  extra_env={'PATH': 'path'}),
     ]
     self.assertEqual(expected_rc, self.rc.call_args_list)
     self.info_mock.assert_called_once_with('Signed UEFI binaries.')

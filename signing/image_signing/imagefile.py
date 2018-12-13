@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import image_lib
@@ -25,8 +26,26 @@ class SignImageError(Error):
   """Error occurred within SignImage"""
 
 
+def _PathForVbootSigningScripts(path=None):
+  """Get extra_env for finding vboot_reference scripts.
+
+  Args:
+    path: path to vboot_reference/scripts/image_signing.
+
+  Returns:
+    Dictionary to pass to RunCommand's extra_env so that it finds the scripts.
+  """
+  if not path:
+    path = os.path.join(constants.SOURCE_ROOT,
+                        'src/platform/vboot_reference/scripts/image_signing')
+  current_path = os.environ.get('PATH', '').split(':')
+  if path not in current_path:
+    current_path.insert(0, path)
+  return {'PATH': ':'.join(current_path)}
+
+
 def SignImage(image_type, input_file, output_file, kernel_part_num, keydir,
-              keyA_prefix=''):
+              keyA_prefix='', vboot_path=None):
   """Sign the image file.
 
   A Chromium OS image file (INPUT) always contains 2 partitions (kernel A & B).
@@ -44,9 +63,11 @@ def SignImage(image_type, input_file, output_file, kernel_part_num, keydir,
         sometimes 4)
     keydir: path of keyset dir to use.
     keyA_prefix: prefix for kernA key (e.g., 'recovery_')
+    vboot_path: optional: vboot_reference/scripts/image_signing dir path
 
   Raises SignImageException
   """
+  extra_env = _PathForVbootSigningScripts(vboot_path)
   # TODO(lamontjones): consider extending osutils to have a sparse file copy
   # function.
   logging.info('Preparing %s image...', image_type)
@@ -60,8 +81,8 @@ def SignImage(image_type, input_file, output_file, kernel_part_num, keydir,
   with osutils.TempDir() as dest_dir:
     with image_lib.LoopbackPartitions(output_file, dest_dir) as image:
       rootfs_dir = image.Mount(('ROOT-A',))[0]
-      SignAndroidImage(rootfs_dir, keyset)
-      SignUefiBinaries(image, rootfs_dir, keyset)
+      SignAndroidImage(rootfs_dir, keyset, vboot_path=vboot_path)
+      SignUefiBinaries(image, rootfs_dir, keyset, vboot_path=vboot_path)
       image.Unmount(('ROOT-A',))
 
       # TODO(lamontjones): From this point on, all we really want at the moment
@@ -78,7 +99,8 @@ def SignImage(image_type, input_file, output_file, kernel_part_num, keydir,
           'cros_legacy' not in kernA_config and
           'cros_efi' not in kernA_config):
         cros_build_lib.RunCommand(
-            ['strip_boot_from_image.sh', '--image', loop_rootfs])
+            ['strip_boot_from_image.sh', '--image', loop_rootfs],
+            extra_env=extra_env)
 
   # TODO(lamontjones): several remaining steps, that all need to be added:
   # UpdateRootfsHash, UpdateStatefulPartitionVblock, UpdateRecoveryKernelHash,
@@ -90,7 +112,7 @@ def SignImage(image_type, input_file, output_file, kernel_part_num, keydir,
   return True
 
 
-def SignAndroidImage(rootfs_dir, keyset):
+def SignAndroidImage(rootfs_dir, keyset, vboot_path=None):
   """If there is an android image, sign it."""
   system_img = os.path.join(
       rootfs_dir, 'opt/google/containers/android/system.raw.img')
@@ -105,6 +127,7 @@ def SignAndroidImage(rootfs_dir, keyset):
                     'Not signing Android APKs.')
     return
 
+  extra_env = _PathForVbootSigningScripts(vboot_path)
   logging.info('Found ARC image version %s, resigning APKs', arc_version)
   # Sign the Android APKs using ${keyset.key_dir}/android keys.
   android_keydir = os.path.join(keyset.key_dir, 'android')
@@ -112,10 +135,11 @@ def SignAndroidImage(rootfs_dir, keyset):
 
   # TODO(lamontjones) migrate sign_android_image.sh.
   cros_build_lib.RunCommand(
-      ['sign_android_image.sh', rootfs_dir, android_keydir])
+      ['sign_android_image.sh', rootfs_dir, android_keydir],
+      extra_env=extra_env)
 
 
-def SignUefiBinaries(image, rootfs_dir, keyset):
+def SignUefiBinaries(image, rootfs_dir, keyset, vboot_path=None):
   """Sign UEFI binaries if appropriate."""
   # If there are no uefi keys in the keyset, we're done.
   uefi_keydir = os.path.join(keyset.key_dir, 'uefi')
@@ -131,17 +155,21 @@ def SignUefiBinaries(image, rootfs_dir, keyset):
     logging.info('No EFI-SYSTEM partition found.')
     return
 
+  extra_env = _PathForVbootSigningScripts(vboot_path)
   # Sign the UEFI binaries on the EFI partition using
   # ${keyset.key_dir}/uefi keys.
   # TODO(lamontjones): convert install_gsetup_certs.sh to python.
   cros_build_lib.RunCommand(
-      ['install_gsetup_certs.sh', uefi_fsdir, uefi_keydir])
+      ['install_gsetup_certs.sh', uefi_fsdir, uefi_keydir],
+      extra_env=extra_env)
   # TODO(lamontjones): convert sign_uefi.sh to python.
   cros_build_lib.RunCommand(
-      ['sign_uefi.sh', uefi_fsdir, uefi_keydir])
+      ['sign_uefi.sh', uefi_fsdir, uefi_keydir],
+      extra_env=extra_env)
 
   # TODO(lamontjones): convert sign_uefi.sh to python.
   cros_build_lib.RunCommand(
-      ['sign_uefi.sh', os.path.join(rootfs_dir, 'boot'), uefi_keydir])
+      ['sign_uefi.sh', os.path.join(rootfs_dir, 'boot'), uefi_keydir],
+      extra_env=extra_env)
 
   logging.info('Signed UEFI binaries.')
