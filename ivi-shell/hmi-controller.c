@@ -49,6 +49,8 @@
  * TODO: support fade-in when UI is ready
  */
 
+#include "config.h"
+
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdlib.h>
