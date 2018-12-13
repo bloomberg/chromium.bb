@@ -3426,11 +3426,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kRegionalLocalesAsDisplayUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kRegionalLocalesAsDisplayUI)},
 
-    {"enable-v8-context-snapshot", flag_descriptions::kV8ContextSnapshotName,
-     flag_descriptions::kV8ContextSnapshotDescription,
-     kOsMac | kOsWin | kOsLinux | kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kV8ContextSnapshot)},
-
     {"enable-pixel-canvas-recording",
      flag_descriptions::kEnablePixelCanvasRecordingName,
      flag_descriptions::kEnablePixelCanvasRecordingDescription, kOsDesktop,

@@ -453,10 +453,6 @@ const base::Feature kUserActivationSameOriginVisibility{
 const base::Feature kUserActivationV2{"UserActivationV2",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables to use a snapshot file in creating V8 contexts.
-const base::Feature kV8ContextSnapshot{"V8ContextSnapshot",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables V8's low memory mode for subframes. This is used only
 // in conjunction with the --site-per-process feature.
 const base::Feature kV8LowMemoryModeForSubframes{
