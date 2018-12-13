@@ -703,8 +703,7 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     // Requesting the sync service to start may trigger call to PushSyncPrefs.
     // Setting up the startup tracker beforehand correctly signals the
     // re-entrant call to early exit.
-    sync_startup_tracker_ =
-        std::make_unique<SyncStartupTracker>(profile_, this);
+    sync_startup_tracker_ = std::make_unique<SyncStartupTracker>(service, this);
     // SetSyncRequested(true) does two things:
     // 1) If DISABLE_REASON_USER_CHOICE is set (meaning that Sync was reset via
     //    the dashboard), clears it.
@@ -722,7 +721,7 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     // (unrecoverable error?), don't bother displaying a spinner that will be
     // immediately closed because this leads to some ugly infinite UI loop (see
     // http://crbug.com/244769).
-    if (SyncStartupTracker::GetSyncServiceState(profile_) !=
+    if (SyncStartupTracker::GetSyncServiceState(service) !=
         SyncStartupTracker::SYNC_STARTUP_ERROR) {
       DisplaySpinner();
     }

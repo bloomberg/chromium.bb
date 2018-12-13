@@ -327,7 +327,7 @@ void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
   signin_metrics::LogSigninReason(signin_reason_);
   base::RecordAction(base::UserMetricsAction("Signin_Signin_Succeed"));
 
-  browser_sync::ProfileSyncService* sync_service = GetProfileSyncService();
+  syncer::SyncService* sync_service = GetProfileSyncService();
   if (sync_service) {
     // Take a SyncSetupInProgressHandle, so that the UI code can use
     // IsFirstSyncSetupInProgress() as a way to know if there is a signin in
@@ -338,15 +338,16 @@ void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
         !policy::BrowserPolicyConnector::IsNonEnterpriseUser(
             account_info_.email);
     if (is_enterprise_user &&
-        SyncStartupTracker::GetSyncServiceState(profile_) ==
+        SyncStartupTracker::GetSyncServiceState(sync_service) ==
             SyncStartupTracker::SYNC_STARTUP_PENDING) {
       // For enterprise users it is important to wait until sync is initialized
-      // so that the confirmation UI can be
-      // aware of startup errors. This is needed to make sure that the sync
-      // confirmation dialog is shown only after the sync service had a chance
-      // to check whether sync was disabled by admin.
+      // so that the confirmation UI can be aware of startup errors. This is
+      // needed to make sure that the sync confirmation dialog is shown only
+      // after the sync service had a chance to check whether sync was disabled
+      // by admin.
       // See http://crbug.com/812546
-      sync_startup_tracker_.reset(new SyncStartupTracker(profile_, this));
+      sync_startup_tracker_ =
+          std::make_unique<SyncStartupTracker>(sync_service, this);
       return;
     }
   }
