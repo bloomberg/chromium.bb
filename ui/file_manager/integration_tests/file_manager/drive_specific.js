@@ -453,6 +453,41 @@ testcase.driveAvailableOfflineGearMenu = async function() {
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId, ['#selection-menu-button']));
 
-  // Check that "Available Offline" is shown in the menu/
+  // Check that "Available Offline" is shown in the menu.
+  await remoteCall.waitForElement(appId, pinnedMenuQuery);
+};
+
+/**
+ * Verify that "Available Offline" is available from the gear menu for a drive
+ * directory before the context menu has been opened.
+ */
+testcase.driveAvailableOfflineDirectoryGearMenu = async function() {
+  const pinnedMenuQuery = '#file-context-menu:not([hidden]) ' +
+      'cr-menu-item[command="#toggle-pinned"]:not([disabled])';
+
+  // Open Files app on Drive.
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, []);
+
+  // Select a file.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']),
+      'selectFile failed');
+
+  // Wait for the entry to be selected.
+  await remoteCall.waitForElement(appId, '.table-row[selected]');
+
+  // Click on the icon of the file to check select it
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId,
+      ['#file-list .table-row[selected] .detail-checkmark']);
+
+  // Ensure gear button is available
+  await remoteCall.waitForElement(appId, '#selection-menu-button');
+
+  // Click on gear menu and ensure "Available Offline" is shown.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#selection-menu-button']));
+
+  // Check that "Available Offline" is shown in the menu.
   await remoteCall.waitForElement(appId, pinnedMenuQuery);
 };

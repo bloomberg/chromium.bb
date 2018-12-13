@@ -191,16 +191,16 @@ function DriveToggleOfflineAction(entries, metadataModel, driveSyncHandler, ui,
  * @param {function()} onExecute
  * @return {DriveToggleOfflineAction}
  */
-DriveToggleOfflineAction.create = function(entries, metadataModel,
-    driveSyncHandler, ui, value, onExecute) {
-  var directoryEntries = entries.filter(function(entry) {
-    return entry.isDirectory;
-  });
-  if (directoryEntries.length > 0)
-    return null;
+DriveToggleOfflineAction.create = function(
+    entries, metadataModel, driveSyncHandler, ui, value, onExecute) {
+  if (!loadTimeData.getBoolean('DRIVE_FS_ENABLED')) {
+    if (entries.some((entry) => entry.isDirectory)) {
+      return null;
+    }
+  }
 
   var actionableEntries = entries.filter(function(entry) {
-    if (entry.isDirectory)
+    if (entry.isDirectory && !loadTimeData.getBoolean('DRIVE_FS_ENABLED'))
       return false;
     var metadata = metadataModel.getCache(
         [entry], ['hosted', 'pinned'])[0];
