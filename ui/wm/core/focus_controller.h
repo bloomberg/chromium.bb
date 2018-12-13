@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_observer.h"
@@ -117,14 +116,11 @@ class WM_CORE_EXPORT FocusController : public ActivationClient,
   void WindowFocusedFromInputEvent(aura::Window* window,
                                    const ui::Event* event);
 
-  aura::Window* active_window_ = nullptr;
-  aura::Window* focused_window_ = nullptr;
+  aura::Window* active_window_;
+  aura::Window* focused_window_;
 
-  bool updating_focus_ = false;
-
-  // An optional value. It is set to the window being activated and is unset
-  // after it is activated.
-  base::Optional<aura::Window*> pending_activation_;
+  bool updating_focus_;
+  bool updating_activation_;
 
   std::unique_ptr<FocusRules> rules_;
 
@@ -132,7 +128,7 @@ class WM_CORE_EXPORT FocusController : public ActivationClient,
   base::ObserverList<aura::client::FocusChangeObserver>::Unchecked
       focus_observers_;
 
-  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_{this};
+  ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusController);
 };
