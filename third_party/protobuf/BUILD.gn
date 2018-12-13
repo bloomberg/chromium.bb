@@ -212,6 +212,9 @@ static_library("protobuf_full") {
     # Chromecast requires descriptors and reflection.
     "//chromecast/*",
 
+    # libassistant requires descriptors and reflection for testing.
+    "//libassistant/*",
+
     # Perfetto uses the full library for testing.
     "//third_party/perfetto/protos/ftrace:full",
     "//third_party/perfetto/gn:protobuf_full_deps",
