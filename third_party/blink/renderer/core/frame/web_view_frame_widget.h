@@ -71,7 +71,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   bool IsPagePopup() const override { return false; }
   void WillCloseLayerTreeView() override;
   SkColor BackgroundColor() const override;
-  WebPagePopup* GetPagePopup() const override;
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget overrides:

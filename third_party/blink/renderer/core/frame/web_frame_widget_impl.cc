@@ -758,7 +758,7 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
   scoped_refptr<WebPagePopupImpl> page_popup;
   if (event.button == WebMouseEvent::Button::kLeft) {
     page_popup = view_impl->GetPagePopup();
-    view_impl->HidePopups();
+    view_impl->CancelPagePopup();
   }
 
   // Take capture on a mouse down on a plugin so we can send it mouse events.
@@ -792,7 +792,7 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
       view_impl->GetPagePopup()->HasSamePopupClient(page_popup.get())) {
     // That click triggered a page popup that is the same as the one we just
     // closed.  It needs to be closed.
-    view_impl->HidePopups();
+    view_impl->CancelPagePopup();
   }
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
@@ -859,8 +859,7 @@ void WebFrameWidgetImpl::HandleMouseUp(LocalFrame& main_frame,
 WebInputEventResult WebFrameWidgetImpl::HandleMouseWheel(
     LocalFrame& frame,
     const WebMouseWheelEvent& event) {
-
-  View()->HidePopups();
+  View()->CancelPagePopup();
   return PageWidgetEventHandler::HandleMouseWheel(frame, event);
 }
 
@@ -888,7 +887,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
       // TODO(wjmaclean): We should maybe mirror what WebViewImpl does, the
       // HandleGestureEvent() needs to happen inside or before the GestureTap
       // case to do so.
-      View()->HidePopups();
+      View()->CancelPagePopup();
       break;
     case WebInputEvent::kGestureTapCancel:
     case WebInputEvent::kGestureShowPress:

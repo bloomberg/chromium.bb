@@ -25,7 +25,8 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
  public:
   // Caller has to ensure that all arguments (i.e. |test_runner| and |delegate|)
   // live longer than |this|.
-  WebWidgetTestClient(WebWidgetTestProxyBase* web_widget_test_proxy_base);
+  WebWidgetTestClient(bool main_frame_widget,
+                      WebWidgetTestProxyBase* web_widget_test_proxy_base);
 
   ~WebWidgetTestClient() override;
 
@@ -48,6 +49,8 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
   WebTestDelegate* delegate();
   TestRunnerForSpecificView* view_test_runner();
   TestRunner* test_runner();
+
+  const bool main_frame_widget_;
 
   // Borrowed pointer to WebWidgetTestProxyBase.
   WebWidgetTestProxyBase* web_widget_test_proxy_base_;

@@ -243,10 +243,6 @@ class WebWidget {
     return 0xFFFFFFFF; /* SK_ColorWHITE */
   }
 
-  // The currently open page popup, which are calendar and datalist pickers
-  // but not the select popup.
-  virtual WebPagePopup* GetPagePopup() const { return 0; }
-
   // Called by client to request showing the context menu.
   virtual void ShowContextMenu(WebMenuSourceType) {}
 

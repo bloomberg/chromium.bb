@@ -404,7 +404,7 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
   scoped_refptr<WebPagePopupImpl> page_popup;
   if (event.button == WebMouseEvent::Button::kLeft) {
     page_popup = page_popup_;
-    HidePopups();
+    CancelPagePopup();
     DCHECK(!page_popup_);
   }
 
@@ -513,7 +513,7 @@ void WebViewImpl::HandleMouseUp(LocalFrame& main_frame,
 WebInputEventResult WebViewImpl::HandleMouseWheel(
     LocalFrame& main_frame,
     const WebMouseWheelEvent& event) {
-  HidePopups();
+  CancelPagePopup();
   return PageWidgetEventHandler::HandleMouseWheel(main_frame, event);
 }
 
@@ -606,6 +606,8 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
         // closed. It needs to be closed.
         CancelPagePopup();
       }
+      // Don't have this value persist outside of a single tap gesture, plus
+      // we're done with it now.
       last_hidden_page_popup_ = nullptr;
       break;
     }
@@ -632,8 +634,10 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
       // When we close a popup because of a GestureTapDown, we also save it so
       // we can prevent the following GestureTap from immediately reopening the
       // same popup.
+      // This value should not persist outside of a gesture, so is cleared by
+      // GestureTap (where it is used) and by GestureCancel.
       last_hidden_page_popup_ = page_popup_;
-      HidePopups();
+      CancelPagePopup();
       DCHECK(!page_popup_);
       event_result =
           MainFrameImpl()->GetFrame()->GetEventHandler().HandleGestureEvent(
@@ -641,6 +645,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
       break;
     }
     case WebInputEvent::kGestureTapCancel: {
+      // Don't have this value persist outside of a single tap gesture.
       last_hidden_page_popup_ = nullptr;
       event_result =
           MainFrameImpl()->GetFrame()->GetEventHandler().HandleGestureEvent(
@@ -1215,10 +1220,11 @@ void WebViewImpl::ShowContextMenuForElement(WebElement element) {
   }
 }
 
-PagePopup* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
+WebPagePopupImpl* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
   DCHECK(client);
-  if (HasOpenedPopup())
-    HidePopups();
+
+  // This guarantees there is never more than 1 PagePopup active at a time.
+  CancelPagePopup();
   DCHECK(!page_popup_);
 
   WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
@@ -1233,6 +1239,11 @@ PagePopup* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
   return page_popup_.get();
 }
 
+void WebViewImpl::CancelPagePopup() {
+  if (page_popup_)
+    page_popup_->Cancel();
+}
+
 void WebViewImpl::ClosePagePopup(PagePopup* popup) {
   DCHECK(popup);
   WebPagePopupImpl* popup_impl = ToWebPagePopupImpl(popup);
@@ -1245,11 +1256,6 @@ void WebViewImpl::ClosePagePopup(PagePopup* popup) {
 void WebViewImpl::CleanupPagePopup() {
   page_popup_ = nullptr;
   DisablePopupMouseWheelEventListener();
-}
-
-void WebViewImpl::CancelPagePopup() {
-  if (page_popup_)
-    page_popup_->Cancel();
 }
 
 void WebViewImpl::EnablePopupMouseWheelEventListener(
@@ -1855,7 +1861,7 @@ void WebViewImpl::SetFocus(bool enable) {
     }
     ime_accept_events_ = true;
   } else {
-    HidePopups();
+    CancelPagePopup();
 
     // Clear focus on the currently focused frame if any.
     if (!page_)
@@ -1924,10 +1930,6 @@ SkColor WebViewImpl::BackgroundColor() const {
   if (!view)
     return BaseBackgroundColor().Rgb();
   return view->DocumentBackgroundColor().Rgb();
-}
-
-WebPagePopupImpl* WebViewImpl::GetPagePopup() const {
-  return page_popup_.get();
 }
 
 bool WebViewImpl::IsAcceleratedCompositingActive() const {
@@ -2843,10 +2845,6 @@ void WebViewImpl::DidCloseContextMenu() {
   LocalFrame* frame = page_->GetFocusController().FocusedFrame();
   if (frame)
     frame->Selection().SetCaretBlinkingSuspended(false);
-}
-
-void WebViewImpl::HidePopups() {
-  CancelPagePopup();
 }
 
 WebInputMethodController* WebViewImpl::GetActiveWebInputMethodController()

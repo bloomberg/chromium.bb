@@ -1091,7 +1091,7 @@ void RenderViewImpl::ApplyNewSizeForWidget(const gfx::Size& old_size,
     // the ChromeOS virtual keyboard) where we send a resize message with no
     // change in size, but we don't want to close popups.
     // See https://crbug.com/761908.
-    webview()->HidePopups();
+    webview()->CancelPagePopup();
   }
 }
 
@@ -1837,7 +1837,7 @@ void RenderViewImpl::OnSetPageScale(float page_scale_factor) {
 }
 
 void RenderViewImpl::UpdateZoomLevel(double zoom_level) {
-  webview()->HidePopups();
+  webview()->CancelPagePopup();
   SetZoomLevel(zoom_level);
 }
 
@@ -1933,7 +1933,7 @@ void RenderViewImpl::OnClosePage() {
 
 void RenderViewImpl::OnMoveOrResizeStarted() {
   if (webview())
-    webview()->HidePopups();
+    webview()->CancelPagePopup();
 }
 
 void RenderViewImpl::OnPageWasHidden() {

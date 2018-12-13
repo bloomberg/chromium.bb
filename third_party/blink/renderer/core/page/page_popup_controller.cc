@@ -61,7 +61,7 @@ void PagePopupController::setValue(const String& value) {
 
 void PagePopupController::closePopup() {
   if (popup_client_)
-    popup_client_->ClosePopup();
+    popup_client_->CancelPopup();
 }
 
 void PagePopupController::selectFontsFromOwnerDocument(

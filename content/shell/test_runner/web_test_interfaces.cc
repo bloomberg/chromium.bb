@@ -10,10 +10,7 @@
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
-#include "content/shell/test_runner/web_view_test_client.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
-#include "content/shell/test_runner/web_widget_test_client.h"
-#include "content/shell/test_runner/web_widget_test_proxy.h"
 #include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
 
 namespace test_runner {
@@ -72,19 +69,6 @@ std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(
   return std::make_unique<WebFrameTestClient>(interfaces_->GetDelegate(),
                                               web_view_test_proxy_base,
                                               web_frame_test_proxy_base);
-}
-
-std::unique_ptr<WebViewTestClient> WebTestInterfaces::CreateWebViewTestClient(
-    WebViewTestProxyBase* web_view_test_proxy_base,
-    std::unique_ptr<WebWidgetTestClient> web_widget_test_client) {
-  return std::make_unique<WebViewTestClient>(web_view_test_proxy_base,
-                                             std::move(web_widget_test_client));
-}
-
-std::unique_ptr<WebWidgetTestClient>
-WebTestInterfaces::CreateWebWidgetTestClient(
-    WebWidgetTestProxyBase* web_widget_test_proxy_base) {
-  return std::make_unique<WebWidgetTestClient>(web_widget_test_proxy_base);
 }
 
 std::vector<blink::WebView*> WebTestInterfaces::GetWindowList() {

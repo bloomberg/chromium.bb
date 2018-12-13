@@ -48,6 +48,7 @@ class WebFrame;
 class WebHitTestResult;
 class WebLocalFrame;
 class WebPageImportanceSignals;
+class WebPagePopup;
 class WebPrerendererClient;
 class WebRemoteFrame;
 class WebSettings;
@@ -335,8 +336,11 @@ class WebView {
   // Sets whether select popup menus should be rendered by the browser.
   BLINK_EXPORT static void SetUseExternalPopupMenus(bool);
 
-  // Hides any popup (suggestions, selects...) that might be showing.
-  virtual void HidePopups() = 0;
+  // Cancels and hides the current popup (datetime, select...) if any.
+  virtual void CancelPagePopup() = 0;
+
+  // Returns the current popup if any.
+  virtual WebPagePopup* GetPagePopup() const = 0;
 
   // Visited link state --------------------------------------------------
 

@@ -30,6 +30,8 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_print_params.h"
+#include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/public/web/web_widget.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace test_runner {
@@ -135,13 +137,16 @@ void DumpPixelsAsync(blink::WebLocalFrame* web_frame,
   auto did_readback = base::BindRepeating(
       &CaptureCallback::DidCompositeAndReadback, capture_callback);
   web_widget->CompositeAndReadbackAsync(did_readback);
-  if (blink::WebPagePopup* popup = web_widget->GetPagePopup()) {
-    capture_callback->set_wait_for_popup(true);
-    blink::WebPoint position = popup->PositionRelativeToOwner();
-    position.x *= device_scale_factor_for_test;
-    position.y *= device_scale_factor_for_test;
-    capture_callback->set_popup_position(position);
-    popup->CompositeAndReadbackAsync(did_readback);
+  // The current PagePopup is composited together with the main frame.
+  if (!web_frame->Parent()) {
+    if (blink::WebPagePopup* popup = web_frame->View()->GetPagePopup()) {
+      capture_callback->set_wait_for_popup(true);
+      blink::WebPoint position = popup->PositionRelativeToOwner();
+      position.x *= device_scale_factor_for_test;
+      position.y *= device_scale_factor_for_test;
+      capture_callback->set_popup_position(position);
+      popup->CompositeAndReadbackAsync(did_readback);
+    }
   }
 }
 
