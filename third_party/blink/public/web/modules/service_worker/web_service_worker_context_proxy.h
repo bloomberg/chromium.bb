@@ -34,7 +34,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-shared.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
 #include "third_party/blink/public/platform/web_canonical_cookie.h"
 

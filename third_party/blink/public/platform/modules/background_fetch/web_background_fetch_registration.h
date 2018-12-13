@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_BACKGROUND_FETCH_WEB_BACKGROUND_FETCH_REGISTRATION_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_BACKGROUND_FETCH_WEB_BACKGROUND_FETCH_REGISTRATION_H_
 
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-shared.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 

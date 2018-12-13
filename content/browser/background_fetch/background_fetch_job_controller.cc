@@ -8,7 +8,7 @@
 #include "content/public/common/origin_util.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 #include <utility>
 
