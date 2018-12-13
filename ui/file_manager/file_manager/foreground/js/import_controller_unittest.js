@@ -29,6 +29,10 @@ var widget;
 /** @type {!DirectoryEntry} */
 var nonDcimDirectory;
 
+/**
+ * Mock metrics.
+ * @type {!Object}
+ */
 window.metrics = {
   recordSmallCount: function() {},
   recordUserAction: function() {},
@@ -36,23 +40,26 @@ window.metrics = {
   recordBoolean: function() {},
 };
 
+// Set up the test components.
 function setUp() {
   window.loadTimeData.getString = id => id;
   window.loadTimeData.data = {};
+
   new MockChromeStorageAPI();
   new MockCommandLinePrivate();
 
   widget = new importer.TestCommandWidget();
 
-  nonDcimDirectory = new MockDirectoryEntry(
-      new MockFileSystem('testFs'),
-      '/jellybeans/');
+  const testFileSystem = new MockFileSystem('testFs');
+  nonDcimDirectory = new MockDirectoryEntry(testFileSystem, '/jellybeans/');
 
   volumeManager = new MockVolumeManager();
   MockVolumeManager.installMockSingleton(volumeManager);
 
-  destinationVolume = volumeManager.getCurrentProfileVolumeInfo(
+  const downloads = volumeManager.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.DOWNLOADS);
+  assert(downloads);
+  destinationVolume = downloads;
 
   mediaScanner = new TestMediaScanner();
   mediaImporter = new TestImportRunner();
