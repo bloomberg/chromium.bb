@@ -947,39 +947,3 @@ IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
   FileDestructionWatcher destruction_watcher(extension_media_cache_path);
   destruction_watcher.WaitForDestruction();
 }
-
-class ProfileWithNetworkServiceBrowserTest : public ProfileBrowserTest {
- public:
-  ProfileWithNetworkServiceBrowserTest() {
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-  }
-
-  ~ProfileWithNetworkServiceBrowserTest() override {}
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Create a media cache file, and make sure it's deleted by the time the next
-// test runs.
-IN_PROC_BROWSER_TEST_F(ProfileWithNetworkServiceBrowserTest,
-                       PRE_DeleteMediaCache) {
-  base::FilePath media_cache_path =
-      browser()->profile()->GetPath().Append(chrome::kMediaCacheDirname);
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  EXPECT_TRUE(base::CreateDirectory(media_cache_path));
-  std::string data = "foo";
-  base::WriteFile(media_cache_path.AppendASCII("foo"), data.c_str(),
-                  data.size());
-}
-
-IN_PROC_BROWSER_TEST_F(ProfileWithNetworkServiceBrowserTest, DeleteMediaCache) {
-  base::FilePath media_cache_path =
-      browser()->profile()->GetPath().Append(chrome::kMediaCacheDirname);
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-
-  FileDestructionWatcher destruction_watcher(media_cache_path);
-  destruction_watcher.WaitForDestruction();
-}

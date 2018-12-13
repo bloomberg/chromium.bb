@@ -403,6 +403,10 @@ class ProfileIOData {
       net::HttpTransactionFactory* main_http_factory,
       std::unique_ptr<net::HttpCache::BackendFactory> backend) const;
 
+  // Deletes the media cache at the specified path if the media cache is
+  // disabled.
+  static void MaybeDeleteMediaCache(const base::FilePath& media_cache_path);
+
  private:
   class ResourceContext : public content::ResourceContext {
    public:

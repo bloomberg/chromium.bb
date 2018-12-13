@@ -724,8 +724,6 @@ void ProfileImpl::DoFinalInit() {
   signin_ui_util::InitializePrefsForProfile(this);
 #endif
 
-  io_data_.InitializeDataReductionProxy();
-
   content::URLDataSource::Add(this,
                               std::make_unique<PrefsInternalsSource>(this));
 }

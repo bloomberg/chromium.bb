@@ -9,9 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -133,6 +131,7 @@ ProfileNetworkContextService::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
   network::mojom::NetworkContextPtr network_context;
+  PartitionInfo partition_info(in_memory, relative_partition_path);
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     content::GetNetworkService()->CreateNetworkContext(
@@ -141,7 +140,6 @@ ProfileNetworkContextService::CreateNetworkContext(
   } else {
     // The corresponding |profile_io_data_network_contexts_| may already be
     // initialized if SetUpProfileIODataNetworkContext was called first.
-    PartitionInfo partition_info(in_memory, relative_partition_path);
     auto iter = profile_io_data_network_contexts_.find(partition_info);
     if (iter == profile_io_data_network_contexts_.end()) {
       // If this is not the main network context, then this method is expected
@@ -157,19 +155,6 @@ ProfileNetworkContextService::CreateNetworkContext(
       // and NetworkContexts can't be destroyed without destroying the profile.
       profile_io_data_network_contexts_.erase(iter);
     }
-  }
-
-  if ((!in_memory && !profile_->IsOffTheRecord()) &&
-      (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-       base::FeatureList::IsEnabled(features::kUseSameCacheForMedia))) {
-    base::FilePath media_cache_path = GetPartitionPath(relative_partition_path)
-                                          .Append(chrome::kMediaCacheDirname);
-    base::PostTaskWithTraits(
-        FROM_HERE,
-        {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), media_cache_path,
-                       true /* recursive */));
   }
 
   std::vector<network::mojom::NetworkContext*> contexts{network_context.get()};
@@ -352,7 +337,10 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     const base::FilePath& relative_partition_path) {
   if (profile_->IsOffTheRecord())
     in_memory = true;
-  base::FilePath path(GetPartitionPath(relative_partition_path));
+  base::FilePath path = profile_->GetPath();
+  bool is_main_partition = relative_partition_path.empty();
+  if (!is_main_partition)
+    path = path.Append(relative_partition_path);
 
   network::mojom::NetworkContextParamsPtr network_context_params =
       g_browser_process->system_network_context_manager()
@@ -417,7 +405,7 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     channel_id_path = channel_id_path.Append(chrome::kChannelIDFilename);
     network_context_params->channel_id_path = channel_id_path;
 
-    if (relative_partition_path.empty()) {  // This is the main partition.
+    if (is_main_partition) {
       network_context_params->restore_old_session_cookies =
           profile_->ShouldRestoreOldSessionCookies();
       network_context_params->persist_session_cookies =
@@ -512,14 +500,6 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   }
 
   return network_context_params;
-}
-
-base::FilePath ProfileNetworkContextService::GetPartitionPath(
-    const base::FilePath& relative_partition_path) {
-  base::FilePath path = profile_->GetPath();
-  if (!relative_partition_path.empty())
-    path = path.Append(relative_partition_path);
-  return path;
 }
 
 void ProfileNetworkContextService::OnContentSettingChanged(

@@ -197,15 +197,30 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
     IOThread* io_thread) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LazyInitialize();
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    NOTREACHED();
-    return nullptr;
-  }
-
   DCHECK(!main_request_context_getter_.get());
   main_request_context_getter_ = ChromeURLRequestContextGetter::Create(
       profile_, io_data_, protocol_handlers, std::move(request_interceptors));
+
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  std::unique_ptr<data_reduction_proxy::DataStore> store(
+      new data_reduction_proxy::DataStoreImpl(io_data_->profile_path_));
+  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)
+      ->InitDataReductionProxySettings(
+          io_data_->data_reduction_proxy_io_data(), profile_->GetPrefs(),
+          // TODO(crbug.com/721403) Switch DRP to mojo. For now it is disabled
+          // with network service.
+          base::FeatureList::IsEnabled(network::features::kNetworkService)
+              ? nullptr
+              : main_request_context_getter_.get(),
+          profile_,
+          content::BrowserContext::GetDefaultStoragePartition(profile_)
+              ->GetURLLoaderFactoryForBrowserProcess(),
+          std::move(store),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+          db_task_runner);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
@@ -218,12 +233,6 @@ scoped_refptr<ChromeURLRequestContextGetter>
 ProfileImplIOData::Handle::GetMediaRequestContextGetter() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LazyInitialize();
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    NOTREACHED();
-    return nullptr;
-  }
-
   if (!media_request_context_getter_.get()) {
     media_request_context_getter_ =
         ChromeURLRequestContextGetter::CreateForMedia(profile_, io_data_);
@@ -242,11 +251,6 @@ ProfileImplIOData::Handle::CreateIsolatedAppRequestContextGetter(
   // expect isolated partition, which will never go to the default profile path.
   CHECK(partition_path != profile_->GetPath());
   LazyInitialize();
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    NOTREACHED();
-    return nullptr;
-  }
 
   // Keep a map of request context getters, one per requested storage partition.
   StoragePartitionDescriptor descriptor(partition_path, in_memory);
@@ -291,11 +295,6 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
   CHECK(partition_path != profile_->GetPath());
   LazyInitialize();
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    NOTREACHED();
-    return nullptr;
-  }
-
   // Keep a map of request context getters, one per requested storage partition.
   StoragePartitionDescriptor descriptor(partition_path, in_memory);
   auto iter = isolated_media_request_context_getter_map_.find(descriptor);
@@ -314,29 +313,6 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
   isolated_media_request_context_getter_map_[descriptor] = context;
 
   return context;
-}
-
-void ProfileImplIOData::Handle::InitializeDataReductionProxy() const {
-  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  std::unique_ptr<data_reduction_proxy::DataStore> store(
-      new data_reduction_proxy::DataStoreImpl(io_data_->profile_path_));
-  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)
-      ->InitDataReductionProxySettings(
-          io_data_->data_reduction_proxy_io_data(), profile_->GetPrefs(),
-          // TODO(crbug.com/721403) Switch DRP to mojo. For now it is disabled
-          // with network service.
-          base::FeatureList::IsEnabled(network::features::kNetworkService)
-              ? nullptr
-              : main_request_context_getter_.get(),
-          profile_,
-          content::BrowserContext::GetDefaultStoragePartition(profile_)
-              ->GetURLLoaderFactoryForBrowserProcess(),
-          std::move(store),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-          db_task_runner);
 }
 
 void ProfileImplIOData::Handle::LazyInitialize() const {
@@ -459,14 +435,13 @@ void ProfileImplIOData::OnMainRequestContextCreated(
   InitializeExtensionsCookieStore(profile_params);
 #endif
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Create a media request context based on the main context, but using a
-    // media cache.  It shares the same job factory as the main context.
-    StoragePartitionDescriptor details(profile_path_, false);
-    media_request_context_.reset(InitializeMediaRequestContext(
-        main_request_context(), details, "main_media"));
-  }
+  MaybeDeleteMediaCache(lazy_params_->media_cache_path);
 
+  // Create a media request context based on the main context, but using a
+  // media cache.  It shares the same job factory as the main context.
+  StoragePartitionDescriptor details(profile_path_, false);
+  media_request_context_.reset(InitializeMediaRequestContext(
+      main_request_context(), details, "main_media"));
   lazy_params_.reset();
 }
 
