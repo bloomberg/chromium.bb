@@ -164,7 +164,9 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   virtual void SanitizeValueInResponseToMinOrMaxAttributeChange();
   virtual bool ShouldRespectAlignAttribute();
   virtual FileList* Files();
-  virtual void SetFiles(FileList*);
+  // Should return true if the file list was were changed.
+  virtual bool SetFiles(FileList*);
+  virtual void SetFilesAndDispatchEvents(FileList*);
   virtual void SetFilesFromPaths(const Vector<String>&);
   // Should return true if the given DragData has more than one dropped files.
   virtual bool ReceiveDroppedFiles(const DragData*);
