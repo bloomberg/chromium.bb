@@ -1006,11 +1006,7 @@ void RenderWidget::DoRequestNewLayerTreeFrameSink(
                                                         std::move(client_info));
   layer_tree_view_->SetRenderFrameObserver(
       std::move(render_frame_metadata_observer));
-  GURL url;
-  // TODO(crbug.com/896836): Sometimes there's no valid widget, for main frame
-  // widgets.
-  if (!owner_delegate_ || GetFrameWidget())
-    url = GetWebWidget()->GetURLForDebugTrace();
+  GURL url = GetWebWidget()->GetURLForDebugTrace();
   // The |url| is not always available, fallback to a fixed string.
   if (url.is_empty())
     url = GURL("chrome://gpu/RenderWidget::RequestNewLayerTreeFrameSink");
