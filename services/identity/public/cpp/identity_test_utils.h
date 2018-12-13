@@ -51,11 +51,12 @@ AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
                               const std::string& email);
 
 // Sets a refresh token for the primary account (which must already be set).
-// Blocks until the refresh token is set. If |token| is not provided a default
-// one will be used instead.
+// Blocks until the refresh token is set. If |token_value| is empty a default
+// value will be used instead.
 // NOTE: See disclaimer at top of file re: direct usage.
-void SetRefreshTokenForPrimaryAccount(IdentityManager* identity_manager,
-                                      const std::string* token = nullptr);
+void SetRefreshTokenForPrimaryAccount(
+    IdentityManager* identity_manager,
+    const std::string& token_value = std::string());
 
 // Sets a special invalid refresh token for the primary account (which must
 // already be set). Blocks until the refresh token is set.
@@ -98,12 +99,12 @@ AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
                                  const std::string& email);
 
 // Sets a refresh token for the given account (which must already be available).
-// Blocks until the refresh token is set. If |token| is not provided a default
-// one will be used instead.
+// Blocks until the refresh token is set. If |token_value| is empty a default
+// value will be used instead.
 // NOTE: See disclaimer at top of file re: direct usage.
 void SetRefreshTokenForAccount(IdentityManager* identity_manager,
                                const std::string& account_id,
-                               const std::string* token = nullptr);
+                               const std::string& token_value = std::string());
 
 // Sets a special invalid refresh token for the given account (which must
 // already be available). Blocks until the refresh token is set.
