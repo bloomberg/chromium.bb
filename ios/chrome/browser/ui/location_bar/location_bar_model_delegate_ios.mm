@@ -95,19 +95,6 @@ LocationBarModelDelegateIOS::GetCertificate() const {
   return scoped_refptr<net::X509Certificate>();
 }
 
-bool LocationBarModelDelegateIOS::FailsMalwareCheck() const {
-  web::WebState* web_state = GetActiveWebState();
-  // If there is no active WebState (which can happen during toolbar
-  // initialization), so nothing can fail.
-  if (!web_state)
-    return NO;
-  auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
-  security_state::SecurityInfo result;
-  client->GetSecurityInfo(&result);
-  return result.malicious_content_status !=
-         security_state::MALICIOUS_CONTENT_STATUS_NONE;
-}
-
 const gfx::VectorIcon* LocationBarModelDelegateIOS::GetVectorIconOverride()
     const {
   return nullptr;

@@ -31,7 +31,6 @@ class LocationBarModelDelegateIOS : public LocationBarModelDelegate {
   bool ShouldDisplayURL() const override;
   void GetSecurityInfo(security_state::SecurityInfo* result) const override;
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
-  bool FailsMalwareCheck() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;
   bool IsOfflinePage() const override;
 

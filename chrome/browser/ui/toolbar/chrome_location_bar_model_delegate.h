@@ -40,8 +40,6 @@ class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
   bool GetURL(GURL* url) const override;
   void GetSecurityInfo(security_state::SecurityInfo* result) const override;
   scoped_refptr<net::X509Certificate> GetCertificate() const override;
-  bool FailsBillingCheck() const override;
-  bool FailsMalwareCheck() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;
   bool IsOfflinePage() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;

@@ -18,14 +18,6 @@ scoped_refptr<net::X509Certificate> LocationBarModelDelegate::GetCertificate()
   return nullptr;
 }
 
-bool LocationBarModelDelegate::FailsBillingCheck() const {
-  return false;
-}
-
-bool LocationBarModelDelegate::FailsMalwareCheck() const {
-  return false;
-}
-
 const gfx::VectorIcon* LocationBarModelDelegate::GetVectorIconOverride() const {
   return nullptr;
 }

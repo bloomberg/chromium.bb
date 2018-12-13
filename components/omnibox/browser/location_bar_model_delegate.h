@@ -47,12 +47,6 @@ class LocationBarModelDelegate {
   // Returns the certificate for the current navigation entry.
   virtual scoped_refptr<net::X509Certificate> GetCertificate() const;
 
-  // Returns true if the current page fails the billing interstitial check.
-  virtual bool FailsBillingCheck() const;
-
-  // Returns true if the current page fails the malware check.
-  virtual bool FailsMalwareCheck() const;
-
   // Returns the id of the icon to show to the left of the address, or nullptr
   // if the icon should be selected by the caller. This is useful for
   // associating particular URLs with particular schemes without importing
