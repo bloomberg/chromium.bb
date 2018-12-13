@@ -311,8 +311,9 @@ void AppListPresenterImpl::ScheduleAnimation() {
   aura::Window* root_window = widget->GetNativeView()->GetRootWindow();
   const gfx::Vector2d offset =
       delegate_->GetVisibilityAnimationOffset(root_window);
-  base::TimeDelta animation_duration =
-      delegate_->GetVisibilityAnimationDuration(root_window, is_visible_);
+  const base::TimeDelta animation_duration =
+      delegate_->GetVisibilityAnimationDuration(root_window,
+                                                view_->is_fullscreen());
   gfx::Rect target_bounds = widget->GetNativeView()->bounds();
   target_bounds.Offset(offset);
   widget->GetNativeView()->SetBounds(target_bounds);
