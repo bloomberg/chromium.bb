@@ -28,8 +28,9 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
   SyncApiComponentFactoryMock();
   ~SyncApiComponentFactoryMock() override;
 
-  MOCK_METHOD1(CreateCommonDataTypeControllers,
-               DataTypeController::TypeVector(ModelTypeSet disabled_types));
+  MOCK_METHOD2(CreateCommonDataTypeControllers,
+               DataTypeController::TypeVector(ModelTypeSet disabled_types,
+                                              SyncService* sync_service));
   MOCK_METHOD6(CreateDataTypeManager,
                std::unique_ptr<DataTypeManager>(
                    ModelTypeSet,
@@ -46,9 +47,10 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
                    const base::FilePath& sync_folder));
   MOCK_METHOD0(CreateLocalDeviceInfoProvider,
                std::unique_ptr<LocalDeviceInfoProvider>());
-  MOCK_METHOD1(
+  MOCK_METHOD2(
       CreateBookmarkSyncComponents,
-      SyncComponents(std::unique_ptr<DataTypeErrorHandler> error_handler));
+      SyncComponents(std::unique_ptr<DataTypeErrorHandler> error_handler,
+                     UserShare* user_share));
 };
 
 }  // namespace syncer

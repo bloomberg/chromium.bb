@@ -18,6 +18,11 @@ namespace autofill {
 class AutofillWebDataService;
 }  // namespace autofill
 
+namespace syncer {
+class SyncClient;
+class SyncService;
+}  // namespace syncer
+
 namespace browser_sync {
 
 // Controls syncing of the AUTOFILL_PROFILE data type.
@@ -29,6 +34,7 @@ class AutofillProfileDataTypeController
   AutofillProfileDataTypeController(
       scoped_refptr<base::SingleThreadTaskRunner> db_thread,
       const base::Closure& dump_stack,
+      syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
   ~AutofillProfileDataTypeController() override;
@@ -54,9 +60,6 @@ class AutofillProfileDataTypeController
 
   // Report an error (which will stop the datatype asynchronously).
   void DisableForPolicy();
-
-  // A pointer to the sync client.
-  syncer::SyncClient* const sync_client_;
 
   // A reference to the AutofillWebDataService for this controller.
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;

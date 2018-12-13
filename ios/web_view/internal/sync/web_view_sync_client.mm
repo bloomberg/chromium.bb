@@ -17,7 +17,6 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -38,7 +37,6 @@
 #include "ios/web_view/internal/pref_names.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
-#import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 #include "ui/base/device_form_factor.h"
@@ -92,11 +90,6 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
 
 WebViewSyncClient::~WebViewSyncClient() {}
 
-syncer::SyncService* WebViewSyncClient::GetSyncService() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return WebViewProfileSyncServiceFactory::GetForBrowserState(browser_state_);
-}
-
 PrefService* WebViewSyncClient::GetPrefService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return browser_state_->GetPrefs();
@@ -143,10 +136,12 @@ base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
 }
 
 syncer::DataTypeController::TypeVector
-WebViewSyncClient::CreateDataTypeControllers() {
+WebViewSyncClient::CreateDataTypeControllers(
+    syncer::SyncService* sync_service) {
   // iOS WebView uses butter sync and so has no need to record user consents.
   syncer::DataTypeController::TypeVector type_vector =
-      component_factory_->CreateCommonDataTypeControllers(GetDisabledTypes());
+      component_factory_->CreateCommonDataTypeControllers(GetDisabledTypes(),
+                                                          sync_service);
   type_vector.erase(std::remove_if(type_vector.begin(), type_vector.end(),
                                    [](const auto& data_type_controller) {
                                      return data_type_controller->type() ==

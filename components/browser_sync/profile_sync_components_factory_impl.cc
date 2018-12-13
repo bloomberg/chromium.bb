@@ -136,7 +136,8 @@ ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {}
 
 syncer::DataTypeController::TypeVector
 ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
-    syncer::ModelTypeSet disabled_types) {
+    syncer::ModelTypeSet disabled_types,
+    syncer::SyncService* sync_service) {
   syncer::DataTypeController::TypeVector controllers;
   const base::RepeatingClosure dump_stack =
       base::BindRepeating(&syncer::ReportUnrecoverableError, channel_);
@@ -165,11 +166,11 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                     base::BindRepeating(
                         &AutofillProfileDelegateFromDataService,
                         base::RetainedRef(web_data_service_on_disk_))),
-                sync_client_));
+                sync_client_->GetPrefService(), sync_service));
       } else {
         controllers.push_back(
             std::make_unique<AutofillProfileDataTypeController>(
-                db_thread_, dump_stack, sync_client_,
+                db_thread_, dump_stack, sync_service, sync_client_,
                 web_data_service_on_disk_));
       }
     }
@@ -182,12 +183,13 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         controllers.push_back(
             CreateWalletModelTypeControllerWithInMemorySupport(
                 syncer::AUTOFILL_WALLET_DATA,
-                base::BindRepeating(&AutofillWalletDelegateFromDataService)));
+                base::BindRepeating(&AutofillWalletDelegateFromDataService),
+                sync_service));
       } else {
         controllers.push_back(
             std::make_unique<AutofillWalletDataTypeController>(
                 syncer::AUTOFILL_WALLET_DATA, db_thread_, dump_stack,
-                sync_client_, web_data_service_on_disk_));
+                sync_service, sync_client_, web_data_service_on_disk_));
       }
     }
 
@@ -199,13 +201,13 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
               switches::kSyncUSSAutofillWalletMetadata)) {
         controllers.push_back(CreateWalletModelTypeController(
             syncer::AUTOFILL_WALLET_METADATA,
-            base::BindRepeating(
-                &AutofillWalletMetadataDelegateFromDataService)));
+            base::BindRepeating(&AutofillWalletMetadataDelegateFromDataService),
+            sync_service));
       } else {
         controllers.push_back(
             std::make_unique<AutofillWalletDataTypeController>(
                 syncer::AUTOFILL_WALLET_METADATA, db_thread_, dump_stack,
-                sync_client_, web_data_service_on_disk_));
+                sync_service, sync_client_, web_data_service_on_disk_));
       }
     }
   }
@@ -224,7 +226,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                                   sync_client_->GetFaviconService()))));
     } else {
       controllers.push_back(std::make_unique<BookmarkDataTypeController>(
-          dump_stack, sync_client_));
+          dump_stack, sync_service, sync_client_));
     }
   }
 
@@ -247,12 +249,12 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
               switches::kSyncPseudoUSSHistoryDeleteDirectives)) {
         controllers.push_back(
             std::make_unique<HistoryDeleteDirectivesModelTypeController>(
-                dump_stack, sync_client_));
+                dump_stack, sync_service, sync_client_));
 
       } else {
         controllers.push_back(
             std::make_unique<HistoryDeleteDirectivesDataTypeController>(
-                dump_stack, sync_client_));
+                dump_stack, sync_service, sync_client_));
       }
     }
 
@@ -297,11 +299,11 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                 dump_stack));
       } else {
         controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-            syncer::FAVICON_IMAGES, base::RepeatingClosure(), sync_client_,
-            syncer::GROUP_UI, ui_thread_));
+            syncer::FAVICON_IMAGES, base::RepeatingClosure(), sync_service,
+            sync_client_, syncer::GROUP_UI, ui_thread_));
         controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-            syncer::FAVICON_TRACKING, base::RepeatingClosure(), sync_client_,
-            syncer::GROUP_UI, ui_thread_));
+            syncer::FAVICON_TRACKING, base::RepeatingClosure(), sync_service,
+            sync_client_, syncer::GROUP_UI, ui_thread_));
       }
     }
   }
@@ -312,17 +314,18 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
       controllers.push_back(
           std::make_unique<password_manager::PasswordModelTypeController>(
-              password_store_->CreateSyncControllerDelegate(), sync_client_));
+              password_store_->CreateSyncControllerDelegate(), sync_service,
+              sync_client_));
     } else if (base::FeatureList::IsEnabled(
                    switches::kSyncPseudoUSSPasswords)) {
       controllers.push_back(
           std::make_unique<password_manager::
                                PasswordSyncableServiceBasedModelTypeController>(
               sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
-              dump_stack, password_store_, sync_client_));
+              dump_stack, password_store_, sync_service, sync_client_));
     } else {
       controllers.push_back(std::make_unique<PasswordDataTypeController>(
-          dump_stack, sync_client_,
+          dump_stack, sync_service, sync_client_,
           sync_client_->GetPasswordStateChangedCallback(), password_store_));
     }
   }
@@ -343,8 +346,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
               dump_stack));
     } else {
       controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-          syncer::PREFERENCES, dump_stack, sync_client_, syncer::GROUP_UI,
-          ui_thread_));
+          syncer::PREFERENCES, dump_stack, sync_service, sync_client_,
+          syncer::GROUP_UI, ui_thread_));
     }
   }
 
@@ -361,7 +364,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
               dump_stack));
     } else {
       controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-          syncer::PRIORITY_PREFERENCES, dump_stack, sync_client_,
+          syncer::PRIORITY_PREFERENCES, dump_stack, sync_service, sync_client_,
           syncer::GROUP_UI, ui_thread_));
     }
   }
@@ -442,10 +445,9 @@ ProfileSyncComponentsFactoryImpl::CreateLocalDeviceInfoProvider() {
 
 syncer::SyncApiComponentFactory::SyncComponents
 ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
-    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) {
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+    syncer::UserShare* user_share) {
   BookmarkModel* bookmark_model = sync_client_->GetBookmarkModel();
-  syncer::UserShare* user_share =
-      sync_client_->GetSyncService()->GetUserShare();
 // TODO(akalin): We may want to propagate this switch up eventually.
 #if defined(OS_ANDROID) || defined(OS_IOS)
   const bool kExpectMobileBookmarksFolder = true;
@@ -489,14 +491,15 @@ ProfileSyncComponentsFactoryImpl::CreateWalletModelTypeController(
     syncer::ModelType type,
     const base::RepeatingCallback<
         base::WeakPtr<syncer::ModelTypeControllerDelegate>(
-            autofill::AutofillWebDataService*)>& delegate_from_web_data) {
+            autofill::AutofillWebDataService*)>& delegate_from_web_data,
+    syncer::SyncService* sync_service) {
   return std::make_unique<AutofillWalletModelTypeController>(
       type,
       std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
           db_thread_,
           base::BindRepeating(delegate_from_web_data,
                               base::RetainedRef(web_data_service_on_disk_))),
-      sync_client_);
+      sync_client_->GetPrefService(), sync_service);
 }
 
 std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
@@ -504,7 +507,8 @@ std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
         syncer::ModelType type,
         const base::RepeatingCallback<
             base::WeakPtr<syncer::ModelTypeControllerDelegate>(
-                autofill::AutofillWebDataService*)>& delegate_from_web_data) {
+                autofill::AutofillWebDataService*)>& delegate_from_web_data,
+        syncer::SyncService* sync_service) {
   return std::make_unique<AutofillWalletModelTypeController>(
       type, /*delegate_on_disk=*/
       std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
@@ -516,7 +520,7 @@ std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
           db_thread_,
           base::BindRepeating(delegate_from_web_data,
                               base::RetainedRef(web_data_service_in_memory_))),
-      sync_client_);
+      sync_client_->GetPrefService(), sync_service);
 }
 
 }  // namespace browser_sync

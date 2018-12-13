@@ -39,8 +39,6 @@ class BundleSyncClient : public syncer::FakeSyncClient {
                    autofill::PersonalDataManager* personal_data_manager,
                    const base::Callback<base::WeakPtr<syncer::SyncableService>(
                        syncer::ModelType type)>& get_syncable_service_callback,
-                   const base::Callback<syncer::SyncService*(void)>&
-                       get_sync_service_callback,
                    const base::Callback<bookmarks::BookmarkModel*(void)>&
                        get_bookmark_model_callback,
                    scoped_refptr<base::SequencedTaskRunner> db_thread,
@@ -53,7 +51,6 @@ class BundleSyncClient : public syncer::FakeSyncClient {
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
-  syncer::SyncService* GetSyncService() override;
   syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
       syncer::ModelSafeGroup group) override;
@@ -67,7 +64,6 @@ class BundleSyncClient : public syncer::FakeSyncClient {
   const base::Callback<base::WeakPtr<syncer::SyncableService>(
       syncer::ModelType type)>
       get_syncable_service_callback_;
-  const base::Callback<syncer::SyncService*(void)> get_sync_service_callback_;
   const base::Callback<bookmarks::BookmarkModel*(void)>
       get_bookmark_model_callback_;
   // These task runners, if not null, are used in CreateModelWorkerForGroup.
@@ -83,7 +79,6 @@ BundleSyncClient::BundleSyncClient(
     autofill::PersonalDataManager* personal_data_manager,
     const base::Callback<base::WeakPtr<syncer::SyncableService>(
         syncer::ModelType type)>& get_syncable_service_callback,
-    const base::Callback<syncer::SyncService*(void)>& get_sync_service_callback,
     const base::Callback<bookmarks::BookmarkModel*(void)>&
         get_bookmark_model_callback,
     scoped_refptr<base::SequencedTaskRunner> db_thread,
@@ -94,7 +89,6 @@ BundleSyncClient::BundleSyncClient(
       model_type_store_service_(model_type_store_service),
       personal_data_manager_(personal_data_manager),
       get_syncable_service_callback_(get_syncable_service_callback),
-      get_sync_service_callback_(get_sync_service_callback),
       get_bookmark_model_callback_(get_bookmark_model_callback),
       db_thread_(db_thread),
       file_thread_(file_thread),
@@ -117,12 +111,6 @@ BundleSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   if (get_syncable_service_callback_.is_null())
     return syncer::FakeSyncClient::GetSyncableServiceForType(type);
   return get_syncable_service_callback_.Run(type);
-}
-
-syncer::SyncService* BundleSyncClient::GetSyncService() {
-  if (get_sync_service_callback_.is_null())
-    return syncer::FakeSyncClient::GetSyncService();
-  return get_sync_service_callback_.Run();
 }
 
 scoped_refptr<syncer::ModelSafeWorker>
@@ -197,13 +185,6 @@ void ProfileSyncServiceBundle::SyncClientBuilder::SetSyncableServiceCallback(
   get_syncable_service_callback_ = get_syncable_service_callback;
 }
 
-// The client will call this callback to produce the service.
-void ProfileSyncServiceBundle::SyncClientBuilder::SetSyncServiceCallback(
-    const base::Callback<syncer::SyncService*(void)>&
-        get_sync_service_callback) {
-  get_sync_service_callback_ = get_sync_service_callback;
-}
-
 void ProfileSyncServiceBundle::SyncClientBuilder::SetHistoryService(
     history::HistoryService* history_service) {
   history_service_ = history_service;
@@ -220,8 +201,7 @@ ProfileSyncServiceBundle::SyncClientBuilder::Build() {
   return std::make_unique<BundleSyncClient>(
       bundle_->component_factory(), bundle_->pref_service(),
       &bundle_->model_type_store_service_, personal_data_manager_,
-      get_syncable_service_callback_, get_sync_service_callback_,
-      get_bookmark_model_callback_,
+      get_syncable_service_callback_, get_bookmark_model_callback_,
       activate_model_creation_ ? bundle_->db_thread() : nullptr,
       activate_model_creation_ ? base::SequencedTaskRunnerHandle::Get()
                                : nullptr,

@@ -65,7 +65,6 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   history::HistoryService* GetHistoryService() override {
     return history_service_.get();
   }
-  syncer::SyncService* GetSyncService() override { return &service_; }
   syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override {
     return &components_factory_;
   }
@@ -78,10 +77,10 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
     model_associator_ = model_associator_deleter_.get();
     change_processor_ = change_processor_deleter_.get();
     history_service_ = std::make_unique<HistoryMock>();
-    bookmark_dtc_ =
-        std::make_unique<BookmarkDataTypeController>(base::DoNothing(), this);
+    bookmark_dtc_ = std::make_unique<BookmarkDataTypeController>(
+        base::DoNothing(), &service_, this);
 
-    ON_CALL(components_factory_, CreateBookmarkSyncComponents(_))
+    ON_CALL(components_factory_, CreateBookmarkSyncComponents(_, _))
         .WillByDefault(testing::InvokeWithoutArgs([=]() {
           syncer::SyncApiComponentFactory::SyncComponents components;
           components.model_associator = std::move(model_associator_deleter_);

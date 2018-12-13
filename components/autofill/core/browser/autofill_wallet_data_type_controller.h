@@ -14,6 +14,11 @@ namespace autofill {
 class AutofillWebDataService;
 }
 
+namespace syncer {
+class SyncClient;
+class SyncService;
+}  // namespace syncer
+
 namespace browser_sync {
 
 // Controls syncing of either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
@@ -26,6 +31,7 @@ class AutofillWalletDataTypeController
       syncer::ModelType type,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread,
       const base::Closure& dump_stack,
+      syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
   ~AutofillWalletDataTypeController() override;

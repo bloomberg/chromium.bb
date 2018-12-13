@@ -25,6 +25,7 @@
 #include "components/sync/driver/data_type_controller_mock.h"
 #include "components/sync/driver/fake_generic_change_processor.h"
 #include "components/sync/driver/fake_sync_client.h"
+#include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/fake_syncable_service.h"
@@ -94,7 +95,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test,
         base::ThreadTaskRunnerHandle::Get());
     autofill_wallet_dtc_ = std::make_unique<AutofillWalletDataTypeController>(
         syncer::AUTOFILL_WALLET_DATA, base::ThreadTaskRunnerHandle::Get(),
-        base::DoNothing(), this, web_data_service_);
+        base::DoNothing(), &sync_service_, this, web_data_service_);
 
     last_type_ = syncer::UNSPECIFIED;
     last_error_ = syncer::SyncError();
@@ -144,6 +145,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test,
 
   base::test::ScopedTaskEnvironment task_environment_;
   TestingPrefServiceSimple prefs_;
+  syncer::FakeSyncService sync_service_;
   syncer::StartCallbackMock start_callback_;
   syncer::SyncApiComponentFactoryMock profile_sync_factory_;
   syncer::FakeSyncableService syncable_service_;

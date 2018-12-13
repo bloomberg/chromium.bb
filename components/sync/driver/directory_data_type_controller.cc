@@ -19,11 +19,11 @@ namespace syncer {
 DirectoryDataTypeController::DirectoryDataTypeController(
     ModelType type,
     const base::Closure& dump_stack,
-    SyncClient* sync_client,
+    SyncService* sync_service,
     ModelSafeGroup model_safe_group)
     : DataTypeController(type),
       dump_stack_(dump_stack),
-      sync_client_(sync_client),
+      sync_service_(sync_service),
       model_safe_group_(model_safe_group) {}
 
 DirectoryDataTypeController::~DirectoryDataTypeController() {}
@@ -69,7 +69,7 @@ void DirectoryDataTypeController::Stop(ShutdownReason shutdown_reason,
 
 void DirectoryDataTypeController::GetAllNodes(AllNodesCallback callback) {
   std::unique_ptr<base::ListValue> node_list = GetAllNodesForTypeFromDirectory(
-      type(), sync_client_->GetSyncService()->GetUserShare()->directory.get());
+      type(), sync_service_->GetUserShare()->directory.get());
   std::move(callback).Run(type(), std::move(node_list));
 }
 
@@ -77,10 +77,8 @@ void DirectoryDataTypeController::GetStatusCounters(
     StatusCountersCallback callback) {
   std::vector<int> num_entries_by_type(syncer::MODEL_TYPE_COUNT, 0);
   std::vector<int> num_to_delete_entries_by_type(syncer::MODEL_TYPE_COUNT, 0);
-  sync_client_->GetSyncService()
-      ->GetUserShare()
-      ->directory->CollectMetaHandleCounts(&num_entries_by_type,
-                                           &num_to_delete_entries_by_type);
+  sync_service_->GetUserShare()->directory->CollectMetaHandleCounts(
+      &num_entries_by_type, &num_to_delete_entries_by_type);
   syncer::StatusCounters counters;
   counters.num_entries_and_tombstones = num_entries_by_type[type()];
   counters.num_entries =
@@ -91,7 +89,7 @@ void DirectoryDataTypeController::GetStatusCounters(
 
 void DirectoryDataTypeController::RecordMemoryUsageAndCountsHistograms() {
   syncer::syncable::Directory* directory =
-      sync_client_->GetSyncService()->GetUserShare()->directory.get();
+      sync_service_->GetUserShare()->directory.get();
   SyncRecordModelTypeMemoryHistogram(
       type(), directory->EstimateMemoryUsageByType(type()));
   int count_excl_root_node = directory->CountEntriesByType(type()) - 1;

@@ -126,11 +126,6 @@ IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}
 
-syncer::SyncService* IOSChromeSyncClient::GetSyncService() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return ProfileSyncServiceFactory::GetForBrowserState(browser_state_);
-}
-
 PrefService* IOSChromeSyncClient::GetPrefService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return browser_state_->GetPrefs();
@@ -186,10 +181,11 @@ base::Closure IOSChromeSyncClient::GetPasswordStateChangedCallback() {
 }
 
 syncer::DataTypeController::TypeVector
-IOSChromeSyncClient::CreateDataTypeControllers() {
+IOSChromeSyncClient::CreateDataTypeControllers(
+    syncer::SyncService* sync_service) {
   // The iOS port does not have any platform-specific datatypes.
   return component_factory_->CreateCommonDataTypeControllers(
-      GetDisabledTypesFromCommandLine());
+      GetDisabledTypesFromCommandLine(), sync_service);
 }
 
 BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoServiceIfExists() {

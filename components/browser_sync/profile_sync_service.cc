@@ -254,8 +254,11 @@ void ProfileSyncService::Initialize() {
       sync_service_url_, local_device_->GetSyncUserAgent(), url_loader_factory_,
       syncer::SyncStoppedReporter::ResultCallback());
 
+  // TODO(mastiz): This function should probably be deferred to the very end of
+  // Initialize(), or even better initiated directly by the sync client (e.g.
+  // inject the map as part of Init()'s parameters).
   data_type_controllers_ =
-      BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers());
+      BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers(this));
 
   device_info_sync_bridge_ = std::make_unique<syncer::DeviceInfoSyncBridge>(
       local_device_.get(), model_type_store_factory,

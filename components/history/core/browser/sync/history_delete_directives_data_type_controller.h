@@ -9,6 +9,11 @@
 #include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/sync_service_observer.h"
 
+namespace syncer {
+class SyncClient;
+class SyncService;
+}  // namespace syncer
+
 namespace browser_sync {
 
 // A controller for delete directives, which cannot sync when full encryption
@@ -19,6 +24,7 @@ class HistoryDeleteDirectivesDataTypeController
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   HistoryDeleteDirectivesDataTypeController(const base::Closure& dump_stack,
+                                            syncer::SyncService* sync_service,
                                             syncer::SyncClient* sync_client);
   ~HistoryDeleteDirectivesDataTypeController() override;
 
@@ -34,8 +40,6 @@ class HistoryDeleteDirectivesDataTypeController
   // Triggers a SingleDataTypeUnrecoverable error and returns true if the
   // type is no longer ready, else does nothing and returns false.
   bool DisableTypeIfNecessary();
-
-  syncer::SyncClient* sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDeleteDirectivesDataTypeController);
 };

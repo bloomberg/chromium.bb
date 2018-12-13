@@ -12,6 +12,7 @@
 namespace syncer {
 class ModelTypeControllerDelegate;
 class SyncClient;
+class SyncService;
 }  // namespace syncer
 
 namespace password_manager {
@@ -22,6 +23,7 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
  public:
   PasswordModelTypeController(
       std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
+      syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client);
   ~PasswordModelTypeController() override;
 
@@ -35,6 +37,7 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
   void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
+  syncer::SyncService* const sync_service_;
   syncer::SyncClient* const sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordModelTypeController);

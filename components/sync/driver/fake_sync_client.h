@@ -14,7 +14,6 @@
 
 namespace syncer {
 
-class FakeSyncService;
 class ModelTypeSyncBridge;
 
 // Fake implementation of SyncClient interface for tests.
@@ -24,7 +23,6 @@ class FakeSyncClient : public SyncClient {
   explicit FakeSyncClient(SyncApiComponentFactory* factory);
   ~FakeSyncClient() override;
 
-  SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;
   ModelTypeStoreService* GetModelTypeStoreService() override;
@@ -34,7 +32,8 @@ class FakeSyncClient : public SyncClient {
   sync_sessions::SessionSyncService* GetSessionSyncService() override;
   bool HasPasswordStore() override;
   base::Closure GetPasswordStateChangedCallback() override;
-  DataTypeController::TypeVector CreateDataTypeControllers() override;
+  DataTypeController::TypeVector CreateDataTypeControllers(
+      SyncService* sync_service) override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
   invalidation::InvalidationService* GetInvalidationService() override;
@@ -53,7 +52,6 @@ class FakeSyncClient : public SyncClient {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   ModelTypeSyncBridge* bridge_;
   SyncApiComponentFactory* factory_;
-  std::unique_ptr<FakeSyncService> sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncClient);
 };

@@ -12,8 +12,10 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/model_type_controller.h"
 
+class PrefService;
+
 namespace syncer {
-class SyncClient;
+class SyncService;
 }
 
 namespace browser_sync {
@@ -26,12 +28,14 @@ class AutofillWalletModelTypeController : public syncer::ModelTypeController {
   AutofillWalletModelTypeController(
       syncer::ModelType type,
       std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
-      syncer::SyncClient* sync_client);
+      PrefService* pref_service,
+      syncer::SyncService* sync_service);
   AutofillWalletModelTypeController(
       syncer::ModelType type,
       std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
       std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_in_memory,
-      syncer::SyncClient* sync_client);
+      PrefService* pref_service,
+      syncer::SyncService* sync_service);
   ~AutofillWalletModelTypeController() override;
 
   // DataTypeController overrides.
@@ -44,7 +48,8 @@ class AutofillWalletModelTypeController : public syncer::ModelTypeController {
   bool IsEnabled() const;
   void SubscribeToPrefChanges();
 
-  syncer::SyncClient* const sync_client_;
+  PrefService* const pref_service_;
+  syncer::SyncService* const sync_service_;
 
   PrefChangeRegistrar pref_registrar_;
 

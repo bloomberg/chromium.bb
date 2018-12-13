@@ -23,6 +23,7 @@
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
+#include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/generic_change_processor_factory.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/model/fake_syncable_service.h"
@@ -97,12 +98,14 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
 class AsyncDirectoryTypeControllerFake : public AsyncDirectoryTypeController {
  public:
   AsyncDirectoryTypeControllerFake(
+      SyncService* sync_service,
       SyncClient* sync_client,
       AsyncDirectoryTypeControllerMock* mock,
       SharedChangeProcessor* change_processor,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
       : AsyncDirectoryTypeController(kType,
                                      base::Closure(),
+                                     sync_service,
                                      sync_client,
                                      GROUP_DB,
                                      nullptr),
@@ -187,7 +190,7 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
     dtc_mock_ =
         std::make_unique<StrictMock<AsyncDirectoryTypeControllerMock>>();
     non_ui_dtc_ = std::make_unique<AsyncDirectoryTypeControllerFake>(
-        this, dtc_mock_.get(), change_processor_.get(),
+        &sync_service_, this, dtc_mock_.get(), change_processor_.get(),
         backend_thread_.task_runner());
   }
 
@@ -205,12 +208,6 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
       ADD_FAILURE() << "Timed out waiting for DB thread to finish.";
     }
     base::RunLoop().RunUntilIdle();
-  }
-
-  SyncService* GetSyncService() override {
-    // Make sure this isn't called on backend_thread.
-    EXPECT_FALSE(backend_thread_.task_runner()->BelongsToCurrentThread());
-    return FakeSyncClient::GetSyncService();
   }
 
  protected:
@@ -262,6 +259,7 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
 
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
+  FakeSyncService sync_service_;
   // Must be destroyed after non_ui_dtc_.
   FakeSyncableService syncable_service_;
   std::unique_ptr<AsyncDirectoryTypeControllerFake> non_ui_dtc_;

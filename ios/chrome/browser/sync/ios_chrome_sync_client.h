@@ -29,7 +29,6 @@ class PasswordStore;
 namespace syncer {
 class DeviceInfoTracker;
 class SyncApiComponentFactory;
-class SyncService;
 }
 
 class IOSChromeSyncClient : public syncer::SyncClient {
@@ -38,7 +37,6 @@ class IOSChromeSyncClient : public syncer::SyncClient {
   ~IOSChromeSyncClient() override;
 
   // SyncClient implementation.
-  syncer::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;
   syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
@@ -48,7 +46,8 @@ class IOSChromeSyncClient : public syncer::SyncClient {
   sync_sessions::SessionSyncService* GetSessionSyncService() override;
   bool HasPasswordStore() override;
   base::Closure GetPasswordStateChangedCallback() override;
-  syncer::DataTypeController::TypeVector CreateDataTypeControllers() override;
+  syncer::DataTypeController::TypeVector CreateDataTypeControllers(
+      syncer::SyncService* sync_service) override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   invalidation::InvalidationService* GetInvalidationService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;

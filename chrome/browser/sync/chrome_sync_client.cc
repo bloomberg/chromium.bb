@@ -203,11 +203,6 @@ void ChromeSyncClient::Initialize() {
   }
 }
 
-syncer::SyncService* ChromeSyncClient::GetSyncService() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
-}
-
 PrefService* ChromeSyncClient::GetPrefService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return profile_->GetPrefs();
@@ -285,11 +280,12 @@ base::Closure ChromeSyncClient::GetPasswordStateChangedCallback() {
 }
 
 syncer::DataTypeController::TypeVector
-ChromeSyncClient::CreateDataTypeControllers() {
+ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   syncer::ModelTypeSet disabled_types = GetDisabledTypesFromCommandLine();
 
   syncer::DataTypeController::TypeVector controllers =
-      component_factory_->CreateCommonDataTypeControllers(disabled_types);
+      component_factory_->CreateCommonDataTypeControllers(disabled_types,
+                                                          sync_service);
 
   const base::RepeatingClosure dump_stack = base::BindRepeating(
       &syncer::ReportUnrecoverableError, chrome::GetChannel());
@@ -305,10 +301,12 @@ ChromeSyncClient::CreateDataTypeControllers() {
   } else {
     controllers.push_back(
         std::make_unique<SupervisedUserSyncDataTypeController>(
-            syncer::SUPERVISED_USER_SETTINGS, dump_stack, this, profile_));
+            syncer::SUPERVISED_USER_SETTINGS, dump_stack, sync_service, this,
+            profile_));
     controllers.push_back(
         std::make_unique<SupervisedUserSyncDataTypeController>(
-            syncer::SUPERVISED_USER_WHITELISTS, dump_stack, this, profile_));
+            syncer::SUPERVISED_USER_WHITELISTS, dump_stack, sync_service, this,
+            profile_));
   }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
@@ -324,7 +322,7 @@ ChromeSyncClient::CreateDataTypeControllers() {
           dump_stack, profile_));
     } else {
       controllers.push_back(std::make_unique<ExtensionDataTypeController>(
-          syncer::APPS, dump_stack, this, profile_));
+          syncer::APPS, dump_stack, sync_service, this, profile_));
     }
   }
 
@@ -339,7 +337,7 @@ ChromeSyncClient::CreateDataTypeControllers() {
           dump_stack, profile_));
     } else {
       controllers.push_back(std::make_unique<ExtensionDataTypeController>(
-          syncer::EXTENSIONS, dump_stack, this, profile_));
+          syncer::EXTENSIONS, dump_stack, sync_service, this, profile_));
     }
   }
 
@@ -359,7 +357,8 @@ ChromeSyncClient::CreateDataTypeControllers() {
     } else {
       controllers.push_back(
           std::make_unique<ExtensionSettingDataTypeController>(
-              syncer::EXTENSION_SETTINGS, dump_stack, this, profile_));
+              syncer::EXTENSION_SETTINGS, dump_stack, sync_service, this,
+              profile_));
     }
   }
 
@@ -378,7 +377,7 @@ ChromeSyncClient::CreateDataTypeControllers() {
     } else {
       controllers.push_back(
           std::make_unique<ExtensionSettingDataTypeController>(
-              syncer::APP_SETTINGS, dump_stack, this, profile_));
+              syncer::APP_SETTINGS, dump_stack, sync_service, this, profile_));
     }
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -394,7 +393,7 @@ ChromeSyncClient::CreateDataTypeControllers() {
           dump_stack, profile_));
     } else {
       controllers.push_back(std::make_unique<ThemeDataTypeController>(
-          dump_stack, this, profile_));
+          dump_stack, sync_service, this, profile_));
     }
   }
 
@@ -407,7 +406,7 @@ ChromeSyncClient::CreateDataTypeControllers() {
           TemplateURLServiceFactory::GetForProfile(profile_)));
     } else {
       controllers.push_back(std::make_unique<SearchEngineDataTypeController>(
-          dump_stack, this,
+          dump_stack, sync_service, this,
           TemplateURLServiceFactory::GetForProfile(profile_)));
     }
   }
@@ -423,7 +422,7 @@ ChromeSyncClient::CreateDataTypeControllers() {
             dump_stack));
   } else {
     controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-        syncer::APP_LIST, dump_stack, this, syncer::GROUP_UI,
+        syncer::APP_LIST, dump_stack, sync_service, this, syncer::GROUP_UI,
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
   }
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
@@ -440,7 +439,7 @@ ChromeSyncClient::CreateDataTypeControllers() {
               dump_stack));
     } else {
       controllers.push_back(std::make_unique<AsyncDirectoryTypeController>(
-          syncer::DICTIONARY, dump_stack, this, syncer::GROUP_UI,
+          syncer::DICTIONARY, dump_stack, sync_service, this, syncer::GROUP_UI,
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
     }
   }
@@ -449,7 +448,7 @@ ChromeSyncClient::CreateDataTypeControllers() {
 #if defined(OS_CHROMEOS)
   if (arc::IsArcAllowedForProfile(profile_)) {
     controllers.push_back(std::make_unique<ArcPackageSyncDataTypeController>(
-        syncer::ARC_PACKAGE, dump_stack, this, profile_));
+        syncer::ARC_PACKAGE, dump_stack, sync_service, this, profile_));
   }
 #endif  // defined(OS_CHROMEOS)
 

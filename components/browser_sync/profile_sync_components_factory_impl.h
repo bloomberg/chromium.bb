@@ -20,6 +20,7 @@ namespace syncer {
 class ModelTypeController;
 class ModelTypeControllerDelegate;
 class SyncClient;
+class SyncService;
 }
 
 namespace autofill {
@@ -57,7 +58,8 @@ class ProfileSyncComponentsFactoryImpl
 
   // SyncApiComponentFactory implementation:
   syncer::DataTypeController::TypeVector CreateCommonDataTypeControllers(
-      syncer::ModelTypeSet disabled_types) override;
+      syncer::ModelTypeSet disabled_types,
+      syncer::SyncService* sync_service) override;
   std::unique_ptr<syncer::DataTypeManager> CreateDataTypeManager(
       syncer::ModelTypeSet initial_types,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
@@ -74,7 +76,8 @@ class ProfileSyncComponentsFactoryImpl
   std::unique_ptr<syncer::LocalDeviceInfoProvider>
   CreateLocalDeviceInfoProvider() override;
   syncer::SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
-      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) override;
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+      syncer::UserShare* user_share) override;
 
   // Sets a bit that determines whether PREFERENCES should be registered with a
   // ModelTypeController for testing purposes.
@@ -93,7 +96,8 @@ class ProfileSyncComponentsFactoryImpl
       syncer::ModelType type,
       const base::RepeatingCallback<
           base::WeakPtr<syncer::ModelTypeControllerDelegate>(
-              autofill::AutofillWebDataService*)>& delegate_from_web_data);
+              autofill::AutofillWebDataService*)>& delegate_from_web_data,
+      syncer::SyncService* sync_service);
   // Same as above, but supporting STORAGE_IN_MEMORY implemented as an
   // independent AutofillWebDataService, namely |web_data_service_in_memory_|.
   std::unique_ptr<syncer::ModelTypeController>
@@ -101,7 +105,8 @@ class ProfileSyncComponentsFactoryImpl
       syncer::ModelType type,
       const base::RepeatingCallback<
           base::WeakPtr<syncer::ModelTypeControllerDelegate>(
-              autofill::AutofillWebDataService*)>& delegate_from_web_data);
+              autofill::AutofillWebDataService*)>& delegate_from_web_data,
+      syncer::SyncService* sync_service);
 
   // Client/platform specific members.
   syncer::SyncClient* const sync_client_;

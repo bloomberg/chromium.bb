@@ -113,12 +113,6 @@ void SyncEngineForProfileSyncTest::ConfigureDataTypes(ConfigureParams params) {
           syncer::ModelTypeSet(), params.ready_task));
 }
 
-// Helper function for return-type-upcasting of the callback.
-syncer::SyncService* GetSyncService(
-    base::Callback<TestProfileSyncService*(void)> get_sync_service_callback) {
-  return get_sync_service_callback.Run();
-}
-
 }  // namespace
 
 /* static */
@@ -181,13 +175,6 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
       .WillOnce(Return(ByMove(std::move(engine))));
 
   sync_service_->GetUserSettings()->SetFirstSetupComplete();
-}
-
-base::Callback<syncer::SyncService*(void)>
-AbstractProfileSyncServiceTest::GetSyncServiceCallback() {
-  return base::Bind(GetSyncService,
-                    base::Bind(&AbstractProfileSyncServiceTest::sync_service,
-                               base::Unretained(this)));
 }
 
 CreateRootHelper::CreateRootHelper(AbstractProfileSyncServiceTest* test,

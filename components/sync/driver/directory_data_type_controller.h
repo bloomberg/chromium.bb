@@ -15,6 +15,7 @@
 namespace syncer {
 
 class ChangeProcessor;
+class SyncService;
 
 // Base class for Directory based Data type controllers.
 class DirectoryDataTypeController : public DataTypeController {
@@ -65,8 +66,11 @@ class DirectoryDataTypeController : public DataTypeController {
   // |dump_stack| is called when an unrecoverable error occurs.
   DirectoryDataTypeController(ModelType type,
                               const base::Closure& dump_stack,
-                              SyncClient* sync_client,
+                              SyncService* sync_service,
                               ModelSafeGroup model_safe_group);
+
+  SyncService* sync_service() { return sync_service_; }
+  const SyncService* sync_service() const { return sync_service_; }
 
   // Create an error handler that reports back to this controller.
   virtual std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() = 0;
@@ -78,9 +82,9 @@ class DirectoryDataTypeController : public DataTypeController {
   // Function to capture and upload a stack trace when an error occurs.
   base::Closure dump_stack_;
 
-  SyncClient* const sync_client_;
-
  private:
+  SyncService* const sync_service_;
+
   // The model safe group of this data type.  This should reflect the
   // thread that should be used to modify the data type's native
   // model.

@@ -14,6 +14,7 @@
 
 namespace syncer {
 class SyncClient;
+class SyncService;
 }  // namespace syncer
 
 namespace password_manager {
@@ -33,6 +34,7 @@ class PasswordSyncableServiceBasedModelTypeController
       syncer::OnceModelTypeStoreFactory store_factory,
       const base::RepeatingClosure& dump_stack,
       scoped_refptr<PasswordStore> password_store,
+      syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client);
   ~PasswordSyncableServiceBasedModelTypeController() override;
 
@@ -56,11 +58,13 @@ class PasswordSyncableServiceBasedModelTypeController
       syncer::OnceModelTypeStoreFactory store_factory,
       const base::RepeatingClosure& dump_stack,
       scoped_refptr<PasswordStore> password_store,
+      syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
       scoped_refptr<ModelCryptographerImpl> model_cryptographer);
 
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   const scoped_refptr<ModelCryptographerImpl> model_cryptographer_;
+  syncer::SyncService* const sync_service_;
   syncer::SyncClient* const sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordSyncableServiceBasedModelTypeController);

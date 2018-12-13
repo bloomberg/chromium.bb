@@ -25,6 +25,7 @@ class ExtensionDataTypeController
   ExtensionDataTypeController(
       syncer::ModelType type,  // Either EXTENSIONS or APPS.
       const base::Closure& dump_stack,
+      syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
       Profile* profile);
   ~ExtensionDataTypeController() override;

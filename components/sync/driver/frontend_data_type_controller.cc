@@ -12,8 +12,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/model_associator.h"
-#include "components/sync/driver/sync_client.h"
-#include "components/sync/driver/sync_service.h"
 #include "components/sync/model/change_processor.h"
 #include "components/sync/model/data_type_error_handler_impl.h"
 #include "components/sync/model/sync_error.h"
@@ -24,12 +22,9 @@ namespace syncer {
 FrontendDataTypeController::FrontendDataTypeController(
     ModelType type,
     const base::Closure& dump_stack,
-    SyncClient* sync_client)
-    : DirectoryDataTypeController(type, dump_stack, sync_client, GROUP_UI),
-      state_(NOT_RUNNING) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(sync_client);
-}
+    SyncService* sync_service)
+    : DirectoryDataTypeController(type, dump_stack, sync_service, GROUP_UI),
+      state_(NOT_RUNNING) {}
 
 void FrontendDataTypeController::LoadModels(
     const ConfigureContext& configure_context,
