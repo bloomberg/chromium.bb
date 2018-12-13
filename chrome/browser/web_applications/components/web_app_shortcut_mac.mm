@@ -10,7 +10,9 @@
 #include <map>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -32,6 +34,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/version.h"
 #import "chrome/browser/mac/dock.h"
@@ -179,9 +182,13 @@ bool HasSameUserDataDir(const base::FilePath& bundle_path) {
                           user_data_dir.value(), base::CompareCase::SENSITIVE);
 }
 
-void LaunchShimOnFileThread(bool launched_after_rebuild,
+void LaunchShimOnFileThread(web_app::LaunchAppCallback callback,
+                            bool launched_after_rebuild,
                             const web_app::ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+
+  // TODO(https://crbug.com/913394): Attempt to locate the shim's path using
+  // LSCopyApplicationURLsForBundleIdentifier.
   base::FilePath shim_path = web_app::GetAppInstallPath(shortcut_info);
 
   if (shim_path.empty() || !base::PathExists(shim_path) ||
@@ -193,8 +200,12 @@ void LaunchShimOnFileThread(bool launched_after_rebuild,
     shim_path = app_data_dir.Append(shim_path.BaseName());
   }
 
-  if (!base::PathExists(shim_path))
+  if (!base::PathExists(shim_path)) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(std::move(callback), base::Process()));
     return;
+  }
 
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(app_mode::kLaunchedByChromeProcessId,
@@ -202,9 +213,12 @@ void LaunchShimOnFileThread(bool launched_after_rebuild,
   if (launched_after_rebuild)
     command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
   // Launch without activating (NSWorkspaceLaunchWithoutActivation).
-  base::mac::OpenApplicationWithPath(
+  base::Process process = base::mac::OpenApplicationWithPath(
       shim_path, command_line,
       NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation);
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(std::move(callback), std::move(process)));
 }
 
 base::FilePath GetAppLoaderPath() {
@@ -234,7 +248,7 @@ void UpdateAndLaunchShimOnFileThread(
       shortcut_info.profile_path, shortcut_info.extension_id, GURL());
   UpdatePlatformShortcutsInternal(shortcut_data_dir, base::string16(),
                                   shortcut_info);
-  LaunchShimOnFileThread(true, shortcut_info);
+  LaunchShimOnFileThread(base::DoNothing(), true, shortcut_info);
 }
 
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
@@ -928,14 +942,19 @@ base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info) {
   return shortcut_creator.GetApplicationsShortcutPath();
 }
 
-void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info) {
+void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info,
+                         LaunchAppCallback callback) {
   if (AppShimsDisabledForTest() &&
       !g_app_shims_allow_update_and_launch_in_tests) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(std::move(callback), base::Process()));
     return;
   }
 
   web_app::internals::PostShortcutIOTask(
-      base::BindOnce(&LaunchShimOnFileThread, false), std::move(shortcut_info));
+      base::BindOnce(&LaunchShimOnFileThread, std::move(callback), false),
+      std::move(shortcut_info));
 }
 
 namespace internals {

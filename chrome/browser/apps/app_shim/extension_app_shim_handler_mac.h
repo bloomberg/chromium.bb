@@ -73,8 +73,10 @@ class ExtensionAppShimHandler : public AppShimHandler,
     virtual void LaunchApp(Profile* profile,
                            const extensions::Extension* extension,
                            const std::vector<base::FilePath>& files);
-    virtual void LaunchShim(Profile* profile,
-                            const extensions::Extension* extension);
+    virtual void LaunchShim(
+        Profile* profile,
+        const extensions::Extension* extension,
+        base::OnceCallback<void(base::Process)> launch_callback);
     virtual void LaunchUserManager();
 
     virtual void MaybeTerminate();
@@ -91,8 +93,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // none. Virtual for tests.
   virtual AppShimHost* FindHost(Profile* profile, const std::string& app_id);
 
-  // Return the host corresponding to |profile| and |app_id|, or create one if
-  // needed.
+  // Return the host corresponding to |profile| and |app_id|, if one exists.
+  // If one does not exist, create one, and launch the app shim (so that the
+  // app shim will connect to the returned host).
   AppShimHost* FindOrCreateHost(Profile* profile, const std::string& app_id);
 
   // Get the AppShimHost corresponding to a browser instance, returning nullptr
@@ -186,9 +189,14 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   // This is passed to Delegate::EnableViaPrompt for shim-initiated launches
   // where the extension is disabled.
-  void OnExtensionEnabled(const base::FilePath& profile_path,
-                          const std::string& app_id,
+  void OnExtensionEnabled(base::WeakPtr<AppShimHost> host,
                           const std::vector<base::FilePath>& files);
+
+  // If an LaunchShim was called to service |host|, then this call will be made
+  // with the resulting process. If the process is invalid, then there was an
+  // error launching the app shim.
+  void OnRequestedShimLaunchComplete(base::WeakPtr<AppShimHost> host,
+                                     base::Process process);
 
   std::unique_ptr<Delegate> delegate_;
 
