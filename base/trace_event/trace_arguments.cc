@@ -6,9 +6,10 @@
 
 #include <inttypes.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
-#include <stdio.h>
+#include <cmath>
 
 #include "base/json/string_escape.h"
 #include "base/logging.h"
