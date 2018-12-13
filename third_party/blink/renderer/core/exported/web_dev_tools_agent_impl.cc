@@ -122,10 +122,16 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
       instance_->QuitNow();
   }
 
+  static void PauseForPageWait(WebLocalFrameImpl* frame) {
+    if (instance_)
+      instance_->RunForPageWait(frame);
+  }
+
  private:
   ClientMessageLoopAdapter(
       std::unique_ptr<Platform::NestedMessageLoopRunner> message_loop)
       : running_for_debug_break_(false),
+        running_for_page_wait_(false),
         message_loop_(std::move(message_loop)) {
     DCHECK(message_loop_.get());
   }
@@ -135,7 +141,17 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
       return;
 
     running_for_debug_break_ = true;
-    RunLoop(WebLocalFrameImpl::FromFrame(frame));
+    if (!running_for_page_wait_)
+      RunLoop(WebLocalFrameImpl::FromFrame(frame));
+  }
+
+  void RunForPageWait(WebLocalFrameImpl* frame) {
+    if (running_for_page_wait_)
+      return;
+
+    running_for_page_wait_ = true;
+    if (!running_for_debug_break_)
+      RunLoop(frame);
   }
 
   void RunLoop(WebLocalFrameImpl* frame) {
@@ -158,16 +174,36 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
   void QuitNow() override {
     if (running_for_debug_break_) {
       running_for_debug_break_ = false;
-      // Undo steps (3), (2) and (1) from above.
-      // NOTE: This code used to be above right after the |mesasge_loop_->Run()|
-      // code, but it is moved here to support browser-side navigation.
-      message_loop_->QuitNow();
-      WebView::DidExitModalLoop();
-      WebFrameWidgetBase::SetIgnoreInputEvents(false);
+      if (!running_for_page_wait_)
+        DoQuit();
     }
   }
 
+  bool QuitForPageWait() {
+    if (running_for_page_wait_) {
+      running_for_page_wait_ = false;
+      if (!running_for_debug_break_)
+        DoQuit();
+      return true;
+    }
+    return false;
+  }
+
+  void DoQuit() {
+    // Undo steps (3), (2) and (1) from above.
+    // NOTE: This code used to be above right after the |mesasge_loop_->Run()|
+    // code, but it is moved here to support browser-side navigation.
+    message_loop_->QuitNow();
+    WebView::DidExitModalLoop();
+    WebFrameWidgetBase::SetIgnoreInputEvents(false);
+  }
+
   void RunIfWaitingForDebugger(LocalFrame* frame) override {
+    // If we've paused for Page.waitForDebugger, handle it ourselves.
+    if (QuitForPageWait())
+      return;
+
+    // Otherwise, pass to the client (embedded workers do it differently).
     WebDevToolsAgentImpl* agent =
         WebLocalFrameImpl::FromFrame(frame)->DevToolsAgentImpl();
     if (agent && agent->worker_client_)
@@ -175,6 +211,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
   }
 
   bool running_for_debug_break_;
+  bool running_for_page_wait_;
   std::unique_ptr<Platform::NestedMessageLoopRunner> message_loop_;
 
   static ClientMessageLoopAdapter* instance_;
@@ -418,6 +455,10 @@ bool WebDevToolsAgentImpl::ScreencastEnabled() {
 void WebDevToolsAgentImpl::PageLayoutInvalidated(bool resized) {
   for (auto& it : overlay_agents_)
     it.value->PageLayoutInvalidated(resized);
+}
+
+void WebDevToolsAgentImpl::WaitForDebugger() {
+  ClientMessageLoopAdapter::PauseForPageWait(web_local_frame_impl_);
 }
 
 bool WebDevToolsAgentImpl::IsInspectorLayer(GraphicsLayer* layer) {

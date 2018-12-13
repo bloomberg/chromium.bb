@@ -695,6 +695,9 @@ void DevToolsWindow::ToggleDevToolsWindow(
       case DevToolsToggleAction::kShowConsolePanel:
         panel = "console";
         break;
+      case DevToolsToggleAction::kPauseInDebugger:
+        panel = "sources";
+        break;
       case DevToolsToggleAction::kShow:
       case DevToolsToggleAction::kToggle:
       case DevToolsToggleAction::kReveal:
@@ -1572,6 +1575,7 @@ void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
       break;
 
     case DevToolsToggleAction::kShowElementsPanel:
+    case DevToolsToggleAction::kPauseInDebugger:
     case DevToolsToggleAction::kShowConsolePanel:
     case DevToolsToggleAction::kShow:
     case DevToolsToggleAction::kToggle:

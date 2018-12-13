@@ -50,6 +50,11 @@ DevToolsToggleAction DevToolsToggleAction::ShowElementsPanel() {
 }
 
 // static
+DevToolsToggleAction DevToolsToggleAction::PauseInDebugger() {
+  return DevToolsToggleAction(kPauseInDebugger);
+}
+
+// static
 DevToolsToggleAction DevToolsToggleAction::Inspect() {
   return DevToolsToggleAction(kInspect);
 }

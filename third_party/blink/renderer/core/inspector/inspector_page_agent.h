@@ -68,6 +68,7 @@ class CORE_EXPORT InspectorPageAgent final
    public:
     virtual ~Client() = default;
     virtual void PageLayoutInvalidated(bool resized) {}
+    virtual void WaitForDebugger() {}
   };
 
   enum ResourceType {
@@ -171,6 +172,7 @@ class CORE_EXPORT InspectorPageAgent final
   protocol::Response addCompilationCache(const String& url,
                                          const protocol::Binary& data) override;
   protocol::Response clearCompilationCache() override;
+  protocol::Response waitForDebugger() override;
 
   // InspectorInstrumentation API
   void DidClearDocumentOfWindowObject(LocalFrame*);
