@@ -233,8 +233,12 @@
         <include name="IDR_APP_MANAGEMENT_CONSTANTS_JS" file="resources\app_management\constants.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS" file="resources\app_management\fake_page_handler.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_INDEX_HTML" file="resources\app_management\index.html" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_ITEM_HTML" file="resources\app_management\item.html" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_ITEM_JS" file="resources\app_management\item.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_HTML" file="resources\app_management\main_view.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_JS" file="resources\app_management\main_view.js" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_SHARED_STYLE_HTML" file="resources\app_management\shared_style.html" type="BINDATA"/>
+        <include name="IDR_APP_MANAGEMENT_SHARED_VARS_HTML" file="resources\app_management\shared_vars.html" type="BINDATA"/>
       </if>
 
       <if expr="not is_android">

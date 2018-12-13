@@ -57,15 +57,6 @@ Polymer({
   },
 
   /**
-   * @param {string} id
-   * @return {string}
-   * @private
-   */
-  iconUrlFromId_: function(id) {
-    return `chrome://extension-icon/${id}/128/1`;
-  },
-
-  /**
    * @param {number} numApps
    * @param {boolean} listExpanded
    * @return {string}
@@ -75,7 +66,7 @@ Polymer({
     return listExpanded ?
         loadTimeData.getString('lessApps') :
         loadTimeData.getStringF(
-            'moreApps', numApps - NUMBER_OF_APP_DISPLAYED_DEFAULT);
+            'moreApps', numApps - NUMBER_OF_APPS_DISPLAYED_DEFAULT);
   },
 
   /**
@@ -91,10 +82,10 @@ Polymer({
    */
   onAppsChanged_: function() {
     this.$['more-apps'].hidden =
-        this.apps_.length <= NUMBER_OF_APP_DISPLAYED_DEFAULT;
-    this.displayedApps_ = this.apps_.slice(0, NUMBER_OF_APP_DISPLAYED_DEFAULT);
+        this.apps_.length <= NUMBER_OF_APPS_DISPLAYED_DEFAULT;
+    this.displayedApps_ = this.apps_.slice(0, NUMBER_OF_APPS_DISPLAYED_DEFAULT);
     this.collapsedApps_ =
-        this.apps_.slice(NUMBER_OF_APP_DISPLAYED_DEFAULT, this.apps_.length);
+        this.apps_.slice(NUMBER_OF_APPS_DISPLAYED_DEFAULT, this.apps_.length);
   },
 
   /**

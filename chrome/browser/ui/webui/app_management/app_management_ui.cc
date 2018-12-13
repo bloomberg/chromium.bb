@@ -55,8 +55,14 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("constants.js", IDR_APP_MANAGEMENT_CONSTANTS_JS);
   source->AddResourcePath("fake_page_handler.js",
                           IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS);
+  source->AddResourcePath("item.html", IDR_APP_MANAGEMENT_ITEM_HTML);
+  source->AddResourcePath("item.js", IDR_APP_MANAGEMENT_ITEM_JS);
   source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
   source->AddResourcePath("main_view.js", IDR_APP_MANAGEMENT_MAIN_VIEW_JS);
+  source->AddResourcePath("shared_style.html",
+                          IDR_APP_MANAGEMENT_SHARED_STYLE_HTML);
+  source->AddResourcePath("shared_vars.html",
+                          IDR_APP_MANAGEMENT_SHARED_VARS_HTML);
 
   source->SetDefaultResource(IDR_APP_MANAGEMENT_INDEX_HTML);
   source->SetJsonPath("strings.js");

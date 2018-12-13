@@ -12,6 +12,7 @@ if (!is_android) {
       ":browser_proxy",
       ":constants",
       ":fake_page_handler",
+      ":item",
       ":main_view",
     ]
   }
@@ -41,10 +42,17 @@ if (!is_android) {
     ]
   }
 
+  js_library("item") {
+    deps = [
+      "//ui/webui/resources/js:load_time_data",
+    ]
+  }
+
   js_library("main_view") {
     deps = [
       ":browser_proxy",
       ":constants",
+      ":item",
       "//ui/webui/resources/js:load_time_data",
     ]
   }
