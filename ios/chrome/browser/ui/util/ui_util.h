@@ -51,9 +51,6 @@ bool IsRefreshLocationBarEnabled();
 // TODO (crbug.com/884725): Remove all use of this flag.
 bool IsUIRefreshPhase1Enabled();
 
-// Returns whether the WKWebView snapshotting API will be used for iOS 11+.
-bool IsWKWebViewSnapshotsEnabled();
-
 // Returns the height of the status bar, accounting for orientation.
 CGFloat StatusBarHeight();
 

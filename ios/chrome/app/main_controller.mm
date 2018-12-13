@@ -1957,7 +1957,6 @@ enum class ShowTabSwitcherSnapshotResult {
           ->SetSnapshotCoalescingEnabled(false);
     }));
 
-    if (IsWKWebViewSnapshotsEnabled()) {
       if (currentTab.webState->IsLoading()) {
         UMA_HISTOGRAM_ENUMERATION(
             "IOS.ShowTabSwitcherSnapshotResult",
@@ -1977,49 +1976,6 @@ enum class ShowTabSwitcherSnapshotResult {
               }
             });
       }
-    } else {
-      // Capture metrics on snapshotting.
-      ShowTabSwitcherSnapshotResult snapshotResult =
-          ShowTabSwitcherSnapshotResult::kSnapshotSucceeded;
-      if (currentTab.webState->IsLoading()) {
-        // Do not take a snapshot if the web state is loading, since it will be
-        // stale.
-        snapshotResult = ShowTabSwitcherSnapshotResult::
-            kSnapshotNotAttemptedBecausePageIsLoading;
-        SnapshotTabHelper::FromWebState(currentTab.webState)->RemoveSnapshot();
-        // TODO(crbug.com/869256) : It is possible that the navigation completes
-        // in the time it takes to animate to the tab grid. The navigation
-        // completion will trigger another snapshot. But that snapshot may have
-        // the previous webpage because the rendering is not guaranteed to have
-        // been completed at navigation completion. It is better to have a blank
-        // snapshot than the wrong snapshot. We pause snapshotting here, and
-        // resume once we have animated to the tab grid.
-        SnapshotTabHelper::FromWebState(currentTab.webState)
-            ->PauseSnapshotting();
-      } else {
-        // TODO(crbug.com/869256) : There is a very small possibility that the
-        // navigation has already completed, but the new webpage has not been
-        // rendered yet, so we may take a snapshot of the previous webpage. The
-        // reason for this is that rendering is not guaranteed at page loaded.
-        // But the possibility of this happening in this codepath is very small,
-        // and is not easily reproducible.
-        UIImage* snapshot = SnapshotTabHelper::FromWebState(currentTab.webState)
-                                ->UpdateSnapshot(/*with_overlays=*/true,
-                                                 /*visible_frame_only=*/true);
-        // TODO(crbug.com/711455) : Snapshot generation can fail for certain
-        // websites that have video somewhere on the page. If the snapshot
-        // generation fails, the stale snapshot should be removed so as not to
-        // display an old snapshot.
-        if (snapshot == SnapshotTabHelper::GetDefaultSnapshotImage()) {
-          snapshotResult =
-              ShowTabSwitcherSnapshotResult::kSnapshotAttemptedAndFailed;
-          SnapshotTabHelper::FromWebState(currentTab.webState)
-              ->RemoveSnapshot();
-        }
-      }
-      UMA_HISTOGRAM_ENUMERATION("IOS.ShowTabSwitcherSnapshotResult",
-                                snapshotResult);
-    }
   }
 
   DCHECK(_tabSwitcher);
@@ -2031,16 +1987,7 @@ enum class ShowTabSwitcherSnapshotResult {
   _tabSwitcherIsActive = YES;
   [_tabSwitcher setDelegate:self];
 
-  [self.mainCoordinator
-      showTabSwitcher:_tabSwitcher
-           completion:^{
-             // Snapshotting may have been paused if the user initiated showing
-             // the tab switcher while the webpage was still loading.
-             if (currentTab && currentTab.webState) {
-               SnapshotTabHelper::FromWebState(currentTab.webState)
-                   ->ResumeSnapshotting();
-             }
-           }];
+  [self.mainCoordinator showTabSwitcher:_tabSwitcher completion:nil];
 }
 
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {

@@ -126,7 +126,7 @@ void SnapshotTabHelper::RetrieveGreySnapshot(void (^callback)(UIImage*)) {
 }
 
 void SnapshotTabHelper::UpdateSnapshotWithCallback(void (^callback)(UIImage*)) {
-  if (IsWKWebViewSnapshotsEnabled() && web_state_->ContentIsHTML()) {
+  if (web_state_->ContentIsHTML()) {
     [snapshot_generator_ updateWebViewSnapshotWithCompletion:callback];
     return;
   }
@@ -164,14 +164,6 @@ void SnapshotTabHelper::IgnoreNextLoad() {
   ignore_next_load_ = true;
 }
 
-void SnapshotTabHelper::PauseSnapshotting() {
-  pause_snapshotting_ = true;
-}
-
-void SnapshotTabHelper::ResumeSnapshotting() {
-  pause_snapshotting_ = false;
-}
-
 // static
 UIImage* SnapshotTabHelper::GetDefaultSnapshotImage() {
   return [SnapshotGenerator defaultSnapshotImage];
@@ -194,16 +186,15 @@ SnapshotTabHelper::SnapshotTabHelper(web::WebState* web_state,
 }
 
 void SnapshotTabHelper::DidStartLoading(web::WebState* web_state) {
-  if (IsWKWebViewSnapshotsEnabled())
     RemoveSnapshot();
 }
 
 void SnapshotTabHelper::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
-  if (!ignore_next_load_ && !pause_snapshotting_ &&
+  if (!ignore_next_load_ &&
       load_completion_status == web::PageLoadCompletionStatus::SUCCESS) {
-    if (IsWKWebViewSnapshotsEnabled() && web_state->ContentIsHTML()) {
+    if (web_state->ContentIsHTML()) {
       base::PostDelayedTaskWithTraits(
           FROM_HERE, {web::WebThread::UI},
           base::BindOnce(&SnapshotTabHelper::UpdateSnapshotWithCallback,
