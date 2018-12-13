@@ -4543,6 +4543,29 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi) {
   return refresh_mask;
 }
 
+static void fix_interp_filter(InterpFilter *const interp_filter,
+                              const FRAME_COUNTS *const counts) {
+  if (*interp_filter == SWITCHABLE) {
+    // Check to see if only one of the filters is actually used
+    int count[SWITCHABLE_FILTERS] = { 0 };
+    int num_filters_used = 0;
+    for (int i = 0; i < SWITCHABLE_FILTERS; ++i) {
+      for (int j = 0; j < SWITCHABLE_FILTER_CONTEXTS; ++j)
+        count[i] += counts->switchable_interp[j][i];
+      num_filters_used += (count[i] > 0);
+    }
+    if (num_filters_used == 1) {
+      // Only one filter is used. So set the filter at frame level
+      for (int i = 0; i < SWITCHABLE_FILTERS; ++i) {
+        if (count[i]) {
+          if (i == EIGHTTAP_REGULAR) *interp_filter = i;
+          break;
+        }
+      }
+    }
+  }
+}
+
 static void finalize_encoded_frame(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
   CurrentFrame *const current_frame = &cm->current_frame;
@@ -4602,6 +4625,16 @@ static void finalize_encoded_frame(AV1_COMP *const cpi) {
     if (cm->film_grain_params.random_seed == 0)
       cm->film_grain_params.random_seed = 7391;
   }
+
+  // Initialise all tiles' contexts from the global frame context
+  for (int tile_col = 0; tile_col < cm->tile_cols; tile_col++) {
+    for (int tile_row = 0; tile_row < cm->tile_rows; tile_row++) {
+      const int tile_idx = tile_row * cm->tile_cols + tile_col;
+      cpi->tile_data[tile_idx].tctx = *cm->fc;
+    }
+  }
+
+  fix_interp_filter(&cm->interp_filter, cpi->td.counts);
 }
 
 // Called after encode_with_recode_loop() has just encoded a frame and packed

@@ -1178,7 +1178,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         }
       }
     }
-
     write_mb_interp_filter(cpi, xd, w);
   }
 }
@@ -2071,29 +2070,6 @@ static void write_frame_interp_filter(InterpFilter filter,
   aom_wb_write_bit(wb, filter == SWITCHABLE);
   if (filter != SWITCHABLE)
     aom_wb_write_literal(wb, filter, LOG_SWITCHABLE_FILTERS);
-}
-
-static void fix_interp_filter(AV1_COMMON *cm, FRAME_COUNTS *counts) {
-  if (cm->interp_filter == SWITCHABLE) {
-    // Check to see if only one of the filters is actually used
-    int count[SWITCHABLE_FILTERS];
-    int i, j, c = 0;
-    for (i = 0; i < SWITCHABLE_FILTERS; ++i) {
-      count[i] = 0;
-      for (j = 0; j < SWITCHABLE_FILTER_CONTEXTS; ++j)
-        count[i] += counts->switchable_interp[j][i];
-      c += (count[i] > 0);
-    }
-    if (c == 1) {
-      // Only one filter is used. So set the filter at frame level
-      for (i = 0; i < SWITCHABLE_FILTERS; ++i) {
-        if (count[i]) {
-          if (i == EIGHTTAP_REGULAR) cm->interp_filter = i;
-          break;
-        }
-      }
-    }
-  }
 }
 
 // Same function as write_uniform but writing to uncompresses header wb
@@ -3041,7 +3017,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
       if (!cm->cur_frame_force_integer_mv)
         aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-      fix_interp_filter(cm, cpi->td.counts);
       write_frame_interp_filter(cm->interp_filter, wb);
       aom_wb_write_bit(wb, cm->switchable_motion_mode);
       if (frame_might_allow_ref_frame_mvs(cm)) {
@@ -3507,8 +3482,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         // Is CONFIG_EXT_TILE = 1, every tile in the row has a header,
         // even for the last one, unless no tiling is used at all.
         total_size += data_offset;
-        // Initialise tile context from the frame context
-        this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
         mode_bc.allow_update_cdf = !cm->large_scale_tile;
         mode_bc.allow_update_cdf =
@@ -3648,8 +3621,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       // The last tile of the tile group does not have a header.
       if (!is_last_tile_in_tg) total_size += 4;
 
-      // Initialise tile context from the frame context
-      this_tile->tctx = *cm->fc;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
       mode_bc.allow_update_cdf = 1;
       mode_bc.allow_update_cdf =
