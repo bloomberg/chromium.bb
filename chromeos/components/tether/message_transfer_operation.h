@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
-#include "chromeos/components/tether/ble_connection_manager.h"
+#include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
