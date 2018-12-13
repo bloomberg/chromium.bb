@@ -147,7 +147,9 @@ bool StructTraits<skia::mojom::ImageInfoDataView, SkImageInfo>::Read(
   if (serialized_color_space.size() != 0u) {
     sk_color_space = SkColorSpace::Deserialize(serialized_color_space.data(),
                                                serialized_color_space.size());
-    CHECK(sk_color_space);  // Deserialize() returns nullptr on invalid input.
+    // Deserialize() returns nullptr on invalid input.
+    if (!sk_color_space)
+      return false;
   } else {
     // Empty byte array is interpreted as "null."
   }
