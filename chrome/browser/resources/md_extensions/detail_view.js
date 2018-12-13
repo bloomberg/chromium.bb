@@ -307,6 +307,15 @@ cr.define('extensions', function() {
      * @return {boolean}
      * @private
      */
+    showSiteAccessContent_: function() {
+      return this.showFreeformRuntimeHostPermissions_() ||
+          this.showHostPermissionsToggleList_();
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
     showFreeformRuntimeHostPermissions_: function() {
       return this.hasRuntimeHostPermissions_() &&
           this.data.permissions.runtimeHostPermissions.hasAllHosts;
