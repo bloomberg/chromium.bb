@@ -167,6 +167,7 @@ cr.define('extension_detail_view_tests', function() {
 
       // Ensure that without runtimeHostPermissions data, the sections are
       // hidden.
+      expectTrue(testIsVisible('#no-site-access'));
       expectFalse(testIsVisible('extensions-runtime-host-permissions'));
       expectFalse(testIsVisible('extensions-host-permissions-toggle-list'));
 
@@ -182,6 +183,7 @@ cr.define('extension_detail_view_tests', function() {
       };
       item.set('data.permissions', allSitesPermissions);
       Polymer.dom.flush();
+      expectFalse(testIsVisible('#no-site-access'));
       expectTrue(testIsVisible('extensions-runtime-host-permissions'));
       expectFalse(testIsVisible('extensions-host-permissions-toggle-list'));
 
@@ -198,6 +200,7 @@ cr.define('extension_detail_view_tests', function() {
       };
       item.set('data.permissions', someSitesPermissions);
       Polymer.dom.flush();
+      expectFalse(testIsVisible('#no-site-access'));
       expectFalse(testIsVisible('extensions-runtime-host-permissions'));
       expectTrue(testIsVisible('extensions-host-permissions-toggle-list'));
     });

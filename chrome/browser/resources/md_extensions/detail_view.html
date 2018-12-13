@@ -311,6 +311,15 @@
                 </li>
               </template>
             </ul>
+          </div>
+        </div>
+        <div class="section block">
+          <div class="section-title">$i18n{itemSiteAccess}</div>
+          <div class="section-content">
+            <span id="no-site-access"
+                hidden$="[[showSiteAccessContent_(data.*)]]">
+              $i18n{itemSiteAccessEmpty}
+            </span>
             <template is="dom-if"
                 if="[[showFreeformRuntimeHostPermissions_(data.*)]]">
               <extensions-runtime-host-permissions
