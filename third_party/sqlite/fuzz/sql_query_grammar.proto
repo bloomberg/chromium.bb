@@ -945,6 +945,15 @@ message Expr {
   }
 }
 
+message NumericLiteral {
+  repeated uint32 hex_digits = 1;
+  repeated uint32 digits = 2;
+  required bool decimal_point = 3;
+  repeated uint32 dec_digits = 4;
+  repeated uint32 exp_digits = 5;
+  required bool negative_exp = 6;
+}
+
 message LiteralValue {
   enum SpecialVal {
     VAL_NULL = 0;  // using just "NULL" vauses it not to compile.
@@ -959,6 +968,7 @@ message LiteralValue {
     string string_lit = 2;
     bytes blob_lit = 3;
     SpecialVal special_val = 4;
+    NumericLiteral numeric_lit = 5;
   }  // If no value, just use int64(1)
 }
 
@@ -1174,7 +1184,7 @@ message CollateExpr {
 
 message CastTypeName {
   enum CastTypeNameEnum {
-    NONE = 0;
+    BLOB = 0;
     TEXT = 1;
     REAL = 2;
     INTEGER = 3;
