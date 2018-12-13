@@ -42,8 +42,6 @@ source_set("util") {
     "reversed_animation.mm",
     "rtl_geometry.h",
     "rtl_geometry.mm",
-    "snapshot_util.h",
-    "snapshot_util.mm",
     "text_frame.h",
     "text_frame.mm",
     "text_region_mapper.h",
