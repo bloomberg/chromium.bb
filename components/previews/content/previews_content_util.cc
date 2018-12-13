@@ -55,26 +55,34 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   if (!is_data_saver_user)
     return previews_state;
 
-  // Check for client-side previews in precedence order.
-  // Note: this is for the beginning of navigation so we should not
-  // check for https here (since an http request may redirect to https).
-  if (previews_decider->ShouldAllowPreviewAtNavigationStart(
-          previews_data, url, is_reload,
-          previews::PreviewsType::LITE_PAGE_REDIRECT)) {
-    previews_state |= content::LITE_PAGE_REDIRECT_ON;
-  }
+  // Check PageHint preview types first.
 
+  bool should_load_page_hints = false;
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload,
           previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
     previews_state |= content::RESOURCE_LOADING_HINTS_ON;
-    // Initiate load of any applicable hint details.
-    previews_decider->LoadResourceHints(url);
+    should_load_page_hints = true;
   }
-
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, url, is_reload, previews::PreviewsType::NOSCRIPT)) {
     previews_state |= content::NOSCRIPT_ON;
+    should_load_page_hints = true;
+  }
+  bool has_page_hints = false;
+  if (should_load_page_hints) {
+    // Initiate load of any applicable page hint details.
+    // TODO(dougarnett): Generalize method name to LoadPageHints().
+    has_page_hints = previews_decider->LoadResourceHints(url);
+  }
+
+  // Note: this is for the beginning of navigation so we should not
+  // check for https here (since an http request may redirect to https).
+  if ((!has_page_hints || params::LitePagePreviewsOverridePageHints()) &&
+      previews_decider->ShouldAllowPreviewAtNavigationStart(
+          previews_data, url, is_reload,
+          previews::PreviewsType::LITE_PAGE_REDIRECT)) {
+    previews_state |= content::LITE_PAGE_REDIRECT_ON;
   }
 
   if (previews::params::IsClientLoFiEnabled() &&

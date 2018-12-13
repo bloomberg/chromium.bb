@@ -10,6 +10,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "content/public/common/previews_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -40,7 +42,9 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
     return IsEnabled(type);
   }
 
-  void LoadResourceHints(const GURL& url) override {}
+  bool LoadResourceHints(const GURL& url) override {
+    return url.host_piece().ends_with("hintcachedhost.com");
+  }
 
   void LogHintCacheMatch(const GURL& url, bool is_committed) const override {}
 
@@ -230,7 +234,6 @@ TEST_F(PreviewsContentUtilTest,
 
 TEST_F(PreviewsContentUtilTest,
        DetermineAllowedClientPreviewsStateLitePageRedirect) {
-  // Enable both Client LoFi and NoScript.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("Previews,LitePageServerPreviews",
                                           std::string());
@@ -254,6 +257,51 @@ TEST_F(PreviewsContentUtilTest,
             previews::DetermineAllowedClientPreviewsState(
                 &user_data, GURL("data://someblob"), is_reload, is_redirect,
                 is_data_saver_user, enabled_previews_decider()));
+}
+
+TEST_F(PreviewsContentUtilTest,
+       DetermineAllowedClientPreviewsStateLitePageRedirectAndPageHintPreviews) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "Previews,LitePageServerPreviews,ResourceLoadingHints,NoScriptPreviews",
+      std::string());
+
+  PreviewsUserData user_data(1);
+  bool is_reload = false;
+  bool is_redirect = false;
+  bool is_data_saver_user = true;
+  // Verify Lite Page Redirect enabled for host without page hints.
+  content::PreviewsState ps1 = previews::DetermineAllowedClientPreviewsState(
+      &user_data, GURL("https://www.google.com"), is_reload, is_redirect,
+      is_data_saver_user, enabled_previews_decider());
+  EXPECT_TRUE(ps1 & content::LITE_PAGE_REDIRECT_ON);
+  EXPECT_TRUE(ps1 & content::RESOURCE_LOADING_HINTS_ON);
+  EXPECT_TRUE(ps1 & content::NOSCRIPT_ON);
+
+  // Verify only page hint client previews enabled with known page hints.
+  content::PreviewsState ps2 = previews::DetermineAllowedClientPreviewsState(
+      &user_data, GURL("https://www.hintcachedhost.com"), is_reload,
+      is_redirect, is_data_saver_user, enabled_previews_decider());
+  EXPECT_FALSE(ps2 & content::LITE_PAGE_REDIRECT_ON);
+  EXPECT_TRUE(ps2 & content::RESOURCE_LOADING_HINTS_ON);
+  EXPECT_TRUE(ps2 & content::NOSCRIPT_ON);
+
+  {
+    // Now set parameter to override page hints.
+    std::map<std::string, std::string> parameters;
+    parameters["override_pagehints"] = "true";
+    base::test::ScopedFeatureList nested_feature_list;
+    nested_feature_list.InitAndEnableFeatureWithParameters(
+        features::kLitePageServerPreviews, parameters);
+
+    // Verify Lite Page Redirect now enabled for host with page hints.
+    content::PreviewsState ps = previews::DetermineAllowedClientPreviewsState(
+        &user_data, GURL("https://www.hintcachedhost.com"), is_reload,
+        is_redirect, is_data_saver_user, enabled_previews_decider());
+    EXPECT_TRUE(ps & content::LITE_PAGE_REDIRECT_ON);
+    EXPECT_TRUE(ps & content::RESOURCE_LOADING_HINTS_ON);
+    EXPECT_TRUE(ps & content::NOSCRIPT_ON);
+  }
 }
 
 TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {

@@ -38,8 +38,10 @@ class PreviewsDecider {
                                    const GURL& committed_url,
                                    PreviewsType type) const = 0;
 
-  // Requests that any applicable detailed resource hints be loaded.
-  virtual void LoadResourceHints(const GURL& url) = 0;
+  // Requests that any applicable detailed page hints be loaded. Returns
+  // whether client knows that it has hints for the host of |url| (that may
+  // need to be loaded from persistent storage).
+  virtual bool LoadResourceHints(const GURL& url) = 0;
 
   // Logs UMA for whether the OptimizationGuide HintCache has a matching Hint
   // guidance for |url|. This is useful for measuring the effectiveness of the

@@ -23,7 +23,7 @@ class TestPreviewsDecider : public previews::PreviewsDecider {
   bool ShouldCommitPreview(PreviewsUserData* previews_data,
                            const GURL& url,
                            PreviewsType type) const override;
-  void LoadResourceHints(const GURL& url) override;
+  bool LoadResourceHints(const GURL& url) override;
   void LogHintCacheMatch(const GURL& url, bool is_committed) const override;
 
  private:

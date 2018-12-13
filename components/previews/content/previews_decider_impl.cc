@@ -335,9 +335,9 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   return PreviewsEligibilityReason::ALLOWED;
 }
 
-void PreviewsDeciderImpl::LoadResourceHints(const GURL& url) {
+bool PreviewsDeciderImpl::LoadResourceHints(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  previews_opt_guide_->MaybeLoadOptimizationHints(
+  return previews_opt_guide_->MaybeLoadOptimizationHints(
       url, base::BindOnce(&PreviewsDeciderImpl::OnResourceLoadingHints,
                           weak_factory_.GetWeakPtr()));
 }

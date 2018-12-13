@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
@@ -40,8 +41,13 @@
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_service.h"
+#include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
@@ -209,6 +215,12 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
           base::FieldTrialList::CreateFieldTrial("TrialName3", "GroupName3");
       feature_list->RegisterFieldTrialOverride(
           previews::features::kPreviews.name,
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+      feature_list->RegisterFieldTrialOverride(
+          previews::features::kOptimizationHints.name,
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+      feature_list->RegisterFieldTrialOverride(
+          previews::features::kResourceLoadingHints.name,
           base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
     }
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
@@ -1317,5 +1329,92 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageControlBrowserTest,
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
   VerifyInfoStatus(previews::ServerLitePageStatus::kControl);
+  ClearDeciderState();
+}
+
+class PreviewsLitePageAndPageHintsBrowserTest
+    : public PreviewsLitePageServerBrowserTest {
+ public:
+  PreviewsLitePageAndPageHintsBrowserTest() = default;
+
+  ~PreviewsLitePageAndPageHintsBrowserTest() override = default;
+
+  void ProcessHintsComponent(
+      const optimization_guide::HintsComponentInfo& component_info) {
+    base::HistogramTester histogram_tester;
+
+    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
+        component_info);
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        previews::kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
+        1);
+  }
+
+  void SetResourceLoadingHints(const std::vector<std::string>& hints_sites) {
+    std::vector<std::string> resource_patterns;
+    resource_patterns.push_back("foo.jpg");
+    resource_patterns.push_back("png");
+    resource_patterns.push_back("woff2");
+
+    ProcessHintsComponent(
+        test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
+            optimization_guide::proto::RESOURCE_LOADING, hints_sites,
+            resource_patterns));
+  }
+
+ private:
+  // Retries fetching |histogram_name| until it contains at least |count|
+  // samples.
+  void RetryForHistogramUntilCountReached(
+      base::HistogramTester* histogram_tester,
+      const std::string& histogram_name,
+      size_t count) {
+    while (true) {
+      base::TaskScheduler::GetInstance()->FlushForTesting();
+      base::RunLoop().RunUntilIdle();
+
+      content::FetchHistogramsFromChildProcesses();
+      SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+      const std::vector<base::Bucket> buckets =
+          histogram_tester->GetAllSamples(histogram_name);
+      size_t total_count = 0;
+      for (const auto& bucket : buckets) {
+        total_count += bucket.count;
+      }
+      if (total_count >= count) {
+        break;
+      }
+    }
+  }
+
+  optimization_guide::testing::TestHintsComponentCreator
+      test_hints_component_creator_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    PreviewsLitePageAndPageHintsBrowserTest,
+    DISABLE_ON_WIN_MAC(LitePagePreviewsDoesNotOverridePageHints)) {
+  // Whitelist test URL for resource loading hints.
+  GURL url = HttpsLitePageURL(kSuccess);
+  SetResourceLoadingHints({url.host()});
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  base::RunLoop().RunUntilIdle();
+  content::WaitForLoadStop(GetWebContents());
+
+  // Verify the committed previews type is resource loading hints.
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(GetWebContents());
+  EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
+  previews::PreviewsUserData* previews_data =
+      ui_tab_helper->previews_user_data();
+  EXPECT_TRUE(previews_data->HasCommittedPreviewsType());
+  EXPECT_EQ(previews_data->committed_previews_type(),
+            previews::PreviewsType::RESOURCE_LOADING_HINTS);
+
   ClearDeciderState();
 }
