@@ -19,6 +19,8 @@ const base::Feature kOverrideTranslateTriggerInIndia{
     "OverrideTranslateTriggerInIndia", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kExplicitLanguageAsk{"ExplicitLanguageAsk",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kImprovedGeoLanguageData{"ImprovedGeoLanguageData",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Params:
 const char kBackoffThresholdKey[] = "backoff_threshold";

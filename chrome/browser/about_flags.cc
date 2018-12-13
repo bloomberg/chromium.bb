@@ -3421,6 +3421,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSysInternals)},
 #endif  // defined(OS_CHROMEOS)
 
+    {"enable-improved-geolanguage-data",
+     flag_descriptions::kImprovedGeoLanguageDataName,
+     flag_descriptions::kImprovedGeoLanguageDataDescription, kOsAll,
+     FEATURE_VALUE_TYPE(language::kImprovedGeoLanguageData)},
+
     {"enable-regional-locales-as-display-ui",
      flag_descriptions::kRegionalLocalesAsDisplayUIName,
      flag_descriptions::kRegionalLocalesAsDisplayUIDescription, kOsAll,

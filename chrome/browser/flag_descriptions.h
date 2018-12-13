@@ -693,6 +693,9 @@ extern const char kIgnoreGpuBlacklistDescription[];
 extern const char kIgnorePreviewsBlacklistName[];
 extern const char kIgnorePreviewsBlacklistDescription[];
 
+extern const char kImprovedGeoLanguageDataName[];
+extern const char kImprovedGeoLanguageDataDescription[];
+
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/language/content/browser/language_code_locator.h"
+#include "components/language/content/browser/regional_language_code_locator.h"
 
 #include "base/strings/string_split.h"
 #include "third_party/s2cellid/src/s2/s2cellid.h"
@@ -10,10 +10,10 @@
 
 namespace language {
 namespace {
-#include "components/language/content/browser/language_code_locator_helper.h"
+#include "components/language/content/browser/regional_language_code_locator_helper.h"
 }  // namespace
 
-LanguageCodeLocator::LanguageCodeLocator() {
+RegionalLanguageCodeLocator::RegionalLanguageCodeLocator() {
   int pos = 0;
   int index = 0;
   std::vector<std::pair<uint32_t, char>> items(arraysize(kDistrictPositions));
@@ -27,9 +27,9 @@ LanguageCodeLocator::LanguageCodeLocator() {
   district_languages_ = base::flat_map<uint32_t, char>(items);
 }
 
-LanguageCodeLocator::~LanguageCodeLocator() {}
+RegionalLanguageCodeLocator::~RegionalLanguageCodeLocator() {}
 
-std::vector<std::string> LanguageCodeLocator::GetLanguageCode(
+std::vector<std::string> RegionalLanguageCodeLocator::GetLanguageCode(
     double latitude,
     double longitude) const {
   S2CellId current_cell(S2LatLng::FromDegrees(latitude, longitude));
