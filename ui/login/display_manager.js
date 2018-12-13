@@ -75,7 +75,8 @@
   SAML_PASSWORD_CONFIRM: 5,
   PASSWORD_CHANGED: 6,
   ENROLLMENT: 7,
-  ERROR: 8
+  ERROR: 8,
+  SYNC_CONSENT: 9,
 };
 
 /* Possible UI states of the error screen. */

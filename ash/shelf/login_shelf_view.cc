@@ -594,6 +594,7 @@ void LoginShelfView::UpdateUi() {
           allow_guest_ &&
           dialog_state_ != mojom::OobeDialogState::WRONG_HWID_WARNING &&
           dialog_state_ != mojom::OobeDialogState::SAML_PASSWORD_CONFIRM &&
+          dialog_state_ != mojom::OobeDialogState::SYNC_CONSENT &&
           (dialog_state_ != mojom::OobeDialogState::GAIA_SIGNIN ||
            !login_screen_has_users_) &&
           (is_login_primary || (is_oobe && allow_guest_in_oobe_)));

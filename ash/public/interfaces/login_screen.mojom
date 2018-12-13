@@ -44,8 +44,11 @@ enum OobeDialogState {
   // Showing error screen.
   ERROR = 8,
 
+  // Showing sync consent screen.
+  SYNC_CONSENT = 9,
+
   // Oobe UI dialog is currently hidden.
-  HIDDEN = 9,
+  HIDDEN = 10,
 };
 
 // Allows clients (e.g. the browser process) to send messages to the ash
