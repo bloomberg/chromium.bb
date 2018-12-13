@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_localized_strings_provider.h"
 
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_handler.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -32,10 +34,7 @@ namespace {
 
 const char kFootnoteMarker[] = "*";
 
-constexpr struct {
-  const char* name;
-  int id;
-} const kLocalizedStringsWithoutPlaceholders[] = {
+constexpr LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"accept", IDS_MULTIDEVICE_SETUP_ACCEPT_LABEL},
     {"back", IDS_MULTIDEVICE_SETUP_BACK_LABEL},
     {"cancel", IDS_CANCEL},
@@ -112,8 +111,8 @@ GetLocalizedStringsWithPlaceholders() {
 }  //  namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  for (const auto& entry : kLocalizedStringsWithoutPlaceholders)
-    html_source->AddLocalizedString(entry.name, entry.id);
+  AddLocalizedStringsBulk(html_source, kLocalizedStringsWithoutPlaceholders,
+                          base::size(kLocalizedStringsWithoutPlaceholders));
 
   for (const auto& entry : GetLocalizedStringsWithPlaceholders())
     html_source->AddString(entry.name, entry.localized_string);
