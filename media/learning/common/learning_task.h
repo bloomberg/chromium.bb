@@ -106,6 +106,11 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   };
   RTUnknownValueHandling rt_unknown_value_handling =
       RTUnknownValueHandling::kUseAllSplits;
+
+  // RandomForest parameters
+
+  // Number of trees in the random forest.
+  size_t rf_number_of_trees = 100;
 };
 
 }  // namespace learning

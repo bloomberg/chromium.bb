@@ -4,6 +4,8 @@
 
 #include "media/learning/impl/target_distribution.h"
 
+#include <sstream>
+
 namespace media {
 namespace learning {
 
@@ -75,6 +77,21 @@ bool TargetDistribution::FindSingularMax(TargetValue* value_out,
   }
 
   return singular_max;
+}
+
+std::string TargetDistribution::ToString() const {
+  std::ostringstream ss;
+  ss << "[";
+  for (auto& entry : counts_)
+    ss << " " << entry.first << ":" << entry.second;
+  ss << " ]";
+
+  return ss.str();
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const media::learning::TargetDistribution& dist) {
+  return out << dist.ToString();
 }
 
 }  // namespace learning
