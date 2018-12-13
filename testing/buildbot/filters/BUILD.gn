@@ -89,7 +89,7 @@ source_set("unit_tests_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/chromeos.single_process_mash.fyi.unit_tests.filter",
+    "//testing/buildbot/filters/chromeos.single_process_mash.unit_tests.filter",
   ]
 }
 

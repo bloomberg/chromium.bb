@@ -1867,6 +1867,13 @@
           'shards': 3,
         },
       },
+      'single_process_mash_unit_tests': {
+        'test': 'unit_tests',
+        'args': [
+          '--enable-features=SingleProcessMash',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.unit_tests.filter',
+        ],
+      },
       'ui_chromeos_unittests': {},
       'views_mus_unittests': {},
       'views_mus_interactive_ui_tests': {},
@@ -1937,13 +1944,6 @@
         'test': 'content_unittests',
         'args': [
           '--enable-features=Mash',
-        ],
-      },
-      'single_process_mash_fyi_unit_tests': {
-        'test': 'unit_tests',
-        'args': [
-          '--enable-features=SingleProcessMash',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.fyi.unit_tests.filter',
         ],
       },
       'mash_fyi_interactive_ui_tests': {
