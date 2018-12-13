@@ -52,7 +52,8 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   static RawResource* FetchMainResource(FetchParameters&,
                                         ResourceFetcher*,
                                         RawResourceClient*,
-                                        const SubstituteData&);
+                                        const SubstituteData&,
+                                        unsigned long identifier);
   static RawResource* FetchImport(FetchParameters&,
                                   ResourceFetcher*,
                                   RawResourceClient*);

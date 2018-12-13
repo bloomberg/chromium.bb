@@ -89,6 +89,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/loader/ftp_directory_listing.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
@@ -240,7 +241,7 @@ void DocumentLoader::Trace(blink::Visitor* visitor) {
 }
 
 unsigned long DocumentLoader::MainResourceIdentifier() const {
-  return GetResource() ? GetResource()->Identifier() : 0;
+  return main_resource_identifier_;
 }
 
 ResourceTimingInfo* DocumentLoader::GetNavigationTimingInfo() const {
@@ -1000,12 +1001,13 @@ void DocumentLoader::StartLoading() {
     // The fetch has already started in the browser,
     // so we don't MarkFetchStart here.
 
+    main_resource_identifier_ = CreateUniqueIdentifier();
     ResourceLoaderOptions options;
     options.data_buffering_policy = kDoNotBufferData;
     options.initiator_info.name = fetch_initiator_type_names::kDocument;
     FetchParameters fetch_params(request_, options);
     RawResource::FetchMainResource(fetch_params, Fetcher(), this,
-                                   substitute_data_);
+                                   substitute_data_, main_resource_identifier_);
     // A bunch of headers are set when the underlying resource load begins, and
     // request_ needs to include those. Even when using a cached resource, we
     // may make some modification to the request, e.g. adding the referer
