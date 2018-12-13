@@ -329,8 +329,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
             return WebApkUpdateReason.ORIENTATION_DIFFERS;
         } else if (oldInfo.displayMode() != fetchedInfo.displayMode()) {
             return WebApkUpdateReason.DISPLAY_MODE_DIFFERS;
-        } else if (!TextUtils.equals(
-                           oldInfo.serializedShareTarget(), fetchedInfo.serializedShareTarget())) {
+        } else if (!oldInfo.shareTarget().equals(fetchedInfo.shareTarget())) {
             return WebApkUpdateReason.WEB_SHARE_TARGET_DIFFERS;
         }
         return WebApkUpdateReason.NONE;
@@ -369,6 +368,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
                 info.scopeUri().toString(), info.name(), info.shortName(), primaryIconUrl,
                 info.icon(), badgeIconUrl, info.badgeIcon(), iconUrls, iconHashes,
                 info.displayMode(), info.orientation(), info.themeColor(), info.backgroundColor(),
+                info.shareTarget().getAction(), info.shareTarget().getParamTitle(),
+                info.shareTarget().getParamText(), info.shareTarget().getParamUrl(),
                 info.manifestUrl(), info.webApkPackageName(), versionCode, isManifestStale,
                 updateReason, callback);
     }
@@ -381,9 +382,10 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
             String startUrl, String scope, String name, String shortName, String primaryIconUrl,
             Bitmap primaryIcon, String badgeIconUrl, Bitmap badgeIcon, String[] iconUrls,
             String[] iconHashes, @WebDisplayMode int displayMode, int orientation, long themeColor,
-            long backgroundColor, String manifestUrl, String webApkPackage, int webApkVersion,
-            boolean isManifestStale, @WebApkUpdateReason int updateReason,
-            Callback<Boolean> callback);
+            long backgroundColor, String shareTargetAction, String shareTargetParamTitle,
+            String shareTargetParamText, String shareTargetParamUrl, String manifestUrl,
+            String webApkPackage, int webApkVersion, boolean isManifestStale,
+            @WebApkUpdateReason int updateReason, Callback<Boolean> callback);
     private static native void nativeUpdateWebApkFromFile(
             String updateRequestPath, WebApkUpdateCallback callback);
 }
