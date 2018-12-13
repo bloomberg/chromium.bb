@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 import android.app.Activity;
 import android.view.View;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
@@ -37,7 +35,7 @@ import java.util.Set;
  * and call {@link #requestShowContent(BottomSheetContent, boolean)} which will return true if the
  * content was actually shown (see full doc on method).
  */
-public class BottomSheetController implements ApplicationStatus.ActivityStateListener {
+public class BottomSheetController {
     /** The initial capacity for the priority queue handling pending content show requests. */
     private static final int INITIAL_QUEUE_CAPACITY = 1;
 
@@ -97,8 +95,6 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         mSuppressSheetForContextualSearch = suppressSheetForContextualSearch;
         mSnackbarManager = new SnackbarManager(
                 activity, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
-        mSnackbarManager.onStart();
-        ApplicationStatus.registerStateListenerForActivity(this, activity);
         mFullShowRequestedSet = new HashSet<>();
 
         // Initialize the queue with a comparator that checks content priority.
@@ -358,17 +354,6 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             //                the only implementation. Fix this to only apply to contextual search.
             mOverlayPanelManager.getActivePanel().closePanel(
                     OverlayPanel.StateChangeReason.UNKNOWN, true);
-        }
-    }
-
-    @Override
-    public void onActivityStateChange(Activity activity, int newState) {
-        if (newState == ActivityState.STARTED) {
-            mSnackbarManager.onStart();
-        } else if (newState == ActivityState.STOPPED) {
-            mSnackbarManager.onStop();
-        } else if (newState == ActivityState.DESTROYED) {
-            ApplicationStatus.unregisterActivityStateListener(this);
         }
     }
 
