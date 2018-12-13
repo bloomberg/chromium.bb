@@ -38,6 +38,7 @@ static_library("shared") {
     "//components/account_id",
     "//components/prefs:prefs",
     "//third_party/icu:icui18n",
+    "//ui/gfx",
   ]
   public_deps = [
     "//base",
