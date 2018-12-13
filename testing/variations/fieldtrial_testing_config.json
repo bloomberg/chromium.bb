@@ -705,6 +705,26 @@
             ]
         }
     ],
+    "AutofillMetadataUploads": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillMetadataUploads"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillPreviewStyleExperiment": [
         {
             "platforms": [
