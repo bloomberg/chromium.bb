@@ -6,6 +6,7 @@
 """Lists all the reached symbols from an instrumentation dump."""
 
 import argparse
+import collections
 import logging
 import operator
 import os
@@ -152,16 +153,17 @@ class SymbolOffsetProcessor(object):
       logging.warning('%d offsets do not have matching symbol', not_found)
     return symbols
 
-  def OffsetsPrimarySize(self, offsets):
-    """Computes the total primary size of a set of offsets.
+  def SymbolsSize(self, symbols):
+    """Computes the total size of a set of symbol names.
 
     Args:
-      offsets (int iterable) a set of offsets.
+      offsets (str iterable) a set of symbols.
 
     Returns
       int The sum of the primary size of the offsets.
     """
-    return sum(self.OffsetToPrimaryMap()[x].size for x in offsets)
+    name_map = self.NameToSymbolMap()
+    return sum(name_map[sym].size for sym in symbols)
 
   def GetReachedOffsetsFromDump(self, dump):
     """Find the symbol offsets from a list of binary offsets.
@@ -231,7 +233,6 @@ class SymbolOffsetProcessor(object):
       update: (lambda item, int) As described above.
     """
     dump_offset_to_symbol_info = self._GetDumpOffsetToSymbolInfo()
-    logging.info('Offset to Symbol size = %d', len(dump_offset_to_symbol_info))
     for i in items:
       dump_offset = get(i)
       idx = dump_offset / 2
@@ -421,6 +422,13 @@ class ProfileManager(object):
               phase, process)
     return offset_map.values()
 
+  def GetProcessOffsetLists(self):
+    """Returns all symbol offsets lists, grouped by process."""
+    offsets_by_process = collections.defaultdict(list)
+    for f in self._filenames:
+      offsets_by_process[self._ProcessName(f)].append(self._ReadOffsets(f))
+    return offsets_by_process
+
   def GetRunGroupOffsets(self, phase=None):
     """Merges files from each run group and returns offset list for each.
 
@@ -451,7 +459,7 @@ class ProfileManager(object):
   @classmethod
   def _ProcessName(cls, filename):
     # The filename starts with 'profile-hitmap-' and ends with
-    # '-PID-TIMESTAMP.text_X'. Anything in between is the process name. The
+    # '-PID-TIMESTAMP.txt_X'. Anything in between is the process name. The
     # browser has an empty process name, which is insterted here.
     process_name_parts = os.path.basename(filename).split('-')[2:-2]
     if not process_name_parts:
