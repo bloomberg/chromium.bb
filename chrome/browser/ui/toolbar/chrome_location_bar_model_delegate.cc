@@ -114,33 +114,6 @@ ChromeLocationBarModelDelegate::GetCertificate() const {
   return entry->GetSSL().certificate;
 }
 
-bool ChromeLocationBarModelDelegate::FailsBillingCheck() const {
-  content::WebContents* web_contents = GetActiveWebContents();
-  // If there is no active WebContents (which can happen during toolbar
-  // initialization), nothing can fail.
-  if (!web_contents)
-    return false;
-  security_state::SecurityInfo security_info;
-  SecurityStateTabHelper::FromWebContents(web_contents)
-      ->GetSecurityInfo(&security_info);
-  return security_info.malicious_content_status ==
-         security_state::MALICIOUS_CONTENT_STATUS_BILLING;
-}
-
-bool ChromeLocationBarModelDelegate::FailsMalwareCheck() const {
-  content::WebContents* web_contents = GetActiveWebContents();
-  // If there is no active WebContents (which can happen during toolbar
-  // initialization), nothing can fail.
-  if (!web_contents)
-    return false;
-  security_state::SecurityInfo security_info;
-  SecurityStateTabHelper::FromWebContents(web_contents)
-      ->GetSecurityInfo(&security_info);
-  const auto status = security_info.malicious_content_status;
-  return status != security_state::MALICIOUS_CONTENT_STATUS_BILLING &&
-         status != security_state::MALICIOUS_CONTENT_STATUS_NONE;
-}
-
 const gfx::VectorIcon* ChromeLocationBarModelDelegate::GetVectorIconOverride()
     const {
 #if !defined(OS_ANDROID)

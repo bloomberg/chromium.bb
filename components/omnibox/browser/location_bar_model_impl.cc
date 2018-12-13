@@ -217,16 +217,28 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
                                                     IDS_SECURE_VERBOSE_STATE));
       return SecureChipText(
           l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE));
-    case security_state::DANGEROUS:
-      if (delegate_->FailsMalwareCheck())
-        return SecureChipText(
-            l10n_util::GetStringUTF16(IDS_DANGEROUS_VERBOSE_STATE));
+    case security_state::DANGEROUS: {
+      security_state::SecurityInfo security_info;
+      delegate_->GetSecurityInfo(&security_info);
+
       // Don't show any text in the security indicator for sites on the billing
       // interstitial list.
-      return SecureChipText(
-          delegate_->FailsBillingCheck()
-              ? base::string16()
-              : l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
+      if (security_info.malicious_content_status ==
+          security_state::MALICIOUS_CONTENT_STATUS_BILLING) {
+#if defined(OS_IOS)
+        // On iOS, we never expect this status, because there are no billing
+        // interstitials.
+        NOTREACHED();
+#endif
+        return SecureChipText(base::string16());
+      }
+
+      bool fails_malware_check = security_info.malicious_content_status !=
+                                 security_state::MALICIOUS_CONTENT_STATUS_NONE;
+      return SecureChipText(l10n_util::GetStringUTF16(
+          fails_malware_check ? IDS_DANGEROUS_VERBOSE_STATE
+                              : IDS_NOT_SECURE_VERBOSE_STATE));
+    }
     default:
       return SecureChipText(base::string16());
   }
