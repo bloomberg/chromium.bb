@@ -753,7 +753,7 @@ void WebMediaPlayerMSTest::ReadyStateChanged() {
 }
 
 void WebMediaPlayerMSTest::SetCcLayer(cc::Layer* layer) {
-  // Make sure that the old layer is still alive, see http://crbug.com/705448.
+  // Make sure that the old layer is still alive, see https://crbug.com/705448.
   if (layer_set_)
     EXPECT_TRUE(layer_ != nullptr);
   layer_set_ = layer ? true : false;

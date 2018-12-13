@@ -137,7 +137,7 @@ ResolutionSet ScreenCastResolutionCapabilities() {
 // algorithm in order to be more compatible with existing applications.
 // TODO(guidou): Update this algorithm to properly take into account the minimum
 // width and height, and the aspect_ratio constraint once most existing
-// applications migrate to the new syntax. See http://crbug.com/701302.
+// applications migrate to the new syntax. See https://crbug.com/701302.
 media::ResolutionChangePolicy SelectResolutionPolicyFromCandidates(
     const ResolutionSet& resolution_set,
     media::ResolutionChangePolicy default_policy) {
@@ -324,7 +324,7 @@ VideoCaptureSettings SelectResultFromCandidates(
   // If a maximum frame rate is explicitly given, use it as default for
   // better compatibility with the old constraints algorithm.
   // TODO(guidou): Use the actual default when applications migrate to the new
-  // constraint syntax.  http://crbug.com/710800
+  // constraint syntax.  https://crbug.com/710800
   double default_frame_rate =
       candidates.frame_rate_set().Max().value_or(kDefaultScreenCastFrameRate);
 

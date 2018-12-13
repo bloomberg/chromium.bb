@@ -36,7 +36,7 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
  public:
   // TODO(guidou): Make all constructors private and replace with Create methods
   // that return a std::unique_ptr. This class is intended for instantiation on
-  // the free store. http://crbug.com/764293
+  // the free store. https://crbug.com/764293
   // |render_frame| and |dependency_factory| must outlive this instance.
   UserMediaClientImpl(
       RenderFrameImpl* render_frame,

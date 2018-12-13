@@ -39,7 +39,7 @@ void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {}
 class MediaStreamVideoTrack::FrameDeliverer
     : public base::RefCountedThreadSafe<FrameDeliverer> {
  public:
-  typedef MediaStreamVideoSink* VideoSinkId;
+  using VideoSinkId = MediaStreamVideoSink*;
 
   FrameDeliverer(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                  bool enabled);
@@ -78,14 +78,14 @@ class MediaStreamVideoTrack::FrameDeliverer
 
   // Used to DCHECK that AddCallback and RemoveCallback are called on the main
   // Render Thread.
-  base::ThreadChecker main_render_thread_checker_;
+  THREAD_CHECKER(main_render_thread_checker_);
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   bool enabled_;
   scoped_refptr<media::VideoFrame> black_frame_;
 
-  typedef std::pair<VideoSinkId, VideoCaptureDeliverFrameCB>
-      VideoIdCallbackPair;
+  using VideoIdCallbackPair =
+      std::pair<VideoSinkId, VideoCaptureDeliverFrameCB>;
   std::vector<VideoIdCallbackPair> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
@@ -105,7 +105,7 @@ MediaStreamVideoTrack::FrameDeliverer::~FrameDeliverer() {
 void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
     VideoSinkId id,
     const VideoCaptureDeliverFrameCB& callback) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FrameDeliverer::AddCallbackOnIO, this, id, callback));
@@ -119,7 +119,7 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnIO(
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::RemoveCallback(VideoSinkId id) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&FrameDeliverer::RemoveCallbackOnIO, this, id,
                                 base::ThreadTaskRunnerHandle::Get()));
@@ -144,7 +144,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::SetEnabled(bool enabled) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FrameDeliverer::SetEnabledOnIO, this, enabled));
@@ -294,7 +294,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
 }
 
 MediaStreamVideoTrack::~MediaStreamVideoTrack() {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   DCHECK(sinks_.empty());
   Stop();
   DVLOG(3) << "~MediaStreamVideoTrack()";
@@ -303,7 +303,7 @@ MediaStreamVideoTrack::~MediaStreamVideoTrack() {
 void MediaStreamVideoTrack::AddSink(MediaStreamVideoSink* sink,
                                     const VideoCaptureDeliverFrameCB& callback,
                                     bool is_sink_secure) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   DCHECK(!base::ContainsValue(sinks_, sink));
   sinks_.push_back(sink);
   frame_deliverer_->AddCallback(sink, callback);
@@ -318,7 +318,7 @@ void MediaStreamVideoTrack::AddSink(MediaStreamVideoSink* sink,
 }
 
 void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   auto it = std::find(sinks_.begin(), sinks_.end(), sink);
   DCHECK(it != sinks_.end());
   sinks_.erase(it);
@@ -333,7 +333,7 @@ void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
 }
 
 void MediaStreamVideoTrack::SetEnabled(bool enabled) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   frame_deliverer_->SetEnabled(enabled);
   for (auto* sink : sinks_)
     sink->OnEnabledChanged(enabled);
@@ -341,13 +341,13 @@ void MediaStreamVideoTrack::SetEnabled(bool enabled) {
 
 void MediaStreamVideoTrack::SetContentHint(
     blink::WebMediaStreamTrack::ContentHintType content_hint) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   for (auto* sink : sinks_)
     sink->OnContentHintChanged(content_hint);
 }
 
 void MediaStreamVideoTrack::StopAndNotify(base::OnceClosure callback) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   if (source_) {
     source_->RemoveTrack(this, std::move(callback));
     source_ = nullptr;
@@ -359,7 +359,7 @@ void MediaStreamVideoTrack::StopAndNotify(base::OnceClosure callback) {
 
 void MediaStreamVideoTrack::GetSettings(
     blink::WebMediaStreamTrack::Settings& settings) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   if (!source_)
     return;
 
@@ -405,7 +405,7 @@ void MediaStreamVideoTrack::GetSettings(
 
 void MediaStreamVideoTrack::OnReadyStateChanged(
     blink::WebMediaStreamSource::ReadyState state) {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   for (auto* sink : sinks_)
     sink->OnReadyStateChanged(state);
 }

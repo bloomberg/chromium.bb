@@ -31,7 +31,7 @@ ExternalMediaStreamAudioSource::~ExternalMediaStreamAudioSource() {
 }
 
 bool ExternalMediaStreamAudioSource::EnsureSourceIsStarted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (was_started_)
     return true;
   VLOG(1) << "Starting externally-provided "
@@ -45,7 +45,7 @@ bool ExternalMediaStreamAudioSource::EnsureSourceIsStarted() {
 }
 
 void ExternalMediaStreamAudioSource::EnsureSourceIsStopped() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!source_)
     return;
   if (was_started_)
@@ -64,7 +64,7 @@ void ExternalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
   DCHECK(audio_bus);
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
-  // audio/video sync. http://crbug.com/335335
+  // audio/video sync. https://crbug.com/335335
   MediaStreamAudioSource::DeliverDataToTracks(
       *audio_bus,
       base::TimeTicks::Now() -

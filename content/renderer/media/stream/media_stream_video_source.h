@@ -35,9 +35,9 @@ class VideoTrackAdapterSettings;
 
 // MediaStreamVideoSource is an interface used for sending video frames to a
 // MediaStreamVideoTrack.
-// http://dev.w3.org/2011/webrtc/editor/getusermedia.html
+// https://dev.w3.org/2011/webrtc/editor/getusermedia.html
 // The purpose of this base class is to be able to implement different
-// MediaStreaVideoSources such as local video capture, video sources received
+// MediaStreamVideoSources such as local video capture, video sources received
 // on a PeerConnection or a source created in NaCl.
 // All methods calls will be done from the main render thread.
 class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {

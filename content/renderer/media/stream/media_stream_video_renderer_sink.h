@@ -28,11 +28,11 @@ namespace content {
 // MediaStreamVideoRenderer is Start()ed, and disconnects itself when the latter
 // is Stop()ed.
 //
-// [1] http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
+// [1] https://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
 //
 // TODO(wuchengli): Add unit test. See the link below for reference.
-// http://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_vi
-// deo_decoder_unittest.cc?revision=180591&view=markup
+// https://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_
+// video_decoder_unittest.cc?revision=180591&view=markup
 class CONTENT_EXPORT MediaStreamVideoRendererSink
     : public MediaStreamVideoRenderer,
       public MediaStreamVideoSink {
@@ -78,7 +78,7 @@ class CONTENT_EXPORT MediaStreamVideoRendererSink
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  base::ThreadChecker main_thread_checker_;
+  THREAD_CHECKER(main_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoRendererSink);
 };

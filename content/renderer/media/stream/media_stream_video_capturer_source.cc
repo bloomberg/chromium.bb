@@ -65,7 +65,7 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
   base::Closure stop_capture_cb_;
 
   // Bound to the main render thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<LocalVideoCapturerSource> weak_factory_;
 
@@ -81,12 +81,12 @@ LocalVideoCapturerSource::LocalVideoCapturerSource(int session_id)
 }
 
 LocalVideoCapturerSource::~LocalVideoCapturerSource() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   release_device_cb_.Run();
 }
 
 media::VideoCaptureFormats LocalVideoCapturerSource::GetPreferredFormats() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return media::VideoCaptureFormats();
 }
 
@@ -95,7 +95,7 @@ void LocalVideoCapturerSource::StartCapture(
     const VideoCaptureDeliverFrameCB& new_frame_callback,
     const RunningCallback& running_callback) {
   DCHECK(params.requested_format.IsValid());
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   running_callback_ = running_callback;
 
   stop_capture_cb_ =
@@ -107,31 +107,31 @@ void LocalVideoCapturerSource::StartCapture(
 }
 
 void LocalVideoCapturerSource::RequestRefreshFrame() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (stop_capture_cb_.is_null())
     return;  // Do not request frames if the source is stopped.
   manager_->RequestRefreshFrame(session_id_);
 }
 
 void LocalVideoCapturerSource::MaybeSuspend() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   manager_->Suspend(session_id_);
 }
 
 void LocalVideoCapturerSource::Resume() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   manager_->Resume(session_id_);
 }
 
 void LocalVideoCapturerSource::StopCapture() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Immediately make sure we don't provide more frames.
   if (!stop_capture_cb_.is_null())
     base::ResetAndReturn(&stop_capture_cb_).Run();
 }
 
 void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (running_callback_.is_null())
     return;
   switch (state) {

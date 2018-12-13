@@ -47,7 +47,7 @@ class CONTENT_EXPORT MediaStreamTrack
   const bool is_local_track_;
 
   // Used to DCHECK that we are called on Render main Thread.
-  base::ThreadChecker main_render_thread_checker_;
+  THREAD_CHECKER(main_render_thread_checker_);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaStreamTrack);

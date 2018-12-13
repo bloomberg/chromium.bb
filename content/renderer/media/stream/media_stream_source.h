@@ -24,16 +24,16 @@ CONTENT_EXPORT extern const char kMediaStreamSourceSystem[]; /* audio only */
 class CONTENT_EXPORT MediaStreamSource
     : public blink::WebMediaStreamSource::ExtraData {
  public:
-  typedef base::Callback<void(const blink::WebMediaStreamSource& source)>
-      SourceStoppedCallback;
+  using SourceStoppedCallback =
+      base::Callback<void(const blink::WebMediaStreamSource& source)>;
 
-  typedef base::Callback<void(MediaStreamSource* source,
-                              MediaStreamRequestResult result,
-                              const blink::WebString& result_name)>
-      ConstraintsCallback;
+  using ConstraintsCallback =
+      base::Callback<void(MediaStreamSource* source,
+                          MediaStreamRequestResult result,
+                          const blink::WebString& result_name)>;
 
   // Source constraints key for
-  // http://dev.w3.org/2011/webrtc/editor/getusermedia.html.
+  // https://dev.w3.org/2011/webrtc/editor/getusermedia.html.
   static const char kSourceId[];
 
   MediaStreamSource();
@@ -83,7 +83,7 @@ class CONTENT_EXPORT MediaStreamSource
 
   // In debug builds, check that all methods are being called on the main
   // thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamSource);
 };

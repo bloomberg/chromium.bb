@@ -191,9 +191,9 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
 
   // Used to DCHECK that some methods are called on the capture audio thread.
-  base::ThreadChecker capture_thread_checker_;
+  THREAD_CHECKER(capture_thread_checker_);
   // Used to DCHECK that some methods are called on the render audio thread.
-  base::ThreadChecker render_thread_checker_;
+  THREAD_CHECKER(render_thread_checker_);
 
   // Flag to enable stereo channel mirroring.
   bool audio_mirroring_;

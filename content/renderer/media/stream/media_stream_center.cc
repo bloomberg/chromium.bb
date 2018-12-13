@@ -177,7 +177,7 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
 
   // TODO(tommi): Rename WebRtcLocalAudioSourceProvider to
   // WebAudioMediaStreamSink since it's not specific to any particular source.
-  // http://crbug.com/577874
+  // https://crbug.com/577874
   return new WebRtcLocalAudioSourceProvider(track);
 }
 

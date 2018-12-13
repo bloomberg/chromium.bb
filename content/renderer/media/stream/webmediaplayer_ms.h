@@ -331,7 +331,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   media::GpuVideoAcceleratorFactories* gpu_factories_;
 
   // Used for DCHECKs to ensure methods calls executed in the correct thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   scoped_refptr<WebMediaPlayerMSCompositor> compositor_;
 

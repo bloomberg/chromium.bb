@@ -366,7 +366,7 @@ void ProcessedLocalAudioSource::CaptureUsingProcessor(
 
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
-  // audio/video sync.  http://crbug.com/335335
+  // audio/video sync.  https://crbug.com/335335
   const base::TimeTicks reference_clock_snapshot = base::TimeTicks::Now();
   TRACE_EVENT2("audio", "ProcessedLocalAudioSource::Capture", "now (ms)",
                (reference_clock_snapshot - base::TimeTicks()).InMillisecondsF(),
@@ -431,7 +431,7 @@ int ProcessedLocalAudioSource::GetBufferSize(int sample_rate) const {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 #if defined(OS_ANDROID)
   // TODO(henrika): Re-evaluate whether to use same logic as other platforms.
-  // http://crbug.com/638081
+  // https://crbug.com/638081
   return (2 * sample_rate / 100);
 #endif
 
@@ -441,7 +441,7 @@ int ProcessedLocalAudioSource::GetBufferSize(int sample_rate) const {
 
   // If audio processing is off and the native hardware buffer size was
   // provided, use it. It can be harmful, in terms of CPU/power consumption, to
-  // use smaller buffer sizes than the native size (http://crbug.com/362261).
+  // use smaller buffer sizes than the native size (https://crbug.com/362261).
   if (int hardware_buffer_size = device().input.frames_per_buffer())
     return hardware_buffer_size;
 
@@ -449,7 +449,7 @@ int ProcessedLocalAudioSource::GetBufferSize(int sample_rate) const {
   // fall-back.
   //
   // TODO(miu): Identify where/why the buffer size might be missing, fix the
-  // code, and then require it here. http://crbug.com/638081
+  // code, and then require it here. https://crbug.com/638081
   return (sample_rate / 100);
 }
 
