@@ -5,16 +5,18 @@
 package org.chromium.chrome.browser.vr;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
 import org.chromium.chrome.browser.ChromeActivity;
 
 /**
- * {@link VrDelegate} implementation if the VR module is available. Mostly forwards calls to {@link
- * VrShellDelegate}.
+ * {@link VrDelegate} and {@link VrIntentDelegate} implementation if the VR module is available.
+ * Forwards calls to VR classes that implement them (mostly {@link VrShellDelegate} and {@link
+ * VrIntentUtils}).
  */
-/* package */ class VrDelegateImpl extends VrDelegate {
+/* package */ class VrDelegateImpl implements VrDelegate, VrIntentDelegate {
     @Override
     public void forceExitVrImmediately() {
         VrShellDelegate.forceExitVrImmediately();
@@ -132,6 +134,11 @@ import org.chromium.chrome.browser.ChromeActivity;
     }
 
     @Override
+    public boolean bootsToVr() {
+        return VrShellDelegate.bootsToVr();
+    }
+
+    @Override
     public boolean isDaydreamReadyDevice() {
         return VrShellDelegate.isDaydreamReadyDevice();
     }
@@ -139,6 +146,26 @@ import org.chromium.chrome.browser.ChromeActivity;
     @Override
     public boolean isDaydreamCurrentViewer() {
         return VrShellDelegate.isDaydreamCurrentViewer();
+    }
+
+    @Override
+    public boolean isVrIntent(Intent intent) {
+        return VrIntentUtils.isVrIntent(intent);
+    }
+
+    @Override
+    public boolean isLaunchingIntoVr(Activity activity, Intent intent) {
+        return VrIntentUtils.isLaunchingIntoVr(activity, intent);
+    }
+
+    @Override
+    public Intent setupVrFreIntent(Context context, Intent freIntent) {
+        return VrIntentUtils.setupVrFreIntent(context, freIntent);
+    }
+
+    @Override
+    public Bundle getVrIntentOptions(Context context) {
+        return VrIntentUtils.getVrIntentOptions(context);
     }
 
     @Override
