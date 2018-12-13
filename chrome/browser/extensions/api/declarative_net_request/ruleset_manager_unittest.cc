@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -228,6 +229,52 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
   EXPECT_EQ(Action::BLOCK,
             manager->EvaluateRequest(
                 request_info, false /*is_incognito_context*/, &redirect_url));
+}
+
+// Tests that
+// Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2
+// is only emitted when there are active rulesets.
+TEST_P(RulesetManagerTest, TotalEvaluationTimeHistogram) {
+  RulesetManager* manager = info_map()->GetRulesetManager();
+  ASSERT_TRUE(manager);
+
+  WebRequestInfo example_com_request = GetRequestForURL("http://example.com");
+  WebRequestInfo google_com_request = GetRequestForURL("http://google.com");
+  GURL redirect_url;
+  bool is_incognito_context = false;
+  const char* kHistogramName =
+      "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2";
+  {
+    base::HistogramTester tester;
+    EXPECT_EQ(Action::NONE,
+              manager->EvaluateRequest(example_com_request,
+                                       is_incognito_context, &redirect_url));
+    EXPECT_EQ(Action::NONE,
+              manager->EvaluateRequest(google_com_request, is_incognito_context,
+                                       &redirect_url));
+    tester.ExpectTotalCount(kHistogramName, 0);
+  }
+
+  // Add an extension ruleset which blocks requests to "example.com".
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("example.com");
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_NO_FATAL_FAILURE(
+      CreateMatcherForRules({rule}, "test_extension", &matcher));
+  manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
+                      URLPatternSet());
+
+  {
+    base::HistogramTester tester;
+    EXPECT_EQ(Action::BLOCK,
+              manager->EvaluateRequest(example_com_request,
+                                       is_incognito_context, &redirect_url));
+    tester.ExpectTotalCount(kHistogramName, 1);
+    EXPECT_EQ(Action::NONE,
+              manager->EvaluateRequest(google_com_request, is_incognito_context,
+                                       &redirect_url));
+    tester.ExpectTotalCount(kHistogramName, 2);
+  }
 }
 
 // Test redirect rules.
