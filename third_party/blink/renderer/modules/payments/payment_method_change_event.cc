@@ -29,7 +29,8 @@ const ScriptValue PaymentMethodChangeEvent::methodDetails(
     ScriptState* script_state) const {
   if (method_details_.IsEmpty())
     return ScriptValue::CreateNull(script_state);
-  return ScriptValue::ToWorldSafeScriptValue(script_state, method_details_);
+  return ScriptValue(script_state,
+                     method_details_.GetAcrossWorld(script_state));
 }
 
 void PaymentMethodChangeEvent::Trace(Visitor* visitor) {

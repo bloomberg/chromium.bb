@@ -99,14 +99,4 @@ ScriptValue ScriptValue::CreateNull(ScriptState* script_state) {
   return ScriptValue(script_state, v8::Null(script_state->GetIsolate()));
 }
 
-// static
-ScriptValue ScriptValue::ToWorldSafeScriptValue(
-    ScriptState* target_script_state,
-    const TraceWrapperV8Reference<v8::Value>& value) {
-  return ScriptValue(
-      target_script_state,
-      ToWorldSafeValue(target_script_state,
-                       value.NewLocal(target_script_state->GetIsolate())));
-}
-
 }  // namespace blink

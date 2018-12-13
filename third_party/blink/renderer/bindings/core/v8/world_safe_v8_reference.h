@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WORLD_SAFE_V8_REFERENCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WORLD_SAFE_V8_REFERENCE_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -15,7 +16,7 @@ namespace blink {
 class ScriptState;
 
 // This is a namespace to provide utility functions to WorldSafeV8Reference.
-class WorldSafeV8ReferenceInternal final {
+class CORE_EXPORT WorldSafeV8ReferenceInternal final {
   STATIC_ONLY(WorldSafeV8ReferenceInternal);
 
  private:
@@ -55,7 +56,8 @@ class WorldSafeV8Reference final {
   explicit WorldSafeV8Reference(v8::Isolate* isolate, v8::Local<V8Type> value)
       : v8_reference_(isolate, value),
         world_(&DOMWrapperWorld::Current(isolate)) {
-    MaybeCheckCreationContextWorld(*world_.get(), value);
+    WorldSafeV8ReferenceInternal::MaybeCheckCreationContextWorld(*world_.get(),
+                                                                 value);
   }
   ~WorldSafeV8Reference() = default;
 
@@ -80,7 +82,8 @@ class WorldSafeV8Reference final {
   void Set(v8::Isolate* isolate, v8::Local<V8Type> new_value) {
     DCHECK(!new_value.IsEmpty());
     const DOMWrapperWorld& new_world = DOMWrapperWorld::Current(isolate);
-    MaybeCheckCreationContextWorld(new_world, new_value);
+    WorldSafeV8ReferenceInternal::MaybeCheckCreationContextWorld(new_world,
+                                                                 new_value);
     CHECK(v8_reference_.IsEmpty() || world_.get() == &new_world);
     v8_reference_.Set(isolate, new_value);
     world_ = WrapRefCounted(&new_world);
