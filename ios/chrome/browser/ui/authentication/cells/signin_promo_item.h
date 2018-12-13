@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_PROMO_ITEM_H_
-#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_PROMO_ITEM_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_SIGNIN_PROMO_ITEM_H_
+#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_SIGNIN_PROMO_ITEM_H_
 
 #import <UIKit/UIKit.h>
 
@@ -13,6 +13,7 @@
 @class SigninPromoView;
 @class SigninPromoViewConfigurator;
 
+// TODO(crbug.com/894800): Remove this.
 // SigninPromoItem is an item that configures a SigninPromoCell cell.
 @interface SigninPromoItem : CollectionViewItem
 
@@ -29,4 +30,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_PROMO_ITEM_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_SIGNIN_PROMO_ITEM_H_
