@@ -1047,6 +1047,24 @@ void RenderFrameHostImpl::AudioContextPlaybackStopped(int audio_context_id) {
   delegate_->AudioContextPlaybackStopped(this, audio_context_id);
 }
 
+// The current frame went into the BackForwardCache.
+void RenderFrameHostImpl::EnterBackForwardCache() {
+  DCHECK(IsBackForwardCacheEnabled());
+  DCHECK(!is_in_back_forward_cache_);
+  is_in_back_forward_cache_ = true;
+  for (auto& child : children_)
+    child->current_frame_host()->EnterBackForwardCache();
+}
+
+// The frame as been restored from the BackForwardCache.
+void RenderFrameHostImpl::LeaveBackForwardCache() {
+  DCHECK(IsBackForwardCacheEnabled());
+  DCHECK(is_in_back_forward_cache_);
+  is_in_back_forward_cache_ = false;
+  for (auto& child : children_)
+    child->current_frame_host()->LeaveBackForwardCache();
+}
+
 SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
   return site_instance_.get();
 }
@@ -2326,7 +2344,7 @@ void RenderFrameHostImpl::SwapOut(
 
   // If this RenderFrameHost is already pending deletion, it must have already
   // gone through this, therefore just return.
-  if (!is_active()) {
+  if (unload_state_ != UnloadState::NotRun) {
     NOTREACHED() << "RFH should be in default state when calling SwapOut.";
     return;
   }
@@ -2576,7 +2594,7 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // be sent again.
   sudden_termination_disabler_types_enabled_ = 0;
 
-  if (!is_active()) {
+  if (unload_state_ != UnloadState::NotRun) {
     // If the process has died, we don't need to wait for the ACK. Complete the
     // deletion immediately.
     unload_state_ = UnloadState::Completed;

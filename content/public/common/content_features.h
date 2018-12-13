@@ -29,6 +29,7 @@ CONTENT_EXPORT extern const base::Feature kAwaitOptimization;
 CONTENT_EXPORT extern const base::Feature kBackgroundFetch;
 CONTENT_EXPORT extern const base::Feature kBackgroundFetchAccessActiveFetches;
 CONTENT_EXPORT extern const base::Feature kBackgroundFetchUploads;
+CONTENT_EXPORT extern const base::Feature kBackForwardCache;
 CONTENT_EXPORT extern const base::Feature kBlinkHeapIncrementalMarking;
 CONTENT_EXPORT extern const base::Feature kBlinkHeapUnifiedGarbageCollection;
 CONTENT_EXPORT extern const base::Feature kBloatedRendererDetection;

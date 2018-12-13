@@ -477,7 +477,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // This method returns true from the time this RenderFrameHost is created
   // until it is pending deletion. Pending deletion starts when SwapOut is
   // called on the frame or one of its ancestors.
-  bool is_active() { return unload_state_ == UnloadState::NotRun; }
+  // BackForwardCache: Returns false when the frame is in the BackForwardCache.
+  bool is_active() {
+    return unload_state_ == UnloadState::NotRun && !is_in_back_forward_cache_;
+  }
 
   // Navigates to an interstitial page represented by the provided data URL.
   void NavigateToInterstitialURL(const GURL& data_url);
@@ -818,6 +821,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool is_attaching_inner_delegate() const {
     return is_attaching_inner_delegate_;
   }
+
+  // BackForwardCache:
+  //
+  // When a RenderFrameHostImpl enters the BackForwardCache, the document enters
+  // in a "Frozen" state where no Javascript can run.
+  void EnterBackForwardCache();  // The document enters the BackForwardCache.
+  void LeaveBackForwardCache();  // The document leaves the BackForwardCache.
+  bool is_in_back_forward_cache() { return is_in_back_forward_cache_; }
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1811,6 +1822,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
     Completed,
   };
   UnloadState unload_state_ = UnloadState::NotRun;
+
+  // BackForwardCache:
+  bool is_in_back_forward_cache_ = false;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

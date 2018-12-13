@@ -81,6 +81,7 @@
 #include "content/public/common/url_utils.h"
 #include "media/base/mime_util.h"
 #include "net/base/escape.h"
+#include "net/http/http_status_code.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -2380,6 +2381,16 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   DCHECK(IsInitialNavigation() || pending_entry_index_ != -1);
   DCHECK(!IsRendererDebugURL(pending_entry_->GetURL()));
   needs_reload_ = false;
+  FrameTreeNode* root = delegate_->GetFrameTree()->root();
+  int nav_entry_id = pending_entry_->GetUniqueID();
+
+  // BackForwardCache:
+  // Try to restore a document from the BackForwardCache.
+  if (auto rfh = back_forward_cache_.RestoreDocument(nav_entry_id)) {
+    root->render_manager()->RestoreFromBackForwardCache(std::move(rfh));
+    CommitRestoreFromBackForwardCache();
+    return;
+  }
 
   // If we were navigating to a slow-to-commit page, and the user performs
   // a session history navigation to the last committed page, RenderViewHost
@@ -2408,8 +2419,6 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
     DiscardNonCommittedEntries();
     return;
   }
-
-  FrameTreeNode* root = delegate_->GetFrameTree()->root();
 
   // Compare FrameNavigationEntries to see which frames in the tree need to be
   // navigated.
@@ -3150,6 +3159,27 @@ void NavigationControllerImpl::InsertEntriesFrom(
 void NavigationControllerImpl::SetGetTimestampCallbackForTest(
     const base::Callback<base::Time()>& get_timestamp_callback) {
   get_timestamp_callback_ = get_timestamp_callback;
+}
+
+// BackForwardCache:
+void NavigationControllerImpl::CommitRestoreFromBackForwardCache() {
+  // TODO(arthursonzogni): Extract the missing parts from RendererDidNavigate()
+  // and reuse them.
+  LoadCommittedDetails details;
+  details.previous_entry_index = GetCurrentEntryIndex();
+  details.entry = pending_entry_;
+  details.type = NAVIGATION_TYPE_EXISTING_PAGE;
+  details.is_main_frame = true;
+  details.http_status_code = net::HTTP_OK;
+  details.did_replace_entry = false;
+  details.is_same_document = false;
+
+  last_committed_entry_index_ = pending_entry_index_;
+  DiscardPendingEntry(false);
+
+  // Notify content/ embedder of the history update.
+  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
+  delegate_->NotifyNavigationEntryCommitted(details);
 }
 
 }  // namespace content
