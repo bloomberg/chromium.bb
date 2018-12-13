@@ -114,9 +114,14 @@ public class WebApkInfoTest {
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES,
                 ICON_URL + " " + ICON_MURMUR2_HASH);
-        bundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "GET");
+
+        Bundle shareActivityBundle = new Bundle();
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ACTION, "action0");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TITLE, "title0");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_TEXT, "text0");
+        shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_URL, "url0");
         WebApkTestHelper.registerWebApkWithMetaData(
-                WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
+                WEBAPK_PACKAGE_NAME, bundle, new Bundle[] {shareActivityBundle});
 
         Intent intent = new Intent();
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
@@ -155,6 +160,13 @@ public class WebApkInfoTest {
         Assert.assertEquals(null, info.icon());
         Assert.assertEquals(null, info.badgeIcon());
         Assert.assertEquals(null, info.splashIcon());
+
+        WebApkInfo.ShareTarget shareTarget = info.shareTarget();
+        Assert.assertNotNull(shareTarget);
+        Assert.assertEquals("action0", shareTarget.getAction());
+        Assert.assertEquals("title0", shareTarget.getParamTitle());
+        Assert.assertEquals("text0", shareTarget.getParamText());
+        Assert.assertEquals("url0", shareTarget.getParamUrl());
     }
 
     /**
@@ -432,23 +444,21 @@ public class WebApkInfoTest {
         Assert.assertEquals(WebApkInfo.WebApkDistributor.OTHER, info.distributor());
     }
 
-    // Test whether getSerializedShareTarget can handle special characters
+    /**
+     * Test that {@link WebApkInfo#shareTarget()} returns a non-null but empty object if the WebAPK
+     * does not handle share intents.
+     */
     @Test
-    public void testGetSerializedShareTarget() {
-        String serializedShareTarget =
-                WebApkInfo.getSerializedShareTarget("\n", "\\", "", "", "", "", "", "");
-        Assert.assertEquals("action: \"\n\", method: \"\\\", enctype: \"\", title: \"\""
-                        + "text: \"\", url: \"\", names: \"\", accepts: \"\"",
-                serializedShareTarget);
-    }
+    public void testGetShareTargetNotNullEvenIfDoesNotHandleShareIntents() {
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle, null);
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+        WebApkInfo info = WebApkInfo.create(intent);
 
-    // Test that getSerializedShareTarget() returns the same result for empty and null parameters.
-    @Test
-    public void testGetSerializedShareTargetNullValues() {
-        String serializedShareTarget1 = WebApkInfo.getSerializedShareTarget(
-                "action", "", "", "awesome title", "", "", "", "");
-        String serializedShareTarget2 = WebApkInfo.getSerializedShareTarget(
-                "action", null, null, "awesome title", "", "", "", "");
-        Assert.assertEquals(serializedShareTarget1, serializedShareTarget2);
+        Assert.assertNotNull(info.shareTarget());
+        Assert.assertEquals("", info.shareTarget().getAction());
     }
 }
