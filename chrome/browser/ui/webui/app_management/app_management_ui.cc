@@ -45,6 +45,9 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS);
   source->AddResourcePath("image_info.mojom-lite.js",
                           IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
+
+  source->AddResourcePath("actions.html", IDR_APP_MANAGEMENT_ACTIONS_HTML);
+  source->AddResourcePath("actions.js", IDR_APP_MANAGEMENT_ACTIONS_JS);
   source->AddResourcePath("app.html", IDR_APP_MANAGEMENT_APP_HTML);
   source->AddResourcePath("app.js", IDR_APP_MANAGEMENT_APP_JS);
   source->AddResourcePath("browser_proxy.html",
@@ -59,10 +62,21 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("item.js", IDR_APP_MANAGEMENT_ITEM_JS);
   source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
   source->AddResourcePath("main_view.js", IDR_APP_MANAGEMENT_MAIN_VIEW_JS);
+  source->AddResourcePath("reducers.html", IDR_APP_MANAGEMENT_REDUCERS_HTML);
+  source->AddResourcePath("reducers.js", IDR_APP_MANAGEMENT_REDUCERS_JS);
   source->AddResourcePath("shared_style.html",
                           IDR_APP_MANAGEMENT_SHARED_STYLE_HTML);
   source->AddResourcePath("shared_vars.html",
                           IDR_APP_MANAGEMENT_SHARED_VARS_HTML);
+  source->AddResourcePath("store.html", IDR_APP_MANAGEMENT_STORE_HTML);
+  source->AddResourcePath("store.js", IDR_APP_MANAGEMENT_STORE_JS);
+  source->AddResourcePath("store_client.html",
+                          IDR_APP_MANAGEMENT_STORE_CLIENT_HTML);
+  source->AddResourcePath("store_client.js",
+                          IDR_APP_MANAGEMENT_STORE_CLIENT_JS);
+  source->AddResourcePath("types.js", IDR_APP_MANAGEMENT_TYPES_JS);
+  source->AddResourcePath("util.html", IDR_APP_MANAGEMENT_UTIL_HTML);
+  source->AddResourcePath("util.js", IDR_APP_MANAGEMENT_UTIL_JS);
 
   source->SetDefaultResource(IDR_APP_MANAGEMENT_INDEX_HTML);
   source->SetJsonPath("strings.js");

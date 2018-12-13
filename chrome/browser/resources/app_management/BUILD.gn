@@ -8,19 +8,34 @@ import("../optimize_webui.gni")
 if (!is_android) {
   js_type_check("closure_compile") {
     deps = [
+      ":actions",
       ":app",
       ":browser_proxy",
       ":constants",
       ":fake_page_handler",
       ":item",
       ":main_view",
+      ":reducers",
+      ":store",
+      ":store_client",
+      ":types",
+      ":util",
+    ]
+  }
+
+  js_library("actions") {
+    deps = [
+      "//chrome/browser/ui/webui/app_management:mojo_bindings_js_externs",
+      "//ui/webui/resources/js:cr",
     ]
   }
 
   js_library("app") {
     deps = [
+      ":actions",
       ":browser_proxy",
       ":main_view",
+      ":util",
     ]
   }
 
@@ -54,6 +69,41 @@ if (!is_android) {
       ":constants",
       ":item",
       "//ui/webui/resources/js:load_time_data",
+    ]
+  }
+
+  js_library("reducers") {
+    deps = [
+      ":types",
+      "//ui/webui/resources/js:cr",
+    ]
+  }
+
+  js_library("store") {
+    deps = [
+      ":reducers",
+      ":util",
+      "//ui/webui/resources/js:cr",
+      "//ui/webui/resources/js/cr/ui:store",
+    ]
+  }
+
+  js_library("store_client") {
+    deps = [
+      ":store",
+      ":types",
+      "//ui/webui/resources/js:cr",
+      "//ui/webui/resources/js/cr/ui:store",
+    ]
+  }
+
+  js_library("types") {
+  }
+
+  js_library("util") {
+    deps = [
+      ":types",
+      "//ui/webui/resources/js:cr",
     ]
   }
 }
