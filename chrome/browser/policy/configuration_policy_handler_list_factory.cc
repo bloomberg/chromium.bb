@@ -947,9 +947,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserSwitcherUrlGreylist,
     browser_switcher::prefs::kUrlGreylist,
     base::Value::Type::LIST },
-  { key::kBrowserSwitcherExternalSitelistUrl,
-    browser_switcher::prefs::kExternalSitelistUrl,
-    base::Value::Type::STRING },
 #endif
 #if defined(OS_WIN)
   { key::kBrowserSwitcherUseIeSitelist,

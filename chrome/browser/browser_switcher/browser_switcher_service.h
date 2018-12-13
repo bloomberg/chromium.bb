@@ -7,14 +7,17 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
 #include <memory>
+
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 class PrefService;
 class Profile;
@@ -24,7 +27,6 @@ namespace browser_switcher {
 class AlternativeBrowserLauncher;
 class BrowserSwitcherSitelist;
 class ParsedXml;
-class XmlDownloader;
 
 // Manages per-profile resources for BrowserSwitcher.
 class BrowserSwitcherService : public KeyedService {
@@ -39,9 +41,10 @@ class BrowserSwitcherService : public KeyedService {
       std::unique_ptr<AlternativeBrowserLauncher> launcher);
   void SetSitelistForTesting(std::unique_ptr<BrowserSwitcherSitelist> sitelist);
 
-  static void SetFetchDelayForTesting(base::TimeDelta delay);
-
 #if defined(OS_WIN)
+  static void SetIeemFetchDelayForTesting(base::TimeDelta delay);
+  static void SetXmlParsedCallbackForTesting(
+      base::OnceCallback<void()> callback);
   static void SetIeemSitelistUrlForTesting(const std::string& url);
 #endif
 
@@ -50,30 +53,35 @@ class BrowserSwitcherService : public KeyedService {
   // Returns the URL to fetch to get Internet Explorer's Enterprise Mode
   // sitelist, based on policy. Returns an empty (invalid) URL if IE's SiteList
   // policy is unset.
-  static GURL GetIeemSitelistUrl();
+  GURL GetIeemSitelistUrl();
 
-  void OnIeemSitelistParsed(ParsedXml xml);
+  // Steps to process the IEEM sitelist rules: fetch, parse, apply.
+  void FetchIeemSitelist(
+      GURL url,
+      scoped_refptr<network::SharedURLLoaderFactory> factory);
+  void ParseXml(std::unique_ptr<std::string> bytes);
+  void OnIeemSitelistXmlParsed(ParsedXml xml);
+  void DoneLoadingIeemSitelist();
 
-  std::unique_ptr<XmlDownloader> ieem_downloader_;
+  // Delay for the IEEM XML fetch task, launched from the constructor.
+  static base::TimeDelta fetch_sitelist_delay_;
 
   // URL to fetch the IEEM sitelist from. Only used for testing.
-  static base::Optional<std::string> ieem_sitelist_url_for_testing_;
+  static std::string ieem_sitelist_url_for_testing_;
+
+  // If set, gets called once the IEEM sitelist rules are applied. Also gets
+  // called if any step of the process fails.
+  static base::OnceCallback<void()> xml_parsed_callback_for_testing_;
+
+  // Used to fetch the IEEM XML.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 #endif
-
-  void OnExternalSitelistParsed(ParsedXml xml);
-
-  // Delay for the IEEM/external XML fetch tasks, launched from the constructor.
-  static base::TimeDelta fetch_delay_;
-
-  std::unique_ptr<XmlDownloader> external_sitelist_downloader_;
 
   // Per-profile helpers.
   std::unique_ptr<AlternativeBrowserLauncher> launcher_;
   std::unique_ptr<BrowserSwitcherSitelist> sitelist_;
 
   PrefService* const prefs_;
-
-  base::WeakPtrFactory<BrowserSwitcherService> weak_ptr_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowserSwitcherService);
 };

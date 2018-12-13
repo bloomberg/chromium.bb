@@ -18,7 +18,6 @@ extern const char kAlternativeBrowserPath[];
 extern const char kAlternativeBrowserParameters[];
 extern const char kUrlList[];
 extern const char kUrlGreylist[];
-extern const char kExternalSitelistUrl[];
 
 #if defined(OS_WIN)
 extern const char kUseIeSitelist[];

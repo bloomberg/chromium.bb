@@ -6,7 +6,6 @@
 
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
-#include "build/build_config.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
@@ -57,7 +56,6 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-    BrowserSwitcherService::SetFetchDelayForTesting(base::TimeDelta());
   }
 
   void SetUseIeSitelist(bool use_ie_sitelist) {
@@ -70,48 +68,19 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetExternalUrl(const std::string& url) {
-    policy::PolicyMap policies;
-    policies.Set(policy::key::kBrowserSwitcherExternalSitelistUrl,
-                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_PLATFORM,
-                 std::make_unique<base::Value>(url), nullptr);
-    provider_.UpdateChromePolicy(policies);
-    base::RunLoop().RunUntilIdle();
-  }
-
  private:
   policy::MockConfigurationPolicyProvider provider_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherServiceTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, ExternalNotEnabledByPolicy) {
-  bool fetch_happened = false;
-  content::URLLoaderInterceptor interceptor(base::BindRepeating(
-      [](bool* happened, content::URLLoaderInterceptor::RequestParams*) {
-        *happened = true;
-        return false;
-      },
-      &fetch_happened));
-
-  // Execute everything and make sure we didn't get to the fetch step.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, NotEnabledByPolicy) {
+  // Only load the IEEM sitelist if the 'UseIeSitelist' policy is set to true.
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](bool* happened, base::OnceClosure quit) {
-            EXPECT_FALSE(*happened);
-            std::move(quit).Run();
-          },
-          &fetch_happened, run_loop.QuitClosure()),
-      TestTimeouts::tiny_timeout());
-  run_loop.Run();
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, ExternalSitelistInvalidUrl) {
-  SetExternalUrl(kAnInvalidUrl);
+  BrowserSwitcherService::SetIeemFetchDelayForTesting(base::TimeDelta());
+  BrowserSwitcherService::SetXmlParsedCallbackForTesting(
+      run_loop.QuitClosure());
+  BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
 
   bool fetch_happened = false;
   content::URLLoaderInterceptor interceptor(base::BindRepeating(
@@ -123,126 +92,17 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, ExternalSitelistInvalidUrl) {
 
   // Execute everything and make sure we didn't get to the fetch step.
   BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](bool* happened, base::OnceClosure quit) {
-            EXPECT_FALSE(*happened);
-            std::move(quit).Run();
-          },
-          &fetch_happened, run_loop.QuitClosure()),
-      TestTimeouts::tiny_timeout());
   run_loop.Run();
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
-                       ExternalFetchAndParseAfterStartup) {
-  SetExternalUrl(kAValidUrl);
-
-  content::URLLoaderInterceptor interceptor(
-      base::BindRepeating(ReturnValidXml));
-
-  // Execute everything and make sure the rules are applied correctly.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherSitelist* sitelist, base::OnceClosure quit) {
-            EXPECT_FALSE(sitelist->ShouldSwitch(GURL("http://google.com/")));
-            EXPECT_TRUE(
-                sitelist->ShouldSwitch(GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service->sitelist(), run_loop.QuitClosure()),
-      TestTimeouts::action_timeout());
-  run_loop.Run();
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
-                       ExternalIgnoresFailedDownload) {
-  SetExternalUrl(kAValidUrl);
-
-  content::URLLoaderInterceptor interceptor(
-      base::BindRepeating(FailToDownload));
-
-  // Execute everything and make sure no rules are applied.
-  auto* service =
-      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherSitelist* sitelist, base::OnceClosure quit) {
-            EXPECT_FALSE(sitelist->ShouldSwitch(GURL("http://google.com/")));
-            EXPECT_FALSE(
-                sitelist->ShouldSwitch(GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service->sitelist(), run_loop.QuitClosure()),
-      TestTimeouts::tiny_timeout());
-  run_loop.Run();
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
-                       ExternalIgnoresNonManagedPref) {
-  browser()->profile()->GetPrefs()->SetString(prefs::kExternalSitelistUrl,
-                                              kAValidUrl);
-
-  bool fetch_happened = false;
-  content::URLLoaderInterceptor interceptor(base::BindRepeating(
-      [](bool* happened, content::URLLoaderInterceptor::RequestParams*) {
-        *happened = true;
-        return false;
-      },
-      &fetch_happened));
-
-  // Execute everything and make sure we didn't get to the fetch step.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](bool* happened, base::OnceClosure quit) {
-            EXPECT_FALSE(*happened);
-            std::move(quit).Run();
-          },
-          &fetch_happened, run_loop.QuitClosure()),
-      TestTimeouts::tiny_timeout());
-  run_loop.Run();
-}
-
-#if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemNotEnabledByPolicy) {
-  SetExternalUrl("");
-
-  bool fetch_happened = false;
-  content::URLLoaderInterceptor interceptor(base::BindRepeating(
-      [](bool* happened, content::URLLoaderInterceptor::RequestParams*) {
-        *happened = true;
-        return false;
-      },
-      &fetch_happened));
-
-  // Execute everything and make sure we didn't get to the fetch step.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](bool* happened, base::OnceClosure quit) {
-            EXPECT_FALSE(*happened);
-            std::move(quit).Run();
-          },
-          &fetch_happened, run_loop.QuitClosure()),
-      TestTimeouts::tiny_timeout());
-  run_loop.Run();
+  EXPECT_FALSE(fetch_happened);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemSitelistInvalidUrl) {
   SetUseIeSitelist(true);
+
+  base::RunLoop run_loop;
+  BrowserSwitcherService::SetIeemFetchDelayForTesting(base::TimeDelta());
+  BrowserSwitcherService::SetXmlParsedCallbackForTesting(
+      run_loop.QuitClosure());
   BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAnInvalidUrl);
 
   bool fetch_happened = false;
@@ -255,22 +115,17 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemSitelistInvalidUrl) {
 
   // Execute everything and make sure we didn't get to the fetch step.
   BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](bool* happened, base::OnceClosure quit) {
-            EXPECT_FALSE(*happened);
-            std::move(quit).Run();
-          },
-          &fetch_happened, run_loop.QuitClosure()),
-      TestTimeouts::tiny_timeout());
   run_loop.Run();
+  EXPECT_FALSE(fetch_happened);
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
-                       IeemFetchAndParseAfterStartup) {
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, FetchAndParseAfterStartup) {
   SetUseIeSitelist(true);
+
+  base::RunLoop run_loop;
+  BrowserSwitcherService::SetIeemFetchDelayForTesting(base::TimeDelta());
+  BrowserSwitcherService::SetXmlParsedCallbackForTesting(
+      run_loop.QuitClosure());
   BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
 
   content::URLLoaderInterceptor interceptor(
@@ -279,23 +134,19 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
   // Execute everything and make sure the rules are applied correctly.
   auto* service =
       BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherSitelist* sitelist, base::OnceClosure quit) {
-            EXPECT_FALSE(sitelist->ShouldSwitch(GURL("http://google.com/")));
-            EXPECT_TRUE(
-                sitelist->ShouldSwitch(GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service->sitelist(), run_loop.QuitClosure()),
-      TestTimeouts::action_timeout());
   run_loop.Run();
+  EXPECT_FALSE(service->sitelist()->ShouldSwitch(GURL("http://google.com/")));
+  EXPECT_TRUE(
+      service->sitelist()->ShouldSwitch(GURL("http://docs.google.com/")));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemIgnoresFailedDownload) {
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IgnoresFailedDownload) {
   SetUseIeSitelist(true);
+
+  base::RunLoop run_loop;
+  BrowserSwitcherService::SetIeemFetchDelayForTesting(base::TimeDelta());
+  BrowserSwitcherService::SetXmlParsedCallbackForTesting(
+      run_loop.QuitClosure());
   BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
 
   content::URLLoaderInterceptor interceptor(
@@ -304,47 +155,31 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemIgnoresFailedDownload) {
   // Execute everything and make sure no rules are applied.
   auto* service =
       BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](BrowserSwitcherSitelist* sitelist, base::OnceClosure quit) {
-            EXPECT_FALSE(sitelist->ShouldSwitch(GURL("http://google.com/")));
-            EXPECT_FALSE(
-                sitelist->ShouldSwitch(GURL("http://docs.google.com/")));
-            std::move(quit).Run();
-          },
-          service->sitelist(), run_loop.QuitClosure()),
-      TestTimeouts::tiny_timeout());
   run_loop.Run();
+  EXPECT_FALSE(service->sitelist()->ShouldSwitch(GURL("http://google.com/")));
+  EXPECT_FALSE(
+      service->sitelist()->ShouldSwitch(GURL("http://docs.google.com/")));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemIgnoresNonManagedPref) {
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IgnoresNonManagedPref) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kUseIeSitelist, true);
+
+  base::RunLoop run_loop;
+  BrowserSwitcherService::SetIeemFetchDelayForTesting(base::TimeDelta());
+  BrowserSwitcherService::SetXmlParsedCallbackForTesting(
+      run_loop.QuitClosure());
   BrowserSwitcherService::SetIeemSitelistUrlForTesting(kAValidUrl);
 
-  bool fetch_happened = false;
-  content::URLLoaderInterceptor interceptor(base::BindRepeating(
-      [](bool* happened, content::URLLoaderInterceptor::RequestParams*) {
-        *happened = true;
-        return false;
-      },
-      &fetch_happened));
+  content::URLLoaderInterceptor interceptor(
+      base::BindRepeating(FailToDownload));
 
-  // Execute everything and make sure we didn't get to the fetch step.
-  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](bool* happened, base::OnceClosure quit) {
-            EXPECT_FALSE(*happened);
-            std::move(quit).Run();
-          },
-          &fetch_happened, run_loop.QuitClosure()),
-      TestTimeouts::tiny_timeout());
+  // Execute everything and make sure no rules are applied.
+  auto* service =
+      BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
   run_loop.Run();
+  EXPECT_FALSE(service->sitelist()->ShouldSwitch(GURL("http://google.com/")));
+  EXPECT_FALSE(
+      service->sitelist()->ShouldSwitch(GURL("http://docs.google.com/")));
 }
-#endif
 
 }  // namespace browser_switcher
