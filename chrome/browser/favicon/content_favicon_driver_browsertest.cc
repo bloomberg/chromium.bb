@@ -713,7 +713,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
 
   // Observe the message for a blocked favicon.
   content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    "*icon.png*");
+                                                    "*insecure*");
   web_contents()->SetDelegate(&console_observer);
 
   // Observe if the favicon URL is requested.
