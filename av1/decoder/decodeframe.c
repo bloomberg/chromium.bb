@@ -4766,8 +4766,10 @@ static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
   int i;
 
   // We have not stored any references to frame buffers in
-  // cm->next_ref_frame_map, so we can directly reset it to all -1.
-  memset(&cm->next_ref_frame_map, -1, sizeof(cm->next_ref_frame_map));
+  // cm->next_ref_frame_map, so we can directly reset it to all NULL.
+  for (i = 0; i < REF_FRAMES; ++i) {
+    cm->next_ref_frame_map[i] = NULL;
+  }
 
   lock_buffer_pool(cm->buffer_pool);
   reset_ref_frame_map(cm);
