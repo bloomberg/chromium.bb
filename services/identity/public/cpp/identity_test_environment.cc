@@ -432,4 +432,8 @@ void IdentityTestEnvironment::UpdateAccountInfoForAccount(
   identity::UpdateAccountInfoForAccount(identity_manager(), account_info);
 }
 
+void IdentityTestEnvironment::ResetToAccountsNotYetLoadedFromDiskState() {
+  token_service_->set_all_credentials_loaded_for_testing(false);
+}
+
 }  // namespace identity
