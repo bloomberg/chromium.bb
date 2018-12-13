@@ -1334,6 +1334,11 @@ Response InspectorPageAgent::clearCompilationCache() {
   return Response::OK();
 }
 
+Response InspectorPageAgent::waitForDebugger() {
+  client_->WaitForDebugger();
+  return Response::OK();
+}
+
 protocol::Response InspectorPageAgent::generateTestReport(const String& message,
                                                           Maybe<String> group) {
   Document* document = inspected_frames_->Root()->GetDocument();

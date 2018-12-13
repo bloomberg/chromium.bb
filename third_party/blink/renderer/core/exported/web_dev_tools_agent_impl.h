@@ -104,6 +104,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
 
   // InspectorPageAgent::Client implementation.
   void PageLayoutInvalidated(bool resized) override;
+  void WaitForDebugger() override;
 
   // InspectorLayerTreeAgent::Client implementation.
   bool IsInspectorLayer(GraphicsLayer*) override;

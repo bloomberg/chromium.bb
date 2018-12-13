@@ -645,6 +645,11 @@ function addTargetToList(data, list, properties) {
     addActionLink(
         row, 'inspect', sendTargetCommand.bind(null, 'inspect', data),
         data.hasNoUniqueId || data.adbAttachedForeign);
+    if (data.type === 'page') {
+      addActionLink(
+          row, 'pause', sendTargetCommand.bind(null, 'pause', data),
+          data.hasNoUniqueId || data.adbAttachedForeign);
+    }
   }
 
   list.appendChild(row);
