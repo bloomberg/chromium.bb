@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -20,6 +21,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model/sync_merge_result.h"
@@ -309,7 +311,12 @@ bool AutofillWalletSyncBridge::SetWalletCards(
   }
 
   if (!diff.IsEmpty()) {
-    table->SetServerCreditCards(wallet_cards);
+    if (base::FeatureList::IsEnabled(
+            ::switches::kSyncUSSAutofillWalletMetadata)) {
+      table->SetServerCardsData(wallet_cards);
+    } else {
+      table->SetServerCreditCards(wallet_cards);
+    }
     for (const CreditCardChange& change : diff.changes)
       web_data_backend_->NotifyOfCreditCardChanged(change);
     return true;
@@ -340,7 +347,12 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
   }
 
   if (!diff.IsEmpty()) {
-    table->SetServerProfiles(wallet_addresses);
+    if (base::FeatureList::IsEnabled(
+            ::switches::kSyncUSSAutofillWalletMetadata)) {
+      table->SetServerAddressesData(wallet_addresses);
+    } else {
+      table->SetServerProfiles(wallet_addresses);
+    }
     for (const AutofillProfileChange& change : diff.changes)
       web_data_backend_->NotifyOfAutofillProfileChanged(change);
     return true;
