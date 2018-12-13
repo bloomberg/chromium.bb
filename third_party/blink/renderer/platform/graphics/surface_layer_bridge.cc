@@ -140,6 +140,10 @@ void SurfaceLayerBridge::ClearSurfaceId() {
   surface_layer_->SetOldestAcceptableFallback(viz::SurfaceId());
 }
 
+void SurfaceLayerBridge::ClearObserver() {
+  observer_ = nullptr;
+}
+
 void SurfaceLayerBridge::SetContentsOpaque(bool opaque) {
   // If the surface isn't activated, we have nothing to show, do not change
   // opacity (defaults to false on surface_layer creation).

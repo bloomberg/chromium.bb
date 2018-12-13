@@ -59,6 +59,7 @@ class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
   MOCK_METHOD1(SetContentsOpaque, void(bool));
   MOCK_METHOD0(CreateSurfaceLayer, void());
   MOCK_METHOD0(ClearSurfaceId, void());
+  MOCK_METHOD0(ClearObserver, void());
 
   viz::FrameSinkId frame_sink_id_ = viz::FrameSinkId(1, 1);
   viz::LocalSurfaceId local_surface_id_ =

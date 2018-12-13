@@ -300,6 +300,7 @@ class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
   MOCK_METHOD0(ClearSurfaceId, void());
   MOCK_METHOD1(SetContentsOpaque, void(bool));
   MOCK_METHOD0(CreateSurfaceLayer, void());
+  MOCK_METHOD0(ClearObserver, void());
 };
 
 class MockVideoFrameCompositor : public VideoFrameCompositor {
@@ -409,6 +410,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   ~WebMediaPlayerImplTest() override {
     EXPECT_CALL(client_, SetCcLayer(nullptr));
     EXPECT_CALL(client_, MediaRemotingStopped(_));
+
     // Destruct WebMediaPlayerImpl and pump the message loop to ensure that
     // objects passed to the message loop for destruction are released.
     //
@@ -416,7 +418,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     // destructed since WMPI may reference them during destruction.
     wmpi_.reset();
 
-    base::RunLoop().RunUntilIdle();
+    CycleThreads();
 
     web_view_->MainFrameWidget()->Close();
   }
@@ -661,13 +663,8 @@ class WebMediaPlayerImplTest : public testing::Test {
     // Ensure any tasks waiting to be posted to the media thread are posted.
     base::RunLoop().RunUntilIdle();
 
-    // Cycle media thread.
-    {
-      base::RunLoop loop;
-      media_thread_.task_runner()->PostTaskAndReply(
-          FROM_HERE, base::DoNothing(), loop.QuitClosure());
-      loop.Run();
-    }
+    // Flush all media tasks.
+    media_thread_.FlushForTesting();
 
     // Cycle anything that was posted back from the media thread.
     base::RunLoop().RunUntilIdle();
@@ -1542,6 +1539,8 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   EXPECT_CALL(client_, SetCcLayer(Eq(layer.get())));
   EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   wmpi_->RegisterContentsLayer(layer.get());
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
@@ -1599,6 +1598,7 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   // Updating SurfaceId should NOT exit Picture-in-Picture.
   EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id(), _))
       .Times(0);
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 // Tests delegate methods are called with the appropriate play/pause button
@@ -1643,6 +1643,7 @@ TEST_F(WebMediaPlayerImplTest,
   // Updating SurfaceId should NOT exit Picture-in-Picture.
   EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id(), _))
       .Times(0);
+  EXPECT_CALL(*surface_layer_bridge_ptr_, ClearObserver());
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest
