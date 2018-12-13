@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 
 #include <memory>
 #include <string>
@@ -188,8 +188,7 @@ DataReductionProxyChromeSettings::DataReductionProxyChromeSettings()
       data_reduction_proxy_enabled_pref_name_(prefs::kDataSaverEnabled),
       profile_(nullptr) {}
 
-DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {
-}
+DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {}
 
 void DataReductionProxyChromeSettings::Shutdown() {
   data_reduction_proxy::DataReductionProxyService* service =
@@ -245,9 +244,8 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
       data_reduction_proxy_service()->GetWeakPtr());
 
   data_reduction_proxy::DataReductionProxySettings::
-      SetCallbackToRegisterSyntheticFieldTrial(
-          base::Bind(
-              &ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));
+      SetCallbackToRegisterSyntheticFieldTrial(base::Bind(
+          &ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));
   // TODO(bengr): Remove after M46. See http://crbug.com/445599.
   MigrateDataReductionProxyOffProxyPrefs(profile_prefs);
 }

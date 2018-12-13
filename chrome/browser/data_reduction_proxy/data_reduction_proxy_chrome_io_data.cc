@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_io_data.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -19,9 +19,8 @@ DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
 }
 
 // static
-bool
-DataReductionProxyChromeSettingsFactory::HasDataReductionProxyChromeSettings(
-    content::BrowserContext* context) {
+bool DataReductionProxyChromeSettingsFactory::
+    HasDataReductionProxyChromeSettings(content::BrowserContext* context) {
   return GetInstance()->GetServiceForBrowserContext(context, false) != NULL;
 }
 
@@ -31,17 +30,14 @@ DataReductionProxyChromeSettingsFactory::GetInstance() {
   return base::Singleton<DataReductionProxyChromeSettingsFactory>::get();
 }
 
-
 DataReductionProxyChromeSettingsFactory::
     DataReductionProxyChromeSettingsFactory()
     : BrowserContextKeyedServiceFactory(
-        "DataReductionProxyChromeSettings",
-        BrowserContextDependencyManager::GetInstance()) {
-}
+          "DataReductionProxyChromeSettings",
+          BrowserContextDependencyManager::GetInstance()) {}
 
 DataReductionProxyChromeSettingsFactory::
-    ~DataReductionProxyChromeSettingsFactory() {
-}
+    ~DataReductionProxyChromeSettingsFactory() {}
 
 KeyedService* DataReductionProxyChromeSettingsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_settings_android.h"
 
 #include <stddef.h>
 
@@ -21,7 +21,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
@@ -59,8 +59,7 @@ class TestDataReductionProxySettingsAndroid
   // settings object.
   explicit TestDataReductionProxySettingsAndroid(
       DataReductionProxySettings* settings)
-      : DataReductionProxySettingsAndroid(),
-        settings_(settings) {}
+      : DataReductionProxySettingsAndroid(), settings_(settings) {}
 
   // Returns the provided setting object. Used by wrapping methods.
   DataReductionProxySettings* Settings() override { return settings_; }
@@ -104,13 +103,11 @@ class DataReductionProxyMockSettingsAndroidTest
   }
 
   void ResetSettingsAndroid() {
-    settings_android_.reset(new TestDataReductionProxySettingsAndroid(
-        settings_.get()));
+    settings_android_.reset(
+        new TestDataReductionProxySettingsAndroid(settings_.get()));
   }
 
-  DataReductionProxySettings* Settings() {
-    return settings_.get();
-  }
+  DataReductionProxySettings* Settings() { return settings_.get(); }
 
   DataReductionProxySettingsAndroid* SettingsAndroid() {
     return settings_android_.get();
