@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_H_
-#define CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_H_
+#ifndef CHROME_BROWSER_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_H_
+#define CHROME_BROWSER_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_H_
 
 #include <memory>
 #include <string>
@@ -19,7 +19,7 @@ class Profile;
 namespace base {
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
-}
+}  // namespace base
 
 namespace content {
 class NavigationHandle;
@@ -29,7 +29,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyData;
 class DataReductionProxyIOData;
 class DataStore;
-}
+}  // namespace data_reduction_proxy
 
 namespace net {
 class URLRequestContextGetter;
@@ -121,4 +121,4 @@ class DataReductionProxyChromeSettings
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyChromeSettings);
 };
 
-#endif  // CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_H_
+#endif  // CHROME_BROWSER_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_promo_infobar_delegate_android.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_promo_infobar_delegate_android.h"
 
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/infobar.h"

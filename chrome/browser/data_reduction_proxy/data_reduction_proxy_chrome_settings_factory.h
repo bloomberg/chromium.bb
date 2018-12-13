@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_FACTORY_H_
-#define CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_FACTORY_H_
+#ifndef CHROME_BROWSER_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_FACTORY_H_
+#define CHROME_BROWSER_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_FACTORY_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -17,7 +17,6 @@ class DataReductionProxyChromeSettings;
 class DataReductionProxyChromeSettingsFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-
   // Returns a settings object for the given context.
   static DataReductionProxyChromeSettings* GetForBrowserContext(
       content::BrowserContext* context);
@@ -44,4 +43,4 @@ class DataReductionProxyChromeSettingsFactory
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyChromeSettingsFactory);
 };
 
-#endif  // CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_FACTORY_H_
+#endif  // CHROME_BROWSER_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_CHROME_SETTINGS_FACTORY_H_

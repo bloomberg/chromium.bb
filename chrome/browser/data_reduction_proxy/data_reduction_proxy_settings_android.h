@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_SETTINGS_ANDROID_H_
-#define CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_SETTINGS_ANDROID_H_
+#ifndef CHROME_BROWSER_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_SETTINGS_ANDROID_H_
+#define CHROME_BROWSER_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_SETTINGS_ANDROID_H_
 
 #include <memory>
 #include <vector>
@@ -62,8 +62,8 @@ class DataReductionProxySettingsAndroid {
       const base::android::JavaParamRef<jobject>& obj,
       jint reason);
   jlong GetTotalHttpContentLengthSaved(
-        JNIEnv* env,
-        const base::android::JavaParamRef<jobject>& obj);
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jlongArray> GetDailyOriginalContentLengths(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -129,4 +129,4 @@ class DataReductionProxySettingsAndroid {
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxySettingsAndroid);
 };
 
-#endif  // CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_SETTINGS_ANDROID_H_
+#endif  // CHROME_BROWSER_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_SETTINGS_ANDROID_H_

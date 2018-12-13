@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 
 #include <memory>
 #include <string>
@@ -347,8 +347,7 @@ TEST_F(DataReductionProxyChromeSettingsTest,
 
 TEST_F(DataReductionProxyChromeSettingsTest, MigrateIgnoreOtherProxy) {
   const std::string kTestServers[] = {
-      "http=https://youtube.com",
-      "http=http://googlezip.net",
+      "http=https://youtube.com", "http=http://googlezip.net",
       "http=http://thisismyproxynotgooglezip.net",
       "https=http://arbitraryprefixgooglezip.net"};
 

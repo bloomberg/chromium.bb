@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_settings_android.h"
 
 #include <stdint.h>
 
@@ -13,8 +13,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -58,11 +58,9 @@ DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid()
 DataReductionProxySettingsAndroid::DataReductionProxySettingsAndroid(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj)
-    : weak_factory_(this) {
-}
+    : weak_factory_(this) {}
 
-DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {
-}
+DataReductionProxySettingsAndroid::~DataReductionProxySettingsAndroid() {}
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyPromoAllowed(
     JNIEnv* env,
@@ -118,13 +116,10 @@ DataReductionProxySettingsAndroid::GetContentLengths(
   int64_t received_content_length;
   int64_t last_update_internal;
   Settings()->GetContentLengths(
-      data_reduction_proxy::kNumDaysInHistorySummary,
-      &original_content_length,
-      &received_content_length,
-      &last_update_internal);
+      data_reduction_proxy::kNumDaysInHistorySummary, &original_content_length,
+      &received_content_length, &last_update_internal);
 
-  return Java_ContentLengths_create(env,
-                                    original_content_length,
+  return Java_ContentLengths_create(env, original_content_length,
                                     received_content_length);
 }
 
@@ -212,11 +207,12 @@ DataReductionProxySettingsAndroid::MaybeRewriteWebliteUrl(
 
 ScopedJavaLocalRef<jlongArray>
 DataReductionProxySettingsAndroid::GetDailyContentLengths(
-    JNIEnv* env,  const char* pref_name) {
-  jlongArray result = env->NewLongArray(
-      data_reduction_proxy::kNumDaysInHistory);
+    JNIEnv* env,
+    const char* pref_name) {
+  jlongArray result =
+      env->NewLongArray(data_reduction_proxy::kNumDaysInHistory);
 
- data_reduction_proxy::ContentLengthList lengths  =
+  data_reduction_proxy::ContentLengthList lengths =
       Settings()->GetDailyContentLengths(pref_name);
 
   if (!lengths.empty()) {
