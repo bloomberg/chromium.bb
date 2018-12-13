@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -23,7 +22,6 @@
 
 namespace {
 
-using base::test::ScopedFeatureList;
 using ::testing::ElementsAreArray;
 using ::testing::UnorderedElementsAreArray;
 
@@ -272,8 +270,6 @@ TEST_F(TranslatePrefsTest, DenialTimeUpdate_SlidingWindow) {
 }
 
 TEST_F(TranslatePrefsTest, UpdateLanguageList) {
-  ScopedFeatureList enable_feature;
-
   // Empty update.
   std::vector<std::string> languages;
   translate_prefs_->UpdateLanguageList(languages);
@@ -353,8 +349,6 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoListOutput) {
 }
 
 TEST_F(TranslatePrefsTest, GetLanguageInfoList) {
-  ScopedFeatureList enable_feature;
-
   std::vector<TranslateLanguageInfo> language_list;
   TranslateLanguageInfo language;
 
@@ -452,8 +446,7 @@ TEST_F(TranslatePrefsTest, UnblockLanguage) {
   ExpectBlockedLanguageListContent({"zh-TW"});
 }
 
-TEST_F(TranslatePrefsTest, AddToLanguageListFeatureEnabled) {
-  ScopedFeatureList enable_feature;
+TEST_F(TranslatePrefsTest, AddToLanguageList) {
   std::vector<std::string> languages;
 
   // Force blocked false, language not already in list.
@@ -473,8 +466,7 @@ TEST_F(TranslatePrefsTest, AddToLanguageListFeatureEnabled) {
   ExpectBlockedLanguageListContent({});
 }
 
-TEST_F(TranslatePrefsTest, RemoveFromLanguageListFeatureEnabled) {
-  ScopedFeatureList enable_feature;
+TEST_F(TranslatePrefsTest, RemoveFromLanguageList) {
   std::vector<std::string> languages;
 
   // Unblock last language of a family.
@@ -496,6 +488,20 @@ TEST_F(TranslatePrefsTest, RemoveFromLanguageListFeatureEnabled) {
   translate_prefs_->RemoveFromLanguageList("es-AR");
   ExpectLanguagePrefs("en-US,es-ES");
   ExpectBlockedLanguageListContent({"en", "es"});
+}
+
+TEST_F(TranslatePrefsTest, RemoveFromLanguageListRemovesRemainingUnsupported) {
+  // There needs to be an App Locale set to determine whether a language can be
+  // an Accept Language or not.
+  TranslateDownloadManager::GetInstance()->set_application_locale("en");
+  std::vector<std::string> languages;
+  languages = {"en", "en-US", "en-FOO"};
+  translate_prefs_->UpdateLanguageList(languages);
+  ExpectLanguagePrefs("en,en-US,en-FOO");
+  translate_prefs_->RemoveFromLanguageList("en-US");
+  ExpectLanguagePrefs("en,en-FOO");
+  translate_prefs_->RemoveFromLanguageList("en");
+  ExpectLanguagePrefs("");
 }
 
 TEST_F(TranslatePrefsTest, RemoveFromLanguageListClearsRecentLanguage) {

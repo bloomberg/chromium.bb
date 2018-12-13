@@ -4,6 +4,7 @@
 
 #include "components/translate/core/browser/translate_prefs.h"
 
+#include <algorithm>
 #include <memory>
 #include <set>
 #include <utility>
@@ -259,6 +260,7 @@ void TranslatePrefs::RemoveFromLanguageList(const std::string& input_language) {
       SetRecentTargetLanguage("");
 
     languages.erase(it);
+    PurgeUnsupportedLanguagesInLanguageFamily(chrome_language, &languages);
     UpdateLanguageList(languages);
 
     // We should unblock the language if this was the last one from the same
@@ -925,6 +927,32 @@ bool TranslatePrefs::IsListEmpty(const char* pref_id) const {
 bool TranslatePrefs::IsDictionaryEmpty(const char* pref_id) const {
   const base::DictionaryValue* dict = prefs_->GetDictionary(pref_id);
   return (dict == nullptr || dict->empty());
+}
+
+void TranslatePrefs::PurgeUnsupportedLanguagesInLanguageFamily(
+    const std::string& language,
+    std::vector<std::string>* list) {
+  std::string base_language = language::ExtractBaseLanguage(language);
+  std::set<std::string> languages_in_same_family;
+
+  std::copy_if(
+      list->begin(), list->end(),
+      std::inserter(languages_in_same_family, languages_in_same_family.end()),
+      [&base_language](const std::string& lang) {
+        return base_language == language::ExtractBaseLanguage(lang);
+      });
+
+  if (std::none_of(languages_in_same_family.begin(),
+                   languages_in_same_family.end(), [](const std::string& lang) {
+                     return TranslateAcceptLanguages::CanBeAcceptLanguage(lang);
+                   })) {
+    list->erase(
+        std::remove_if(list->begin(), list->end(),
+                       [&languages_in_same_family](const std::string& lang) {
+                         return languages_in_same_family.count(lang) > 0;
+                       }),
+        list->end());
+  }
 }
 
 }  // namespace translate
