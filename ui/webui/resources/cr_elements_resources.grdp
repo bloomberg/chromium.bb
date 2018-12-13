@@ -126,14 +126,16 @@
              file="cr_elements/cr_slider/cr_slider.js"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_CR_ELEMENTS_CR_SEARCHABLE_DROP_DOWN_HTML"
-             file="cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html"
-             type="chrome_html"
-             compress="gzip" />
-  <structure name="IDR_CR_ELEMENTS_CR_SEARCHABLE_DROP_DOWN_JS"
-             file="cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.js"
-             type="chrome_html"
-             compress="gzip" />
+  <if expr="chromeos">
+    <structure name="IDR_CR_ELEMENTS_CR_SEARCHABLE_DROP_DOWN_HTML"
+               file="cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_CR_ELEMENTS_CR_SEARCHABLE_DROP_DOWN_JS"
+               file="cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.js"
+               type="chrome_html"
+               compress="gzip" />
+  </if>
   <structure name="IDR_CR_ELEMENTS_CR_VIEW_MANAGER_HTML"
              file="cr_elements/cr_view_manager/cr_view_manager.html"
              type="chrome_html" />

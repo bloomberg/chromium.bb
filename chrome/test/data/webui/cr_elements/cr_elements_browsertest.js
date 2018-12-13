@@ -403,6 +403,7 @@ TEST_F('CrElementsRadioGroupTest', 'All', function() {
 });
 
 
+GEN('#if defined(OS_CHROMEOS)');
 /**
  * @constructor
  * @extends {CrElementsBrowserTest}
@@ -426,6 +427,7 @@ CrElementsSearchableDropDownTest.prototype = {
 TEST_F('CrElementsSearchableDropDownTest', 'All', function() {
   mocha.run();
 });
+GEN('#endif');
 
 ////////////////////////////////////////////////////////////////////////////////
 // View Manager Tests
