@@ -51,14 +51,25 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
-  class MirrorClient {
+  class PLATFORM_EXPORT MirrorClient : public RefCounted<MirrorClient> {
    public:
-    virtual void OnMirrorImageAvailable(
-        scoped_refptr<StaticBitmapImage>,
-        std::unique_ptr<viz::SingleReleaseCallback>) = 0;
+    void OnMirrorImageAvailable(scoped_refptr<StaticBitmapImage>,
+                                std::unique_ptr<viz::SingleReleaseCallback>);
+
+    void BeginDestruction();
+    scoped_refptr<StaticBitmapImage> GetLastImage();
+    void CallLastReleaseCallback();
+
+    ~MirrorClient();
+
+   private:
+    scoped_refptr<StaticBitmapImage> next_image_;
+    std::unique_ptr<viz::SingleReleaseCallback> next_release_callback_;
+    std::unique_ptr<viz::SingleReleaseCallback> current_release_callback_;
+    std::unique_ptr<viz::SingleReleaseCallback> previous_release_callback_;
   };
 
-  void SetMirrorClient(MirrorClient*);
+  void SetMirrorClient(scoped_refptr<MirrorClient> mirror_client);
 
   void UseSharedBuffer(const gpu::MailboxHolder&);
   void DoneWithSharedBuffer();
@@ -166,7 +177,7 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   int max_texture_size_ = 0;
   int sample_count_ = 0;
 
-  MirrorClient* mirror_client_ = nullptr;
+  scoped_refptr<MirrorClient> mirror_client_;
 };
 
 }  // namespace blink

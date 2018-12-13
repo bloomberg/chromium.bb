@@ -100,6 +100,68 @@ scoped_refptr<XRWebGLDrawingBuffer> XRWebGLDrawingBuffer::Create(
   return xr_drawing_buffer;
 }
 
+void XRWebGLDrawingBuffer::MirrorClient::OnMirrorImageAvailable(
+    scoped_refptr<StaticBitmapImage> image,
+    std::unique_ptr<viz::SingleReleaseCallback> callback) {
+  // Replace the next image if we have one already.
+  if (next_image_ && next_release_callback_) {
+    next_release_callback_->Run(gpu::SyncToken(), false);
+  }
+
+  // Set our new image.
+  next_image_ = image;
+  next_release_callback_ = std::move(callback);
+}
+
+void XRWebGLDrawingBuffer::MirrorClient::BeginDestruction() {
+  // Call all callbacks we have to clean up associated resources.  For
+  // next_release_callback_, we report the previous image as "not lost", meaning
+  // we can reuse the texture/image.  For previous_release_callback_
+  // and current_release_callback_, we report the image as lost, because we
+  // don't know if the consumer is still using them, so they should not be
+  // reused.
+  if (previous_release_callback_) {
+    previous_release_callback_->Run(gpu::SyncToken(), true);
+    previous_release_callback_ = nullptr;
+  }
+
+  if (current_release_callback_) {
+    current_release_callback_->Run(gpu::SyncToken(), true);
+    current_release_callback_ = nullptr;
+  }
+
+  if (next_release_callback_) {
+    next_release_callback_->Run(gpu::SyncToken(), false);
+    next_release_callback_ = nullptr;
+  }
+
+  next_image_ = nullptr;
+}
+
+scoped_refptr<StaticBitmapImage>
+XRWebGLDrawingBuffer::MirrorClient::GetLastImage() {
+  if (!next_image_)
+    return nullptr;
+
+  scoped_refptr<StaticBitmapImage> ret = next_image_;
+  next_image_ = nullptr;
+  DCHECK(!previous_release_callback_);
+  previous_release_callback_ = std::move(current_release_callback_);
+  DCHECK(!current_release_callback_);
+  current_release_callback_ = std::move(next_release_callback_);
+  return ret;
+}
+
+void XRWebGLDrawingBuffer::MirrorClient::CallLastReleaseCallback() {
+  if (previous_release_callback_)
+    previous_release_callback_->Run(gpu::SyncToken(), false);
+  previous_release_callback_ = nullptr;
+}
+
+XRWebGLDrawingBuffer::MirrorClient::~MirrorClient() {
+  BeginDestruction();
+}
+
 XRWebGLDrawingBuffer::XRWebGLDrawingBuffer(DrawingBuffer* drawing_buffer,
                                            GLuint framebuffer,
                                            bool discard_framebuffer_supported,
@@ -116,6 +178,7 @@ XRWebGLDrawingBuffer::XRWebGLDrawingBuffer(DrawingBuffer* drawing_buffer,
       multiview_(false) {}
 
 void XRWebGLDrawingBuffer::BeginDestruction() {
+  mirror_client_ = nullptr;
   back_color_buffer_ = nullptr;
   front_color_buffer_ = nullptr;
   recycled_color_buffer_queue_.clear();
@@ -179,7 +242,7 @@ gpu::gles2::GLES2Interface* XRWebGLDrawingBuffer::ContextGL() {
   return drawing_buffer_->ContextGL();
 }
 
-void XRWebGLDrawingBuffer::SetMirrorClient(MirrorClient* client) {
+void XRWebGLDrawingBuffer::SetMirrorClient(scoped_refptr<MirrorClient> client) {
   mirror_client_ = client;
   if (mirror_client_) {
     // Immediately send a black 1x1 image to the mirror client to ensure that

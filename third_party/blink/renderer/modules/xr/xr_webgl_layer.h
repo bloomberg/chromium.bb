@@ -26,8 +26,7 @@ class WebGLRenderingContextBase;
 class XRSession;
 class XRViewport;
 
-class XRWebGLLayer final : public XRLayer,
-                           public XRWebGLDrawingBuffer::MirrorClient {
+class XRWebGLLayer final : public XRLayer {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -78,13 +77,10 @@ class XRWebGLLayer final : public XRLayer,
   void OverwriteColorBufferFromMailboxTexture(const gpu::MailboxHolder&,
                                               const IntSize& size);
 
+  void UpdateWebXRMirror();
+
   scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
-
-  // XRWebGLDrawingBuffer::MirrorClient impementation
-  void OnMirrorImageAvailable(
-      scoped_refptr<StaticBitmapImage>,
-      std::unique_ptr<viz::SingleReleaseCallback>) override;
 
   void Trace(blink::Visitor*) override;
 
@@ -92,11 +88,11 @@ class XRWebGLLayer final : public XRLayer,
   Member<XRViewport> left_viewport_;
   Member<XRViewport> right_viewport_;
 
+  scoped_refptr<XRWebGLDrawingBuffer::MirrorClient> mirror_client_;
+
   TraceWrapperMember<WebGLRenderingContextBase> webgl_context_;
   scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer_;
   Member<WebGLFramebuffer> framebuffer_;
-
-  std::unique_ptr<viz::SingleReleaseCallback> mirror_release_callback_;
 
   double framebuffer_scale_ = 1.0;
   double requested_viewport_scale_ = 1.0;
