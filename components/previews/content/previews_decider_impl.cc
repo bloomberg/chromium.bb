@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
@@ -22,6 +23,7 @@
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "net/nqe/network_quality_estimator.h"
 
@@ -55,6 +57,9 @@ void LogTriggeredPreviewEffectiveConnectionType(
 }
 
 bool AllowedOnReload(PreviewsType type) {
+  if (base::FeatureList::IsEnabled(features::kPreviewsDisallowedOnReloads))
+    return false;
+
   switch (type) {
     // These types return new content on refresh.
     case PreviewsType::LITE_PAGE:

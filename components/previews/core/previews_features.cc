@@ -94,5 +94,9 @@ const base::Feature kAndroidOmniboxPreviewsBadge{
 const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// A feature to prevent previews on all reloads.
+const base::Feature kPreviewsDisallowedOnReloads{
+    "PreviewsDisallowedOnReloads", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews
