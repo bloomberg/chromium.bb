@@ -131,6 +131,9 @@ public class ExploreSitesSection {
             loadingCatalogFromNetwork = true;
             ExploreSitesBridge.updateCatalogFromNetwork(mProfile, true /*isImmediateFetch*/,
                     (Boolean success) -> { updateCategoryIcons(); });
+            RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
+                    ExploreSitesEnums.CatalogUpdateRequestSource.NEW_TAB_PAGE,
+                    ExploreSitesEnums.CatalogUpdateRequestSource.COUNT);
         }
         RecordHistogram.recordBooleanHistogram(
                 "ExploreSites.NTPLoadingCatalogFromNetwork", loadingCatalogFromNetwork);

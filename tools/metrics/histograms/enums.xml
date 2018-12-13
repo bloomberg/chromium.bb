@@ -15539,6 +15539,24 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Site with missing icon"/>
 </enum>
 
+<!-- This must be kept current with explore_sites_types.h's
+     ExploreSitesCatalogUpdateRequestResult -->
+
+<enum name="ExploreSitesCatalogUpdateRequestResult">
+  <int value="0" label="New Catalog"/>
+  <int value="1" label="Existing catalog is current"/>
+  <int value="2" label="Failure"/>
+</enum>
+
+<!-- This must be kept current with ExploreSitesEnums.java's
+     ExploreSitesEnums.CatalogUpdateRequestSource -->
+
+<enum name="ExploreSitesCatalogUpdateRequestSource">
+  <int value="0" label="New Tab Page"/>
+  <int value="1" label="Explore Sites Page"/>
+  <int value="2" label="Background"/>
+</enum>
+
 <!-- This must be kept current with
      //chrome/browser/android/explore_sites/catalog.proto's CategoryType. -->
 

@@ -47,7 +47,6 @@ import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.net.ConnectionType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -182,21 +181,6 @@ public class ExploreSitesBackgroundTaskUnitTest {
                     fail("Finished callback should not be run, network conditions not met.");
                 });
         assertEquals(NativeBackgroundTask.StartBeforeNativeResult.RESCHEDULE, result);
-    }
-
-    @Test
-    public void testWithNetwork() throws Exception {
-        initDeviceConditions(ConnectionType.CONNECTION_2G);
-        TaskParameters params = TaskParameters.create(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID).build();
-
-        final ArrayList<Boolean> taskFinishedList = new ArrayList<>();
-        mExploreSitesBackgroundTask.onStartTask(RuntimeEnvironment.application, params,
-                (boolean needsReschedule) -> { taskFinishedList.add(needsReschedule); });
-
-        // Simulate update finishing from the native side.
-        ShadowExploreSitesBridge.mUpdateCatalogFinishedCallback.onResult(null);
-        assertEquals(1, taskFinishedList.size());
-        assertEquals(false, taskFinishedList.get(0));
     }
 
     @Test

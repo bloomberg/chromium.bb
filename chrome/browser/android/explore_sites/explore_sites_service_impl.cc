@@ -27,6 +27,11 @@ namespace {
 void ReportCatalogError(explore_sites::ExploreSitesCatalogError error) {
   UMA_HISTOGRAM_ENUMERATION("ExploreSites.CatalogError", error);
 }
+
+void ReportCatalogRequestResult(
+    explore_sites::ExploreSitesCatalogUpdateRequestResult result) {
+  UMA_HISTOGRAM_ENUMERATION("ExploreSites.CatalogRequestResult", result);
+}
 }  // namespace
 
 namespace explore_sites {
@@ -230,6 +235,13 @@ void ExploreSitesServiceImpl::OnCatalogFetched(
 
   if (serialized_protobuf == nullptr) {
     DVLOG(1) << "Empty catalog response received from network.";
+    if (status == ExploreSitesRequestStatus::kSuccess) {
+      ReportCatalogRequestResult(
+          ExploreSitesCatalogUpdateRequestResult::kExistingCatalogIsCurrent);
+    } else {
+      ReportCatalogRequestResult(
+          ExploreSitesCatalogUpdateRequestResult::kFailure);
+    }
     NotifyCatalogUpdated(std::move(update_catalog_callbacks_), false);
     update_catalog_callbacks_.clear();
     return;
@@ -261,6 +273,9 @@ void ExploreSitesServiceImpl::OnCatalogFetched(
   } else {
     NotifyCatalogUpdated(std::move(update_catalog_callbacks_), true);
   }
+
+  ReportCatalogRequestResult(
+      ExploreSitesCatalogUpdateRequestResult::kNewCatalog);
 }
 
 void ExploreSitesServiceImpl::ComposeSiteImage(BitmapCallback callback,
