@@ -609,6 +609,10 @@ class TestRunner(object):
       self.test_results['tests'] = tests
 
       self.logs['passed tests'] = passed
+      if flaked:
+        self.logs['flaked tests'] = flaked
+      if failed:
+        self.logs['failed tests'] = failed
       for test, log_lines in failed.iteritems():
         self.logs[test] = log_lines
       for test, log_lines in flaked.iteritems():
