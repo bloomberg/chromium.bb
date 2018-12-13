@@ -1082,13 +1082,6 @@ public class CustomTabsConnection {
 
     /**
      * Sends a callback using {@link CustomTabsCallback} with the first run result if necessary.
-     * @param intent The initial VIEW intent that initiated first run.
-     * @param resultOK Whether first run was successful.
-     */
-    public void sendFirstRunCallbackIfNecessary(Intent intent, boolean resultOK) { }
-
-    /**
-     * Sends a callback using {@link CustomTabsCallback} with the first run result if necessary.
      * @param intentExtras The extras for the initial VIEW intent that initiated first run.
      * @param resultOK Whether first run was successful.
      */
