@@ -28,6 +28,12 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache, aura::Window* window);
   ~AXWindowObjWrapper() override;
 
+  // Whether this window is an alert window.
+  bool is_alert() { return is_alert_; }
+
+  // Sets whether this window is an alert window.
+  void set_is_alert(bool is_alert) { is_alert_ = is_alert; }
+
   // AXAuraObjWrapper overrides.
   bool IsIgnored() override;
   AXAuraObjWrapper* GetParent() override;
@@ -59,6 +65,8 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   AXAuraObjCache* const aura_obj_cache_;
 
   aura::Window* window_;
+
+  bool is_alert_;
 
   bool is_root_window_;
 

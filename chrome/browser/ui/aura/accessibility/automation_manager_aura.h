@@ -32,7 +32,6 @@ class AXEventBundleSink;
 }
 
 namespace views {
-class AccessibilityAlertWindow;
 class AXAuraObjWrapper;
 class View;
 }  // namespace views
@@ -117,8 +116,6 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   // The handler for AXEvents (e.g. the extensions subsystem in production, or
   // a fake for tests).
   ui::AXEventBundleSink* event_bundle_sink_ = nullptr;
-
-  std::unique_ptr<views::AccessibilityAlertWindow> alert_window_;
 
   base::WeakPtrFactory<AutomationManagerAura> weak_ptr_factory_;
 
