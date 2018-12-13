@@ -843,7 +843,6 @@ if (support_webgl2_compute_context) {
       get_path_info([
                       "canvas/htmlcanvas/html_canvas_element_module.idl",
                       "canvas/offscreencanvas/offscreen_canvas_module.idl",
-                      "webgl/webgl2_compute_rendering_context_base.idl",
                     ],
                     "abspath")
 }
