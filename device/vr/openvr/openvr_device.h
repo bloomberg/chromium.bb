@@ -27,6 +27,9 @@ class DEVICE_VR_EXPORT OpenVRDevice
   OpenVRDevice();
   ~OpenVRDevice() override;
 
+  static bool IsHwAvailable();
+  static bool IsApiAvailable();
+
   void Shutdown();
 
   // VRDeviceBase

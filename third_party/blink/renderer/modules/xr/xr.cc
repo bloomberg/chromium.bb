@@ -190,19 +190,20 @@ void XR::AddedEventListener(const AtomicString& event_type,
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
 
-  // If we don't have device and there is no sync pending, then request the
-  // device to ensure devices have been enumerated and register as a listener
-  // for changes.
-  if (event_type == event_type_names::kDevicechange && !device_ &&
-      !pending_sync_) {
-    device::mojom::blink::VRServiceClientPtr client;
-    binding_.Bind(mojo::MakeRequest(&client));
+  if (event_type == event_type_names::kDevicechange) {
+    // Register for notifications if we haven't already.
+    if (!binding_.is_bound()) {
+      device::mojom::blink::VRServiceClientPtr client;
+      binding_.Bind(mojo::MakeRequest(&client));
+      service_->SetClient(std::move(client));
+    }
 
-    service_->RequestDevice(
-        WTF::Bind(&XR::OnRequestDeviceReturned, WrapPersistent(this)));
-    service_->SetClient(std::move(client));
-
-    pending_sync_ = true;
+    // Request a device if we don't have one, and don't have an ongoing request.
+    if (!device_ && !pending_sync_) {
+      pending_sync_ = true;
+      service_->RequestDevice(
+          WTF::Bind(&XR::OnRequestDeviceReturned, WrapPersistent(this)));
+    }
   }
 };
 
