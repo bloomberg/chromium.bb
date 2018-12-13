@@ -728,7 +728,6 @@ bool BridgedNativeWidgetImpl::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   CHECK(!CocoaMouseCapture::GetGlobalCaptureWindow());
   CHECK(!window_move_loop_);
 
-  [bridged_view_ setDisableRightClickEvents:YES];
   // RunMoveLoop caller is responsible for updating the window to be under the
   // mouse, but it does this using possibly outdated coordinate from the mouse
   // event, and mouse is very likely moved beyound that point.
@@ -753,7 +752,6 @@ bool BridgedNativeWidgetImpl::RunMoveLoop(const gfx::Vector2d& drag_offset) {
 
 void BridgedNativeWidgetImpl::EndMoveLoop() {
   DCHECK(window_move_loop_);
-  [bridged_view_ setDisableRightClickEvents:NO];
   window_move_loop_->End();
   window_move_loop_.reset();
 }
