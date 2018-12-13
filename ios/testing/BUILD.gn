@@ -86,6 +86,7 @@ bundle_data("http_server_bundle_data") {
     "data/http_server_files/onload_replacestate_reload.js",
     "data/http_server_files/opensearch.xml",
     "data/http_server_files/pony.html",
+    "data/http_server_files/profile_form.html",
     "data/http_server_files/redchair.usdz",
     "data/http_server_files/redirect_refresh.html",
     "data/http_server_files/single_page_wide.pdf",

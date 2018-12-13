@@ -186,6 +186,7 @@ source_set("eg_tests") {
   testonly = true
   sources = [
     "card_view_controller_egtest.mm",
+    "fallback_coordinator_egtest.mm",
     "keyboard_observer_egtest.mm",
     "password_view_controller_egtest.mm",
   ]
@@ -200,6 +201,7 @@ source_set("eg_tests") {
     "//components/autofill/ios/browser",
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui/settings",
