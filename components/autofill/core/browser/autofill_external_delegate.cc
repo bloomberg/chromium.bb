@@ -263,7 +263,12 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
             : AutofillMetrics::SCAN_CARD_OTHER_ITEM_SELECTED);
   }
 
-  manager_->client()->HideAutofillPopup();
+  if (identifier == POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS) {
+    should_show_cards_from_account_option_ = false;
+    manager_->RefetchCardsAndUpdatePopup(query_id_, query_form_, query_field_);
+  } else {
+    manager_->client()->HideAutofillPopup();
+  }
 }
 
 bool AutofillExternalDelegate::GetDeletionConfirmationText(
