@@ -5,6 +5,7 @@
 #ifndef BASE_TRACE_EVENT_BUILTIN_CATEGORIES_H_
 #define BASE_TRACE_EVENT_BUILTIN_CATEGORIES_H_
 
+#include "base/base_export.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/common/trace_event_common.h"
@@ -246,7 +247,7 @@ static_assert(!StrEqConstexpr("abc", "ab"), "strings should not be equal");
 
 // Static-only class providing access to the compile-time registry of trace
 // categories.
-class BuiltinCategories {
+class BASE_EXPORT BuiltinCategories {
  public:
   // Returns a built-in category name at |index| in the registry.
   static constexpr const char* At(size_t index) {
