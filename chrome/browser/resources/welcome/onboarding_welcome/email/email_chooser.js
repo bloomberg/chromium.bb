@@ -73,21 +73,12 @@ Polymer({
     this.metricsManager_ =
         new nux.ModuleMetricsManager(nux.EmailMetricsProxyImpl.getInstance());
 
-
     this.listInitialized_ = this.emailProxy_.getEmailList().then(list => {
       this.emailList_ = list;
     });
-
-    window.addEventListener('beforeunload', () => {
-      if (this.finalized_)
-        return;
-      this.cleanUp_();
-      this.metricsManager_.recordNavigatedAway();
-    });
   },
 
-  /** Initializes the section when navigated to. */
-  initializeSection: function() {
+  onRouteEnter: function() {
     this.wasBookmarkBarShownOnInit_ = this.bookmarkBarManager_.getShown();
     this.metricsManager_.recordPageInitialized();
     this.finalized_ = false;
@@ -107,12 +98,18 @@ Polymer({
     });
   },
 
-  /** Finalizes the section when navigated away from. */
-  finalizeSection: function() {
+  onRouteExit: function() {
     if (this.finalized_)
       return;
     this.cleanUp_();
     this.metricsManager_.recordBrowserBackOrForward();
+  },
+
+  onRouteUnload: function() {
+    if (this.finalized_)
+      return;
+    this.cleanUp_();
+    this.metricsManager_.recordNavigatedAway();
   },
 
   /**
@@ -197,7 +194,7 @@ Polymer({
    * @private
    */
   revertBookmark_: function(opt_emailProvider) {
-    let emailProvider = opt_emailProvider || this.selectedEmailProvider_;
+    const emailProvider = opt_emailProvider || this.selectedEmailProvider_;
 
     if (emailProvider && emailProvider.bookmarkId) {
       this.bookmarkProxy_.removeBookmark(emailProvider.bookmarkId);

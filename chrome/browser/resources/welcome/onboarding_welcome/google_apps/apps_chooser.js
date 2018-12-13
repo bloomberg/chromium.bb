@@ -78,26 +78,26 @@ Polymer({
     this.bookmarkBarManager_ = nux.BookmarkBarManager.getInstance();
     this.metricsManager_ = new nux.ModuleMetricsManager(
         nux.GoogleAppsMetricsProxyImpl.getInstance());
-
-    window.addEventListener('beforeunload', () => {
-      if (this.finalized_)
-        return;
-      this.cleanUp_();
-      this.metricsManager_.recordNavigatedAway();
-    });
   },
 
-  initializeSection() {
+  onRouteEnter() {
     this.finalized_ = false;
     this.metricsManager_.recordPageInitialized();
     this.populateAllBookmarks();
   },
 
-  finalizeSection() {
+  onRouteExit() {
     if (this.finalized_)
       return;
     this.cleanUp_();
     this.metricsManager_.recordBrowserBackOrForward();
+  },
+
+  onRouteUnload() {
+    if (this.finalized_)
+      return;
+    this.cleanUp_();
+    this.metricsManager_.recordNavigatedAway();
   },
 
   /** @private */
@@ -196,7 +196,7 @@ Polymer({
    * @private
    */
   onAppClick_: function(e) {
-    let item = e.model.item;
+    const item = e.model.item;
     e.model.set('item.selected', !item.selected);
     this.updateBookmark(item);
     this.updateHasAppsSelected();

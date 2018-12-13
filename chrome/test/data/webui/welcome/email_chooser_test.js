@@ -47,7 +47,7 @@ cr.define('onboarding_welcome_email_chooser', function() {
       testElement = document.createElement('email-chooser');
       document.body.appendChild(testElement);
       // Simulate nux-email's onRouteEnter call.
-      testElement.initializeSection();
+      testElement.onRouteEnter();
       return Promise.all([
         testEmailMetricsProxy.whenCalled('recordPageShown'),
         testEmailBrowserProxy.whenCalled('getEmailList'),
@@ -127,7 +127,6 @@ cr.define('onboarding_welcome_email_chooser', function() {
     test('test email chooser next button', function() {
       let options = testElement.shadowRoot.querySelectorAll('.option');
       testElement.wasBookmarkBarShownOnInit_ = true;
-
 
       // First option should be selected and action button should be enabled.
       testElement.$$('.action-button').click();

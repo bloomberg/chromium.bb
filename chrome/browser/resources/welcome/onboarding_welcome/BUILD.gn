@@ -24,24 +24,48 @@ js_type_check("welcome_files") {
 
 js_library("email_interstitial") {
   deps = [
+    ":email_interstitial_proxy",
     ":welcome_browser_proxy",
     "./email/:nux_email_proxy",
   ]
 }
 
+js_library("email_interstitial_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
+}
+
 js_library("landing_view") {
   deps = [
+    ":landing_view_proxy",
     ":navigation_behavior",
     ":welcome_browser_proxy",
   ]
+}
+
+js_library("landing_view_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("signin_view") {
   deps = [
     ":navigation_behavior",
+    ":signin_view_proxy",
     ":welcome_browser_proxy",
     "./email/:nux_email_proxy",
   ]
+}
+
+js_library("signin_view_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("navigation_behavior") {

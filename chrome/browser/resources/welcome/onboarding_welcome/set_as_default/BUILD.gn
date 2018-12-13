@@ -24,5 +24,8 @@ js_library("nux_set_as_default_proxy") {
   deps = [
     "//ui/webui/resources/js:cr",
   ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
+  externs_list = [
+    "$externs_path/chrome_send.js",
+    "$externs_path/metrics_private.js",
+  ]
 }

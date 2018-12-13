@@ -5,10 +5,10 @@
 Polymer({
   is: 'nux-set-as-default',
 
-  behaviors: [WebUIListenerBehavior],
-
-  /** @private {nux.NuxSetAsDefaultProxy} */
-  browserProxy_: null,
+  behaviors: [
+    WebUIListenerBehavior,
+    welcome.NavigationBehavior,
+  ],
 
   properties: {
     /** @type {nux.stepIndicatorModel} */
@@ -22,8 +22,14 @@ Polymer({
     // </if>
   },
 
+  /** @private {nux.NuxSetAsDefaultProxy} */
+  browserProxy_: null,
+
+  /** @private {boolean} */
+  finalized_: false,
+
   /** @override */
-  attached: function() {
+  ready: function() {
     this.browserProxy_ = nux.NuxSetAsDefaultProxyImpl.getInstance();
 
     this.addWebUIListener(
@@ -31,15 +37,40 @@ Polymer({
         this.onDefaultBrowserChange_.bind(this));
   },
 
+  onRouteEnter: function() {
+    this.finalized_ = false;
+    this.browserProxy_.recordPageShown();
+  },
+
+  onRouteExit: function() {
+    if (this.finalized_)
+      return;
+    this.finalized_ = true;
+    this.browserProxy_.recordNavigatedAwayThroughBrowserHistory();
+  },
+
+  onRouteUnload: function() {
+    if (this.finalized_)
+      return;
+    this.finalized_ = true;
+    this.browserProxy_.recordNavigatedAway();
+  },
+
   /** @private */
   onDeclineClick_: function() {
-    // TODO(scottchen): Add UMA collection here.
-
+    if (this.finalized_)
+      return;
+    this.finalized_ = true;
+    this.browserProxy_.recordSkip();
     this.finished_();
   },
 
   /** @private */
   onSetDefaultClick_: function() {
+    if (this.finalized_)
+      return;
+    this.finalized_ = true;
+    this.browserProxy_.recordBeginSetDefault();
     this.browserProxy_.setAsDefault();
   },
 
@@ -49,10 +80,10 @@ Polymer({
    * @private
    */
   onDefaultBrowserChange_: function(status) {
-    // TODO(scottchen): Add UMA collection here.
-
-    if (status.isDefault)
+    if (status.isDefault) {
+      this.browserProxy_.recordSuccessfullySetDefault();
       this.finished_();
+    }
   },
 
   /** @private */

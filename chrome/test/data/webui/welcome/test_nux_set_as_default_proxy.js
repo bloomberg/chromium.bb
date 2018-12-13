@@ -8,6 +8,12 @@ class TestNuxSetAsDefaultProxy extends TestBrowserProxy {
     super([
       'requestDefaultBrowserState',
       'setAsDefault',
+      'recordPageShown',
+      'recordNavigatedAway',
+      'recordSkip',
+      'recordBeginSetDefault',
+      'recordSuccessfullySetDefault',
+      'recordNavigatedAwayThroughBrowserHistory',
     ]);
 
     this.defaultStatus_ = {};
@@ -28,5 +34,35 @@ class TestNuxSetAsDefaultProxy extends TestBrowserProxy {
   /** @param {!nux.DefaultBrowserInfo} status */
   setDefaultStatus(status) {
     this.defaultStatus_ = status;
+  }
+
+  /** @override */
+  recordPageShown() {
+    this.methodCalled('recordPageShown');
+  }
+
+  /** @override */
+  recordNavigatedAway() {
+    this.methodCalled('recordNavigatedAway');
+  }
+
+  /** @override */
+  recordSkip() {
+    this.methodCalled('recordSkip');
+  }
+
+  /** @override */
+  recordBeginSetDefault() {
+    this.methodCalled('recordBeginSetDefault');
+  }
+
+  /** @override */
+  recordSuccessfullySetDefault() {
+    this.methodCalled('recordSuccessfullySetDefault');
+  }
+
+  /** @override */
+  recordNavigatedAwayThroughBrowserHistory() {
+    this.methodCalled('recordNavigatedAwayThroughBrowserHistory');
   }
 }
