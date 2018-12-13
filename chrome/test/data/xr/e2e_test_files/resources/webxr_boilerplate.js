@@ -80,19 +80,27 @@ function getSessionType(session) {
 function onRequestSession() {
   switch (sessionTypeToRequest) {
     case sessionTypes.IMMERSIVE:
+      console.info('Requesting immersive session');
       xrDevice.requestSession({immersive: true}).then( (session) => {
+        console.info('Immersive session request succeeded');
         sessionInfos[sessionTypes.IMMERSIVE].currentSession = session;
         onSessionStarted(session);
+      }, (error) => {
+        console.info('Immersive session request rejected with: ' + error);
       });
       break;
     case sessionTypes.AR:
+      console.info('Requesting AR session');
       let sessionOptions = {
         environmentIntegration: true,
         outputContext: webglCanvas.getContext('xrpresent'),
       };
       xrDevice.requestSession(sessionOptions).then((session) => {
+        console.info('AR session request succeeded');
         sessionInfos[sessionTypes.AR].currentSession = session;
         onSessionStarted(session);
+      }, (error) => {
+        console.info('AR session request rejected with: ' + error);
       });
       break;
     default:
