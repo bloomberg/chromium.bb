@@ -22,8 +22,14 @@ namespace content {
 
 // A public interface to manage CORS origin access lists on the UI thread.
 // The shared network::cors::OriginAccessList instance can only be accessed on
-// the IO thread. Callers on UI thread must use this wrapper class.
-// TODO(toyoshim): Remove once the NetworkService is enabled.
+// the IO thread if NetworkService is not enabled. Callers on UI thread must use
+// this wrapper class to make it work with and without NetworkService until
+// NetworkService is fully enabled. If NetworkService is enabled,
+// network::cors::OriginAccessList is accessed only on the UI thread, and all
+// calls can be finished synchronously. This is used for remembering per-profile
+// access lists in the browser process.
+// TODO(toyoshim): Remove this class, and use network::cors::OriginAccessList
+// directly once NetworkService is fully enabled.
 class CONTENT_EXPORT SharedCorsOriginAccessList
     : public base::RefCountedThreadSafe<SharedCorsOriginAccessList> {
  public:
@@ -33,7 +39,7 @@ class CONTENT_EXPORT SharedCorsOriginAccessList
   // instance so that its IsAllowed() method works for all users that refer the
   // shared network::cors::OriginAccessList instance returned by
   // origin_access_list() below. |allow_patterns| and |block_patterns| will be
-  // moved so to pass the lists to the IO thread.
+  // moved so to pass the lists to the IO thread if NetworkService is disabled.
   // Should be called on the UI thread, and |closure| runs on the UI thread too.
   virtual void SetForOrigin(
       const url::Origin& source_origin,

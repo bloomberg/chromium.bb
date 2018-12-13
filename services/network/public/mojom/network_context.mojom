@@ -307,6 +307,10 @@ struct NetworkContextParams {
   // verification, we should consider using each URLRequestContext to do its own
   // validation.
   bool primary_network_context = false;
+
+  // Specifies the initial set of allowed and blocked origins for the
+  // URLLoaderFactory consumers to access beyond the same-origin-policy.
+  array<CorsOriginAccessPatterns> cors_origin_access_list;
 };
 
 struct NetworkConditions {
