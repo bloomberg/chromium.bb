@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {
 
@@ -54,8 +55,10 @@ void JSEventListener::InvokeInternal(EventTarget&,
       // TODO(yukishiino): Should check event.Is{Before,After}PrintEvent.
       event.type() == event_type_names::kBeforeprint ||
       event.type() == event_type_names::kAfterprint;
+  const bool is_media_query_list_event =
+      event.InterfaceName() == event_interface_names::kMediaQueryListEvent;
   if (!event_listener_->IsRunnableOrThrowException(
-          (is_beforeunload_event || is_print_event)
+          (is_beforeunload_event || is_print_event || is_media_query_list_event)
               ? V8EventListener::IgnorePause::kIgnore
               : V8EventListener::IgnorePause::kDontIgnore)) {
     return;
