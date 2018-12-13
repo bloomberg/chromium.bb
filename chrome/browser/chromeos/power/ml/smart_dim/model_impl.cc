@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
@@ -15,6 +16,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/tf_native_inference.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_helpers.h"
 #include "chrome/grit/browser_resources.h"
@@ -235,7 +238,9 @@ base::Optional<float> GetDimThreshold() {
 
 }  // namespace
 
-SmartDimModelImpl::SmartDimModelImpl() = default;
+SmartDimModelImpl::SmartDimModelImpl()
+    : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {}
 
 SmartDimModelImpl::~SmartDimModelImpl() = default;
 
@@ -313,6 +318,24 @@ UserActivityEvent::ModelPrediction SmartDimModelImpl::ShouldDim(
   }
 
   return prediction;
+}
+
+void SmartDimModelImpl::RequestDimDecision(
+    const UserActivityEvent::Features& input_features,
+    DimDecisionCallback dim_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Cancel previously assigned callbacks and set it to the new callback.
+  cancelable_callback_.Reset(std::move(dim_callback));
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&SmartDimModelImpl::ShouldDim, base::Unretained(this),
+                     input_features),
+      base::BindOnce(cancelable_callback_.callback()));
+}
+
+void SmartDimModelImpl::CancelPreviousRequest() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  cancelable_callback_.Cancel();
 }
 
 void SmartDimModelImpl::LazyInitialize() {

@@ -7,7 +7,10 @@
 
 #include <memory>
 
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/model.h"
 
 namespace assist_ranker {
@@ -50,8 +53,9 @@ class SmartDimModelImpl : public SmartDimModel {
   ~SmartDimModelImpl() override;
 
   // chromeos::power::ml::SmartDimModel overrides:
-  UserActivityEvent::ModelPrediction ShouldDim(
-      const UserActivityEvent::Features& features) override;
+  void RequestDimDecision(const UserActivityEvent::Features& features,
+                          DimDecisionCallback dim_callback) override;
+  void CancelPreviousRequest() override;
 
  private:
   friend class SmartDimModelImplTest;
@@ -64,6 +68,13 @@ class SmartDimModelImpl : public SmartDimModel {
       const UserActivityEvent::Features& features,
       float* inactivity_score_out);
 
+  // Asynchronous task which gets posted to the |blocking_task_runner_| and
+  // performs the ML inference call. Based on the result of the inference call,
+  // a prediction is returned, and this return value will be passed to a
+  // DimDecisionCallback which will execute after this function.
+  UserActivityEvent::ModelPrediction ShouldDim(
+      const UserActivityEvent::Features& input_features);
+
   std::unique_ptr<assist_ranker::ExamplePreprocessorConfig>
       preprocessor_config_;
   std::unique_ptr<assist_ranker::ExamplePreprocessor> preprocessor_;
@@ -71,6 +82,13 @@ class SmartDimModelImpl : public SmartDimModel {
   // Fixed-size working memory provided to the inferencing function. Lazily
   // initialized once so it isn't reallocated for every inference.
   std::unique_ptr<tfnative_model::FixedAllocations> model_alloc_;
+
+  // A separate task runner is used to perform the inference.
+  const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  base::CancelableOnceCallback<void(UserActivityEvent::ModelPrediction)>
+      cancelable_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SmartDimModelImpl);
 };
