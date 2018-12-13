@@ -129,14 +129,19 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
   // If the contents need mirroring, indicate that to the drawing buffer.
   if (session->immersive() && session->outputContext() && session->External()) {
     mirroring_ = true;
-    drawing_buffer_->SetMirrorClient(this);
+
+    mirror_client_ = base::AdoptRef(new XRWebGLDrawingBuffer::MirrorClient());
+    drawing_buffer_->SetMirrorClient(mirror_client_);
   }
   UpdateViewports();
 }
 
 XRWebGLLayer::~XRWebGLLayer() {
-  if (mirroring_)
+  if (mirroring_) {
     drawing_buffer_->SetMirrorClient(nullptr);
+    mirror_client_->BeginDestruction();
+  }
+  mirror_client_ = nullptr;
   drawing_buffer_->BeginDestruction();
 }
 
@@ -324,21 +329,15 @@ scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage(
   return drawing_buffer_->TransferToStaticBitmapImage(out_release_callback);
 }
 
-void XRWebGLLayer::OnMirrorImageAvailable(
-    scoped_refptr<StaticBitmapImage> image,
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
-  ImageBitmap* image_bitmap = ImageBitmap::Create(std::move(image));
-
-  session()->outputContext()->SetImage(image_bitmap);
-
-  if (mirror_release_callback_) {
-    // TODO(bajones): We should probably have the compositor report to us when
-    // it's done with the image, rather than reporting back that it's usable as
-    // soon as we receive a new one.
-    mirror_release_callback_->Run(gpu::SyncToken(), false /* lost_resource */);
+void XRWebGLLayer::UpdateWebXRMirror() {
+  if (mirroring_) {
+    scoped_refptr<StaticBitmapImage> image = mirror_client_->GetLastImage();
+    if (image) {
+      ImageBitmap* image_bitmap = ImageBitmap::Create(std::move(image));
+      session()->outputContext()->SetImage(image_bitmap);
+      mirror_client_->CallLastReleaseCallback();
+    }
   }
-
-  mirror_release_callback_ = std::move(release_callback);
 }
 
 void XRWebGLLayer::Trace(blink::Visitor* visitor) {
