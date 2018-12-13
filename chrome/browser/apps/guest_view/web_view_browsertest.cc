@@ -185,7 +185,8 @@ class ContextMenuShownObserver {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&RenderViewContextMenuBase::Cancel,
                                   base::Unretained(context_menu)));
-    run_loop_.Quit();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop_.QuitClosure());
   }
 
   void Wait() { run_loop_.Run(); }
@@ -2485,8 +2486,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TestContextMenu) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&RenderViewContextMenuBase::Cancel,
                                   base::Unretained(context_menu)));
-
-    std::move(closure).Run();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(closure));
   };
 
   base::RunLoop run_loop;
