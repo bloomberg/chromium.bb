@@ -154,6 +154,10 @@ static_library("test_support") {
     "trace_event_analyzer.h",
     "trace_to_file.cc",
     "trace_to_file.h",
+    "type_id_test_support_a.cc",
+    "type_id_test_support_a.h",
+    "type_id_test_support_b.cc",
+    "type_id_test_support_b.h",
     "values_test_util.cc",
     "values_test_util.h",
   ]
@@ -271,24 +275,6 @@ static_library("test_support") {
       "//third_party/libxml",
     ]
   }
-}
-
-component("test_support_component") {
-  testonly = true
-  sources = [
-    "type_id_test_support_a.cc",
-    "type_id_test_support_a.h",
-    "type_id_test_support_b.cc",
-    "type_id_test_support_b.h",
-  ]
-  deps = [
-    "//base",
-  ]
-  configs += [ ":base_test_implementation" ]
-}
-
-config("base_test_implementation") {
-  defines = [ "IS_BASE_TEST_IMPL" ]
 }
 
 config("perf_test_config") {
