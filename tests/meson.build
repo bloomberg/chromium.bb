@@ -33,6 +33,7 @@ lib_test_client = static_library(
 dep_test_client = declare_dependency(
 	link_with: lib_test_client,
 	dependencies: [
+		dep_wayland_client,
 		dep_test_runner,
 		dep_pixman,
 	]
