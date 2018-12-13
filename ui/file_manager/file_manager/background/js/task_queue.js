@@ -17,6 +17,7 @@ var importer = importer || {};
  *
  * @constructor
  * @struct
+ * @return undefined
  */
 importer.TaskQueue = function() {
   /** @private {!Array<!importer.TaskQueue.Task>} */
@@ -180,6 +181,7 @@ importer.TaskQueue.Task.prototype.run;
 importer.TaskQueue.BaseTask = function(taskId) {
   /** @protected {string} */
   this.taskId_ = taskId;
+
   /** @private {!Array<!importer.TaskQueue.Task.Observer>} */
   this.observers_ = [];
 

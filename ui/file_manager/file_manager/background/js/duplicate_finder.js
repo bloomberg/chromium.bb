@@ -188,10 +188,10 @@ importer.DispositionChecker = function(historyLoader, contentMatcher) {
 };
 
 /**
- * Type for a function to return content disposition of an entry.
+ * Define a function type that returns a Promise that resolves the content
+ * disposition of an entry.
  *
- * @typedef {function(!FileEntry, !importer.Destination,
- *                   !importer.ScanMode):
+ * @typedef {function(!FileEntry, !importer.Destination, !importer.ScanMode):
  *     !Promise<!importer.Disposition>}
  */
 importer.DispositionChecker.CheckerFunction;
