@@ -51,6 +51,12 @@ class MEDIA_EXPORT DataSource {
   // Values of |bitrate| <= 0 are invalid and should be ignored.
   virtual void SetBitrate(int bitrate) = 0;
 
+  // Assume fully bufferred by default.
+  virtual bool AssumeFullyBuffered() const;
+
+  // By default this just returns GetSize().
+  virtual int64_t GetMemoryUsage();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DataSource);
 };

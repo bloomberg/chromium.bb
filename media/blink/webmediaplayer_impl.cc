@@ -54,7 +54,9 @@
 #include "media/blink/webmediasource_impl.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_demuxer.h"
+#include "media/filters/memory_data_source.h"
 #include "media/media_buildflags.h"
+#include "net/base/data_url.h"
 #include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
@@ -598,8 +600,11 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  GURL gurl(url);
-  ReportMetrics(load_type, gurl, *frame_, media_log_.get());
+  // Note: |url| may be very large, take care when making copies.
+  loaded_url_ = GURL(url);
+  load_type_ = load_type;
+
+  ReportMetrics(load_type, loaded_url_, *frame_, media_log_.get());
 
   // Report poster availability for SRC=.
   if (load_type == kLoadTypeURL) {
@@ -610,16 +615,11 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
     }
   }
 
-  // Set subresource URL for crash reporting.
+  // Set subresource URL for crash reporting; will be truncated to 256 bytes.
   static base::debug::CrashKeyString* subresource_url =
       base::debug::AllocateCrashKeyString("subresource_url",
                                           base::debug::CrashKeySize::Size256);
-  base::debug::SetCrashKeyString(subresource_url, gurl.spec());
-
-  // Used for HLS playback.
-  loaded_url_ = gurl;
-
-  load_type_ = load_type;
+  base::debug::SetCrashKeyString(subresource_url, loaded_url_.spec());
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
@@ -635,18 +635,43 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   if (load_type == kLoadTypeMediaSource) {
     StartPipeline();
   } else {
+    // Short circuit the more complex loading path for data:// URLs. Sending
+    // them through the network based loading path just wastes memory and causes
+    // worse performance since reads become asynchronous.
+    if (loaded_url_.SchemeIs(url::kDataScheme)) {
+      std::string mime_type, charset, data;
+      if (!net::DataURL::Parse(loaded_url_, &mime_type, &charset, &data)) {
+        DataSourceInitialized(false);
+        return;
+      }
+
+      // Replace |loaded_url_| with an empty data:// URL since it may be large.
+      loaded_url_ = GURL("data:,");
+
+      // Mark all the data as buffered.
+      buffered_data_source_host_.SetTotalBytes(data.size());
+      buffered_data_source_host_.AddBufferedByteRange(0, data.size());
+
+      DCHECK(!mb_data_source_);
+      data_source_.reset(new MemoryDataSource(std::move(data)));
+      DataSourceInitialized(true);
+      return;
+    }
+
     auto url_data =
         url_index_->GetByUrl(url, static_cast<UrlData::CorsMode>(cors_mode));
     // Notify |this| of bytes received by the network.
     url_data->AddBytesReceivedCallback(BindToCurrentLoop(base::BindRepeating(
         &WebMediaPlayerImpl::OnBytesReceived, AsWeakPtr())));
-    data_source_.reset(new MultibufferDataSource(
+    mb_data_source_ = new MultibufferDataSource(
         main_task_runner_, std::move(url_data), media_log_.get(),
         &buffered_data_source_host_,
-        base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
-    data_source_->SetPreload(preload_);
-    data_source_->SetIsClientAudioElement(client_->IsAudioElement());
-    data_source_->Initialize(
+        base::BindRepeating(&WebMediaPlayerImpl::NotifyDownloading,
+                            AsWeakPtr()));
+    data_source_.reset(mb_data_source_);
+    mb_data_source_->SetPreload(preload_);
+    mb_data_source_->SetIsClientAudioElement(client_->IsAudioElement());
+    mb_data_source_->Initialize(
         base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, AsWeakPtr()));
   }
 
@@ -675,8 +700,8 @@ void WebMediaPlayerImpl::Play() {
   pipeline_controller_.SetPlaybackRate(playback_rate_);
   background_pause_timer_.Stop();
 
-  if (data_source_)
-    data_source_->MediaIsPlaying();
+  if (mb_data_source_)
+    mb_data_source_->MediaIsPlaying();
 
   if (observer_)
     observer_->OnPlaying();
@@ -822,8 +847,8 @@ void WebMediaPlayerImpl::SetRate(double rate) {
   playback_rate_ = rate;
   if (!paused_) {
     pipeline_controller_.SetPlaybackRate(rate);
-    if (data_source_)
-      data_source_->MediaPlaybackRateChanged(rate);
+    if (mb_data_source_)
+      mb_data_source_->MediaPlaybackRateChanged(rate);
   }
 }
 
@@ -904,8 +929,8 @@ void WebMediaPlayerImpl::SetPreload(WebMediaPlayer::Preload preload) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   preload_ = static_cast<MultibufferDataSource::Preload>(preload);
-  if (data_source_)
-    data_source_->SetPreload(preload_);
+  if (mb_data_source_)
+    mb_data_source_->SetPreload(preload_);
 }
 
 bool WebMediaPlayerImpl::HasVideo() const {
@@ -1091,7 +1116,8 @@ blink::WebTimeRanges WebMediaPlayerImpl::Seekable() const {
 
   // Allow a special exception for seeks to zero for streaming sources with a
   // finite duration; this allows looping to work.
-  const bool is_finite_stream = data_source_ && data_source_->IsStreaming() &&
+  const bool is_finite_stream = mb_data_source_ &&
+                                mb_data_source_->IsStreaming() &&
                                 std::isfinite(seekable_end);
 
   // Do not change the seekable range when using the MediaPlayerRenderer. It
@@ -1196,18 +1222,18 @@ bool WebMediaPlayerImpl::WouldTaintOrigin() const {
     return true;
   }
 
-  if (!data_source_)
+  if (!mb_data_source_)
     return false;
 
   // When the resource is redirected to another origin we think it as
   // tainted. This is actually not specified, and is under discussion.
   // See https://github.com/whatwg/fetch/issues/737.
-  if (!data_source_->HasSingleOrigin() &&
-      data_source_->cors_mode() == UrlData::CORS_UNSPECIFIED) {
+  if (!mb_data_source_->HasSingleOrigin() &&
+      mb_data_source_->cors_mode() == UrlData::CORS_UNSPECIFIED) {
     return true;
   }
 
-  return data_source_->IsCorsCrossOrigin();
+  return mb_data_source_->IsCorsCrossOrigin();
 }
 
 double WebMediaPlayerImpl::MediaTimeForTimeValue(double timeValue) const {
@@ -1525,8 +1551,8 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
 
   // Tell the data source we have enough data so that it may release the
   // connection.
-  if (data_source_)
-    data_source_->OnBufferingHaveEnough(true);
+  if (mb_data_source_)
+    mb_data_source_->OnBufferingHaveEnough(true);
 
   ReportMemoryUsage();
 
@@ -1849,7 +1875,7 @@ bool WebMediaPlayerImpl::CanPlayThrough() {
     return true;
   if (chunk_demuxer_)
     return true;
-  if (data_source_ && data_source_->assume_fully_buffered())
+  if (data_source_ && data_source_->AssumeFullyBuffered())
     return true;
   // If we're not currently downloading, we have as much buffer as
   // we're ever going to get, which means we say we can play through.
@@ -1897,8 +1923,8 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
 
     // Let the DataSource know we have enough data. It may use this information
     // to release unused network connections.
-    if (data_source_ && !client_->CouldPlayIfEnoughData())
-      data_source_->OnBufferingHaveEnough(false);
+    if (mb_data_source_ && !client_->CouldPlayIfEnoughData())
+      mb_data_source_->OnBufferingHaveEnough(false);
 
     // Blink expects a timeChanged() in response to a seek().
     if (should_notify_time_changed_) {
@@ -2377,8 +2403,8 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  if (observer_ && IsNewRemotePlaybackPipelineEnabled() && data_source_)
-    observer_->OnDataSourceInitialized(data_source_->GetUrlAfterRedirects());
+  if (observer_ && IsNewRemotePlaybackPipelineEnabled() && mb_data_source_)
+    observer_->OnDataSourceInitialized(mb_data_source_->GetUrlAfterRedirects());
 
   if (!success) {
     SetNetworkState(WebMediaPlayer::kNetworkStateFormatError);
@@ -2392,8 +2418,9 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   }
 
   // No point in preloading data as we'll probably just throw it away anyways.
-  if (IsStreaming() && preload_ > MultibufferDataSource::METADATA) {
-    data_source_->SetPreload(MultibufferDataSource::METADATA);
+  if (IsStreaming() && preload_ > MultibufferDataSource::METADATA &&
+      mb_data_source_) {
+    mb_data_source_->SetPreload(MultibufferDataSource::METADATA);
   }
 
   StartPipeline();
@@ -2523,8 +2550,8 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   if (renderer_factory_selector_->GetCurrentFactory()
           ->GetRequiredMediaResourceType() == MediaResource::Type::URL) {
-    if (data_source_)
-      loaded_url_ = data_source_->GetUrlAfterRedirects();
+    if (mb_data_source_)
+      loaded_url_ = mb_data_source_->GetUrlAfterRedirects();
 
     // MediaPlayerRendererClient factory is the only factory that a
     // MediaResource::Type::URL for the moment. This might no longer be true
@@ -2622,9 +2649,10 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (state == WebMediaPlayer::kReadyStateHaveEnoughData && data_source_ &&
-      data_source_->assume_fully_buffered() &&
-      network_state_ == WebMediaPlayer::kNetworkStateLoading)
+      data_source_->AssumeFullyBuffered() &&
+      network_state_ == WebMediaPlayer::kNetworkStateLoading) {
     SetNetworkState(WebMediaPlayer::kNetworkStateLoaded);
+  }
 
   ready_state_ = state;
   highest_ready_state_ = std::max(highest_ready_state_, ready_state_);

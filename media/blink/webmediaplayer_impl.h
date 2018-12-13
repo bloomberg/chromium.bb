@@ -740,7 +740,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //
   // |demuxer_| will contain the appropriate demuxer based on which resource
   // load strategy we're using.
-  std::unique_ptr<MultibufferDataSource> data_source_;
+  MultibufferDataSource* mb_data_source_ = nullptr;
+  std::unique_ptr<DataSource> data_source_;
   std::unique_ptr<Demuxer> demuxer_;
   ChunkDemuxer* chunk_demuxer_ = nullptr;
 
