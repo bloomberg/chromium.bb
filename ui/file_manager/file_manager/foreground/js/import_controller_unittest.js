@@ -213,8 +213,8 @@ function testDirectoryChange_DetailsPanelVisibility_InitialChangeDir(callback) {
       '/DCIM/');
   // ensure there is some content in the scan so the code that depends
   // on this state doesn't croak which it finds it missing.
-  mediaScanner.fileEntries.push(
-      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
+  mediaScanner.fileEntries.push(new MockFileEntry(
+      fileSystem, '/DCIM/photos0/IMG00001.jpg', getDefaultMetadata()));
 
   // Make controller enter a scanning state.
   environment.directoryChangedListener(event);
@@ -270,8 +270,8 @@ function testSelectionChange_TriggersUpdate(callback) {
   var fileSystem = new MockFileSystem('testFs');
   // ensure there is some content in the scan so the code that depends
   // on this state doesn't croak which it finds it missing.
-  environment.selection.push(
-      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
+  environment.selection.push(new MockFileEntry(
+      fileSystem, '/DCIM/photos0/IMG00001.jpg', getDefaultMetadata()));
 
   environment.selectionChangedListener();
   mediaScanner.finalizeScans();
@@ -292,8 +292,8 @@ function testFinalizeScans_TriggersUpdate(callback) {
   var fileSystem = new MockFileSystem('testFs');
   // ensure there is some content in the scan so the code that depends
   // on this state doesn't croak which it finds it missing.
-  mediaScanner.fileEntries.push(
-      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
+  mediaScanner.fileEntries.push(new MockFileEntry(
+      fileSystem, '/DCIM/photos0/IMG00001.jpg', getDefaultMetadata()));
 
   environment.directoryChangedListener(EMPTY_EVENT);  // initiates a scan.
   widget.resetPromises();
@@ -347,8 +347,8 @@ function startImport(clickSource) {
   var fileSystem = new MockFileSystem('testFs');
   // ensure there is some content in the scan so the code that depends
   // on this state doesn't croak which it finds it missing.
-  mediaScanner.fileEntries.push(
-      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
+  mediaScanner.fileEntries.push(new MockFileEntry(
+      fileSystem, '/DCIM/photos0/IMG00001.jpg', getDefaultMetadata()));
 
   // First we need to force the controller into a scanning state.
   environment.directoryChangedListener(EMPTY_EVENT);
@@ -707,4 +707,12 @@ function setupFileSystem(volumeType, volumeId, fileNames) {
   assertTrue(volumeInfo != null);
   volumeInfo.fileSystem.populate(fileNames);
   return volumeInfo;
+}
+
+/**
+ * @return {!Metadata}
+ */
+function getDefaultMetadata() {
+  const metadata = {size: 0};
+  return /** @type {!Metadata} */ (metadata);
 }
