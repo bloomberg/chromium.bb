@@ -11,24 +11,23 @@
 namespace chromeos {
 
 namespace {
-const char kDeviceType[] = "DEVICETYPE";
+const char kDeviceTypeKey[] = "DEVICETYPE";
 }
 
 DeviceType GetDeviceType() {
   std::string value;
-  if (base::SysInfo::GetLsbReleaseValue(kDeviceType, &value)) {
+  if (base::SysInfo::GetLsbReleaseValue(kDeviceTypeKey, &value)) {
     if (value == "CHROMEBASE")
       return DeviceType::kChromebase;
-    else if (value == "CHROMEBIT")
+    if (value == "CHROMEBIT")
       return DeviceType::kChromebit;
     // Most devices are Chromebooks, so we will also consider reference boards
     // as chromebooks.
-    else if (value == "CHROMEBOOK" || value == "REFERENCE")
+    if (value == "CHROMEBOOK" || value == "REFERENCE")
       return DeviceType::kChromebook;
-    else if (value == "CHROMEBOX")
+    if (value == "CHROMEBOX")
       return DeviceType::kChromebox;
-    else
-      LOG(ERROR) << "Unknown device type \"" << value << "\"";
+    LOG(ERROR) << "Unknown device type \"" << value << "\"";
   }
 
   return DeviceType::kUnknown;
