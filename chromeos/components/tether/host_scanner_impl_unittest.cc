@@ -398,7 +398,7 @@ class HostScannerImplTest : public NetworkStateTest {
                   : session_manager::SessionState::LOGIN_PRIMARY);
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   const multidevice::RemoteDeviceRefList test_devices_;
   const std::vector<HostScannerOperation::ScannedDeviceInfo>

@@ -832,7 +832,7 @@ class SecureChannelServiceTest : public testing::Test {
     return test_remote_device_cache_factory_->instance();
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   const multidevice::RemoteDeviceList test_devices_;
 
   scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;

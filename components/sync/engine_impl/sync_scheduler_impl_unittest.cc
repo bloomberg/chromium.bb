@@ -86,28 +86,21 @@ void PumpLoop() {
   RunLoop();
 }
 
-void PumpLoopFor(TimeDelta time) {
-  // Allow the loop to run for the specified amount of time.
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&QuitLoopNow), time);
-  RunLoop();
-}
-
 static const size_t kMinNumSamples = 5;
 
 // Test harness for the SyncScheduler.  Test the delays and backoff timers used
-// in response to various events.
-//
-// These tests execute in real time with real timers.  We try to keep the
-// delays short, but there is a limit to how short we can make them.  The
-// timers on some platforms (ie. Windows) have a timer resolution greater than
-// 1ms.  Using 1ms delays may result in test flakiness.
-//
-// See crbug.com/402212 for more info.
+// in response to various events.  Mock time is used to avoid flakes.
 class SyncSchedulerImplTest : public testing::Test {
  public:
   SyncSchedulerImplTest()
-      : syncer_(nullptr), delay_(nullptr), weak_ptr_factory_(this) {}
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
+            base::test::ScopedTaskEnvironment::NowSource::
+                MAIN_THREAD_MOCK_TIME),
+        syncer_(nullptr),
+        delay_(nullptr),
+        weak_ptr_factory_(this) {}
 
   class MockDelayProvider : public BackoffDelayProvider {
    public:
@@ -306,12 +299,14 @@ class SyncSchedulerImplTest : public testing::Test {
                                                      now);
   }
 
+ protected:
+  base::test::ScopedTaskEnvironment task_environment_;
+
  private:
   syncable::Directory* directory() {
     return test_user_share_.user_share()->directory.get();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
   TestUserShare test_user_share_;
   CancelationSignal cancelation_signal_;
   std::unique_ptr<MockConnectionManager> connection_;
@@ -1351,7 +1346,7 @@ TEST_F(SyncSchedulerImplTest, BackoffDropsJobs) {
   Mock::VerifyAndClearExpectations(syncer());
 
   // Wait a while (10x poll interval) so a few poll jobs will be attempted.
-  PumpLoopFor(poll * 10);
+  task_environment_.FastForwardBy(poll * 10);
 
   // Try (and fail) to schedule a nudge.
   scheduler()->ScheduleLocalNudge(types, FROM_HERE);
@@ -1776,7 +1771,7 @@ TEST_F(SyncSchedulerImplTest, ScheduleClearServerData_FailsRetriesSucceeds) {
 
   // Now succeed.
   connection()->SetServerReachable();
-  PumpLoopFor(2 * delta);
+  task_environment_.FastForwardBy(2 * delta);
   ASSERT_EQ(1, success_counter.times_called());
   ASSERT_FALSE(scheduler()->IsGlobalBackoff());
 }

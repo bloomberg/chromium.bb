@@ -203,7 +203,7 @@ class WifiHotspotDisconnectorImplTest : public NetworkStateTest {
     return test_pref_service_->GetString(prefs::kDisconnectingWifiNetworkPath);
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<TestNetworkConnectionHandler>
       test_network_connection_handler_;

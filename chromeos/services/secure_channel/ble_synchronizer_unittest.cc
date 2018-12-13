@@ -450,7 +450,7 @@ class SecureChannelBleSynchronizerTest : public testing::Test {
         new StopDiscoverySessionArgs(callback, error_callback)));
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   const scoped_refptr<FakeBluetoothAdvertisement> fake_advertisement_;
   const std::unique_ptr<device::MockBluetoothDiscoverySession>
       fake_discovery_session_;

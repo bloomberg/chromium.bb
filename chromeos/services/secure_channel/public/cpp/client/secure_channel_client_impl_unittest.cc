@@ -201,7 +201,7 @@ class SecureChannelClientImplTest : public testing::Test {
     static_cast<SecureChannelClientImpl*>(client_.get())->FlushForTesting();
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   FakeSecureChannel* fake_secure_channel_;
   std::unique_ptr<FakeSecureChannelInitializerFactory>

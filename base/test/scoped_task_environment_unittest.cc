@@ -373,6 +373,10 @@ INSTANTIATE_TEST_CASE_P(
     ScopedTaskEnvironmentTest,
     ::testing::Values(ScopedTaskEnvironment::MainThreadType::MOCK_TIME));
 INSTANTIATE_TEST_CASE_P(
+    MainThreadUIMockTime,
+    ScopedTaskEnvironmentTest,
+    ::testing::Values(ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME));
+INSTANTIATE_TEST_CASE_P(
     MainThreadUI,
     ScopedTaskEnvironmentTest,
     ::testing::Values(ScopedTaskEnvironment::MainThreadType::UI));
@@ -380,6 +384,10 @@ INSTANTIATE_TEST_CASE_P(
     MainThreadIO,
     ScopedTaskEnvironmentTest,
     ::testing::Values(ScopedTaskEnvironment::MainThreadType::IO));
+INSTANTIATE_TEST_CASE_P(
+    MainThreadIOMockTime,
+    ScopedTaskEnvironmentTest,
+    ::testing::Values(ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME));
 
 class ScopedTaskEnvironmentMockedTime
     : public testing::TestWithParam<ScopedTaskEnvironment::MainThreadType> {};
@@ -583,10 +591,30 @@ TEST_P(ScopedTaskEnvironmentMockedTime, NoFastForwardToCancelledTask) {
   EXPECT_EQ(start_time, scoped_task_environment.NowTicks());
 }
 
+TEST_P(ScopedTaskEnvironmentMockedTime, NowSource) {
+  ScopedTaskEnvironment scoped_task_environment(
+      GetParam(), ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
+
+  TimeTicks start_time = scoped_task_environment.NowTicks();
+  EXPECT_EQ(TimeTicks::Now(), start_time);
+
+  constexpr TimeDelta delay = TimeDelta::FromSeconds(10);
+  scoped_task_environment.FastForwardBy(delay);
+  EXPECT_EQ(TimeTicks::Now(), start_time + delay);
+}
+
 INSTANTIATE_TEST_CASE_P(
     MainThreadMockTime,
     ScopedTaskEnvironmentMockedTime,
     ::testing::Values(ScopedTaskEnvironment::MainThreadType::MOCK_TIME));
+INSTANTIATE_TEST_CASE_P(
+    MainThreadUIMockTime,
+    ScopedTaskEnvironmentMockedTime,
+    ::testing::Values(ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME));
+INSTANTIATE_TEST_CASE_P(
+    MainThreadIOMockTime,
+    ScopedTaskEnvironmentMockedTime,
+    ::testing::Values(ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME));
 
 }  // namespace test
 }  // namespace base
