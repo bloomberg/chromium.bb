@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 
+#include "base/base_export.h"
+
 namespace base {
 namespace allocator {
 
@@ -31,6 +33,14 @@ size_t WinHeapGetSizeEstimate(void* ptr);
 // Call the new handler, if one has been set.
 // Returns true on successfully calling the handler, false otherwise.
 bool WinCallNewHandler(size_t size);
+
+// Wrappers to implement the interface for the _aligned_* functions on top of
+// the CRT's Windows heap. Exported for tests.
+BASE_EXPORT void* WinHeapAlignedMalloc(size_t size, size_t alignment);
+BASE_EXPORT void* WinHeapAlignedRealloc(void* ptr,
+                                        size_t size,
+                                        size_t alignment);
+BASE_EXPORT void WinHeapAlignedFree(void* ptr);
 
 }  // namespace allocator
 }  // namespace base

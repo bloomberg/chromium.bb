@@ -204,6 +204,42 @@ void FreeDefiniteSizeFn(const AllocatorDispatch* self,
   self->next->free_definite_size_function(self->next, ptr, size, context);
 }
 
+static void* AlignedMallocFn(const AllocatorDispatch* self,
+                             size_t size,
+                             size_t alignment,
+                             void* context) {
+  void* ret =
+      self->next->aligned_malloc_function(self->next, size, alignment, context);
+  if (ret != nullptr)
+    RecordAlloc(self->next, ret, size, context);
+
+  return ret;
+}
+
+static void* AlignedReallocFn(const AllocatorDispatch* self,
+                              void* address,
+                              size_t size,
+                              size_t alignment,
+                              void* context) {
+  if (address != nullptr)
+    RecordFree(self->next, address, context);
+
+  void* ret = self->next->aligned_realloc_function(self->next, address, size,
+                                                   alignment, context);
+  if (ret != nullptr && size != 0)
+    RecordAlloc(self->next, ret, size, context);
+
+  return ret;
+}
+
+static void AlignedFreeFn(const AllocatorDispatch* self,
+                          void* address,
+                          void* context) {
+  if (address != nullptr)
+    RecordFree(self->next, address, context);
+  self->next->aligned_free_function(self->next, address, context);
+}
+
 // The allocator dispatch used to intercept heap operations.
 AllocatorDispatch allocator_dispatch = {&AllocFn,
                                         &AllocZeroInitializedFn,
@@ -214,6 +250,9 @@ AllocatorDispatch allocator_dispatch = {&AllocFn,
                                         &BatchMallocFn,
                                         &BatchFreeFn,
                                         &FreeDefiniteSizeFn,
+                                        &AlignedMallocFn,
+                                        &AlignedReallocFn,
+                                        &AlignedFreeFn,
                                         nullptr};
 
 ThreadHeapUsage* GetOrCreateThreadUsage() {
