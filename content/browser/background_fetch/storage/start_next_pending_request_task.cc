@@ -72,6 +72,7 @@ void StartNextPendingRequestTask::DidGetPendingRequests(
   // Transfer ownership of the request to avoid a potentially expensive copy.
   active_request_.set_allocated_serialized_request(
       pending_request_.release_serialized_request());
+  active_request_.set_has_request_body(pending_request_.has_request_body());
 
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
@@ -98,7 +99,8 @@ void StartNextPendingRequestTask::DidStoreActiveRequest(
   next_request_ = base::MakeRefCounted<BackgroundFetchRequestInfo>(
       active_request_.request_index(),
       ServiceWorkerUtils::DeserializeFetchRequestFromString(
-          active_request_.serialized_request()));
+          active_request_.serialized_request()),
+      active_request_.has_request_body());
   next_request_->SetDownloadGuid(active_request_.download_guid());
 
   // Delete the pending request.

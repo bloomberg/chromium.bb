@@ -39,7 +39,8 @@ class BackgroundFetchCrossOriginFilterTest : public ::testing::Test {
           response_headers) {
     scoped_refptr<BackgroundFetchRequestInfo> request_info =
         base::MakeRefCounted<BackgroundFetchRequestInfo>(
-            0 /* request_info */, blink::mojom::FetchAPIRequest::New());
+            0 /* request_info */, blink::mojom::FetchAPIRequest::New(),
+            /* has_request_body= */ false);
 
     request_info->response_headers_ = response_headers;
     request_info->url_chain_ = {GURL(response_url)};

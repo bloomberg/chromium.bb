@@ -239,7 +239,8 @@ class GetRequestsTask : public InitializationSubTask {
       auto request_info = base::MakeRefCounted<BackgroundFetchRequestInfo>(
           active_request.request_index(),
           ServiceWorkerUtils::DeserializeFetchRequestFromString(
-              active_request.serialized_request()));
+              active_request.serialized_request()),
+          active_request.has_request_body());
       request_info->SetDownloadGuid(active_request.download_guid());
 
       sub_task_init().initialization_data->active_fetch_requests.push_back(

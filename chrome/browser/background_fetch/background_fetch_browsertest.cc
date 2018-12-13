@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/browser_process.h"
@@ -31,9 +32,12 @@
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/origin.h"
@@ -46,6 +50,10 @@ using offline_items_collection::OfflineItemProgressUnit;
 using offline_items_collection::OfflineItemVisuals;
 
 namespace {
+
+using net::test_server::BasicHttpResponse;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
 
 // Scripts run by this test are defined in
 // chrome/test/data/background_fetch/background_fetch.js.
@@ -221,6 +229,12 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   ~BackgroundFetchBrowserTest() override = default;
 
   // InProcessBrowserTest overrides:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kBackgroundFetchUploads);
+    InProcessBrowserTest::SetUp();
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Background Fetch is available as an experimental Web Platform feature.
     command_line->AppendSwitch(
@@ -230,7 +244,10 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
-    https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_->RegisterRequestHandler(base::BindRepeating(
+        &BackgroundFetchBrowserTest::HandleRequest, base::Unretained(this)));
+    https_server_->AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
     ASSERT_TRUE(https_server_->Start());
 
     Profile* profile = browser()->profile();
@@ -341,6 +358,22 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
     ASSERT_EQ("ok", result);
   }
 
+  // Intercepts all requests.
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    if (request.GetURL().path() != "/background_fetch/upload") {
+      // The default handlers will take care of this request.
+      return nullptr;
+    }
+
+    DCHECK(!request.content.empty());
+    DCHECK(request_body_.empty());
+    request_body_ = request.content;
+
+    auto response = std::make_unique<BasicHttpResponse>();
+    response->set_code(net::HTTP_OK);
+    return response;
+  }
+
   // Gets the ideal display size.
   gfx::Size GetIconDisplaySize() {
     gfx::Size out_display_size;
@@ -421,6 +454,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<OfflineContentProviderObserver>
       offline_content_provider_observer_;
   std::unique_ptr<ukm::TestUkmRecorder> test_ukm_recorder_;
+  std::string request_body_;
 
  private:
   // Callback for RunScriptAndWaitForOfflineItems(), called when the |items|
@@ -443,6 +477,8 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
   Browser* active_browser_ = nullptr;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchBrowserTest);
 };
@@ -686,6 +722,14 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   EXPECT_TRUE(
       base::StartsWith(offline_content_provider_observer_->latest_item().title,
                        "New Failed Title!", base::CompareCase::SENSITIVE));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       FetchesRunToCompletion_Upload) {
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
+      "RunFetchTillCompletionWithUpload()", "backgroundfetchsuccess"));
+
+  EXPECT_EQ(request_body_, "upload!");
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchCanBePausedAndResumed) {

@@ -27,6 +27,8 @@
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -66,6 +68,16 @@ download::DownloadService* BackgroundFetchDelegateImpl::GetDownloadService() {
 void BackgroundFetchDelegateImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
+
+BackgroundFetchDelegateImpl::JobDetails::UploadData::UploadData(
+    bool has_upload_data) {
+  if (has_upload_data)
+    status = Status::kIncluded;
+  else
+    status = Status::kAbsent;
+}
+
+BackgroundFetchDelegateImpl::JobDetails::UploadData::~UploadData() = default;
 
 BackgroundFetchDelegateImpl::JobDetails::JobDetails(JobDetails&&) = default;
 
@@ -297,9 +309,8 @@ void BackgroundFetchDelegateImpl::StartDownload(
     bool has_request_body) {
   DCHECK(job_details_map_.count(job_unique_id));
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
-  job_details.current_fetch_guids.emplace(
-      params.guid, has_request_body ? JobDetails::UploadData::kIncluded
-                                    : JobDetails::UploadData::kAbsent);
+
+  job_details.current_fetch_guids.emplace(params.guid, has_request_body);
   GetDownloadService()->StartDownload(params);
 }
 
@@ -363,10 +374,15 @@ void BackgroundFetchDelegateImpl::OnDownloadStarted(
     return;
 
   const std::string& job_unique_id = download_job_unique_id_iter->second;
-  if (auto client = GetClient(job_unique_id)) {
-    client->OnDownloadStarted(job_unique_id, download_guid,
-                              std::move(response));
+  auto& job_details = job_details_map_.find(job_unique_id)->second;
+  if (job_details.client) {
+    job_details.client->OnDownloadStarted(job_unique_id, download_guid,
+                                          std::move(response));
   }
+
+  // Release the request body blob, if any.
+  DCHECK(job_details.current_fetch_guids.count(download_guid));
+  job_details.current_fetch_guids.at(download_guid).request_body_blob.reset();
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadUpdated(
@@ -694,8 +710,8 @@ void BackgroundFetchDelegateImpl::GetUploadData(
   DCHECK(job_it != download_job_unique_id_map_.end());
 
   JobDetails& job_details = job_details_map_.find(job_it->second)->second;
-  if (job_details.current_fetch_guids[download_guid] ==
-      JobDetails::UploadData::kAbsent) {
+  if (job_details.current_fetch_guids.at(download_guid).status ==
+      JobDetails::UploadData::Status::kAbsent) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), /* request_body= */ nullptr));
@@ -703,9 +719,49 @@ void BackgroundFetchDelegateImpl::GetUploadData(
   }
 
   if (job_details.client) {
-    job_details.client->GetUploadData(job_it->second, download_guid,
-                                      std::move(callback));
+    job_details.client->GetUploadData(
+        job_it->second, download_guid,
+        base::BindOnce(&BackgroundFetchDelegateImpl::DidGetUploadData,
+                       weak_ptr_factory_.GetWeakPtr(), job_it->second,
+                       download_guid, std::move(callback)));
   }
+}
+
+void BackgroundFetchDelegateImpl::DidGetUploadData(
+    const std::string& unique_id,
+    const std::string& download_guid,
+    download::GetUploadDataCallback callback,
+    blink::mojom::SerializedBlobPtr blob) {
+  if (!blob || blob->uuid.empty()) {
+    std::move(callback).Run(/* request_body= */ nullptr);
+    return;
+  }
+
+  auto job_it = job_details_map_.find(unique_id);
+  if (job_it == job_details_map_.end()) {
+    std::move(callback).Run(/* request_body= */ nullptr);
+    return;
+  }
+
+  auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      profile_->IsOffTheRecord()) {
+    // Use a Data Pipe to transfer the blob.
+    network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+    blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
+    blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
+    request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  } else {
+    // Use the blob itself and store the handle for the duration of the upload.
+    request_body->AppendBlob(blob->uuid);
+
+    auto& job_details = job_it->second;
+    DCHECK(job_details.current_fetch_guids.count(download_guid));
+    job_details.current_fetch_guids.at(download_guid).request_body_blob =
+        std::move(blob);
+  }
+
+  std::move(callback).Run(request_body);
 }
 
 base::WeakPtr<content::BackgroundFetchDelegate::Client>

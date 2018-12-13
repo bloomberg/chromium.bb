@@ -39,7 +39,8 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
     : public base::RefCountedDeleteOnSequence<BackgroundFetchRequestInfo> {
  public:
   BackgroundFetchRequestInfo(int request_index,
-                             blink::mojom::FetchAPIRequestPtr fetch_request);
+                             blink::mojom::FetchAPIRequestPtr fetch_request,
+                             bool has_request_body);
 
   // Sets the download GUID to a newly generated value. Can only be used if no
   // GUID is already set.
@@ -73,6 +74,9 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   const blink::mojom::FetchAPIRequestPtr& fetch_request_ptr() const {
     return fetch_request_;
   }
+
+  // Returns whether the request has a body that needs to be uploaded.
+  bool has_request_body() const { return has_request_body_; }
 
   // Returns the response code for the download. Available for both successful
   // and failed requests.
@@ -118,6 +122,7 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   // ---- Data associated with the request -------------------------------------
   int request_index_ = kInvalidBackgroundFetchRequestIndex;
   blink::mojom::FetchAPIRequestPtr fetch_request_;
+  bool has_request_body_ = false;
 
   // ---- Data associated with the in-progress download ------------------------
   std::string download_guid_;
