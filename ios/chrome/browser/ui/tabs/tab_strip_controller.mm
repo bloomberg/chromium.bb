@@ -41,7 +41,6 @@
 #include "ios/chrome/browser/ui/tabs/target_frame_cache.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
-#import "ios/chrome/browser/ui/util/snapshot_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
