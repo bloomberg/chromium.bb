@@ -5718,6 +5718,7 @@ crbug.com/878226 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout 
 crbug.com/910452 media/controls/buttons-after-reset.html [ Pass Failure ]
 crbug.com/910452 virtual/new-remote-playback-pipeline/media/controls/buttons-after-reset.html [ Pass Failure ]
 crbug.com/910452 virtual/video-surface-layer/media/controls/buttons-after-reset.html [ Pass Failure ]
+crbug.com/914782 [ Linux ] fast/scrolling/no-hover-during-scroll.html [ Pass Failure ]
 
 # These tests will fail until upstream v8 changes are landed.
 crbug.com/v8/8381 http/tests/devtools/coverage/coverage-repeated.js [ Pass Failure ]
