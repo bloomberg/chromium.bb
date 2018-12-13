@@ -29,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/core_winrt_util.h"
+#include "base/win/post_async_results.h"
 #include "device/bluetooth/bluetooth_advertisement_winrt.h"
 #include "device/bluetooth/bluetooth_device_winrt.h"
 #include "device/bluetooth/bluetooth_discovery_filter.h"
@@ -654,7 +655,7 @@ void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(get_default_adapter_op),
       base::BindOnce(&BluetoothAdapterWinrt::OnGetDefaultAdapter,
                      weak_ptr_factory_.GetWeakPtr(), std::move(on_init)));
@@ -680,9 +681,10 @@ bool BluetoothAdapterWinrt::SetPoweredImpl(bool powered) {
     return false;
   }
 
-  hr = PostAsyncResults(std::move(set_state_op),
-                        base::BindOnce(&BluetoothAdapterWinrt::OnSetRadioState,
-                                       weak_ptr_factory_.GetWeakPtr()));
+  hr = base::win::PostAsyncResults(
+      std::move(set_state_op),
+      base::BindOnce(&BluetoothAdapterWinrt::OnSetRadioState,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   if (FAILED(hr)) {
     VLOG(2) << "PostAsyncResults failed: "
@@ -928,7 +930,7 @@ void BluetoothAdapterWinrt::OnGetDefaultAdapter(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(create_from_id_op),
       base::BindOnce(&BluetoothAdapterWinrt::OnCreateFromIdAsync,
                      weak_ptr_factory_.GetWeakPtr(), std::move(on_init)));
@@ -972,7 +974,7 @@ void BluetoothAdapterWinrt::OnCreateFromIdAsync(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(request_access_op),
       base::BindOnce(&BluetoothAdapterWinrt::OnRequestRadioAccess,
                      weak_ptr_factory_.GetWeakPtr(), std::move(on_init)));
@@ -1000,7 +1002,7 @@ void BluetoothAdapterWinrt::OnRequestRadioAccess(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(get_radio_op),
       base::BindOnce(&BluetoothAdapterWinrt::OnGetRadio,
                      weak_ptr_factory_.GetWeakPtr(), std::move(on_init)));

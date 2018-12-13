@@ -6,18 +6,27 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/win/post_async_results.h"
+#include "services/shape_detection/detection_utils_win.h"
 
 namespace shape_detection {
 
 namespace {
 
+using ABI::Windows::Foundation::IAsyncOperation;
+using ABI::Windows::Foundation::Collections::IVector;
+using ABI::Windows::Graphics::Imaging::BitmapPixelFormat;
 using ABI::Windows::Media::FaceAnalysis::DetectedFace;
+using ABI::Windows::Media::FaceAnalysis::IDetectedFace;
+using ABI::Windows::Media::FaceAnalysis::IFaceDetector;
+
+using Microsoft::WRL::ComPtr;
 
 }  // namespace
 
 FaceDetectionImplWin::FaceDetectionImplWin(
-    Microsoft::WRL::ComPtr<IFaceDetector> face_detector,
-    Microsoft::WRL::ComPtr<ISoftwareBitmapStatics> bitmap_factory,
+    ComPtr<IFaceDetector> face_detector,
+    ComPtr<ISoftwareBitmapStatics> bitmap_factory,
     BitmapPixelFormat pixel_format)
     : face_detector_(std::move(face_detector)),
       bitmap_factory_(std::move(bitmap_factory)),
@@ -43,16 +52,14 @@ void FaceDetectionImplWin::Detect(const SkBitmap& bitmap,
 }
 
 HRESULT FaceDetectionImplWin::BeginDetect(const SkBitmap& bitmap) {
-  Microsoft::WRL::ComPtr<ISoftwareBitmap> win_bitmap =
-      CreateWinBitmapWithPixelFormat(bitmap, bitmap_factory_.Get(),
-                                     pixel_format_);
+  ComPtr<ISoftwareBitmap> win_bitmap = CreateWinBitmapWithPixelFormat(
+      bitmap, bitmap_factory_.Get(), pixel_format_);
   if (!win_bitmap)
     return E_FAIL;
 
   // Detect faces asynchronously.
-  AsyncOperation<IVector<DetectedFace*>>::IAsyncOperationPtr async_op;
-  const HRESULT hr =
-      face_detector_->DetectFacesAsync(win_bitmap.Get(), &async_op);
+  ComPtr<IAsyncOperation<IVector<DetectedFace*>*>> async_op;
+  HRESULT hr = face_detector_->DetectFacesAsync(win_bitmap.Get(), &async_op);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Detect faces asynchronously failed: "
                 << logging::SystemErrorCodeToString(hr);
@@ -62,26 +69,28 @@ HRESULT FaceDetectionImplWin::BeginDetect(const SkBitmap& bitmap) {
   // Use WeakPtr to bind the callback so that the once callback will not be run
   // if this object has been already destroyed. |win_bitmap| needs to be kept
   // alive until OnFaceDetected().
-  return AsyncOperation<IVector<DetectedFace*>>::BeginAsyncOperation(
+  hr = base::win::PostAsyncResults(
+      std::move(async_op),
       base::BindOnce(&FaceDetectionImplWin::OnFaceDetected,
-                     weak_factory_.GetWeakPtr(), std::move(win_bitmap)),
-      std::move(async_op));
+                     weak_factory_.GetWeakPtr(), std::move(win_bitmap)));
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "PostAsyncResults failed: "
+                << logging::SystemErrorCodeToString(hr);
+    return hr;
+  }
+
+  return hr;
 }
 
 std::vector<mojom::FaceDetectionResultPtr>
 FaceDetectionImplWin::BuildFaceDetectionResult(
-    AsyncOperation<IVector<DetectedFace*>>::IAsyncOperationPtr async_op) {
+    ComPtr<IVector<DetectedFace*>> detected_face) {
   std::vector<mojom::FaceDetectionResultPtr> results;
-  Microsoft::WRL::ComPtr<IVector<DetectedFace*>> detected_face;
-  HRESULT hr = async_op ? async_op->GetResults(&detected_face) : E_FAIL;
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "GetResults failed: "
-                << logging::SystemErrorCodeToString(hr);
+  if (!detected_face)
     return results;
-  }
 
   uint32_t count;
-  hr = detected_face->get_Size(&count);
+  HRESULT hr = detected_face->get_Size(&count);
   if (FAILED(hr)) {
     DLOG(ERROR) << "get_Size failed: " << logging::SystemErrorCodeToString(hr);
     return results;
@@ -89,7 +98,7 @@ FaceDetectionImplWin::BuildFaceDetectionResult(
 
   results.reserve(count);
   for (uint32_t i = 0; i < count; i++) {
-    Microsoft::WRL::ComPtr<IDetectedFace> face;
+    ComPtr<IDetectedFace> face;
     hr = detected_face->GetAt(i, &face);
     if (FAILED(hr))
       break;
@@ -110,10 +119,10 @@ FaceDetectionImplWin::BuildFaceDetectionResult(
 // |win_bitmap| is passed here so that it is kept alive until the AsyncOperation
 // completes because DetectFacesAsync does not hold a reference.
 void FaceDetectionImplWin::OnFaceDetected(
-    Microsoft::WRL::ComPtr<ISoftwareBitmap> /* win_bitmap */,
-    AsyncOperation<IVector<DetectedFace*>>::IAsyncOperationPtr async_op) {
+    ComPtr<ISoftwareBitmap> /* win_bitmap */,
+    ComPtr<IVector<DetectedFace*>> result) {
   std::move(detected_face_callback_)
-      .Run(BuildFaceDetectionResult(std::move(async_op)));
+      .Run(BuildFaceDetectionResult(std::move(result)));
   binding_->ResumeIncomingMethodCallProcessing();
 }
 

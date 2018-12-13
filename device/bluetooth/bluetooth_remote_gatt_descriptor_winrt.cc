@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/post_async_results.h"
 #include "base/win/winrt_storage_util.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
 #include "device/bluetooth/event_utils_winrt.h"
@@ -119,7 +120,7 @@ void BluetoothRemoteGattDescriptorWinrt::ReadRemoteDescriptor(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(read_value_op),
       base::BindOnce(&BluetoothRemoteGattDescriptorWinrt::OnReadValue,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -186,7 +187,7 @@ void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(write_value_op),
       base::BindOnce(
           &BluetoothRemoteGattDescriptorWinrt::OnWriteValueWithResult,

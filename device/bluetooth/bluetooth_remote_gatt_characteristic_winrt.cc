@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/post_async_results.h"
 #include "base/win/winrt_storage_util.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -176,7 +177,7 @@ void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(read_value_op),
       base::BindOnce(&BluetoothRemoteGattCharacteristicWinrt::OnReadValue,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -257,10 +258,11 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteRemoteCharacteristic(
     return;
   }
 
-  hr = PostAsyncResults(std::move(write_value_op),
-                        base::BindOnce(&BluetoothRemoteGattCharacteristicWinrt::
-                                           OnWriteValueWithResultAndOption,
-                                       weak_ptr_factory_.GetWeakPtr()));
+  hr = base::win::PostAsyncResults(
+      std::move(write_value_op),
+      base::BindOnce(&BluetoothRemoteGattCharacteristicWinrt::
+                         OnWriteValueWithResultAndOption,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   if (FAILED(hr)) {
     VLOG(2) << "PostAsyncResults failed: "
@@ -341,7 +343,8 @@ bool BluetoothRemoteGattCharacteristicWinrt::WriteWithoutResponse(
 
   // While we are ignoring the response, we still post the async_op in order to
   // extend its lifetime until the operation has completed.
-  hr = PostAsyncResults(std::move(write_value_op), base::DoNothing());
+  hr =
+      base::win::PostAsyncResults(std::move(write_value_op), base::DoNothing());
   if (FAILED(hr)) {
     VLOG(2) << "PostAsyncResults failed: "
             << logging::SystemErrorCodeToString(hr);
@@ -472,7 +475,7 @@ void BluetoothRemoteGattCharacteristicWinrt::WriteCccDescriptor(
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(write_ccc_descriptor_op),
       base::BindOnce(
           &BluetoothRemoteGattCharacteristicWinrt::OnWriteCccDescriptor,
