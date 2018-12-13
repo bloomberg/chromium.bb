@@ -11,6 +11,7 @@
 #include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/strings/sys_string_conversions.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/OCMock/OCPartialMockObject.h"
 
 static NSBundle* g_original_main_bundle = nil;
 static id g_swizzled_main_bundle = nil;
@@ -33,7 +34,8 @@ ScopedBundleSwizzlerMac::ScopedBundleSwizzlerMac() {
 
   g_original_main_bundle = [NSBundle mainBundle];
   g_swizzled_main_bundle =
-      [[OCMockObject partialMockForObject:g_original_main_bundle] retain];
+      [[OCPartialMockObject alloc] initWithObject:g_original_main_bundle];
+
   NSString* identifier = base::SysUTF8ToNSString(base::mac::BaseBundleID());
   CHECK(identifier);
   [[[g_swizzled_main_bundle stub] andReturn:identifier] bundleIdentifier];
