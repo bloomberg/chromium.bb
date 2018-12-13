@@ -1631,7 +1631,7 @@ TEST_F(ShelfLayoutManagerTest, GestureDrag) {
 
 // If swiping up on shelf ends with fling event, the app list state should
 // depends on the fling velocity.
-TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForFullscreenAppList) {
+TEST_F(ShelfLayoutManagerTest, FlingUpOnShelfForAppList) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
@@ -1740,8 +1740,7 @@ TEST_F(ShelfLayoutManagerTest, ChangeShelfAlignmentDuringAppListDragging) {
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
-TEST_F(ShelfLayoutManagerTest,
-       SwipingUpOnShelfInLaptopModeForFullscreenAppList) {
+TEST_F(ShelfLayoutManagerTest, SwipingUpOnShelfInLaptopModeForAppList) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
@@ -1752,10 +1751,8 @@ TEST_F(ShelfLayoutManagerTest,
   constexpr int kNumScrollSteps = 4;
 
   // Starts the drag from the center of the shelf's bottom.
-  gfx::Rect shelf_widget_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
-  gfx::Point start =
-      gfx::Point(shelf_widget_bounds.x() + shelf_widget_bounds.width() / 2,
-                 shelf_widget_bounds.bottom());
+  gfx::Rect shelf_bounds = GetVisibleShelfWidgetBoundsInScreen();
+  gfx::Point start = shelf_bounds.bottom_center();
   gfx::Vector2d delta;
 
   // Swiping up less than the close threshold should close the app list.
@@ -1792,10 +1789,39 @@ TEST_F(ShelfLayoutManagerTest,
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(
       app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+
+  // Closing the app list.
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  // Create a normal unmaximized window, the auto-hide shelf should be hidden.
+  aura::Window* window = CreateTestWindow();
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->Show();
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Swiping up to show the auto-hide shelf.
+  end = shelf_bounds.top_center();
+  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Swiping up on the auto-hide shelf to drag up the app list. Close the app
+  // list on drag ended since the short drag distance but keep the previous
+  // shown auto-hide shelf still visible.
+  delta.set_y(ShelfLayoutManager::kAppListDragSnapToClosedThreshold - 10);
+  end = start - delta;
+  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }
 
 // Swiping on shelf when fullscreen app list is opened should have no effect.
-TEST_F(ShelfLayoutManagerTest, SwipingOnShelfIfFullscreenAppListOpened) {
+TEST_F(ShelfLayoutManagerTest, SwipingOnShelfIfAppListOpened) {
   Shelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
   aura::Window* root_window =
