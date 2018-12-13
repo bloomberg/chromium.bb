@@ -1,0 +1,62 @@
+******** section_sizes ********
+.rodata                  6364747
+.rel.plt                 3032
+.gnu.hash                28
+.text                    38909928
+.shstrtab                452
+.data                    118728
+.gnu.version             782
+.rel.dyn                 184789
+.comment                 168
+.got                     1452
+.note.gnu.build-id       36
+.symtab                  18626064
+.gnu.version_r           96
+.got.plt                 1528
+.bss                     1089404
+.dynstr                  3947
+.note.android.ident      152
+.note.crashpad.info      28
+.ARM.extab               36860
+.fini_array              8
+.init_array              16
+.dynamic                 240
+.plt                     6096
+.strtab                  49754930
+.data.rel.ro             2013024
+.ARM.attributes          35
+
+******** raw_symbols ********
+.rodata@213200(size_without_padding=4,padding=0,full_name=,object_path=obj/v8/v8_external_snapshot/embedded.o,source_path=,flags={},num_aliases=1,component=)
+.rodata@213210(size_without_padding=32,padding=0,full_name=pmmp,object_path=obj/third_party/ffmpeg/libffmpeg_internal.a(ffmpeg_internal/fft_neon.o),source_path=,flags={},num_aliases=1,component=)
+.rodata@213230(size_without_padding=384,padding=0,full_name=std::__ndk1::(anonymous namespace)::small_primes,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(hash.o),source_path=,flags={},num_aliases=1,component=)
+.rodata@2133b0(size_without_padding=209,padding=0,full_name=std::__ndk1::ios_base::boolalpha,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(ios.o),source_path=,flags={},num_aliases=1,component=)
+.rodata@213490(size_without_padding=45,padding=0,full_name=,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(ios.o),source_path=,flags={},num_aliases=1,component=)
+.rodata@21368b(size_without_padding=2897806,padding=0,full_name=** lld merge strings,object_path=,source_path=,flags={},num_aliases=1,component=)
+.rodata@4d6e20(size_without_padding=27,padding=0,full_name=typeinfo name for std::__ndk1::__stdinbuf<wchar_t>,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(iostream.o),source_path=,flags={},num_aliases=1,component=)
+.rodata@4d7920(size_without_padding=9836,padding=0,full_name=** lld merge strings,object_path=,source_path=,flags={},num_aliases=1,component=)
+.rodata@4d9f90(size_without_padding=24,padding=0,full_name=typeinfo name for std::__ndk1::ctype_base,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(locale.o),source_path=,flags={},num_aliases=1,component=)
+.rodata@4d9fb0(size_without_padding=26,padding=0,full_name=typeinfo name for std::__ndk1::codecvt_base,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(locale.o),source_path=,flags={},num_aliases=1,component=)
+.rodata@503eb3(size_without_padding=1,padding=0,full_name=network::mojom::CookieManagerProxy_SetCanonicalCookie_Message::kMessageTag,object_path=,source_path=,flags={},num_aliases=1,component=)
+.rodata@503eb4(size_without_padding=1,padding=0,full_name=network::mojom::CookieManagerProxy_DeleteCanonicalCookie_Message::kMessageTag,object_path=,source_path=,flags={},num_aliases=1,component=)
+.text@82f000(size_without_padding=3292,padding=0,full_name=ChaCha20_ctr32,object_path=obj/third_party/boringssl/boringssl_asm/chacha-armv4.o,source_path=,flags={},num_aliases=1,component=)
+.text@82fce0(size_without_padding=4876,padding=0,full_name=AES_Te,object_path=obj/third_party/boringssl/boringssl_asm/aes-armv4.o,source_path=,flags={},num_aliases=1,component=)
+.text@831000(size_without_padding=2600,padding=0,full_name=aes_hw_set_encrypt_key,object_path=obj/third_party/boringssl/boringssl_asm/aesv8-armx32.o,source_path=,flags={},num_aliases=1,component=)
+.text@83c640(size_without_padding=1289952,padding=0,full_name=,object_path=obj/v8/v8_external_snapshot/embedded.o,source_path=,flags={},num_aliases=1,component=)
+.text@977520(size_without_padding=24,padding=0,full_name=,object_path=obj/third_party/blink/renderer/platform/heap/asm/asm/SaveRegisters_arm.o,source_path=,flags={},num_aliases=1,component=)
+.text@97c834(size_without_padding=1244,padding=0,full_name=vpx_convolve8_avg_horiz_filter_type1_neon,object_path=obj/third_party/libvpx/libvpx_assembly_arm.a(libvpx_assembly_arm/vpx_convolve8_avg_horiz_filter_type1_neon.asm.o),source_path=,flags={},num_aliases=1,component=)
+.text@99cad8(size_without_padding=252,padding=0,full_name=sinhl,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libandroid_support.a(e_sinh.o),source_path=,flags={},num_aliases=1,component=)
+.text@1401788(size_without_padding=164,padding=0,full_name=$_21::operator()(FamilyData*, char const*, char const**) const,object_path=,source_path=,flags={},num_aliases=1,component=)
+.data@2d4c000(size_without_padding=4,padding=0,full_name=,object_path=obj/v8/v8_external_snapshot/embedded.o,source_path=,flags={},num_aliases=1,component=)
+.data@2d4c004(size_without_padding=4,padding=0,full_name=__dso_handle,object_path=../../third_party/android_ndk/platforms/android-16/arch-arm/usr/lib/crtbegin_so.o,source_path=,flags={},num_aliases=1,component=)
+.data.rel.ro@2d69000(size_without_padding=60,padding=0,full_name=fft_tab_vfp,object_path=obj/third_party/ffmpeg/libffmpeg_internal.a(ffmpeg_internal/fft_vfp.o),source_path=,flags={},num_aliases=1,component=)
+.data.rel.ro@2d6903c(size_without_padding=60,padding=0,full_name=fft_tab_neon,object_path=obj/third_party/ffmpeg/libffmpeg_internal.a(ffmpeg_internal/fft_neon.o),source_path=,flags={},num_aliases=1,component=)
+.data.rel.ro@2d69078(size_without_padding=64,padding=0,full_name=vtable for std::__ndk1::basic_streambuf<wchar_t, std::__ndk1::char_traits<wchar_t> >,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(ios.o),source_path=,flags={},num_aliases=1,component=)
+.data.rel.ro@2d690b8(size_without_padding=40,padding=0,full_name=vtable for std::__ndk1::basic_istream<char, std::__ndk1::char_traits<char> >,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(ios.o),source_path=,flags={},num_aliases=1,component=)
+.data.rel.ro@2d690e0(size_without_padding=40,padding=0,full_name=vtable for std::__ndk1::basic_istream<wchar_t, std::__ndk1::char_traits<wchar_t> >,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(ios.o),source_path=,flags={},num_aliases=1,component=)
+.data.rel.ro@2d69108(size_without_padding=40,padding=0,full_name=vtable for std::__ndk1::basic_ostream<char, std::__ndk1::char_traits<char> >,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(ios.o),source_path=,flags={},num_aliases=1,component=)
+.data.rel.ro@2d69130(size_without_padding=40,padding=0,full_name=vtable for std::__ndk1::basic_ostream<wchar_t, std::__ndk1::char_traits<wchar_t> >,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(ios.o),source_path=,flags={},num_aliases=1,component=)
+.data.rel.ro@2d69158(size_without_padding=104,padding=0,full_name=vtable for std::__ndk1::__iostream_category,object_path=../../third_party/android_ndk/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_static.a(ios.o),source_path=,flags={},num_aliases=1,component=)
+.bss@2f56000(size_without_padding=4,padding=0,full_name=WebRtcSpl_CrossCorrelation,object_path=,source_path=,flags={},num_aliases=1,component=)
+.bss@2f56004(size_without_padding=4,padding=0,full_name=WebRtcSpl_DownsampleFast,object_path=,source_path=,flags={},num_aliases=1,component=)
+.bss@2f56008(size_without_padding=4,padding=0,full_name=WebRtcSpl_MaxAbsValueW16,object_path=,source_path=,flags={},num_aliases=1,component=)
