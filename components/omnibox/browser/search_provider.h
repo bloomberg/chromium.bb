@@ -412,7 +412,7 @@ class SearchProvider : public BaseSearchProvider,
   SearchSuggestionParser::Results keyword_results_;
 
   // The top query suggestion, left blank if none.
-  base::string16 top_query_suggestion_match_contents_;
+  base::string16 top_query_suggestion_fill_into_edit_;
   // The top navigation suggestion, left blank/invalid if none.
   GURL top_navigation_suggestion_;
 

@@ -210,10 +210,8 @@ void SearchProvider::UpdateOldResults(
         ++sug_it;
       }
     }
-    for (auto nav_it = results->navigation_results.begin();
-         nav_it != results->navigation_results.end(); ++nav_it) {
-      nav_it->set_received_after_last_keystroke(false);
-    }
+    for (auto& navigation_result : results->navigation_results)
+      navigation_result.set_received_after_last_keystroke(false);
   }
 }
 
@@ -463,14 +461,10 @@ void SearchProvider::ClearAllResults() {
 void SearchProvider::UpdateMatchContentsClass(
     const base::string16& input_text,
     SearchSuggestionParser::Results* results) {
-  for (auto sug_it = results->suggest_results.begin();
-       sug_it != results->suggest_results.end(); ++sug_it) {
-    sug_it->ClassifyMatchContents(false, input_text);
-  }
-  for (auto nav_it = results->navigation_results.begin();
-       nav_it != results->navigation_results.end(); ++nav_it) {
-    nav_it->CalculateAndClassifyMatchContents(false, input_text);
-  }
+  for (auto& suggest_result : results->suggest_results)
+    suggest_result.ClassifyMatchContents(false, input_text);
+  for (auto& navigation_result : results->navigation_results)
+    navigation_result.CalculateAndClassifyMatchContents(false, input_text);
 }
 
 void SearchProvider::SortResults(bool is_keyword,
@@ -595,16 +589,15 @@ void SearchProvider::EnforceConstraints() {
 }
 
 void SearchProvider::RecordTopSuggestion() {
-  top_query_suggestion_match_contents_ = base::string16();
+  top_query_suggestion_fill_into_edit_ = base::string16();
   top_navigation_suggestion_ = GURL();
   auto first_match = AutocompleteResult::FindTopMatch(matches_);
-  if ((first_match != matches_.end()) &&
-      !first_match->inline_autocompletion.empty()) {
+  if (first_match != matches_.end()) {
     // Identify if this match came from a query suggestion or a navsuggestion.
     // In either case, extracts the identifying feature of the suggestion
     // (query string or navigation url).
     if (AutocompleteMatch::IsSearchType(first_match->type))
-      top_query_suggestion_match_contents_ = first_match->contents;
+      top_query_suggestion_fill_into_edit_ = first_match->fill_into_edit;
     else
       top_navigation_suggestion_ = first_match->destination_url;
   }
@@ -828,18 +821,18 @@ void SearchProvider::PersistTopSuggestions(
   // clobbering top results, which may be used for inline autocompletion.
   // Other results don't need similar changes, because they shouldn't be
   // displayed asynchronously anyway.
-  if (!top_query_suggestion_match_contents_.empty()) {
-    for (auto sug_it = results->suggest_results.begin();
-         sug_it != results->suggest_results.end(); ++sug_it) {
-      if (sug_it->match_contents() == top_query_suggestion_match_contents_)
-        sug_it->set_received_after_last_keystroke(false);
+  if (!top_query_suggestion_fill_into_edit_.empty()) {
+    for (auto& suggest_result : results->suggest_results) {
+      if (GetFillIntoEdit(suggest_result, providers_.GetKeywordProviderURL()) ==
+          top_query_suggestion_fill_into_edit_) {
+        suggest_result.set_received_after_last_keystroke(false);
+      }
     }
   }
   if (top_navigation_suggestion_.is_valid()) {
-    for (auto nav_it = results->navigation_results.begin();
-         nav_it != results->navigation_results.end(); ++nav_it) {
-      if (nav_it->url() == top_navigation_suggestion_)
-        nav_it->set_received_after_last_keystroke(false);
+    for (auto& navigation_result : results->navigation_results) {
+      if (navigation_result.url() == top_navigation_suggestion_)
+        navigation_result.set_received_after_last_keystroke(false);
     }
   }
 }

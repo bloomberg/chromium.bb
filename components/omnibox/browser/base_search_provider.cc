@@ -293,8 +293,6 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       (base::CollapseWhitespace(input_lower, false) ==
        base::i18n::ToLower(suggestion.match_contents()));
 
-  if (suggestion.from_keyword_provider())
-    match.fill_into_edit.append(match.keyword + base::char16(' '));
   // We only allow inlinable navsuggestions that were received before the
   // last keystroke because we don't want asynchronous inline autocompletions.
   if (!input.prevent_inline_autocomplete() &&
@@ -312,13 +310,12 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   DCHECK(search_url.SupportsReplacement(search_terms_data));
   base::string16 query(suggestion.suggestion());
   base::string16 original_query(input.text());
-  base::string16 fill_into_edit(suggestion.suggestion());
   if (suggestion.type() == AutocompleteMatchType::CALCULATOR) {
     // Use query text, rather than the calculator answer suggestion, to search.
     query = original_query;
     original_query.clear();
   }
-  match.fill_into_edit.append(fill_into_edit);
+  match.fill_into_edit = GetFillIntoEdit(suggestion, template_url);
   match.search_terms_args.reset(new TemplateURLRef::SearchTermsArgs(query));
   match.search_terms_args->original_query = original_query;
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
@@ -337,6 +334,20 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       ui::PAGE_TRANSITION_KEYWORD : ui::PAGE_TRANSITION_GENERATED;
 
   return match;
+}
+
+// static
+base::string16 BaseSearchProvider::GetFillIntoEdit(
+    const SearchSuggestionParser::SuggestResult& suggest_result,
+    const TemplateURL* template_url) {
+  base::string16 fill_into_edit;
+
+  if (suggest_result.from_keyword_provider())
+    fill_into_edit.append(template_url->keyword() + base::char16(' '));
+
+  fill_into_edit.append(suggest_result.suggestion());
+
+  return fill_into_edit;
 }
 
 // static
