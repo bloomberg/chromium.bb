@@ -785,7 +785,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_byte.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_angle'], bug=716496)
-    self.Fail('conformance/uniforms/uniform-samplers-test.html',
+    self.Skip('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')],
         bug=610951)
     self.Fail('WebglExtension_EXT_sRGB',
@@ -842,7 +842,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'copy-tex-image-and-sub-image-2d.html',
         ['android', ('qualcomm', 'Adreno (TM) 420'), 'no_passthrough'],
         bug=499555)
-    self.Fail('conformance/uniforms/uniform-samplers-test.html',
+    self.Skip('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 430')],
         bug=663071)
     self.Fail('conformance/offscreencanvas/' +
@@ -880,18 +880,18 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Android ANGLE GLES
     # Video tests time out
-    self.Fail('conformance/textures/image_bitmap_from_video/*',
+    self.Skip('conformance/textures/image_bitmap_from_video/*',
         ['android', 'opengles'], bug=906724)
-    self.Fail('conformance/textures/misc/' +
+    self.Skip('conformance/textures/misc/' +
         'tex-video-using-tex-unit-non-zero.html',
         ['android', 'opengles'], bug=906724)
-    self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
+    self.Skip('conformance/textures/misc/texture-corner-case-videos.html',
         ['android', 'opengles'], bug=906724)
-    self.Fail('conformance/textures/misc/texture-npot-video.html',
+    self.Skip('conformance/textures/misc/texture-npot-video.html',
         ['android', 'opengles'], bug=906724)
-    self.Fail('conformance/textures/misc/texture-upload-size.html',
+    self.Skip('conformance/textures/misc/texture-upload-size.html',
         ['android', 'opengles'], bug=906724)
-    self.Fail('conformance/textures/video/*',
+    self.Skip('conformance/textures/video/*',
         ['android', 'opengles'], bug=906724)
 
     # Canvas tests fail with missing fonts
