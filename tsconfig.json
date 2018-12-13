@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     /* Basic Options */
-    "target": "ES2017",                       /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
-    "module": "commonjs",                     /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
+    "target": "ES2017",
+    "module": "commonjs",
     "outDir": "./out",
 
     /* Strict Type-Checking Options */
@@ -20,9 +20,10 @@
 
     /* Module Resolution Options */
     "esModuleInterop": true,
+    "baseUrl": "src/",
+    "paths": {
+      "framework": ["node_modules/framework/index"],
+      "framework/*": ["node_modules/framework/*"],
+    }
   },
-  "include": [
-    "cts/**/*",
-    "cts/node_modules/**/*"
-  ],
 }
