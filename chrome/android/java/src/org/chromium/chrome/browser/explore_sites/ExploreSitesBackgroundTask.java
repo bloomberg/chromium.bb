@@ -10,6 +10,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask.StartBeforeNativeResult;
 import org.chromium.chrome.browser.offlinepages.DeviceConditions;
@@ -70,6 +71,9 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
         mTaskFinishedCallback = callback;
         ExploreSitesBridge.updateCatalogFromNetwork(getProfile(), false /*isImmediateFetch*/,
                 (ignored) -> mTaskFinishedCallback.taskFinished(false));
+        RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
+                ExploreSitesEnums.CatalogUpdateRequestSource.BACKGROUND,
+                ExploreSitesEnums.CatalogUpdateRequestSource.COUNT);
     }
 
     @Override

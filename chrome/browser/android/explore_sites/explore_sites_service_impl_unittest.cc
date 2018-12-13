@@ -96,6 +96,7 @@ class ExploreSitesServiceImplTest : public testing::Test {
   std::string CreateBadTestDataProto();
 
   void SimulateFetcherData(const std::string& response_data);
+  void SimulateFetchFailure();
 
   const base::HistogramTester* histograms() const {
     return histogram_tester_.get();
@@ -159,6 +160,16 @@ void ExploreSitesServiceImplTest::SimulateFetcherData(
   DCHECK(test_url_loader_factory_.pending_requests()->size() > 0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       GetLastPendingRequest()->request.url.spec(), response_data, net::HTTP_OK,
+      network::TestURLLoaderFactory::kMostRecentMatch);
+}
+
+// Called by tests - Will return a http failure.
+void ExploreSitesServiceImplTest::SimulateFetchFailure() {
+  PumpLoop();
+
+  DCHECK(test_url_loader_factory_.pending_requests()->size() > 0);
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      GetLastPendingRequest()->request.url.spec(), "", net::HTTP_BAD_REQUEST,
       network::TestURLLoaderFactory::kMostRecentMatch);
 }
 
@@ -355,6 +366,10 @@ TEST_F(ExploreSitesServiceImplTest, UpdateCatalogFromNetwork) {
   PumpLoop();
 
   ValidateTestCatalog();
+
+  histograms()->ExpectBucketCount(
+      "ExploreSites.CatalogRequestResult",
+      ExploreSitesCatalogUpdateRequestResult::kNewCatalog, 1);
 }
 
 TEST_F(ExploreSitesServiceImplTest, MultipleUpdateCatalogFromNetwork) {
@@ -430,6 +445,40 @@ TEST_F(ExploreSitesServiceImplTest, GetCachedCatalogFromNetwork) {
   PumpLoop();
 
   ValidateTestCatalog();
+}
+
+TEST_F(ExploreSitesServiceImplTest, UpdateCatalogReturnsNoProtobuf) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
+
+  // Pretend that a catalog has been fetched and returns with an empty protobuf.
+  std::unique_ptr<std::string> empty_serialized_protobuf;
+  service()->OnCatalogFetchedForTest(ExploreSitesRequestStatus::kSuccess,
+                                     std::move(empty_serialized_protobuf));
+
+  histograms()->ExpectBucketCount(
+      "ExploreSites.CatalogRequestResult",
+      ExploreSitesCatalogUpdateRequestResult::kExistingCatalogIsCurrent, 1);
+}
+
+TEST_F(ExploreSitesServiceImplTest, FailedCatalogFetch) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
+
+  service()->UpdateCatalogFromNetwork(
+      true /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+
+  // Simulate fetching using the test loader factory and test data.
+  SimulateFetchFailure();
+
+  // Wait for callback to get called.
+  PumpLoop();
+
+  histograms()->ExpectBucketCount(
+      "ExploreSites.CatalogRequestResult",
+      ExploreSitesCatalogUpdateRequestResult::kFailure, 1);
 }
 
 TEST_F(ExploreSitesServiceImplTest, BadCatalogHistograms) {

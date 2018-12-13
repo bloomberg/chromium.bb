@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -165,6 +166,9 @@ public class ExploreSitesPage extends BasicNativePage {
             mHasFetchedNetworkCatalog = true;
             ExploreSitesBridge.updateCatalogFromNetwork(
                     mProfile, /* isImmediateFetch =*/true, this::onUpdatedCatalog);
+            RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
+                    ExploreSitesEnums.CatalogUpdateRequestSource.EXPLORE_SITES_PAGE,
+                    ExploreSitesEnums.CatalogUpdateRequestSource.COUNT);
             return;
         }
         mModel.set(STATUS_KEY, CatalogLoadingState.SUCCESS);
