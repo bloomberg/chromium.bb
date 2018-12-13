@@ -225,6 +225,7 @@ void TranslateInternalsHandler::SendPrefsToJs() {
       translate::TranslatePrefs::kPrefTranslateAcceptedCount,
       translate::TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage,
       translate::TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage,
+      prefs::kAcceptLanguages,
   };
   for (const char* key : keys) {
     const PrefService::Preference* pref = prefs->FindPreference(key);
