@@ -13,12 +13,12 @@ var importer;
 importer.ImportRunner = function() {};
 
 /**
- * Imports all media identified by scanResult.
+ * Imports all media identified by a scanResult.
  *
  * @param {!importer.ScanResult} scanResult
  * @param {!importer.Destination} destination
  * @param {!Promise<!DirectoryEntry>} directoryPromise
  *
- * @return {!importer.MediaImportHandler.ImportTask} The resulting import task.
+ * @return {!importer.MediaImportHandler.ImportTask} The media import task.
  */
 importer.ImportRunner.prototype.importFromScanResult;

@@ -87,6 +87,7 @@ js_library("closure_compile_externs") {
     "../../../externs/background/file_operation_manager.js",
     "../../../externs/background/import_history.js",
     "../../../externs/background/import_runner.js",
+    "../../../externs/background/media_import_handler.js",
     "../../../externs/background/media_scanner.js",
     "../../../externs/background/progress_center.js",
     "../../../externs/background_window.js",

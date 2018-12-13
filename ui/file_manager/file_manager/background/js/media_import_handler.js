@@ -11,11 +11,11 @@ var importer = importer || {};
  * @constructor
  * @implements {importer.ImportRunner}
  * @struct
- *
  * @param {!ProgressCenter} progressCenter
  * @param {!importer.HistoryLoader} historyLoader
  * @param {!importer.DispositionChecker.CheckerFunction} dispositionChecker
  * @param {!DriveSyncHandler} driveSyncHandler
+ * @return undefined
  */
 importer.MediaImportHandler = function(
     progressCenter, historyLoader, dispositionChecker, driveSyncHandler) {
@@ -222,19 +222,20 @@ importer.MediaImportHandler.prototype.onFileImported_ =
  * @constructor
  * @extends {importer.TaskQueue.BaseTask}
  * @struct
- *
  * @param {string} taskId
  * @param {!importer.HistoryLoader} historyLoader
  * @param {!importer.ScanResult} scanResult
  * @param {!Promise<!DirectoryEntry>} directoryPromise
  * @param {!importer.Destination} destination The logical destination.
  * @param {!importer.DispositionChecker.CheckerFunction} dispositionChecker
+ * @return undefined
  */
 importer.MediaImportHandler.ImportTask = function(
     taskId, historyLoader, scanResult, directoryPromise, destination,
     dispositionChecker) {
-
+  /** @extends {importer.TaskQueue.BaseTask} */
   importer.TaskQueue.BaseTask.call(this, taskId);
+
   /** @protected {string} */
   this.taskId_ = taskId;
 
@@ -258,7 +259,8 @@ importer.MediaImportHandler.ImportTask = function(
 
   /**
    * Number of duplicate files found by the content hash check.
-   * @private {number} */
+   * @private {number}
+   */
   this.duplicateFilesCount_ = 0;
 
   /** @private {number} */
@@ -278,12 +280,14 @@ importer.MediaImportHandler.ImportTask = function(
 
   /**
    * The entries to be imported.
-   * @private {!Array<!FileEntry>} */
+   * @private {!Array<!FileEntry>}
+   */
   this.importEntries_ = [];
 
   /**
    * The failed entries.
-   * @private {!Array<!FileEntry>} */
+   * @private {!Array<!FileEntry>}
+   */
   this.failedEntries_ = [];
 
   /**
