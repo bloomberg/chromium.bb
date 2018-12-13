@@ -33,7 +33,10 @@ void AppManagementPageHandler::GetApps() {
   std::vector<app_management::mojom::AppPtr> apps;
   proxy->Cache().ForEachApp([&apps](const apps::AppUpdate& update) {
     apps.push_back(app_management::mojom::App::New(
-        update.AppId(), update.AppType(), update.Name()));
+        update.AppId(), update.AppType(), update.Name(),
+        base::nullopt /*description*/,
+        apps::mojom::OptionalBool::kUnknown /*is_pinned*/,
+        base::nullopt /*version*/, base::nullopt /*size*/));
   });
   page_->OnAppsAdded(std::move(apps));
 }
@@ -46,5 +49,8 @@ void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
   }
 
   page_->OnAppChanged(app_management::mojom::App::New(
-      update.AppId(), update.AppType(), update.Name()));
+      update.AppId(), update.AppType(), update.Name(),
+      base::nullopt /*description*/,
+      apps::mojom::OptionalBool::kUnknown /*is_pinned*/,
+      base::nullopt /*version*/, base::nullopt /*size*/));
 }
