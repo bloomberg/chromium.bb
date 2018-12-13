@@ -30,7 +30,6 @@ class BrowserContext;
 }  // namespace content
 
 namespace views {
-class AccessibilityAlertWindow;
 class AXAuraObjWrapper;
 class View;
 }  // namespace views
@@ -102,8 +101,6 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   std::vector<std::pair<views::AXAuraObjWrapper*, ax::mojom::Event>>
       pending_events_;
-
-  std::unique_ptr<views::AccessibilityAlertWindow> alert_window_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationManagerAura);
 };
