@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -482,11 +483,40 @@ class RemoveFaviconTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveFaviconTester);
 };
 
+// Custom ProtocolHandlerRegistry delegate that doesn't change any OS settings.
+class FakeProtocolHandlerRegistryDelegate
+    : public ProtocolHandlerRegistry::Delegate {
+ public:
+  ~FakeProtocolHandlerRegistryDelegate() override = default;
+
+  void RegisterExternalHandler(const std::string& protocol) override {
+    registered_protocols_.insert(protocol);
+  }
+
+  void DeregisterExternalHandler(const std::string& protocol) override {
+    registered_protocols_.erase(protocol);
+  }
+
+  bool IsExternalHandlerRegistered(const std::string& protocol) override {
+    return registered_protocols_.count(protocol);
+  }
+
+  void RegisterWithOSAsDefaultClient(
+      const std::string& protocol,
+      ProtocolHandlerRegistry* registry) override {}
+
+  void CheckDefaultClientWithOS(const std::string& protocol,
+                                ProtocolHandlerRegistry* registry) override {}
+
+ private:
+  std::set<std::string> registered_protocols_;
+};
+
 std::unique_ptr<KeyedService> BuildProtocolHandlerRegistry(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   return std::make_unique<ProtocolHandlerRegistry>(
-      profile, new ProtocolHandlerRegistry::Delegate());
+      profile, new FakeProtocolHandlerRegistryDelegate());
 }
 
 class ClearDomainReliabilityTester {
