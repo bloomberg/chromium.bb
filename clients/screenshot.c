@@ -45,11 +45,6 @@
  * the compositor and serves as a test bed for implementing client
  * side marshalling outside libwayland.so */
 
-static struct wl_shm *shm;
-static struct weston_screenshooter *screenshooter;
-static struct wl_list output_list;
-int min_x, min_y, max_x, max_y;
-int buffer_copy_done;
 
 struct screenshooter_output {
 	struct wl_output *output;
@@ -58,6 +53,22 @@ struct screenshooter_output {
 	void *data;
 	struct wl_list link;
 };
+
+struct buffer_size {
+	int width, height;
+
+	int min_x, min_y;
+	int max_x, max_y;
+};
+
+struct screenshooter_data {
+	struct wl_shm *shm;
+	struct wl_list output_list;
+
+	struct weston_screenshooter *screenshooter;
+	int buffer_copy_done;
+};
+
 
 static void
 display_handle_geometry(void *data,
@@ -107,7 +118,8 @@ static const struct wl_output_listener output_listener = {
 static void
 screenshot_done(void *data, struct weston_screenshooter *screenshooter)
 {
-	buffer_copy_done = 1;
+	struct screenshooter_data *sh_data = data;
+	sh_data->buffer_copy_done = 1;
 }
 
 static const struct weston_screenshooter_listener screenshooter_listener = {
@@ -119,19 +131,20 @@ handle_global(void *data, struct wl_registry *registry,
 	      uint32_t name, const char *interface, uint32_t version)
 {
 	static struct screenshooter_output *output;
+	struct screenshooter_data *sh_data = data;
 
 	if (strcmp(interface, "wl_output") == 0) {
 		output = xmalloc(sizeof *output);
 		output->output = wl_registry_bind(registry, name,
 						  &wl_output_interface, 1);
-		wl_list_insert(&output_list, &output->link);
+		wl_list_insert(&sh_data->output_list, &output->link);
 		wl_output_add_listener(output->output, &output_listener, output);
 	} else if (strcmp(interface, "wl_shm") == 0) {
-		shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
+		sh_data->shm = wl_registry_bind(registry, name, &wl_shm_interface, 1);
 	} else if (strcmp(interface, "weston_screenshooter") == 0) {
-		screenshooter = wl_registry_bind(registry, name,
-						 &weston_screenshooter_interface,
-						 1);
+		sh_data->screenshooter = wl_registry_bind(registry, name,
+							  &weston_screenshooter_interface,
+							  1);
 	}
 }
 
@@ -147,7 +160,8 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 static struct wl_buffer *
-create_shm_buffer(int width, int height, void **data_out)
+screenshot_create_shm_buffer(int width, int height, void **data_out,
+			     struct wl_shm *shm)
 {
 	struct wl_shm_pool *pool;
 	struct wl_buffer *buffer;
@@ -183,7 +197,8 @@ create_shm_buffer(int width, int height, void **data_out)
 }
 
 static void
-write_png(int width, int height)
+screenshot_write_png(const struct buffer_size *buff_size,
+		     struct wl_list *output_list)
 {
 	int output_stride, buffer_stride, i;
 	cairo_surface_t *surface;
@@ -192,17 +207,17 @@ write_png(int width, int height)
 	FILE *fp;
 	char filepath[PATH_MAX];
 
-	buffer_stride = width * 4;
+	buffer_stride = buff_size->width * 4;
 
-	data = xmalloc(buffer_stride * height);
+	data = xmalloc(buffer_stride * buff_size->height);
 	if (!data)
 		return;
 
-	wl_list_for_each_safe(output, next, &output_list, link) {
+	wl_list_for_each_safe(output, next, output_list, link) {
 		output_stride = output->width * 4;
 		s = output->data;
-		d = data + (output->offset_y - min_y) * buffer_stride +
-			   (output->offset_x - min_x) * 4;
+		d = data + (output->offset_y - buff_size->min_y) * buffer_stride +
+			   (output->offset_x - buff_size->min_x) * 4;
 
 		for (i = 0; i < output->height; i++) {
 			memcpy(d, s, output_stride);
@@ -215,7 +230,9 @@ write_png(int width, int height)
 
 	surface = cairo_image_surface_create_for_data(data,
 						      CAIRO_FORMAT_ARGB32,
-						      width, height, buffer_stride);
+						      buff_size->width,
+						      buff_size->height,
+						      buffer_stride);
 
 	fp = file_create_dated(getenv("XDG_PICTURES_DIR"), "wayland-screenshot-",
 			       ".png", filepath, sizeof(filepath));
@@ -228,30 +245,33 @@ write_png(int width, int height)
 }
 
 static int
-set_buffer_size(int *width, int *height)
+screenshot_set_buffer_size(struct buffer_size *buff_size, struct wl_list *output_list)
 {
 	struct screenshooter_output *output;
-	min_x = min_y = INT_MAX;
-	max_x = max_y = INT_MIN;
+	buff_size->min_x = buff_size->min_y = INT_MAX;
+	buff_size->max_x = buff_size->max_y = INT_MIN;
 	int position = 0;
 
-	wl_list_for_each_reverse(output, &output_list, link) {
+	wl_list_for_each_reverse(output, output_list, link) {
 		output->offset_x = position;
 		position += output->width;
 	}
 
-	wl_list_for_each(output, &output_list, link) {
-		min_x = MIN(min_x, output->offset_x);
-		min_y = MIN(min_y, output->offset_y);
-		max_x = MAX(max_x, output->offset_x + output->width);
-		max_y = MAX(max_y, output->offset_y + output->height);
+	wl_list_for_each(output, output_list, link) {
+		buff_size->min_x = MIN(buff_size->min_x, output->offset_x);
+		buff_size->min_y = MIN(buff_size->min_y, output->offset_y);
+		buff_size->max_x =
+			MAX(buff_size->max_x, output->offset_x + output->width);
+		buff_size->max_y =
+			MAX(buff_size->max_y, output->offset_y + output->height);
 	}
 
-	if (max_x <= min_x || max_y <= min_y)
+	if (buff_size->max_x <= buff_size->min_x ||
+	    buff_size->max_y <= buff_size->min_y)
 		return -1;
 
-	*width = max_x - min_x;
-	*height = max_y - min_y;
+	buff_size->width = buff_size->max_x - buff_size->min_x;
+	buff_size->height = buff_size->max_y - buff_size->min_y;
 
 	return 0;
 }
@@ -261,7 +281,8 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	struct wl_registry *registry;
 	struct screenshooter_output *output;
-	int width, height;
+	struct buffer_size buff_size = {};
+	struct screenshooter_data sh_data = {};
 
 	if (getenv("WAYLAND_SOCKET") == NULL) {
 		fprintf(stderr, "%s must be launched by weston.\n"
@@ -276,35 +297,39 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	wl_list_init(&output_list);
+	wl_list_init(&sh_data.output_list);
 	registry = wl_display_get_registry(display);
-	wl_registry_add_listener(registry, &registry_listener, NULL);
+	wl_registry_add_listener(registry, &registry_listener, &sh_data);
 	wl_display_dispatch(display);
 	wl_display_roundtrip(display);
-	if (screenshooter == NULL) {
+	if (sh_data.screenshooter == NULL) {
 		fprintf(stderr, "display doesn't support screenshooter\n");
 		return -1;
 	}
 
-	weston_screenshooter_add_listener(screenshooter,
+	weston_screenshooter_add_listener(sh_data.screenshooter,
 					  &screenshooter_listener,
-					  screenshooter);
+					  &sh_data);
 
-	if (set_buffer_size(&width, &height))
+	if (screenshot_set_buffer_size(&buff_size, &sh_data.output_list))
 		return -1;
 
 
-	wl_list_for_each(output, &output_list, link) {
-		output->buffer = create_shm_buffer(output->width, output->height, &output->data);
-		weston_screenshooter_shoot(screenshooter,
+	wl_list_for_each(output, &sh_data.output_list, link) {
+		output->buffer =
+			screenshot_create_shm_buffer(output->width,
+						     output->height,
+						     &output->data,
+						     sh_data.shm);
+		weston_screenshooter_shoot(sh_data.screenshooter,
 					   output->output,
 					   output->buffer);
-		buffer_copy_done = 0;
-		while (!buffer_copy_done)
+		sh_data.buffer_copy_done = 0;
+		while (!sh_data.buffer_copy_done)
 			wl_display_roundtrip(display);
 	}
 
-	write_png(width, height);
+	screenshot_write_png(&buff_size, &sh_data.output_list);
 
 	return 0;
 }
