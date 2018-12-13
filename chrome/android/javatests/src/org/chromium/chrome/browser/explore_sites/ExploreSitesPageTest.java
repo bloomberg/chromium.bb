@@ -116,6 +116,20 @@ public class ExploreSitesPageTest {
         mRenderTestRule.render(mRecyclerView, "initial_layout");
     }
 
+    @Test
+    @SmallTest
+    @Feature({"ExploreSites", "RenderTest"})
+    public void testScrollingFromNTP() throws Exception {
+        mActivityTestRule.loadUrl("about:blank");
+        ExploreSitesCategory category = getTestingCatalog().get(2);
+        mActivityTestRule.loadUrl(category.getUrl());
+        waitForEspLoaded(mTab);
+        Assert.assertTrue(mTab.getNativePage() instanceof ExploreSitesPage);
+        mEsp = (ExploreSitesPage) mTab.getNativePage();
+        mRecyclerView = mEsp.getView().findViewById(R.id.explore_sites_category_recycler);
+        mRenderTestRule.render(mRecyclerView, "scrolled_to_category_2");
+    }
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public static void waitForEspLoaded(final Tab tab) {
         CriteriaHelper.pollUiThread(new Criteria("ESP never fully loaded") {
