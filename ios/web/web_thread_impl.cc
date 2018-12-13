@@ -84,36 +84,22 @@ struct WebThreadTaskRunners {
 base::LazyInstance<WebThreadTaskRunners>::Leaky g_task_runners =
     LAZY_INSTANCE_INITIALIZER;
 
-// State of a given WebThread::ID.
-enum WebThreadState {
-  // WebThread::ID does not exist.
-  UNINITIALIZED = 0,
-  // WebThread::ID is associated with a WebThreadImpl instance but the
-  // underlying thread hasn't started yet.
-  INITIALIZED,
-  // WebThread::ID is associated to a TaskRunner and is accepting tasks.
-  RUNNING,
-  // WebThread::ID no longer accepts tasks.
-  SHUTDOWN,
-};
-
 using WebThreadDelegateAtomicPtr = base::subtle::AtomicWord;
 
 struct WebThreadGlobals {
   WebThreadGlobals() {
+    memset(threads, 0, WebThread::ID_COUNT * sizeof(threads[0]));
   }
 
-  // This lock protects |threads| and |states|. Do not read or modify those
-  // arrays without holding this lock. Do not block while holding this lock.
+  // This lock protects |threads|. Do not read or modify that array
+  // without holding this lock. Do not block while holding this lock.
   base::Lock lock;
 
-  // This array is protected by |lock|. This array is filled as WebThreadImpls
-  // are constructed and depopulated when they are destructed.
-  scoped_refptr<base::SingleThreadTaskRunner>
-      task_runners[WebThread::ID_COUNT] GUARDED_BY(lock);
-
-  // This array is protected by |lock|. Holds the state of each WebThread::ID.
-  WebThreadState states[WebThread::ID_COUNT] GUARDED_BY(lock) = {};
+  // This array is protected by |lock|. The threads are not owned by this
+  // array. Typically, the threads are owned on the UI thread by
+  // WebMainLoop. WebThreadImpl objects remove themselves from this
+  // array upon destruction.
+  WebThreadImpl* threads[WebThread::ID_COUNT];
 
   // Only atomic operations are used on this pointer. The delegate isn't owned
   // by WebThreadGlobals, rather by whoever calls
@@ -128,9 +114,8 @@ bool PostTaskHelper(WebThread::ID identifier,
                     const base::Location& from_here,
                     base::OnceClosure task,
                     base::TimeDelta delay,
-                    bool nestable) NO_THREAD_SAFETY_ANALYSIS {
-  DCHECK_GE(identifier, 0);
-  DCHECK_LT(identifier, WebThread::ID_COUNT);
+                    bool nestable) {
+  DCHECK(identifier >= 0 && identifier < WebThread::ID_COUNT);
   // Optimization: to avoid unnecessary locks, we listed the ID enumeration in
   // order of lifetime.  So no need to lock if we know that the target thread
   // outlives current thread.
@@ -146,12 +131,10 @@ bool PostTaskHelper(WebThread::ID identifier,
   if (!target_thread_outlives_current)
     globals.lock.Acquire();
 
-  const bool accepting_tasks =
-      globals.states[identifier] == WebThreadState::RUNNING;
-  if (accepting_tasks) {
-    base::SingleThreadTaskRunner* task_runner =
-        globals.task_runners[identifier].get();
-    DCHECK(task_runner);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      globals.threads[identifier] ? globals.threads[identifier]->task_runner()
+                                  : nullptr;
+  if (task_runner) {
     if (nestable) {
       task_runner->PostDelayedTask(from_here, std::move(task), delay);
     } else {
@@ -163,7 +146,7 @@ bool PostTaskHelper(WebThread::ID identifier,
   if (!target_thread_outlives_current)
     globals.lock.Release();
 
-  return accepting_tasks;
+  return !!task_runner;
 }
 
 class WebThreadTaskExecutor : public base::TaskExecutor {
@@ -243,36 +226,11 @@ WebThreadImpl::WebThreadImpl(ID identifier, base::MessageLoop* message_loop)
     : Thread(GetThreadName(identifier)), identifier_(identifier) {
   SetMessageLoop(message_loop);
   Initialize();
-
-  // If constructed with an explicit message loop, this is a fake
-  // WebThread which runs on the current thread.
-  WebThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
-
-  DCHECK(!globals.task_runners[identifier_]);
-  globals.task_runners[identifier_] = this->task_runner();
-
-  DCHECK_EQ(globals.states[identifier_], WebThreadState::INITIALIZED);
-  globals.states[identifier_] = WebThreadState::RUNNING;
 }
 
 void WebThreadImpl::Init() {
-  WebThreadGlobals& globals = g_globals.Get();
-
-#if DCHECK_IS_ON()
-  {
-    base::AutoLock lock(globals.lock);
-    // |globals| should already have been initialized for |identifier_| in
-    // WebThreadImpl::StartWithOptions(). If this isn't the case it's likely
-    // because this WebThreadImpl's owner incorrectly used Thread::Start.*()
-    // instead of WebThreadImpl::Start.*().
-    DCHECK_EQ(globals.states[identifier_], WebThreadState::RUNNING);
-    DCHECK(globals.task_runners[identifier_]);
-    DCHECK(globals.task_runners[identifier_]->RunsTasksInCurrentSequence());
-  }
-#endif  // DCHECK_IS_ON()
-
   if (identifier_ == WebThread::IO) {
+    WebThreadGlobals& globals = g_globals.Get();
     WebThreadDelegateAtomicPtr delegate =
         base::subtle::NoBarrier_Load(&globals.io_thread_delegate);
     if (delegate)
@@ -290,41 +248,6 @@ NOINLINE void WebThreadImpl::IOThreadRun(base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(run_loop);
   CHECK_GT(line_number, 0);
-}
-
-bool WebThreadImpl::Start() {
-  return StartWithOptions(base::Thread::Options());
-}
-
-bool WebThreadImpl::StartWithOptions(const Options& options) {
-  WebThreadGlobals& globals = g_globals.Get();
-
-  // Holding the lock is necessary when kicking off the thread to ensure
-  // |states| and |task_runners| are updated before it gets to query them.
-  base::AutoLock lock(globals.lock);
-
-  bool result = Thread::StartWithOptions(options);
-
-  // Although the thread is starting asynchronously, the MessageLoop is already
-  // ready to accept tasks and as such this BrowserThreadImpl is considered as
-  // "running".
-  DCHECK_GE(identifier_, 0);
-  DCHECK_LT(identifier_, ID_COUNT);
-  DCHECK(!globals.task_runners[identifier_]);
-  globals.task_runners[identifier_] = this->task_runner();
-  DCHECK(globals.task_runners[identifier_]);
-
-  DCHECK_EQ(globals.states[identifier_], WebThreadState::INITIALIZED);
-  globals.states[identifier_] = WebThreadState::RUNNING;
-
-  return result;
-}
-
-bool WebThreadImpl::StartAndWaitForTesting() {
-  if (!Start())
-    return false;
-  WaitUntilThreadStarted();
-  return true;
 }
 
 void WebThreadImpl::Run(base::RunLoop* run_loop) {
@@ -345,44 +268,22 @@ void WebThreadImpl::Run(base::RunLoop* run_loop) {
 }
 
 void WebThreadImpl::CleanUp() {
-  WebThreadGlobals& globals = g_globals.Get();
-
   if (identifier_ == WebThread::IO) {
+    WebThreadGlobals& globals = g_globals.Get();
     WebThreadDelegateAtomicPtr delegate =
         base::subtle::NoBarrier_Load(&globals.io_thread_delegate);
     if (delegate)
       reinterpret_cast<WebThreadDelegate*>(delegate)->CleanUp();
   }
-
-  // Change the state to SHUTDOWN so that PostTaskHelper stops accepting tasks
-  // for this thread. Do not clear globals.task_runners[identifier_] so that
-  // WebThread::CurrentlyOn() works from the MessageLoop's
-  // DestructionObservers.
-  base::AutoLock lock(globals.lock);
-  DCHECK_EQ(globals.states[identifier_], WebThreadState::RUNNING);
-  globals.states[identifier_] = WebThreadState::SHUTDOWN;
 }
 
 void WebThreadImpl::Initialize() {
   WebThreadGlobals& globals = g_globals.Get();
 
   base::AutoLock lock(globals.lock);
-  DCHECK_GE(identifier_, 0);
-  DCHECK_LT(identifier_, ID_COUNT);
-  DCHECK_EQ(globals.states[identifier_], WebThreadState::UNINITIALIZED);
-  DCHECK(globals.task_runners[identifier_] == nullptr);
-  globals.states[identifier_] = WebThreadState::INITIALIZED;
-}
-
-// static
-void WebThreadImpl::ResetGlobalsForTesting(WebThread::ID identifier) {
-  WebThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
-  DCHECK_EQ(globals.states[identifier], WebThreadState::SHUTDOWN);
-  globals.states[identifier] = WebThreadState::UNINITIALIZED;
-  globals.task_runners[identifier] = nullptr;
-  if (identifier == WebThread::IO)
-    SetIOThreadDelegate(nullptr);
+  DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
+  DCHECK(globals.threads[identifier_] == nullptr);
+  globals.threads[identifier_] = this;
 }
 
 WebThreadImpl::~WebThreadImpl() {
@@ -393,27 +294,14 @@ WebThreadImpl::~WebThreadImpl() {
 
   WebThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
-  // This thread should have gone through Cleanup() as part of Stop() and be in
-  // the SHUTDOWN state already (unless it uses an externally provided
-  // MessageLoop instead of a real underlying thread and thus doesn't go through
-  // Cleanup()).
-  if (using_external_message_loop()) {
-    DCHECK_EQ(globals.states[identifier_], WebThreadState::RUNNING);
-    globals.states[identifier_] = WebThreadState::SHUTDOWN;
-  } else {
-    DCHECK_EQ(globals.states[identifier_], WebThreadState::SHUTDOWN);
-  }
-  globals.task_runners[identifier_] = nullptr;
-#if DCHECK_IS_ON()
+  globals.threads[identifier_] = nullptr;
+#ifndef NDEBUG
   // Double check that the threads are ordered correctly in the enumeration.
   for (int i = identifier_ + 1; i < ID_COUNT; ++i) {
-    DCHECK(globals.states[i] == WebThreadState::SHUTDOWN ||
-           globals.states[i] == WebThreadState::UNINITIALIZED)
-        << "Threads must be listed in the reverse order that they die";
-    DCHECK(!globals.task_runners[i])
+    DCHECK(!globals.threads[i])
         << "Threads must be listed in the reverse order that they die";
   }
-#endif  // DCHECK_IS_ON()
+#endif
 }
 
 // static
@@ -423,20 +311,17 @@ bool WebThread::IsThreadInitialized(ID identifier) {
 
   WebThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
-  DCHECK_GE(identifier, 0);
-  DCHECK_LT(identifier, ID_COUNT);
-  return globals.states[identifier] == WebThreadState::INITIALIZED ||
-         globals.states[identifier] == WebThreadState::RUNNING;
+  DCHECK(identifier >= 0 && identifier < ID_COUNT);
+  return globals.threads[identifier] != nullptr;
 }
 
 // static
 bool WebThread::CurrentlyOn(ID identifier) {
   WebThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
-  DCHECK_GE(identifier, 0);
-  DCHECK_LT(identifier, ID_COUNT);
-  return globals.task_runners[identifier] &&
-         globals.task_runners[identifier]->BelongsToCurrentThread();
+  DCHECK(identifier >= 0 && identifier < ID_COUNT);
+  return globals.threads[identifier] &&
+         globals.threads[identifier]->task_runner()->BelongsToCurrentThread();
 }
 
 // static
@@ -459,11 +344,10 @@ bool WebThread::GetCurrentThreadIdentifier(ID* identifier) {
     return false;
 
   WebThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
   for (int i = 0; i < ID_COUNT; ++i) {
-    if (globals.task_runners[i] &&
-        globals.task_runners[i]->BelongsToCurrentThread()) {
-      *identifier = static_cast<ID>(i);
+    if (globals.threads[i] &&
+        globals.threads[i]->task_runner()->BelongsToCurrentThread()) {
+      *identifier = globals.threads[i]->identifier_;
       return true;
     }
   }
