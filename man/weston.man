@@ -141,8 +141,11 @@ which any client can use to receive debugging messages from the compositor.
 .B WARNING:
 This is risky for two reasons. First, a client may cause a denial-of-service
 blocking the compositor by providing an unsuitable file descriptor, and
-second, the debug messages may expose sensitive information. This option
-should not be used in production.
+second, the debug messages may expose sensitive information.
+Additionally this will expose weston-screenshooter interface allowing the user
+to take screenshots of the outputs using weston-screenshooter application,
+which can lead to silently leaking the output contents.  This option should
+not be used in production.
 .TP
 .BR \-\-version
 Print the program version.

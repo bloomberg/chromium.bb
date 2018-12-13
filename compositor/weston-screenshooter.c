@@ -32,6 +32,7 @@
 #include "weston.h"
 #include "weston-screenshooter-server-protocol.h"
 #include "shared/helpers.h"
+#include "weston-debug.h"
 
 struct screenshooter {
 	struct weston_compositor *ec;
@@ -88,13 +89,20 @@ bind_shooter(struct wl_client *client,
 {
 	struct screenshooter *shooter = data;
 	struct wl_resource *resource;
+	bool debug_enabled =
+		weston_compositor_is_debug_protocol_enabled(shooter->ec);
 
 	resource = wl_resource_create(client,
 				      &weston_screenshooter_interface, 1, id);
 
-	if (client != shooter->client) {
+	if (!debug_enabled && !shooter->client) {
 		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "screenshooter failed: permission denied");
+				       "screenshooter failed: permission denied. "\
+				       "Debug protocol must be enabled");
+		return;
+	} else if (!debug_enabled && client != shooter->client) {
+		wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "screenshooter failed: permission denied.");
 		return;
 	}
 
