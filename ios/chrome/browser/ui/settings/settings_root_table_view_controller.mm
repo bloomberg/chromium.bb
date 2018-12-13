@@ -21,7 +21,12 @@
 
 namespace {
 constexpr CGFloat kTableViewSeparatorInset = 16;
-}
+// Height of the space used by header/footer when none is set. Default is
+// |estimatedSection{Header|Footer}Height|.
+const CGFloat kDefaultHeaderFooterHeight = 10;
+// Estimated height of the header/footer, used to speed the constraints.
+const CGFloat kEstimatedHeaderFooterHeight = 35;
+}  // namespace
 
 NSString* const kSettingsToolbarDeleteButtonId =
     @"PasswordsToolbarDeleteButtonId";
@@ -91,7 +96,9 @@ NSString* const kSettingsToolbarDeleteButtonId =
   [super viewDidLoad];
   self.styler.cellBackgroundColor = [UIColor whiteColor];
   self.styler.cellTitleColor = [UIColor blackColor];
+  self.tableView.estimatedSectionHeaderHeight = kEstimatedHeaderFooterHeight;
   self.tableView.estimatedRowHeight = kSettingsCellDefaultHeight;
+  self.tableView.estimatedSectionFooterHeight = kEstimatedHeaderFooterHeight;
   self.tableView.separatorInset = UIEdgeInsetsMake(0, kTableViewSeparatorInset,
                                                    0, kTableViewSeparatorInset);
   // Do not set the estimated height of the footer/header as if there is no
@@ -135,6 +142,20 @@ NSString* const kSettingsToolbarDeleteButtonId =
 
   if (self.tableView.indexPathsForSelectedRows.count == 0)
     [self.navigationController setToolbarHidden:YES animated:YES];
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForHeaderInSection:(NSInteger)section {
+  if ([self.tableViewModel headerForSection:section])
+    return UITableViewAutomaticDimension;
+  return kDefaultHeaderFooterHeight;
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForFooterInSection:(NSInteger)section {
+  if ([self.tableViewModel footerForSection:section])
+    return UITableViewAutomaticDimension;
+  return kDefaultHeaderFooterHeight;
 }
 
 #pragma mark - TableViewLinkHeaderFooterItemDelegate

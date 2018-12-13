@@ -17,7 +17,7 @@ namespace {
 const CGFloat kHorizontalPadding = 24;
 
 // Padding used on the top and bottom edges of the cell.
-const CGFloat kVerticalPadding = 16;
+const CGFloat kVerticalPadding = 8;
 
 // Text color.
 const int kTextColor = 0x8A8A8F;
