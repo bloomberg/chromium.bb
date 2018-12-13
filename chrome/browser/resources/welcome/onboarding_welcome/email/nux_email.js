@@ -13,10 +13,14 @@ Polymer({
   },
 
   onRouteEnter: function() {
-    this.$.emailChooser.initializeSection();
+    this.$.emailChooser.onRouteEnter();
   },
 
   onRouteExit: function() {
-    this.$.emailChooser.finalizeSection();
+    this.$.emailChooser.onRouteExit();
+  },
+
+  onRouteUnload: function() {
+    this.$.emailChooser.onRouteUnload();
   },
 });

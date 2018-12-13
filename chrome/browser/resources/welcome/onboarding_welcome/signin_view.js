@@ -11,12 +11,41 @@ Polymer({
   shouldShowEmailInterstitial_:
       loadTimeData.getBoolean('showEmailInterstitial'),
 
+  /** @private {boolean} */
+  finalized_: false,
+
   /** @private {?welcome.WelcomeBrowserProxy} */
   welcomeBrowserProxy_: null,
+
+  /** @private {?nux.SigninViewProxy} */
+  signinViewProxy_: null,
 
   /** @override */
   ready: function() {
     this.welcomeBrowserProxy_ = welcome.WelcomeBrowserProxyImpl.getInstance();
+    this.signinViewProxy_ = nux.SigninViewProxyImpl.getInstance();
+  },
+
+  onRouteEnter: function() {
+    this.finalized_ = false;
+    this.signinViewProxy_.recordPageShown();
+  },
+
+  onRouteExit: function() {
+    if (this.finalized_) {
+      return;
+    }
+    this.finalized_ = true;
+    this.signinViewProxy_.recordNavigatedAwayThroughBrowserHistory();
+  },
+
+  onRouteUnload: function() {
+    // URL is expected to change when signing in or skipping.
+    if (this.finalized_) {
+      return;
+    }
+    this.finalized_ = true;
+    this.signinViewProxy_.recordNavigatedAway();
   },
 
   /**
@@ -40,11 +69,15 @@ Polymer({
    * @private
    */
   onSignInClick_: function() {
+    this.finalized_ = true;
+    this.signinViewProxy_.recordSignIn();
     this.welcomeBrowserProxy_.handleActivateSignIn(this.getTargetUrl_());
   },
 
   /** @private */
   onNoThanksClick_: function() {
+    this.finalized_ = true;
+    this.signinViewProxy_.recordSkip();
     // It's safe to assume sign-view is always going to be the last step, so
     // go to the target url directly. If there's no target, it lands on NTP.
     this.welcomeBrowserProxy_.handleUserDecline(this.getTargetUrl_());

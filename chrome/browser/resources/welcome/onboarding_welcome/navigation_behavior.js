@@ -65,7 +65,7 @@ cr.define('welcome', function() {
 
     const route = /** @type {!welcome.Routes} */ (history.state.route);
     const step = history.state.step;
-    routeObservers.forEach((observer) => {
+    routeObservers.forEach(observer => {
       (/** @type {{onRouteChange: Function}} */ (observer))
           .onRouteChange(route, step);
 
@@ -86,6 +86,14 @@ cr.define('welcome', function() {
 
   // Notifies all elements when browser history is popped.
   window.addEventListener('popstate', notifyObservers);
+
+  // Notify the active element before unload.
+  window.addEventListener('beforeunload', () => {
+    if (currentRouteElement) {
+      (/** @type {{onRouteUnload: Function}} */ (currentRouteElement))
+          .onRouteUnload();
+    }
+  });
 
   function navigateToNextStep() {
     history.pushState(
@@ -162,6 +170,8 @@ cr.define('welcome', function() {
     onRouteEnter: function() {},
 
     onRouteExit: function() {},
+
+    onRouteUnload: function() {},
   };
 
   return {
