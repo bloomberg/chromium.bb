@@ -311,10 +311,6 @@ extern const char kWebPageTextAccessibilityDescription[];
 extern const char kWKHTTPSystemCookieStoreName[];
 extern const char kWKHTTPSystemCookieStoreDescription[];
 
-// Title and description for the flag to use the WKWebView snapshotting API.
-extern const char kWKWebViewSnapshotsName[];
-extern const char kWKWebViewSnapshotsDescription[];
-
 // Title and description for the flag to allow custom search engines.
 extern const char kCustomSearchEnginesName[];
 extern const char kCustomSearchEnginesDescription[];

@@ -15,8 +15,6 @@ const base::Feature kCopyImage{"CopyImage", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOmniboxPopupShortcutIconsInZeroState{
     "OmniboxPopupShortcutIconsInZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kWKWebViewSnapshots{"WKWebViewSnapshots",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSearchCopiedImage{"SearchCopiedImage",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

@@ -249,12 +249,6 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 
 - (void)snapshotCache:(SnapshotCache*)snapshotCache
     didUpdateSnapshotForIdentifier:(NSString*)identifier {
-  if (!IsWKWebViewSnapshotsEnabled()) {
-    // This feature guard is here to compare against the existing baseline.
-    // Prior to enabling WKWebViewSnapshots, the mediator was not a
-    // SnapshotCache observer.
-    return;
-  }
   [self.appearanceCache removeObjectForKey:identifier];
   web::WebState* webState = GetWebStateWithId(self.webStateList, identifier);
   if (webState) {

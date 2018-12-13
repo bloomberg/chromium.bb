@@ -73,11 +73,6 @@ bool IsUIRefreshPhase1Enabled() {
   return true;
 }
 
-// TODO(crbug.com/885003) : Remove this flag.
-bool IsWKWebViewSnapshotsEnabled() {
-  return base::FeatureList::IsEnabled(kWKWebViewSnapshots);
-}
-
 CGFloat StatusBarHeight() {
   if (base::FeatureList::IsEnabled(
           web::features::kBrowserContainerFullscreen) &&

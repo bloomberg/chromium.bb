@@ -21,9 +21,6 @@ extern const base::Feature kCopyImage;
 // popup instead of ZeroSuggest.
 extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 
-// Used to enable using the WKWebView snapshotting API for iOS 11+.
-extern const base::Feature kWKWebViewSnapshots;
-
 // Feature to allow user to search for a copied image.
 extern const base::Feature kSearchCopiedImage;
 
