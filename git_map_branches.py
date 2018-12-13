@@ -307,8 +307,9 @@ def main(argv):
 
   parser = argparse.ArgumentParser()
   parser.add_argument('-v', action='count',
-                      help=('Pass once to show tracking info; '
-                           'twice for hash and review url'))
+                      help=('Pass once to show tracking info, '
+                            'twice for hash and review url, '
+                            'thrice for review status'))
   parser.add_argument('--no-color', action='store_true', dest='nocolor',
                       help='Turn off colors.')
   parser.add_argument(
