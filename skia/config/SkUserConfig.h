@@ -144,6 +144,14 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_USE_LEGACY_DISTANCE_FIELDS
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_FONTMETRICS_IN_PAINT
+#define SK_SUPPORT_LEGACY_FONTMETRICS_IN_PAINT
+#endif
+
+#ifndef SK_SUPPORT_LEGACY_PAINT_TEXTMEASURE
+#define SK_SUPPORT_LEGACY_PAINT_TEXTMEASURE
+#endif
+
 // Skia is enabling this feature soon. Chrome probably does
 // not want it for M64
 #ifndef SK_DISABLE_EXPLICIT_GPU_RESOURCE_ALLOCATION
