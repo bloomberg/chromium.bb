@@ -58,7 +58,10 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
                void(Profile*,
                     const Extension*,
                     const std::vector<base::FilePath>&));
-  MOCK_METHOD2(LaunchShim, void(Profile*, const Extension*));
+  MOCK_METHOD3(LaunchShim,
+               void(Profile*,
+                    const Extension*,
+                    base::OnceCallback<void(base::Process)> launch_callback));
   MOCK_METHOD0(LaunchUserManager, void());
 
   MOCK_METHOD0(MaybeTerminate, void());
@@ -456,16 +459,19 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
 }
 
 TEST_F(ExtensionAppShimHandlerTest, AppLifetime) {
-  // When the app activates, if there is no shim, start one.
-  EXPECT_CALL(*delegate_, LaunchShim(&profile_a_, extension_a_.get()));
+  // When the app activates, a host is created. If there is no shim, one is
+  // launched.
+  delegate_->SetHostForCreate(host_aa_.get());
+  EXPECT_CALL(*delegate_, LaunchShim(&profile_a_, extension_a_.get(), _));
   handler_->OnAppActivated(&profile_a_, kTestAppIdA);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Normal shim launch adds an entry in the map.
   // App should not be launched here, but return success to the shim.
   EXPECT_CALL(*delegate_,
               LaunchApp(&profile_a_, extension_a_.get(), _))
       .Times(0);
-  RegisterOnlyLaunch(bootstrap_aa_, host_aa_);
+  RegisterOnlyLaunch(bootstrap_aa_, nullptr);
   EXPECT_EQ(APP_SHIM_LAUNCH_SUCCESS, *bootstrap_aa_result_);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
 

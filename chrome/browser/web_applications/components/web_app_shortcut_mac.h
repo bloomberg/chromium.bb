@@ -11,9 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/process/process.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 
 // Whether to enable update and launch of app shims in tests. (Normally shims
@@ -27,8 +29,14 @@ namespace web_app {
 // CreateShortcuts().
 base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info);
 
-// If necessary, launch the shortcut for an app.
-void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info);
+// Callback type for MaybeLaunchShortcut. If |shim_process| is valid then the
+// app shim was launched.
+using LaunchAppCallback = base::OnceCallback<void(base::Process shim_process)>;
+
+// If necessary, launch the shortcut for an app. Return the process that was
+// launched.
+void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info,
+                         LaunchAppCallback callback);
 
 // Update the shortcut and launch it.
 void UpdateAndLaunchShim(std::unique_ptr<web_app::ShortcutInfo> shortcut_info);

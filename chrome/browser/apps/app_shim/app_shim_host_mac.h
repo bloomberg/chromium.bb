@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/process/process.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/common/mac/app_shim.mojom.h"
@@ -67,6 +69,8 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // Return the app shim interface.
   chrome::mojom::AppShim* GetAppShim() const;
 
+  base::WeakPtr<AppShimHost> GetWeakPtr();
+
  protected:
   // AppShimHost is owned by itself. It will delete itself in Close (called on
   // channel error and OnAppClosed).
@@ -103,7 +107,9 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   base::Optional<apps::AppShimLaunchResult> launch_result_;
   bool has_sent_on_launch_complete_ = false;
 
+  // This class is only ever to be used on the UI thread.
   THREAD_CHECKER(thread_checker_);
+  base::WeakPtrFactory<AppShimHost> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AppShimHost);
 };
 

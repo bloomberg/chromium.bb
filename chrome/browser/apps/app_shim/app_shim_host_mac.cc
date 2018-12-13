@@ -29,7 +29,8 @@ AppShimHost::AppShimHost(const std::string& app_id,
     : host_binding_(this),
       app_shim_request_(mojo::MakeRequest(&app_shim_)),
       app_id_(app_id),
-      profile_path_(profile_path) {
+      profile_path_(profile_path),
+      weak_factory_(this) {
   // Create the interfaces used to host windows, so that browser windows may be
   // created before the host process finishes launching.
   if (features::HostWindowsInAppShimProcess()) {
@@ -178,4 +179,8 @@ views::BridgeFactoryHost* AppShimHost::GetViewsBridgeFactoryHost() const {
 
 chrome::mojom::AppShim* AppShimHost::GetAppShim() const {
   return app_shim_.get();
+}
+
+base::WeakPtr<AppShimHost> AppShimHost::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }

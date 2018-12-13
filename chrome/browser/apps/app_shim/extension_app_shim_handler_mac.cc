@@ -236,10 +236,13 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
   }
 }
 
-void ExtensionAppShimHandler::Delegate::LaunchShim(Profile* profile,
-                                                   const Extension* extension) {
+void ExtensionAppShimHandler::Delegate::LaunchShim(
+    Profile* profile,
+    const Extension* extension,
+    base::OnceCallback<void(base::Process)> launch_callback) {
   web_app::MaybeLaunchShortcut(
-      web_app::ShortcutInfoForExtensionAndProfile(extension, profile));
+      web_app::ShortcutInfoForExtensionAndProfile(extension, profile),
+      std::move(launch_callback));
 }
 
 void ExtensionAppShimHandler::Delegate::LaunchUserManager() {
@@ -508,6 +511,7 @@ void ExtensionAppShimHandler::CloseBrowsersForApp(const std::string& app_id) {
 void ExtensionAppShimHandler::OnProfileLoaded(
     std::unique_ptr<AppShimHostBootstrap> bootstrap,
     Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const std::string& app_id = bootstrap->GetAppId();
   AppShimLaunchType launch_type = bootstrap->GetLaunchType();
   const std::vector<base::FilePath>& files = bootstrap->GetLaunchFiles();
@@ -551,31 +555,49 @@ void ExtensionAppShimHandler::OnProfileLoaded(
   delegate_->EnableExtension(
       profile, app_id,
       base::Bind(&ExtensionAppShimHandler::OnExtensionEnabled,
-                 weak_factory_.GetWeakPtr(),
-                 host->GetProfilePath(), app_id, files));
+                 weak_factory_.GetWeakPtr(), host->GetWeakPtr(), files));
 }
 
 void ExtensionAppShimHandler::OnExtensionEnabled(
-    const base::FilePath& profile_path,
-    const std::string& app_id,
+    base::WeakPtr<AppShimHost> host,
     const std::vector<base::FilePath>& files) {
-  Profile* profile = delegate_->ProfileForPath(profile_path);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!host)
+    return;
+
+  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
   if (!profile)
     return;
 
-  const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
-  if (!extension || !delegate_->ProfileExistsForPath(profile_path)) {
+  const Extension* extension =
+      delegate_->MaybeGetAppExtension(profile, host->GetAppId());
+  if (!extension || !delegate_->ProfileExistsForPath(host->GetProfilePath())) {
     // If !extension, the extension doesn't exist, or was not re-enabled.
     // If the profile doesn't exist, it may have been deleted during the enable
     // prompt. In this case, NOTIFICATION_PROFILE_DESTROYED may not be fired
     // until later, so respond to the host now.
-    AppShimHost* host = FindHost(profile, app_id);
-    if (host)
-      host->OnAppLaunchComplete(APP_SHIM_LAUNCH_APP_NOT_FOUND);
+    host->OnAppLaunchComplete(APP_SHIM_LAUNCH_APP_NOT_FOUND);
     return;
   }
 
   delegate_->LaunchApp(profile, extension, files);
+}
+
+void ExtensionAppShimHandler::OnRequestedShimLaunchComplete(
+    base::WeakPtr<AppShimHost> host,
+    base::Process shim_process) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // It is possible (but not likely) that the windows for this app were closed
+  // or the profile was unloaded before this callback came in.
+  if (!host)
+    return;
+
+  if (!shim_process.IsValid()) {
+    // TODO(https://crbug.com/913362)): Consider adding some UI to tell the
+    // user that the process launch failed.
+    DLOG(ERROR) << "Failed to launch shim.";
+    host->OnAppClosed();
+  }
 }
 
 void ExtensionAppShimHandler::OnShimClose(AppShimHost* host) {
@@ -723,16 +745,21 @@ void ExtensionAppShimHandler::OnAppActivated(content::BrowserContext* context,
     return;
 
   Profile* profile = static_cast<Profile*>(context);
-  AppShimHost* host = FindHost(profile, app_id);
-  if (host && host->HasBootstrapConnected()) {
+  AppShimHost* host = FindOrCreateHost(profile, app_id);
+  if (!host)
+    return;
+  if (host->HasBootstrapConnected()) {
     // If there is a connected app shim process, notify it of success and focus
     // the app windows.
     host->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
     OnShimFocus(host, APP_SHIM_FOCUS_NORMAL, std::vector<base::FilePath>());
-  } else {
-    // Otherwise, launch an app shim.
-    delegate_->LaunchShim(profile, extension);
+    return;
   }
+  // Otherwise, launch an app shim.
+  delegate_->LaunchShim(
+      profile, extension,
+      base::BindOnce(&ExtensionAppShimHandler::OnRequestedShimLaunchComplete,
+                     weak_factory_.GetWeakPtr(), host->GetWeakPtr()));
 }
 
 void ExtensionAppShimHandler::OnAppDeactivated(content::BrowserContext* context,
