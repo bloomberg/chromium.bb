@@ -157,7 +157,8 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   ExecutionContext* context = ExecutionContext::From(script_state);
 
 // Remind developers when they are using Web Bluetooth on unsupported platforms.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_MACOSX) && \
+    !defined(OS_WIN)
   context->AddConsoleMessage(ConsoleMessage::Create(
       kJSMessageSource, kInfoMessageLevel,
       "Web Bluetooth is experimental on this platform. See "
