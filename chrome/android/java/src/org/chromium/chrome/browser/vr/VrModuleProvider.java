@@ -9,6 +9,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.components.module_installer.ModuleInstaller;
+import org.chromium.components.module_installer.OnModuleInstallFinishedListener;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
@@ -69,6 +70,20 @@ public class VrModuleProvider {
         for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
     }
 
+    /* package */ static void installModule(OnModuleInstallFinishedListener onFinishedListener) {
+        assert !isModuleInstalled();
+
+        ModuleInstaller.install("vr", (success) -> {
+            if (success) {
+                // Re-create delegate provider.
+                sDelegateProvider = null;
+                VrDelegate delegate = getDelegate();
+                assert !(delegate instanceof VrDelegateFallback);
+            }
+            onFinishedListener.onFinished(success);
+        });
+    }
+
     // TODO(crbug.com/870055): JNI should be registered in the shared VR library's JNI_OnLoad
     // function. Do this once we have a shared VR library.
     /* package */ static void registerJni() {
@@ -98,7 +113,7 @@ public class VrModuleProvider {
     }
 
     @CalledByNative
-    private static boolean isModuleInstalled() {
+    /* package */ static boolean isModuleInstalled() {
         return !(getDelegateProvider() instanceof VrDelegateProviderFallback);
     }
 
@@ -113,20 +128,13 @@ public class VrModuleProvider {
 
     @CalledByNative
     private void installModule() {
-        assert !isModuleInstalled();
-
         // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
         Toast.makeText(ContextUtils.getApplicationContext(), R.string.vr_module_install_start_text,
                      Toast.LENGTH_SHORT)
                 .show();
-
-        ModuleInstaller.install("vr", (success) -> {
+        installModule((success) -> {
             if (success) {
-                // Re-create delegate provider.
-                sDelegateProvider = null;
-                VrDelegate delegate = getDelegate();
-                assert !(delegate instanceof VrDelegateFallback);
-                delegate.onNativeLibraryAvailable();
+                getDelegate().onNativeLibraryAvailable();
             }
             // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
             int mToastTextRes = success ? R.string.vr_module_install_success_text

@@ -10,6 +10,7 @@ import org.chromium.base.annotations.UsedByReflection;
 @UsedByReflection("VrModuleProvider.java")
 /* package */ class VrDelegateProviderImpl implements VrDelegateProvider {
     private final VrDelegateImpl mDelegate = new VrDelegateImpl();
+    private final VrIntentDelegateImpl mIntentDelegate = new VrIntentDelegateImpl();
 
     @UsedByReflection("VrModuleProvider.java")
     public VrDelegateProviderImpl() {}
@@ -21,6 +22,6 @@ import org.chromium.base.annotations.UsedByReflection;
 
     @Override
     public VrIntentDelegate getIntentDelegate() {
-        return mDelegate;
+        return mIntentDelegate;
     }
 }

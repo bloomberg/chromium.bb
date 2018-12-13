@@ -5,9 +5,12 @@
 package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ClipData;
+import android.content.ComponentName;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaCodec.CryptoInfo;
 import android.os.Build;
@@ -63,5 +66,11 @@ public final class ApiHelperForN {
     /** See {@link CryptoInfo#setPattern(Pattern)}. */
     public static void setCryptoInfoPattern(CryptoInfo cryptoInfo, int encrypt, int skip) {
         cryptoInfo.setPattern(new CryptoInfo.Pattern(encrypt, skip));
+    }
+
+    /** See {@link Activity#setVrModeEnabled(boolean, ComponentName)}. */
+    public static void setVrModeEnabled(Activity activity, boolean enabled,
+            ComponentName requestedComponent) throws PackageManager.NameNotFoundException {
+        activity.setVrModeEnabled(enabled, requestedComponent);
     }
 }
