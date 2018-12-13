@@ -150,15 +150,24 @@ HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
   return S_OK;
 }
 
-HRESULT FakeOSUserManager::SetUserPassword(const wchar_t* username,
-                                           const wchar_t* password,
-                                           DWORD* error) {
-  if (error)
-    *error = 0;
-
+HRESULT FakeOSUserManager::ChangeUserPassword(const wchar_t* username,
+                                              const wchar_t* old_password,
+                                              const wchar_t* new_password) {
   if (username_to_info_.count(username) > 0) {
-    username_to_info_[username].password = password;
+    if (username_to_info_[username].password != old_password)
+      return HRESULT_FROM_WIN32(ERROR_INVALID_PASSWORD);
+
+    username_to_info_[username].password = new_password;
     return S_OK;
+  }
+
+  return HRESULT_FROM_WIN32(NERR_UserNotFound);
+}
+
+HRESULT FakeOSUserManager::IsWindowsPasswordValid(const wchar_t* username,
+                                                  const wchar_t* password) {
+  if (username_to_info_.count(username) > 0) {
+    return username_to_info_[username].password == password ? S_OK : S_FALSE;
   }
 
   return HRESULT_FROM_WIN32(NERR_UserNotFound);
@@ -231,7 +240,7 @@ FakeOSUserManager::UserInfo::~UserInfo() {}
 
 bool FakeOSUserManager::UserInfo::operator==(const UserInfo& other) const {
   return password == other.password && fullname == other.fullname &&
-      comment == other.comment && sid == other.sid;
+         comment == other.comment && sid == other.sid;
 }
 
 const FakeOSUserManager::UserInfo FakeOSUserManager::GetUserInfo(
@@ -331,56 +340,5 @@ FakeScopedUserProfile::FakeScopedUserProfile(const base::string16& sid,
                                              const base::string16& password) {}
 
 FakeScopedUserProfile::~FakeScopedUserProfile() {}
-
-///////////////////////////////////////////////////////////////////////////////
-
-FakeWinHttpUrlFetcherFactory::FakeWinHttpUrlFetcherFactory()
-    : original_creator_(*WinHttpUrlFetcher::GetCreatorFunctionStorage()) {
-  *WinHttpUrlFetcher::GetCreatorFunctionStorage() = base::BindRepeating(
-      &FakeWinHttpUrlFetcherFactory::Create, base::Unretained(this));
-}
-
-FakeWinHttpUrlFetcherFactory::~FakeWinHttpUrlFetcherFactory() {
-  *WinHttpUrlFetcher::GetCreatorFunctionStorage() = original_creator_;
-}
-
-void FakeWinHttpUrlFetcherFactory::SetFakeResponse(
-    const GURL& url,
-    const WinHttpUrlFetcher::Headers& headers,
-    const std::string& response) {
-  fake_responses_.emplace(url, std::make_pair(headers, response));
-}
-
-std::unique_ptr<WinHttpUrlFetcher> FakeWinHttpUrlFetcherFactory::Create(
-    const GURL& url) {
-  if (fake_responses_.count(url) == 0)
-    return nullptr;
-
-  const Response& response = fake_responses_[url];
-
-  FakeWinHttpUrlFetcher* fetcher = new FakeWinHttpUrlFetcher(std::move(url));
-  fetcher->response_headers_ = response.first;
-  fetcher->response_ = response.second;
-  return std::unique_ptr<WinHttpUrlFetcher>(fetcher);
-}
-
-FakeWinHttpUrlFetcher::FakeWinHttpUrlFetcher(const GURL& url)
-    : WinHttpUrlFetcher() {}
-
-FakeWinHttpUrlFetcher::~FakeWinHttpUrlFetcher() {}
-
-// WinHttpUrlFetcher
-bool FakeWinHttpUrlFetcher::IsValid() const {
-  return true;
-}
-
-HRESULT FakeWinHttpUrlFetcher::Fetch(std::string* response) {
-  response->assign(response_);
-  return S_OK;
-}
-
-HRESULT FakeWinHttpUrlFetcher::Close() {
-  return S_OK;
-}
 
 }  // namespace credential_provider

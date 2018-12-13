@@ -21,7 +21,6 @@
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
-#include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
 
 namespace credential_provider {
 
@@ -29,6 +28,8 @@ namespace credential_provider {
 
 static const CREDENTIAL_PROVIDER_FIELD_DESCRIPTOR g_field_desc[] = {
     {FID_DESCRIPTION, CPFT_LARGE_TEXT, W2CW(L"Description"), GUID_NULL},
+    {FID_CURRENT_PASSWORD_FIELD, CPFT_PASSWORD_TEXT, W2CW(L"Windows Password"),
+     GUID_NULL},
     {FID_SUBMIT, CPFT_SUBMIT_BUTTON, W2CW(L"Submit button"), GUID_NULL},
     {FID_PROVIDER_LOGO, CPFT_TILE_IMAGE, W2CW(L"Provider logo"),
      CPFG_CREDENTIAL_PROVIDER_LOGO},
@@ -119,10 +120,12 @@ void CGaiaCredentialProvider::CleanupStaleTokenHandles() {
 
 // IGaiaCredentialProvider ////////////////////////////////////////////////////
 
-HRESULT CGaiaCredentialProvider::OnUserAuthenticated(IUnknown* credential,
-                                                     BSTR /*username*/,
-                                                     BSTR /*password*/,
-                                                     BSTR sid) {
+HRESULT CGaiaCredentialProvider::OnUserAuthenticated(
+    IUnknown* credential,
+    BSTR /*username*/,
+    BSTR /*password*/,
+    BSTR sid,
+    BOOL fire_credentials_changed) {
   DCHECK(!credential || sid);
 
   // |credential| should be in the |users_|.  Find its index.
@@ -142,9 +145,9 @@ HRESULT CGaiaCredentialProvider::OnUserAuthenticated(IUnknown* credential,
 
   // Tell winlogon.exe that credential info has changed.  This provider will
   // make the newly created user the default login credential with auto
-  // logon enabled.  See GetCredentialCount() for more detais.
+  // logon enabled.  See GetCredentialCount() for more details.
   HRESULT hr = S_OK;
-  if (events_)
+  if (events_ && fire_credentials_changed)
     hr = events_->CredentialsChanged(advise_context_);
 
   LOGFN(INFO) << "hr=" << putHR(hr) << " sid=" << new_user_sid_.m_str
@@ -181,12 +184,6 @@ HRESULT CGaiaCredentialProvider::HasInternetConnection() {
 }
 
 // IGaiaCredentialProviderForTesting //////////////////////////////////////////
-
-HRESULT CGaiaCredentialProvider::SetReauthCheckDoneEvent(INT_PTR event) {
-  DCHECK(event);
-  reauth_check_done_event_ = reinterpret_cast<HANDLE>(event);
-  return S_OK;
-}
 
 HRESULT CGaiaCredentialProvider::SetHasInternetConnection(
     HasInternetConnectionCheckType has_internet_connection) {
@@ -251,155 +248,51 @@ HRESULT CGaiaCredentialProvider::SetUserArray(
 
   // For each SID, check to see if this user requires reauth.
   for (const auto& kv : sid_to_username) {
-    DWORD needs_reauth = 0;
-    HRESULT hr = GetUserProperty(kv.first.c_str(), kUserNeedsReauth,
-                                 &needs_reauth);
+    // Get the user's email address.  If not found, proceed anyway.  The net
+    // effect is that the user will need to enter their email address
+    // manually instead of it being pre-filled.  Need to see if it would be
+    // better to just fail.
+    wchar_t email[64];
+    ULONG length = base::size(email);
+    HRESULT hr = GetUserProperty(kv.first.c_str(), kUserEmail, email, &length);
     if (FAILED(hr)) {
-      needs_reauth = 0;
-      hr = S_OK;
+      LOGFN(ERROR) << "GetUserProperty(" << kv.first << ", email)"
+                   << " hr=" << putHR(hr);
+      email[0] = 0;
+      continue;
     }
 
-    if (needs_reauth) {
-      // Get the user's email address.  If not found, proceed anyway.  The net
-      // effect is that the user will need to enter their email address
-      // manually instead of it being pre-filled.  Need to see if it would be
-      // better to just fail.
-      wchar_t email[64];
-      ULONG length = base::size(email);
-      hr = GetUserProperty(kv.first.c_str(), kUserEmail, email, &length);
-      if (FAILED(hr)) {
-        LOGFN(ERROR) << "GetUserProperty(" << kv.first << ", email)"
-                     << " hr=" << putHR(hr);
-        email[0] = 0;
-        hr = S_OK;
-      }
+    LOGFN(INFO) << "Existing gaia user: sid=" << kv.first
+                << " user=" << kv.second << " email=" << email;
 
-      LOGFN(INFO) << "User needs reauth sid=" << kv.first
-                  << " user=" << kv.second << " email=" << email;
-
-      CComPtr<IGaiaCredential> cred;
-      hr = CComCreator<CComObject<CReauthCredential>>::CreateInstance(
-          nullptr, IID_IGaiaCredential, (void**)&cred);
-      if (FAILED(hr)) {
-        LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
-        return hr;
-      }
-
-      hr = cred->Initialize(this);
-      if (FAILED(hr)) {
-        LOG(ERROR) << "Could not initialize credential hr=" << putHR(hr);
-        return hr;
-      }
-
-      CComPtr<IReauthCredential> reauth;
-      reauth = cred;
-      hr = reauth->SetUserInfo(CComBSTR(W2COLE(kv.first.c_str())),
-                               CComBSTR(email));
-      if (FAILED(hr)) {
-        LOG(ERROR) << "reauth->SetUserInfo hr=" << putHR(hr);
-        return hr;
-      }
-
-      users_.emplace_back(cred);
+    CComPtr<IGaiaCredential> cred;
+    hr = CComCreator<CComObject<CReauthCredential>>::CreateInstance(
+        nullptr, IID_IGaiaCredential, (void**)&cred);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Could not create credential hr=" << putHR(hr);
+      return hr;
     }
-  }
 
-  // Fire off a thread to check with Gaia if a re-auth is required.  This
-  // sets the kUserNeedsReauth bit if needed.  If there is no internet
-  // connection, don't bother.
-  if (HasInternetConnection() == S_OK) {
-    unsigned wait_thread_id;
-    uintptr_t wait_thread = _beginthreadex(
-        nullptr, 0, CheckReauthStatus,
-        reinterpret_cast<void*>(reauth_check_done_event_), 0, &wait_thread_id);
-    if (wait_thread != 0) {
-      LOGFN(INFO) << "Started check re-auth thread id=" << wait_thread_id;
-      ::CloseHandle(reinterpret_cast<HANDLE>(wait_thread));
-    } else {
-      HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-      LOGFN(ERROR) << "Unable to start check re-auth thread hr=" << putHR(hr);
-      if (reauth_check_done_event_ != INVALID_HANDLE_VALUE)
-        ::SetEvent(reauth_check_done_event_);
+    hr = cred->Initialize(this);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Could not initialize credential hr=" << putHR(hr);
+      return hr;
     }
-  } else {
-    LOGFN(INFO) << "No internet connection, not checking re-auth";
-    if (reauth_check_done_event_ != INVALID_HANDLE_VALUE)
-      ::SetEvent(reauth_check_done_event_);
+
+    CComPtr<IReauthCredential> reauth;
+    reauth = cred;
+    hr = reauth->SetUserInfo(CComBSTR(W2COLE(kv.first.c_str())),
+                             CComBSTR(W2COLE(kv.second.c_str())),
+                             CComBSTR(email));
+    if (FAILED(hr)) {
+      LOG(ERROR) << "reauth->SetUserInfo hr=" << putHR(hr);
+      return hr;
+    }
+
+    users_.emplace_back(cred);
   }
 
   return S_OK;
-}
-
-// static
-unsigned __stdcall CGaiaCredentialProvider::CheckReauthStatus(void* param) {
-  LOGFN(INFO) << "Start";
-  DCHECK(param);
-  HANDLE reauth_check_done_event = reinterpret_cast<HANDLE>(param);
-  std::map<base::string16, base::string16> handles;
-
-  auto fetcher = WinHttpUrlFetcher::Create(
-      GURL("https://www.googleapis.com/oauth2/v2/tokeninfo"));
-
-  if (fetcher) {
-    fetcher->SetRequestHeader("Content-Type",
-                              "application/x-www-form-urlencoded");
-
-    GetUserTokenHandles(&handles);
-    for (const auto& kv : handles) {
-      DWORD needs_reauth;
-      HRESULT hr =
-          GetUserProperty(kv.first.c_str(), kUserNeedsReauth, &needs_reauth);
-      if (SUCCEEDED(hr) && needs_reauth) {
-        LOGFN(INFO) << "Already needs reath sid=" << kv.first;
-        continue;
-      }
-
-      std::string body =
-          base::StringPrintf("token_handle=%S", kv.second.c_str());
-      hr = fetcher->SetRequestBody(body.c_str());
-      if (FAILED(hr)) {
-        LOGFN(ERROR) << "fetcher.SetRequestBody sid=" << kv.first
-                     << " hr=" << putHR(hr);
-        continue;
-      }
-
-      std::string response;
-      hr = fetcher->Fetch(&response);
-      if (FAILED(hr)) {
-        LOGFN(INFO) << "fetcher.Fetch sid=" << kv.first << " hr=" << putHR(hr);
-        continue;
-      }
-
-      base::DictionaryValue* dict = nullptr;
-      std::unique_ptr<base::Value> properties(
-          base::JSONReader::Read(response, base::JSON_ALLOW_TRAILING_COMMAS));
-      if (properties.get() == nullptr || !properties->GetAsDictionary(&dict)) {
-        LOGFN(ERROR) << "base::JSONReader::Read failed";
-        continue;
-      }
-
-      int expires_in;
-      if (dict->HasKey("error") ||
-          !dict->GetInteger("expires_in", &expires_in) || expires_in < 0) {
-        LOGFN(INFO) << "Needs reauth sid=" << kv.first;
-        hr = SetUserProperty(kv.first.c_str(), kUserNeedsReauth, 1);
-        if (FAILED(hr)) {
-          LOGFN(ERROR) << "SetUserProperty sid=" << kv.first
-                       << " hr=" << putHR(hr);
-        }
-      } else {
-        LOGFN(INFO) << "No reauth sid=" << kv.first;
-      }
-    }
-  }
-
-  // This event handle is used only in tests to wait for the reauth check
-  // to complete.
-  if (reauth_check_done_event != INVALID_HANDLE_VALUE)
-    ::SetEvent(reauth_check_done_event);
-
-  LOGFN(INFO) << "Done";
-  return 0;
 }
 
 // ICredentialProvider ////////////////////////////////////////////////////////
@@ -519,8 +412,7 @@ HRESULT CGaiaCredentialProvider::GetCredentialCount(
     *autologin_with_default = true;
   }
 
-  LOGFN(INFO) << " count=" << *count
-              << " default=" << *default_index
+  LOGFN(INFO) << " count=" << *count << " default=" << *default_index
               << " auto=" << *autologin_with_default;
   return S_OK;
 }
@@ -529,7 +421,7 @@ HRESULT CGaiaCredentialProvider::GetCredentialAt(
     DWORD index,
     ICredentialProviderCredential** ppcpc) {
   HRESULT hr = E_INVALIDARG;
-  if (!ppcpc || (index > 1)) {
+  if (!ppcpc || index >= users_.size()) {
     LOG(ERROR) << "hr=" << putHR(hr) << " index=" << index;
     return hr;
   }

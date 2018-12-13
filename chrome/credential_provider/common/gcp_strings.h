@@ -22,7 +22,6 @@ extern const char kKeyUsername[];
 
 // Name of registry value that holds user properties.
 extern const wchar_t kUserTokenHandle[];
-extern const wchar_t kUserNeedsReauth[];
 extern const wchar_t kUserEmail[];
 extern const wchar_t kUserId[];
 

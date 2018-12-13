@@ -4,7 +4,10 @@
 
 #include "chrome/credential_provider/test/com_fakes.h"
 
+#include <sddl.h>  // For ConvertSidToStringSid()
+
 #include "base/logging.h"
+#include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/stdafx.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,13 +110,16 @@ FakeGaiaCredentialProvider::FakeGaiaCredentialProvider() {}
 
 FakeGaiaCredentialProvider::~FakeGaiaCredentialProvider() {}
 
-HRESULT FakeGaiaCredentialProvider::OnUserAuthenticated(IUnknown* credential,
-                                                        BSTR username,
-                                                        BSTR password,
-                                                        BSTR sid) {
+HRESULT FakeGaiaCredentialProvider::OnUserAuthenticated(
+    IUnknown* credential,
+    BSTR username,
+    BSTR password,
+    BSTR sid,
+    BOOL fire_credentials_changed) {
   username_ = username;
   password_ = password;
   sid_ = sid;
+  credentials_changed_fired_ = fire_credentials_changed;
   return S_OK;
 }
 
@@ -122,11 +128,6 @@ HRESULT FakeGaiaCredentialProvider::HasInternetConnection() {
 }
 
 // IGaiaCredentialProviderForTesting //////////////////////////////////////////
-
-HRESULT FakeGaiaCredentialProvider::SetReauthCheckDoneEvent(INT_PTR event) {
-  NOTREACHED();
-  return E_NOTIMPL;
-}
 
 HRESULT FakeGaiaCredentialProvider::SetHasInternetConnection(
     HasInternetConnectionCheckType has_internet_connection) {

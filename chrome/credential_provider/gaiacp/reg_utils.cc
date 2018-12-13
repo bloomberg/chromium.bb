@@ -113,6 +113,11 @@ HRESULT GetGlobalFlag(const base::string16& name,
   return GetRegString(kGcpRootKeyName, name, value, length);
 }
 
+HRESULT SetGlobalFlagForTesting(const base::string16& name,
+                                const base::string16& value) {
+  return SetRegString(kGcpRootKeyName, name, value);
+}
+
 HRESULT GetUserProperty(const base::string16& sid,
                         const base::string16& name,
                         DWORD* value) {

@@ -5,7 +5,9 @@
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 
 #include <windows.h>
+
 #include <lm.h>
+
 #include <Shellapi.h>  // For <Shlobj.h>
 #include <Shlobj.h>    // For SHFileOperation()
 #include <sddl.h>      // For ConvertSidToStringSid()
@@ -195,7 +197,7 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
     nsts = ::NetUserSetInfo(nullptr, info.usri1_name, 1011,
                             reinterpret_cast<LPBYTE>(&info1011), error);
     if (nsts != NERR_Success) {
-      LOGFN(ERROR) << "NetUserSetInfo nsts=" << nsts;
+      LOGFN(ERROR) << "NetUserSetInfo(set full name) nsts=" << nsts;
     }
   } else if (nsts == NERR_UserExists) {
     // TODO: If adding the special "gaia" account might want to check that
@@ -245,21 +247,64 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
              : (nsts == NERR_Success ? S_OK : HRESULT_FROM_WIN32(nsts));
 }
 
-HRESULT OSUserManager::SetUserPassword(const wchar_t* username,
-                                       const wchar_t* password,
-                                       DWORD* error) {
-  USER_INFO_1003 info1003;
-  NET_API_STATUS nsts;
-  memset(&info1003, 0, sizeof(info1003));
-  info1003.usri1003_password = const_cast<wchar_t*>(password);
-  nsts = ::NetUserSetInfo(nullptr, username, 1003,
-                          reinterpret_cast<LPBYTE>(&info1003), error);
+HRESULT OSUserManager::ChangeUserPassword(const wchar_t* username,
+                                          const wchar_t* old_password,
+                                          const wchar_t* new_password) {
+  // Remove the UF_PASSWD_CANT_CHANGE flag temporarily so that the password can
+  // be changed.
+  LPBYTE buffer = nullptr;
+  NET_API_STATUS nsts = ::NetUserGetInfo(nullptr, username, 4, &buffer);
   if (nsts != NERR_Success) {
-    LOGFN(ERROR) << "Unable to change password for '" << username
-                 << "' nsts=" << nsts;
+    LOGFN(ERROR) << "NetUserGetInfo(get password change flag) nsts=" << nsts;
+    return HRESULT_FROM_WIN32(nsts);
   }
 
-  return HRESULT_FROM_WIN32(nsts);
+  USER_INFO_4* user_info = reinterpret_cast<USER_INFO_4*>(buffer);
+  DWORD original_user_flags = user_info->usri4_flags;
+
+  user_info->usri4_flags &= ~UF_PASSWD_CANT_CHANGE;
+  nsts = ::NetUserSetInfo(nullptr, username, 4, buffer, nullptr);
+  if (nsts != NERR_Success) {
+    LOGFN(ERROR) << "NetUserSetInfo(allow password change) nsts=" << nsts;
+    ::NetApiBufferFree(buffer);
+    return HRESULT_FROM_WIN32(nsts);
+  }
+
+  NET_API_STATUS changepassword_nsts =
+      ::NetUserChangePassword(L"\\\\.", username, old_password, new_password);
+  if (changepassword_nsts != NERR_Success) {
+    LOGFN(ERROR) << "Unable to change password for '" << username
+                 << "' nsts=" << changepassword_nsts;
+  }
+
+  user_info->usri4_flags = original_user_flags;
+  nsts = ::NetUserSetInfo(nullptr, username, 4, buffer, nullptr);
+  if (nsts != NERR_Success) {
+    LOGFN(ERROR) << "NetUserSetInfo(reset password change flag) nsts=" << nsts;
+  }
+
+  ::NetApiBufferFree(buffer);
+
+  return HRESULT_FROM_WIN32(changepassword_nsts);
+}
+
+HRESULT OSUserManager::IsWindowsPasswordValid(const wchar_t* username,
+                                              const wchar_t* password) {
+  // Check if the user exists before trying to log them on, because an error
+  // of ERROR_LOGON_FAILURE will be returned if the user does not exist
+  // or if the password is invalid. This function only wants to return
+  // S_FALSE on an ERROR_LOGON_FAILURE if the user exists.
+  PSID sid;
+  HRESULT hr = GetUserSID(username, &sid);
+
+  if (SUCCEEDED(hr)) {
+    ::LocalFree(sid);
+    base::win::ScopedHandle handle;
+    hr = CreateLogonToken(username, password, /*interactive=*/true, &handle);
+    return hr == HRESULT_FROM_WIN32(ERROR_LOGON_FAILURE) ? S_FALSE : hr;
+  }
+
+  return hr;
 }
 
 HRESULT OSUserManager::CreateLogonToken(const wchar_t* username,

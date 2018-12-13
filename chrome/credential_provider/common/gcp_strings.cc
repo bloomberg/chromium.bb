@@ -21,7 +21,6 @@ const char kKeyUsername[] = "user_name";
 
 // Name of registry value that holds user properties.
 const wchar_t kUserTokenHandle[] = L"th";
-const wchar_t kUserNeedsReauth[] = L"nr";
 const wchar_t kUserEmail[] = L"email";
 const wchar_t kUserId[] = L"id";
 
