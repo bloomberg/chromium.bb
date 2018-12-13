@@ -147,7 +147,9 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   bool canceled_ = false;
   bool need_to_cancel_ = false;
 
-  bool forbid_cross_origin_redirects_ = false;
+  // true when LoadTopLevelScriptAsynchronously() is called,
+  // false when LoadSynchronously() is called i.e. for importScripts().
+  bool is_top_level_script_ = false;
 
   unsigned long identifier_ = 0;
   long long app_cache_id_ = 0;
