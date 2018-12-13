@@ -292,7 +292,7 @@ activeElement: TEXTAREA
 Shift+Tab:
 Viewport virtual selection: 0
 Has object: expanded
-activeElement: LI.parent.object-properties-section-root-element.selected.expanded
+activeElement: LI.parent.object-properties-section-root-element.expanded.selected
 active text: {a0: 0, a1: 1, a2: 2, a3: 3, a4: 4, …}
 Is at bottom: false, should stick: false
 
