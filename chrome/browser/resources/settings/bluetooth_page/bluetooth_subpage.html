@@ -40,7 +40,8 @@
     </style>
 
     <div class="settings-box first" actionable on-click="onEnableTap_">
-      <div id="onOff" class="start" on$="[[bluetoothToggleState]]">
+      <div id="onOff" class="start settings-box-text"
+          on$="[[bluetoothToggleState]]">
         [[getOnOffString_(bluetoothToggleState,
           '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
       </div>
@@ -53,9 +54,11 @@
 
     <!-- Paired device list -->
     <div class="settings-box first header" hidden="[[!bluetoothToggleState]]">
-      <div class="start">$i18n{bluetoothDeviceListPaired}</div>
+      <div class="start settings-box-text">
+        $i18n{bluetoothDeviceListPaired}
+      </div>
     </div>
-    <div id="noPairedDevices" class="list-frame"
+    <div id="noPairedDevices" class="list-frame settings-box-text"
         hidden="[[!showNoDevices_(bluetoothToggleState, pairedDeviceList_)]]">
       $i18n{bluetoothNoDevices}
     </div>
@@ -75,11 +78,13 @@
 
     <!-- Unpaired device list -->
     <div class="settings-box first header" hidden="[[!bluetoothToggleState]]">
-      <div class="start">$i18n{bluetoothDeviceListUnpaired}</div>
+      <div class="start settings-box-text">
+        $i18n{bluetoothDeviceListUnpaired}
+      </div>
       <paper-spinner-lite active="[[showSpinner_]]">
       </paper-spinner-lite>
     </div>
-    <div id="noUnpairedDevices" class="list-frame"
+    <div id="noUnpairedDevices" class="list-frame settings-box-text"
         hidden="[[!showNoDevices_(bluetoothToggleState, unpairedDeviceList_)]]">
       $i18n{bluetoothNoDevicesFound}
     </div>

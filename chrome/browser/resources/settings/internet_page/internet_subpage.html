@@ -112,7 +112,7 @@
         <!-- VPN only header for built-in VPNs. -->
         <template is="dom-if" if="[[isEqual_('VPN', deviceState.Type)]]">
           <div class="vpn-header layout horizontal center">
-            <div class="flex">$i18n{networkVpnBuiltin}</div>
+            <div class="flex settings-box-text">$i18n{networkVpnBuiltin}</div>
             <paper-icon-button-light class="icon-add-circle">
               <button aria-label="$i18n{internetAddVPN}"
                   on-click="onAddButtonTap_" tabindex$="[[tabindex]]">
@@ -162,7 +162,7 @@
           <template is="dom-repeat" items="[[thirdPartyVpnProviders]]">
             <div id="[[item.ProviderName]]"
                 class="vpn-header layout horizontal center">
-              <div class="flex">[[item.ProviderName]]</div>
+              <div class="flex settings-box-text">[[item.ProviderName]]</div>
               <paper-icon-button-light>
                 <button class="icon-add-circle"
                     aria-label$="[[getAddThirdPartyVpnA11yString_(item)]]"
@@ -176,7 +176,7 @@
                 on-selected="onNetworkSelected_">
             </cr-network-list>
             <div hidden$="[[haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"
-                class="no-networks">
+                class="no-networks settings-box-text">
               $i18n{internetNoNetworks}
             </div>
           </template>
@@ -184,7 +184,7 @@
           <template is="dom-repeat" items="[[arcVpnProviders]]">
             <div id="[[item.ProviderName]]"
                 class="vpn-header layout horizontal center">
-              <div class="flex">[[item.ProviderName]]</div>
+              <div class="flex settings-box-text">[[item.ProviderName]]</div>
               <paper-icon-button-light>
                 <button class="icon-add-circle"
                     aria-label$="[[getAddArcVpnAllyString_(item)]]"
@@ -209,7 +209,7 @@
           if="[[tetherToggleIsVisible_(deviceState, tetherDeviceState)]]">
         <div class="settings-box two-line" actionable
             on-click="onTetherEnabledTap_">
-          <div class="start">
+          <div class="start settings-box-text">
             $i18n{internetToggleTetherLabel}
             <div id="tetherSecondary" class="secondary">
               $i18n{internetToggleTetherSubtext}

@@ -69,7 +69,7 @@
       <div class="start layout horizontal center">
         <cr-network-icon network-state="[[networkProperties]]">
         </cr-network-icon>
-        <div id="networkState" class="title"
+        <div id="networkState" class="title settings-box-text"
             connected$="[[isConnectedState_(networkProperties)]]"
             error$="[[outOfRange_]]">
           [[getStateText_(networkProperties, outOfRange_)]]
@@ -127,9 +127,9 @@
         hidden$="[[!isBlockedByPolicy_(networkProperties, globalPolicy,
             managedNetworkAvailable)]]">
       <iron-icon class="policy" icon="cr20:domain"></iron-icon>
-      <div>$i18n{networkConnectNotAllowed}</div>
+      <div class="settings-box-text">$i18n{networkConnectNotAllowed}</div>
     </div>
-    <div class="settings-box continuation"
+    <div class="settings-box continuation settings-box-text"
         hidden$="[[!showShared_(networkProperties, globalPolicy,
             managedNetworkAvailable)]]">
       $i18n{networkShared}
@@ -140,7 +140,9 @@
       <div class="settings-box continuation single-column">
         <div class="layout horizontal center">
           <iron-icon class="policy" icon="cr:group"></iron-icon>
-          <div>[[i18n('networkPrimaryUserControlled', primaryUserEmail_)]]</div>
+          <div class="settings-box-text">
+            [[i18n('networkPrimaryUserControlled', primaryUserEmail_)]]
+          </div>
         </div>
       </div>
     </template>
@@ -151,7 +153,7 @@
           if="[[showPreferNetwork_(networkProperties, globalPolicy,
               managedNetworkAvailable)]]">
         <div class="settings-box">
-          <div id="preferNetworkToggleLabel"class="start">
+          <div id="preferNetworkToggleLabel" class="start settings-box-text">
             $i18n{networkPrefer}
           </div>
           <cr-policy-network-indicator
@@ -168,7 +170,7 @@
           if="[[showAutoConnect_(networkProperties, globalPolicy,
               managedNetworkAvailable)]]">
         <div class="settings-box">
-          <div id="autoConnectToggleLabel" class="start">
+          <div id="autoConnectToggleLabel" class="start settings-box-text">
             $i18n{networkAutoConnect}
           </div>
           <cr-policy-network-indicator
@@ -184,7 +186,7 @@
       <template is="dom-if"
           if="[[showAlwaysOnVpn_(networkProperties)]]">
         <div class="settings-box">
-          <div id="AlwaysOnVpnToggleLabel" class="start">
+          <div id="AlwaysOnVpnToggleLabel" class="start settings-box-text">
             $i18n{networkAlwaysOnVpn}
           </div>
           <cr-toggle checked="{{alwaysOnVpn_}}"
@@ -223,7 +225,7 @@
         </div>
       </template>
       <!-- IP Address. -->
-      <div class="settings-box two-line single-column stretch"
+      <div class="settings-box two-line single-column stretch settings-box-text"
         hidden$="[[!showIpAddress_(ipAddress_, networkProperties)]]">
         <div>$i18n{networkIPAddress}</div>
         <div class="secondary">[[ipAddress_]]</div>
@@ -243,7 +245,9 @@
       <template is="dom-if" if="[[showAdvanced_(networkProperties)]]">
         <!-- Advanced toggle. -->
         <div class="settings-box" actionable on-click="toggleAdvancedExpanded_">
-          <div class="flex">$i18n{networkSectionAdvanced}</div>
+          <div class="flex settings-box-text">
+            $i18n{networkSectionAdvanced}
+          </div>
           <cr-expand-button expanded="{{advancedExpanded_}}"
               alt="$i18n{networkSectionAdvancedA11yLabel}">
           </cr-expand-button>
@@ -273,7 +277,9 @@
           globalPolicy, managedNetworkAvailable)]]">
         <!-- Network toggle -->
         <div class="settings-box" actionable on-click="toggleNetworkExpanded_">
-          <div class="start">$i18n{networkSectionNetwork}</div>
+          <div class="start settings-box-text">
+            $i18n{networkSectionNetwork}
+          </div>
           <cr-expand-button expanded="{{networkExpanded_}}"
               alt="$i18n{networkSectionNetworkExpandA11yLabel}">
           </cr-expand-button>
@@ -316,7 +322,7 @@
           globalPolicy, managedNetworkAvailable)]]">
         <!-- Proxy toggle -->
         <div class="settings-box" actionable on-click="toggleProxyExpanded_">
-          <div class="start">$i18n{networkSectionProxy}</div>
+          <div class="start settings-box-text">$i18n{networkSectionProxy}</div>
           <cr-expand-button expanded="{{proxyExpanded_}}"
               alt="$i18n{networkSectionProxyExpandA11yLabel}">
           </cr-expand-button>
