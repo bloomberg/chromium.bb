@@ -405,8 +405,8 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
         *metadata.backend_format.getGLTarget());
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    metadata.driver_backend_format = GrBackendFormat::MakeVk(
-        gfx::SkColorTypeToVkFormat(metadata.color_type));
+    metadata.driver_backend_format =
+        GrBackendFormat::MakeVk(ToVkFormat(metadata.resource_format));
 #else
     NOTREACHED();
 #endif
@@ -414,11 +414,13 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
 
   DCHECK(!metadata.mailbox.IsZero());
   resource_sync_tokens_.push_back(metadata.sync_token);
+  SkColorType sk_color_type = ResourceFormatToClosestSkColorType(
+      /*gpu_compositing=*/true, metadata.resource_format);
 
   return PromiseTextureHelper<ResourceMetadata>::MakePromiseSkImage(
       this, &recorder_.value(), metadata.driver_backend_format, metadata.size,
-      metadata.mip_mapped, metadata.origin, metadata.color_type,
-      metadata.alpha_type, metadata.color_space, std::move(metadata));
+      metadata.mip_mapped, metadata.origin, sk_color_type, metadata.alpha_type,
+      metadata.color_space, std::move(metadata));
 }
 
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
@@ -534,8 +536,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
         GL_TEXTURE_2D);
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    backend_format =
-        GrBackendFormat::MakeVk(gfx::SkColorTypeToVkFormat(color_type));
+    backend_format = GrBackendFormat::MakeVk(ToVkFormat(format));
 #else
     NOTREACHED();
 #endif
@@ -632,8 +633,7 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
         GL_TEXTURE_2D);
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    backend_format =
-        GrBackendFormat::MakeVk(gfx::SkColorTypeToVkFormat(color_type));
+    backend_format = GrBackendFormat::MakeVk(ToVkFormat(format));
 #else
     NOTREACHED();
 #endif

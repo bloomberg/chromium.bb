@@ -401,4 +401,47 @@ bool GLSupportsFormat(ResourceFormat format) {
   }
 }
 
+#if BUILDFLAG(ENABLE_VULKAN)
+VkFormat ToVkFormat(ResourceFormat format) {
+  switch (format) {
+    case RGBA_8888:
+      return VK_FORMAT_R8G8B8A8_UNORM;  // or VK_FORMAT_R8G8B8A8_SRGB
+    case RGBA_4444:
+      return VK_FORMAT_R4G4B4A4_UNORM_PACK16;
+    case BGRA_8888:
+      return VK_FORMAT_B8G8R8A8_UNORM;
+    case RED_8:
+      return VK_FORMAT_R8_UNORM;
+    case RGB_565:
+      return VK_FORMAT_R5G6B5_UNORM_PACK16;
+    case BGR_565:
+      return VK_FORMAT_B5G6R5_UNORM_PACK16;
+    case RG_88:
+      return VK_FORMAT_R8G8_UNORM;
+    case RGBA_F16:
+      return VK_FORMAT_R16_SFLOAT;
+    case R16_EXT:
+      return VK_FORMAT_R16_UNORM;
+    case RGBX_8888:
+      return VK_FORMAT_R8G8B8_UNORM;
+    case BGRX_8888:
+      return VK_FORMAT_B8G8R8_UNORM;
+    case RGBX_1010102:
+      return VK_FORMAT_A2R10G10B10_UNORM_PACK32;
+    case BGRX_1010102:
+      return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+    case ALPHA_8:
+    case LUMINANCE_8:
+    case LUMINANCE_F16:
+    case YVU_420:
+    case YUV_420_BIPLANAR:
+    case UYVY_422:
+    case ETC1:
+      break;
+  }
+  NOTREACHED();
+  return VK_FORMAT_UNDEFINED;
+}
+#endif
+
 }  // namespace viz

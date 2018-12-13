@@ -12,7 +12,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -528,8 +527,7 @@ ResourceMetadata DisplayResourceProvider::LockForExternalUse(ResourceId id) {
   metadata.size = resource->transferable.size;
   metadata.mip_mapped = GrMipMapped::kNo;
   metadata.origin = kTopLeft_GrSurfaceOrigin;
-  metadata.color_type = ResourceFormatToClosestSkColorType(
-      !IsSoftware(), resource->transferable.format);
+  metadata.resource_format = resource->transferable.format;
   metadata.alpha_type = kPremul_SkAlphaType;
   metadata.color_space = nullptr;
   metadata.sync_token = resource->sync_token();

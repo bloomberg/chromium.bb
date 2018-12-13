@@ -25,7 +25,6 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/gpu/texture_allocation.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -149,8 +148,6 @@ static void RasterizeSourceOOP(
   // use GL_TEXTURE_2D.
   ri->BeginRasterCHROMIUM(raster_source->background_color(), msaa_sample_count,
                           playback_settings.use_lcd_text,
-                          viz::ResourceFormatToClosestSkColorType(
-                              /*gpu_compositing=*/true, resource_format),
                           playback_settings.raster_color_space, mailbox->name);
   float recording_to_raster_scale =
       transform.scale() / raster_source->recording_scale_factor();

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 
+#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -42,8 +43,8 @@ struct VIZ_SERVICE_EXPORT ResourceMetadata {
   // The origin type for the resource texture.
   GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin;
 
-  // The color type for creating SkImage from the resource texture.
-  SkColorType color_type = kUnknown_SkColorType;
+  // ResourceFormat from the resource texture.
+  ResourceFormat resource_format = RGBA_8888;
 
   // The alpha type for the resource texture.
   SkAlphaType alpha_type = kUnknown_SkAlphaType;

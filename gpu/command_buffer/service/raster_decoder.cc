@@ -511,7 +511,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoBeginRasterCHROMIUM(GLuint sk_color,
                              GLuint msaa_sample_count,
                              GLboolean can_use_lcd_text,
-                             GLint color_type,
                              GLuint color_space_transfer_cache_id,
                              const volatile GLbyte* key);
   void DoRasterCHROMIUM(GLuint raster_shm_id,
@@ -2127,7 +2126,6 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    GLint color_type,
     GLuint color_space_transfer_cache_id,
     const volatile GLbyte* key) {
   if (!gr_context()) {
@@ -2169,7 +2167,8 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
         SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   }
 
-  SkColorType sk_color_type = static_cast<SkColorType>(color_type);
+  SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+      /*gpu_compositing=*/true, shared_image_->format());
   // If we can't match requested MSAA samples, don't use MSAA.
   int final_msaa_count = std::max(static_cast<int>(msaa_sample_count), 0);
   if (final_msaa_count >
@@ -2177,7 +2176,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
     final_msaa_count = 0;
 
   sk_surface_ = shared_image_->BeginWriteAccess(gr_context(), final_msaa_count,
-                                                sk_color_type, surface_props);
+                                                surface_props);
   if (!sk_surface_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "failed to create surface");

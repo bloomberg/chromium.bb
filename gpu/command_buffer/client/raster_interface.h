@@ -43,7 +43,6 @@ class RasterInterface {
       GLuint sk_color,
       GLuint msaa_sample_count,
       GLboolean can_use_lcd_text,
-      GLint pixel_config,
       const cc::RasterColorSpace& raster_color_space,
       const GLbyte* mailbox) = 0;
   virtual void RasterCHROMIUM(const cc::DisplayItemList* list,

@@ -97,7 +97,6 @@ void InsertFenceSyncCHROMIUM(GLuint64 release_count) {
 void BeginRasterCHROMIUMImmediate(GLuint sk_color,
                                   GLuint msaa_sample_count,
                                   GLboolean can_use_lcd_text,
-                                  GLint color_type,
                                   GLuint color_space_transfer_cache_id,
                                   const GLbyte* mailbox) {
   const uint32_t size =
@@ -106,7 +105,7 @@ void BeginRasterCHROMIUMImmediate(GLuint sk_color,
       GetImmediateCmdSpaceTotalSize<raster::cmds::BeginRasterCHROMIUMImmediate>(
           size);
   if (c) {
-    c->Init(sk_color, msaa_sample_count, can_use_lcd_text, color_type,
+    c->Init(sk_color, msaa_sample_count, can_use_lcd_text,
             color_space_transfer_cache_id, mailbox);
   }
 }

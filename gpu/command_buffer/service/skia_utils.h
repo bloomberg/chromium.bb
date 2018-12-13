@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SKIA_UTILS_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SKIA_UTILS_H_
 
+#include "components/viz/common/resources/resource_format.h"
 #include "gpu/gpu_gles2_export.h"
 
 // Forwardly declare a few GL types to avoid including GL header files.
@@ -26,7 +27,7 @@ GPU_GLES2_EXPORT bool GetGrBackendTexture(GLenum target,
                                           GLenum internal_format,
                                           GLenum driver_internal_format,
                                           GLuint service_id,
-                                          GLint sk_color_type,
+                                          viz::ResourceFormat resource_format,
                                           GrBackendTexture* gr_texture);
 
 }  // namespace gpu

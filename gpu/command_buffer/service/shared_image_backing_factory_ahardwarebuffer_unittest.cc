@@ -141,16 +141,13 @@ TEST_F(SharedImageBackingFactoryAHBTest, Basic) {
       shared_image_representation_factory_->ProduceSkia(mailbox);
   EXPECT_TRUE(skia_representation);
   auto surface = skia_representation->BeginWriteAccess(
-      gr_context(), 0, kRGBA_8888_SkColorType,
-      SkSurfaceProps(0, kUnknown_SkPixelGeometry));
+      gr_context(), 0, SkSurfaceProps(0, kUnknown_SkPixelGeometry));
   EXPECT_TRUE(surface);
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   skia_representation->EndWriteAccess(std::move(surface));
   GrBackendTexture backend_texture;
-  EXPECT_TRUE(skia_representation->BeginReadAccess(
-
-      kRGBA_8888_SkColorType, &backend_texture));
+  EXPECT_TRUE(skia_representation->BeginReadAccess(&backend_texture));
   EXPECT_EQ(size.width(), backend_texture.width());
   EXPECT_EQ(size.width(), backend_texture.width());
   skia_representation->EndReadAccess();
@@ -210,8 +207,7 @@ TEST_F(SharedImageBackingFactoryAHBTest, GLSkiaGL) {
       shared_image_representation_factory_->ProduceSkia(mailbox);
   EXPECT_TRUE(skia_representation);
   GrBackendTexture backend_texture;
-  EXPECT_TRUE(skia_representation->BeginReadAccess(kRGBA_8888_SkColorType,
-                                                   &backend_texture));
+  EXPECT_TRUE(skia_representation->BeginReadAccess(&backend_texture));
   EXPECT_EQ(size.width(), backend_texture.width());
   EXPECT_EQ(size.width(), backend_texture.width());
 
