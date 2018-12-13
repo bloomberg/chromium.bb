@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/services/secure_channel/data_with_timestamp.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
-#include "components/cryptauth/data_with_timestamp.h"
 
 namespace chromeos {
 
@@ -29,8 +29,8 @@ class BleServiceDataHelper {
   // Generates service data to be used in a foreground BLE advertisement from
   // the device with ID |local_device_id| to the device with ID
   // |remote_device_id|. If no service data can be generated, null is returned.
-  virtual std::unique_ptr<cryptauth::DataWithTimestamp>
-  GenerateForegroundAdvertisement(const DeviceIdPair& device_id_pair) = 0;
+  virtual std::unique_ptr<DataWithTimestamp> GenerateForegroundAdvertisement(
+      const DeviceIdPair& device_id_pair) = 0;
 
   // Remote device paired with a boolean of whether the device was identified
   // via the background advertisement scheme.

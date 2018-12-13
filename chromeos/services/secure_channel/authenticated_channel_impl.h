@@ -10,20 +10,18 @@
 
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
-#include "components/cryptauth/secure_channel.h"
-
-namespace cryptauth {
-class SecureChannel;
-}  // namespace cryptauth
+#include "chromeos/services/secure_channel/secure_channel.h"
 
 namespace chromeos {
 
 namespace secure_channel {
 
+class SecureChannel;
+
 // Concrete AuthenticatedChannel implementation, whose send/receive mechanisms
 // are implemented via SecureChannel.
 class AuthenticatedChannelImpl : public AuthenticatedChannel,
-                                 public cryptauth::SecureChannel::Observer {
+                                 public SecureChannel::Observer {
  public:
   class Factory {
    public:
@@ -32,7 +30,7 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
     virtual std::unique_ptr<AuthenticatedChannel> BuildInstance(
         const std::vector<mojom::ConnectionCreationDetail>&
             connection_creation_details,
-        std::unique_ptr<cryptauth::SecureChannel> secure_channel);
+        std::unique_ptr<SecureChannel> secure_channel);
 
    private:
     static Factory* test_factory_;
@@ -41,10 +39,9 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
   ~AuthenticatedChannelImpl() override;
 
  private:
-  AuthenticatedChannelImpl(
-      const std::vector<mojom::ConnectionCreationDetail>&
-          connection_creation_details,
-      std::unique_ptr<cryptauth::SecureChannel> secure_channel);
+  AuthenticatedChannelImpl(const std::vector<mojom::ConnectionCreationDetail>&
+                               connection_creation_details,
+                           std::unique_ptr<SecureChannel> secure_channel);
 
   // AuthenticatedChannel:
   void GetConnectionMetadata(
@@ -54,15 +51,15 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
                           base::OnceClosure on_sent_callback) final;
   void PerformDisconnection() override;
 
-  // cryptauth::SecureChannel::Observer:
+  // SecureChannel::Observer:
   void OnSecureChannelStatusChanged(
-      cryptauth::SecureChannel* secure_channel,
-      const cryptauth::SecureChannel::Status& old_status,
-      const cryptauth::SecureChannel::Status& new_status) override;
-  void OnMessageReceived(cryptauth::SecureChannel* secure_channel,
+      SecureChannel* secure_channel,
+      const SecureChannel::Status& old_status,
+      const SecureChannel::Status& new_status) override;
+  void OnMessageReceived(SecureChannel* secure_channel,
                          const std::string& feature,
                          const std::string& payload) override;
-  void OnMessageSent(cryptauth::SecureChannel* secure_channel,
+  void OnMessageSent(SecureChannel* secure_channel,
                      int sequence_number) override;
 
   void OnRssiFetched(
@@ -71,7 +68,7 @@ class AuthenticatedChannelImpl : public AuthenticatedChannel,
 
   const std::vector<mojom::ConnectionCreationDetail>
       connection_creation_details_;
-  std::unique_ptr<cryptauth::SecureChannel> secure_channel_;
+  std::unique_ptr<SecureChannel> secure_channel_;
   std::unordered_map<int, base::OnceClosure> sequence_number_to_callback_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatedChannelImpl);

@@ -13,7 +13,7 @@ namespace tether {
 
 FakeBleConnectionManager::StatusAndRegisteredConnectionRequestIds::
     StatusAndRegisteredConnectionRequestIds()
-    : status(cryptauth::SecureChannel::Status::DISCONNECTED) {}
+    : status(secure_channel::SecureChannel::Status::DISCONNECTED) {}
 
 FakeBleConnectionManager::StatusAndRegisteredConnectionRequestIds::
     StatusAndRegisteredConnectionRequestIds(
@@ -32,12 +32,12 @@ FakeBleConnectionManager::~FakeBleConnectionManager() = default;
 
 void FakeBleConnectionManager::SetDeviceStatus(
     const std::string& device_id,
-    const cryptauth::SecureChannel::Status& status,
+    const secure_channel::SecureChannel::Status& status,
     BleConnectionManager::StateChangeDetail state_change_detail) {
   const auto iter = device_id_map_.find(device_id);
   DCHECK(iter != device_id_map_.end());
 
-  cryptauth::SecureChannel::Status old_status = iter->second.status;
+  secure_channel::SecureChannel::Status old_status = iter->second.status;
   if (old_status == status) {
     // If the status has not changed, do not do anything.
     return;
@@ -63,10 +63,11 @@ void FakeBleConnectionManager::SimulateUnansweredConnectionAttempts(
     const std::string& device_id,
     size_t num_attempts) {
   for (size_t i = 0; i < num_attempts; ++i) {
-    SetDeviceStatus(device_id, cryptauth::SecureChannel::Status::CONNECTING,
+    SetDeviceStatus(device_id,
+                    secure_channel::SecureChannel::Status::CONNECTING,
                     StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
     SetDeviceStatus(
-        device_id, cryptauth::SecureChannel::Status::DISCONNECTED,
+        device_id, secure_channel::SecureChannel::Status::DISCONNECTED,
         StateChangeDetail::STATE_CHANGE_DETAIL_COULD_NOT_ATTEMPT_CONNECTION);
   }
 }
@@ -75,14 +76,16 @@ void FakeBleConnectionManager::SimulateGattErrorConnectionAttempts(
     const std::string& device_id,
     size_t num_attempts) {
   for (size_t i = 0; i < num_attempts; ++i) {
-    SetDeviceStatus(device_id, cryptauth::SecureChannel::Status::CONNECTING,
+    SetDeviceStatus(device_id,
+                    secure_channel::SecureChannel::Status::CONNECTING,
                     StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
-    SetDeviceStatus(device_id, cryptauth::SecureChannel::Status::CONNECTED,
+    SetDeviceStatus(device_id, secure_channel::SecureChannel::Status::CONNECTED,
                     StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
-    SetDeviceStatus(device_id, cryptauth::SecureChannel::Status::AUTHENTICATING,
+    SetDeviceStatus(device_id,
+                    secure_channel::SecureChannel::Status::AUTHENTICATING,
                     StateChangeDetail::STATE_CHANGE_DETAIL_NONE);
     SetDeviceStatus(
-        device_id, cryptauth::SecureChannel::Status::DISCONNECTED,
+        device_id, secure_channel::SecureChannel::Status::DISCONNECTED,
         StateChangeDetail::STATE_CHANGE_DETAIL_GATT_CONNECTION_WAS_ATTEMPTED);
   }
 }
@@ -116,7 +119,7 @@ int FakeBleConnectionManager::SendMessage(const std::string& device_id,
 
 bool FakeBleConnectionManager::GetStatusForDevice(
     const std::string& device_id,
-    cryptauth::SecureChannel::Status* status) const {
+    secure_channel::SecureChannel::Status* status) const {
   const auto iter = device_id_map_.find(device_id);
   if (iter == device_id_map_.end())
     return false;

@@ -12,12 +12,7 @@
 #include "base/optional.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/secure_channel/ble_service_data_helper.h"
-#include "components/cryptauth/data_with_timestamp.h"
-
-namespace cryptauth {
-class BackgroundEidGenerator;
-class ForegroundEidGenerator;
-}  // namespace cryptauth
+#include "chromeos/services/secure_channel/data_with_timestamp.h"
 
 namespace chromeos {
 
@@ -26,6 +21,9 @@ class RemoteDeviceCache;
 }  // namespace multidevice
 
 namespace secure_channel {
+
+class BackgroundEidGenerator;
+class ForegroundEidGenerator;
 
 // Concrete BleServiceDataHelper implementation.
 class BleServiceDataHelperImpl : public BleServiceDataHelper {
@@ -51,7 +49,7 @@ class BleServiceDataHelperImpl : public BleServiceDataHelper {
       multidevice::RemoteDeviceCache* remote_device_cache);
 
   // BleServiceDataHelper:
-  std::unique_ptr<cryptauth::DataWithTimestamp> GenerateForegroundAdvertisement(
+  std::unique_ptr<DataWithTimestamp> GenerateForegroundAdvertisement(
       const DeviceIdPair& device_id_pair) override;
   base::Optional<DeviceWithBackgroundBool> PerformIdentifyRemoteDevice(
       const std::string& service_data,
@@ -63,14 +61,13 @@ class BleServiceDataHelperImpl : public BleServiceDataHelper {
       const std::string& local_device_id,
       const std::vector<std::string>& remote_device_ids);
 
-  void SetTestDoubles(std::unique_ptr<cryptauth::BackgroundEidGenerator>
-                          background_eid_generator,
-                      std::unique_ptr<cryptauth::ForegroundEidGenerator>
-                          foreground_eid_generator);
+  void SetTestDoubles(
+      std::unique_ptr<BackgroundEidGenerator> background_eid_generator,
+      std::unique_ptr<ForegroundEidGenerator> foreground_eid_generator);
 
   multidevice::RemoteDeviceCache* remote_device_cache_;
-  std::unique_ptr<cryptauth::BackgroundEidGenerator> background_eid_generator_;
-  std::unique_ptr<cryptauth::ForegroundEidGenerator> foreground_eid_generator_;
+  std::unique_ptr<BackgroundEidGenerator> background_eid_generator_;
+  std::unique_ptr<ForegroundEidGenerator> foreground_eid_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(BleServiceDataHelperImpl);
 };

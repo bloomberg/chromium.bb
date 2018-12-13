@@ -16,9 +16,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/fake_authenticated_channel.h"
+#include "chromeos/services/secure_channel/fake_connection.h"
+#include "chromeos/services/secure_channel/fake_secure_channel_connection.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/fake_secure_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -40,10 +40,9 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
   ~SecureChannelAuthenticatedChannelImplTest() override = default;
 
   void SetUp() override {
-    auto fake_secure_channel = std::make_unique<cryptauth::FakeSecureChannel>(
-        std::make_unique<cryptauth::FakeConnection>(test_device_));
-    fake_secure_channel->ChangeStatus(
-        cryptauth::SecureChannel::Status::AUTHENTICATED);
+    auto fake_secure_channel = std::make_unique<FakeSecureChannelConnection>(
+        std::make_unique<FakeConnection>(test_device_));
+    fake_secure_channel->ChangeStatus(SecureChannel::Status::AUTHENTICATED);
     fake_secure_channel->set_rssi_to_return(kTestRssi);
     fake_secure_channel->set_channel_binding_data(kTestChannelBindingData);
     fake_secure_channel_ = fake_secure_channel.get();
@@ -69,8 +68,9 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
     size_t num_sent_messages_before_call =
         fake_secure_channel_->sent_messages().size();
 
-    // Note: This relies on an implicit assumption that FakeSecureChannel starts
-    // its counter at 0. If that ever changes, this test needs to be updated.
+    // Note: This relies on an implicit assumption that
+    // FakeSecureChannelConnection starts its counter at 0. If that ever
+    // changes, this test needs to be updated.
     int sequence_number = num_times_send_message_called_++;
 
     bool success = channel_->SendMessage(
@@ -83,7 +83,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
     if (!expected_to_succeed)
       return -1;
 
-    std::vector<cryptauth::FakeSecureChannel::SentMessage> sent_messages =
+    std::vector<FakeSecureChannelConnection::SentMessage> sent_messages =
         fake_secure_channel_->sent_messages();
     EXPECT_EQ(num_sent_messages_before_call + 1u, sent_messages.size());
     EXPECT_EQ(feature, sent_messages.back().feature);
@@ -110,7 +110,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
     connection_metadata_ = std::move(connection_metadata);
   }
 
-  cryptauth::FakeSecureChannel* fake_secure_channel() {
+  FakeSecureChannelConnection* fake_secure_channel() {
     return fake_secure_channel_;
   }
 
@@ -134,7 +134,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
 
   std::unordered_set<int> sent_sequence_numbers_;
 
-  cryptauth::FakeSecureChannel* fake_secure_channel_;
+  FakeSecureChannelConnection* fake_secure_channel_;
   std::unique_ptr<FakeAuthenticatedChannelObserver> test_observer_;
 
   std::unique_ptr<AuthenticatedChannel> channel_;
@@ -162,8 +162,7 @@ TEST_F(SecureChannelAuthenticatedChannelImplTest, DisconnectRequestFromClient) {
   EXPECT_FALSE(test_observer()->has_been_notified_of_disconnection());
 
   // Complete the disconnection process.
-  fake_secure_channel()->ChangeStatus(
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+  fake_secure_channel()->ChangeStatus(SecureChannel::Status::DISCONNECTED);
   EXPECT_TRUE(test_observer()->has_been_notified_of_disconnection());
 }
 
@@ -192,8 +191,7 @@ TEST_F(SecureChannelAuthenticatedChannelImplTest,
   EXPECT_EQ("payload4", received_messages[1].second);
 
   EXPECT_FALSE(test_observer()->has_been_notified_of_disconnection());
-  fake_secure_channel()->ChangeStatus(
-      cryptauth::SecureChannel::Status::DISCONNECTED);
+  fake_secure_channel()->ChangeStatus(SecureChannel::Status::DISCONNECTED);
   EXPECT_TRUE(test_observer()->has_been_notified_of_disconnection());
 
   SendMessageAndVerifyResults("feature1", "payload5",

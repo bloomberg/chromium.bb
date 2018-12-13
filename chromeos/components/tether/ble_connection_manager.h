@@ -21,7 +21,7 @@
 #include "chromeos/components/tether/ble_scanner.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
-#include "components/cryptauth/secure_channel.h"
+#include "chromeos/services/secure_channel/secure_channel.h"
 
 namespace device {
 class BluetoothAdapter;
@@ -73,8 +73,8 @@ class BleConnectionManager : public BleScanner::Observer {
    public:
     virtual void OnSecureChannelStatusChanged(
         const std::string& device_id,
-        const cryptauth::SecureChannel::Status& old_status,
-        const cryptauth::SecureChannel::Status& new_status,
+        const secure_channel::SecureChannel::Status& old_status,
+        const secure_channel::SecureChannel::Status& new_status,
         StateChangeDetail state_change_detail) = 0;
 
     virtual void OnMessageReceived(const std::string& device_id,
@@ -134,7 +134,7 @@ class BleConnectionManager : public BleScanner::Observer {
   // |false|, no value is saved to |status|.
   virtual bool GetStatusForDevice(
       const std::string& device_id,
-      cryptauth::SecureChannel::Status* status) const;
+      secure_channel::SecureChannel::Status* status) const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -154,8 +154,8 @@ class BleConnectionManager : public BleScanner::Observer {
   void NotifyMessageReceived(std::string device_id, std::string payload);
   void NotifySecureChannelStatusChanged(
       std::string device_id,
-      cryptauth::SecureChannel::Status old_status,
-      cryptauth::SecureChannel::Status new_status,
+      secure_channel::SecureChannel::Status old_status,
+      secure_channel::SecureChannel::Status new_status,
       StateChangeDetail state_change_detail);
   void NotifyMessageSent(int sequence_number);
 
@@ -170,7 +170,8 @@ class BleConnectionManager : public BleScanner::Observer {
   // the |ConnectionMetadata| is removed when the device is unregistered. A
   // |ConnectionMetadata| stores the associated |SecureChannel| for registered
   // devices which have an active connection.
-  class ConnectionMetadata final : public cryptauth::SecureChannel::Observer {
+  class ConnectionMetadata final
+      : public secure_channel::SecureChannel::Observer {
    public:
     ConnectionMetadata(const std::string& device_id,
                        std::unique_ptr<base::OneShotTimer> timer,
@@ -185,25 +186,25 @@ class BleConnectionManager : public BleScanner::Observer {
     bool HasPendingConnectionRequests() const;
 
     bool HasEstablishedConnection() const;
-    cryptauth::SecureChannel::Status GetStatus() const;
+    secure_channel::SecureChannel::Status GetStatus() const;
 
     void StartConnectionAttemptTimer(bool use_short_error_timeout);
     void StopConnectionAttemptTimer();
     bool HasSecureChannel();
     void SetSecureChannel(
-        std::unique_ptr<cryptauth::SecureChannel> secure_channel);
+        std::unique_ptr<secure_channel::SecureChannel> secure_channel);
     int SendMessage(const std::string& payload);
     void Disconnect();
 
-    // cryptauth::SecureChannel::Observer:
+    // secure_channel::SecureChannel::Observer:
     void OnSecureChannelStatusChanged(
-        cryptauth::SecureChannel* secure_channel,
-        const cryptauth::SecureChannel::Status& old_status,
-        const cryptauth::SecureChannel::Status& new_status) override;
-    void OnMessageReceived(cryptauth::SecureChannel* secure_channel,
+        secure_channel::SecureChannel* secure_channel,
+        const secure_channel::SecureChannel::Status& old_status,
+        const secure_channel::SecureChannel::Status& new_status) override;
+    void OnMessageReceived(secure_channel::SecureChannel* secure_channel,
                            const std::string& feature,
                            const std::string& payload) override;
-    void OnMessageSent(cryptauth::SecureChannel* secure_channel,
+    void OnMessageSent(secure_channel::SecureChannel* secure_channel,
                        int sequence_number) override;
 
    private:
@@ -216,7 +217,7 @@ class BleConnectionManager : public BleScanner::Observer {
                        secure_channel::ConnectionPriority,
                        base::UnguessableTokenHash>
         request_id_to_priority_map_;
-    std::unique_ptr<cryptauth::SecureChannel> secure_channel_;
+    std::unique_ptr<secure_channel::SecureChannel> secure_channel_;
     std::unique_ptr<base::OneShotTimer> connection_attempt_timeout_timer_;
     base::WeakPtr<BleConnectionManager> manager_;
 
@@ -237,8 +238,8 @@ class BleConnectionManager : public BleScanner::Observer {
   void OnConnectionAttemptTimeout(const std::string& device_id);
   void OnSecureChannelStatusChanged(
       const std::string& device_id,
-      const cryptauth::SecureChannel::Status& old_status,
-      const cryptauth::SecureChannel::Status& new_status,
+      const secure_channel::SecureChannel::Status& old_status,
+      const secure_channel::SecureChannel::Status& new_status,
       StateChangeDetail state_change_detail);
 
   void SetTestTimerFactoryForTesting(
