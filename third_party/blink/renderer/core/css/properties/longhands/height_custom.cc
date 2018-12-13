@@ -22,7 +22,7 @@ const CSSValue* Height::ParseSingleValue(CSSParserTokenRange& range,
 
 bool Height::IsLayoutDependent(const ComputedStyle* style,
                                LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox();
+  return layout_object && (layout_object->IsBox() || layout_object->IsSVG());
 }
 
 const CSSValue* Height::CSSValueFromComputedStyleInternal(
@@ -33,7 +33,7 @@ const CSSValue* Height::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (ComputedStyleUtils::WidthOrHeightShouldReturnUsedValue(layout_object)) {
     return ZoomAdjustedPixelValue(
-        ComputedStyleUtils::SizingBox(*layout_object).Height(), style);
+        ComputedStyleUtils::UsedBoxSize(*layout_object).Height(), style);
   }
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.Height(),
                                                              style);

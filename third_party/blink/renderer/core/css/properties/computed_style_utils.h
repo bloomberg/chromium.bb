@@ -112,7 +112,7 @@ class ComputedStyleUtils {
                                          const LayoutObject*,
                                          const ComputedStyle&);
   static CSSValue* ValueForGridPosition(const GridPosition&);
-  static LayoutRect SizingBox(const LayoutObject&);
+  static FloatSize UsedBoxSize(const LayoutObject&);
   static CSSValue* RenderTextDecorationFlagsToCSSValue(TextDecoration);
   static CSSValue* ValueForTextDecorationStyle(ETextDecorationStyle);
   static CSSValue* ValueForTextDecorationSkipInk(ETextDecorationSkipInk);
