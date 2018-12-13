@@ -5,6 +5,7 @@
 #include "content/browser/dom_storage/session_storage_metadata.h"
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "components/services/leveldb/public/cpp/util.h"
@@ -39,7 +40,7 @@ using leveldb::mojom::BatchedOperationPtr;
 constexpr const uint8_t kMapIdPrefixBytes[] = {'m', 'a', 'p', '-'};
 
 constexpr const size_t kNamespacePrefixLength =
-    arraysize(SessionStorageMetadata::kNamespacePrefixBytes);
+    base::size(SessionStorageMetadata::kNamespacePrefixBytes);
 constexpr const uint8_t kNamespaceOriginSeperatorByte = '-';
 constexpr const size_t kNamespaceOriginSeperatorLength = 1;
 constexpr const size_t kPrefixBeforeOriginLength =

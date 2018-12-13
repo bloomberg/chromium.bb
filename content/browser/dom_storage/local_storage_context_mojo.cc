@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -81,8 +82,8 @@ static const uint8_t kLatin1Format = 1;
 std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
   auto serialized_origin = leveldb::StdStringToUint8Vector(origin.Serialize());
   std::vector<uint8_t> key;
-  key.reserve(arraysize(kMetaPrefix) + serialized_origin.size());
-  key.insert(key.end(), kMetaPrefix, kMetaPrefix + arraysize(kMetaPrefix));
+  key.reserve(base::size(kMetaPrefix) + serialized_origin.size());
+  key.insert(key.end(), kMetaPrefix, kMetaPrefix + base::size(kMetaPrefix));
   key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
   return key;
 }
@@ -949,7 +950,7 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
   }
 
   database_->GetPrefixed(
-      std::vector<uint8_t>(kMetaPrefix, kMetaPrefix + arraysize(kMetaPrefix)),
+      std::vector<uint8_t>(kMetaPrefix, kMetaPrefix + base::size(kMetaPrefix)),
       base::BindOnce(&LocalStorageContextMojo::OnGotMetaData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -961,9 +962,9 @@ void LocalStorageContextMojo::OnGotMetaData(
   std::vector<StorageUsageInfo> result;
   std::set<url::Origin> origins;
   for (const auto& row : data) {
-    DCHECK_GT(row->key.size(), arraysize(kMetaPrefix));
+    DCHECK_GT(row->key.size(), base::size(kMetaPrefix));
     GURL origin(leveldb::Uint8VectorToStdString(row->key).substr(
-        arraysize(kMetaPrefix)));
+        base::size(kMetaPrefix)));
 
     origins.insert(url::Origin::Create(origin));
     if (!origin.is_valid()) {

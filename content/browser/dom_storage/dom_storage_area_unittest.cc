@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -510,7 +511,7 @@ TEST_F(DOMStorageAreaTest, DatabaseFileNames) {
       {"file:///", "file__0.localstorage"},
   };
 
-  for (size_t i = 0; i < arraysize(kCases); ++i) {
+  for (size_t i = 0; i < base::size(kCases); ++i) {
     url::Origin origin =
         url::Origin::Create(GURL(kCases[i].origin).GetOrigin());
     base::FilePath file_name =
