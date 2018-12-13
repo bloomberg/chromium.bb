@@ -27,6 +27,9 @@ class DEVICE_VR_EXPORT OculusDevice
   explicit OculusDevice();
   ~OculusDevice() override;
 
+  static bool IsHwAvailable();
+  static bool IsApiAvailable();
+
   // VRDeviceBase
   void RequestSession(
       mojom::XRRuntimeSessionOptionsPtr options,

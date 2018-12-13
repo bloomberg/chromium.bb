@@ -100,6 +100,16 @@ OculusDevice::OculusDevice()
   render_loop_ = std::make_unique<OculusRenderLoop>();
 }
 
+bool OculusDevice::IsHwAvailable() {
+  auto result = ovr_Detect(0);
+  return result.IsOculusHMDConnected;
+}
+
+bool OculusDevice::IsApiAvailable() {
+  auto result = ovr_Detect(0);
+  return result.IsOculusServiceRunning;
+}
+
 mojom::IsolatedXRGamepadProviderFactoryPtr OculusDevice::BindGamepadFactory() {
   mojom::IsolatedXRGamepadProviderFactoryPtr ret;
   gamepad_provider_factory_binding_.Bind(mojo::MakeRequest(&ret));

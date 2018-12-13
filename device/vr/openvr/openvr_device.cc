@@ -148,6 +148,14 @@ OpenVRDevice::OpenVRDevice()
   OnPollingEvents();
 }
 
+bool OpenVRDevice::IsHwAvailable() {
+  return vr::VR_IsHmdPresent();
+}
+
+bool OpenVRDevice::IsApiAvailable() {
+  return vr::VR_IsRuntimeInstalled();
+}
+
 mojom::IsolatedXRGamepadProviderFactoryPtr OpenVRDevice::BindGamepadFactory() {
   mojom::IsolatedXRGamepadProviderFactoryPtr ret;
   gamepad_provider_factory_binding_.Bind(mojo::MakeRequest(&ret));
