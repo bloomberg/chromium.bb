@@ -78,10 +78,6 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
       const FrameSinkId& root_frame_sink_id,
       const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue);
 
-  uint64_t submit_hit_test_region_list_index() const {
-    return submit_hit_test_region_list_index_;
-  }
-
  private:
   bool ValidateHitTestRegionList(const SurfaceId& surface_id,
                                  HitTestRegionList* hit_test_region_list);
@@ -96,11 +92,6 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
   // HitTestAggregator for 2 seconds, or until the next async queried event.
   base::flat_map<FrameSinkId, HitTestAsyncQueriedDebugRegion>
       hit_test_async_queried_debug_regions_;
-
-  // Keeps track of the number of submitted HitTestRegionLists. This allows the
-  // HitTestAggregators to stay in sync with the HitTestManager and only
-  // aggregate when there is new hit-test data.
-  uint64_t submit_hit_test_region_list_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestManager);
 };
