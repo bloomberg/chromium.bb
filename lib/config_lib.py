@@ -444,11 +444,13 @@ class ModelTestConfig(object):
     lab_board_name: The name of the board in the lab (matches board label)
     test_suites: List of hardware test suites that will be executed.
   """
-  def __init__(self, name, lab_board_name, test_suites=None):
+  def __init__(self, name, lab_board_name, test_suites=None,
+               enable_skylab=True):
     """Constructor -- see members above."""
     self.name = name
     self.lab_board_name = lab_board_name
     self.test_suites = test_suites
+    self.enable_skylab = enable_skylab
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__

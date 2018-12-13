@@ -288,7 +288,8 @@ class UnifiedBuildReleaseBuilders(
     coral_release = self._site_config['coral-release']
     self.assertIsNotNone(coral_release)
     models = coral_release['models']
-    self.assertIn(config_lib.ModelTestConfig('coral', 'coral', []), models)
+    self.assertIn(config_lib.ModelTestConfig('coral', 'coral', [], False),
+                  models)
     self.assertIn(
         config_lib.ModelTestConfig('robo', 'robo', ['sanity']), models)
 
