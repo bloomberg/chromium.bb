@@ -404,7 +404,7 @@ void StagingBufferPool::ReleaseBuffersNotUsedSince(base::TimeTicks time) {
     // buffers as soon as we find a buffer that has been used since |time|.
     while (!free_buffers_.empty()) {
       if (free_buffers_.front()->last_usage > time)
-        return;
+        break;
 
       destroyed_buffers = true;
       free_buffers_.front()->DestroyGLResources(ri, sii);
@@ -415,7 +415,7 @@ void StagingBufferPool::ReleaseBuffersNotUsedSince(base::TimeTicks time) {
 
     while (!busy_buffers_.empty()) {
       if (busy_buffers_.front()->last_usage > time)
-        return;
+        break;
 
       destroyed_buffers = true;
       busy_buffers_.front()->DestroyGLResources(ri, sii);
