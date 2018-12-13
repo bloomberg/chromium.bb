@@ -34,6 +34,7 @@
 #include "ash/wm/window_positioner.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -180,7 +181,7 @@ void AshTestBase::TearDown() {
   window_tree_.reset();
 
   // Flush the message loop to finish pending release tasks.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   ash_test_helper_->TearDown();
 
@@ -367,10 +368,6 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
 void AshTestBase::ParentWindowInPrimaryRootWindow(aura::Window* window) {
   aura::client::ParentWindowWithContext(window, Shell::GetPrimaryRootWindow(),
                                         gfx::Rect());
-}
-
-void AshTestBase::RunAllPendingInMessageLoop() {
-  base::RunLoop().RunUntilIdle();
 }
 
 TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
@@ -567,7 +564,7 @@ void SingleProcessMashTestBase::SetUp() {
   // run via a posted task. Run the loop now so that we know the task is
   // processed. Without this, the task gets processed later on, which may
   // interfer with things.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // This test configures views with mus, which means it triggers some of the
   // DCHECKs ensuring Shell's Env is used.

@@ -740,7 +740,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(
   // Minimize actually, otherwise further event may be affected since widget
   // is fullscreen status.
   widget->Minimize();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(layout_manager->HasVisibleWindow());
 
   // The shelf should be shown because there are no more visible windows.
@@ -764,7 +764,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
   widget->Restore();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(layout_manager->HasVisibleWindow());
 
   // Swipe up on the shelf. This should show the shelf but should not change the
@@ -785,7 +785,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
   widget->Close();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(layout_manager->HasVisibleWindow());
 
   // Swipe-down to hide. This should have no effect because there are no visible

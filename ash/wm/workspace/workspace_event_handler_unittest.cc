@@ -13,6 +13,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_api.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -309,7 +310,7 @@ TEST_F(WorkspaceEventHandlerTest,
 
   generator.GestureTapAt(gfx::Point(25, 25));
   generator.GestureTapAt(gfx::Point(25, 25));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ("10,20 30x40", window->bounds().ToString());
   EXPECT_FALSE(window_state->IsMaximized());
 }
@@ -408,7 +409,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleTapCaptionTogglesMaximize) {
                                      window.get());
   generator.GestureTapAt(gfx::Point(25, 25));
   generator.GestureTapAt(gfx::Point(25, 25));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_NE(bounds.ToString(), window->bounds().ToString());
   EXPECT_TRUE(window_state->IsMaximized());
 

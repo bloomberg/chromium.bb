@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -115,14 +116,14 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
 
   // Disable mouse event which hides the cursor and check again.
   ash::Shell::Get()->cursor_manager()->DisableMouseEvents();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
   helper_->UpdateIfRequired();
   EXPECT_FALSE(helper_->IsTooltipVisible());
 
   // Enable mouse event which shows the cursor and re-check.
   ash::Shell::Get()->cursor_manager()->EnableMouseEvents();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
   helper_->UpdateIfRequired();
   EXPECT_TRUE(helper_->IsTooltipVisible());

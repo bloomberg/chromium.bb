@@ -12,6 +12,7 @@
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/manager/display_manager.h"
@@ -85,7 +86,7 @@ class ResolutionNotificationControllerTest : public AshTestBase {
       info_list.push_back(info);
     }
     display_manager()->OnNativeDisplaysChanged(info_list);
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetDisplayResolutionAndNotify(const display::Display& display,
@@ -173,7 +174,7 @@ TEST_F(ResolutionNotificationControllerTest, Basic) {
 
   // Click the revert button, which reverts to the best resolution.
   ClickOnNotificationButton(0);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
   EXPECT_EQ(0, accept_count());
@@ -201,7 +202,7 @@ TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {
 
   // Click the revert button, which reverts the resolution.
   ClickOnNotification();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
   EXPECT_EQ(1, accept_count());
@@ -270,7 +271,7 @@ TEST_F(ResolutionNotificationControllerTest, Close) {
   // Close the notification (imitates clicking [x] button). Also verifies if
   // this does not cause a crash.  See crbug.com/271784
   CloseNotification();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
   EXPECT_EQ(1, accept_count());
@@ -286,7 +287,7 @@ TEST_F(ResolutionNotificationControllerTest, Timeout) {
     EXPECT_TRUE(IsNotificationVisible()) << "notification is closed after " << i
                                          << "-th timer tick";
     TickTimer();
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
   }
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
@@ -310,7 +311,7 @@ TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
 
   // Disconnects the secondary display and verifies it doesn't cause crashes.
   UpdateDisplay("300x300#300x300%56|200x200%57");
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_EQ(0, accept_count());
   display::ManagedDisplayMode mode;
@@ -350,7 +351,7 @@ TEST_F(ResolutionNotificationControllerTest,
   // SetDisplayResolutionAndNotify is 200x200, it should revert to the original
   // size 250x250.
   ClickOnNotificationButton(0);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
   EXPECT_EQ(0, accept_count());
@@ -384,7 +385,7 @@ TEST_F(ResolutionNotificationControllerTest, Fallback) {
 
   // Click the revert button, which reverts to the best resolution.
   ClickOnNotificationButton(0);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_FALSE(IsScreenLayoutObserverNotificationVisible());
   EXPECT_EQ(0, accept_count());

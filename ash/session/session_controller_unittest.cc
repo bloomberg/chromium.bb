@@ -591,7 +591,7 @@ class CanSwitchUserTest : public AshTestBase {
   ~CanSwitchUserTest() override = default;
 
   void TearDown() override {
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
     AshTestBase::TearDown();
   }
 

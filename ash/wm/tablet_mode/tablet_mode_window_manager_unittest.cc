@@ -30,6 +30,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -1297,7 +1298,7 @@ TEST_F(TabletModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   generator.MoveMouseTo(gfx::Point(rect.x() + 2, rect.y() + 2));
   generator.PressLeftButton();
   generator.MoveMouseBy(10, 5);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   generator.ReleaseLeftButton();
   gfx::Point first_dragged_origin = window->bounds().origin();
   EXPECT_EQ(rect.x() + 10, first_dragged_origin.x());
@@ -1312,7 +1313,7 @@ TEST_F(TabletModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
       gfx::Point(center_bounds.x() + 1, center_bounds.y() + 1));
   generator.PressLeftButton();
   generator.MoveMouseBy(10, 5);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   generator.ReleaseLeftButton();
   EXPECT_EQ(center_bounds.x(), window->bounds().x());
   EXPECT_EQ(center_bounds.y(), window->bounds().y());
@@ -1324,7 +1325,7 @@ TEST_F(TabletModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
       gfx::Point(first_dragged_origin.x() + 1, first_dragged_origin.y() + 1));
   generator.PressLeftButton();
   generator.MoveMouseBy(10, 5);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   generator.ReleaseLeftButton();
   EXPECT_EQ(first_dragged_origin.x() + 10, window->bounds().x());
   EXPECT_EQ(first_dragged_origin.y() + 5, window->bounds().y());

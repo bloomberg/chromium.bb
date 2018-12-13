@@ -13,6 +13,7 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/capture_client.h"
@@ -750,7 +751,7 @@ TEST_F(ExtendedDesktopTest, OpenSystemTray) {
   // Closes the tray and again makes sure that adding/removing displays doesn't
   // break anything.
   event_generator->ClickLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(IsBubbleShown());
 

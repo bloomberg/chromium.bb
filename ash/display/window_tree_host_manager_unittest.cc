@@ -19,6 +19,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
@@ -793,7 +794,7 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
 
   // Deleting 2nd display should move the primary to original primary display.
   UpdateDisplay("200x200");
-  RunAllPendingInMessageLoop();  // RootWindow is deleted in a posted task.
+  base::RunLoop().RunUntilIdle();  // RootWindow is deleted in a posted task.
   EXPECT_EQ(1, display::Screen::GetScreen()->GetNumDisplays());
   EXPECT_EQ(primary_display.id(),
             display::Screen::GetScreen()->GetPrimaryDisplay().id());

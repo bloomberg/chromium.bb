@@ -1472,27 +1472,27 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
   gfx::Rect bounds = app_list_button->GetBoundsInScreen();
   generator->MoveMouseTo(bounds.CenterPoint());
   // Wait for the timer to go off.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Move the mouse cursor slightly to the right of the item. The tooltip should
   // stay open.
   generator->MoveMouseBy(bounds.width() / 2 + 5, 0);
   // Make sure there is no delayed close.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Move back - it should still stay open.
   generator->MoveMouseBy(-(bounds.width() / 2 + 5), 0);
   // Make sure there is no delayed close.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Now move the mouse cursor slightly above the item - so that it is over the
   // tooltip bubble. Now it should disappear.
   generator->MoveMouseBy(0, -(bounds.height() / 2 + 5));
   // Wait until the delayed close kicked in.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(tooltip_manager->IsVisible());
 }
 
@@ -2585,7 +2585,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
   generator->PressLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),

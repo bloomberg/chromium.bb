@@ -19,6 +19,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -751,7 +752,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   keyboard::KeyboardController::Get()->ShowKeyboard(false);
 
   // Make sure no pending mouse events in the queue.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // TODO(oshima|yhanada): This simply make sure that targeting logic works, but
   // doesn't mean it'll deliver the event to the target. Fix this to make this

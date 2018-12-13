@@ -610,7 +610,7 @@ TEST_F(KeyboardTest, AckKeyboardKeyExpired) {
       FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(1000));
   run_loop.Run();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Release the key and reset modifier_flags.
   EXPECT_CALL(delegate, OnKeyboardModifiers(0));
@@ -684,7 +684,7 @@ TEST_F(KeyboardTest, AckKeyboardKeyExpiredWithMovingFocusAccelerator) {
       FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(1000));
   run_loop.Run();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   keyboard.reset();
 }

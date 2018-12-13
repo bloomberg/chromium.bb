@@ -194,10 +194,10 @@ TEST_F(AcceleratorInteractiveUITest, MAYBE_ChromeOsAccelerators) {
 TEST_F(AcceleratorInteractiveUITest, MAYBE_ToggleAppList) {
   GetAppListTestHelper()->CheckVisibility(false);
   SendKeyPressSync(ui::VKEY_LWIN, false, false, false);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   SendKeyPressSync(ui::VKEY_LWIN, false, false, false);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
 }
 

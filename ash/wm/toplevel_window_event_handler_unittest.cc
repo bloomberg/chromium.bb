@@ -16,6 +16,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/compiler_specific.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -471,7 +472,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   end.Offset(100, 0);
   generator.GestureScrollSequence(location, end,
                                   base::TimeDelta::FromMilliseconds(5), 10);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the window has moved after the gesture.
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
@@ -485,7 +486,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   end.Offset(-100, 0);
   generator.GestureScrollSequence(location, end,
                                   base::TimeDelta::FromMilliseconds(5), 10);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   EXPECT_EQ(mojom::WindowStateType::LEFT_SNAPPED, window_state->GetStateType());
@@ -500,7 +501,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   end.Offset(0, -100);
   generator.GestureScrollSequence(location, end,
                                   base::TimeDelta::FromMilliseconds(5), 10);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   EXPECT_TRUE(window_state->IsMaximized());
@@ -515,7 +516,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   end.Offset(0, 100);
   generator.GestureScrollSequence(location, end,
                                   base::TimeDelta::FromMilliseconds(5), 10);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   EXPECT_TRUE(window_state->IsMinimized());
   EXPECT_TRUE(window_state->unminimize_to_restore_bounds());
@@ -537,7 +538,7 @@ TEST_F(ToplevelWindowEventHandlerTest,
   end.Offset(0, 100);
   generator.GestureScrollSequence(location, end,
                                   base::TimeDelta::FromMilliseconds(5), 10);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(wm::GetWindowState(target.get())->IsMinimized());
 }
 
@@ -696,7 +697,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
   end.Offset(0, 100);
   generator.GestureScrollSequence(location, end,
                                   base::TimeDelta::FromMilliseconds(5), 10);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_NE(old_bounds.ToString(), window->bounds().ToString());
   EXPECT_TRUE(window_state->IsMinimized());
   EXPECT_TRUE(window_state->unminimize_to_restore_bounds());
@@ -790,7 +791,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   end.Offset(100, 0);
   generator.GestureScrollSequence(location, end,
                                   base::TimeDelta::FromMilliseconds(5), 10);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the window has moved after the gesture.
   gfx::Rect expected_bounds(old_bounds);
@@ -807,7 +808,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   end.Offset(-100, 0);
   generator.GestureScrollSequence(location, end,
                                   base::TimeDelta::FromMilliseconds(5), 10);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the window has moved after the gesture.
   expected_bounds = old_bounds;
@@ -856,7 +857,7 @@ TEST_F(ToplevelWindowEventHandlerTest, EscapeReverts) {
   generator.MoveMouseBy(10, 11);
 
   // Execute any scheduled draws so that pending mouse events are processed.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ("0,0 110x111", target->bounds().ToString());
   generator.PressKey(ui::VKEY_ESCAPE, 0);
@@ -874,7 +875,7 @@ TEST_F(ToplevelWindowEventHandlerTest, MinimizeMaximizeCompletes) {
                                        target.get());
     generator.PressLeftButton();
     generator.MoveMouseBy(10, 11);
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ("10,11 100x100", target->bounds().ToString());
     wm::WindowState* window_state = wm::GetWindowState(target.get());
     window_state->Minimize();
@@ -882,7 +883,7 @@ TEST_F(ToplevelWindowEventHandlerTest, MinimizeMaximizeCompletes) {
 
     generator.PressLeftButton();
     generator.MoveMouseBy(10, 11);
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ("10,11 100x100", target->bounds().ToString());
   }
 
@@ -894,7 +895,7 @@ TEST_F(ToplevelWindowEventHandlerTest, MinimizeMaximizeCompletes) {
                                        target.get());
     generator.PressLeftButton();
     generator.MoveMouseBy(10, 11);
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ("10,11 100x100", target->bounds().ToString());
     wm::WindowState* window_state = wm::GetWindowState(target.get());
     window_state->Maximize();
@@ -902,7 +903,7 @@ TEST_F(ToplevelWindowEventHandlerTest, MinimizeMaximizeCompletes) {
 
     generator.PressLeftButton();
     generator.MoveMouseBy(10, 11);
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ("10,11 100x100", target->bounds().ToString());
   }
 }
