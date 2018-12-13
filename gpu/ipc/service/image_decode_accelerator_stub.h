@@ -95,6 +95,7 @@ class ImageDecodeAcceleratorStub
   base::queue<std::vector<uint8_t>> pending_completed_decodes_
       GUARDED_BY(lock_);
   bool accepting_completed_decodes_ GUARDED_BY(lock_) = true;
+  uint64_t last_release_count_ GUARDED_BY(lock_) = 0;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

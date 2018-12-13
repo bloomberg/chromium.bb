@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/numerics/checked_math.h"
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
@@ -83,13 +82,18 @@ void ImageDecodeAcceleratorStub::OnScheduleImageDecode(
     return;
   }
 
-  // TODO(andrescj): validate all the |decode_params|.
+  // Make sure the decode sync token is ordered with respect to the last decode
+  // request.
+  if (release_count <= last_release_count_) {
+    DLOG(ERROR) << "Out-of-order decode sync token";
+    OnError();
+    return;
+  }
+  last_release_count_ = release_count;
 
-  // Make sure the output data size won't overflow.
-  base::CheckedNumeric<size_t> rgba_bytes = 4u;
-  rgba_bytes *= decode_params.output_size.width();
-  rgba_bytes *= decode_params.output_size.height();
-  if (!rgba_bytes.IsValid()) {
+  // Make sure the output dimensions are not too small.
+  if (decode_params.output_size.IsEmpty()) {
+    DLOG(ERROR) << "Output dimensions are too small";
     OnError();
     return;
   }
@@ -148,6 +152,7 @@ void ImageDecodeAcceleratorStub::OnDecodeCompleted(
   }
 
   if (rgba_output.empty()) {
+    DLOG(ERROR) << "The decode failed";
     OnError();
     return;
   }

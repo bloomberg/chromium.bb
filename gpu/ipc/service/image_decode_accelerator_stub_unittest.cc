@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
-
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/numerics/checked_math.h"
@@ -21,6 +19,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
+
+using testing::InSequence;
+using testing::StrictMock;
 
 namespace gpu {
 class GpuChannel;
@@ -78,10 +79,6 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
   ImageDecodeAcceleratorStubTest() : GpuChannelTestCommon() {}
   ~ImageDecodeAcceleratorStubTest() override = default;
 
-  MockImageDecodeAcceleratorWorker* image_decode_accelerator_worker() const {
-    return image_decode_accelerator_worker_.get();
-  }
-
   SyncPointManager* sync_point_manager() const {
     return channel_manager()->sync_point_manager();
   }
@@ -92,10 +89,8 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
     // enabled by default.
     feature_list_.InitAndEnableFeature(
         features::kVaapiJpegImageDecodeAcceleration);
-    image_decode_accelerator_worker_ =
-        std::make_unique<MockImageDecodeAcceleratorWorker>();
     channel_manager()->SetImageDecodeAcceleratorWorkerForTesting(
-        image_decode_accelerator_worker_.get());
+        &image_decode_accelerator_worker_);
     ASSERT_TRUE(CreateChannel(kChannelId, false /* is_gpu_host */));
   }
 
@@ -105,7 +100,8 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
     channel_manager()->DestroyAllChannels();
   }
 
-  SyncToken SendDecodeRequest(const gfx::Size& output_size) {
+  SyncToken SendDecodeRequest(const gfx::Size& output_size,
+                              uint64_t release_count) {
     GpuChannel* channel = channel_manager()->LookupChannel(kChannelId);
     if (!channel) {
       // It's possible that the channel was destroyed as part of an earlier
@@ -120,7 +116,7 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
         CommandBufferIdFromChannelAndRoute(
             kChannelId, static_cast<int32_t>(
                             GpuChannelReservedRoutes::kImageDecodeAccelerator)),
-        release_count_++);
+        release_count);
     GpuChannelMsg_ScheduleImageDecode_Params decode_params;
     decode_params.encoded_data = std::vector<uint8_t>();
     decode_params.output_size = output_size;
@@ -148,11 +144,11 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
     }
   }
 
+ protected:
+  StrictMock<MockImageDecodeAcceleratorWorker> image_decode_accelerator_worker_;
+
  private:
   base::test::ScopedFeatureList feature_list_;
-  std::unique_ptr<MockImageDecodeAcceleratorWorker>
-      image_decode_accelerator_worker_;
-  uint64_t release_count_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeAcceleratorStubTest);
 };
@@ -164,16 +160,16 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
 TEST_F(ImageDecodeAcceleratorStubTest,
        MultipleDecodesCompletedAfterSequenceIsDisabled) {
   {
-    testing::InSequence call_sequence;
-    EXPECT_CALL(*image_decode_accelerator_worker(),
-                DoDecode(gfx::Size(100, 100)))
+    InSequence call_sequence;
+    EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
         .Times(1);
-    EXPECT_CALL(*image_decode_accelerator_worker(),
-                DoDecode(gfx::Size(200, 200)))
+    EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(200, 200)))
         .Times(1);
   }
-  const SyncToken decode1_sync_token = SendDecodeRequest(gfx::Size(100, 100));
-  const SyncToken decode2_sync_token = SendDecodeRequest(gfx::Size(200, 200));
+  const SyncToken decode1_sync_token = SendDecodeRequest(
+      gfx::Size(100, 100) /* output_size */, 1u /* release_count */);
+  const SyncToken decode2_sync_token = SendDecodeRequest(
+      gfx::Size(200, 200) /* output_size */, 2u /* release_count */);
 
   // A decode sync token should not be released before a decode is finished.
   RunTasksUntilIdle();
@@ -182,14 +178,14 @@ TEST_F(ImageDecodeAcceleratorStubTest,
 
   // Only the first decode sync token should be released after the first decode
   // is finished.
-  image_decode_accelerator_worker()->FinishOneDecode(true);
+  image_decode_accelerator_worker_.FinishOneDecode(true);
   RunTasksUntilIdle();
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
 
   // The second decode sync token should be released after the second decode is
   // finished.
-  image_decode_accelerator_worker()->FinishOneDecode(true);
+  image_decode_accelerator_worker_.FinishOneDecode(true);
   RunTasksUntilIdle();
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
@@ -205,20 +201,20 @@ TEST_F(ImageDecodeAcceleratorStubTest,
 TEST_F(ImageDecodeAcceleratorStubTest,
        MultipleDecodesCompletedWhileSequenceIsEnabled) {
   {
-    testing::InSequence call_sequence;
-    EXPECT_CALL(*image_decode_accelerator_worker(),
-                DoDecode(gfx::Size(100, 100)))
+    InSequence call_sequence;
+    EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
         .Times(1);
-    EXPECT_CALL(*image_decode_accelerator_worker(),
-                DoDecode(gfx::Size(200, 200)))
+    EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(200, 200)))
         .Times(1);
-    EXPECT_CALL(*image_decode_accelerator_worker(),
-                DoDecode(gfx::Size(300, 300)))
+    EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(300, 300)))
         .Times(1);
   }
-  const SyncToken decode1_sync_token = SendDecodeRequest(gfx::Size(100, 100));
-  const SyncToken decode2_sync_token = SendDecodeRequest(gfx::Size(200, 200));
-  const SyncToken decode3_sync_token = SendDecodeRequest(gfx::Size(300, 300));
+  const SyncToken decode1_sync_token = SendDecodeRequest(
+      gfx::Size(100, 100) /* output_size */, 1u /* release_count */);
+  const SyncToken decode2_sync_token = SendDecodeRequest(
+      gfx::Size(200, 200) /* output_size */, 2u /* release_count */);
+  const SyncToken decode3_sync_token = SendDecodeRequest(
+      gfx::Size(300, 300) /* output_size */, 3u /* release_count */);
 
   // A decode sync token should not be released before a decode is finished.
   RunTasksUntilIdle();
@@ -227,9 +223,9 @@ TEST_F(ImageDecodeAcceleratorStubTest,
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode3_sync_token));
 
   // All decode sync tokens should be released after completing all the decodes.
-  image_decode_accelerator_worker()->FinishOneDecode(true);
-  image_decode_accelerator_worker()->FinishOneDecode(true);
-  image_decode_accelerator_worker()->FinishOneDecode(true);
+  image_decode_accelerator_worker_.FinishOneDecode(true);
+  image_decode_accelerator_worker_.FinishOneDecode(true);
+  image_decode_accelerator_worker_.FinishOneDecode(true);
   RunTasksUntilIdle();
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
@@ -245,29 +241,29 @@ TEST_F(ImageDecodeAcceleratorStubTest,
 // destroyed and all sync tokens should be released.
 TEST_F(ImageDecodeAcceleratorStubTest, FailedDecodes) {
   {
-    testing::InSequence call_sequence;
-    EXPECT_CALL(*image_decode_accelerator_worker(),
-                DoDecode(gfx::Size(100, 100)))
+    InSequence call_sequence;
+    EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
         .Times(1);
-    EXPECT_CALL(*image_decode_accelerator_worker(),
-                DoDecode(gfx::Size(200, 200)))
+    EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(200, 200)))
         .Times(1);
-    EXPECT_CALL(*image_decode_accelerator_worker(),
-                DoDecode(gfx::Size(300, 300)))
+    EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(300, 300)))
         .Times(1);
   }
-  const SyncToken decode1_sync_token = SendDecodeRequest(gfx::Size(100, 100));
-  const SyncToken decode2_sync_token = SendDecodeRequest(gfx::Size(200, 200));
-  const SyncToken decode3_sync_token = SendDecodeRequest(gfx::Size(300, 300));
+  const SyncToken decode1_sync_token = SendDecodeRequest(
+      gfx::Size(100, 100) /* output_size */, 1u /* release_count */);
+  const SyncToken decode2_sync_token = SendDecodeRequest(
+      gfx::Size(200, 200) /* output_size */, 2u /* release_count */);
+  const SyncToken decode3_sync_token = SendDecodeRequest(
+      gfx::Size(300, 300) /* output_size */, 3u /* release_count */);
 
   // A decode sync token should not be released before a decode is finished.
   RunTasksUntilIdle();
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(decode3_sync_token));
-  image_decode_accelerator_worker()->FinishOneDecode(false);
-  image_decode_accelerator_worker()->FinishOneDecode(true);
-  image_decode_accelerator_worker()->FinishOneDecode(false);
+  image_decode_accelerator_worker_.FinishOneDecode(false);
+  image_decode_accelerator_worker_.FinishOneDecode(true);
+  image_decode_accelerator_worker_.FinishOneDecode(false);
 
   // We expect the destruction of the ImageDecodeAcceleratorStub, which also
   // implies that all decode sync tokens should be released.
@@ -276,6 +272,55 @@ TEST_F(ImageDecodeAcceleratorStubTest, FailedDecodes) {
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
   EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode3_sync_token));
+}
+
+TEST_F(ImageDecodeAcceleratorStubTest, OutOfOrderSyncTokens) {
+  EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
+      .Times(1);
+  const SyncToken decode1_sync_token = SendDecodeRequest(
+      gfx::Size(100, 100) /* output_size */, 2u /* release_count */);
+  const SyncToken decode2_sync_token = SendDecodeRequest(
+      gfx::Size(200, 200) /* output_size */, 1u /* release_count */);
+
+  // We expect the destruction of the ImageDecodeAcceleratorStub, which also
+  // implies that all decode sync tokens should be released.
+  RunTasksUntilIdle();
+  EXPECT_FALSE(channel_manager()->LookupChannel(kChannelId));
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode1_sync_token));
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode2_sync_token));
+}
+
+TEST_F(ImageDecodeAcceleratorStubTest, ZeroReleaseCountSyncToken) {
+  const SyncToken decode_sync_token = SendDecodeRequest(
+      gfx::Size(100, 100) /* output_size */, 0u /* release_count */);
+
+  // We expect the destruction of the ImageDecodeAcceleratorStub, which also
+  // implies that all decode sync tokens should be released.
+  RunTasksUntilIdle();
+  EXPECT_FALSE(channel_manager()->LookupChannel(kChannelId));
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
+}
+
+TEST_F(ImageDecodeAcceleratorStubTest, ZeroWidthOutputSize) {
+  const SyncToken decode_sync_token = SendDecodeRequest(
+      gfx::Size(0, 100) /* output_size */, 1u /* release_count */);
+
+  // We expect the destruction of the ImageDecodeAcceleratorStub, which also
+  // implies that all decode sync tokens should be released.
+  RunTasksUntilIdle();
+  EXPECT_FALSE(channel_manager()->LookupChannel(kChannelId));
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
+}
+
+TEST_F(ImageDecodeAcceleratorStubTest, ZeroHeightOutputSize) {
+  const SyncToken decode_sync_token = SendDecodeRequest(
+      gfx::Size(100, 0) /* output_size */, 1u /* release_count */);
+
+  // We expect the destruction of the ImageDecodeAcceleratorStub, which also
+  // implies that all decode sync tokens should be released.
+  RunTasksUntilIdle();
+  EXPECT_FALSE(channel_manager()->LookupChannel(kChannelId));
+  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(decode_sync_token));
 }
 
 }  // namespace gpu
