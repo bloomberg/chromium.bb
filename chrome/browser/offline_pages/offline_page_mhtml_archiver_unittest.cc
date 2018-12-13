@@ -107,7 +107,7 @@ void TestMHTMLArchiver::GenerateMHTML(
       FROM_HERE, base::BindOnce(&TestMHTMLArchiver::OnGenerateMHTMLDone,
                                 base::Unretained(this), url_, archive_file_path,
                                 kTestTitle, create_archive_params.name_space,
-                                OfflineClock()->Now(), kTestFileSize));
+                                OfflineTimeNow(), kTestFileSize));
 
   clock_->Advance(kTimeToSaveMhtml);
 }

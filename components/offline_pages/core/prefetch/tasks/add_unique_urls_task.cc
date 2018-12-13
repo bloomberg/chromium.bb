@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -103,7 +102,7 @@ Result AddUniqueUrlsSync(
       GetAllUrlsAndIdsFromNamespaceSync(db, name_space);
   std::set<std::string> added_urls;
   int added_row_count = 0;
-  base::Time now = OfflineClock()->Now();
+  base::Time now = OfflineTimeNow();
   // Insert rows in reverse order to ensure that the beginning of the list has
   // the most recent timestamps so that it is prefetched first.
   for (auto candidate_iter = candidate_prefetch_urls.rbegin();

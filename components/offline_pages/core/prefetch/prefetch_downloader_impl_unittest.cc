@@ -8,7 +8,6 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/download/public/background_service/test/test_download_service.h"
 #include "components/offline_pages/core/client_namespace_constants.h"

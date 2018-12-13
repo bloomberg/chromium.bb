@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/download/public/background_service/download_params.h"
@@ -117,7 +116,7 @@ void PrefetchDownloaderImpl::StartDownload(const std::string& download_id,
   params.scheduling_params.battery_requirements =
       download::SchedulingParams::BatteryRequirements::BATTERY_SENSITIVE;
   params.scheduling_params.cancel_time =
-      OfflineClock()->Now() + kPrefetchDownloadLifetime;
+      OfflineTimeNow() + kPrefetchDownloadLifetime;
   params.request_params.url = PrefetchDownloadURL(download_location, channel_);
 
   std::string experiment_header = PrefetchExperimentHeader();

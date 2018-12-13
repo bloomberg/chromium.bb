@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/background/change_requests_state_task.h"
 #include "components/offline_pages/core/background/mark_attempt_started_task.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
@@ -46,7 +45,7 @@ class MarkAttemptAbortedTaskTest : public RequestQueueTaskTestBase {
 };
 
 void MarkAttemptAbortedTaskTest::AddItemToStore(RequestQueueStore* store) {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
   store->AddRequest(request_1,

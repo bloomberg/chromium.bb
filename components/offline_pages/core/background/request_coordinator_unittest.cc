@@ -19,7 +19,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_items_collection/core/pending_state.h"
 #include "components/offline_pages/core/background/device_conditions.h"
@@ -484,7 +483,7 @@ void RequestCoordinatorTest::SetupForOfflinerDoneCallbackTest(
     offline_pages::SavePageRequest* request) {
   // Mark request as started and add it to the queue,
   // then wait for callback to finish.
-  request->MarkAttemptStarted(OfflineClock()->Now());
+  request->MarkAttemptStarted(OfflineTimeNow());
   queue()->AddRequest(*request,
                       base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
                                      base::Unretained(this)));
@@ -499,7 +498,7 @@ void RequestCoordinatorTest::SetupForOfflinerDoneCallbackTest(
   // Mock that coordinator is in actively processing state starting now.
   SetProcessingStateForTest(
       RequestCoordinator::ProcessingWindowState::IMMEDIATE_WINDOW);
-  SetOperationStartTimeForTest(OfflineClock()->Now());
+  SetOperationStartTimeForTest(OfflineTimeNow());
 }
 
 void RequestCoordinatorTest::SendOfflinerDoneCallback(
@@ -510,8 +509,8 @@ void RequestCoordinatorTest::SendOfflinerDoneCallback(
 }
 
 SavePageRequest RequestCoordinatorTest::AddRequest1() {
-  offline_pages::SavePageRequest request1(
-      kRequestId1, kUrl1, kClientId1, OfflineClock()->Now(), kUserRequested);
+  offline_pages::SavePageRequest request1(kRequestId1, kUrl1, kClientId1,
+                                          OfflineTimeNow(), kUserRequested);
   queue()->AddRequest(request1,
                       base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
                                      base::Unretained(this)));
@@ -519,8 +518,8 @@ SavePageRequest RequestCoordinatorTest::AddRequest1() {
 }
 
 SavePageRequest RequestCoordinatorTest::AddRequest2() {
-  offline_pages::SavePageRequest request2(
-      kRequestId2, kUrl2, kClientId2, OfflineClock()->Now(), kUserRequested);
+  offline_pages::SavePageRequest request2(kRequestId2, kUrl2, kClientId2,
+                                          OfflineTimeNow(), kUserRequested);
   queue()->AddRequest(request2,
                       base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
                                      base::Unretained(this)));
@@ -727,7 +726,7 @@ TEST_F(RequestCoordinatorTest, SavePageLaterFailed) {
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
-                                         OfflineClock()->Now(), kUserRequested);
+                                         OfflineTimeNow(), kUserRequested);
   SetupForOfflinerDoneCallbackTest(&request);
 
   // Call the OfflinerDoneCallback to simulate the page being completed, wait
@@ -758,7 +757,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceededButLostNetwork) {
   // Add a request to the queue and set offliner done callback for it.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
-                                         OfflineClock()->Now(), kUserRequested);
+                                         OfflineTimeNow(), kUserRequested);
   SetupForOfflinerDoneCallbackTest(&request);
   EnableOfflinerCallback(false);
 
@@ -787,7 +786,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceededButLostNetwork) {
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
-                                         OfflineClock()->Now(), kUserRequested);
+                                         OfflineTimeNow(), kUserRequested);
   request.set_completed_attempt_count(kMaxCompletedTries - 1);
   SetupForOfflinerDoneCallbackTest(&request);
   // Stop processing before completing the second request on the queue.
@@ -830,7 +829,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
-                                         OfflineClock()->Now(), kUserRequested);
+                                         OfflineTimeNow(), kUserRequested);
   SetupForOfflinerDoneCallbackTest(&request);
   EnableOfflinerCallback(false);
 
@@ -873,7 +872,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoNextFailure) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
-                                         OfflineClock()->Now(), kUserRequested);
+                                         OfflineTimeNow(), kUserRequested);
   SetupForOfflinerDoneCallbackTest(&request);
   EnableOfflinerCallback(false);
 
@@ -905,7 +904,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoNextFailure) {
 TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
   // Add a request to the queue, wait for callbacks to finish.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
-                                         OfflineClock()->Now(), kUserRequested);
+                                         OfflineTimeNow(), kUserRequested);
   SetupForOfflinerDoneCallbackTest(&request);
 
   // Call the OfflinerDoneCallback to simulate the request failed, wait
@@ -1034,8 +1033,8 @@ TEST_F(RequestCoordinatorTest, SchedulerGetsLeastRestrictiveConditions) {
   // Put two requests on the queue - The first is user requested, and
   // the second is not user requested.
   AddRequest1();
-  offline_pages::SavePageRequest request2(
-      kRequestId2, kUrl2, kClientId2, OfflineClock()->Now(), !kUserRequested);
+  offline_pages::SavePageRequest request2(kRequestId2, kUrl2, kClientId2,
+                                          OfflineTimeNow(), !kUserRequested);
   queue()->AddRequest(request2,
                       base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
                                      base::Unretained(this)));
@@ -1336,7 +1335,7 @@ TEST_F(RequestCoordinatorTest,
        WatchdogTimeoutForScheduledProcessingNoLastSnapshot) {
   // Build a request to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
-                                         OfflineClock()->Now(), kUserRequested);
+                                         OfflineTimeNow(), kUserRequested);
   // Set request to allow one more completed attempt.
   int max_tries = coordinator()->policy()->GetMaxCompletedTries();
   request.set_completed_attempt_count(max_tries - 1);
@@ -1411,8 +1410,7 @@ TEST_F(RequestCoordinatorTest, TimeBudgetExceeded) {
   AddRequest1();
   // The second request will have a larger completed attempt count.
   offline_pages::SavePageRequest request2(kRequestId1 + 1, kUrl1, kClientId1,
-                                          OfflineClock()->Now(),
-                                          kUserRequested);
+                                          OfflineTimeNow(), kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
   queue()->AddRequest(request2,
                       base::BindOnce(&RequestCoordinatorTest::AddRequestDone,
@@ -1684,7 +1682,7 @@ TEST_F(RequestCoordinatorTest,
 TEST_F(RequestCoordinatorTest, SnapshotOnLastTryForScheduledProcessing) {
   // Build a request to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
-                                         OfflineClock()->Now(), kUserRequested);
+                                         OfflineTimeNow(), kUserRequested);
   // Set request to allow one more completed attempt. So that the next try would
   // be the last retry.
   int max_tries = coordinator()->policy()->GetMaxCompletedTries();

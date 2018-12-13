@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
@@ -130,7 +129,7 @@ void OfflinePageRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
   }
 
   info->headers = redirect_headers;
-  info->request_time = OfflineClock()->Now();
+  info->request_time = OfflineTimeNow();
   info->response_time = info->request_time;
 }
 
