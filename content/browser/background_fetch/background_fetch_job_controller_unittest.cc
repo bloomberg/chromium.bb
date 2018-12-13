@@ -30,8 +30,8 @@
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 using blink::FetchAPIRequestHeadersMap;
 using testing::_;

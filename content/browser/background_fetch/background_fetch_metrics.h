@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_METRICS_H_
 
 #include "content/public/browser/background_fetch_delegate.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 

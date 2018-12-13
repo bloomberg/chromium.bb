@@ -5,7 +5,7 @@
 #include "content/browser/background_fetch/storage/database_helpers.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 

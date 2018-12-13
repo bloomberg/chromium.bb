@@ -14,7 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace storage {
 class QuotaManagerProxy;

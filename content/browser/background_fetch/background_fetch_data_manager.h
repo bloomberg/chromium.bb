@@ -26,7 +26,7 @@
 #include "content/browser/background_fetch/storage/get_initialization_data_task.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "url/origin.h"
 
 namespace storage {
