@@ -175,8 +175,6 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
 
   void RegisterBackingStoreReference(void** slot);
 
-  void ConservativelyMarkHeader(HeapObjectHeader*);
-
   MarkingWorklist::View marking_worklist_;
   NotFullyConstructedWorklist::View not_fully_constructed_worklist_;
   WeakCallbackWorklist::View weak_callback_worklist_;
