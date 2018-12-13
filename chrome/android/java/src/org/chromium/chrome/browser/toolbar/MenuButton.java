@@ -125,11 +125,11 @@ public class MenuButton extends FrameLayout implements ThemeColorObserver {
         if (isUpdateBadgeVisible) {
             switch (UpdateMenuItemHelper.getInstance().getUpdateType()) {
                 case UpdateMenuItemHelper.UpdateType.UPDATE_AVAILABLE:
-                    setContentDescription(getResources().getString(
+                    mMenuImageButton.setContentDescription(getResources().getString(
                             R.string.accessibility_toolbar_btn_menu_update));
                     break;
                 case UpdateMenuItemHelper.UpdateType.UNSUPPORTED_OS_VERSION:
-                    setContentDescription(getResources().getString(
+                    mMenuImageButton.setContentDescription(getResources().getString(
                             R.string.accessibility_toolbar_btn_menu_os_version_unsupported));
                     break;
                 case UpdateMenuItemHelper.UpdateType.NONE:
@@ -140,7 +140,7 @@ public class MenuButton extends FrameLayout implements ThemeColorObserver {
                     break;
             }
         } else {
-            setContentDescription(
+            mMenuImageButton.setContentDescription(
                     getResources().getString(R.string.accessibility_toolbar_btn_menu));
         }
     }
