@@ -789,7 +789,8 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
   const VisiblePositionInFlatTree& extent =
       CreateVisiblePosition(new_selection.Extent());
   const SelectionInFlatTree& adjusted_selection =
-      endpoints_adjustment_mode == kAdjustEndpointsAtBidiBoundary
+      (!RuntimeEnabledFeatures::BidiCaretAffinityEnabled() &&
+       endpoints_adjustment_mode == kAdjustEndpointsAtBidiBoundary)
           ? BidiAdjustment::AdjustForRangeSelection(base, extent)
           : SelectionInFlatTree::Builder()
                 .SetBaseAndExtent(base.DeepEquivalent(),

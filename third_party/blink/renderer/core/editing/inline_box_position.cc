@@ -108,6 +108,8 @@ InlineBoxPosition AdjustInlineBoxPositionForTextDirection(InlineBox* inline_box,
                                                           int caret_offset) {
   DCHECK(caret_offset == inline_box->CaretLeftmostOffset() ||
          caret_offset == inline_box->CaretRightmostOffset());
+  if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+    return InlineBoxPosition(inline_box, caret_offset);
   return BidiAdjustment::AdjustForCaretPositionResolution(
       InlineBoxPosition(inline_box, caret_offset));
 }
