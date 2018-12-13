@@ -11,6 +11,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/i18n/number_formatting.h"
@@ -109,7 +110,7 @@ void NotificationCounterView::Update() {
       message_center::MessageCenter::Get()->IsQuietMode() ||
       !session_controller->ShouldShowNotificationTray() ||
       (session_controller->IsScreenLocked() &&
-       !features::IsLockScreenNotificationsEnabled())) {
+       !AshMessageCenterLockScreenController::IsEnabled())) {
     SetVisible(false);
     return;
   }
