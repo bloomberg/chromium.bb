@@ -4,8 +4,11 @@
 
 package org.chromium.webapk.test;
 
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
 
@@ -14,11 +17,12 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.shadows.ShadowPackageManager;
 
+import java.net.URISyntaxException;
+
 /**
  * Helper class for WebAPK JUnit tests.
  */
 public class WebApkTestHelper {
-
     /**
      * Registers WebAPK. This function also creates an empty resource for the WebAPK.
      * @param packageName The package to register
@@ -30,6 +34,19 @@ public class WebApkTestHelper {
         Resources res = Mockito.mock(Resources.class);
         packageManager.resources.put(packageName, res);
         packageManager.addPackage(newPackageInfo(packageName, metaData));
+    }
+
+    /** Registers intent filter for the passed-in package name and URL. */
+    public static void addIntentFilterForUrl(String packageName, String url) {
+        ShadowPackageManager packageManager =
+                Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager());
+        try {
+            Intent deepLinkIntent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+            deepLinkIntent.addCategory(Intent.CATEGORY_BROWSABLE);
+            deepLinkIntent.setPackage(packageName);
+            packageManager.addResolveInfoForIntent(deepLinkIntent, newResolveInfo(packageName));
+        } catch (URISyntaxException e) {
+        }
     }
 
     /** Sets the resource for the given package name. */
@@ -46,5 +63,13 @@ public class WebApkTestHelper {
         packageInfo.packageName = packageName;
         packageInfo.applicationInfo = applicationInfo;
         return packageInfo;
+    }
+
+    private static ResolveInfo newResolveInfo(String packageName) {
+        ActivityInfo activityInfo = new ActivityInfo();
+        activityInfo.packageName = packageName;
+        ResolveInfo resolveInfo = new ResolveInfo();
+        resolveInfo.activityInfo = activityInfo;
+        return resolveInfo;
     }
 }
