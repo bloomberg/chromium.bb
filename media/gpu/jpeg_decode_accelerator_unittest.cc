@@ -158,20 +158,17 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
 
   void SetUp() override;
 
-  // Creates and returns a FilePath for the pathless |name|. The current folder
-  // is used if |name| exists in it. If not the file will be treated as relative
-  // to the test data path. This is either a custom test data path provided by
-  // --test_data_path, or the default test data path (//media/test/data).
-  base::FilePath GetOriginalOrTestDataFilePath(const std::string& name) {
-    LOG_ASSERT(std::find_if(name.begin(), name.end(),
-                            base::FilePath::IsSeparator) == name.end())
-        << name << " should be just a file name and not have a path";
-    const base::FilePath original_file_path = base::FilePath(name);
+  // Resolve the specified file path. The file path can be either an absolute
+  // path, relative to the current directory, or relative to the test data path.
+  // This is either a custom test data path provided by --test_data_path, or the
+  // default test data path (//media/test/data).
+  base::FilePath GetOriginalOrTestDataFilePath(const std::string& file_path) {
+    const base::FilePath original_file_path = base::FilePath(file_path);
     if (base::PathExists(original_file_path))
       return original_file_path;
     if (test_data_path_)
       return base::FilePath(test_data_path_).Append(original_file_path);
-    return GetTestDataFilePath(name);
+    return GetTestDataFilePath(file_path);
   }
 
   // Used for InputSizeChange test case. The image size should be smaller than
