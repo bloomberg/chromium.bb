@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/html/media/remote_playback_controller.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_observer.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
@@ -47,13 +48,12 @@ class MODULES_EXPORT RemotePlayback final
       public WebRemotePlaybackClient,
       public PresentationAvailabilityObserver,
       public mojom::blink::PresentationConnection,
-      public Supplement<HTMLMediaElement> {
+      public RemotePlaybackController {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
+  WTF_MAKE_NONCOPYABLE(RemotePlayback);
 
  public:
-  static const char kSupplementName[];
-
   // Result of WatchAvailabilityInternal that means availability is not
   // supported.
   static const int kWatchAvailabilityNotSupported = -1;
@@ -123,6 +123,10 @@ class MODULES_EXPORT RemotePlayback final
   void SourceChanged(const WebURL&, bool is_source_supported) override;
   WebString GetPresentationId() override;
 
+  // RemotePlaybackController implementation.
+  void AddObserver(RemotePlaybackObserver*) override;
+  void RemoveObserver(RemotePlaybackObserver*) override;
+
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
@@ -171,6 +175,8 @@ class MODULES_EXPORT RemotePlayback final
   mojo::Binding<mojom::blink::PresentationConnection>
       presentation_connection_binding_;
   mojom::blink::PresentationConnectionPtr target_presentation_connection_;
+
+  HeapHashSet<Member<RemotePlaybackObserver>> observers_;
 };
 
 }  // namespace blink
