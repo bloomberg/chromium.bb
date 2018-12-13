@@ -183,6 +183,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // |log_action| should be set to the reason why this method was called.
   void TakeActionNowOnTabOrAppVisibilityChange(Action log_action);
 
+  // MaybePreconnectNow preconnects to an origin server if it's allowed.
+  void MaybePreconnectNow(Action log_action);
+
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
 
@@ -222,6 +225,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // that scores of origins are computed differently from scores of URLs, so
   // they are not comparable.
   const int preconnect_origin_score_threshold_;
+
+  // True if |this| is allowed to preconnect to same origin hosts.
+  const bool same_origin_preconnecting_allowed_;
 
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;
