@@ -326,33 +326,6 @@ bool IsCorsEnabledRequestMode(mojom::FetchRequestMode mode) {
          mode == mojom::FetchRequestMode::kCorsWithForcedPreflight;
 }
 
-mojom::FetchResponseType CalculateResponseTainting(
-    const GURL& url,
-    mojom::FetchRequestMode request_mode,
-    const base::Optional<url::Origin>& origin,
-    bool cors_flag,
-    bool tainted_origin) {
-  if (url.SchemeIs(url::kDataScheme))
-    return mojom::FetchResponseType::kBasic;
-
-  if (cors_flag) {
-    DCHECK(IsCorsEnabledRequestMode(request_mode));
-    return mojom::FetchResponseType::kCors;
-  }
-
-  if (!origin) {
-    // This is actually not defined in the fetch spec, but in this case CORS
-    // is disabled so no one should care this value.
-    return mojom::FetchResponseType::kBasic;
-  }
-
-  if (request_mode == mojom::FetchRequestMode::kNoCors &&
-      (tainted_origin || !origin->IsSameOriginWith(url::Origin::Create(url)))) {
-    return mojom::FetchResponseType::kOpaque;
-  }
-  return mojom::FetchResponseType::kBasic;
-}
-
 bool IsCorsSafelistedMethod(const std::string& method) {
   // https://fetch.spec.whatwg.org/#cors-safelisted-method
   // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."

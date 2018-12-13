@@ -99,18 +99,6 @@ base::Optional<CorsErrorStatus> CheckExternalPreflight(
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCorsEnabledRequestMode(mojom::FetchRequestMode mode);
 
-// Returns the response tainting value
-// (https://fetch.spec.whatwg.org/#concept-request-response-tainting) for a
-// request and the CORS flag, as specified in
-// https://fetch.spec.whatwg.org/#main-fetch.
-COMPONENT_EXPORT(NETWORK_CPP)
-mojom::FetchResponseType CalculateResponseTainting(
-    const GURL& url,
-    mojom::FetchRequestMode request_mode,
-    const base::Optional<url::Origin>& origin,
-    bool cors_flag,
-    bool tainted_origin);
-
 // Checks safelisted request parameters.
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCorsSafelistedMethod(const std::string& method);
