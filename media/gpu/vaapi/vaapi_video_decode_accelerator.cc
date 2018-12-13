@@ -167,6 +167,7 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     : state_(kUninitialized),
       input_ready_(&lock_),
       vaapi_picture_factory_(new VaapiPictureFactory()),
+      profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       surfaces_available_(&lock_),
       decode_using_client_picture_buffers_(false),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -176,7 +177,6 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       requested_num_pics_(0),
       requested_num_reference_frames_(0),
       previously_requested_num_reference_frames_(0),
-      profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       make_context_current_cb_(make_context_current_cb),
       bind_image_cb_(bind_image_cb),
       weak_this_factory_(this) {
@@ -284,9 +284,12 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
                                  PLATFORM_FAILURE, );
   }
 
-  TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
-                    pictures_.size() - available_picture_buffers_.size(),
-                    "available", available_picture_buffers_.size());
+  {
+    base::AutoLock auto_lock(lock_);
+    TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
+                      pictures_.size() - available_picture_buffers_.size(),
+                      "available", available_picture_buffers_.size());
+  }
 
   DVLOGF(4) << "Notifying output picture id " << output_id << " for input "
             << input_id
@@ -307,6 +310,7 @@ void VaapiVideoDecodeAccelerator::TryOutputPicture() {
   if (!client_)
     return;
 
+  base::AutoLock auto_lock(lock_);
   if (pending_output_cbs_.empty() || available_picture_buffers_.empty())
     return;
 
@@ -540,6 +544,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   if (!awaiting_va_surfaces_recycle_)
     return;
 
+  base::AutoLock auto_lock(lock_);
   const size_t kExpectedMaxAvailableVASurfaces =
       decode_using_client_picture_buffers_
           ? pictures_.size()
@@ -579,7 +584,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   VLOGF(2) << "Requesting " << requested_num_pics_
            << " pictures of size: " << requested_pic_size_.ToString();
 
-  VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
+  const VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(
       vaapi_picture_factory_->GetBufferFormat());
   task_runner_->PostTask(
       FROM_HERE,
@@ -700,6 +705,7 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     return;
   }
 
+  base::AutoLock auto_lock(lock_);
   if (!pictures_.count(picture_buffer_id)) {
     CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
 
@@ -734,24 +740,24 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
   TRACE_EVENT1("media,gpu", "VAVDA::ReusePictureBuffer", "Picture id",
                picture_buffer_id);
 
-  if (!pictures_.count(picture_buffer_id)) {
-    // It's possible that we've already posted a DismissPictureBuffer for this
-    // picture, but it has not yet executed when this ReusePictureBuffer
-    // was posted to us by the client. In that case just ignore this (we've
-    // already dismissed it and accounted for that).
-    DVLOGF(3) << "got picture id=" << picture_buffer_id
-              << " not in use (anymore?).";
-    return;
-  }
-
   {
     base::AutoLock auto_lock(lock_);
-    available_picture_buffers_.push_back(picture_buffer_id);
-  }
 
-  TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
-                    pictures_.size() - available_picture_buffers_.size(),
-                    "available", available_picture_buffers_.size());
+    if (!pictures_.count(picture_buffer_id)) {
+      // It's possible that we've already posted a DismissPictureBuffer for this
+      // picture, but it has not yet executed when this ReusePictureBuffer
+      // was posted to us by the client. In that case just ignore this (we've
+      // already dismissed it and accounted for that).
+      DVLOGF(3) << "got picture id=" << picture_buffer_id
+                << " not in use (anymore?).";
+      return;
+    }
+
+    available_picture_buffers_.push_back(picture_buffer_id);
+    TRACE_COUNTER_ID2("media,gpu", "Vaapi frames at client", this, "used",
+                      pictures_.size() - available_picture_buffers_.size(),
+                      "available", available_picture_buffers_.size());
+  }
 
   TryOutputPicture();
 }
@@ -964,10 +970,10 @@ void VaapiVideoDecodeAccelerator::SurfaceReady(
     if (state_ == kResetting || state_ == kDestroying)
       return;
   }
-
   pending_output_cbs_.push(
       base::BindOnce(&VaapiVideoDecodeAccelerator::OutputPicture, weak_this_,
                      dec_surface, bitstream_id, visible_rect, color_space));
+
   TryOutputPicture();
 }
 
