@@ -18,7 +18,6 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
-#include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -43,17 +42,12 @@ std::unique_ptr<KeyedService> BuildTestSigninClient(web::BrowserState* state) {
       ios::ChromeBrowserState::FromBrowserState(state)->GetPrefs());
 }
 
-// Builds a token service with a fake provider.
+// Builds a fake token service.
 std::unique_ptr<KeyedService> BuildTestTokenService(web::BrowserState* state) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(state);
-  std::unique_ptr<ProfileOAuth2TokenServiceIOSDelegate> delegate =
-      std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
-          SigninClientFactory::GetForBrowserState(browser_state),
-          std::make_unique<FakeProfileOAuth2TokenServiceIOSProvider>(),
-          ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state));
   return std::make_unique<FakeProfileOAuth2TokenService>(
-      browser_state->GetPrefs(), std::move(delegate));
+      browser_state->GetPrefs());
 }
 }  // namespace
 
@@ -145,10 +139,7 @@ TEST_F(SigninBrowserStateInfoUpdaterTest, AuthError) {
               chrome_browser_state_.get()));
   std::string account_id =
       account_tracker->SeedAccountInfo("gaia", "example@email.com");
-  ProfileOAuth2TokenServiceIOSDelegate* token_service_delegate =
-      static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
-          token_service->GetDelegate());
-  token_service_delegate->AddOrUpdateAccount(account_id);
+  token_service->UpdateCredentials(account_id, "token");
   signin_manager->OnExternalSigninCompleted("example@email.com");
 
   EXPECT_TRUE(
