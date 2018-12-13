@@ -26,7 +26,7 @@ rootWebArea
 ++++labelText
 ++++++staticText name='Image: '
 ++++++++inlineTextBox name='Image: '
-++++++button default name='Image:'
+++++++button name='Image:'
 ++++labelText
 ++++++staticText name='Number: '
 ++++++++inlineTextBox name='Number: '
@@ -55,7 +55,7 @@ rootWebArea
 ++++labelText
 ++++++staticText name='Submit: '
 ++++++++inlineTextBox name='Submit: '
-++++++button default name='Submit:'
+++++++button name='Submit:'
 ++++labelText
 ++++++staticText name='Tel: '
 ++++++++inlineTextBox name='Tel: '

@@ -1070,6 +1070,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityButton) {
   RunHtmlTest(FILE_PATH_LITERAL("button.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityButtonSubmit) {
+  RunHtmlTest(FILE_PATH_LITERAL("button-submit.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityButtonAltChanged) {
   RunHtmlTest(FILE_PATH_LITERAL("button-alt-changed.html"));
