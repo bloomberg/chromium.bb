@@ -185,7 +185,9 @@
 
 #pragma mark - FallbackCoordinatorDelegate
 
-- (void)resetAccessoryView {
+- (void)fallbackCoordinatorDidDismissPopover:
+    (FallbackCoordinator*)fallbackCoordinator {
+  [self.formInputAccessoryMediator enableSuggestions];
   [self.formInputAccessoryViewController resetManualFallbackIcons];
 }
 
