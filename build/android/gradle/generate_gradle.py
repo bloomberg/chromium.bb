@@ -554,9 +554,8 @@ def _GenerateLocalProperties(sdk_dir):
       ''])
 
 
-def _GenerateBaseVars(generator, build_vars, source_properties):
+def _GenerateBaseVars(generator, build_vars):
   variables = {}
-  variables['build_tools_version'] = source_properties['Pkg.Revision']
   variables['compile_sdk_version'] = (
       'android-%s' % build_vars['compile_sdk_version'])
   target_sdk_version = build_vars['android_sdk_version']
@@ -569,13 +568,12 @@ def _GenerateBaseVars(generator, build_vars, source_properties):
   return variables
 
 
-def _GenerateGradleFile(entry, generator, build_vars, source_properties,
-    jinja_processor):
+def _GenerateGradleFile(entry, generator, build_vars, jinja_processor):
   """Returns the data for a project's build.gradle."""
   deps_info = entry.DepsInfo()
   gradle = entry.Gradle()
 
-  variables = _GenerateBaseVars(generator, build_vars, source_properties)
+  variables = _GenerateBaseVars(generator, build_vars)
 
   sourceSetName = 'main'
 
@@ -661,13 +659,12 @@ def _GetNative(relative_func, target_names):
   }
 
 
-def _GenerateModuleAll(
-    gradle_output_dir, generator, build_vars, source_properties,
-    jinja_processor, native_targets):
+def _GenerateModuleAll(gradle_output_dir, generator, build_vars,
+                       jinja_processor, native_targets):
   """Returns the data for a pseudo build.gradle of all dirs.
 
   See //docs/android_studio.md for more details."""
-  variables = _GenerateBaseVars(generator, build_vars, source_properties)
+  variables = _GenerateBaseVars(generator, build_vars)
   target_type = 'android_apk'
   variables['target_name'] = _MODULE_ALL
   variables['template_type'] = target_type
@@ -943,15 +940,11 @@ def main():
   logging.info('Creating %d projects for targets.', len(entries))
 
   logging.warning('Writing .gradle files...')
-  source_properties = _ReadPropertiesFile(
-      _RebasePath(os.path.join(build_vars['android_sdk_build_tools'],
-                               'source.properties')))
   project_entries = []
   # When only one entry will be generated we want it to have a valid
   # build.gradle file with its own AndroidManifest.
   for entry in entries:
-    data = _GenerateGradleFile(
-        entry, generator, build_vars, source_properties, jinja_processor)
+    data = _GenerateGradleFile(entry, generator, build_vars, jinja_processor)
     if data and not args.all:
       project_entries.append((entry.ProjectName(), entry.GradleSubdir()))
       _WriteFile(
@@ -959,9 +952,8 @@ def main():
           data)
   if args.all:
     project_entries.append((_MODULE_ALL, _MODULE_ALL))
-    _GenerateModuleAll(
-        _gradle_output_dir, generator, build_vars, source_properties,
-        jinja_processor, args.native_targets)
+    _GenerateModuleAll(_gradle_output_dir, generator, build_vars,
+                       jinja_processor, args.native_targets)
 
   _WriteFile(os.path.join(generator.project_dir, _GRADLE_BUILD_FILE),
              _GenerateRootGradle(jinja_processor, channel))
