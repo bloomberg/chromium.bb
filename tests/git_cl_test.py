@@ -1615,8 +1615,6 @@ class TestGitCl(TestCase):
       self.calls += [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
-        ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-        ((['git', 'config', 'gerrit.host'],), 'true'),
       ]
     if detect_gerrit_server:
       self.calls += self._get_gerrit_codereview_server_calls(
@@ -1767,8 +1765,6 @@ class TestGitCl(TestCase):
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
-      ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-      ((['git', 'config', 'gerrit.host'],), 'true'),
       ((['git', 'config', 'branch.master.gerritserver'],), CERR1),
       ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
@@ -2045,8 +2041,6 @@ class TestGitCl(TestCase):
           'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
          ((['git', 'config', 'branch.master.gerritissue'],), '456'),
          ((['git', 'config', 'branch.foo.gerritissue'],), CERR1),
-         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-         ((['git', 'config', 'gerrit.host'],), 'true'),
          ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
          ((['git', 'tag', 'git-cl-archived-456-foo', 'foo'],), ''),
@@ -2082,8 +2076,6 @@ class TestGitCl(TestCase):
           'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
          ((['git', 'config', 'branch.master.gerritissue'],), '456'),
          ((['git', 'config', 'branch.foo.gerritissue'],), CERR1),
-         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-         ((['git', 'config', 'gerrit.host'],), 'true'),
          ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),]
 
@@ -2104,8 +2096,6 @@ class TestGitCl(TestCase):
          ((['git', 'config', 'branch.master.gerritissue'],), '1'),
          ((['git', 'config', 'branch.foo.gerritissue'],), '456'),
          ((['git', 'config', 'branch.bar.gerritissue'],), CERR1),
-         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-         ((['git', 'config', 'gerrit.host'],), 'true'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
          ((['git', 'branch', '-D', 'foo'],), '')]
 

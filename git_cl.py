@@ -1133,9 +1133,9 @@ class Changelist(object):
           self.issue = int(issue)
           return
 
-    # No issue is set for this branch, so decide based on repo-wide settings.
+    # No issue is set for this branch, so default to gerrit.
     return self._load_codereview_impl(
-        codereview='gerrit' if settings.GetIsGerrit() else 'rietveld',
+        codereview='gerrit',
         **kwargs)
 
   def IsGerrit(self):
