@@ -3375,7 +3375,7 @@ MouseLockDispatcher* PepperPluginInstanceImpl::GetMouseLockDispatcher() {
     return container->mouse_lock_dispatcher();
   }
   if (render_frame_)
-    return render_frame_->render_view()->GetWidget()->mouse_lock_dispatcher();
+    return render_frame_->GetRenderWidget()->mouse_lock_dispatcher();
   return nullptr;
 }
 
