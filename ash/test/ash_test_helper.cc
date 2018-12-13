@@ -66,6 +66,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/wm_state.h"
@@ -240,6 +241,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 }
 
 void AshTestHelper::TearDown() {
+  mus_client_.reset();
+  window_tree_client_setter_.reset();
+
   test_keyboard_controller_observer_.reset();
   app_list_test_helper_.reset();
 
@@ -291,7 +295,6 @@ void AshTestHelper::TearDown() {
   command_line_.reset();
 
   display::Display::ResetForceDeviceScaleFactorForTesting();
-  env_window_tree_client_setter_.reset();
 
   CHECK(!::wm::CaptureController::Get());
 #if !defined(NDEBUG)
@@ -329,6 +332,25 @@ display::Display AshTestHelper::GetSecondaryDisplay() {
 
 service_manager::Connector* AshTestHelper::GetWindowServiceConnector() {
   return window_service_connector_.get();
+}
+
+void AshTestHelper::CreateMusClient() {
+  DCHECK(!mus_client_);
+  // Set aura::Env's WindowTreeClient to null. This is necessary as code such
+  // as AshTestBase may have already installed a WindowTreeClient.
+  window_tree_client_setter_ =
+      std::make_unique<aura::test::EnvWindowTreeClientSetter>(nullptr);
+  // As EnvWindowTreeClientSetter sets aura::Env's WindowTreeClient to null, it
+  // also sets Env::in_mus_shutdown_ to false. Env isn't in shutdown at this
+  // point, so force it to false.
+  aura::test::EnvTestHelper().SetInMusShutdown(false);
+
+  // Configure views backed by mus.
+  views::MusClient::InitParams mus_client_init_params;
+  mus_client_init_params.connector = GetWindowServiceConnector();
+  mus_client_init_params.create_wm_state = false;
+  mus_client_init_params.running_in_ws_process = true;
+  mus_client_ = std::make_unique<views::MusClient>(mus_client_init_params);
 }
 
 void AshTestHelper::CreateWindowService() {
