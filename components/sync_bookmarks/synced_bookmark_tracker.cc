@@ -530,4 +530,31 @@ size_t SyncedBookmarkTracker::TrackedUncommittedTombstonesCountForDebugging()
   return ordered_local_tombstones_.size();
 }
 
+void SyncedBookmarkTracker::CheckAllNodesTracked(
+    const bookmarks::BookmarkModel* bookmark_model) const {
+  // TODO(crbug.com/516866): The method is added to debug some crashes.
+  // Since it's relatively expensive, it should run on debug enabled
+  // builds only after the root cause is found.
+  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
+      bookmark_model->root_node());
+  while (iterator.has_next()) {
+    const bookmarks::BookmarkNode* node = iterator.Next();
+    if (!bookmark_model->client()->CanSyncNode(node)) {
+      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+      // Should be converted to a DCHECK after the root cause if found.
+      CHECK(!GetEntityForBookmarkNode(node));
+      continue;
+    }
+    // Mobile bookmarks folder is created on the server only after signing-in
+    // with a mobile client. Therefore, it should not be considered for
+    // validation.
+    if (node == bookmark_model->mobile_node()) {
+      continue;
+    }
+    // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+    // Should be converted to a DCHECK after the root cause if found.
+    CHECK(GetEntityForBookmarkNode(node));
+  }
+}
+
 }  // namespace sync_bookmarks
