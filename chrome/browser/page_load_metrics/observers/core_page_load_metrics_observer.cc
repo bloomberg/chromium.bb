@@ -512,56 +512,6 @@ void CorePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
   }
 }
 
-void CorePageLoadMetricsObserver::OnLargestImagePaintInMainFrameDocument(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  base::Optional<base::TimeDelta>& largest_image_paint =
-      timing.paint_timing->largest_image_paint;
-  if (largest_image_paint.has_value() &&
-      WasStartedInForegroundOptionalEventInForeground(largest_image_paint,
-                                                      info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestImagePaint,
-                        largest_image_paint.value());
-  }
-}
-
-void CorePageLoadMetricsObserver::OnLastImagePaintInMainFrameDocument(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  base::Optional<base::TimeDelta>& last_image_paint =
-      timing.paint_timing->last_image_paint;
-  if (last_image_paint.has_value() &&
-      WasStartedInForegroundOptionalEventInForeground(last_image_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastImagePaint,
-                        last_image_paint.value());
-  }
-}
-
-void CorePageLoadMetricsObserver::OnLargestTextPaintInMainFrameDocument(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  base::Optional<base::TimeDelta>& largest_text_paint =
-      timing.paint_timing->largest_text_paint;
-  if (largest_text_paint.has_value() &&
-      WasStartedInForegroundOptionalEventInForeground(largest_text_paint,
-                                                      info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestTextPaint,
-                        largest_text_paint.value());
-  }
-}
-
-void CorePageLoadMetricsObserver::OnLastTextPaintInMainFrameDocument(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  base::Optional<base::TimeDelta>& last_text_paint =
-      timing.paint_timing->last_text_paint;
-  if (last_text_paint.has_value() &&
-      WasStartedInForegroundOptionalEventInForeground(last_text_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastTextPaint,
-                        last_text_paint.value());
-  }
-}
-
 void CorePageLoadMetricsObserver::OnPageInteractive(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
@@ -736,7 +686,9 @@ void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
 }
 
 void CorePageLoadMetricsObserver::OnUserInput(
-    const blink::WebInputEvent& event) {
+    const blink::WebInputEvent& event,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
   base::TimeTicks now;
 
   if (first_paint_.is_null())
@@ -792,6 +744,27 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
   if (!info.started_in_foreground && info.first_foreground_time) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstForeground,
                         info.first_foreground_time.value());
+  }
+
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->largest_image_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestImagePaint,
+                        timing.paint_timing->largest_image_paint.value());
+  }
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->last_image_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastImagePaint,
+                        timing.paint_timing->last_image_paint.value());
+  }
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->largest_text_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestTextPaint,
+                        timing.paint_timing->largest_text_paint.value());
+  }
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->last_text_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastTextPaint,
+                        timing.paint_timing->last_text_paint.value());
   }
 
   if (timing.paint_timing->first_paint &&

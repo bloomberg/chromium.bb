@@ -148,18 +148,6 @@ void DispatchObserverTimingCallbacks(
   if (new_timing.paint_timing->first_meaningful_paint &&
       !last_timing.paint_timing->first_meaningful_paint)
     observer->OnFirstMeaningfulPaintInMainFrameDocument(new_timing, extra_info);
-  if (new_timing.paint_timing->largest_image_paint &&
-      !last_timing.paint_timing->largest_image_paint)
-    observer->OnLargestImagePaintInMainFrameDocument(new_timing, extra_info);
-  if (new_timing.paint_timing->last_image_paint &&
-      !last_timing.paint_timing->last_image_paint)
-    observer->OnLastImagePaintInMainFrameDocument(new_timing, extra_info);
-  if (new_timing.paint_timing->largest_text_paint &&
-      !last_timing.paint_timing->largest_text_paint)
-    observer->OnLargestTextPaintInMainFrameDocument(new_timing, extra_info);
-  if (new_timing.paint_timing->last_text_paint &&
-      !last_timing.paint_timing->last_text_paint)
-    observer->OnLastTextPaintInMainFrameDocument(new_timing, extra_info);
   if (new_timing.interactive_timing->interactive &&
       !last_timing.interactive_timing->interactive)
     observer->OnPageInteractive(new_timing, extra_info);
@@ -395,8 +383,9 @@ void PageLoadTracker::Redirect(content::NavigationHandle* navigation_handle) {
 
 void PageLoadTracker::OnInputEvent(const blink::WebInputEvent& event) {
   input_tracker_.OnInputEvent(event);
+  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
   for (const auto& observer : observers_) {
-    observer->OnUserInput(event);
+    observer->OnUserInput(event, metrics_update_dispatcher_.timing(), info);
   }
 }
 

@@ -404,7 +404,9 @@ void DataReductionProxyMetricsObserverBase::OnEventOccurred(
 }
 
 void DataReductionProxyMetricsObserverBase::OnUserInput(
-    const blink::WebInputEvent& event) {
+    const blink::WebInputEvent& event,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (event.GetType() == blink::WebInputEvent::kMouseDown ||
       event.GetType() == blink::WebInputEvent::kGestureTap) {
     touch_count_++;

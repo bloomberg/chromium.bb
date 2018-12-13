@@ -89,7 +89,9 @@ class FromGWSPageLoadMetricsLogger {
                     const page_load_metrics::PageLoadExtraInfo& extra_info);
   void OnParseStop(const page_load_metrics::mojom::PageLoadTiming& timing,
                    const page_load_metrics::PageLoadExtraInfo& extra_info);
-  void OnUserInput(const blink::WebInputEvent& event);
+  void OnUserInput(const blink::WebInputEvent& event,
+                   const page_load_metrics::mojom::PageLoadTiming& timing,
+                   const page_load_metrics::PageLoadExtraInfo& extra_info);
   void OnFirstInputInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info);
@@ -169,7 +171,10 @@ class FromGWSPageLoadMetricsObserver
       const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
-  void OnUserInput(const blink::WebInputEvent& event) override;
+  void OnUserInput(
+      const blink::WebInputEvent& event,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
   FromGWSPageLoadMetricsLogger logger_;

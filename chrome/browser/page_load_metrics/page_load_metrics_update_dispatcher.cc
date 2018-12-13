@@ -333,9 +333,16 @@ class PageLoadTimingMerger {
                          navigation_start_offset,
                          new_paint_timing.first_contentful_paint);
     if (is_main_frame) {
-      // First meaningful paint is only tracked in the main frame.
+      // FMP and FCP++ are only tracked in the main frame.
       target_paint_timing->first_meaningful_paint =
           new_paint_timing.first_meaningful_paint;
+
+      target_paint_timing->largest_image_paint =
+          new_paint_timing.largest_image_paint;
+      target_paint_timing->last_image_paint = new_paint_timing.last_image_paint;
+      target_paint_timing->largest_text_paint =
+          new_paint_timing.largest_text_paint;
+      target_paint_timing->last_text_paint = new_paint_timing.last_text_paint;
     }
   }
 
@@ -415,36 +422,6 @@ void PageLoadMetricsUpdateDispatcher::ShutDown() {
     should_dispatch = true;
   }
   timer_ = nullptr;
-
-  if (largest_image_paint_) {
-    pending_merged_page_timing_->paint_timing->largest_image_paint.swap(
-        largest_image_paint_);
-    // Reset it so multiple shutdowns will have only one dispatch.
-    largest_image_paint_.reset();
-    should_dispatch = true;
-  }
-  if (last_image_paint_) {
-    pending_merged_page_timing_->paint_timing->last_image_paint.swap(
-        last_image_paint_);
-    // Reset it so multiple shutdowns will have only one dispatch.
-    last_image_paint_.reset();
-    should_dispatch = true;
-  }
-
-  if (largest_text_paint_) {
-    pending_merged_page_timing_->paint_timing->largest_text_paint.swap(
-        largest_text_paint_);
-    // Reset it so multiple shutdowns will have only one dispatch.
-    largest_text_paint_.reset();
-    should_dispatch = true;
-  }
-  if (last_text_paint_) {
-    pending_merged_page_timing_->paint_timing->last_text_paint.swap(
-        last_text_paint_);
-    // Reset it so multiple shutdowns will have only one dispatch.
-    last_text_paint_.reset();
-    should_dispatch = true;
-  }
 
   if (should_dispatch) {
     DispatchTimingUpdates();
@@ -573,18 +550,6 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
 
   mojom::InteractiveTimingPtr last_interactive_timing =
       std::move(pending_merged_page_timing_->interactive_timing);
-
-  // Update the latest candidate to the corresponding buffers. We will dispatch
-  // the last candidate at the page load end. Because we don't want to dispatch
-  // the non-last candidate here, we clear it from |new_timing|.
-  largest_image_paint_.swap(new_timing->paint_timing->largest_image_paint);
-  new_timing->paint_timing->largest_image_paint.reset();
-  last_image_paint_.swap(new_timing->paint_timing->last_image_paint);
-  new_timing->paint_timing->last_image_paint.reset();
-  largest_text_paint_.swap(new_timing->paint_timing->largest_text_paint);
-  new_timing->paint_timing->largest_text_paint.reset();
-  last_text_paint_.swap(new_timing->paint_timing->last_text_paint);
-  new_timing->paint_timing->last_text_paint.reset();
 
   // Update the pending_merged_page_timing_, making sure to merge the previously
   // observed |paint_timing| and |interactive_timing|, which are tracked across

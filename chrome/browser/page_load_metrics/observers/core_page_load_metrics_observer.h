@@ -209,22 +209,13 @@ class CorePageLoadMetricsObserver
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnUserInput(const blink::WebInputEvent& event) override;
+  void OnUserInput(
+      const blink::WebInputEvent& event,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnResourceDataUseObserved(
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
-  void OnLargestImagePaintInMainFrameDocument(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLastImagePaintInMainFrameDocument(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLargestTextPaintInMainFrameDocument(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLastTextPaintInMainFrameDocument(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
   void RecordTimingHistograms(
