@@ -27,7 +27,7 @@ exe_weston = executable(
 	'weston',
 	srcs_weston,
 	include_directories: include_directories('..', '../shared'),
-	link_args: [ '-export-dynamic' ],
+	link_args: [ '-Wl,-export-dynamic' ],
 	dependencies: deps_weston,
 	install: true
 )
