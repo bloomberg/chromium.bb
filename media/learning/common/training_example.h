@@ -51,6 +51,25 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) TrainingExample {
   // Copy / assignment is allowed.
 };
 
+// <TrainingExample, weight == number of counts this example is used>.
+class COMPONENT_EXPORT(LEARNING_COMMON) WeightedExample {
+ public:
+  using weight_t = size_t;
+
+  WeightedExample(const TrainingExample* example, weight_t weight);
+  ~WeightedExample();
+
+  const TrainingExample* example() const { return example_; }
+
+  weight_t weight() const { return weight_; }
+
+ private:
+  const TrainingExample* example_ = nullptr;
+  weight_t weight_ = 0u;
+
+  // Allow copy and assign.
+};
+
 // Collection of training examples.
 // TODO(liberato): This should probably move to impl/ .
 class COMPONENT_EXPORT(LEARNING_COMMON) TrainingDataStorage
@@ -60,16 +79,28 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingDataStorage
   // TrainingData collections (see below) as new examples are added.  Deques
   // promise not to do that when inserting at either end.
   using StorageVector = std::deque<TrainingExample>;
-  using const_iterator = StorageVector::const_iterator;
+
+  // WeightedExamples can be stored in a vector, since we don't care if they're
+  // reallocated.  The underlying ptr is all we care about.
+  using WeightedExampleVector = std::vector<WeightedExample>;
+  using const_iterator = WeightedExampleVector::const_iterator;
+
+  // For convenience.
+  using weight_t = WeightedExample::weight_t;
 
   TrainingDataStorage();
 
-  StorageVector::const_iterator begin() const { return examples_.begin(); }
-  StorageVector::const_iterator end() const { return examples_.end(); }
+  const_iterator begin() const { return weighted_examples_.begin(); }
+  const_iterator end() const { return weighted_examples_.end(); }
 
   // Note that it's okay to add examples at any time.
-  void push_back(const TrainingExample& example) {
+  void push_back(const TrainingExample& example, weight_t weight = 1u) {
+    // TODO(liberato): de-duplicate here.
+    size_t index = examples_.size();
     examples_.push_back(example);
+    const TrainingExample* ptr = &(examples_[index]);
+    weighted_examples_.push_back(WeightedExample(ptr, weight));
+    total_weight_ += weight;
   }
 
   // Notice that there's no option to clear storage; that might invalidate
@@ -78,8 +109,12 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingDataStorage
 
   // Return the number of examples that we store.
   size_t size() const { return examples_.size(); }
+  weight_t total_weight() const { return total_weight_; }
 
-  const TrainingExample* operator[](size_t i) const { return &examples_[i]; }
+  // |i| ranges over [0, size()).
+  const WeightedExample& operator[](size_t i) const {
+    return weighted_examples_[i];
+  }
 
  private:
   friend class base::RefCountedThreadSafe<TrainingDataStorage>;
@@ -87,25 +122,10 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingDataStorage
   ~TrainingDataStorage();
 
   StorageVector examples_;
+  WeightedExampleVector weighted_examples_;
+  weight_t total_weight_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(TrainingDataStorage);
-};
-
-// <TrainingExample, weight == number of counts this example is used>.
-class COMPONENT_EXPORT(LEARNING_COMMON) WeightedExample {
- public:
-  WeightedExample(const TrainingExample* example, size_t weight);
-  ~WeightedExample();
-
-  const TrainingExample* example() const { return example_; }
-
-  size_t weight() const { return weight_; }
-
- private:
-  const TrainingExample* example_ = nullptr;
-  size_t weight_ = 0u;
-
-  // Allow copy and assign.
 };
 
 // Collection of pointers to training data.  References would be more convenient
@@ -116,11 +136,16 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
   using ExampleVector = std::vector<WeightedExample>;
   using const_iterator = ExampleVector::const_iterator;
 
+  // For convenience.
+  using weight_t = WeightedExample::weight_t;
+
   // Construct an empty set of examples, with |backing_storage| as the allowed
   // underlying storage.
   TrainingData(scoped_refptr<TrainingDataStorage> backing_storage);
 
   // Construct a list of examples from |begin| to excluding |end|.
+  // TODO(liberato): provide an option to de-duplicate the storage for those
+  // training algorithms that don't support weighted examples.
   TrainingData(scoped_refptr<TrainingDataStorage> backing_storage,
                TrainingDataStorage::const_iterator begin,
                TrainingDataStorage::const_iterator end);
@@ -130,32 +155,27 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
 
   ~TrainingData();
 
-  // TODO(liberato): Right now, these don't try to consolidate weights on
-  // identical examples.  It's unclear if we should.
+  // Add |example| with weight 1.
   void push_back(const TrainingExample* example) {
     DCHECK(backing_storage_);
     examples_.push_back(WeightedExample(example, 1u));
-    weighted_size_++;
-  }
-
-  void push_back(const TrainingExample* example, size_t weight) {
-    DCHECK(backing_storage_);
-    examples_.push_back(WeightedExample(example, weight));
-    weighted_size_ += weight;
+    total_weight_++;
   }
 
   void push_back(const WeightedExample& weighted_example) {
     DCHECK(backing_storage_);
     examples_.push_back(weighted_example);
-    weighted_size_ += weighted_example.weight();
+    total_weight_ += weighted_example.weight();
   }
 
-  bool empty() const { return !weighted_size_; }
+  bool empty() const { return !total_weight_; }
+
+  size_t size() const { return examples_.size(); }
 
   // Returns the number of instances, taking into account their weight.  For
   // example, if one adds an example with weight 2, then this will return two
   // more than it did before.
-  size_t weighted_size() const { return weighted_size_; }
+  weight_t total_weight() const { return total_weight_; }
 
   const_iterator begin() const { return examples_.begin(); }
   const_iterator end() const { return examples_.end(); }
@@ -165,9 +185,9 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
   }
 
   // Return true if and only if all examples have weight 1.
-  bool is_unweighted() const { return examples_.size() == weighted_size_; }
+  bool is_unweighted() const { return size() == total_weight_; }
 
-  // Provide the |i|-th example.  Only defined for unweighted sets.
+  // Provide the |i|-th example, over [0, size()).
   WeightedExample operator[](size_t i) const {
     DCHECK(is_unweighted());
     return examples_[i];
@@ -179,7 +199,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) TrainingData {
 
   ExampleVector examples_;
 
-  size_t weighted_size_ = 0u;
+  weight_t total_weight_ = 0u;
 
   // Copy / assignment is allowed.
 };

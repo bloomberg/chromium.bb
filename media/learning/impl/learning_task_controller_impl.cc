@@ -45,7 +45,7 @@ void LearningTaskControllerImpl::AddExample(const TrainingExample& example) {
   }
 
   // Train every time we get a multiple of |data_set_size|.
-  if ((storage_->size() % task_.min_data_set_size) != 0)
+  if ((storage_->total_weight() % task_.min_data_set_size) != 0)
     return;
 
   TrainingData training_data(storage_, storage_->begin(), storage_->end());

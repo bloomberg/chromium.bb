@@ -137,12 +137,11 @@ TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
     }
   }
 
-  // Add two copies of each example.  Note that we do this after fully
-  // constructing |training_data_storage|, since it may realloc.
+  // Add two copies of each example.
   TrainingData training_data(storage_);
   for (auto& example : *storage_) {
-    training_data.push_back(&example);
-    training_data.push_back(&example);
+    training_data.push_back(example);
+    training_data.push_back(example);
   }
 
   std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
