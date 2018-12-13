@@ -782,7 +782,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // If this fragment will be larger than the inline-size of the opportunity,
     // *and* the opportunity is smaller than the available inline-size, and the
     // container autowraps, continue to the next opportunity.
-    if (line_info.Width() > line_opportunity.AvailableInlineSize() &&
+    if (line_info.HasOverflow() &&
         ConstraintSpace().AvailableSize().inline_size !=
             line_opportunity.AvailableFloatInlineSize() &&
         Node().Style().AutoWrap()) {

@@ -170,6 +170,10 @@ class CORE_EXPORT NGLineInfo {
   LayoutUnit WidthForAlignment() const { return width_; }
   LayoutUnit ComputeWidth() const;
 
+  // True if this line has overflow, excluding preserved trailing spaces.
+  bool HasOverflow() const { return has_overflow_; }
+  void SetHasOverflow() { has_overflow_ = true; }
+
   void SetBfcOffset(const NGBfcOffset& bfc_offset) { bfc_offset_ = bfc_offset; }
   void SetWidth(LayoutUnit available_width, LayoutUnit width) {
     available_width_ = available_width;
@@ -214,6 +218,7 @@ class CORE_EXPORT NGLineInfo {
   bool use_first_line_style_ = false;
   bool is_last_line_ = false;
   bool is_empty_line_ = false;
+  bool has_overflow_ = false;
 };
 
 }  // namespace blink
