@@ -339,11 +339,14 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
   if (!ShouldEvaluateRequest(request))
     return Action::NONE;
 
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions");
-
   if (test_observer_)
     test_observer_->OnEvaluateRequest(request, is_incognito_context);
+
+  if (rulesets_.empty())
+    return Action::NONE;
+
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2");
 
   const GURL& url = request.url;
   const url::Origin first_party_origin =
