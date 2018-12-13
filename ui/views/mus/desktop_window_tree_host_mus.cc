@@ -52,7 +52,8 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
       : widget_(widget) {
     // Not part of the accessibility node hierarchy because the window frame is
     // provided by the window manager.
-    GetViewAccessibility().OverrideIsIgnored(true);
+    if (MusClient::Get()->use_remote_accessibility_host())
+      GetViewAccessibility().OverrideIsIgnored(true);
 
     // Initialize kTopViewInset to a default value. Further updates will come
     // from Ash. This is necessary so that during app window creation,
@@ -553,10 +554,12 @@ void DesktopWindowTreeHostMus::OnWidgetInitDone() {
   // These views are not part of the accessibility node hierarchy because the
   // window frame is provided by the window manager.
   Widget* widget = native_widget_delegate_->AsWidget();
-  if (widget->non_client_view())
-    widget->non_client_view()->GetViewAccessibility().OverrideIsIgnored(true);
-  if (widget->client_view())
-    widget->client_view()->GetViewAccessibility().OverrideIsIgnored(true);
+  if (MusClient::Get()->use_remote_accessibility_host()) {
+    if (widget->non_client_view())
+      widget->non_client_view()->GetViewAccessibility().OverrideIsIgnored(true);
+    if (widget->client_view())
+      widget->client_view()->GetViewAccessibility().OverrideIsIgnored(true);
+  }
 
   MusClient::Get()->OnWidgetInitDone(widget);
 }

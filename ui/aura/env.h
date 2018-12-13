@@ -73,7 +73,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
                         public base::SupportsUserData {
  public:
   enum class Mode {
-    // Classic aura.
+    // Classic aura, or ash under SingleProcessMash.
     LOCAL,
 
     // Aura with a backend of mus.

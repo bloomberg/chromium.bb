@@ -13,17 +13,9 @@
 # Crash in media::AudioOutputController::Create()
 -KioskVirtualKeyboardTest.RestrictFeatures
 
-# AutomationManagerAura::Enable() uses ash to get active window. More generally,
-# chrome a11y code directly accesses ash system UI widgets and views.
-# https://crbug.com/888145
--AutomationApiTest.*
--AutomationApiTestWithDeviceScaleFactor.*
--AutomationManagerAuraBrowserTest.*
-
-# ChromeVox and Select-to-Speak not yet supported. https://crbug.com/594887
--ChromeVox*
--SelectToSpeak*
--SwitchAccess*
+# Timeouts. https://crbug.com/594887
+-ChromeVoxPanelTest.ActivateMenu
+-ChromeVoxPanelTest.LinkMenu
 
 # Flaky https://crbug.com/887175
 -PrerenderBrowserTest.PrerenderHTML5VideoJs

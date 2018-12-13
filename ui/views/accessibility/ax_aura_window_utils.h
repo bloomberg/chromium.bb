@@ -9,6 +9,7 @@
 #include "ui/views/views_export.h"
 
 namespace views {
+class Widget;
 
 // Singleton class that provides functions for walking a tree of aura::Windows
 // for accessibility. in particular, for --single-process-mash we want the
@@ -27,6 +28,8 @@ class VIEWS_EXPORT AXAuraWindowUtils {
 
   virtual aura::Window* GetParent(aura::Window* window);
   virtual aura::Window::Windows GetChildren(aura::Window* window);
+  virtual bool IsRootWindow(aura::Window* window) const;
+  virtual views::Widget* GetWidgetForNativeView(aura::Window* window);
 
  protected:
   AXAuraWindowUtils();

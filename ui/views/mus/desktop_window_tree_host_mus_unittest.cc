@@ -30,6 +30,7 @@
 #include "ui/events/gestures/gesture_recognizer_observer.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/mus_client_test_api.h"
 #include "ui/views/mus/screen_mus.h"
@@ -580,6 +581,9 @@ TEST_F(DesktopWindowTreeHostMusTest, WindowTitle) {
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, Accessibility) {
+  // Pretend we're using the remote AX service, like shortcut_viewer.
+  MusClientTestApi::SetAXRemoteHost(std::make_unique<AXRemoteHost>());
+
   std::unique_ptr<Widget> widget = CreateWidget();
   // Widget frame views do not participate in accessibility node hierarchy
   // because the frame is provided by the window manager.

@@ -4,6 +4,8 @@
 
 #include "ui/views/accessibility/ax_aura_window_utils.h"
 
+#include "ui/views/widget/widget.h"
+
 namespace views {
 
 namespace {
@@ -32,6 +34,14 @@ aura::Window* AXAuraWindowUtils::GetParent(aura::Window* window) {
 
 aura::Window::Windows AXAuraWindowUtils::GetChildren(aura::Window* window) {
   return window->children();
+}
+
+bool AXAuraWindowUtils::IsRootWindow(aura::Window* window) const {
+  return window->IsRootWindow();
+}
+
+views::Widget* AXAuraWindowUtils::GetWidgetForNativeView(aura::Window* window) {
+  return Widget::GetWidgetForNativeView(window);
 }
 
 AXAuraWindowUtils::AXAuraWindowUtils() = default;

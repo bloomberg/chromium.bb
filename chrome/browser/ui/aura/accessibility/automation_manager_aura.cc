@@ -40,14 +40,22 @@ void AutomationManagerAura::Enable() {
   enabled_ = true;
   Reset(false);
 
+#if defined(OS_CHROMEOS)
+  // Seed the views::AXAuraObjCache with per-display root windows so
+  // GetTopLevelWindows() returns the correct values when automation is enabled
+  // with multiple displays connected.
+  for (aura::Window* root : ash::Shell::GetAllRootWindows())
+    views::AXAuraObjCache::GetInstance()->OnRootWindowObjCreated(root);
+#endif
+
   SendEvent(current_tree_->GetRoot(), ax::mojom::Event::kLoadComplete);
   // Intentionally not reset at shutdown since we cannot rely on the shutdown
   // ordering of two base::Singletons.
   views::AXAuraObjCache::GetInstance()->SetDelegate(this);
 
 #if defined(OS_CHROMEOS)
-  // TODO(crbug.com/756054): Support SingleProcessMash and MultiProcessMash.
-  if (!features::IsUsingWindowService()) {
+  // TODO(crbug.com/756054): Support MultiProcessMash.
+  if (!features::IsMultiProcessMash()) {
     aura::Window* active_window = ash::wm::GetActiveWindow();
     if (active_window) {
       views::AXAuraObjWrapper* focus =
@@ -194,7 +202,8 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
   std::vector<ui::AXTreeUpdate> tree_updates;
   ui::AXTreeUpdate update;
   if (!current_tree_serializer_->SerializeChanges(aura_obj, &update)) {
-    LOG(ERROR) << "Unable to serialize one accessibility event.";
+    LOG(ERROR) << "Unable to serialize one accessibility event: "
+               << update.ToString();
     return;
   }
   tree_updates.push_back(update);

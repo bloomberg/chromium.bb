@@ -113,6 +113,8 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
     return property_converter_.get();
   }
 
+  bool use_remote_accessibility_host() const { return !!ax_remote_host_; }
+
   aura::WindowTreeClient* window_tree_client() { return window_tree_client_; }
 
   // Creates DesktopNativeWidgetAura with DesktopWindowTreeHostMus. This is

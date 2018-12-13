@@ -72,7 +72,8 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   // Lookup a cached entry based on an id.
   AXAuraObjWrapper* Get(int32_t id);
 
-  // Get all top level windows this cache knows about.
+  // Get all top level windows this cache knows about. Under classic ash and
+  // SingleProcessMash this is a list of per-display root windows.
   void GetTopLevelWindows(std::vector<AXAuraObjWrapper*>* children);
 
   // Get the object that has focus.

@@ -156,6 +156,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_shadow_controller_delegate.h"
 #include "ash/wm/workspace_controller.h"
+#include "ash/ws/ax_ash_window_utils.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -970,6 +971,10 @@ void Shell::Init(
     frame_values.max_title_bar_button_width =
         NonClientFrameController::GetMaxTitleBarButtonWidth();
     views::WindowManagerFrameValues::SetInstance(frame_values);
+
+    // Accessibility node tree serialization needs to "jump the fence" and
+    // convert between ash proxy and mus client windows.
+    views::AXAuraWindowUtils::Set(std::make_unique<AXAshWindowUtils>());
   }
 
   // This creates the MessageCenter object which is used by some other objects
