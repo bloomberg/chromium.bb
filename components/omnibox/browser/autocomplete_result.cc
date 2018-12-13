@@ -31,6 +31,8 @@
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 
+typedef AutocompleteMatchType ACMatchType;
+
 struct MatchGURLHash {
   // The |bool| is whether the match is a calculator suggestion. We want them
   // compare differently against other matches with the same URL.
@@ -122,7 +124,7 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
               i.description);
     matches_.push_back(i);
     if (!AutocompleteMatch::IsSearchType(i.type) &&
-        i.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
+        i.type != ACMatchType::DOCUMENT_SUGGESTION) {
       const OmniboxFieldTrial::EmphasizeTitlesCondition condition(
           OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(input));
       bool emphasize = false;
@@ -415,6 +417,42 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
              : GURL();
 }
 
+// static
+bool AutocompleteResult::IsBetterMatch(
+    AutocompleteMatch& first,
+    AutocompleteMatch& second,
+    metrics::OmniboxEventProto::PageClassification page_classification) {
+  // This object implements greater than.
+  CompareWithDemoteByType<AutocompleteMatch> compare_demote_by_type(
+      page_classification);
+
+  if (first.type == ACMatchType::SEARCH_SUGGEST_ENTITY &&
+      second.type != ACMatchType::SEARCH_SUGGEST_ENTITY) {
+    // If |first| is an entity suggestion and |second| isn't, |first| is
+    // considered better. If its type-adjusted relevance is lower, boost it to
+    // the value of |second|.
+    if (compare_demote_by_type(second, first)) {
+      first.RecordAdditionalInfo(kScoreBoostedFrom, second.relevance);
+      first.relevance = second.relevance;
+    }
+    return true;
+  } else if (first.type != ACMatchType::SEARCH_SUGGEST_ENTITY &&
+             second.type == ACMatchType::SEARCH_SUGGEST_ENTITY) {
+    // Likewise, if |second| is an entity suggestion and |first| isn't, first
+    // is not considered better, even if it has a higher type-adjusted
+    // relevance. If it does have a higher relevance, boost |second|.
+    if (compare_demote_by_type(first, second)) {
+      second.RecordAdditionalInfo(kScoreBoostedFrom, first.relevance);
+      second.relevance = first.relevance;
+    }
+    return false;
+  }
+
+  // In the case that both values are entity suggestions or both aren't, |first|
+  // is simply considered better if it's type-adjusted relevance is higher.
+  return compare_demote_by_type(first, second);
+}
+
 void AutocompleteResult::SortAndDedupMatches(
     metrics::OmniboxEventProto::PageClassification page_classification,
     ACMatches* matches) {
@@ -426,31 +464,28 @@ void AutocompleteResult::SortAndDedupMatches(
     std::pair<GURL, bool> p = GetMatchComparisonFields(*i);
     url_to_matches[p].push_back(i);
   }
-  CompareWithDemoteByType<AutocompleteMatch> compare_demote_by_type(
-      page_classification);
   // Find best default, and non-default, match in each group.
   for (auto& group : url_to_matches) {
-    const auto& p = group.first;
-    const GURL& gurl = p.first;
+    const auto& key = group.first;
+    const GURL& gurl = key.first;
     // The list of matches whose URL are equivalent.
-    auto& duplicate_matches = group.second;
+    std::list<ACMatches::iterator>& duplicate_matches = group.second;
     if (gurl.is_empty() || duplicate_matches.size() == 1)
       continue;
 
     auto best_match = duplicate_matches.end();
     auto best_default = duplicate_matches.end();
-    for (auto i = duplicate_matches.begin(); i != duplicate_matches.end();
-         ++i) {
-      if ((*i)->allowed_to_be_default_match) {
+    for (auto match = duplicate_matches.begin();
+         match != duplicate_matches.end(); ++match) {
+      if ((*match)->allowed_to_be_default_match) {
         if (best_default == duplicate_matches.end() ||
-            // This object implements greater than.
-            compare_demote_by_type(**i, **best_default)) {
-          best_default = i;
+            IsBetterMatch(**match, **best_default, page_classification)) {
+          best_default = match;
         }
       }
       if (best_match == duplicate_matches.end() ||
-          compare_demote_by_type(**i, **best_match)) {
-        best_match = i;
+          IsBetterMatch(**match, **best_match, page_classification)) {
+        best_match = match;
       }
     }
     if (best_match != best_default && best_default != duplicate_matches.end()) {
@@ -490,7 +525,7 @@ void AutocompleteResult::InlineTailPrefixes() {
   base::string16 common_prefix;
 
   for (const auto& match : matches_) {
-    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
+    if (match.type == ACMatchType::SEARCH_SUGGEST_TAIL) {
       int common_length;
       base::StringToInt(
           match.GetAdditionalInfo(kACMatchPropertyContentsStartIndex),
@@ -530,7 +565,7 @@ bool AutocompleteResult::HasMatchByDestination(const AutocompleteMatch& match,
 void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
   std::function<bool(const AutocompleteMatch&)> is_tail =
       [](const AutocompleteMatch& match) {
-        return match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
+        return match.type == ACMatchType::SEARCH_SUGGEST_TAIL;
       };
   auto non_tail_default = std::find_if(
       matches->begin(), matches->end(), [&](const AutocompleteMatch& match) {
@@ -630,5 +665,5 @@ void AutocompleteResult::MergeMatchesByProvider(
 std::pair<GURL, bool> AutocompleteResult::GetMatchComparisonFields(
     const AutocompleteMatch& match) {
   return std::make_pair(match.stripped_destination_url,
-                        match.type == AutocompleteMatchType::CALCULATOR);
+                        match.type == ACMatchType::CALCULATOR);
 }
