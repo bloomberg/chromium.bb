@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/http/http_status_code.h"
@@ -330,7 +330,9 @@ class AccountTrackerTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
+  // net:: stuff needs IO message loop.
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_test_env_;
 
