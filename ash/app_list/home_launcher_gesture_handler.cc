@@ -199,14 +199,17 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
 
   void StopAnimating() {
     window_->layer()->GetAnimator()->StopAnimating();
-    for (const auto& descendant : transient_descendants_values_) {
+    for (const auto& descendant : transient_descendants_values_)
       descendant.first->layer()->GetAnimator()->StopAnimating();
-    }
   }
 
   void ResetOpacityAndTransform() {
     window_->SetTransform(window_values_.initial_transform);
     window_->layer()->SetOpacity(window_values_.initial_opacity);
+    for (const auto& descendant : transient_descendants_values_) {
+      descendant.first->SetTransform(descendant.second.initial_transform);
+      descendant.first->layer()->SetOpacity(descendant.second.initial_opacity);
+    }
   }
 
   // Calculates the values for |window_| and its transient descendants.
