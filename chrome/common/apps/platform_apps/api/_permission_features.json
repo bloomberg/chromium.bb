@@ -50,6 +50,10 @@
       "3407516021EA3669C0EC8E65E6B9837E5A521B9C"
     ]
   },
+  "pointerLock": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
   "syncFileSystem": {
     "channel": "stable",
     "extension_types": ["platform_app"]

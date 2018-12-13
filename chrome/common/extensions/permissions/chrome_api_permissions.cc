@@ -197,7 +197,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     // Platform-app permissions.
 
     {APIPermission::kFileSystemProvider, "fileSystemProvider"},
-    {APIPermission::kPointerLock, "pointerLock"},
     {APIPermission::kCastStreaming, "cast.streaming"},
     {APIPermission::kLauncherSearchProvider, "launcherSearchProvider"},
 
