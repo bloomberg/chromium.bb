@@ -101,6 +101,9 @@ class TestHitTestAggregator final : public HitTestAggregator {
 
   int GetRegionCount() const { return hit_test_data_size_; }
   int GetHitTestRegionListCapacity() { return hit_test_data_capacity_; }
+  uint64_t GetLastSubmitHitTestRegionListIndex() const {
+    return last_submit_hit_test_region_list_index_;
+  }
 
  private:
   const FrameSinkId frame_sink_id_;
@@ -1135,6 +1138,37 @@ TEST_F(HitTestAggregatorTest, TransparentOverlayRegions) {
   EXPECT_EQ(region.frame_sink_id, c2_surface_id.frame_sink_id());
   EXPECT_EQ(region.rect, gfx::Rect(0, 0, 200, 100));
   EXPECT_EQ(region.child_count, 0);
+}
+
+TEST_F(HitTestAggregatorTest, HitTestDataNotUpdated) {
+  TestHitTestAggregator* aggregator = hit_test_aggregator();
+  EXPECT_EQ(aggregator->GetRegionCount(), 0);
+
+  SurfaceId surface_id = MakeSurfaceId(kDisplayClientId);
+  HitTestRegionList hit_test_region_list;
+  hit_test_region_list.flags = HitTestRegionFlags::kHitTestMine;
+  hit_test_region_list.bounds.SetRect(0, 0, 1024, 768);
+  HitTestRegionList hit_test_region_list_copy = hit_test_region_list;
+
+  support()->SubmitCompositorFrame(surface_id.local_surface_id(),
+                                   MakeDefaultCompositorFrame(),
+                                   std::move(hit_test_region_list));
+  aggregator->Aggregate(surface_id);
+  uint64_t last_index = aggregator->GetLastSubmitHitTestRegionListIndex();
+
+  // We did not update the hit-test data. Expect the index from Aggregator /
+  // Manager to remain unchanged.
+  support()->SubmitCompositorFrame(surface_id.local_surface_id(),
+                                   MakeDefaultCompositorFrame(), base::nullopt);
+  aggregator->Aggregate(surface_id);
+  EXPECT_EQ(last_index, aggregator->GetLastSubmitHitTestRegionListIndex());
+
+  // We updated hit-test data. Expect the index to have changed.
+  support()->SubmitCompositorFrame(surface_id.local_surface_id(),
+                                   MakeDefaultCompositorFrame(),
+                                   std::move(hit_test_region_list));
+  aggregator->Aggregate(surface_id);
+  EXPECT_NE(last_index, aggregator->GetLastSubmitHitTestRegionListIndex());
 }
 
 }  // namespace viz

@@ -100,6 +100,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   base::flat_set<FrameSinkId> referenced_child_regions_;
 
   base::flat_map<FrameSinkId, uint64_t> last_active_frame_index_;
+  uint64_t last_submit_hit_test_region_list_index_ = 0;
 
   // Handles the case when this object is deleted after
   // the PostTaskAggregation call is scheduled but before invocation.
