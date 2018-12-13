@@ -54,6 +54,8 @@ TestWebThreadBundle::~TestWebThreadBundle() {
   base::TaskScheduler::GetInstance()->JoinForTesting();
   base::TaskScheduler::SetInstance(nullptr);
 
+  WebThreadImpl::ResetGlobalsForTesting(WebThread::UI);
+  WebThreadImpl::ResetGlobalsForTesting(WebThread::IO);
   WebThreadImpl::ResetTaskExecutorForTesting();
 }
 
