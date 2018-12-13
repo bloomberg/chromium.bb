@@ -3417,7 +3417,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6198252989419008588">Schimbă codul PIN</translation>
 <translation id="6199801702437275229">Se așteaptă informațiile despre spațiu...</translation>
 <translation id="6201792273624501289">Aplicații Linux</translation>
-<translation id="6202304368170870640">Poți folosi codul PIN ca să te conectezi la sau să deblochezi dispozitivul.</translation>
+<translation id="6202304368170870640">Poți folosi codul PIN ca să te conectezi la dispozitiv sau să-l deblochezi.</translation>
 <translation id="6205710420833115353">Unele operațiuni durează mai mult decât ar trebui. Dorești să le anulezi?</translation>
 <translation id="6206311232642889873">Cop&amp;iază imaginea</translation>
 <translation id="6207200176136643843">Resetează la nivelul de zoom prestabilit</translation>
@@ -4250,7 +4250,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7497215489070763236">Certificat CA de server</translation>
 <translation id="7497981768003291373">Nu ai jurnale text WebRTC înregistrate recent.</translation>
 <translation id="7502658306369382406">Adresă IPv6</translation>
-<translation id="7503127198245469314">Elimină căștile ca să blochezi sau să permiți de pe afișajul desktop-ului</translation>
+<translation id="7503127198245469314">Dă jos casca pentru a bloca sau a permite de pe afișajul desktopului</translation>
 <translation id="7503191893372251637">Tip de certificat Netscape</translation>
 <translation id="7503821294401948377">Nu se poate încărca pictograma „<ph name="ICON" />” pentru acțiunea browserului.</translation>
 <translation id="750509436279396091">Deschideți dosarul de descărcări</translation>

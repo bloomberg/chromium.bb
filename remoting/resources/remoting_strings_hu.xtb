@@ -289,7 +289,6 @@ Ha aktiválni szeretné ezt a funkciót, kattintson a(z) „<ph name="BUTTON_NAM
 <translation id="7434397035092923453">Hozzáférés megtagadva a következő klienstől: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Kliens csatlakoztatva: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Másik fiók választása</translation>
-<translation id="7589941250119944644">A Chrome távoliasztal-szolgáltatás új helyre költözik az interneten. Próbálja ki <ph name="LINK_BEGIN" />internetes alkalmazásunkat<ph name="LINK_END" />, amely gyors, ingyenes, és tartalmazza az összes, korábban megszokott funkciót is.</translation>
 <translation id="7606912958770842224">Távoli kapcsolatok engedélyezése</translation>
 <translation id="7628469622942688817">PIN-kód megjegyzése az eszközön.</translation>
 <translation id="7649070708921625228">Súgó</translation>
