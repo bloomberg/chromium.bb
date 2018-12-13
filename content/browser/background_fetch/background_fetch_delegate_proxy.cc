@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_manager.h"
+#include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
@@ -160,12 +161,10 @@ class BackgroundFetchDelegateProxy::Core
       headers.SetHeader("Origin", origin.Serialize());
     }
 
-    // TODO(crbug.com/774054): Update |has_request_body| after the cache storage
-    // supports request bodies.
     delegate->DownloadUrl(job_unique_id, request->download_guid(),
                           fetch_request->method, fetch_request->url,
                           traffic_annotation, headers,
-                          /* has_request_body= */ false);
+                          request->has_request_body());
   }
 
   void Abort(const std::string& job_unique_id) {
@@ -288,10 +287,10 @@ void BackgroundFetchDelegateProxy::Core::GetUploadData(
   BackgroundFetchDelegate::GetUploadDataCallback wrapped_callback =
       base::BindOnce(
           [](BackgroundFetchDelegate::GetUploadDataCallback callback,
-             scoped_refptr<network::ResourceRequestBody> body) {
+             blink::mojom::SerializedBlobPtr blob) {
             base::PostTaskWithTraits(
                 FROM_HERE, {BrowserThread::UI},
-                base::BindOnce(std::move(callback), std::move(body)));
+                base::BindOnce(std::move(callback), std::move(blob)));
           },
           std::move(callback));
 

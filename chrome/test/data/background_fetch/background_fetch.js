@@ -135,6 +135,16 @@ function RunFetchAnExpectAnException() {
     .catch(e => sendResultToTest(e.message));
 }
 
+// Starts a Background Fetch with an upload that should succeed.
+function RunFetchTillCompletionWithUpload() {
+  const request = new Request('/background_fetch/upload',
+                              {method: 'POST', body: 'upload!'});
+  navigator.serviceWorker.ready.then(swRegistration => {
+    return swRegistration.backgroundFetch.fetch(
+        kBackgroundFetchId, request);
+  }).catch(sendErrorToTest);
+}
+
 function StartFetchFromServiceWorker() {
   navigator.serviceWorker.ready.then(reg => reg.active.postMessage('fetch'));
 }

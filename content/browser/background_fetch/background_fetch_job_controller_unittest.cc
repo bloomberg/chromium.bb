@@ -119,7 +119,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
           GURL(pair.first), pair.second, FetchAPIRequestHeadersMap(),
           blink::mojom::Referrer::New(), false);
       auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-          request_counter++, std::move(request_ptr));
+          request_counter++, std::move(request_ptr),
+          /* has_request_body= */ false);
       request->InitializeDownloadGuid();
       request_infos.push_back(request);
     }

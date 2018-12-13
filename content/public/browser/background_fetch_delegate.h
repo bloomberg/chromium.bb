@@ -12,12 +12,10 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_request_info.h"
-#include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -63,7 +61,7 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
   using GetPermissionForOriginCallback =
       base::OnceCallback<void(BackgroundFetchPermission)>;
   using GetUploadDataCallback =
-      base::OnceCallback<void(scoped_refptr<network::ResourceRequestBody>)>;
+      base::OnceCallback<void(blink::mojom::SerializedBlobPtr)>;
 
   // Client interface that a BackgroundFetchDelegate would use to signal the
   // progress of a background fetch.

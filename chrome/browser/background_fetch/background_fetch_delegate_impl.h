@@ -154,9 +154,21 @@ class BackgroundFetchDelegateImpl
     void UpdateOfflineItem();
     void MarkJobAsStarted();
 
-    enum class UploadData {
-      kAbsent,
-      kIncluded,
+    struct UploadData {
+      enum class Status {
+        kAbsent,
+        kIncluded,
+      };
+
+      explicit UploadData(bool has_upload_data);
+      ~UploadData();
+
+      Status status = Status::kAbsent;
+
+      // The request body blob will be stored here after the Download Service
+      // queries the upload data. The blob handle needs to be kept alive
+      // while the request is sent out, and will be cleared after.
+      blink::mojom::SerializedBlobPtr request_body_blob = nullptr;
     };
 
     // The client to report the Background Fetch updates to.
@@ -198,6 +210,11 @@ class BackgroundFetchDelegateImpl
   void DidGetPermissionFromDownloadRequestLimiter(
       GetPermissionForOriginCallback callback,
       bool has_permission);
+
+  void DidGetUploadData(const std::string& unique_id,
+                        const std::string& download_guid,
+                        download::GetUploadDataCallback callback,
+                        blink::mojom::SerializedBlobPtr blob);
 
   // Returns the client for a given |job_unique_id|.
   base::WeakPtr<Client> GetClient(const std::string& job_unique_id);

@@ -189,7 +189,7 @@ scoped_refptr<BackgroundFetchRequestInfo> CreateRequestInfo(
     int request_index,
     blink::mojom::FetchAPIRequestPtr fetch_request) {
   auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-      request_index, std::move(fetch_request));
+      request_index, std::move(fetch_request), /* has_request_body= */ false);
   request->InitializeDownloadGuid();
   return request;
 }

@@ -7,7 +7,6 @@
 #include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/public/common/origin_util.h"
 #include "services/network/public/cpp/cors/cors.h"
-#include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 #include <utility>
@@ -314,20 +313,13 @@ void BackgroundFetchJobController::DidGetUploadData(
   if (error != BackgroundFetchError::NONE) {
     Abort(BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE,
           base::DoNothing());
-    std::move(callback).Run(/* request_body= */ nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
 
   DCHECK_EQ(fetches.size(), 1u);
   DCHECK(fetches[0]->request->blob);
-
-  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-  blink::mojom::BlobPtr blob_ptr(std::move(fetches[0]->request->blob->blob));
-  blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
-
-  auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
-  request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
-  std::move(callback).Run(std::move(request_body));
+  std::move(callback).Run(std::move(fetches[0]->request->blob));
 }
 
 }  // namespace content
