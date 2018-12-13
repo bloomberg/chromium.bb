@@ -24,10 +24,14 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 namespace {
 
 // This is the width used for |self.preferredContentSize|.
-constexpr float PopoverPreferredWidth = 320;
+constexpr CGFloat PopoverPreferredWidth = 320;
 
 // This is the maximum height used for |self.preferredContentSize|.
-constexpr float PopoverMaxHeight = 360;
+constexpr CGFloat PopoverMaxHeight = 360;
+
+// This is the height used for |self.preferredContentSize| when showing the
+// loading indicator on iPad.
+constexpr CGFloat PopoverLoadingHeight = 185.5;
 
 }  // namespace
 
@@ -61,11 +65,15 @@ constexpr float PopoverMaxHeight = 360;
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 20.0;
-  self.tableView.estimatedRowHeight = 200;
+  self.tableView.estimatedRowHeight = 1;
   self.tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0);
   self.tableView.allowsSelection = NO;
   self.definesPresentationContext = YES;
   if (!self.tableViewModel) {
+    if (IsIPadIdiom()) {
+      self.preferredContentSize = CGSizeMake(
+          PopoverPreferredWidth, AlignValueToPixel(PopoverLoadingHeight));
+    }
     [self startLoadingIndicatorWithLoadingMessage:@""];
   }
 }
