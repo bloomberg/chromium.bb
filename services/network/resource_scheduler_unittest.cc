@@ -55,11 +55,6 @@ const int kRouteId2 = 67;
 const int kBackgroundChildId = 35;
 const int kBackgroundRouteId = 43;
 
-// Sync below with cc file.
-const char kPrioritySupportedRequestsDelayable[] =
-    "PrioritySupportedRequestsDelayable";
-const char kHeadPrioritySupportedRequestsDelayable[] =
-    "HeadPriorityRequestsDelayable";
 const size_t kMaxNumDelayableRequestsPerHostPerClient = 6;
 
 class TestRequest {
@@ -470,8 +465,6 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
 
 TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenNotDelayable) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("",
-                                          kPrioritySupportedRequestsDelayable);
 
   InitializeScheduler();
   http_server_properties_.SetSupportsSpdy(
@@ -487,71 +480,6 @@ TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenNotDelayable) {
     EXPECT_TRUE(request->started());
 }
 
-TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      kPrioritySupportedRequestsDelayable,
-      kHeadPrioritySupportedRequestsDelayable);
-
-  InitializeScheduler();
-  http_server_properties_.SetSupportsSpdy(
-      url::SchemeHostPort("https", "spdyhost", 443), true);
-
-  // Add more than max-per-host low-priority requests.
-  std::vector<std::unique_ptr<TestRequest>> requests;
-  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
-    requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
-
-  // Only kMaxNumDelayableRequestsPerHostPerClient in body.
-  for (size_t i = 0; i < requests.size(); ++i) {
-    if (i < kMaxNumDelayableRequestsPerHostPerClient)
-      EXPECT_TRUE(requests[i]->started());
-    else
-      EXPECT_FALSE(requests[i]->started());
-  }
-}
-
-TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenHeadDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      kHeadPrioritySupportedRequestsDelayable,
-      kPrioritySupportedRequestsDelayable);
-
-  InitializeScheduler();
-  http_server_properties_.SetSupportsSpdy(
-      url::SchemeHostPort("https", "spdyhost", 443), true);
-
-  // Add more than max-per-host low-priority requests.
-  std::vector<std::unique_ptr<TestRequest>> requests;
-  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
-    requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
-
-  // No throttling.
-  for (const auto& request : requests)
-    EXPECT_TRUE(request->started());
-}
-
-TEST_F(ResourceSchedulerTest, ThrottlesHeadWhenHeadDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      kHeadPrioritySupportedRequestsDelayable,
-      kPrioritySupportedRequestsDelayable);
-
-  InitializeScheduler();
-  http_server_properties_.SetSupportsSpdy(
-      url::SchemeHostPort("https", "spdyhost", 443), true);
-
-  // Add more than max-per-host low-priority requests.
-  std::vector<std::unique_ptr<TestRequest>> requests;
-  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
-    requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
-
-  base::RunLoop().RunUntilIdle();
-
-  // No throttling.
-  for (const auto& request : requests)
-    EXPECT_TRUE(request->started());
-}
 
 
 TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
@@ -810,8 +738,6 @@ TEST_F(ResourceSchedulerTest, NonHTTPSchedulesImmediately) {
 
 TEST_F(ResourceSchedulerTest, SpdyProxySchedulesImmediately) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("",
-                                          kPrioritySupportedRequestsDelayable);
   InitializeScheduler();
   SetMaxDelayableRequests(1);
 
@@ -827,8 +753,6 @@ TEST_F(ResourceSchedulerTest, SpdyProxySchedulesImmediately) {
 
 TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("",
-                                          kPrioritySupportedRequestsDelayable);
   InitializeScheduler();
 
   const int kDefaultMaxNumDelayableRequestsPerClient =
@@ -912,45 +836,6 @@ TEST_F(ResourceSchedulerTest,
   std::unique_ptr<TestRequest> low3_spdy(
       NewRequest("http://spdyhost1:8080/low", net::LOWEST));
   EXPECT_FALSE(low3_spdy->started());
-}
-
-TEST_F(ResourceSchedulerTest, NewDelayableSpdyHostInDelayableRequests) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(kPrioritySupportedRequestsDelayable,
-                                          "");
-  InitializeScheduler();
-
-  const int kDefaultMaxNumDelayableRequestsPerClient =
-      10;  // Should match the .cc.
-
-  std::unique_ptr<TestRequest> low1_spdy(
-      NewRequest("http://spdyhost1:8080/low", net::LOWEST));
-  // Cancel a request after we learn the server supports SPDY.
-  std::vector<std::unique_ptr<TestRequest>> lows;
-  for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient - 1; ++i) {
-    string url = "http://host" + base::IntToString(i) + "/low";
-    lows.push_back(NewRequest(url.c_str(), net::LOWEST));
-  }
-  std::unique_ptr<TestRequest> low1(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_FALSE(low1->started());
-  http_server_properties_.SetSupportsSpdy(
-      url::SchemeHostPort("http", "spdyhost1", 8080), true);
-  low1_spdy.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low1->started());
-
-  low1.reset();
-  base::RunLoop().RunUntilIdle();
-  std::unique_ptr<TestRequest> low2_spdy(
-      NewRequest("http://spdyhost2:8080/low", net::IDLE));
-  // Reprioritize a request after we learn the server supports SPDY.
-  EXPECT_TRUE(low2_spdy->started());
-  http_server_properties_.SetSupportsSpdy(
-      url::SchemeHostPort("http", "spdyhost2", 8080), true);
-  ChangeRequestPriority(low2_spdy.get(), net::LOWEST);
-  base::RunLoop().RunUntilIdle();
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_FALSE(low2->started());
 }
 
 // Async revalidations which are not started when the tab is closed must be
