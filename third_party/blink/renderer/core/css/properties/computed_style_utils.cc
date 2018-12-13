@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/core/svg_element_type_helpers.h"
 
 namespace blink {
 
@@ -1272,14 +1273,28 @@ CSSValue* ComputedStyleUtils::ValueForGridPosition(
   return list;
 }
 
-LayoutRect ComputedStyleUtils::SizingBox(const LayoutObject& layout_object) {
-  if (!layout_object.IsBox())
-    return LayoutRect();
+static bool IsSVGObjectWithWidthAndHeight(const LayoutObject& layout_object) {
+  DCHECK(layout_object.IsSVGChild());
+  return layout_object.IsSVGImage() || layout_object.IsSVGForeignObject() ||
+         (layout_object.IsSVGShape() &&
+          IsSVGRectElement(layout_object.GetNode()));
+}
 
+FloatSize ComputedStyleUtils::UsedBoxSize(const LayoutObject& layout_object) {
+  if (layout_object.IsSVGChild() &&
+      IsSVGObjectWithWidthAndHeight(layout_object)) {
+    FloatSize size(layout_object.ObjectBoundingBox().Size());
+    // The object bounding box does not have zoom applied. Multiply with zoom
+    // here since we'll divide by it when we produce the CSS value.
+    size.Scale(layout_object.StyleRef().EffectiveZoom());
+    return size;
+  }
+  if (!layout_object.IsBox())
+    return FloatSize();
   const LayoutBox& box = ToLayoutBox(layout_object);
-  return box.StyleRef().BoxSizing() == EBoxSizing::kBorderBox
-             ? box.BorderBoxRect()
-             : box.ComputedCSSContentBoxRect();
+  return FloatSize(box.StyleRef().BoxSizing() == EBoxSizing::kBorderBox
+                       ? box.BorderBoxRect().Size()
+                       : box.ComputedCSSContentBoxRect().Size());
 }
 
 CSSValue* ComputedStyleUtils::RenderTextDecorationFlagsToCSSValue(
@@ -2111,17 +2126,15 @@ bool ComputedStyleUtils::WidthOrHeightShouldReturnUsedValue(
   // The display property is 'none'.
   if (!object)
     return false;
+  // Non-root SVG objects return the resolved value except <image>,
+  // <rect> and <foreignObject> which return the used value.
+  if (object->IsSVGChild())
+    return IsSVGObjectWithWidthAndHeight(*object);
   // According to
   // http://www.w3.org/TR/CSS2/visudet.html#the-width-property and
   // http://www.w3.org/TR/CSS2/visudet.html#the-height-property, the "width" or
   // "height" property does not apply to non-atomic inline elements.
-  if (!object->IsAtomicInlineLevel() && object->IsInline())
-    return false;
-  // Non-root SVG objects return the resolved value.
-  // TODO(fs): Return the used value for <image>, <rect> and <foreignObject> (to
-  // which 'width' or 'height' can be said to apply) too? We don't return the
-  // used value for other geometric properties ('x', 'y' et.c.)
-  return !object->IsSVGChild();
+  return object->IsAtomicInlineLevel() || !object->IsInline();
 }
 
 CSSValueList* ComputedStyleUtils::ValuesForShorthandProperty(
