@@ -8,14 +8,6 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/assistant/assistant_alarm_timer_controller.h"
-#include "ash/assistant/assistant_cache_controller.h"
-#include "ash/assistant/assistant_controller_observer.h"
-#include "ash/assistant/assistant_interaction_controller.h"
-#include "ash/assistant/assistant_notification_controller.h"
-#include "ash/assistant/assistant_screen_context_controller.h"
-#include "ash/assistant/assistant_setup_controller.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -33,19 +25,13 @@ namespace ash {
 
 AssistantController::AssistantController()
     : assistant_volume_control_binding_(this),
-      assistant_alarm_timer_controller_(
-          std::make_unique<AssistantAlarmTimerController>(this)),
-      assistant_cache_controller_(
-          std::make_unique<AssistantCacheController>(this)),
-      assistant_interaction_controller_(
-          std::make_unique<AssistantInteractionController>(this)),
-      assistant_notification_controller_(
-          std::make_unique<AssistantNotificationController>(this)),
-      assistant_screen_context_controller_(
-          std::make_unique<AssistantScreenContextController>(this)),
-      assistant_setup_controller_(
-          std::make_unique<AssistantSetupController>(this)),
-      assistant_ui_controller_(std::make_unique<AssistantUiController>(this)),
+      assistant_alarm_timer_controller_(this),
+      assistant_cache_controller_(this),
+      assistant_interaction_controller_(this),
+      assistant_notification_controller_(this),
+      assistant_screen_context_controller_(this),
+      assistant_setup_controller_(this),
+      assistant_ui_controller_(this),
       weak_factory_(this) {
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
@@ -92,10 +78,10 @@ void AssistantController::SetAssistant(
   assistant_ = std::move(assistant);
 
   // Provide reference to sub-controllers.
-  assistant_interaction_controller_->SetAssistant(assistant_.get());
-  assistant_notification_controller_->SetAssistant(assistant_.get());
-  assistant_screen_context_controller_->SetAssistant(assistant_.get());
-  assistant_ui_controller_->SetAssistant(assistant_.get());
+  assistant_interaction_controller_.SetAssistant(assistant_.get());
+  assistant_notification_controller_.SetAssistant(assistant_.get());
+  assistant_screen_context_controller_.SetAssistant(assistant_.get());
+  assistant_ui_controller_.SetAssistant(assistant_.get());
 
   // The Assistant service needs to have accessibility state synced with ash
   // and be notified of any accessibility status changes in the future to
@@ -154,7 +140,7 @@ void AssistantController::OnDeepLinkReceived(
     case DeepLinkType::kScreenshot:
       // We close the UI before taking the screenshot as it's probably not the
       // user's intention to include the Assistant in the picture.
-      assistant_ui_controller_->CloseUi(AssistantExitPoint::kUnspecified);
+      assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
       Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
       break;
     case DeepLinkType::kTaskManager:
@@ -279,7 +265,7 @@ void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
 void AssistantController::OnVoiceInteractionStatusChanged(
     mojom::VoiceInteractionState state) {
   if (state == mojom::VoiceInteractionState::NOT_READY)
-    assistant_ui_controller_->HideUi(AssistantExitPoint::kUnspecified);
+    assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
 }
 
 base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {
