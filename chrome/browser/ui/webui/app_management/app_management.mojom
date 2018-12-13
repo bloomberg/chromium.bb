@@ -7,17 +7,18 @@ module app_management.mojom;
 import "chrome/services/app_service/public/mojom/types.mojom";
 
 struct App {
-  // The id of this app.
   string id;
 
-  // The type of this app.
   apps.mojom.AppType type;
 
   // The fields below may be omitted because this struct is also used to signal
   // updates.
 
-  // The name of the app to display in the UI.
   string? title;
+  string? description;
+  apps.mojom.OptionalBool is_pinned;
+  string? version;
+  string? size;
 };
 
 interface PageHandlerFactory {
@@ -32,6 +33,6 @@ interface PageHandler {
 // Frontend interface.
 interface Page {
   OnAppsAdded(array<App> apps);
-  OnAppChanged(App app);
+  OnAppChanged(App update);
   OnAppRemoved(string app_id);
 };
