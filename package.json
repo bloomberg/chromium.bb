@@ -21,6 +21,8 @@
   "homepage": "https://github.com/kainino0x/cts-experiment#readme",
   "dependencies": {},
   "devDependencies": {
+    "@types/tape": "^4.2.32",
+    "tape": "^4.9.1",
     "ts-node": "^7.0.1",
     "typescript": "^3.2.1"
   }
