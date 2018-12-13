@@ -543,7 +543,7 @@
       }
     ]
   },
-  "Linux V8 FYI Release - concurrent marking (NVIDIA)": {
+  "Linux V8 FYI Release - pointer compression (NVIDIA)": {
     "isolated_scripts": [
       {
         "args": [

@@ -478,8 +478,7 @@
       'Linux ASAN Builder': 'asan_lsan_release_trybot',
       'Linux Debug Builder': 'debug_bot',
       'Linux V8 FYI Release (NVIDIA)': 'gpu_tests_release_trybot',
-      'Linux Release - concurrent marking (NVIDIA)': 'gpu_tests_release_trybot_cm',
-      'Linux V8 FYI Release - concurrent marking (NVIDIA)': 'gpu_tests_release_trybot_cm',
+      'Linux V8 FYI Release - pointer compression (NVIDIA)': 'gpu_tests_release_trybot_ptr_comp',
       'Linux Snapshot Builder': 'release_bot',
       'Mac V8 FYI Release (Intel)': 'gpu_tests_release_trybot',
       'V8 Android GN (dbg)': 'android_debug_bot',
@@ -1429,12 +1428,12 @@
       'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
     ],
 
-    'gpu_tests_release_trybot_cm': [
-      'gpu_tests', 'release_trybot', 'v8_concurrent_marking',
-    ],
-
     'gpu_tests_release_trybot_minimal_symbols': [
       'gpu_tests', 'release_trybot', 'minimal_symbols',
+    ],
+
+    'gpu_tests_release_trybot_ptr_comp': [
+      'gpu_tests', 'release_trybot', 'v8_pointer_compression',
     ],
 
     'gpu_tests_release_trybot_x86_minimal_symbols': [
@@ -2230,10 +2229,6 @@
       'gn_args': 'use_vaapi=true',
     },
 
-    'v8_concurrent_marking': {
-      'gn_args': 'v8_enable_concurrent_marking=true',
-    },
-
     'v8_enable_debugging_features': {
       'gn_args': 'v8_enable_debugging_features=true',
     },
@@ -2244,6 +2239,10 @@
 
     'v8_heap': {
       'gn_args': 'v8_enable_verify_heap=true',
+    },
+
+    'v8_pointer_compression': {
+      'gn_args': 'v8_enable_pointer_compression=true',
     },
 
     'vr': {
