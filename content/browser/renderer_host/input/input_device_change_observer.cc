@@ -39,6 +39,10 @@ InputDeviceChangeObserver::~InputDeviceChangeObserver() {
   render_view_host_ = nullptr;
 }
 
+void InputDeviceChangeObserver::OnInputDeviceConfigurationChanged(uint8_t) {
+  NotifyRenderViewHost();
+}
+
 void InputDeviceChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
   NotifyRenderViewHost();
 }
@@ -64,6 +68,8 @@ void InputDeviceChangeObserver::NotifyRenderViewHost() {
       prefs.available_pointer_types != available_pointer_types ||
       prefs.available_hover_types != available_hover_types;
 
+  // TODO(mustaq): GetAvailablePointerAndHoverTypes() is called again in
+  // OnWebkitPreferencesChanged() below. https://crbug.com/904535.
   if (input_device_changed) {
     TRACE_EVENT0("input", "InputDeviceChangeObserver::NotifyRendererViewHost");
     render_view_host_->OnWebkitPreferencesChanged();

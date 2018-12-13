@@ -28,9 +28,7 @@ class EVENTS_DEVICES_EXPORT InputDeviceObserverAndroid {
   void AddObserver(ui::InputDeviceEventObserver* observer);
   void RemoveObserver(ui::InputDeviceEventObserver* observer);
 
-  void NotifyObserversTouchpadDeviceConfigurationChanged();
-  void NotifyObserversKeyboardDeviceConfigurationChanged();
-  void NotifyObserversMouseDeviceConfigurationChanged();
+  void NotifyObserversDeviceConfigurationChanged();
 
  private:
   InputDeviceObserverAndroid();
