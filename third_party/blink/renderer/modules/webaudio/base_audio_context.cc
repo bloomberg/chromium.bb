@@ -101,6 +101,7 @@ BaseAudioContext::BaseAudioContext(Document* document,
       periodic_wave_sawtooth_(nullptr),
       periodic_wave_triangle_(nullptr),
       output_position_(),
+      callback_metric_(),
       task_runner_(document->GetTaskRunner(TaskType::kInternalMedia)) {}
 
 BaseAudioContext::~BaseAudioContext() {
@@ -666,7 +667,8 @@ void BaseAudioContext::HandleStoppableSourceNodes() {
 }
 
 void BaseAudioContext::HandlePreRenderTasks(
-    const AudioIOPosition& output_position) {
+    const AudioIOPosition& output_position,
+    const AudioIOCallbackMetric& metric) {
   DCHECK(IsAudioThread());
 
   // At the beginning of every render quantum, try to update the internal
@@ -684,8 +686,9 @@ void BaseAudioContext::HandlePreRenderTasks(
     // Update the dirty state of the listener.
     listener()->UpdateState();
 
-    // Update output timestamp.
+    // Update output timestamp and metric.
     output_position_ = output_position;
+    callback_metric_ = metric;
 
     unlock();
   }
