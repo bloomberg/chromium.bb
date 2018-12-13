@@ -1,64 +1,23 @@
-# Checking out and building Cronet for Android
+# Testing and debugging Cronet for Android
 
 [TOC]
 
-## Checking out the code
+## Checkout and build
 
-Follow all the
-[Checking out and building Chromium for Android
-](../../../docs/android_build_instructions.md) instructions up to and including
-the
-[Run the hooks](../../../docs/android_build_instructions.md#Run-the-hooks) step.
+See instructions in the [common checkout and
+build](/components/cronet/build_instructions.md).
 
-## Building Cronet
-
-### Building Cronet for development and debugging
-
-To build Cronet for development and debugging purposes:
-
-```shell
-$ ./components/cronet/tools/cr_cronet.py gn --out_dir=out/Cronet
-$ ninja -C out/Cronet cronet_package
-```
-
-Note: these commands clobber output of previously executed gn commands in
-`out/Cronet`. If `--out_dir` is left out, the output directory defaults to
-`out/Debug`.
-
-If `--x86` option is specified, then native library is built for Intel x86
-architecture, and the output directory defaults to `out/Debug-x86`.
-
-### Building Cronet for releases
-
-To build Cronet with optimizations and with debug information stripped out:
-
-```shell
-$ ./components/cronet/tools/cr_cronet.py gn --release
-$ ninja -C out/Release cronet_package
-```
-
-Note: these commands clobber output of previously executed gn commands in
-`out/Release`.
-
-### Building for other architectures
-
-By default ARMv7 32-bit executables are generated. To generate executables
-targeting other architectures modify [cr_cronet.py](../tools/cr_cronet.py)'s
-`gn_args` variable to include:
-
-*   For ARMv8 64-bit: `target_cpu="arm64"`
-*   For x86 32-bit: `target_cpu="x86"`
-*   For x86 64-bit: `target_cpu="x64"`
-
-## Running tests
-
-### Running tests locally
+## Running tests locally
 
 First, connect an Android device by following the [Plug in your Android
-device](../../../docs/android_build_instructions.md#Plug-in-your-Android-device)
+device](/docs/android_build_instructions.md#Plug-in-your-Android-device)
 steps. Prefer using a device running a userdebug build.
 
-#### Running Cronet Java unit tests
+Alternatively, you can pass the --x86 flag to `gn` to test on a local emulator
+-- make sure you substitute `out/Debug` for `out/Debug-x86` in the instructions
+below.
+
+### Running Cronet Java unit tests
 
 To run Java unit tests that actuate the Cronet API:
 
@@ -74,7 +33,7 @@ command. For example:
 $ ./components/cronet/tools/cr_cronet.py build-test -f QuicTest#testQuicLoadUrl
 ```
 
-#### Running net_unittests and cronet_unittests_android
+### Running net_unittests and cronet_unittests_android
 
 To run C++ and Java unit tests of net/ functionality:
 
@@ -85,18 +44,18 @@ $ ./out/Debug/bin/run_net_unittests --fast-local-dev
 ```
 
 For more information about running net_unittests, read
-[Android Test Instructions](../../../docs/android_test_instructions.md).
+[Android Test Instructions](/docs/android_test_instructions.md).
 
-There are a small number of C++ Cronet unit tests, called cronet_unittests_android, that
-can be run by following the above instructions and substituting cronet_unittests_android
-for net_unittests.
+There are a small number of C++ Cronet unit tests, called
+cronet_unittests_android, that can be run by following the above instructions
+and substituting cronet_unittests_android for net_unittests.
 
-#### Running Cronet performance tests
+### Running Cronet performance tests
 
 To run Cronet's perf tests, follow the instructions in
 [components/cronet/android/test/javaperftests/run.py](test/javaperftests/run.py)
 
-### Running tests remotely
+## Running tests remotely
 
 Once you've uploaded a Chromium change list using `git cl upload`, you can
 launch a bot to build and test your change list:
