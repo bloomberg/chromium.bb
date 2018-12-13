@@ -6,7 +6,7 @@
 //
 // Library support to remap process executable elf segment with hugepages.
 //
-// ReloadElfTextInHugePages() will search for an ELF executable segment,
+// InitHugepagesAndMlockSelf() will search for an ELF executable segment,
 // and remap it using hugepage.
 
 #ifndef CHROMEOS_HUGEPAGE_TEXT_HUGEPAGE_TEXT_H_
@@ -23,13 +23,16 @@
 
 namespace chromeos {
 
-// This function will scan ELF
-// segments and attempt to remap text segment from small page to hugepage.
+// This function will scan ELF segments and attempt to do two things:
+// - Reload some of .text into hugepages
+// - Lock some of .text into memory, so it can't be swapped out.
+//
 // When this function returns, text segments that are naturally aligned on
-// hugepage size will be backed by hugepages.  In the event of errors, the
-// remapping operation will be aborted and rolled back, e.g. they are all
-// soft fail.
-CHROMEOS_EXPORT extern void ReloadElfTextInHugePages(void);
+// hugepage size will be backed by hugepages.
+//
+// Any and all errors encountered by this function are soft errors; Chrome
+// should still be able to run.
+CHROMEOS_EXPORT extern void InitHugepagesAndMlockSelf(void);
 }  // namespace chromeos
 
 #endif  // CHROMEOS_HUGEPAGE_TEXT_HUGEPAGE_TEXT_H_
