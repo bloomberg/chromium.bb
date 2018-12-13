@@ -77,6 +77,10 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
 
   bool paint_as_active() const { return paint_as_active_; }
 
+  void set_ink_drop_corner_radius(int ink_drop_corner_radius) {
+    ink_drop_corner_radius_ = ink_drop_corner_radius;
+  }
+
   CaptionButtonIcon icon() const { return icon_; }
 
   const gfx::ImageSkia& icon_image() const { return icon_image_; }
@@ -94,6 +98,11 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
   // active state.
   int GetAlphaForIcon(int base_alpha) const;
 
+  // Returns the amount by which the inkdrop ripple and mask should be insetted
+  // from the button size in order to achieve a circular inkdrop with a size
+  // equals to kInkDropHighlightSize.
+  gfx::Insets GetInkdropInsets(const gfx::Size& button_size) const;
+
   void UpdateInkDropBaseColor();
 
   // The button's current icon.
@@ -110,6 +119,9 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
 
   // Current alpha to use for painting.
   int alpha_;
+
+  // Radius of the ink drop highlight and mask.
+  int ink_drop_corner_radius_;
 
   // The image id (kept for the purposes of testing) and image used to paint the
   // button's icon.

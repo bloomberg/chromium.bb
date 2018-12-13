@@ -16,6 +16,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
+#include "ui/views/window/caption_button_layout_constants.h"
 #include "ui/views/window/hit_test_utils.h"
 
 namespace views {
@@ -24,7 +25,6 @@ namespace {
 
 // Ink drop parameters.
 constexpr float kInkDropVisibleOpacity = 0.06f;
-constexpr int kInkDropCornerRadius = 14;
 
 // The duration of the crossfade animation when swapping the button's images.
 const int kSwapImagesAnimationDurationMs = 200;
@@ -35,17 +35,6 @@ const float kFadeOutRatio = 0.5f;
 
 // The ratio applied to the button's alpha when the button is disabled.
 const float kDisabledButtonAlphaRatio = 0.5f;
-
-// Returns the amount by which the inkdrop ripple and mask should be insetted
-// from the button size in order to achieve a circular inkdrop with a size
-// equals to kInkDropHighlightSize.
-gfx::Insets GetInkdropInsets(const gfx::Size& button_size) {
-  constexpr gfx::Size kInkDropHighlightSize{2 * kInkDropCornerRadius,
-                                            2 * kInkDropCornerRadius};
-  return gfx::Insets(
-      (button_size.height() - kInkDropHighlightSize.height()) / 2,
-      (button_size.width() - kInkDropHighlightSize.width()) / 2);
-}
 
 }  // namespace
 
@@ -61,6 +50,7 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
       color_mode_(ColorMode::kDefault),
       paint_as_active_(false),
       alpha_(255),
+      ink_drop_corner_radius_(kCaptionButtonInkDropDefaultCornerRadius),
       swap_images_animation_(new gfx::SlideAnimation(this)) {
   views::SetHitTestComponent(this, hit_test_type);
 
@@ -186,7 +176,7 @@ std::unique_ptr<views::InkDropRipple> FrameCaptionButton::CreateInkDropRipple()
 std::unique_ptr<views::InkDropMask> FrameCaptionButton::CreateInkDropMask()
     const {
   return std::make_unique<views::RoundRectInkDropMask>(
-      size(), GetInkdropInsets(size()), kInkDropCornerRadius);
+      size(), GetInkdropInsets(size()), ink_drop_corner_radius_);
 }
 
 void FrameCaptionButton::SetBackgroundColor(SkColor background_color) {
@@ -227,7 +217,7 @@ void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
     flags.setColor(GetInkDropBaseColor());
     flags.setAlpha(highlight_alpha);
     const gfx::Point center(GetMirroredRect(GetContentsBounds()).CenterPoint());
-    canvas->DrawCircle(center, kInkDropCornerRadius, flags);
+    canvas->DrawCircle(center, ink_drop_corner_radius_, flags);
   }
 
   int icon_alpha = swap_images_animation_->CurrentValueBetween(0, 255);
@@ -277,6 +267,15 @@ int FrameCaptionButton::GetAlphaForIcon(int base_alpha) const {
     inactive_alpha = 1.0f;
   }
   return base_alpha * inactive_alpha;
+}
+
+gfx::Insets FrameCaptionButton::GetInkdropInsets(
+    const gfx::Size& button_size) const {
+  const gfx::Size kInkDropHighlightSize{2 * ink_drop_corner_radius_,
+                                        2 * ink_drop_corner_radius_};
+  return gfx::Insets(
+      (button_size.height() - kInkDropHighlightSize.height()) / 2,
+      (button_size.width() - kInkDropHighlightSize.width()) / 2);
 }
 
 void FrameCaptionButton::UpdateInkDropBaseColor() {
