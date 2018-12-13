@@ -6,6 +6,7 @@
 #define BASE_TRACE_EVENT_TRACE_ARGUMENTS_H_
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <algorithm>
 #include <memory>
