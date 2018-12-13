@@ -4,6 +4,10 @@
 
 #include "chrome/common/extensions/permissions/chrome_permission_message_rules.h"
 
+#include <iterator>
+#include <memory>
+#include <utility>
+
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -260,22 +264,25 @@ ChromePermissionMessageRule::ChromePermissionMessageRule(
     const std::initializer_list<APIPermission::ID>& required,
     const std::initializer_list<APIPermission::ID>& optional)
     : ChromePermissionMessageRule(
-          new DefaultPermissionMessageFormatter(message_id),
+          std::make_unique<DefaultPermissionMessageFormatter>(message_id),
           required,
           optional) {}
 
 ChromePermissionMessageRule::ChromePermissionMessageRule(
-    ChromePermissionMessageFormatter* formatter,
+    std::unique_ptr<ChromePermissionMessageFormatter> formatter,
     const std::initializer_list<APIPermission::ID>& required,
     const std::initializer_list<APIPermission::ID>& optional)
     : required_permissions_(required),
       optional_permissions_(optional),
-      formatter_(formatter) {
+      formatter_(std::move(formatter)) {
   DCHECK(!required_permissions_.empty());
 }
 
 ChromePermissionMessageRule::ChromePermissionMessageRule(
-    const ChromePermissionMessageRule& other) = default;
+    ChromePermissionMessageRule&& other) = default;
+
+ChromePermissionMessageRule& ChromePermissionMessageRule::operator=(
+    ChromePermissionMessageRule&& other) = default;
 
 ChromePermissionMessageRule::~ChromePermissionMessageRule() {
 }
@@ -359,16 +366,18 @@ ChromePermissionMessageRule::GetAllRules() {
         APIPermission::kProcesses, APIPermission::kTab,
         APIPermission::kTopSites, APIPermission::kWebNavigation}},
 
-      {new HostListFormatter(IDS_EXTENSION_PROMPT_WARNING_1_HOST,
-                             IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
-                             IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
-                             IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST),
+      {std::make_unique<HostListFormatter>(
+           IDS_EXTENSION_PROMPT_WARNING_1_HOST,
+           IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
+           IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
+           IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST),
        {APIPermission::kHostReadWrite},
        {}},
-      {new HostListFormatter(IDS_EXTENSION_PROMPT_WARNING_1_HOST_READ_ONLY,
-                             IDS_EXTENSION_PROMPT_WARNING_2_HOSTS_READ_ONLY,
-                             IDS_EXTENSION_PROMPT_WARNING_3_HOSTS_READ_ONLY,
-                             IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST_READ_ONLY),
+      {std::make_unique<HostListFormatter>(
+           IDS_EXTENSION_PROMPT_WARNING_1_HOST_READ_ONLY,
+           IDS_EXTENSION_PROMPT_WARNING_2_HOSTS_READ_ONLY,
+           IDS_EXTENSION_PROMPT_WARNING_3_HOSTS_READ_ONLY,
+           IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST_READ_ONLY),
        {APIPermission::kHostReadOnly},
        {}},
 
@@ -422,12 +431,12 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kSocketAnyHost},
        {APIPermission::kSocketDomainHosts,
         APIPermission::kSocketSpecificHosts}},
-      {new SpaceSeparatedListFormatter(
+      {std::make_unique<SpaceSeparatedListFormatter>(
            IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN,
            IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS),
        {APIPermission::kSocketDomainHosts},
        {}},
-      {new SpaceSeparatedListFormatter(
+      {std::make_unique<SpaceSeparatedListFormatter>(
            IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST,
            IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS),
        {APIPermission::kSocketSpecificHosts},
@@ -437,14 +446,16 @@ ChromePermissionMessageRule::GetAllRules() {
       // USB Device Permission rules. Think of these three rules as a single one
       // that applies when any of the three kUsb* IDs is there, and pulls them
       // all into a single formatter.
-      {new USBDevicesFormatter,
+      {std::make_unique<USBDevicesFormatter>(),
        {APIPermission::kUsbDevice},
        {APIPermission::kUsbDeviceUnknownProduct,
         APIPermission::kUsbDeviceUnknownVendor}},
-      {new USBDevicesFormatter,
+      {std::make_unique<USBDevicesFormatter>(),
        {APIPermission::kUsbDeviceUnknownProduct},
        {APIPermission::kUsbDeviceUnknownVendor}},
-      {new USBDevicesFormatter, {APIPermission::kUsbDeviceUnknownVendor}, {}},
+      {std::make_unique<USBDevicesFormatter>(),
+       {APIPermission::kUsbDeviceUnknownVendor},
+       {}},
       // Access to users' devices should provide a single warning message
       // specifying the transport method used; serial and/or Bluetooth.
       {IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_SERIAL,
@@ -544,15 +555,15 @@ ChromePermissionMessageRule::GetAllRules() {
       {IDS_EXTENSION_PROMPT_WARNING_WEB_CONNECTABLE,
        {APIPermission::kWebConnectable},
        {}},
-      {new SingleParameterFormatter(
+      {std::make_unique<SingleParameterFormatter>(
            IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE),
        {APIPermission::kHomepage},
        {}},
-      {new SingleParameterFormatter(
+      {std::make_unique<SingleParameterFormatter>(
            IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE),
        {APIPermission::kSearchProvider},
        {}},
-      {new SingleParameterFormatter(
+      {std::make_unique<SingleParameterFormatter>(
            IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE),
        {APIPermission::kStartupPages},
        {}},
@@ -646,7 +657,8 @@ ChromePermissionMessageRule::GetAllRules() {
   };
 
   return std::vector<ChromePermissionMessageRule>(
-      rules_arr, rules_arr + arraysize(rules_arr));
+      std::make_move_iterator(std::begin(rules_arr)),
+      std::make_move_iterator(std::end(rules_arr)));
 }
 
 }  // namespace extensions

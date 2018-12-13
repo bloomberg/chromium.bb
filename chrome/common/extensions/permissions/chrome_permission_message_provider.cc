@@ -90,15 +90,14 @@ PermissionIDSet ChromePermissionMessageProvider::GetAllPermissionIDs(
 PermissionMessages
 ChromePermissionMessageProvider::GetPowerfulPermissionMessages(
     const PermissionIDSet& permissions) const {
-  std::vector<ChromePermissionMessageRule> all_rules =
+  std::vector<ChromePermissionMessageRule> rules =
       ChromePermissionMessageRule::GetAllRules();
 
   // TODO(crbug.com/888981): Find a better way to get wanted rules. Maybe add a
   // bool to each one telling if we should consider it here or not.
   constexpr size_t rules_considered = 15;
-  const std::vector<extensions::ChromePermissionMessageRule> rules(
-      all_rules.begin(),
-      all_rules.begin() + std::min(rules_considered, all_rules.size()));
+  rules.erase(rules.begin() + std::min(rules_considered, rules.size()),
+              rules.end());
 
   return GetPermissionMessagesHelper(permissions, rules);
 }
