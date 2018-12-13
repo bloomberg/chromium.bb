@@ -15,13 +15,32 @@ Polymer({
   /** @private */
   welcomeBrowserProxy_: null,
 
+  /** @private {?nux.EmailInterstitialProxy} */
+  emailInterstitialProxy_: null,
+
+  /** @private {boolean} */
+  finalized_: false,
+
   /** @override */
   ready: function() {
     this.welcomeBrowserProxy_ = welcome.WelcomeBrowserProxyImpl.getInstance();
+    this.emailInterstitialProxy_ = nux.EmailInterstitialProxyImpl.getInstance();
+    this.emailInterstitialProxy_.recordPageShown();
+
+    window.addEventListener('beforeunload', () => {
+      // Both buttons on this page will navigate to a new URL.
+      if (this.finalized_) {
+        return;
+      }
+      this.finalized_ = true;
+      this.emailInterstitialProxy_.recordNavigatedAway();
+    });
   },
 
   /** @private */
   onContinueClick_: function() {
+    this.finalized_ = true;
+    this.emailInterstitialProxy_.recordNext();
     const providerId =
         (new URL(window.location.href)).searchParams.get('provider');
     nux.NuxEmailProxyImpl.getInstance().getEmailList().then(list => {
@@ -40,6 +59,8 @@ Polymer({
 
   /** @private */
   onNoThanksClick_: function() {
+    this.finalized_ = true;
+    this.emailInterstitialProxy_.recordSkip();
     this.welcomeBrowserProxy_.goToNewTabPage();
   }
 });

@@ -13,10 +13,14 @@ Polymer({
   },
 
   onRouteEnter: function() {
-    this.$.appChooser.initializeSection();
+    this.$.appChooser.onRouteEnter();
   },
 
   onRouteExit: function() {
-    this.$.appChooser.finalizeSection();
+    this.$.appChooser.onRouteExit();
+  },
+
+  onRouteUnload: function() {
+    this.$.appChooser.onRouteUnload();
   },
 });
