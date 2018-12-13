@@ -5,20 +5,24 @@
 Polymer({
   is: 'app-management-main-view',
 
+  behaviors: [
+    app_management.StoreClient,
+  ],
+
   properties: {
     /**
      * List of all apps.
-     * @private {Array<string>}
+     * @private {Array<appManagement.mojom.App>}
      */
     apps_: {
       type: Array,
       value: () => [],
       observer: 'onAppsChanged_',
-
     },
+
     /**
      * List of apps displayed before expanding the app list.
-     * @private {Array<string>}
+     * @private {Array<appManagement.mojom.App>}
      */
     displayedApps_: {
       type: Array,
@@ -27,7 +31,7 @@ Polymer({
 
     /**
      * List of apps displayed after expanding app list.
-     * @private {Array<string>}
+     * @private {Array<appManagement.mojom.App>}
      */
     collapsedApps_: {
       type: Array,
@@ -44,16 +48,10 @@ Polymer({
   },
 
   attached: function() {
-    const callbackRouter =
-        app_management.BrowserProxy.getInstance().callbackRouter;
-    this.listenerIds_ =
-        [callbackRouter.onAppsAdded.addListener((ids) => this.apps_ = ids)];
-  },
-
-  detached: function() {
-    const callbackRouter =
-        app_management.BrowserProxy.getInstance().callbackRouter;
-    this.listenerIds_.forEach((id) => callbackRouter.removeListener(id));
+    this.watch('apps_', function(state) {
+      return Object.values(state.apps);
+    });
+    this.updateFromStore();
   },
 
   /**
