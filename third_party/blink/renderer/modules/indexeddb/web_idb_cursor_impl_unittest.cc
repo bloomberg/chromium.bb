@@ -80,7 +80,7 @@ class MockCursorImpl : public mojom::blink::IDBCursor {
 class MockContinueCallbacks : public testing::StrictMock<MockWebIDBCallbacks> {
  public:
   MockContinueCallbacks(std::unique_ptr<IDBKey>* key = nullptr,
-                        WebVector<WebBlobInfo>* blobs = nullptr)
+                        Vector<WebBlobInfo>* blobs = nullptr)
       : key_(key), blobs_(blobs) {}
 
   void OnSuccess(std::unique_ptr<IDBKey> key,
@@ -94,7 +94,7 @@ class MockContinueCallbacks : public testing::StrictMock<MockWebIDBCallbacks> {
 
  private:
   std::unique_ptr<IDBKey>* key_;
-  WebVector<WebBlobInfo>* blobs_;
+  Vector<WebBlobInfo>* blobs_;
 };
 
 }  // namespace
@@ -161,8 +161,8 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
       expected_size++;
       EXPECT_EQ(expected_size, keys.size());
       EXPECT_EQ(expected_size, primary_keys.size());
-      WebVector<WebBlobInfo> blob_info;
-      blob_info.reserve(expected_key + i);
+      Vector<WebBlobInfo> blob_info;
+      blob_info.ReserveInitialCapacity(expected_key + i);
       for (int j = 0; j < expected_key + i; ++j) {
         blob_info.emplace_back(WebBlobInfo::BlobForTesting(
             WebString("blobuuid"), "text/plain", 123));
@@ -180,7 +180,7 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
     // Verify that the cache is used for subsequent continue() calls.
     for (int i = 0; i < prefetch_count; ++i) {
       std::unique_ptr<IDBKey> key;
-      WebVector<WebBlobInfo> blobs;
+      Vector<WebBlobInfo> blobs;
       cursor_->CursorContinue(null_key_.get(), null_key_.get(),
                               new MockContinueCallbacks(&key, &blobs));
       platform_->RunUntilIdle();
@@ -233,8 +233,8 @@ TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
     expected_size++;
     EXPECT_EQ(expected_size, keys.size());
     EXPECT_EQ(expected_size, primary_keys.size());
-    WebVector<WebBlobInfo> blob_info;
-    blob_info.reserve(expected_key + i);
+    Vector<WebBlobInfo> blob_info;
+    blob_info.ReserveInitialCapacity(expected_key + i);
     for (int j = 0; j < expected_key + i; ++j) {
       blob_info.emplace_back(WebBlobInfo::BlobForTesting(WebString("blobuuid"),
                                                          "text/plain", 123));
@@ -324,8 +324,8 @@ TEST_F(WebIDBCursorImplTest, PrefetchReset) {
   Vector<std::unique_ptr<IDBKey>> primary_keys(prefetch_count);
   Vector<std::unique_ptr<IDBValue>> values;
   for (int i = 0; i < prefetch_count; ++i) {
-    values.emplace_back(IDBValue::Create(scoped_refptr<SharedBuffer>(),
-                                         WebVector<WebBlobInfo>()));
+    values.emplace_back(
+        IDBValue::Create(scoped_refptr<SharedBuffer>(), Vector<WebBlobInfo>()));
   }
   cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
                            std::move(values));

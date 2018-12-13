@@ -29,9 +29,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-
-#include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
@@ -84,7 +81,7 @@ void WebIDBDatabaseCallbacksImpl::OnComplete(long long transaction_id) {
 
 void WebIDBDatabaseCallbacksImpl::OnChanges(
     const ObservationIndexMap& observation_index_map,
-    WebVector<WebIDBObservation> observations,
+    Vector<WebIDBObservation> observations,
     const TransactionMap& transactions) {
   if (callbacks_) {
     callbacks_->OnChanges(observation_index_map, std::move(observations),

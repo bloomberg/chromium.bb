@@ -156,7 +156,7 @@ IDBKeyPath::operator WebIDBKeyPath() const {
     case mojom::IDBKeyPathType::Null:
       return WebIDBKeyPath();
     case mojom::IDBKeyPathType::String:
-      return WebIDBKeyPath(WebString(string_));
+      return WebIDBKeyPath(String(string_));
     case mojom::IDBKeyPathType::Array:
       return WebIDBKeyPath(array_);
   }

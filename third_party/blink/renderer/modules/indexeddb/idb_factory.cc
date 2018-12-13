@@ -105,7 +105,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     promise_resolver_.Clear();
   }
 
-  void OnSuccess(const WebVector<WebIDBNameAndVersion>&
+  void OnSuccess(const Vector<WebIDBNameAndVersion>&
                      web_database_name_and_version_list) override {
     if (!promise_resolver_)
       return;
@@ -124,7 +124,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     promise_resolver_.Clear();
   }
 
-  void OnSuccess(const WebVector<WebString>&) override { NOTREACHED(); }
+  void OnSuccess(const Vector<String>&) override { NOTREACHED(); }
 
   void OnSuccess(WebIDBCursor* cursor,
                  std::unique_ptr<IDBKey> key,
@@ -162,7 +162,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
                        WebIDBDatabase* database,
                        const IDBDatabaseMetadata& metadata,
                        mojom::IDBDataLoss data_loss,
-                       WebString data_loss_message) override {
+                       String data_loss_message) override {
     NOTREACHED();
   }
 

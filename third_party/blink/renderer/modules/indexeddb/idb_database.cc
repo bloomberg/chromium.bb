@@ -190,7 +190,7 @@ void IDBDatabase::OnComplete(int64_t transaction_id) {
 
 void IDBDatabase::OnChanges(
     const WebIDBDatabaseCallbacks::ObservationIndexMap& observation_index_map,
-    WebVector<WebIDBObservation> web_observations,
+    Vector<WebIDBObservation> web_observations,
     const WebIDBDatabaseCallbacks::TransactionMap& transactions) {
   HeapVector<Member<IDBObservation>> observations;
   observations.ReserveInitialCapacity(
@@ -208,7 +208,7 @@ void IDBDatabase::OnChanges(
       IDBTransaction* transaction = nullptr;
       auto it = transactions.find(map_entry.first);
       if (it != transactions.end()) {
-        const std::pair<int64_t, WebVector<int64_t>>& obs_txn = it->second;
+        const std::pair<int64_t, Vector<int64_t>>& obs_txn = it->second;
         HashSet<String> stores;
         for (int64_t store_id : obs_txn.second) {
           stores.insert(metadata_.object_stores.at(store_id)->name);

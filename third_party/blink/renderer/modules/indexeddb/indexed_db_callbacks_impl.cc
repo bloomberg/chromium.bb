@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
@@ -13,12 +14,9 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h"
 
-using blink::WebBlobInfo;
 using blink::WebIDBCallbacks;
 using blink::WebIDBDatabase;
 using blink::WebIDBNameAndVersion;
-using blink::WebString;
-using blink::WebVector;
 using blink::mojom::blink::IDBDatabaseAssociatedPtrInfo;
 
 namespace blink {
@@ -29,7 +27,7 @@ std::unique_ptr<IDBValue> ConvertReturnValue(
     const mojom::blink::IDBReturnValuePtr& input) {
   if (!input) {
     return IDBValue::Create(scoped_refptr<SharedBuffer>(),
-                            WebVector<WebBlobInfo>());
+                            Vector<WebBlobInfo>());
   }
 
   std::unique_ptr<IDBValue> output = std::move(input->value);
@@ -56,26 +54,26 @@ IndexedDBCallbacksImpl::IndexedDBCallbacksImpl(
 IndexedDBCallbacksImpl::~IndexedDBCallbacksImpl() = default;
 
 void IndexedDBCallbacksImpl::Error(int32_t code, const WTF::String& message) {
-  callbacks_->OnError(WebIDBDatabaseError(code, WebString(message)));
+  callbacks_->OnError(WebIDBDatabaseError(code, String(message)));
   callbacks_.reset();
 }
 
 void IndexedDBCallbacksImpl::SuccessNamesAndVersionsList(
     Vector<mojom::blink::IDBNameAndVersionPtr> names_and_versions) {
-  WebVector<WebIDBNameAndVersion> web_names_and_versions;
-  web_names_and_versions.reserve(names_and_versions.size());
+  Vector<WebIDBNameAndVersion> output_names_and_versions;
+  output_names_and_versions.ReserveInitialCapacity(names_and_versions.size());
   for (const mojom::blink::IDBNameAndVersionPtr& name_version :
        names_and_versions)
-    web_names_and_versions.emplace_back(ConvertNameVersion(name_version));
-  callbacks_->OnSuccess(web_names_and_versions);
+    output_names_and_versions.emplace_back(ConvertNameVersion(name_version));
+  callbacks_->OnSuccess(output_names_and_versions);
   callbacks_.reset();
 }
 
 void IndexedDBCallbacksImpl::SuccessStringList(const Vector<String>& value) {
-  WebVector<WebString> web_value(value.size());
-  std::transform(value.begin(), value.end(), web_value.begin(),
-                 [](const WTF::String& s) { return WebString(s); });
-  callbacks_->OnSuccess(web_value);
+  Vector<String> values(value.size());
+  std::transform(value.begin(), value.end(), values.begin(),
+                 [](const WTF::String& s) { return String(s); });
+  callbacks_->OnSuccess(values);
   callbacks_.reset();
 }
 
@@ -94,7 +92,7 @@ void IndexedDBCallbacksImpl::UpgradeNeeded(
     const IDBDatabaseMetadata& metadata) {
   WebIDBDatabase* database = new WebIDBDatabaseImpl(std::move(database_info));
   callbacks_->OnUpgradeNeeded(old_version, database, metadata, data_loss,
-                              WebString(data_loss_message));
+                              String(data_loss_message));
   // Not resetting |callbacks_|.  In this instance we will have to forward at
   // least one other call in the set OnSuccess() / OnError().
 }
@@ -121,8 +119,8 @@ void IndexedDBCallbacksImpl::SuccessCursor(
   if (optional_value.has_value()) {
     value = std::move(optional_value.value());
   } else {
-    value = IDBValue::Create(scoped_refptr<SharedBuffer>(),
-                             WebVector<WebBlobInfo>());
+    value =
+        IDBValue::Create(scoped_refptr<SharedBuffer>(), Vector<WebBlobInfo>());
   }
   DCHECK(value);
   callbacks_->OnSuccess(cursor, std::move(key), std::move(primary_key),
@@ -144,8 +142,8 @@ void IndexedDBCallbacksImpl::SuccessCursorContinue(
   if (optional_value.has_value()) {
     value = std::move(optional_value.value());
   } else {
-    value = IDBValue::Create(scoped_refptr<SharedBuffer>(),
-                             WebVector<WebBlobInfo>());
+    value =
+        IDBValue::Create(scoped_refptr<SharedBuffer>(), Vector<WebBlobInfo>());
   }
   DCHECK(value);
   callbacks_->OnSuccess(std::move(key), std::move(primary_key),

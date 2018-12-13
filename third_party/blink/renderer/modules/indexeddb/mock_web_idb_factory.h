@@ -17,12 +17,15 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace WTF {
+class String;
+}
+
 namespace blink {
 
 class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
 class WebSecurityOrigin;
-class WebString;
 
 class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
  public:
@@ -39,7 +42,7 @@ class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
                     const WebSecurityOrigin&,
                     scoped_refptr<base::SingleThreadTaskRunner>));
   MOCK_METHOD7(Open,
-               void(const WebString& name,
+               void(const WTF::String& name,
                     long long version,
                     long long transaction_id,
                     WebIDBCallbacks*,
@@ -47,7 +50,7 @@ class MockWebIDBFactory : public testing::StrictMock<blink::WebIDBFactory> {
                     const WebSecurityOrigin&,
                     scoped_refptr<base::SingleThreadTaskRunner>));
   MOCK_METHOD5(DeleteDatabase,
-               void(const WebString& name,
+               void(const WTF::String& name,
                     WebIDBCallbacks*,
                     const WebSecurityOrigin&,
                     bool force_close,

@@ -9,8 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/web_blob_info.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -38,14 +36,8 @@ class WebBlobInfo;
 // the values before returning them to the user.
 class MODULES_EXPORT IDBValue final {
  public:
-  // Creates an IDBValue from backing store information.
-  static std::unique_ptr<IDBValue> Create(const scoped_refptr<SharedBuffer>&,
-                                          const WebVector<WebBlobInfo>&);
-
-  // Used by IDBValueUnwrapper tests.
-  static std::unique_ptr<IDBValue> Create(
-      scoped_refptr<SharedBuffer> unwrapped_data,
-      Vector<WebBlobInfo>);
+  static std::unique_ptr<IDBValue> Create(scoped_refptr<SharedBuffer>,
+                                          Vector<WebBlobInfo>);
 
   ~IDBValue();
 
@@ -93,9 +85,7 @@ class MODULES_EXPORT IDBValue final {
 
   friend class IDBValueUnwrapper;
 
-  IDBValue(const scoped_refptr<SharedBuffer>&, const WebVector<WebBlobInfo>&);
-  IDBValue(scoped_refptr<SharedBuffer> unwrapped_data,
-           Vector<WebBlobInfo>);
+  IDBValue(scoped_refptr<SharedBuffer>, Vector<WebBlobInfo>);
 
   // Keep this private to prevent new refs because we manually bookkeep the
   // memory to V8.

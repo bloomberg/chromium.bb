@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_CALLBACKS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_CALLBACKS_H_
 
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
@@ -40,11 +39,11 @@ struct WebIDBObservation;
 
 class WebIDBDatabaseCallbacks {
  public:
-  using ObservationIndexMap = std::unordered_map<int32_t, WebVector<int32_t>>;
+  using ObservationIndexMap = std::unordered_map<int32_t, Vector<int32_t>>;
 
   // Maps observer to transaction, which needs an id and a scope.
   using TransactionMap =
-      std::unordered_map<int32_t, std::pair<int64_t, WebVector<int64_t>>>;
+      std::unordered_map<int32_t, std::pair<int64_t, Vector<int64_t>>>;
 
   virtual ~WebIDBDatabaseCallbacks() = default;
 
@@ -56,7 +55,7 @@ class WebIDBDatabaseCallbacks {
                        const WebIDBDatabaseError&) = 0;
   virtual void OnComplete(long long transaction_id) = 0;
   virtual void OnChanges(const ObservationIndexMap&,
-                         WebVector<WebIDBObservation> observations,
+                         Vector<WebIDBObservation> observations,
                          const TransactionMap& transactions) = 0;
   virtual void Detach() = 0;
 };

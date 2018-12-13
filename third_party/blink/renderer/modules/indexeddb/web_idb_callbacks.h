@@ -27,9 +27,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CALLBACKS_H_
 
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+
+namespace WTF {
+class String;
+}
 
 namespace blink {
 
@@ -47,8 +50,8 @@ class WebIDBCallbacks {
 
   // Pointers transfer ownership.
   virtual void OnError(const WebIDBDatabaseError&) = 0;
-  virtual void OnSuccess(const WebVector<WebIDBNameAndVersion>&) = 0;
-  virtual void OnSuccess(const WebVector<WebString>&) = 0;
+  virtual void OnSuccess(const Vector<WebIDBNameAndVersion>&) = 0;
+  virtual void OnSuccess(const Vector<WTF::String>&) = 0;
   virtual void OnSuccess(WebIDBCursor*,
                          std::unique_ptr<IDBKey>,
                          std::unique_ptr<IDBKey> primary_key,
@@ -67,7 +70,7 @@ class WebIDBCallbacks {
                                WebIDBDatabase*,
                                const IDBDatabaseMetadata&,
                                mojom::IDBDataLoss data_loss,
-                               WebString data_loss_message) = 0;
+                               WTF::String data_loss_message) = 0;
   virtual void Detach() = 0;
 };
 

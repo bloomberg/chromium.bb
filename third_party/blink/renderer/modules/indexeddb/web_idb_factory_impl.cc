@@ -7,9 +7,9 @@
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -42,7 +42,7 @@ void WebIDBFactoryImpl::GetDatabaseNames(
 }
 
 void WebIDBFactoryImpl::Open(
-    const WebString& name,
+    const String& name,
     long long version,
     long long transaction_id,
     WebIDBCallbacks* callbacks,
@@ -61,7 +61,7 @@ void WebIDBFactoryImpl::Open(
 }
 
 void WebIDBFactoryImpl::DeleteDatabase(
-    const WebString& name,
+    const String& name,
     WebIDBCallbacks* callbacks,
     const WebSecurityOrigin& origin,
     bool force_close,

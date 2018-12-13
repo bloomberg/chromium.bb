@@ -28,29 +28,28 @@
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 class WebIDBKeyPath {
  public:
   // FIXME: Update callers use constructors directly, and remove these.
-  static WebIDBKeyPath Create(const WebString& string) {
+  static WebIDBKeyPath Create(const String& string) {
     return WebIDBKeyPath(string);
   }
-  static WebIDBKeyPath Create(const WebVector<WebString>& array) {
+  static WebIDBKeyPath Create(const Vector<String>& array) {
     return WebIDBKeyPath(array);
   }
   static WebIDBKeyPath CreateNull() { return WebIDBKeyPath(); }
 
   WebIDBKeyPath() : type_(mojom::IDBKeyPathType::Null) {}
 
-  explicit WebIDBKeyPath(const WebString& string)
+  explicit WebIDBKeyPath(const String& string)
       : type_(mojom::IDBKeyPathType::String), string_(string) {}
 
-  explicit WebIDBKeyPath(const WebVector<WebString>& array)
+  explicit WebIDBKeyPath(const Vector<String>& array)
       : type_(mojom::IDBKeyPathType::Array), array_(array) {}
 
   WebIDBKeyPath(const WebIDBKeyPath& key_path) = default;
@@ -62,15 +61,15 @@ class WebIDBKeyPath {
   mojom::IDBKeyPathType KeyPathType() const { return type_; }
 
   // Only valid for ArrayType.
-  const WebVector<WebString>& Array() const { return array_; }
+  const Vector<String>& Array() const { return array_; }
 
   // Only valid for StringType.
-  const WebString& String() const { return string_; }
+  const String& String() const { return string_; }
 
  private:
   mojom::IDBKeyPathType type_;
-  WebVector<WebString> array_;
-  WebString string_;
+  Vector<WTF::String> array_;
+  WTF::String string_;
 };
 
 }  // namespace blink

@@ -13,9 +13,12 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 
+namespace WTF {
+class String;
+}
+
 namespace blink {
 class WebSecurityOrigin;
-class WebString;
 
 class WebIDBFactoryImpl : public blink::WebIDBFactory {
  public:
@@ -31,7 +34,7 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
       blink::WebIDBCallbacks* callbacks,
       const blink::WebSecurityOrigin& origin,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  void Open(const blink::WebString& name,
+  void Open(const WTF::String& name,
             long long version,
             long long transaction_id,
             blink::WebIDBCallbacks* callbacks,
@@ -39,7 +42,7 @@ class WebIDBFactoryImpl : public blink::WebIDBFactory {
             const blink::WebSecurityOrigin& origin,
             scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void DeleteDatabase(
-      const blink::WebString& name,
+      const WTF::String& name,
       blink::WebIDBCallbacks* callbacks,
       const blink::WebSecurityOrigin& origin,
       bool force_close,

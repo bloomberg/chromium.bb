@@ -17,38 +17,18 @@
 
 namespace blink {
 
-IDBValue::IDBValue(const scoped_refptr<SharedBuffer>& data,
-                   const WebVector<WebBlobInfo>& web_blob_info)
-    : data_(data) {
-  blob_info_.ReserveInitialCapacity(SafeCast<wtf_size_t>(web_blob_info.size()));
-
-  for (const WebBlobInfo& info : web_blob_info) {
-    blob_info_.push_back(info);
-  }
-}
-
-IDBValue::IDBValue(scoped_refptr<SharedBuffer> unwrapped_data,
+IDBValue::IDBValue(scoped_refptr<SharedBuffer> data,
                    Vector<WebBlobInfo> blob_info)
-    : data_(std::move(unwrapped_data)),
-      blob_info_(std::move(blob_info)) {
-}
+    : data_(std::move(data)), blob_info_(std::move(blob_info)) {}
 
 IDBValue::~IDBValue() {
   if (isolate_ && external_allocated_size_)
     isolate_->AdjustAmountOfExternalAllocatedMemory(-external_allocated_size_);
 }
 
-std::unique_ptr<IDBValue> IDBValue::Create(
-    const scoped_refptr<SharedBuffer>& data,
-    const WebVector<WebBlobInfo>& web_blob_info) {
-  return base::WrapUnique(new IDBValue(data, web_blob_info));
-}
-
-std::unique_ptr<IDBValue> IDBValue::Create(
-    scoped_refptr<SharedBuffer> unwrapped_data,
-    Vector<WebBlobInfo> blob_info) {
-  return base::WrapUnique(
-      new IDBValue(std::move(unwrapped_data), std::move(blob_info)));
+std::unique_ptr<IDBValue> IDBValue::Create(scoped_refptr<SharedBuffer> data,
+                                           Vector<WebBlobInfo> blob_info) {
+  return base::WrapUnique(new IDBValue(std::move(data), std::move(blob_info)));
 }
 
 scoped_refptr<SerializedScriptValue> IDBValue::CreateSerializedValue() const {
