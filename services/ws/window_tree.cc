@@ -1045,7 +1045,9 @@ bool WindowTree::SetWindowVisibilityImpl(const ClientWindowId& window_id,
       window->Show();
     else
       window->Hide();
-    return true;
+    // Return true only if the change actually took. It's entirely possible an
+    // observer may effectively revert the change.
+    return window->TargetVisibility() == visible;
   }
   DVLOG(1) << "SetWindowVisibility failed (access policy denied change)";
   return false;

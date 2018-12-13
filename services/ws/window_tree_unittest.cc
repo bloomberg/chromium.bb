@@ -2306,5 +2306,75 @@ TEST(WindowTreeTest, OcclusionTrackingPauseGoingAwayTree) {
   EXPECT_FALSE(tracker_api.IsPaused());
 }
 
+// Forces window visibility to a target value in OnWindowVisibilityChanged().
+// This mimics MultiUserWindowManager in ash.
+class WindowVisibilityEnforcer : public aura::WindowObserver {
+ public:
+  WindowVisibilityEnforcer(aura::Window* window, bool target_visibility)
+      : window_(window), target_visibility_(target_visibility) {
+    window_->AddObserver(this);
+  }
+  ~WindowVisibilityEnforcer() override { StopObservering(); }
+
+  // aura::WindowObserver:
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
+    if (visible == target_visibility_)
+      return;
+
+    if (target_visibility_)
+      window->Show();
+    else
+      window->Hide();
+  }
+  void OnWindowDestroying(aura::Window* window) override { StopObservering(); }
+
+ private:
+  void StopObservering() {
+    if (!window_)
+      return;
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+  }
+
+  aura::Window* window_;
+  const bool target_visibility_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowVisibilityEnforcer);
+};
+
+TEST(WindowTreeTest, ForcedWindowVisibility) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  setup.changes()->clear();
+
+  // WindowVisibilityEnforcer ensures the window remains hidden.
+  std::unique_ptr<WindowVisibilityEnforcer> enforcer =
+      std::make_unique<WindowVisibilityEnforcer>(top_level, false);
+  // Attempting to show the window should fail because WindowVisibilityEnforcer
+  // forces the window to remain hidden.
+  EXPECT_FALSE(
+      setup.window_tree_test_helper()->SetWindowVisibility(top_level, true));
+  EXPECT_FALSE(top_level->IsVisible());
+  // The client should not be notified of anything (returning false is enough).
+  EXPECT_TRUE(setup.changes()->empty());
+
+  // Destroy the enforcer and make the window visible.
+  enforcer.reset();
+  EXPECT_TRUE(
+      setup.window_tree_test_helper()->SetWindowVisibility(top_level, true));
+  EXPECT_TRUE(top_level->IsVisible());
+  EXPECT_TRUE(setup.changes()->empty());
+
+  // Create another enforcer that forces the window to remain visible.
+  enforcer = std::make_unique<WindowVisibilityEnforcer>(top_level, true);
+  // Attempting to hide the window should fail because WindowVisibilityEnforcer
+  // forces the window to remain visible.
+  EXPECT_FALSE(
+      setup.window_tree_test_helper()->SetWindowVisibility(top_level, false));
+  EXPECT_TRUE(top_level->IsVisible());
+  EXPECT_TRUE(setup.changes()->empty());
+}
+
 }  // namespace
 }  // namespace ws
