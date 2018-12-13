@@ -100,7 +100,11 @@ class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
               VASurfaceID va_surface) const;
 
   base::Lock* GetVaapiWrapperLock() const { return wrapper_->va_lock_; }
-  VADisplay GetVaapiWrapperVaDisplay() const { return wrapper_->va_display_; }
+
+  VADisplay GetVaapiWrapperVaDisplay() const {
+    base::AutoLock auto_lock(*wrapper_->va_lock_);
+    return wrapper_->va_display_;
+  }
 
  protected:
   scoped_refptr<VaapiWrapper> wrapper_;

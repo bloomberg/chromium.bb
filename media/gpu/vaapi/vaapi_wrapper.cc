@@ -195,7 +195,6 @@ class VADisplayState {
   // Initialize static data before sandbox is enabled.
   static void PreSandboxInitialization();
 
-  // |va_lock_| must be held on entry.
   bool Initialize();
   void Deinitialize(VAStatus* status);
 
@@ -212,10 +211,9 @@ class VADisplayState {
   ~VADisplayState() = default;
 
   // Implementation of Initialize() called only once.
-  bool InitializeOnce();
+  bool InitializeOnce() EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
 
-  // Protected by |va_lock_|.
-  int refcount_;
+  int refcount_ GUARDED_BY(va_lock_);
 
   // Libva is not thread safe, so we have to do locking for it ourselves.
   // This lock is to be taken for the duration of all VA-API calls and for
@@ -257,7 +255,7 @@ VADisplayState::VADisplayState()
     : refcount_(0), va_display_(nullptr), va_initialized_(false) {}
 
 bool VADisplayState::Initialize() {
-  va_lock_.AssertAcquired();
+  base::AutoLock auto_lock(va_lock_);
 
   if (!IsVaInitialized() ||
 #if defined(USE_X11)
@@ -349,7 +347,8 @@ bool VADisplayState::InitializeOnce() {
 }
 
 void VADisplayState::Deinitialize(VAStatus* status) {
-  va_lock_.AssertAcquired();
+  base::AutoLock auto_lock(va_lock_);
+
   if (--refcount_ > 0)
     return;
 
@@ -438,29 +437,30 @@ class VASupportedProfiles {
   std::vector<ProfileInfo> GetSupportedProfileInfosForCodecModeInternal(
       VaapiWrapper::CodecMode mode) const;
 
-  // |va_lock_| must be held on entry in the following _Locked methods.
-
   // Checks if |va_profile| supports |entrypoint| or not.
   bool IsEntrypointSupported_Locked(VAProfile va_profile,
-                                    VAEntrypoint entrypoint) const;
+                                    VAEntrypoint entrypoint) const
+      EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
   // Returns true if |va_profile| for |entrypoint| with |required_attribs| is
   // supported.
   bool AreAttribsSupported_Locked(
       VAProfile va_profile,
       VAEntrypoint entrypoint,
-      const std::vector<VAConfigAttrib>& required_attribs) const;
+      const std::vector<VAConfigAttrib>& required_attribs) const
+      EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
   // Gets maximum resolution for |va_profile| and |entrypoint| with
   // |required_attribs|. If return value is true, |resolution| is the maximum
   // resolution.
   bool GetMaxResolution_Locked(VAProfile va_profile,
                                VAEntrypoint entrypoint,
                                std::vector<VAConfigAttrib>& required_attribs,
-                               gfx::Size* resolution) const;
+                               gfx::Size* resolution) const
+      EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
   std::vector<ProfileInfo> supported_profiles_[VaapiWrapper::kCodecModeMax];
 
   // Pointer to VADisplayState's members |va_lock_| and its |va_display_|.
   base::Lock* va_lock_;
-  VADisplay va_display_;
+  VADisplay va_display_ GUARDED_BY(va_lock_);
 
   const base::Closure report_error_to_uma_cb_;
 
@@ -489,30 +489,34 @@ bool VASupportedProfiles::IsProfileSupported(VaapiWrapper::CodecMode mode,
 }
 
 VASupportedProfiles::VASupportedProfiles()
-    : va_display_(nullptr), report_error_to_uma_cb_(base::DoNothing()) {
+    : va_lock_(VADisplayState::Get()->va_lock()),
+      va_display_(nullptr),
+      report_error_to_uma_cb_(base::DoNothing()) {
   VADisplayState* display_state = VADisplayState::Get();
-  va_lock_ = display_state->va_lock();
 
   static_assert(arraysize(supported_profiles_) == VaapiWrapper::kCodecModeMax,
                 "The array size of supported profile is incorrect.");
+
+  if (!display_state->Initialize())
+    return;
+
   {
     base::AutoLock auto_lock(*va_lock_);
-    if (!display_state->Initialize())
-      return;
+    va_display_ = display_state->va_display();
   }
 
-  va_display_ = display_state->va_display();
   DCHECK(va_display_) << "VADisplayState hasn't been properly Initialize()d";
   for (size_t i = 0; i < VaapiWrapper::kCodecModeMax; ++i) {
     supported_profiles_[i] = GetSupportedProfileInfosForCodecModeInternal(
         static_cast<VaapiWrapper::CodecMode>(i));
   }
 
+  VAStatus va_res = VA_STATUS_SUCCESS;
+  display_state->Deinitialize(&va_res);
+  VA_LOG_ON_ERROR(va_res, "VADisplayState::Deinitialize failed");
+
   {
     base::AutoLock auto_lock(*va_lock_);
-    VAStatus va_res = VA_STATUS_SUCCESS;
-    display_state->Deinitialize(&va_res);
-    VA_LOG_ON_ERROR(va_res, "VADisplayState::Deinitialize failed");
     va_display_ = nullptr;
   }
 }
@@ -725,9 +729,12 @@ class VASupportedImageFormats {
   VASupportedImageFormats();
   ~VASupportedImageFormats() = default;
 
-  // Initialize the list of supported image formats. The VA display should be
-  // locked upon calling this function.
-  bool InitSupportedImageFormats();
+  // Initialize the list of supported image formats.
+  bool InitSupportedImageFormats_Locked() EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
+
+  // Pointer to VADisplayState's members |va_lock_| and its |va_display_|.
+  base::Lock* va_lock_;
+  VADisplay va_display_ GUARDED_BY(va_lock_);
 
   std::vector<VAImageFormat> supported_formats_;
   const base::RepeatingClosure report_error_to_uma_cb_;
@@ -751,33 +758,31 @@ bool VASupportedImageFormats::IsImageFormatSupported(
 }
 
 VASupportedImageFormats::VASupportedImageFormats()
-    : report_error_to_uma_cb_(base::DoNothing()) {
+    : va_lock_(VADisplayState::Get()->va_lock()),
+      report_error_to_uma_cb_(base::DoNothing()) {
   VADisplayState* display_state = VADisplayState::Get();
-  base::Lock* va_lock = display_state->va_lock();
-  base::AutoLock auto_lock(*va_lock);
-
   if (!display_state->Initialize())
     return;
 
-  VADisplay va_display = display_state->va_display();
-  DCHECK(va_display) << "VADisplayState hasn't been properly initialized";
+  {
+    base::AutoLock auto_lock(*va_lock_);
+    va_display_ = display_state->va_display();
+    DCHECK(va_display_) << "VADisplayState hasn't been properly initialized";
 
-  if (!InitSupportedImageFormats())
-    LOG(ERROR) << "Failed to get supported image formats";
+    if (!InitSupportedImageFormats_Locked())
+      LOG(ERROR) << "Failed to get supported image formats";
+  }
 
   VAStatus va_res = VA_STATUS_SUCCESS;
   display_state->Deinitialize(&va_res);
   VA_LOG_ON_ERROR(va_res, "VADisplayState::Deinitialize failed");
 }
 
-bool VASupportedImageFormats::InitSupportedImageFormats() {
-  VADisplayState* display_state = VADisplayState::Get();
-  display_state->va_lock()->AssertAcquired();
-  VADisplay va_display = display_state->va_display();
-  DCHECK(va_display) << "VADisplayState hasn't been properly initialized";
+bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
+  va_lock_->AssertAcquired();
 
   // Query the driver for the max number of image formats and allocate space.
-  const int max_image_formats = vaMaxNumImageFormats(va_display);
+  const int max_image_formats = vaMaxNumImageFormats(va_display_);
   if (max_image_formats < 0) {
     LOG(ERROR) << "vaMaxNumImageFormats returned: " << max_image_formats;
     return false;
@@ -786,8 +791,8 @@ bool VASupportedImageFormats::InitSupportedImageFormats() {
 
   // Query the driver for the list of supported image formats.
   int num_image_formats;
-  VAStatus va_res = vaQueryImageFormats(va_display, supported_formats_.data(),
-                                        &num_image_formats);
+  const VAStatus va_res = vaQueryImageFormats(
+      va_display_, supported_formats_.data(), &num_image_formats);
   VA_SUCCESS_OR_RETURN(va_res, "vaQueryImageFormats failed", false);
   if (num_image_formats < 0 || num_image_formats > max_image_formats) {
     LOG(ERROR) << "vaQueryImageFormats returned: " << num_image_formats;
@@ -1296,6 +1301,7 @@ bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
   bool result = DownloadFromCodedBuffer(buffer_id, sync_surface_id, target_ptr,
                                         target_size, coded_data_size);
 
+  base::AutoLock auto_lock(*va_lock_);
   VAStatus va_res = vaDestroyBuffer(va_display_, buffer_id);
   VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer failed");
   const auto was_found = coded_buffers_.erase(buffer_id);
@@ -1410,15 +1416,14 @@ void VaapiWrapper::PreSandboxInitialization() {
 }
 
 VaapiWrapper::VaapiWrapper()
-    : va_surface_format_(0),
+    : va_lock_(VADisplayState::Get()->va_lock()),
+      va_surface_format_(0),
       va_display_(NULL),
       va_config_id_(VA_INVALID_ID),
       va_context_id_(VA_INVALID_ID),
       va_vpp_config_id_(VA_INVALID_ID),
       va_vpp_context_id_(VA_INVALID_ID),
-      va_vpp_buffer_id_(VA_INVALID_ID) {
-  va_lock_ = VADisplayState::Get()->va_lock();
-}
+      va_vpp_buffer_id_(VA_INVALID_ID) {}
 
 VaapiWrapper::~VaapiWrapper() {
   DestroyPendingBuffers();
@@ -1444,31 +1449,32 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
 }
 
 void VaapiWrapper::Deinitialize() {
-  base::AutoLock auto_lock(*va_lock_);
-
-  if (va_config_id_ != VA_INVALID_ID) {
-    VAStatus va_res = vaDestroyConfig(va_display_, va_config_id_);
-    VA_LOG_ON_ERROR(va_res, "vaDestroyConfig failed");
+  {
+    base::AutoLock auto_lock(*va_lock_);
+    if (va_config_id_ != VA_INVALID_ID) {
+      VAStatus va_res = vaDestroyConfig(va_display_, va_config_id_);
+      VA_LOG_ON_ERROR(va_res, "vaDestroyConfig failed");
+    }
+    va_config_id_ = VA_INVALID_ID;
+    va_display_ = nullptr;
   }
 
   VAStatus va_res = VA_STATUS_SUCCESS;
   VADisplayState::Get()->Deinitialize(&va_res);
   VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
-
-  va_config_id_ = VA_INVALID_ID;
-  va_display_ = NULL;
 }
 
 bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
   report_error_to_uma_cb_ = report_error_to_uma_cb;
+
+  if (!VADisplayState::Get()->Initialize())
+    return false;
+
   {
     base::AutoLock auto_lock(*va_lock_);
-    if (!VADisplayState::Get()->Initialize())
-      return false;
+    va_display_ = VADisplayState::Get()->va_display();
+    DCHECK(va_display_) << "VADisplayState hasn't been properly Initialize()d";
   }
-
-  va_display_ = VADisplayState::Get()->va_display();
-  DCHECK(va_display_) << "VADisplayState hasn't been properly Initialize()d";
   return true;
 }
 
