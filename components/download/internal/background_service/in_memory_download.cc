@@ -27,6 +27,7 @@ InMemoryDownload::~InMemoryDownload() = default;
 InMemoryDownloadImpl::InMemoryDownloadImpl(
     const std::string& guid,
     const RequestParams& request_params,
+    scoped_refptr<network::ResourceRequestBody> request_body,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     Delegate* delegate,
     network::mojom::URLLoaderFactory* url_loader_factory,
@@ -34,6 +35,7 @@ InMemoryDownloadImpl::InMemoryDownloadImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : InMemoryDownload(guid),
       request_params_(request_params),
+      request_body_(std::move(request_body)),
       traffic_annotation_(traffic_annotation),
       url_loader_factory_(url_loader_factory),
       blob_task_proxy_(
@@ -190,6 +192,7 @@ void InMemoryDownloadImpl::SendRequest() {
   request->method = request_params_.method;
   request->headers = request_params_.request_headers;
   request->load_flags = net::LOAD_DISABLE_CACHE;
+  request->request_body = std::move(request_body_);
 
   url_chain_.push_back(request_params_.url);
 

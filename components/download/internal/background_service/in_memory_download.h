@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/download/internal/background_service/blob_task_proxy.h"
@@ -58,6 +59,7 @@ class InMemoryDownload {
     virtual std::unique_ptr<InMemoryDownload> Create(
         const std::string& guid,
         const RequestParams& request_params,
+        scoped_refptr<network::ResourceRequestBody> request_body,
         const net::NetworkTrafficAnnotationTag& traffic_annotation,
         Delegate* delegate) = 0;
 
@@ -151,6 +153,7 @@ class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
   InMemoryDownloadImpl(
       const std::string& guid,
       const RequestParams& request_params,
+      scoped_refptr<network::ResourceRequestBody> request_body,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       Delegate* delegate,
       network::mojom::URLLoaderFactory* url_loader_factory,
@@ -201,6 +204,9 @@ class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
 
   // Request parameters of the download.
   const RequestParams request_params_;
+
+  // The request body to upload (if any).
+  scoped_refptr<network::ResourceRequestBody> request_body_;
 
   // Traffic annotation of the request.
   const net::NetworkTrafficAnnotationTag traffic_annotation_;

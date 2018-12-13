@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/download/content/factory/download_service_factory.h"
@@ -33,16 +34,18 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
  public:
   explicit WebTestBackgroundFetchDownloadClient(
       base::WeakPtr<content::BackgroundFetchDelegate::Client> client)
-      : client_(std::move(client)) {}
+      : client_(std::move(client)), weak_ptr_factory_(this) {}
 
   ~WebTestBackgroundFetchDownloadClient() override = default;
 
   // Registers the |guid| as belonging to a Background Fetch job identified by
   // |job_unique_id|. Downloads may only be registered once.
   void RegisterDownload(const std::string& guid,
-                        const std::string& job_unique_id) {
+                        const std::string& job_unique_id,
+                        bool has_request_body) {
     DCHECK(!guid_to_unique_job_id_mapping_.count(guid));
     guid_to_unique_job_id_mapping_[guid] = job_unique_id;
+    guid_to_request_body_mapping_[guid] = has_request_body;
   }
 
   // download::Client implementation:
@@ -123,6 +126,7 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
                                 std::move(result));
 
     guid_to_unique_job_id_mapping_.erase(guid);
+    guid_to_request_body_mapping_.erase(guid);
     guid_to_response_.erase(guid);
   }
 
@@ -143,6 +147,7 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
                                 std::move(result));
 
     guid_to_unique_job_id_mapping_.erase(guid);
+    guid_to_request_body_mapping_.erase(guid);
     guid_to_response_.erase(guid);
   }
 
@@ -153,15 +158,37 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
 
   void GetUploadData(const std::string& guid,
                      download::GetUploadDataCallback callback) override {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), nullptr));
+    if (!guid_to_request_body_mapping_[guid]) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), nullptr));
+      return;
+    }
+
+    client_->GetUploadData(
+        guid_to_unique_job_id_mapping_[guid], guid,
+        base::BindOnce(&WebTestBackgroundFetchDownloadClient::DidGetUploadData,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void DidGetUploadData(download::GetUploadDataCallback callback,
+                        blink::mojom::SerializedBlobPtr blob) {
+    network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+    blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
+    blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
+
+    auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
+    request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+    std::move(callback).Run(std::move(request_body));
   }
 
  private:
   base::WeakPtr<content::BackgroundFetchDelegate::Client> client_;
   base::flat_map<std::string, std::string> guid_to_unique_job_id_mapping_;
+  base::flat_map<std::string, bool> guid_to_request_body_mapping_;
   base::flat_map<std::string, std::unique_ptr<content::BackgroundFetchResponse>>
       guid_to_response_;
+
+  base::WeakPtrFactory<WebTestBackgroundFetchDownloadClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestBackgroundFetchDownloadClient);
 };
@@ -232,7 +259,8 @@ void WebTestBackgroundFetchDelegate::DownloadUrl(
     bool has_request_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  background_fetch_client_->RegisterDownload(download_guid, job_unique_id);
+  background_fetch_client_->RegisterDownload(download_guid, job_unique_id,
+                                             has_request_body);
 
   download::DownloadParams params;
   params.guid = download_guid;

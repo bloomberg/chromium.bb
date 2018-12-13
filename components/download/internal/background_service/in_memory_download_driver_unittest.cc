@@ -72,6 +72,7 @@ class TestInMemoryDownloadFactory : public InMemoryDownload::Factory {
   std::unique_ptr<InMemoryDownload> Create(
       const std::string& guid,
       const RequestParams& request_params,
+      scoped_refptr<network::ResourceRequestBody> request_body,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       InMemoryDownload::Delegate* delegate) override {
     auto download = std::make_unique<TestInMemoryDownload>(guid, delegate);
