@@ -36,7 +36,6 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/bookmarks",
     "//ios/chrome/browser/ui/broadcaster",
-    "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fullscreen",
