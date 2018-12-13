@@ -54,6 +54,11 @@ const base::Feature kDriveFs{"DriveFS", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kMyFilesVolume{"MyFilesVolume",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, will display blocking screens during re-authentication after a
+// supervision transition occurred.
+const base::Feature kEnableSupervisionTransitionScreens{
+    "EnableSupervisionTransitionScreens", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the Chrome OS Settings UI will include a menu for the unified
 // MultiDevice settings.
 const base::Feature kEnableUnifiedMultiDeviceSettings{

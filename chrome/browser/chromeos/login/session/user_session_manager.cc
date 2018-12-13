@@ -108,6 +108,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/assistant/buildflags.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -1674,7 +1675,9 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
 
       ActivateWizard(OobeScreen::SCREEN_TERMS_OF_SERVICE);
       return false;
-    } else if (!user_manager->IsCurrentUserNew() &&
+    } else if (base::FeatureList::IsEnabled(
+                   chromeos::features::kEnableSupervisionTransitionScreens) &&
+               !user_manager->IsCurrentUserNew() &&
                arc::GetSupervisionTransition(profile) !=
                    arc::ArcSupervisionTransition::NO_TRANSITION) {
       ActivateWizard(OobeScreen::SCREEN_SUPERVISION_TRANSITION);
