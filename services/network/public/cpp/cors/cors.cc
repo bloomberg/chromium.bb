@@ -113,6 +113,14 @@ bool IsCorsSafelistedLowerCaseContentType(const std::string& value) {
          mime_type == "multipart/form-data" || mime_type == "text/plain";
 }
 
+bool IsNoCorsSafelistedHeaderNameLowerCase(const std::string& lower_name) {
+  if (lower_name != "accept" && lower_name != "accept-language" &&
+      lower_name != "content-language" && lower_name != "content-type") {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace network {
@@ -422,15 +430,20 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
   return true;
 }
 
+bool IsNoCorsSafelistedHeaderName(const std::string& name) {
+  return IsNoCorsSafelistedHeaderNameLowerCase(base::ToLowerASCII(name));
+}
+
+bool IsPrivilegedNoCorsHeaderName(const std::string& name) {
+  return base::ToLowerASCII(name) == "range";
+}
+
 bool IsNoCorsSafelistedHeader(const std::string& name,
                               const std::string& value) {
   const std::string lower_name = base::ToLowerASCII(name);
 
-  if (lower_name != "accept" && lower_name != "accept-language" &&
-      lower_name != "content-language" && lower_name != "content-type") {
+  if (!IsNoCorsSafelistedHeaderNameLowerCase(lower_name))
     return false;
-  }
-
   return IsCorsSafelistedHeader(lower_name, value);
 }
 

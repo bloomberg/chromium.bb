@@ -93,6 +93,8 @@ PLATFORM_EXPORT bool IsCorsSafelistedMethod(const String& method);
 PLATFORM_EXPORT bool IsCorsSafelistedContentType(const String&);
 PLATFORM_EXPORT bool IsNoCorsSafelistedHeader(const String& name,
                                               const String& value);
+PLATFORM_EXPORT bool IsPrivilegedNoCorsHeaderName(const String& name);
+PLATFORM_EXPORT bool IsNoCorsSafelistedHeaderName(const String& name);
 PLATFORM_EXPORT Vector<String> CorsUnsafeRequestHeaderNames(
     const HTTPHeaderMap& headers);
 PLATFORM_EXPORT bool IsForbiddenHeaderName(const String& name);

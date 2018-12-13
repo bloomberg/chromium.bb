@@ -303,6 +303,16 @@ bool IsCorsSafelistedContentType(const String& media_type) {
       WebString(media_type).Latin1());
 }
 
+bool IsNoCorsSafelistedHeaderName(const String& name) {
+  DCHECK(!name.IsNull());
+  return network::cors::IsNoCorsSafelistedHeaderName(WebString(name).Latin1());
+}
+
+bool IsPrivilegedNoCorsHeaderName(const String& name) {
+  DCHECK(!name.IsNull());
+  return network::cors::IsPrivilegedNoCorsHeaderName(WebString(name).Latin1());
+}
+
 bool IsNoCorsSafelistedHeader(const String& name, const String& value) {
   DCHECK(!name.IsNull());
   DCHECK(!value.IsNull());
