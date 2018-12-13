@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.UserManager;
 import android.support.customtabs.CustomTabsIntent;
 
@@ -21,13 +23,23 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
+import org.chromium.chrome.browser.webapps.TransparentSplashWebApkActivity;
+import org.chromium.chrome.browser.webapps.WebApkActivity;
+import org.chromium.chrome.browser.webapps.WebApkActivity0;
+import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
+import org.chromium.webapk.lib.client.WebApkValidator;
+import org.chromium.webapk.lib.common.WebApkConstants;
+import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.webapk.test.WebApkTestHelper;
 
 /** JUnit tests for first run triggering code. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -49,6 +61,40 @@ public final class FirstRunIntegrationUnitTest {
         mShadowApplication.setSystemService(Context.USER_SERVICE, userManager);
 
         FirstRunStatus.setFirstRunFlowComplete(false);
+        WebApkValidator.disableValidationForTesting();
+    }
+
+    /** Checks that the intent component is one of the provided classes. */
+    private boolean checkIntentComponentClassOneOf(Intent intent, Class[] componentClassOptions) {
+        if (intent == null || intent.getComponent() == null) return false;
+
+        String componentClassName = intent.getComponent().getClassName();
+        for (Class componentClassOption : componentClassOptions) {
+            if (componentClassOption.getName().equals(componentClassName)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks that intent is either for {@link FirstRunActivity} or
+     * {@link TabbedModeFirstRunActivity}.
+     */
+    private boolean checkIntentIsForFre(Intent intent) {
+        return checkIntentComponentClassOneOf(
+                intent, new Class[] {FirstRunActivity.class, TabbedModeFirstRunActivity.class});
+    }
+
+    /** Builds activity using the component class name from the provided intent. */
+    @SuppressWarnings("unchecked")
+    private static void buildActivityWithClassNameFromIntent(Intent intent) {
+        Class<? extends Activity> activityClass = null;
+        try {
+            activityClass =
+                    (Class<? extends Activity>) Class.forName(intent.getComponent().getClassName());
+        } catch (ClassNotFoundException e) {
+            Assert.fail();
+        }
+        Robolectric.buildActivity(activityClass, intent).create();
     }
 
     /**
@@ -59,9 +105,7 @@ public final class FirstRunIntegrationUnitTest {
         Intent launchedIntent = mShadowApplication.getNextStartedActivity();
         Assert.assertNotNull(launchedIntent);
 
-        String launchedActivityClassName = launchedIntent.getComponent().getClassName();
-        Assert.assertTrue(launchedActivityClassName.equals(FirstRunActivity.class.getName())
-                || launchedActivityClassName.equals(TabbedModeFirstRunActivity.class.getName()));
+        Assert.assertTrue(checkIntentIsForFre(launchedIntent));
     }
 
     @Test
@@ -110,5 +154,44 @@ public final class FirstRunIntegrationUnitTest {
                 Robolectric.buildActivity(SearchActivity.class, intent).create().get();
         assertFirstRunActivityLaunched();
         Assert.assertTrue(searchActivity.isFinishing());
+    }
+
+    /**
+     * Tests that when the first run experience is shown by a WebAPK that the WebAPK is launched
+     * when the user finishes the first run experience. In the case where the WebAPK (as opposed
+     * to WebApkActivity) displays the splash screen this is necessary for correct behaviour when
+     * the user taps the app icon and the WebAPK is still running.
+     */
+    @Test
+    public void testFreRelaunchesWebApkNotWebApkActivity() {
+        String webApkPackageName = "org.chromium.webapk.name";
+        String startUrl = "https://pwa.rocks/";
+
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
+        WebApkTestHelper.registerWebApkWithMetaData(webApkPackageName, bundle);
+        WebApkTestHelper.addIntentFilterForUrl(webApkPackageName, startUrl);
+
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, startUrl);
+        intent.putExtra(WebApkConstants.EXTRA_USE_TRANSPARENT_SPLASH, true);
+
+        Robolectric.buildActivity(WebappLauncherActivity.class, intent).create();
+
+        Intent launchedIntent = mShadowApplication.getNextStartedActivity();
+        while (checkIntentComponentClassOneOf(launchedIntent,
+                new Class[] {WebApkActivity.class, WebApkActivity0.class,
+                        TransparentSplashWebApkActivity.class})) {
+            buildActivityWithClassNameFromIntent(launchedIntent);
+            launchedIntent = mShadowApplication.getNextStartedActivity();
+        }
+
+        Assert.assertTrue(checkIntentIsForFre(launchedIntent));
+        PendingIntent freCompleteLaunchIntent = launchedIntent.getParcelableExtra(
+                FirstRunActivityBase.EXTRA_FRE_COMPLETE_LAUNCH_INTENT);
+        Assert.assertNotNull(freCompleteLaunchIntent);
+        Assert.assertEquals(webApkPackageName,
+                Shadows.shadowOf(freCompleteLaunchIntent).getSavedIntent().getPackage());
     }
 }

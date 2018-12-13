@@ -54,6 +54,45 @@ public class WebappLauncherActivity extends Activity {
 
     private static final String TAG = "webapps";
 
+    /** Creates intent to relaunch WebAPK. */
+    public static Intent createRelaunchWebApkIntent(Intent sourceIntent, WebApkInfo webApkInfo) {
+        assert webApkInfo != null;
+
+        Intent intent = new Intent(Intent.ACTION_VIEW, webApkInfo.uri());
+        intent.setPackage(webApkInfo.webApkPackageName());
+        intent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        Bundle extras = sourceIntent.getExtras();
+        if (extras != null) {
+            intent.putExtras(extras);
+        }
+        return intent;
+    }
+
+    /**
+     * Brings a live WebappActivity back to the foreground if one exists for the given tab ID.
+     * @param tabId ID of the Tab to bring back to the foreground.
+     * @return True if a live WebappActivity was found, false otherwise.
+     */
+    public static boolean bringWebappToFront(int tabId) {
+        if (tabId == Tab.INVALID_TAB_ID) return false;
+
+        for (WeakReference<Activity> activityRef : ApplicationStatus.getRunningActivities()) {
+            Activity activity = activityRef.get();
+            if (activity == null || !(activity instanceof WebappActivity)) continue;
+
+            WebappActivity webappActivity = (WebappActivity) activity;
+            if (webappActivity.getActivityTab() != null
+                    && webappActivity.getActivityTab().getId() == tabId) {
+                Tab tab = webappActivity.getActivityTab();
+                tab.getTabWebContentsDelegateAndroid().activateContents();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -157,15 +196,7 @@ public class WebappLauncherActivity extends Activity {
     /** Relaunches WebAPK. */
     private static void relaunchWebApk(
             Activity launchingActivity, Intent sourceIntent, @NonNull WebappInfo info) {
-        Intent launchIntent = new Intent(Intent.ACTION_VIEW, info.uri());
-        launchIntent.setPackage(info.webApkPackageName());
-        launchIntent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
-        Bundle extras = sourceIntent.getExtras();
-        if (extras != null) {
-            launchIntent.putExtras(extras);
-        }
-
+        Intent launchIntent = createRelaunchWebApkIntent(sourceIntent, (WebApkInfo) info);
         launchAfterDelay(
                 launchingActivity.getApplicationContext(), launchIntent, WEBAPK_LAUNCH_DELAY_MS);
         ApiCompatibilityUtils.finishAndRemoveTask(launchingActivity);
@@ -285,30 +316,6 @@ public class WebappLauncherActivity extends Activity {
             launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         }
         return launchIntent;
-    }
-
-    /**
-     * Brings a live WebappActivity back to the foreground if one exists for the given tab ID.
-     * @param tabId ID of the Tab to bring back to the foreground.
-     * @return True if a live WebappActivity was found, false otherwise.
-     */
-    public static boolean bringWebappToFront(int tabId) {
-        if (tabId == Tab.INVALID_TAB_ID) return false;
-
-        for (WeakReference<Activity> activityRef : ApplicationStatus.getRunningActivities()) {
-            Activity activity = activityRef.get();
-            if (activity == null || !(activity instanceof WebappActivity)) continue;
-
-            WebappActivity webappActivity = (WebappActivity) activity;
-            if (webappActivity.getActivityTab() != null
-                    && webappActivity.getActivityTab().getId() == tabId) {
-                Tab tab = webappActivity.getActivityTab();
-                tab.getTabWebContentsDelegateAndroid().activateContents();
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /** Tries to create WebappInfo/WebApkInfo for the intent. */

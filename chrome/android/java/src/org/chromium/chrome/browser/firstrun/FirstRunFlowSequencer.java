@@ -269,8 +269,7 @@ public abstract class FirstRunFlowSequencer  {
      * @return A generic intent to show the First Run Activity.
      * @param context                        The context.
      * @param fromIntent                     The intent that was used to launch Chrome.
-     * @param intentToLaunchAfterFreComplete The intent to relaunch Chrome when the user completes
-     *                                       the FRE.
+     * @param intentToLaunchAfterFreComplete The intent to launch when the user completes the FRE.
      * @param requiresBroadcast              Whether the relaunch intent must be broadcasted.
      */
     private static Intent createGenericFirstRunIntent(Context context, Intent fromIntent,
@@ -299,16 +298,20 @@ public abstract class FirstRunFlowSequencer  {
      * Returns an intent to show the lightweight first run activity.
      * @param context                        The context.
      * @param fromIntent                     The intent that was used to launch Chrome.
-     * @param intentToLaunchAfterFreComplete The intent to relaunch Chrome when the user completes
-     *                                       the FRE.
+     * @param associatedAppName              The id of the application associated with the activity
+     *                                       being launched.
+     * @param intentToLaunchAfterFreComplete The intent to launch when the user completes the FRE.
      * @param requiresBroadcast              Whether the relaunch intent must be broadcasted.
      */
     private static Intent createLightweightFirstRunIntent(Context context, Intent fromIntent,
-            Intent intentToLaunchAfterFreComplete, boolean requiresBroadcast) {
+            String associatedAppName, Intent intentToLaunchAfterFreComplete,
+            boolean requiresBroadcast) {
         Intent intent = new Intent();
         intent.setClassName(context, LightweightFirstRunActivity.class.getName());
-        String appName = WebApkActivity.slowExtractNameFromIntentIfTargetIsWebApk(fromIntent);
-        intent.putExtra(LightweightFirstRunActivity.EXTRA_ASSOCIATED_APP_NAME, appName);
+        if (associatedAppName != null) {
+            intent.putExtra(
+                    LightweightFirstRunActivity.EXTRA_ASSOCIATED_APP_NAME, associatedAppName);
+        }
         addPendingIntent(context, intent, intentToLaunchAfterFreComplete, requiresBroadcast);
         return intent;
     }
@@ -317,21 +320,21 @@ public abstract class FirstRunFlowSequencer  {
      * Adds fromIntent as a PendingIntent to the firstRunIntent. This should be used to add a
      * PendingIntent that will be sent when first run is completed.
      *
-     * @param context           The context that corresponds to the Intent.
-     * @param firstRunIntent    The intent that will be used to start first run.
-     * @param fromIntent        The intent that was used to launch Chrome.
-     * @param requiresBroadcast Whether or not the fromIntent must be broadcasted.
+     * @param context                        The context that corresponds to the Intent.
+     * @param firstRunIntent                 The intent that will be used to start first run.
+     * @param intentToLaunchAfterFreComplete The intent to launch when the user completes the FRE.
+     * @param requiresBroadcast              Whether or not the fromIntent must be broadcasted.
      */
-    private static void addPendingIntent(
-            Context context, Intent firstRunIntent, Intent fromIntent, boolean requiresBroadcast) {
+    private static void addPendingIntent(Context context, Intent firstRunIntent,
+            Intent intentToLaunchAfterFreComplete, boolean requiresBroadcast) {
         PendingIntent pendingIntent = null;
         int pendingIntentFlags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT;
         if (requiresBroadcast) {
-            pendingIntent = PendingIntent.getBroadcast(
-                    context, FIRST_RUN_EXPERIENCE_REQUEST_CODE, fromIntent, pendingIntentFlags);
+            pendingIntent = PendingIntent.getBroadcast(context, FIRST_RUN_EXPERIENCE_REQUEST_CODE,
+                    intentToLaunchAfterFreComplete, pendingIntentFlags);
         } else {
-            pendingIntent = PendingIntent.getActivity(
-                    context, FIRST_RUN_EXPERIENCE_REQUEST_CODE, fromIntent, pendingIntentFlags);
+            pendingIntent = PendingIntent.getActivity(context, FIRST_RUN_EXPERIENCE_REQUEST_CODE,
+                    intentToLaunchAfterFreComplete, pendingIntentFlags);
         }
         firstRunIntent.putExtra(FirstRunActivity.EXTRA_FRE_COMPLETE_LAUNCH_INTENT, pendingIntent);
     }
@@ -341,17 +344,17 @@ public abstract class FirstRunFlowSequencer  {
      * flags, we first relaunch it to make sure it runs in its own task, then trigger First Run.
      *
      * @param caller               Activity instance that is checking if first run is necessary.
-     * @param intent               Intent used to launch the caller.
+     * @param fromIntent           Intent used to launch the caller.
      * @param requiresBroadcast    Whether or not the Intent triggers a BroadcastReceiver.
      * @param preferLightweightFre Whether to prefer the Lightweight First Run Experience.
      * @return Whether startup must be blocked (e.g. via Activity#finish or dropping the Intent).
      */
-    public static boolean launch(Context caller, Intent intent, boolean requiresBroadcast,
+    public static boolean launch(Context caller, Intent fromIntent, boolean requiresBroadcast,
             boolean preferLightweightFre) {
         // Check if the user needs to go through First Run at all.
-        if (!checkIfFirstRunIsNecessary(caller, intent, preferLightweightFre)) return false;
+        if (!checkIfFirstRunIsNecessary(caller, fromIntent, preferLightweightFre)) return false;
 
-        String intentUrl = IntentHandler.getUrlFromIntent(intent);
+        String intentUrl = IntentHandler.getUrlFromIntent(fromIntent);
         Uri uri = intentUrl != null ? Uri.parse(intentUrl) : null;
         if (uri != null && UrlConstants.CONTENT_SCHEME.equals(uri.getScheme())) {
             caller.grantUriPermission(
@@ -359,26 +362,39 @@ public abstract class FirstRunFlowSequencer  {
         }
 
         Log.d(TAG, "Redirecting user through FRE.");
-        if ((intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
-            boolean isVrIntent = VrModuleProvider.getIntentDelegate().isVrIntent(intent);
+        if ((fromIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
+            boolean isVrIntent = VrModuleProvider.getIntentDelegate().isVrIntent(fromIntent);
             boolean isGenericFreActive = checkIsGenericFreActive();
+
+            Intent intentToLaunchAfterFreComplete = fromIntent;
+            String associatedAppNameForLightweightFre = null;
+            WebApkActivity.FreParams webApkFreParams =
+                    WebApkActivity.slowGenerateFreParamsIfIntentIsForWebApkActivity(fromIntent);
+            if (webApkFreParams != null) {
+                intentToLaunchAfterFreComplete =
+                        webApkFreParams.getIntentToLaunchAfterFreComplete();
+                associatedAppNameForLightweightFre = webApkFreParams.webApkShortName();
+            }
 
             // Launch the Generic First Run Experience if it was previously active.
             Intent freIntent = null;
             if (preferLightweightFre && !isGenericFreActive) {
-                freIntent =
-                        createLightweightFirstRunIntent(caller, intent, intent, requiresBroadcast);
+                freIntent = createLightweightFirstRunIntent(caller, fromIntent,
+                        associatedAppNameForLightweightFre, intentToLaunchAfterFreComplete,
+                        requiresBroadcast);
             } else {
-                freIntent = createGenericFirstRunIntent(caller, intent, intent, requiresBroadcast);
+                freIntent = createGenericFirstRunIntent(
+                        caller, fromIntent, intentToLaunchAfterFreComplete, requiresBroadcast);
 
                 if (shouldSwitchToTabbedMode(caller)) {
                     freIntent.setClass(caller, TabbedModeFirstRunActivity.class);
 
                     // We switched to TabbedModeFRE. We need to disable animation on the original
                     // intent, to make transition seamless.
-                    intent = new Intent(intent);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                    addPendingIntent(caller, freIntent, intent, requiresBroadcast);
+                    intentToLaunchAfterFreComplete = new Intent(intentToLaunchAfterFreComplete);
+                    intentToLaunchAfterFreComplete.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                    addPendingIntent(
+                            caller, freIntent, intentToLaunchAfterFreComplete, requiresBroadcast);
                 }
             }
 
@@ -391,7 +407,7 @@ public abstract class FirstRunFlowSequencer  {
         } else {
             // First Run requires that the Intent contains NEW_TASK so that it doesn't sit on top
             // of something else.
-            Intent newIntent = new Intent(intent);
+            Intent newIntent = new Intent(fromIntent);
             newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             IntentUtils.safeStartActivity(caller, newIntent);
         }

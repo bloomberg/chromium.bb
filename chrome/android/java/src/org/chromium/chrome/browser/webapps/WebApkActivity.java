@@ -39,18 +39,47 @@ public class WebApkActivity extends WebappActivity {
     @VisibleForTesting
     public static final String STARTUP_UMA_HISTOGRAM_SUFFIX = ".WebApk";
 
+    /** WebAPK first run experience parameters. */
+    public static class FreParams {
+        private final Intent mIntentToLaunchAfterFreComplete;
+        private final String mShortName;
+
+        public FreParams(Intent intentToLaunchAfterFreComplete, String shortName) {
+            mIntentToLaunchAfterFreComplete = intentToLaunchAfterFreComplete;
+            mShortName = shortName;
+        }
+
+        /** Returns the intent launch when the user completes the first run experience. */
+        public Intent getIntentToLaunchAfterFreComplete() {
+            return mIntentToLaunchAfterFreComplete;
+        }
+
+        /** Returns the WebAPK's short name. */
+        public String webApkShortName() {
+            return mShortName;
+        }
+    }
+
     /**
-     * Tries extracting the WebAPK short name from the passed in intent. Returns null if the intent
-     * does not launch a WebApkActivity. This method is slow. It makes several PackageManager calls.
+     * Generates parameters for the WebAPK first run experience for the given intent. Returns null
+     * if the intent does not launch a WebApkActivity. This method is slow. It makes several
+     * PackageManager calls.
      */
-    public static String slowExtractNameFromIntentIfTargetIsWebApk(Intent intent) {
-        // Check for intents targetted at WebApkActivity and WebApkActivity0-9.
-        if (!intent.getComponent().getClassName().startsWith(WebApkActivity.class.getName())) {
+    public static FreParams slowGenerateFreParamsIfIntentIsForWebApkActivity(Intent fromIntent) {
+        // Check for intents targeted at WebApkActivity, WebApkActivity0-9 and
+        // TransparentSplashWebApkActivity.
+        String targetActivityClassName = fromIntent.getComponent().getClassName();
+        if (!targetActivityClassName.startsWith(WebApkActivity.class.getName())
+                && !targetActivityClassName.equals(
+                        TransparentSplashWebApkActivity.class.getName())) {
             return null;
         }
 
-        WebApkInfo info = WebApkInfo.create(intent);
-        return (info != null) ? info.shortName() : null;
+        WebApkInfo info = WebApkInfo.create(fromIntent);
+        return (info != null)
+                ? new FreParams(WebappLauncherActivity.createRelaunchWebApkIntent(fromIntent, info),
+                        info.shortName())
+                : null;
     }
 
     @Override
