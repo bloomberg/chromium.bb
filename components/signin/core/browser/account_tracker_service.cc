@@ -312,6 +312,7 @@ void AccountTrackerService::SetAccountImage(const std::string& account_id,
   if (!base::ContainsKey(accounts_, account_id))
     return;
   accounts_[account_id].image = image;
+  accounts_[account_id].info.account_image = image;
   SaveAccountImageToDisk(account_id, image);
   NotifyAccountImageUpdated(account_id, image);
 }
@@ -441,6 +442,7 @@ void AccountTrackerService::OnAccountImageLoaded(const std::string& account_id,
   if (base::ContainsKey(accounts_, account_id) &&
       accounts_[account_id].image.IsEmpty()) {
     accounts_[account_id].image = image;
+    accounts_[account_id].info.account_image = image;
     NotifyAccountImageUpdated(account_id, image);
   }
 }
