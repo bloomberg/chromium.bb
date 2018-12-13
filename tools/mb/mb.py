@@ -890,7 +890,6 @@ class MetaBuildWrapper(object):
         runtime_deps_targets = [
           'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
       elif (isolate_map[target]['type'] == 'script' or
-            isolate_map[target]['type'] == 'fuzzer' or
             isolate_map[target].get('label_type') == 'group'):
         # For script targets, the build target is usually a group,
         # for which gn generates the runtime_deps next to the stamp file
@@ -1102,14 +1101,7 @@ class MetaBuildWrapper(object):
       self.WriteFailureAndRaise('We should not be isolating %s.' % target,
                                 output_path=None)
 
-    if test_type == 'fuzzer':
-      cmdline = [
-        '../../testing/test_env.py',
-        '../../tools/code_coverage/run_fuzz_target.py',
-        '--fuzzer', './' + target,
-        '--output-dir', '${ISOLATED_OUTDIR}',
-        '--timeout', '3600']
-    elif is_android and test_type != "script":
+    if is_android and test_type != "script":
       cmdline = [
           '../../testing/test_env.py',
           '../../build/android/test_wrapper/logdog_wrapper.py',
