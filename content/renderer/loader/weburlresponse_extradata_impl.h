@@ -22,33 +22,6 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl
   WebURLResponseExtraDataImpl();
   ~WebURLResponseExtraDataImpl() override;
 
-  /// Flag whether this request was loaded via the SPDY protocol or not.
-  // SPDY is an experimental web protocol, see http://dev.chromium.org/spdy
-  bool was_fetched_via_spdy() const {
-    return was_fetched_via_spdy_;
-  }
-  void set_was_fetched_via_spdy(bool was_fetched_via_spdy) {
-    was_fetched_via_spdy_ = was_fetched_via_spdy;
-  }
-
-  // Flag whether this request was loaded after the
-  // TLS/Next-Protocol-Negotiation was used.
-  // This is related to SPDY.
-  bool was_alpn_negotiated() const { return was_alpn_negotiated_; }
-  void set_was_alpn_negotiated(bool was_alpn_negotiated) {
-    was_alpn_negotiated_ = was_alpn_negotiated;
-  }
-
-  // Flag whether this request was made when "Alternate-Protocol: xxx"
-  // is present in server's response.
-  bool was_alternate_protocol_available() const {
-    return was_alternate_protocol_available_;
-  }
-  void set_was_alternate_protocol_available(
-      bool was_alternate_protocol_available) {
-    was_alternate_protocol_available_ = was_alternate_protocol_available;
-  }
-
   net::EffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
   }
@@ -58,9 +31,6 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl
   }
 
  private:
-  bool was_fetched_via_spdy_;
-  bool was_alpn_negotiated_;
-  bool was_alternate_protocol_available_;
   net::EffectiveConnectionType effective_connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLResponseExtraDataImpl);

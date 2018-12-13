@@ -59,6 +59,7 @@
 #include "content/test/test_render_frame.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2067,19 +2068,21 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
 #define MAYBE_HttpStatusCodeErrorWithEmptyBody HttpStatusCodeErrorWithEmptyBody
 #endif
 TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
-  blink::WebURLResponse response;
-  response.SetHTTPStatusCode(503);
-
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
   CommonNavigationParams common_params;
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.url = GURL("data:text/html,test data");
-  TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
-  main_frame->Navigate(common_params, RequestNavigationParams());
 
-  // Emulate a 4xx/5xx main resource response with an empty body.
-  main_frame->DidReceiveResponse(response);
+  // Emulate a 503 main resource response with an empty body.
+  network::ResourceResponseHead head;
+  std::string headers(
+      "HTTP/1.1 503 SERVICE UNAVAILABLE\nContent-type: text/html\n\n");
+  head.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+
+  TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
+  main_frame->Navigate(head, common_params, RequestNavigationParams());
   main_frame->DidFinishDocumentLoad();
   main_frame->RunScriptsAtDocumentReady(true);
 

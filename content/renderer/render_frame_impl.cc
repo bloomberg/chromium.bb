@@ -880,6 +880,8 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
   if (head) {
     if (head->headers)
       internal_data->set_http_status_code(head->headers->response_code());
+    else if (common_params.url.SchemeIs(url::kDataScheme))
+      internal_data->set_http_status_code(200);
     document_state->set_was_fetched_via_spdy(head->was_fetched_via_spdy);
     document_state->set_was_alpn_negotiated(head->was_alpn_negotiated);
     document_state->set_alpn_negotiated_protocol(
@@ -3321,10 +3323,8 @@ void RenderFrameImpl::CommitNavigation(
   if (request_extra_data) {
     base::OnceClosure continue_navigation =
         request_extra_data->TakeContinueNavigationFunctionOwnerShip();
-    if (continue_navigation) {
-      base::AutoReset<bool> replaying(&replaying_main_response_, true);
+    if (continue_navigation)
       std::move(continue_navigation).Run();
-    }
   }
 }
 
@@ -4965,47 +4965,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   if (!render_view_->renderer_preferences_.enable_referrers)
     request.SetHTTPReferrer(WebString(),
                             network::mojom::ReferrerPolicy::kDefault);
-}
-
-void RenderFrameImpl::DidReceiveResponse(
-    const blink::WebURLResponse& response) {
-  // For main resource, this is done in CommitNavigation instead.
-  // TODO(dgozman): get rid of this method once we always go through
-  // CommitNavigation, even for urls like about:blank.
-  if (replaying_main_response_)
-    return;
-
-  // Only do this for responses that correspond to a provisional data source
-  // of the top-most frame.  If we have a provisional data source, then we
-  // can't have any sub-resources yet, so we know that this response must
-  // correspond to a frame load.
-  if (!frame_->GetProvisionalDocumentLoader() || frame_->Parent())
-    return;
-
-  // If we are in view source mode, then just let the user see the source of
-  // the server's error page.
-  if (frame_->IsViewSourceModeEnabled())
-    return;
-
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(frame_->GetProvisionalDocumentLoader());
-  int http_status_code = response.HttpStatusCode();
-
-  // Record page load flags.
-  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
-  if (extra_data) {
-    document_state->set_was_fetched_via_spdy(
-        extra_data->was_fetched_via_spdy());
-    document_state->set_was_alpn_negotiated(extra_data->was_alpn_negotiated());
-    document_state->set_alpn_negotiated_protocol(
-        response.AlpnNegotiatedProtocol().Utf8());
-    document_state->set_was_alternate_protocol_available(
-        extra_data->was_alternate_protocol_available());
-    document_state->set_connection_info(response.ConnectionInfo());
-  }
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
-  internal_data->set_http_status_code(http_status_code);
 }
 
 void RenderFrameImpl::DidLoadResourceFromMemoryCache(
