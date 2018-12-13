@@ -1,4 +1,0 @@
-include_rules = [
-  "+third_party/perfetto/include",
-  "+third_party/perfetto/protos",
-]
