@@ -248,44 +248,6 @@ void FreeDefiniteSizeFn(const AllocatorDispatch* self,
   self->next->free_definite_size_function(self->next, address, size, context);
 }
 
-static void* AlignedMallocFn(const AllocatorDispatch* self,
-                             size_t size,
-                             size_t alignment,
-                             void* context) {
-  ReentryGuard guard;
-  void* address =
-      self->next->aligned_malloc_function(self->next, size, alignment, context);
-  if (LIKELY(guard)) {
-    PoissonAllocationSampler::RecordAlloc(
-        address, size, PoissonAllocationSampler::kMalloc, nullptr);
-  }
-  return address;
-}
-
-static void* AlignedReallocFn(const AllocatorDispatch* self,
-                              void* address,
-                              size_t size,
-                              size_t alignment,
-                              void* context) {
-  ReentryGuard guard;
-  // Note: size == 0 actually performs free.
-  PoissonAllocationSampler::RecordFree(address);
-  address = self->next->aligned_realloc_function(self->next, address, size,
-                                                 alignment, context);
-  if (LIKELY(guard)) {
-    PoissonAllocationSampler::RecordAlloc(
-        address, size, PoissonAllocationSampler::kMalloc, nullptr);
-  }
-  return address;
-}
-
-static void AlignedFreeFn(const AllocatorDispatch* self,
-                          void* address,
-                          void* context) {
-  PoissonAllocationSampler::RecordFree(address);
-  self->next->aligned_free_function(self->next, address, context);
-}
-
 AllocatorDispatch g_allocator_dispatch = {&AllocFn,
                                           &AllocZeroInitializedFn,
                                           &AllocAlignedFn,
@@ -295,9 +257,6 @@ AllocatorDispatch g_allocator_dispatch = {&AllocFn,
                                           &BatchMallocFn,
                                           &BatchFreeFn,
                                           &FreeDefiniteSizeFn,
-                                          &AlignedMallocFn,
-                                          &AlignedReallocFn,
-                                          &AlignedFreeFn,
                                           nullptr};
 
 #if BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
