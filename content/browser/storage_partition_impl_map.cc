@@ -418,21 +418,16 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
       browser_context_->GetResourceContext()));
   request_interceptors.push_back(std::make_unique<AppCacheInterceptor>());
 
-  // These ifdefs should match StoragePartitionImpl::GetURLRequestContext.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-#endif
-  {
-    // These calls must happen after StoragePartitionImpl::Create().
-    if (partition_domain.empty()) {
-      partition->SetURLRequestContext(browser_context_->CreateRequestContext(
-          &protocol_handlers, std::move(request_interceptors)));
-    } else {
-      partition->SetURLRequestContext(
-          browser_context_->CreateRequestContextForStoragePartition(
-              partition->GetPath(), in_memory, &protocol_handlers,
-              std::move(request_interceptors)));
-    }
+  // These calls must happen after StoragePartitionImpl::Create().
+  if (partition_domain.empty()) {
+    partition->SetURLRequestContext(
+        browser_context_->CreateRequestContext(
+            &protocol_handlers, std::move(request_interceptors)));
+  } else {
+    partition->SetURLRequestContext(
+        browser_context_->CreateRequestContextForStoragePartition(
+            partition->GetPath(), in_memory, &protocol_handlers,
+            std::move(request_interceptors)));
   }
 
   // A separate media cache isn't used with the network service.
@@ -443,7 +438,6 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
             : browser_context_->CreateMediaRequestContextForStoragePartition(
                   partition->GetPath(), in_memory));
   }
-
   partition->GetCookieStoreContext()->ListenToCookieChanges(
       partition->GetNetworkContext(), base::DoNothing());
 
