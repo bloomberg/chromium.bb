@@ -47,6 +47,8 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   // to the browser process. These will update the timing information for the
   // most recently committed navigation.
   void SimulateTimingUpdate(const mojom::PageLoadTiming& timing);
+  void SimulateTimingUpdate(const mojom::PageLoadTiming& timing,
+                            content::RenderFrameHost* rfh);
   void SimulateTimingAndMetadataUpdate(const mojom::PageLoadTiming& timing,
                                        const mojom::PageLoadMetadata& metadata);
   void SimulateFeaturesUpdate(const mojom::PageLoadFeatures& new_features);
@@ -83,7 +85,8 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
   void SimulatePageLoadTimingUpdate(const mojom::PageLoadTiming& timing,
                                     const mojom::PageLoadMetadata& metadata,
                                     const mojom::PageLoadFeatures& new_features,
-                                    const mojom::PageRenderData& render_data);
+                                    const mojom::PageRenderData& render_data,
+                                    content::RenderFrameHost* rfh);
 
   content::WebContents* web_contents() const { return web_contents_; }
 

@@ -17,6 +17,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 
+using content::NavigationSimulator;
+using content::RenderFrameHost;
+using content::RenderFrameHostTester;
+
 namespace {
 
 const char kDefaultTestUrl[] = "https://google.com";
@@ -631,6 +635,48 @@ TEST_F(CorePageLoadMetricsObserverTest, LargestImagePaint) {
   // Navigate again to force histogram recording.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(internal::kHistogramLargestImagePaint),
+      testing::ElementsAre(base::Bucket(4780, 1)));
+}
+
+TEST_F(CorePageLoadMetricsObserverTest, LargestImagePaintIgnoreSubFrame) {
+  const char kSubframeTestUrl[] = "https://google.com/subframe.html";
+
+  // Create a main frame timing with a largest_image_paint that happens late.
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  // Pick a value that lines up with a histogram bucket.
+  timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(4780);
+  PopulateRequiredTimingFields(&timing);
+
+  // Create a subframe timing with a largest_image_paint that happens before the
+  // largest_image_paint in the main frame timing.
+  page_load_metrics::mojom::PageLoadTiming subframe_timing;
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
+  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(0);
+  PopulateRequiredTimingFields(&subframe_timing);
+
+  // Commit the main frame and a subframe.
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL(kSubframeTestUrl),
+          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  // Simulate timing updates in the main frame and the subframe.
+  SimulateTimingUpdate(timing);
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  // Navigate again to force histogram recording in the main frame.
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  // Ensure that the largest_image_paint timing for the main frame is recorded.
   EXPECT_THAT(
       histogram_tester().GetAllSamples(internal::kHistogramLargestImagePaint),
       testing::ElementsAre(base::Bucket(4780, 1)));
