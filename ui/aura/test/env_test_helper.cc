@@ -8,16 +8,11 @@ namespace aura {
 namespace test {
 
 EnvWindowTreeClientSetter::EnvWindowTreeClientSetter(WindowTreeClient* client)
-    : supplied_client_(client),
-      previous_client_(Env::GetInstance()->window_tree_client_) {
-  DCHECK(client);
+    : previous_client_(Env::GetInstance()->window_tree_client_) {
   SetWindowTreeClient(client);
 }
 
 EnvWindowTreeClientSetter::~EnvWindowTreeClientSetter() {
-  // |supplied_client_| may have already been deleted.
-  DCHECK(Env::GetInstance()->window_tree_client_ == nullptr ||
-         Env::GetInstance()->window_tree_client_ == supplied_client_);
   SetWindowTreeClient(previous_client_);
 }
 

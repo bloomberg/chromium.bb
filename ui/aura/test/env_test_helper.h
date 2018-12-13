@@ -27,7 +27,6 @@ class EnvWindowTreeClientSetter {
  private:
   void SetWindowTreeClient(WindowTreeClient* client);
 
-  WindowTreeClient* supplied_client_;
   WindowTreeClient* previous_client_;
 
   DISALLOW_COPY_AND_ASSIGN(EnvWindowTreeClientSetter);
@@ -60,6 +59,8 @@ class EnvTestHelper {
     env_->in_mus_shutdown_ = false;
     return old_mode;
   }
+
+  void SetInMusShutdown(bool value) { env_->in_mus_shutdown_ = value; }
 
   // Use to force Env::last_mouse_location() to return the value last set.
   // This matters for MUS, which may not return the last explicitly set

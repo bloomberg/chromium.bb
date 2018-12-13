@@ -12,11 +12,13 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/env.h"
 #include "ui/display/display.h"
 
 namespace aura {
@@ -271,6 +273,25 @@ class NoSessionAshTestBase : public AshTestBase {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoSessionAshTestBase);
+};
+
+// Base test class that forces single-process mash to be enabled *and* creates
+// a views::MusClient. This base class is useful for testing WindowService
+// related functionality exposed by Ash.
+class SingleProcessMashTestBase : public AshTestBase {
+ public:
+  SingleProcessMashTestBase();
+  ~SingleProcessMashTestBase() override;
+
+  // AshTestBase:
+  void SetUp() override;
+  void TearDown() override;
+
+ private:
+  aura::Env::Mode original_aura_env_mode_ = aura::Env::Mode::LOCAL;
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SingleProcessMashTestBase);
 };
 
 }  // namespace ash
