@@ -15,7 +15,6 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/fake_connection_preserver.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/message_wrapper.h"
@@ -23,7 +22,6 @@
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "chromeos/services/secure_channel/ble_constants.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -140,13 +138,19 @@ class HostScannerOperationTest : public testing::Test {
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
-    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
     test_host_scan_device_prioritizer_ =
         std::make_unique<TestHostScanDevicePrioritizer>();
     mock_tether_host_response_recorder_ =
         std::make_unique<StrictMock<MockTetherHostResponseRecorder>>();
     fake_connection_preserver_ = std::make_unique<FakeConnectionPreserver>();
     test_observer_ = base::WrapUnique(new TestObserver());
+
+    // Used here to prevent "unused function" compiler warning.
+    // TODO(https://crbug.com/905151): Use elsewhere and remove this call.
+    CreateTetherAvailabilityResponseString(
+        TetherAvailabilityResponse_ResponseCode ::
+            TetherAvailabilityResponse_ResponseCode_TETHER_AVAILABLE,
+        "fakeCarrierName");
   }
 
   void ConstructOperation(
@@ -177,21 +181,9 @@ class HostScannerOperationTest : public testing::Test {
   void SimulateDeviceAuthenticationAndVerifyMessageSent(
       multidevice::RemoteDeviceRef remote_device,
       size_t expected_num_messages_sent) {
-    // Verify that before the authentication, one fewer than the expected number
-    // of messages has been sent.
-    EXPECT_EQ(expected_num_messages_sent - 1,
-              fake_ble_connection_manager_->sent_messages().size());
-
     operation_->OnDeviceAuthenticated(remote_device);
 
-    // Now, verify that the message was sent successfully.
-    std::vector<FakeBleConnectionManager::SentMessage>& sent_messages =
-        fake_ble_connection_manager_->sent_messages();
-    ASSERT_EQ(expected_num_messages_sent, sent_messages.size());
-    EXPECT_EQ(remote_device.GetDeviceId(),
-              sent_messages[expected_num_messages_sent - 1].device_id);
-    EXPECT_EQ(tether_availability_request_string_,
-              sent_messages[expected_num_messages_sent - 1].message);
+    // TODO(https://crbug.com/905151): Verify that message was sent.
   }
 
   void SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
@@ -204,10 +196,7 @@ class HostScannerOperationTest : public testing::Test {
 
     test_clock_.Advance(kTetherAvailabilityResponseTime);
 
-    fake_ble_connection_manager_->ReceiveMessage(
-        remote_device.GetDeviceId(), CreateTetherAvailabilityResponseString(
-                                         response_code, cell_provider_name));
-    test_task_runner_->RunUntilIdle();
+    // TODO(https://crbug.com/905151): Receive message.
 
     bool tether_available =
         response_code ==
@@ -273,7 +262,6 @@ class HostScannerOperationTest : public testing::Test {
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>
       fake_secure_channel_client_;
-  std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<TestHostScanDevicePrioritizer>
       test_host_scan_device_prioritizer_;
   std::unique_ptr<StrictMock<MockTetherHostResponseRecorder>>
@@ -429,18 +417,14 @@ TEST_F(HostScannerOperationTest, DISABLED_TestMultipleDevices) {
             fake_connection_preserver_
                 ->last_requested_preserved_connection_device_id());
 
-  // Simulate device 1 failing to connect.
-  fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
-      test_devices_[1].GetDeviceId(), 0 /* num_attempts */);
+  // TODO(https://crbug.com/905151): Simulate device 1 failing to connect.
 
   // The scan should still not be over, and no new scan results should have
   // come in.
   EXPECT_FALSE(test_observer_->has_final_scan_result_been_sent());
   EXPECT_EQ(2u, test_observer_->scanned_devices_so_far().size());
 
-  // Simulate device 3 failing to connect.
-  fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
-      test_devices_[3].GetDeviceId(), 0 /* num_attempts */);
+  // TODO(https://crbug.com/905151): Simulate device 3 failing to connect.
 
   // The scan should still not be over, and no new scan results should have
   // come in.

@@ -14,7 +14,6 @@
 #include "chromeos/components/tether/connect_tethering_operation.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"
-#include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
@@ -160,7 +159,6 @@ class TetherConnectorImplTest : public NetworkStateTest {
     fake_active_host_ = std::make_unique<FakeActiveHost>();
     fake_tether_host_fetcher_ =
         std::make_unique<FakeTetherHostFetcher>(test_devices_);
-    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
     mock_tether_host_response_recorder_ =
         std::make_unique<MockTetherHostResponseRecorder>();
     device_id_tether_network_guid_map_ =
@@ -330,7 +328,6 @@ class TetherConnectorImplTest : public NetworkStateTest {
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>
       fake_secure_channel_client_;
-  std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<MockTetherHostResponseRecorder>
       mock_tether_host_response_recorder_;
   // TODO(hansberry): Use a fake for this when a real mapping scheme is created.
