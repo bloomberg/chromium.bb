@@ -60,6 +60,9 @@ class VIEWS_EXPORT InkDropRipple {
   // to any observers being notified as a result of the call.
   void AnimateToState(InkDropState ink_drop_state);
 
+  // Snaps from the current InkDropState to the new |ink_drop_state|.
+  void SnapToState(InkDropState ink_drop_state);
+
   InkDropState target_ink_drop_state() const { return target_ink_drop_state_; }
 
   // Immediately aborts all in-progress animations and hides the ink drop.

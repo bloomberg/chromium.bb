@@ -68,6 +68,20 @@ void InkDropRipple::AnimateToState(InkDropState ink_drop_state) {
   // AnimationEndedCallback which can delete |this|.
 }
 
+void InkDropRipple::SnapToState(InkDropState ink_drop_state) {
+  switch (ink_drop_state) {
+    case InkDropState::HIDDEN:
+      SnapToHidden();
+      break;
+    case InkDropState::ACTIVATED:
+      SnapToActivated();
+      break;
+    default:
+      AbortAllAnimations();
+      target_ink_drop_state_ = ink_drop_state;
+  }
+}
+
 void InkDropRipple::SnapToActivated() {
   AbortAllAnimations();
   // |animation_observer| will be deleted when AnimationEndedCallback() returns
