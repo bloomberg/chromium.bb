@@ -40,6 +40,9 @@ class TestRenderFrame : public RenderFrameImpl {
   void SetURLOverrideForNextWebURLRequest(const GURL& url);
 
   void WillSendRequest(blink::WebURLRequest& request) override;
+  void Navigate(const network::ResourceResponseHead& head,
+                const CommonNavigationParams& common_params,
+                const RequestNavigationParams& request_params);
   void Navigate(const CommonNavigationParams& common_params,
                 const RequestNavigationParams& request_params);
   void SwapOut(int proxy_routing_id,

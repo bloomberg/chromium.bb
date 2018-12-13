@@ -1192,10 +1192,6 @@ void WebURLLoaderImpl::PopulateURLResponse(
 
   WebURLResponseExtraDataImpl* extra_data = new WebURLResponseExtraDataImpl();
   response->SetExtraData(extra_data);
-  extra_data->set_was_fetched_via_spdy(info.was_fetched_via_spdy);
-  extra_data->set_was_alpn_negotiated(info.was_alpn_negotiated);
-  extra_data->set_was_alternate_protocol_available(
-      info.was_alternate_protocol_available);
   extra_data->set_effective_connection_type(info.effective_connection_type);
 
   // If there's no received headers end time, don't set load timing.  This is

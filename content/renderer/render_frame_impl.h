@@ -704,7 +704,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void SaveImageFromDataURL(const blink::WebString& data_url) override;
   void FrameRectsChanged(const blink::WebRect& frame_rect) override;
   void WillSendRequest(blink::WebURLRequest& request) override;
-  void DidReceiveResponse(const blink::WebURLResponse& response) override;
   void DidLoadResourceFromMemoryCache(
       const blink::WebURLRequest& request,
       const blink::WebURLResponse& response) override;
@@ -1603,12 +1602,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(dgozman): should be temporary until we stop using
   // WebURLRequest for this.
   bool committing_main_request_ = false;
-
-  // Set to true while we are replaying main resource response,
-  // which was captured in the browser, during navigation commit.
-  // TODO(dgozman): should be temporary until we stop using
-  // WebURLRequest for this.
-  bool replaying_main_response_ = false;
 
   RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
 

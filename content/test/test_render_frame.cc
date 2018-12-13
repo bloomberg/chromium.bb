@@ -155,15 +155,21 @@ void TestRenderFrame::WillSendRequest(blink::WebURLRequest& request) {
   RenderFrameImpl::WillSendRequest(request);
 }
 
-void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
+void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
+                               const CommonNavigationParams& common_params,
                                const RequestNavigationParams& request_params) {
   CommitNavigation(
-      network::ResourceResponseHead(), common_params, request_params,
+      head, common_params, request_params,
       network::mojom::URLLoaderClientEndpointsPtr(),
       std::make_unique<URLLoaderFactoryBundleInfo>(), base::nullopt,
       blink::mojom::ControllerServiceWorkerInfoPtr(),
       network::mojom::URLLoaderFactoryPtr(), base::UnguessableToken::Create(),
       CommitNavigationCallback());
+}
+
+void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
+                               const RequestNavigationParams& request_params) {
+  Navigate(network::ResourceResponseHead(), common_params, request_params);
 }
 
 void TestRenderFrame::SwapOut(
