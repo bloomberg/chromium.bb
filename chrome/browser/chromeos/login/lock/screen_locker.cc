@@ -700,8 +700,14 @@ bool ScreenLocker::IsUserLoggedIn(const AccountId& account_id) const {
   return false;
 }
 
+void ScreenLocker::OnRestarted() {}
+
+void ScreenLocker::OnEnrollScanDone(device::mojom::ScanResult scan_result,
+                                    bool enroll_session_complete,
+                                    int percent_complete) {}
+
 void ScreenLocker::OnAuthScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {
   VLOG(1) << "Receive fingerprint auth scan result. scan_result="
           << scan_result;
@@ -720,7 +726,7 @@ void ScreenLocker::OnAuthScanDone(
   LoginScreenClient::Get()->auth_recorder()->RecordAuthMethod(
       LoginAuthRecorder::AuthMethod::kFingerprint);
 
-  if (scan_result != biod::ScanResult::SCAN_RESULT_SUCCESS) {
+  if (scan_result != device::mojom::ScanResult::SUCCESS) {
     LOG(ERROR) << "Fingerprint unlock failed because scan_result="
                << scan_result;
     OnFingerprintAuthFailure(*active_user);

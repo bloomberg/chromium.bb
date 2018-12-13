@@ -124,7 +124,7 @@ void FingerprintHandler::OnJavascriptDisallowed() {
 
 void FingerprintHandler::OnRestarted() {}
 
-void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
+void FingerprintHandler::OnEnrollScanDone(device::mojom::ScanResult scan_result,
                                           bool enroll_session_complete,
                                           int percent_complete) {
   VLOG(1) << "Receive fingerprint enroll scan result. scan_result="
@@ -132,7 +132,7 @@ void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
           << ", enroll_session_complete=" << enroll_session_complete
           << ", percent_complete=" << percent_complete;
   auto scan_attempt = std::make_unique<base::DictionaryValue>();
-  scan_attempt->SetInteger("result", scan_result);
+  scan_attempt->SetInteger("result", static_cast<int>(scan_result));
   scan_attempt->SetBoolean("isComplete", enroll_session_complete);
   scan_attempt->SetInteger("percentComplete", percent_complete);
 
@@ -140,7 +140,7 @@ void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
 }
 
 void FingerprintHandler::OnAuthScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {
   VLOG(1) << "Receive fingerprint auth scan result. scan_result="
           << scan_result;
@@ -164,7 +164,7 @@ void FingerprintHandler::OnAuthScanDone(
   }
 
   auto fingerprint_attempt = std::make_unique<base::DictionaryValue>();
-  fingerprint_attempt->SetInteger("result", scan_result);
+  fingerprint_attempt->SetInteger("result", static_cast<int>(scan_result));
   fingerprint_attempt->Set("indexes", std::move(fingerprint_ids));
 
   FireWebUIListener("on-fingerprint-attempt-received", *fingerprint_attempt);

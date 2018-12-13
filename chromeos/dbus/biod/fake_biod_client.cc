@@ -168,12 +168,10 @@ void FakeBiodClient::StartAuthSession(const ObjectPathCallback& callback) {
       base::BindOnce(callback, dbus::ObjectPath(kAuthSessionObjectPath)));
 }
 
-void FakeBiodClient::RequestType(const BiometricTypeCallback& callback) {
+void FakeBiodClient::RequestType(BiometricTypeCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(callback,
-                     static_cast<uint32_t>(
-                         biod::BiometricType::BIOMETRIC_TYPE_FINGERPRINT)));
+      base::BindOnce(std::move(callback), biod::BIOMETRIC_TYPE_FINGERPRINT));
 }
 
 void FakeBiodClient::CancelEnrollSession(VoidDBusMethodCallback callback) {

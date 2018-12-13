@@ -9,6 +9,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/fingerprint/fingerprint.h"
+#include "services/device/public/mojom/fingerprint.mojom.h"
 
 namespace device {
 
@@ -16,6 +17,46 @@ namespace {
 
 chromeos::BiodClient* GetBiodClient() {
   return chromeos::DBusThreadManager::Get()->GetBiodClient();
+}
+
+// Helper functions to convert between dbus and mojo types. The dbus type comes
+// from code imported from cros, so it is hard to use the mojo type there. Since
+// the dbus type is imported, there are DEPs restrictions w.r.t. using it across
+// the entire code-base. Chrome code outside of the interop layer with dbus
+// exclusively uses the mojo type.
+device::mojom::BiometricType ToMojom(biod::BiometricType type) {
+  switch (type) {
+    case biod::BIOMETRIC_TYPE_UNKNOWN:
+      return device::mojom::BiometricType::UNKNOWN;
+    case biod::BIOMETRIC_TYPE_FINGERPRINT:
+      return device::mojom::BiometricType::FINGERPRINT;
+    case biod::BIOMETRIC_TYPE_MAX:
+      return device::mojom::BiometricType::kMaxValue;
+  }
+  NOTREACHED();
+  return device::mojom::BiometricType::UNKNOWN;
+}
+device::mojom::ScanResult ToMojom(biod::ScanResult type) {
+  switch (type) {
+    case biod::SCAN_RESULT_SUCCESS:
+      return device::mojom::ScanResult::SUCCESS;
+    case biod::SCAN_RESULT_PARTIAL:
+      return device::mojom::ScanResult::PARTIAL;
+    case biod::SCAN_RESULT_INSUFFICIENT:
+      return device::mojom::ScanResult::INSUFFICIENT;
+    case biod::SCAN_RESULT_SENSOR_DIRTY:
+      return device::mojom::ScanResult::SENSOR_DIRTY;
+    case biod::SCAN_RESULT_TOO_SLOW:
+      return device::mojom::ScanResult::TOO_SLOW;
+    case biod::SCAN_RESULT_TOO_FAST:
+      return device::mojom::ScanResult::TOO_FAST;
+    case biod::SCAN_RESULT_IMMOBILE:
+      return device::mojom::ScanResult::IMMOBILE;
+    case biod::SCAN_RESULT_MAX:
+      return device::mojom::ScanResult::kMaxValue;
+  }
+  NOTREACHED();
+  return device::mojom::ScanResult::INSUFFICIENT;
 }
 
 }  // namespace
@@ -157,8 +198,11 @@ void FingerprintChromeOS::DestroyAllRecords(
 }
 
 void FingerprintChromeOS::RequestType(RequestTypeCallback callback) {
-  GetBiodClient()->RequestType(
-      base::AdaptCallbackForRepeating(std::move(callback)));
+  GetBiodClient()->RequestType(base::BindOnce(
+      [](RequestTypeCallback callback, biod::BiometricType type) {
+        std::move(callback).Run(ToMojom(type));
+      },
+      std::move(callback)));
 }
 
 void FingerprintChromeOS::AddFingerprintObserver(
@@ -182,9 +226,10 @@ void FingerprintChromeOS::BiodEnrollScanDoneReceived(
   if (enroll_session_complete)
     opened_session_ = FingerprintSession::NONE;
 
-  for (auto& observer : observers_)
-    observer->OnEnrollScanDone(scan_result, enroll_session_complete,
+  for (auto& observer : observers_) {
+    observer->OnEnrollScanDone(ToMojom(scan_result), enroll_session_complete,
                                percent_complete);
+  }
 }
 
 void FingerprintChromeOS::BiodAuthScanDoneReceived(
@@ -201,10 +246,15 @@ void FingerprintChromeOS::BiodAuthScanDoneReceived(
     entries.emplace_back(std::move(item.first), std::move(paths));
   }
 
-  for (auto& observer : observers_)
+  auto casted_scan_result = static_cast<device::mojom::ScanResult>(scan_result);
+  CHECK(device::mojom::IsKnownEnumValue(casted_scan_result));
+
+  for (auto& observer : observers_) {
     observer->OnAuthScanDone(
-        scan_result, base::flat_map<std::string, std::vector<std::string>>(
-                         std::move(entries)));
+        casted_scan_result,
+        base::flat_map<std::string, std::vector<std::string>>(
+            std::move(entries)));
+  }
 }
 
 void FingerprintChromeOS::BiodSessionFailedReceived() {

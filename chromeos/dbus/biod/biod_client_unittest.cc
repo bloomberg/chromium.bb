@@ -89,9 +89,7 @@ class BiodClientTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void GetBiometricType(uint32_t type) {
-    biometric_type_ = static_cast<biod::BiometricType>(type);
-  }
+  void GetBiometricType(biod::BiometricType type) { biometric_type_ = type; }
 
  protected:
   // Add an expectation for method with |method_name| to be called. When the
@@ -346,8 +344,7 @@ TEST_F(BiodClientTest, TestStartAuthentication) {
 }
 
 TEST_F(BiodClientTest, TestRequestBiometricType) {
-  const biod::BiometricType kFakeBiometricType =
-      biod::BIOMETRIC_TYPE_FINGERPRINT;
+  const auto kFakeBiometricType = biod::BIOMETRIC_TYPE_FINGERPRINT;
 
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
@@ -369,7 +366,7 @@ TEST_F(BiodClientTest, TestRequestBiometricType) {
   client_->RequestType(
       base::Bind(&BiodClientTest::GetBiometricType, base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(biod::BiometricType::BIOMETRIC_TYPE_UNKNOWN, biometric_type_);
+  EXPECT_EQ(biod::BIOMETRIC_TYPE_UNKNOWN, biometric_type_);
 }
 
 TEST_F(BiodClientTest, TestRequestRecordLabel) {

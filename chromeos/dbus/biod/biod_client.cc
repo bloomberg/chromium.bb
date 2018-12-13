@@ -118,7 +118,7 @@ class BiodClientImpl : public BiodClient {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void RequestType(const BiometricTypeCallback& callback) override {
+  void RequestType(BiometricTypeCallback callback) override {
     dbus::MethodCall method_call(dbus::kDBusPropertiesInterface,
                                  dbus::kDBusPropertiesGet);
     dbus::MessageWriter writer(&method_call);
@@ -128,7 +128,7 @@ class BiodClientImpl : public BiodClient {
     biod_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BiodClientImpl::OnRequestType,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void CancelEnrollSession(VoidDBusMethodCallback callback) override {
@@ -290,19 +290,21 @@ class BiodClientImpl : public BiodClient {
     callback.Run(result);
   }
 
-  void OnRequestType(const BiometricTypeCallback& callback,
-                     dbus::Response* response) {
-    uint32_t result =
-        static_cast<uint32_t>(biod::BiometricType::BIOMETRIC_TYPE_UNKNOWN);
+  void OnRequestType(BiometricTypeCallback callback, dbus::Response* response) {
+    biod::BiometricType result = biod::BIOMETRIC_TYPE_UNKNOWN;
     if (response) {
       dbus::MessageReader reader(response);
-      if (!reader.PopVariantOfUint32(&result)) {
+      uint32_t value;
+      if (reader.PopVariantOfUint32(&value)) {
+        result = static_cast<biod::BiometricType>(value);
+        CHECK(result >= 0 && result < biod::BIOMETRIC_TYPE_MAX);
+      } else {
         LOG(ERROR) << biod::kBiometricsManagerBiometricTypeProperty
                    << " had incorrect response.";
       }
     }
 
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   void OnRequestRecordLabel(LabelCallback callback, dbus::Response* response) {
