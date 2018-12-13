@@ -12,7 +12,7 @@ std::string TypeId::ToString() const {
 #if DCHECK_IS_ON()
   return function_name_;
 #else
-  return NumberToString(internal_unique_id());
+  return NumberToString(reinterpret_cast<uintptr_t>(type_id_));
 #endif
 }
 

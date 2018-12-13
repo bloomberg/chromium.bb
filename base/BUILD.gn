@@ -2592,7 +2592,6 @@ test("base_unittests") {
     "//base/test:native_library_test_utils",
     "//base/test:run_all_base_unittests",
     "//base/test:test_support",
-    "//base/test:test_support_component",
     "//base/third_party/dynamic_annotations",
     "//testing/gmock",
     "//testing/gtest",
