@@ -141,4 +141,12 @@ const AXUniqueId& AXPlatformNodeDelegateBase::GetUniqueId() const {
   return *dummy_unique_id;
 }
 
+int32_t AXPlatformNodeDelegateBase::GetPosInSet() const {
+  return 0;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetSetSize() const {
+  return 0;
+}
+
 }  // namespace ui

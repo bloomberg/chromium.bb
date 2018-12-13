@@ -2275,8 +2275,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetGroupPosition) {
   LONG level, similar, position;
   EXPECT_EQ(S_OK, iaccessible2->get_groupPosition(&level, &similar, &position));
   EXPECT_EQ(1, level);
-  EXPECT_EQ(1, similar);
-  EXPECT_EQ(1, position);
+  EXPECT_EQ(0, similar);
+  EXPECT_EQ(0, position);
 
   EXPECT_EQ(E_INVALIDARG,
             iaccessible2->get_groupPosition(nullptr, nullptr, nullptr));

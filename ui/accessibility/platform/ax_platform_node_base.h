@@ -284,6 +284,9 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // embedded element character.
   AXHypertext ComputeHypertext();
 
+  int32_t GetPosInSet() const;
+  int32_t GetSetSize() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeBase);
 };

@@ -1280,8 +1280,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_groupPosition(
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
   *group_level = GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
-  *similar_items_in_group = GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
-  *position_in_group = GetIntAttribute(ax::mojom::IntAttribute::kPosInSet);
+  *similar_items_in_group = GetSetSize();
+  *position_in_group = GetPosInSet();
 
   if (!*group_level && !*similar_items_in_group && !*position_in_group)
     return S_FALSE;
