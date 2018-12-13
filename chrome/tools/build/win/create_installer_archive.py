@@ -104,8 +104,11 @@ def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
   if distribution:
     if len(distribution) > 1 and distribution[0] == '_':
       distribution = distribution[1:]
-    CopySectionFilesToStagingDir(config, distribution.upper(),
-                                 staging_dir, build_dir)
+
+    distribution = distribution.upper()
+    if config.has_section(distribution):
+      CopySectionFilesToStagingDir(config, distribution,
+                                   staging_dir, build_dir)
   if enable_hidpi == '1':
     CopySectionFilesToStagingDir(config, 'HIDPI', staging_dir, build_dir)
 

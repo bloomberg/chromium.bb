@@ -156,7 +156,7 @@ template("generate_mini_installer") {
       "--resource_file_path",
       rebase_path(packed_files_rc_file, root_build_dir),
       "--target_arch=$current_cpu",
-      "--distribution=_google_chrome",
+      "--distribution=_${branding_path_component}",
       "--output_dir",
       rebase_path(output_dir, root_build_dir),
       "--chrome_runtime_deps",
