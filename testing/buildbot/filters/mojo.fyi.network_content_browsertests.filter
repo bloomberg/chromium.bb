@@ -2,13 +2,6 @@
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
 
-# https://crbug.com/820060
--PreviewsStateBrowserTest.ShouldEnableLoFiModeNavigateBackThenForward
--PreviewsStateBrowserTest.ShouldEnableLoFiModeOff
--PreviewsStateBrowserTest.ShouldEnableLoFiModeOn
--PreviewsStateBrowserTest.ShouldEnableLoFiModeReload
--PreviewsStateBrowserTest.ShouldEnableLoFiModeReloadDisableLoFi
-
 # services/network/url_loader.cc should handle failure in
 # URLLoaderImpl::OnResponseBodyStreamRead(). Note this is flaky, so it will pass
 # sometimes.
