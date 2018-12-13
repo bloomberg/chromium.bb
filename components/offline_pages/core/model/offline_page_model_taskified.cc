@@ -708,7 +708,7 @@ void OfflinePageModelTaskified::ScheduleMaintenanceTasks() {
   if (skip_maintenance_tasks_for_testing_)
     return;
   // If not enough time has passed, don't queue maintenance tasks.
-  base::Time now = OfflineClock()->Now();
+  base::Time now = OfflineTimeNow();
   if (now - last_maintenance_tasks_schedule_time_ < kClearStorageInterval)
     return;
 
@@ -733,7 +733,7 @@ void OfflinePageModelTaskified::RunMaintenanceTasks(base::Time now,
         store_.get(), archive_manager_.get(), policy_controller_.get()));
 
     task_queue_.AddTask(std::make_unique<CleanupThumbnailsTask>(
-        store_.get(), OfflineClock()->Now(), base::DoNothing()));
+        store_.get(), OfflineTimeNow(), base::DoNothing()));
   }
 
   task_queue_.AddTask(std::make_unique<ClearStorageTask>(

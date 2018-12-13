@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -65,7 +64,7 @@ bool UpdateStateSync(sql::Database* db, const int64_t offline_id) {
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(
       0, static_cast<int>(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE));
-  statement.BindInt64(1, store_utils::ToDatabaseTime(OfflineClock()->Now()));
+  statement.BindInt64(1, store_utils::ToDatabaseTime(OfflineTimeNow()));
   statement.BindInt64(2, offline_id);
   return statement.Run();
 }

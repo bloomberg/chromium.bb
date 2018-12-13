@@ -17,7 +17,6 @@
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/offline_pages/core/archive_validator.h"
@@ -130,7 +129,7 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
       params,
       base::BindOnce(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
                      weak_ptr_factory_.GetWeakPtr(), url, file_path, title,
-                     create_archive_params.name_space, OfflineClock()->Now()));
+                     create_archive_params.name_space, OfflineTimeNow()));
 }
 
 void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
@@ -146,7 +145,7 @@ void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
     return;
   }
 
-  const base::Time digest_start_time = OfflineClock()->Now();
+  const base::Time digest_start_time = OfflineTimeNow();
   base::UmaHistogramTimes(
       model_utils::AddHistogramSuffix(
           name_space, "OfflinePages.SavePage.CreateArchiveTime"),
@@ -175,7 +174,7 @@ void OfflinePageMHTMLArchiver::OnComputeDigestDone(
   base::UmaHistogramTimes(
       model_utils::AddHistogramSuffix(
           name_space, "OfflinePages.SavePage.ComputeDigestTime"),
-      OfflineClock()->Now() - digest_start_time);
+      OfflineTimeNow() - digest_start_time);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

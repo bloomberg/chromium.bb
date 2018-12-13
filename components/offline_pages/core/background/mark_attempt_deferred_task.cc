@@ -7,8 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/time/clock.h"
-#include "base/time/time.h"
 #include "components/offline_pages/core/offline_clock.h"
 
 namespace offline_pages {
@@ -30,7 +28,7 @@ void MarkAttemptDeferredTask::UpdateRequestImpl(
 
   // It is perfectly fine to reuse the read_result.updated_items collection, as
   // it is owned by this callback and will be destroyed when out of scope.
-  read_result.updated_items[0].MarkAttemptDeferred(OfflineClock()->Now());
+  read_result.updated_items[0].MarkAttemptDeferred(OfflineTimeNow());
   store()->UpdateRequests(
       read_result.updated_items,
       base::BindOnce(&MarkAttemptDeferredTask::CompleteWithResult,

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -76,7 +75,7 @@ bool MarkItemAsDownloading(sql::Database* db,
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::DOWNLOADING));
   statement.BindString(1, guid);
-  statement.BindInt64(2, store_utils::ToDatabaseTime(OfflineClock()->Now()));
+  statement.BindInt64(2, store_utils::ToDatabaseTime(OfflineTimeNow()));
   statement.BindInt64(3, offline_id);
   return statement.Run();
 }

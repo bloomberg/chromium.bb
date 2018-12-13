@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/request_queue_task_test_base.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
@@ -52,13 +51,13 @@ class GetRequestsTaskTest : public RequestQueueTaskTestBase {
 };
 
 void GetRequestsTaskTest::AddItemsToStore(RequestQueueStore* store) {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
   store->AddRequest(request_1,
                     base::BindOnce(&GetRequestsTaskTest::AddRequestDone,
                                    base::Unretained(this)));
-  creation_time = OfflineClock()->Now();
+  creation_time = OfflineTimeNow();
   SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
                             true);
   store->AddRequest(request_2,

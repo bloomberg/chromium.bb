@@ -13,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/background/request_queue.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_clock.h"
@@ -411,7 +410,7 @@ TEST_F(RequestQueueStoreTest, GetRequestsByIds) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   this->InitializeStore(store.get());
 
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
                            kUserRequested);
   store->AddRequest(request1,
@@ -472,7 +471,7 @@ TEST_F(RequestQueueStoreTest, AddRequest) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   this->InitializeStore(store.get());
 
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
                           kUserRequested);
   request.set_original_url(kUrl2);
@@ -534,7 +533,7 @@ TEST_F(RequestQueueStoreTest, UpdateRequest) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   this->InitializeStore(store.get());
 
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
                                    kUserRequested);
   store->AddRequest(original_request,
@@ -590,7 +589,7 @@ TEST_F(RequestQueueStoreTest, RemoveRequests) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   this->InitializeStore(store.get());
 
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
                            kUserRequested);
   store->AddRequest(request1,
@@ -654,7 +653,7 @@ TEST_F(RequestQueueStoreTest, ResetStore) {
   std::unique_ptr<RequestQueueStore> store(this->BuildStore());
   this->InitializeStore(store.get());
 
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
                                    kUserRequested);
   store->AddRequest(original_request,
@@ -684,7 +683,7 @@ TEST_F(RequestQueueStoreTest, SaveCloseReopenRead) {
   std::unique_ptr<RequestQueueStore> store(BuildStore());
   this->InitializeStore(store.get());
 
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
                                    kUserRequested);
   store->AddRequest(original_request,

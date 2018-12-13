@@ -4,7 +4,7 @@
 
 #include "components/offline_pages/core/background/offliner_policy_utils.h"
 
-#include "base/time/clock.h"
+#include "base/time/time.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_clock.h"
@@ -19,7 +19,7 @@ OfflinerPolicyUtils::CheckRequestExpirationStatus(
   DCHECK(request);
   DCHECK(policy);
 
-  if (OfflineClock()->Now() - request->creation_time() >=
+  if (OfflineTimeNow() - request->creation_time() >=
       base::TimeDelta::FromSeconds(
           policy->GetRequestExpirationTimeInSeconds())) {
     return RequestExpirationStatus::EXPIRED;

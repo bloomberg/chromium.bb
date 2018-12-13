@@ -4,9 +4,7 @@
 
 #include "chrome/browser/offline_pages/prefetch/prefetch_background_task_handler_impl.h"
 
-#include "base/time/clock.h"
 #include "base/time/default_tick_clock.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_background_task_scheduler.h"
 #include "chrome/common/pref_names.h"
@@ -62,7 +60,7 @@ PrefetchBackgroundTaskHandlerImpl::GetCurrentBackoff() const {
   std::unique_ptr<net::BackoffEntry> result;
   if (value) {
     result = net::BackoffEntrySerializer::DeserializeFromValue(
-        *value, &kPrefetchBackoffPolicy, tick_clock_, OfflineClock()->Now());
+        *value, &kPrefetchBackoffPolicy, tick_clock_, OfflineTimeNow());
   }
   if (!result)
     return std::make_unique<net::BackoffEntry>(&kPrefetchBackoffPolicy,
@@ -120,8 +118,7 @@ void PrefetchBackgroundTaskHandlerImpl::SetTickClockForTesting(
 void PrefetchBackgroundTaskHandlerImpl::UpdateBackoff(
     net::BackoffEntry* backoff) {
   std::unique_ptr<base::Value> value =
-      net::BackoffEntrySerializer::SerializeToValue(*backoff,
-                                                    OfflineClock()->Now());
+      net::BackoffEntrySerializer::SerializeToValue(*backoff, OfflineTimeNow());
   prefs_->Set(prefetch_prefs::kBackoff, *value);
 }
 

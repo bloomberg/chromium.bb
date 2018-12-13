@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -215,7 +214,7 @@ Result FinalizeStaleEntriesSync(sql::Database* db) {
       // Bucket 3.
       PrefetchItemState::DOWNLOADING, PrefetchItemState::IMPORTING,
   }};
-  base::Time now = OfflineClock()->Now();
+  base::Time now = OfflineTimeNow();
   for (PrefetchItemState state : expirable_states) {
     if (!FinalizeStaleItems(state, now, db))
       return Result::NO_MORE_WORK;
