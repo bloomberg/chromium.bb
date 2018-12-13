@@ -39,21 +39,6 @@ namespace network {
 
 namespace {
 
-// When kPrioritySupportedRequestsDelayable is enabled, requests for
-// H2/QUIC/SPDY resources can be delayed by the ResourceScheduler just as
-// HTTP/1.1 resources are. It has good impact on performance, but breaks
-// expected behavior of H2. See intent-to-unship:
-// https://groups.google.com/a/chromium.org/forum/#!topic/blink-
-// dev/ChqGX8UyHz8. We're keeping it around for finch trials to compare
-// alternatives to.
-const base::Feature kPrioritySupportedRequestsDelayable{
-    "PrioritySupportedRequestsDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, low-priority H2 and QUIC requests are throttled, but only
-// when the parser is in head.
-const base::Feature kHeadPrioritySupportedRequestsDelayable{
-    "HeadPriorityRequestsDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
-
 enum StartMode { START_SYNC, START_ASYNC };
 
 // Flags identifying various attributes of the request that are used
@@ -390,14 +375,6 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     DCHECK(tick_clock_);
 
     UpdateParamsForNetworkQuality();
-    // Must not run the conflicting experiments together.
-    DCHECK(!params_for_network_quality_
-                .delay_requests_on_multiplexed_connections ||
-           !resource_scheduler->priority_requests_delayable());
-    DCHECK(!params_for_network_quality_
-                .delay_requests_on_multiplexed_connections ||
-           !resource_scheduler->head_priority_requests_delayable());
-
     if (network_quality_estimator_)
       network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
   }
@@ -645,8 +622,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
       attributes |= kAttributeLayoutBlocking;
     } else if (request->url_request()->priority() <
                kDelayablePriorityThreshold) {
-      if (resource_scheduler_->priority_requests_delayable() ||
-          params_for_network_quality_
+      if (params_for_network_quality_
               .delay_requests_on_multiplexed_connections) {
         // Resources below the delayable priority threshold that are considered
         // delayable.
@@ -674,9 +650,7 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     // throttle priority requests is enabled.
     DCHECK(
         !supports_priority ||
-        params_for_network_quality_.delay_requests_on_multiplexed_connections ||
-        resource_scheduler_->priority_requests_delayable() ||
-        resource_scheduler_->head_priority_requests_delayable());
+        params_for_network_quality_.delay_requests_on_multiplexed_connections);
 
     // kMaxNumDelayableRequestsPerHostPerClient limit does not apply to servers
     // that support request priorities when
@@ -791,7 +765,6 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     const net::HostPortPair& host_port_pair = request->host_port_pair();
 
     bool priority_delayable =
-        resource_scheduler_->priority_requests_delayable() ||
         params_for_network_quality_.delay_requests_on_multiplexed_connections;
 
     url::SchemeHostPort scheme_host_port(url_request.url());
@@ -956,16 +929,8 @@ ResourceScheduler::ResourceScheduler(bool enabled,
     : tick_clock_(tick_clock ? tick_clock
                              : base::DefaultTickClock::GetInstance()),
       enabled_(enabled),
-      priority_requests_delayable_(
-          base::FeatureList::IsEnabled(kPrioritySupportedRequestsDelayable)),
-      head_priority_requests_delayable_(base::FeatureList::IsEnabled(
-          kHeadPrioritySupportedRequestsDelayable)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(tick_clock_);
-
-  // Don't run the two experiments together.
-  if (priority_requests_delayable_ && head_priority_requests_delayable_)
-    priority_requests_delayable_ = false;
 
   StartLongQueuedRequestsDispatchTimerIfNeeded();
 }

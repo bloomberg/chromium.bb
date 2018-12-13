@@ -141,12 +141,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   // Returns true if the timer that dispatches long queued requests is running.
   bool IsLongQueuedRequestsDispatchTimerRunning() const;
 
-  bool priority_requests_delayable() const {
-    return priority_requests_delayable_;
-  }
-  bool head_priority_requests_delayable() const {
-    return head_priority_requests_delayable_;
-  }
   base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
 
   // Testing setters
@@ -206,14 +200,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   // enabled, except for some C++ headless embedders who may implement their own
   // resource scheduling via protocol handlers.
   const bool enabled_;
-
-  // True if requests to servers that support priorities (e.g., H2/QUIC) can
-  // be delayed.
-  bool priority_requests_delayable_;
-
-  // True if requests to servers that support priorities (e.g., H2/QUIC) can
-  // be delayed while the parser is in head.
-  bool head_priority_requests_delayable_;
 
   ResourceSchedulerParamsManager resource_scheduler_params_manager_;
 
