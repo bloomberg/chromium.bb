@@ -169,8 +169,7 @@ TextDetectionImplWin::BuildTextDetectionResult(
     AsyncOperation<OcrResult>::IAsyncOperationPtr async_op) {
   std::vector<mojom::TextDetectionResultPtr> results;
   Microsoft::WRL::ComPtr<IOcrResult> ocr_result;
-  HRESULT hr =
-      async_op ? async_op->GetResults(ocr_result.GetAddressOf()) : E_FAIL;
+  HRESULT hr = async_op ? async_op->GetResults(&ocr_result) : E_FAIL;
   if (FAILED(hr)) {
     DLOG(ERROR) << "GetResults failed: "
                 << logging::SystemErrorCodeToString(hr);
@@ -178,7 +177,7 @@ TextDetectionImplWin::BuildTextDetectionResult(
   }
 
   Microsoft::WRL::ComPtr<IVectorView<OcrLine*>> ocr_lines;
-  hr = ocr_result->get_Lines(ocr_lines.GetAddressOf());
+  hr = ocr_result->get_Lines(&ocr_lines);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Get Lines failed: " << logging::SystemErrorCodeToString(hr);
     return results;
@@ -205,7 +204,7 @@ TextDetectionImplWin::BuildTextDetectionResult(
 
     // Gets bounding box with the words detected in the current line of Text.
     Microsoft::WRL::ComPtr<IVectorView<OcrWord*>> ocr_words;
-    hr = line->get_Words(ocr_words.GetAddressOf());
+    hr = line->get_Words(&ocr_words);
     if (FAILED(hr))
       break;
 

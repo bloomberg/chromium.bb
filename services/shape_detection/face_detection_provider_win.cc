@@ -117,8 +117,7 @@ void FaceDetectionProviderWin::OnFaceDetectorCreated(
   binding_->ResumeIncomingMethodCallProcessing();
 
   Microsoft::WRL::ComPtr<IFaceDetector> face_detector;
-  HRESULT hr =
-      async_op ? async_op->GetResults(face_detector.GetAddressOf()) : E_FAIL;
+  HRESULT hr = async_op ? async_op->GetResults(&face_detector) : E_FAIL;
   if (FAILED(hr)) {
     DLOG(ERROR) << "GetResults failed: "
                 << logging::SystemErrorCodeToString(hr);
