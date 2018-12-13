@@ -62,7 +62,7 @@ class CONTENT_EXPORT VideoTrackAdapterSettings {
   double max_aspect_ratio_;
   // A |max_frame_rate| of zero is used to signal that no frame-rate
   // adjustment is necessary.
-  // TODO(guidou): Change this to base::Optional. http://crbug.com/734528
+  // TODO(guidou): Change this to base::Optional. https://crbug.com/734528
   double max_frame_rate_;
 };
 
@@ -78,7 +78,7 @@ class CONTENT_EXPORT VideoTrackAdapterSettings {
 class VideoTrackAdapter
     : public base::RefCountedThreadSafe<VideoTrackAdapter> {
  public:
-  typedef base::Callback<void(bool mute_state)> OnMutedCallback;
+  using OnMutedCallback = base::Callback<void(bool mute_state)>;
 
   explicit VideoTrackAdapter(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
@@ -102,7 +102,7 @@ class VideoTrackAdapter
                         base::TimeTicks estimated_capture_time);
 
   base::SingleThreadTaskRunner* io_task_runner() const {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return io_task_runner_.get();
   }
 
@@ -148,7 +148,7 @@ class VideoTrackAdapter
                                uint64_t old_frame_counter_snapshot);
 
   // |thread_checker_| is bound to the main render thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
@@ -160,8 +160,7 @@ class VideoTrackAdapter
   // render thread but operates on the IO-thread. It does the resolution
   // adaptation and delivers frames to all registered tracks on the IO-thread.
   class VideoFrameResolutionAdapter;
-  typedef std::vector<scoped_refptr<VideoFrameResolutionAdapter> >
-      FrameAdapters;
+  using FrameAdapters = std::vector<scoped_refptr<VideoFrameResolutionAdapter>>;
   FrameAdapters adapters_;
 
   // Set to true if frame monitoring has been started. It is only accessed on

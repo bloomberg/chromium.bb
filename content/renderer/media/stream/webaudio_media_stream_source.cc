@@ -27,7 +27,7 @@ WebAudioMediaStreamSource::~WebAudioMediaStreamSource() {
 
 void WebAudioMediaStreamSource::SetFormat(size_t number_of_channels,
                                           float sample_rate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "WebAudio media stream source changed format to: channels="
           << number_of_channels << ", sample_rate=" << sample_rate;
 
@@ -42,7 +42,7 @@ void WebAudioMediaStreamSource::SetFormat(size_t number_of_channels,
   // running on.
   //
   // TODO(miu): Re-evaluate whether this is needed. For now (this refactoring),
-  // I did not want to change behavior. http://crbug.com/577874
+  // I did not want to change behavior. https://crbug.com/577874
   fifo_.Reset(sample_rate / 100);
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 channel_layout, sample_rate,
@@ -56,7 +56,7 @@ void WebAudioMediaStreamSource::SetFormat(size_t number_of_channels,
 }
 
 bool WebAudioMediaStreamSource::EnsureSourceIsStarted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (is_registered_consumer_)
     return true;
   if (blink_source_.IsNull() || !blink_source_.RequiresAudioConsumer())
@@ -68,7 +68,7 @@ bool WebAudioMediaStreamSource::EnsureSourceIsStarted() {
 }
 
 void WebAudioMediaStreamSource::EnsureSourceIsStopped() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!is_registered_consumer_)
     return;
   is_registered_consumer_ = false;
@@ -84,7 +84,7 @@ void WebAudioMediaStreamSource::ConsumeAudio(
     size_t number_of_frames) {
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
-  // audio/video sync.  http://crbug.com/335335
+  // audio/video sync.  https://crbug.com/335335
   current_reference_time_ = base::TimeTicks::Now();
 
   wrapper_bus_->set_frames(number_of_frames);

@@ -124,7 +124,7 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
       // underlying implementation results in failed source creation since
       // stopping a source with StopSource() can have side effects that affect
       // sources created after that StopSource() call, but before the actual
-      // stop takes place. See http://crbug.com/778039.
+      // stop takes place. See https://crbug.com/778039.
       StopForRestart(base::BindOnce(&MediaStreamVideoSource::DidStopSource,
                                     weak_factory_.GetWeakPtr(),
                                     std::move(callback)));

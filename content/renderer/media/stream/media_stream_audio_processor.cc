@@ -128,21 +128,21 @@ class MediaStreamAudioBus {
       : bus_(media::AudioBus::Create(channels, frames)),
         channel_ptrs_(new float*[channels]) {
     // May be created in the main render thread and used in the audio threads.
-    thread_checker_.DetachFromThread();
+    DETACH_FROM_THREAD(thread_checker_);
   }
 
   void ReattachThreadChecker() {
-    thread_checker_.DetachFromThread();
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DETACH_FROM_THREAD(thread_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   }
 
   media::AudioBus* bus() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return bus_.get();
   }
 
   float* const* channel_ptrs() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     for (int i = 0; i < bus_->channels(); ++i) {
       channel_ptrs_[i] = bus_->channel(i);
     }
@@ -150,7 +150,7 @@ class MediaStreamAudioBus {
   }
 
  private:
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   std::unique_ptr<media::AudioBus> bus_;
   std::unique_ptr<float* []> channel_ptrs_;
 };
@@ -189,17 +189,17 @@ class MediaStreamAudioFifo {
     }
 
     // May be created in the main render thread and used in the audio threads.
-    thread_checker_.DetachFromThread();
+    DETACH_FROM_THREAD(thread_checker_);
   }
 
   void ReattachThreadChecker() {
-    thread_checker_.DetachFromThread();
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DETACH_FROM_THREAD(thread_checker_);
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     destination_->ReattachThreadChecker();
   }
 
   void Push(const media::AudioBus& source, base::TimeDelta audio_delay) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK_EQ(source.channels(), source_channels_);
     DCHECK_EQ(source.frames(), source_frames_);
 
@@ -232,7 +232,7 @@ class MediaStreamAudioFifo {
   // consumed, and otherwise false.
   bool Consume(MediaStreamAudioBus** destination,
                base::TimeDelta* audio_delay) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
     if (fifo_) {
       if (fifo_->frames() < destination_->bus()->frames())
@@ -256,7 +256,7 @@ class MediaStreamAudioFifo {
   }
 
  private:
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   const int source_channels_;  // For a DCHECK.
   const int source_frames_;  // For a DCHECK.
   const int sample_rate_;
@@ -286,8 +286,8 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
       aec_dump_message_filter_(AecDumpMessageFilter::Get()),
       stopped_(false) {
   DCHECK(main_thread_runner_);
-  capture_thread_checker_.DetachFromThread();
-  render_thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(capture_thread_checker_);
+  DETACH_FROM_THREAD(render_thread_checker_);
 
   InitializeAudioProcessingModule(properties);
 
@@ -317,13 +317,13 @@ void MediaStreamAudioProcessor::OnCaptureFormatChanged(
 
   // Reset the |capture_thread_checker_| since the capture data will come from
   // a new capture thread.
-  capture_thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(capture_thread_checker_);
 }
 
 void MediaStreamAudioProcessor::PushCaptureData(
     const media::AudioBus& audio_source,
     base::TimeDelta capture_delay) {
-  DCHECK(capture_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(capture_thread_checker_);
   TRACE_EVENT1("audio", "MediaStreamAudioProcessor::PushCaptureData",
                "delay (ms)", capture_delay.InMillisecondsF());
   capture_fifo_->Push(audio_source, capture_delay);
@@ -335,7 +335,7 @@ bool MediaStreamAudioProcessor::ProcessAndConsumeData(
     media::AudioBus** processed_data,
     base::TimeDelta* capture_delay,
     int* new_volume) {
-  DCHECK(capture_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(capture_thread_checker_);
   DCHECK(processed_data);
   DCHECK(capture_delay);
   DCHECK(new_volume);
@@ -477,7 +477,7 @@ bool MediaStreamAudioProcessor::WouldModifyAudio(
 void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                               int sample_rate,
                                               int audio_delay_milliseconds) {
-  DCHECK(render_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
   DCHECK_GE(audio_bus->channels(), 1);
   DCHECK_LE(audio_bus->channels(), 2);
   int frames_per_10_ms = sample_rate / 100;
@@ -517,12 +517,12 @@ void MediaStreamAudioProcessor::OnPlayoutDataSourceChanged() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   // There is no need to hold a lock here since the caller guarantees that
   // there is no more OnPlayoutData() callback on the render thread.
-  render_thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(render_thread_checker_);
 }
 
 void MediaStreamAudioProcessor::OnRenderThreadChanged() {
-  render_thread_checker_.DetachFromThread();
-  DCHECK(render_thread_checker_.CalledOnValidThread());
+  DETACH_FROM_THREAD(render_thread_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
 }
 
 webrtc::AudioProcessorInterface::AudioProcessorStatistics
@@ -764,7 +764,7 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
                                            bool key_pressed,
                                            float* const* output_ptrs) {
   DCHECK(audio_processing_);
-  DCHECK(capture_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(capture_thread_checker_);
 
   base::subtle::Atomic32 render_delay_ms =
       base::subtle::Acquire_Load(&render_delay_ms_);

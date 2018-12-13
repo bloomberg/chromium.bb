@@ -111,7 +111,7 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
                       float source_frame_rate);
 
   // Bound to the IO-thread.
-  base::ThreadChecker io_thread_checker_;
+  THREAD_CHECKER(io_thread_checker_);
 
   // The task runner where we will release VideoCaptureDeliverFrameCB
   // registered in AddCallback.
@@ -122,8 +122,8 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   base::TimeDelta last_time_stamp_;
   double keep_frame_counter_;
 
-  typedef std::pair<const MediaStreamVideoTrack*, VideoCaptureDeliverFrameCB>
-      VideoIdCallbackPair;
+  using VideoIdCallbackPair =
+      std::pair<const MediaStreamVideoTrack*, VideoCaptureDeliverFrameCB>;
   std::vector<VideoIdCallbackPair> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameResolutionAdapter);
@@ -138,7 +138,7 @@ VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
       last_time_stamp_(base::TimeDelta::Max()),
       keep_frame_counter_(0.0) {
   DCHECK(renderer_task_runner_.get());
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   CHECK_NE(0, settings_.max_aspect_ratio());
 
   const std::string max_fps_str =
@@ -158,20 +158,20 @@ VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
 
 VideoTrackAdapter::
 VideoFrameResolutionAdapter::~VideoFrameResolutionAdapter() {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   DCHECK(callbacks_.empty());
 }
 
 void VideoTrackAdapter::VideoFrameResolutionAdapter::AddCallback(
     const MediaStreamVideoTrack* track,
     const VideoCaptureDeliverFrameCB& callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   callbacks_.push_back(std::make_pair(track, callback));
 }
 
 void VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveAndReleaseCallback(
     const MediaStreamVideoTrack* track) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   auto it = callbacks_.begin();
   for (; it != callbacks_.end(); ++it) {
     if (it->first == track) {
@@ -193,7 +193,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveAndReleaseCallback(
 std::unique_ptr<VideoCaptureDeliverFrameCB>
 VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveAndGetCallback(
     const MediaStreamVideoTrack* track) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   std::unique_ptr<VideoCaptureDeliverFrameCB> ret;
   for (auto it = callbacks_.begin(); it != callbacks_.end(); ++it) {
     if (it->first == track) {
@@ -212,7 +212,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     const base::TimeTicks& estimated_capture_time,
     bool is_device_rotated) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   if (!frame) {
     DLOG(ERROR) << "Incoming frame is not valid.";
@@ -229,7 +229,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     return;
 
   // TODO(perkj): Allow cropping / scaling of textures once
-  // http://crbug/362521 is fixed.
+  // https://crbug/362521 is fixed.
   if (frame->HasTextures()) {
     DoDeliverFrame(frame, estimated_capture_time);
     return;
@@ -265,19 +265,19 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
 
 bool VideoTrackAdapter::VideoFrameResolutionAdapter::SettingsMatch(
     const VideoTrackAdapterSettings& settings) const {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   return settings_ == settings;
 }
 
 bool VideoTrackAdapter::VideoFrameResolutionAdapter::IsEmpty() const {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   return callbacks_.empty();
 }
 
 void VideoTrackAdapter::VideoFrameResolutionAdapter::DoDeliverFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     const base::TimeTicks& estimated_capture_time) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   for (const auto& callback : callbacks_)
     callback.second.Run(frame, estimated_capture_time);
 }
@@ -285,7 +285,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DoDeliverFrame(
 bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     float source_frame_rate) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   // Do not drop frames if max frame rate hasn't been specified or the source
   // frame rate is known and is lower than max.
@@ -310,7 +310,7 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
   if (delta_ms < kMinTimeInMsBetweenFrames) {
     // We have seen video frames being delivered from camera devices back to
     // back. The simple AR filter for frame rate calculation is too short to
-    // handle that. http://crbug/394315
+    // handle that. https://crbug/394315
     // TODO(perkj): Can we come up with a way to fix the times stamps and the
     // timing when frames are delivered so all frames can be used?
     // The time stamps are generated by Chrome and not the actual device.
@@ -402,7 +402,7 @@ VideoTrackAdapter::~VideoTrackAdapter() {
 void VideoTrackAdapter::AddTrack(const MediaStreamVideoTrack* track,
                                  VideoCaptureDeliverFrameCB frame_callback,
                                  const VideoTrackAdapterSettings& settings) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoTrackAdapter::AddTrackOnIO, this, track,
@@ -430,7 +430,7 @@ void VideoTrackAdapter::AddTrackOnIO(
 }
 
 void VideoTrackAdapter::RemoveTrack(const MediaStreamVideoTrack* track) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VideoTrackAdapter::RemoveTrackOnIO, this, track));
@@ -439,7 +439,7 @@ void VideoTrackAdapter::RemoveTrack(const MediaStreamVideoTrack* track) {
 void VideoTrackAdapter::ReconfigureTrack(
     const MediaStreamVideoTrack* track,
     const VideoTrackAdapterSettings& settings) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoTrackAdapter::ReconfigureTrackOnIO, this,
@@ -449,7 +449,7 @@ void VideoTrackAdapter::ReconfigureTrack(
 void VideoTrackAdapter::StartFrameMonitoring(
     double source_frame_rate,
     const OnMutedCallback& on_muted_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   VideoTrackAdapter::OnMutedCallback bound_on_muted_callback =
       media::BindToCurrentLoop(on_muted_callback);
@@ -461,14 +461,14 @@ void VideoTrackAdapter::StartFrameMonitoring(
 }
 
 void VideoTrackAdapter::StopFrameMonitoring() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VideoTrackAdapter::StopFrameMonitoringOnIO, this));
 }
 
 void VideoTrackAdapter::SetSourceFrameSize(const gfx::Size& source_frame_size) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoTrackAdapter::SetSourceFrameSizeOnIO,
                                 this, source_frame_size));
@@ -610,7 +610,7 @@ void VideoTrackAdapter::DeliverFrameOnIO(
 
   bool is_device_rotated = false;
   // TODO(guidou): Use actual device information instead of this heuristic to
-  // detect frames from rotated devices. http://crbug.com/722748
+  // detect frames from rotated devices. https://crbug.com/722748
   if (source_frame_size_ &&
       frame->natural_size().width() == source_frame_size_->height() &&
       frame->natural_size().height() == source_frame_size_->width()) {

@@ -47,7 +47,7 @@ class CONTENT_EXPORT ExternalMediaStreamAudioSource final
 
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // True once the source has been started successfully.
   bool was_started_;

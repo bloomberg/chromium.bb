@@ -76,7 +76,7 @@ void MediaStreamDeviceObserver::OnDeviceStopped(
     const std::string& label,
     const MediaStreamDevice& device) {
   DVLOG(1) << __func__ << " label=" << label << " device_id=" << device.id;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end()) {
@@ -96,8 +96,8 @@ void MediaStreamDeviceObserver::OnDeviceStopped(
   // |it| could have already been invalidated in the function call above. So we
   // need to check if |label| is still in |label_stream_map_| again.
   // Note: this is a quick fix to the crash caused by erasing the invalidated
-  // iterator from |label_stream_map_| (crbug.com/616884). Future work needs to
-  // be done to resolve this re-entrancy issue.
+  // iterator from |label_stream_map_| (https://crbug.com/616884). Future work
+  // needs to be done to resolve this re-entrancy issue.
   it = label_stream_map_.find(label);
   if (it == label_stream_map_.end())
     return;
@@ -112,7 +112,7 @@ void MediaStreamDeviceObserver::OnDeviceChanged(
     const MediaStreamDevice& new_device) {
   DVLOG(1) << __func__ << " old_device_id=" << old_device.id
            << " new_device_id=" << new_device.id;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end()) {
@@ -149,7 +149,7 @@ void MediaStreamDeviceObserver::AddStream(
     const MediaStreamDevices& audio_devices,
     const MediaStreamDevices& video_devices,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   Stream stream;
   stream.handler = event_handler;
@@ -161,7 +161,7 @@ void MediaStreamDeviceObserver::AddStream(
 
 void MediaStreamDeviceObserver::AddStream(const std::string& label,
                                           const MediaStreamDevice& device) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   Stream stream;
   if (IsAudioInputMediaType(device.type))
@@ -175,7 +175,7 @@ void MediaStreamDeviceObserver::AddStream(const std::string& label,
 }
 
 bool MediaStreamDeviceObserver::RemoveStream(const std::string& label) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end())
@@ -187,7 +187,7 @@ bool MediaStreamDeviceObserver::RemoveStream(const std::string& label) {
 
 void MediaStreamDeviceObserver::RemoveStreamDevice(
     const MediaStreamDevice& device) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Remove |device| from all streams in |label_stream_map_|.
   bool device_found = false;
@@ -210,7 +210,7 @@ void MediaStreamDeviceObserver::RemoveStreamDevice(
 }
 
 int MediaStreamDeviceObserver::audio_session_id(const std::string& label) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end() || it->second.audio_devices.empty())
@@ -220,7 +220,7 @@ int MediaStreamDeviceObserver::audio_session_id(const std::string& label) {
 }
 
 int MediaStreamDeviceObserver::video_session_id(const std::string& label) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end() || it->second.video_devices.empty())

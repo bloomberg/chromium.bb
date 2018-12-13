@@ -1237,7 +1237,7 @@ TEST_F(UserMediaClientImplTest, ApplyConstraintsVideoDeviceTwoTracks) {
   // It fails, because the source is open in native 20Hz mode and it does not
   // support reconfiguration when more than one track is connected.
   // TODO(guidou): Allow reconfiguring sources with more than one track.
-  // http://crbug.com/768205.
+  // https://crbug.com/768205.
   ApplyConstraintsVideoMode(web_track, 800, 600, 30.0);
   CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track, 800, 600, 20.0);
   CheckVideoSourceAndTrack(source, 1024, 768, 20.0, web_track2, 1024, 768,

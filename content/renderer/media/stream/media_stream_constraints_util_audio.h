@@ -147,7 +147,7 @@ using AudioDeviceCaptureCapabilities =
 //    audio-processing properties for which no explicit value is provided in
 //    their corresponding constraints.
 // TODO(guidou): Add support for other standard constraints such as sampleRate,
-// channelCount and groupId. http://crbug.com/731170
+// channelCount and groupId. https://crbug.com/731170
 AudioCaptureSettings CONTENT_EXPORT
 SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
                            const blink::WebMediaConstraints& constraints,
@@ -159,7 +159,7 @@ SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
 // The current implementation rejects constraints that would result in settings
 // different from those of |source| because it is currently not possible to
 // reconfigure audio tracks or sources.
-// TODO(guidou): Allow reconfiguring audio tracks. http://crbug.com/796964
+// TODO(guidou): Allow reconfiguring audio tracks. https://crbug.com/796964
 AudioCaptureSettings CONTENT_EXPORT
 SelectSettingsAudioCapture(MediaStreamAudioSource* source,
                            const blink::WebMediaConstraints& constraints);

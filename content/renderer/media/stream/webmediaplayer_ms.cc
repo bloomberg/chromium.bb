@@ -87,7 +87,7 @@ class WebMediaPlayerMS::FrameDeliverer {
         media_task_runner_(media_task_runner),
         weak_factory_for_pool_(this),
         weak_factory_(this) {
-    io_thread_checker_.DetachFromThread();
+    DETACH_FROM_THREAD(io_thread_checker_);
 
     if (gpu_factories && gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames(
                              true /* for_media_stream */)) {
@@ -97,7 +97,7 @@ class WebMediaPlayerMS::FrameDeliverer {
   }
 
   ~FrameDeliverer() {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     if (gpu_memory_buffer_pool_) {
       DropCurrentPoolTasks();
       media_task_runner_->DeleteSoon(FROM_HERE,
@@ -106,7 +106,7 @@ class WebMediaPlayerMS::FrameDeliverer {
   }
 
   void OnVideoFrame(scoped_refptr<media::VideoFrame> frame) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
 // On Android, stop passing frames.
 #if defined(OS_ANDROID)
@@ -156,7 +156,7 @@ class WebMediaPlayerMS::FrameDeliverer {
   }
 
   void SetRenderFrameSuspended(bool render_frame_suspended) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     render_frame_suspended_ = render_frame_suspended;
   }
 
@@ -169,7 +169,7 @@ class WebMediaPlayerMS::FrameDeliverer {
   friend class WebMediaPlayerMS;
 
   void EnqueueFrame(const scoped_refptr<media::VideoFrame>& frame) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
     {
       bool tracing_enabled = false;
@@ -190,7 +190,7 @@ class WebMediaPlayerMS::FrameDeliverer {
   }
 
   void DropCurrentPoolTasks() {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     DCHECK(gpu_memory_buffer_pool_);
 
     if (!weak_factory_for_pool_.HasWeakPtrs())
@@ -217,7 +217,7 @@ class WebMediaPlayerMS::FrameDeliverer {
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
-  base::ThreadChecker io_thread_checker_;
+  THREAD_CHECKER(io_thread_checker_);
 
   base::WeakPtrFactory<FrameDeliverer> weak_factory_for_pool_;
   base::WeakPtrFactory<FrameDeliverer> weak_factory_;
@@ -274,7 +274,7 @@ WebMediaPlayerMS::WebMediaPlayerMS(
 
 WebMediaPlayerMS::~WebMediaPlayerMS() {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!web_stream_.IsNull())
     web_stream_.RemoveObserver(this);
@@ -311,7 +311,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
     const blink::WebMediaPlayerSource& source,
     CorsMode /*cors_mode*/) {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // TODO(acolwell): Change this to DCHECK_EQ(load_type, LoadTypeMediaStream)
   // once Blink-side changes land.
@@ -390,7 +390,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
   // When associated with an <audio> element, we don't want to wait for the
   // first video fram to become available as we do for <video> elements
   // (<audio> elements can also be assigned video tracks).
-  // For more details, see crbug.com/738379
+  // For more details, see https://crbug.com/738379
   if (audio_renderer_ &&
       (client_->IsAudioElement() || !video_frame_provider_)) {
     // This is audio-only mode.
@@ -404,7 +404,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 void WebMediaPlayerMS::OnWebLayerUpdated() {}
 
 void WebMediaPlayerMS::RegisterContentsLayer(cc::Layer* layer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(bridge_);
 
   bridge_->SetContentsOpaque(opaque_);
@@ -412,7 +412,7 @@ void WebMediaPlayerMS::RegisterContentsLayer(cc::Layer* layer) {
 }
 
 void WebMediaPlayerMS::UnregisterContentsLayer(cc::Layer* layer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // |client_| will unregister its cc::Layer if given a nullptr.
   client_->SetCcLayer(nullptr);
 }
@@ -438,7 +438,7 @@ void WebMediaPlayerMS::TrackRemoved(const blink::WebMediaStreamTrack& track) {
 }
 
 void WebMediaPlayerMS::ActiveStateChanged(bool is_active) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // The case when the stream becomes active is handled by TrackAdded().
   if (is_active)
     return;
@@ -458,7 +458,7 @@ void WebMediaPlayerMS::ActiveStateChanged(bool is_active) {
 }
 
 void WebMediaPlayerMS::Reload() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (web_stream_.IsNull())
     return;
 
@@ -467,7 +467,7 @@ void WebMediaPlayerMS::Reload() {
 }
 
 void WebMediaPlayerMS::ReloadVideo() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!web_stream_.IsNull());
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks =
       web_stream_.VideoTracks();
@@ -513,7 +513,7 @@ void WebMediaPlayerMS::ReloadVideo() {
 }
 
 void WebMediaPlayerMS::ReloadAudio() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!web_stream_.IsNull());
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
   if (!frame)
@@ -563,7 +563,7 @@ void WebMediaPlayerMS::ReloadAudio() {
 
 void WebMediaPlayerMS::Play() {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
   if (!paused_)
@@ -586,7 +586,7 @@ void WebMediaPlayerMS::Play() {
   if (HasAudio() || HasVideo()) {
     // TODO(perkj, magjed): We use OneShot focus type here so that it takes
     // audio focus once it starts, and then will not respond to further audio
-    // focus changes. See http://crbug.com/596516 for more details.
+    // focus changes. See https://crbug.com/596516 for more details.
     delegate_->DidPlay(delegate_id_, HasVideo(), HasAudio(),
                        media::MediaContentType::OneShot);
   }
@@ -597,7 +597,7 @@ void WebMediaPlayerMS::Play() {
 
 void WebMediaPlayerMS::Pause() {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   should_play_upon_shown_ = false;
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
@@ -620,16 +620,16 @@ void WebMediaPlayerMS::Pause() {
 }
 
 void WebMediaPlayerMS::Seek(double seconds) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void WebMediaPlayerMS::SetRate(double rate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void WebMediaPlayerMS::SetVolume(double volume) {
   DVLOG(1) << __func__ << "(volume=" << volume << ")";
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   volume_ = volume;
   if (audio_renderer_.get())
     audio_renderer_->SetVolume(volume_ * volume_multiplier_);
@@ -680,7 +680,7 @@ void WebMediaPlayerMS::SetSinkId(
     const blink::WebString& sink_id,
     std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   media::OutputDeviceStatusCB callback =
       media::ConvertToOutputDeviceStatusCB(std::move(web_callback));
   if (audio_renderer_) {
@@ -691,21 +691,21 @@ void WebMediaPlayerMS::SetSinkId(
 }
 
 void WebMediaPlayerMS::SetPreload(WebMediaPlayer::Preload preload) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 bool WebMediaPlayerMS::HasVideo() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return (video_frame_provider_.get() != nullptr);
 }
 
 bool WebMediaPlayerMS::HasAudio() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return (audio_renderer_.get() != nullptr);
 }
 
 blink::WebSize WebMediaPlayerMS::NaturalSize() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!video_frame_provider_)
     return blink::WebSize();
 
@@ -718,7 +718,7 @@ blink::WebSize WebMediaPlayerMS::NaturalSize() const {
 }
 
 blink::WebSize WebMediaPlayerMS::VisibleRect() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<media::VideoFrame> video_frame =
       compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   if (!video_frame)
@@ -733,22 +733,22 @@ blink::WebSize WebMediaPlayerMS::VisibleRect() const {
 }
 
 bool WebMediaPlayerMS::Paused() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return paused_;
 }
 
 bool WebMediaPlayerMS::Seeking() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return false;
 }
 
 double WebMediaPlayerMS::Duration() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return std::numeric_limits<double>::infinity();
 }
 
 double WebMediaPlayerMS::CurrentTime() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   const base::TimeDelta current_time = compositor_->GetCurrentTime();
   if (current_time.ToInternalValue() != 0)
     return current_time.InSecondsF();
@@ -759,13 +759,13 @@ double WebMediaPlayerMS::CurrentTime() const {
 
 blink::WebMediaPlayer::NetworkState WebMediaPlayerMS::GetNetworkState() const {
   DVLOG(1) << __func__ << ", state:" << network_state_;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return network_state_;
 }
 
 blink::WebMediaPlayer::ReadyState WebMediaPlayerMS::GetReadyState() const {
   DVLOG(1) << __func__ << ", state:" << ready_state_;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return ready_state_;
 }
 
@@ -779,17 +779,17 @@ blink::WebString WebMediaPlayerMS::GetErrorMessage() const {
 }
 
 blink::WebTimeRanges WebMediaPlayerMS::Buffered() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return buffered_;
 }
 
 blink::WebTimeRanges WebMediaPlayerMS::Seekable() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return blink::WebTimeRanges();
 }
 
 bool WebMediaPlayerMS::DidLoadingProgress() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return true;
 }
 
@@ -799,7 +799,7 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
                              int already_uploaded_id,
                              VideoFrameUploadMetadata* out_metadata) {
   DVLOG(3) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const scoped_refptr<media::VideoFrame> frame =
       compositor_->GetCurrentFrameWithoutUpdatingStatistics();
@@ -821,7 +821,7 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
 }
 
 bool WebMediaPlayerMS::WouldTaintOrigin() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return false;
 }
 
@@ -830,29 +830,29 @@ double WebMediaPlayerMS::MediaTimeForTimeValue(double timeValue) const {
 }
 
 unsigned WebMediaPlayerMS::DecodedFrameCount() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return compositor_->total_frame_count();
 }
 
 unsigned WebMediaPlayerMS::DroppedFrameCount() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return compositor_->dropped_frame_count();
 }
 
 uint64_t WebMediaPlayerMS::AudioDecodedByteCount() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
   return 0;
 }
 
 uint64_t WebMediaPlayerMS::VideoDecodedByteCount() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
   return 0;
 }
 
 void WebMediaPlayerMS::OnFrameHidden() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // This method is called when the RenderFrame is sent to background or
   // suspended. During undoable tab closures OnHidden() may be called back to
   // back, so we can't rely on |render_frame_suspended_| being false here.
@@ -872,7 +872,7 @@ void WebMediaPlayerMS::OnFrameHidden() {
 }
 
 void WebMediaPlayerMS::OnFrameClosed() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
 // On Android, pause the video completely for this time period.
 #if defined(OS_ANDROID)
@@ -893,7 +893,7 @@ void WebMediaPlayerMS::OnFrameClosed() {
 }
 
 void WebMediaPlayerMS::OnFrameShown() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (frame_deliverer_) {
     io_task_runner_->PostTask(
@@ -915,7 +915,7 @@ void WebMediaPlayerMS::OnIdleTimeout() {}
 void WebMediaPlayerMS::OnPlay() {
   // TODO(perkj, magjed): It's not clear how WebRTC should work with an
   // MediaSession, until these issues are resolved, disable session controls.
-  // http://crbug.com/595297.
+  // https://crbug.com/595297.
 }
 
 void WebMediaPlayerMS::OnPause() {
@@ -965,7 +965,7 @@ bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
     int already_uploaded_id,
     VideoFrameUploadMetadata* out_metadata) {
   TRACE_EVENT0("media", "copyVideoTextureToPlatformTexture");
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   scoped_refptr<media::VideoFrame> video_frame =
       compositor_->GetCurrentFrameWithoutUpdatingStatistics();
@@ -1000,7 +1000,7 @@ bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(
     int already_uploaded_id,
     VideoFrameUploadMetadata* out_metadata) {
   TRACE_EVENT0("media", "copyVideoYUVDataToPlatformTexture");
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   scoped_refptr<media::VideoFrame> video_frame =
       compositor_->GetCurrentFrameWithoutUpdatingStatistics();
@@ -1038,7 +1038,7 @@ bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
                                     bool flip_y,
                                     bool premultiply_alpha) {
   TRACE_EVENT0("media", "texImageImpl");
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const scoped_refptr<media::VideoFrame> video_frame =
       compositor_->GetCurrentFrameWithoutUpdatingStatistics();
@@ -1110,7 +1110,7 @@ void WebMediaPlayerMS::ActivateSurfaceLayerForVideo() {
 void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
                                             bool is_opaque) {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   OnRotationChanged(video_rotation);
   OnOpacityChanged(is_opaque);
@@ -1131,7 +1131,7 @@ void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
 
 void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   opaque_ = is_opaque;
   if (!bridge_) {
@@ -1146,7 +1146,7 @@ void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
 
 void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation) {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   video_rotation_ = video_rotation;
 
   if (!bridge_) {
@@ -1168,25 +1168,25 @@ bool WebMediaPlayerMS::IsInPictureInPicture() const {
 
 void WebMediaPlayerMS::RepaintInternal() {
   DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   get_client()->Repaint();
 }
 
 void WebMediaPlayerMS::OnSourceError() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SetNetworkState(WebMediaPlayer::kNetworkStateFormatError);
   RepaintInternal();
 }
 
 void WebMediaPlayerMS::SetNetworkState(WebMediaPlayer::NetworkState state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   network_state_ = state;
   // Always notify to ensure client has the latest value.
   get_client()->NetworkStateChanged();
 }
 
 void WebMediaPlayerMS::SetReadyState(WebMediaPlayer::ReadyState state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ready_state_ = state;
   // Always notify to ensure client has the latest value.
   get_client()->ReadyStateChanged();
@@ -1198,7 +1198,7 @@ WebMediaPlayerMS::GetPaintCanvasVideoRenderer() {
 }
 
 void WebMediaPlayerMS::ResetCanvasCache() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   video_renderer_.ResetCache();
 }
 

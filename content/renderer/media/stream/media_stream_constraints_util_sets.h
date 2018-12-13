@@ -102,7 +102,7 @@ class NumericRangeSet {
 // is application defined (e.g., it could be all possible boolean values, all
 // possible strings of length N, or anything that suits a particular
 // application).
-// TODO(guidou): Rename this class. http://crbug.com/731166
+// TODO(guidou): Rename this class. https://crbug.com/731166
 template <typename T>
 class DiscreteSet {
  public:

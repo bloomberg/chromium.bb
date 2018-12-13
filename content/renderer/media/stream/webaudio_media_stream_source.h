@@ -51,7 +51,7 @@ class WebAudioMediaStreamSource final
 
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // True while this WebAudioMediaStreamSource is registered with
   // |blink_source_| and is consuming audio.

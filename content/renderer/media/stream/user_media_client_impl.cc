@@ -250,7 +250,7 @@ void UserMediaClientImpl::CancelUserMediaRequest(
     const blink::WebUserMediaRequest& web_request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   {
-    // TODO(guidou): Remove this conditional logging. http://crbug.com/764293
+    // TODO(guidou): Remove this conditional logging. https://crbug.com/764293
     UserMediaRequest* request = user_media_processor_->CurrentRequest();
     if (request && request->web_request == web_request) {
       WebRtcLogMessage(base::StringPrintf(

@@ -78,7 +78,7 @@ class CONTENT_EXPORT UserMediaProcessor
   // It can be assumed that the output of CurrentRequest() remains the same
   // during the execution of a task on the main thread unless ProcessRequest or
   // DeleteWebRequest are invoked.
-  // TODO(guidou): Remove this method. http://crbug.com/764293
+  // TODO(guidou): Remove this method. https://crbug.com/764293
   UserMediaRequest* CurrentRequest();
 
   // Starts processing |request| in order to create a new MediaStream. When
@@ -93,7 +93,7 @@ class CONTENT_EXPORT UserMediaProcessor
   // false.
   // TODO(guidou): Make this method private and replace with a public
   // CancelRequest() method that deletes the request only if it has not been
-  // generated yet. http://crbug.com/764293
+  // generated yet. https://crbug.com/764293
   bool DeleteWebRequest(const blink::WebUserMediaRequest& web_request);
 
   // Stops processing the current request, if any, and stops all sources
@@ -132,7 +132,7 @@ class CONTENT_EXPORT UserMediaProcessor
   // These are virtual for test purposes.
   // The caller takes ownership of the returned pointers.
   // TODO(guidou): return std::unique_ptr to make ownership clearer.
-  // http://crbug.com/764293
+  // https://crbug.com/764293
   virtual MediaStreamAudioSource* CreateAudioSource(
       const MediaStreamDevice& device,
       const MediaStreamSource::ConstraintsCallback& source_ready);
@@ -146,7 +146,7 @@ class CONTENT_EXPORT UserMediaProcessor
 
  private:
   class RequestInfo;
-  typedef std::vector<blink::WebMediaStreamSource> LocalStreamSources;
+  using LocalStreamSources = std::vector<blink::WebMediaStreamSource>;
 
   void OnStreamGenerated(int request_id,
                          MediaStreamRequestResult result,

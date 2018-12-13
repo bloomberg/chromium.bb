@@ -56,7 +56,7 @@ class CONTENT_EXPORT MediaStreamAudioTrack : public MediaStreamTrack {
   // TODO(tommi): This method appears to only be used by Pepper and in fact
   // does not appear to be necessary there.  We should remove it since it adds
   // to the complexity of all types of audio tracks+source implementations.
-  // http://crbug.com/577874
+  // https://crbug.com/577874
   media::AudioParameters GetOutputFormat() const;
 
   // Halts the flow of audio data from the source (and to the sinks), and then
@@ -95,7 +95,7 @@ class CONTENT_EXPORT MediaStreamAudioTrack : public MediaStreamTrack {
  private:
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Callback provided to Start() which is run when the audio flow must halt.
   base::Closure stop_callback_;

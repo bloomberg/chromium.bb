@@ -61,7 +61,7 @@ class CONTENT_EXPORT LocalMediaStreamAudioSource
 
   // In debug builds, check that all methods that could cause object graph
   // or data flow changes are being called on the main thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(LocalMediaStreamAudioSource);
 };

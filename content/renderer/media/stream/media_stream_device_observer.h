@@ -83,9 +83,9 @@ class CONTENT_EXPORT MediaStreamDeviceObserver
   mojo::Binding<mojom::MediaStreamDeviceObserver> binding_;
 
   // Used for DCHECKs so methods calls won't execute in the wrong thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
-  typedef std::map<std::string, Stream> LabelStreamMap;
+  using LabelStreamMap = std::map<std::string, Stream>;
   LabelStreamMap label_stream_map_;
 
   service_manager::BinderRegistry registry_;

@@ -168,7 +168,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   // Used for DCHECKs to ensure method calls executed in the correct thread,
   // which is renderer main thread in this class.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   const scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner_;

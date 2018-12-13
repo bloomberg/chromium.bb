@@ -22,7 +22,7 @@ MediaStreamAudioTrack::MediaStreamAudioTrack(bool is_local_track)
 }
 
 MediaStreamAudioTrack::~MediaStreamAudioTrack() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << "MediaStreamAudioTrack@" << this << " is being destroyed.";
   Stop();
 }
@@ -38,7 +38,7 @@ MediaStreamAudioTrack* MediaStreamAudioTrack::From(
 }
 
 void MediaStreamAudioTrack::AddSink(MediaStreamAudioSink* sink) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   DVLOG(1) << "Adding MediaStreamAudioSink@" << sink
            << " to MediaStreamAudioTrack@" << this << '.';
@@ -55,7 +55,7 @@ void MediaStreamAudioTrack::AddSink(MediaStreamAudioSink* sink) {
 }
 
 void MediaStreamAudioTrack::RemoveSink(MediaStreamAudioSink* sink) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   deliverer_.RemoveConsumer(sink);
   DVLOG(1) << "Removed MediaStreamAudioSink@" << sink
            << " from MediaStreamAudioTrack@" << this << '.';
@@ -66,7 +66,7 @@ media::AudioParameters MediaStreamAudioTrack::GetOutputFormat() const {
 }
 
 void MediaStreamAudioTrack::SetEnabled(bool enabled) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << "MediaStreamAudioTrack@" << this << "::SetEnabled("
            << (enabled ? 'Y' : 'N') << ')';
 
@@ -83,7 +83,7 @@ void MediaStreamAudioTrack::SetEnabled(bool enabled) {
 
 void MediaStreamAudioTrack::SetContentHint(
     blink::WebMediaStreamTrack::ContentHintType content_hint) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   std::vector<MediaStreamAudioSink*> sinks_to_notify;
   deliverer_.GetConsumerList(&sinks_to_notify);
@@ -96,7 +96,7 @@ void* MediaStreamAudioTrack::GetClassIdentifier() const {
 }
 
 void MediaStreamAudioTrack::Start(const base::Closure& stop_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!stop_callback.is_null());
   DCHECK(stop_callback_.is_null());
   DVLOG(1) << "Starting MediaStreamAudioTrack@" << this << '.';
@@ -104,7 +104,7 @@ void MediaStreamAudioTrack::Start(const base::Closure& stop_callback) {
 }
 
 void MediaStreamAudioTrack::StopAndNotify(base::OnceClosure callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << "Stopping MediaStreamAudioTrack@" << this << '.';
 
   if (!stop_callback_.is_null())

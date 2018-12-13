@@ -32,17 +32,17 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
       : repaint_cb_(repaint_cb),
         state_(STOPPED),
         frame_size_(kMinFrameSize, kMinFrameSize) {
-    io_thread_checker_.DetachFromThread();
+    DETACH_FROM_THREAD(io_thread_checker_);
   }
 
   ~FrameDeliverer() {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     DCHECK(state_ == STARTED || state_ == PAUSED) << state_;
   }
 
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
                     base::TimeTicks /*current_time*/) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     DCHECK(frame);
     TRACE_EVENT_INSTANT1("webrtc",
                          "MediaStreamVideoRendererSink::"
@@ -58,7 +58,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
   }
 
   void RenderEndOfStream() {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     // This is necessary to make sure audio can play if the video tag src is a
     // MediaStream video track that has been rejected or ended. It also ensure
     // that the renderer doesn't hold a reference to a real video frame if no
@@ -76,19 +76,19 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
   }
 
   void Start() {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     DCHECK_EQ(state_, STOPPED);
     state_ = STARTED;
   }
 
   void Resume() {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     if (state_ == PAUSED)
       state_ = STARTED;
   }
 
   void Pause() {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     if (state_ == STARTED)
       state_ = PAUSED;
   }
@@ -101,7 +101,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
   gfx::Size frame_size_;
 
   // Used for DCHECKs to ensure method calls are executed on the correct thread.
-  base::ThreadChecker io_thread_checker_;
+  THREAD_CHECKER(io_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
@@ -119,7 +119,7 @@ MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
 MediaStreamVideoRendererSink::~MediaStreamVideoRendererSink() {}
 
 void MediaStreamVideoRendererSink::Start() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
   frame_deliverer_.reset(
       new MediaStreamVideoRendererSink::FrameDeliverer(repaint_cb_));
@@ -147,7 +147,7 @@ void MediaStreamVideoRendererSink::Start() {
 }
 
 void MediaStreamVideoRendererSink::Stop() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
   MediaStreamVideoSink::DisconnectFromTrack();
   if (frame_deliverer_)
@@ -155,7 +155,7 @@ void MediaStreamVideoRendererSink::Stop() {
 }
 
 void MediaStreamVideoRendererSink::Resume() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   if (!frame_deliverer_)
     return;
 
@@ -165,7 +165,7 @@ void MediaStreamVideoRendererSink::Resume() {
 }
 
 void MediaStreamVideoRendererSink::Pause() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   if (!frame_deliverer_)
     return;
 
@@ -176,7 +176,7 @@ void MediaStreamVideoRendererSink::Pause() {
 
 void MediaStreamVideoRendererSink::OnReadyStateChanged(
     blink::WebMediaStreamSource::ReadyState state) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   if (state == blink::WebMediaStreamSource::kReadyStateEnded &&
       frame_deliverer_) {
     io_task_runner_->PostTask(
@@ -187,7 +187,7 @@ void MediaStreamVideoRendererSink::OnReadyStateChanged(
 
 MediaStreamVideoRendererSink::State
 MediaStreamVideoRendererSink::GetStateForTesting() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   if (!frame_deliverer_)
     return STOPPED;
   return frame_deliverer_->state_;

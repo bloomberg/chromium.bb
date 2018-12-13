@@ -20,12 +20,12 @@ MediaStreamSource::MediaStreamSource() {
 }
 
 MediaStreamSource::~MediaStreamSource() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(stop_callback_.is_null());
 }
 
 void MediaStreamSource::StopSource() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DoStopSource();
   FinalizeStopSource();
 }
@@ -37,7 +37,7 @@ void MediaStreamSource::FinalizeStopSource() {
 }
 
 void MediaStreamSource::SetSourceMuted(bool is_muted) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Although this change is valid only if the ready state isn't already Ended,
   // there's code further along (like in blink::MediaStreamTrack) which filters
   // that out alredy.
@@ -47,25 +47,25 @@ void MediaStreamSource::SetSourceMuted(bool is_muted) {
 }
 
 void MediaStreamSource::SetDevice(const MediaStreamDevice& device) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   device_ = device;
 }
 
 void MediaStreamSource::SetStopCallback(
     const SourceStoppedCallback& stop_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(stop_callback_.is_null());
   stop_callback_ = stop_callback;
 }
 
 void MediaStreamSource::ResetSourceStoppedCallback() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!stop_callback_.is_null());
   stop_callback_.Reset();
 }
 
 void MediaStreamSource::ChangeSource(const MediaStreamDevice& new_device) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DoChangeSource(new_device);
 }
 

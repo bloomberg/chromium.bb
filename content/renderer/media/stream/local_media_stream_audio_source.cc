@@ -11,9 +11,10 @@
 
 namespace content {
 
-// TODO(crbug.com/638081): Like in ProcessedLocalAudioSource::GetBufferSize(),
-// we should re-evaluate whether Android needs special treatment here. Or,
-// perhaps we should just DCHECK_GT(device...frames_per_buffer, 0)?
+// TODO(https://crbug.com/638081):
+// Like in ProcessedLocalAudioSource::GetBufferSize(), we should re-evaluate
+// whether Android needs special treatment here. Or, perhaps we should just
+// DCHECK_GT(device...frames_per_buffer, 0)?
 #if defined(OS_ANDROID)
 static constexpr int kFallbackAudioLatencyMs = 20;
 #else
@@ -58,7 +59,7 @@ LocalMediaStreamAudioSource::~LocalMediaStreamAudioSource() {
 }
 
 bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (source_)
     return true;
@@ -92,7 +93,7 @@ bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
 }
 
 void LocalMediaStreamAudioSource::EnsureSourceIsStopped() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!source_)
     return;
@@ -117,7 +118,7 @@ void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
   DCHECK(audio_bus);
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
-  // audio/video sync. http://crbug.com/335335
+  // audio/video sync. https://crbug.com/335335
   DeliverDataToTracks(
       *audio_bus, base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(
                                                audio_delay_milliseconds));

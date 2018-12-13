@@ -126,7 +126,7 @@ void ApplyConstraintsProcessor::ProcessVideoDeviceRequest() {
     return;
 
   // TODO(guidou): Support restarting the source even if there is more than
-  // one track in the source. http://crbug.com/768205
+  // one track in the source. https://crbug.com/768205
   if (video_source_->NumTracks() > 1U) {
     FinalizeVideoRequest();
     return;

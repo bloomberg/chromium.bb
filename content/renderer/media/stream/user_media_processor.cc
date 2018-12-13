@@ -324,7 +324,7 @@ class UserMediaProcessor::RequestInfo
 };
 
 // TODO(guidou): Initialize request_result_name_ as a null blink::WebString.
-// http://crbug.com/764293
+// https://crbug.com/764293
 UserMediaProcessor::RequestInfo::RequestInfo(
     std::unique_ptr<UserMediaRequest> request)
     : request_(std::move(request)),
