@@ -1147,6 +1147,8 @@ void NGLineBreaker::HandleOverflow() {
   }
 
   // Let this line overflow.
+  line_info_->SetHasOverflow();
+
   // If there was a break opportunity, the overflow should stop there.
   if (break_before) {
     Rewind(break_before);
