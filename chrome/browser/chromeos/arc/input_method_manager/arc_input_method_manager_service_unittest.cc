@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chromeos/arc/input_method_manager/test_input_method_manager_bridge.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/common/pref_names.h"
@@ -160,67 +161,10 @@ class TestIMEInputContextHandler : public ui::MockIMEInputContextHandler {
 
   ui::InputMethod* GetInputMethod() override { return input_method_; }
 
-  void SendKeyEvent(ui::KeyEvent* event) override {
-    ui::MockIMEInputContextHandler::SendKeyEvent(event);
-    ++send_key_event_call_count_;
-  }
-
-  void Reset() {
-    ui::MockIMEInputContextHandler::Reset();
-    send_key_event_call_count_ = 0;
-  }
-
-  int send_key_event_call_count() const { return send_key_event_call_count_; }
-
  private:
   ui::InputMethod* const input_method_;
 
-  int send_key_event_call_count_ = 0;
-
   DISALLOW_COPY_AND_ASSIGN(TestIMEInputContextHandler);
-};
-
-class TestInputMethodManagerBridge : public ArcInputMethodManagerBridge {
- public:
-  TestInputMethodManagerBridge() = default;
-  ~TestInputMethodManagerBridge() override = default;
-
-  void SendEnableIme(const std::string& ime_id,
-                     bool enable,
-                     EnableImeCallback callback) override {
-    enable_ime_calls_.push_back(std::make_tuple(ime_id, enable));
-    std::move(callback).Run(true);
-  }
-  void SendSwitchImeTo(const std::string& ime_id,
-                       SwitchImeToCallback callback) override {
-    switch_ime_to_calls_.push_back(ime_id);
-    std::move(callback).Run(true);
-  }
-
-  void SendFocus(mojom::InputConnectionPtr connection,
-                 mojom::TextInputStatePtr state) override {
-    ++focus_calls_count_;
-  }
-
-  void SendUpdateTextInputState(mojom::TextInputStatePtr state) override {
-    ++update_text_input_state_calls_count_;
-    last_text_input_state = state.Clone();
-  }
-
-  void SendShowVirtualKeyboard() override {
-    ++show_virtual_keyboard_calls_count_;
-  }
-  void SendHideVirtualKeyboard() override {}
-
-  std::vector<std::tuple<std::string, bool>> enable_ime_calls_;
-  std::vector<std::string> switch_ime_to_calls_;
-  int focus_calls_count_ = 0;
-  int update_text_input_state_calls_count_ = 0;
-  mojom::TextInputStatePtr last_text_input_state;
-  int show_virtual_keyboard_calls_count_ = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManagerBridge);
 };
 
 // TODO(crbug.com/890677): Stop inheriting ash::AshTestBase once ash::Shell
@@ -765,139 +709,8 @@ TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
   engine_handler->FocusIn(test_context);
   EXPECT_EQ(1, bridge()->focus_calls_count_);
 
-  bridge()->update_text_input_state_calls_count_ = 0;
-
-  engine_handler->SetCompositionBounds({});
-  EXPECT_EQ(0, bridge()->update_text_input_state_calls_count_);
-
-  engine_handler->SetSurroundingText("", 0, 0, 0);
-  EXPECT_EQ(1, bridge()->update_text_input_state_calls_count_);
-  EXPECT_FALSE(bridge()->last_text_input_state->first_update_after_operation);
-
   engine_handler->FocusOut();
   EXPECT_EQ(1, bridge()->focus_calls_count_);
-
-  mock_input_method.DetachTextInputClient(&dummy_text_input_client);
-  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
-}
-
-TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
-  ToggleTabletMode(true);
-
-  // Adding one ARC IME.
-  {
-    const std::string android_ime_id = "test.arc.ime";
-    const std::string display_name = "DisplayName";
-    const std::string settings_url = "url_to_settings";
-    mojom::ImeInfoPtr info = mojom::ImeInfo::New();
-    info->ime_id = android_ime_id;
-    info->display_name = display_name;
-    info->enabled = false;
-    info->settings_url = settings_url;
-
-    std::vector<mojom::ImeInfoPtr> info_array;
-    info_array.emplace_back(std::move(info));
-    service()->OnImeInfoChanged(std::move(info_array));
-  }
-  // The proxy IME engine should be added.
-  ASSERT_EQ(1u, imm()->state()->added_input_method_extensions_.size());
-  ui::IMEEngineHandlerInterface* engine_handler =
-      std::get<2>(imm()->state()->added_input_method_extensions_.at(0));
-
-  // Set up mock input context.
-  constexpr int test_context_id = 0;
-  const ui::IMEEngineHandlerInterface::InputContext test_context{
-      test_context_id,
-      ui::TEXT_INPUT_TYPE_TEXT,
-      ui::TEXT_INPUT_MODE_DEFAULT,
-      0 /* flags */,
-      ui::TextInputClient::FOCUS_REASON_MOUSE,
-      true /* should_do_learning */};
-  ui::MockInputMethod mock_input_method(nullptr);
-  TestIMEInputContextHandler test_context_handler(&mock_input_method);
-  ui::DummyTextInputClient dummy_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
-  ui::IMEBridge::Get()->SetInputContextHandler(&test_context_handler);
-
-  // Enable the ARC IME.
-  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
-  engine_handler->Enable(
-      chromeos::extension_ime_util::GetComponentIDByInputMethodID(
-          std::get<1>(imm()->state()->added_input_method_extensions_.at(0))
-              .at(0)
-              .id()));
-  mock_input_method.SetFocusedTextInputClient(&dummy_text_input_client);
-
-  engine_handler->FocusIn(test_context);
-  bridge()->update_text_input_state_calls_count_ = 0;
-
-  InputConnectionImpl* connection = service()->GetInputConnectionForTesting();
-  ASSERT_NE(nullptr, connection);
-  connection->CommitText(base::ASCIIToUTF16("text"), 0);
-  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
-  // Trigger an observer method to trigger text input state updating.
-  engine_handler->SetSurroundingText("", 0, 0, 0);
-  EXPECT_EQ(1, bridge()->update_text_input_state_calls_count_);
-  EXPECT_TRUE(bridge()->last_text_input_state->first_update_after_operation);
-
-  // Calling CommitText() with '\n' doesn't invoke
-  // InputMethodEngine::CommitText.
-  EXPECT_EQ(0, test_context_handler.send_key_event_call_count());
-  connection->CommitText(base::ASCIIToUTF16("\n"), 0);
-  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
-  EXPECT_EQ(2, test_context_handler.send_key_event_call_count());
-
-  test_context_handler.Reset();
-  connection->DeleteSurroundingText(1, 1);
-  EXPECT_EQ(1, test_context_handler.delete_surrounding_text_call_count());
-
-  // If there is no composing text, FinishComposingText() does nothing.
-  test_context_handler.Reset();
-  connection->FinishComposingText();
-  EXPECT_EQ(0, test_context_handler.commit_text_call_count());
-
-  // If there is composing text, FinishComposingText() calls CommitText() with
-  // the text.
-  connection->SetComposingText(base::ASCIIToUTF16("composing"), 0,
-                               base::nullopt);
-  EXPECT_EQ(0, test_context_handler.commit_text_call_count());
-  connection->FinishComposingText();
-  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
-
-  base::string16 text = base::ASCIIToUTF16("text");
-  test_context_handler.Reset();
-  connection->SetComposingText(text, 0, base::nullopt);
-  EXPECT_EQ(1, test_context_handler.update_preedit_text_call_count());
-  EXPECT_EQ(
-      text,
-      test_context_handler.last_update_composition_arg().composition_text.text);
-  EXPECT_EQ(3u, test_context_handler.last_update_composition_arg()
-                    .composition_text.selection.start());
-  // Committing the composing text calls ClearComposition() and CommitText().
-  connection->CommitText(base::ASCIIToUTF16("text"), 0);
-  EXPECT_EQ(2, test_context_handler.update_preedit_text_call_count());
-  EXPECT_EQ(
-      base::ASCIIToUTF16(""),
-      test_context_handler.last_update_composition_arg().composition_text.text);
-  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
-
-  // CommitText should clear the composing text.
-  connection->FinishComposingText();
-  // commit_text_call_count() doesn't change.
-  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
-
-  test_context_handler.Reset();
-  connection->SetComposingText(text, 0, base::make_optional<gfx::Range>(1, 3));
-  EXPECT_EQ(1u, test_context_handler.last_update_composition_arg()
-                    .composition_text.selection.start());
-  EXPECT_EQ(3u, test_context_handler.last_update_composition_arg()
-                    .composition_text.selection.end());
-
-  engine_handler->FocusOut();
-
-  mock_input_method.DetachTextInputClient(&dummy_text_input_client);
-  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
