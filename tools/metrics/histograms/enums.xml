@@ -54177,6 +54177,87 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Revoked ephemeral permission"/>
 </enum>
 
+<enum name="WebViewApiCall">
+  <int value="0" label="addJavascriptInterface"/>
+  <int value="1" label="autofill"/>
+  <int value="2" label="canGoBack"/>
+  <int value="3" label="canGoBackOrForward"/>
+  <int value="4" label="canGoForward"/>
+  <int value="5" label="canZoomIn"/>
+  <int value="6" label="canZoomOut"/>
+  <int value="7" label="capturePicture"/>
+  <int value="8" label="clearCache"/>
+  <int value="9" label="clearFormData"/>
+  <int value="10" label="clearHistory"/>
+  <int value="11" label="clearMatches"/>
+  <int value="12" label="clearSslPreferences"/>
+  <int value="13" label="clearView"/>
+  <int value="14" label="copyBackForwardList"/>
+  <int value="15" label="createPrintDocumentAdapter"/>
+  <int value="16" label="createWebmessageChannel"/>
+  <int value="17" label="documentHasImages"/>
+  <int value="18" label="doesSupportFullscreen"/>
+  <int value="19" label="evaluateJavascript"/>
+  <int value="20" label="extractSmartClipData"/>
+  <int value="21" label="findNext"/>
+  <int value="22" label="getCertificate"/>
+  <int value="23" label="getContentHeight"/>
+  <int value="24" label="getContentWidth"/>
+  <int value="25" label="getFavicon"/>
+  <int value="26" label="getHitTestResult"/>
+  <int value="27" label="getHttpAuthUsernamePassword"/>
+  <int value="28" label="getOriginalUrl"/>
+  <int value="29" label="getProgress"/>
+  <int value="30" label="getScale"/>
+  <int value="31" label="getSettings"/>
+  <int value="32" label="getTextClassifier"/>
+  <int value="33" label="getTitle"/>
+  <int value="34" label="getUrl"/>
+  <int value="35" label="getWebchromeClient"/>
+  <int value="36" label="getWebviewClient"/>
+  <int value="37" label="goBack"/>
+  <int value="38" label="goBackOrForward"/>
+  <int value="39" label="goForward"/>
+  <int value="40" label="insertVisualStateCallback"/>
+  <int value="41" label="invokeZoomPicker"/>
+  <int value="42" label="isPaused"/>
+  <int value="43" label="isPrivateBrowsingEnabled"/>
+  <int value="44" label="loadData"/>
+  <int value="45" label="loadDataWithBaseUrl"/>
+  <int value="46" label="notifyFindDialogDismissed"/>
+  <int value="47" label="onPause"/>
+  <int value="48" label="onProvideAutofillVirtualStructure"/>
+  <int value="49" label="onResume"/>
+  <int value="50" label="overlayHorizontalScrollbar"/>
+  <int value="51" label="overlayVerticalScrollbar"/>
+  <int value="52" label="pageDown"/>
+  <int value="53" label="pageUp"/>
+  <int value="54" label="pauseTimers"/>
+  <int value="55" label="postMessageToMainFrame"/>
+  <int value="56" label="postUrl"/>
+  <int value="57" label="reload"/>
+  <int value="58" label="removeJavascriptInterface"/>
+  <int value="59" label="requestFocusNodeHref"/>
+  <int value="60" label="requestImageRef"/>
+  <int value="61" label="restoreState"/>
+  <int value="62" label="resumeTimers"/>
+  <int value="63" label="saveState"/>
+  <int value="64" label="setDownloadListener"/>
+  <int value="65" label="setFindListener"/>
+  <int value="66" label="setHorizontalScrollbarOverlay"/>
+  <int value="67" label="setHttpAuthUsernamePassword"/>
+  <int value="68" label="setInitialScale"/>
+  <int value="69" label="setNetworkAvailable"/>
+  <int value="70" label="setPictureListener"/>
+  <int value="71" label="setSmartClipResultHandler"/>
+  <int value="72" label="setTextClassifier"/>
+  <int value="73" label="setVerticalScrollbarOverlay"/>
+  <int value="74" label="setWebchromeClient"/>
+  <int value="75" label="setWebviewClient"/>
+  <int value="76" label="showFindDialog"/>
+  <int value="77" label="stopLoading"/>
+</enum>
+
 <enum name="WebViewClientTypeEnum">
   <int value="0" label="Regular WebViewClient"/>
   <int value="1" label="WebViewClientCompat (via AndroidX)"/>
