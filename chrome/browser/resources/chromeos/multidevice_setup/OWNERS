@@ -1,1 +1,3 @@
-file://chromeos/services/multidevice_setup/OWNERS
+file://chromeos/components/multidevice/OWNERS
+
+# COMPONENT: UI>Multidevice

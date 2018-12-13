@@ -1,5 +1,3 @@
-hansberry@chromium.org
-khorimoto@chromium.org
-jlklein@chromium.org
+file://chromeos/components/multidevice/OWNERS
 
-# COMPONENT: UI>ProximityAuth
+# COMPONENT: UI>Multidevice
