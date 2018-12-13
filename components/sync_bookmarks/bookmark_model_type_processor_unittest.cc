@@ -182,10 +182,14 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
           syncer::UniquePosition::RandomSuffix());
 
   syncer::UpdateResponseDataList updates;
-  // Add update for the permanent folder "Bookmarks bar".
+  // Add update for the permanent folders "Bookmarks bar" and "Other bookmarks".
   updates.push_back(
       CreateUpdateResponseData({kBookmarkBarId, std::string(), std::string(),
                                 kBookmarksRootId, kBookmarkBarTag},
+                               kRandomPosition, /*response_version=*/0));
+  updates.push_back(
+      CreateUpdateResponseData({kOtherBookmarksId, std::string(), std::string(),
+                                kBookmarksRootId, kOtherBookmarksTag},
                                kRandomPosition, /*response_version=*/0));
 
   // Add update for another node under the bookmarks bar.

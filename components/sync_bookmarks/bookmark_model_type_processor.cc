@@ -170,6 +170,7 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
       BookmarkModelMerger(&updates, bookmark_model_, favicon_service_,
                           bookmark_tracker_.get())
           .Merge();
+      bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
     }
     schedule_save_closure_.Run();
     NudgeForCommitIfNeeded();
@@ -241,6 +242,7 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
     model_type_state->Swap(model_metadata.mutable_model_type_state());
     StartTrackingMetadata(std::move(nodes_metadata),
                           std::move(model_type_state));
+    bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
   } else if (!model_metadata.model_type_state().initial_sync_done() &&
              !model_metadata.bookmarks_metadata().empty()) {
     DLOG(ERROR)
