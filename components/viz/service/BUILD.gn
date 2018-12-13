@@ -325,12 +325,17 @@ viz_source_set("gpu_service_dependencies") {
 
   defines = [ "VIZ_SERVICE_IMPLEMENTATION" ]
 
+  deps = []
   if (is_chromeos) {
-    deps = [
+    deps += [
       "//components/arc/video_accelerator",
       "//gpu/command_buffer/service:gles2",
       "//media/mojo/services",
     ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 
   if (enable_vulkan) {

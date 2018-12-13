@@ -9,7 +9,9 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -18,6 +20,7 @@ namespace ui {
 
 class ScenicWindowManager;
 class ScenicGpuService;
+class ScenicSurface;
 
 class ScenicSurfaceFactory : public SurfaceFactoryOzone {
  public:
@@ -28,6 +31,8 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
   // SurfaceFactoryOzone implementation.
   std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
   GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
+  std::unique_ptr<PlatformWindowSurface> CreatePlatformWindowSurface(
+      gfx::AcceleratedWidget widget) override;
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
   scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
@@ -40,13 +45,21 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
       override;
 #endif
 
+  void AddSurface(gfx::AcceleratedWidget widget, ScenicSurface* surface);
+  void RemoveSurface(gfx::AcceleratedWidget widget);
+  ScenicSurface* GetSurface(gfx::AcceleratedWidget widget);
+
  private:
   fuchsia::ui::scenic::Scenic* GetScenic();
+
+  base::flat_map<gfx::AcceleratedWidget, ScenicSurface*> surface_map_;
 
   ScenicWindowManager* const window_manager_ = nullptr;
   ScenicGpuService* scenic_gpu_service_ = nullptr;
   std::unique_ptr<GLOzone> egl_implementation_;
   fuchsia::ui::scenic::ScenicPtr scenic_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ScenicSurfaceFactory);
 };

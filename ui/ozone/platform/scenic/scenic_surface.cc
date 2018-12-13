@@ -9,26 +9,34 @@
 
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/ozone/platform/scenic/scenic_gpu_host.h"
+#include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 
 namespace ui {
 
-ScenicSurface::ScenicSurface(fuchsia::ui::scenic::Scenic* scenic,
+ScenicSurface::ScenicSurface(ScenicSurfaceFactory* scenic_surface_factory,
+                             fuchsia::ui::scenic::Scenic* scenic,
                              mojom::ScenicGpuHost* gpu_host,
                              gfx::AcceleratedWidget window)
     : scenic_session_(scenic),
       parent_(&scenic_session_),
       shape_(&scenic_session_),
       material_(&scenic_session_),
+      scenic_surface_factory_(scenic_surface_factory),
       gpu_host_(gpu_host),
       window_(window) {
   shape_.SetShape(scenic::Rectangle(&scenic_session_, 1.f, 1.f));
   shape_.SetMaterial(material_);
+  scenic_surface_factory->AddSurface(window, this);
 }
 
-ScenicSurface::~ScenicSurface() {}
+ScenicSurface::~ScenicSurface() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  scenic_surface_factory_->RemoveSurface(window_);
+}
 
 void ScenicSurface::SetTextureToNewImagePipe(
     fidl::InterfaceRequest<fuchsia::images::ImagePipe> image_pipe_request) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   uint32_t image_pipe_id = scenic_session_.AllocResourceId();
   scenic_session_.Enqueue(scenic::NewCreateImagePipeCmd(
       image_pipe_id, std::move(image_pipe_request)));
@@ -39,6 +47,7 @@ void ScenicSurface::SetTextureToNewImagePipe(
 void ScenicSurface::LinkToParent() {
   // Scenic does not care about order here; it's totally fine for imports to
   // cause exports, and that's what's done here.
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   zx::eventpair export_token;
   parent_.BindAsRequest(&export_token);
   parent_.AddChild(shape_);
@@ -48,6 +57,7 @@ void ScenicSurface::LinkToParent() {
 }
 
 void ScenicSurface::Commit() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scenic_session_.Present(
       /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }

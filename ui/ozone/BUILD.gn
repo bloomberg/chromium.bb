@@ -5,9 +5,9 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
+import("//testing/test.gni")
 import("//ui/ozone/ozone.gni")
 import("//ui/ozone/ozone_extra.gni")
-import("//testing/test.gni")
 
 assert(use_ozone)
 
@@ -92,6 +92,7 @@ jumbo_component("ozone_base") {
     "public/ozone_switches.cc",
     "public/ozone_switches.h",
     "public/platform_screen.h",
+    "public/platform_window_surface.h",
     "public/surface_factory_ozone.cc",
     "public/surface_factory_ozone.h",
     "public/surface_ozone_canvas.h",

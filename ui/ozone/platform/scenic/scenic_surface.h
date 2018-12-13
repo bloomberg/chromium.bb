@@ -10,13 +10,17 @@
 #include <lib/ui/scenic/cpp/session.h>
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/public/platform_window_surface.h"
 
 namespace ui {
 
 namespace mojom {
 class ScenicGpuHost;
 }
+
+class ScenicSurfaceFactory;
 
 // Holder for Scenic resources backing rendering surface.
 //
@@ -25,12 +29,13 @@ class ScenicGpuHost;
 // browser process).
 //
 // The texture is updated through an image pipe.
-class ScenicSurface {
+class ScenicSurface : public ui::PlatformWindowSurface {
  public:
-  ScenicSurface(fuchsia::ui::scenic::Scenic* scenic,
+  ScenicSurface(ScenicSurfaceFactory* scenic_surface_factory,
+                fuchsia::ui::scenic::Scenic* scenic,
                 mojom::ScenicGpuHost* gpu_host,
                 gfx::AcceleratedWidget window);
-  ~ScenicSurface();
+  ~ScenicSurface() override;
 
   // Sets the texture of the surface to a new image pipe.
   void SetTextureToNewImagePipe(
@@ -48,8 +53,11 @@ class ScenicSurface {
   scenic::ShapeNode shape_;
   scenic::Material material_;
 
-  mojom::ScenicGpuHost* gpu_host_ = nullptr;
-  gfx::AcceleratedWidget window_ = gfx::kNullAcceleratedWidget;
+  ScenicSurfaceFactory* const scenic_surface_factory_;
+  mojom::ScenicGpuHost* const gpu_host_;
+  const gfx::AcceleratedWidget window_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ScenicSurface);
 };

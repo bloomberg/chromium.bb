@@ -44,6 +44,12 @@ class VulkanSurface;
 #endif
 }
 
+namespace ui {
+#if defined(USE_OZONE)
+class PlatformWindowSurface;
+#endif
+}  // namespace ui
+
 namespace viz {
 
 class GpuServiceImpl;
@@ -147,6 +153,11 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
   BufferPresentedCallback buffer_presented_callback_;
   ContextLostCallback context_lost_callback_;
+
+#if defined(USE_OZONE)
+  // This should outlive gl_surface_ and vulkan_surface_.
+  std::unique_ptr<ui::PlatformWindowSurface> window_surface_;
+#endif
 
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   gpu::GpuPreferences gpu_preferences_;

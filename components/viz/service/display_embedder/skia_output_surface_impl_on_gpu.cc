@@ -40,6 +40,13 @@
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_implementation.h"
 #endif
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/platform_window_surface.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+#endif
+
 namespace viz {
 namespace {
 
@@ -78,6 +85,12 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
   feature_info_ = base::MakeRefCounted<gpu::gles2::FeatureInfo>(
       channel_manager->gpu_driver_bug_workarounds(),
       channel_manager->gpu_feature_info());
+
+#if defined(USE_OZONE)
+  window_surface_ = ui::OzonePlatform::GetInstance()
+                        ->GetSurfaceFactoryOzone()
+                        ->CreatePlatformWindowSurface(surface_handle);
+#endif
 
   if (gpu_service_->is_using_vulkan())
     InitializeForVulkan();

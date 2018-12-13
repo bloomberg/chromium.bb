@@ -14,10 +14,11 @@
 
 namespace ui {
 
+class ScenicSurfaceFactory;
+
 class VulkanImplementationScenic : public gpu::VulkanImplementation {
  public:
-  VulkanImplementationScenic(mojom::ScenicGpuHost* scenic_gpu_host,
-                             fuchsia::ui::scenic::Scenic* scenic);
+  VulkanImplementationScenic(ScenicSurfaceFactory* scenic_surface_factory);
   ~VulkanImplementationScenic() override;
 
   // VulkanImplementation:
@@ -36,8 +37,7 @@ class VulkanImplementationScenic : public gpu::VulkanImplementation {
       VkFence vk_fence) override;
 
  private:
-  mojom::ScenicGpuHost* const scenic_gpu_host_;
-  fuchsia::ui::scenic::Scenic* const scenic_;
+  ScenicSurfaceFactory* const scenic_surface_factory_;
   gpu::VulkanInstance vulkan_instance_;
 
   PFN_vkVoidFunction vkCreateMagmaSurfaceKHR_ = nullptr;
