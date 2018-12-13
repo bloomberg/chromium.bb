@@ -161,11 +161,13 @@ PasswordSyncableServiceBasedModelTypeController::
         syncer::OnceModelTypeStoreFactory store_factory,
         const base::RepeatingClosure& dump_stack,
         scoped_refptr<PasswordStore> password_store,
+        syncer::SyncService* sync_service,
         syncer::SyncClient* sync_client)
     : PasswordSyncableServiceBasedModelTypeController(
           std::move(store_factory),
           dump_stack,
           std::move(password_store),
+          sync_service,
           sync_client,
           base::MakeRefCounted<ModelCryptographerImpl>()) {}
 
@@ -176,7 +178,7 @@ void PasswordSyncableServiceBasedModelTypeController::LoadModels(
     const syncer::ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
-  sync_client_->GetSyncService()->AddObserver(this);
+  sync_service_->AddObserver(this);
   NonUiSyncableServiceBasedModelTypeController::LoadModels(configure_context,
                                                            model_load_callback);
   sync_client_->GetPasswordStateChangedCallback().Run();
@@ -186,7 +188,7 @@ void PasswordSyncableServiceBasedModelTypeController::Stop(
     syncer::ShutdownReason shutdown_reason,
     StopCallback callback) {
   DCHECK(CalledOnValidThread());
-  sync_client_->GetSyncService()->RemoveObserver(this);
+  sync_service_->RemoveObserver(this);
   NonUiSyncableServiceBasedModelTypeController::Stop(shutdown_reason,
                                                      std::move(callback));
   sync_client_->GetPasswordStateChangedCallback().Run();
@@ -212,6 +214,7 @@ PasswordSyncableServiceBasedModelTypeController::
         syncer::OnceModelTypeStoreFactory store_factory,
         const base::RepeatingClosure& dump_stack,
         scoped_refptr<PasswordStore> password_store,
+        syncer::SyncService* sync_service,
         syncer::SyncClient* sync_client,
         scoped_refptr<ModelCryptographerImpl> model_cryptographer)
     : NonUiSyncableServiceBasedModelTypeController(
@@ -224,7 +227,9 @@ PasswordSyncableServiceBasedModelTypeController::
           model_cryptographer),
       background_task_runner_(password_store->GetBackgroundTaskRunner()),
       model_cryptographer_(model_cryptographer),
+      sync_service_(sync_service),
       sync_client_(sync_client) {
+  DCHECK(sync_service_);
   DCHECK(sync_client_);
   DCHECK(model_cryptographer_);
 }

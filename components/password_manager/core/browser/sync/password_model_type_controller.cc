@@ -13,8 +13,10 @@ namespace password_manager {
 
 PasswordModelTypeController::PasswordModelTypeController(
     std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
+    syncer::SyncService* sync_service,
     syncer::SyncClient* sync_client)
     : ModelTypeController(syncer::PASSWORDS, std::move(delegate_on_disk)),
+      sync_service_(sync_service),
       sync_client_(sync_client) {}
 
 PasswordModelTypeController::~PasswordModelTypeController() = default;
@@ -23,7 +25,7 @@ void PasswordModelTypeController::LoadModels(
     const syncer::ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
-  sync_client_->GetSyncService()->AddObserver(this);
+  sync_service_->AddObserver(this);
   ModelTypeController::LoadModels(configure_context, model_load_callback);
   sync_client_->GetPasswordStateChangedCallback().Run();
 }
@@ -31,7 +33,7 @@ void PasswordModelTypeController::LoadModels(
 void PasswordModelTypeController::Stop(syncer::ShutdownReason shutdown_reason,
                                        StopCallback callback) {
   DCHECK(CalledOnValidThread());
-  sync_client_->GetSyncService()->RemoveObserver(this);
+  sync_service_->RemoveObserver(this);
   ModelTypeController::Stop(shutdown_reason, std::move(callback));
   sync_client_->GetPasswordStateChangedCallback().Run();
 }

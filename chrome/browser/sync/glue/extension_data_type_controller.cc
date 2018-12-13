@@ -14,10 +14,12 @@ namespace browser_sync {
 ExtensionDataTypeController::ExtensionDataTypeController(
     syncer::ModelType type,
     const base::Closure& dump_stack,
+    syncer::SyncService* sync_service,
     syncer::SyncClient* sync_client,
     Profile* profile)
     : AsyncDirectoryTypeController(type,
                                    dump_stack,
+                                   sync_service,
                                    sync_client,
                                    syncer::GROUP_UI,
                                    base::ThreadTaskRunnerHandle::Get()),

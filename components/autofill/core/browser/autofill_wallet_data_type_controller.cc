@@ -22,10 +22,12 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
     syncer::ModelType type,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread,
     const base::Closure& dump_stack,
+    syncer::SyncService* sync_service,
     syncer::SyncClient* sync_client,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
     : AsyncDirectoryTypeController(type,
                                    dump_stack,
+                                   sync_service,
                                    sync_client,
                                    syncer::GROUP_DB,
                                    std::move(db_thread)),
@@ -34,7 +36,7 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
       currently_enabled_(IsEnabled()) {
   DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
          type == syncer::AUTOFILL_WALLET_METADATA);
-  pref_registrar_.Init(sync_client_->GetPrefService());
+  pref_registrar_.Init(sync_client->GetPrefService());
   pref_registrar_.Add(
       autofill::prefs::kAutofillWalletImportEnabled,
       base::BindRepeating(&AutofillWalletDataTypeController::OnUserPrefChanged,
@@ -85,16 +87,16 @@ void AutofillWalletDataTypeController::StopModels() {
     // cards and addresses copied from the server. This is different than other
     // sync cases since this type of data reflects what's on the server rather
     // than syncing local data between clients, so this extra step is required.
-    syncer::SyncService* service = sync_client_->GetSyncService();
 
     // CanSyncFeatureStart indicates if sync is currently enabled at all. The
     // preferred data type indicates if wallet sync data is enabled, and
     // currently_enabled_ indicates if the other prefs are enabled. All of these
     // have to be enabled to sync wallet data.
-    if (!service->CanSyncFeatureStart() ||
-        !service->GetPreferredDataTypes().Has(type()) || !currently_enabled_) {
+    if (!sync_service()->CanSyncFeatureStart() ||
+        !sync_service()->GetPreferredDataTypes().Has(type()) ||
+        !currently_enabled_) {
       autofill::PersonalDataManager* pdm =
-          sync_client_->GetPersonalDataManager();
+          sync_client()->GetPersonalDataManager();
       if (pdm)
         pdm->ClearAllServerData();
     }
@@ -117,8 +119,7 @@ void AutofillWalletDataTypeController::OnUserPrefChanged() {
   if (currently_enabled_) {
     // The preference was just enabled. Trigger a reconfiguration. This will do
     // nothing if the type isn't preferred.
-    syncer::SyncService* sync_service = sync_client_->GetSyncService();
-    sync_service->ReenableDatatype(type());
+    sync_service()->ReenableDatatype(type());
   } else {
     DisableForPolicy();
   }
@@ -128,9 +129,9 @@ bool AutofillWalletDataTypeController::IsEnabled() {
   DCHECK(CalledOnValidThread());
 
   // Require the user-visible pref to be enabled to sync Wallet data/metadata.
-  return sync_client_->GetPrefService()->GetBoolean(
+  return sync_client()->GetPrefService()->GetBoolean(
              autofill::prefs::kAutofillWalletImportEnabled) &&
-         sync_client_->GetPrefService()->GetBoolean(
+         sync_client()->GetPrefService()->GetBoolean(
              autofill::prefs::kAutofillCreditCardEnabled);
 }
 void AutofillWalletDataTypeController::DisableForPolicy() {

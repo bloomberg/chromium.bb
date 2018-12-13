@@ -64,12 +64,6 @@ class ProfileSyncServiceBundle {
         const base::RepeatingCallback<base::WeakPtr<syncer::SyncableService>(
             syncer::ModelType type)>& get_syncable_service_callback);
 
-    // The client will call this callback to produce the SyncService for the
-    // current Profile.
-    void SetSyncServiceCallback(
-        const base::Callback<syncer::SyncService*(void)>&
-            get_sync_service_callback);
-
     void SetHistoryService(history::HistoryService* history_service);
 
     void SetBookmarkModelCallback(
@@ -88,7 +82,6 @@ class ProfileSyncServiceBundle {
     base::Callback<base::WeakPtr<syncer::SyncableService>(
         syncer::ModelType type)>
         get_syncable_service_callback_;
-    base::Callback<syncer::SyncService*(void)> get_sync_service_callback_;
     history::HistoryService* history_service_ = nullptr;
     base::Callback<bookmarks::BookmarkModel*(void)>
         get_bookmark_model_callback_;

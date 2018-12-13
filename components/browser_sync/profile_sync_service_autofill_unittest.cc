@@ -404,7 +404,6 @@ class ProfileSyncServiceAutofillTest
     ProfileSyncServiceBundle::SyncClientBuilder builder(
         profile_sync_service_bundle());
     builder.SetPersonalDataManager(personal_data_manager_.get());
-    builder.SetSyncServiceCallback(GetSyncServiceCallback());
     builder.SetSyncableServiceCallback(base::BindRepeating(
         &ProfileSyncServiceAutofillTest::GetSyncableServiceForType,
         base::Unretained(this)));
@@ -440,13 +439,13 @@ class ProfileSyncServiceAutofillTest
     CreateSyncService(std::move(sync_client_owned_), std::move(callback));
 
     EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
-                CreateCommonDataTypeControllers(_))
+                CreateCommonDataTypeControllers(_, _))
         .WillOnce(testing::InvokeWithoutArgs([=]() {
           syncer::DataTypeController::TypeVector controllers;
           controllers.push_back(
               std::make_unique<AutofillProfileDataTypeController>(
                   data_type_thread()->task_runner(), base::DoNothing(),
-                  sync_client_, web_data_service_));
+                  sync_service(), sync_client_, web_data_service_));
           return controllers;
         }));
     EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),

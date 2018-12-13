@@ -16,7 +16,6 @@ class SyncClientMock : public SyncClient {
   SyncClientMock();
   ~SyncClientMock() override;
 
-  MOCK_METHOD0(GetSyncService, SyncService*());
   MOCK_METHOD0(GetPrefService, PrefService*());
   MOCK_METHOD0(GetLocalSyncBackendFolder, base::FilePath());
   MOCK_METHOD0(GetModelTypeStoreService, syncer::ModelTypeStoreService*());
@@ -25,7 +24,8 @@ class SyncClientMock : public SyncClient {
   MOCK_METHOD0(GetHistoryService, history::HistoryService*());
   MOCK_METHOD0(HasPasswordStore, bool());
   MOCK_METHOD0(GetSessionSyncService, sync_sessions::SessionSyncService*());
-  MOCK_METHOD0(CreateDataTypeControllers, DataTypeController::TypeVector());
+  MOCK_METHOD1(CreateDataTypeControllers,
+               DataTypeController::TypeVector(SyncService* sync_service));
   MOCK_METHOD0(GetPasswordStateChangedCallback, base::RepeatingClosure());
 
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());

@@ -10,10 +10,12 @@ namespace browser_sync {
 
 SearchEngineDataTypeController::SearchEngineDataTypeController(
     const base::Closure& dump_stack,
+    syncer::SyncService* sync_service,
     syncer::SyncClient* sync_client,
     TemplateURLService* template_url_service)
     : AsyncDirectoryTypeController(syncer::SEARCH_ENGINES,
                                    dump_stack,
+                                   sync_service,
                                    sync_client,
                                    syncer::GROUP_UI,
                                    base::ThreadTaskRunnerHandle::Get()),

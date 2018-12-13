@@ -12,6 +12,7 @@
 
 namespace syncer {
 class SyncClient;
+class SyncService;
 }  // namespace syncer
 
 namespace browser_sync {
@@ -22,9 +23,11 @@ class HistoryDeleteDirectivesModelTypeController
     : public syncer::SyncableServiceBasedModelTypeController,
       public syncer::SyncServiceObserver {
  public:
-  // |sync_client| must not be null and must outlive this object.
+  // |sync_service| and |sync_client| must not be null and must outlive this
+  // object.
   HistoryDeleteDirectivesModelTypeController(
       const base::RepeatingClosure& dump_stack,
+      syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client);
   ~HistoryDeleteDirectivesModelTypeController() override;
 
@@ -43,7 +46,7 @@ class HistoryDeleteDirectivesModelTypeController
   // type is no longer ready, else does nothing and returns false.
   bool DisableTypeIfNecessary();
 
-  syncer::SyncClient* const sync_client_;
+  syncer::SyncService* const sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryDeleteDirectivesModelTypeController);
 };

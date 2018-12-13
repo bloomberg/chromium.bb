@@ -59,11 +59,6 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
   TestProfileSyncService* sync_service() { return sync_service_.get(); }
 
-  // Returns the callback for the FakeSyncClient builder. It is not possible to
-  // just Bind() sync_service(), because of Callback not understanding the
-  // inheritance of its template arguments.
-  base::Callback<syncer::SyncService*(void)> GetSyncServiceCallback();
-
   ProfileSyncServiceBundle* profile_sync_service_bundle() {
     return &profile_sync_service_bundle_;
   }

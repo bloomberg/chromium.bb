@@ -33,7 +33,6 @@ class WebViewSyncClient : public syncer::SyncClient {
   ~WebViewSyncClient() override;
 
   // SyncClient implementation.
-  syncer::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   base::FilePath GetLocalSyncBackendFolder() override;
   syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
@@ -43,7 +42,8 @@ class WebViewSyncClient : public syncer::SyncClient {
   sync_sessions::SessionSyncService* GetSessionSyncService() override;
   bool HasPasswordStore() override;
   base::RepeatingClosure GetPasswordStateChangedCallback() override;
-  syncer::DataTypeController::TypeVector CreateDataTypeControllers() override;
+  syncer::DataTypeController::TypeVector CreateDataTypeControllers(
+      syncer::SyncService* sync_service) override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   invalidation::InvalidationService* GetInvalidationService() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;

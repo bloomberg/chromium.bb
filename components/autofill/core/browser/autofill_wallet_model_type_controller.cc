@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
 
 namespace browser_sync {
@@ -18,9 +17,11 @@ namespace browser_sync {
 AutofillWalletModelTypeController::AutofillWalletModelTypeController(
     syncer::ModelType type,
     std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
-    syncer::SyncClient* sync_client)
+    PrefService* pref_service,
+    syncer::SyncService* sync_service)
     : ModelTypeController(type, std::move(delegate_on_disk)),
-      sync_client_(sync_client) {
+      pref_service_(pref_service),
+      sync_service_(sync_service) {
   DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
          type == syncer::AUTOFILL_WALLET_METADATA);
   currently_enabled_ = IsEnabled();
@@ -31,11 +32,13 @@ AutofillWalletModelTypeController::AutofillWalletModelTypeController(
     syncer::ModelType type,
     std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
     std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_in_memory,
-    syncer::SyncClient* sync_client)
+    PrefService* pref_service,
+    syncer::SyncService* sync_service)
     : ModelTypeController(type,
                           std::move(delegate_on_disk),
                           std::move(delegate_in_memory)),
-      sync_client_(sync_client) {
+      pref_service_(pref_service),
+      sync_service_(sync_service) {
   DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
          type == syncer::AUTOFILL_WALLET_METADATA);
   currently_enabled_ = IsEnabled();
@@ -56,24 +59,22 @@ void AutofillWalletModelTypeController::OnUserPrefChanged() {
   if (currently_enabled_ == newly_enabled) {
     return;  // No change to sync state.
   }
-  currently_enabled_ = newly_enabled;
 
-  syncer::SyncService* sync_service = sync_client_->GetSyncService();
-  sync_service->ReadyForStartChanged(type());
+  currently_enabled_ = newly_enabled;
+  sync_service_->ReadyForStartChanged(type());
 }
 
 bool AutofillWalletModelTypeController::IsEnabled() const {
   DCHECK(CalledOnValidThread());
 
   // Require two user-visible prefs to be enabled to sync Wallet data/metadata.
-  return sync_client_->GetPrefService()->GetBoolean(
+  return pref_service_->GetBoolean(
              autofill::prefs::kAutofillWalletImportEnabled) &&
-         sync_client_->GetPrefService()->GetBoolean(
-             autofill::prefs::kAutofillCreditCardEnabled);
+         pref_service_->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled);
 }
 
 void AutofillWalletModelTypeController::SubscribeToPrefChanges() {
-  pref_registrar_.Init(sync_client_->GetPrefService());
+  pref_registrar_.Init(pref_service_);
   pref_registrar_.Add(
       autofill::prefs::kAutofillWalletImportEnabled,
       base::BindRepeating(&AutofillWalletModelTypeController::OnUserPrefChanged,

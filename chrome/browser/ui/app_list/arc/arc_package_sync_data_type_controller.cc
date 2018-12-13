@@ -16,10 +16,12 @@
 ArcPackageSyncDataTypeController::ArcPackageSyncDataTypeController(
     syncer::ModelType type,
     const base::Closure& dump_stack,
+    syncer::SyncService* sync_service,
     syncer::SyncClient* sync_client,
     Profile* profile)
     : syncer::AsyncDirectoryTypeController(type,
                                            dump_stack,
+                                           sync_service,
                                            sync_client,
                                            syncer::GROUP_UI,
                                            base::ThreadTaskRunnerHandle::Get()),
@@ -94,13 +96,9 @@ void ArcPackageSyncDataTypeController::OnArcInitialStart() {
 }
 
 void ArcPackageSyncDataTypeController::EnableDataType() {
-  syncer::SyncService* sync_service = sync_client_->GetSyncService();
-  DCHECK(sync_service);
-  sync_service->ReenableDatatype(type());
+  sync_service()->ReenableDatatype(type());
 }
 
 bool ArcPackageSyncDataTypeController::ShouldSyncArc() const {
-  syncer::SyncService* sync_service = sync_client_->GetSyncService();
-  DCHECK(sync_service);
-  return sync_service->GetPreferredDataTypes().Has(type());
+  return sync_service()->GetPreferredDataTypes().Has(type());
 }

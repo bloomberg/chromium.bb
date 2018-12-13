@@ -45,7 +45,6 @@ class SessionSyncService;
 namespace syncer {
 
 class ModelTypeStoreService;
-class SyncService;
 class SyncableService;
 
 // Interface for clients of the Sync API to plumb through necessary dependent
@@ -58,9 +57,6 @@ class SyncClient {
  public:
   SyncClient();
   virtual ~SyncClient();
-
-  // Returns the current SyncService instance.
-  virtual SyncService* GetSyncService() = 0;
 
   // Returns the current profile's preference service.
   virtual PrefService* GetPrefService() = 0;
@@ -79,7 +75,8 @@ class SyncClient {
   virtual bool HasPasswordStore() = 0;
 
   // Returns a vector with all supported datatypes and their controllers.
-  virtual DataTypeController::TypeVector CreateDataTypeControllers() = 0;
+  virtual DataTypeController::TypeVector CreateDataTypeControllers(
+      SyncService* sync_service) = 0;
 
   // Returns a callback that will be invoked when password sync state has
   // potentially been changed.

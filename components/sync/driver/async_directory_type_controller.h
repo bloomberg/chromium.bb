@@ -29,6 +29,7 @@ class AsyncDirectoryTypeController : public DirectoryDataTypeController {
   AsyncDirectoryTypeController(
       ModelType type,
       const base::Closure& dump_stack,
+      SyncService* sync_service,
       SyncClient* sync_client,
       ModelSafeGroup model_safe_group,
       scoped_refptr<base::SequencedTaskRunner> model_thread);
@@ -50,6 +51,8 @@ class AsyncDirectoryTypeController : public DirectoryDataTypeController {
  protected:
   // For testing only.
   AsyncDirectoryTypeController();
+
+  SyncClient* sync_client() { return sync_client_; }
 
   // Start any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.
@@ -112,6 +115,8 @@ class AsyncDirectoryTypeController : public DirectoryDataTypeController {
   // an unrecoverable error.
   // Note: this is performed on the UI thread.
   void DisableImpl(const SyncError& error);
+
+  SyncClient* const sync_client_;
 
   // UserShare is stored in StartAssociating while on UI thread and
   // passed to SharedChangeProcessor::Connect on the model thread.

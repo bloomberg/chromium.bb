@@ -33,7 +33,9 @@ class DataTypeManagerObserver;
 class LocalDeviceInfoProvider;
 class SyncEngine;
 class SyncPrefs;
+class SyncService;
 class SyncableService;
+struct UserShare;
 
 // This factory provides sync driver code with the model type specific sync/api
 // service (like SyncableService) implementations.
@@ -64,7 +66,8 @@ class SyncApiComponentFactory {
   // |disabled_types| allows callers to prevent certain types from being
   // created (e.g. to honor command-line flags).
   virtual DataTypeController::TypeVector CreateCommonDataTypeControllers(
-      ModelTypeSet disabled_types) = 0;
+      ModelTypeSet disabled_types,
+      SyncService* sync_service) = 0;
 
   virtual std::unique_ptr<DataTypeManager> CreateDataTypeManager(
       ModelTypeSet initial_types,
@@ -87,7 +90,8 @@ class SyncApiComponentFactory {
 
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(
-      std::unique_ptr<DataTypeErrorHandler> error_handler) = 0;
+      std::unique_ptr<DataTypeErrorHandler> error_handler,
+      UserShare* user_share) = 0;
 };
 
 }  // namespace syncer

@@ -11,9 +11,11 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/model_type_controller.h"
 
+class PrefService;
+
 namespace syncer {
 class ModelTypeControllerDelegate;
-class SyncClient;
+class SyncService;
 }  // namespace syncer
 
 namespace browser_sync {
@@ -23,7 +25,8 @@ class AutofillProfileModelTypeController : public syncer::ModelTypeController {
  public:
   AutofillProfileModelTypeController(
       std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
-      syncer::SyncClient* sync_client);
+      PrefService* pref_service,
+      syncer::SyncService* sync_service);
   ~AutofillProfileModelTypeController() override;
 
   // DataTypeController overrides.
@@ -36,7 +39,8 @@ class AutofillProfileModelTypeController : public syncer::ModelTypeController {
   // Returns true if the pref is set such that autofill sync should be enabled.
   bool IsEnabled();
 
-  syncer::SyncClient* const sync_client_;
+  PrefService* const pref_service_;
+  syncer::SyncService* const sync_service_;
 
   // Registrar for listening to prefs::kAutofillProfileEnabled.
   PrefChangeRegistrar pref_registrar_;

@@ -194,7 +194,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
                                                            builder.Build());
     service_ = std::make_unique<ProfileSyncService>(std::move(init_params));
 
-    ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_))
+    ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_, _))
         .WillByDefault(testing::InvokeWithoutArgs([=]() {
           syncer::DataTypeController::TypeVector controllers;
           controllers.push_back(
@@ -224,7 +224,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
     service_ = std::make_unique<ProfileSyncService>(std::move(init_params));
 
-    ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_))
+    ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_, _))
         .WillByDefault(testing::InvokeWithoutArgs([=]() {
           syncer::DataTypeController::TypeVector controllers;
           controllers.push_back(

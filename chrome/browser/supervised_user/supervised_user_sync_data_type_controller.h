@@ -13,7 +13,8 @@ class Profile;
 
 namespace syncer {
 class SyncClient;
-}
+class SyncService;
+}  // namespace syncer
 
 // A DataTypeController for supervised user sync datatypes, which enables or
 // disables these types based on the profile's IsSupervised state.
@@ -23,6 +24,7 @@ class SupervisedUserSyncDataTypeController
   // |dump_stack| is called when an unrecoverable error occurs.
   SupervisedUserSyncDataTypeController(syncer::ModelType type,
                                        const base::Closure& dump_stack,
+                                       syncer::SyncService* sync_service,
                                        syncer::SyncClient* sync_client,
                                        Profile* profile);
   ~SupervisedUserSyncDataTypeController() override;

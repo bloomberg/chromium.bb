@@ -31,13 +31,15 @@ AsyncDirectoryTypeController::CreateSharedChangeProcessor() {
 AsyncDirectoryTypeController::AsyncDirectoryTypeController(
     ModelType type,
     const base::Closure& dump_stack,
+    SyncService* sync_service,
     SyncClient* sync_client,
     ModelSafeGroup model_safe_group,
     scoped_refptr<base::SequencedTaskRunner> model_thread)
     : DirectoryDataTypeController(type,
                                   dump_stack,
-                                  sync_client,
+                                  sync_service,
                                   model_safe_group),
+      sync_client_(sync_client),
       user_share_(nullptr),
       processor_factory_(new GenericChangeProcessorFactory()),
       state_(NOT_RUNNING),
@@ -110,8 +112,7 @@ void AsyncDirectoryTypeController::StartAssociating(
 
   // Store UserShare now while on UI thread to avoid potential race
   // condition in StartAssociationWithSharedChangeProcessor.
-  DCHECK(sync_client_->GetSyncService());
-  user_share_ = sync_client_->GetSyncService()->GetUserShare();
+  user_share_ = sync_service()->GetUserShare();
 
   start_callback_ = std::move(start_callback);
   if (!StartAssociationAsync()) {
@@ -163,7 +164,8 @@ AsyncDirectoryTypeController::AsyncDirectoryTypeController()
     : DirectoryDataTypeController(UNSPECIFIED,
                                   base::Closure(),
                                   nullptr,
-                                  GROUP_PASSIVE) {}
+                                  GROUP_PASSIVE),
+      sync_client_(nullptr) {}
 
 AsyncDirectoryTypeController::~AsyncDirectoryTypeController() {}
 
