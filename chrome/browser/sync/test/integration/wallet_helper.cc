@@ -105,11 +105,11 @@ void LogLists(const std::vector<Item*>& list_a,
               const std::vector<Item*>& list_b) {
   int x = 0;
   for (Item* item : list_a) {
-    DVLOG(1) << "A#" << x++ << " " << *item;
+    DLOG(WARNING) << "A#" << x++ << " " << *item;
   }
   x = 0;
   for (Item* item : list_b) {
-    DVLOG(1) << "B#" << x++ << " " << *item;
+    DLOG(WARNING) << "B#" << x++ << " " << *item;
   }
 }
 
