@@ -6,6 +6,7 @@
 #define MEDIA_GPU_PLATFORM_VIDEO_FRAME_H_
 
 #include "media/base/video_frame.h"
+#include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace media {
@@ -13,7 +14,7 @@ namespace gpu {
 
 // Create platform dependent media::VideoFrame. |buffer_usage| is passed to
 // CreateNativePixmap(). See //media/base/video_frame.h for other parameters.
-scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
+MEDIA_GPU_EXPORT scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     VideoPixelFormat pixel_format,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
