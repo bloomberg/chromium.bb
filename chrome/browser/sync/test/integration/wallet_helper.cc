@@ -105,11 +105,11 @@ void LogLists(const std::vector<Item*>& list_a,
               const std::vector<Item*>& list_b) {
   int x = 0;
   for (Item* item : list_a) {
-    DLOG(WARNING) << "A#" << x++ << " " << *item;
+    LOG(WARNING) << "A#" << x++ << " " << *item;
   }
   x = 0;
   for (Item* item : list_b) {
-    DLOG(WARNING) << "B#" << x++ << " " << *item;
+    LOG(WARNING) << "B#" << x++ << " " << *item;
   }
 }
 
@@ -131,6 +131,8 @@ bool WalletDataAndMetadataMatchAndAddressesHaveConverted(
   // Check that all server profiles have converted to local ones.
   for (AutofillProfile* profile : server_profiles_a) {
     if (!profile->has_converted()) {
+      LOG(WARNING) << "Not all profiles are converted";
+      LogLists(server_profiles_a, server_profiles_b);
       return false;
     }
   }
