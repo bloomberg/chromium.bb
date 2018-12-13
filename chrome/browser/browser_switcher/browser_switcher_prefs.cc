@@ -26,9 +26,6 @@ const char kUrlList[] = "browser_switcher.url_list";
 // List of hosts that should not trigger a transition in either browser.
 const char kUrlGreylist[] = "browser_switcher.url_greylist";
 
-// URL with an external XML sitelist file to load.
-const char kExternalSitelistUrl[] = "browser_switcher.external_sitelist_url";
-
 #if defined(OS_WIN)
 // If set to true, use the IE Enterprise Mode Sitelist policy.
 const char kUseIeSitelist[] = "browser_switcher.use_ie_sitelist";
@@ -39,7 +36,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kAlternativeBrowserParameters);
   registry->RegisterListPref(prefs::kUrlList);
   registry->RegisterListPref(prefs::kUrlGreylist);
-  registry->RegisterStringPref(prefs::kExternalSitelistUrl, "");
 #if defined(OS_WIN)
   registry->RegisterBooleanPref(prefs::kUseIeSitelist, false);
 #endif
