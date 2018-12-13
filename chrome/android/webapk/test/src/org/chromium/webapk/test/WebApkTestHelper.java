@@ -23,17 +23,47 @@ import java.net.URISyntaxException;
  * Helper class for WebAPK JUnit tests.
  */
 public class WebApkTestHelper {
+    private static final String SHARE_TARGET_ACTIVITY_CLASS_NAME_PREFIX = "TestShareTargetActivity";
+
     /**
      * Registers WebAPK. This function also creates an empty resource for the WebAPK.
      * @param packageName The package to register
-     * @param metaData Bundle with meta data from WebAPK's Android Manifest.
+     * @param metaData Bundle with application-level meta data from WebAPK's Android Manifest.
+     * @param shareTargetMetaData Bundles with meta data for the share target activities. Null if
+     *                            the WebAPK does not have any share target activities.
      */
-    public static void registerWebApkWithMetaData(String packageName, Bundle metaData) {
+    public static void registerWebApkWithMetaData(
+            String packageName, Bundle metaData, Bundle[] shareTargetMetaData) {
         ShadowPackageManager packageManager =
                 Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager());
         Resources res = Mockito.mock(Resources.class);
         packageManager.resources.put(packageName, res);
-        packageManager.addPackage(newPackageInfo(packageName, metaData));
+
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.setPackage(packageName);
+
+        // Remove old data in case that we are overwriting an old WebAPK registration.
+        packageManager.removeResolveInfosForIntent(shareIntent, packageName);
+
+        String[] shareTargetActivityClassNames = null;
+        if (shareTargetMetaData != null) {
+            shareTargetActivityClassNames = new String[shareTargetMetaData.length];
+            for (int i = 0; i < shareTargetMetaData.length; ++i) {
+                shareTargetActivityClassNames[i] = getGeneratedShareTargetActivityClassName(i);
+                packageManager.addResolveInfoForIntent(shareIntent,
+                        newResolveInfo(packageName, shareTargetActivityClassNames[i],
+                                shareTargetMetaData[i]));
+            }
+        }
+
+        packageManager.addPackage(newPackageInfo(
+                packageName, metaData, shareTargetActivityClassNames, shareTargetMetaData));
+    }
+
+    /** Returns generated share activity class name for the given index. */
+    public static String getGeneratedShareTargetActivityClassName(int index) {
+        return SHARE_TARGET_ACTIVITY_CLASS_NAME_PREFIX + index;
     }
 
     /** Registers intent filter for the passed-in package name and URL. */
@@ -44,7 +74,8 @@ public class WebApkTestHelper {
             Intent deepLinkIntent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
             deepLinkIntent.addCategory(Intent.CATEGORY_BROWSABLE);
             deepLinkIntent.setPackage(packageName);
-            packageManager.addResolveInfoForIntent(deepLinkIntent, newResolveInfo(packageName));
+            packageManager.addResolveInfoForIntent(
+                    deepLinkIntent, newResolveInfo(packageName, null, null));
         } catch (URISyntaxException e) {
         }
     }
@@ -56,20 +87,38 @@ public class WebApkTestHelper {
         packageManager.resources.put(packageName, res);
     }
 
-    private static PackageInfo newPackageInfo(String packageName, Bundle metaData) {
+    private static PackageInfo newPackageInfo(String packageName, Bundle metaData,
+            String[] shareTargetActivityClassNames, Bundle[] shareTargetMetaData) {
         ApplicationInfo applicationInfo = new ApplicationInfo();
         applicationInfo.metaData = metaData;
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.packageName = packageName;
         packageInfo.applicationInfo = applicationInfo;
+
+        if (shareTargetMetaData != null) {
+            packageInfo.activities = new ActivityInfo[shareTargetMetaData.length];
+            for (int i = 0; i < shareTargetMetaData.length; ++i) {
+                packageInfo.activities[i] = newActivityInfo(
+                        packageName, shareTargetActivityClassNames[i], shareTargetMetaData[i]);
+            }
+        }
         return packageInfo;
     }
 
-    private static ResolveInfo newResolveInfo(String packageName) {
+    private static ResolveInfo newResolveInfo(
+            String packageName, String activityClassName, Bundle activityMetaData) {
+        ResolveInfo resolveInfo = new ResolveInfo();
+        resolveInfo.activityInfo =
+                newActivityInfo(packageName, activityClassName, activityMetaData);
+        return resolveInfo;
+    }
+
+    private static ActivityInfo newActivityInfo(
+            String packageName, String activityClassName, Bundle metaData) {
         ActivityInfo activityInfo = new ActivityInfo();
         activityInfo.packageName = packageName;
-        ResolveInfo resolveInfo = new ResolveInfo();
-        resolveInfo.activityInfo = activityInfo;
-        return resolveInfo;
+        activityInfo.targetActivity = activityClassName;
+        activityInfo.metaData = metaData;
+        return activityInfo;
     }
 }

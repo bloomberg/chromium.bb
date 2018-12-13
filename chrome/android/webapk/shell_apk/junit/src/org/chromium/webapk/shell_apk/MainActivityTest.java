@@ -63,7 +63,8 @@ public final class MainActivityTest {
         bundle.putString(WebApkMetaDataKeys.SCOPE, manifestScope);
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
         bundle.putString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM, "originalUrl");
-        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
@@ -89,7 +90,8 @@ public final class MainActivityTest {
         bundle.putString(WebApkMetaDataKeys.SCOPE, manifestScope);
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
         bundle.putString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM, "originalUrl");
-        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
@@ -115,7 +117,8 @@ public final class MainActivityTest {
         bundle.putString(WebApkMetaDataKeys.SCOPE, manifestScope);
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
         bundle.putString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM, "originalUrl");
-        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
@@ -140,7 +143,8 @@ public final class MainActivityTest {
         bundle.putString(WebApkMetaDataKeys.SCOPE, manifestScope);
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
         bundle.putString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM, "originalUrl");
-        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
@@ -168,7 +172,8 @@ public final class MainActivityTest {
         bundle.putString(WebApkMetaDataKeys.SCOPE, scope);
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
         bundle.putString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM, "originalUrl");
-        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
         Robolectric.buildActivity(MainActivity.class, launchIntent).create();
@@ -190,7 +195,8 @@ public final class MainActivityTest {
         bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
         bundle.putString(WebApkMetaDataKeys.SCOPE, startUrl);
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
-        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
 
         mPackageManager.getPackageInfo(BROWSER_PACKAGE_NAME, 0).versionName = oldVersionName;
 
@@ -216,7 +222,8 @@ public final class MainActivityTest {
         bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
         bundle.putString(WebApkMetaDataKeys.SCOPE, startUrl);
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
-        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
 
         mPackageManager.getPackageInfo(BROWSER_PACKAGE_NAME, 0).versionName = newVersionName;
 
@@ -248,7 +255,8 @@ public final class MainActivityTest {
         bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
         bundle.putString(WebApkMetaDataKeys.SCOPE, startUrl);
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, BROWSER_PACKAGE_NAME);
-        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle, null /* shareTargetMetaData */);
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(startUrl));
         launchIntent.putExtras((Bundle) extrasToPropagate.clone());

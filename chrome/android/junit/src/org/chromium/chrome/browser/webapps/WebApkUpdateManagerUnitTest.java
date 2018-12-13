@@ -77,6 +77,8 @@ public class WebApkUpdateManagerUnitTest {
     private static final int ORIENTATION = ScreenOrientationValues.DEFAULT;
     private static final long THEME_COLOR = 1L;
     private static final long BACKGROUND_COLOR = 2L;
+    private static final String SHARE_TARGET_ACTION = "/share_action.html";
+    private static final String SHARE_TARGET_PARAM_TITLE = "share_params_title";
 
     /** Different name than the one used in {@link defaultManifestData()}. */
     private static final String DIFFERENT_NAME = "Different Name";
@@ -182,6 +184,8 @@ public class WebApkUpdateManagerUnitTest {
         public int orientation;
         public long themeColor;
         public long backgroundColor;
+        public String shareTargetAction;
+        public String shareTargetParamTitle;
     }
 
     private static String getWebApkId(String packageName) {
@@ -222,7 +226,14 @@ public class WebApkUpdateManagerUnitTest {
         metaData.putString(
                 WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES, iconUrlsAndIconMurmur2Hashes);
 
-        WebApkTestHelper.registerWebApkWithMetaData(packageName, metaData);
+        Bundle shareTargetMetaData = new Bundle();
+        shareTargetMetaData.putString(
+                WebApkMetaDataKeys.SHARE_ACTION, manifestData.shareTargetAction);
+        shareTargetMetaData.putString(
+                WebApkMetaDataKeys.SHARE_PARAM_TITLE, manifestData.shareTargetParamTitle);
+
+        WebApkTestHelper.registerWebApkWithMetaData(
+                packageName, metaData, new Bundle[] {shareTargetMetaData});
     }
 
     private static ManifestData defaultManifestData() {
@@ -244,6 +255,8 @@ public class WebApkUpdateManagerUnitTest {
         manifestData.orientation = ORIENTATION;
         manifestData.themeColor = THEME_COLOR;
         manifestData.backgroundColor = BACKGROUND_COLOR;
+        manifestData.shareTargetAction = SHARE_TARGET_ACTION;
+        manifestData.shareTargetParamTitle = SHARE_TARGET_PARAM_TITLE;
         return manifestData;
     }
 
@@ -257,8 +270,10 @@ public class WebApkUpdateManagerUnitTest {
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
                 manifestData.themeColor, manifestData.backgroundColor, kPackageName, -1,
                 WEB_MANIFEST_URL, manifestData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
-                manifestData.iconUrlToMurmur2HashMap, null, false /* forceNavigation */,
-                false /* useTransparentSplash */, null);
+                manifestData.iconUrlToMurmur2HashMap,
+                WebApkInfo.getSerializedShareTarget(manifestData.shareTargetAction, null, null,
+                        manifestData.shareTargetParamTitle, null, null, null, null),
+                false /* forceNavigation */, false /* useTransparentSplash */, null);
     }
 
     /**
@@ -672,6 +687,18 @@ public class WebApkUpdateManagerUnitTest {
         updateIfNeeded(UNBOUND_WEBAPK_PACKAGE_NAME, updateManager);
         assertFalse(updateManager.updateCheckStarted());
         assertFalse(updateManager.updateRequested());
+    }
+
+    /**
+     * Test that an upgrade is requested when the share target specified in the Web Manifest
+     * changes.
+     */
+    @Test
+    public void testShareTargetChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.shareTargetAction = "/action2.html";
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
     }
 
     /**
