@@ -450,6 +450,10 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
                        InertialGSUBubblingStopsWhenParentCannotScroll) {
   LoadPageWithOOPIF();
   // Scroll the parent down so that it is scrollable upward.
+
+  // Initialize observer before scrolling changes the position of the OOPIF.
+  HitTestTransformChangeObserver observer(child_view_->GetFrameSinkId());
+
   EXPECT_TRUE(
       ExecJs(GetRootNode()->current_frame_host(), "window.scrollTo(0, 20)"));
   // We expect to have window.scrollY == 20 after scrolling but with zoom for
@@ -457,6 +461,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   // https://crbug.com/891860).
   WaitForFrameScroll(GetRootNode(), 19);
   SynchronizeThreads();
+
+  // Wait for hit test data to change after scroll happens.
+  observer.WaitForHitTestDataChange();
 
   // Fling and wait for the parent to scroll up.
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
@@ -474,10 +481,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
 
   run_loop_ = std::make_unique<base::RunLoop>();
 
-  std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
-      new SyntheticSmoothScrollGesture(params));
   GetWidgetHost()->QueueSyntheticGesture(
-      std::move(gesture),
+      std::make_unique<SyntheticSmoothScrollGesture>(params),
       base::BindOnce(&BrowserSideFlingBrowserTest::OnSyntheticGestureCompleted,
                      base::Unretained(this)));
 
