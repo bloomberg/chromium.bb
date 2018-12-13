@@ -199,7 +199,7 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
       is_xsl_ ? IncrementLoadEventDelayCount::Create(GetDocument()) : nullptr;
   if (is_xsl_) {
     sheet_ = XSLStyleSheet::Create(this, resource->Url(),
-                                   resource->GetResponse().CurrentRequestUrl());
+                                   resource->GetResponse().ResponseUrl());
     ToXSLStyleSheet(sheet_.Get())
         ->ParseString(ToXSLStyleSheetResource(resource)->Sheet());
   } else {
