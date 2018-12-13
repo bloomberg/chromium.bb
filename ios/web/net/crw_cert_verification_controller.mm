@@ -183,10 +183,13 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
                                        serverTrust:trust.get()
                                               host:host];
 
-        TaskTraits traits{WebThread::UI, TaskShutdownBehavior::BLOCK_SHUTDOWN};
-        base::PostTaskWithTraits(FROM_HERE, traits, base::BindOnce(^{
-                                   handler(policy, certStatus);
-                                 }));
+        // TODO(crbug.com/872372): This should use PostTaskWithTraits to post to
+        // WebThread::UI with BLOCK_SHUTDOWN once shutdown behaviors are
+        // supported on the UI thread. BLOCK_SHUTDOWN is necessary because
+        // WKWebView throws an exception if the completion handler doesn't run.
+        dispatch_async(dispatch_get_main_queue(), ^{
+          handler(policy, certStatus);
+        });
       }));
 }
 
@@ -202,10 +205,13 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
         if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
           trustResult = kSecTrustResultInvalid;
         }
-        TaskTraits traits{WebThread::UI, TaskShutdownBehavior::BLOCK_SHUTDOWN};
-        base::PostTaskWithTraits(FROM_HERE, traits, base::BindOnce(^{
-                                   completionHandler(trustResult);
-                                 }));
+        // TODO(crbug.com/872372): This should use PostTaskWithTraits to post to
+        // WebThread::UI with BLOCK_SHUTDOWN once shutdown behaviors are
+        // supported on the UI thread. BLOCK_SHUTDOWN is necessary because
+        // WKWebView throws an exception if the completion handler doesn't run.
+        dispatch_async(dispatch_get_main_queue(), ^{
+          completionHandler(trustResult);
+        });
       }));
 }
 
