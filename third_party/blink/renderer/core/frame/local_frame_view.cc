@@ -2737,7 +2737,15 @@ void LocalFrameView::PaintTree() {
 
       PaintInternal(graphics_context, kGlobalPaintNormalPhase,
                     CullRect::Infinite());
+
       frame_->GetPage()->GetLinkHighlights().Paint(graphics_context);
+
+      frame_->GetPage()->GetValidationMessageClient().PaintOverlay(
+          graphics_context);
+      frame_->PaintFrameColorOverlay(graphics_context);
+      ForAllChildLocalFrameViews([&graphics_context](LocalFrameView& view) {
+        view.frame_->PaintFrameColorOverlay(graphics_context);
+      });
 
       paint_controller_->CommitNewDisplayItems();
     }
@@ -2773,12 +2781,12 @@ void LocalFrameView::PaintTree() {
     // layers so it must be before
     // |CollectDrawableLayersForLayerListRecursively|.
     frame_->GetPage()->GetLinkHighlights().UpdateGeometry();
-  }
 
-  frame_->GetPage()->GetValidationMessageClient().PaintOverlay();
-  frame_->PaintFrameColorOverlay();
-  ForAllChildLocalFrameViews(
-      [](LocalFrameView& view) { view.frame_->PaintFrameColorOverlay(); });
+    frame_->GetPage()->GetValidationMessageClient().PaintOverlay();
+    frame_->PaintFrameColorOverlay();
+    ForAllChildLocalFrameViews(
+        [](LocalFrameView& view) { view.frame_->PaintFrameColorOverlay(); });
+  }
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);

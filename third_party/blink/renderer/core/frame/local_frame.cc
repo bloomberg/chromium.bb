@@ -1634,7 +1634,7 @@ class FrameColorOverlay final : public FrameOverlay::Delegate {
  private:
   void PaintFrameOverlay(const FrameOverlay& frame_overlay,
                          GraphicsContext& graphics_context,
-                         const IntSize& size) const override {
+                         const IntSize&) const override {
     const auto* view = frame_->View();
     DCHECK(view);
     ScopedPaintChunkProperties properties(
@@ -1689,8 +1689,15 @@ void LocalFrame::UpdateFrameColorOverlay() {
 }
 
 void LocalFrame::PaintFrameColorOverlay() {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   if (frame_color_overlay_ && frame_color_overlay_->GetGraphicsLayer())
     frame_color_overlay_->GetGraphicsLayer()->Paint(nullptr);
+}
+
+void LocalFrame::PaintFrameColorOverlay(GraphicsContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  if (frame_color_overlay_)
+    frame_color_overlay_->Paint(context);
 }
 
 }  // namespace blink

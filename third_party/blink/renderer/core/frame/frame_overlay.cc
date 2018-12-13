@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 
 namespace blink {
@@ -59,6 +60,8 @@ FrameOverlay::FrameOverlay(LocalFrame* local_frame,
 }
 
 FrameOverlay::~FrameOverlay() {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
   if (!layer_)
     return;
   layer_->RemoveFromParent();
@@ -66,6 +69,9 @@ FrameOverlay::~FrameOverlay() {
 }
 
 void FrameOverlay::Update() {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
   auto* local_root_frame_widget =
       WebLocalFrameImpl::FromFrame(frame_)->LocalRootFrameWidget();
   if (!local_root_frame_widget->IsAcceleratedCompositingActive())
@@ -89,38 +95,44 @@ void FrameOverlay::Update() {
     cc_layer->AddMainThreadScrollingReasons(
         MainThreadScrollingReason::kFrameOverlay);
 
-    layer_->SetLayerState(PropertyTreeState(PropertyTreeState::Root()),
-                          IntPoint());
+    layer_->SetLayerState(PropertyTreeState::Root(), IntPoint());
   }
 
-  gfx::Size size(frame_->GetPage()->GetVisualViewport().Size());
-  if (size != layer_->Size())
-    layer_->SetSize(size);
+  layer_->SetSize(gfx::Size(Size()));
+  layer_->SetNeedsDisplay();
+}
 
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    layer_->SetNeedsDisplay();
+IntSize FrameOverlay::Size() const {
+  return frame_->GetPage()->GetVisualViewport().Size();
 }
 
 LayoutRect FrameOverlay::VisualRect() const {
-  DCHECK(layer_.get());
-  return LayoutRect(IntPoint(), IntSize(layer_->Size()));
+  return LayoutRect(IntPoint(), Size());
 }
 
 IntRect FrameOverlay::ComputeInterestRect(const GraphicsLayer* graphics_layer,
                                           const IntRect&) const {
-  return IntRect(IntPoint(), IntSize(layer_->Size()));
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  return IntRect(IntPoint(), Size());
 }
 
 void FrameOverlay::PaintContents(const GraphicsLayer* graphics_layer,
                                  GraphicsContext& gc,
                                  GraphicsLayerPaintingPhase phase,
                                  const IntRect& interest_rect) const {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(layer_);
-  delegate_->PaintFrameOverlay(*this, gc, interest_rect.Size());
+  delegate_->PaintFrameOverlay(*this, gc, Size());
 }
 
 String FrameOverlay::DebugName(const GraphicsLayer*) const {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   return "Frame Overlay Content Layer";
+}
+
+void FrameOverlay::Paint(GraphicsContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  delegate_->PaintFrameOverlay(*this, context, Size());
 }
 
 }  // namespace blink

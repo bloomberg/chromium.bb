@@ -29,6 +29,7 @@
 #include <memory>
 #include <utility>
 
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -174,8 +175,15 @@ void ValidationMessageClientImpl::LayoutOverlay() {
 }
 
 void ValidationMessageClientImpl::PaintOverlay() {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   if (overlay_)
     overlay_->GetGraphicsLayer()->Paint(nullptr);
+}
+
+void ValidationMessageClientImpl::PaintOverlay(GraphicsContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  if (overlay_)
+    overlay_->Paint(context);
 }
 
 void ValidationMessageClientImpl::Trace(blink::Visitor* visitor) {

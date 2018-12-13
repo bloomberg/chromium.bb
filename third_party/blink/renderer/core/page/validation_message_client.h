@@ -34,6 +34,7 @@ namespace blink {
 
 class Document;
 class Element;
+class GraphicsContext;
 
 class ValidationMessageClient : public GarbageCollectedMixin {
  public:
@@ -62,6 +63,8 @@ class ValidationMessageClient : public GarbageCollectedMixin {
 
   virtual void LayoutOverlay() {}
   virtual void PaintOverlay() {}
+  // For CompositeAfterPaint.
+  virtual void PaintOverlay(GraphicsContext&) {}
 
   void Trace(blink::Visitor* visitor) override {}
 };

@@ -422,6 +422,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Called from LocalFrameView when updating document life cycle.
   void UpdateFrameColorOverlay();
   void PaintFrameColorOverlay();
+  // For CompositeAfterPaint.
+  void PaintFrameColorOverlay(GraphicsContext&);
 
  private:
   friend class FrameNavigationDisabler;
