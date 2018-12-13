@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/image_bitmap_source.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -102,7 +103,10 @@ class ImageBitmapFactories final
  private:
   class ImageBitmapLoader final
       : public GarbageCollectedFinalized<ImageBitmapLoader>,
+        public ContextLifecycleObserver,
         public FileReaderLoaderClient {
+    USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapLoader);
+
    public:
     static ImageBitmapLoader* Create(ImageBitmapFactories& factory,
                                      base::Optional<IntRect> crop_rect,
@@ -120,9 +124,9 @@ class ImageBitmapFactories final
     void LoadBlobAsync(Blob*);
     ScriptPromise Promise() { return resolver_->Promise(); }
 
-    void Trace(blink::Visitor*);
+    void Trace(blink::Visitor*) override;
 
-    ~ImageBitmapLoader() override = default;
+    ~ImageBitmapLoader() override;
 
    private:
     enum ImageBitmapRejectionReason {
@@ -139,6 +143,9 @@ class ImageBitmapFactories final
         const String& premultiply_alpha_option,
         const String& color_space_conversion_option);
     void ResolvePromiseOnOriginalThread(sk_sp<SkImage>);
+
+    // ContextLifecycleObserver
+    void ContextDestroyed(ExecutionContext*) override;
 
     // FileReaderLoaderClient
     void DidStartLoading() override {}
