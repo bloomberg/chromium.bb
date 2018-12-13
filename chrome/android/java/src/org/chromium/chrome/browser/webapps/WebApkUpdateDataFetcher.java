@@ -112,8 +112,8 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
             iconUrlToMurmur2HashMap.put(iconUrl, murmur2Hash);
         }
 
-        String serializedShareTarget = WebApkInfo.getSerializedShareTarget(
-                shareAction, "", "", shareParamsTitle, shareParamsText, shareParamsUrl, "", "");
+        String serializedShareTarget = WebApkInfo.getSerializedShareTarget(shareAction, null, null,
+                shareParamsTitle, shareParamsText, shareParamsUrl, null, null);
 
         WebApkInfo info = WebApkInfo.create(mOldInfo.id(), mOldInfo.uri().toString(), scopeUrl,
                 new WebApkInfo.Icon(primaryIconBitmap), new WebApkInfo.Icon(badgeIconBitmap), null,

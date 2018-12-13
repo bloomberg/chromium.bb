@@ -545,11 +545,18 @@ public class WebApkInfo extends WebappInfo {
     static String getSerializedShareTarget(String shareAction, String shareMethod,
             String shareEnctype, String shareParamsTitle, String shareParamsText,
             String shareParamsUrl, String shareParamsNames, String shareParamsAccepts) {
-        if (shareAction == null) return null;
+        if (TextUtils.isEmpty(shareAction)) return null;
 
         return String.format("action: \"%s\", method: \"%s\", enctype: \"%s\", title: \"%s\""
                         + "text: \"%s\", url: \"%s\", names: \"%s\", accepts: \"%s\"",
-                shareAction, shareMethod, shareEnctype, shareParamsTitle, shareParamsText,
-                shareParamsUrl, shareParamsNames, shareParamsAccepts);
+                shareAction, replaceNullWithEmpty(shareMethod), replaceNullWithEmpty(shareEnctype),
+                replaceNullWithEmpty(shareParamsTitle), replaceNullWithEmpty(shareParamsText),
+                replaceNullWithEmpty(shareParamsUrl), replaceNullWithEmpty(shareParamsNames),
+                replaceNullWithEmpty(shareParamsAccepts));
+    }
+
+    /** Returns the value if it is non-null. Returns an empty string otherwise. */
+    private static String replaceNullWithEmpty(String value) {
+        return (value == null) ? "" : value;
     }
 }
