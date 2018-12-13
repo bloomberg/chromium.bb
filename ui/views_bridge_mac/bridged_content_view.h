@@ -64,8 +64,6 @@ VIEWS_EXPORT
 @property(readonly, nonatomic) views::BridgedNativeWidgetImpl* bridge;
 @property(assign, nonatomic) ui::TextInputClient* textInputClient;
 @property(assign, nonatomic) BOOL drawMenuBackgroundForBlur;
-// Workaround for crbug.com/876493
-@property(assign, nonatomic) BOOL disableRightClickEvents;
 
 // Initialize the NSView -> views::View bridge. |viewToHost| must be non-NULL.
 - (instancetype)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge

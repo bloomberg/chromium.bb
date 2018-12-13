@@ -272,7 +272,6 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 @synthesize bridge = bridge_;
 @synthesize textInputClient = textInputClient_;
 @synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
-@synthesize disableRightClickEvents = disableRightClickEvents_;
 
 - (instancetype)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge
                         bounds:(gfx::Rect)bounds {
@@ -685,11 +684,6 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)mouseEvent:(NSEvent*)theEvent {
   if (!bridge_)
     return;
-
-  if (disableRightClickEvents_ && ([theEvent type] == NSRightMouseDown ||
-                                   [theEvent type] == NSRightMouseUp)) {
-    return;
-  }
 
   DCHECK([theEvent type] != NSScrollWheel);
   auto event = std::make_unique<ui::MouseEvent>(theEvent);

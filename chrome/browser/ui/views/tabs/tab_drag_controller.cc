@@ -357,6 +357,9 @@ TabDragController::~TabDragController() {
   if (move_loop_widget_)
     move_loop_widget_->RemoveObserver(this);
 
+  if (is_dragging_window())
+    GetAttachedBrowserWidget()->EndMoveLoop();
+
   if (source_tabstrip_)
     GetModel(source_tabstrip_)->RemoveObserver(this);
 
