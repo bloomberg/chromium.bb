@@ -306,8 +306,14 @@ bool AutofillManager::ShouldShowCardsFromAccountOption(
     const FormFieldData& field) {
   // Check whether we are dealing with a credit card field.
   AutofillField* autofill_field = GetAutofillField(form, field);
-  if (!autofill_field || autofill_field->Type().group() != CREDIT_CARD)
+  if (!autofill_field || autofill_field->Type().group() != CREDIT_CARD ||
+      // Exclude CVC and card type fields, because these will not have
+      // suggestions available after the user opts in.
+      autofill_field->Type().GetStorableType() ==
+          CREDIT_CARD_VERIFICATION_CODE ||
+      autofill_field->Type().GetStorableType() == CREDIT_CARD_TYPE) {
     return false;
+  }
 
   if (IsFormNonSecure(form))
     return false;
