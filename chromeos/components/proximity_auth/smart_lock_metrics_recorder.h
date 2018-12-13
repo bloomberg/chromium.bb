@@ -53,6 +53,28 @@ class SmartLockMetricsRecorder {
     kMaxValue = kOther
   };
 
+  enum class SmartLockAuthEventPasswordState {
+    kUnknownState = 0,
+    kNoPairing = 1,
+    kPairingChanged = 2,
+    kUserHardlock = 3,
+    kServiceNotActive = 4,
+    kNoBluetooth = 5,
+    kBluetoothConnecting = 6,
+    kCouldNotConnectToPhone = 7,
+    kNotAuthenticated = 8,
+    kPhoneLocked = 9,
+    kRssiTooLow = 10,
+    kAuthenticatedPhone = 11,
+    kLoginFailed = 12,
+    kPairingAdded = 13,
+    kNoScreenlockStateHandler = 14,
+    kPhoneLockedAndRssiTooLow = 15,
+    kForcedReauth = 16,
+    kRequiredForLogin = 17,
+    kMaxValue = kRequiredForLogin
+  };
+
   static void RecordSmartLockUnlockAuthMethodChoice(
       SmartLockAuthMethodChoice auth_method_choice);
   static void RecordSmartLockSignInAuthMethodChoice(
@@ -73,6 +95,11 @@ class SmartLockMetricsRecorder {
   static void RecordGetRemoteStatusResultSignInSuccess(bool success = true);
   static void RecordGetRemoteStatusResultSignInFailure(
       SmartLockGetRemoteStatusResultFailureReason failure_reason);
+
+  static void RecordAuthMethodChoiceUnlockPasswordState(
+      SmartLockAuthEventPasswordState password_state);
+  static void RecordAuthMethodChoiceSignInPasswordState(
+      SmartLockAuthEventPasswordState password_state);
 };
 
 #endif  // CHROMEOS_COMPONENTS_PROXIMITY_AUTH_SMART_LOCK_METRICS_RECORDER_H_

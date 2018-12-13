@@ -297,6 +297,10 @@ void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
 
   EasyUnlockAuthEvent event = GetPasswordAuthEvent();
   RecordEasyUnlockSigninEvent(event);
+
+  SmartLockMetricsRecorder::RecordAuthMethodChoiceSignInPasswordState(
+      GetSmartUnlockPasswordAuthEvent());
+
   DVLOG(1) << "Easy Sign-in password login event, event=" << event;
 }
 

@@ -68,3 +68,15 @@ void SmartLockMetricsRecorder::RecordGetRemoteStatusResultSignInFailure(
   UMA_HISTOGRAM_ENUMERATION("SmartLock.GetRemoteStatus.SignIn.Failure",
                             failure_reason);
 }
+
+void SmartLockMetricsRecorder::RecordAuthMethodChoiceUnlockPasswordState(
+    SmartLockAuthEventPasswordState password_state) {
+  UMA_HISTOGRAM_ENUMERATION("SmartLock.AuthMethodChoice.Unlock.PasswordState",
+                            password_state);
+}
+
+void SmartLockMetricsRecorder::RecordAuthMethodChoiceSignInPasswordState(
+    SmartLockAuthEventPasswordState password_state) {
+  UMA_HISTOGRAM_ENUMERATION("SmartLock.AuthMethodChoice.SignIn.PasswordState",
+                            password_state);
+}

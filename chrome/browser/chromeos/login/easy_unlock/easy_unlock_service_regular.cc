@@ -646,6 +646,8 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
       RecordEasyUnlockScreenUnlockDuration(base::TimeTicks::Now() -
                                            lock_screen_last_shown_timestamp_);
     } else {
+      SmartLockMetricsRecorder::RecordAuthMethodChoiceUnlockPasswordState(
+          GetSmartUnlockPasswordAuthEvent());
       SmartLockMetricsRecorder::RecordSmartLockUnlockAuthMethodChoice(
           SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kOther);
       OnUserEnteredPassword();

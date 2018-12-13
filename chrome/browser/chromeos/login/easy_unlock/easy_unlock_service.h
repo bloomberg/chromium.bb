@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_types.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/screenlock_state.h"
+#include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class AccountId;
@@ -219,6 +220,11 @@ class EasyUnlockService : public KeyedService {
   // Returns the authentication event for a recent password sign-in or unlock,
   // according to the current state of the service.
   EasyUnlockAuthEvent GetPasswordAuthEvent() const;
+
+  // Returns the authentication event for a recent password sign-in or unlock,
+  // according to the current state of the service.
+  SmartLockMetricsRecorder::SmartLockAuthEventPasswordState
+  GetSmartUnlockPasswordAuthEvent() const;
 
   // Called by subclasses when remote devices allowed to unlock the screen
   // are loaded for |account_id|.
