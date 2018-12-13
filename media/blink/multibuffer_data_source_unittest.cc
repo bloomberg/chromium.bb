@@ -445,7 +445,7 @@ class MultibufferDataSourceTest : public testing::Test {
     return loader()->current_buffer_size_ * 32768 /* block size */;
   }
   double data_source_playback_rate() { return data_source_->playback_rate_; }
-  bool is_local_source() { return data_source_->assume_fully_buffered(); }
+  bool is_local_source() { return data_source_->AssumeFullyBuffered(); }
   scoped_refptr<UrlData> url_data() { return data_source_->url_data_; }
   void set_might_be_reused_from_cache_in_future(bool value) {
     url_data()->set_cacheable(value);

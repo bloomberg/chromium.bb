@@ -159,7 +159,7 @@ bool MultibufferDataSource::media_has_played() const {
   return media_has_played_;
 }
 
-bool MultibufferDataSource::assume_fully_buffered() {
+bool MultibufferDataSource::AssumeFullyBuffered() const {
   return !url_data_->url().SchemeIsHTTPOrHTTPS();
 }
 
@@ -361,7 +361,7 @@ void MultibufferDataSource::OnBufferingHaveEnough(bool always_cancel) {
   }
 }
 
-int64_t MultibufferDataSource::GetMemoryUsage() const {
+int64_t MultibufferDataSource::GetMemoryUsage() {
   // TODO(hubbe): Make more accurate when url_data_ is shared.
   return base::checked_cast<int64_t>(url_data_->CachedSize())
          << url_data_->multibuffer()->block_size_shift();
@@ -574,9 +574,9 @@ void MultibufferDataSource::StartCallback() {
 
   // All responses must be successful. Resources that are assumed to be fully
   // buffered must have a known content length.
-  bool success = reader_ && reader_->Available() > 0 && url_data_ &&
-                 (!assume_fully_buffered() ||
-                  url_data_->length() != kPositionNotSpecified);
+  bool success =
+      reader_ && reader_->Available() > 0 && url_data_ &&
+      (!AssumeFullyBuffered() || url_data_->length() != kPositionNotSpecified);
 
   if (success) {
     {
@@ -584,8 +584,8 @@ void MultibufferDataSource::StartCallback() {
       total_bytes_ = url_data_->length();
     }
     streaming_ =
-        !assume_fully_buffered() && (total_bytes_ == kPositionNotSpecified ||
-                                     !url_data_->range_supported());
+        !AssumeFullyBuffered() && (total_bytes_ == kPositionNotSpecified ||
+                                   !url_data_->range_supported());
 
     media_log_->SetDoubleProperty("total_bytes",
                                   static_cast<double>(total_bytes_));
@@ -603,7 +603,7 @@ void MultibufferDataSource::StartCallback() {
   if (success) {
     if (total_bytes_ != kPositionNotSpecified) {
       host_->SetTotalBytes(total_bytes_);
-      if (assume_fully_buffered())
+      if (AssumeFullyBuffered())
         host_->AddBufferedByteRange(0, total_bytes_);
     }
 
@@ -628,7 +628,7 @@ void MultibufferDataSource::ProgressCallback(int64_t begin, int64_t end) {
   DVLOG(1) << __func__ << "(" << begin << ", " << end << ")";
   DCHECK(render_task_runner_->BelongsToCurrentThread());
 
-  if (assume_fully_buffered())
+  if (AssumeFullyBuffered())
     return;
 
   base::AutoLock auto_lock(lock_);
@@ -653,7 +653,7 @@ void MultibufferDataSource::ProgressCallback(int64_t begin, int64_t end) {
 void MultibufferDataSource::UpdateLoadingState_Locked(bool force_loading) {
   DVLOG(1) << __func__;
   lock_.AssertAcquired();
-  if (assume_fully_buffered())
+  if (AssumeFullyBuffered())
     return;
   // Update loading state.
   bool is_loading = !!reader_ && reader_->IsLoading();

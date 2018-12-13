@@ -750,6 +750,89 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
   EXPECT_GT(reported_memory_ - data_source_size, 0);
 }
 
+// Verify LoadAndWaitForMetadata() functions without issue.
+TEST_F(WebMediaPlayerImplTest, LoadAndDestroyDataUrl) {
+  InitializeWebMediaPlayerImpl();
+  EXPECT_FALSE(IsSuspended());
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadAuto);
+
+  const GURL kMp3DataUrl(
+      "data://audio/mp3;base64,SUQzAwAAAAAAFlRFTkMAAAAMAAAAQW1hZGV1cyBQcm//"
+      "+5DEAAAAAAAAAAAAAAAAAAAAAABYaW5nAAAADwAAAAwAAAftABwcHBwcHBwcMTExMTExMTFG"
+      "RkZGRkZGRlpaWlpaWlpaWm9vb29vb29vhISEhISEhISYmJiYmJiYmJitra2tra2trcLCwsLC"
+      "wsLC3t7e3t7e3t7e7+/v7+/v7+///////////"
+      "wAAADxMQU1FMy45OHIErwAAAAAudQAANCAkCK9BAAHMAAAHbZV/"
+      "jdYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/"
+      "+0DEAAABcAOH1AAAIhcbaLc80EgAAAAAAPAAAP/"
+      "0QfAAQdBwGBwf8AwGAgAAMBYxgxBgaTANj4NBIJgwVX+"
+      "jXKCAMFgC8LgBGBmB3KTAhAT8wIQFjATAWhyLf4TUFdHcW4WkdwwxdMT3EaJEeo4UknR8dww"
+      "wlxIj1RZJJ98S0khhhhiaPX/8LqO4YYS4kRhRhf/8nD2HsYj1HqZF4vf9YKiIKgqIlQAMA3/"
+      "kQAMHsToyV0cDdv/"
+      "7IMQHgEgUaSld4QAg1A0lde4cXDskP7w0MysiKzEUARMCEBQwLQPAwC8VADBwCsOwF+v///"
+      "6ydVW3tR1HNzg22xv+3Z9gAAOgA//"
+      "pg1gxGG0G6aJdDp5LCgnFycZmDJi0ADQhRrZGzKGQAqP//3t3Xe3pUv19yF6v7FIAAiMAb/"
+      "3/"
+      "+yDEAwBGpBsprn9gIN0NZOn9lFyAAGa1QaI6ZhLqtGY3QFgnJ4BlymYWTBYNQ4LcX88rfX/"
+      "1Yu+8WKLoSm09u7Fd1QADgbfwwBECUMBpB+TDDGAUySsMLO80jP18xowMNGTBgotYkm3gPv/"
+      "/6P1v2pspRShZJjXgT7V1AAAoAG/9//"
+      "sgxAMCxzRpKa9k5KDODOUR7ihciAAsEwYdoVZqATrn1uJSYowIBg9gKn0MboJlBF3Fh4YAfX"
+      "//9+52v6qhZt7o244rX/JfRoADB+B5MPsQ401sRj4pGKOeGUzuJDGwHEhUhAvBuMNAM1b//"
+      "t9kSl70NlDrbJecU/t99aoAACMAD//7IMQCggY0Gymuf2Ag7A0k9f2UXPwAAGaFSZ/"
+      "7BhFSu4Yy2FjHCYZlKoYQTiEMTLaGxV5nNu/8UddjmtWbl6r/SYAN/pAADACAI8wHQHwMM/"
+      "XrDJuAv48nRNEXDHS8w4YMJCy0aSDbgm3//26S0noiIgkPfZn1Sa9V16dNAAAgAA//"
+      "+yDEAoBHCGkpr2SkoMgDZXW/cAT4iAA8FEYeASxqGx/H20IYYpYHJg+AHH2GbgBlgl/"
+      "1yQ2AFP///YpK32okeasc/f/+xXsAAJ1AA/"
+      "9Ntaj1Pc0K7Yzw6FrOHlozEHzFYEEg6NANZbIn9a8p//j7HC6VvlmStt3o+pUAACMADfyA//"
+      "sgxAOCRkwbKa5/YCDUDWU1/ZxcAGZVQZ27Zg/KweYuMFmm74hkSqYKUCINS0ZoxZ5XOv/"
+      "8X7EgE4lCZDu7fc4AN/6BQHQwG0GpMMAUczI/wpM7iuM9TTGCQwsRMEBi8Cl7yAnv//"
+      "2+belL59SGkk1ENqvyagAAKAAP/aAAEBGmGv/"
+      "7IMQGAobYaSuvcOLgzA1lNe4cXGDeaOzj56RhnnIBMZrA4GMAKF4GBCJjK4gC+v///"
+      "uh3b1WWRQNv2e/syS7ABAADCACBMPUSw0sNqj23G4OZHMzmKjGgLDBMkAzxpMNAE1b///"
+      "od72VdCOtlpw1/764AAhwAf/0AAGUkeZb0Bgz/"
+      "+yDEB4CGMBsrrn9gINgNJXX9qFxCcAYkOE7GsVJi6QBCEZCEEav2owqE3f4+KbGKLWKN29/"
+      "YsAAC0AUAARAL5gMgLQYWGjRGQkBGh1MmZseGKjpgwUYCBoprUgcDlG//7372tX0y/"
+      "zl33dN2ugIf/yIADoERhDlqm9CtAfsRzhlK//"
+      "tAxAoAB7RpKPXhACHRkia3PPAAEkGL4EUFgCTA3BTMDkAcEgMgoCeefz/////"
+      "oxOy73ryRx97nI2//YryIAhX0mveu/"
+      "3tEgAAAABh2nnnBAAOYOK6ZtxB4mEYkiaDwX5gzgHGAkAUYGwB0kMGQFaKGBEAwDgHAUAcvP"
+      "KwDfJeHEGqcMk3iN5blKocU8c6FA4FxhTqXf/OtXzv37ErkOYWXP/"
+      "93kTV91+YNo3Lh8ECwliUABv7/"
+      "+xDEAYPIREMrXcMAKAAAP8AAAARfwAADHinN1RU5NKTjkHN1Mc08dTJQjL4GBwgYEAK/"
+      "X2a8/1qZjMtcFCUTiSXmteUeFNBWIqEKCioLiKyO10VVTEFNRTMuOTguMlVVVVVVVVVVVf/"
+      "7EMQJg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
+      "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVEFHAAA"
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAAAP8=");
+
+  wmpi_->Load(blink::WebMediaPlayer::kLoadTypeURL,
+              blink::WebMediaPlayerSource(blink::WebURL(kMp3DataUrl)),
+              blink::WebMediaPlayer::kCorsModeUnspecified);
+
+  base::RunLoop().RunUntilIdle();
+
+  // This runs until we reach the have current data state. Attempting to wait
+  // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous
+  // execution of tasks on the base::test:ScopedTaskEnvironment.
+  while (wmpi_->GetReadyState() <
+         blink::WebMediaPlayer::kReadyStateHaveCurrentData) {
+    base::RunLoop loop;
+    EXPECT_CALL(client_, ReadyStateChanged())
+        .WillRepeatedly(RunClosure(loop.QuitClosure()));
+    loop.Run();
+
+    // Clear the mock so it doesn't have a stale QuitClosure.
+    testing::Mock::VerifyAndClearExpectations(&client_);
+  }
+
+  EXPECT_FALSE(IsSuspended());
+  CycleThreads();
+}
+
 // Verify that preload=metadata suspend works properly.
 TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   InitializeWebMediaPlayerImpl();
