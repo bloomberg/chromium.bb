@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
@@ -36,6 +35,8 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/storage_partition.h"
@@ -312,10 +313,10 @@ void DiceTurnSyncOnHelper::CompleteInitForNewProfile(
   }
 }
 
-browser_sync::ProfileSyncService*
-DiceTurnSyncOnHelper::GetProfileSyncService() {
+syncer::SyncService* DiceTurnSyncOnHelper::GetSyncService() {
   return profile_->IsSyncAllowed()
-             ? ProfileSyncServiceFactory::GetForProfile(profile_)
+             ? ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
+                   profile_)
              : nullptr;
 }
 
@@ -327,7 +328,7 @@ void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
   signin_metrics::LogSigninReason(signin_reason_);
   base::RecordAction(base::UserMetricsAction("Signin_Signin_Succeed"));
 
-  syncer::SyncService* sync_service = GetProfileSyncService();
+  syncer::SyncService* sync_service = GetSyncService();
   if (sync_service) {
     // Take a SyncSetupInProgressHandle, so that the UI code can use
     // IsFirstSyncSetupInProgress() as a way to know if there is a signin in
@@ -385,7 +386,7 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
       delegate_->ShowSyncSettings();
       break;
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
-      browser_sync::ProfileSyncService* sync_service = GetProfileSyncService();
+      syncer::SyncService* sync_service = GetSyncService();
       if (sync_service)
         sync_service->GetUserSettings()->SetFirstSetupComplete();
       if (consent_service)

@@ -22,7 +22,6 @@
 #include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -32,7 +31,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/dialog_test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
@@ -130,10 +128,6 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
   FakeSigninManager* signin_manager() {
     return static_cast<FakeSigninManager*>(
         SigninManagerFactory::GetForProfile(profile()));
-  }
-
-  browser_sync::ProfileSyncService* sync() {
-    return ProfileSyncServiceFactory::GetForProfile(profile());
   }
 
   base::UserActionTester* user_action_tester() {

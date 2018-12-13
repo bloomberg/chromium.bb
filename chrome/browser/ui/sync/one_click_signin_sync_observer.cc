@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
@@ -36,7 +36,7 @@ OneClickSigninSyncObserver::OneClickSigninSyncObserver(
       weak_ptr_factory_(this) {
   DCHECK(!continue_url_.is_empty());
 
-  browser_sync::ProfileSyncService* sync_service = GetSyncService(web_contents);
+  syncer::SyncService* sync_service = GetSyncService(web_contents);
   if (sync_service) {
     sync_service->AddObserver(this);
   } else {
@@ -55,8 +55,7 @@ OneClickSigninSyncObserver::OneClickSigninSyncObserver(
 OneClickSigninSyncObserver::~OneClickSigninSyncObserver() {}
 
 void OneClickSigninSyncObserver::WebContentsDestroyed() {
-  browser_sync::ProfileSyncService* sync_service =
-      GetSyncService(web_contents());
+  syncer::SyncService* sync_service = GetSyncService(web_contents());
   if (sync_service)
     sync_service->RemoveObserver(this);
 
@@ -64,8 +63,7 @@ void OneClickSigninSyncObserver::WebContentsDestroyed() {
 }
 
 void OneClickSigninSyncObserver::OnStateChanged(syncer::SyncService* sync) {
-  browser_sync::ProfileSyncService* sync_service =
-      GetSyncService(web_contents());
+  syncer::SyncService* sync_service = GetSyncService(web_contents());
 
   // At this point, the sign-in process is complete, and control has been handed
   // back to the sync engine. Close the gaia sign in tab if the |continue_url_|
@@ -103,11 +101,10 @@ void OneClickSigninSyncObserver::LoadContinueUrl() {
       std::string());
 }
 
-browser_sync::ProfileSyncService* OneClickSigninSyncObserver::GetSyncService(
+syncer::SyncService* OneClickSigninSyncObserver::GetSyncService(
     content::WebContents* web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return ProfileSyncServiceFactory::GetForProfile(profile);
+  return ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
+      web_contents->GetBrowserContext());
 }
 
 // static

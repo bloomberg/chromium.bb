@@ -21,11 +21,8 @@ class Browser;
 class ProfileOAuth2TokenService;
 class SigninManager;
 
-namespace browser_sync {
-class ProfileSyncService;
-}
-
 namespace syncer {
+class SyncService;
 class SyncSetupInProgressHandle;
 }
 
@@ -166,8 +163,8 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   void CompleteInitForNewProfile(Profile* new_profile,
                                  Profile::CreateStatus status);
 
-  // Returns the ProfileSyncService, or nullptr if sync is not allowed.
-  browser_sync::ProfileSyncService* GetProfileSyncService();
+  // Returns the SyncService, or nullptr if sync is not allowed.
+  syncer::SyncService* GetSyncService();
 
   // Completes the signin in SigninManager and displays the Sync confirmation
   // UI.
