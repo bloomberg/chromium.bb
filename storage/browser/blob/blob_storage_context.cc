@@ -122,7 +122,6 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
 
   entry->SetSharedBlobItems(std::move(items));
   std::unique_ptr<BlobDataHandle> handle = CreateHandle(uuid, entry);
-  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.ItemCount", entry->items().size());
   UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.TotalSize", total_memory_size / 1024);
   entry->set_status(BlobStatus::DONE);
   memory_controller_.NotifyMemoryItemsUsed(entry->items());
@@ -233,7 +232,6 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
 
   std::unique_ptr<BlobDataHandle> handle = CreateHandle(content->uuid_, entry);
 
-  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.ItemCount", entry->items().size());
   UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.TotalSize",
                           content->total_memory_size() / 1024);
 
