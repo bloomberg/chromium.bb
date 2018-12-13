@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_PROXY_DATA_TYPE_CONTROLLER_H__
-#define COMPONENTS_SYNC_DRIVER_PROXY_DATA_TYPE_CONTROLLER_H__
+#ifndef COMPONENTS_SYNC_SESSIONS_PROXY_TABS_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_SYNC_SESSIONS_PROXY_TABS_DATA_TYPE_CONTROLLER_H_
 
 #include <memory>
 #include <string>
@@ -12,31 +12,30 @@
 #include "base/macros.h"
 #include "components/sync/driver/data_type_controller.h"
 
-namespace syncer {
+namespace sync_sessions {
 
-// Implementation for proxy datatypes. These are datatype that have no
-// representation in sync, and therefore no change processor or syncable
-// service.
-class ProxyDataTypeController : public DataTypeController {
+// Controller for PROXY_TABS. Proxy tabs have no representation in sync, and
+// therefore processor or worker.
+class ProxyTabsDataTypeController : public syncer::DataTypeController {
  public:
   // |state_changed_cb| can be used to listen to state changes.
-  ProxyDataTypeController(
-      ModelType type,
+  explicit ProxyTabsDataTypeController(
       const base::RepeatingCallback<void(State)>& state_changed_cb);
-  ~ProxyDataTypeController() override;
+  ~ProxyTabsDataTypeController() override;
 
   // DataTypeController interface.
   bool ShouldLoadModelBeforeConfigure() const override;
-  void BeforeLoadModels(ModelTypeConfigurer* configurer) override;
-  void LoadModels(const ConfigureContext& configure_context,
+  void BeforeLoadModels(syncer::ModelTypeConfigurer* configurer) override;
+  void LoadModels(const syncer::ConfigureContext& configure_context,
                   const ModelLoadCallback& model_load_callback) override;
   void RegisterWithBackend(base::OnceCallback<void(bool)> set_downloaded,
-                           ModelTypeConfigurer* configurer) override;
+                           syncer::ModelTypeConfigurer* configurer) override;
   void StartAssociating(StartCallback start_callback) override;
-  void Stop(ShutdownReason shutdown_reason, StopCallback callback) override;
+  void Stop(syncer::ShutdownReason shutdown_reason,
+            StopCallback callback) override;
   State state() const override;
-  void ActivateDataType(ModelTypeConfigurer* configurer) override;
-  void DeactivateDataType(ModelTypeConfigurer* configurer) override;
+  void ActivateDataType(syncer::ModelTypeConfigurer* configurer) override;
+  void DeactivateDataType(syncer::ModelTypeConfigurer* configurer) override;
   void GetAllNodes(AllNodesCallback callback) override;
   void GetStatusCounters(StatusCountersCallback callback) override;
   void RecordMemoryUsageAndCountsHistograms() override;
@@ -45,9 +44,9 @@ class ProxyDataTypeController : public DataTypeController {
   const base::RepeatingCallback<void(State)> state_changed_cb_;
   State state_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProxyDataTypeController);
+  DISALLOW_COPY_AND_ASSIGN(ProxyTabsDataTypeController);
 };
 
-}  // namespace syncer
+}  // namespace sync_sessions
 
-#endif  // COMPONENTS_SYNC_DRIVER_PROXY_DATA_TYPE_CONTROLLER_H__
+#endif  // COMPONENTS_SYNC_SESSIONS_PROXY_TABS_DATA_TYPE_CONTROLLER_H_

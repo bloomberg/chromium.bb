@@ -36,7 +36,6 @@
 #include "components/sync/driver/data_type_manager_impl.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
 #include "components/sync/driver/model_type_controller.h"
-#include "components/sync/driver/proxy_data_type_controller.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
@@ -48,6 +47,7 @@
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
+#include "components/sync_sessions/proxy_tabs_data_type_controller.h"
 #include "components/sync_sessions/session_model_type_controller.h"
 #include "components/sync_sessions/session_sync_service.h"
 
@@ -62,7 +62,6 @@ using syncer::DataTypeManager;
 using syncer::DataTypeManagerImpl;
 using syncer::DataTypeManagerObserver;
 using syncer::ModelTypeController;
-using syncer::ProxyDataTypeController;
 using syncer::SyncableServiceBasedModelTypeController;
 
 namespace browser_sync {
@@ -262,19 +261,19 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     // disabled because the tab sync data is added to the web history on the
     // server.
     if (!disabled_types.Has(syncer::PROXY_TABS)) {
-      controllers.push_back(std::make_unique<ProxyDataTypeController>(
-          syncer::PROXY_TABS,
-          base::BindRepeating(
-              &sync_sessions::SessionSyncService::ProxyTabsStateChanged,
-              base::Unretained(sync_client_->GetSessionSyncService()))));
-        controllers.push_back(
-            std::make_unique<sync_sessions::SessionModelTypeController>(
-                sync_client_->GetPrefService(),
-                std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
-                    sync_client_->GetSessionSyncService()
-                        ->GetControllerDelegate()
-                        .get()),
-                history_disabled_pref_));
+      controllers.push_back(
+          std::make_unique<sync_sessions::ProxyTabsDataTypeController>(
+              base::BindRepeating(
+                  &sync_sessions::SessionSyncService::ProxyTabsStateChanged,
+                  base::Unretained(sync_client_->GetSessionSyncService()))));
+      controllers.push_back(
+          std::make_unique<sync_sessions::SessionModelTypeController>(
+              sync_client_->GetPrefService(),
+              std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+                  sync_client_->GetSessionSyncService()
+                      ->GetControllerDelegate()
+                      .get()),
+              history_disabled_pref_));
     }
 
     // Favicon sync is enabled by default. Register unless explicitly disabled.
