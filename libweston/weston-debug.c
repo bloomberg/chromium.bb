@@ -350,6 +350,16 @@ weston_compositor_enable_debug_protocol(struct weston_compositor *compositor)
 		   "information leak.\n");
 }
 
+/** Determine if the debug protocol has been enabled
+ *
+ * \param wc The libweston compositor to verify if debug protocol has been enabled
+ */
+WL_EXPORT bool
+weston_compositor_is_debug_protocol_enabled(struct weston_compositor *wc)
+{
+	return wc->weston_debug->global != NULL;
+}
+
 /** Register a new debug stream name, creating a debug scope
  *
  * \param compositor The libweston compositor where to add.

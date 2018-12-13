@@ -39,6 +39,9 @@ struct weston_compositor;
 void
 weston_compositor_enable_debug_protocol(struct weston_compositor *);
 
+bool
+weston_compositor_is_debug_protocol_enabled(struct weston_compositor *);
+
 struct weston_debug_scope;
 struct weston_debug_stream;
 
