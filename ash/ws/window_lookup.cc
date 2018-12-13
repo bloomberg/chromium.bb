@@ -16,6 +16,16 @@
 
 namespace ash {
 namespace window_lookup {
+namespace {
+
+ws::Id GetTransportId(aura::Window* window) {
+  return Shell::Get()
+      ->window_service_owner()
+      ->window_service()
+      ->GetCompleteTransportIdForWindow(window);
+}
+
+}  // namespace
 
 bool IsProxyWindow(aura::Window* window) {
   return ws::WindowService::HasRemoteClient(window);
@@ -52,10 +62,7 @@ aura::Window* GetClientWindowForProxyWindow(aura::Window* window) {
   DCHECK(IsProxyWindow(window));
   DCHECK(views::MusClient::Get());
 
-  const ws::Id window_id = Shell::Get()
-                               ->window_service_owner()
-                               ->window_service()
-                               ->GetCompleteTransportIdForWindow(window);
+  const ws::Id window_id = GetTransportId(window);
   if (window_id == ws::kInvalidTransportId)
     return nullptr;
 
@@ -75,6 +82,24 @@ aura::Window* GetClientWindowForProxyWindow(aura::Window* window) {
   aura::WindowMus* window_mus = window_tree_client->GetWindowByServerId(
       ws::BuildTransportId(0, ws::ClientWindowIdFromTransportId(window_id)));
   return window_mus ? window_mus->GetWindow() : nullptr;
+}
+
+bool IsProxyWindowForOutOfProcess(aura::Window* window) {
+  if (!IsProxyWindow(window))
+    return false;
+
+  const ws::Id window_id = GetTransportId(window);
+  if (window_id == ws::kInvalidTransportId)
+    return false;
+
+  aura::WindowTreeClient* window_tree_client =
+      views::MusClient::Get()->window_tree_client();
+
+  if (!window_tree_client->id().has_value())
+    return false;  // The client doesn't know its id yet.
+
+  const ws::ClientSpecificId client_id = *(window_tree_client->id());
+  return ws::ClientIdFromTransportId(window_id) != client_id;
 }
 
 }  // namespace window_lookup

@@ -28,6 +28,10 @@ ASH_EXPORT aura::Window* GetProxyWindowForClientWindow(aura::Window* window);
 // Returns the client window for a proxy window.
 ASH_EXPORT aura::Window* GetClientWindowForProxyWindow(aura::Window* window);
 
+// Returns true if |window| is a proxy for a window created by a client that
+// is running in its own process (e.g. shortcut_viewer).
+ASH_EXPORT bool IsProxyWindowForOutOfProcess(aura::Window* window);
+
 }  // namespace window_lookup
 }  // namespace ash
 

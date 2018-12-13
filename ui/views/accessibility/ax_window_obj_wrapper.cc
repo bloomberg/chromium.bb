@@ -45,7 +45,7 @@ AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
     : aura_obj_cache_(aura_obj_cache),
       window_(window),
       is_alert_(false),
-      is_root_window_(window->IsRootWindow()) {
+      is_root_window_(AXAuraWindowUtils::Get()->IsRootWindow(window)) {
   window->AddObserver(this);
 
   if (is_root_window_)

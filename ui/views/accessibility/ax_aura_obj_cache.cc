@@ -10,6 +10,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_aura_window_utils.h"
 #include "ui/views/accessibility/ax_view_obj_wrapper.h"
 #include "ui/views/accessibility/ax_widget_obj_wrapper.h"
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
@@ -18,12 +19,15 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace views {
+namespace {
 
 aura::client::FocusClient* GetFocusClient(aura::Window* root_window) {
   if (!root_window)
     return nullptr;
   return aura::client::GetFocusClient(root_window);
 }
+
+}  // namespace
 
 // static
 AXAuraObjCache* AXAuraObjCache::GetInstance() {
@@ -92,10 +96,8 @@ AXAuraObjWrapper* AXAuraObjCache::Get(int32_t id) {
 
 void AXAuraObjCache::GetTopLevelWindows(
     std::vector<AXAuraObjWrapper*>* children) {
-  for (const auto& it : window_to_id_map_) {
-    if (!it.first->parent())
-      children->push_back(GetOrCreate(it.first));
-  }
+  for (aura::Window* root : root_windows_)
+    children->push_back(GetOrCreate(root));
 }
 
 AXAuraObjWrapper* AXAuraObjCache::GetFocus() {
@@ -139,13 +141,15 @@ View* AXAuraObjCache::GetFocusedView() {
     if (!focused_window)
       return nullptr;
 
-    focused_widget = Widget::GetWidgetForNativeView(focused_window);
+    // SingleProcessMash may need to jump between ash and client windows.
+    AXAuraWindowUtils* window_utils = AXAuraWindowUtils::Get();
+    focused_widget = window_utils->GetWidgetForNativeView(focused_window);
     while (!focused_widget) {
       focused_window = focused_window->parent();
       if (!focused_window)
         break;
 
-      focused_widget = Widget::GetWidgetForNativeView(focused_window);
+      focused_widget = window_utils->GetWidgetForNativeView(focused_window);
     }
   }
 

@@ -526,6 +526,7 @@ bool AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
     // above. If this happens, reset and return an error.
     ClientTreeNode* client_child = client_id_map_[new_child_id];
     if (client_child && client_child->parent != client_node) {
+      DVLOG(1) << "Reparenting detected";
       Reset();
       return false;
     }
