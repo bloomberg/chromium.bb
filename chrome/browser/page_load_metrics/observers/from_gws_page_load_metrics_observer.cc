@@ -435,8 +435,10 @@ void FromGWSPageLoadMetricsObserver::OnFailedProvisionalLoad(
 }
 
 void FromGWSPageLoadMetricsObserver::OnUserInput(
-    const blink::WebInputEvent& event) {
-  logger_.OnUserInput(event);
+    const blink::WebInputEvent& event,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnUserInput(event, timing, extra_info);
 }
 
 void FromGWSPageLoadMetricsLogger::OnCommit(
@@ -638,7 +640,9 @@ void FromGWSPageLoadMetricsLogger::OnParseStop(
 }
 
 void FromGWSPageLoadMetricsLogger::OnUserInput(
-    const blink::WebInputEvent& event) {
+    const blink::WebInputEvent& event,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (first_paint_triggered_ && !first_user_interaction_after_paint_) {
     DCHECK(!navigation_start_.is_null());
     first_user_interaction_after_paint_ =

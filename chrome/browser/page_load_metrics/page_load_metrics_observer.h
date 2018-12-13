@@ -381,8 +381,10 @@ class PageLoadMetricsObserver {
                               const PageLoadExtraInfo& extra_info) {}
 
   // OnUserInput is triggered when a new user input is passed in to
-  // web_contents. Contains a TimeDelta from navigation start.
-  virtual void OnUserInput(const blink::WebInputEvent& event) {}
+  // web_contents.
+  virtual void OnUserInput(const blink::WebInputEvent& event,
+                           const mojom::PageLoadTiming& timing,
+                           const PageLoadExtraInfo& extra_info) {}
 
   // The following methods are invoked at most once, when the timing for the
   // associated event first becomes available.
@@ -413,22 +415,6 @@ class PageLoadMetricsObserver {
   virtual void OnFirstMeaningfulPaintInMainFrameDocument(
       const mojom::PageLoadTiming& timing,
       const PageLoadExtraInfo& extra_info) {}
-
-  // These signatures are used to report the last candidate for each of FCP++
-  // metrics. They will be invoked at the end of page load's life time, around
-  // the time of the OnComplete callback.
-  virtual void OnLargestImagePaintInMainFrameDocument(
-      const mojom::PageLoadTiming& last_candidate,
-      const page_load_metrics::PageLoadExtraInfo& info) {}
-  virtual void OnLastImagePaintInMainFrameDocument(
-      const mojom::PageLoadTiming& last_candidate,
-      const page_load_metrics::PageLoadExtraInfo& info) {}
-  virtual void OnLargestTextPaintInMainFrameDocument(
-      const mojom::PageLoadTiming& last_candidate,
-      const page_load_metrics::PageLoadExtraInfo& info) {}
-  virtual void OnLastTextPaintInMainFrameDocument(
-      const mojom::PageLoadTiming& last_candidate,
-      const page_load_metrics::PageLoadExtraInfo& info) {}
 
   virtual void OnPageInteractive(const mojom::PageLoadTiming& timing,
                                  const PageLoadExtraInfo& extra_info) {}
