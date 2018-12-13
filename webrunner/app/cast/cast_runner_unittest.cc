@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webrunner/app/cast/application_config_manager/test/fake_application_config_manager.h"
 #include "webrunner/fidl/chromium/web/cpp/fidl.h"
 #include "webrunner/test/fake_context.h"
 
@@ -36,9 +37,20 @@ class CastRunnerTest : public testing::Test {
         std::make_unique<base::fuchsia::ScopedDefaultComponentContext>(
             std::move(service_directory_client));
 
+    // Create the AppConfigManager.
+    app_config_manager_ =
+        std::make_unique<castrunner::test::FakeApplicationConfigManager>(
+            &test_server_);
+    app_config_binding_ = std::make_unique<
+        fidl::Binding<chromium::cast::ApplicationConfigManager>>(
+        app_config_manager_.get());
+    chromium::cast::ApplicationConfigManagerPtr app_config_manager_interface;
+    app_config_binding_->Bind(app_config_manager_interface.NewRequest());
+
     // Create the CastRunner, published into |service_directory_|.
     cast_runner_ = std::make_unique<CastRunner>(
         service_directory_.get(), std::move(fake_context_ptr_),
+        std::move(app_config_manager_interface),
         until_runner_idle_loop_.QuitClosure());
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
@@ -49,6 +61,8 @@ class CastRunnerTest : public testing::Test {
       until_runner_idle_loop_.Quit();
     });
   }
+
+  void SetUp() override { ASSERT_TRUE(test_server_.Start()); }
 
   zx::channel StartCastComponent(
       const base::StringPiece& cast_url,
@@ -86,6 +100,15 @@ class CastRunnerTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
   base::RunLoop until_runner_idle_loop_;
 
+  // Test server.
+  net::EmbeddedTestServer test_server_;
+
+  // Test AppConfigManager and its binding.
+  std::unique_ptr<castrunner::test::FakeApplicationConfigManager>
+      app_config_manager_;
+  std::unique_ptr<fidl::Binding<chromium::cast::ApplicationConfigManager>>
+      app_config_binding_;
+
   // Temporarily holds the InterfacePtr to the FakeContext, until it is passed
   // to the CastRunner.
   chromium::web::ContextPtr fake_context_ptr_;
@@ -116,8 +139,10 @@ TEST_F(CastRunnerTest, TeardownOnComponentControllerUnbind) {
   fuchsia::sys::ComponentControllerPtr component_controller_ptr;
 
   // Launch the test-app component, passing a ComponentController request.
-  base::fuchsia::ComponentContext component_services(StartCastComponent(
-      "cast:00000000", component_controller_ptr.NewRequest()));
+  std::string url("cast:");
+  url += castrunner::test::FakeApplicationConfigManager::kTestCastAppId;
+  base::fuchsia::ComponentContext component_services(
+      StartCastComponent(url, component_controller_ptr.NewRequest()));
 
   // Pump the message-loop to process StartComponent(). If the call is rejected
   // then the ComponentControllerPtr's error-handler will be invoked at this
