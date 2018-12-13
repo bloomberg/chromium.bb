@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
+#include "components/viz/common/features.h"
 #include "content/browser/media/capture/content_capture_device_browsertest_base.h"
 #include "content/browser/media/capture/fake_video_capture_stack.h"
 #include "content/browser/media/capture/frame_test_util.h"
@@ -102,8 +103,10 @@ class WebContentsVideoCaptureDeviceBrowserTest
         // TODO(crbug/810131): The software compositor ignores color space and
         // always uses the REC609 conversion factors. Once that's fixed and
         // color space info is fully plumbed-through, remove this.
+        // TODO(crbug/795132): SkiaRenderer temporarily uses same code as
+        // software compositor. Fix plumbing for SkiaRenderer.
         const int max_color_diff =
-            IsSoftwareCompositingTest()
+            (IsSoftwareCompositingTest() || features::IsUsingSkiaRenderer())
                 ? FrameTestUtil::kMaxInaccurateColorDifference
                 : FrameTestUtil::kMaxColorDifference;
 

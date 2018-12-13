@@ -94,6 +94,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
   // the output of a cached SkSurface for the given |id|.
   virtual void CopyOutput(RenderPassId id,
                           const gfx::Rect& copy_rect,
+                          const gfx::Rect& result_rect,
                           std::unique_ptr<CopyOutputRequest> request) = 0;
 
   // Add context lost observer.

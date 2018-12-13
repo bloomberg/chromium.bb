@@ -99,6 +99,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void RemoveRenderPassResource(std::vector<RenderPassId> ids);
   void CopyOutput(RenderPassId id,
                   const gfx::Rect& copy_rect,
+                  const gfx::Rect& result_rect,
                   std::unique_ptr<CopyOutputRequest> request);
 
   // Fulfill callback for promise SkImage created from a resource.

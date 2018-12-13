@@ -12,6 +12,7 @@
 #include "cc/paint/render_surface_filters.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -1155,41 +1156,59 @@ void SkiaRenderer::CopyDrawnRenderPass(
   // TODO(weiliangc): Make copy request work. (crbug.com/644851)
   TRACE_EVENT0("viz", "SkiaRenderer::CopyDrawnRenderPass");
 
-  gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
+  // Finalize the source subrect, as the entirety of the RenderPass's output
+  // optionally clamped to the requested copy area. Then, compute the result
+  // rect, which is the selection clamped to the maximum possible result bounds.
+  // If there will be zero pixels of output or the scaling ratio was not
+  // reasonable, do not proceed.
+  gfx::Rect output_rect = current_frame()->current_render_pass->output_rect;
   if (request->has_area())
-    copy_rect.Intersect(request->area());
-
-  if (copy_rect.IsEmpty())
+    output_rect.Intersect(request->area());
+  const gfx::Rect result_bounds =
+      request->is_scaled() ? copy_output::ComputeResultRect(
+                                 gfx::Rect(output_rect.size()),
+                                 request->scale_from(), request->scale_to())
+                           : gfx::Rect(output_rect.size());
+  gfx::Rect result_rect = result_bounds;
+  if (request->has_result_selection())
+    result_rect.Intersect(request->result_selection());
+  if (result_rect.IsEmpty())
     return;
 
-  gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(copy_rect);
-
-  if (request->result_format() != CopyOutputResult::Format::RGBA_BITMAP ||
-      request->is_scaled() ||
-      (request->has_result_selection() &&
-       request->result_selection() == gfx::Rect(copy_rect.size()))) {
-    // TODO(crbug.com/644851): Complete the implementation for all request
-    // types, scaling, etc.
-    NOTIMPLEMENTED();
-    return;
+  gfx::Rect copy_rect;
+  if (request->is_scaled()) {
+    copy_rect = MoveFromDrawToWindowSpace(output_rect);
+  } else {
+    copy_rect =
+        MoveFromDrawToWindowSpace(result_rect + output_rect.OffsetFromOrigin());
   }
 
   switch (draw_mode_) {
     case DrawMode::DDL: {
       // Root framebuffer uses id 0 in SkiaOutputSurface.
-      auto render_pass_id = 0;
-      const auto* render_pass = current_frame()->current_render_pass;
-      if (render_pass != current_frame()->root_render_pass)
-        render_pass_id = render_pass->id;
-      skia_output_surface_->CopyOutput(render_pass_id, window_copy_rect,
+      RenderPassId render_pass_id = 0;
+      if (current_frame()->root_render_pass !=
+          current_frame()->current_render_pass) {
+        render_pass_id = current_frame()->current_render_pass->id;
+      }
+      skia_output_surface_->CopyOutput(render_pass_id, copy_rect, result_rect,
                                        std::move(request));
       break;
     }
     case DrawMode::GL:  // Fallthrough
     case DrawMode::VULKAN: {
+      if (request->result_format() != CopyOutputResult::Format::RGBA_BITMAP ||
+          request->is_scaled() ||
+          (request->has_result_selection() &&
+           request->result_selection() == gfx::Rect(copy_rect.size()))) {
+        // TODO(crbug.com/644851): Complete the implementation for all request
+        // types, scaling, etc.
+        NOTIMPLEMENTED();
+        return;
+      }
       sk_sp<SkImage> copy_image =
           current_surface_->makeImageSnapshot()->makeSubset(
-              RectToSkIRect(window_copy_rect));
+              RectToSkIRect(copy_rect));
 
       // Send copy request by copying into a bitmap.
       SkBitmap bitmap;
