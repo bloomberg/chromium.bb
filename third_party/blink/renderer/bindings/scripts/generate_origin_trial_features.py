@@ -92,14 +92,21 @@ def origin_trial_features_info(info_provider, reader, idl_filenames, target_comp
     types_for_feature = defaultdict(set)
     includes = set()
 
+    # Gather interfaces which are implemented by other interfaces.
+    implemented_interfaces = set()
+    for name, interface_info in info_provider.interfaces_info.iteritems():
+        # Skip special entries such as 'dictionaries' or 'ancestors'.
+        if name.lower() == name:
+            continue
+        implemented_interfaces.update(interface_info.get('implements_interfaces'))
+
     for idl_filename in idl_filenames:
         interface, implements = read_idl_file(reader, idl_filename)
         feature_names = get_origin_trial_feature_names_from_interface(interface)
 
-        # If this interface has NoInterfaceObject then we don't want to add
-        # includes for it because it is a base interface to be implemented
-        # by other interfaces, and does not generate an ECMAScript binding.
-        if 'NoInterfaceObject' in interface.extended_attributes:
+        # If this interface is implemented by other interfaces, we don't generate
+        # V8 bindings code for it.
+        if interface.name in implemented_interfaces:
             continue
 
         # If this interface implements another one,
