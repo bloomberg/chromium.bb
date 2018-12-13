@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//remoting/remoting_options.gni")
 import("//media/media_options.gni")
+import("//remoting/remoting_options.gni")
 
 static_library("protocol") {
   sources = [
@@ -232,8 +232,6 @@ static_library("protocol") {
       "webrtc_connection_to_host.h",
       "webrtc_data_stream_adapter.cc",
       "webrtc_data_stream_adapter.h",
-      "webrtc_dummy_video_capturer.cc",
-      "webrtc_dummy_video_capturer.h",
       "webrtc_dummy_video_encoder.cc",
       "webrtc_dummy_video_encoder.h",
       "webrtc_transport.cc",
