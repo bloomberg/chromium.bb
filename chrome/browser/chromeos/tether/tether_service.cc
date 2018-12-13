@@ -155,23 +155,8 @@ TetherService::TetherService(
   tether_host_fetcher_->AddObserver(this);
   power_manager_client_->AddObserver(this);
   network_state_handler_->AddObserver(this, FROM_HERE);
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    device_sync_client_->AddObserver(this);
-
-    if (base::FeatureList::IsEnabled(
-            chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-      multidevice_setup_client_->AddObserver(this);
-    }
-  }
-
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-    registrar_.Init(profile_->GetPrefs());
-    registrar_.Add(
-        chromeos::multidevice_setup::kInstantTetheringAllowedPrefName,
-        base::BindRepeating(&TetherService::OnPrefsChanged,
-                            weak_ptr_factory_.GetWeakPtr()));
-  }
+  device_sync_client_->AddObserver(this);
+  multidevice_setup_client_->AddObserver(this);
 
   UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnStartup",
                         IsEnabledByPreference());
@@ -179,18 +164,11 @@ TetherService::TetherService(
       << "TetherService has started. Initial user preference value: "
       << IsEnabledByPreference();
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    if (device_sync_client_->is_ready())
-      OnReady();
+  if (device_sync_client_->is_ready())
+    OnReady();
 
-    // Wait for OnReady() to be called. If
-    // chromeos::features::kEnableUnifiedMultiDeviceSetup is disabled,
-    // OnReady() will call GetAdapter(). If enabled, OnReady() will indirectly
-    // call OnHostStatusChanged(), which will call GetAdapter().
-    return;
-  }
-
-  GetBluetoothAdapter();
+  // Wait for OnReady() to be called. OnReady() will indirectly
+  // call OnHostStatusChanged(), which will call GetAdapter().
 }
 
 TetherService::~TetherService() {
@@ -296,22 +274,11 @@ void TetherService::Shutdown() {
   tether_host_fetcher_->RemoveObserver(this);
   power_manager_client_->RemoveObserver(this);
   network_state_handler_->RemoveObserver(this, FROM_HERE);
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    device_sync_client_->RemoveObserver(this);
-
-    if (base::FeatureList::IsEnabled(
-            chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-      multidevice_setup_client_->RemoveObserver(this);
-    }
-  }
+  device_sync_client_->RemoveObserver(this);
+  multidevice_setup_client_->RemoveObserver(this);
 
   if (adapter_)
     adapter_->RemoveObserver(this);
-
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-    registrar_.RemoveAll();
-  }
 
   // Shut down the feature. Note that this does not change Tether's technology
   // state in NetworkStateHandler because doing so could cause visual jank just
@@ -465,10 +432,6 @@ void TetherService::OnFeatureStatesChanged(
     UpdateTetherTechnologyState();
   else
     GetBluetoothAdapter();
-}
-
-void TetherService::OnPrefsChanged() {
-  UpdateTetherTechnologyState();
 }
 
 bool TetherService::HasSyncedTetherHosts() const {
@@ -682,51 +645,45 @@ TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {
 
   // For the cases below, the state is computed differently depending on whether
   // the MultiDeviceSetup service is active.
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-    chromeos::multidevice_setup::mojom::FeatureState tether_multidevice_state =
-        multidevice_setup_client_->GetFeatureState(
-            chromeos::multidevice_setup::mojom::Feature::kInstantTethering);
-    switch (tether_multidevice_state) {
-      case chromeos::multidevice_setup::mojom::FeatureState::
-          kProhibitedByPolicy:
-        return PROHIBITED;
-      case chromeos::multidevice_setup::mojom::FeatureState::kDisabledByUser:
-        return USER_PREFERENCE_DISABLED;
-      case chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser:
-        return ENABLED;
-      case chromeos::multidevice_setup::mojom::FeatureState::
-          kUnavailableSuiteDisabled:
-        return BETTER_TOGETHER_SUITE_DISABLED;
-      case chromeos::multidevice_setup::mojom::FeatureState::
-          kUnavailableNoVerifiedHost:
-        // Note that because of the early return above after
-        // !HasSyncedTetherHosts, if this point is hit, there are synced tether
-        // hosts available, but the multidevice state is unverified. This switch
-        // case can only occur for legacy Magic Tether hosts, in which case the
-        // service should be enabled.
-        // TODO(crbug.com/894585): Remove this legacy special case after M71.
-        return ENABLED;
-      case chromeos::multidevice_setup::mojom::FeatureState::
-          kNotSupportedByChromebook:
-        // CryptAuth may not yet know that this device supports
-        // MAGIC_TETHER_CLIENT (and the local device metadata is reflecting
-        // that). This should be resolved shortly once DeviceReenroller realizes
-        // reconciles the discrepancy. For now, fall through to mark as
-        // unavailable.
-        FALLTHROUGH;
-      case chromeos::multidevice_setup::mojom::FeatureState::
-          kNotSupportedByPhone:
-        return NO_AVAILABLE_HOSTS;
-      default:
-        // Other FeatureStates:
-        //   *kUnavailableInsufficientSecurity: Should never occur.
-        PA_LOG(ERROR) << "Invalid MultiDevice FeatureState: "
-                      << tether_multidevice_state;
-        NOTREACHED();
-        return NO_AVAILABLE_HOSTS;
-    }
+  chromeos::multidevice_setup::mojom::FeatureState tether_multidevice_state =
+      multidevice_setup_client_->GetFeatureState(
+          chromeos::multidevice_setup::mojom::Feature::kInstantTethering);
+  switch (tether_multidevice_state) {
+    case chromeos::multidevice_setup::mojom::FeatureState::kProhibitedByPolicy:
+      return PROHIBITED;
+    case chromeos::multidevice_setup::mojom::FeatureState::kDisabledByUser:
+      return USER_PREFERENCE_DISABLED;
+    case chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser:
+      return ENABLED;
+    case chromeos::multidevice_setup::mojom::FeatureState::
+        kUnavailableSuiteDisabled:
+      return BETTER_TOGETHER_SUITE_DISABLED;
+    case chromeos::multidevice_setup::mojom::FeatureState::
+        kUnavailableNoVerifiedHost:
+      // Note that because of the early return above after
+      // !HasSyncedTetherHosts, if this point is hit, there are synced tether
+      // hosts available, but the multidevice state is unverified. This switch
+      // case can only occur for legacy Magic Tether hosts, in which case the
+      // service should be enabled.
+      // TODO(crbug.com/894585): Remove this legacy special case after M71.
+      return ENABLED;
+    case chromeos::multidevice_setup::mojom::FeatureState::
+        kNotSupportedByChromebook:
+      // CryptAuth may not yet know that this device supports
+      // MAGIC_TETHER_CLIENT (and the local device metadata is reflecting
+      // that). This should be resolved shortly once DeviceReenroller realizes
+      // reconciles the discrepancy. For now, fall through to mark as
+      // unavailable.
+      FALLTHROUGH;
+    case chromeos::multidevice_setup::mojom::FeatureState::kNotSupportedByPhone:
+      return NO_AVAILABLE_HOSTS;
+    default:
+      // Other FeatureStates:
+      //   *kUnavailableInsufficientSecurity: Should never occur.
+      PA_LOG(ERROR) << "Invalid MultiDevice FeatureState: "
+                    << tether_multidevice_state;
+      NOTREACHED();
+      return NO_AVAILABLE_HOSTS;
   }
 
   if (!IsAllowedByPolicy())
