@@ -25,12 +25,26 @@ class WebThreadImpl : public WebThread, public base::Thread {
   WebThreadImpl(WebThread::ID identifier, base::MessageLoop* message_loop);
   ~WebThreadImpl() override;
 
+  bool Start();
+  bool StartWithOptions(const Options& options);
+  bool StartAndWaitForTesting();
+
   // Creates and registers a TaskExecutor that facilitates posting tasks to a
   // WebThread via //base/task/post_task.h.
   static void CreateTaskExecutor();
 
   // Unregister and delete the TaskExecutor after a test.
   static void ResetTaskExecutorForTesting();
+
+  // Resets globals for |identifier|. Used in tests to clear global state that
+  // would otherwise leak to the next test. Globals are not otherwise fully
+  // cleaned up in ~WebThreadImpl() as there are subtle differences between
+  // UNINITIALIZED and SHUTDOWN state (e.g. globals.task_runners are kept around
+  // on shutdown). Must be called after ~WebThreadImpl() for the given
+  // |identifier|.
+  //
+  // Also unregisters and deletes the TaskExecutor.
+  static void ResetGlobalsForTesting(WebThread::ID identifier);
 
  protected:
   void Init() override;
