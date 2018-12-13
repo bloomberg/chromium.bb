@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import os
 import time
 
 from chromite.cbuildbot.stages import generic_stages
@@ -18,29 +17,6 @@ from chromite.lib import config_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import request_build
-from chromite.lib.const import waterfall
-
-
-def BuilderName(build_config, active_waterfall, current_builder):
-  """Gets the corresponding builder name of the build.
-
-  Args:
-    build_config: build config (string) of the build.
-    active_waterfall: active waterfall to run the build.
-    current_builder: buildbot builder name of the current builder, or None.
-
-  Returns:
-    Builder name to run the build on.
-  """
-  # The builder name is configured differently for release builds in
-  # chromeos and chromeos_release waterfalls. (see crbug.com/755276)
-  if active_waterfall == waterfall.WATERFALL_RELEASE:
-    assert current_builder
-    # Example: master-release release-R64-10176.B
-    named_branch = current_builder.split()[1]
-    return '%s %s' % (build_config, named_branch)
-  else:
-    return build_config
 
 
 class ScheduleSlavesStage(generic_stages.BuilderStage):
@@ -52,26 +28,6 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     super(ScheduleSlavesStage, self).__init__(builder_run, **kwargs)
     self.sync_stage = sync_stage
     self.buildbucket_client = self.GetBuildbucketClient()
-
-  def _GetBuildbucketBucket(self, build_name, build_config):
-    """Get the corresponding Buildbucket bucket.
-
-    Args:
-      build_name: name of the build to put to Buildbucket.
-      build_config: config of the build to put to Buildbucket.
-
-    Raises:
-      NoBuildbucketBucketFoundException when no Buildbucket bucket found.
-    """
-    bucket = buildbucket_lib.WATERFALL_BUCKET_MAP.get(
-        build_config.active_waterfall)
-
-    if bucket is None:
-      raise buildbucket_lib.NoBuildbucketBucketFoundException(
-          'No Buildbucket bucket found for builder %s waterfall: %s' %
-          (build_name, build_config.active_waterfall))
-
-    return bucket
 
   def _FindMostRecentBotId(self, build_config, branch):
     buildbucket_client = self.GetBuildbucketClient()
@@ -116,33 +72,19 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
         buildbucket_id
         created_ts
     """
-    bucket = self._GetBuildbucketBucket(build_name, build_config)
-
-    luci_builder = None
     requested_bot = None
-    if bucket == constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET:
-      if build_config.build_affinity:
-        requested_bot = self._FindMostRecentBotId(build_config.name,
-                                                  self._run.manifest_branch)
-    else:
-      # If it's not a swarming build, we must explicitly set this to the
-      # waterfall column name.
-      current_buildername = os.environ.get('BUILDBOT_BUILDERNAME', None)
-      luci_builder = BuilderName(
-          build_name, build_config.active_waterfall, current_buildername)
-
-    if requested_bot:
+    if build_config.build_affinity:
+      requested_bot = self._FindMostRecentBotId(build_config.name,
+                                                self._run.manifest_branch)
       logging.info('Requesting build affinity for %s against %s',
                    build_config.name, requested_bot)
 
     request = request_build.RequestBuild(
         build_config=build_name,
-        luci_builder=luci_builder,
         display_label=build_config.display_label,
         branch=self._run.manifest_branch,
         master_cidb_id=master_build_id,
         master_buildbucket_id=master_buildbucket_id,
-        bucket=bucket,
         extra_args=['--buildbot'],
         requested_bot=requested_bot,
     )

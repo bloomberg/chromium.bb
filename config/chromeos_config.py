@@ -557,8 +557,7 @@ def GeneralTemplates(site_config, ge_build_config):
       overlays=constants.BOTH_OVERLAYS,
       push_overlays=constants.BOTH_OVERLAYS,
       doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
-          'TOC-Chrome-PFQ',
-      active_waterfall=waterfall.WATERFALL_RELEASE)
+          'TOC-Chrome-PFQ')
 
   site_config.AddTemplate(
       'internal_paladin',

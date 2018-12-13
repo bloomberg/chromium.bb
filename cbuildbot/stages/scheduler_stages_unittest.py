@@ -19,23 +19,7 @@ from chromite.lib import build_requests
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
-
-
-class HelperMethodTests(cros_test_lib.MockTestCase):
-  """Test cases for helper methods in scheduler_stages."""
-
-  def testBuilderName(self):
-    """Test BuilderName."""
-    builder_name = scheduler_stages.BuilderName(
-        'parrot-release', waterfall.WATERFALL_INTERNAL, 'master-release')
-    self.assertEqual(builder_name, 'parrot-release')
-
-    builder_name = scheduler_stages.BuilderName(
-        'parrot-release', waterfall.WATERFALL_RELEASE,
-        'master-release release-R62-9901.B')
-    self.assertEqual(builder_name, 'parrot-release release-R62-9901.B')
 
 
 class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
@@ -196,6 +180,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
                      return_value=content)
     slave_config = config_lib.BuildConfig(
         name='slave',
+        build_affinity=True,
         important=True, active_waterfall=waterfall.WATERFALL_INTERNAL,
         display_label='cq',
         boards=['board_A'], build_type='paladin')
