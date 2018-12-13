@@ -22,9 +22,9 @@ namespace background_fetch {
 
 class MatchRequestsTask : public DatabaseTask {
  public:
-  using SettledFetchesCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              std::vector<BackgroundFetchSettledFetch>)>;
+  using SettledFetchesCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>)>;
 
   // Gets settled fetches from cache storage, filtered according to
   // |match_params|.
@@ -56,7 +56,7 @@ class MatchRequestsTask : public DatabaseTask {
   SettledFetchesCallback callback_;
 
   CacheStorageCacheHandle handle_;
-  std::vector<BackgroundFetchSettledFetch> settled_fetches_;
+  std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches_;
 
   base::WeakPtrFactory<MatchRequestsTask> weak_factory_;  // Keep as last.
 

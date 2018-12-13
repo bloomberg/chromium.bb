@@ -128,9 +128,10 @@ class CONTENT_EXPORT BackgroundFetchJobController
   void Finish(blink::mojom::BackgroundFetchFailureReason reason_to_abort,
               ErrorCallback callback);
 
-  void DidGetUploadData(BackgroundFetchDelegate::GetUploadDataCallback callback,
-                        blink::mojom::BackgroundFetchError error,
-                        std::vector<BackgroundFetchSettledFetch> fetches);
+  void DidGetUploadData(
+      BackgroundFetchDelegate::GetUploadDataCallback callback,
+      blink::mojom::BackgroundFetchError error,
+      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> fetches);
 
   // Manager for interacting with the DB. It is owned by the
   // BackgroundFetchContext.

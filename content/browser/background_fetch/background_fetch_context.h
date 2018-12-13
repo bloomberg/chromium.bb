@@ -157,7 +157,8 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidGetMatchingRequests(
       blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
       blink::mojom::BackgroundFetchError error,
-      std::vector<BackgroundFetchSettledFetch> settled_fetches);
+      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>
+          settled_fetches);
 
   // Called when the data manager finishes getting the initialization data.
   void DidGetInitializationData(

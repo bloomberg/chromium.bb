@@ -39,7 +39,6 @@ namespace content {
 class BackgroundFetchDataManagerObserver;
 class BackgroundFetchRequestInfo;
 class BackgroundFetchRequestMatchParams;
-struct BackgroundFetchSettledFetch;
 class BrowserContext;
 class CacheStorageManager;
 class ChromeBlobStorageContext;
@@ -62,9 +61,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   using GetInitializationDataCallback = base::OnceCallback<void(
       blink::mojom::BackgroundFetchError,
       std::vector<background_fetch::BackgroundFetchInitializationData>)>;
-  using SettledFetchesCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              std::vector<BackgroundFetchSettledFetch>)>;
+  using SettledFetchesCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>)>;
   using GetRegistrationCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
                               blink::mojom::BackgroundFetchRegistrationPtr)>;

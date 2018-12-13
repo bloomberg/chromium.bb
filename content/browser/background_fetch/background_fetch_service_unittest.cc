@@ -202,10 +202,11 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
 
   // Calls BackgroundFetchServiceImpl::MatchRequests() to retrieve all settled
   // fetches.
-  void MatchAllRequests(int64_t service_worker_registration_id,
-                        const std::string& developer_id,
-                        const std::string& unique_id,
-                        std::vector<BackgroundFetchSettledFetch>* out_fetches) {
+  void MatchAllRequests(
+      int64_t service_worker_registration_id,
+      const std::string& developer_id,
+      const std::string& unique_id,
+      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>* out_fetches) {
     DCHECK(out_fetches);
     base::RunLoop run_loop;
     service_->MatchRequests(
@@ -402,9 +403,16 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
 
   void DidMatchAllRequests(
       base::OnceClosure quit_closure,
-      std::vector<BackgroundFetchSettledFetch>* out_fetches,
-      const std::vector<BackgroundFetchSettledFetch>& fetches) {
-    *out_fetches = fetches;
+      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>* out_fetches,
+      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> fetches) {
+    for (const auto& in_fetch : fetches) {
+      auto out_fetch = blink::mojom::BackgroundFetchSettledFetch::New();
+      out_fetch->request =
+          BackgroundFetchSettledFetch::CloneRequest(in_fetch->request);
+      out_fetch->response =
+          BackgroundFetchSettledFetch::CloneResponse(in_fetch->response);
+      out_fetches->push_back(std::move(out_fetch));
+    }
     std::move(quit_closure).Run();
   }
 
@@ -600,53 +608,53 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
   EXPECT_EQ(kExampleDeveloperId, registration.developer_id);
 
   // Get all the settled fetches and test properties.
-  std::vector<BackgroundFetchSettledFetch> fetches;
+  std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> fetches;
   MatchAllRequests(service_worker_registration_id, registration.developer_id,
                    registration.unique_id, &fetches);
   ASSERT_EQ(fetches.size(), requests.size());
   for (size_t i = 0; i < fetches.size(); ++i) {
-    ASSERT_EQ(fetches[i].request->url, requests[i]->url);
-    EXPECT_EQ(fetches[i].request->method, requests[i]->method);
+    ASSERT_EQ(fetches[i]->request->url, requests[i]->url);
+    EXPECT_EQ(fetches[i]->request->method, requests[i]->method);
 
-    EXPECT_EQ(fetches[i].response->url_list[0], fetches[i].request->url);
-    EXPECT_EQ(fetches[i].response->response_type,
+    EXPECT_EQ(fetches[i]->response->url_list[0], fetches[i]->request->url);
+    EXPECT_EQ(fetches[i]->response->response_type,
               network::mojom::FetchResponseType::kDefault);
 
     switch (i) {
       case 0:
-        EXPECT_EQ(fetches[i].response->status_code, kFirstResponseCode);
+        EXPECT_EQ(fetches[i]->response->status_code, kFirstResponseCode);
         EXPECT_TRUE(
-            ContainsHeader(fetches[i].response->headers, "Content-Type"));
-        EXPECT_TRUE(ContainsHeader(fetches[i].response->headers, "X-Cat"));
+            ContainsHeader(fetches[i]->response->headers, "Content-Type"));
+        EXPECT_TRUE(ContainsHeader(fetches[i]->response->headers, "X-Cat"));
         break;
       case 1:
-        EXPECT_EQ(fetches[i].response->status_code, kSecondResponseCode);
+        EXPECT_EQ(fetches[i]->response->status_code, kSecondResponseCode);
         EXPECT_TRUE(
-            ContainsHeader(fetches[i].response->headers, "Content-Type"));
-        EXPECT_FALSE(ContainsHeader(fetches[i].response->headers, "X-Cat"));
+            ContainsHeader(fetches[i]->response->headers, "Content-Type"));
+        EXPECT_FALSE(ContainsHeader(fetches[i]->response->headers, "X-Cat"));
         break;
       case 2:
-        EXPECT_EQ(fetches[i].response->status_code, kThirdResponseCode);
+        EXPECT_EQ(fetches[i]->response->status_code, kThirdResponseCode);
         EXPECT_TRUE(
-            ContainsHeader(fetches[i].response->headers, "Content-Type"));
-        EXPECT_FALSE(ContainsHeader(fetches[i].response->headers, "X-Cat"));
+            ContainsHeader(fetches[i]->response->headers, "Content-Type"));
+        EXPECT_FALSE(ContainsHeader(fetches[i]->response->headers, "X-Cat"));
         break;
       default:
         NOTREACHED();
     }
 
     // TODO(peter): change-detector tests for unsupported properties.
-    EXPECT_EQ(fetches[i].response->error,
+    EXPECT_EQ(fetches[i]->response->error,
               blink::mojom::ServiceWorkerResponseError::kUnknown);
 
     // Verify that all properties have a sensible value.
-    EXPECT_FALSE(fetches[i].response->response_time.is_null());
+    EXPECT_FALSE(fetches[i]->response->response_time.is_null());
 
     // Verify that the response blobs have been populated. We cannot consume
     // their data here since the handles have already been released.
-    ASSERT_TRUE(fetches[i].response->blob);
-    ASSERT_FALSE(fetches[i].response->blob->uuid.empty());
-    ASSERT_GT(fetches[i].response->blob->size, 0u);
+    ASSERT_TRUE(fetches[i]->response->blob);
+    ASSERT_FALSE(fetches[i]->response->blob->uuid.empty());
+    ASSERT_GT(fetches[i]->response->blob->size, 0u);
   }
 
   auto* delegate = static_cast<MockBackgroundFetchDelegate*>(
@@ -707,41 +715,41 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
   EXPECT_EQ(kExampleDeveloperId, registration.developer_id);
 
   // Get all the settled fetches and test properties.
-  std::vector<BackgroundFetchSettledFetch> fetches;
+  std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> fetches;
   MatchAllRequests(service_worker_registration_id, registration.developer_id,
                    registration.unique_id, &fetches);
   ASSERT_EQ(fetches.size(), 2u);
 
   // Make sure the 404 request is first, which has a response.
-  if (!fetches[0].response)
+  if (!fetches[0]->response)
     std::swap(fetches[0], fetches[1]);
 
   for (size_t i = 0; i < fetches.size(); ++i) {
-    ASSERT_EQ(fetches[i].request->url, requests[i]->url);
-    EXPECT_EQ(fetches[i].request->method, requests[i]->method);
+    ASSERT_EQ(fetches[i]->request->url, requests[i]->url);
+    EXPECT_EQ(fetches[i]->request->method, requests[i]->method);
 
     switch (i) {
       case 0:
-        EXPECT_EQ(fetches[i].response->status_code, 404);
-        EXPECT_EQ(fetches[i].response->url_list[0], fetches[i].request->url);
-        EXPECT_EQ(fetches[i].response->response_type,
+        EXPECT_EQ(fetches[i]->response->status_code, 404);
+        EXPECT_EQ(fetches[i]->response->url_list[0], fetches[i]->request->url);
+        EXPECT_EQ(fetches[i]->response->response_type,
                   network::mojom::FetchResponseType::kDefault);
         break;
       case 1:
-        EXPECT_FALSE(fetches[i].response);
+        EXPECT_FALSE(fetches[i]->response);
         continue;
       default:
         NOTREACHED();
     }
 
-    EXPECT_TRUE(fetches[i].response->headers.empty());
-    EXPECT_FALSE(fetches[i].response->blob);
-    EXPECT_FALSE(fetches[i].response->response_time.is_null());
+    EXPECT_TRUE(fetches[i]->response->headers.empty());
+    EXPECT_FALSE(fetches[i]->response->blob);
+    EXPECT_FALSE(fetches[i]->response->response_time.is_null());
 
     // TODO(peter): change-detector tests for unsupported properties.
-    EXPECT_EQ(fetches[i].response->error,
+    EXPECT_EQ(fetches[i]->response->error,
               blink::mojom::ServiceWorkerResponseError::kUnknown);
-    EXPECT_TRUE(fetches[i].response->cors_exposed_header_names.empty());
+    EXPECT_TRUE(fetches[i]->response->cors_exposed_header_names.empty());
   }
 
   auto* delegate = static_cast<MockBackgroundFetchDelegate*>(

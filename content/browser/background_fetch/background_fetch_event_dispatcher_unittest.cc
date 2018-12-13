@@ -68,8 +68,11 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
   ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
             service_worker_registration_id);
 
-  std::vector<BackgroundFetchSettledFetch> fetches;
-  fetches.push_back(BackgroundFetchSettledFetch());
+  std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> fetches;
+  auto fetch = blink::mojom::BackgroundFetchSettledFetch::New();
+  fetch->request = blink::mojom::FetchAPIRequest::New();
+  fetch->response = blink::mojom::FetchAPIResponse::New();
+  fetches.push_back(std::move(fetch));
 
   BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
                                                 origin(), kExampleDeveloperId,

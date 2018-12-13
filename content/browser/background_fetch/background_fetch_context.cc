@@ -276,7 +276,7 @@ void BackgroundFetchContext::MatchRequests(
 void BackgroundFetchContext::DidGetMatchingRequests(
     blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
     blink::mojom::BackgroundFetchError error,
-    std::vector<BackgroundFetchSettledFetch> settled_fetches) {
+    std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (error != blink::mojom::BackgroundFetchError::NONE)
