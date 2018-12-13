@@ -229,7 +229,8 @@ class MODULES_EXPORT BaseAudioContext
   void NotifySourceNodeFinishedProcessing(AudioHandler*);
 
   // Called at the start of each render quantum.
-  void HandlePreRenderTasks(const AudioIOPosition& output_position);
+  void HandlePreRenderTasks(const AudioIOPosition& output_position,
+                            const AudioIOCallbackMetric& metric);
 
   // Called at the end of each render quantum.
   void HandlePostRenderTasks(const AudioBus* destination_bus);
@@ -420,6 +421,7 @@ class MODULES_EXPORT BaseAudioContext
   enum { kMaxNumberOfChannels = 32 };
 
   AudioIOPosition output_position_;
+  AudioIOCallbackMetric callback_metric_;
 
   // The handler associated with the above |destination_node_|.
   scoped_refptr<AudioDestinationHandler> destination_handler_;

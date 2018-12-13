@@ -67,7 +67,8 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
   // |output_position|.
   void Render(AudioBus* destination_bus,
               uint32_t number_of_frames,
-              const AudioIOPosition& output_position) final;
+              const AudioIOPosition& output_position,
+              const AudioIOCallbackMetric& metric) final;
 
   // Returns a hadrware callback buffer size from audio infra.
   uint32_t GetCallbackBufferSize() const;

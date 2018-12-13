@@ -166,7 +166,12 @@ void AudioDestination::RequestRender(size_t frames_requested,
       frames_elapsed_ / static_cast<double>(web_audio_device_->SampleRate()) -
       delay;
   output_position.timestamp = delay_timestamp;
-  base::TimeTicks received_timestamp = base::TimeTicks::Now();
+
+  base::TimeTicks callback_request = base::TimeTicks::Now();
+  AudioIOCallbackMetric metric;
+  metric.callback_interval =
+      (callback_request - previous_callback_request_).InSecondsF();
+  metric.render_duration = previous_render_duration_.InSecondsF();
 
   for (size_t pushed_frames = 0; pushed_frames < frames_to_render;
        pushed_frames += audio_utilities::kRenderQuantumFrames) {
@@ -174,7 +179,7 @@ void AudioDestination::RequestRender(size_t frames_requested,
     // we do not want output position to get stuck so we promote it
     // using the elapsed time from the moment it was initially obtained.
     if (callback_buffer_size_ > audio_utilities::kRenderQuantumFrames * 2) {
-      double delta = (base::TimeTicks::Now() - received_timestamp).InSecondsF();
+      double delta = (base::TimeTicks::Now() - callback_request).InSecondsF();
       output_position.position += delta;
       output_position.timestamp += delta;
     }
@@ -186,10 +191,15 @@ void AudioDestination::RequestRender(size_t frames_requested,
 
     // Process WebAudio graph and push the rendered output to FIFO.
     callback_.Render(render_bus_.get(), audio_utilities::kRenderQuantumFrames,
-                     output_position);
+                     output_position, metric);
 
     fifo_->Push(render_bus_.get());
   }
+
+  // Update the IO callback metric with information from the current iteration.
+  // They are will be picked up in the next render request.
+  previous_callback_request_ = callback_request;
+  previous_render_duration_ = base::TimeTicks::Now() - callback_request;
 
   frames_elapsed_ += frames_requested;
 }
