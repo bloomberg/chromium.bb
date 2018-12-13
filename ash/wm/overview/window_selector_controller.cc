@@ -312,6 +312,7 @@ bool WindowSelectorController::ToggleOverview(
           continue;
 
         ScopedAnimationDisabler disable(window);
+        window->Hide();
         wm::GetWindowState(window)->Minimize();
       }
     }
