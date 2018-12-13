@@ -149,6 +149,8 @@ static bool IsRectInDirection(WebFocusType direction,
 // account, spatnav could have called it directly; no need to check the
 // LayoutObject's VisibleContentRect.
 bool IsOffscreen(const Node* node) {
+  DCHECK(node);
+
   LocalFrameView* frame_view = node->GetDocument().View();
   if (!frame_view)
     return true;
@@ -176,7 +178,7 @@ bool IsOffscreen(const Node* node) {
   IntRect rect_in_root_frame;
   if (auto* document = DynamicTo<Document>(node))
     node = document->body();
-  if (node->IsElementNode())
+  if (node && node->IsElementNode())
     rect_in_root_frame = ToElement(*node).VisibleBoundsInVisualViewport();
   return rect_in_root_frame.IsEmpty();
 }
