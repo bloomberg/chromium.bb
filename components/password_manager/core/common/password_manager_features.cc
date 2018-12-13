@@ -60,6 +60,11 @@ const base::Feature kRecoverPasswordsForSyncUsers = {
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the experiment for the password manager to only fill on account
+// selection when the password form was served over HTTP.
+const base::Feature kFillOnAccountSelectHttp = {
+    "fill-on-account-select-http", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Integration with Google's Password Manager for signed-in and sync users.
 const base::Feature kGooglePasswordManager = {
     "google-password-manager", base::FEATURE_DISABLED_BY_DEFAULT};
