@@ -832,6 +832,17 @@
         ],
       },
       'ToTLinuxMSan': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+        },
+      },
+      'ToTLinuxTSan': {
+        'additional_compile_targets': [
+          'all',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
         },

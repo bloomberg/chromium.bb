@@ -136,6 +136,7 @@
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
       'ToTLinuxASanLibfuzzer': 'libfuzzer_asan_clang_tot_release',
       'ToTLinuxMSan': 'clang_tot_msan_release',
+      'ToTLinuxTSan': 'clang_tot_tsan_release',
       'ToTLinuxThinLTO': 'clang_tot_release_minimal_symbols_thin_lto_static',
       'ToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ToTMac': 'clang_tot_minimal_symbols_shared_release',
@@ -1215,6 +1216,10 @@
 
     'clang_tot_shared_debug_x86': [
       'clang_tot', 'shared', 'debug', 'x86',
+    ],
+
+    'clang_tot_tsan_release': [
+      'clang_tot', 'tsan', 'release',
     ],
 
     'closure_compilation': [
