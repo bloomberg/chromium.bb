@@ -75,6 +75,10 @@ source_set("vaapi") {
     "//third_party/libyuv",
   ]
 
+  if (is_linux) {
+    configs += [ "//build/config/linux/libva" ]
+  }
+
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
