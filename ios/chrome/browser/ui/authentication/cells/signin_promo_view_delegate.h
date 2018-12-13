@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGN_PROMO_VIEW_DELEGATE_H_
-#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGN_PROMO_VIEW_DELEGATE_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_SIGNIN_PROMO_VIEW_DELEGATE_H_
+#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_SIGNIN_PROMO_VIEW_DELEGATE_H_
 
 #import <UIKit/UIKit.h>
 
 @class SigninPromoView;
 
-@protocol SigninPromoViewDelegate<NSObject>
+@protocol SigninPromoViewDelegate <NSObject>
 
 // Called by SigninPromoView when the user taps the primary button in cold state
 // mode.
@@ -28,4 +28,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGN_PROMO_VIEW_DELEGATE_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_SIGNIN_PROMO_VIEW_DELEGATE_H_

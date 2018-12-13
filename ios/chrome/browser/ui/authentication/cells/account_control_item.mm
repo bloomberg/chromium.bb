@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/authentication/account_control_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/account_control_item.h"
 
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
@@ -69,8 +69,9 @@ const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
     detailTextColor = [[MDCPalette cr_redPalette] tint700];
   }
 
-  cell.textLabel.attributedText =
-      [self attributedStringForText:self.text font:textFont color:textColor];
+  cell.textLabel.attributedText = [self attributedStringForText:self.text
+                                                           font:textFont
+                                                          color:textColor];
   cell.detailTextLabel.attributedText =
       [self attributedStringForText:self.detailText
                                font:detailTextFont

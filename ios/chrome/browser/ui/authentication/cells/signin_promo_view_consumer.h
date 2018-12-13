@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_PROMO_VIEW_CONSUMER_H_
-#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_PROMO_VIEW_CONSUMER_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_SIGNIN_PROMO_VIEW_CONSUMER_H_
+#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_SIGNIN_PROMO_VIEW_CONSUMER_H_
 
 #import <Foundation/Foundation.h>
 
@@ -14,7 +14,7 @@
 @class SigninPromoViewMediator;
 
 // Handles identity update notifications.
-@protocol SigninPromoViewConsumer<NSObject>
+@protocol SigninPromoViewConsumer <NSObject>
 
 // Called when the default identity is changed or updated.
 // |configurator|, new instance set each time, to configure a SigninPromoView.
@@ -48,4 +48,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_PROMO_VIEW_CONSUMER_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_SIGNIN_PROMO_VIEW_CONSUMER_H_

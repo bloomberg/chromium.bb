@@ -29,7 +29,7 @@ source_set("cells") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/authentication",
-    "//ios/chrome/browser/ui/authentication:authentication_ui",
+    "//ios/chrome/browser/ui/authentication/cells",
     "//ios/chrome/browser/ui/bookmarks:bookmarks_ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/icons",
