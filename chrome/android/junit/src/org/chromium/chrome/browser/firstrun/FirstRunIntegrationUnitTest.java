@@ -169,7 +169,8 @@ public final class FirstRunIntegrationUnitTest {
 
         Bundle bundle = new Bundle();
         bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
-        WebApkTestHelper.registerWebApkWithMetaData(webApkPackageName, bundle);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                webApkPackageName, bundle, null /* shareTargetMetaData */);
         WebApkTestHelper.addIntentFilterForUrl(webApkPackageName, startUrl);
 
         Intent intent = new Intent();

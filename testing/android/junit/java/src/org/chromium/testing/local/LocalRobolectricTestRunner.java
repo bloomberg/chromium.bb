@@ -28,7 +28,12 @@ public class LocalRobolectricTestRunner extends RobolectricTestRunner {
         String packageName =
                 System.getProperty("chromium.robolectric.package.name", DEFAULT_PACKAGE_NAME);
 
-        return new Config.Builder().setSdk(DEFAULT_SDK).setPackageName(packageName).build();
+        return new Config.Builder()
+                .setSdk(DEFAULT_SDK)
+                .setPackageName(packageName)
+                // Shadows to fix robolectric shortcomings.
+                .setShadows(new Class[] {CustomShadowApplicationPackageManager.class})
+                .build();
     }
 
     @Override
