@@ -117,6 +117,8 @@ class InputConnectionImplTest : public testing::Test {
 
   TestIMEInputContextHandler* context_handler() { return &context_handler_; }
 
+  ui::DummyTextInputClient* client() { return &text_input_client_; }
+
   ui::IMEEngineHandlerInterface::InputContext context() {
     return ui::IMEEngineHandlerInterface::InputContext{
         1,
@@ -259,6 +261,20 @@ TEST_F(InputConnectionImplTest, SetComposingText) {
   EXPECT_EQ(3u, context_handler()
                     ->last_update_composition_arg()
                     .composition_text.selection.end());
+
+  engine()->FocusOut();
+}
+
+TEST_F(InputConnectionImplTest, SetSelection) {
+  auto connection = createNewConnection(1);
+  engine()->FocusIn(context());
+  ASSERT_TRUE(client()->selection_history().empty());
+
+  context_handler()->Reset();
+  connection->SetSelection(gfx::Range(2, 4));
+  EXPECT_FALSE(client()->selection_history().empty());
+  EXPECT_EQ(2u, client()->selection_history().back().start());
+  EXPECT_EQ(4u, client()->selection_history().back().end());
 
   engine()->FocusOut();
 }

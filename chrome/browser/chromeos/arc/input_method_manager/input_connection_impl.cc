@@ -210,6 +210,21 @@ void InputConnectionImpl::RequestTextInputState(
   std::move(callback).Run(GetTextInputState(false));
 }
 
+void InputConnectionImpl::SetSelection(const gfx::Range& new_selection_range) {
+  ui::TextInputClient* client = GetTextInputClient();
+
+  gfx::Range selection_range;
+  client->GetSelectionRange(&selection_range);
+  if (new_selection_range == selection_range) {
+    // This SetSelection call is no-op.
+    // Return the current state immediately.
+    UpdateTextInputState(true);
+  }
+
+  StartStateUpdateTimer();
+  client->SetSelectionRange(new_selection_range);
+}
+
 void InputConnectionImpl::StartStateUpdateTimer() {
   // It's safe to use Unretained() here because the timer is automatically
   // canceled when it go out of scope.

@@ -63,6 +63,9 @@ class DummyTextInputClient : public TextInputClient {
   const std::vector<CompositionText>& composition_history() const {
     return composition_history_;
   }
+  const std::vector<gfx::Range>& selection_history() const {
+    return selection_history_;
+  }
 
   TextInputType text_input_type_;
   TextInputMode text_input_mode_;
@@ -74,6 +77,7 @@ class DummyTextInputClient : public TextInputClient {
   base::char16 last_insert_char_;
   std::vector<base::string16> insert_text_history_;
   std::vector<CompositionText> composition_history_;
+  std::vector<gfx::Range> selection_history_;
 };
 
 }  // namespace ui
