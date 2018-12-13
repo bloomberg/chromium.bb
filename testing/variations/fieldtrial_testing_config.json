@@ -1317,7 +1317,7 @@
             ],
             "experiments": [
                 {
-                    "name": "CommittedSSLInterstitialsEnabled",
+                    "name": "Enabled",
                     "enable_features": [
                         "SSLCommittedInterstitials"
                     ]
