@@ -53,7 +53,7 @@
       "description",
       "-d"
     ],
-    "cwd": "[TMP_BASE]/fakerepo_tmp_1",
+    "cwd": "[CLEANUP]/fakerepo_tmp_1",
     "name": "git_cl description",
     "stdout": "/path/to/tmp/"
   },
@@ -71,7 +71,7 @@
       "-n",
       "-"
     ],
-    "cwd": "[TMP_BASE]/fakerepo_tmp_1",
+    "cwd": "[CLEANUP]/fakerepo_tmp_1",
     "name": "git_cl set description (2)",
     "stdin": "new description woo",
     "stdout": "/path/to/tmp/"
@@ -82,7 +82,7 @@
       "description",
       "-d"
     ],
-    "cwd": "[TMP_BASE]/fakerepo_tmp_1",
+    "cwd": "[CLEANUP]/fakerepo_tmp_1",
     "name": "git_cl description (2)",
     "stdout": "/path/to/tmp/"
   },
