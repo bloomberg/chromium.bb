@@ -289,7 +289,7 @@ class IdentityManager : public SigninManagerBase::Observer,
                                        const std::string& email);
   friend void SetRefreshTokenForPrimaryAccount(
       IdentityManager* identity_manager,
-      const std::string* token);
+      const std::string& token_value);
   friend void SetInvalidRefreshTokenForPrimaryAccount(
       IdentityManager* identity_manager);
   friend void RemoveRefreshTokenForPrimaryAccount(
@@ -303,7 +303,7 @@ class IdentityManager : public SigninManagerBase::Observer,
                                           const std::string& email);
   friend void SetRefreshTokenForAccount(IdentityManager* identity_manager,
                                         const std::string& account_id,
-                                        const std::string* token);
+                                        const std::string& token_value);
   friend void SetInvalidRefreshTokenForAccount(
       IdentityManager* identity_manager,
       const std::string& account_id);

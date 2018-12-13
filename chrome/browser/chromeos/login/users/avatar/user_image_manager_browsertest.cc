@@ -277,8 +277,8 @@ class UserImageManagerTest : public LoginManagerTest,
 
   void UpdatePrimaryAccountInfo(Profile* profile) {
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-    const std::string token = kRandomTokenStrForTesting;
-    identity::SetRefreshTokenForPrimaryAccount(identity_manager, &token);
+    identity::SetRefreshTokenForPrimaryAccount(identity_manager,
+                                               kRandomTokenStrForTesting);
     auto account_info = identity_manager->GetPrimaryAccountInfo();
     account_info.full_name = account_info.email;
     account_info.given_name = account_info.email;
