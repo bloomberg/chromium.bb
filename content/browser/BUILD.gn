@@ -837,6 +837,8 @@ jumbo_source_set("browser") {
     "font_list_async.cc",
     "frame_host/ancestor_throttle.cc",
     "frame_host/ancestor_throttle.h",
+    "frame_host/back_forward_cache.cc",
+    "frame_host/back_forward_cache.h",
     "frame_host/blocked_scheme_navigation_throttle.cc",
     "frame_host/blocked_scheme_navigation_throttle.h",
     "frame_host/cross_process_frame_connector.cc",

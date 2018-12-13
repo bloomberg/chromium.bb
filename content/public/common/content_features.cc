@@ -65,6 +65,10 @@ const base::Feature kBackgroundFetchAccessActiveFetches{
 const base::Feature kBackgroundFetchUploads{"BackgroundFetchUploads",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable using the BackForwardCache.
+const base::Feature kBackForwardCache{"BackForwardCache",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable incremental marking for Blink's heap managed by the Oilpan garbage
 // collector.
 const base::Feature kBlinkHeapIncrementalMarking{
