@@ -1940,6 +1940,13 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
 void WebMediaPlayerImpl::OnDurationChange() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  if (frame_->IsAdSubframe()) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Ads.Media.Duration", GetPipelineMediaDuration(),
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromDays(1),
+                               50 /* bucket_count */);
+  }
+
   // TODO(sandersd): We should call delegate_->DidPlay() with the new duration,
   // especially if it changed from  <5s to >5s.
   if (ready_state_ == WebMediaPlayer::kReadyStateHaveNothing)
