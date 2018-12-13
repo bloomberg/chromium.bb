@@ -104,8 +104,8 @@ class InMemoryDownloadTest : public testing::Test {
   // Helper method to create a download with request_params.
   void CreateDownload(const RequestParams& request_params) {
     download_ = std::make_unique<InMemoryDownloadImpl>(
-        base::GenerateGUID(), request_params, TRAFFIC_ANNOTATION_FOR_TESTS,
-        delegate(), &url_loader_factory_,
+        base::GenerateGUID(), request_params, /* request_body= */ nullptr,
+        TRAFFIC_ANNOTATION_FOR_TESTS, delegate(), &url_loader_factory_,
         base::BindRepeating(&BlobStorageContextGetter,
                             blob_storage_context_.get()),
         io_thread_->task_runner());
