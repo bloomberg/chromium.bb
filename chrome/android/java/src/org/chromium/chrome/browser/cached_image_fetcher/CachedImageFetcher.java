@@ -24,8 +24,10 @@ public interface CachedImageFetcher {
      * found or fails decoding.
      *
      * @param url The url to fetch the image from.
-     * @param width The new bitmap's desired width (in pixels).
-     * @param height The new bitmap's desired height (in pixels).
+     * @param width The new bitmap's desired width (in pixels). If the given value is <= 0, the
+     * image won't be scaled.
+     * @param height The new bitmap's desired height (in pixels). If the given value is <= 0, the
+     * image won't be scaled.
      * @param callback The function which will be called when the image is ready; will be called
      * with null result if fetching fails;
      */

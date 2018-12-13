@@ -144,14 +144,27 @@ public class InMemoryCachedImageFetcherTest {
 
     @Test
     @SmallTest
-    public void testResizeBailsOutIfSizeIsZero() throws Exception {
-        Bitmap result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, 0, HEIGHT_PX);
+    public void testResizeBailsOutIfSizeIsZeroOrLess() throws Exception {
+        doReturn(null)
+                .when(mInMemoryCachedImageFetcher)
+                .tryToResizeImage(any(), eq(WIDTH_PX), eq(HEIGHT_PX));
+
+        Bitmap result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX, HEIGHT_PX);
+        assertNotEquals(result, mBitmap);
+
+        result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, 0, HEIGHT_PX);
         assertEquals(result, mBitmap);
 
         result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX, 0);
         assertEquals(result, mBitmap);
 
         result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, 0, 0);
+        assertEquals(result, mBitmap);
+
+        result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, -1, HEIGHT_PX);
+        assertEquals(result, mBitmap);
+
+        result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX, -1);
         assertEquals(result, mBitmap);
     }
 

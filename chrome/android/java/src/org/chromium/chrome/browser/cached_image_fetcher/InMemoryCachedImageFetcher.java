@@ -154,7 +154,7 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
      */
     @VisibleForTesting
     Bitmap tryToResizeImage(@Nullable Bitmap bitmap, int width, int height) {
-        if (bitmap != null && width != 0 && height != 0 && bitmap.getWidth() != width
+        if (bitmap != null && width > 0 && height > 0 && bitmap.getWidth() != width
                 && bitmap.getHeight() != height) {
             /* The resizing rules are the as follows:
                (1) The image will be scaled up (if smaller) in a way that maximizes the area of the
