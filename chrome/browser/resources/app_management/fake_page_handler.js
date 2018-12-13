@@ -11,13 +11,13 @@ cr.define('app_management', function() {
 
       /** @type {!Array<appManagement.mojom.App>} */
       this.apps_ = [
-        this.createApp('ahfgeienlihckogmohjhadlkjgocpleb'),
-        this.createApp(
+        FakePageHandler.createApp('ahfgeienlihckogmohjhadlkjgocpleb'),
+        FakePageHandler.createApp(
             'aohghmighlieiainnegkcijnfilokake',
             {type: apps.mojom.AppType.kArc}),
-        this.createApp('blpcfgokakmgnkcojhhkbfbldkacnbeo'),
-        this.createApp('pjkljhegncpnkpknbcohdijeoejaedia'),
-        this.createApp('aapocclcgogkmnckokdopfmhonfmgoek'),
+        FakePageHandler.createApp('blpcfgokakmgnkcojhhkbfbldkacnbeo'),
+        FakePageHandler.createApp('pjkljhegncpnkpknbcohdijeoejaedia'),
+        FakePageHandler.createApp('aapocclcgogkmnckokdopfmhonfmgoek'),
       ];
     }
 
@@ -30,7 +30,7 @@ cr.define('app_management', function() {
      * @param {Object=} config
      * @return {!appManagement.mojom.App}
      */
-    createApp(id, config) {
+    static createApp(id, config) {
       const app = /** @type {!appManagement.mojom.App} */ ({
         id: id,
         type: apps.mojom.AppType.kUnknown,

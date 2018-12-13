@@ -40,3 +40,18 @@ AppManagementAppTest.prototype = {
 TEST_F('AppManagementAppTest', 'All', function() {
   mocha.run();
 });
+
+
+function AppManagementReducersTest() {}
+
+AppManagementReducersTest.prototype = {
+  __proto__: AppManagementBrowserTest.prototype,
+
+  extraLibraries: AppManagementBrowserTest.prototype.extraLibraries.concat([
+    'reducers_test.js',
+  ]),
+};
+
+TEST_F('AppManagementReducersTest', 'All', function() {
+  mocha.run();
+});
