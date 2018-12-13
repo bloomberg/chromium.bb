@@ -41,10 +41,6 @@ struct MatchGURLHash {
   }
 };
 
-// A match attribute when a default match's score has been boosted
-// with a higher scoring non-default match.
-static const char kScoreBoostedFrom[] = "score_boosted_from";
-
 // static
 size_t AutocompleteResult::GetMaxMatches() {
   constexpr size_t kDefaultMaxAutocompleteMatches = 6;
@@ -417,42 +413,6 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
              : GURL();
 }
 
-// static
-bool AutocompleteResult::IsBetterMatch(
-    AutocompleteMatch& first,
-    AutocompleteMatch& second,
-    metrics::OmniboxEventProto::PageClassification page_classification) {
-  // This object implements greater than.
-  CompareWithDemoteByType<AutocompleteMatch> compare_demote_by_type(
-      page_classification);
-
-  if (first.type == ACMatchType::SEARCH_SUGGEST_ENTITY &&
-      second.type != ACMatchType::SEARCH_SUGGEST_ENTITY) {
-    // If |first| is an entity suggestion and |second| isn't, |first| is
-    // considered better. If its type-adjusted relevance is lower, boost it to
-    // the value of |second|.
-    if (compare_demote_by_type(second, first)) {
-      first.RecordAdditionalInfo(kScoreBoostedFrom, second.relevance);
-      first.relevance = second.relevance;
-    }
-    return true;
-  } else if (first.type != ACMatchType::SEARCH_SUGGEST_ENTITY &&
-             second.type == ACMatchType::SEARCH_SUGGEST_ENTITY) {
-    // Likewise, if |second| is an entity suggestion and |first| isn't, first
-    // is not considered better, even if it has a higher type-adjusted
-    // relevance. If it does have a higher relevance, boost |second|.
-    if (compare_demote_by_type(first, second)) {
-      second.RecordAdditionalInfo(kScoreBoostedFrom, first.relevance);
-      second.relevance = first.relevance;
-    }
-    return false;
-  }
-
-  // In the case that both values are entity suggestions or both aren't, |first|
-  // is simply considered better if it's type-adjusted relevance is higher.
-  return compare_demote_by_type(first, second);
-}
-
 void AutocompleteResult::SortAndDedupMatches(
     metrics::OmniboxEventProto::PageClassification page_classification,
     ACMatches* matches) {
@@ -490,7 +450,8 @@ void AutocompleteResult::SortAndDedupMatches(
     }
     if (best_match != best_default && best_default != duplicate_matches.end()) {
       (*best_default)
-          ->RecordAdditionalInfo(kScoreBoostedFrom, (*best_default)->relevance);
+          ->RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom,
+                                 (*best_default)->relevance);
       (*best_default)->relevance = (*best_match)->relevance;
       best_match = best_default;
     }
@@ -549,6 +510,44 @@ size_t AutocompleteResult::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(alternate_nav_url_);
 
   return res;
+}
+
+// static
+bool AutocompleteResult::IsBetterMatch(
+    AutocompleteMatch& first,
+    AutocompleteMatch& second,
+    metrics::OmniboxEventProto::PageClassification page_classification) {
+  // This object implements greater than.
+  CompareWithDemoteByType<AutocompleteMatch> compare_demote_by_type(
+      page_classification);
+
+  if (first.type == ACMatchType::SEARCH_SUGGEST_ENTITY &&
+      second.type != ACMatchType::SEARCH_SUGGEST_ENTITY) {
+    // If |first| is an entity suggestion and |second| isn't, |first| is
+    // considered better. If its type-adjusted relevance is lower, boost it to
+    // the value of |second|.
+    if (compare_demote_by_type(second, first)) {
+      first.RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom,
+                                 first.relevance);
+      first.relevance = second.relevance;
+    }
+    return true;
+  } else if (first.type != ACMatchType::SEARCH_SUGGEST_ENTITY &&
+             second.type == ACMatchType::SEARCH_SUGGEST_ENTITY) {
+    // Likewise, if |second| is an entity suggestion and |first| isn't, first
+    // is not considered better, even if it has a higher type-adjusted
+    // relevance. If it does have a higher relevance, boost |second|.
+    if (compare_demote_by_type(first, second)) {
+      second.RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom,
+                                  second.relevance);
+      second.relevance = first.relevance;
+    }
+    return false;
+  }
+
+  // In the case that both values are entity suggestions or both aren't, |first|
+  // is simply considered better if it's type-adjusted relevance is higher.
+  return compare_demote_by_type(first, second);
 }
 
 // static
