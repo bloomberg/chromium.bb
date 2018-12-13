@@ -621,7 +621,7 @@ AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
                                                         &factory_ptr);
 
   SubresourceLoaderParams params;
-  params.loader_factory_info = factory_ptr.PassInterface();
+  params.appcache_loader_factory_info = factory_ptr.PassInterface();
   return base::Optional<SubresourceLoaderParams>(std::move(params));
 }
 

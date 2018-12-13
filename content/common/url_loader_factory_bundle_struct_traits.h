@@ -25,6 +25,9 @@ struct StructTraits<content::mojom::URLLoaderFactoryBundleDataView,
   static network::mojom::URLLoaderFactoryPtrInfo default_factory(
       BundleInfoType& bundle);
 
+  static network::mojom::URLLoaderFactoryPtrInfo appcache_factory(
+      BundleInfoType& bundle);
+
   static content::URLLoaderFactoryBundleInfo::SchemeMap
   scheme_specific_factories(BundleInfoType& bundle);
 

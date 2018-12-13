@@ -110,41 +110,11 @@ std::unique_ptr<URLLoaderFactoryBundleInfo> CreateFactoryBundle(
   bool bypass_redirect_checks = false;
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Create the default *network* factory. The factory will be used as the
-    // default factory when |factory_bundle| is cloned via
-    // CloneWithoutDefaultFactory(). See comments in URLLoaderFactoryBundle
-    // for more details.
-    network::mojom::URLLoaderFactoryRequest default_network_factory_request =
-        mojo::MakeRequest(&factory_bundle->default_network_factory_info());
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
-    GetContentClient()->browser()->WillCreateURLLoaderFactory(
-        rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
-        false /* is_navigation */, origin, &default_network_factory_request,
-        &header_client, &bypass_redirect_checks);
-
-    if (!GetNetworkFactoryCallbackForTest()) {
-      rph->CreateURLLoaderFactory(origin, std::move(header_client),
-                                  std::move(default_network_factory_request));
-    } else {
-      network::mojom::URLLoaderFactoryPtr original_factory;
-      rph->CreateURLLoaderFactory(origin, std::move(header_client),
-                                  mojo::MakeRequest(&original_factory));
-      GetNetworkFactoryCallbackForTest()->Run(
-          std::move(default_network_factory_request), rph->GetID(),
-          original_factory.PassInterface());
-    }
-
-    // Create the default factory. See comments in URLLoaderFactoryBundle
-    // for more details.
-    bool bypass_redirect_checks_for_default_factory = bypass_redirect_checks;
+    // See if the default factory needs to be tweaked by the embedder.
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
         false /* is_navigation */, origin, &default_factory_request,
-        &default_header_client, &bypass_redirect_checks_for_default_factory);
-    DCHECK_EQ(bypass_redirect_checks,
-              bypass_redirect_checks_for_default_factory)
-        << "CreateFactoryBundle doesn't support multiple "
-           "|bypass_redirect_checks| values";
+        &default_header_client, &bypass_redirect_checks);
   }
 
   if (!GetNetworkFactoryCallbackForTest()) {
