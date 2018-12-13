@@ -133,12 +133,11 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
 }
 
 void AccessibilityPanelLayoutManager::UpdateWorkArea() {
-  if (panel_window_ && panel_window_->bounds().y() != 0)
-    return;
-  if (panel_state_ == mojom::AccessibilityPanelState::FULLSCREEN)
-    return;
+  bool should_set_height =
+      panel_window_ && panel_window_->bounds().y() == 0 &&
+      panel_state_ == mojom::AccessibilityPanelState::FULL_WIDTH;
   Shell::GetPrimaryRootWindowController()->shelf()->SetAccessibilityPanelHeight(
-      panel_window_ ? panel_window_->bounds().height() : 0);
+      should_set_height ? panel_window_->bounds().height() : 0);
 }
 
 }  // namespace ash

@@ -17502,6 +17502,7 @@ Called by update_net_error_codes.py.-->
   <int value="1301" label="AUTOTESTPRIVATE_GETARCPACKAGE"/>
   <int value="1302" label="AUTOTESTPRIVATE_LAUNCHARCAPP"/>
   <int value="1303" label="AUTOTESTPRIVATE_CLOSEAPP"/>
+  <int value="1304" label="ACCESSIBILITY_PRIVATE_SETSWITCHACCESSMENUSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">

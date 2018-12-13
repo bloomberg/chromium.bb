@@ -66,7 +66,7 @@ class NavigationManager {
     if (this.contextMenuManager_.selectCurrentNode())
       return;
 
-    this.contextMenuManager_.enter(this.getRelevantMenuActions_());
+    this.contextMenuManager_.enter(this.node_);
   }
 
   /**
@@ -241,21 +241,6 @@ class NavigationManager {
         this.scope_ = ancestor;
       }
     }
-  }
-
-  /**
-   * Determines which menu actions are relevant, given the current node and
-   * scope.
-   * @private
-   */
-  getRelevantMenuActions_() {
-    // TODO(crbug/881080): determine relevant actions programmatically.
-    let actions = [
-      ContextMenuManager.Action.CLICK, ContextMenuManager.Action.DICTATION,
-      ContextMenuManager.Action.OPTIONS, ContextMenuManager.Action.SCROLL_UP,
-      ContextMenuManager.Action.SCROLL_DOWN
-    ];
-    return actions;
   }
 
   /**

@@ -1427,6 +1427,15 @@ void AccessibilityManager::SetKeyboardListenerExtensionId(
     extension_registry_observer_.Add(registry);
 }
 
+void AccessibilityManager::HideSwitchAccessMenu() {
+  switch_access_panel_->Hide();
+}
+
+void AccessibilityManager::ShowSwitchAccessMenu(
+    const gfx::Rect& element_bounds) {
+  switch_access_panel_->Show(element_bounds);
+}
+
 bool AccessibilityManager::ToggleDictation() {
   if (!profile_)
     return false;

@@ -387,4 +387,25 @@ AccessibilityPrivateToggleDictationFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+ExtensionFunction::ResponseAction
+AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
+  std::unique_ptr<accessibility_private::SetSwitchAccessMenuState::Params>
+      params = accessibility_private::SetSwitchAccessMenuState::Params::Create(
+          *args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  bool show_menu = params->show;
+
+  extensions::api::accessibility_private::ScreenRect elem =
+      std::move(params->element_bounds);
+
+  gfx::Rect element_bounds(elem.left, elem.top, elem.width, elem.height);
+
+  if (show_menu)
+    chromeos::AccessibilityManager::Get()->ShowSwitchAccessMenu(element_bounds);
+  else
+    chromeos::AccessibilityManager::Get()->HideSwitchAccessMenu();
+
+  return RespondNow(NoArguments());
+}
+
 #endif  // defined (OS_CHROMEOS)

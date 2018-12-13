@@ -273,6 +273,15 @@ class AccessibilityManager
     return keyboard_listener_extension_id_;
   }
 
+  // Set the keys to be captured by Switch Access.
+  void SetSwitchAccessKeys(const std::set<int>& key_codes);
+
+  // Hides the Switch Access menu.
+  void HideSwitchAccessMenu();
+
+  // Shows the Switch Access menu.
+  void ShowSwitchAccessMenu(const gfx::Rect& element_bounds);
+
   // Starts or stops dictation (type what you speak).
   bool ToggleDictation();
 

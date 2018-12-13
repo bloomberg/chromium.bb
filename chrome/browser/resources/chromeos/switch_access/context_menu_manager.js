@@ -55,9 +55,11 @@ class ContextMenuManager {
   /**
    * Enter the context menu and highlight the first available action.
    *
-   * @param {!Array<!ContextMenuManager.Action>} actions
+   * @param {!chrome.automation.AutomationNode} navNode the currently selected
+   *        node, for which the context menu is being displayed.
    */
-  enter(actions) {
+  enter(navNode) {
+    const actions = this.getActionsForNode_(navNode);
     this.inContextMenu_ = true;
     if (actions !== this.actions_) {
       this.actions_ = actions;
@@ -66,6 +68,12 @@ class ContextMenuManager {
     }
 
     this.node_ = this.menuNode();
+
+    if (navNode.location)
+      chrome.accessibilityPrivate.setSwitchAccessMenuState(
+          true, navNode.location);
+    else
+      console.log('Unable to show Switch Access context menu.');
     this.moveForward();
   }
 
@@ -77,6 +85,9 @@ class ContextMenuManager {
     this.inContextMenu_ = false;
     if (this.node_)
       this.node_ = null;
+
+    chrome.accessibilityPrivate.setSwitchAccessMenuState(
+        false, ContextMenuManager.EmptyLocation);
   }
 
   /**
@@ -177,6 +188,21 @@ class ContextMenuManager {
   }
 
   /**
+   * Determines which menu actions are relevant, given the current node.
+   * @param {!chrome.automation.AutomationNode} node
+   * @private
+   */
+  getActionsForNode_(node) {
+    // TODO(crbug/881080): determine relevant actions programmatically.
+    let actions = [
+      ContextMenuManager.Action.CLICK, ContextMenuManager.Action.DICTATION,
+      ContextMenuManager.Action.OPTIONS, ContextMenuManager.Action.SCROLL_UP,
+      ContextMenuManager.Action.SCROLL_DOWN
+    ];
+    return actions;
+  }
+
+  /**
    * @private
    */
   init_() {
@@ -245,3 +271,14 @@ ContextMenuManager.Action = {
  * @const
  */
 ContextMenuManager.MenuId = 'switchaccess_contextmenu_actions';
+
+/**
+ * Empty location, used for hiding the menu.
+ * @const
+ */
+ContextMenuManager.EmptyLocation = {
+  left: 0,
+  top: 0,
+  width: 0,
+  height: 0
+};
