@@ -88,8 +88,7 @@ class SSHPortForwarder(chrome_test_server_spawner.PortForwarder):
     for host_port, entry in self._port_mapping.iteritems():
       if entry == device_port:
         forwarding_args = [
-            '-NT', '-O', 'cancel', '-R',
-            '%d:localhost:%d' % (self._port_mapping[host_port], host_port)]
+            '-NT', '-O', 'cancel', '-R', '0:localhost:%d' % host_port]
         task = self._target.RunCommandPiped([],
                                             ssh_args=forwarding_args,
                                             stderr=subprocess.PIPE)
