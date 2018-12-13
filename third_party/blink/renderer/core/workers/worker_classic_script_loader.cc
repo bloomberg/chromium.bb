@@ -141,7 +141,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   finished_callback_ = std::move(finished_callback);
   url_ = url;
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
-  forbid_cross_origin_redirects_ = true;
+  is_top_level_script_ = true;
 
   is_worker_global_scope_ = execution_context.IsWorkerGlobalScope();
 
@@ -186,7 +186,7 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
     return;
   }
 
-  if (forbid_cross_origin_redirects_) {
+  if (is_top_level_script_) {
     String error = CheckSameOriginEnforcement(url_, response);
     if (!error.IsNull()) {
       fetch_client_settings_object_fetcher_->Context().AddErrorConsoleMessage(
