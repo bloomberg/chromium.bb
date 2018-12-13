@@ -528,7 +528,7 @@ TEST_F(SubresourceFilterFeaturesTest,
       {{kActivationLevelParameterName, kActivationLevelDryRun},
        {kActivationScopeParameterName, kActivationScopeAllSites},
        {kActivationPriorityParameterName, "500"},
-       {kPerformanceMeasurementRateParameterName, "1.0"}});
+       {kPerformanceMeasurementRateParameterName, "0.01"}});
 }
 
 TEST_F(SubresourceFilterFeaturesTest, PresetForLiveRunOnBetterAdsSites) {

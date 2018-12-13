@@ -285,7 +285,7 @@ Configuration Configuration::MakePresetForLiveRunOnPhishingSites() {
 Configuration Configuration::MakePresetForPerformanceTestingDryRunOnAllSites() {
   Configuration config(mojom::ActivationLevel::kDryRun,
                        ActivationScope::ALL_SITES);
-  config.activation_options.performance_measurement_rate = 1.0;
+  config.activation_options.performance_measurement_rate = 0.01;
   config.activation_conditions.priority = 500;
   return config;
 }
