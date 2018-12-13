@@ -12,6 +12,7 @@
 
 namespace chromeos {
 
+// TODO(hsuregan): Remove this class.
 // Factory which is used to access the CryptAuthService singleton.
 class ChromeCryptAuthServiceFactory : public BrowserContextKeyedServiceFactory {
  public:

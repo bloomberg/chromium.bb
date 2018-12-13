@@ -39,23 +39,11 @@ ChromeCryptAuthServiceFactory::~ChromeCryptAuthServiceFactory() {}
 
 KeyedService* ChromeCryptAuthServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  // If DeviceSync Mojo Service is being used to get remote device information,
-  // CryptAuthService is not needed, and should not be used.
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
-    return nullptr;
-
-  Profile* profile = Profile::FromBrowserContext(context);
-  return ChromeCryptAuthService::Create(profile).release();
+  // TODO(hsuregan): This function, along with this class will be removed.
+  return nullptr;
 }
 
 void ChromeCryptAuthServiceFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  // If DeviceSync service is being used, it will be responsible for registering
-  // these preferences. See https://crbug.com/876906.
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
-    return;
-
-  cryptauth::CryptAuthService::RegisterProfilePrefs(registry);
-}
+    user_prefs::PrefRegistrySyncable* registry) {}
 
 }  // namespace chromeos

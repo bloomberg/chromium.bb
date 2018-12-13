@@ -279,10 +279,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #if defined(OS_CHROMEOS)
   if (!profile->IsGuestSession() &&
       base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
-      base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSettings) &&
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+          chromeos::features::kEnableUnifiedMultiDeviceSettings)) {
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::MultideviceHandler>(
             profile->GetPrefs(),

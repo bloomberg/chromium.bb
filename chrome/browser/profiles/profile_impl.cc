@@ -163,7 +163,6 @@
 #include "chromeos/account_manager/account_manager.h"
 #include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/assistant/buildflags.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/services/device_sync/device_sync_service.h"
 #include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
@@ -1170,8 +1169,7 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      service_name == chromeos::device_sync::mojom::kServiceName) {
+  if (service_name == chromeos::device_sync::mojom::kServiceName) {
     return std::make_unique<chromeos::device_sync::DeviceSyncService>(
         IdentityManagerFactory::GetForProfile(this),
         gcm::GCMProfileServiceFactory::GetForProfile(this)->driver(),
@@ -1179,10 +1177,7 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
         GetURLLoaderFactory(), std::move(request));
   }
 
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      service_name == chromeos::multidevice_setup::mojom::kServiceName) {
+  if (service_name == chromeos::multidevice_setup::mojom::kServiceName) {
     return std::make_unique<
         chromeos::multidevice_setup::MultiDeviceSetupService>(
         std::move(request), GetPrefs(),

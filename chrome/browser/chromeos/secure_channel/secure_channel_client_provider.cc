@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 
 #include "base/macros.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client_impl.h"
 #include "content/public/common/service_manager_connection.h"
 
@@ -23,9 +22,6 @@ SecureChannelClientProvider* SecureChannelClientProvider::GetInstance() {
 }
 
 SecureChannelClient* SecureChannelClientProvider::GetClient() {
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
-    return nullptr;
-
   if (!secure_channel_client_) {
     // ServiceManagerConnection::GetForProcess() returns null in tests.
     service_manager::Connector* connector =

@@ -80,10 +80,8 @@ KeyedService* DeviceSyncClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   // TODO(crbug.com/848347): Check prohibited by policy in services that depend
   // on this Factory, not here.
-  if (IsEnrollmentAllowedByPolicy(context) &&
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+  if (IsEnrollmentAllowedByPolicy(context))
     return new DeviceSyncClientHolder(context);
-  }
 
   return nullptr;
 }

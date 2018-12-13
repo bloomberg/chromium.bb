@@ -20,7 +20,6 @@ class SecureChannelClientProvider {
  public:
   static SecureChannelClientProvider* GetInstance();
 
-  // Returns null if chromeos::features::kMultiDeviceApi is not enabled.
   SecureChannelClient* GetClient();
 
  private:

@@ -20,7 +20,6 @@
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 class Profile;
@@ -126,9 +125,6 @@ class TetherService
   void OnFeatureStatesChanged(
       const chromeos::multidevice_setup::MultiDeviceSetupClient::
           FeatureStatesMap& feature_states_map) override;
-
-  // Callback when the controlling pref changes.
-  void OnPrefsChanged();
 
   // Stop the Tether module if it is currently enabled; if it was not enabled,
   // this function is a no-op.
@@ -315,7 +311,6 @@ class TetherService
   std::unique_ptr<chromeos::tether::TetherHostFetcher> tether_host_fetcher_;
   std::unique_ptr<chromeos::tether::TetherComponent> tether_component_;
 
-  PrefChangeRegistrar registrar_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   std::unique_ptr<base::OneShotTimer> timer_;
 

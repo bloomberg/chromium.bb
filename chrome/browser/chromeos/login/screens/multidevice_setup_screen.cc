@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/oobe_completion_tracker_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 
@@ -39,13 +38,6 @@ MultiDeviceSetupScreen::~MultiDeviceSetupScreen() {
 }
 
 void MultiDeviceSetupScreen::Show() {
-  // If multi-device flags are disabled, skip the associated setup flow.
-  if (!base::FeatureList::IsEnabled(features::kMultiDeviceApi) ||
-      !base::FeatureList::IsEnabled(features::kEnableUnifiedMultiDeviceSetup)) {
-    ExitScreen();
-    return;
-  }
-
   // Only attempt the setup flow for non-guest users.
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
     ExitScreen();
