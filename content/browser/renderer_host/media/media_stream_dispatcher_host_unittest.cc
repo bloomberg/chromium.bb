@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
 #include <stddef.h>
+#include <stdint.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -55,7 +56,8 @@ namespace {
 
 constexpr int kProcessId = 5;
 constexpr int kRenderId = 6;
-constexpr int kPageRequestId = 7;
+constexpr int kRequesterId = 7;
+constexpr int kPageRequestId = 8;
 constexpr const char* kRegularVideoDeviceId = "stub_device_0";
 constexpr const char* kDepthVideoDeviceId = "stub_device_1 (depth)";
 constexpr media::VideoCaptureApi kStubCaptureApi =
@@ -322,6 +324,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   std::unique_ptr<FakeMediaStreamUIProxy> CreateMockUI(bool expect_started) {
     std::unique_ptr<MockMediaStreamUIProxy> fake_ui =
         std::make_unique<MockMediaStreamUIProxy>();
+    testing::Mock::AllowLeak(fake_ui.get());
     if (expect_started)
       EXPECT_CALL(*fake_ui, MockOnStarted(_));
     return fake_ui;
@@ -790,7 +793,7 @@ TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreams) {
                             run_loop.QuitClosure());
   }
 
-  media_stream_manager_->CancelAllRequests(kProcessId, kRenderId);
+  media_stream_manager_->CancelAllRequests(kProcessId, kRenderId, kRequesterId);
   run_loop.RunUntilIdle();
 }
 
@@ -804,7 +807,7 @@ TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreams) {
   for (size_t i = 0; i < generated_streams; ++i)
     GenerateStreamAndWaitForResult(kPageRequestId + i, controls);
 
-  media_stream_manager_->CancelAllRequests(kProcessId, kRenderId);
+  media_stream_manager_->CancelAllRequests(kProcessId, kRenderId, kRequesterId);
   base::RunLoop().RunUntilIdle();
 }
 
