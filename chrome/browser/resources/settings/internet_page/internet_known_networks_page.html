@@ -15,14 +15,15 @@
     </style>
 
     <div class="settings-box first">
-      <div>$i18n{knownNetworksMessage}</div>
+      <div class="settings-box-text">$i18n{knownNetworksMessage}</div>
     </div>
 
-    <div class="settings-box">
+    <div class="settings-box settings-box-text">
       <div class="secondary">$i18n{knownNetworksPreferred}</div>
     </div>
     <div class="list-frame vertical-list">
-      <div class="list-item" hidden$="[[havePreferred_(networkStateList_)]]">
+      <div class="list-item settings-box-text"
+          hidden$="[[havePreferred_(networkStateList_)]]">
         $i18n{internetNoNetworks}
       </div>
       <template is="dom-repeat" items="[[networkStateList_]]"
@@ -30,7 +31,7 @@
         <div class="list-item">
           <div actionable class="flex layout horizontal center"
               on-click="fireShowDetails_">
-            <div class="flex">[[item.Name]]</div>
+            <div class="flex settings-box-text">[[item.Name]]</div>
             <template is="dom-if" if="[[isPolicySource(item.Source))]]">
               <cr-policy-indicator on-click="doNothing_"
                   indicator-type="[[getIndicatorTypeForSource(item.Source)]]">
@@ -52,7 +53,7 @@
       </template>
     </div>
 
-    <div class="settings-box">
+    <div class="settings-box settings-box-text">
       <div class="secondary">$i18n{knownNetworksAll}</div>
     </div>
     <div class="list-frame vertical-list"
@@ -62,7 +63,7 @@
         <div class="list-item">
           <div actionable class="flex layout horizontal center"
               on-click="fireShowDetails_">
-            <div class="flex">[[item.Name]]</div>
+            <div class="flex settings-box-text">[[item.Name]]</div>
             <template is="dom-if" if="[[isPolicySource(item.Source))]]">
               <cr-policy-indicator on-click="doNothing_"
                   indicator-type="[[getIndicatorTypeForSource(item.Source)]]">

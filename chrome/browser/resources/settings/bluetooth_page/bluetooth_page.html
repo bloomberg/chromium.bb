@@ -25,7 +25,7 @@
           <div id="bluetoothDevices"
               class="settings-box two-line" actionable on-click="onTap_">
             <iron-icon icon="[[getIcon_(bluetoothToggleState_)]]"></iron-icon>
-            <div class="middle">
+            <div class="middle settings-box-text">
               $i18n{bluetoothPageTitle}
               <div class="secondary" id="bluetoothSecondary">
                 [[getOnOffString_(bluetoothToggleState_,
@@ -57,7 +57,7 @@
         <template is="dom-if" if="[[isSecondaryUser_]]">
           <div id="bluetoothDevices" class="settings-box two-line">
             <iron-icon class="policy" icon="cr:group"></iron-icon>
-            <div class="middle">
+            <div class="middle settings-box-text">
               [[i18n('bluetoothPrimaryUserControlled', primaryUserEmail_)]]
             </div>
           </div>

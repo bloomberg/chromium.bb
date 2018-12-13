@@ -40,7 +40,7 @@
             managedNetworkAvailable)]]">
           <div actionable class="settings-box two-line"
               on-click="onExpandAddConnectionsTap_">
-            <div class="start layout horizontal center">
+            <div class="start layout horizontal center settings-box-text">
               <div>$i18n{internetAddConnection}</div>
             </div>
             <cr-expand-button alt="$i18n{internetAddConnectionExpandA11yLabel}"
@@ -52,7 +52,9 @@
               <template is="dom-if"
                   if="[[deviceIsEnabled_(deviceStates.WiFi)]]">
                 <div actionable class="list-item" on-click="onAddWiFiTap_">
-                  <div class="start">$i18n{internetAddWiFi}</div>
+                  <div class="start settings-box-text">
+                    $i18n{internetAddWiFi}
+                  </div>
                   <paper-icon-button-light
                       class$="[[getAddNetworkClass_('WiFi')]]">
                     <button aria-label="$i18n{internetAddWiFi}"></button>
@@ -60,7 +62,9 @@
                 </div>
               </template>
               <div actionable class="list-item" on-click="onAddVPNTap_">
-                <div class="start">$i18n{internetAddVPN}</div>
+                <div class="start settings-box-text">
+                  $i18n{internetAddVPN}
+                </div>
                 <paper-icon-button-light
                     class$="[[getAddNetworkClass_('VPN')]]">
                   <button aria-label="$i18n{internetAddVPN}"></button>
@@ -69,7 +73,9 @@
               <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
                 <div actionable class="list-item"
                     on-click="onAddThirdPartyVpnTap_" provider="[[item]]">
-                  <div class="start">[[getAddThirdPartyVpnLabel_(item)]]</div>
+                  <div class="start settings-box-text">
+                    [[getAddThirdPartyVpnLabel_(item)]]
+                  </div>
                   <paper-icon-button-light class="icon-external">
                     <button aria-label$="[[getAddThirdPartyVpnLabel_(item)]]">
                     </button>
@@ -79,7 +85,9 @@
               <template is="dom-if" if="[[arcVpnProviders_.length]]">
                 <div actionable class="list-item" id="addArcVpn"
                     on-click="onAddArcVpnTap_">
-                  <div class="start">$i18n{internetAddArcVPN}</div>
+                  <div class="setting-box-text">
+                    $i18n{internetAddArcVPN}
+                  </div>
                   <paper-icon-button-light class="icon-external">
                     <button aria-label$="$i18n{internetAddArcVPN}"></button>
                   </paper-icon-button-light>
@@ -92,7 +100,9 @@
             managedNetworkAvailable)]]">
           <div class="settings-box">
             <iron-icon class="policy" icon="cr20:domain"></iron-icon>
-            <div>$i18n{internetAddConnectionNotAllowed}</div>
+            <div class="settings-box-text">
+              $i18n{internetAddConnectionNotAllowed}
+            </div>
           </div>
         </template>
       </div>
@@ -129,7 +139,7 @@
               arc-vpn-providers="[[arcVpnProviders_]]"
               networking-private="[[networkingPrivate]]"
               show-spinner="{{showSpinner_}}">
-          </settings-bluetooth-subpage>
+          </settings-internet-subpage>
         </settings-subpage>
       </template>
 
