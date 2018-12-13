@@ -790,8 +790,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       request.PassResponsePipeToClient(), std::move(peer), url_loader_factory_,
       std::move(throttles), std::move(response_override),
       &continue_navigation_function);
-  extra_data->set_continue_navigation_function(
-      std::move(continue_navigation_function));
+  if (client_) {
+    client_->SetContinueNavigationRequestCallback(
+        std::move(continue_navigation_function));
+  }
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);

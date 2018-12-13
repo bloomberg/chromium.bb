@@ -3274,8 +3274,6 @@ void RenderFrameImpl::CommitNavigation(
           &request_params, std::move(controller_service_worker_info));
   FillNavigationParams(common_params, request_params, navigation_params.get());
 
-  RequestExtraData* request_extra_data = nullptr;
-
   // Perform a navigation to a data url if needed (for main frames).
   // Note: the base URL might be invalid, so also check the data URL string.
   bool should_load_data_url = !common_params.base_url_for_data_url.is_empty();
@@ -3294,11 +3292,14 @@ void RenderFrameImpl::CommitNavigation(
     // Needed so that history-url-only changes don't become reloads.
     navigation_params->unreachable_url = common_params.history_url_for_data_url;
   } else {
+    // TODO(arthursonzogni): Pass the data needed to continue the navigation
+    // directly to CommitNavigation instead of storing it in the
+    // NavigationResponseOverrideParameters. The architecture of committing the
+    // navigation in the renderer process should be simplified and avoid going
+    // through the ResourceFetcher for the main resource.
     navigation_params->request =
         CreateURLRequestForCommit(common_params, request_params,
                                   std::move(url_loader_client_endpoints), head);
-    request_extra_data = static_cast<RequestExtraData*>(
-        navigation_params->request.GetExtraData());
   }
 
   // Note: we cannot use base::AutoReset here, since |this| can be deleted
@@ -3313,19 +3314,6 @@ void RenderFrameImpl::CommitNavigation(
   if (!weak_this)
     return;
   committing_main_request_ = false;
-
-  // Continue the navigation.
-  // TODO(arthursonzogni): Pass the data needed to continue the navigation to
-  // this function instead of storing it in the
-  // NavigationResponseOverrideParameters. The architecture of committing the
-  // navigation in the renderer process should be simplified and avoid going
-  // through the ResourceFetcher for the main resource.
-  if (request_extra_data) {
-    base::OnceClosure continue_navigation =
-        request_extra_data->TakeContinueNavigationFunctionOwnerShip();
-    if (continue_navigation)
-      std::move(continue_navigation).Run();
-  }
 }
 
 void RenderFrameImpl::CommitFailedNavigation(

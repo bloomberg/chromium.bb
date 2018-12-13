@@ -995,26 +995,28 @@ void DocumentLoader::StartLoading() {
   DCHECK_EQ(state_, kNotStarted);
   state_ = kProvisional;
 
-  if (MaybeLoadEmpty()) {
-    source_location_ = nullptr;
-    return;
+  if (!MaybeLoadEmpty()) {
+    DCHECK(!GetTiming().NavigationStart().is_null());
+    // The fetch has already started in the browser,
+    // so we don't MarkFetchStart here.
+
+    ResourceLoaderOptions options;
+    options.data_buffering_policy = kDoNotBufferData;
+    options.initiator_info.name = fetch_initiator_type_names::kDocument;
+    FetchParameters fetch_params(request_, options);
+    RawResource::FetchMainResource(fetch_params, Fetcher(), this,
+                                   substitute_data_);
+    // A bunch of headers are set when the underlying resource load begins, and
+    // request_ needs to include those. Even when using a cached resource, we
+    // may make some modification to the request, e.g. adding the referer
+    // header.
+    request_ = GetResource()->IsLoading() ? GetResource()->GetResourceRequest()
+                                          : fetch_params.GetResourceRequest();
+    base::OnceClosure continue_navigation =
+        GetResource()->TakeContinueNavigationRequestCallback();
+    if (continue_navigation)
+      std::move(continue_navigation).Run();
   }
-
-  DCHECK(!GetTiming().NavigationStart().is_null());
-  // The fetch has already started in the browser,
-  // so we don't MarkFetchStart here.
-
-  ResourceLoaderOptions options;
-  options.data_buffering_policy = kDoNotBufferData;
-  options.initiator_info.name = fetch_initiator_type_names::kDocument;
-  FetchParameters fetch_params(request_, options);
-  RawResource::FetchMainResource(fetch_params, Fetcher(), this,
-                                 substitute_data_);
-  // A bunch of headers are set when the underlying resource load begins, and
-  // request_ needs to include those. Even when using a cached resource, we may
-  // make some modification to the request, e.g. adding the referer header.
-  request_ = GetResource()->IsLoading() ? GetResource()->GetResourceRequest()
-                                        : fetch_params.GetResourceRequest();
   source_location_ = nullptr;
 }
 
