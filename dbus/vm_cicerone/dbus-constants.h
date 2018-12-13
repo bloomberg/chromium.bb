@@ -32,7 +32,7 @@ const char kGetLxdContainerUsernameMethod[] = "GetLxdContainerUsername";
 const char kSetUpLxdContainerUserMethod[] = "SetUpLxdContainerUser";
 
 // Methods to be called from debugd.
-const char kGetDebugInformation[] = "GetDebugInformation";
+const char kGetDebugInformationMethod[] = "GetDebugInformation";
 
 // Signals.
 const char kContainerStartedSignal[] = "ContainerStarted";
