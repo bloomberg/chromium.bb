@@ -15,49 +15,66 @@
 #include "build/build_config.h"
 
 namespace base {
+namespace internal {
+
+// Make sure dummy_var has default visibility since we need to make sure that
+// there is only one definition across all libraries (shared or static).
+template <typename Type>
+struct __attribute__((visibility("default"))) TypeTag {
+  constexpr static char dummy_var = 0;
+};
+
+template <typename Type>
+constexpr char TypeTag<Type>::dummy_var;
+
+// Returns a compile-time unique pointer for the passed in type.
+template <typename Type>
+constexpr inline const void* UniqueIdFromType() {
+  return &TypeTag<Type>::dummy_var;
+}
+
+}  // namespace internal
 
 // A substitute for RTTI that uses the linker to uniquely reserve an address in
 // the binary for each type.
-class TypeId {
+class BASE_EXPORT TypeId {
  public:
-  bool constexpr operator==(const TypeId& other) const {
-    return type_id_ == other.type_id_;
+  template <typename T>
+  constexpr static TypeId From() {
+    return TypeId(PRETTY_FUNCTION, internal::UniqueIdFromType<T>());
   }
 
-  bool constexpr operator!=(const TypeId& other) const {
-    return !(*this == other);
+  constexpr TypeId() : TypeId(nullptr, "") {}
+
+  constexpr TypeId(const TypeId& other) = default;
+  TypeId& operator=(const TypeId& other) = default;
+
+  constexpr bool operator==(TypeId other) const {
+    return unique_type_id_ == other.unique_type_id_;
   }
 
- public:
-  template <typename Type>
-  static constexpr TypeId Create() {
-    return TypeId(&TypeTag<Type>::dummy_var, PRETTY_FUNCTION);
-  }
+  constexpr bool operator!=(TypeId other) const { return !(*this == other); }
 
   std::string ToString() const;
 
  private:
-  template <typename Type>
-  struct TypeTag {
-    constexpr static char dummy_var = 0;
-  };
-
-  constexpr TypeId(const void* type_id, const char* function_name)
+  constexpr TypeId(const char* function_name, const void* unique_type_id)
       :
 #if DCHECK_IS_ON()
         function_name_(function_name),
 #endif
-        type_id_(type_id) {
+        unique_type_id_(unique_type_id) {
+  }
+
+  uintptr_t internal_unique_id() const {
+    return reinterpret_cast<uintptr_t>(unique_type_id_);
   }
 
 #if DCHECK_IS_ON()
-  const char* const function_name_;
+  const char* function_name_;
 #endif
-  const void* const type_id_;
+  const void* unique_type_id_;
 };
-
-template <typename Type>
-constexpr char TypeId::TypeTag<Type>::dummy_var;
 
 BASE_EXPORT std::ostream& operator<<(std::ostream& out, const TypeId& type_id);
 

@@ -16,11 +16,11 @@ namespace base {
 
 // static
 TypeId TypeIdTestSupportA::GetTypeIdForTypeInAnonymousNameSpace() {
-  return TypeId::Create<TypeInAnonymousNameSpace>();
+  return TypeId::From<TypeInAnonymousNameSpace>();
 }
 
 TypeId TypeIdTestSupportA::GetTypeIdForUniquePtrInt() {
-  return TypeId::Create<std::unique_ptr<int>>();
+  return TypeId::From<std::unique_ptr<int>>();
 }
 
 }  // namespace base
