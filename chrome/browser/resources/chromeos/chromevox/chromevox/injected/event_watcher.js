@@ -319,7 +319,7 @@ cvox.ChromeVoxEventWatcher.maybeCallReadyCallbacks_ = function() {
         cvox.ChromeVoxEventWatcher.readyCallbacks_.shift()();
         cvox.ChromeVoxEventWatcher.maybeCallReadyCallbacks_();
       }
-    }, 100);
+    }, 5);
   }
 };
 
