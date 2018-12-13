@@ -326,6 +326,7 @@ cr.define('cr.ui.login', function() {
     /**
      * Hides/shows header (Shutdown/Add User/Cancel buttons).
      * @param {boolean} hidden Whether header is hidden.
+     * TODO(crbug/914578): talk to the views login shelf through Mojo.
      */
     get headerHidden() {
       return $('login-header-bar').hidden;
@@ -937,9 +938,6 @@ cr.define('cr.ui.login', function() {
         screen.classList.remove('left');
       }
       if (this.showingViewsLogin) {
-        // Hide the shelf and version info because these should be
-        // displayed in views.
-        $('login-header-bar').hidden = true;
         $('top-header-bar').hidden = true;
       }
     },
@@ -1069,7 +1067,19 @@ cr.define('cr.ui.login', function() {
      */
     toggleClass: function(className, enabled) {
       $('oobe').classList.toggle(className, enabled);
-    }
+    },
+
+    /**
+     * Notifies the C++ handler in views login that the OOBE signin state has
+     * been updated. This information is primarily used by the login shelf to
+     * update button visibility state.
+     * @param {number} state The state (see SIGNIN_UI_STATE) of the OOBE UI.
+     */
+    setSigninUIState: function(state) {
+      if (Oobe.getInstance().showingViewsLogin)
+        chrome.send('updateSigninUIState', [state]);
+    },
+
   };
 
   /**
@@ -1138,7 +1148,6 @@ cr.define('cr.ui.login', function() {
    * Disables signin UI.
    */
   DisplayManager.disableSigninUI = function() {
-    $('login-header-bar').disabled = true;
     $('pod-row').disabled = true;
   };
 
@@ -1149,7 +1158,7 @@ cr.define('cr.ui.login', function() {
   DisplayManager.showSigninUI = function(opt_email) {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
     if (currentScreenId == SCREEN_GAIA_SIGNIN)
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
+      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
     chrome.send('showAddUser', [opt_email]);
   };
 
@@ -1164,7 +1173,6 @@ cr.define('cr.ui.login', function() {
     if ($(SCREEN_GAIA_SIGNIN))
       $(SCREEN_GAIA_SIGNIN)
           .reset(currentScreenId == SCREEN_GAIA_SIGNIN, forceOnline);
-    $('login-header-bar').disabled = false;
     $('pod-row').reset(currentScreenId == SCREEN_ACCOUNT_PICKER);
   };
 

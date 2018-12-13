@@ -66,7 +66,7 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
       Oobe.getInstance().headerHidden = false;
       Oobe.showScreen({id: SCREEN_PASSWORD_CHANGED});
       $('login-header-bar').disabled = false;
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.PASSWORD_CHANGED;
+      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.PASSWORD_CHANGED);
     }
   };
 });
