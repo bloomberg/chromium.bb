@@ -209,6 +209,57 @@ void FreeDefiniteSizeFn(const AllocatorDispatch* self,
   self->next->free_definite_size_function(self->next, address, size, context);
 }
 
+static void* AlignedMallocFn(const AllocatorDispatch* self,
+                             size_t size,
+                             size_t alignment,
+                             void* context) {
+  if (UNLIKELY(sampling_state.Sample()))
+    if (void* allocation = GetGpa().Allocate(size, alignment))
+      return allocation;
+
+  return self->next->aligned_malloc_function(self->next, size, alignment,
+                                             context);
+}
+
+static void* AlignedReallocFn(const AllocatorDispatch* self,
+                              void* address,
+                              size_t size,
+                              size_t alignment,
+                              void* context) {
+  if (UNLIKELY(!address))
+    return AlignedMallocFn(self, size, alignment, context);
+
+  if (LIKELY(!GetGpa().PointerIsMine(address)))
+    return self->next->aligned_realloc_function(self->next, address, size,
+                                                alignment, context);
+
+  if (!size) {
+    GetGpa().Deallocate(address);
+    return nullptr;
+  }
+
+  void* new_alloc = GetGpa().Allocate(size, alignment);
+  if (!new_alloc)
+    new_alloc = self->next->aligned_malloc_function(self->next, size, alignment,
+                                                    context);
+  if (!new_alloc)
+    return nullptr;
+
+  memcpy(new_alloc, address,
+         std::min(size, GetGpa().GetRequestedSize(address)));
+  GetGpa().Deallocate(address);
+  return new_alloc;
+}
+
+static void AlignedFreeFn(const AllocatorDispatch* self,
+                          void* address,
+                          void* context) {
+  if (UNLIKELY(GetGpa().PointerIsMine(address)))
+    return GetGpa().Deallocate(address);
+
+  self->next->aligned_free_function(self->next, address, context);
+}
+
 AllocatorDispatch g_allocator_dispatch = {
     &AllocFn,
     &AllocZeroInitializedFn,
@@ -219,6 +270,9 @@ AllocatorDispatch g_allocator_dispatch = {
     &BatchMallocFn,
     &BatchFreeFn,
     &FreeDefiniteSizeFn,
+    &AlignedMallocFn,
+    &AlignedReallocFn,
+    &AlignedFreeFn,
     nullptr /* next */
 };
 
