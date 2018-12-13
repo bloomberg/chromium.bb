@@ -40,8 +40,10 @@ chrome_public_android_manifest =
     "$target_gen_dir/chrome_public_apk/AndroidManifest.xml"
 chrome_modern_public_android_manifest =
     "$target_gen_dir/chrome_modern_public_apk/AndroidManifest.xml"
-monochrome_public_android_manifest =
+monochrome_public_apk_android_manifest =
     "$target_gen_dir/monochrome_public_apk/AndroidManifest.xml"
+monochrome_public_bundle_android_manifest =
+    "$target_gen_dir/monochrome_public_bundle/AndroidManifest.xml"
 trichrome_library_android_manifest =
     "$target_gen_dir/trichrome_library_apk/AndroidManifest.xml"
 trichrome_chrome_android_manifest =
@@ -79,16 +81,34 @@ jinja_template("chrome_modern_public_android_manifest") {
   ]
 }
 
-jinja_template("monochrome_public_android_manifest") {
+jinja_template("monochrome_public_apk_android_manifest") {
   input = "java/AndroidManifest_monochrome.xml"
   includes = [
     "//android_webview/apk/java/AndroidManifest.xml",
     "java/AndroidManifest.xml",
   ]
-  output = monochrome_public_android_manifest
+  output = monochrome_public_apk_android_manifest
   variables = chrome_public_jinja_variables +
               monochrome_android_manifest_jinja_variables +
-              [ "target_sdk_version=$android_sdk_version" ]
+              [
+                "target_sdk_version=$android_sdk_version",
+                "webview_library=libmonochrome.so",
+              ]
+}
+
+jinja_template("monochrome_public_bundle_android_manifest") {
+  input = "java/AndroidManifest_monochrome.xml"
+  includes = [
+    "//android_webview/apk/java/AndroidManifest.xml",
+    "java/AndroidManifest.xml",
+  ]
+  output = monochrome_public_bundle_android_manifest
+  variables = chrome_public_jinja_variables +
+              monochrome_android_manifest_jinja_variables +
+              [
+                "target_sdk_version=$android_sdk_version",
+                "webview_library=libmonochrome${bundle_library_suffix}.so",
+              ]
 }
 
 jinja_template("trichrome_library_android_manifest") {
@@ -1502,8 +1522,13 @@ template("monochrome_public_apk_or_module_tmpl") {
                            ])
 
     if (!defined(android_manifest) && !defined(android_manifest_dep)) {
-      android_manifest = monochrome_public_android_manifest
-      android_manifest_dep = ":monochrome_public_android_manifest"
+      if (target_type == "android_app_bundle_module") {
+        android_manifest = monochrome_public_bundle_android_manifest
+        android_manifest_dep = ":monochrome_public_bundle_android_manifest"
+      } else {
+        android_manifest = monochrome_public_apk_android_manifest
+        android_manifest_dep = ":monochrome_public_apk_android_manifest"
+      }
     }
 
     if (public_android_sdk) {
@@ -1636,6 +1661,7 @@ jinja_template("monochrome_public_test_ar_apk_manifest") {
               [
                 "target_sdk_version=$android_sdk_version",
                 "test_manifest_package=$test_manifest_package",
+                "webview_library=libmonochrome.so",
               ]
 }
 
