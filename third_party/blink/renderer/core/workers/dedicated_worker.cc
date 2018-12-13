@@ -247,6 +247,12 @@ bool DedicatedWorker::HasPendingActivity() const {
   return context_proxy_->HasPendingActivity() || classic_script_loader_;
 }
 
+void DedicatedWorker::DispatchErrorEventForScriptFetchFailure() {
+  DCHECK(!GetExecutionContext() || GetExecutionContext()->IsContextThread());
+  // TODO(nhiroki): Add a console error message.
+  DispatchEvent(*Event::CreateCancelable(event_type_names::kError));
+}
+
 const String DedicatedWorker::Name() const {
   return options_->name();
 }
@@ -285,7 +291,7 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
   if (classic_script_loader_->Canceled()) {
     // Do nothing.
   } else if (classic_script_loader_->Failed()) {
-    DispatchEvent(*Event::CreateCancelable(event_type_names::kError));
+    context_proxy_->DidFailToFetchScript();
   } else {
     network::mojom::ReferrerPolicy referrer_policy =
         network::mojom::ReferrerPolicy::kDefault;

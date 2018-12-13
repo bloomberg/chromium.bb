@@ -68,6 +68,8 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
   void ReportException(const String& error_message,
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;
+  void DidFailToFetchClassicScript() final;
+  void DidFailToFetchModuleScript() final;
   void DidEvaluateClassicScript(bool success) override;
   void DidEvaluateModuleScript(bool success) override;
 

@@ -76,6 +76,8 @@ class CORE_EXPORT DedicatedWorker final
   // (via AbstractWorker -> EventTargetWithInlineData -> EventTarget).
   bool HasPendingActivity() const final;
 
+  void DispatchErrorEventForScriptFetchFailure();
+
   // Returns the name specified by WorkerOptions.
   const String Name() const;
 

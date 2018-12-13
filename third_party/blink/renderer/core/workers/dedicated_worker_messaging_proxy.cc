@@ -106,6 +106,13 @@ bool DedicatedWorkerMessagingProxy::HasPendingActivity() const {
   return !AskedToTerminate();
 }
 
+void DedicatedWorkerMessagingProxy::DidFailToFetchScript() {
+  DCHECK(IsParentContextThread());
+  if (!worker_object_ || AskedToTerminate())
+    return;
+  worker_object_->DispatchErrorEventForScriptFetchFailure();
+}
+
 void DedicatedWorkerMessagingProxy::DidEvaluateScript(bool success) {
   DCHECK(IsParentContextThread());
   was_script_evaluated_ = true;

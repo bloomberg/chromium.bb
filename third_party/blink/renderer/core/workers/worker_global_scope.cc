@@ -440,9 +440,7 @@ void WorkerGlobalScope::DidImportClassicScript(
     // Step 12.1. "Queue a task to fire an event named error at worker."
     // Step 12.2. "Run the environment discarding steps for inside settings."
     // Step 12.3. "Return."
-    ExceptionThrown(ErrorEvent::Create(
-        "Failed to load a worker script: " + url_.GetString(),
-        SourceLocation::Capture(), nullptr /* world */));
+    ReportingProxy().DidFailToFetchClassicScript();
     return;
   }
 
