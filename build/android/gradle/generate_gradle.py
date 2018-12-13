@@ -834,6 +834,11 @@ def main():
                       help='Override compileSdkVersion for android sdk docs. '
                            'Useful when sources for android_sdk_version is '
                            'not available in Android Studio.')
+  parser.add_argument(
+      '--sdk-path',
+      default=os.path.expanduser('~/Android/Sdk'),
+      help='The path to use as the SDK root, overrides the '
+      'default at ~/Android/Sdk.')
   version_group = parser.add_mutually_exclusive_group()
   version_group.add_argument('--beta',
                       action='store_true',
@@ -843,20 +848,6 @@ def main():
                       action='store_true',
                       help='Generate a project that is compatible with '
                            'Android Studio Canary.')
-  sdk_group = parser.add_mutually_exclusive_group()
-  sdk_group.add_argument('--sdk',
-                         choices=['AndroidStudioCurrent',
-                                  'AndroidStudioDefault',
-                                  'ChromiumSdkRoot'],
-                         default='AndroidStudioDefault',
-                         help="Set the project's SDK root. This can be set to "
-                              "Android Studio's current SDK root, the default "
-                              "Android Studio SDK root, or Chromium's SDK "
-                              "root in //third_party. The default is Android "
-                              "Studio's SDK root in ~/Android/Sdk.")
-  sdk_group.add_argument('--sdk-path',
-                         help='An explict path for the SDK root, setting this '
-                              'is an alternative to setting the --sdk option')
   args = parser.parse_args()
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
@@ -961,19 +952,14 @@ def main():
   _WriteFile(os.path.join(generator.project_dir, 'settings.gradle'),
              _GenerateSettingsGradle(project_entries))
 
-  if args.sdk != "AndroidStudioCurrent":
-    if args.sdk_path:
-      sdk_path = _RebasePath(args.sdk_path)
-    elif args.sdk == "AndroidStudioDefault":
-      sdk_path = os.path.expanduser('~/Android/Sdk')
-      if not os.path.exists(sdk_path):
-        # Help first-time users avoid Android Studio forcibly changing back to
-        # the previous default due to not finding a valid sdk under this dir.
-        shutil.copytree(_RebasePath(build_vars['android_sdk_root']), sdk_path)
-    else:
-      sdk_path = _RebasePath(build_vars['android_sdk_root'])
-    _WriteFile(os.path.join(generator.project_dir, 'local.properties'),
-               _GenerateLocalProperties(sdk_path))
+  # Ensure the Android Studio sdk is correctly initialized.
+  if not os.path.exists(args.sdk_path):
+    # Help first-time users avoid Android Studio forcibly changing back to
+    # the previous default due to not finding a valid sdk under this dir.
+    shutil.copytree(_RebasePath(build_vars['android_sdk_root']), args.sdk_path)
+  _WriteFile(
+      os.path.join(generator.project_dir, 'local.properties'),
+      _GenerateLocalProperties(args.sdk_path))
 
   zip_tuples = []
   generated_inputs = set()
