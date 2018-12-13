@@ -1464,10 +1464,6 @@ void TabDragController::PerformDeferredAttach() {
   // after the drag ends.
   did_restore_window_ = false;
 
-  TabStrip* target_tabstrip = deferred_target_tabstrip;
-  SetDeferredTargetTabstrip(nullptr);
-  deferred_target_tabstrip_observer_.reset();
-
   // GetCursorScreenPoint() needs to be called before Detach() is called as
   // GetCursorScreenPoint() may use the current attached tabstrip to get the
   // touch event position but Detach() sets attached tabstrip to nullptr.
@@ -1475,7 +1471,10 @@ void TabDragController::PerformDeferredAttach() {
   Detach(DONT_RELEASE_CAPTURE);
   // If we're attaching the dragged tabs to an overview window's tabstrip, the
   // tabstrip should not have focus.
-  Attach(target_tabstrip, current_screen_point, /*set_capture=*/false);
+  Attach(deferred_target_tabstrip, current_screen_point, /*set_capture=*/false);
+
+  SetDeferredTargetTabstrip(nullptr);
+  deferred_target_tabstrip_observer_.reset();
 #endif
 }
 

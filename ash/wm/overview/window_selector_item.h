@@ -195,6 +195,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
       float opacity,
       WindowSelector::UpdateAnimationSettingsCallback callback);
 
+  // If the window item represents a minimized window, update its content view.
+  void UpdateItemContentViewForMinimizedWindow();
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 

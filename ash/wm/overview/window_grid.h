@@ -244,6 +244,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
  private:
   class ShieldView;
+  class TargetWindowObserver;
   friend class WindowSelectorTest;
 
   // Struct which holds data required to perform nudges.
@@ -344,6 +345,13 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // drag ends or overview mode is ended. When the dragged window is dropped
   // onto the drop target, the dragged window is added to the overview.
   std::unique_ptr<views::Widget> drop_target_widget_;
+
+  // The observer of the target window, which is the window that the dragged
+  // tabs are going to merge into after the drag ends. After the dragged tabs
+  // merge into the target window, and if the target window is a minimized
+  // window in overview and is not destroyed yet, we need to update the overview
+  // minimized widget's content view so that it reflects the merge.
+  std::unique_ptr<TargetWindowObserver> target_window_observer_;
 
   // Current selected window position.
   size_t selected_index_ = 0;

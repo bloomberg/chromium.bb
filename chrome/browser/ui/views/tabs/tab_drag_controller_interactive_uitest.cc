@@ -75,6 +75,7 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -3130,6 +3131,73 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 
   EXPECT_FALSE(WebContentsIsFastResized(browser()));
   EXPECT_FALSE(WebContentsIsFastResized(browser2));
+}
+
+namespace {
+
+void DragToMinimizedOverviewWindowStep2(
+    DetachToBrowserTabDragControllerTest* test,
+    TabStrip* dragged_tab_strip,
+    TabStrip* target_tab_strip) {
+  EXPECT_EQ(2u, test->browser_list->size());
+
+  // Test that overview is open behind the dragged window and |target_window|
+  // has been put in overview as expected.
+  aura::Window* dragged_window = test::GetWindowForTabStrip(dragged_tab_strip);
+  aura::Window* target_window = test::GetWindowForTabStrip(target_tab_strip);
+  EXPECT_TRUE(target_window->GetProperty(ash::kIsShowingInOverviewKey));
+  EXPECT_FALSE(dragged_window->GetProperty(ash::kIsShowingInOverviewKey));
+
+  // Now drag the tabs to a point that is contained by |target_window|.
+  gfx::RectF target_window_bounds(target_window->bounds());
+  gfx::Transform transform = target_window->layer()->GetTargetTransform();
+  transform.TransformRect(&target_window_bounds);
+  gfx::Point target_point(target_window_bounds.CenterPoint().x(),
+                          target_window_bounds.CenterPoint().y());
+
+  // Minimize the |target_window|.
+  target_window->SetProperty(aura::client::kShowStateKey,
+                             ui::SHOW_STATE_MINIMIZED);
+
+  ASSERT_TRUE(test->DragInputTo(target_point));
+  EXPECT_TRUE(
+      target_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+
+  if (test->input_source() == INPUT_SOURCE_TOUCH)
+    ASSERT_TRUE(test->ReleaseInput());
+  else
+    ASSERT_TRUE(test->ReleaseMouseAsync());
+}
+
+}  // namespace
+
+// Test that the dragged tabs should be able to merge into an overview window
+// that represents a minimized window.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragToMinimizedOverviewWindow) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Create another browser.
+  Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+  EXPECT_EQ(2u, browser_list->size());
+
+  test::SetAndWaitForTabletMode(true);
+
+  // Move to the first tab of |browser2| and drag it toward to browser(). Note
+  // dragging on |browser2| which only has one tab in tablet mode will open
+  // overview behind the |browser2|.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip2->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip2),
+      base::BindOnce(&DragToMinimizedOverviewWindowStep2, this, tab_strip2,
+                     tab_strip)));
+  QuitWhenNotDragging();
+
+  // |tab_strip| should have been merged into |browser2|. Thus there should only
+  // be one browser now.
+  EXPECT_EQ(browser_list->size(), 1u);
 }
 
 #endif  // OS_CHROMEOS

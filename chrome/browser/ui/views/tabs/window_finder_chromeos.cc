@@ -13,6 +13,8 @@
 
 namespace {
 
+// The class to be used by ash to find an eligible chrome window that we can
+// attach the dragged tabs into.
 class WindowFinderClassic : public WindowFinder {
  public:
   WindowFinderClassic() {}
@@ -27,6 +29,8 @@ class WindowFinderClassic : public WindowFinder {
   DISALLOW_COPY_AND_ASSIGN(WindowFinderClassic);
 };
 
+// The class to be used by mash to find an eligible chrome window that we can
+// attach the dragged tabs into.
 class WindowFinderMus : public WindowFinder {
  public:
   WindowFinderMus(TabDragController::EventSource event_source,
