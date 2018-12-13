@@ -41,7 +41,7 @@ class VIZ_HOST_EXPORT HitTestQuery {
  public:
   explicit HitTestQuery(
       base::RepeatingClosure shut_down_gpu_callback = base::RepeatingClosure());
-  ~HitTestQuery();
+  virtual ~HitTestQuery();
 
   // TODO(riajiang): Need to validate the data received.
   // http://crbug.com/746470
@@ -72,8 +72,10 @@ class VIZ_HOST_EXPORT HitTestQuery {
   // then we get 2 in the coordinate system of a; apply the
   // transfrom-from-e-to-c and transform-from-c-to-b then we get 3 in the
   // coordinate system of b.
-  Target FindTargetForLocation(EventSource event_source,
-                               const gfx::PointF& location_in_root) const;
+  // Virtual for testing.
+  virtual Target FindTargetForLocation(
+      EventSource event_source,
+      const gfx::PointF& location_in_root) const;
 
   // When a target window is already known, e.g. capture/latched window, convert
   // |location_in_root| to be in the coordinate space of the target and store
