@@ -9,7 +9,6 @@ import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.SmallTest;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import org.junit.Assert;
@@ -125,7 +124,9 @@ public class AutofillAssistantPreferencesTest {
     }
 
     /**
-     * Ensure that the "Autofill Assistant" setting is shown when the feature is enabled.
+     * The "Autofill Assistant" preference entry is currently completely disabled.
+     *
+     * Ensure that the entry is not shown when the AUTOFILL_ASSISTANT feature is on.
      */
     @Test
     @SmallTest
@@ -140,7 +141,7 @@ public class AutofillAssistantPreferencesTest {
             public void run() {
                 MainPreferences mainPrefs = (MainPreferences) preferences.getFragmentForTest();
                 Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
-                        is(not(nullValue())));
+                        is(nullValue()));
             }
         });
     }
