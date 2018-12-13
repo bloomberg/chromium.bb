@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "media/learning/impl/test_random_number_generator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -15,10 +16,10 @@ namespace learning {
 class RandomTreeTest : public testing::TestWithParam<LearningTask::Ordering> {
  public:
   RandomTreeTest()
-      : storage_(base::MakeRefCounted<TrainingDataStorage>()),
+      : rng_(0),
+        trainer_(&rng_),
+        storage_(base::MakeRefCounted<TrainingDataStorage>()),
         ordering_(GetParam()) {}
-
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Set up |task_| to have |n| features with the given ordering.
   void SetupFeatures(size_t n) {
@@ -29,6 +30,9 @@ class RandomTreeTest : public testing::TestWithParam<LearningTask::Ordering> {
     }
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  TestRandomNumberGenerator rng_;
   RandomTreeTrainer trainer_;
   LearningTask task_;
   scoped_refptr<TrainingDataStorage> storage_;
@@ -111,6 +115,12 @@ TEST_P(RandomTreeTest, SimpleSeparableTrainingData) {
 }
 
 TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
+  // Skip this test for numeric features.  Fully randomized splits are too
+  // random to expect meaningful results.  The RandomForest tests will test this
+  // behavior as part of an ensemble.
+  if (ordering_ == LearningTask::Ordering::kNumeric)
+    return;
+
   SetupFeatures(4);
   // Build a four-feature training set that's completely separable, but one
   // needs all four features to do it.

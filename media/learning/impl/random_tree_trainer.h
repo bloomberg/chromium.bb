@@ -14,6 +14,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "media/learning/common/learning_task.h"
+#include "media/learning/impl/random_number_generator.h"
 #include "media/learning/impl/training_algorithm.h"
 
 namespace media {
@@ -57,9 +58,10 @@ namespace learning {
 // TODO(liberato): Right now, it not-so-randomly selects from the entire set.
 // TODO(liberato): consider PRF or other simplified approximations.
 // TODO(liberato): separate Model and TrainingAlgorithm.  This is the latter.
-class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
+class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
+    : public HasRandomNumberGenerator {
  public:
-  RandomTreeTrainer();
+  explicit RandomTreeTrainer(RandomNumberGenerator* rng = nullptr);
   ~RandomTreeTrainer();
 
   // Return a callback that can be used to train a random tree.

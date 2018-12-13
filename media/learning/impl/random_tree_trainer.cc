@@ -135,7 +135,8 @@ struct LeafNode : public Model {
   TargetDistribution distribution_;
 };
 
-RandomTreeTrainer::RandomTreeTrainer() = default;
+RandomTreeTrainer::RandomTreeTrainer(RandomNumberGenerator* rng)
+    : HasRandomNumberGenerator(rng) {}
 
 RandomTreeTrainer::~RandomTreeTrainer() = default;
 
@@ -158,12 +159,22 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
   Split best_potential_split;
 
   // Select the feature subset to consider at this leaf.
-  // TODO(liberato): subset.
   FeatureSet feature_candidates;
   for (size_t i = 0; i < training_data[0]->features.size(); i++) {
     if (used_set.find(i) != used_set.end())
       continue;
     feature_candidates.insert(i);
+  }
+  // TODO(liberato): Let our caller override this.
+  const size_t features_per_split =
+      std::min(static_cast<int>(sqrt(feature_candidates.size())), 3);
+  while (feature_candidates.size() > features_per_split) {
+    // Remove a random feature.
+    size_t which = rng()->Generate(feature_candidates.size());
+    auto iter = feature_candidates.begin();
+    for (; which; which--, iter++)
+      ;
+    feature_candidates.erase(iter);
   }
 
   // Find the best split among the candidates that we have.

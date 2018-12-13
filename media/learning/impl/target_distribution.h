@@ -5,6 +5,9 @@
 #ifndef MEDIA_LEARNING_IMPL_TARGET_DISTRIBUTION_H_
 #define MEDIA_LEARNING_IMPL_TARGET_DISTRIBUTION_H_
 
+#include <ostream>
+#include <string>
+
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
@@ -53,6 +56,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) TargetDistribution {
   // singular maximum, else returns false with the out params undefined.
   bool FindSingularMax(TargetValue* value_out, int* counts_out = nullptr) const;
 
+  std::string ToString() const;
+
  private:
   // We use a flat_map since this will often have only one or two TargetValues,
   // such as "true" or "false".
@@ -65,6 +70,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) TargetDistribution {
 
   // Allow copy and assign.
 };
+
+COMPONENT_EXPORT(LEARNING_IMPL)
+std::ostream& operator<<(std::ostream& out, const TargetDistribution& dist);
 
 }  // namespace learning
 }  // namespace media
