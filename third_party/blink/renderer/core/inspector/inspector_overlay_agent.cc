@@ -154,10 +154,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
       return;
 
     LocalFrameView* view = overlay_->OverlayMainFrame()->View();
-    DCHECK(!view->NeedsLayout());
-    view->PaintWithLifecycleUpdate(
-        graphics_context, kGlobalPaintNormalPhase,
-        CullRect(IntRect(0, 0, view->Width(), view->Height())));
+    view->PaintOutsideOfLifecycle(graphics_context, kGlobalPaintNormalPhase);
   }
 
  private:

@@ -440,8 +440,8 @@ bool SVGImage::ApplyShaderInternal(PaintFlags& flags,
   IntRect bounds(IntPoint(), size);
 
   flags.setShader(PaintShader::MakePaintRecord(
-      PaintRecordForCurrentFrame(bounds, url), bounds,
-      SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &local_matrix));
+      PaintRecordForCurrentFrame(url), bounds, SkShader::kRepeat_TileMode,
+      SkShader::kRepeat_TileMode, &local_matrix));
 
   // Animation is normally refreshed in draw() impls, which we don't reach when
   // painting via shaders.
@@ -487,10 +487,7 @@ void SVGImage::Draw(
                should_respect_image_orientation, clamp_mode, NullURL());
 }
 
-sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
-    const IntRect& bounds,
-    const KURL& url,
-    cc::PaintCanvas* canvas) {
+sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const KURL& url) {
   DCHECK(page_);
   LocalFrameView* view = ToLocalFrame(page_->MainFrame())->View();
   view->Resize(ContainerSize());
@@ -507,17 +504,14 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
   // avoid setting timers from the latter.
   FlushPendingTimelineRewind();
 
+  view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return view->GetPaintRecord();
+
   PaintRecordBuilder builder(nullptr, nullptr, paint_controller_.get());
-
-  view->UpdateAllLifecyclePhasesExceptPaint();
-  view->PaintWithLifecycleUpdate(builder.Context(), kGlobalPaintNormalPhase,
-                                 CullRect(bounds));
-  DCHECK(!view->NeedsLayout());
-
-  if (canvas) {
-    builder.EndRecording(*canvas);
-    return nullptr;
-  }
+  view->PaintOutsideOfLifecycle(builder.Context(), kGlobalPaintNormalPhase);
   return builder.EndRecording();
 }
 
@@ -549,7 +543,7 @@ void SVGImage::DrawInternal(cc::PaintCanvas* canvas,
     canvas->save();
     canvas->clipRect(EnclosingIntRect(dst_rect));
     canvas->concat(AffineTransformToSkMatrix(transform));
-    PaintRecordForCurrentFrame(EnclosingIntRect(src_rect), url, canvas);
+    canvas->drawPicture(PaintRecordForCurrentFrame(url));
     canvas->restore();
   }
 

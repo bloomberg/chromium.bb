@@ -81,6 +81,9 @@ class PLATFORM_EXPORT PaintArtifact final : public RefCounted<PaintArtifact> {
               const PropertyTreeState& replay_state,
               const IntPoint& offset = IntPoint()) const;
 
+  sk_sp<PaintRecord> GetPaintRecord(const PropertyTreeState& replay_state,
+                                    const IntPoint& offset = IntPoint()) const;
+
   // Called when the caller finishes updating a full document life cycle.
   // Will cleanup data (e.g. raster invalidations) that will no longer be used
   // for the next cycle, and update status to be ready for the next cycle.

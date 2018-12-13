@@ -96,8 +96,8 @@ static void PaintContentInternal(Page& page,
 
     PaintRecordBuilder builder;
     builder.Context().SetDeviceScaleFactor(scale_factor);
-    view->PaintWithLifecycleUpdate(builder.Context(), global_paint_flags,
-                                   CullRect(dirty_rect));
+    view->PaintOutsideOfLifecycle(builder.Context(), global_paint_flags,
+                                  CullRect(dirty_rect));
     builder.EndRecording(
         *canvas,
         view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties());

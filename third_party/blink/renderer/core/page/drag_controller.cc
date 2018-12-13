@@ -1144,8 +1144,9 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
       kGlobalPaintSelectionOnly | kGlobalPaintFlattenCompositingLayers;
 
   PaintRecordBuilder builder;
-  frame.View()->PaintContents(builder.Context(), paint_flags,
-                              EnclosingIntRect(painting_rect));
+  frame.View()->PaintContentsOutsideOfLifecycle(
+      builder.Context(), paint_flags,
+      CullRect(EnclosingIntRect(painting_rect)));
 
   PropertyTreeState property_tree_state =
       frame.View()->GetLayoutView()->FirstFragment().LocalBorderBoxProperties();
