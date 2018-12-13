@@ -141,7 +141,8 @@ function PDFViewer(browserApi) {
   this.metrics.onDocumentOpened();
 
   // Parse open pdf parameters.
-  this.paramsParser_ = new OpenPDFParamsParser(this.postMessage_.bind(this));
+  this.paramsParser_ = new OpenPDFParamsParser(
+      message => this.pluginController_.postMessage(message));
   const toolbarEnabled =
       this.paramsParser_.getUiUrlParams(this.originalUrl_).toolbar &&
       !this.isPrintPreview_;
@@ -173,7 +174,11 @@ function PDFViewer(browserApi) {
       1.0;
   this.viewport_ = new Viewport(
       window, this.sizer_, this.viewportChanged_.bind(this),
-      this.beforeZoom_.bind(this), this.afterZoom_.bind(this),
+      () => this.currentController_.beforeZoom(),
+      () => {
+        this.currentController_.afterZoom();
+        this.zoomManager_.onPdfZoomChange();
+      },
       this.setUserInitiated_.bind(this), getScrollbarWidth(), defaultZoom,
       topToolbarHeight);
 
@@ -187,8 +192,6 @@ function PDFViewer(browserApi) {
   // references it.
   this.plugin_.id = 'plugin';
   this.plugin_.type = 'application/x-google-chrome-pdf';
-  this.plugin_.addEventListener(
-      'message', this.handlePluginMessage_.bind(this), false);
 
   // Handle scripting messages from outside the extension that wish to interact
   // with it. We also send a message indicating that extension has loaded and
@@ -219,6 +222,10 @@ function PDFViewer(browserApi) {
   }
   document.body.appendChild(this.plugin_);
 
+  this.pluginController_ =
+      new PluginController(this.plugin_, this, this.viewport_);
+  this.currentController_ = this.pluginController_;
+
   // Setup the button event listeners.
   this.zoomToolbar_ = $('zoom-toolbar');
   this.zoomToolbar_.addEventListener(
@@ -240,10 +247,11 @@ function PDFViewer(browserApi) {
   if (toolbarEnabled) {
     this.toolbar_ = $('toolbar');
     this.toolbar_.hidden = false;
-    this.toolbar_.addEventListener('save', this.save_.bind(this));
-    this.toolbar_.addEventListener('print', this.print_.bind(this));
+    this.toolbar_.addEventListener('save', () => this.save());
     this.toolbar_.addEventListener(
-        'rotate-right', this.rotateClockwise_.bind(this));
+        'print', () => this.currentController_.print());
+    this.toolbar_.addEventListener(
+        'rotate-right', () => this.currentController_.rotateClockwise());
 
     this.toolbar_.docTitle = getFilenameFromURL(this.originalUrl_);
   }
@@ -410,7 +418,7 @@ PDFViewer.prototype = {
         return;
       case 65:  // 'a' key.
         if (e.ctrlKey || e.metaKey) {
-          this.postMessage_({type: 'selectAll'});
+          this.pluginController_.postMessage({type: 'selectAll'});
           // Since we do selection ourselves.
           e.preventDefault();
         }
@@ -423,7 +431,7 @@ PDFViewer.prototype = {
         return;
       case 219:  // Left bracket key.
         if (e.ctrlKey)
-          this.rotateCounterClockwise_();
+          this.currentController_.rotateCounterClockwise();
         return;
       case 220:  // Backslash key.
         if (e.ctrlKey)
@@ -431,7 +439,7 @@ PDFViewer.prototype = {
         return;
       case 221:  // Right bracket key.
         if (e.ctrlKey)
-          this.rotateClockwise_();
+          this.currentController_.rotateClockwise();
         return;
     }
 
@@ -465,28 +473,6 @@ PDFViewer.prototype = {
   },
 
   /**
-   * Rotate the plugin clockwise.
-   *
-   * @private
-   */
-  rotateClockwise_: function() {
-    this.metrics.onRotation();
-    this.viewport_.rotateClockwise(1);
-    this.postMessage_({type: 'rotateClockwise'});
-  },
-
-  /**
-   * Rotate the plugin counter-clockwise.
-   *
-   * @private
-   */
-  rotateCounterClockwise_: function() {
-    this.metrics.onRotation();
-    this.viewport_.rotateClockwise(3);
-    this.postMessage_({type: 'rotateCounterclockwise'});
-  },
-
-  /**
    * Request to change the viewport fitting type.
    *
    * @param {CustomEvent} e Event received with the new FittingType as detail.
@@ -505,26 +491,6 @@ PDFViewer.prototype = {
 
     if (e.detail.userInitiated)
       this.metrics.onFitTo(e.detail.fittingType);
-  },
-
-  /**
-   * Notify the plugin to print.
-   *
-   * @private
-   */
-  print_: function() {
-    this.postMessage_({type: 'print'});
-  },
-
-  /**
-   * Notify the plugin to save.
-   *
-   * @private
-   */
-  save_: function() {
-    const newToken = createToken();
-    this.pendingTokens_.add(newToken);
-    this.postMessage_({type: 'save', token: newToken});
   },
 
   /**
@@ -598,9 +564,8 @@ PDFViewer.prototype = {
    * message being received from the plugin.
    *
    * @param {number} progress the progress as a percentage.
-   * @private
    */
-  updateProgress_: function(progress) {
+  updateProgress: function(progress) {
     if (this.toolbar_)
       this.toolbar_.loadProgress = progress;
 
@@ -658,221 +623,8 @@ PDFViewer.prototype = {
    * @private
    */
   onPasswordSubmitted_: function(event) {
-    this.postMessage_(
+    this.pluginController_.postMessage(
         {type: 'getPasswordComplete', password: event.detail.password});
-  },
-
-  /**
-   * Post a message to the PPAPI plugin. Some messages will cause an async reply
-   * to be received through handlePluginMessage_().
-   *
-   * @param {Object} message Message to post.
-   * @private
-   */
-  postMessage_: function(message) {
-    this.plugin_.postMessage(message);
-  },
-
-  /**
-   * An event handler for handling message events received from the plugin.
-   *
-   * @param {MessageObject} message a message event.
-   * @private
-   */
-  handlePluginMessage_: function(message) {
-    switch (message.data.type.toString()) {
-      case 'beep':
-        // Beeps are annoying, so just track count for now.
-        this.beepCount_ += 1;
-        break;
-      case 'documentDimensions':
-        this.documentDimensions_ = message.data;
-        this.isUserInitiatedEvent_ = false;
-        this.viewport_.setDocumentDimensions(this.documentDimensions_);
-        this.isUserInitiatedEvent_ = true;
-        // If we received the document dimensions, the password was good so we
-        // can dismiss the password screen.
-        if (this.passwordScreen_.active)
-          this.passwordScreen_.close();
-
-        if (this.pageIndicator_)
-          this.pageIndicator_.initialFadeIn();
-
-        if (this.toolbar_) {
-          this.toolbar_.docLength =
-              this.documentDimensions_.pageDimensions.length;
-        }
-        break;
-      case 'email':
-        const href = 'mailto:' + message.data.to + '?cc=' + message.data.cc +
-            '&bcc=' + message.data.bcc + '&subject=' + message.data.subject +
-            '&body=' + message.data.body;
-        window.location.href = href;
-        break;
-      case 'getPassword':
-        // If the password screen isn't up, put it up. Otherwise we're
-        // responding to an incorrect password so deny it.
-        if (!this.passwordScreen_.active)
-          this.passwordScreen_.show();
-        else
-          this.passwordScreen_.deny();
-        break;
-      case 'getSelectedTextReply':
-        this.sendScriptingMessage_(message.data);
-        break;
-      case 'goToPage':
-        this.viewport_.goToPage(message.data.page);
-        break;
-      case 'loadProgress':
-        this.updateProgress_(message.data.progress);
-        break;
-      case 'navigate':
-        // If in print preview, always open a new tab.
-        if (this.isPrintPreview_) {
-          this.navigator_.navigate(
-              message.data.url,
-              Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB);
-        } else {
-          this.navigator_.navigate(message.data.url, message.data.disposition);
-        }
-        break;
-      case 'printPreviewLoaded':
-        this.isPrintPreviewLoadingFinished_ = true;
-        this.sendDocumentLoadedMessage_();
-        break;
-      case 'setScrollPosition':
-        this.viewport_.scrollTo(/** @type {!PartialPoint} */ (message.data));
-        break;
-      case 'scrollBy':
-        this.viewport_.scrollBy(/** @type {!Point} */ (message.data));
-        break;
-      case 'cancelStreamUrl':
-        chrome.mimeHandlerPrivate.abortStream();
-        break;
-      case 'metadata':
-        if (message.data.title) {
-          document.title = message.data.title;
-        } else {
-          document.title = getFilenameFromURL(this.originalUrl_);
-        }
-        this.bookmarks_ = message.data.bookmarks;
-        if (this.toolbar_) {
-          this.toolbar_.docTitle = document.title;
-          this.toolbar_.bookmarks = this.bookmarks;
-        }
-        break;
-      case 'setIsSelecting':
-        this.viewportScroller_.setEnableScrolling(message.data.isSelecting);
-        break;
-      case 'getNamedDestinationReply':
-        this.paramsParser_.onNamedDestinationReceived(message.data.pageNumber);
-        break;
-      case 'formFocusChange':
-        this.isFormFieldFocused_ = message.data.focused;
-        break;
-      case 'saveData':
-        this.saveData_(message.data);
-        break;
-      case 'consumeSaveToken':
-        if (!this.pendingTokens_.delete(message.data.token))
-          throw new Error('Internal error: save token not found.');
-        break;
-    }
-  },
-
-  /**
-   * Saves a pdf file buffer received from the plugin.
-   *
-   * @param {SaveDataMessageData} messageData data of the message event.
-   * @private
-   */
-  saveData_: function(messageData) {
-    if (!loadTimeData.getBoolean('pdfFormSaveEnabled'))
-      throw new Error('Internal error: save not enabled.');
-
-    // Verify a token that was created by this instance is included to avoid
-    // being spammed.
-    if (!this.pendingTokens_.delete(messageData.token))
-      throw new Error('Internal error: save token not found, abort save.');
-
-    // Verify the file size and the first bytes to make sure it's a PDF. Cap at
-    // 100 MB. This cap should be kept in sync with and is also enforced in
-    // pdf/out_of_process_instance.cc.
-    const MIN_FILE_SIZE = '%PDF1.0'.length;
-    const MAX_FILE_SIZE = 100 * 1000 * 1000;
-
-    const bufView = new Uint8Array(messageData.dataToSave);
-    if (bufView.length > MAX_FILE_SIZE)
-      throw new Error(`File too large to be saved: ${bufView.length} bytes.`);
-    if (bufView.length < MIN_FILE_SIZE ||
-        String.fromCharCode(bufView[0], bufView[1], bufView[2], bufView[3]) !=
-            '%PDF') {
-      throw new Error('Not a PDF file.');
-    }
-
-    // Make sure file extension is .pdf, avoids dangerous extensions.
-    let fileName = messageData.fileName;
-    if (!fileName.toLowerCase().endsWith('.pdf'))
-      fileName = fileName + '.pdf';
-
-    const a = document.createElement('a');
-    a.download = fileName;
-    const blob = new Blob([messageData.dataToSave], {type: 'application/pdf'});
-    a.href = URL.createObjectURL(blob);
-    a.click();
-    URL.revokeObjectURL(a.href);
-  },
-
-  /**
-   * A callback that's called before the zoom changes. Notify the plugin to stop
-   * reacting to scroll events while zoom is taking place to avoid flickering.
-   *
-   * @private
-   */
-  beforeZoom_: function() {
-    this.postMessage_({type: 'stopScrolling'});
-
-    if (this.viewport_.pinchPhase == Viewport.PinchPhase.PINCH_START) {
-      const position = this.viewport_.position;
-      const zoom = this.viewport_.zoom;
-      const pinchPhase = this.viewport_.pinchPhase;
-      this.postMessage_({
-        type: 'viewport',
-        userInitiated: true,
-        zoom: zoom,
-        xOffset: position.x,
-        yOffset: position.y,
-        pinchPhase: pinchPhase
-      });
-    }
-  },
-
-  /**
-   * A callback that's called after the zoom changes. Notify the plugin of the
-   * zoom change and to continue reacting to scroll events.
-   *
-   * @private
-   */
-  afterZoom_: function() {
-    const position = this.viewport_.position;
-    const zoom = this.viewport_.zoom;
-    const pinchVector = this.viewport_.pinchPanVector || {x: 0, y: 0};
-    const pinchCenter = this.viewport_.pinchCenter || {x: 0, y: 0};
-    const pinchPhase = this.viewport_.pinchPhase;
-
-    this.postMessage_({
-      type: 'viewport',
-      userInitiated: this.isUserInitiatedEvent_,
-      zoom: zoom,
-      xOffset: position.x,
-      yOffset: position.y,
-      pinchPhase: pinchPhase,
-      pinchX: pinchCenter.x,
-      pinchY: pinchCenter.y,
-      pinchVectorX: pinchVector.x,
-      pinchVectorY: pinchVector.y
-    });
-    this.zoomManager_.onPdfZoomChange();
   },
 
   /**
@@ -1024,7 +776,7 @@ PDFViewer.prototype = {
       case 'getSelectedText':
       case 'print':
       case 'selectAll':
-        this.postMessage_(message.data);
+        this.pluginController_.postMessage(message.data);
         break;
     }
   },
@@ -1042,7 +794,7 @@ PDFViewer.prototype = {
 
     switch (message.data.type.toString()) {
       case 'loadPreviewPage':
-        this.postMessage_(message.data);
+        this.pluginController_.postMessage(message.data);
         return true;
       case 'resetPrintPreviewMode':
         this.loadState_ = LoadState.LOADING;
@@ -1067,7 +819,7 @@ PDFViewer.prototype = {
 
         this.pageIndicator_.pageLabels = message.data.pageNumbers;
 
-        this.postMessage_({
+        this.pluginController_.postMessage({
           type: 'resetPrintPreviewMode',
           url: message.data.url,
           grayscale: message.data.grayscale,
@@ -1132,5 +884,397 @@ PDFViewer.prototype = {
    */
   get bookmarks() {
     return this.bookmarks_;
-  }
+  },
+
+  /**
+   * Sets document dimensions from the current controller.
+   *
+   * @param {{height: number, width: number, pageDimensions: Array}}
+   *     documentDimensions
+   */
+  setDocumentDimensions: function(documentDimensions) {
+    this.documentDimensions_ = documentDimensions;
+    this.isUserInitiatedEvent_ = false;
+    this.viewport_.setDocumentDimensions(this.documentDimensions_);
+    this.isUserInitiatedEvent_ = true;
+    // If we received the document dimensions, the password was good so we
+    // can dismiss the password screen.
+    if (this.passwordScreen_.active)
+      this.passwordScreen_.close();
+
+    if (this.pageIndicator_)
+      this.pageIndicator_.initialFadeIn();
+
+    if (this.toolbar_) {
+      this.toolbar_.docLength = this.documentDimensions_.pageDimensions.length;
+    }
+  },
+
+  /**
+   * Handles a beep request from the current controller.
+   */
+  handleBeep: function() {
+    // Beeps are annoying, so just track count for now.
+    this.beepCount_ += 1;
+  },
+
+  /**
+   * Handles a password request from the current controller.
+   */
+  handlePasswordRequest: function() {
+    // If the password screen isn't up, put it up. Otherwise we're
+    // responding to an incorrect password so deny it.
+    if (!this.passwordScreen_.active)
+      this.passwordScreen_.show();
+    else
+      this.passwordScreen_.deny();
+  },
+
+  /**
+   * Handles a selected text reply from the current controller.
+   * @param {string} selectedText
+   */
+  handleSelectedTextReply: function(selectedText) {
+    this.sendScriptingMessage_({
+      type: 'getSelectedTextReply',
+      selectedText: selectedText,
+    });
+  },
+
+  /**
+   * Handles a navigation request from the current controller.
+   *
+   * @param {string} url
+   * @param {string} disposition
+   */
+  handleNavigate: function(url, disposition) {
+    // If in print preview, always open a new tab.
+    if (this.isPrintPreview_) {
+      this.navigator_.navigate(url, Navigator.WindowOpenDisposition.NEW_BACKGROUND_TAB);
+    } else {
+      this.navigator_.navigate(url, disposition);
+    }
+  },
+
+  /**
+   * Handles a notification that print preview has loaded from the
+   * current controller.
+   */
+  handlePrintPreviewLoaded: function() {
+    this.isPrintPreviewLoadingFinished_ = true;
+    this.sendDocumentLoadedMessage_();
+  },
+
+  /**
+   * Sets document metadata from the current controller.
+   * @param {string} title
+   * @param {Array} bookmarks
+   */
+  setDocumentMetadata: function(title, bookmarks) {
+    if (title) {
+      document.title = title;
+    } else {
+      document.title = getFilenameFromURL(this.originalUrl_);
+    }
+    this.bookmarks_ = bookmarks;
+    if (this.toolbar_) {
+      this.toolbar_.docTitle = document.title;
+      this.toolbar_.bookmarks = this.bookmarks;
+    }
+  },
+
+  /**
+   * Sets the is selecting flag from the current controller.
+   * @param {boolean} isSelecting
+   */
+  setIsSelecting: function(isSelecting) {
+    this.viewportScroller_.setEnableScrolling(isSelecting);
+  },
+
+  /**
+   * Sets the form field focused flag from the current controller.
+   * @param {boolean} focused
+   */
+  setIsFormFieldFocused: function(focused) {
+    this.isFormFieldFocused_ = focused;
+  },
+
+  /**
+   * Saves the current PDF document to disk.
+   */
+  save: async function() {
+    const result = await this.currentController_.save();
+    if (result == null) {
+      // The content controller handled the save internally.
+      return;
+    }
+
+    // Make sure file extension is .pdf, avoids dangerous extensions.
+    let fileName = result.fileName;
+    if (!fileName.toLowerCase().endsWith('.pdf'))
+      fileName = fileName + '.pdf';
+
+    const a = document.createElement('a');
+    a.download = fileName;
+    const blob = new Blob([result.dataToSave], {type: 'application/pdf'});
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    URL.revokeObjectURL(a.href);
+  },
 };
+
+/** @abstract */
+class ContentController {
+  constructor() {}
+
+  /**
+   * A callback that's called before the zoom changes.
+   */
+  beforeZoom() {}
+
+  /**
+   * A callback that's called after the zoom changes.
+   */
+  afterZoom() {}
+
+  /**
+   * Rotates the document 90 degrees in the clockwise direction.
+   * @abstract
+   */
+  rotateClockwise() {}
+
+  /**
+   * Rotates the document 90 degrees in the counter clockwise direction.
+   * @abstract
+   */
+  rotateCounterClockwise() {}
+
+  /**
+   * Triggers printing of the current document.
+   * @abstract
+   */
+  print() {}
+
+  /**
+   * Requests that the current document be saved.
+   * @return {Promise<{fileName: string, dataToSave: ArrayBuffer}}
+   * @abstract
+   */
+  save() {}
+}
+
+class PluginController extends ContentController {
+  /**
+   * @param {HTMLEmbedElement} plugin
+   * @param {PDFViewer} viewer
+   * @param {Viewport} viewport
+   */
+  constructor(plugin, viewer, viewport) {
+    super();
+    this.plugin_ = plugin;
+    this.viewer_ = viewer;
+    this.viewport_ = viewport;
+
+    /** @private {!Map<string, Function>} */
+    this.pendingTokens_ = new Map();
+    this.plugin_.addEventListener(
+        'message', e => this.handlePluginMessage_(e), false);
+  }
+
+  /**
+   * Notify the plugin to stop reacting to scroll events while zoom is taking
+   * place to avoid flickering.
+   * @override
+   */
+  beforeZoom() {
+    this.postMessage({type: 'stopScrolling'});
+
+    if (this.viewport_.pinchPhase == Viewport.PinchPhase.PINCH_START) {
+      const position = this.viewport_.position;
+      const zoom = this.viewport_.zoom;
+      const pinchPhase = this.viewport_.pinchPhase;
+      this.postMessage({
+        type: 'viewport',
+        userInitiated: true,
+        zoom: zoom,
+        xOffset: position.x,
+        yOffset: position.y,
+        pinchPhase: pinchPhase
+      });
+    }
+  }
+
+  /**
+   * Notify the plugin of the zoom change and to continue reacting to scroll
+   * events.
+   * @override
+   */
+  afterZoom() {
+    const position = this.viewport_.position;
+    const zoom = this.viewport_.zoom;
+    const pinchVector = this.viewport_.pinchPanVector || {x: 0, y: 0};
+    const pinchCenter = this.viewport_.pinchCenter || {x: 0, y: 0};
+    const pinchPhase = this.viewport_.pinchPhase;
+
+    this.postMessage({
+      type: 'viewport',
+      userInitiated: this.viewer_.isUserInitiatedEvent_,
+      zoom: zoom,
+      xOffset: position.x,
+      yOffset: position.y,
+      pinchPhase: pinchPhase,
+      pinchX: pinchCenter.x,
+      pinchY: pinchCenter.y,
+      pinchVectorX: pinchVector.x,
+      pinchVectorY: pinchVector.y
+    });
+  }
+
+  // TODO(dstockwell): this method should be private, add controller APIs that
+  // map to all of the existing usage. crbug.com/913279
+  /**
+   * Post a message to the PPAPI plugin. Some messages will cause an async reply
+   * to be received through handlePluginMessage_().
+   *
+   * @param {Object} message Message to post.
+   */
+  postMessage(message) {
+    this.plugin_.postMessage(message);
+  }
+
+  /** @override */
+  rotateClockwise() {
+    this.viewer_.metrics.onRotation();
+    this.viewport_.rotateClockwise(1);
+    this.postMessage({type: 'rotateClockwise'});
+  }
+
+  /** @override */
+  rotateCounterClockwise() {
+    this.viewer_.metrics.onRotation();
+    this.viewport_.rotateClockwise(3);
+    this.postMessage({type: 'rotateCounterclockwise'});
+  }
+
+  /** @override */
+  print() {
+    this.postMessage({type: 'print'});
+  }
+
+  /** @override */
+  save() {
+    return new Promise(resolve => {
+      const newToken = createToken();
+      this.pendingTokens_.set(newToken, resolve);
+      const force = false;
+      this.postMessage({type: 'save', token: newToken});
+    });
+  }
+
+  /**
+   * An event handler for handling message events received from the plugin.
+   *
+   * @param {MessageObject} message a message event.
+   * @private
+   */
+  handlePluginMessage_(message) {
+    switch (message.data.type.toString()) {
+      case 'beep':
+        this.viewer_.handleBeep();
+        break;
+      case 'documentDimensions':
+        viewer.setDocumentDimensions(message.data);
+        break;
+      case 'email':
+        const href = 'mailto:' + message.data.to + '?cc=' + message.data.cc +
+            '&bcc=' + message.data.bcc + '&subject=' + message.data.subject +
+            '&body=' + message.data.body;
+        window.location.href = href;
+        break;
+      case 'getPassword':
+        this.viewer_.handlePasswordRequest();
+        break;
+      case 'getSelectedTextReply':
+        this.viewer_.handleSelectedTextReply(message.data.selectedText);
+        break;
+      case 'goToPage':
+        this.viewport_.goToPage(message.data.page);
+        break;
+      case 'loadProgress':
+        this.viewer_.updateProgress(message.data.progress);
+        break;
+      case 'navigate':
+        this.viewer_.handleNavigate(message.data.url, message.data.disposition);
+        break;
+      case 'printPreviewLoaded':
+        this.viewer_.handlePrintPreviewLoaded();
+        break;
+      case 'setScrollPosition':
+        this.viewport_.scrollTo(/** @type {!PartialPoint} */ (message.data));
+        break;
+      case 'scrollBy':
+        this.viewport_.scrollBy(/** @type {!Point} */ (message.data));
+        break;
+      case 'cancelStreamUrl':
+        chrome.mimeHandlerPrivate.abortStream();
+        break;
+      case 'metadata':
+        this.viewer_.setDocumentMetadata(
+            message.data.title, message.data.bookmarks);
+        break;
+      case 'setIsSelecting':
+        this.viewer_.setIsSelecting(message.data.isSelecting);
+        break;
+      case 'getNamedDestinationReply':
+        this.paramsParser_.onNamedDestinationReceived(message.data.pageNumber);
+        break;
+      case 'formFocusChange':
+        this.viewer_.setIsFormFieldFocused(message.data.focused);
+        break;
+      case 'saveData':
+        this.saveData_(message.data);
+        break;
+      case 'consumeSaveToken':
+        const resolve = this.pendingTokens_.get(message.data.token);
+        if (!this.pendingTokens_.delete(message.data.token))
+          throw new Error('Internal error: save token not found.');
+        resolve(null);
+        break;
+    }
+  }
+
+  /**
+   * Handles the pdf file buffer received from the plugin.
+   *
+   * @param {SaveDataMessageData} messageData data of the message event.
+   * @private
+   */
+  saveData_(messageData) {
+    if (!(loadTimeData.getBoolean('pdfFormSaveEnabled')))
+      throw new Error('Internal error: save not enabled.');
+
+    // Verify a token that was created by this instance is included to avoid
+    // being spammed.
+    const resolve = this.pendingTokens_.get(messageData.token);
+    if (!this.pendingTokens_.delete(messageData.token))
+      throw new Error('Internal error: save token not found, abort save.');
+
+    // Verify the file size and the first bytes to make sure it's a PDF. Cap at
+    // 100 MB. This cap should be kept in sync with and is also enforced in
+    // pdf/out_of_process_instance.cc.
+    const MIN_FILE_SIZE = '%PDF1.0'.length;
+    const MAX_FILE_SIZE = 100 * 1000 * 1000;
+
+    const buffer = messageData.dataToSave;
+    const bufView = new Uint8Array(buffer);
+    if (bufView.length > MAX_FILE_SIZE)
+      throw new Error(`File too large to be saved: ${bufView.length} bytes.`);
+    if (bufView.length < MIN_FILE_SIZE ||
+        String.fromCharCode(bufView[0], bufView[1], bufView[2], bufView[3]) !=
+            '%PDF') {
+      throw new Error('Not a PDF file.');
+    }
+
+    resolve(messageData);
+  }
+}
