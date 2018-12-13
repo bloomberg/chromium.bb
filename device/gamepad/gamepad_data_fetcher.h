@@ -5,6 +5,7 @@
 #ifndef DEVICE_GAMEPAD_GAMEPAD_DATA_FETCHER_H_
 #define DEVICE_GAMEPAD_GAMEPAD_DATA_FETCHER_H_
 
+#include "base/sequenced_task_runner.h"
 #include "device/gamepad/gamepad_data_fetcher_manager.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_pad_state_provider.h"
@@ -18,17 +19,19 @@ namespace device {
 class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
  public:
   GamepadDataFetcher();
-  virtual ~GamepadDataFetcher() {}
+  virtual ~GamepadDataFetcher();
   virtual void GetGamepadData(bool devices_changed_hint) = 0;
   virtual void PauseHint(bool paused) {}
   virtual void PlayEffect(
       int source_id,
       mojom::GamepadHapticEffectType,
       mojom::GamepadEffectParametersPtr,
-      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback);
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback,
+      scoped_refptr<base::SequencedTaskRunner>);
   virtual void ResetVibration(
       int source_id,
-      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback);
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback,
+      scoped_refptr<base::SequencedTaskRunner>);
 
   virtual GamepadSource source() = 0;
   GamepadPadStateProvider* provider() { return provider_; }
@@ -47,6 +50,13 @@ class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
   // Converts a TimeTicks value to a timestamp in microseconds, as used for
   // the |timestamp| gamepad member.
   static int64_t TimeInMicroseconds(base::TimeTicks update_time);
+
+  // Call a vibration callback on the same sequence that the vibration command
+  // was issued on.
+  static void RunVibrationCallback(
+      base::OnceCallback<void(mojom::GamepadHapticsResult)> callback,
+      scoped_refptr<base::SequencedTaskRunner> callback_runner,
+      mojom::GamepadHapticsResult result);
 
  protected:
   friend GamepadPadStateProvider;

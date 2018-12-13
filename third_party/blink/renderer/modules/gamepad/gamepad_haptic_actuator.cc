@@ -52,15 +52,17 @@ String ResultToString(GamepadHapticsResult result) {
 namespace blink {
 
 // static
-GamepadHapticActuator* GamepadHapticActuator::Create(int pad_index) {
+GamepadHapticActuator* GamepadHapticActuator::Create(ExecutionContext* context,
+                                                     int pad_index) {
   return MakeGarbageCollected<GamepadHapticActuator>(
-      pad_index, device::GamepadHapticActuatorType::kDualRumble);
+      context, pad_index, device::GamepadHapticActuatorType::kDualRumble);
 }
 
 GamepadHapticActuator::GamepadHapticActuator(
+    ExecutionContext* context,
     int pad_index,
     device::GamepadHapticActuatorType type)
-    : pad_index_(pad_index) {
+    : ContextClient(context), pad_index_(pad_index) {
   SetType(type);
 }
 
@@ -102,6 +104,9 @@ ScriptPromise GamepadHapticActuator::playEffect(
     return promise;
   }
 
+  // Avoid resetting vibration for a preempted effect.
+  should_reset_ = false;
+
   auto callback = WTF::Bind(&GamepadHapticActuator::OnPlayEffectCompleted,
                             WrapPersistent(this), WrapPersistent(resolver));
 
@@ -121,8 +126,24 @@ void GamepadHapticActuator::OnPlayEffectCompleted(
   if (result == GamepadHapticsResult::GamepadHapticsResultError) {
     resolver->Reject();
     return;
+  } else if (result == GamepadHapticsResult::GamepadHapticsResultComplete) {
+    should_reset_ = true;
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kMiscPlatformAPI)
+        ->PostTask(
+            FROM_HERE,
+            WTF::Bind(&GamepadHapticActuator::ResetVibrationIfNotPreempted,
+                      WrapPersistent(this)));
   }
   resolver->Resolve(ResultToString(result));
+}
+
+void GamepadHapticActuator::ResetVibrationIfNotPreempted() {
+  if (should_reset_) {
+    should_reset_ = false;
+    GamepadDispatcher::Instance().ResetVibrationActuator(pad_index_,
+                                                         base::DoNothing());
+  }
 }
 
 ScriptPromise GamepadHapticActuator::reset(ScriptState* script_state) {
@@ -149,6 +170,7 @@ void GamepadHapticActuator::OnResetCompleted(
 
 void GamepadHapticActuator::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

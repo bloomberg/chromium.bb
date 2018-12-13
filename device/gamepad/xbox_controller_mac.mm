@@ -303,103 +303,24 @@ XboxControllerMac::ControllerType ControllerTypeFromIds(uint16_t vendor_id,
 XboxControllerMac::XboxControllerMac(Delegate* delegate)
     : delegate_(delegate) {}
 
-XboxControllerMac::~XboxControllerMac() {
-  if (playing_effect_callback_)
-    RunCallbackOnMojoThread(
-        mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
+XboxControllerMac::~XboxControllerMac() = default;
+
+void XboxControllerMac::DoShutdown() {
   if (source_)
     CFRunLoopSourceInvalidate(source_);
+  source_.reset();
   if (interface_ && interface_is_open_)
     (*interface_)->USBInterfaceClose(interface_);
+  interface_.reset();
   if (device_ && device_is_open_)
     (*device_)->USBDeviceClose(device_);
+  device_.reset();
 }
 
-void XboxControllerMac::PlayEffect(
-    mojom::GamepadHapticEffectType type,
-    mojom::GamepadEffectParametersPtr params,
-    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
-  if (type !=
-      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble) {
-    // Only dual-rumble effects are supported.
-    std::move(callback).Run(
-        mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
-    return;
-  }
-
-  int sequence_id = ++sequence_id_;
-
-  if (playing_effect_callback_) {
-    RunCallbackOnMojoThread(
-        mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
-  }
-
-  playing_effect_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  playing_effect_callback_ = std::move(callback);
-
-  PlayDualRumbleEffect(sequence_id, params->duration, params->start_delay,
-                       params->strong_magnitude, params->weak_magnitude);
-}
-
-void XboxControllerMac::ResetVibration(
-    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
-  ++sequence_id_;
-  if (playing_effect_callback_) {
-    SetVibration(0.0, 0.0);
-    RunCallbackOnMojoThread(
-        mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
-  }
-  std::move(callback).Run(
-      mojom::GamepadHapticsResult::GamepadHapticsResultComplete);
-}
-
-void XboxControllerMac::PlayDualRumbleEffect(int sequence_id,
-                                             double duration,
-                                             double start_delay,
-                                             double strong_magnitude,
-                                             double weak_magnitude) {
-  playing_effect_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&XboxControllerMac::StartVibration, base::Unretained(this),
-                     sequence_id, duration, strong_magnitude, weak_magnitude),
-      base::TimeDelta::FromMillisecondsD(start_delay));
-}
-
-void XboxControllerMac::StartVibration(int sequence_id,
-                                       double duration,
-                                       double strong_magnitude,
-                                       double weak_magnitude) {
-  if (sequence_id != sequence_id_)
-    return;
-  SetVibration(strong_magnitude, weak_magnitude);
-
+double XboxControllerMac::GetMaxEffectDurationMillis() {
   // The Xbox One controller rumble packet specifies a duration for the rumble
-  // effect with a maximum length of about 3 seconds. Support longer durations
-  // by sending a second rumble packet to extend the duration.
-  if (duration > kXboxOneMaxEffectDurationMillis) {
-    double remaining = duration - kXboxOneMaxEffectDurationMillis;
-    playing_effect_task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&XboxControllerMac::StartVibration,
-                       base::Unretained(this), sequence_id, remaining,
-                       strong_magnitude, weak_magnitude),
-        base::TimeDelta::FromMillisecondsD(kXboxOneMaxEffectDurationMillis));
-  } else {
-    playing_effect_task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&XboxControllerMac::StopVibration,
-                       base::Unretained(this), sequence_id),
-        base::TimeDelta::FromMillisecondsD(duration));
-  }
-}
-
-void XboxControllerMac::StopVibration(int sequence_id) {
-  if (sequence_id != sequence_id_)
-    return;
-  SetVibration(0.0, 0.0);
-
-  RunCallbackOnMojoThread(
-      mojom::GamepadHapticsResult::GamepadHapticsResultComplete);
+  // effect with a maximum length of about 3 seconds.
+  return kXboxOneMaxEffectDurationMillis;
 }
 
 void XboxControllerMac::SetVibration(double strong_magnitude,
@@ -937,25 +858,6 @@ void XboxControllerMac::WriteXboxOneAckGuide(uint8_t sequence_number) {
     IOError();
     return;
   }
-}
-
-void XboxControllerMac::RunCallbackOnMojoThread(
-    mojom::GamepadHapticsResult result) {
-  if (playing_effect_task_runner_->RunsTasksInCurrentSequence()) {
-    DoRunCallback(std::move(playing_effect_callback_), result);
-    return;
-  }
-
-  playing_effect_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&XboxControllerMac::DoRunCallback,
-                                std::move(playing_effect_callback_), result));
-}
-
-// static
-void XboxControllerMac::DoRunCallback(
-    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
-    mojom::GamepadHapticsResult result) {
-  std::move(callback).Run(result);
 }
 
 }  // namespace device

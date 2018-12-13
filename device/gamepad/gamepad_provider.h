@@ -114,6 +114,18 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   // true if any user gesture observers were notified.
   bool CheckForUserGesture();
 
+  void PlayEffectOnPollingThread(
+      uint32_t pad_index,
+      mojom::GamepadHapticEffectType,
+      mojom::GamepadEffectParametersPtr,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback,
+      scoped_refptr<base::SequencedTaskRunner>);
+
+  void ResetVibrationOnPollingThread(
+      uint32_t pad_index,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback,
+      scoped_refptr<base::SequencedTaskRunner>);
+
   // The duration of the delay between iterations of DoPoll.
   base::TimeDelta sampling_interval_delta_;
 

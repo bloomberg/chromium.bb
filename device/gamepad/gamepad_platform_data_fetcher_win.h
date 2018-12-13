@@ -60,15 +60,16 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   // GamepadDataFetcher implementation.
   void GetGamepadData(bool devices_changed_hint) override;
 
-  void PlayEffect(
-      int pad_index,
-      mojom::GamepadHapticEffectType,
-      mojom::GamepadEffectParametersPtr,
-      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback) override;
+  void PlayEffect(int pad_index,
+                  mojom::GamepadHapticEffectType,
+                  mojom::GamepadEffectParametersPtr,
+                  mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback,
+                  scoped_refptr<base::SequencedTaskRunner>) override;
 
   void ResetVibration(
       int pad_index,
-      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback) override;
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback,
+      scoped_refptr<base::SequencedTaskRunner>) override;
 
  private:
   void OnAddedToProvider() override;

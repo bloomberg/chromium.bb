@@ -244,40 +244,48 @@ void GamepadPlatformDataFetcherWin::PlayEffect(
     int pad_id,
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
-    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   if (pad_id < 0 || pad_id >= XUSER_MAX_COUNT) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
   if (!xinput_available_ || !xinput_connected_[pad_id] ||
       haptics_[pad_id] == nullptr) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
     return;
   }
 
-  haptics_[pad_id]->PlayEffect(type, std::move(params), std::move(callback));
+  haptics_[pad_id]->PlayEffect(type, std::move(params), std::move(callback),
+                               std::move(callback_runner));
 }
 
 void GamepadPlatformDataFetcherWin::ResetVibration(
     int pad_id,
-    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   if (pad_id < 0 || pad_id >= XUSER_MAX_COUNT) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
   if (!xinput_available_ || !xinput_connected_[pad_id] ||
       haptics_[pad_id] == nullptr) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
     return;
   }
 
-  haptics_[pad_id]->ResetVibration(std::move(callback));
+  haptics_[pad_id]->ResetVibration(std::move(callback),
+                                   std::move(callback_runner));
 }
 
 bool GamepadPlatformDataFetcherWin::GetXInputDllFunctions() {

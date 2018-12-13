@@ -138,7 +138,7 @@ static void SampleGamepad(unsigned index,
 
 template <typename GamepadType, typename ListType>
 static void SampleGamepads(ListType* into,
-                           const ExecutionContext* context,
+                           ExecutionContext* context,
                            const TimeTicks& navigation_start) {
   device::Gamepads gamepads;
 
@@ -166,7 +166,7 @@ static void SampleGamepads(ListType* into,
     } else if (web_gamepad.connected) {
       GamepadType* gamepad = into->item(i);
       if (!gamepad)
-        gamepad = GamepadType::Create();
+        gamepad = GamepadType::Create(context);
       SampleGamepad(i, *gamepad, web_gamepad, navigation_start);
       into->Set(i, gamepad);
     } else {

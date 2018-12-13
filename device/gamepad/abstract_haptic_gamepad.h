@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
@@ -29,17 +30,25 @@ class DEVICE_GAMEPAD_EXPORT AbstractHapticGamepad {
   AbstractHapticGamepad();
   virtual ~AbstractHapticGamepad();
 
-  // Start playing an effect.
+  // Start playing a haptic effect of type |type|, described by |params|. When
+  // the effect is complete, or if it encounters an error, the result code is
+  // passed back to the caller on its own sequence by calling |callback| using
+  // |callback_runner|.
   void PlayEffect(
-      mojom::GamepadHapticEffectType,
-      mojom::GamepadEffectParametersPtr,
-      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback);
+      mojom::GamepadHapticEffectType type,
+      mojom::GamepadEffectParametersPtr params,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+      scoped_refptr<base::SequencedTaskRunner> callback_runner);
 
-  // Reset vibration on the gamepad, perhaps interrupting an ongoing effect.
+  // Reset vibration on the gamepad, perhaps interrupting an ongoing effect. A
+  // result code is passed back to the caller on its own sequence by calling
+  // |callback| using |callback_runner|.
   void ResetVibration(
-      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback);
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback,
+      scoped_refptr<base::SequencedTaskRunner> callback_runner);
 
-  // Stop vibration and release held resources.
+  // Stop vibration effects, run callbacks, and release held resources. Must be
+  // called before the device is destroyed.
   void Shutdown();
 
   // Set the vibration magnitude for the strong and weak vibration actuators.
@@ -48,13 +57,14 @@ class DEVICE_GAMEPAD_EXPORT AbstractHapticGamepad {
   // Set the vibration magnitude for both actuators to zero.
   virtual void SetZeroVibration();
 
+  // The maximum effect duration supported by this device. Long-running effects
+  // must be divided into effects of this duration or less.
+  virtual double GetMaxEffectDurationMillis();
+
  private:
   // Override to perform additional shutdown actions after vibration effects
   // are halted and callbacks are issued.
   virtual void DoShutdown() {}
-
-  // For testing.
-  virtual base::TimeDelta TaskDelayFromMilliseconds(double delay_millis);
 
   void PlayDualRumbleEffect(int sequence_id,
                             double duration,
@@ -65,19 +75,14 @@ class DEVICE_GAMEPAD_EXPORT AbstractHapticGamepad {
                       double duration,
                       double strong_magnitude,
                       double weak_magnitude);
-  void StopVibration(int sequence_id);
-
-  void RunCallbackOnMojoThread(mojom::GamepadHapticsResult result);
-
-  static void DoRunCallback(
-      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback,
-      mojom::GamepadHapticsResult);
+  void FinishEffect(int sequence_id);
 
   bool is_shut_down_;
   int sequence_id_;
-  scoped_refptr<base::SequencedTaskRunner> playing_effect_task_runner_;
   mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback
       playing_effect_callback_;
+  scoped_refptr<base::SequencedTaskRunner> callback_runner_;
+  THREAD_CHECKER(thread_checker_);
 };
 
 }  // namespace device
