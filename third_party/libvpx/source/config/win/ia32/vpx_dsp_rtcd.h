@@ -3952,12 +3952,22 @@ void vpx_highbd_h_predictor_8x8_sse2(uint16_t* dst,
 void vpx_highbd_hadamard_16x16_c(const int16_t* src_diff,
                                  ptrdiff_t src_stride,
                                  tran_low_t* coeff);
-#define vpx_highbd_hadamard_16x16 vpx_highbd_hadamard_16x16_c
+void vpx_highbd_hadamard_16x16_avx2(const int16_t* src_diff,
+                                    ptrdiff_t src_stride,
+                                    tran_low_t* coeff);
+RTCD_EXTERN void (*vpx_highbd_hadamard_16x16)(const int16_t* src_diff,
+                                              ptrdiff_t src_stride,
+                                              tran_low_t* coeff);
 
 void vpx_highbd_hadamard_32x32_c(const int16_t* src_diff,
                                  ptrdiff_t src_stride,
                                  tran_low_t* coeff);
-#define vpx_highbd_hadamard_32x32 vpx_highbd_hadamard_32x32_c
+void vpx_highbd_hadamard_32x32_avx2(const int16_t* src_diff,
+                                    ptrdiff_t src_stride,
+                                    tran_low_t* coeff);
+RTCD_EXTERN void (*vpx_highbd_hadamard_32x32)(const int16_t* src_diff,
+                                              ptrdiff_t src_stride,
+                                              tran_low_t* coeff);
 
 void vpx_highbd_hadamard_8x8_c(const int16_t* src_diff,
                                ptrdiff_t src_stride,
@@ -4853,6 +4863,10 @@ void vpx_highbd_sad8x8x4d_sse2(const uint8_t* src_ptr,
                                int ref_stride,
                                uint32_t* sad_array);
 #define vpx_highbd_sad8x8x4d vpx_highbd_sad8x8x4d_sse2
+
+int vpx_highbd_satd_c(const tran_low_t* coeff, int length);
+int vpx_highbd_satd_avx2(const tran_low_t* coeff, int length);
+RTCD_EXTERN int (*vpx_highbd_satd)(const tran_low_t* coeff, int length);
 
 void vpx_highbd_subtract_block_c(int rows,
                                  int cols,
@@ -7692,6 +7706,12 @@ static void setup_rtcd_internal(void) {
   vpx_highbd_d63_predictor_8x8 = vpx_highbd_d63_predictor_8x8_c;
   if (flags & HAS_SSSE3)
     vpx_highbd_d63_predictor_8x8 = vpx_highbd_d63_predictor_8x8_ssse3;
+  vpx_highbd_hadamard_16x16 = vpx_highbd_hadamard_16x16_c;
+  if (flags & HAS_AVX2)
+    vpx_highbd_hadamard_16x16 = vpx_highbd_hadamard_16x16_avx2;
+  vpx_highbd_hadamard_32x32 = vpx_highbd_hadamard_32x32_c;
+  if (flags & HAS_AVX2)
+    vpx_highbd_hadamard_32x32 = vpx_highbd_hadamard_32x32_avx2;
   vpx_highbd_hadamard_8x8 = vpx_highbd_hadamard_8x8_c;
   if (flags & HAS_AVX2)
     vpx_highbd_hadamard_8x8 = vpx_highbd_hadamard_8x8_avx2;
@@ -7722,6 +7742,9 @@ static void setup_rtcd_internal(void) {
   vpx_highbd_idct8x8_64_add = vpx_highbd_idct8x8_64_add_sse2;
   if (flags & HAS_SSE4_1)
     vpx_highbd_idct8x8_64_add = vpx_highbd_idct8x8_64_add_sse4_1;
+  vpx_highbd_satd = vpx_highbd_satd_c;
+  if (flags & HAS_AVX2)
+    vpx_highbd_satd = vpx_highbd_satd_avx2;
   vpx_idct32x32_135_add = vpx_idct32x32_135_add_sse2;
   if (flags & HAS_SSSE3)
     vpx_idct32x32_135_add = vpx_idct32x32_135_add_ssse3;
