@@ -50,12 +50,12 @@ class LinkerMapParserTest(unittest.TestCase):
   @_CompareWithGolden()
   def test_Parser(self):
     ret = []
-    map_file = iter(_ReadMapFile(_TEST_MAP_PATH))
-    linker_name = linker_map_parser.DetectLinkerNameFromMapFile(map_file)
+    map_file = _ReadMapFile(_TEST_MAP_PATH)
+    linker_name = linker_map_parser.DetectLinkerNameFromMapFile(iter(map_file))
     section_sizes, raw_symbols = (
-        linker_map_parser.MapFileParser().Parse(linker_name, map_file))
+        linker_map_parser.MapFileParser().Parse(linker_name, iter(map_file)))
     ret.append('******** section_sizes ********')
-    for k, v in section_sizes.iteritems():
+    for k, v in sorted(section_sizes.iteritems()):
       ret.append('%-24s %d' % (k, v))
     ret.append('')
     ret.append('******** raw_symbols ********')

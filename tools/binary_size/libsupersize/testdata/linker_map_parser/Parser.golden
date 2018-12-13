@@ -1,30 +1,33 @@
 ******** section_sizes ********
-.rodata                  6364747
-.rel.plt                 3032
-.gnu.hash                28
-.text                    38909928
-.shstrtab                452
-.data                    118728
-.gnu.version             782
-.rel.dyn                 184789
-.comment                 168
-.got                     1452
-.note.gnu.build-id       36
-.symtab                  18626064
-.gnu.version_r           96
-.got.plt                 1528
+.ARM.attributes          35
+.ARM.exidx               1975928
+.ARM.extab               36860
 .bss                     1089404
+.comment                 168
+.data                    118728
+.data.rel.ro             2013024
+.dynamic                 240
 .dynstr                  3947
+.dynsym                  6256
+.fini_array              8
+.gnu.hash                28
+.gnu.version             782
+.gnu.version_r           96
+.got                     1452
+.got.plt                 1528
+.init_array              16
+.interp                  19
 .note.android.ident      152
 .note.crashpad.info      28
-.ARM.extab               36860
-.fini_array              8
-.init_array              16
-.dynamic                 240
+.note.gnu.build-id       36
 .plt                     6096
+.rel.dyn                 184789
+.rel.plt                 3032
+.rodata                  6364747
+.shstrtab                452
 .strtab                  49754930
-.data.rel.ro             2013024
-.ARM.attributes          35
+.symtab                  18626064
+.text                    38909928
 
 ******** raw_symbols ********
 .rodata@213200(size_without_padding=4,padding=0,full_name=,object_path=obj/v8/v8_external_snapshot/embedded.o,source_path=,flags={},num_aliases=1,component=)
