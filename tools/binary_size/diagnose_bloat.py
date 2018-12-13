@@ -446,9 +446,6 @@ class _DiffArchiveManager(object):
     self.subrepo = subrepo
     self._summary_stats = []
 
-  def IterArchives(self):
-    return iter(self.build_archives)
-
   def MaybeDiff(self, before_id, after_id):
     """Perform diffs given two build archives."""
     before = self.build_archives[before_id]
@@ -978,7 +975,7 @@ def main():
                                     subrepo, args.include_slow_options,
                                     args.unstripped)
     consecutive_failures = 0
-    for i, archive in enumerate(diff_mngr.IterArchives()):
+    for i, archive in enumerate(diff_mngr.build_archives):
       if archive.Exists():
         step = 'download' if build.IsCloud() else 'build'
         logging.info('Found matching metadata for %s, skipping %s step.',
@@ -995,7 +992,9 @@ def main():
                 'Build failed for %s, diffs using this rev will be skipped.',
                 archive.rev)
             consecutive_failures += 1
-            if consecutive_failures > _ALLOWED_CONSECUTIVE_FAILURES:
+            if len(diff_mngr.build_archives) <= 2:
+              _Die('Stopping due to build failure.')
+            elif consecutive_failures > _ALLOWED_CONSECUTIVE_FAILURES:
               _Die('%d builds failed in a row, last failure was %s.',
                    consecutive_failures, archive.rev)
           else:
