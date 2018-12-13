@@ -153,7 +153,6 @@ extern const char kOriginTrialDisabledTokens[];
 extern const char kOriginTrialPublicKey[];
 extern const char kPackExtension[];
 extern const char kPackExtensionKey[];
-extern const char kParentProfile[];
 extern const char kPermissionRequestApiScope[];
 extern const char kPermissionRequestApiUrl[];
 extern const char kPpapiFlashPath[];
