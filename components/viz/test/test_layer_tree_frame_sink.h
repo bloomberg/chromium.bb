@@ -91,6 +91,7 @@ class TestLayerTreeFrameSink : public cc::LayerTreeFrameSink,
   void DetachFromClient() override;
   void SetLocalSurfaceId(const LocalSurfaceId& local_surface_id) override;
   void SubmitCompositorFrame(CompositorFrame frame,
+                             bool hit_test_data_changed,
                              bool show_hit_test_borders) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,

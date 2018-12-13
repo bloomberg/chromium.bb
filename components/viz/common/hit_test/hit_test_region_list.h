@@ -81,11 +81,16 @@ struct HitTestRegion {
   // defines the space occupied by this region in the coordinate space of
   // the embedder.
   gfx::Transform transform;
+
+  static bool IsEqual(const HitTestRegion&, const HitTestRegion&);
 };
 
 struct VIZ_COMMON_EXPORT HitTestRegionList {
   HitTestRegionList();
   ~HitTestRegionList();
+
+  HitTestRegionList(const HitTestRegionList&);
+  HitTestRegionList& operator=(const HitTestRegionList&);
 
   HitTestRegionList(HitTestRegionList&&);
   HitTestRegionList& operator=(HitTestRegionList&&);
@@ -105,6 +110,8 @@ struct VIZ_COMMON_EXPORT HitTestRegionList {
 
   // The list of sub-regions in front to back order.
   std::vector<HitTestRegion> regions;
+
+  static bool IsEqual(const HitTestRegionList&, const HitTestRegionList&);
 };
 
 }  // namespace viz

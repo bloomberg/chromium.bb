@@ -2094,7 +2094,8 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   auto compositor_frame = GenerateCompositorFrame(frame);
   layer_tree_frame_sink_->SubmitCompositorFrame(
-      std::move(compositor_frame), debug_state_.show_hit_test_borders);
+      std::move(compositor_frame),
+      /*hit_test_data_changed=*/false, debug_state_.show_hit_test_borders);
 
   // Clears the list of swap promises after calling DidSwap on each of them to
   // signal that the swap is over.
