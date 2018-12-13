@@ -53,9 +53,17 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
     AddHitTestRegion(fuzz, regions, frame_sink_ids, depth + 1);
 }
 
+class Environment {
+ public:
+  Environment() { base::CommandLine::Init(0, nullptr); }
+};
+
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t num_bytes) {
+  // Initialize the environment only once.
+  static Environment environment;
+
   // If there isn't enough memory to have a single AggregatedHitTestRegion, then
   // skip.
   if (num_bytes < sizeof(viz::AggregatedHitTestRegion))
