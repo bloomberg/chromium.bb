@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<!-- TODO(rakina): move to WPT once spec is finalized -->
-<script src = '../../resources/testharness.js'></script>
-<script src = '../../resources/testharnessreport.js'></script>
+<title>CSSStyleSheet constructor and adoptedStyleSheets</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<link rel="help" href="https://wicg.github.io/construct-stylesheets/">
+<script src = '/resources/testharness.js'></script>
+<script src = '/resources/testharnessreport.js'></script>
 
 <section id="firstSection">
   <div>
@@ -431,7 +433,7 @@ test(() => {
   assert_equals(sheet.cssRules[0].cssText, redStyleTexts[1]);
 }, 'CSSStyleSheet.replaceSync replaces stylesheet text synchronously');
 
-const import_text = '@import url("constructable-import.css");';
+const import_text = '@import url("support/constructable-import.css");';
 
 test(() => {
   assert_throws("NotAllowedError", () => { (new CSSStyleSheet).replaceSync(import_text) });
