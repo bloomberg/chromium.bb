@@ -3811,9 +3811,11 @@ def BranchScheduleConfig():
       # Add non release branch schedules here, if needed.
       # <branch>, <build_config>, <display_label>, <schedule>, <triggers>
 
-      # WIP(b/111954990). All live branches will be included here eventually.
-      ('release-R72-11316.B', 'master-lakitu-release',
-       config_lib.DISPLAY_LABEL_RELEASE, '0 6 * * *', None),
+      # ATTENTION: R69 is a Long Term Support milestone for lakitu and they'd
+      # like to keep it a little longer. Please let lakitu-dev@google.com know
+      # before deleting this.
+      ('release-R69-10895.B', 'master-lakitu-release',
+       config_lib.DISPLAY_LABEL_RELEASE, '0 4 * * *', None),
   ]
 
   # The three active release branches.
@@ -3833,24 +3835,12 @@ def BranchScheduleConfig():
        ['reef-android-nyc-pre-flight-branch',
         'grunt-android-pi-pre-flight-branch'],
        'samus-chrome-pre-flight-branch'),
-
-      # ATTENTION: R69 is a Long Term Support milestone for lakitu and they'd
-      # like to keep it a little longer. Please let lakitu-dev@google.com know
-      # before deleting this.
-      ('release-R69-10895.B',
-       ['reef-android-nyc-pre-flight-branch'],
-       'samus-chrome-pre-flight-branch'),
   ]
 
   RELEASE_SCHEDULES = [
       '0 6 * * *',
       '0 5 * * *',
       '0 16 * * 0',
-      # Normally this should be "triggered" but lakitu needs R69 for a little
-      # longer. Please let lakitu-dev@google.com know before updating this.
-      # TODO(b/111954990): create a master-lakitu-release builder and remove
-      # this.
-      '0 15 * * 0',
   ]
 
   PFQ_SCHEDULE = [
@@ -3863,6 +3853,9 @@ def BranchScheduleConfig():
   for (branch, android_pfq, chrome_pfq), schedule, android_schedule in zip(
       RELEASES, RELEASE_SCHEDULES, PFQ_SCHEDULE):
     branch_builds.append([branch, 'master-release',
+                          config_lib.DISPLAY_LABEL_RELEASE,
+                          schedule, None])
+    branch_builds.append([branch, 'master-lakitu-release',
                           config_lib.DISPLAY_LABEL_RELEASE,
                           schedule, None])
     branch_builds.extend([[branch, pfq,
