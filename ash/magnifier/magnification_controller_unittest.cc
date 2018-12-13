@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_utils.h"
@@ -649,7 +650,7 @@ TEST_F(MagnificationControllerTest, CenterTextCaretNotInsideViewport) {
 
   // Focus on the text input field.
   text_input_helper_.FocusOnTextInputView();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   // Verify the view port has been moved to the place where the text field is
   // contained in the view port and the caret is at the center of the view port.
   gfx::Rect view_port = GetViewport();
@@ -662,7 +663,7 @@ TEST_F(MagnificationControllerTest, CenterTextCaretNotInsideViewport) {
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->PressKey(ui::VKEY_A, 0);
   event_generator->ReleaseKey(ui::VKEY_A, 0);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   gfx::Rect new_caret_bounds = text_input_helper_.GetCaretBounds();
   EXPECT_NE(caret_bounds, new_caret_bounds);
 
@@ -689,7 +690,7 @@ TEST_F(MagnificationControllerTest, CenterTextCaretInViewport) {
 
   // Focus on the text input field.
   text_input_helper_.FocusOnTextInputView();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Verify the view port has been moved to the place where the text field is
   // contained in the view port and the caret is at the center of the view port.

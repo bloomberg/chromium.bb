@@ -1200,7 +1200,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   Shelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
   ShowTopWindowBackdropForContainer(default_container(), true);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   const gfx::Size fullscreen_size = GetPrimaryDisplay().size();
 
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
@@ -1303,11 +1303,11 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
 
   // Toggle overview.
   Shell::Get()->window_selector_controller()->ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(test_helper.GetBackdropWindow());
 
   Shell::Get()->window_selector_controller()->ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
   EXPECT_TRUE(backdrop);
   {
@@ -1333,10 +1333,10 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
 
   // Toggle overview with the delegate.
   Shell::Get()->window_selector_controller()->ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(test_helper.GetBackdropWindow());
   Shell::Get()->window_selector_controller()->ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
   {
     aura::Window::Windows children = window1->parent()->children();
@@ -1496,7 +1496,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, DISABLED_OpenAppListInOverviewMode) {
 
   // Toggle overview button to enter overview mode.
   Shell::Get()->window_selector_controller()->ToggleOverview();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(test_helper.GetBackdropWindow());
 
   ui::ScopedAnimationDurationScaleMode test_duration_mode(

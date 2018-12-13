@@ -9,6 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -69,7 +70,7 @@ ScreenLayoutObserver* ScreenLayoutObserverTest::GetScreenLayoutObserver() {
 void ScreenLayoutObserverTest::CloseNotification() {
   message_center::MessageCenter::Get()->RemoveNotification(
       ScreenLayoutObserver::kNotificationId, false);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 }
 
 void ScreenLayoutObserverTest::ClickNotification() {

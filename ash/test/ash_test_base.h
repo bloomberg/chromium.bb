@@ -184,10 +184,6 @@ class AshTestBase : public testing::Test {
 
   AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
 
-  // Deprecated. Using this triggers a preprocessor warning, use
-  // base::RunLoop().RunUntilIdle() instead.
-  void RunAllPendingInMessageLoop();
-
   TestScreenshotDelegate* GetScreenshotDelegate();
 
   TestSessionControllerClient* GetSessionControllerClient();

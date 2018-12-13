@@ -28,6 +28,7 @@
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -96,7 +97,7 @@ class LoginShelfViewTest : public LoginTestBase {
                                ui::EventTimeForNow(), 0, 0);
     login_shelf_view_->ButtonPressed(
         static_cast<views::Button*>(login_shelf_view_->GetViewByID(id)), event);
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Checks if the shelf is only showing the buttons in the list. The IDs in

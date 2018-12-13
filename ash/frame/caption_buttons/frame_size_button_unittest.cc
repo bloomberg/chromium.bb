@@ -11,6 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "base/i18n/rtl.h"
+#include "base/run_loop.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -165,14 +166,14 @@ TEST_F(FrameSizeButtonTest, PressedState) {
   generator->PressLeftButton();
   EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
   generator->ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
 
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressTouchId(3);
   EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
   generator->ReleaseTouchId(3);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
 }
 
@@ -184,20 +185,20 @@ TEST_F(FrameSizeButtonTest, ClickSizeButtonTogglesMaximize) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->ClickLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(window_state()->IsMaximized());
 
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->ClickLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(window_state()->IsMaximized());
 
   generator->GestureTapAt(CenterPointInScreen(size_button()));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(window_state()->IsMaximized());
 
   generator->GestureTapAt(CenterPointInScreen(size_button()));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(window_state()->IsMaximized());
 }
 
@@ -213,7 +214,7 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
   generator->PressLeftButton();
   generator->MoveMouseTo(CenterPointInScreen(close_button()));
   generator->ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasStateType(mojom::WindowStateType::RIGHT_SNAPPED));
 
   // Snap left.
@@ -221,7 +222,7 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
   generator->PressLeftButton();
   generator->MoveMouseTo(CenterPointInScreen(minimize_button()));
   generator->ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
 
   // 2) Test with scroll gestures.
@@ -229,14 +230,14 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
   generator->GestureScrollSequence(CenterPointInScreen(size_button()),
                                    CenterPointInScreen(close_button()),
                                    base::TimeDelta::FromMilliseconds(100), 3);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasStateType(mojom::WindowStateType::RIGHT_SNAPPED));
 
   // Snap left.
   generator->GestureScrollSequence(CenterPointInScreen(size_button()),
                                    CenterPointInScreen(minimize_button()),
                                    base::TimeDelta::FromMilliseconds(100), 3);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
 
   // 3) Test with tap gestures.
@@ -246,12 +247,12 @@ TEST_F(FrameSizeButtonTest, ButtonDrag) {
   // Snap right.
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressMoveAndReleaseTouchTo(CenterPointInScreen(close_button()));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasStateType(mojom::WindowStateType::RIGHT_SNAPPED));
   // Snap left.
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressMoveAndReleaseTouchTo(CenterPointInScreen(minimize_button()));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
   ui::GestureConfiguration::GetInstance()->set_default_radius(
       touch_default_radius);
@@ -271,7 +272,7 @@ TEST_F(FrameSizeButtonTest, SnapLeftOvershootMinimize) {
   // Overshoot the minimize button.
   generator->MoveMouseBy(-minimize_button()->width(), 0);
   generator->ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
 }
 
@@ -283,7 +284,7 @@ TEST_F(FrameSizeButtonTest, RightMouseButton) {
   generator->MoveMouseTo(CenterPointInScreen(size_button()));
   generator->PressRightButton();
   generator->ReleaseRightButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(window_state()->IsNormalStateType());
 }
 
@@ -318,7 +319,7 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
 
   // Release the mouse, snapping the window left.
   generator->ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
 
   // None of the buttons should stay pressed and the buttons should have their
@@ -350,7 +351,7 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
 
   // Release the mouse. The window should stay snapped left.
   generator->ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasStateType(mojom::WindowStateType::LEFT_SNAPPED));
 
   // The buttons should stay unpressed and the buttons should now have their
@@ -457,7 +458,7 @@ TEST_F(FrameSizeButtonTestRTL, ButtonDrag) {
 
   // Releasing should snap the window right.
   generator->ReleaseLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasStateType(mojom::WindowStateType::RIGHT_SNAPPED));
 
   // None of the buttons should stay pressed and the buttons should have their

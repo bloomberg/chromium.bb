@@ -9,6 +9,7 @@
 
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/test/ash_test_base.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "dbus/object_path.h"
 #include "device/base/features.h"
@@ -107,7 +108,7 @@ TEST_F(TrayBluetoothHelperLegacyTest, Basics) {
 
   TrayBluetoothHelperLegacy helper;
   helper.Initialize();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(device::mojom::BluetoothSystem::State::kPoweredOn,
             helper.GetBluetoothState());
   EXPECT_FALSE(helper.HasBluetoothDiscoverySession());
@@ -119,11 +120,11 @@ TEST_F(TrayBluetoothHelperLegacyTest, Basics) {
   EXPECT_FALSE(ExistInFilteredDevices(kLowEnergyAddress, devices));
 
   helper.StartBluetoothDiscovering();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(helper.HasBluetoothDiscoverySession());
 
   helper.StopBluetoothDiscovering();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(helper.HasBluetoothDiscoverySession());
 }
 
@@ -142,7 +143,7 @@ TEST_F(TrayBluetoothHelperLegacyTest, GetBluetoothState) {
   adapter_client->SetVisible(false);
   adapter_client->SetSecondVisible(false);
   helper.Initialize();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(BluetoothSystem::State::kUnavailable, helper.GetBluetoothState());
 

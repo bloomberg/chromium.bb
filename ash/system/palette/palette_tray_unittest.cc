@@ -28,6 +28,7 @@
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
@@ -161,7 +162,7 @@ TEST_F(PaletteTrayTest, PaletteTrayWorkflow) {
   EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::CAPTURE_SCREEN));
   // Wait for the tray bubble widget to close.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(test_api_->tray_bubble_wrapper());
   EXPECT_FALSE(palette_tray_->is_active());
 }

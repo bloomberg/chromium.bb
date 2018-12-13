@@ -5,6 +5,7 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/run_loop.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -83,7 +84,7 @@ class AutoclickTest : public AshTestBase {
     // Make sure the display is initialized so we don't fail the test due to any
     // input events caused from creating the display.
     Shell::Get()->display_manager()->UpdateDisplays();
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
@@ -99,7 +100,7 @@ class AutoclickTest : public AshTestBase {
 
   const std::vector<ui::MouseEvent>& WaitForMouseEvents() {
     ClearMouseEvents();
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
     return GetMouseEvents();
   }
 
@@ -184,7 +185,7 @@ TEST_F(AutoclickTest, MouseMovement) {
 
 TEST_F(AutoclickTest, MovementThreshold) {
   UpdateDisplay("1280x1024,800x600");
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2u, root_windows.size());
 

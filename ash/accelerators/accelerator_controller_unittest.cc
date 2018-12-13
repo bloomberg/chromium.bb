@@ -824,13 +824,13 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   // The press event should not toggle the AppList, the release should instead.
   EXPECT_FALSE(
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ui::VKEY_LWIN, GetCurrentAccelerator().key_code());
   GetAppListTestHelper()->CheckVisibility(false);
 
   EXPECT_TRUE(ProcessInController(
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(ui::VKEY_LWIN, GetPreviousAccelerator().key_code());
 
@@ -843,7 +843,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(controller->spoken_feedback_enabled());
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
 
   // Turning off spoken feedback should allow the AppList to toggle again.
@@ -851,17 +851,17 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
       ProcessInController(ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   EXPECT_TRUE(ProcessInController(
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
 
   // The press of VKEY_BROWSER_SEARCH should toggle the AppList
   EXPECT_TRUE(ProcessInController(
       ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_FALSE(ProcessInController(
       CreateReleaseAccelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_NONE)));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
 
   // When pressed key is interrupted by mouse, the AppList should not toggle.
@@ -870,7 +870,7 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
   GetController()->accelerator_history()->InterruptCurrentAccelerator();
   EXPECT_FALSE(ProcessInController(
       CreateReleaseAccelerator(ui::VKEY_LWIN, ui::EF_NONE)));
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
 }
 

@@ -19,6 +19,7 @@
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/events/test/event_generator.h"
@@ -107,7 +108,7 @@ TEST_F(AppListButtonTest, SwipeUpToOpenFullscreenAppList) {
             ShelfLayoutManager::kAppListDragSnapToPeekingThreshold - 10);
   GetEventGenerator()->GestureScrollSequence(
       start, end, base::TimeDelta::FromMilliseconds(100), 4 /* steps */);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(
@@ -119,7 +120,7 @@ TEST_F(AppListButtonTest, ButtonPositionInTabletMode) {
   // GetSwitchStates post task in (Fake)PowerManagerClient which is triggered
   // by TabletModeController otherwise this will cause tablet mode to exit
   // while we wait for animations in the test.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   ShelfViewTestAPI test_api(GetPrimaryShelf()->GetShelfViewForTesting());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);

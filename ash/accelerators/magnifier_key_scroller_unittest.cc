@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "base/run_loop.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
@@ -60,7 +61,7 @@ TEST_F(MagnifierKeyScrollerTest, Basic) {
 
   generator->ReleaseKey(ui::VKEY_DOWN, 0);
   EXPECT_EQ("200,150", controller->GetWindowPosition().ToString());
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(delegate.event());
   EXPECT_EQ(ui::ET_KEY_PRESSED, delegate.event()->type());
   delegate.reset();

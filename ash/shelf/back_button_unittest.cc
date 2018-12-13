@@ -15,6 +15,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/run_loop.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/events/test/event_generator.h"
@@ -39,7 +40,7 @@ class BackButtonTest : public AshTestBase {
     // GetSwitchStates post task in (Fake)PowerManagerClient which is triggered
     // by TabletModeController otherwise this will cause tablet mode to exit
     // while we wait for animations in the test.
-    RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:

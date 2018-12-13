@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/run_loop.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -86,7 +87,7 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   // Removing the view won't stop the timer, but the tooltip shouldn't be shown.
   model->RemoveItemAt(index);
   EXPECT_TRUE(IsTimerRunning());
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTimerRunning());
   EXPECT_FALSE(tooltip_manager_->IsVisible());
 }
