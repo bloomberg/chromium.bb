@@ -317,6 +317,48 @@ CONV_FN(SchemaTableAsAlias, staa) {
 // ~~~~Expression stuff~~~~
 
 // WARNING does not include space
+CONV_FN(NumericLiteral, nl) {
+  static constexpr char hex_digits[] = "0123456789ABCDEF";
+  static constexpr char digits[] = "0123456789";
+  std::string ret;
+  if (nl.hex_digits_size() > 0) {
+    ret += "0x";
+    for (int i = 0; i < nl.hex_digits_size(); i++) {
+      ret += hex_digits[nl.hex_digits(i) % sizeof(hex_digits)];
+    }
+
+    return ret;
+  }
+  for (int i = 0; i < nl.digits_size(); i++) {
+    ret += digits[nl.digits(i) % sizeof(digits)];
+  }
+  if (nl.decimal_point()) {
+    ret += ".";
+    if (nl.dec_digits_size() == 0) {
+      ret += "0";
+    } else {
+      for (int i = 0; i < nl.dec_digits_size(); i++) {
+        ret += digits[nl.dec_digits(i) % sizeof(digits)];
+      }
+    }
+  }
+  if (nl.exp_digits_size() > 0) {
+    ret += "E";
+    if (nl.negative_exp())
+      ret += "-";
+    if (nl.exp_digits_size() == 0) {
+      ret += "0";
+    } else {
+      for (int i = 0; i < nl.exp_digits_size(); i++) {
+        ret += digits[nl.exp_digits(i) % sizeof(digits)];
+      }
+    }
+  }
+
+  return ret;
+}
+
+// WARNING does not include space
 CONV_FN(LiteralValue, lit_val) {
   std::string ret;
   using LitValType = LiteralValue::LitValOneofCase;
@@ -339,6 +381,8 @@ CONV_FN(LiteralValue, lit_val) {
         return "NULL";
       // do not remove underscores
       return LiteralValue_SpecialVal_Name(lit_val.special_val());
+    case LitValType::kNumericLit:
+      return NumericLiteralToString(lit_val.numeric_lit());
     default:
       return "1";
   }
@@ -1446,6 +1490,7 @@ CONV_FN(JoinOperator, jo) {
   if (jo.join_type() != JoinOperator::NONE) {
     ret +=
         EnumStrReplaceUnderscores(JoinOperator_JoinType_Name(jo.join_type()));
+    ret += " ";
   }
   ret += "JOIN ";
   return ret;
@@ -1587,7 +1632,7 @@ CONV_FN(TableOrSubquery, tos) {
 }
 
 CONV_FN(FromStatement, fs) {
-  return TableOrSubqueryOption3ToString(fs.tos3());
+  return "FROM " + TableOrSubqueryOption3ToString(fs.tos3());
 }
 
 CONV_FN(GroupByStatement, gbs) {
