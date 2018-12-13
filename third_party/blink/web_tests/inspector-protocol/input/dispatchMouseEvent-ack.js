@@ -18,15 +18,18 @@
       testRunner.log('Error: ' + message.error.message);
   }
 
-
+  let buttons = 0;
   for (var event of ['mousePressed', 'mouseReleased', 'mouseMoved']) {
     testRunner.log(`-- ${event} --`);
     let resolved = false;
     await dp.Debugger.enable();
     testRunner.log('Dispatching event');
+    if (event == 'mouseReleased')
+      buttons = 1;
     let mouseEventPromise = dp.Input.dispatchMouseEvent({
       type: event,
       button: 'left',
+      buttons: buttons,
       clickCount: 1,
       x: 100,
       y: 200

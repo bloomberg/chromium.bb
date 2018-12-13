@@ -11,9 +11,9 @@
     testRunner.die(message.error.message);
     return;
   }
-  dp.Input.dispatchMouseEvent({type: 'mouseMoved', button: 'left', clickCount: 1, x: 150, y: 150 });
-  dp.Input.dispatchMouseEvent({type: 'mousePressed', button: 'left', clickCount: 1, x: 150, y: 150 });
-  dp.Input.dispatchMouseEvent({type: 'mouseReleased', button: 'left', clickCount: 1, x: 150, y: 150 });
+  dp.Input.dispatchMouseEvent({type: 'mouseMoved', button: 'left', buttons: 0, clickCount: 1, x: 150, y: 150 });
+  dp.Input.dispatchMouseEvent({type: 'mousePressed', button: 'left', buttons: 0, clickCount: 1, x: 150, y: 150 });
+  dp.Input.dispatchMouseEvent({type: 'mouseReleased', button: 'left', buttons: 1, clickCount: 1, x: 150, y: 150 });
 
   var message = await dp.Overlay.onceInspectNodeRequested();
   message = await dp.DOM.pushNodesByBackendIdsToFrontend({backendNodeIds: [message.params.backendNodeId]});

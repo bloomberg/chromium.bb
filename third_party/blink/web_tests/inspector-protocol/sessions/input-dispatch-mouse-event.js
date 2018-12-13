@@ -36,6 +36,7 @@
   dumpError(await session1.protocol.Input.dispatchMouseEvent({
     type: 'mousePressed',
     button: 'middle',
+    buttons: 0,
     clickCount: 1,
     x: 100,
     y: 200
@@ -44,6 +45,7 @@
   dumpError(await session2.protocol.Input.dispatchMouseEvent({
     type: 'mouseMoved',
     button: 'middle',
+    buttons: 4,
     x: 50,
     y: 150
   }));
@@ -51,6 +53,7 @@
   dumpError(await session2.protocol.Input.dispatchMouseEvent({
     type: 'mouseReleased',
     button: 'middle',
+    buttons: 4,
     clickCount: 1,
     x: 50,
     y: 150

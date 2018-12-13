@@ -14,12 +14,14 @@ MouseEvent::MouseEvent(MouseEventType type,
                        int x,
                        int y,
                        int modifiers,
+                       int buttons,
                        int click_count)
     : type(type),
       button(button),
       x(x),
       y(y),
       modifiers(modifiers),
+      buttons(buttons),
       click_count(click_count) {}
 
 MouseEvent::~MouseEvent() {}
