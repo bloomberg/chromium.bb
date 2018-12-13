@@ -726,12 +726,19 @@ void AutofillMetrics::LogCardUploadDecisionMetrics(
 void AutofillMetrics::LogCreditCardInfoBarMetric(
     InfoBarMetric metric,
     bool is_uploading,
+    bool is_requesting_cardholder_name,
     int previous_save_credit_card_prompt_user_decision) {
   DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
 
   std::string destination = is_uploading ? ".Server" : ".Local";
   base::UmaHistogramEnumeration("Autofill.CreditCardInfoBar" + destination,
                                 metric, NUM_INFO_BAR_METRICS);
+  if (is_requesting_cardholder_name) {
+    base::UmaHistogramEnumeration("Autofill.CreditCardInfoBar" + destination +
+                                      ".RequestingCardholderName",
+                                  metric, NUM_INFO_BAR_METRICS);
+  }
+
   base::UmaHistogramEnumeration(
       "Autofill.CreditCardInfoBar" + destination +
           PreviousSaveCreditCardPromptUserDecisionToString(
@@ -959,6 +966,13 @@ void AutofillMetrics::LogSaveCardReachedPersonalDataManager(bool is_local) {
 void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.Events", event,
                             NUM_UNMASK_PROMPT_EVENTS);
+}
+
+// static
+void AutofillMetrics::LogCardholderNameFixFlowPromptEvent(
+    CardholderNameFixFlowPromptEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Autofill.CardholderNameFixFlowPrompt.Events",
+                            event, NUM_FIXFLOW_PROMPT_EVENTS);
 }
 
 // static

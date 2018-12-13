@@ -2527,6 +2527,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Suggestion Selected"/>
 </enum>
 
+<enum name="AutofillCardholderNameFixFlowPromptEvent">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Accepted"/>
+  <int value="2" label="Dismissed"/>
+  <int value="3" label="Closed without user interaction"/>
+</enum>
+
 <enum name="AutofillCardUploadDecision">
   <obsolete>
     Deprecated as of 2/2016, replaced by AutofillCardUploadDecisionExpanded.

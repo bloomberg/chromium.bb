@@ -62,6 +62,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
                                  /*escape_apostrophes=*/true)) {
       AutofillMetrics::LogCreditCardInfoBarMetric(
           AutofillMetrics::INFOBAR_NOT_SHOWN_INVALID_LEGAL_MESSAGE, upload_,
+          should_request_name_from_user_,
           pref_service_->GetInteger(
               prefs::kAutofillAcceptSaveCreditCardPromptState));
       return;
@@ -69,7 +70,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
   }
 
   AutofillMetrics::LogCreditCardInfoBarMetric(
-      AutofillMetrics::INFOBAR_SHOWN, upload_,
+      AutofillMetrics::INFOBAR_SHOWN, upload_, should_request_name_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState));
 }
@@ -193,7 +194,7 @@ void AutofillSaveCardInfoBarDelegateMobile::LogUserAction(
   DCHECK(!had_user_interaction_);
 
   AutofillMetrics::LogCreditCardInfoBarMetric(
-      user_action, upload_,
+      user_action, upload_, should_request_name_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState));
   pref_service_->SetInteger(

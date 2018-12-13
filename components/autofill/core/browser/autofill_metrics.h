@@ -687,6 +687,19 @@ class AutofillMetrics {
     BANK_NAME_NUM_FORM_EVENTS,
   };
 
+  // Cardholder name fix flow prompt metrics.
+  enum CardholderNameFixFlowPromptEvent {
+    // The prompt was shown.
+    CARDHOLDER_NAME_FIX_FLOW_PROMPT_SHOWN = 0,
+    // The prompt was accepted by user.
+    CARDHOLDER_NAME_FIX_FLOW_PROMPT_ACCEPTED,
+    // The prompt was dismissed by user.
+    CARDHOLDER_NAME_FIX_FLOW_PROMPT_DISMISSED,
+    // The prompt was closed without user interaction.
+    CARDHOLDER_NAME_FIX_FLOW_PROMPT_CLOSED_WITHOUT_INTERACTION,
+    NUM_FIXFLOW_PROMPT_EVENTS,
+  };
+
   // Events related to the Unmask Credit Card Prompt.
   enum UnmaskPromptEvent {
     // The prompt was shown.
@@ -950,6 +963,7 @@ class AutofillMetrics {
   static void LogCreditCardInfoBarMetric(
       InfoBarMetric metric,
       bool is_uploading,
+      bool is_requesting_cardholder_name,
       int previous_save_credit_card_prompt_user_decision);
   static void LogCreditCardFillingInfoBarMetric(InfoBarMetric metric);
   static void LogSaveCardRequestExpirationDateReasonMetric(
@@ -1035,6 +1049,10 @@ class AutofillMetrics {
 
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);
+
+  // Logs |event| to cardholder name fix flow prompt events histogram.
+  static void LogCardholderNameFixFlowPromptEvent(
+      CardholderNameFixFlowPromptEvent event);
 
   // Logs the time elapsed between the unmask prompt being shown and it
   // being closed.

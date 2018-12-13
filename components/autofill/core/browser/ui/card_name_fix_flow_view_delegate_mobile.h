@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 
 namespace autofill {
 
@@ -29,14 +30,22 @@ class CardNameFixFlowViewDelegateMobile {
   base::string16 GetInferredCardHolderName() const;
   base::string16 GetSaveButtonLabel() const;
   void Accept(const base::string16& name);
+  void Dismissed();
+  void Shown();
 
  private:
+  void LogUserAction(
+      AutofillMetrics::CardholderNameFixFlowPromptEvent user_action);
+
   // Inferred cardholder name from Gaia account.
   base::string16 inferred_cardholder_name_;
 
   // The callback to save the credit card to Google Payments once user accepts
   // fix flow.
   base::OnceCallback<void(const base::string16&)> upload_save_card_callback_;
+
+  // Did the user ever explicitly accept or dismiss this prompt?
+  bool had_user_interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(CardNameFixFlowViewDelegateMobile);
 };
