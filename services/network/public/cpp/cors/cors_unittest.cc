@@ -780,6 +780,29 @@ TEST_F(CorsTest, CorsUnsafeNotForbiddenRequestHeaderNamesWithRevalidating) {
       List({"if-modified-since", "if-none-match", "cache-control"}));
 }
 
+TEST_F(CorsTest, NoCorsSafelistedHeaderName) {
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("accept"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("AcCePT"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("accept-language"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("acCEPt-lAnguage"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("content-language"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("coNTENt-lAnguage"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("content-type"));
+  EXPECT_TRUE(IsNoCorsSafelistedHeaderName("CONTENT-TYPE"));
+
+  EXPECT_FALSE(IsNoCorsSafelistedHeaderName("range"));
+  EXPECT_FALSE(IsNoCorsSafelistedHeaderName("cookie"));
+  EXPECT_FALSE(IsNoCorsSafelistedHeaderName("foobar"));
+}
+
+TEST_F(CorsTest, PrivilegedNoCorsHeaderName) {
+  EXPECT_TRUE(IsPrivilegedNoCorsHeaderName("range"));
+  EXPECT_TRUE(IsPrivilegedNoCorsHeaderName("RanGe"));
+  EXPECT_FALSE(IsPrivilegedNoCorsHeaderName("content-type"));
+  EXPECT_FALSE(IsPrivilegedNoCorsHeaderName("foobar"));
+  EXPECT_FALSE(IsPrivilegedNoCorsHeaderName("cookie"));
+}
+
 }  // namespace
 }  // namespace cors
 }  // namespace network

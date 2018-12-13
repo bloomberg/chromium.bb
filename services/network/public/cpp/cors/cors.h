@@ -119,6 +119,10 @@ bool IsCorsSafelistedContentType(const std::string& name);
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCorsSafelistedHeader(const std::string& name, const std::string& value);
 COMPONENT_EXPORT(NETWORK_CPP)
+bool IsNoCorsSafelistedHeaderName(const std::string& name);
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsPrivilegedNoCorsHeaderName(const std::string& name);
+COMPONENT_EXPORT(NETWORK_CPP)
 bool IsNoCorsSafelistedHeader(const std::string& name,
                               const std::string& value);
 
