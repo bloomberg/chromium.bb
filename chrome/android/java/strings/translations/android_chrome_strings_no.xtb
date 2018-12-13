@@ -80,7 +80,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="1539064842193522527">Linken er åpnet i Chrome</translation>
 <translation id="1549000191223877751">Flytt til det andre vinduet</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
-<translation id="1556911995758835928">*Ny* Sniktitt</translation>
+<translation id="1556911995758835928">*Nyhet* Sniktitt</translation>
 <translation id="1566400915470565838">Koble til Internett for å bruke <ph name="APP_NAME" />.</translation>
 <translation id="1569387923882100876">Tilkoblet enhet</translation>
 <translation id="1571304935088121812">Kopiér brukernavnet</translation>
@@ -165,7 +165,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="2154484045852737596">Endre kortet</translation>
 <translation id="2154710561487035718">Kopier nettadresse</translation>
 <translation id="2156074688469523661">Andre nettsteder (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2173302385160625112">Sjekk Internett-tilkoblingen</translation>
+<translation id="2173302385160625112">Sjekk internettilkoblingen</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>
 <translation id="2221802148287197464">Automatisk</translation>
 <translation id="2227444325776770048">Fortsett som <ph name="USER_FULL_NAME" /></translation>
@@ -837,7 +837,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7423538860840206698">Blokkert fra å lese utklippstavlen</translation>
 <translation id="7431991332293347422">Kontrollér hvordan nettleserloggen din brukes til blant annet personlig tilpasning av søk</translation>
 <translation id="7437998757836447326">Logg av Chrome</translation>
-<translation id="7438641746574390233">Når forenklet modus er på, bruker Chrome Google-tjenere, slik at sidene lastes inn raskere. Forenklet modus omskriver svært trege sider, slik at kun vesentlig innhold lastes inn. Forenklet modus brukes ikke på inkognitofaner.</translation>
+<translation id="7438641746574390233">Når forenklet modus er på, bruker Chrome Google-tjenere slik at sidene lastes inn raskere. Forenklet modus omskriver svært trege sider, slik at kun vesentlig innhold lastes inn. Forenklet modus brukes ikke på inkognitofaner.</translation>
 <translation id="7444811645081526538">Flere kategorier</translation>
 <translation id="7445411102860286510">Gi nettsteder tillatelse til automatisk avspilling av videoer med kuttet lyd (anbefales)</translation>
 <translation id="7453467225369441013">Logger deg av de fleste nettsteder. Du blir ikke logget av Google-kontoen din.</translation>
@@ -864,7 +864,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7593557518625677601">Start Chrome-synkronisering ved å slå på synkronisering i Android-innstillingene</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
-<translation id="7606077192958116810">Forenklet modus er på. Administrer den i Innstillinger.</translation>
+<translation id="7606077192958116810">Forenklet modus er på. Du kan endre dette i Innstillinger.</translation>
 <translation id="7612619742409846846">Logget på Google som</translation>
 <translation id="7619072057915878432">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av nettverksproblemer.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjelp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />skann på nytt<ph name="END_LINK2" /></translation>
@@ -1026,7 +1026,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> – fane</translation>
 <translation id="885701979325669005">Lagring</translation>
 <translation id="8901170036886848654">Fant ingen bokmerker</translation>
-<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d åpen fane. Trykk for å skifte fane}other{%1$d åpne faner. Trykk for å skifte fane}}</translation>
+<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d åpen fane – trykk for å skifte fane}other{%1$d åpne faner – trykk for å skifte fane}}</translation>
 <translation id="8905378131945614900">Kunne ikke installere VR-modulen</translation>
 <translation id="8909135823018751308">Del</translation>
 <translation id="8912362522468806198">Google-konto</translation>
@@ -1035,7 +1035,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Åpne i et annet vindu</translation>
 <translation id="8951232171465285730">Chrome har spart deg for <ph name="MEGABYTES" /> MB</translation>
-<translation id="8958424370300090006">Blokker informasjonskapsler for et spesifikt nettsted.</translation>
+<translation id="8958424370300090006">Blokkér informasjonskapsler for et spesifikt nettsted.</translation>
 <translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>
 <translation id="8965591936373831584">venter</translation>
 <translation id="8972098258593396643">Vil du laste ned til standardmappen?</translation>
