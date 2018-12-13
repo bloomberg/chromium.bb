@@ -1076,7 +1076,6 @@ void RasterImplementation::BeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    GLint color_type,
     const cc::RasterColorSpace& raster_color_space,
     const GLbyte* mailbox) {
   DCHECK(!raster_properties_);
@@ -1093,7 +1092,7 @@ void RasterImplementation::BeginRasterCHROMIUM(
       raster_color_space.color_space_id);
 
   helper_->BeginRasterCHROMIUMImmediate(
-      sk_color, msaa_sample_count, can_use_lcd_text, color_type,
+      sk_color, msaa_sample_count, can_use_lcd_text,
       raster_color_space.color_space_id, mailbox);
   transfer_cache_serialize_helper.FlushEntries();
 

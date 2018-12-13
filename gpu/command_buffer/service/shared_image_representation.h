@@ -110,11 +110,9 @@ class SharedImageRepresentationSkia : public SharedImageRepresentation {
   virtual sk_sp<SkSurface> BeginWriteAccess(
       GrContext* gr_context,
       int final_msaa_count,
-      SkColorType color_type,
       const SkSurfaceProps& surface_props) = 0;
   virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
-  virtual bool BeginReadAccess(SkColorType color_type,
-                               GrBackendTexture* backend_texture_out) = 0;
+  virtual bool BeginReadAccess(GrBackendTexture* backend_texture_out) = 0;
   virtual void EndReadAccess() = 0;
 };
 

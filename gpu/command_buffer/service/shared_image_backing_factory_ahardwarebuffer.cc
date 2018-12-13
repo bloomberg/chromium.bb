@@ -72,20 +72,22 @@ class SharedImageRepresentationSkiaGLAHB
   sk_sp<SkSurface> BeginWriteAccess(
       GrContext* gr_context,
       int final_msaa_count,
-      SkColorType color_type,
       const SkSurfaceProps& surface_props) override {
     if (write_surface_)
       return nullptr;
 
     GrBackendTexture backend_texture;
     if (!GetGrBackendTexture(target_, size(), internal_format_,
-                             driver_internal_format_, service_id_, color_type,
+                             driver_internal_format_, service_id_, format(),
                              &backend_texture)) {
       return nullptr;
     }
+
+    SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+        /*gpu_compositing=*/true, format());
     auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
         gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
-        color_type, nullptr, &surface_props);
+        sk_color_type, nullptr, &surface_props);
     write_surface_ = surface.get();
     return surface;
   }
@@ -97,10 +99,9 @@ class SharedImageRepresentationSkiaGLAHB
     write_surface_ = nullptr;
   }
 
-  bool BeginReadAccess(SkColorType color_type,
-                       GrBackendTexture* backend_texture) override {
+  bool BeginReadAccess(GrBackendTexture* backend_texture) override {
     if (!GetGrBackendTexture(target_, size(), internal_format_,
-                             driver_internal_format_, service_id_, color_type,
+                             driver_internal_format_, service_id_, format(),
                              backend_texture)) {
       return false;
     }

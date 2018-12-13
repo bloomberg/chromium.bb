@@ -175,10 +175,12 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
   sk_sp<SkSurface> BeginWriteAccess(
       GrContext* gr_context,
       int final_msaa_count,
-      SkColorType color_type,
       const SkSurfaceProps& surface_props) override {
-    auto surface = wrapped_sk_image()->GetSkSurface(final_msaa_count,
-                                                    color_type, surface_props);
+    SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+        /*gpu_compositing=*/true, format());
+
+    auto surface = wrapped_sk_image()->GetSkSurface(
+        final_msaa_count, sk_color_type, surface_props);
     write_surface_ = surface.get();
     return surface;
   }
@@ -189,8 +191,7 @@ class WrappedSkImageRepresentation : public SharedImageRepresentationSkia {
     write_surface_ = nullptr;
   }
 
-  bool BeginReadAccess(SkColorType color_type,
-                       GrBackendTexture* backend_texture) override {
+  bool BeginReadAccess(GrBackendTexture* backend_texture) override {
     if (!wrapped_sk_image()->GetGrBackendTexture(backend_texture))
       return false;
     return true;

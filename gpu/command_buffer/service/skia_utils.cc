@@ -17,7 +17,7 @@ bool GetGrBackendTexture(GLenum target,
                          GLenum internal_format,
                          GLenum driver_internal_format,
                          GLuint service_id,
-                         GLint sk_color_type,
+                         viz::ResourceFormat resource_format,
                          GrBackendTexture* gr_texture) {
   if (target != GL_TEXTURE_2D && target != GL_TEXTURE_RECTANGLE_ARB) {
     LOG(ERROR) << "GetGrBackendTexture: invalid texture target.";
@@ -31,8 +31,8 @@ bool GetGrBackendTexture(GLenum target,
   // |driver_internal_format| may be a base internal format but Skia requires a
   // sized internal format. So this may be adjusted below.
   texture_info.fFormat = driver_internal_format;
-  switch (sk_color_type) {
-    case kARGB_4444_SkColorType:
+  switch (resource_format) {
+    case viz::RGBA_4444:
       if (internal_format != GL_RGBA4 && internal_format != GL_RGBA) {
         LOG(ERROR)
             << "GetGrBackendTexture: color type mismatch. internal_format=0x"
@@ -42,7 +42,7 @@ bool GetGrBackendTexture(GLenum target,
       if (texture_info.fFormat == GL_RGBA)
         texture_info.fFormat = GL_RGBA4;
       break;
-    case kRGBA_8888_SkColorType:
+    case viz::RGBA_8888:
       if (internal_format != GL_RGBA8_OES && internal_format != GL_RGBA) {
         LOG(ERROR)
             << "GetGrBackendTexture: color type mismatch. internal_format=0x"
@@ -52,7 +52,7 @@ bool GetGrBackendTexture(GLenum target,
       if (texture_info.fFormat == GL_RGBA)
         texture_info.fFormat = GL_RGBA8_OES;
       break;
-    case kRGB_888x_SkColorType:
+    case viz::RGBX_8888:
       if (internal_format != GL_RGB8_OES && internal_format != GL_RGB) {
         LOG(ERROR)
             << "GetGrBackendTexture: color type mismatch. internal_format=0x"
@@ -62,7 +62,7 @@ bool GetGrBackendTexture(GLenum target,
       if (texture_info.fFormat == GL_RGB)
         texture_info.fFormat = GL_RGB8_OES;
       break;
-    case kBGRA_8888_SkColorType:
+    case viz::BGRA_8888:
       if (internal_format != GL_BGRA_EXT && internal_format != GL_BGRA8_EXT) {
         LOG(ERROR)
             << "GetGrBackendTexture: color type mismatch. internal_format=0x"

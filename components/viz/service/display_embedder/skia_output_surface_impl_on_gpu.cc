@@ -394,7 +394,7 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image =
         shared_image_representation_factory_->ProduceSkia(metadata.mailbox);
     DCHECK(shared_image);
-    if (!shared_image->BeginReadAccess(metadata.color_type, backend_texture)) {
+    if (!shared_image->BeginReadAccess(backend_texture)) {
       DLOG(ERROR)
           << "Failed to begin read access for SharedImageRepresentationSkia";
       return;
@@ -420,7 +420,7 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
   gpu::GetGrBackendTexture(texture_base->target(), metadata.size,
                            *metadata.backend_format.getGLFormat(),
                            *metadata.driver_backend_format.getGLFormat(),
-                           texture_base->service_id(), metadata.color_type,
+                           texture_base->service_id(), metadata.resource_format,
                            backend_texture);
 }
 

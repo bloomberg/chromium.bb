@@ -183,7 +183,6 @@ void RasterImplementationGLES::BeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    GLint color_type,
     const cc::RasterColorSpace& raster_color_space,
     const GLbyte* mailbox) {
   NOTREACHED();

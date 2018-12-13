@@ -417,14 +417,12 @@ struct BeginRasterCHROMIUMImmediate {
   void Init(GLuint _sk_color,
             GLuint _msaa_sample_count,
             GLboolean _can_use_lcd_text,
-            GLint _color_type,
             GLuint _color_space_transfer_cache_id,
             const GLbyte* _mailbox) {
     SetHeader();
     sk_color = _sk_color;
     msaa_sample_count = _msaa_sample_count;
     can_use_lcd_text = _can_use_lcd_text;
-    color_type = _color_type;
     color_space_transfer_cache_id = _color_space_transfer_cache_id;
     memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
   }
@@ -433,11 +431,10 @@ struct BeginRasterCHROMIUMImmediate {
             GLuint _sk_color,
             GLuint _msaa_sample_count,
             GLboolean _can_use_lcd_text,
-            GLint _color_type,
             GLuint _color_space_transfer_cache_id,
             const GLbyte* _mailbox) {
     static_cast<ValueType*>(cmd)->Init(
-        _sk_color, _msaa_sample_count, _can_use_lcd_text, _color_type,
+        _sk_color, _msaa_sample_count, _can_use_lcd_text,
         _color_space_transfer_cache_id, _mailbox);
     const uint32_t size = ComputeSize();
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
@@ -447,12 +444,11 @@ struct BeginRasterCHROMIUMImmediate {
   uint32_t sk_color;
   uint32_t msaa_sample_count;
   uint32_t can_use_lcd_text;
-  int32_t color_type;
   uint32_t color_space_transfer_cache_id;
 };
 
-static_assert(sizeof(BeginRasterCHROMIUMImmediate) == 24,
-              "size of BeginRasterCHROMIUMImmediate should be 24");
+static_assert(sizeof(BeginRasterCHROMIUMImmediate) == 20,
+              "size of BeginRasterCHROMIUMImmediate should be 20");
 static_assert(offsetof(BeginRasterCHROMIUMImmediate, header) == 0,
               "offset of BeginRasterCHROMIUMImmediate header should be 0");
 static_assert(offsetof(BeginRasterCHROMIUMImmediate, sk_color) == 4,
@@ -463,12 +459,10 @@ static_assert(
 static_assert(
     offsetof(BeginRasterCHROMIUMImmediate, can_use_lcd_text) == 12,
     "offset of BeginRasterCHROMIUMImmediate can_use_lcd_text should be 12");
-static_assert(offsetof(BeginRasterCHROMIUMImmediate, color_type) == 16,
-              "offset of BeginRasterCHROMIUMImmediate color_type should be 16");
 static_assert(offsetof(BeginRasterCHROMIUMImmediate,
-                       color_space_transfer_cache_id) == 20,
+                       color_space_transfer_cache_id) == 16,
               "offset of BeginRasterCHROMIUMImmediate "
-              "color_space_transfer_cache_id should be 20");
+              "color_space_transfer_cache_id should be 16");
 
 struct RasterCHROMIUM {
   typedef RasterCHROMIUM ValueType;
