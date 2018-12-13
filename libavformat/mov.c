@@ -4464,6 +4464,12 @@ static int mov_read_tkhd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     st = c->fc->streams[c->fc->nb_streams-1];
     sc = st->priv_data;
 
+    // Each stream (trak) should have exactly 1 tkhd. This catches bad files and
+    // avoids corrupting AVStreams mapped to an earlier tkhd.
+    if (sc->has_tkhd)
+        return AVERROR_INVALIDDATA;
+    sc->has_tkhd = 1;
+
     version = avio_r8(pb);
     flags = avio_rb24(pb);
     st->disposition |= (flags & MOV_TKHD_FLAG_ENABLED) ? AV_DISPOSITION_DEFAULT : 0;
@@ -4730,8 +4736,7 @@ static int mov_read_trun(MOVContext *c, AVIOContext *pb, MOVAtom atom)
             break;
         }
     }
-    if (index_entry_pos > st->nb_index_entries)
-        return AVERROR_INVALIDDATA;
+    av_assert0(index_entry_pos <= st->nb_index_entries);
 
     avio_r8(pb); /* version */
     flags = avio_rb24(pb);
