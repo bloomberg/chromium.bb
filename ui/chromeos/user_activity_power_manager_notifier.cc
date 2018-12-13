@@ -79,7 +79,7 @@ void UserActivityPowerManagerNotifier::OnUserActivity(const Event* event) {
 }
 
 void UserActivityPowerManagerNotifier::OnAuthScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {
   MaybeNotifyUserActivity(power_manager::USER_ACTIVITY_OTHER);
 }
@@ -89,7 +89,7 @@ void UserActivityPowerManagerNotifier::OnSessionFailed() {}
 void UserActivityPowerManagerNotifier::OnRestarted() {}
 
 void UserActivityPowerManagerNotifier::OnEnrollScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     bool enroll_session_complete,
     int percent_complete) {
   MaybeNotifyUserActivity(power_manager::USER_ACTIVITY_OTHER);

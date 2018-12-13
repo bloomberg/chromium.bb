@@ -178,6 +178,17 @@ class ScreenLocker : public AuthStatusConsumer,
       scoped_refptr<Authenticator> authenticator,
       scoped_refptr<ExtendedAuthenticator> extended_authenticator);
 
+  // device::mojom::FingerprintObserver:
+  void OnRestarted() override;
+  void OnEnrollScanDone(device::mojom::ScanResult scan_result,
+                        bool is_complete,
+                        int32_t percent_complete) override;
+  void OnAuthScanDone(
+      device::mojom::ScanResult scan_result,
+      const base::flat_map<std::string, std::vector<std::string>>& matches)
+      override;
+  void OnSessionFailed() override;
+
  private:
   friend class base::DeleteHelper<ScreenLocker>;
   friend class WebUIScreenLocker;
@@ -189,17 +200,6 @@ class ScreenLocker : public AuthStatusConsumer,
   enum UnlockType { AUTH_PASSWORD = 0, AUTH_PIN, AUTH_FINGERPRINT, AUTH_COUNT };
 
   ~ScreenLocker() override;
-
-  // fingerprint::mojom::FingerprintObserver:
-  void OnAuthScanDone(
-      uint32_t scan_result,
-      const base::flat_map<std::string, std::vector<std::string>>& matches)
-      override;
-  void OnSessionFailed() override;
-  void OnRestarted() override {}
-  void OnEnrollScanDone(uint32_t scan_result,
-                        bool enroll_session_complete,
-                        int percent_complete) override {}
 
   void OnFingerprintAuthFailure(const user_manager::User& user);
 

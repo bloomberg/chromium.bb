@@ -125,7 +125,7 @@ void FingerprintSetupScreenHandler::OnRestarted() {
 }
 
 void FingerprintSetupScreenHandler::OnEnrollScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     bool enroll_session_complete,
     int percent_complete) {
   VLOG(1) << "Receive fingerprint enroll scan result. scan_result="
@@ -150,7 +150,7 @@ void FingerprintSetupScreenHandler::OnEnrollScanDone(
 }
 
 void FingerprintSetupScreenHandler::OnAuthScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {}
 
 void FingerprintSetupScreenHandler::OnSessionFailed() {

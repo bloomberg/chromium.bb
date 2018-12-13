@@ -65,7 +65,7 @@ class CHROMEOS_EXPORT FakeBiodClient : public BiodClient {
                          UserRecordsCallback callback) override;
   void DestroyAllRecords(VoidDBusMethodCallback callback) override;
   void StartAuthSession(const ObjectPathCallback& callback) override;
-  void RequestType(const BiometricTypeCallback& callback) override;
+  void RequestType(BiometricTypeCallback callback) override;
   void CancelEnrollSession(VoidDBusMethodCallback callback) override;
   void EndAuthSession(VoidDBusMethodCallback callback) override;
   void SetRecordLabel(const dbus::ObjectPath& record_path,
