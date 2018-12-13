@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/find_bar_view.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
@@ -56,30 +57,6 @@ constexpr int kDefaultCharWidth = 30;
 // the view can at least display the caret and some number of characters.
 constexpr int kMinimumCharWidth = 1;
 
-// The match count label is like a normal label, but can process events (which
-// makes it easier to forward events to the text input --- see
-// FindBarView::TargetForRect).
-class MatchCountLabel : public views::Label {
- public:
-  MatchCountLabel() {}
-  ~MatchCountLabel() override {}
-
-  // views::Label overrides:
-  bool CanProcessEventsWithinSubtree() const override { return true; }
-
-  gfx::Size CalculatePreferredSize() const override {
-    // We need to return at least 1dip so that box layout adds padding on either
-    // side (otherwise there will be a jump when our size changes between empty
-    // and non-empty).
-    gfx::Size size = views::Label::CalculatePreferredSize();
-    size.set_width(std::max(1, size.width()));
-    return size;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MatchCountLabel);
-};
-
 // We use a hidden view to grab mouse clicks and bring focus to the find
 // text box. This is because although the find text box may look like it
 // extends all the way to the find button, it only goes as far as to the
@@ -105,6 +82,69 @@ class FocusForwarderView : public views::View {
 };
 
 }  // namespace
+
+// The match count label is like a normal label, but can process events (which
+// makes it easier to forward events to the text input --- see
+// FindBarView::TargetForRect).
+class FindBarView::MatchCountLabel : public views::Label {
+ public:
+  MatchCountLabel() {}
+  ~MatchCountLabel() override {}
+
+  // views::Label overrides:
+  bool CanProcessEventsWithinSubtree() const override { return true; }
+
+  gfx::Size CalculatePreferredSize() const override {
+    // We need to return at least 1dip so that box layout adds padding on either
+    // side (otherwise there will be a jump when our size changes between empty
+    // and non-empty).
+    gfx::Size size = views::Label::CalculatePreferredSize();
+    size.set_width(std::max(1, size.width()));
+    return size;
+  }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    if (!last_result_) {
+      node_data->SetNameExplicitlyEmpty();
+    } else if (last_result_->number_of_matches() < 1) {
+      node_data->SetName(
+          l10n_util::GetStringUTF16(IDS_ACCESSIBLE_FIND_IN_PAGE_NO_RESULTS));
+    } else {
+      node_data->SetName(l10n_util::GetStringFUTF16(
+          IDS_ACCESSIBLE_FIND_IN_PAGE_COUNT,
+          base::FormatNumber(last_result_->active_match_ordinal()),
+          base::FormatNumber(last_result_->number_of_matches())));
+    }
+    node_data->role = ax::mojom::Role::kStatus;
+  }
+
+  void SetResult(const FindNotificationDetails& result) {
+    last_result_ = result;
+    SetText(l10n_util::GetStringFUTF16(
+        IDS_FIND_IN_PAGE_COUNT,
+        base::FormatNumber(last_result_->active_match_ordinal()),
+        base::FormatNumber(last_result_->number_of_matches())));
+
+    if (last_result_->final_update()) {
+      NotifyAccessibilityEvent(ax::mojom::Event::kLiveRegionChanged,
+                               /* send_native_event = */ true);
+    }
+  }
+
+  void ClearResult() {
+    last_result_.reset();
+    SetText(base::string16());
+  }
+
+ protected:
+  // views::Label:
+  void SetText(const base::string16& text) override { Label::SetText(text); }
+
+ private:
+  base::Optional<FindNotificationDetails> last_result_;
+
+  DISALLOW_COPY_AND_ASSIGN(MatchCountLabel);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, public:
@@ -263,9 +303,7 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
     return;
   }
 
-  match_count_text_->SetText(l10n_util::GetStringFUTF16(
-      IDS_FIND_IN_PAGE_COUNT, base::FormatNumber(result.active_match_ordinal()),
-      base::FormatNumber(result.number_of_matches())));
+  match_count_text_->SetResult(result);
 
   UpdateMatchCountAppearance(result.number_of_matches() == 0 &&
                              result.final_update());
@@ -278,7 +316,7 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
 }
 
 void FindBarView::ClearMatchCount() {
-  match_count_text_->SetText(base::string16());
+  match_count_text_->ClearResult();
   UpdateMatchCountAppearance(false);
   Layout();
   SchedulePaint();
