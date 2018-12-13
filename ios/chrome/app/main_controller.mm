@@ -2102,15 +2102,10 @@ enum class ShowTabSwitcherSnapshotResult {
   // is not invoked) and has undesired side-effect (cause all regular tabs
   // to reload, see http://crbug.com/821753 for details).
 
-  BOOL disableWebUsageDuringRemoval =
+  const BOOL disableWebUsageDuringRemoval =
       !browserState->IsOffTheRecord() &&
       IsRemoveDataMaskSet(removeMask, BrowsingDataRemoveMask::REMOVE_SITE_DATA);
 
-  if (@available(iOS 12, *)) {
-    // TODO(crbug.com/632772): https://bugs.webkit.org/show_bug.cgi?id=149079 is
-    // fixed for iOS 12. Stop disabling web usage once iOS 11 is not supported.
-    disableWebUsageDuringRemoval = NO;
-  }
   ProceduralBlock removeBrowsingDataBlock = ^{
     if (disableWebUsageDuringRemoval) {
       // Disables browsing and purges web views.
@@ -2118,10 +2113,6 @@ enum class ShowTabSwitcherSnapshotResult {
       DCHECK([NSThread isMainThread]);
       [self.mainBrowserCoordinator setActive:NO];
       [self.incognitoBrowserCoordinator setActive:NO];
-    } else {
-      // Show activity overlay so users know that clear browsing data is in
-      // progress.
-      [self.mainBVC showActivityOverlay];
     }
 
     BrowsingDataRemoverFactory::GetForBrowserState(browserState)
@@ -2129,14 +2120,6 @@ enum class ShowTabSwitcherSnapshotResult {
                    // Activates browsing and enables web views.
                    // Must be called only on the main thread.
                    DCHECK([NSThread isMainThread]);
-                   if (!disableWebUsageDuringRemoval) {
-                     // Force NTP to reset so most visited tiles are updated.
-                     // TODO(crbug.com/906199): NewTabPageTabHelper should use
-                     // an observer to listen to browsing data changes.
-                     [self.mainBVC resetNTP];
-                     [self.otrBVC resetNTP];
-                     [self.mainBVC dismissActivityOverlay];
-                   }
                    [self.mainBrowserCoordinator setActive:YES];
                    [self.incognitoBrowserCoordinator setActive:YES];
                    [self.currentBVC setPrimary:YES];

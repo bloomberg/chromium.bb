@@ -118,20 +118,6 @@ class ChromeBrowserState;
 // Shows the voice search UI.
 - (void)startVoiceSearch;
 
-// Shows the activity overlay to inform users and prevent users from
-// interacting. This method should only be used for clear browsing data.
-// TODO(crbug.com/913338): Remove after clear browsing data coordinator is
-// created.
-- (void)showActivityOverlay;
-
-// Dismisses the activity overlay if it was started.
-- (void)dismissActivityOverlay;
-
-// Reset all New Tab Page coordinators to force them to reload their content.
-// TODO(crbug.com/906199): NewTabPageTabHelper should use an observer to listen
-// to browsing data changes.
-- (void)resetNTP;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BROWSER_VIEW_CONTROLLER_H_
