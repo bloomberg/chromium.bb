@@ -131,7 +131,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
         new TransportSocketParams(*proxy_host_port, disable_resolver_cache,
                                   resolution_callback));
 
-    if (proxy_info.is_http() || proxy_info.is_https() || proxy_info.is_quic()) {
+    if (proxy_info.is_http() || proxy_info.is_https()) {
       // TODO(mmenke):  Would it be better to split these into two different
       //     socket pools?  And maybe socks4/socks5 as well?
       if (proxy_info.is_http()) {
@@ -144,7 +144,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
       request_extra_headers.GetHeader(HttpRequestHeaders::kUserAgent,
                                       &user_agent);
       scoped_refptr<SSLSocketParams> ssl_params;
-      if (!proxy_info.is_http()) {
+      if (proxy_info.is_https()) {
         proxy_tcp_params = new TransportSocketParams(
             *proxy_host_port, disable_resolver_cache, resolution_callback);
         // Set ssl_params, and unset proxy_tcp_params
