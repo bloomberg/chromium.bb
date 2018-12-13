@@ -22,6 +22,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
@@ -53,7 +54,6 @@ class ScopedVAImage;
 // It is also responsible for managing and freeing VABuffers (not VASurfaces),
 // which are used to queue parameters and slice data to the HW codec,
 // as well as underlying memory for VASurfaces themselves.
-// TODO(crbug.com/909547): Use GUARDED_BY in VaapiWrapper.
 class MEDIA_GPU_EXPORT VaapiWrapper
     : public base::RefCountedThreadSafe<VaapiWrapper> {
  public:
@@ -233,7 +233,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   // Initialize the video post processing context with the |size| of
   // the input pictures to be processed.
-  bool InitializeVpp_Locked();
+  bool InitializeVpp_Locked() EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
 
   // Deinitialize the video post processing context.
   void DeinitializeVpp();
@@ -258,7 +258,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   // VA handles.
   // All valid after successful Initialize() and until Deinitialize().
-  VADisplay va_display_;
+  VADisplay va_display_ GUARDED_BY(va_lock_);
   VAConfigID va_config_id_;
   // Created in CreateContext() or CreateContextAndSurfaces() and valid until
   // DestroyContextAndSurfaces().
