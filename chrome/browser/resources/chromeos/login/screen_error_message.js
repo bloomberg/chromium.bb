@@ -263,7 +263,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      */
     onBeforeShow: function(data) {
       cr.ui.Oobe.clearErrors();
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ERROR;
+      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.ERROR);
       $('error-message-back-button').disabled = !this.closable;
     },
 
@@ -271,7 +271,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      * Event handler that is invoked just before the screen is hidden.
      */
     onBeforeHide: function() {
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
+      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
     },
 
     /**

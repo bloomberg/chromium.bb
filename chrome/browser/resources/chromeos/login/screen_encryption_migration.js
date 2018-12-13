@@ -54,23 +54,20 @@ login.createScreen(
          * Event handler that is invoked just before the screen in shown.
          */
         onBeforeShow: function() {
-          var headerBar = $('login-header-bar');
-          headerBar.allowCancel = false;
-          headerBar.showGuestButton = false;
-          headerBar.showCreateSupervisedButton = false;
-          headerBar.signinUIState = SIGNIN_UI_STATE.HIDDEN;
+          Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
         },
 
         /**
          * Updates the migration screen by specifying a state which corresponds
          * to a sub step in the migration process.
-         * @param {EncryptionMigrationUIState} state The UI state to identify a sub
-         *     step in migration.
+         * @param {EncryptionMigrationUIState} state The UI state to identify a
+         *     sub step in migration.
          */
         setUIState: function(state) {
           $('encryption-migration-element').uiState = state;
 
-          // Hide "Shut down" button during migration.
+          // TODO(qnnguyen): Hide the views login shelf "Shutdown" button during
+          // migration.
           $('login-header-bar').showShutdownButton =
               state != EncryptionMigrationUIState.MIGRATING;
         },
