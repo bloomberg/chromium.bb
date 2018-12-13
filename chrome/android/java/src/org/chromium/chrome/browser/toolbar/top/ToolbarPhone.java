@@ -1769,8 +1769,8 @@ public class ToolbarPhone
 
         // Don't inflate the incognito toggle button unless the horizontal tab switcher experiment
         // is enabled and the user actually enters the tab switcher.
-        if (!FeatureUtilities.isBottomToolbarEnabled() && mIncognitoToggleTabLayout == null
-                && mTabSwitcherState != STATIC_TAB && usingHorizontalTabSwitcher()
+        if (mIncognitoToggleTabLayout == null && mTabSwitcherState != STATIC_TAB
+                && usingHorizontalTabSwitcher()
                 && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
             ViewStub incognitoToggleTabsStub = findViewById(R.id.incognito_tabs_stub);
             mIncognitoToggleTabLayout =
@@ -1781,7 +1781,9 @@ public class ToolbarPhone
                     mTabModelSelector.getModel(false).getCount(), false);
             mTabSwitcherModeViews.add(mIncognitoToggleTabLayout);
 
-            mBrowsingModeViews.add(mToggleTabStackButton);
+            if (!FeatureUtilities.isBottomToolbarEnabled()) {
+                mBrowsingModeViews.add(mToggleTabStackButton);
+            }
         }
 
         for (View view : mTabSwitcherModeViews) {
