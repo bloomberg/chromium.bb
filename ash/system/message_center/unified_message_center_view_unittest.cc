@@ -5,6 +5,10 @@
 #include "ash/system/message_center/unified_message_center_view.h"
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
@@ -13,6 +17,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/prefs/pref_service.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/scroll_view.h"
@@ -195,10 +200,13 @@ TEST_F(UnifiedMessageCenterViewTest, ContentsRelayout) {
 }
 
 TEST_F(UnifiedMessageCenterViewTest, NotVisibleWhenLocked) {
-  // Skip the test if the lock screen notification is enabled.
-  // TODO(yoshiki): Clean up after the feature is launched crbug.com/913764.
-  if (features::IsLockScreenNotificationsEnabled())
-    return;
+  // Disable the lock screen notification if the feature is enable.
+  PrefService* user_prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  user_prefs->SetString(prefs::kMessageCenterLockScreenMode,
+                        prefs::kMessageCenterLockScreenModeHide);
+
+  ASSERT_FALSE(AshMessageCenterLockScreenController::IsEnabled());
 
   AddNotification();
   AddNotification();
@@ -210,10 +218,18 @@ TEST_F(UnifiedMessageCenterViewTest, NotVisibleWhenLocked) {
 }
 
 TEST_F(UnifiedMessageCenterViewTest, VisibleWhenLocked) {
-  // Skip the test if the lock screen notification is disabled.
+  // This test is only valid if the lock screen feature is enabled.
   // TODO(yoshiki): Clean up after the feature is launched crbug.com/913764.
   if (!features::IsLockScreenNotificationsEnabled())
     return;
+
+  // Enables the lock screen notification if the feature is disabled.
+  PrefService* user_prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  user_prefs->SetString(prefs::kMessageCenterLockScreenMode,
+                        prefs::kMessageCenterLockScreenModeShow);
+
+  ASSERT_TRUE(AshMessageCenterLockScreenController::IsEnabled());
 
   AddNotification();
   AddNotification();
