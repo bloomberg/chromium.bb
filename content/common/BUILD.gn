@@ -49,8 +49,6 @@ source_set("common") {
     "appcache_interfaces.h",
     "ax_content_node_data.cc",
     "ax_content_node_data.h",
-    "background_fetch/background_fetch_struct_traits.cc",
-    "background_fetch/background_fetch_struct_traits.h",
     "background_fetch/background_fetch_types.cc",
     "background_fetch/background_fetch_types.h",
     "bluetooth/web_bluetooth_device_id.cc",

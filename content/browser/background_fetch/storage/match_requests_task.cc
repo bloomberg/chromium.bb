@@ -82,15 +82,15 @@ void MatchRequestsTask::DidGetAllMatchedEntries(
 
   for (size_t i = 0; i < size; i++) {
     auto& entry = entries[i];
-    BackgroundFetchSettledFetch settled_fetch;
-    settled_fetch.request = std::move(entry.first);
+    auto settled_fetch = blink::mojom::BackgroundFetchSettledFetch::New();
+    settled_fetch->request = std::move(entry.first);
 
     if (entry.second && entry.second->url_list.empty()) {
       // We didn't process this empty response, so we should expose it
       // as a nullptr.
-      settled_fetch.response = nullptr;
+      settled_fetch->response = nullptr;
     } else {
-      settled_fetch.response = std::move(entry.second);
+      settled_fetch->response = std::move(entry.second);
     }
 
     settled_fetches_.push_back(std::move(settled_fetch));

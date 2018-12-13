@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/background_fetch/background_fetch_struct_traits.h"
-
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"

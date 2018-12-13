@@ -310,7 +310,7 @@ void BackgroundFetchJobController::GetUploadData(
 void BackgroundFetchJobController::DidGetUploadData(
     BackgroundFetchDelegate::GetUploadDataCallback callback,
     BackgroundFetchError error,
-    std::vector<BackgroundFetchSettledFetch> fetches) {
+    std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> fetches) {
   if (error != BackgroundFetchError::NONE) {
     Abort(BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE,
           base::DoNothing());
@@ -319,10 +319,10 @@ void BackgroundFetchJobController::DidGetUploadData(
   }
 
   DCHECK_EQ(fetches.size(), 1u);
-  DCHECK(fetches[0].request->blob);
+  DCHECK(fetches[0]->request->blob);
 
   network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-  blink::mojom::BlobPtr blob_ptr(std::move(fetches[0].request->blob->blob));
+  blink::mojom::BlobPtr blob_ptr(std::move(fetches[0]->request->blob->blob));
   blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
 
   auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();

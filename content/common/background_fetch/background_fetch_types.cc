@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace {
 
@@ -50,21 +49,4 @@ blink::mojom::FetchAPIRequestPtr BackgroundFetchSettledFetch::CloneRequest(
       request->redirect_mode, request->integrity, request->keepalive,
       request->client_id, request->is_reload, request->is_history_navigation);
 }
-
-BackgroundFetchSettledFetch::BackgroundFetchSettledFetch() = default;
-
-BackgroundFetchSettledFetch::BackgroundFetchSettledFetch(
-    const BackgroundFetchSettledFetch& other) {
-  *this = other;
-}
-
-BackgroundFetchSettledFetch& BackgroundFetchSettledFetch::operator=(
-    const BackgroundFetchSettledFetch& other) {
-  request = CloneRequest(other.request);
-  response = CloneResponse(other.response);
-  return *this;
-}
-
-BackgroundFetchSettledFetch::~BackgroundFetchSettledFetch() = default;
-
 }  // namespace content
