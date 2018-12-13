@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -181,6 +182,61 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
   ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
   EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+}
+
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+                       AddDuplicateProfiles_OneIsVerified) {
+  ASSERT_TRUE(SetupClients());
+
+  // Create two identical profiles where one of them is verified, additionally.
+  AutofillProfile profile0 = autofill::test::GetFullProfile();
+  AutofillProfile profile1 =
+      autofill::test::GetVerifiedProfile();  // I.e. Full + Verified.
+  std::string verified_origin = profile1.origin();
+
+  AddProfile(0, profile0);
+  AddProfile(1, profile1);
+  ASSERT_TRUE(SetupSync());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+
+  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(0)[0]->origin());
+  EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(1)[0]->origin());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    TwoClientAutofillProfileSyncTest,
+    AddDuplicateProfiles_OneIsVerified_NonverifiedComesLater) {
+  ASSERT_TRUE(SetupClients());
+
+  AutofillProfile profile0 = autofill::test::GetFullProfile();
+  AutofillProfile profile1 =
+      autofill::test::GetVerifiedProfile();  // I.e. Full + Verified.
+  std::string verified_origin = profile1.origin();
+
+  // We start by having the verified profile.
+  AddProfile(1, profile1);
+  ASSERT_TRUE(SetupSync());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+
+  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(0)[0]->origin());
+  EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(1)[0]->origin());
+
+  // Add the same (but non-verified) profile on the other client, afterwards.
+  AddProfile(0, profile0);
+  // This call avoids the standard de-duping mechanisms in PDM so there will be
+  // two profiles at client 0 for a while. In this sense, this test is not very
+  // realistic as this should not happen in reality. The test checks that
+  // autofill_profile sync is robust enough to handle this situation.
+  EXPECT_EQ(2U, GetAllAutoFillProfiles(0).size());
+  EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+
+  // The profiles should de-duplicate via sync on the other client, the verified
+  // one should win.
+  EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+  EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(0)[0]->origin());
+  EXPECT_EQ(verified_origin, GetAllAutoFillProfiles(1)[0]->origin());
 }
 
 // Tests that a null profile does not get synced across clients.
