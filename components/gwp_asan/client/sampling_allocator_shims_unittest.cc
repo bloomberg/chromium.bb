@@ -104,6 +104,14 @@ MULTIPROCESS_TEST_MAIN(BasicFunctionality) {
   EXPECT_TRUE(allocationCheck([&] { return realloc(nullptr, page_size); },
                               &free, &failures));
 
+#if defined(OS_WIN)
+  EXPECT_TRUE(allocationCheck([&] { return _aligned_malloc(123, 16); },
+                              &_aligned_free, &failures));
+  EXPECT_TRUE(
+      allocationCheck([&] { return _aligned_realloc(nullptr, 123, 16); },
+                      &_aligned_free, &failures));
+#endif
+
 #if !defined(OS_WIN)
   EXPECT_TRUE(allocationCheck(
       [&] { return aligned_alloc(page_size, page_size); }, &free, &failures));
@@ -232,6 +240,29 @@ MULTIPROCESS_TEST_MAIN(GetSizeEstimate) {
 TEST_F(SamplingAllocatorShimsTest, GetSizeEstimate) {
   runTest("GetSizeEstimate");
 }
+
+#if defined(OS_WIN)
+MULTIPROCESS_TEST_MAIN(AlignedRealloc) {
+  // Exercise the _aligned_* shims and ensure that we handle them stably.
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
+
+  constexpr size_t kAllocationSize = 123;
+  constexpr size_t kAllocationAlignment = 64;
+  for (size_t i = 0; i < kLoopIterations; i++) {
+    void* ptr = _aligned_malloc(kAllocationSize, kAllocationAlignment);
+    CHECK(ptr);
+    ptr = _aligned_realloc(ptr, kAllocationSize * 2, kAllocationAlignment);
+    CHECK(ptr);
+    _aligned_free(ptr);
+  }
+
+  return kSuccess;
+}
+
+TEST_F(SamplingAllocatorShimsTest, AlignedRealloc) {
+  runTest("AlignedRealloc");
+}
+#endif
 
 }  // namespace
 

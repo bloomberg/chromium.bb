@@ -2788,6 +2788,7 @@ test("base_unittests") {
   if (use_allocator_shim) {
     sources += [
       "allocator/allocator_shim_unittest.cc",
+      "allocator/winheap_stubs_win_unittest.cc",
       "sampling_heap_profiler/sampling_heap_profiler_unittest.cc",
     ]
   }
