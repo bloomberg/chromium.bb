@@ -8,6 +8,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/language/content/browser/regional_language_code_locator.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -90,7 +91,8 @@ void GeoLanguageProvider::BackgroundStartUp() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
 
   // Initialize location->language lookup library.
-  language_code_locator_ = std::make_unique<language::LanguageCodeLocator>();
+  language_code_locator_ =
+      std::make_unique<language::RegionalLanguageCodeLocator>();
 
   // Make initial query.
   QueryNextPosition();

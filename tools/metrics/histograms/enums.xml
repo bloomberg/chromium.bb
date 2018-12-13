@@ -30710,7 +30710,9 @@ from previous Chrome versions.
   <int value="195570937" label="EnableHomeLauncher:disabled"/>
   <int value="200347243" label="WebVRExperimentalRendering:disabled"/>
   <int value="201343576" label="enable-password-change-support:enabled"/>
+  <int value="203239167" label="ImprovedGeoLanguageData:enabled"/>
   <int value="203776499" label="enable-virtual-keyboard-overscroll"/>
+  <int value="215328738" label="ImprovedGeoLanguageData:disabled"/>
   <int value="217455219" label="SyncStandaloneTransport:enabled"/>
   <int value="218890378" label="ManualSaving:disabled"/>
   <int value="219117936" label="AllowReaderForAccessibility:enabled"/>

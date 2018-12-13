@@ -10,10 +10,10 @@ action("make_s2_language_locator") {
     "adminregionsdata.csv",
   ]
   inputs = [
-    "template/language_code_locator_helper.h.tmpl",
+    "template/regional_language_code_locator_helper.h.tmpl",
   ]
   outputs = [
-    "$target_gen_dir/language_code_locator_helper.h",
+    "$target_gen_dir/regional_language_code_locator_helper.h",
   ]
 
   args = [
@@ -25,10 +25,20 @@ action("make_s2_language_locator") {
 
 source_set("language_code_locator") {
   sources = [
-              "language_code_locator.h",
-              "language_code_locator.cc",
+    "language_code_locator.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("regional_language_code_locator") {
+  sources = [
+              "regional_language_code_locator.h",
+              "regional_language_code_locator.cc",
             ] + get_target_outputs(":make_s2_language_locator")
   deps = [
+    ":language_code_locator",
     ":make_s2_language_locator",
     "//base",
     "//third_party/s2cellid",
@@ -45,6 +55,7 @@ static_library("browser") {
 
   deps = [
     ":language_code_locator",
+    ":regional_language_code_locator",
     "//base",
     "//components/language/core/browser:browser",
     "//components/prefs:prefs",
@@ -59,13 +70,13 @@ source_set("unit_tests") {
   sources = [
     "geo_language_model_unittest.cc",
     "geo_language_provider_unittest.cc",
-    "language_code_locator_unittest.cc",
+    "regional_language_code_locator_unittest.cc",
     "test_utils.cc",
     "test_utils.h",
   ]
   deps = [
     ":browser",
-    ":language_code_locator",
+    ":regional_language_code_locator",
     "//base",
     "//base/test:test_support",
     "//components/prefs:test_support",

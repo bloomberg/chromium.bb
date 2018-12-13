@@ -1143,6 +1143,11 @@ const char kIgnorePreviewsBlacklistName[] = "Ignore Previews Blocklist";
 const char kIgnorePreviewsBlacklistDescription[] =
     "Ignore decisions made by the PreviewsBlockList";
 
+const char kImprovedGeoLanguageDataName[] = "Improved Geo-language Data";
+const char kImprovedGeoLanguageDataDescription[] =
+    "Makes the GeoLanguageModel use higher quality, more refined ULP "
+    "geo-language data.";
+
 const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
     "Selects the In-Product Help demo mode.";

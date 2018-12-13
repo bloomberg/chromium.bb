@@ -1324,6 +1324,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-improved-geolanguage-data",
+    "owners": [ "frechette", "chrome-language@google.com" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-incognito-window-counter",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
