@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -54,20 +55,6 @@ namespace {
 constexpr char kInDevModeKey[] = "inDevMode";
 constexpr char kShowActivityLogKey[] = "showActivityLog";
 constexpr char kLoadTimeClassesKey[] = "loadTimeClasses";
-
-struct LocalizedString {
-  const char* name;
-  int id;
-};
-
-void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
-                             const LocalizedString localized_strings[],
-                             size_t num_strings) {
-  for (size_t i = 0; i < num_strings; i++) {
-    html_source->AddLocalizedString(localized_strings[i].name,
-                                    localized_strings[i].id);
-  }
-}
 
 class ExtensionWebUiTimer : public content::WebContentsObserver {
  public:

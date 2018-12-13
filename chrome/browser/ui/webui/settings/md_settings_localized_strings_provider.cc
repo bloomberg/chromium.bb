@@ -22,6 +22,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -84,7 +85,6 @@
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/strcat.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif
@@ -101,11 +101,6 @@ namespace {
 // the following name. These names must be kept in sync.
 constexpr char kLocalizedStringsFile[] = "strings.js";
 
-struct LocalizedString {
-  const char* name;
-  int id;
-};
-
 #if defined(OS_CHROMEOS)
 // Generates a Google Help URL which includes a "board type" parameter. Some
 // help pages need to be adjusted depending on the type of CrOS device that is
@@ -115,15 +110,6 @@ base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
                             "&b=" + base::SysInfo::GetLsbReleaseBoard());
 }
 #endif
-
-void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
-                             LocalizedString localized_strings[],
-                             size_t num_strings) {
-  for (size_t i = 0; i < num_strings; i++) {
-    html_source->AddLocalizedString(localized_strings[i].name,
-                                    localized_strings[i].id);
-  }
-}
 
 void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
   LocalizedString localized_strings[] = {
@@ -2578,7 +2564,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
          IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED},
         {"siteSettingsFlashPermissionsEphemeral",
          IDS_SETTINGS_SITE_SETTINGS_FLASH_PERMISSIONS_ARE_EPHEMERAL},
-
     };
     AddLocalizedStringsBulk(html_source, flash_strings,
                             arraysize(flash_strings));

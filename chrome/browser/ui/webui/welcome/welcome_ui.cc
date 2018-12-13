@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
 #include "chrome/browser/ui/webui/welcome/nux/email_handler.h"
@@ -43,13 +44,6 @@ const bool kIsBranded =
     false;
 #endif
 }  // namespace
-
-// TODO(scottchen): reuse instead of copy from
-// md_settings_localized_strings_provider.cc.
-struct LocalizedString {
-  const char* name;
-  int id;
-};
 
 void AddOnboardingStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
@@ -98,13 +92,8 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"emailInterstitialContinue",
        IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_CONTINUE},
   };
-
-  // TODO(scottchen): reuse instead of copy from
-  // md_settings_localized_strings_provider.cc.
-  for (size_t i = 0; i < base::size(kLocalizedStrings); i++) {
-    html_source->AddLocalizedString(kLocalizedStrings[i].name,
-                                    kLocalizedStrings[i].id);
-  }
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
+                          base::size(kLocalizedStrings));
 }
 
 WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)

@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
@@ -256,6 +257,8 @@ jumbo_split_static_library("ui") {
     "webui/invalidations_ui.h",
     "webui/local_state/local_state_ui.cc",
     "webui/local_state/local_state_ui.h",
+    "webui/localized_string.cc",
+    "webui/localized_string.h",
     "webui/log_web_ui_url.cc",
     "webui/log_web_ui_url.h",
     "webui/media/media_engagement_ui.cc",
