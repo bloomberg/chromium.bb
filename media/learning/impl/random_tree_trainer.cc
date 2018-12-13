@@ -153,7 +153,7 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
     const LearningTask& task,
     const TrainingData& training_data,
     const FeatureSet& used_set) {
-  DCHECK(training_data.weighted_size());
+  DCHECK_GT(training_data.total_weight(), 0u);
 
   // TODO(liberato): Does it help if we refuse to split without an info gain?
   Split best_potential_split;
@@ -222,7 +222,7 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
     int index) {
   // We should not be given a training set of size 0, since there's no need to
   // check an empty split.
-  DCHECK_GT(training_data.weighted_size(), 0u);
+  DCHECK_GT(training_data.total_weight(), 0u);
 
   Split split(index);
   base::Optional<FeatureValue> split_point;
@@ -271,7 +271,7 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
     const double total_counts = branch_info.target_distribution.total_counts();
     // |p_branch| is the probability of following this branch.
     const double p_branch =
-        ((double)total_counts) / training_data.weighted_size();
+        ((double)total_counts) / training_data.total_weight();
     for (auto& iter : branch_info.target_distribution) {
       double p = iter.second / total_counts;
       // p*log(p) is the expected nats if the answer is |iter|.  We multiply
@@ -288,7 +288,7 @@ FeatureValue RandomTreeTrainer::FindNumericSplitPoint(
     const TrainingData& training_data) {
   // We should not be given a training set of size 0, since there's no need to
   // check an empty split.
-  DCHECK_GT(training_data.weighted_size(), 0u);
+  DCHECK_GT(training_data.total_weight(), 0u);
 
   // We should either (a) choose the single best split point given all our
   // training data (i.e., choosing between the splits that are equally between

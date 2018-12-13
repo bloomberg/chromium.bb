@@ -115,7 +115,8 @@ TEST_F(LearnerTrainingExampleTest, OrderingIsTransitive) {
   }
 }
 
-TEST_F(LearnerTrainingExampleTest, StoragePushBack) {
+TEST_F(LearnerTrainingExampleTest, UnweightedStoragePushBack) {
+  // Test that pushing unweighted examples into storage works.
   TrainingExample example({FeatureValue(123)}, TargetValue(789));
   scoped_refptr<TrainingDataStorage> storage =
       base::MakeRefCounted<TrainingDataStorage>();
@@ -123,46 +124,99 @@ TEST_F(LearnerTrainingExampleTest, StoragePushBack) {
   storage->push_back(example);
   EXPECT_NE(storage->begin(), storage->end());
   EXPECT_EQ(++storage->begin(), storage->end());
-  EXPECT_EQ(*storage->begin(), example);
+  EXPECT_EQ(*storage->begin()->example(), example);
+  EXPECT_EQ(storage->begin()->weight(), 1u);
+  EXPECT_EQ(storage->size(), 1u);
+  EXPECT_EQ(storage->total_weight(), 1u);
 }
 
-TEST_F(LearnerTrainingExampleTest, TrainingDataPushBack) {
+TEST_F(LearnerTrainingExampleTest, WeightedStoragePushBack) {
+  // Test that pushing weighted examples into storage works.
+  TrainingExample example({FeatureValue(123)}, TargetValue(789));
+  scoped_refptr<TrainingDataStorage> storage =
+      base::MakeRefCounted<TrainingDataStorage>();
+  EXPECT_EQ(storage->begin(), storage->end());
+  const WeightedExample::weight_t weight(10);
+  storage->push_back(example, weight);
+  EXPECT_NE(storage->begin(), storage->end());
+  EXPECT_EQ(++storage->begin(), storage->end());
+  EXPECT_EQ(*storage->begin()->example(), example);
+  EXPECT_EQ(storage->begin()->weight(), weight);
+  EXPECT_EQ(storage->size(), 1u);
+  EXPECT_EQ(storage->total_weight(), weight);
+}
+
+TEST_F(LearnerTrainingExampleTest, UnweightedTrainingDataPushBack) {
+  // Test that pushing examples from unweighted storage into TrainingData works.
   TrainingExample example({FeatureValue(123)}, TargetValue(789));
   scoped_refptr<TrainingDataStorage> storage =
       base::MakeRefCounted<TrainingDataStorage>();
   storage->push_back(example);
 
   TrainingData training_data(storage);
-  EXPECT_EQ(training_data.weighted_size(), 0u);
+  EXPECT_EQ(training_data.total_weight(), 0u);
   EXPECT_TRUE(training_data.empty());
-  training_data.push_back(&(*storage->begin()));
-  EXPECT_EQ(training_data.weighted_size(), 1u);
+  training_data.push_back(*storage->begin());
+  EXPECT_EQ(training_data.total_weight(), 1u);
   EXPECT_FALSE(training_data.empty());
-  EXPECT_EQ(training_data.begin()->example(), &(*storage->begin()));
+  EXPECT_TRUE(training_data.is_unweighted());
+  EXPECT_EQ(training_data.begin()->example(), storage->begin()->example());
+  EXPECT_EQ(training_data.begin()->weight(), 1u);
+}
+
+TEST_F(LearnerTrainingExampleTest, WeightedTrainingDataPushBack) {
+  // Test that pushing examples from weighted storage into TrainingData works.
+  TrainingExample example({FeatureValue(123)}, TargetValue(789));
+  const WeightedExample::weight_t weight(10);
+  scoped_refptr<TrainingDataStorage> storage =
+      base::MakeRefCounted<TrainingDataStorage>();
+  storage->push_back(example, weight);
+
+  TrainingData training_data(storage);
+  EXPECT_EQ(training_data.total_weight(), 0u);
+  EXPECT_TRUE(training_data.empty());
+  training_data.push_back(*storage->begin());
+  EXPECT_EQ(training_data.total_weight(), weight);
+  EXPECT_FALSE(training_data.empty());
+  EXPECT_FALSE(training_data.is_unweighted());
+  EXPECT_EQ(training_data.begin()->example(), storage->begin()->example());
+  EXPECT_EQ(training_data.begin()->weight(), weight);
 }
 
 TEST_F(LearnerTrainingExampleTest, TrainingDataConstructWithRange) {
-  TrainingExample example({FeatureValue(123)}, TargetValue(789));
   scoped_refptr<TrainingDataStorage> storage =
       base::MakeRefCounted<TrainingDataStorage>();
-  storage->push_back(example);
+
+  // Add one weighted and one unweighted example.
+  TrainingExample unweighted_example({FeatureValue(123)}, TargetValue(789));
+  storage->push_back(unweighted_example);
+  TrainingExample weighted_example({FeatureValue(456)}, TargetValue(789));
+  const WeightedExample::weight_t weight(10);
+  storage->push_back(weighted_example, weight);
 
   TrainingData training_data(storage, storage->begin(), storage->end());
-  EXPECT_EQ(training_data.weighted_size(), 1u);
+  EXPECT_EQ(training_data.total_weight(), 1u + weight);
   EXPECT_FALSE(training_data.empty());
-  EXPECT_EQ(training_data.begin()->example(), &(*storage->begin()));
+  EXPECT_EQ(training_data.begin()->example(), storage->begin()->example());
+  EXPECT_EQ(training_data.begin()->weight(), 1u);
+  EXPECT_EQ((++(training_data.begin()))->example(),
+            (++(storage->begin()))->example());
+  EXPECT_EQ((++(training_data.begin()))->weight(), weight);
 }
 
-TEST_F(LearnerTrainingExampleTest, AddWeighedExamples) {
+TEST_F(LearnerTrainingExampleTest, AddWeighedExamplesToTrainingData) {
+  // Add examples to TrainingData with different weights than are in the
+  // storage, and verify that the TrainingData weights are used.
   TrainingExample example({FeatureValue(123)}, TargetValue(789));
   scoped_refptr<TrainingDataStorage> storage =
       base::MakeRefCounted<TrainingDataStorage>();
   storage->push_back(example);
 
   TrainingData training_data(storage);
-  const size_t weight = 100u;
-  training_data.push_back(&(*storage->begin()), weight);
-  EXPECT_EQ(training_data.weighted_size(), weight);
+  const WeightedExample::weight_t weight(100);
+  training_data.push_back(WeightedExample(storage->begin()->example(), weight));
+  EXPECT_EQ(training_data.total_weight(), weight);
+  EXPECT_FALSE(training_data.is_unweighted());
 }
 
 }  // namespace learning

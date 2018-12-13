@@ -39,13 +39,13 @@ std::unique_ptr<RandomForestTrainer::TrainingResult> RandomForestTrainer::Train(
   if (!training_data.is_unweighted())
     return std::make_unique<TrainingResult>();
 
-  const int n_examples = training_data.weighted_size();
+  const size_t n_examples = training_data.size();
   for (int i = 0; i < n_trees; i++) {
     // Collect a bagged training set and oob data for it.
     TrainingData bagged_data(training_data.storage());
 
     std::set<const TrainingExample*> bagged_set;
-    for (int e = 0; e < n_examples; e++) {
+    for (size_t e = 0; e < n_examples; e++) {
       WeightedExample weighted_example =
           training_data[rng()->Generate(n_examples)];
       const TrainingExample* example = weighted_example.example();

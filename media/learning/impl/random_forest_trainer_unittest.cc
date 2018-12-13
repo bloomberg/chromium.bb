@@ -156,7 +156,7 @@ TEST_P(RandomForestTest, FisherIrisDataset) {
   auto result = trainer_.Train(task_, training_data);
 
   // Require at least 75% oob data.  Should probably be ~100%.
-  EXPECT_GT(result->oob_total, training_data.weighted_size() * 0.75);
+  EXPECT_GT(result->oob_total, training_data.total_weight() * 0.75);
 
   // Require at least 85% oob accuracy.  We actually get about 88% (kUnordered)
   // or 95% (kOrdered).
@@ -180,7 +180,7 @@ TEST_P(RandomForestTest, FisherIrisDataset) {
   // Currently, we seem to get about ~95%.  If we switch to kEmptyDistribution
   // in the learning task, then it goes back to 1 for kUnordered features.  It's
   // 1 for kOrdered.
-  double train_accuracy = ((double)num_correct) / training_data.weighted_size();
+  double train_accuracy = ((double)num_correct) / training_data.total_weight();
   EXPECT_GT(train_accuracy, 0.95);
 }
 
@@ -194,8 +194,10 @@ TEST_P(RandomForestTest, WeightedTrainingSetIsUnsupported) {
 
   // Create a weighed set with |weight| for each example's weight.
   TrainingData weighted_training_data(storage_);
-  weighted_training_data.push_back(WeightedExample((*storage_)[0], weight));
-  weighted_training_data.push_back(WeightedExample((*storage_)[1], weight));
+  weighted_training_data.push_back(
+      WeightedExample((*storage_)[0].example(), weight));
+  weighted_training_data.push_back(
+      WeightedExample((*storage_)[1].example(), weight));
   EXPECT_FALSE(weighted_training_data.is_unweighted());
   auto weighted_result = trainer_.Train(task_, weighted_training_data);
   EXPECT_EQ(weighted_result->model.get(), nullptr);
