@@ -765,13 +765,45 @@ bool NavigationControllerImpl::CanGoToOffset(int offset) const {
 }
 
 void NavigationControllerImpl::GoBack() {
-  // Call GoToIndex rather than GoToOffset to get the NOTREACHED() check.
-  GoToIndex(GetIndexForOffset(-1));
+  int target_index = GetIndexForOffset(-1);
+
+  // Log metrics for the number of entries that are eligible for skipping on
+  // back button.
+  int count_entries_skipped = 0;
+  for (int index = target_index; index >= 0; index--) {
+    if (GetEntryAtIndex(index)->should_skip_on_back_forward_ui())
+      count_entries_skipped++;
+    else
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Navigation.BackForward.BackTargetSkipped",
+                            count_entries_skipped, kMaxSessionHistoryEntries);
+
+  // TODO(crbug.com/907167): Move target_index to the first non-skippable entry,
+  // if it exists, for the history manipulation intervention. Call GoToIndex
+  // rather than GoToOffset to get the NOTREACHED() check.
+  GoToIndex(target_index);
 }
 
 void NavigationControllerImpl::GoForward() {
-  // Call GoToIndex rather than GoToOffset to get the NOTREACHED() check.
-  GoToIndex(GetIndexForOffset(1));
+  int target_index = GetIndexForOffset(1);
+
+  // Log metrics for the number of entries that are eligible for skipping on
+  // forward button.
+  int count_entries_skipped = 0;
+  for (size_t index = target_index; index < entries_.size(); index++) {
+    if (GetEntryAtIndex(index)->should_skip_on_back_forward_ui())
+      count_entries_skipped++;
+    else
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Navigation.BackForward.ForwardTargetSkipped",
+                            count_entries_skipped, kMaxSessionHistoryEntries);
+
+  // TODO(crbug.com/907167): Move target_index to the first non-skippable entry,
+  // if it exists, for the history manipulation intervention. Call GoToIndex
+  // rather than GoToOffset to get the NOTREACHED() check.
+  GoToIndex(target_index);
 }
 
 void NavigationControllerImpl::GoToIndex(int index) {
@@ -1379,6 +1411,11 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   if (!replace_entry && !previous_page_was_activated &&
       last_committed_entry_index_ != -1 && handle->IsRendererInitiated()) {
     GetLastCommittedEntry()->set_should_skip_on_back_forward_ui(true);
+    UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.SetShouldSkipOnBackForwardUI",
+                          true);
+  } else if (last_committed_entry_index_ != -1) {
+    UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.SetShouldSkipOnBackForwardUI",
+                          false);
   }
 
   InsertOrReplaceEntry(std::move(new_entry), replace_entry);

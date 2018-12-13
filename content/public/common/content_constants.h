@@ -35,7 +35,7 @@ CONTENT_EXPORT extern const char kFlashPluginSplDescription[];
 CONTENT_EXPORT extern const size_t kMaxRendererProcessCount;
 
 // The maximum number of session history entries per tab.
-extern const int kMaxSessionHistoryEntries;
+constexpr int kMaxSessionHistoryEntries = 50;
 
 // The maximum number of characters of the document's title that we're willing
 // to accept in the browser process.
