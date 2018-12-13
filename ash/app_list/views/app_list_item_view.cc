@@ -472,7 +472,8 @@ void AppListItemView::OnContextMenuModelReceived(
   if (source_type == ui::MENU_SOURCE_TOUCH && touch_dragging_)
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
 
-  gfx::Rect anchor_rect = apps_grid_view_->GetIdealBounds(this);
+  gfx::Rect anchor_rect =
+      apps_grid_view_->GetMirroredRect(apps_grid_view_->GetIdealBounds(this));
   // Anchor the menu to the same rect that is used for selection highlight.
   AdaptBoundsForSelectionHighlight(&anchor_rect);
   views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
