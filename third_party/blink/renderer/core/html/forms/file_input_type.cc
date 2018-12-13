@@ -142,7 +142,7 @@ void FileInputType::RestoreFormControlState(const FormControlState& state) {
   FileList* file_list = FileList::Create();
   for (const auto& file : file_vector)
     file_list->Append(file);
-  SetFiles(file_list);
+  SetFilesAndDispatchEvents(file_list);
 }
 
 void FileInputType::AppendToFormData(FormData& form_data) const {
@@ -352,9 +352,9 @@ void FileInputType::MultipleAttributeChanged() {
                 : WebLocalizedString::kFileButtonChooseFileLabel)));
 }
 
-void FileInputType::SetFiles(FileList* files) {
+bool FileInputType::SetFiles(FileList* files) {
   if (!files)
-    return;
+    return false;
 
   bool files_changed = false;
   if (files->length() != file_list_->length()) {
@@ -376,7 +376,11 @@ void FileInputType::SetFiles(FileList* files) {
   if (GetElement().GetLayoutObject())
     GetElement().GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 
-  if (files_changed) {
+  return files_changed;
+}
+
+void FileInputType::SetFilesAndDispatchEvents(FileList* files) {
+  if (SetFiles(files)) {
     // This call may cause destruction of this instance.
     // input instance is safe since it is ref-counted.
     GetElement().DispatchInputEvent();
@@ -397,7 +401,7 @@ void FileInputType::FilesChosen(FileChooserFileInfoList files,
     }
     ++i;
   }
-  SetFiles(CreateFileList(files, base_dir));
+  SetFilesAndDispatchEvents(CreateFileList(files, base_dir));
   if (HasConnectedFileChooser())
     DisconnectFileChooser();
 }

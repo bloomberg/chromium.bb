@@ -485,7 +485,11 @@ FileList* InputType::Files() {
   return nullptr;
 }
 
-void InputType::SetFiles(FileList*) {}
+bool InputType::SetFiles(FileList*) {
+  return false;
+}
+
+void InputType::SetFilesAndDispatchEvents(FileList*) {}
 
 void InputType::SetFilesFromPaths(const Vector<String>& paths) {}
 
