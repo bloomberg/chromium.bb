@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/gcm_driver/gcm_channel_status_request.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/protocol/experiment_status.pb.h"
 #include "components/sync/protocol/experiments_specifics.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -43,7 +43,7 @@ class GCMChannelStatusRequestTest : public testing::Test {
   network::TestURLLoaderFactory* test_url_loader_factory();
 
   std::unique_ptr<GCMChannelStatusRequest> request_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   bool request_callback_invoked_;
