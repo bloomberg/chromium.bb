@@ -16,16 +16,16 @@ class TargetDistributionTest : public testing::Test {
   TargetDistribution distribution_;
 
   TargetValue value_1;
-  const int counts_1 = 100;
+  const size_t counts_1 = 100;
 
   TargetValue value_2;
-  const int counts_2 = 10;
+  const size_t counts_2 = 10;
 
   TargetValue value_3;
 };
 
 TEST_F(TargetDistributionTest, EmptyTargetDistributionHasZeroCounts) {
-  EXPECT_EQ(distribution_.total_counts(), 0);
+  EXPECT_EQ(distribution_.total_counts(), 0u);
 }
 
 TEST_F(TargetDistributionTest, AddingCountsWorks) {
@@ -33,8 +33,8 @@ TEST_F(TargetDistributionTest, AddingCountsWorks) {
   EXPECT_EQ(distribution_.total_counts(), counts_1);
   EXPECT_EQ(distribution_[value_1], counts_1);
   distribution_[value_1] += counts_1;
-  EXPECT_EQ(distribution_.total_counts(), counts_1 * 2);
-  EXPECT_EQ(distribution_[value_1], counts_1 * 2);
+  EXPECT_EQ(distribution_.total_counts(), counts_1 * 2u);
+  EXPECT_EQ(distribution_[value_1], counts_1 * 2u);
 }
 
 TEST_F(TargetDistributionTest, MultipleValuesAreSeparate) {
@@ -47,19 +47,19 @@ TEST_F(TargetDistributionTest, MultipleValuesAreSeparate) {
 
 TEST_F(TargetDistributionTest, AddingTargetValues) {
   distribution_ += value_1;
-  EXPECT_EQ(distribution_.total_counts(), 1);
-  EXPECT_EQ(distribution_[value_1], 1);
-  EXPECT_EQ(distribution_[value_2], 0);
+  EXPECT_EQ(distribution_.total_counts(), 1u);
+  EXPECT_EQ(distribution_[value_1], 1u);
+  EXPECT_EQ(distribution_[value_2], 0u);
 
   distribution_ += value_1;
-  EXPECT_EQ(distribution_.total_counts(), 2);
-  EXPECT_EQ(distribution_[value_1], 2);
-  EXPECT_EQ(distribution_[value_2], 0);
+  EXPECT_EQ(distribution_.total_counts(), 2u);
+  EXPECT_EQ(distribution_[value_1], 2u);
+  EXPECT_EQ(distribution_[value_2], 0u);
 
   distribution_ += value_2;
-  EXPECT_EQ(distribution_.total_counts(), 3);
-  EXPECT_EQ(distribution_[value_1], 2);
-  EXPECT_EQ(distribution_[value_2], 1);
+  EXPECT_EQ(distribution_.total_counts(), 3u);
+  EXPECT_EQ(distribution_[value_1], 2u);
+  EXPECT_EQ(distribution_[value_2], 1u);
 }
 
 TEST_F(TargetDistributionTest, AddingTargetDistributions) {
@@ -81,7 +81,7 @@ TEST_F(TargetDistributionTest, FindSingularMaxFindsTheSingularMax) {
   ASSERT_TRUE(counts_1 > counts_2);
 
   TargetValue max_value(0);
-  int max_counts = 0;
+  size_t max_counts = 0;
   EXPECT_TRUE(distribution_.FindSingularMax(&max_value, &max_counts));
   EXPECT_EQ(max_value, value_1);
   EXPECT_EQ(max_counts, counts_1);
@@ -95,7 +95,7 @@ TEST_F(TargetDistributionTest,
   ASSERT_TRUE(counts_1 > counts_2);
 
   TargetValue max_value(0);
-  int max_counts = 0;
+  size_t max_counts = 0;
   EXPECT_TRUE(distribution_.FindSingularMax(&max_value, &max_counts));
   EXPECT_EQ(max_value, value_2);
   EXPECT_EQ(max_counts, counts_1);
@@ -106,7 +106,7 @@ TEST_F(TargetDistributionTest, FindSingularMaxReturnsFalsForNonSingularMax) {
   distribution_[value_2] = counts_1;
 
   TargetValue max_value(0);
-  int max_counts = 0;
+  size_t max_counts = 0;
   EXPECT_FALSE(distribution_.FindSingularMax(&max_value, &max_counts));
 }
 
@@ -118,7 +118,7 @@ TEST_F(TargetDistributionTest, FindSingularMaxIgnoresNonSingularNonMax) {
   ASSERT_TRUE(counts_1 > counts_2);
 
   TargetValue max_value(0);
-  int max_counts = 0;
+  size_t max_counts = 0;
   EXPECT_TRUE(distribution_.FindSingularMax(&max_value, &max_counts));
   EXPECT_EQ(max_value, value_1);
   EXPECT_EQ(max_counts, counts_1);
@@ -146,6 +146,18 @@ TEST_F(TargetDistributionTest, UnequalDistributionsCompareAsNotEqual) {
   distribution_2[value_2] = counts_2;
 
   EXPECT_FALSE(distribution_ == distribution_2);
+}
+
+TEST_F(TargetDistributionTest, WeightedTrainingExamplesCountCorrectly) {
+  TrainingExample example = {{}, value_1};
+  WeightedExample weighted_example(&example, counts_1);
+  distribution_ += weighted_example;
+
+  TargetDistribution distribution_2;
+  for (size_t i = 0; i < counts_1; i++)
+    distribution_2 += value_1;
+
+  EXPECT_EQ(distribution_, distribution_2);
 }
 
 }  // namespace learning

@@ -33,15 +33,22 @@ std::unique_ptr<RandomForestTrainer::TrainingResult> RandomForestTrainer::Train(
   // [example] = sum of all oob predictions
   std::map<const TrainingExample*, TargetDistribution> oob_distributions;
 
-  const int n_examples = training_data.size();
+  // We don't support weighted training data, since bagging with weights is
+  // very hard to do right without spending time that depends on the value of
+  // the weights.  Since ExactTrees don't need bagging, we skip it.
+  if (!training_data.is_unweighted())
+    return std::make_unique<TrainingResult>();
+
+  const int n_examples = training_data.weighted_size();
   for (int i = 0; i < n_trees; i++) {
-    // Collect a bagged training set.
+    // Collect a bagged training set and oob data for it.
     TrainingData bagged_data(training_data.storage());
 
     std::set<const TrainingExample*> bagged_set;
     for (int e = 0; e < n_examples; e++) {
-      const TrainingExample* example =
+      WeightedExample weighted_example =
           training_data[rng()->Generate(n_examples)];
+      const TrainingExample* example = weighted_example.example();
       bagged_data.push_back(example);
       bagged_set.insert(example);
     }
@@ -51,7 +58,9 @@ std::unique_ptr<RandomForestTrainer::TrainingResult> RandomForestTrainer::Train(
 
     // Compute OOB distribution.
     int n_oob = 0;
-    for (const TrainingExample* example : training_data) {
+    for (WeightedExample weighted_example : training_data) {
+      const TrainingExample* example = weighted_example.example();
+
       if (bagged_set.find(example) != bagged_set.end())
         continue;
 
@@ -59,6 +68,10 @@ std::unique_ptr<RandomForestTrainer::TrainingResult> RandomForestTrainer::Train(
       TargetDistribution predicted =
           tree->PredictDistribution(example->features);
 
+      // Add the predicted distribution to this example's total distribution.
+      // Remember that the distribution is not normalized, so the counts will
+      // scale with the number of examples.
+      // TODO(liberato): Should it be normalized before being combined?
       TargetDistribution& our_oob_dist = oob_distributions[example];
       our_oob_dist += predicted;
     }

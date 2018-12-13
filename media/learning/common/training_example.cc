@@ -59,6 +59,11 @@ TrainingDataStorage::TrainingDataStorage() = default;
 
 TrainingDataStorage::~TrainingDataStorage() = default;
 
+WeightedExample::WeightedExample(const TrainingExample* example, size_t weight)
+    : example_(example), weight_(weight) {}
+
+WeightedExample::~WeightedExample() = default;
+
 TrainingData::TrainingData(scoped_refptr<TrainingDataStorage> backing_storage)
     : backing_storage_(std::move(backing_storage)) {}
 
@@ -67,7 +72,8 @@ TrainingData::TrainingData(scoped_refptr<TrainingDataStorage> backing_storage,
                            TrainingDataStorage::const_iterator end)
     : backing_storage_(std::move(backing_storage)) {
   for (; begin != end; begin++)
-    examples_.push_back(&(*begin));
+    examples_.push_back(WeightedExample(&(*begin), 1));
+  weighted_size_ = examples_.size();
 }
 
 TrainingData::TrainingData(const TrainingData& rhs) = default;

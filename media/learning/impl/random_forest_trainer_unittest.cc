@@ -120,7 +120,8 @@ TEST_P(RandomForestTest, ComplexSeparableTrainingData) {
   EXPECT_NE(result->model.get(), nullptr);
 
   // Each example should have a distribution in which it is the max.
-  for (const TrainingExample* example : training_data) {
+  for (WeightedExample weighted_example : training_data) {
+    const TrainingExample* example = weighted_example.example();
     TargetDistribution distribution =
         result->model->PredictDistribution(example->features);
     TargetValue max_value;
@@ -155,7 +156,7 @@ TEST_P(RandomForestTest, FisherIrisDataset) {
   auto result = trainer_.Train(task_, training_data);
 
   // Require at least 75% oob data.  Should probably be ~100%.
-  EXPECT_GT(result->oob_total, training_data.size() * 0.75);
+  EXPECT_GT(result->oob_total, training_data.weighted_size() * 0.75);
 
   // Require at least 85% oob accuracy.  We actually get about 88% (kUnordered)
   // or 95% (kOrdered).
@@ -164,13 +165,14 @@ TEST_P(RandomForestTest, FisherIrisDataset) {
 
   // Verify predictions on the training set, just for sanity.
   size_t num_correct = 0;
-  for (const TrainingExample* example : training_data) {
+  for (WeightedExample weighted_example : training_data) {
+    const TrainingExample* example = weighted_example.example();
     TargetDistribution distribution =
         result->model->PredictDistribution(example->features);
     TargetValue predicted_value;
     if (distribution.FindSingularMax(&predicted_value) &&
         predicted_value == example->target_value) {
-      num_correct++;
+      num_correct += weighted_example.weight();
     }
   }
 
@@ -178,8 +180,25 @@ TEST_P(RandomForestTest, FisherIrisDataset) {
   // Currently, we seem to get about ~95%.  If we switch to kEmptyDistribution
   // in the learning task, then it goes back to 1 for kUnordered features.  It's
   // 1 for kOrdered.
-  double train_accuracy = ((double)num_correct) / training_data.size();
+  double train_accuracy = ((double)num_correct) / training_data.weighted_size();
   EXPECT_GT(train_accuracy, 0.95);
+}
+
+TEST_P(RandomForestTest, WeightedTrainingSetIsUnsupported) {
+  TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
+  TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
+  storage_->push_back(example_1);
+  storage_->push_back(example_2);
+
+  const size_t weight = 100;
+
+  // Create a weighed set with |weight| for each example's weight.
+  TrainingData weighted_training_data(storage_);
+  weighted_training_data.push_back(WeightedExample((*storage_)[0], weight));
+  weighted_training_data.push_back(WeightedExample((*storage_)[1], weight));
+  EXPECT_FALSE(weighted_training_data.is_unweighted());
+  auto weighted_result = trainer_.Train(task_, weighted_training_data);
+  EXPECT_EQ(weighted_result->model.get(), nullptr);
 }
 
 INSTANTIATE_TEST_CASE_P(RandomForestTest,

@@ -122,8 +122,8 @@ struct InteriorNode : public Model {
 
 struct LeafNode : public Model {
   LeafNode(const TrainingData& training_data) {
-    for (const TrainingExample* example : training_data)
-      distribution_ += example->target_value;
+    for (WeightedExample example : training_data)
+      distribution_ += example;
   }
 
   // TreeNode
@@ -153,14 +153,15 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
     const LearningTask& task,
     const TrainingData& training_data,
     const FeatureSet& used_set) {
-  DCHECK(training_data.size());
+  DCHECK(training_data.weighted_size());
 
   // TODO(liberato): Does it help if we refuse to split without an info gain?
   Split best_potential_split;
 
   // Select the feature subset to consider at this leaf.
   FeatureSet feature_candidates;
-  for (size_t i = 0; i < training_data[0]->features.size(); i++) {
+  for (size_t i = 0; i < training_data.begin()->example()->features.size();
+       i++) {
     if (used_set.find(i) != used_set.end())
       continue;
     feature_candidates.insert(i);
@@ -221,7 +222,7 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
     int index) {
   // We should not be given a training set of size 0, since there's no need to
   // check an empty split.
-  DCHECK_GT(training_data.size(), 0u);
+  DCHECK_GT(training_data.weighted_size(), 0u);
 
   Split split(index);
   base::Optional<FeatureValue> split_point;
@@ -237,8 +238,9 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
   // Find the split's feature values and construct the training set for each.
   // I think we want to iterate on the underlying vector, and look up the int in
   // the training data directly.
-  for (const TrainingExample* example : training_data) {
-    // Get the value of the |index|-th feature for
+  for (WeightedExample weighted_example : training_data) {
+    const TrainingExample* example = weighted_example.example();
+    // Get the value of the |index|-th feature for |example|.
     FeatureValue v_i = example->features[split.split_index];
 
     // Figure out what value this example would use for splitting.  For nominal,
@@ -258,7 +260,7 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
 
     Split::BranchInfo& branch_info = iter->second;
     branch_info.training_data.push_back(example);
-    branch_info.class_counts[example->target_value]++;
+    branch_info.target_distribution += weighted_example;
   }
 
   // Compute the nats given that we're at this node.
@@ -266,11 +268,12 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
   for (auto& info_iter : split.branch_infos) {
     Split::BranchInfo& branch_info = info_iter.second;
 
-    const int total_counts = branch_info.training_data.size();
+    const double total_counts = branch_info.target_distribution.total_counts();
     // |p_branch| is the probability of following this branch.
-    const double p_branch = ((double)total_counts) / training_data.size();
-    for (auto& iter : branch_info.class_counts) {
-      double p = ((double)iter.second) / total_counts;
+    const double p_branch =
+        ((double)total_counts) / training_data.weighted_size();
+    for (auto& iter : branch_info.target_distribution) {
+      double p = iter.second / total_counts;
       // p*log(p) is the expected nats if the answer is |iter|.  We multiply
       // that by the probability of being in this bucket at all.
       split.nats_remaining -= (p * log(p)) * p_branch;
@@ -285,16 +288,17 @@ FeatureValue RandomTreeTrainer::FindNumericSplitPoint(
     const TrainingData& training_data) {
   // We should not be given a training set of size 0, since there's no need to
   // check an empty split.
-  DCHECK_GT(training_data.size(), 0u);
+  DCHECK_GT(training_data.weighted_size(), 0u);
 
   // We should either (a) choose the single best split point given all our
   // training data (i.e., choosing between the splits that are equally between
   // adjacent feature values), or (b) choose the best split point by drawing
   // uniformly over the range that contains our feature values.  (a) is
   // appropriate with RandomForest, while (b) is appropriate with ExtraTrees.
-  FeatureValue v_min = (*training_data.begin())->features[index];
-  FeatureValue v_max = (*training_data.begin())->features[index];
-  for (const TrainingExample* example : training_data) {
+  FeatureValue v_min = (*training_data.begin()).example()->features[index];
+  FeatureValue v_max = (*training_data.begin()).example()->features[index];
+  for (WeightedExample weighted_example : training_data) {
+    const TrainingExample* example = weighted_example.example();
     // Get the value of the |index|-th feature for
     FeatureValue v_i = example->features[index];
     if (v_i < v_min)
