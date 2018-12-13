@@ -111,7 +111,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
   source->SetJsonPath("strings.js");
 
-  constexpr LocalizedString localized_strings[] = {
+  static constexpr LocalizedString kLocalizedStrings[] = {
     // Add common strings.
     {"add", IDS_ADD},
     {"back", IDS_ACCNAME_BACK},
@@ -275,8 +275,8 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
      IDS_MD_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_TITLE},
 #endif
   };
-  AddLocalizedStringsBulk(source, localized_strings,
-                          base::size(localized_strings));
+  AddLocalizedStringsBulk(source, kLocalizedStrings,
+                          base::size(kLocalizedStrings));
 
   source->AddBoolean("isManaged", chrome::ShouldDisplayManagedUi(profile));
 
