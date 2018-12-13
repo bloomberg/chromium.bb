@@ -836,7 +836,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                  spdy::SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
-                 spdy::SpdyHeaderBlock headers) override;
+                 spdy::SpdyHeaderBlock headers,
+                 base::TimeTicks recv_first_byte_time) override;
   void OnAltSvc(spdy::SpdyStreamId stream_id,
                 base::StringPiece origin,
                 const spdy::SpdyAltSvcWireFormat::AlternativeServiceVector&

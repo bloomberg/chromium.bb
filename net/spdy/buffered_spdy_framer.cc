@@ -21,12 +21,14 @@ size_t kGoAwayDebugDataMaxSize = 1024;
 }  // namespace
 
 BufferedSpdyFramer::BufferedSpdyFramer(uint32_t max_header_list_size,
-                                       const NetLogWithSource& net_log)
+                                       const NetLogWithSource& net_log,
+                                       TimeFunc time_func)
     : spdy_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       visitor_(NULL),
       frames_received_(0),
       max_header_list_size_(max_header_list_size),
-      net_log_(net_log) {
+      net_log_(net_log),
+      time_func_(time_func) {
   // Do not bother decoding response header payload above the limit.
   deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
       max_header_list_size_);
@@ -70,6 +72,7 @@ void BufferedSpdyFramer::OnHeaders(spdy::SpdyStreamId stream_id,
     control_frame_fields_->exclusive = exclusive;
   }
   control_frame_fields_->fin = fin;
+  control_frame_fields_->recv_first_byte_time = time_func_();
 }
 
 void BufferedSpdyFramer::OnDataFrameHeader(spdy::SpdyStreamId stream_id,
@@ -122,7 +125,8 @@ void BufferedSpdyFramer::OnHeaderFrameEnd(spdy::SpdyStreamId stream_id) {
           control_frame_fields_->weight,
           control_frame_fields_->parent_stream_id,
           control_frame_fields_->exclusive, control_frame_fields_->fin,
-          coalescer_->release_headers());
+          coalescer_->release_headers(),
+          control_frame_fields_->recv_first_byte_time);
       break;
     case spdy::SpdyFrameType::PUSH_PROMISE:
       visitor_->OnPushPromise(control_frame_fields_->stream_id,
@@ -199,6 +203,7 @@ void BufferedSpdyFramer::OnPushPromise(spdy::SpdyStreamId stream_id,
   control_frame_fields_->type = spdy::SpdyFrameType::PUSH_PROMISE;
   control_frame_fields_->stream_id = stream_id;
   control_frame_fields_->promised_stream_id = promised_stream_id;
+  control_frame_fields_->recv_first_byte_time = time_func_();
 }
 
 void BufferedSpdyFramer::OnAltSvc(
@@ -318,6 +323,8 @@ size_t BufferedSpdyFramer::EstimateMemoryUsage() const {
          base::trace_event::EstimateMemoryUsage(control_frame_fields_) +
          base::trace_event::EstimateMemoryUsage(goaway_fields_);
 }
+
+BufferedSpdyFramer::ControlFrameFields::ControlFrameFields() = default;
 
 size_t BufferedSpdyFramer::GoAwayFields::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(debug_data);
