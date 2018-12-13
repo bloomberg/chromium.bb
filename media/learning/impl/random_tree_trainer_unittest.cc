@@ -51,8 +51,8 @@ TEST_P(RandomTreeTest, UniformTrainingDataWorks) {
   SetupFeatures(2);
   TrainingExample example({FeatureValue(123), FeatureValue(456)},
                           TargetValue(789));
-  const int n_examples = 10;
-  for (int i = 0; i < n_examples; i++)
+  const size_t n_examples = 10;
+  for (size_t i = 0; i < n_examples; i++)
     storage_->push_back(example);
   TrainingData training_data(storage_, storage_->begin(), storage_->end());
   std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
@@ -69,8 +69,8 @@ TEST_P(RandomTreeTest, UniformTrainingDataWorksWithCallback) {
   SetupFeatures(2);
   TrainingExample example({FeatureValue(123), FeatureValue(456)},
                           TargetValue(789));
-  const int n_examples = 10;
-  for (int i = 0; i < n_examples; i++)
+  const size_t n_examples = 10;
+  for (size_t i = 0; i < n_examples; i++)
     storage_->push_back(example);
   TrainingData training_data(storage_, storage_->begin(), storage_->end());
 
@@ -107,17 +107,17 @@ TEST_P(RandomTreeTest, SimpleSeparableTrainingData) {
       model->PredictDistribution(example_1.features);
   EXPECT_NE(model.get(), nullptr);
   EXPECT_EQ(distribution.size(), 1u);
-  EXPECT_EQ(distribution[example_1.target_value], 1);
+  EXPECT_EQ(distribution[example_1.target_value], 1u);
 
   distribution = model->PredictDistribution(example_2.features);
   EXPECT_EQ(distribution.size(), 1u);
-  EXPECT_EQ(distribution[example_2.target_value], 1);
+  EXPECT_EQ(distribution[example_2.target_value], 1u);
 }
 
 TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
-  // Skip this test for numeric features.  Fully randomized splits are too
-  // random to expect meaningful results.  The RandomForest tests will test this
-  // behavior as part of an ensemble.
+  // Building a random tree with numeric splits isn't terribly likely to work,
+  // so just skip it.  Entirely randomized splits are just too random.  The
+  // RandomForest unittests will test them as part of an ensemble.
   if (ordering_ == LearningTask::Ordering::kNumeric)
     return;
 
@@ -148,15 +148,14 @@ TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
   std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
   EXPECT_NE(model.get(), nullptr);
 
-  // Each example should have a distribution by itself, with two counts.
-  for (const TrainingExample* example : training_data) {
+  // Each example should have a distribution that selects the right value.
+  for (WeightedExample weighted_example : training_data) {
+    const TrainingExample* example = weighted_example.example();
     TargetDistribution distribution =
         model->PredictDistribution(example->features);
     TargetValue singular_max;
     EXPECT_TRUE(distribution.FindSingularMax(&singular_max));
     EXPECT_EQ(singular_max, example->target_value);
-    // EXPECT_EQ(distribution.size(), 1u);
-    // EXPECT_EQ(distribution[example->target_value], 2);
   }
 }
 
@@ -174,13 +173,13 @@ TEST_P(RandomTreeTest, UnseparableTrainingData) {
   TargetDistribution distribution =
       model->PredictDistribution(example_1.features);
   EXPECT_EQ(distribution.size(), 2u);
-  EXPECT_EQ(distribution[example_1.target_value], 1);
-  EXPECT_EQ(distribution[example_2.target_value], 1);
+  EXPECT_EQ(distribution[example_1.target_value], 1u);
+  EXPECT_EQ(distribution[example_2.target_value], 1u);
 
   distribution = model->PredictDistribution(example_2.features);
   EXPECT_EQ(distribution.size(), 2u);
-  EXPECT_EQ(distribution[example_1.target_value], 1);
-  EXPECT_EQ(distribution[example_2.target_value], 1);
+  EXPECT_EQ(distribution[example_1.target_value], 1u);
+  EXPECT_EQ(distribution[example_2.target_value], 1u);
 }
 
 TEST_P(RandomTreeTest, UnknownFeatureValueHandling) {
@@ -204,7 +203,7 @@ TEST_P(RandomTreeTest, UnknownFeatureValueHandling) {
     // OOV data should end up in the |example_2| bucket, since the feature is
     // numerically higher.
     EXPECT_EQ(distribution.size(), 1u);
-    EXPECT_EQ(distribution[example_2.target_value], 1);
+    EXPECT_EQ(distribution[example_2.target_value], 1u);
   }
 
   task_.rt_unknown_value_handling =
@@ -214,13 +213,13 @@ TEST_P(RandomTreeTest, UnknownFeatureValueHandling) {
   if (ordering_ == LearningTask::Ordering::kUnordered) {
     // OOV data should return with the sum of all splits.
     EXPECT_EQ(distribution.size(), 2u);
-    EXPECT_EQ(distribution[example_1.target_value], 1);
-    EXPECT_EQ(distribution[example_2.target_value], 1);
+    EXPECT_EQ(distribution[example_1.target_value], 1u);
+    EXPECT_EQ(distribution[example_2.target_value], 1u);
   } else {
     // The unknown feature is numerically higher than |example_2|, so we
     // expect it to fall into that bucket.
     EXPECT_EQ(distribution.size(), 1u);
-    EXPECT_EQ(distribution[example_2.target_value], 1);
+    EXPECT_EQ(distribution[example_2.target_value], 1u);
   }
 }
 
@@ -245,8 +244,8 @@ TEST_P(RandomTreeTest, NumericFeaturesSplitMultipleTimes) {
     // The distribution should have one count that should be correct.  If
     // the feature isn't split four times, then some feature value will have too
     // many or too few counts.
-    EXPECT_EQ(distribution.total_counts(), 1);
-    EXPECT_EQ(distribution[TargetValue(i)], 1);
+    EXPECT_EQ(distribution.total_counts(), 1u);
+    EXPECT_EQ(distribution[TargetValue(i)], 1u);
   }
 }
 

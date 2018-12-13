@@ -133,13 +133,12 @@ TEST_F(LearnerTrainingExampleTest, TrainingDataPushBack) {
   storage->push_back(example);
 
   TrainingData training_data(storage);
-  EXPECT_EQ(training_data.size(), 0u);
+  EXPECT_EQ(training_data.weighted_size(), 0u);
   EXPECT_TRUE(training_data.empty());
   training_data.push_back(&(*storage->begin()));
-  EXPECT_EQ(training_data.size(), 1u);
+  EXPECT_EQ(training_data.weighted_size(), 1u);
   EXPECT_FALSE(training_data.empty());
-  EXPECT_EQ(*training_data.begin(), &(*storage->begin()));
-  EXPECT_EQ(training_data[0], &(*storage->begin()));
+  EXPECT_EQ(training_data.begin()->example(), &(*storage->begin()));
 }
 
 TEST_F(LearnerTrainingExampleTest, TrainingDataConstructWithRange) {
@@ -149,10 +148,21 @@ TEST_F(LearnerTrainingExampleTest, TrainingDataConstructWithRange) {
   storage->push_back(example);
 
   TrainingData training_data(storage, storage->begin(), storage->end());
-  EXPECT_EQ(training_data.size(), 1u);
+  EXPECT_EQ(training_data.weighted_size(), 1u);
   EXPECT_FALSE(training_data.empty());
-  EXPECT_EQ(*training_data.begin(), &(*storage->begin()));
-  EXPECT_EQ(training_data[0], &(*storage->begin()));
+  EXPECT_EQ(training_data.begin()->example(), &(*storage->begin()));
+}
+
+TEST_F(LearnerTrainingExampleTest, AddWeighedExamples) {
+  TrainingExample example({FeatureValue(123)}, TargetValue(789));
+  scoped_refptr<TrainingDataStorage> storage =
+      base::MakeRefCounted<TrainingDataStorage>();
+  storage->push_back(example);
+
+  TrainingData training_data(storage);
+  const size_t weight = 100u;
+  training_data.push_back(&(*storage->begin()), weight);
+  EXPECT_EQ(training_data.weighted_size(), weight);
 }
 
 }  // namespace learning

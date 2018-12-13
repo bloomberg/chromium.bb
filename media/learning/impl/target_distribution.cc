@@ -40,7 +40,14 @@ TargetDistribution& TargetDistribution::operator+=(const TargetValue& rhs) {
   return *this;
 }
 
-int TargetDistribution::operator[](const TargetValue& value) const {
+TargetDistribution& TargetDistribution::operator+=(
+    const WeightedExample& weighted_example) {
+  counts_[weighted_example.example()->target_value] +=
+      weighted_example.weight();
+  return *this;
+}
+
+size_t TargetDistribution::operator[](const TargetValue& value) const {
   auto iter = counts_.find(value);
   if (iter == counts_.end())
     return 0;
@@ -48,16 +55,16 @@ int TargetDistribution::operator[](const TargetValue& value) const {
   return iter->second;
 }
 
-int& TargetDistribution::operator[](const TargetValue& value) {
+size_t& TargetDistribution::operator[](const TargetValue& value) {
   return counts_[value];
 }
 
 bool TargetDistribution::FindSingularMax(TargetValue* value_out,
-                                         int* counts_out) const {
+                                         size_t* counts_out) const {
   if (!counts_.size())
     return false;
 
-  int unused_counts;
+  size_t unused_counts;
   if (!counts_out)
     counts_out = &unused_counts;
 

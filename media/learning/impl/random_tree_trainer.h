@@ -112,7 +112,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
       // branch of the split.
       // This is a flat_map since we're likely to have a very small (e.g.,
       // "true / "false") number of targets.
-      base::flat_map<TargetValue, int> class_counts;
+      TargetDistribution target_distribution;
     };
 
     // [feature value at this split] = info about which examples take this
