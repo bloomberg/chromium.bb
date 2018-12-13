@@ -10,34 +10,8 @@ assert(is_chromeos, "CryptAuth is Chrome OS only")
 
 static_library("cryptauth") {
   sources = [
-    "authenticator.cc",
-    "authenticator.h",
-    "background_eid_generator.cc",
-    "background_eid_generator.h",
-    "connection.cc",
-    "connection.h",
     "cryptauth_service.cc",
     "cryptauth_service.h",
-    "data_with_timestamp.cc",
-    "data_with_timestamp.h",
-    "device_to_device_authenticator.cc",
-    "device_to_device_authenticator.h",
-    "device_to_device_initiator_helper.cc",
-    "device_to_device_initiator_helper.h",
-    "device_to_device_secure_context.cc",
-    "device_to_device_secure_context.h",
-    "foreground_eid_generator.cc",
-    "foreground_eid_generator.h",
-    "raw_eid_generator.h",
-    "raw_eid_generator_impl.cc",
-    "raw_eid_generator_impl.h",
-    "secure_channel.cc",
-    "secure_channel.h",
-    "secure_context.h",
-    "session_keys.cc",
-    "session_keys.h",
-    "wire_message.cc",
-    "wire_message.h",
   ]
 
   deps = [
@@ -48,7 +22,6 @@ static_library("cryptauth") {
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/device_sync",
     "//chromeos/services/device_sync/proto:util",
-    "//components/cryptauth/ble",
     "//components/gcm_driver",
     "//components/gcm_driver/common",
     "//components/prefs",
@@ -62,9 +35,6 @@ static_library("cryptauth") {
   public_deps = [
     "//chromeos/services/device_sync/proto",
   ]
-
-  # TODO (hansberry): Resolve this.
-  allow_circular_includes_from = [ "//components/cryptauth/ble" ]
 }
 
 static_library("secure_message") {
@@ -102,22 +72,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "device_to_device_responder_operations.cc",
-    "device_to_device_responder_operations.h",
-    "fake_authenticator.cc",
-    "fake_authenticator.h",
-    "fake_background_eid_generator.cc",
-    "fake_background_eid_generator.h",
-    "fake_connection.cc",
-    "fake_connection.h",
     "fake_cryptauth_service.cc",
     "fake_cryptauth_service.h",
-    "fake_secure_channel.cc",
-    "fake_secure_channel.h",
-    "fake_secure_context.cc",
-    "fake_secure_context.h",
-    "mock_foreground_eid_generator.cc",
-    "mock_foreground_eid_generator.h",
   ]
 
   public_deps = [
@@ -138,17 +94,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "background_eid_generator_unittest.cc",
-    "connection_unittest.cc",
-    "device_to_device_authenticator_unittest.cc",
-    "device_to_device_operations_unittest.cc",
-    "device_to_device_secure_context_unittest.cc",
     "fake_secure_message_delegate_unittest.cc",
-    "foreground_eid_generator_unittest.cc",
-    "raw_eid_generator_impl_unittest.cc",
-    "secure_channel_unittest.cc",
-    "session_keys_unittest.cc",
-    "wire_message_unittest.cc",
   ]
 
   deps = [
@@ -160,7 +106,6 @@ source_set("unit_tests") {
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
     "//chromeos/services/device_sync/proto:util",
-    "//components/cryptauth/ble:unit_tests",
     "//components/gcm_driver:test_support",
     "//components/prefs:test_support",
     "//google_apis:test_support",

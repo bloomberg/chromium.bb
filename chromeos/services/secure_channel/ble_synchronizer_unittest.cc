@@ -17,7 +17,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
-#include "components/cryptauth/data_with_timestamp.h"
+#include "chromeos/services/secure_channel/data_with_timestamp.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_advertisement.h"

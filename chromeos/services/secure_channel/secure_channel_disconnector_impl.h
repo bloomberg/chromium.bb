@@ -9,17 +9,16 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "chromeos/services/secure_channel/secure_channel.h"
 #include "chromeos/services/secure_channel/secure_channel_disconnector.h"
-#include "components/cryptauth/secure_channel.h"
 
 namespace chromeos {
 
 namespace secure_channel {
 
 // Concrete SecureChannelDisconnector implementation.
-class SecureChannelDisconnectorImpl
-    : public SecureChannelDisconnector,
-      public cryptauth::SecureChannel::Observer {
+class SecureChannelDisconnectorImpl : public SecureChannelDisconnector,
+                                      public SecureChannel::Observer {
  public:
   class Factory {
    public:
@@ -39,16 +38,15 @@ class SecureChannelDisconnectorImpl
 
   // SecureChannelDisconnector:
   void DisconnectSecureChannel(
-      std::unique_ptr<cryptauth::SecureChannel> channel_to_disconnect) override;
+      std::unique_ptr<SecureChannel> channel_to_disconnect) override;
 
-  // cryptauth::SecureChannel::Observer:
+  // SecureChannel::Observer:
   void OnSecureChannelStatusChanged(
-      cryptauth::SecureChannel* secure_channel,
-      const cryptauth::SecureChannel::Status& old_status,
-      const cryptauth::SecureChannel::Status& new_status) override;
+      SecureChannel* secure_channel,
+      const SecureChannel::Status& old_status,
+      const SecureChannel::Status& new_status) override;
 
-  base::flat_set<std::unique_ptr<cryptauth::SecureChannel>>
-      disconnecting_channels_;
+  base::flat_set<std::unique_ptr<SecureChannel>> disconnecting_channels_;
 
   DISALLOW_COPY_AND_ASSIGN(SecureChannelDisconnectorImpl);
 };

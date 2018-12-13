@@ -12,6 +12,7 @@
 #include "base/unguessable_token.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
+#include "chromeos/services/secure_channel/secure_channel.h"
 
 namespace chromeos {
 
@@ -30,7 +31,7 @@ class FakeBleConnectionManager : public BleConnectionManager {
 
   void SetDeviceStatus(
       const std::string& device_id,
-      const cryptauth::SecureChannel::Status& status,
+      const secure_channel::SecureChannel::Status& status,
       BleConnectionManager::StateChangeDetail state_change_detail);
   void ReceiveMessage(const std::string& device_id, const std::string& payload);
   void SetMessageSent(int sequence_number);
@@ -67,7 +68,7 @@ class FakeBleConnectionManager : public BleConnectionManager {
                   const std::string& message) override;
   bool GetStatusForDevice(
       const std::string& device_id,
-      cryptauth::SecureChannel::Status* status) const override;
+      secure_channel::SecureChannel::Status* status) const override;
 
   using BleConnectionManager::NotifyAdvertisementReceived;
 
@@ -78,7 +79,7 @@ class FakeBleConnectionManager : public BleConnectionManager {
         const StatusAndRegisteredConnectionRequestIds& other);
     ~StatusAndRegisteredConnectionRequestIds();
 
-    cryptauth::SecureChannel::Status status;
+    secure_channel::SecureChannel::Status status;
     std::set<base::UnguessableToken> registered_request_ids;
   };
 

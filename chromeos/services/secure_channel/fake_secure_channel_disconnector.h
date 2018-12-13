@@ -9,8 +9,8 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "chromeos/services/secure_channel/secure_channel.h"
 #include "chromeos/services/secure_channel/secure_channel_disconnector.h"
-#include "components/cryptauth/secure_channel.h"
 
 namespace chromeos {
 
@@ -22,19 +22,18 @@ class FakeSecureChannelDisconnector : public SecureChannelDisconnector {
   FakeSecureChannelDisconnector();
   ~FakeSecureChannelDisconnector() override;
 
-  const base::flat_set<std::unique_ptr<cryptauth::SecureChannel>>&
-  handled_channels() {
+  const base::flat_set<std::unique_ptr<SecureChannel>>& handled_channels() {
     return handled_channels_;
   }
 
-  bool WasChannelHandled(cryptauth::SecureChannel* secure_channel);
+  bool WasChannelHandled(SecureChannel* secure_channel);
 
  private:
   // SecureChannelDisconnector:
   void DisconnectSecureChannel(
-      std::unique_ptr<cryptauth::SecureChannel> channel_to_disconnect) override;
+      std::unique_ptr<SecureChannel> channel_to_disconnect) override;
 
-  base::flat_set<std::unique_ptr<cryptauth::SecureChannel>> handled_channels_;
+  base::flat_set<std::unique_ptr<SecureChannel>> handled_channels_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSecureChannelDisconnector);
 };

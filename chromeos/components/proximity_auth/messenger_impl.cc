@@ -19,7 +19,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/messenger_observer.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
-#include "components/cryptauth/wire_message.h"
+#include "chromeos/services/secure_channel/wire_message.h"
 
 namespace proximity_auth {
 

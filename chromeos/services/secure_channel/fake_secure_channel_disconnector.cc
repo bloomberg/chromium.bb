@@ -13,7 +13,7 @@ FakeSecureChannelDisconnector::FakeSecureChannelDisconnector() = default;
 FakeSecureChannelDisconnector::~FakeSecureChannelDisconnector() = default;
 
 bool FakeSecureChannelDisconnector::WasChannelHandled(
-    cryptauth::SecureChannel* secure_channel) {
+    SecureChannel* secure_channel) {
   for (const auto& channel : handled_channels_) {
     if (channel.get() == secure_channel)
       return true;
@@ -22,7 +22,7 @@ bool FakeSecureChannelDisconnector::WasChannelHandled(
 }
 
 void FakeSecureChannelDisconnector::DisconnectSecureChannel(
-    std::unique_ptr<cryptauth::SecureChannel> channel_to_disconnect) {
+    std::unique_ptr<SecureChannel> channel_to_disconnect) {
   handled_channels_.insert(std::move(channel_to_disconnect));
 }
 

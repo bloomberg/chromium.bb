@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/secure_channel/ble_service_data_helper.h"
-#include "components/cryptauth/data_with_timestamp.h"
+#include "chromeos/services/secure_channel/data_with_timestamp.h"
 
 namespace chromeos {
 
@@ -28,7 +28,7 @@ class FakeBleServiceDataHelper : public BleServiceDataHelper {
 
   // Sets the data to be returned by a GenerateForegroundAdvertisement() call.
   void SetAdvertisement(const DeviceIdPair& device_id_pair,
-                        const cryptauth::DataWithTimestamp& service_data);
+                        const DataWithTimestamp& service_data);
 
   void RemoveAdvertisement(const DeviceIdPair& device_id_pair);
 
@@ -39,15 +39,13 @@ class FakeBleServiceDataHelper : public BleServiceDataHelper {
 
  private:
   // BleServiceDataHelper:
-  std::unique_ptr<cryptauth::DataWithTimestamp> GenerateForegroundAdvertisement(
+  std::unique_ptr<DataWithTimestamp> GenerateForegroundAdvertisement(
       const DeviceIdPair& device_id_pair) override;
   base::Optional<DeviceWithBackgroundBool> PerformIdentifyRemoteDevice(
       const std::string& service_data,
       const DeviceIdPairSet& device_id_pair_set) override;
 
-  std::unordered_map<DeviceIdPair,
-                     cryptauth::DataWithTimestamp,
-                     DeviceIdPairHash>
+  std::unordered_map<DeviceIdPair, DataWithTimestamp, DeviceIdPairHash>
       device_id_pair_to_service_data_map_;
 
   std::unordered_map<std::string, DeviceWithBackgroundBool>

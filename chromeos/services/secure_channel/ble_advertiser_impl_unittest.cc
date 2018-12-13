@@ -52,7 +52,7 @@ class FakeErrorTolerantBleAdvertisementFactory
   // ErrorTolerantBleAdvertisementImpl::Factory:
   std::unique_ptr<ErrorTolerantBleAdvertisement> BuildInstance(
       const DeviceIdPair& device_id_pair,
-      std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+      std::unique_ptr<DataWithTimestamp> advertisement_data,
       BleSynchronizerBase* ble_synchronizer) override {
     EXPECT_EQ(*ble_service_data_helper_->GenerateForegroundAdvertisement(
                   device_id_pair),
@@ -195,9 +195,9 @@ class SecureChannelBleAdvertiserImplTest : public testing::Test {
       std::stringstream ss;
       ss << request.remote_device_id() << "+" << request.local_device_id();
       fake_ble_service_data_helper_->SetAdvertisement(
-          request, cryptauth::DataWithTimestamp(ss.str() /* data */,
-                                                kDefaultStartTimestamp,
-                                                kDefaultEndTimestamp));
+          request,
+          DataWithTimestamp(ss.str() /* data */, kDefaultStartTimestamp,
+                            kDefaultEndTimestamp));
     }
 
     advertiser_->AddAdvertisementRequest(request, connection_priority);

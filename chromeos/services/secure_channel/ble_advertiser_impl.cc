@@ -293,7 +293,7 @@ void BleAdvertiserImpl::AddActiveAdvertisementRequest(size_t index_to_add) {
 void BleAdvertiserImpl::AttemptToAddActiveAdvertisement(size_t index_to_add) {
   const DeviceIdPair pair =
       active_advertisement_requests_[index_to_add]->device_id_pair;
-  std::unique_ptr<cryptauth::DataWithTimestamp> service_data =
+  std::unique_ptr<DataWithTimestamp> service_data =
       ble_service_data_helper_->GenerateForegroundAdvertisement(pair);
 
   // If an advertisement could not be created, the request is immediately
