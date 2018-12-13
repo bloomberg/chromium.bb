@@ -298,6 +298,17 @@ Status WindowViewportSize(Session* session,
   return Status(kOk);
 }
 
+Status ProcessPauseAction(const base::DictionaryValue* action_item,
+                          base::DictionaryValue* action) {
+  if (action_item->HasKey("duration")) {
+    int duration;
+    if (!action_item->GetInteger("duration", &duration) || duration < 0)
+      return Status(kInvalidArgument, "'duration' must be a non-negative int");
+    action->SetInteger("duration", duration);
+  }
+  return Status(kOk);
+}
+
 }  // namespace
 
 Status ExecuteWindowCommand(const WindowCommand& command,
@@ -967,13 +978,9 @@ Status ProcessInputActionSequence(
       action->SetString("type", "none");
       action->SetString("subtype", subtype);
 
-      int duration;
-      if (action_item->GetInteger("duration", &duration)) {
-        if (duration < 0)
-          return Status(kInvalidArgument,
-                        "duration must be a non-negative int");
-        action->SetInteger("duration", duration);
-      }
+      Status status = ProcessPauseAction(action_item, action.get());
+      if (status.IsError())
+        return status;
     } else if (type == "key") {
       // process key action
       std::string subtype;
@@ -988,21 +995,18 @@ Status ProcessInputActionSequence(
       action->SetString("subtype", subtype);
 
       if (subtype == "pause") {
-        int duration;
-        if (action_item->GetInteger("duration", &duration)) {
-          if (duration < 0)
-            return Status(kInvalidArgument,
-                          "duration must be a non-negative int");
-          action->SetInteger("duration", duration);
+        Status status = ProcessPauseAction(action_item, action.get());
+        if (status.IsError())
+          return status;
+      } else {
+        std::string key;
+        // TODO: check if key is a single unicode code point
+        if (!action_item->GetString("value", &key)) {
+          return Status(kInvalidArgument,
+                        "'value' must be a single unicode point");
         }
+        action->SetString("value", key);
       }
-      std::string key;
-      // TODO: check if key is a single unicode code point
-      if (!action_item->GetString("value", &key)) {
-        return Status(kInvalidArgument,
-                      "'value' must be a single unicode point");
-      }
-      action->SetString("value", key);
     } else if (type == "pointer") {
       std::string subtype;
       if (!action_item->GetString("type", &subtype) ||
@@ -1064,14 +1068,9 @@ Status ProcessInputActionSequence(
           action->SetString("origin", "viewport");
         }
 
-        int duration;
-        if (action_item->HasKey("duration")) {
-          if (!action_item->GetInteger("duration", &duration) || duration < 0) {
-            return Status(kInvalidArgument,
-                          "'duration' must be a non-negative int");
-          }
-          action->SetInteger("duration", duration);
-        }
+        Status status = ProcessPauseAction(action_item, action.get());
+        if (status.IsError())
+          return status;
       } else {
         int duration;
         if (action_item->HasKey("duration")) {
