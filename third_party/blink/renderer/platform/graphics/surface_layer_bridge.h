@@ -60,6 +60,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   void ClearSurfaceId() override;
   void SetContentsOpaque(bool) override;
   void CreateSurfaceLayer() override;
+  void ClearObserver() override;
 
   const viz::SurfaceId& GetSurfaceId() const override {
     return current_surface_id_;

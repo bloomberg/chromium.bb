@@ -56,7 +56,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
              Demuxer* demuxer,
              std::unique_ptr<Renderer> renderer,
              base::WeakPtr<PipelineImpl> weak_pipeline);
-  void Stop(const base::Closure& stop_cb);
+  void Stop();
   void Seek(base::TimeDelta time);
   void Suspend();
   void Resume(std::unique_ptr<Renderer> renderer, base::TimeDelta time);
@@ -270,7 +270,7 @@ void PipelineImpl::RendererWrapper::Start(
                                         weak_this_, base::TimeDelta()));
 }
 
-void PipelineImpl::RendererWrapper::Stop(const base::Closure& stop_cb) {
+void PipelineImpl::RendererWrapper::Stop() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != kStopping && state_ != kStopped);
 
@@ -296,17 +296,9 @@ void PipelineImpl::RendererWrapper::Stop(const base::Closure& stop_cb) {
 
   SetState(kStopped);
 
-  // Reset the status. Otherwise, if we encountered an error, new erros will
+  // Reset the status. Otherwise, if we encountered an error, new errors will
   // never be propagated. See https://crbug.com/812465.
   status_ = PIPELINE_OK;
-
-  // Post the stop callback to enqueue it after the tasks that may have been
-  // posted by Demuxer and Renderer during stopping. Note that in theory the
-  // tasks posted by Demuxer/Renderer may post even more tasks that will get
-  // enqueued after |stop_cb|. This may be problematic because Demuxer may
-  // get destroyed as soon as |stop_cb| is run. In practice this is not a
-  // problem, but ideally Demuxer should be destroyed on the media thread.
-  media_task_runner_->PostTask(FROM_HERE, stop_cb);
 }
 
 void PipelineImpl::RendererWrapper::Seek(base::TimeDelta time) {
@@ -1053,29 +1045,13 @@ void PipelineImpl::Stop() {
 
   if (media_task_runner_->BelongsToCurrentThread()) {
     // This path is executed by unittests that share media and main threads.
-    renderer_wrapper_->Stop(base::DoNothing());
+    renderer_wrapper_->Stop();
   } else {
     // This path is executed by production code where the two task runners -
     // main and media - live on different threads.
-    //
-    // TODO(alokp): We should not have to wait for the RendererWrapper::Stop.
-    // RendererWrapper holds a raw reference to Demuxer, which in turn holds a
-    // raw reference to DataSource. Both Demuxer and DataSource need to live
-    // until RendererWrapper is stopped. If RendererWrapper owned Demuxer and
-    // Demuxer owned DataSource, we could simply let RendererWrapper get lazily
-    // destroyed on the media thread.
-    base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                               base::WaitableEvent::InitialState::NOT_SIGNALED);
-    base::Closure stop_cb =
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter));
-    // If posting the task fails or the posted task fails to run,
-    // we will wait here forever. So add a CHECK to make sure we do not run
-    // into those situations.
-    CHECK(media_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&RendererWrapper::Stop,
-                   base::Unretained(renderer_wrapper_.get()), stop_cb)));
-    waiter.Wait();
+    media_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&RendererWrapper::Stop,
+                                  base::Unretained(renderer_wrapper_.get())));
   }
 
   // Once the pipeline is stopped, nothing is reported back to the client.
