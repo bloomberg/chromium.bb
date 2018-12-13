@@ -379,16 +379,16 @@ function startImport(clickSource) {
  *
  * @constructor
  *
- * @param {!impoter.ScanResult} scan
- * @param {!impoter.Destination} destination
- * @param {DirectoryEntry} destinationDirectory
+ * @param {!importer.ScanResult} scan
+ * @param {!importer.Destination} destination
+ * @param {!DirectoryEntry} destinationDirectory
  */
 function TestImportTask(scan, destination, destinationDirectory) {
 
   /** @public {!importer.ScanResult} */
   this.scan = scan;
 
-  /** @type {!impoter.Destination} */
+  /** @type {!importer.Destination} */
   this.destination = destination;
 
   /** @type {!DirectoryEntry} */
@@ -436,6 +436,7 @@ function TestImportRunner() {
   this.tasks_ = [];
 }
 
+/* TODO(noel): what class does this code override? */
 /** @override */
 TestImportRunner.prototype.importFromScanResult =
     function(scan, destination, destinationDirectory) {
@@ -446,21 +447,11 @@ TestImportRunner.prototype.importFromScanResult =
   return task;
 };
 
-/**
- * @param {!DirectoryEntry} destination
- */
 TestImportRunner.prototype.finishImportTasks = function() {
-  this.tasks_.forEach(
-      function(task) {
-        task.finish();
-      });
+  this.tasks_.forEach((task) => task.finish());
 };
 
-/**
- * @param {!DirectoryEntry} destination
- */
 TestImportRunner.prototype.cancelImportTasks = function() {
-  // No diff to us.
   this.finishImportTasks();
 };
 
@@ -477,6 +468,7 @@ TestImportRunner.prototype.assertImportsStarted = function(expected) {
  * importer.ImportController.
  *
  * @constructor
+ * TODO(noel): class importer.CommandInput does not exist.
  * @implements {importer.CommandInput}
  *
  * @param {!VolumeManager} volumeManager
@@ -484,6 +476,7 @@ TestImportRunner.prototype.assertImportsStarted = function(expected) {
  * @param {!DirectoryEntry} directory
  */
 TestControllerEnvironment = function(volumeManager, volumeInfo, directory) {
+  /** @private {!VolumeManager} */
   this.volumeManager = volumeManager;
 
   /** @private {!VolumeInfo} */
@@ -498,13 +491,13 @@ TestControllerEnvironment = function(volumeManager, volumeInfo, directory) {
   /** @public {function(string)} */
   this.volumeUnmountListener;
 
-  /** @public {function()} */
+  /** @public {function(!Event)} */
   this.directoryChangedListener;
 
   /** @public {function()} */
   this.selectionChangedListener;
 
-  /** @public {!Entry} */
+  /** @public {!Array<!Entry>} */
   this.selection = [];
 
   /** @public {boolean} */
@@ -521,14 +514,12 @@ TestControllerEnvironment = function(volumeManager, volumeInfo, directory) {
 };
 
 /** @override */
-TestControllerEnvironment.prototype.getSelection =
-    function() {
+TestControllerEnvironment.prototype.getSelection = function() {
   return this.selection;
 };
 
 /** @override */
-TestControllerEnvironment.prototype.getCurrentDirectory =
-    function() {
+TestControllerEnvironment.prototype.getCurrentDirectory = function() {
   return this.directory_;
 };
 
@@ -538,20 +529,17 @@ TestControllerEnvironment.prototype.setCurrentDirectory = function(entry) {
 };
 
 /** @override */
-TestControllerEnvironment.prototype.getVolumeInfo =
-    function(entry) {
+TestControllerEnvironment.prototype.getVolumeInfo = function(entry) {
   return this.volumeInfo_;
 };
 
 /** @override */
-TestControllerEnvironment.prototype.isGoogleDriveMounted =
-    function() {
+TestControllerEnvironment.prototype.isGoogleDriveMounted = function() {
   return this.isDriveMounted;
 };
 
 /** @override */
-TestControllerEnvironment.prototype.getFreeStorageSpace =
-    function() {
+TestControllerEnvironment.prototype.getFreeStorageSpace = function() {
   return Promise.resolve(this.freeStorageSpace);
 };
 
@@ -580,8 +568,7 @@ TestControllerEnvironment.prototype.addSelectionChangedListener =
 };
 
 /** @override */
-TestControllerEnvironment.prototype.getImportDestination =
-    function(date) {
+TestControllerEnvironment.prototype.getImportDestination = function(date) {
   var fileSystem = new MockFileSystem('testFs');
   return new MockDirectoryEntry(fileSystem, '/abc/123');
 };
@@ -614,10 +601,10 @@ importer.TestCommandWidget = function() {
   /** @public {function()} */
   this.clickListener;
 
-  /** @public {!importer.Resolver.<!importer.CommandUpdate>} */
+  /** @public {!importer.Resolver} */
   this.updateResolver = new importer.Resolver();
 
-  /** @public {!importer.Resolver.<!importer.CommandUpdate>} */
+  /** @public {!importer.Resolver} */
   this.toggleDetailsResolver = new importer.Resolver();
 
   /** @public {boolean} */
@@ -631,8 +618,7 @@ importer.TestCommandWidget.prototype.resetPromises = function() {
 };
 
 /** @override */
-importer.TestCommandWidget.prototype.addClickListener =
-    function(listener) {
+importer.TestCommandWidget.prototype.addClickListener = function(listener) {
   this.clickListener = listener;
 };
 
@@ -676,8 +662,8 @@ importer.TestCommandWidget.prototype.setDetailsVisible = function(visible) {
 };
 
 /** @override */
-importer.TestCommandWidget.prototype.setDetailsBannerVisible =
-    function(visible) {
+importer.TestCommandWidget.prototype.setDetailsBannerVisible = function(
+    visible) {
   // TODO(smckay)
 };
 
@@ -686,13 +672,10 @@ importer.TestCommandWidget.prototype.setDetailsBannerVisible =
  * @param {string} volumeId
  * @param {!Array<string>} fileNames
  * @param {string} currentDirectory
- * @return {!importer.ImportControler}
+ * @return {!importer.ImportController}
  */
 function createController(volumeType, volumeId, fileNames, currentDirectory) {
-  sourceVolume = setupFileSystem(
-      volumeType,
-      volumeId,
-      fileNames);
+  sourceVolume = setupFileSystem(volumeType, volumeId, fileNames);
 
   environment = new TestControllerEnvironment(
       volumeManager, sourceVolume,
