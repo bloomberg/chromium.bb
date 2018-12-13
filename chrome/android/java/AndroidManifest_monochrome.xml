@@ -28,5 +28,5 @@ android:extractNativeLibs="false"
 
 {% block extra_application_definitions %}
 {{ super() }}
-{{ webview.common(manifest_package, 'libmonochrome.so') }}
+{{ webview.common(manifest_package, webview_library) }}
 {% endblock %}
