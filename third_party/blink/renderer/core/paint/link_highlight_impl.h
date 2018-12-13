@@ -111,7 +111,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   // changed size since the last call to this function.
   bool ComputeHighlightLayerPathAndPosition(const LayoutBoxModelObject&);
 
-  class LinkHighlightFragment : public cc::ContentLayerClient {
+  class LinkHighlightFragment : private cc::ContentLayerClient {
    public:
     LinkHighlightFragment(CompositorElementId);
 
@@ -120,6 +120,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
     void SetPath(const Path& path) { path_ = path; }
     void SetColor(const Color& color) { color_ = color; }
 
+   private:
     // cc::ContentLayerClient implementation.
     gfx::Rect PaintableRegion() override;
     scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
@@ -127,7 +128,6 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
     bool FillsBoundsCompletely() const override { return false; }
     size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
 
-   private:
     scoped_refptr<cc::PictureLayer> layer_;
     Path path_;
     Color color_;

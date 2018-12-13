@@ -52,7 +52,7 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
     // Paints page overlay contents.
     virtual void PaintFrameOverlay(const FrameOverlay&,
                                    GraphicsContext&,
-                                   const IntSize& web_view_size) const = 0;
+                                   const IntSize& view_size) const = 0;
   };
 
   static std::unique_ptr<FrameOverlay> Create(
@@ -63,13 +63,19 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
 
   void Update();
 
-  GraphicsLayer* GetGraphicsLayer() const { return layer_.get(); }
+  // For CompositeAfterPaint.
+  void Paint(GraphicsContext&);
+
+  GraphicsLayer* GetGraphicsLayer() const {
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+    return layer_.get();
+  }
 
   // DisplayItemClient methods.
   String DebugName() const final { return "FrameOverlay"; }
   LayoutRect VisualRect() const override;
 
-  // GraphicsLayerClient implementation
+  // GraphicsLayerClient implementation. Not needed for CompositeAfterPaint.
   bool NeedsRepaint(const GraphicsLayer&) const override { return true; }
   IntRect ComputeInterestRect(const GraphicsLayer*,
                               const IntRect&) const override;
@@ -81,6 +87,9 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
 
  private:
   FrameOverlay(LocalFrame*, std::unique_ptr<FrameOverlay::Delegate>);
+
+  // FrameOverlay is always the same size as the viewport.
+  IntSize Size() const;
 
   Persistent<LocalFrame> frame_;
   std::unique_ptr<FrameOverlay::Delegate> delegate_;

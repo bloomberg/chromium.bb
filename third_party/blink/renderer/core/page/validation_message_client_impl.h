@@ -71,6 +71,7 @@ class ValidationMessageClientImpl final
   void WillBeDestroyed() override;
   void LayoutOverlay() override;
   void PaintOverlay() override;
+  void PaintOverlay(GraphicsContext&) override;
 
   // PopupOpeningObserver function
   void WillOpenPopup() override;
