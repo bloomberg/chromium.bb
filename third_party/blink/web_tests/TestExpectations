@@ -5716,3 +5716,9 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/constructor.any.html [ Pass Fai
 crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/constructor.any.worker.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/table/constructor.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/table/constructor.any.worker.html [ Pass Failure ]
+
+# These tests will fail until upstream v8 changes are landed.
+crbug.com/v8/8381 http/tests/devtools/coverage/coverage-repeated.js [ Pass Failure ]
+crbug.com/v8/8381 http/tests/devtools/coverage/coverage-view-filter.js [ Pass Failure ]
+crbug.com/v8/8381 http/tests/devtools/coverage/coverage-view.js [ Pass Failure ]
+crbug.com/v8/8381 http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Failure ]
