@@ -6,8 +6,8 @@
   "scripts": {
     "build": "node_modules/typescript/bin/tsc",
     "clean": "rm -rf out/",
-    "test": "ts-node framework/unittests",
-    "cts": "ts-node node_modules/jasmine/bin/jasmine"
+    "test": "ts-node cts/node_modules/framework/unittests",
+    "cts": "ts-node cts"
   },
   "repository": {
     "type": "git",
