@@ -134,6 +134,7 @@ BookmarkRemoteUpdatesHandler::BookmarkRemoteUpdatesHandler(
 void BookmarkRemoteUpdatesHandler::Process(
     const syncer::UpdateResponseDataList& updates,
     bool got_new_encryption_requirements) {
+  bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
   // If new encryption requirements come from the server, the entities that are
   // in |updates| will be recorded here so they can be ignored during the
   // re-encryption phase at the end.
@@ -248,6 +249,7 @@ void BookmarkRemoteUpdatesHandler::Process(
           entity->metadata()->server_id());
     }
   }
+  bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
 }
 
 // static
