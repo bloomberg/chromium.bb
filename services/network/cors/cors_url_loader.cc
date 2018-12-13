@@ -159,7 +159,7 @@ void CorsURLLoader::FollowRedirect(
       !fetch_cors_flag_) {
     response_tainting_ = CalculateResponseTainting(
         request_.url, request_.fetch_request_mode, request_.request_initiator,
-        fetch_cors_flag_, tainted_);
+        fetch_cors_flag_, tainted_, origin_access_list_);
     network_loader_->FollowRedirect(to_be_removed_request_headers,
                                     modified_request_headers, new_url);
     return;
@@ -390,7 +390,7 @@ void CorsURLLoader::StartRequest() {
 
   response_tainting_ = CalculateResponseTainting(
       request_.url, request_.fetch_request_mode, request_.request_initiator,
-      fetch_cors_flag_, tainted_);
+      fetch_cors_flag_, tainted_, origin_access_list_);
 
   if (!CalculateCredentialsFlag(request_.fetch_credentials_mode,
                                 response_tainting_)) {
@@ -500,6 +500,41 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
   }
 
   fetch_cors_flag_ = true;
+}
+
+// Keep this in sync with the identical function
+// blink::cors::CalculateResponseTainting.
+//
+// static
+mojom::FetchResponseType CorsURLLoader::CalculateResponseTainting(
+    const GURL& url,
+    mojom::FetchRequestMode request_mode,
+    const base::Optional<url::Origin>& origin,
+    bool cors_flag,
+    bool tainted_origin,
+    const OriginAccessList* origin_access_list) {
+  if (url.SchemeIs(url::kDataScheme))
+    return mojom::FetchResponseType::kBasic;
+
+  if (cors_flag) {
+    DCHECK(IsCorsEnabledRequestMode(request_mode));
+    return mojom::FetchResponseType::kCors;
+  }
+
+  if (!origin) {
+    // This is actually not defined in the fetch spec, but in this case CORS
+    // is disabled so no one should care this value.
+    return mojom::FetchResponseType::kBasic;
+  }
+
+  if (request_mode == mojom::FetchRequestMode::kNoCors) {
+    if (tainted_origin ||
+        (!origin->IsSameOriginWith(url::Origin::Create(url)) &&
+         !origin_access_list->IsAllowed(*origin, url))) {
+      return mojom::FetchResponseType::kOpaque;
+    }
+  }
+  return mojom::FetchResponseType::kBasic;
 }
 
 base::Optional<std::string> CorsURLLoader::GetHeaderString(

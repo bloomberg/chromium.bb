@@ -77,6 +77,10 @@ PLATFORM_EXPORT bool CheckIfRequestCanSkipPreflight(
     const String& method,
     const HTTPHeaderMap& request_header_map);
 
+// Returns the response tainting value
+// (https://fetch.spec.whatwg.org/#concept-request-response-tainting) for a
+// request and the CORS flag, as specified in
+// https://fetch.spec.whatwg.org/#main-fetch.
 PLATFORM_EXPORT network::mojom::FetchResponseType CalculateResponseTainting(
     const KURL& url,
     network::mojom::FetchRequestMode request_mode,
