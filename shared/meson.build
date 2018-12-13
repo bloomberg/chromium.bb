@@ -43,7 +43,11 @@ if dep_pango.found() and dep_pangocairo.found() and dep_glib.found()
 endif
 
 if get_option('image-jpeg')
-	deps_cairo_shared += cc.find_library('jpeg')
+	dep_libjpeg = dependency('libjpeg', required: false)
+	if not dep_libjpeg.found()
+		dep_libjpeg = cc.find_library('jpeg')
+	endif
+	deps_cairo_shared += dep_libjpeg
 	config_h.set('HAVE_JPEG', '1')
 endif
 
