@@ -50,7 +50,10 @@ bool IsTetheringAvailableWithValidDeviceStatus(
               TetherAvailabilityResponse_ResponseCode_SETUP_NEEDED ||
       response_code ==
           TetherAvailabilityResponse_ResponseCode::
-              TetherAvailabilityResponse_ResponseCode_TETHER_AVAILABLE) {
+              TetherAvailabilityResponse_ResponseCode_TETHER_AVAILABLE ||
+      response_code ==
+          TetherAvailabilityResponse_ResponseCode::
+              TetherAvailabilityResponse_ResponseCode_LAST_PROVISIONING_FAILED) {
     return true;
   }
 
