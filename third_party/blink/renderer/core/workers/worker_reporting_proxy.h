@@ -79,6 +79,10 @@ class CORE_EXPORT WorkerReportingProxy {
   // InstalledScriptsManager.
   virtual void DidFailToLoadInstalledClassicScript() {}
 
+  // Invoked on failure to fetch the worker's classic script from network. This
+  // is not called when the script is loaded from InstalledScriptsManager.
+  virtual void DidFailToFetchClassicScript() {}
+
   // Invoked on failure to fetch the worker's module script (either from network
   // or InstalledScriptsManager).
   virtual void DidFailToFetchModuleScript() {}

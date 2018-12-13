@@ -47,7 +47,11 @@ void SharedWorkerReportingProxy::ReportException(
     std::unique_ptr<SourceLocation>,
     int exception_id) {
   DCHECK(!IsMainThread());
-  // Not suppported in SharedWorker.
+  // TODO(nhiroki): Implement the "runtime script errors" algorithm in the HTML
+  // spec:
+  // "For shared workers, if the error is still not handled afterwards, the
+  // error may be reported to a developer console."
+  // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
 }
 
 void SharedWorkerReportingProxy::ReportConsoleMessage(MessageSource,
@@ -56,6 +60,19 @@ void SharedWorkerReportingProxy::ReportConsoleMessage(MessageSource,
                                                       SourceLocation*) {
   DCHECK(!IsMainThread());
   // Not supported in SharedWorker.
+}
+
+void SharedWorkerReportingProxy::DidFailToFetchClassicScript() {
+  DCHECK(!IsMainThread());
+  // TODO(nhiroki): Dispatch an error event at the SharedWorker object in the
+  // parent document.
+}
+
+void SharedWorkerReportingProxy::DidFailToFetchModuleScript() {
+  DCHECK(!IsMainThread());
+  // TODO(nhiroki): Implement module scripts for shared workers.
+  // (https://crbug.com/824646)
+  NOTIMPLEMENTED();
 }
 
 void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {

@@ -100,6 +100,22 @@ void DedicatedWorkerObjectProxy::ReportException(
                       WTF::Passed(location->Clone()), exception_id));
 }
 
+void DedicatedWorkerObjectProxy::DidFailToFetchClassicScript() {
+  PostCrossThreadTask(
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
+      FROM_HERE,
+      CrossThreadBind(&DedicatedWorkerMessagingProxy::DidFailToFetchScript,
+                      messaging_proxy_weak_ptr_));
+}
+
+void DedicatedWorkerObjectProxy::DidFailToFetchModuleScript() {
+  PostCrossThreadTask(
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
+      FROM_HERE,
+      CrossThreadBind(&DedicatedWorkerMessagingProxy::DidFailToFetchScript,
+                      messaging_proxy_weak_ptr_));
+}
+
 void DedicatedWorkerObjectProxy::DidEvaluateClassicScript(bool success) {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),

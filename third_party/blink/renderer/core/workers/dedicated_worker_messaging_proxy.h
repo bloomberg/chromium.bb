@@ -46,6 +46,11 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
 
   bool HasPendingActivity() const;
 
+  // This is called from DedicatedWorkerObjectProxy when off-the-main-thread
+  // worker script fetch is enabled. Otherwise, this is called from
+  // DedicatedWorker.
+  void DidFailToFetchScript();
+
   // These methods come from worker context thread via
   // DedicatedWorkerObjectProxy and are called on the parent context thread.
   void DidEvaluateScript(bool success);
