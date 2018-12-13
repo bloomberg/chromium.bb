@@ -281,16 +281,17 @@ DesktopAutomationHandler.prototype = {
     EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
     var target = evt.target;
-    if (!AutomationPredicate.object(target)) {
-      target = AutomationUtil.findNodePre(
-                   target, Dir.FORWARD, AutomationPredicate.object) ||
-          target;
+    var targetLeaf = null;
+    var targetObject = null;
+    while (target && target != target.root) {
+      if (!targetObject && AutomationPredicate.object(target))
+        targetObject = target;
+      if (AutomationPredicate.touchLeaf(target))
+        targetLeaf = target;
+      target = target.parent;
     }
 
-    while (target && !AutomationPredicate.object(target))
-      target = target.parent;
-
-
+    target = targetLeaf || targetObject;
     if (!target)
       return;
 
