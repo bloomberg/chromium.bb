@@ -11,10 +11,8 @@
 namespace views {
 
 gfx::Size GetCaptionButtonLayoutSize(CaptionButtonLayoutSize size) {
-  constexpr int kButtonWidth = 32;
-
   if (size == CaptionButtonLayoutSize::kNonBrowserCaption)
-    return gfx::Size(kButtonWidth, 32);
+    return gfx::Size(kCaptionButtonWidth, 32);
 
   // |kBrowserMaximizedCaptionButtonHeight| should be kept in sync with those
   // for TAB_HEIGHT in // chrome/browser/ui/layout_constants.cc.
@@ -22,7 +20,7 @@ gfx::Size GetCaptionButtonLayoutSize(CaptionButtonLayoutSize size) {
   int height = ui::MaterialDesignController::touch_ui() ? 41 : 34;
   if (size == CaptionButtonLayoutSize::kBrowserCaptionRestored)
     height += 8;  // Restored window titlebars are 8 DIP taller than maximized.
-  return gfx::Size(kButtonWidth, height);
+  return gfx::Size(kCaptionButtonWidth, height);
 }
 
 }  // namespace views

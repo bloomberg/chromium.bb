@@ -24,6 +24,12 @@ enum class CaptionButtonLayoutSize {
   kNonBrowserCaption,
 };
 
+// Default radius of caption button ink drop highlight and mask.
+constexpr int kCaptionButtonInkDropDefaultCornerRadius = 14;
+
+// Caption button width.
+constexpr int kCaptionButtonWidth = 32;
+
 // Calculates the preferred size of an MD-style frame caption button.  Only used
 // on ChromeOS and desktop Linux.
 VIEWS_EXPORT gfx::Size GetCaptionButtonLayoutSize(CaptionButtonLayoutSize size);

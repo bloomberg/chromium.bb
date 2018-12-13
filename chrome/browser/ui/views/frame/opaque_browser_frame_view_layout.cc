@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
@@ -426,11 +427,17 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
       OpaqueBrowserFrameViewLayoutDelegate::FrameButtonStyle::kMdButton) {
     DCHECK_EQ(std::string(views::FrameCaptionButton::kViewClassName),
               button->GetClassName());
-    button_size = GetCaptionButtonLayoutSize(
-        is_frame_condensed
-            ? views::CaptionButtonLayoutSize::kBrowserCaptionMaximized
-            : views::CaptionButtonLayoutSize::kBrowserCaptionRestored);
+    constexpr int kCaptionButtonCenterSize =
+        views::kCaptionButtonWidth -
+        2 * views::kCaptionButtonInkDropDefaultCornerRadius;
+    const int height = delegate_->GetTopAreaHeight();
+    const int corner_radius =
+        base::ClampToRange((height - kCaptionButtonCenterSize) / 2, 0,
+                           views::kCaptionButtonInkDropDefaultCornerRadius);
+    button_size = gfx::Size(views::kCaptionButtonWidth, height);
     button->SetPreferredSize(button_size);
+    static_cast<views::FrameCaptionButton*>(button)->set_ink_drop_corner_radius(
+        corner_radius);
   } else if (delegate_->GetFrameButtonStyle() ==
              OpaqueBrowserFrameViewLayoutDelegate::FrameButtonStyle::
                  kImageButton) {
