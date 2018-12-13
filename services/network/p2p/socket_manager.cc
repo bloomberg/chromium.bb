@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
@@ -308,10 +309,10 @@ void P2PSocketManager::CreateSocket(P2PSocketType type,
     LOG(ERROR) << "Too many sockets created";
     return;
   }
-  std::unique_ptr<P2PSocket> socket(
+  std::unique_ptr<P2PSocket> socket =
       P2PSocket::Create(this, std::move(client), std::move(request), type,
                         url_request_context_->net_log(),
-                        proxy_resolving_socket_factory_.get(), &throttler_));
+                        proxy_resolving_socket_factory_.get(), &throttler_);
 
   if (!socket)
     return;

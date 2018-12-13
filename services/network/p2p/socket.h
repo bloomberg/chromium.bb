@@ -56,7 +56,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocket : public mojom::P2PSocket {
   static const size_t kMaximumPacketSize = 32768;
 
   // Creates P2PSocket of the specific type.
-  static P2PSocket* Create(
+  static std::unique_ptr<P2PSocket> Create(
       Delegate* delegate,
       mojom::P2PSocketClientPtr client,
       mojom::P2PSocketRequest socket,
