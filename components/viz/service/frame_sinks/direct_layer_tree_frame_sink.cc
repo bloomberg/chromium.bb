@@ -159,7 +159,6 @@ static HitTestRegionList CreateHitTestData(const CompositorFrame& frame) {
 
 void DirectLayerTreeFrameSink::SubmitCompositorFrame(
     CompositorFrame frame,
-    bool hit_test_data_changed,
     bool show_hit_test_borders) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
@@ -192,23 +191,7 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
                          TRACE_EVENT_FLAG_FLOW_OUT, "step",
                          "SubmitHitTestData");
 
-  base::Optional<HitTestRegionList> hit_test_region_list(
-      CreateHitTestData(frame));
-
-  // Do not send duplicate hit-test data.
-  if (!hit_test_data_changed) {
-    if (HitTestRegionList::IsEqual(*hit_test_region_list,
-                                   last_hit_test_data_)) {
-      DCHECK(!HitTestRegionList::IsEqual(*hit_test_region_list,
-                                         HitTestRegionList()));
-      hit_test_region_list = base::nullopt;
-    } else {
-      last_hit_test_data_ = *hit_test_region_list;
-    }
-  } else {
-    last_hit_test_data_ = HitTestRegionList();
-  }
-
+  HitTestRegionList hit_test_region_list = CreateHitTestData(frame);
   support_->SubmitCompositorFrame(
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .local_surface_id(),

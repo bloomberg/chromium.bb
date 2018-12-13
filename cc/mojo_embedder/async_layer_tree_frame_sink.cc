@@ -167,7 +167,6 @@ void AsyncLayerTreeFrameSink::SetLocalSurfaceId(
 
 void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
     viz::CompositorFrame frame,
-    bool hit_test_data_changed,
     bool show_hit_test_borders) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(compositor_frame_sink_ptr_);
@@ -217,20 +216,6 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
 
   if (show_hit_test_borders && hit_test_region_list)
     hit_test_region_list->flags |= viz::HitTestRegionFlags::kHitTestDebug;
-
-  // Do not send duplicate hit-test data.
-  if (hit_test_region_list && !hit_test_data_changed) {
-    if (viz::HitTestRegionList::IsEqual(*hit_test_region_list,
-                                        last_hit_test_data_)) {
-      DCHECK(!viz::HitTestRegionList::IsEqual(*hit_test_region_list,
-                                              viz::HitTestRegionList()));
-      hit_test_region_list = base::nullopt;
-    } else {
-      last_hit_test_data_ = *hit_test_region_list;
-    }
-  } else {
-    last_hit_test_data_ = viz::HitTestRegionList();
-  }
 
   if (last_submitted_local_surface_id_ != local_surface_id_) {
     last_submitted_local_surface_id_ = local_surface_id_;

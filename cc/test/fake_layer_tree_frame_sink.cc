@@ -62,7 +62,6 @@ void FakeLayerTreeFrameSink::DetachFromClient() {
 
 void FakeLayerTreeFrameSink::SubmitCompositorFrame(
     viz::CompositorFrame frame,
-    bool hit_test_data_changed,
     bool submit_hit_test_borders) {
   ReturnResourcesHeldByParent();
 

@@ -67,24 +67,10 @@ void HitTestManager::SubmitHitTestRegionList(
     const SurfaceId& surface_id,
     const uint64_t frame_index,
     base::Optional<HitTestRegionList> hit_test_region_list) {
-  if (!hit_test_region_list) {
-    auto& frame_index_map = hit_test_region_lists_[surface_id];
-    if (!frame_index_map.empty()) {
-      // We will reuse the last submitted hit-test data.
-      uint64_t last_frame_index = frame_index_map.rbegin()->first;
-
-      HitTestRegionList last_hit_test_region_list =
-          std::move(frame_index_map[last_frame_index]);
-
-      frame_index_map[frame_index] = std::move(last_hit_test_region_list);
-      frame_index_map.erase(last_frame_index);
-    }
+  if (!hit_test_region_list)
     return;
-  }
   if (!ValidateHitTestRegionList(surface_id, &*hit_test_region_list))
     return;
-  ++submit_hit_test_region_list_index_;
-
   // TODO(gklassen): Runtime validation that hit_test_region_list is valid.
   // TODO(gklassen): Inform FrameSink that the hit_test_region_list is invalid.
   // TODO(gklassen): FrameSink needs to inform the host of a difficult renderer.

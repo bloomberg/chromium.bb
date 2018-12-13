@@ -109,15 +109,10 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
 
   // For successful swaps, the implementation must call
   // DidReceiveCompositorFrameAck() asynchronously when the frame has been
-  // processed in order to unthrottle the next frame.
-  // If |hit_test_data_changed| is false, we do an equality check
-  // with the old hit-test data. If there is no change, we do not send the
-  // hit-test data. False positives are allowed. The value of
-  // |hit_test_data_changed| should remain constant in the caller.
-  // |show_hit_test_borders| controls whether viz will insert debug borders over
-  // hit-test data and is passed from LayerTreeDebugState.
+  // processed in order to unthrottle the next frame. |show_hit_test_borders|
+  // controls whether viz will insert debug borders over hit-test data and is
+  // passed from LayerTreeDebugState.
   virtual void SubmitCompositorFrame(viz::CompositorFrame frame,
-                                     bool hit_test_data_changed,
                                      bool show_hit_test_borders) = 0;
 
   // Signals that a BeginFrame issued by the viz::BeginFrameSource provided to
