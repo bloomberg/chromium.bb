@@ -172,6 +172,14 @@ chrome.accessibilityPrivate.darkenScreen = function(enabled) {};
 chrome.accessibilityPrivate.setSwitchAccessKeys = function(key_codes) {};
 
 /**
+ * Show or hide the Switch Access menu in a position appropriate for an element
+ * with location |element_bounds|.
+ * @param {boolean} show
+ * @param {chrome.accessibilityPrivate.ScreenRect} element_bounds
+ */
+chrome.accessibilityPrivate.setSwitchAccessMenuState = function(show, element_bounds) {};
+
+/**
  * Sets current ARC app to use native ARC support.
  * @param {boolean} enabled True for ChromeVox (native), false for TalkBack.
  */

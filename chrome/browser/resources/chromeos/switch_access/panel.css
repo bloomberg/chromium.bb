@@ -7,6 +7,7 @@
 body {
   background: white;
   border: 5px solid grey;
+  height: 180px;
   margin: 0;
   padding: 4px 3px 5px 3px;
 }
@@ -15,7 +16,7 @@ body > div {
 }
 .action {
   font-size: 150%;
-  margin: auto 2px;
+  margin: 2px;
 }
 .focus {
   outline: solid thick #78e428;  /** light green from automation_manager.js */

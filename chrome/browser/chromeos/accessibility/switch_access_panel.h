@@ -13,6 +13,8 @@
 class SwitchAccessPanel : public AccessibilityPanel {
  public:
   explicit SwitchAccessPanel(content::BrowserContext* browser_context);
+  void Show(const gfx::Rect& element_bounds);
+  void Hide();
   ~SwitchAccessPanel() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(SwitchAccessPanel);

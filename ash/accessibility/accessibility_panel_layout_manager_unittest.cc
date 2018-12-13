@@ -87,15 +87,15 @@ TEST_F(AccessibilityPanelLayoutManagerTest, PanelFullscreen) {
 
   gfx::Rect expected_work_area = screen->GetPrimaryDisplay().work_area();
 
-  // When the panel is fullscreen it fills the display and does not change the
+  // When the panel is fullscreen it fills the display and clears the
   // work area.
   layout_manager->SetPanelBounds(gfx::Rect(),
                                  mojom::AccessibilityPanelState::FULLSCREEN);
   EXPECT_EQ(widget->GetNativeWindow()->bounds(),
             screen->GetPrimaryDisplay().bounds());
-  EXPECT_EQ(screen->GetPrimaryDisplay().work_area(), expected_work_area);
+  EXPECT_EQ(screen->GetPrimaryDisplay().work_area().y(), 0);
 
-  // Restoring the panel to default size restores the bounds and does not change
+  // Restoring the panel to default size restores the bounds and sets
   // the work area.
   layout_manager->SetPanelBounds(gfx::Rect(0, 0, 0, kDefaultPanelHeight),
                                  mojom::AccessibilityPanelState::FULL_WIDTH);
