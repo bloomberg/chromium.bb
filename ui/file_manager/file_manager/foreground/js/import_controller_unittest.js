@@ -705,7 +705,8 @@ function setupFileSystem(volumeType, volumeId, fileNames) {
   var volumeInfo = volumeManager.createVolumeInfo(
       volumeType, volumeId, 'A volume known as ' + volumeId);
   assertTrue(volumeInfo != null);
-  volumeInfo.fileSystem.populate(fileNames);
+  var mockFileSystem = /** @type {!MockFileSystem} */ (volumeInfo.fileSystem);
+  mockFileSystem.populate(fileNames);
   return volumeInfo;
 }
 
