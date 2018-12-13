@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -68,6 +69,7 @@ public class ExploreSitesPage extends BasicNativePage {
         int LOADING_NET = 4; // Retrieving catalog resources from internet.
     }
 
+    private TabModelSelector mTabModelSelector;
     private NativePageHost mHost;
     private Tab mTab;
     private TabObserver mTabObserver;
@@ -105,6 +107,7 @@ public class ExploreSitesPage extends BasicNativePage {
             mTab.addObserver(mTabObserver);
         }
 
+        mTabModelSelector = activity.getTabModelSelector();
         mTitle = activity.getString(R.string.explore_sites_title);
         mView = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.explore_sites_page_layout, null);
@@ -125,9 +128,8 @@ public class ExploreSitesPage extends BasicNativePage {
                         context.getResources(), R.color.default_favicon_background_color),
                 context.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_text_size));
 
-        NativePageNavigationDelegateImpl navDelegate = new NativePageNavigationDelegateImpl(
-                activity, mProfile, host, activity.getTabModelSelector());
-
+        NativePageNavigationDelegateImpl navDelegate =
+                new NativePageNavigationDelegateImpl(activity, mProfile, host, mTabModelSelector);
         // Don't direct reference activity because it might change if tab is reparented.
         Runnable closeContextMenuCallback =
                 () -> host.getActiveTab().getActivity().closeContextMenu();
@@ -147,6 +149,8 @@ public class ExploreSitesPage extends BasicNativePage {
 
         ExploreSitesBridge.getEspCatalog(mProfile, this::translateToModel);
         RecordUserAction.record("Android.ExploreSitesPage.Open");
+
+        // TODO(chili): Set layout to be an observer of list model
     }
 
     void translateToModel(@Nullable List<ExploreSitesCategory> categoryList) {

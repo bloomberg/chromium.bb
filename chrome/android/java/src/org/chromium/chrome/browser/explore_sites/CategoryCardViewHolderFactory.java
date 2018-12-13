@@ -27,6 +27,11 @@ class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHolderFac
             ViewGroup parent, @CategoryCardAdapter.ViewType int viewType) {
         View view;
         switch (viewType) {
+            case CategoryCardAdapter.ViewType.HEADER:
+                view = LayoutInflater.from(parent.getContext())
+                               .inflate(R.layout.explore_sites_title_card, parent,
+                                       /* attachToRoot = */ false);
+                break;
             case CategoryCardAdapter.ViewType.CATEGORY:
                 view = LayoutInflater.from(parent.getContext())
                                .inflate(R.layout.explore_sites_category_card_view, parent,
