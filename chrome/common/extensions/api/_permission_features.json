@@ -580,10 +580,6 @@
     "extension_types": ["extension", "platform_app"],
     "location": "component"
   },
-  "pointerLock": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
-  },
   "platformKeys": {
     "channel": "stable",
     "platforms": ["chromeos"],
