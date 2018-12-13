@@ -5714,6 +5714,7 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/table/constructor.any.html [ Pass Fail
 crbug.com/v8/8319 external/wpt/wasm/jsapi/table/constructor.any.worker.html [ Pass Failure ]
 
 # Sheriff 2018-12-13
+crbug.com/878226 fast/dynamic/window-resize-scrollbars-test.html [ Pass Timeout ]
 crbug.com/910452 media/controls/buttons-after-reset.html [ Pass Failure ]
 crbug.com/910452 virtual/new-remote-playback-pipeline/media/controls/buttons-after-reset.html [ Pass Failure ]
 crbug.com/910452 virtual/video-surface-layer/media/controls/buttons-after-reset.html [ Pass Failure ]
