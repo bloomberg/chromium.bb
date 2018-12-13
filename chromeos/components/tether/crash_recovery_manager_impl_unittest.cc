@@ -119,7 +119,7 @@ class CrashRecoveryManagerImplTest : public NetworkStateTest {
               fake_active_host_->GetActiveHostStatus());
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   const multidevice::RemoteDeviceRef test_device_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;

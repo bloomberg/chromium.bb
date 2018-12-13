@@ -176,7 +176,7 @@ class ConnectionPreserverImplTest : public NetworkStateTest {
     remote_device_to_client_channel_destruction_count_map_[remote_device]++;
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   const multidevice::RemoteDeviceRef test_local_device_;
   const multidevice::RemoteDeviceRefList test_remote_devices_;

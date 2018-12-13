@@ -85,7 +85,7 @@ class CountDownLatchImplTest : public testing::Test {
     base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::Lock map_lock_;
   base::flat_map<base::UnguessableToken,
                  base::Optional<location::nearby::ExceptionOr<bool>>>
