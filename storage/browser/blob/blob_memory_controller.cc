@@ -102,8 +102,10 @@ BlobStorageLimits CalculateBlobStorageLimitsImpl(const FilePath& storage_dir,
     limits.desired_max_disk_space = static_cast<uint64_t>(disk_size / 10ll);
 #endif
   }
-  UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.MaxDiskSpace",
-                          limits.desired_max_disk_space / kMegabyte);
+  if (disk_enabled) {
+    UMA_HISTOGRAM_COUNTS_1M("Storage.Blob.MaxDiskSpace2",
+                            limits.desired_max_disk_space / kMegabyte);
+  }
   limits.effective_max_disk_space = limits.desired_max_disk_space;
 
   CHECK(limits.IsValid());
