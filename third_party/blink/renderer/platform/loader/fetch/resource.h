@@ -26,6 +26,7 @@
 
 #include <memory>
 #include "base/auto_reset.h"
+#include "base/callback.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
@@ -428,6 +429,14 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     return virtual_time_pauser_;
   }
 
+  // See WebURLLoaderClient.
+  base::OnceClosure TakeContinueNavigationRequestCallback() {
+    return std::move(continue_navigation_request_callback_);
+  }
+  void SetContinueNavigationRequestCallback(base::OnceClosure closure) {
+    continue_navigation_request_callback_ = std::move(closure);
+  }
+
  protected:
   Resource(const ResourceRequest&, ResourceType, const ResourceLoaderOptions&);
 
@@ -590,6 +599,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   scoped_refptr<SharedBuffer> data_;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
+  base::OnceClosure continue_navigation_request_callback_;
 };
 
 class ResourceFactory {
