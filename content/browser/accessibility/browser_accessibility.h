@@ -366,6 +366,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
                                         int32_t dst_id) override;
   std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
                                         int32_t dst_id) override;
+  int32_t GetPosInSet() const override;
+  int32_t GetSetSize() const override;
 
  protected:
   using BrowserAccessibilityPositionInstance =

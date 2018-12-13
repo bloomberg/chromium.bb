@@ -58,6 +58,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   std::set<int32_t> GetReverseRelations(ax::mojom::IntListAttribute attr,
                                         int32_t dst_id) override;
 
+  int32_t GetPosInSet() const override;
+  int32_t GetSetSize() const override;
+
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);
   void ReplaceIntAttribute(int32_t node_id,

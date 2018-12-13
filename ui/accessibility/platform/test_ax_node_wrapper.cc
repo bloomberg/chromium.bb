@@ -308,4 +308,12 @@ TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
       platform_node_(AXPlatformNode::Create(this)) {
 }
 
+int32_t TestAXNodeWrapper::GetPosInSet() const {
+  return node_->GetPosInSet();
+}
+
+int32_t TestAXNodeWrapper::GetSetSize() const {
+  return node_->GetSetSize();
+}
+
 }  // namespace ui

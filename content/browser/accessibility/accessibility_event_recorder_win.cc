@@ -340,10 +340,10 @@ void AccessibilityEventRecorderWin::OnWinEventHook(
                                       &position_in_group) == S_OK) {
     if (group_level)
       log += base::StringPrintf(" level=%ld", group_level);
-    if (similar_items_in_group) {
-      log += base::StringPrintf(" %ld of %ld", position_in_group,
-                                similar_items_in_group);
-    }
+    if (position_in_group)
+      log += base::StringPrintf(" PosInSet=%ld", position_in_group);
+    if (similar_items_in_group)
+      log += base::StringPrintf(" SetSize=%ld", similar_items_in_group);
   }
 
   // For TEXT_REMOVED and TEXT_INSERTED events, query the text that was

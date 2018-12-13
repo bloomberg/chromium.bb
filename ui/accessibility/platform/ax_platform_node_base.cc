@@ -982,6 +982,14 @@ void AXPlatformNodeBase::AddAttributeToList(const char* name,
                                             PlatformAttributeList* attributes) {
 }
 
+int32_t AXPlatformNodeBase::GetPosInSet() const {
+  return delegate_->GetPosInSet();
+}
+
+int32_t AXPlatformNodeBase::GetSetSize() const {
+  return delegate_->GetSetSize();
+}
+
 // static
 void AXPlatformNodeBase::SanitizeStringAttribute(const std::string& input,
                                                  std::string* output) {

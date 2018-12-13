@@ -1135,4 +1135,12 @@ bool BrowserAccessibility::ShouldIgnoreHoveredStateForTesting() {
   return accessibility_state->disable_hot_tracking_for_testing();
 }
 
+int32_t BrowserAccessibility::GetPosInSet() const {
+  return node()->GetPosInSet();
+}
+
+int32_t BrowserAccessibility::GetSetSize() const {
+  return node()->GetSetSize();
+}
+
 }  // namespace content

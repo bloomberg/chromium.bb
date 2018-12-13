@@ -105,6 +105,10 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   int32_t GetTableCellIndex() const override;
   int32_t CellIndexToId(int32_t cell_index) const override;
 
+  // Only called on ordered-set-like elements and item-like elements.
+  int32_t GetPosInSet() const override;
+  int32_t GetSetSize() const override;
+
   //
   // Events.
   //
