@@ -260,6 +260,7 @@
       'Linux remote_run Tester': 'release_bot',
       'Linux Viz': 'release_trybot',
       'linux-annotator-rel': 'release_bot',
+      'linux-autofill-captured-sites-rel': 'release_bot',
       'linux-gtest-hackathon-dbg': 'debug_bot',
       'linux-blink-animation-use-time-delta': 'debug_bot_enable_blink_animation_use_time_delta',
       'linux-blink-heap-incremental-marking': 'debug_bot_enable_blink_heap_incremental_marking',
@@ -268,6 +269,7 @@
       'linux-code-coverage': 'clang_code_coverage',
       'Mac deterministic': 'release_bot_mac_strip',
       'Mac deterministic (dbg)': 'debug_bot',
+      'mac-autofill-captured-sites-rel': 'release_bot',
 
       'android-mojo-webview-rel': 'android_release_bot_minimal_symbols_arm64',
       'Mojo ChromiumOS': 'chromeos_with_codecs_release_trybot',
@@ -282,6 +284,7 @@
       'Win 10 Fast Ring': 'release_trybot',
       'Windows Clang deterministic': 'clang_release_bot_minimal_symbols_x86',
       'win-annotator-rel': 'release_bot',
+      'win-autofill-captured-sites-rel': 'release_bot',
     },
 
     'chromium.goma': {
