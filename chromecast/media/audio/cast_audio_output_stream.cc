@@ -70,7 +70,7 @@ class CastAudioOutputStream::CmaWrapper : public CmaBackend::Decoder::Delegate {
   void Initialize(const std::string& application_session_id,
                   chromecast::mojom::MultiroomInfoPtr multiroom_info);
   void Start(AudioSourceCallback* source_callback);
-  void Stop();
+  void Stop(base::WaitableEvent* finished);
   void Close(base::OnceClosure closure);
   void SetVolume(double volume);
 
@@ -193,6 +193,7 @@ void CastAudioOutputStream::CmaWrapper::Initialize(
 
 void CastAudioOutputStream::CmaWrapper::Start(
     AudioSourceCallback* source_callback) {
+  DCHECK(source_callback);
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   if (media_thread_state_ == kPendingClose)
     return;
@@ -215,18 +216,23 @@ void CastAudioOutputStream::CmaWrapper::Start(
   }
 }
 
-void CastAudioOutputStream::CmaWrapper::Stop() {
+void CastAudioOutputStream::CmaWrapper::Stop(base::WaitableEvent* finished) {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
+  // Prevent further pushes to the audio buffer after stopping.
+  push_timer_.Stop();
   if (cma_backend_ && media_thread_state_ == kStarted) {
     cma_backend_->Stop();
   }
   push_in_progress_ = false;
   media_thread_state_ = kOpened;
   source_callback_ = nullptr;
+  finished->Signal();
 }
 
 void CastAudioOutputStream::CmaWrapper::Close(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
+  // Prevent further pushes to the audio buffer after stopping.
+  push_timer_.Stop();
   // Only stop the backend if it was started.
   if (cma_backend_ && media_thread_state_ == kStarted) {
     cma_backend_->Stop();
@@ -586,6 +592,7 @@ void CastAudioOutputStream::FinishClose() {
 }
 
 void CastAudioOutputStream::Start(AudioSourceCallback* source_callback) {
+  DCHECK(source_callback);
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
   // We allow calls to start even in the unopened state.
   DCHECK(audio_thread_state_ != kPendingClose);
@@ -624,7 +631,9 @@ void CastAudioOutputStream::Stop() {
   DCHECK(!(cma_wrapper_ && mixer_service_wrapper_));
 
   if (cma_wrapper_) {
-    POST_TO_CMA_WRAPPER(Stop);
+    base::WaitableEvent stopFinished;
+    POST_TO_CMA_WRAPPER(Stop, base::Unretained(&stopFinished));
+    stopFinished.Wait();
   } else if (mixer_service_wrapper_) {
     POST_TO_MIXER_SERVICE_WRAPPER(Stop);
   }
