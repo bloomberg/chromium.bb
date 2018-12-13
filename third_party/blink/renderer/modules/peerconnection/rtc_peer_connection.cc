@@ -669,7 +669,6 @@ RTCPeerConnection* RTCPeerConnection::Create(
   RTCPeerConnection* peer_connection = MakeGarbageCollected<RTCPeerConnection>(
       context, std::move(configuration), rtc_configuration->hasSdpSemantics(),
       constraints, exception_state);
-  peer_connection->PauseIfNeeded();
   if (exception_state.HadException())
     return nullptr;
 
@@ -686,20 +685,13 @@ RTCPeerConnection::RTCPeerConnection(
     bool sdp_semantics_specified,
     WebMediaConstraints constraints,
     ExceptionState& exception_state)
-    : PausableObject(context),
+    : ContextLifecycleObserver(context),
       signaling_state_(
           webrtc::PeerConnectionInterface::SignalingState::kStable),
       ice_gathering_state_(webrtc::PeerConnectionInterface::kIceGatheringNew),
       ice_connection_state_(webrtc::PeerConnectionInterface::kIceConnectionNew),
       peer_connection_state_(
           webrtc::PeerConnectionInterface::PeerConnectionState::kNew),
-      // WebRTC spec specifies kNetworking as task source.
-      // https://www.w3.org/TR/webrtc/#operation
-      dispatch_scheduled_event_runner_(
-          AsyncMethodRunner<RTCPeerConnection>::Create(
-              this,
-              &RTCPeerConnection::DispatchScheduledEvent,
-              context->GetTaskRunner(TaskType::kNetworking))),
       negotiation_needed_(false),
       stopped_(false),
       closed_(false),
@@ -2849,10 +2841,8 @@ void RTCPeerConnection::ReleasePeerConnectionHandler() {
   ice_connection_state_ = webrtc::PeerConnectionInterface::kIceConnectionClosed;
   signaling_state_ = webrtc::PeerConnectionInterface::SignalingState::kClosed;
 
-  dispatch_scheduled_event_runner_->Stop();
-
   peer_handler_.reset();
-
+  dispatch_scheduled_events_task_handle_.Cancel();
   connection_handle_for_scheduler_.reset();
 }
 
@@ -2867,15 +2857,7 @@ const AtomicString& RTCPeerConnection::InterfaceName() const {
 }
 
 ExecutionContext* RTCPeerConnection::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
-}
-
-void RTCPeerConnection::Pause() {
-  dispatch_scheduled_event_runner_->Pause();
-}
-
-void RTCPeerConnection::Unpause() {
-  dispatch_scheduled_event_runner_->Unpause();
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
 void RTCPeerConnection::ContextDestroyed(ExecutionContext*) {
@@ -3007,10 +2989,20 @@ void RTCPeerConnection::ScheduleDispatchEvent(Event* event,
   scheduled_events_.push_back(
       MakeGarbageCollected<EventWrapper>(event, std::move(setup_function)));
 
-  dispatch_scheduled_event_runner_->RunAsync();
+  if (dispatch_scheduled_events_task_handle_.IsActive())
+    return;
+
+  if (auto* context = GetExecutionContext()) {
+    // WebRTC spec specifies kNetworking as task source.
+    // https://www.w3.org/TR/webrtc/#operation
+    dispatch_scheduled_events_task_handle_ = PostCancellableTask(
+        *context->GetTaskRunner(TaskType::kNetworking), FROM_HERE,
+        WTF::Bind(&RTCPeerConnection::DispatchScheduledEvents,
+                  WrapPersistent(this)));
+  }
 }
 
-void RTCPeerConnection::DispatchScheduledEvent() {
+void RTCPeerConnection::DispatchScheduledEvents() {
   if (stopped_)
     return;
 
@@ -3054,11 +3046,10 @@ void RTCPeerConnection::Trace(blink::Visitor* visitor) {
   visitor->Trace(rtp_senders_);
   visitor->Trace(rtp_receivers_);
   visitor->Trace(transceivers_);
-  visitor->Trace(dispatch_scheduled_event_runner_);
   visitor->Trace(scheduled_events_);
   visitor->Trace(dtls_transports_by_mid_);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
   MediaStreamObserver::Trace(visitor);
 }
 

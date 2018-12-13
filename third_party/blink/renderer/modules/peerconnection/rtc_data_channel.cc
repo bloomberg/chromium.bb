@@ -60,11 +60,7 @@ RTCDataChannel* RTCDataChannel::Create(
     ExecutionContext* context,
     std::unique_ptr<WebRTCDataChannelHandler> handler) {
   DCHECK(handler);
-  RTCDataChannel* channel =
-      MakeGarbageCollected<RTCDataChannel>(context, std::move(handler));
-  channel->PauseIfNeeded();
-
-  return channel;
+  return MakeGarbageCollected<RTCDataChannel>(context, std::move(handler));
 }
 
 RTCDataChannel* RTCDataChannel::Create(
@@ -80,17 +76,13 @@ RTCDataChannel* RTCDataChannel::Create(
                                       "RTCDataChannel is not supported");
     return nullptr;
   }
-  RTCDataChannel* channel =
-      MakeGarbageCollected<RTCDataChannel>(context, std::move(handler));
-  channel->PauseIfNeeded();
-
-  return channel;
+  return MakeGarbageCollected<RTCDataChannel>(context, std::move(handler));
 }
 
 RTCDataChannel::RTCDataChannel(
     ExecutionContext* context,
     std::unique_ptr<WebRTCDataChannelHandler> handler)
-    : PausableObject(context),
+    : ContextLifecycleObserver(context),
       handler_(std::move(handler)),
       ready_state_(kReadyStateConnecting),
       binary_type_(kBinaryTypeArrayBuffer),
@@ -305,17 +297,7 @@ const AtomicString& RTCDataChannel::InterfaceName() const {
 }
 
 ExecutionContext* RTCDataChannel::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
-}
-
-// PausableObject
-void RTCDataChannel::Pause() {
-  scheduled_event_timer_.Stop();
-}
-
-void RTCDataChannel::Unpause() {
-  if (!scheduled_events_.IsEmpty() && !scheduled_event_timer_.IsActive())
-    scheduled_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
 void RTCDataChannel::ContextDestroyed(ExecutionContext*) {
@@ -385,7 +367,7 @@ void RTCDataChannel::ScheduledEventTimerFired(TimerBase*) {
 void RTCDataChannel::Trace(blink::Visitor* visitor) {
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink
