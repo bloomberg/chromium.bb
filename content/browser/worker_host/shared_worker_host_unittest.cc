@@ -97,7 +97,7 @@ class SharedWorkerHostTest : public testing::Test {
           std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
           mojo::MakeRequest(&loader_factory_ptr));
 
-      subresource_loader_params->loader_factory_info =
+      subresource_loader_params->appcache_loader_factory_info =
           loader_factory_ptr.PassInterface();
     } else if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
       provider_info = mojom::ServiceWorkerProviderInfoForSharedWorker::New();
@@ -113,13 +113,8 @@ class SharedWorkerHostTest : public testing::Test {
       mojo::MakeStrongBinding(
           std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
           mojo::MakeRequest(&default_factory_ptr));
-      network::mojom::URLLoaderFactoryPtr default_network_factory_ptr;
-      mojo::MakeStrongBinding(
-          std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
-          mojo::MakeRequest(&default_network_factory_ptr));
       subresource_loader_factories.reset(new URLLoaderFactoryBundleInfo(
           default_factory_ptr.PassInterface(),
-          default_network_factory_ptr.PassInterface(),
           URLLoaderFactoryBundleInfo::SchemeMap(),
           URLLoaderFactoryBundleInfo::OriginMap(),
           true /* bypass_redirect_checks */));

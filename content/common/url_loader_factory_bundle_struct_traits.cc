@@ -22,6 +22,12 @@ network::mojom::URLLoaderFactoryPtrInfo Traits::default_factory(
 }
 
 // static
+network::mojom::URLLoaderFactoryPtrInfo Traits::appcache_factory(
+    BundleInfoType& bundle) {
+  return std::move(bundle->appcache_factory_info());
+}
+
+// static
 content::URLLoaderFactoryBundleInfo::SchemeMap
 Traits::scheme_specific_factories(BundleInfoType& bundle) {
   return std::move(bundle->scheme_specific_factory_infos());
@@ -45,6 +51,8 @@ bool Traits::Read(content::mojom::URLLoaderFactoryBundleDataView data,
 
   (*out_bundle)->default_factory_info() =
       data.TakeDefaultFactory<network::mojom::URLLoaderFactoryPtrInfo>();
+  (*out_bundle)->appcache_factory_info() =
+      data.TakeAppcacheFactory<network::mojom::URLLoaderFactoryPtrInfo>();
   if (!data.ReadSchemeSpecificFactories(
           &(*out_bundle)->scheme_specific_factory_infos()))
     return false;
