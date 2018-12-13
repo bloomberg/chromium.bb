@@ -928,28 +928,58 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // SiteInstance's proxies.
   GetSiteInstance()->DecrementActiveFrameCount();
 
-  // If this RenderFrameHost is swapping with a RenderFrameProxyHost, the
-  // RenderFrame will already be deleted in the renderer process. Main frame
-  // RenderFrames will be cleaned up as part of deleting its RenderView if the
-  // RenderView isn't in use by other frames. In all other cases, the
-  // RenderFrame should be cleaned up (if it exists).
-  bool will_render_view_clean_up_render_frame =
-      frame_tree_node_->IsMainFrame() && render_view_host_->ref_count() == 1;
-  if (is_active() && render_frame_created_ &&
-      !will_render_view_clean_up_render_frame) {
-    Send(new FrameMsg_Delete(routing_id_));
-
-    // If this subframe has an unload handler, ensure that it has a chance to
-    // execute by delaying process cleanup.  This will prevent the process from
-    // shutting down immediately in the case where this is the last active
-    // frame in the process.  See https://crbug.com/852204.
-    if (!frame_tree_node_->IsMainFrame() &&
-        GetSuddenTerminationDisablerState(blink::kUnloadHandler)) {
-      RenderProcessHostImpl* process =
-          static_cast<RenderProcessHostImpl*>(GetProcess());
-      process->DelayProcessShutdownForUnload(subframe_unload_timeout_);
-    }
-  }
+  // Once a RenderFrame is created in the renderer, there are three possible
+  // clean-up paths:
+  // 1. The RenderFrame can be the main frame. In this case, closing the
+  //    associated RenderView will clean up the resources associated with the
+  //    main RenderFrame.
+  // 2. The RenderFrame can be swapped out. In this case, the browser sends a
+  //    FrameMsg_SwapOut for the RenderFrame to replace itself with a
+  //    RenderFrameProxy and release its associated resources. |unload_state_|
+  //    is advanced to UnloadState::InProgress to track that this IPC is in
+  //    flight.
+  // 3. The RenderFrame can be detached, as part of removing a subtree (due to
+  //    navigation, swap out, or DOM mutation). In this case, the browser sends
+  //    a FrameMsg_Delete for the RenderFrame to detach itself and release its
+  //    associated resources. If the subframe contains an unload handler,
+  //    |unload_state_| is advanced to UnloadState::InProgress to track that the
+  //    detach is in progress; otherwise, it is advanced directly to
+  //    UnloadState::Completed.
+  //
+  // The browser side gives the renderer a small timeout to finish processing
+  // swap out / detach messages. When the timeout expires, the RFH will be
+  // removed regardless of whether or not the renderer acknowledged that it
+  // completed the work, to avoid indefinitely leaking browser-side state. To
+  // avoid leaks, ~RenderFrameHostImpl still validates that the appropriate
+  // cleanup IPC was sent to the renderer, by checking that |unload_state_| !=
+  // UnloadState::NotRun.
+  //
+  // TODO(dcheng): Due to how frame detach is signalled today, there are some
+  // bugs in this area. In particular, subtree detach is reported from the
+  // bottom up, so the replicated FrameMsg_Delete messages actually operate on a
+  // node-by-node basis rather than detaching an entire subtree at once...
+  //
+  // Note that this logic is fairly subtle. It needs to include all subframes
+  // and all speculative frames, but it should exclude case #1 (a main
+  // RenderFrame owned by the RenderView). It can't simply:
+  // - check |frame_tree_node_->render_manager()->speculative_frame_host()| for
+  //   equality against |this|. The speculative frame host is unset before the
+  //   speculative frame host is destroyed, so this condition would never be
+  //   matched for a speculative RFH that needs to be destroyed.
+  // - check |IsCurrent()|, because the RenderFrames in an InterstitialPageImpl
+  //   are never considered current.
+  //
+  // Directly comparing against |RenderViewHostImpl::GetMainFrame()| still has
+  // one additional subtlety though: |GetMainFrame()| can sometimes return a
+  // speculative RFH! For subframes, this obviously does not matter: a subframe
+  // will always pass the condition |render_view_host_->GetMainFrame() != this|.
+  // However, it turns out that a speculative main frame being deleted will
+  // *always* pass this condition as well: a speculative RFH being deleted will
+  // *always* first be unassociated from its corresponding RFHM. Thus, it
+  // follows that |GetMainFrame()| will never return the speculative main frame
+  // being deleted, since it must have already been unset.
+  if (render_frame_created_ && render_view_host_->GetMainFrame() != this)
+    CHECK(!is_active());
 
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
@@ -1681,6 +1711,30 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
   return true;
 }
 
+void RenderFrameHostImpl::DeleteRenderFrame() {
+  if (!is_active())
+    return;
+
+  if (render_frame_created_) {
+    Send(new FrameMsg_Delete(routing_id_));
+
+    // If this subframe has an unload handler (and isn't speculative), ensure
+    // that it has a chance to execute by delaying process cleanup. This will
+    // prevent the process from shutting down immediately in the case where this
+    // is the last active frame in the process. See https://crbug.com/852204.
+    if (!frame_tree_node_->IsMainFrame() && IsCurrent() &&
+        GetSuddenTerminationDisablerState(blink::kUnloadHandler)) {
+      RenderProcessHostImpl* process =
+          static_cast<RenderProcessHostImpl*>(GetProcess());
+      process->DelayProcessShutdownForUnload(subframe_unload_timeout_);
+    }
+  }
+
+  unload_state_ = GetSuddenTerminationDisablerState(blink::kUnloadHandler)
+                      ? UnloadState::InProgress
+                      : UnloadState::Completed;
+}
+
 void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
   // We should not create new RenderFrames while our delegate is being destroyed
   // (e.g., via a WebContentsObserver during WebContents shutdown).  This seems
@@ -1905,6 +1959,12 @@ void RenderFrameHostImpl::RemoveChild(FrameTreeNode* child) {
       // observers are notified of its deletion.
       std::unique_ptr<FrameTreeNode> node_to_delete(std::move(*iter));
       children_.erase(iter);
+      node_to_delete->current_frame_host()->DeleteRenderFrame();
+      // Speculative RenderFrameHosts are deleted by the FrameTreeNode's
+      // RenderFrameHostManager's destructor. RenderFrameProxyHosts send
+      // FrameMsg_Delete automatically in the destructor.
+      // TODO(dcheng): This is horribly confusing. Refactor this logic so it's
+      // more understandable.
       node_to_delete.reset();
       PendingDeletionCheckCompleted();
       return;
@@ -1916,7 +1976,13 @@ void RenderFrameHostImpl::ResetChildren() {
   // Remove child nodes from the tree, then delete them. This destruction
   // operation will notify observers. See https://crbug.com/612450 for
   // explanation why we don't just call the std::vector::clear method.
-  std::vector<std::unique_ptr<FrameTreeNode>>().swap(children_);
+  std::vector<std::unique_ptr<FrameTreeNode>> children;
+  children.swap(children_);
+  // TODO(dcheng): Ideally, this would be done by messaging all the proxies of
+  // this RenderFrameHostImpl to detach the current frame's children, rather
+  // than messaging each child's current frame host...
+  for (auto& child : children)
+    child->current_frame_host()->DeleteRenderFrame();
 }
 
 void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
@@ -4293,19 +4359,11 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
   DCHECK_EQ(UnloadState::InProgress, unload_state_);
   DCHECK(is_waiting_for_swapout_ack_);
 
-  std::set<RenderFrameHostImpl*> deletion_command_sent;
-  deletion_command_sent.insert(this);  // FrameMsg_SwapOut sent.
-
   for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
     for (FrameTreeNode* node :
          frame_tree_node_->frame_tree()->SubtreeNodes(child_frame.get())) {
       RenderFrameHostImpl* child = node->current_frame_host();
       DCHECK_EQ(UnloadState::NotRun, child->unload_state_);
-
-      child->unload_state_ =
-          child->GetSuddenTerminationDisablerState(blink::kUnloadHandler)
-              ? UnloadState::InProgress
-              : UnloadState::Completed;
 
       // Blink handles deletion of all same-process descendants, running their
       // unload handler if necessary. So delegate sending IPC on the topmost
@@ -4316,9 +4374,12 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
           local_ancestor = rfh;
       }
 
-      if (!base::ContainsKey(deletion_command_sent, local_ancestor)) {
-        deletion_command_sent.insert(local_ancestor);
-        local_ancestor->Send(new FrameMsg_Delete(local_ancestor->routing_id_));
+      local_ancestor->DeleteRenderFrame();
+      if (local_ancestor != child) {
+        child->unload_state_ =
+            child->GetSuddenTerminationDisablerState(blink::kUnloadHandler)
+                ? UnloadState::InProgress
+                : UnloadState::Completed;
       }
     }
   }

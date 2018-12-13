@@ -312,6 +312,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          int parent_routing_id,
                          int previous_sibling_routing_id);
 
+  // Deletes the RenderFrame in the renderer process.
+  // Postcondition: |is_active()| will return false.
+  void DeleteRenderFrame();
+
   // Tracks whether the RenderFrame for this RenderFrameHost has been created in
   // the renderer process.  This is currently only used for subframes.
   // TODO(creis): Use this for main frames as well when RVH goes away.
