@@ -421,12 +421,10 @@ static void setup_frame(AV1_COMP *cpi) {
   if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
     cpi->refresh_golden_frame = 1;
     cpi->refresh_alt_ref_frame = 1;
-    av1_zero(cpi->interp_filter_selected);
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
   } else if (frame_is_sframe(cm)) {
     cpi->refresh_golden_frame = 1;
     cpi->refresh_alt_ref_frame = 1;
-    av1_zero(cpi->interp_filter_selected);
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
   } else {
     const RefCntBuffer *const primary_ref_buf = get_primary_ref_frame_buf(cm);
@@ -437,7 +435,6 @@ static void setup_frame(AV1_COMP *cpi) {
     } else {
       *cm->fc = primary_ref_buf->frame_context;
     }
-    av1_zero(cpi->interp_filter_selected[0]);
   }
 
   cm->prev_frame = get_primary_ref_frame_buf(cm);
@@ -3528,12 +3525,6 @@ static INLINE void shift_last_ref_frames(AV1_COMP *cpi) {
     const int ref_idx = ref_frame - LAST_FRAME;
     cpi->common.remapped_ref_idx[ref_idx] =
         cpi->common.remapped_ref_idx[ref_idx - 1];
-
-    if (!cpi->rc.is_src_frame_alt_ref) {
-      memcpy(cpi->interp_filter_selected[ref_frame],
-             cpi->interp_filter_selected[ref_frame - 1],
-             sizeof(cpi->interp_filter_selected[ref_frame - 1]));
-    }
   }
 }
 
@@ -3548,11 +3539,6 @@ static INLINE void rshift_bwd_ref_frames(AV1_COMP *cpi) {
                                       EXTREF_FRAME };
 
   for (int i = 2; i > 0; --i) {
-    // [0] is allocated to the current coded frame, i.e. bwdref
-    memcpy(cpi->interp_filter_selected[ordered_bwd[i]],
-           cpi->interp_filter_selected[ordered_bwd[i - 1]],
-           sizeof(cpi->interp_filter_selected[ordered_bwd[i - 1]]));
-
     cpi->common.remapped_ref_idx[ordered_bwd[i] - LAST_FRAME] =
         cpi->common.remapped_ref_idx[ordered_bwd[i - 1] - LAST_FRAME];
   }
@@ -3568,11 +3554,6 @@ static INLINE void lshift_bwd_ref_frames(AV1_COMP *cpi) {
                                       EXTREF_FRAME };
 
   for (int i = 0; i < 2; ++i) {
-    // [0] is allocated to the current coded frame, i.e. bwdref
-    memcpy(cpi->interp_filter_selected[ordered_bwd[i]],
-           cpi->interp_filter_selected[ordered_bwd[i + 1]],
-           sizeof(cpi->interp_filter_selected[ordered_bwd[i + 1]]));
-
     cpi->common.remapped_ref_idx[ordered_bwd[i] - LAST_FRAME] =
         cpi->common.remapped_ref_idx[ordered_bwd[i + 1] - LAST_FRAME];
   }
@@ -3644,9 +3625,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
     cm->remapped_ref_idx[ALTREF_FRAME - LAST_FRAME] =
         get_ref_frame_map_idx(cm, GOLDEN_FRAME);
     cm->remapped_ref_idx[GOLDEN_FRAME - LAST_FRAME] = tmp;
-
-    // TODO(zoeliu): Do we need to copy cpi->interp_filter_selected[0] over to
-    // cpi->interp_filter_selected[GOLDEN_FRAME]?
   } else if (cpi->rc.is_src_frame_ext_arf && encode_show_existing_frame(cm)) {
 #if CONFIG_DEBUG
     const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
@@ -3667,9 +3645,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
     cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] =
         get_ref_frame_map_idx(cm, bwdref_to_show);
 
-    memcpy(cpi->interp_filter_selected[LAST_FRAME],
-           cpi->interp_filter_selected[bwdref_to_show],
-           sizeof(cpi->interp_filter_selected[bwdref_to_show]));
 #if USE_SYMM_MULTI_LAYER
     if (cpi->new_bwdref_update_rule == 1) {
       lshift_bwd_ref_frames(cpi);
@@ -3687,10 +3662,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
     if (cpi->refresh_alt_ref_frame) {
       int arf_idx = get_ref_frame_map_idx(cm, ALTREF_FRAME);
       assign_frame_buffer_p(&cm->ref_frame_map[arf_idx], cm->cur_frame);
-
-      memcpy(cpi->interp_filter_selected[ALTREF_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
     }
 
     // === GOLDEN_FRAME ===
@@ -3698,10 +3669,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
       assign_frame_buffer_p(
           &cm->ref_frame_map[get_ref_frame_map_idx(cm, GOLDEN_FRAME)],
           cm->cur_frame);
-
-      memcpy(cpi->interp_filter_selected[GOLDEN_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
     }
 
     // === BWDREF_FRAME ===
@@ -3725,9 +3692,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
 #if USE_SYMM_MULTI_LAYER
       }
 #endif
-      memcpy(cpi->interp_filter_selected[BWDREF_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
     }
 
     // === ALTREF2_FRAME ===
@@ -3735,10 +3699,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
       assign_frame_buffer_p(
           &cm->ref_frame_map[get_ref_frame_map_idx(cm, ALTREF2_FRAME)],
           cm->cur_frame);
-
-      memcpy(cpi->interp_filter_selected[ALTREF2_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
     }
   }
 
@@ -3783,9 +3743,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
     cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] = last3_remapped_idx;
 
     assert(!encode_show_existing_frame(cm));
-    memcpy(cpi->interp_filter_selected[LAST_FRAME],
-           cpi->interp_filter_selected[0],
-           sizeof(cpi->interp_filter_selected[0]));
 
     // If the new structure is used, we will always have overlay frames coupled
     // with bwdref frames. Therefore, we won't have to perform this update
@@ -3809,10 +3766,6 @@ static void update_reference_frames(AV1_COMP *cpi) {
       cm->remapped_ref_idx[LAST_FRAME - LAST_FRAME] =
           get_ref_frame_map_idx(cm, BWDREF_FRAME);
       cm->remapped_ref_idx[BWDREF_FRAME - LAST_FRAME] = last3_remapped_idx;
-
-      memcpy(cpi->interp_filter_selected[LAST_FRAME],
-             cpi->interp_filter_selected[BWDREF_FRAME],
-             sizeof(cpi->interp_filter_selected[BWDREF_FRAME]));
     }
   }
 
