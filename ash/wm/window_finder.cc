@@ -5,6 +5,10 @@
 #include "ash/wm/window_finder.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
+#include "ash/wm/overview/window_grid.h"
+#include "ash/wm/overview/window_selector.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "services/ws/window_service.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -83,6 +87,32 @@ aura::Window* GetTopmostWindowAtPointWithinWindow(
   return nullptr;
 }
 
+// Finds the top level window in overview that contains |screen_point| while
+// ignoring |ignore|. Returns nullptr if there is no such window. Note the
+// returned window might be a minimized window that's currently showing in
+// overview.
+aura::Window* GetToplevelWindowInOverviewAtPoint(
+    const gfx::Point& screen_point,
+    const std::set<aura::Window*>& ignore) {
+  ash::WindowSelectorController* window_selector_controller =
+      ash::Shell::Get()->window_selector_controller();
+  if (!window_selector_controller->IsSelecting())
+    return nullptr;
+
+  ash::WindowGrid* grid =
+      window_selector_controller->window_selector()->GetGridWithRootWindow(
+          ash::wm::GetRootWindowAt(screen_point));
+  if (!grid)
+    return nullptr;
+
+  aura::Window* window = grid->GetTargetWindowOnLocation(screen_point);
+  if (!window)
+    return nullptr;
+
+  window = window->GetToplevelWindow();
+  return (ignore.find(window) == ignore.end()) ? window : nullptr;
+}
+
 }  // namespace
 
 namespace ash {
@@ -94,8 +124,13 @@ aura::Window* GetTopmostWindowAtPoint(const gfx::Point& screen_point,
   if (real_topmost)
     *real_topmost = nullptr;
   aura::Window* root = GetRootWindowAt(screen_point);
-  return GetTopmostWindowAtPointWithinWindow(
+  // GetTopmostWindowAtPointWithinWindow() always needs to be called to update
+  // |real_topmost| correctly.
+  aura::Window* topmost_window = GetTopmostWindowAtPointWithinWindow(
       screen_point, root, root->targeter(), ignore, real_topmost);
+  aura::Window* overview_window =
+      GetToplevelWindowInOverviewAtPoint(screen_point, ignore);
+  return overview_window ? overview_window : topmost_window;
 }
 
 }  // namespace wm

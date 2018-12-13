@@ -149,6 +149,9 @@ class ShieldButton : public views::Button {
  public:
   ShieldButton(views::ButtonListener* listener, const base::string16& name)
       : views::Button(listener) {
+    // The shield button should not be focusable. It's also to avoid
+    // accessability error when |name| is empty.
+    SetFocusBehavior(FocusBehavior::NEVER);
     SetAccessibleName(name);
   }
   ~ShieldButton() override = default;
@@ -625,6 +628,10 @@ void WindowSelectorItem::UpdateYPositionAndOpacity(
     transform.matrix().setFloat(1, 3, static_cast<float>(offset + new_grid_y));
     layer->SetTransform(transform);
   }
+}
+
+void WindowSelectorItem::UpdateItemContentViewForMinimizedWindow() {
+  transform_window_.UpdateMinimizedWidget();
 }
 
 float WindowSelectorItem::GetItemScale(const gfx::Size& size) {

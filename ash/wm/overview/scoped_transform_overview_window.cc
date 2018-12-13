@@ -510,6 +510,16 @@ void ScopedTransformOverviewWindow::ResizeMinimizedWidgetIfNeeded() {
   }
 }
 
+void ScopedTransformOverviewWindow::UpdateMinimizedWidget() {
+  if (!minimized_widget_)
+    return;
+
+  wm::WindowPreviewView* preview_view =
+      new wm::WindowPreviewView(window_, /*trilinear_filtering_on_init=*/false);
+  preview_view->SetVisible(true);
+  minimized_widget_->SetContentsView(preview_view);
+}
+
 void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
   selector_item_->UpdateMaskAndShadow(/*show=*/true);
   selector_item_->OnDragAnimationCompleted();

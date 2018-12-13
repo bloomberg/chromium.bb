@@ -30,6 +30,7 @@
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_selector.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
@@ -40,6 +41,7 @@
 #include "base/i18n/string_search.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -278,6 +280,73 @@ class WindowGrid::ShieldView : public views::View {
   views::Label* label_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShieldView);
+};
+
+// The class to observe the overview window that the dragged tabs will merge
+// into. After the dragged tabs merge into the overview window, and if the
+// overview window represents a minimized window, we need to update the
+// overview minimized widget's content view so that it reflects the merge.
+class WindowGrid::TargetWindowObserver : public aura::WindowObserver {
+ public:
+  TargetWindowObserver() = default;
+  ~TargetWindowObserver() override { StopObserving(); }
+
+  void StartObserving(aura::Window* window) {
+    if (target_window_)
+      StopObserving();
+
+    target_window_ = window;
+    target_window_->AddObserver(this);
+  }
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    DCHECK_EQ(window, target_window_);
+    // When the property is cleared, the dragged window should have been merged
+    // into |target_window_|, update the corresponding window item in overview.
+    if (key == ash::kIsDeferredTabDraggingTargetWindowKey &&
+        !window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
+      UpdateWindowItemInOverviewContaining(window);
+      StopObserving();
+    }
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK_EQ(window, target_window_);
+    StopObserving();
+  }
+
+ private:
+  void UpdateWindowItemInOverviewContaining(aura::Window* window) {
+    WindowSelectorController* window_selector_controller =
+        Shell::Get()->window_selector_controller();
+    if (!window_selector_controller->IsSelecting())
+      return;
+
+    WindowGrid* grid =
+        window_selector_controller->window_selector()->GetGridWithRootWindow(
+            window->GetRootWindow());
+    if (!grid)
+      return;
+
+    WindowSelectorItem* item = grid->GetWindowSelectorItemContaining(window);
+    if (!item)
+      return;
+
+    item->UpdateItemContentViewForMinimizedWindow();
+  }
+
+  void StopObserving() {
+    if (target_window_)
+      target_window_->RemoveObserver(this);
+    target_window_ = nullptr;
+  }
+
+  aura::Window* target_window_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TargetWindowObserver);
 };
 
 WindowGrid::WindowGrid(aura::Window* root_window,
@@ -708,6 +777,20 @@ void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
 
   // Called to reset caption and title visibility after dragging.
   OnSelectorItemDragEnded();
+
+  // After drag ends, if the dragged window needs to merge into another window
+  // |target_window|, and we may need to update |minimized_widget_| that holds
+  // the contents of |target_window| if |target_window| is a minimized window
+  // in overview.
+  aura::Window* target_window = GetTargetWindowOnLocation(location_in_screen);
+  if (target_window &&
+      target_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
+    // Create an window observer and update the minimized window widget after
+    // the dragged window merges into |target_window|.
+    if (!target_window_observer_)
+      target_window_observer_ = std::make_unique<TargetWindowObserver>();
+    target_window_observer_->StartObserving(target_window);
+  }
 
   // Update the grid bounds and reposition windows. Since the grid bounds might
   // be updated based on the preview area during drag, but the window finally

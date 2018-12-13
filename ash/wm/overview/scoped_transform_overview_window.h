@@ -176,6 +176,9 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // the bounds of the |window_|.
   void ResizeMinimizedWidgetIfNeeded();
 
+  // Update |minimized_widget_| so that its content view is up-to-date.
+  void UpdateMinimizedWidget();
+
   views::Widget* minimized_widget() { return minimized_widget_.get(); }
 
   // ui::ImplicitAnimationObserver:
