@@ -500,7 +500,7 @@ void ScopedTransformOverviewWindow::ResizeMinimizedWidgetIfNeeded() {
   if (bounds.size() == window_->GetBoundsInScreen().size())
     return;
 
-  wm::WindowPreviewView* preview_view =
+  auto* preview_view =
       static_cast<wm::WindowPreviewView*>(minimized_widget_->GetContentsView());
   if (preview_view) {
     preview_view->RecreatePreviews();

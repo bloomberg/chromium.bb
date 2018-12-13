@@ -177,7 +177,7 @@ ui::Layer* WindowMirrorView::GetMirrorLayer() {
 }
 
 gfx::Rect WindowMirrorView::GetClientAreaBounds() const {
-  int inset = source_->GetProperty(aura::client::kTopViewInset);
+  const int inset = source_->GetProperty(aura::client::kTopViewInset);
   if (inset > 0) {
     gfx::Rect bounds(source_->bounds().size());
     bounds.Inset(0, inset, 0, 0);
