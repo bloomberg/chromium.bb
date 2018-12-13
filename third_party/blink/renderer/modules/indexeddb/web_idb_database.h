@@ -37,7 +37,6 @@
 namespace blink {
 
 class IDBKeyRange;
-class WebBlobInfo;
 class WebIDBCallbacks;
 class WebIDBKeyPath;
 
@@ -105,8 +104,7 @@ class MODULES_EXPORT WebIDBDatabase {
                       WebIDBCallbacks*) = 0;
   virtual void Put(long long transaction_id,
                    long long object_store_id,
-                   const scoped_refptr<SharedBuffer>& value,
-                   const Vector<WebBlobInfo>&,
+                   std::unique_ptr<IDBValue> value,
                    std::unique_ptr<IDBKey> primary_key,
                    mojom::IDBPutMode,
                    WebIDBCallbacks*,

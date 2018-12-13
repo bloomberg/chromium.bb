@@ -578,11 +578,13 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
   if (base::FeatureList::IsEnabled(kIndexedDBLargeValueWrapping))
     value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
 
+  std::unique_ptr<IDBValue> idb_value = IDBValue::Create(
+      value_wrapper.TakeWireBytes(), value_wrapper.TakeBlobInfo());
+
   request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
-  BackendDB()->Put(transaction_->Id(), Id(), value_wrapper.TakeWireBytes(),
-                   value_wrapper.TakeBlobInfo(), IDBKey::Clone(key), put_mode,
-                   request->CreateWebCallbacks().release(),
-                   std::move(index_keys));
+  BackendDB()->Put(
+      transaction_->Id(), Id(), std::move(idb_value), IDBKey::Clone(key),
+      put_mode, request->CreateWebCallbacks().release(), std::move(index_keys));
 
   return request;
 }
