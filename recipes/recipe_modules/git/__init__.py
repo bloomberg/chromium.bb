@@ -1,4 +1,5 @@
 DEPS = [
+  'recipe_engine/buildbucket',
   'recipe_engine/context',
   'recipe_engine/runtime',
   'recipe_engine/path',

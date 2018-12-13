@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+  'recipe_engine/buildbucket',
   'recipe_engine/context',
   'recipe_engine/path',
   'recipe_engine/platform',
@@ -29,9 +30,11 @@ def RunSteps(api):
           True)
 
   # You can use api.git.checkout to perform all the steps of a safe checkout.
+  revision = (api.buildbucket.gitiles_commit.ref or
+              api.buildbucket.gitiles_commit.id)
   retVal = api.git.checkout(
       url,
-      ref=api.properties.get('revision'),
+      ref=revision,
       recursive=True,
       submodule_update_force=submodule_update_force,
       set_got_revision=api.properties.get('set_got_revision'),
@@ -84,7 +87,7 @@ def RunSteps(api):
 
   if api.properties.get('cat_file', None):
     step_result = api.git.cat_file_at_commit(api.properties['cat_file'],
-                                             api.properties['revision'],
+                                             revision,
                                              stdout=api.raw_io.output())
     if 'TestOutput' in step_result.stdout:
       pass  # Success!
@@ -101,18 +104,22 @@ def GenTests(api):
     api.runtime(is_luci=True, is_experimental=False)
   )
   yield api.test('basic_tags') + api.properties(tags=True)
-  yield api.test('basic_ref') + api.properties(revision='refs/foo/bar')
-  yield api.test('basic_branch') + api.properties(revision='refs/heads/testing')
-  yield api.test('basic_hash') + api.properties(
-      revision='abcdef0123456789abcdef0123456789abcdef01')
+  yield api.test('basic_ref') + api.buildbucket.ci_build(git_ref='refs/foo/bar')
+  yield api.test('basic_branch') + api.buildbucket.ci_build(
+      git_ref='refs/heads/testing')
+  yield api.test('basic_hash') + api.buildbucket.ci_build(
+      revision='abcdef0123456789abcdef0123456789abcdef01', git_ref=None)
   yield api.test('basic_file_name') + api.properties(checkout_file_name='DEPS')
   yield api.test('basic_submodule_update_force') + api.properties(
       submodule_update_force=True)
 
   yield api.test('platform_win') + api.platform.name('win')
 
-  yield api.test('curl_trace_file') + api.properties(
-      revision='refs/foo/bar', use_curl_trace=True)
+  yield (
+      api.test('curl_trace_file') +
+      api.properties(use_curl_trace=True) +
+      api.buildbucket.ci_build(git_ref='refs/foo/bar')
+  )
 
   yield (
     api.test('can_fail_build') +
@@ -160,7 +167,8 @@ def GenTests(api):
       api.test('cat-file_test') +
       api.step_data('git cat-file abcdef12345:TestFile',
                     stdout=api.raw_io.output('TestOutput')) +
-      api.properties(revision='abcdef12345', cat_file='TestFile'))
+      api.buildbucket.ci_build(revision='abcdef12345', git_ref=None) +
+      api.properties(cat_file='TestFile'))
 
   yield (
       api.test('git-cache-checkout') +

@@ -217,29 +217,28 @@ class GitApi(recipe_api.RecipeApi):
                can_fail_build=can_fail_build)
 
       # There are five kinds of refs we can be handed:
-      # 0) None. In this case, we default to properties['branch'].
-      # 1) A 40-character SHA1 hash.
-      # 2) A fully-qualifed arbitrary ref, e.g. 'refs/foo/bar/baz'.
-      # 3) A fully qualified branch name, e.g. 'refs/heads/master'.
-      #    Chop off 'refs/heads' and now it matches case (4).
+      # 0) None. In this case, we default to api.buildbucket.gitiles_commit.ref.
+      # 1) A fully qualified branch name, e.g. 'refs/heads/master'.
+      #    Chop off 'refs/heads/' and now it matches case (4).
+      # 2) A 40-character SHA1 hash.
+      # 3) A fully-qualifed arbitrary ref, e.g. 'refs/foo/bar/baz'.
       # 4) A branch name, e.g. 'master'.
       # Note that 'FETCH_HEAD' can be many things (and therefore not a valid
       # checkout target) if many refs are fetched, but we only explicitly fetch
       # one ref here, so this is safe.
+      if not ref:                                  # Case 0.
+        ref = self.m.buildbucket.gitiles_commit.ref or 'master'
+
+      # If it's a fully-qualified branch name, trim the 'refs/heads/' prefix.
+      if ref.startswith('refs/heads/'):            # Case 1.
+        ref = ref[len('refs/heads/'):]
+
       fetch_args = []
-      if not ref:                                  # Case 0
-        fetch_remote = remote_name
-        fetch_ref = self.m.properties.get('branch') or 'master'
-        checkout_ref = 'FETCH_HEAD'
-      elif self._GIT_HASH_RE.match(ref):        # Case 1.
+      if self._GIT_HASH_RE.match(ref):             # Case 2.
         fetch_remote = remote_name
         fetch_ref = ''
         checkout_ref = ref
-      elif ref.startswith('refs/heads/'):       # Case 3.
-        fetch_remote = remote_name
-        fetch_ref = ref[len('refs/heads/'):]
-        checkout_ref = 'FETCH_HEAD'
-      else:                                     # Cases 2 and 4.
+      else:                                        # Cases 3 and 4.
         fetch_remote = remote_name
         fetch_ref = ref
         checkout_ref = 'FETCH_HEAD'
