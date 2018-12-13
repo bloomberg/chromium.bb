@@ -204,8 +204,7 @@ TEST(ThreadLocalStorageTest, Basics) {
   EXPECT_EQ(value, 123);
 }
 
-#if defined(THREAD_SANITIZER) || \
-    (defined(OS_WIN) && defined(ARCH_CPU_X86_64) && !defined(NDEBUG))
+#if defined(THREAD_SANITIZER)
 // Do not run the test under ThreadSanitizer. Because this test iterates its
 // own TSD destructor for the maximum possible number of times, TSan can't jump
 // in after the last destructor invocation, therefore the destructor remains
