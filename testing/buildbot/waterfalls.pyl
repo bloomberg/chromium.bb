@@ -3687,7 +3687,7 @@
           'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
         },
       },
-      'Linux V8 FYI Release - concurrent marking (NVIDIA)': {
+      'Linux V8 FYI Release - pointer compression (NVIDIA)': {
         'os_type': 'linux',
         'browser_config': 'release',
         'mixins': [

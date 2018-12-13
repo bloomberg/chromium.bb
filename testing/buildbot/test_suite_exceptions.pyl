@@ -617,7 +617,7 @@
       # client.v8.fyi
       'Android V8 FYI Release (Nexus 5X)',
       'Linux V8 FYI Release (NVIDIA)',
-      'Linux V8 FYI Release - concurrent marking (NVIDIA)',
+      'Linux V8 FYI Release - pointer compression (NVIDIA)',
       'Mac V8 FYI Release (Intel)',
       'Win V8 FYI Release (NVIDIA)',
     ],
