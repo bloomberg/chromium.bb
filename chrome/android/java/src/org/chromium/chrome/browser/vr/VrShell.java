@@ -403,7 +403,7 @@ public class VrShell extends GvrLayout
             // In the case where we're still in portrait, keep the black overlay visible until the
             // GvrLayout is in the correct orientation.
         } else {
-            VrModuleProvider.getDelegate().removeBlackOverlayView(mActivity, false /* animate */);
+            VrShellDelegate.removeBlackOverlayView(mActivity, false /* animate */);
         }
         float displayWidthMeters = (dm.widthPixels / dm.xdpi) * INCHES_TO_METERS;
         float displayHeightMeters = (dm.heightPixels / dm.ydpi) * INCHES_TO_METERS;
@@ -625,7 +625,7 @@ public class VrShell extends GvrLayout
         // VR mode off.
         // TODO(asimjour): Focus is a bad signal. We should listen for windows being created and
         // destroyed if possible.
-        if (VrModuleProvider.getDelegate().bootsToVr()) {
+        if (VrShellDelegate.bootsToVr()) {
             if (focused) {
                 resume();
             } else {
@@ -1136,8 +1136,7 @@ public class VrShell extends GvrLayout
     @Override
     protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
-        if (width > height)
-            VrModuleProvider.getDelegate().removeBlackOverlayView(mActivity, true /* animate */);
+        if (width > height) VrShellDelegate.removeBlackOverlayView(mActivity, true /* animate */);
     }
 
     /**
