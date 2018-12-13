@@ -50,7 +50,7 @@
       <h2>$i18n{customDictionaryWords}</h2>
     </div>
     <div class="list-frame">
-      <template is="dom-if" if="[[hasWords_(words_.length)]]">
+      <template is="dom-if" if="[[hasWords_]]">
         <iron-list id="list" items="[[words_]]" preserve-focus
             scroll-target="[[subpageScrollTarget]]">
           <template>
@@ -64,8 +64,7 @@
           </template>
         </iron-list>
       </template>
-      <div id="noWordsLabel" class="list-item"
-          hidden$="[[hasWords_(words_.length)]]">
+      <div id="noWordsLabel" class="list-item" hidden$="[[hasWords_]]">
         $i18n{noCustomDictionaryWordsFound}
       </div>
     </div>

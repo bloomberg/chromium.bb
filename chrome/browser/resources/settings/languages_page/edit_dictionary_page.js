@@ -36,6 +36,12 @@ Polymer({
         return [];
       },
     },
+
+    /** @private {boolean} */
+    hasWords_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @type {LanguageSettingsPrivate} */
@@ -48,6 +54,7 @@ Polymer({
         (chrome.languageSettingsPrivate);
 
     this.languageSettingsPrivate.getSpellcheckWords(words => {
+      this.hasWords_ = words.length > 0;
       this.words_ = words;
     });
 
@@ -98,6 +105,15 @@ Polymer({
 
     for (const word of removed)
       this.arrayDelete('words_', word);
+
+    if (this.words_.length === 0 && added.length === 0 && !wasEmpty)
+      this.hasWords_ = false;
+
+    // This is a workaround to ensure the dom-if is set to true before items
+    // are rendered so that focus works correctly in Polymer 2; see
+    // https://crbug.com/912523.
+    if (wasEmpty && added.length > 0)
+      this.hasWords_ = true;
 
     for (const word of added) {
       if (this.words_.indexOf(word) == -1)
@@ -156,13 +172,4 @@ Polymer({
 
     this.languageSettingsPrivate.addSpellcheckWord(word);
   },
-
-  /**
-   * Checks if any words exists in the dictionary.
-   * @private
-   * @return {boolean}
-   */
-  hasWords_: function() {
-    return this.words_.length > 0;
-  }
 });

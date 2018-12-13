@@ -115,4 +115,33 @@ suite('settings-edit-dictionary-page', function() {
     assertEquals(2, editDictPage.$$('#list').items.length);
   });
 
+  test('spellcheck edit dictionary page remove is in tab order', function() {
+    const addWordButton = editDictPage.$$('#addWord');
+    editDictPage.$.newWord.value = 'valid word';
+    addWordButton.click();
+    Polymer.dom.flush();
+
+    assertTrue(editDictPage.$.noWordsLabel.hidden);
+    assertTrue(!!editDictPage.$$('#list'));
+    assertEquals(1, editDictPage.$$('#list').items.length);
+
+    const removeWordButton = editDictPage.$$('button');
+    // Button should be reachable in the tab order.
+    assertEquals(0, removeWordButton.tabIndex);
+    removeWordButton.click();
+    Polymer.dom.flush();
+
+    assertFalse(editDictPage.$.noWordsLabel.hidden);
+
+    editDictPage.$.newWord.value = 'valid word2';
+    addWordButton.click();
+    Polymer.dom.flush();
+
+    assertTrue(editDictPage.$.noWordsLabel.hidden);
+    assertTrue(!!editDictPage.$$('#list'));
+    assertEquals(1, editDictPage.$$('#list').items.length);
+    const newRemoveWordButton = editDictPage.$$('button');
+    // Button should be reachable in the tab order.
+    assertEquals(0, newRemoveWordButton.tabIndex);
+  });
 });
