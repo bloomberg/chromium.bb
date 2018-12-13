@@ -17,6 +17,7 @@
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/platform/scenic/scenic_gpu_service.h"
+#include "ui/ozone/platform/scenic/scenic_surface.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_canvas.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
@@ -141,8 +142,16 @@ GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
   }
 }
 
+std::unique_ptr<PlatformWindowSurface>
+ScenicSurfaceFactory::CreatePlatformWindowSurface(
+    gfx::AcceleratedWidget widget) {
+  return std::make_unique<ScenicSurface>(
+      this, GetScenic(), scenic_gpu_service_->gpu_host(), widget);
+}
+
 std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!window_manager_)
     LOG(FATAL) << "Software output not supported from GPU process";
   ScenicWindow* window = window_manager_->GetWindow(widget);
@@ -162,12 +171,32 @@ scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
 ScenicSurfaceFactory::CreateVulkanImplementation() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!scenic_gpu_service_)
     LOG(FATAL) << "Vulkan implementation requires InitializeForGPU";
 
-  return std::make_unique<ui::VulkanImplementationScenic>(
-      scenic_gpu_service_->gpu_host(), GetScenic());
+  return std::make_unique<ui::VulkanImplementationScenic>(this);
 }
 #endif
+
+void ScenicSurfaceFactory::AddSurface(gfx::AcceleratedWidget widget,
+                                      ScenicSurface* surface) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!base::ContainsKey(surface_map_, widget));
+  surface_map_.insert(std::make_pair(widget, surface));
+}
+
+void ScenicSurfaceFactory::RemoveSurface(gfx::AcceleratedWidget widget) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(base::ContainsKey(surface_map_, widget));
+  surface_map_.erase(widget);
+}
+
+ScenicSurface* ScenicSurfaceFactory::GetSurface(gfx::AcceleratedWidget widget) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  auto it = surface_map_.find(widget);
+  DCHECK(it != surface_map_.end());
+  return it->second;
+}
 
 }  // namespace ui

@@ -83,8 +83,7 @@ std::unique_ptr<VulkanSurface> VulkanImplementationX11::CreateViewSurface(
     return nullptr;
   }
 
-  return std::make_unique<VulkanSurface>(GetVulkanInstance(), surface,
-                                         base::DoNothing());
+  return std::make_unique<VulkanSurface>(GetVulkanInstance(), surface);
 }
 
 bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(

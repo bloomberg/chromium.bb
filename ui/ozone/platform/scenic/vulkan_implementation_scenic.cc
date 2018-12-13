@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/platform/scenic/scenic_surface.h"
+#include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
 #include "ui/ozone/platform/scenic/vulkan_magma.h"
@@ -26,9 +27,8 @@
 namespace ui {
 
 VulkanImplementationScenic::VulkanImplementationScenic(
-    mojom::ScenicGpuHost* scenic_gpu_host,
-    fuchsia::ui::scenic::Scenic* scenic)
-    : scenic_gpu_host_(scenic_gpu_host), scenic_(scenic) {}
+    ScenicSurfaceFactory* scenic_surface_factory)
+    : scenic_surface_factory_(scenic_surface_factory) {}
 
 VulkanImplementationScenic::~VulkanImplementationScenic() = default;
 
@@ -79,8 +79,7 @@ VkInstance VulkanImplementationScenic::GetVulkanInstance() {
 
 std::unique_ptr<gpu::VulkanSurface>
 VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
-  auto scenic_surface =
-      std::make_unique<ScenicSurface>(scenic_, scenic_gpu_host_, window);
+  ScenicSurface* scenic_surface = scenic_surface_factory_->GetSurface(window);
 
   // Attach the surface to the window.
   scenic_surface->LinkToParent();
@@ -108,12 +107,7 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
   // texture can be replaced through the vulkan swapchain API.
   scenic_surface->Commit();
 
-  auto destruction_callback =
-      base::BindOnce(base::DoNothing::Once<std::unique_ptr<ScenicSurface>>(),
-                     std::move(scenic_surface));
-
-  return std::make_unique<gpu::VulkanSurface>(GetVulkanInstance(), surface,
-                                              std::move(destruction_callback));
+  return std::make_unique<gpu::VulkanSurface>(GetVulkanInstance(), surface);
 }
 
 bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(

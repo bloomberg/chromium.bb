@@ -36,6 +36,7 @@ namespace ui {
 
 class SurfaceOzoneCanvas;
 class OverlaySurface;
+class PlatformWindowSurface;
 
 // The Ozone interface allows external implementations to hook into Chromium to
 // provide a system specific implementation. The Ozone interface supports two
@@ -93,6 +94,11 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
       VkDeviceMemory* vk_device_memory,
       VkImage* vk_image);
 #endif
+
+  // Creates a rendering and presentation API agnostic surface for a platform
+  // window.
+  virtual std::unique_ptr<PlatformWindowSurface> CreatePlatformWindowSurface(
+      gfx::AcceleratedWidget window);
 
   // Creates an overlay surface for a platform window.
   virtual std::unique_ptr<OverlaySurface> CreateOverlaySurface(
