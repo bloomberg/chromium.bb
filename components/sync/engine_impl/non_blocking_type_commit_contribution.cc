@@ -273,6 +273,13 @@ void NonBlockingTypeCommitContribution::AdjustCommitProto(
     commit_proto->set_name("encrypted");
   }
 
+  // See crbug.com/915133: Certain versions of Chrome (e.g. M71) handle corrupt
+  // SESSIONS data poorly. Let's guard against future versions from committing
+  // problematic data that could cause crashes on other syncing devices.
+  if (commit_proto->specifics().session().has_tab()) {
+    CHECK_GE(commit_proto->specifics().session().tab_node_id(), 0);
+  }
+
   // Always include enough specifics to identify the type. Do this even in
   // deletion requests, where the specifics are otherwise invalid.
   AddDefaultFieldValue(type_, commit_proto->mutable_specifics());
