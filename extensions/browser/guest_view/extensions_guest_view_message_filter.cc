@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "components/guest_view/browser/bad_message.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
@@ -520,7 +521,13 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
   attach_params.SetInteger(guest_view::kElementWidth, element_size.width());
   attach_params.SetInteger(guest_view::kElementHeight, element_size.height());
   auto* manager = GuestViewManager::FromBrowserContext(browser_context_);
-  CHECK(manager);
+  if (!manager) {
+    guest_view::bad_message::ReceivedBadMessage(
+        this,
+        guest_view::bad_message::GVMF_UNEXPECTED_MESSAGE_BEFORE_GVM_CREATION);
+    guest_view->Destroy(true);
+    return;
+  }
   manager->AttachGuest(embedder_render_process_id, element_instance_id,
                        guest_instance_id, attach_params);
 
