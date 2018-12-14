@@ -2665,7 +2665,9 @@ if (enable_java_templates) {
       create_apk("$_create_apk_target") {
         forward_variables_from(invoker,
                                [
+                                 "native_lib_placeholders",
                                  "public_deps",
+                                 "secondary_native_lib_placeholders",
                                  "shared_resources",
                                  "write_asset_list",
                                  "uncompress_dex",
@@ -2715,20 +2717,9 @@ if (enable_java_templates) {
               _extra_native_libs_even_when_incremental
         }
         deps += _all_native_libs_deps
-
-        if (_secondary_abi_native_libs_deps != []) {
-          deps += _secondary_abi_native_libs_deps
-          secondary_abi_native_libs_filearg =
-              "@FileArg($_rebased_build_config:native:secondary_abi_libraries)"
-        }
-
-        # Placeholders necessary for some older devices.
-        # http://crbug.com/395038
-        forward_variables_from(invoker,
-                               [
-                                 "native_lib_placeholders",
-                                 "secondary_native_lib_placeholders",
-                               ])
+        deps += _secondary_abi_native_libs_deps
+        secondary_abi_native_libs_filearg =
+            "@FileArg($_rebased_build_config:native:secondary_abi_libraries)"
 
         uncompress_shared_libraries = _uncompress_shared_libraries
       }
