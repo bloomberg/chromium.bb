@@ -171,12 +171,9 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // |available_va_surfaces_|
   void RecycleVASurfaceID(VASurfaceID va_surface_id);
 
-  // Request a new set of |num_pics| PictureBuffers to be allocated by
-  // |client_|. Up to |num_reference_frames| out of |num_pics_| might be needed
-  // by |decoder_|.
-  void InitiateSurfaceSetChange(size_t num_pics,
-                                gfx::Size size,
-                                size_t num_reference_frames);
+  // Initiate wait cycle for surfaces to be released before we release them
+  // and allocate new ones, as requested by the decoder.
+  void InitiateSurfaceSetChange(size_t num_pics, gfx::Size size);
 
   // Check if the surfaces have been released or post ourselves for later.
   void TryFinishSurfaceSetChange();
@@ -277,13 +274,10 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // to be returned before we can free them.
   bool awaiting_va_surfaces_recycle_;
 
-  // Last requested number/resolution of output PictureBuffers.
+  // Last requested number/resolution of output picture buffers and their
+  // format.
   size_t requested_num_pics_;
   gfx::Size requested_pic_size_;
-  // Max number of reference frames needed by |decoder_|.
-  size_t requested_num_reference_frames_;
-  size_t previously_requested_num_reference_frames_;
-
   VideoCodecProfile profile_;
 
   // Callback to make GL context current.
