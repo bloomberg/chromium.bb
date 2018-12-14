@@ -46,8 +46,6 @@ class AgentRegistry : public mojom::AgentRegistry {
     mojom::Agent* agent() const { return agent_.get(); }
     const std::string& label() const { return label_; }
     mojom::TraceDataType type() const { return type_; }
-    bool is_tracing() const { return is_tracing_; }
-    void set_is_tracing(bool is_tracing) { is_tracing_ = is_tracing; }
     base::ProcessId pid() const { return pid_; }
 
    private:
@@ -60,7 +58,6 @@ class AgentRegistry : public mojom::AgentRegistry {
     const mojom::TraceDataType type_;
     const base::ProcessId pid_;
     std::map<const void*, base::OnceClosure> closures_;
-    bool is_tracing_;
 
     DISALLOW_COPY_AND_ASSIGN(AgentEntry);
   };
@@ -76,9 +73,10 @@ class AgentRegistry : public mojom::AgentRegistry {
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       mojom::AgentRegistryRequest request,
       const service_manager::BindSourceInfo& source_info);
-  void SetAgentInitializationCallback(
-      const AgentInitializationCallback& callback);
-  void RemoveAgentInitializationCallback();
+  // Returns the number of existing agents that the callback was run on.
+  size_t SetAgentInitializationCallback(
+      const AgentInitializationCallback& callback,
+      bool call_on_new_agents_only);
   bool HasDisconnectClosure(const void* closure_name);
 
   template <typename FunctionType>

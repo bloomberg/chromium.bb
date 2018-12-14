@@ -26,8 +26,7 @@ AgentRegistry::AgentEntry::AgentEntry(size_t id,
       agent_(std::move(agent)),
       label_(label),
       type_(type),
-      pid_(pid),
-      is_tracing_(false) {
+      pid_(pid) {
   DCHECK(!label.empty());
   agent_.set_connection_error_handler(base::BindRepeating(
       &AgentRegistry::AgentEntry::OnConnectionError, AsWeakPtr()));
@@ -92,18 +91,19 @@ void AgentRegistry::BindAgentRegistryRequestOnSequence(
   bindings_.AddBinding(this, std::move(request), source_info.identity);
 }
 
-void AgentRegistry::SetAgentInitializationCallback(
-    const AgentInitializationCallback& callback) {
+size_t AgentRegistry::SetAgentInitializationCallback(
+    const AgentInitializationCallback& callback,
+    bool call_on_new_agents_only) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   agent_initialization_callback_ = callback;
-  ForAllAgents([this](AgentEntry* agent_entry) {
-    agent_initialization_callback_.Run(agent_entry);
-  });
-}
-
-void AgentRegistry::RemoveAgentInitializationCallback() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  agent_initialization_callback_.Reset();
+  size_t num_initialized_agents = 0;
+  if (!call_on_new_agents_only) {
+    ForAllAgents([this, &num_initialized_agents](AgentEntry* agent_entry) {
+      agent_initialization_callback_.Run(agent_entry);
+      num_initialized_agents++;
+    });
+  }
+  return num_initialized_agents;
 }
 
 bool AgentRegistry::HasDisconnectClosure(const void* closure_name) {

@@ -438,4 +438,27 @@ TEST_F(CoordinatorTest, GetCategoriesFromTwoAgents) {
   run_loop.RunUntilIdle();
 }
 
+TEST_F(CoordinatorTest, LateAgents) {
+  base::RunLoop run_loop1;
+  quit_closure_ = run_loop1.QuitClosure();
+  auto* agent1 = AddArrayAgent();
+  StartTracing("config", true, true);
+  if (!quit_closure_.is_null())
+    run_loop1.Run();
+
+  base::RunLoop run_loop2;
+  auto* agent2 = AddArrayAgent();
+  agent2->data_.push_back("discarded data");
+  run_loop2.RunUntilIdle();
+
+  EXPECT_EQ(2u, agent1->call_stat().size());
+  EXPECT_EQ("StartTracing", agent1->call_stat()[0]);
+  EXPECT_EQ("StopAndFlush", agent1->call_stat()[1]);
+
+  // The second agent that registers after the end of a tracing session should
+  // receive a StopAndFlush message.
+  EXPECT_EQ(1u, agent2->call_stat().size());
+  EXPECT_EQ("StopAndFlush", agent2->call_stat()[0]);
+}
+
 }  // namespace tracing

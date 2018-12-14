@@ -69,13 +69,16 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
       mojom::TraceDataType type,
       base::WeakPtr<AgentRegistry::AgentEntry> agent_entry) {
     mojom::RecorderPtr ptr;
-    auto recorder = std::make_unique<Recorder>(
-        MakeRequest(&ptr), type,
-        base::BindRepeating(&Coordinator::TraceStreamer::OnRecorderDataChange,
-                            AsWeakPtr(), label));
-    recorders_[label].insert(std::move(recorder));
-    DCHECK(type != mojom::TraceDataType::STRING ||
-           recorders_[label].size() == 1);
+    mojom::RecorderRequest request = MakeRequest(&ptr);
+    if (processed_labels_.count(label) == 0) {
+      auto recorder = std::make_unique<Recorder>(
+          std::move(request), type,
+          base::BindRepeating(&Coordinator::TraceStreamer::OnRecorderDataChange,
+                              AsWeakPtr(), label));
+      recorders_[label].insert(std::move(recorder));
+      DCHECK(type != mojom::TraceDataType::STRING ||
+             recorders_[label].size() == 1);
+    }
 
     // Tracing agent proxies are bound on the main thread and should be called
     // from the main thread.
@@ -128,7 +131,10 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
       // We are not waiting for data from any particular label now. So, we look
       // at the recorders that have some data available and select the next
       // label to stream.
-      streaming_label_.clear();
+      if (!streaming_label_.empty()) {
+        processed_labels_.insert(streaming_label_);
+        streaming_label_.clear();
+      }
       bool all_finished = true;
       for (const auto& key_value : recorders_) {
         for (const auto& recorder : key_value.second) {
@@ -255,6 +261,7 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
   base::WeakPtr<Coordinator> coordinator_;
 
   std::map<std::string, std::set<std::unique_ptr<Recorder>>> recorders_;
+  std::set<std::string> processed_labels_;
 
   // If |streaming_label_| is not empty, it shows the label for which we are
   // writing chunks to the output stream.
@@ -323,8 +330,10 @@ void Coordinator::StartTracing(const std::string& config,
   is_tracing_ = true;
   config_ = config;
   parsed_config_ = base::trace_event::TraceConfig(config);
-  agent_registry_->SetAgentInitializationCallback(base::BindRepeating(
-      &Coordinator::SendStartTracingToAgent, weak_ptr_factory_.GetWeakPtr()));
+  agent_registry_->SetAgentInitializationCallback(
+      base::BindRepeating(&Coordinator::SendStartTracingToAgent,
+                          weak_ptr_factory_.GetWeakPtr()),
+      false /* call_on_new_agents_only */);
   if (!agent_registry_->HasDisconnectClosure(&kStartTracingClosureName)) {
     std::move(callback).Run(true);
     return;
@@ -334,8 +343,6 @@ void Coordinator::StartTracing(const std::string& config,
 
 void Coordinator::SendStartTracingToAgent(
     AgentRegistry::AgentEntry* agent_entry) {
-  if (agent_entry->is_tracing())
-    return;
   if (agent_entry->HasDisconnectClosure(&kStartTracingClosureName))
     return;
   if (!parsed_config_.process_filter_config().IsEnabled(agent_entry->pid()))
@@ -354,7 +361,6 @@ void Coordinator::SendStartTracingToAgent(
 
 void Coordinator::OnTracingStarted(AgentRegistry::AgentEntry* agent_entry,
                                    bool success) {
-  agent_entry->set_is_tracing(success);
   bool removed =
       agent_entry->RemoveDisconnectClosure(&kStartTracingClosureName);
   DCHECK(removed);
@@ -382,8 +388,6 @@ void Coordinator::StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
   DCHECK(stream.is_valid());
   is_tracing_ = false;
 
-  // Do not send |StartTracing| to agents that connect from now on.
-  agent_registry_->RemoveAgentInitializationCallback();
   trace_streamer_.reset(new Coordinator::TraceStreamer(
       std::move(stream), agent_label, task_runner_,
       weak_ptr_factory_.GetWeakPtr()));
@@ -404,20 +408,22 @@ void Coordinator::StopAndFlushInternal() {
     return;
   }
 
-  bool has_tracing_agents = false;
-  agent_registry_->ForAllAgents(
-      [this, &has_tracing_agents](AgentRegistry::AgentEntry* agent_entry) {
-        if (!agent_entry->is_tracing())
-          return;
-        has_tracing_agents = true;
-        backend_task_runner_->PostTask(
-            FROM_HERE,
-            base::BindOnce(&Coordinator::TraceStreamer::CreateAndSendRecorder,
-                           trace_streamer_->AsWeakPtr(), agent_entry->label(),
-                           agent_entry->type(), agent_entry->AsWeakPtr()));
-      });
-  if (!has_tracing_agents)
+  size_t num_initialized_agents =
+      agent_registry_->SetAgentInitializationCallback(
+          base::BindRepeating(&Coordinator::SendStopTracingToAgent,
+                              weak_ptr_factory_.GetWeakPtr()),
+          false /* call_on_new_agents_only */);
+  if (num_initialized_agents == 0)
     OnFlushDone();
+}
+
+void Coordinator::SendStopTracingToAgent(
+    AgentRegistry::AgentEntry* agent_entry) {
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Coordinator::TraceStreamer::CreateAndSendRecorder,
+                     trace_streamer_->AsWeakPtr(), agent_entry->label(),
+                     agent_entry->type(), agent_entry->AsWeakPtr()));
 }
 
 void Coordinator::SendRecorder(
@@ -438,10 +444,23 @@ void Coordinator::OnFlushDone() {
   std::move(stop_and_flush_callback_)
       .Run(std::move(*trace_streamer_->GetMetadata()));
   backend_task_runner_->DeleteSoon(FROM_HERE, trace_streamer_.release());
-  agent_registry_->ForAllAgents([](AgentRegistry::AgentEntry* agent_entry) {
-    agent_entry->set_is_tracing(false);
-  });
   is_tracing_ = false;
+  agent_registry_->SetAgentInitializationCallback(
+      base::BindRepeating(&Coordinator::SendStopTracingWithNoOpRecorderToAgent,
+                          weak_ptr_factory_.GetWeakPtr()),
+      true /* call_on_new_agents_only */);
+}
+
+void Coordinator::SendStopTracingWithNoOpRecorderToAgent(
+    AgentRegistry::AgentEntry* agent_entry) {
+  mojom::RecorderPtr ptr;
+  // We need to create a message pipe and bind |ptr| to one end of it before
+  // sending |ptr| to the agent; otherwise, the agent will fail as soon as it
+  // tries to invoke a method on |ptr|. We do not have to bind the
+  // implementation end of the message pipe since we are going to ignore the
+  // messages.
+  MakeRequest(&ptr);
+  agent_entry->agent()->StopAndFlush(std::move(ptr));
 }
 
 void Coordinator::IsTracing(IsTracingCallback callback) {
