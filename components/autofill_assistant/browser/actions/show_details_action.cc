@@ -37,8 +37,10 @@ void ShowDetailsAction::OnShowDetails(ProcessActionCallback callback,
                                       bool can_continue) {
   if (!can_continue) {
     delegate->Close();
+    UpdateProcessedAction(MANUAL_FALLBACK);
+  } else {
+    UpdateProcessedAction(ACTION_APPLIED);
   }
-  UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 }  // namespace autofill_assistant

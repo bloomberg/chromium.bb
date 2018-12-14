@@ -136,13 +136,13 @@ void AutofillAction::InternalProcessAction(
     if (!has_valid_data) {
       // User selected 'Fill manually'.
       delegate->StopCurrentScriptAndShutdown(fill_form_message_);
-      EndAction(/* successful= */ true);
+      EndAction(MANUAL_FALLBACK);
       return;
     }
 
     if (selector_.empty()) {
       // If there is no selector, finish the action directly.
-      EndAction(/* successful= */ true);
+      EndAction(ACTION_APPLIED);
       return;
     }
 
@@ -167,8 +167,8 @@ void AutofillAction::InternalProcessAction(
   delegate->ChooseAddress(std::move(selection_callback));
 }
 
-void AutofillAction::EndAction(bool successful) {
-  UpdateProcessedAction(successful ? ACTION_APPLIED : OTHER_ACTION_STATUS);
+void AutofillAction::EndAction(ProcessedActionStatusProto status) {
+  UpdateProcessedAction(status);
   std::move(process_action_callback_).Run(std::move(processed_action_proto_));
 }
 
@@ -196,13 +196,13 @@ void AutofillAction::OnDataSelected(ActionDelegate* delegate,
     // If there is no selector, finish the action directly. This can be the case
     // when we want to trigger the selection of address or card at the beginning
     // of the script and use it later.
-    EndAction(/* successful= */ true);
+    EndAction(ACTION_APPLIED);
     return;
   }
 
   if (guid.empty()) {
     delegate->StopCurrentScriptAndShutdown(fill_form_message_);
-    EndAction(/* successful= */ true);
+    EndAction(MANUAL_FALLBACK);
     return;
   }
 
@@ -219,7 +219,7 @@ void AutofillAction::FillFormWithData(ActionDelegate* delegate) {
 void AutofillAction::OnWaitForElement(ActionDelegate* delegate,
                                       bool element_found) {
   if (!element_found) {
-    EndAction(/* successful= */ false);
+    EndAction(ELEMENT_RESOLUTION_FAILED);
     return;
   }
 
@@ -255,7 +255,7 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
     // Gracefully shutdown the script. The empty message forces the use of the
     // default message.
     delegate->StopCurrentScriptAndShutdown("");
-    EndAction(/* successful= */ true);
+    EndAction(MANUAL_FALLBACK);
     return;
   }
 
@@ -266,7 +266,7 @@ void AutofillAction::OnGetFullCard(ActionDelegate* delegate,
 
 void AutofillAction::OnCardFormFilled(bool successful) {
   // TODO(crbug.com/806868): Implement required fields checking for cards.
-  EndAction(successful);
+  EndAction(successful ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   return;
 }
 
@@ -274,7 +274,7 @@ void AutofillAction::OnAddressFormFilled(ActionDelegate* delegate,
                                          bool successful) {
   // In case Autofill failed, we fail the action.
   if (!successful) {
-    EndAction(/* successful= */ false);
+    EndAction(OTHER_ACTION_STATUS);
     return;
   }
 
@@ -285,7 +285,7 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
                                          bool allow_fallback) {
   // If there are no required fields, finish the action successfully.
   if (proto_.use_address().required_fields().empty()) {
-    EndAction(/* successful= */ true);
+    EndAction(ACTION_APPLIED);
     return;
   }
 
@@ -330,7 +330,7 @@ void AutofillAction::OnCheckRequiredFieldsDone(ActionDelegate* delegate,
   }
 
   if (validation_successful) {
-    EndAction(/* successful= */ true);
+    EndAction(ACTION_APPLIED);
     return;
   }
 
@@ -338,7 +338,7 @@ void AutofillAction::OnCheckRequiredFieldsDone(ActionDelegate* delegate,
     // Validation failed and we don't want to try the fallback, so we stop
     // the script.
     delegate->StopCurrentScriptAndShutdown(check_form_message_);
-    EndAction(/* successful= */ true);
+    EndAction(MANUAL_FALLBACK);
     return;
   }
 
@@ -358,7 +358,7 @@ void AutofillAction::OnCheckRequiredFieldsDone(ActionDelegate* delegate,
   }
   if (!has_fallbacks) {
     delegate->StopCurrentScriptAndShutdown(check_form_message_);
-    EndAction(/* successful= */ true);
+    EndAction(MANUAL_FALLBACK);
     return;
   }
 
@@ -414,7 +414,7 @@ void AutofillAction::OnSetFallbackFieldValue(ActionDelegate* delegate,
   if (!successful) {
     // Fallback failed: we stop the script without checking the fields.
     delegate->StopCurrentScriptAndShutdown(check_form_message_);
-    EndAction(/* successful= */ true);
+    EndAction(MANUAL_FALLBACK);
     return;
   }
   SetFallbackFieldValuesSequentially(delegate, ++required_fields_index);

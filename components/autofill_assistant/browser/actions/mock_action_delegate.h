@@ -33,10 +33,11 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD2(OnShortWaitForElementExist,
                void(const Selector& selector, base::OnceCallback<void(bool)>&));
 
-  void WaitForElementVisible(base::TimeDelta max_wait_time,
-                             bool allow_interrupt,
-                             const Selector& selector,
-                             base::OnceCallback<void(bool)> callback) override {
+  void WaitForElementVisible(
+      base::TimeDelta max_wait_time,
+      bool allow_interrupt,
+      const Selector& selector,
+      base::OnceCallback<void(ProcessedActionStatusProto)> callback) override {
     OnWaitForElementVisible(max_wait_time, allow_interrupt, selector, callback);
   }
 
@@ -44,7 +45,7 @@ class MockActionDelegate : public ActionDelegate {
                void(base::TimeDelta,
                     bool,
                     const Selector&,
-                    base::OnceCallback<void(bool)>&));
+                    base::OnceCallback<void(ProcessedActionStatusProto)>&));
 
   MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));
   MOCK_METHOD2(ClickOrTapElement,

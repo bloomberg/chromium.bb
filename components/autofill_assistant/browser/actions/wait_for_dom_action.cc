@@ -45,9 +45,8 @@ void WaitForDomAction::InternalProcessAction(ActionDelegate* delegate,
 }
 
 void WaitForDomAction::OnCheckDone(ProcessActionCallback callback,
-                                   bool element_found) {
-  UpdateProcessedAction(element_found ? ACTION_APPLIED
-                                      : ELEMENT_RESOLUTION_FAILED);
+                                   ProcessedActionStatusProto status) {
+  UpdateProcessedAction(status);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 }  // namespace autofill_assistant

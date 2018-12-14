@@ -90,16 +90,18 @@ void ScriptExecutor::WaitForElementVisible(
     base::TimeDelta max_wait_time,
     bool allow_interrupt,
     const Selector& selector,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(ProcessedActionStatusProto)> callback) {
   if (!allow_interrupt || ordered_interrupts_->empty()) {
     // No interrupts to worry about. Just run normal wait.
-    WaitForElement(max_wait_time, kVisibilityCheck, selector,
-                   std::move(callback));
+    WaitForElement(
+        max_wait_time, kVisibilityCheck, selector,
+        base::BindOnce(&ScriptExecutor::OnWaitForElementVisibleNoInterrupts,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
   wait_with_interrupts_ = std::make_unique<WaitWithInterrupts>(
       this, max_wait_time, kVisibilityCheck, selector,
-      base::BindOnce(&ScriptExecutor::OnWaitForElementVisible,
+      base::BindOnce(&ScriptExecutor::OnWaitForElementVisibleWithInterrupts,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   wait_with_interrupts_->Run();
 }
@@ -265,8 +267,13 @@ void ScriptExecutor::Shutdown() {
   } else {
     at_end_ = SHUTDOWN;
   }
+}
+
+void ScriptExecutor::Terminate() {
   if (wait_with_interrupts_)
-    wait_with_interrupts_->Shutdown();
+    wait_with_interrupts_->Terminate();
+  at_end_ = TERMINATE;
+  should_stop_script_ = true;
 }
 
 void ScriptExecutor::Close() {
@@ -310,10 +317,30 @@ void ScriptExecutor::ShowDetails(const DetailsProto& details,
 }
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
-  if (!result) {
+  bool success = result && ProcessNextActionResponse(response);
+  if (should_stop_script_) {
+    // The last action forced the script to stop. Sending the result of the
+    // action is considered best effort in this situation. Report a successful
+    // run to the caller no matter what, so we don't confuse users with an error
+    // message.
+    RunCallback(true);
+    return;
+  }
+
+  if (!success) {
     RunCallback(false);
     return;
   }
+
+  if (!actions_.empty()) {
+    ProcessNextAction();
+    return;
+  }
+
+  RunCallback(true);
+}
+
+bool ScriptExecutor::ProcessNextActionResponse(const std::string& response) {
   processed_actions_.clear();
   actions_.clear();
 
@@ -322,23 +349,15 @@ void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   bool parse_result = ProtocolUtils::ParseActions(
       response, &last_global_payload_, &last_script_payload_, &actions_,
       &scripts, &should_update_scripts);
-
   if (!parse_result) {
-    RunCallback(false);
-    return;
+    return false;
   }
+
   ReportPayloadsToListener();
   if (should_update_scripts) {
     ReportScriptsUpdateToListener(std::move(scripts));
   }
-
-  if (actions_.empty()) {
-    // Finished executing the script if there are no more actions.
-    RunCallback(true);
-    return;
-  }
-
-  ProcessNextAction();
+  return true;
 }
 
 void ScriptExecutor::ReportPayloadsToListener() {
@@ -418,20 +437,19 @@ void ScriptExecutor::OnProcessedAction(
     std::unique_ptr<ProcessedActionProto> processed_action_proto) {
   previous_action_type_ = processed_action_proto->action().action_info_case();
   processed_actions_.emplace_back(*processed_action_proto);
-  if (processed_actions_.back().status() !=
-      ProcessedActionStatusProto::ACTION_APPLIED) {
+
+  auto& processed_action = processed_actions_.back();
+  if (at_end_ == TERMINATE) {
+    // Let the backend know that the script has been terminated. The original
+    // action status doesn't matter.
+    processed_action.set_status(
+        ProcessedActionStatusProto::USER_ABORTED_ACTION);
+  }
+  if (processed_action.status() != ProcessedActionStatusProto::ACTION_APPLIED) {
     // Report error immediately, interrupting action processing.
     GetNextActions();
     return;
   }
-
-  if (should_stop_script_) {
-    // Last action called StopCurrentScript(). We simulate a successful end of
-    // script to make sure we don't display any errors.
-    RunCallback(true);
-    return;
-  }
-
   ProcessNextAction();
 }
 
@@ -455,22 +473,30 @@ void ScriptExecutor::OnWaitForElement(base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(all_found);
 }
 
-void ScriptExecutor::OnWaitForElementVisible(
-    base::OnceCallback<void(bool)> element_found_callback,
+void ScriptExecutor::OnWaitForElementVisibleWithInterrupts(
+    base::OnceCallback<void(ProcessedActionStatusProto)> callback,
     bool element_found,
     const Result* interrupt_result) {
   if (interrupt_result) {
-    RunCallbackWithResult(*interrupt_result);
-
-    // TODO(crbug.com/806868): Let the server know that the original script was
-    // interrupted and that the interrupting script failed. This implementation
-    // just drops the current action flow on the floor by deleting
-    // element_found_callback without calling it.
-    return;
+    if (!interrupt_result->success) {
+      std::move(callback).Run(INTERRUPT_FAILED);
+      return;
+    }
+    if (interrupt_result->at_end != CONTINUE) {
+      at_end_ = interrupt_result->at_end;
+      should_stop_script_ = true;
+      std::move(callback).Run(MANUAL_FALLBACK);
+      return;
+    }
   }
+  OnWaitForElementVisibleNoInterrupts(std::move(callback), element_found);
+}
 
-  // Continue the original script.
-  std::move(element_found_callback).Run(element_found);
+void ScriptExecutor::OnWaitForElementVisibleNoInterrupts(
+    base::OnceCallback<void(ProcessedActionStatusProto)> callback,
+    bool element_found) {
+  std::move(callback).Run(element_found ? ACTION_APPLIED
+                                        : ELEMENT_RESOLUTION_FAILED);
 }
 
 ScriptExecutor::WaitWithInterrupts::WaitWithInterrupts(
@@ -572,6 +598,7 @@ void ScriptExecutor::WaitWithInterrupts::OnAllDone() {
 void ScriptExecutor::WaitWithInterrupts::RunInterrupt(const Script* interrupt) {
   batch_element_checker_.reset();
   SavePreInterruptState();
+  main_script_->ran_interrupts_.emplace_back(interrupt->handle.path);
   interrupt_executor_ = std::make_unique<ScriptExecutor>(
       interrupt->handle.path, main_script_->last_global_payload_,
       main_script_->initial_script_payload_,
@@ -641,9 +668,9 @@ void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptScroll(
   }
 }
 
-void ScriptExecutor::WaitWithInterrupts::Shutdown() {
+void ScriptExecutor::WaitWithInterrupts::Terminate() {
   if (interrupt_executor_)
-    interrupt_executor_->Shutdown();
+    interrupt_executor_->Terminate();
 }
 
 void ScriptExecutor::OnChosen(

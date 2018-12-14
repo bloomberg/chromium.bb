@@ -262,6 +262,10 @@ void Controller::OnScriptExecuted(const std::string& script_path,
   GetUiController()->AllowShowingSoftKeyboard(true);
   switch (result.at_end) {
     case ScriptExecutor::SHUTDOWN:
+    case ScriptExecutor::TERMINATE:
+      // TODO(crbug.com/806868): Distinguish shutdown from terminate: Users
+      // should be allowed to undo shutdown, but not terminate.
+
       GetUiController()->Shutdown();  // indirectly deletes this
       return;
 
