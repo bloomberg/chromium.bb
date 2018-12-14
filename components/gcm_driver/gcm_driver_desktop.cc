@@ -874,6 +874,9 @@ void GCMDriverDesktop::GetToken(
 
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
   if (result != GCMClient::SUCCESS) {
+    DLOG(ERROR)
+        << "Unable to get the InstanceID token: cannot start the GCM Client";
+
     callback.Run(std::string(), result);
     return;
   }
@@ -938,6 +941,8 @@ void GCMDriverDesktop::ValidateToken(const std::string& app_id,
   if (result != GCMClient::SUCCESS) {
     // Can't tell whether the registration is valid or not, so don't run the
     // callback (let it hang indefinitely).
+    DLOG(ERROR) << "Unable to validate the InstanceID token: cannot start the "
+                   "GCM Client";
     return;
   }
 
@@ -971,6 +976,9 @@ void GCMDriverDesktop::DeleteToken(const std::string& app_id,
 
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
   if (result != GCMClient::SUCCESS) {
+    DLOG(ERROR)
+        << "Unable to delete the InstanceID token: cannot start the GCM Client";
+
     callback.Run(result);
     return;
   }
@@ -1017,8 +1025,11 @@ void GCMDriverDesktop::AddInstanceIDData(
   DCHECK(ui_thread_->RunsTasksInCurrentSequence());
 
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
-  if (result != GCMClient::SUCCESS)
+  if (result != GCMClient::SUCCESS) {
+    DLOG(ERROR)
+        << "Unable to add the InstanceID data: cannot start the GCM Client";
     return;
+  }
 
   // Delay the operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
@@ -1048,8 +1059,11 @@ void GCMDriverDesktop::RemoveInstanceIDData(const std::string& app_id) {
   DCHECK(ui_thread_->RunsTasksInCurrentSequence());
 
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
-  if (result != GCMClient::SUCCESS)
+  if (result != GCMClient::SUCCESS) {
+    DLOG(ERROR)
+        << "Unable to remove the InstanceID data: cannot start the GCM Client";
     return;
+  }
 
   // Delay the operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
@@ -1078,6 +1092,10 @@ void GCMDriverDesktop::GetInstanceIDData(
 
   GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
   if (result != GCMClient::SUCCESS) {
+    DLOG(ERROR)
+        << "Unable to get the InstanceID data: cannot start the GCM Client";
+
+    // Resolve the |callback| to not leave it hanging indefinitely.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, std::string(), std::string()));
     return;
