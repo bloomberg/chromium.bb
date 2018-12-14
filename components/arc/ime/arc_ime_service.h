@@ -113,7 +113,7 @@ class ArcImeService : public KeyedService,
   ui::TextInputType GetTextInputType() const override;
   gfx::Rect GetCaretBounds() const override;
   bool GetTextRange(gfx::Range* range) const override;
-  bool GetSelectionRange(gfx::Range* range) const override;
+  bool GetEditableSelectionRange(gfx::Range* range) const override;
   bool GetTextFromRange(const gfx::Range& range,
                         base::string16* text) const override;
 
@@ -129,7 +129,7 @@ class ArcImeService : public KeyedService,
   bool HasCompositionText() const override;
   FocusReason GetFocusReason() const override;
   bool GetCompositionTextRange(gfx::Range* range) const override;
-  bool SetSelectionRange(const gfx::Range& range) override;
+  bool SetEditableSelectionRange(const gfx::Range& range) override;
   bool DeleteRange(const gfx::Range& range) override;
   void OnInputMethodChanged() override {}
   bool ChangeTextDirectionAndLayoutAlignment(

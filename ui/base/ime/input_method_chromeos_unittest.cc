@@ -275,7 +275,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     *range = text_range_;
     return true;
   }
-  bool GetSelectionRange(gfx::Range* range) const override {
+  bool GetEditableSelectionRange(gfx::Range* range) const override {
     *range = selection_range_;
     return true;
   }

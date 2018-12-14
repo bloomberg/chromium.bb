@@ -591,7 +591,7 @@ NSRange BridgedNativeWidgetTest::GetExpectedSelectionRange() {
 
 void BridgedNativeWidgetTest::SetSelectionRange(NSRange range) {
   ui::TextInputClient* client = [ns_view_ textInputClient];
-  client->SetSelectionRange(gfx::Range(range));
+  client->SetEditableSelectionRange(gfx::Range(range));
 
   [dummy_text_view_ setSelectedRange:range];
 }
@@ -607,7 +607,7 @@ void BridgedNativeWidgetTest::MakeSelection(int start, int end) {
 
   // Although a gfx::Range is directed, the underlying model will not choose an
   // affinity until the cursor is moved.
-  client->SetSelectionRange(range);
+  client->SetEditableSelectionRange(range);
 
   // Set the range without an affinity. The first @selector sent to the text
   // field determines the affinity. Note that Range::ToNSRange() may discard

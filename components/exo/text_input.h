@@ -114,8 +114,8 @@ class TextInput : public ui::TextInputClient,
   ui::TextInputClient::FocusReason GetFocusReason() const override;
   bool GetTextRange(gfx::Range* range) const override;
   bool GetCompositionTextRange(gfx::Range* range) const override;
-  bool GetSelectionRange(gfx::Range* range) const override;
-  bool SetSelectionRange(const gfx::Range& range) override;
+  bool GetEditableSelectionRange(gfx::Range* range) const override;
+  bool SetEditableSelectionRange(const gfx::Range& range) override;
   bool DeleteRange(const gfx::Range& range) override;
   bool GetTextFromRange(const gfx::Range& range,
                         base::string16* text) const override;

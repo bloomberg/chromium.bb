@@ -1409,7 +1409,9 @@ bool RenderWidgetHostViewAura::GetCompositionTextRange(
   return false;
 }
 
-bool RenderWidgetHostViewAura::GetSelectionRange(gfx::Range* range) const {
+bool RenderWidgetHostViewAura::GetEditableSelectionRange(
+    gfx::Range* range) const {
+  // TODO(yhanada, crbug.com/908762): Return only selections in a text field.
   if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
@@ -1423,7 +1425,8 @@ bool RenderWidgetHostViewAura::GetSelectionRange(gfx::Range* range) const {
   return true;
 }
 
-bool RenderWidgetHostViewAura::SetSelectionRange(const gfx::Range& range) {
+bool RenderWidgetHostViewAura::SetEditableSelectionRange(
+    const gfx::Range& range) {
   // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
   NOTIMPLEMENTED_LOG_ONCE();
   return false;

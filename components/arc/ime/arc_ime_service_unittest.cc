@@ -348,7 +348,7 @@ TEST_F(ArcImeServiceTest, GetTextFromRange) {
   instance_->GetTextFromRange(text_range, &temp_str);
   EXPECT_EQ(text_in_range, temp_str);
 
-  instance_->GetSelectionRange(&temp);
+  instance_->GetEditableSelectionRange(&temp);
   EXPECT_EQ(selection_range, temp);
 }
 

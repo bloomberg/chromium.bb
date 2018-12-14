@@ -970,7 +970,7 @@ TEST_F(TextfieldTest, WordSelection) {
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
 
   // Place the cursor after "5".
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   // Select word towards right.
   SendWordEvent(ui::VKEY_RIGHT, true);
@@ -1013,7 +1013,7 @@ TEST_F(TextfieldTest, LineSelection) {
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
 
   // Place the cursor after "5".
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   // Select line towards right.
   SendEndEvent(true);
@@ -1042,7 +1042,7 @@ TEST_F(TextfieldTest, LineSelection) {
 TEST_F(TextfieldTest, MoveUpDownAndModifySelection) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   // Up/Down keys won't be handled except on Mac where they map to move
   // commands.
@@ -1066,7 +1066,7 @@ TEST_F(TextfieldTest, MoveUpDownAndModifySelection) {
 #endif
   textfield_->clear();
 
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   // Shift+[Up/Down] should select the text to the beginning and end of the
   // line, respectively.
@@ -1090,7 +1090,7 @@ TEST_F(TextfieldTest, MovePageUpDownAndModifySelection) {
 // enabled on Mac.
 #if defined(OS_MACOSX)
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   EXPECT_TRUE(
       textfield_->IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_PAGE_UP));
@@ -1107,7 +1107,7 @@ TEST_F(TextfieldTest, MovePageUpDownAndModifySelection) {
   test_api_->ExecuteTextEditCommand(ui::TextEditCommand::MOVE_PAGE_DOWN);
   EXPECT_EQ(gfx::Range(11), textfield_->GetSelectedRange());
 
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
   test_api_->ExecuteTextEditCommand(
       ui::TextEditCommand::MOVE_PAGE_UP_AND_MODIFY_SELECTION);
   EXPECT_EQ(gfx::Range(6, 0), textfield_->GetSelectedRange());
@@ -1130,7 +1130,7 @@ TEST_F(TextfieldTest, MovePageUpDownAndModifySelection) {
 TEST_F(TextfieldTest, MoveParagraphForwardBackwardAndModifySelection) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
-  textfield_->SetSelectionRange(gfx::Range(6));
+  textfield_->SetEditableSelectionRange(gfx::Range(6));
 
   test_api_->ExecuteTextEditCommand(
       ui::TextEditCommand::MOVE_PARAGRAPH_FORWARD_AND_MODIFY_SELECTION);
@@ -2001,8 +2001,8 @@ TEST_F(TextfieldTest, TextInputClientTest) {
   EXPECT_EQ(0U, range.start());
   EXPECT_EQ(10U, range.end());
 
-  EXPECT_TRUE(client->SetSelectionRange(gfx::Range(1, 4)));
-  EXPECT_TRUE(client->GetSelectionRange(&range));
+  EXPECT_TRUE(client->SetEditableSelectionRange(gfx::Range(1, 4)));
+  EXPECT_TRUE(client->GetEditableSelectionRange(&range));
   EXPECT_EQ(gfx::Range(1, 4), range);
 
   base::string16 substring;
@@ -2064,7 +2064,7 @@ TEST_F(TextfieldTest, TextInputClientTest) {
 
   textfield_->clear();
   textfield_->SetText(ASCIIToUTF16("0123456789"));
-  EXPECT_TRUE(client->SetSelectionRange(gfx::Range(5, 5)));
+  EXPECT_TRUE(client->SetEditableSelectionRange(gfx::Range(5, 5)));
   client->ExtendSelectionAndDelete(4, 2);
   EXPECT_STR_EQ("0789", textfield_->text());
 
@@ -3227,23 +3227,23 @@ TEST_F(TextfieldTouchSelectionTest, MAYBE_TapOnSelection) {
 
   // Select range |sel_range| and check if touch selection handles are not
   // present and correct range is selected.
-  textfield_->SetSelectionRange(sel_range);
+  textfield_->SetEditableSelectionRange(sel_range);
   gfx::Range range;
-  textfield_->GetSelectionRange(&range);
+  textfield_->GetEditableSelectionRange(&range);
   EXPECT_FALSE(test_api_->touch_selection_controller());
   EXPECT_EQ(sel_range, range);
 
   // Tap on selection and check if touch selectoin handles are shown, but
   // selection range is not modified.
   Tap(tap_point);
-  textfield_->GetSelectionRange(&range);
+  textfield_->GetEditableSelectionRange(&range);
   EXPECT_TRUE(test_api_->touch_selection_controller());
   EXPECT_EQ(sel_range, range);
 
   // Tap again on selection and check if touch selection handles are still
   // present and selection is changed to a cursor at tap location.
   Tap(tap_point);
-  textfield_->GetSelectionRange(&range);
+  textfield_->GetEditableSelectionRange(&range);
   EXPECT_TRUE(test_api_->touch_selection_controller());
   EXPECT_EQ(tap_range, range);
 }

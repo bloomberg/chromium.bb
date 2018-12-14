@@ -172,12 +172,12 @@ bool TextInput::GetCompositionTextRange(gfx::Range* range) const {
   return false;
 }
 
-bool TextInput::GetSelectionRange(gfx::Range* range) const {
+bool TextInput::GetEditableSelectionRange(gfx::Range* range) const {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
-bool TextInput::SetSelectionRange(const gfx::Range& range) {
+bool TextInput::SetEditableSelectionRange(const gfx::Range& range) {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }

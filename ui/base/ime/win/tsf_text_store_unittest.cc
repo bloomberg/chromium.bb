@@ -47,8 +47,8 @@ class MockTextInputClient : public TextInputClient {
   MOCK_METHOD0(ShouldDoLearning, bool());
   MOCK_CONST_METHOD1(GetTextRange, bool(gfx::Range*));
   MOCK_CONST_METHOD1(GetCompositionTextRange, bool(gfx::Range*));
-  MOCK_CONST_METHOD1(GetSelectionRange, bool(gfx::Range*));
-  MOCK_METHOD1(SetSelectionRange, bool(const gfx::Range&));
+  MOCK_CONST_METHOD1(GetEditableSelectionRange, bool(gfx::Range*));
+  MOCK_METHOD1(SetEditableSelectionRange, bool(const gfx::Range&));
   MOCK_METHOD1(DeleteRange, bool(const gfx::Range&));
   MOCK_CONST_METHOD2(GetTextFromRange,
                      bool(const gfx::Range&, base::string16*));

@@ -97,7 +97,7 @@ void TextInputTestHelper::OnCaretBoundsChanged(
     if (!GetTextInputClient()->GetTextRange(&text_range) ||
         !GetTextInputClient()->GetTextFromRange(text_range,
                                                 &surrounding_text_) ||
-        !GetTextInputClient()->GetSelectionRange(&selection_range_))
+        !GetTextInputClient()->GetEditableSelectionRange(&selection_range_))
       return;
   }
   if (waiting_type_ == WAIT_ON_CARET_BOUNDS_CHANGED)

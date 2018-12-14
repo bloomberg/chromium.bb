@@ -120,13 +120,13 @@ bool RemoteTextInputClient::GetCompositionTextRange(gfx::Range* range) const {
   return false;
 }
 
-bool RemoteTextInputClient::GetSelectionRange(gfx::Range* range) const {
+bool RemoteTextInputClient::GetEditableSelectionRange(gfx::Range* range) const {
   // TODO(moshayedi): crbug.com/631527.
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
-bool RemoteTextInputClient::SetSelectionRange(const gfx::Range& range) {
+bool RemoteTextInputClient::SetEditableSelectionRange(const gfx::Range& range) {
   // TODO(moshayedi): crbug.com/631527.
   NOTIMPLEMENTED_LOG_ONCE();
   return false;

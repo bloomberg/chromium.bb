@@ -181,7 +181,7 @@ void LabelExample::AddCustomLabel(View* container) {
   textfield_ = new Textfield();
   textfield_->SetText(ASCIIToUTF16("Use the provided controls to configure the "
       "content and presentation of this custom label."));
-  textfield_->SetSelectionRange(gfx::Range());
+  textfield_->SetEditableSelectionRange(gfx::Range());
   textfield_->set_controller(this);
   layout->AddView(textfield_);
 

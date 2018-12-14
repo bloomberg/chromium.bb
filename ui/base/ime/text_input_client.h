@@ -127,23 +127,25 @@ class UI_BASE_IME_EXPORT TextInputClient {
   // Returns false if the information cannot be retrieved right now.
   virtual bool GetCompositionTextRange(gfx::Range* range) const = 0;
 
-  // Retrieves the UTF-16 based character range of current selection.
-  // Returns false if the information cannot be retrieved right now.
-  virtual bool GetSelectionRange(gfx::Range* range) const = 0;
+  // Retrieves the UTF-16 based character range of current selection in the text
+  // input. Returns false if the information cannot be retrieved right now.
+  // Returns false if the selected text is outside of the text input (== the
+  // text input is not focused)
+  virtual bool GetEditableSelectionRange(gfx::Range* range) const = 0;
 
   // Selects the given UTF-16 based character range. Current composition text
   // will be confirmed before selecting the range.
   // Returns false if the operation is not supported.
-  virtual bool SetSelectionRange(const gfx::Range& range) = 0;
+  virtual bool SetEditableSelectionRange(const gfx::Range& range) = 0;
 
   // Deletes contents in the given UTF-16 based character range. Current
   // composition text will be confirmed before deleting the range.
   // The input caret will be moved to the place where the range gets deleted.
   // ExtendSelectionAndDelete should be used instead as far as you are deleting
   // characters around current caret. This function with the range based on
-  // GetSelectionRange has a race condition due to asynchronous IPCs between
-  // browser and renderer.
-  // Returns false if the operation is not supported.
+  // GetEditableSelectionRange has a race condition due to asynchronous IPCs
+  // between browser and renderer. Returns false if the operation is not
+  // supported.
   virtual bool DeleteRange(const gfx::Range& range) = 0;
 
   // Retrieves the text content in a given UTF-16 based character range.
@@ -168,9 +170,9 @@ class UI_BASE_IME_EXPORT TextInputClient {
 
   // Deletes the current selection plus the specified number of characters
   // before and after the selection or caret. This function should be used
-  // instead of calling DeleteRange with GetSelectionRange, because
-  // GetSelectionRange may not be the latest value due to asynchronous of IPC
-  // between browser and renderer.
+  // instead of calling DeleteRange with GetEditableSelectionRange, because
+  // GetEditableSelectionRange may not be the latest value due to asynchronous
+  // of IPC between browser and renderer.
   virtual void ExtendSelectionAndDelete(size_t before, size_t after) = 0;
 
   // Ensure the caret is not in |rect|.  |rect| is in screen coordinates in

@@ -350,7 +350,8 @@ LRESULT InputMethodWinBase::OnDocumentFeed(RECONVERTSTRING* reconv) {
     result = client->GetCompositionTextRange(&target_range);
 
   if (!result || target_range.is_empty()) {
-    if (!client->GetSelectionRange(&target_range) || !target_range.IsValid()) {
+    if (!client->GetEditableSelectionRange(&target_range) ||
+        !target_range.IsValid()) {
       return 0;
     }
   }
@@ -411,7 +412,7 @@ LRESULT InputMethodWinBase::OnReconvertString(RECONVERTSTRING* reconv) {
     return 0;
 
   gfx::Range selection_range;
-  if (!client->GetSelectionRange(&selection_range) ||
+  if (!client->GetEditableSelectionRange(&selection_range) ||
       selection_range.is_empty()) {
     return 0;
   }
