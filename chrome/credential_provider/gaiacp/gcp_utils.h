@@ -185,10 +185,7 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties);
 HRESULT GetAuthenticationPackageId(ULONG* id);
 
 // Gets a string resource from the DLL with the given id.
-base::string16 GetStringResource(int base_message_id);
-
-// Gets the language selected by the base::win::i18n::LanguageSelector.
-base::string16 GetSelectedLanguage();
+base::string16 GetStringResource(UINT id);
 
 // Helpers to get strings from DictionaryValues.
 base::string16 GetDictString(const base::DictionaryValue* dict,
