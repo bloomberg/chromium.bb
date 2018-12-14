@@ -45,14 +45,18 @@ class DummyGCMAppHandler : public gcm::GCMAppHandler {
 
 DeviceSyncBase::DeviceSyncBase(gcm::GCMDriver* gcm_driver)
     : gcm_app_handler_(std::make_unique<DummyGCMAppHandler>(
-          base::BindOnce(&DeviceSyncBase::Shutdown, base::Unretained(this)))) {
-  if (gcm_driver)
-    gcm_driver->AddAppHandler(kDummyAppName, gcm_app_handler_.get());
+          base::BindOnce(&DeviceSyncBase::Shutdown, base::Unretained(this)))),
+      gcm_driver_(gcm_driver) {
+  if (gcm_driver_)
+    gcm_driver_->AddAppHandler(kDummyAppName, gcm_app_handler_.get());
   bindings_.set_connection_error_handler(base::BindRepeating(
       &DeviceSyncBase::OnDisconnection, base::Unretained(this)));
 }
 
-DeviceSyncBase::~DeviceSyncBase() = default;
+DeviceSyncBase::~DeviceSyncBase() {
+  if (gcm_driver_)
+    gcm_driver_->RemoveAppHandler(kDummyAppName);
+}
 
 void DeviceSyncBase::AddObserver(mojom::DeviceSyncObserverPtr observer,
                                  AddObserverCallback callback) {

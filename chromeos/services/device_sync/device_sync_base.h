@@ -55,6 +55,8 @@ class DeviceSyncBase : public mojom::DeviceSync {
 
   std::unique_ptr<gcm::GCMAppHandler> gcm_app_handler_;
 
+  gcm::GCMDriver* gcm_driver_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncBase);
 };
 
