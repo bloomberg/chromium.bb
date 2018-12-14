@@ -1046,6 +1046,11 @@ public class AwContents implements SmartClipProvider {
             drawable.onContainerViewChanged(newContainerView);
         }
         onContainerViewChanged();
+
+        // When switching between main view and fullscreen view the container's
+        // view needs to be synchronized to what the native side has otherwise
+        // it may force an unintended scroll to the top of the document.
+        mScrollOffsetManager.syncScrollToContainerView();
     }
 
     /**
