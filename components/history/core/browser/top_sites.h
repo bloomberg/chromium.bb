@@ -48,13 +48,12 @@ class TopSites : public RefcountedKeyedService {
   typedef base::Callback<void(const MostVisitedURLList&)>
       GetMostVisitedURLsCallback;
 
-  // Returns a list of most visited URLs via a callback, if
-  // |include_forced_urls| is false includes only non-forced URLs. This may be
-  // invoked on any thread. NOTE: The callback is called immediately if we have
-  // the data cached. If data is not available yet, callback will later be
-  // posted to the thread that called this function.
-  virtual void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback,
-                                  bool include_forced_urls) = 0;
+  // Returns a list of most visited URLs via a callback. This may be invoked on
+  // any thread. NOTE: The callback is called immediately if we have the data
+  // cached. If data is not available yet, callback will later be posted to the
+  // thread that called this function.
+  virtual void GetMostVisitedURLs(
+      const GetMostVisitedURLsCallback& callback) = 0;
 
   // Asks TopSites to refresh what it thinks the top sites are. This may do
   // nothing. Should be called from the UI thread.
@@ -82,27 +81,15 @@ class TopSites : public RefcountedKeyedService {
   // This function also returns false if TopSites isn't loaded yet.
   virtual bool IsKnownURL(const GURL& url) = 0;
 
-  // Returns true if the top sites list of non-forced URLs is full (i.e. we
-  // already have the maximum number of non-forced top sites).  This function
-  // also returns false if TopSites isn't loaded yet.
-  virtual bool IsNonForcedFull() = 0;
-
-  // Returns true if the top sites list of forced URLs is full (i.e. we already
-  // have the maximum number of forced top sites).  This function also returns
-  // false if TopSites isn't loaded yet.
-  virtual bool IsForcedFull() = 0;
+  // Returns true if the top sites list is full (i.e. we already have the
+  // maximum number of top sites).  This function also returns false if TopSites
+  // isn't loaded yet.
+  virtual bool IsFull() = 0;
 
   virtual bool loaded() const = 0;
 
   // Returns the set of prepopulated pages.
   virtual PrepopulatedPageList GetPrepopulatedPages() = 0;
-
-  // Adds or updates a |url| for which we should force the capture of a
-  // thumbnail next time it's visited. If there is already a non-forced URL
-  // matching this |url| this call has no effect. Indicate this URL was last
-  // forced at |time| so we can evict the older URLs when needed. Should be
-  // called from the UI thread.
-  virtual bool AddForcedURL(const GURL& url, const base::Time& time) = 0;
 
   // Called when user has navigated to |url|.
   virtual void OnNavigationCommitted(const GURL& url) = 0;

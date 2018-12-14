@@ -28,8 +28,7 @@ ExtensionFunction::ResponseAction TopSitesGetFunction::Run() {
     return RespondNow(Error(kUnknownErrorDoNotUse));
 
   ts->GetMostVisitedURLs(
-      base::Bind(&TopSitesGetFunction::OnMostVisitedURLsAvailable, this),
-      false);
+      base::Bind(&TopSitesGetFunction::OnMostVisitedURLsAvailable, this));
 
   // GetMostVisitedURLs() will invoke the callback synchronously if the URLs are
   // already populated.

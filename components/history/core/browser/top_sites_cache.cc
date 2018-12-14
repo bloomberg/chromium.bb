@@ -24,7 +24,6 @@ TopSitesCache::~TopSitesCache() {
 
 void TopSitesCache::SetTopSites(const MostVisitedURLList& top_sites) {
   top_sites_ = top_sites;
-  CountForcedURLs();
   GenerateCanonicalURLs();
 }
 
@@ -42,29 +41,8 @@ size_t TopSitesCache::GetURLIndex(const GURL& url) const {
   return GetCanonicalURLsIterator(url)->second;
 }
 
-size_t TopSitesCache::GetNumNonForcedURLs() const {
-  return top_sites_.size() - num_forced_urls_;
-}
-
-size_t TopSitesCache::GetNumForcedURLs() const {
-  return num_forced_urls_;
-}
-
-void TopSitesCache::CountForcedURLs() {
-  num_forced_urls_ = 0;
-  while (num_forced_urls_ < top_sites_.size()) {
-    // Forced sites are all at the beginning.
-    if (top_sites_[num_forced_urls_].last_forced_time.is_null())
-      break;
-    num_forced_urls_++;
-  }
-#if DCHECK_IS_ON()
-  // In debug, ensure the cache user has no forced URLs pass that point.
-  for (size_t i = num_forced_urls_; i < top_sites_.size(); ++i) {
-    DCHECK(top_sites_[i].last_forced_time.is_null())
-        << "All the forced URLs must appear before non-forced URLs.";
-  }
-#endif
+size_t TopSitesCache::GetNumURLs() const {
+  return top_sites_.size();
 }
 
 void TopSitesCache::GenerateCanonicalURLs() {
