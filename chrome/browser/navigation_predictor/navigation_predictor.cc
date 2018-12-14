@@ -28,14 +28,12 @@
 
 namespace {
 
-content::RenderFrameHost* GetMainFrame(content::RenderFrameHost* rfh) {
+bool IsMainFrame(content::RenderFrameHost* rfh) {
   // Don't use rfh->GetRenderViewHost()->GetMainFrame() here because
   // RenderViewHost is being deprecated and because in OOPIF,
   // RenderViewHost::GetMainFrame() returns nullptr for child frames hosted in a
   // different process from the main frame.
-  while (rfh->GetParent() != nullptr)
-    rfh = rfh->GetParent();
-  return rfh;
+  return rfh->GetParent() == nullptr;
 }
 
 }  // namespace
@@ -140,7 +138,7 @@ NavigationPredictor::NavigationPredictor(
   DCHECK_LE(0, preconnect_origin_score_threshold_);
   DCHECK_LE(0, prefetch_url_score_threshold_);
 
-  if (render_frame_host != GetMainFrame(render_frame_host))
+  if (!IsMainFrame(render_frame_host))
     return;
 
   content::WebContents* web_contents =
