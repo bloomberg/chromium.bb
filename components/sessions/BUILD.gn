@@ -112,6 +112,7 @@ source_set("shared") {
 
   deps = [
     "//base",
+    "//components/history/core/common",
     "//components/keyed_service/core",
     "//components/prefs",
     "//components/variations",

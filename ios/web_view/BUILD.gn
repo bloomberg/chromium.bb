@@ -266,6 +266,7 @@ ios_web_view_deps = [
   "//components/content_settings/core/browser",
   "//components/flags_ui",
   "//components/gcm_driver",
+  "//components/history/core/common",
   "//components/image_fetcher/ios",
   "//components/invalidation/impl",
   "//components/infobars/core",

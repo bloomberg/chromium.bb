@@ -5,6 +5,7 @@ include_rules = [
   "+components/content_settings/core",
   "+components/flags_ui",
   "+components/gcm_driver",
+  "+components/history/core/common",
   "+components/image_fetcher/ios",
   "+components/infobars/core",
   "+components/invalidation/impl",

@@ -914,9 +914,6 @@ const char kShowHomeButton[] = "browser.show_home_button";
 const char kSpeechRecognitionFilterProfanities[] =
     "browser.speechinput_censor_results";
 
-// Boolean controlling whether history saving is disabled.
-const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
-
 // Boolean controlling whether deleting browsing and download history is
 // permitted.
 const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
