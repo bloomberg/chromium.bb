@@ -37,11 +37,14 @@ Status FocusToElement(
     Session* session,
     WebView* web_view,
     const std::string& element_id) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   bool is_displayed = false;
   bool is_focused = false;
   base::TimeTicks start_time = base::TimeTicks::Now();
   while (true) {
-    Status status = IsElementDisplayed(
+    status = IsElementDisplayed(
         session, web_view, element_id, true, &is_displayed);
     if (status.IsError())
       return status;
@@ -59,7 +62,7 @@ Status FocusToElement(
   }
 
   bool is_enabled = false;
-  Status status = IsElementEnabled(session, web_view, element_id, &is_enabled);
+  status = IsElementEnabled(session, web_view, element_id, &is_enabled);
   if (status.IsError())
     return status;
   if (!is_enabled)
@@ -297,11 +300,14 @@ Status ExecuteClearElement(Session* session,
                            const std::string& element_id,
                            const base::DictionaryValue& params,
                            std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   // Scrolling to element is done by webdriver::atoms::CLEAR
   bool is_displayed = false;
   base::TimeTicks start_time = base::TimeTicks::Now();
   while (true) {
-    Status status = IsElementDisplayed(
+    status = IsElementDisplayed(
       session, web_view, element_id, true, &is_displayed);
     if (status.IsError())
       return status;
@@ -326,6 +332,9 @@ Status ExecuteSendKeysToElement(Session* session,
                                 const std::string& element_id,
                                 const base::DictionaryValue& params,
                                 std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   const base::ListValue* key_list;
   base::ListValue key_list_local;
   if (session->w3c_compliant) {
@@ -340,7 +349,7 @@ Status ExecuteSendKeysToElement(Session* session,
   }
 
   bool is_input = false;
-  Status status = IsElementAttributeEqualToIgnoreCase(
+  status = IsElementAttributeEqualToIgnoreCase(
       session, web_view, element_id, "tagName", "input", &is_input);
   if (status.IsError())
     return status;
@@ -404,6 +413,9 @@ Status ExecuteSubmitElement(Session* session,
                             const std::string& element_id,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -418,6 +430,9 @@ Status ExecuteGetElementText(Session* session,
                              const std::string& element_id,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -432,6 +447,9 @@ Status ExecuteGetElementValue(Session* session,
                               const std::string& element_id,
                               const base::DictionaryValue& params,
                               std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -446,6 +464,9 @@ Status ExecuteGetElementProperty(Session* session,
                               const std::string& element_id,
                               const base::DictionaryValue& params,
                               std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
 
@@ -466,6 +487,9 @@ Status ExecuteGetElementTagName(Session* session,
                                 const std::string& element_id,
                                 const base::DictionaryValue& params,
                                 std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -480,6 +504,9 @@ Status ExecuteIsElementSelected(Session* session,
                                 const std::string& element_id,
                                 const base::DictionaryValue& params,
                                 std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -494,11 +521,14 @@ Status ExecuteIsElementEnabled(Session* session,
                                const std::string& element_id,
                                const base::DictionaryValue& params,
                                std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
 
   bool is_xml = false;
-  Status status = IsDocumentTypeXml(session, web_view, &is_xml);
+  status = IsDocumentTypeXml(session, web_view, &is_xml);
   if (status.IsError())
     return status;
 
@@ -519,6 +549,9 @@ Status ExecuteIsElementDisplayed(Session* session,
                                  const std::string& element_id,
                                  const base::DictionaryValue& params,
                                  std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -533,6 +566,9 @@ Status ExecuteGetElementLocation(Session* session,
                                  const std::string& element_id,
                                  const base::DictionaryValue& params,
                                  std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
@@ -547,11 +583,14 @@ Status ExecuteGetElementRect(Session* session,
                              const std::string& element_id,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
 
   std::unique_ptr<base::Value> location;
-  Status status = web_view->CallFunction(
+  status = web_view->CallFunction(
       session->GetCurrentFrameId(),
       webdriver::atoms::asString(webdriver::atoms::GET_LOCATION), args,
       &location);
@@ -615,6 +654,9 @@ Status ExecuteGetElementSize(Session* session,
                              const std::string& element_id,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value) {
+  Status status = CheckElement(element_id);
+  if (status.IsError())
+    return status;
   base::ListValue args;
   args.Append(CreateElement(element_id));
   return web_view->CallFunction(
