@@ -39,10 +39,14 @@ class IDBObservation final : public ScriptWrappable {
   ScriptValue value(ScriptState*);
   const String& type() const;
 
+  // Helpers.
+  int64_t object_store_id() const { return object_store_id_; }
+
  private:
   Member<IDBKeyRange> key_range_;
   Member<IDBAny> value_;
   const mojom::IDBOperationType operation_type_;
+  int64_t object_store_id_;
 };
 
 }  // namespace blink
