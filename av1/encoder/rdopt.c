@@ -4846,6 +4846,7 @@ static void try_tx_block_split(
   RD_STATS this_rd_stats;
   int this_cost_valid = 1;
   int64_t tmp_rd = 0;
+  *split_rd = INT64_MAX;
 
   split_rd_stats->rate = x->txfm_partition_cost[txfm_partition_ctx][1];
 
@@ -4868,23 +4869,18 @@ static void try_tx_block_split(
           ref_best_rd - tmp_rd, &this_cost_valid, ftxs_mode,
           (rd_info_node != NULL) ? rd_info_node->children[blk_idx] : NULL);
 
-      if (!this_cost_valid) goto LOOP_EXIT;
+      if (!this_cost_valid) return;
 
       av1_merge_rd_stats(split_rd_stats, &this_rd_stats);
 
       tmp_rd = RDCOST(x->rdmult, split_rd_stats->rate, split_rd_stats->dist);
 
-      if (no_split_rd < tmp_rd) {
-        this_cost_valid = 0;
-        goto LOOP_EXIT;
-      }
+      if (no_split_rd < tmp_rd) return;
       block += sub_step;
     }
   }
 
-LOOP_EXIT : {}
-
-  if (this_cost_valid) *split_rd = tmp_rd;
+  *split_rd = tmp_rd;
 }
 
 // Search for the best tx partition/type for a given luma block.
