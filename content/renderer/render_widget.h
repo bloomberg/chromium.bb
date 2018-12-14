@@ -82,6 +82,7 @@ class WebGestureEvent;
 class WebInputMethodController;
 class WebLocalFrame;
 class WebMouseEvent;
+class WebPagePopup;
 }  // namespace blink
 
 namespace cc {

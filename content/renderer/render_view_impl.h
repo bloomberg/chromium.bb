@@ -222,7 +222,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                              blink::WebSandboxFlags sandbox_flags,
                              const blink::SessionStorageNamespaceId&
                                  session_storage_namespace_id) override;
-  blink::WebWidget* CreatePopup(blink::WebLocalFrame* creator) override;
+  blink::WebPagePopup* CreatePopup(blink::WebLocalFrame* creator) override;
   base::StringPiece GetSessionStorageNamespaceId() override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   void SetValidationMessageDirection(base::string16* main_text,

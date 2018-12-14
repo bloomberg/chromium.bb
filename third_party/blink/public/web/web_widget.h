@@ -61,7 +61,6 @@ class Point;
 namespace blink {
 class WebCoalescedInputEvent;
 class WebLayerTreeView;
-class WebPagePopup;
 
 class WebWidget {
  public:
@@ -211,17 +210,11 @@ class WebWidget {
   // to render its contents.
   virtual bool IsAcceleratedCompositingActive() const { return false; }
 
-  // Returns true if the WebWidget created is of type WebView.
-  virtual bool IsWebView() const { return false; }
-
   // Returns true if the WebWidget created is of type PepperWidget.
   virtual bool IsPepperWidget() const { return false; }
 
   // Returns true if the WebWidget created is of type WebFrameWidget.
   virtual bool IsWebFrameWidget() const { return false; }
-
-  // Returns true if the WebWidget created is of type WebPagePopup.
-  virtual bool IsPagePopup() const { return false; }
 
   // The WebLayerTreeView initialized on this WebWidgetClient will be going away
   // and is no longer safe to access.

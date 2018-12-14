@@ -239,7 +239,6 @@ using blink::WebView;
 using blink::WebWidget;
 using blink::WebWindowFeatures;
 using blink::WebRuntimeFeatures;
-using base::TimeDelta;
 
 namespace content {
 
@@ -1422,7 +1421,8 @@ WebView* RenderViewImpl::CreateView(
   return view->webview();
 }
 
-WebWidget* RenderViewImpl::CreatePopup(blink::WebLocalFrame* creator) {
+blink::WebPagePopup* RenderViewImpl::CreatePopup(
+    blink::WebLocalFrame* creator) {
   mojom::WidgetPtr widget_channel;
   mojom::WidgetRequest widget_channel_request =
       mojo::MakeRequest(&widget_channel);
@@ -1590,8 +1590,8 @@ void RenderViewImpl::StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame) {
   }
 
   // Tell each frame with pending state to inform the browser.
-  nav_state_sync_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(delay), this,
-                              &RenderViewImpl::SendFrameStateUpdates);
+  nav_state_sync_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(delay),
+                              this, &RenderViewImpl::SendFrameStateUpdates);
 }
 
 void RenderViewImpl::SetMouseOverURL(const WebURL& url) {

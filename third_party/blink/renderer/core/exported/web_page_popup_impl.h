@@ -94,7 +94,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void Close() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetFocus(bool) override;
-  bool IsPagePopup() const override { return true; }
   bool IsAcceleratedCompositingActive() const override {
     return is_accelerated_compositing_active_;
   }
@@ -146,13 +145,9 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   DISALLOW_COPY_AND_ASSIGN(WebPagePopupImpl);
 };
 
-DEFINE_TYPE_CASTS(WebPagePopupImpl,
-                  WebWidget,
-                  widget,
-                  widget->IsPagePopup(),
-                  widget.IsPagePopup());
-// WebPagePopupImpl is the only implementation of PagePopup, so no
-// further checking required.
+// WebPagePopupImpl is the only implementation of WebPagePopup and PagePopup, so
+// no further checking required.
+DEFINE_TYPE_CASTS(WebPagePopupImpl, WebPagePopup, widget, true, true);
 DEFINE_TYPE_CASTS(WebPagePopupImpl, PagePopup, popup, true, true);
 
 }  // namespace blink
