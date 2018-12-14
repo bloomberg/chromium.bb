@@ -488,13 +488,13 @@ TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_NewWalletAddressAndCard) {
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
   EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(
-                              AddChange(address2.guid(), address2)));
+                              AddChange(address2.server_id(), address2)));
+  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(
+                              RemoveChange(address1.server_id())));
   EXPECT_CALL(*backend(),
-              NotifyOfAutofillProfileChanged(RemoveChange(address1.guid())));
+              NotifyOfCreditCardChanged(AddChange(card2.server_id(), card2)));
   EXPECT_CALL(*backend(),
-              NotifyOfCreditCardChanged(AddChange(card2.guid(), card2)));
-  EXPECT_CALL(*backend(),
-              NotifyOfCreditCardChanged(RemoveChange(card1.guid())));
+              NotifyOfCreditCardChanged(RemoveChange(card1.server_id())));
   StartSyncing({profile_specifics2, card_specifics2, customer_data_specifics});
 
   if (IsWalletMetadataOnUSS()) {
@@ -597,9 +597,9 @@ TEST_P(AutofillWalletSyncBridgeTest, MergeSyncData_NoWalletAddressOrCard) {
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
   EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(
-                              RemoveChange(local_profile.guid())));
+                              RemoveChange(local_profile.server_id())));
   EXPECT_CALL(*backend(),
-              NotifyOfCreditCardChanged(RemoveChange(local_card.guid())));
+              NotifyOfCreditCardChanged(RemoveChange(local_card.server_id())));
   StartSyncing({});
 
   if (IsWalletMetadataOnUSS()) {
@@ -673,11 +673,12 @@ TEST_P(AutofillWalletSyncBridgeTest,
                                                      &customer_data_specifics);
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+  EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(
+                              RemoveChange(profile2.server_id())));
   EXPECT_CALL(*backend(),
-              NotifyOfAutofillProfileChanged(RemoveChange(profile2.guid())));
-  EXPECT_CALL(*backend(), NotifyOfCreditCardChanged(RemoveChange(card.guid())));
+              NotifyOfCreditCardChanged(RemoveChange(card.server_id())));
   EXPECT_CALL(*backend(),
-              NotifyOfCreditCardChanged(AddChange(card2.guid(), card2)));
+              NotifyOfCreditCardChanged(AddChange(card2.server_id(), card2)));
   StartSyncing({profile_specifics, card2_specifics, customer_data_specifics});
 
   if (IsWalletMetadataOnUSS()) {
@@ -818,9 +819,9 @@ TEST_P(AutofillWalletSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
 
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
   EXPECT_CALL(*backend(), NotifyOfAutofillProfileChanged(
-                              RemoveChange(local_profile.guid())));
+                              RemoveChange(local_profile.server_id())));
   EXPECT_CALL(*backend(),
-              NotifyOfCreditCardChanged(RemoveChange(local_card.guid())));
+              NotifyOfCreditCardChanged(RemoveChange(local_card.server_id())));
   // Passing in a non-null metadata change list indicates to the bridge that
   // sync is stopping because it was disabled.
   bridge()->ApplyStopSyncChanges(
