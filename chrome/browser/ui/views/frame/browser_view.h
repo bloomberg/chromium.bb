@@ -50,6 +50,10 @@
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/ui/views/quit_instruction_bubble_controller.h"
+#endif
+
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
@@ -832,10 +836,9 @@ class BrowserView : public BrowserWindow,
   };
   base::Optional<ResizeSession> interactive_resize_;
 
-// Set to true if QuitInstructionBubbleController is added as pre-target
-// handler.
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  bool added_quit_instructions_ = false;
+  scoped_refptr<QuitInstructionBubbleController>
+      quit_instruction_bubble_controller_;
 #endif
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{
