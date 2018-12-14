@@ -409,6 +409,12 @@ struct drm_pending_state {
 	struct wl_list output_list;
 };
 
+enum drm_output_propose_state_mode {
+	DRM_OUTPUT_PROPOSE_STATE_MIXED, /**< mix renderer & planes */
+	DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY, /**< only assign to renderer & cursor */
+	DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY, /**< no renderer use, only planes */
+};
+
 /*
  * Output state holds the dynamic state for one Weston output, i.e. a KMS CRTC,
  * plus >= 1 each of encoder/connector/plane. Since everything but the planes
@@ -566,6 +572,12 @@ static const char *const aspect_ratio_as_string[] = {
 	[WESTON_MODE_PIC_AR_16_9] = " 16:9",
 	[WESTON_MODE_PIC_AR_64_27] = " 64:27",
 	[WESTON_MODE_PIC_AR_256_135] = " 256:135",
+};
+
+static const char *const drm_output_propose_state_mode_as_string[] = {
+	[DRM_OUTPUT_PROPOSE_STATE_MIXED] = "mixed state",
+	[DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY] = "render-only state",
+	[DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY]	= "plane-only state"
 };
 
 static struct gl_renderer_interface *gl_renderer;
@@ -1971,12 +1983,6 @@ drm_output_assign_state(struct drm_output_state *state,
 			output->page_flip_pending = 1;
 	}
 }
-
-enum drm_output_propose_state_mode {
-	DRM_OUTPUT_PROPOSE_STATE_MIXED, /**< mix renderer & planes */
-	DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY, /**< only assign to renderer & cursor */
-	DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY, /**< no renderer use, only planes */
-};
 
 static struct drm_plane_state *
 drm_output_prepare_scanout_view(struct drm_output_state *output_state,
@@ -3736,7 +3742,6 @@ drm_output_propose_state(struct weston_output *output_base,
 		       scanout_state->fb->type == BUFFER_PIXMAN_DUMB);
 		drm_plane_state_put_back(scanout_state);
 	}
-
 	return state;
 
 err_region:
@@ -3745,6 +3750,15 @@ err_region:
 err:
 	drm_output_state_free(state);
 	return NULL;
+}
+
+static const char *
+drm_propose_state_mode_to_string(enum drm_output_propose_state_mode mode)
+{
+	if (mode < 0 || mode >= ARRAY_LENGTH(drm_output_propose_state_mode_as_string))
+		return " unknown compositing mode";
+
+	return drm_output_propose_state_mode_as_string[mode];
 }
 
 static void
@@ -3757,18 +3771,21 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	struct drm_plane_state *plane_state;
 	struct weston_view *ev;
 	struct weston_plane *primary = &output_base->compositor->primary_plane;
+	enum drm_output_propose_state_mode mode = DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY;
 
 	drm_debug(b, "\t[repaint] preparing state for output %s (%lu)\n",
 		  output_base->name, (unsigned long) output_base->id);
 
 	if (!b->sprites_are_broken && !output->virtual) {
-		state = drm_output_propose_state(output_base, pending_state,
-						 DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY);
+		drm_debug(b, "\t[repaint] trying planes-only build state\n");
+		state = drm_output_propose_state(output_base, pending_state, mode);
 		if (!state) {
 			drm_debug(b, "\t[repaint] could not build planes-only "
 				     "state, trying mixed\n");
-			state = drm_output_propose_state(output_base, pending_state,
-							 DRM_OUTPUT_PROPOSE_STATE_MIXED);
+			mode = DRM_OUTPUT_PROPOSE_STATE_MIXED;
+			state = drm_output_propose_state(output_base,
+							 pending_state,
+							 mode);
 		}
 		if (!state) {
 			drm_debug(b, "\t[repaint] could not build mixed-mode "
@@ -3778,11 +3795,15 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 		drm_debug(b, "\t[state] no overlay plane support\n");
 	}
 
-	if (!state)
+	if (!state) {
+		mode = DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY;
 		state = drm_output_propose_state(output_base, pending_state,
 						 DRM_OUTPUT_PROPOSE_STATE_RENDERER_ONLY);
+	}
 
 	assert(state);
+	drm_debug(b, "\t[repaint] Using %s composition\n",
+		  drm_propose_state_mode_to_string(mode));
 
 	wl_list_for_each(ev, &output_base->compositor->view_list, link) {
 		struct drm_plane *target_plane = NULL;
