@@ -12,7 +12,7 @@
 namespace {
 
 base::LazyInstance<ClientHintsFactory>::DestructorAtExit
-    g_previews_service_factory = LAZY_INSTANCE_INITIALIZER;
+    g_client_hints_factory = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -25,7 +25,7 @@ client_hints::ClientHints* ClientHintsFactory::GetForBrowserContext(
 
 // static
 ClientHintsFactory* ClientHintsFactory::GetInstance() {
-  return g_previews_service_factory.Pointer();
+  return g_client_hints_factory.Pointer();
 }
 
 ClientHintsFactory::ClientHintsFactory()
