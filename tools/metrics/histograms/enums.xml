@@ -12483,6 +12483,7 @@ Called by update_net_error_codes.py.-->
   <int value="318" label="pyd"/>
   <int value="319" label="pyo"/>
   <int value="320" label="desktop"/>
+  <int value="321" label="cpi"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
