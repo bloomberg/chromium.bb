@@ -116,7 +116,6 @@ public class WebXrVrInputTest {
      * Tests that screen touches are not registered when in an immersive session. Disabled on
      * standalones because they don't have touchscreens.
      */
-    @DisabledTest(message = "https://crbug.com/913161")
     @Test
     @MediumTest
     @DisableIf
@@ -296,7 +295,6 @@ public class WebXrVrInputTest {
     /**
      * Tests that screen touches are registered as XR input when the viewer is Cardboard.
      */
-    @DisabledTest(message = "https://crbug.com/913161")
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
@@ -348,7 +346,6 @@ public class WebXrVrInputTest {
      * Tests that focus is locked to the device with an immersive session for the purposes of
      * VR input.
      */
-    @DisabledTest(message = "https://crbug.com/913161")
     @Test
     @MediumTest
     @CommandLineFlags
@@ -588,7 +585,6 @@ public class WebXrVrInputTest {
      * WebXRGamepadSupport is not explicitly enabled. Correctness testing for
      * https://crbug.com/830935.
      */
-    @DisabledTest(message = "https://crbug.com/913161")
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
@@ -606,7 +602,6 @@ public class WebXrVrInputTest {
      * Verifies that a Gamepad API gamepad is returned when using WebXR  and Daydream View if
      * WebXRGamepadSupport is explicitly enabled. Correctness testing for https://crbug.com/830935.
      */
-    @DisabledTest(message = "https://crbug.com/913161")
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)

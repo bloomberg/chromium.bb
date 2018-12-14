@@ -37,7 +37,6 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -105,7 +104,6 @@ public class WebXrVrTransitionTest {
     /**
      * Tests that a successful request for an immersive session actually enters VR.
      */
-    @DisabledTest(message = "https://crbug.com/913161")
     @Test
     @MediumTest
     @CommandLineFlags
@@ -330,7 +328,6 @@ public class WebXrVrTransitionTest {
     /**
      * Tests that the omnibox reappears after exiting an immersive session.
      */
-    @DisabledTest(message = "https://crbug.com/913161")
     @Test
     @MediumTest
     @CommandLineFlags
@@ -381,7 +378,6 @@ public class WebXrVrTransitionTest {
      * Tests that window.requestAnimationFrame stops firing while in a WebXR immersive session, but
      * resumes afterwards.
      */
-    @DisabledTest(message = "https://crbug.com/913161")
     @Test
     @MediumTest
     @CommandLineFlags
@@ -472,7 +468,6 @@ public class WebXrVrTransitionTest {
      * Tests that non-immersive sessions stop receiving rAFs during an immersive session, but resume
      * once the immersive session ends.
      */
-    @DisabledTest(message = "https://crbug.com/913161")
     @Test
     @MediumTest
     @CommandLineFlags
