@@ -93,11 +93,11 @@ bool StyleStrokeData::operator==(const StyleStrokeData& other) const {
 }
 
 StyleStopData::StyleStopData()
-    : opacity(SVGComputedStyle::InitialStopOpacity()),
-      color(SVGComputedStyle::InitialStopColor()) {}
+    : color(SVGComputedStyle::InitialStopColor()),
+      opacity(SVGComputedStyle::InitialStopOpacity()) {}
 
 StyleStopData::StyleStopData(const StyleStopData& other)
-    : RefCounted<StyleStopData>(), opacity(other.opacity), color(other.color) {}
+    : RefCounted<StyleStopData>(), color(other.color), opacity(other.opacity) {}
 
 bool StyleStopData::operator==(const StyleStopData& other) const {
   return color == other.color && opacity == other.opacity;
