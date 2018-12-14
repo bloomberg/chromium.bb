@@ -4571,6 +4571,9 @@ void Element::DidMoveToNewDocument(Document& old_document) {
 
   if (NeedsURLResolutionForInlineStyle(*this, old_document, GetDocument()))
     ReResolveURLsInInlineStyle(GetDocument(), EnsureMutableInlineStyle());
+
+  if (auto* context = GetDisplayLockContext())
+    context->DidMoveToNewDocument(old_document);
 }
 
 void Element::UpdateNamedItemRegistration(NamedItemType type,

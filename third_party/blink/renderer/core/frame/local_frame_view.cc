@@ -293,6 +293,7 @@ void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(anchoring_adjustment_queue_);
   visitor->Trace(print_context_);
   visitor->Trace(paint_timing_detector_);
+  visitor->Trace(lifecycle_observers_);
 }
 
 template <typename Function>
@@ -2329,6 +2330,9 @@ bool LocalFrameView::UpdateLifecyclePhases(
   if (reason == DocumentLifecycle::LifecycleUpdateReason::kBeginMainFrame)
     EnsureUkmAggregator().BeginMainFrame();
 
+  for (auto& observer : lifecycle_observers_)
+    observer->WillStartLifecycleUpdate();
+
   // If we're in PrintBrowser mode, setup a print context.
   // TODO(vmpstr): It doesn't seem like we need to do this every lifecycle
   // update, but rather once somewhere at creation time.
@@ -2350,6 +2354,9 @@ bool LocalFrameView::UpdateLifecyclePhases(
   }
 
   UpdateThrottlingStatusForSubtree();
+
+  for (auto& observer : lifecycle_observers_)
+    observer->DidFinishLifecycleUpdate();
 
   return Lifecycle().GetState() == target_state;
 }
@@ -4377,6 +4384,16 @@ LocalFrameUkmAggregator& LocalFrameView::EnsureUkmAggregator() {
                                     frame_->GetDocument()->UkmRecorder()));
   }
   return *ukm_aggregator_;
+}
+
+void LocalFrameView::RegisterForLifecycleNotifications(
+    LifecycleNotificationObserver* observer) {
+  lifecycle_observers_.insert(observer);
+}
+
+void LocalFrameView::UnregisterFromLifecycleNotifications(
+    LifecycleNotificationObserver* observer) {
+  lifecycle_observers_.erase(observer);
 }
 
 }  // namespace blink

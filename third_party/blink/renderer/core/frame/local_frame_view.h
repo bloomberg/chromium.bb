@@ -108,6 +108,14 @@ class CORE_EXPORT LocalFrameView final
   friend class Internals;
 
  public:
+  class CORE_EXPORT LifecycleNotificationObserver
+      : public GarbageCollectedMixin {
+   public:
+    // These are called when the lifecycle updates start/finish.
+    virtual void WillStartLifecycleUpdate() = 0;
+    virtual void DidFinishLifecycleUpdate() = 0;
+  };
+
   static LocalFrameView* Create(LocalFrame&);
   static LocalFrameView* Create(LocalFrame&, const IntSize& initial_size);
 
@@ -699,6 +707,9 @@ class CORE_EXPORT LocalFrameView final
   // Return the UKM aggregator for this frame, creating it if necessary.
   LocalFrameUkmAggregator& EnsureUkmAggregator();
 
+  void RegisterForLifecycleNotifications(LifecycleNotificationObserver*);
+  void UnregisterFromLifecycleNotifications(LifecycleNotificationObserver*);
+
  protected:
   void NotifyFrameRectsChangedIfNeeded();
 
@@ -990,6 +1001,8 @@ class CORE_EXPORT LocalFrameView final
   UniqueObjectId unique_id_;
   std::unique_ptr<JankTracker> jank_tracker_;
   Member<PaintTimingDetector> paint_timing_detector_;
+
+  HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };

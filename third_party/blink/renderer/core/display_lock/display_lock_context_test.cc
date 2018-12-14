@@ -44,14 +44,16 @@ class DisplayLockContextTest : public RenderingTest {
   base::Optional<RuntimeEnabledFeatures::Backup> features_backup_;
 };
 
-class EmptyFunction : public ScriptFunction {
+class ContextTestEmptyFunction : public ScriptFunction {
  public:
   static v8::Local<v8::Function> Create(ScriptState* script_state) {
-    auto* callback = MakeGarbageCollected<EmptyFunction>(script_state);
+    auto* callback =
+        MakeGarbageCollected<ContextTestEmptyFunction>(script_state);
     return callback->BindToV8Function();
   }
 
-  EmptyFunction(ScriptState* script_state) : ScriptFunction(script_state) {}
+  ContextTestEmptyFunction(ScriptState* script_state)
+      : ScriptFunction(script_state) {}
 
   ScriptValue Call(ScriptValue value) final { return value; }
 };
@@ -67,8 +69,8 @@ TEST_F(DisplayLockContextTest, ContextCleanedUpWhenElementDestroyed) {
     auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
     ScriptState::Scope scope(script_state);
     script_promise = element->acquireDisplayLock(
-        script_state,
-        V8DisplayLockCallback::Create(EmptyFunction::Create(script_state)));
+        script_state, V8DisplayLockCallback::Create(
+                          ContextTestEmptyFunction::Create(script_state)));
   }
   WeakPersistent<DisplayLockContext> context = element->GetDisplayLockContext();
   ASSERT_TRUE(context);

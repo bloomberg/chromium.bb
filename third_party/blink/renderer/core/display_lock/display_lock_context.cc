@@ -6,6 +6,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_display_lock_callback.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_suspended_handle.h"
+#include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
+#include "third_party/blink/renderer/core/display_lock/unyielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -14,104 +16,29 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 
 namespace blink {
 
-// Change this to 1 to enable each function stderr logging.
-// TODO(vmpstr): Remove this after debugging is all done.
-#if 0
-class CORE_EXPORT DisplayLockScopedLogger {
- public:
-  DisplayLockScopedLogger(const char* function,
-                          const DisplayLockContext::State* state,
-                          const DisplayLockContext::LifecycleUpdateState* lifecycle_update_state)
-      : function_(function), state_(state), lifecycle_update_state_(lifecycle_update_state) {
-    for (int i = 0; i < s_indent_; ++i)
-      fprintf(stderr, " ");
-    fprintf(stderr, "entering %s: state %s lifecycle_update_state %s\n",
-            function, StateToString(*state),
-            LifecycleUpdateStateToString(*lifecycle_update_state));
-    ++s_indent_;
-  }
-
-  ~DisplayLockScopedLogger() {
-    --s_indent_;
-    for (int i = 0; i < s_indent_; ++i)
-      fprintf(stderr, " ");
-    fprintf(stderr, "exiting %s: state %s lifecycle_update_state %s\n",
-            function_, StateToString(*state_),
-            LifecycleUpdateStateToString(*lifecycle_update_state_));
-  }
-
- private:
-  const char* StateToString(DisplayLockContext::State state) {
-    switch (state) {
-      case DisplayLockContext::kUninitialized:
-        return "kUninitialized";
-      case DisplayLockContext::kSuspended:
-        return "kSuspended";
-      case DisplayLockContext::kCallbacksPending:
-        return "kCallbacksPending";
-      case DisplayLockContext::kDisconnected:
-        return "kDisconnected";
-      case DisplayLockContext::kCommitting:
-        return "kCommitting";
-      case DisplayLockContext::kResolving:
-        return "kResolving";
-      case DisplayLockContext::kResolved:
-        return "kResolved";
-    }
-    return "<unknown>";
-  };
-
-  const char* LifecycleUpdateStateToString(
-      DisplayLockContext::LifecycleUpdateState state) {
-    switch (state) {
-      case DisplayLockContext::kNeedsStyle:
-        return "kNeedsStyle";
-      case DisplayLockContext::kNeedsLayout:
-        return "kNeedsLayout";
-      case DisplayLockContext::kNeedsPrePaint:
-        return "kNeedsPrePaint";
-      case DisplayLockContext::kNeedsPaint:
-        return "kNeedsPaint";
-      case DisplayLockContext::kDone:
-        return "kDone";
-    }
-    return "<unknown>";
-  }
-
-  const char* function_;
-  const DisplayLockContext::State* state_;
-  const DisplayLockContext::LifecycleUpdateState* lifecycle_update_state_;
-  static int s_indent_;
-};
-
-int DisplayLockScopedLogger::s_indent_ = 0;
-
-#define SCOPED_LOGGER(func) \
-  DisplayLockScopedLogger logger(func, &state_, &lifecycle_update_state_)
-#else
-#define SCOPED_LOGGER(func)
-#endif  // #if 0
+DisplayLockContext::BudgetType DisplayLockContext::s_budget_type_ =
+    DisplayLockContext::BudgetType::kDefault;
 
 DisplayLockContext::DisplayLockContext(Element* element,
                                        ExecutionContext* context)
     : ContextLifecycleObserver(context),
       element_(element),
       weak_element_handle_(element) {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
+  DCHECK(element_->GetDocument().View());
+  element_->GetDocument().View()->RegisterForLifecycleNotifications(this);
 }
 
 DisplayLockContext::~DisplayLockContext() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   DCHECK(state_ == kResolved || state_ == kSuspended) << state_;
   DCHECK(callbacks_.IsEmpty());
 }
 
 void DisplayLockContext::Trace(blink::Visitor* visitor) {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   visitor->Trace(callbacks_);
   visitor->Trace(resolver_);
   visitor->Trace(element_);
@@ -122,7 +49,6 @@ void DisplayLockContext::Trace(blink::Visitor* visitor) {
 }
 
 void DisplayLockContext::Dispose() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   // Note that if we have a resolver_ at dispose time, then it's too late to
   // reject the promise, since we are not allowed to create new strong
   // references to objects already set for destruction (and rejecting would do
@@ -135,22 +61,21 @@ void DisplayLockContext::Dispose() {
     state_ = kResolved;
   }
   RejectAndCleanUp();
+  if (element_ && element_->GetDocument().View())
+    element_->GetDocument().View()->UnregisterFromLifecycleNotifications(this);
 }
 
 void DisplayLockContext::ContextDestroyed(ExecutionContext*) {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   RejectAndCleanUp();
 }
 
 bool DisplayLockContext::HasPendingActivity() const {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   // If we haven't resolved it, we should stick around.
   // Note that if the element we're locking is gone, then we can also be GCed.
   return !IsResolved() && weak_element_handle_;
 }
 
 void DisplayLockContext::ScheduleCallback(V8DisplayLockCallback* callback) {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   callbacks_.push_back(callback);
 
   // Suspended state supercedes any new lock requests.
@@ -163,23 +88,21 @@ void DisplayLockContext::ScheduleCallback(V8DisplayLockCallback* callback) {
 
 void DisplayLockContext::RequestLock(V8DisplayLockCallback* callback,
                                      ScriptState* script_state) {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (!resolver_) {
     DCHECK(script_state);
     resolver_ = ScriptPromiseResolver::Create(script_state);
+    budget_.reset();
   }
   ScheduleCallback(callback);
 }
 
 void DisplayLockContext::schedule(V8DisplayLockCallback* callback) {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   DCHECK(state_ == kSuspended || state_ == kCallbacksPending);
 
   ScheduleCallback(callback);
 }
 
 DisplayLockSuspendedHandle* DisplayLockContext::suspend() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   ++suspended_count_;
   state_ = kSuspended;
   return MakeGarbageCollected<DisplayLockSuspendedHandle>(this);
@@ -190,7 +113,6 @@ Element* DisplayLockContext::lockedElement() const {
 }
 
 void DisplayLockContext::ProcessQueue() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   // It's important to clear this before running the tasks, since the tasks can
   // call ScheduleCallback() which will re-schedule a PostTask() for us to
   // continue the work.
@@ -253,27 +175,27 @@ void DisplayLockContext::ProcessQueue() {
 }
 
 void DisplayLockContext::RejectAndCleanUp() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (resolver_) {
     state_ = kResolved;
     resolver_->Reject();
     resolver_ = nullptr;
+    budget_.reset();
   }
   callbacks_.clear();
   locked_frame_rect_.reset();
 
   // We may have a dirty subtree and have not propagated the dirty bit up the
   // ancestor tree. Since we're now rejecting the promise and unlocking the
-  // element, ensure that we can reach both style and layout subtrees if they
-  // are dirty by propagating the bit.
+  // element, ensure that we can reach the element in all of the phases.
   if (weak_element_handle_) {
     MarkAncestorsForStyleRecalcIfNeeded();
     MarkAncestorsForLayoutIfNeeded();
+    MarkAncestorsForPaintInvalidationCheckIfNeeded();
+    MarkPaintLayerNeedsRepaint();
   }
 }
 
 void DisplayLockContext::Resume() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   DCHECK_GT(suspended_count_, 0u);
   DCHECK_EQ(state_, kSuspended);
   if (--suspended_count_ == 0) {
@@ -293,7 +215,6 @@ void DisplayLockContext::Resume() {
 }
 
 void DisplayLockContext::NotifyWillNotResume() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   DCHECK_GT(suspended_count_, 0u);
   // The promise will never reject or resolve since we're now indefinitely
   // suspended.
@@ -306,7 +227,6 @@ void DisplayLockContext::NotifyWillNotResume() {
 }
 
 void DisplayLockContext::ScheduleTaskIfNeeded() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (state_ != kCallbacksPending || process_queue_task_scheduled_)
     return;
 
@@ -320,7 +240,6 @@ void DisplayLockContext::ScheduleTaskIfNeeded() {
 }
 
 void DisplayLockContext::NotifyConnectedMayHaveChanged() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (GetElement()->isConnected()) {
     if (state_ == kDisconnected)
       StartCommit();
@@ -337,12 +256,12 @@ void DisplayLockContext::NotifyConnectedMayHaveChanged() {
 }
 
 bool DisplayLockContext::ShouldStyle() const {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  return update_forced_ || state_ >= kCommitting;
+  return update_forced_ || state_ > kCommitting ||
+         (state_ == kCommitting &&
+          budget_->ShouldPerformPhase(DisplayLockBudget::Phase::kStyle));
 }
 
 void DisplayLockContext::DidStyle() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (state_ != kCommitting && !update_forced_)
     return;
 
@@ -360,72 +279,59 @@ void DisplayLockContext::DidStyle() {
   if (state_ != kCommitting)
     return;
 
-  if (lifecycle_update_state_ <= kNeedsStyle) {
-    // Normally we need to do layout next, but if it's not dirty then we can
-    // skip ahead to pre-paint.
-    if (MarkAncestorsForLayoutIfNeeded())
-      lifecycle_update_state_ = kNeedsLayout;
-    else
-      lifecycle_update_state_ = kNeedsPrePaint;
-  }
+  budget_->DidPerformPhase(DisplayLockBudget::Phase::kStyle);
 }
 
 bool DisplayLockContext::ShouldLayout() const {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  return update_forced_ ||
-         std::tie(state_, lifecycle_update_state_) >=
-             std::tuple<State, LifecycleUpdateState>{kCommitting, kNeedsLayout};
+  return update_forced_ || state_ > kCommitting ||
+         (state_ == kCommitting &&
+          budget_->ShouldPerformPhase(DisplayLockBudget::Phase::kLayout));
 }
 
 void DisplayLockContext::DidLayout() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (state_ != kCommitting)
     return;
 
-  if (lifecycle_update_state_ <= kNeedsLayout)
-    lifecycle_update_state_ = kNeedsPrePaint;
+  budget_->DidPerformPhase(DisplayLockBudget::Phase::kLayout);
 }
 
 bool DisplayLockContext::ShouldPrePaint() const {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  return update_forced_ || std::tie(state_, lifecycle_update_state_) >=
-                               std::tuple<State, LifecycleUpdateState>{
-                                   kCommitting, kNeedsPrePaint};
+  return update_forced_ || state_ > kCommitting ||
+         (state_ == kCommitting &&
+          budget_->ShouldPerformPhase(DisplayLockBudget::Phase::kPrePaint));
 }
 
 void DisplayLockContext::DidPrePaint() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (state_ != kCommitting)
     return;
+
+  budget_->DidPerformPhase(DisplayLockBudget::Phase::kPrePaint);
 
   // Since we should be under containment, we should have a layer. If we don't,
   // then paint might not happen and we'll never resolve.
   DCHECK(GetElement()->GetLayoutObject()->HasLayer());
-  if (lifecycle_update_state_ <= kNeedsPrePaint)
-    lifecycle_update_state_ = kNeedsPaint;
 }
 
 bool DisplayLockContext::ShouldPaint() const {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   // Note that forced updates should never require us to paint, so we don't
   // check |update_forced_| here. In other words, although |update_forced_|
   // could be true here, we still should not paint.
-  return std::tie(state_, lifecycle_update_state_) >=
-         std::tuple<State, LifecycleUpdateState>{kCommitting, kNeedsPaint};
+  return state_ > kCommitting ||
+         (state_ == kCommitting &&
+          budget_->ShouldPerformPhase(DisplayLockBudget::Phase::kPaint));
 }
 
 void DisplayLockContext::DidPaint() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (state_ != kCommitting)
     return;
 
-  if (lifecycle_update_state_ <= kNeedsPaint)
-    lifecycle_update_state_ = kDone;
+  budget_->DidPerformPhase(DisplayLockBudget::Phase::kPaint);
 
   DCHECK(resolver_);
   state_ = kResolving;
   resolver_->Resolve();
   resolver_ = nullptr;
+  budget_.reset();
 
   // After the above resolution callback runs (in a microtask), we should
   // finish resolving if the lock was not re-acquired.
@@ -434,7 +340,6 @@ void DisplayLockContext::DidPaint() {
 }
 
 void DisplayLockContext::DidAttachLayoutTree() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
 
   // Note that although we checked at style recalc time that the element has
   // "contain: content", it might not actually apply the containment (e.g. see
@@ -447,7 +352,6 @@ void DisplayLockContext::DidAttachLayoutTree() {
 
 DisplayLockContext::ScopedPendingFrameRect
 DisplayLockContext::GetScopedPendingFrameRect() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (IsResolved())
     return ScopedPendingFrameRect(nullptr);
   DCHECK(GetElement()->GetLayoutObject() && GetElement()->GetLayoutBox());
@@ -456,7 +360,6 @@ DisplayLockContext::GetScopedPendingFrameRect() {
 }
 
 void DisplayLockContext::NotifyPendingFrameRectScopeEnded() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   DCHECK(GetElement()->GetLayoutObject() && GetElement()->GetLayoutBox());
   DCHECK(locked_frame_rect_);
   pending_frame_rect_ = GetElement()->GetLayoutBox()->FrameRect();
@@ -465,26 +368,29 @@ void DisplayLockContext::NotifyPendingFrameRectScopeEnded() {
 
 DisplayLockContext::ScopedForcedUpdate
 DisplayLockContext::GetScopedForcedUpdate() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   DCHECK(!update_forced_);
   update_forced_ = true;
-  // Now that the update is forced, we should ensure that style and layout code
-  // can reach it via dirty bits.
+  // Now that the update is forced, we should ensure that style layout, and
+  // prepaint code can reach it via dirty bits. Note that paint isn't a part of
+  // this, since |update_forced_| doesn't force paint to happen. See
+  // ShouldPaint().
   MarkAncestorsForStyleRecalcIfNeeded();
   MarkAncestorsForLayoutIfNeeded();
+  MarkAncestorsForPaintInvalidationCheckIfNeeded();
   return ScopedForcedUpdate(this);
 }
 
 void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   DCHECK(update_forced_);
   update_forced_ = false;
 }
 
 void DisplayLockContext::FinishResolution() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  if (state_ == kResolving)
-    state_ = kResolved;
+  // If we're not resolving, then something in the promise resolution prevented
+  // us from proceeding (we could have been suspended or relocked).
+  if (state_ != kResolving)
+    return;
+  state_ = kResolved;
   locked_frame_rect_.reset();
 
   // Update the pending frame rect if we still have a layout object.
@@ -512,27 +418,13 @@ void DisplayLockContext::FinishResolution() {
   ToLayoutBox(layout_object)->SetFrameRect(pending_frame_rect_);
   layout_object->SetNeedsLayout(
       layout_invalidation_reason::kDisplayLockCommitting);
-  // Schedule an animation to perform the lifecycle phases.
-  GetElement()->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
-      GetElement()->GetDocument().GetFrame());
+  ScheduleAnimation();
 }
 
 void DisplayLockContext::StartCommit() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   state_ = kCommitting;
-  lifecycle_update_state_ = kNeedsStyle;
-
-  if (!MarkAncestorsForStyleRecalcIfNeeded())
-    DidStyle();
-
-  // The above DidStyle() may reject the promise since it checks that we have
-  // containment before proceeding.
-  if (state_ != kCommitting)
-    return;
-
-  // Schedule an animation to perform the lifecycle phases.
-  GetElement()->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
-      GetElement()->GetDocument().GetFrame());
+  ResetNewBudget();
+  ScheduleAnimation();
 }
 
 bool DisplayLockContext::MarkAncestorsForStyleRecalcIfNeeded() {
@@ -554,13 +446,82 @@ bool DisplayLockContext::MarkAncestorsForLayoutIfNeeded() {
   return false;
 }
 
+bool DisplayLockContext::MarkAncestorsForPaintInvalidationCheckIfNeeded() {
+  if (auto* layout_object = GetElement()->GetLayoutObject()) {
+    if (layout_object->Parent() &&
+        (layout_object->ShouldCheckForPaintInvalidation() ||
+         layout_object->SubtreeShouldCheckForPaintInvalidation())) {
+      layout_object->Parent()->SetSubtreeShouldCheckForPaintInvalidation();
+      return true;
+    }
+  }
+  return false;
+}
+
+bool DisplayLockContext::MarkPaintLayerNeedsRepaint() {
+  if (auto* layout_object = GetElement()->GetLayoutObject()) {
+    layout_object->PaintingLayer()->SetNeedsRepaint();
+    return true;
+  }
+  return false;
+}
+
 void DisplayLockContext::MarkAsDisconnected() {
-  SCOPED_LOGGER(__PRETTY_FUNCTION__);
   state_ = kDisconnected;
   // Let go of the strong reference to the element, allowing it to be GCed. See
   // the comment on |element_| in the header.
   element_ = nullptr;
 }
+
+void DisplayLockContext::ResetNewBudget() {
+  switch (s_budget_type_) {
+    case BudgetType::kDoNotYield:
+      budget_.reset(new UnyieldingDisplayLockBudget(this));
+      return;
+    case BudgetType::kStrictYieldBetweenLifecyclePhases:
+      budget_.reset(new StrictYieldingDisplayLockBudget(this));
+      return;
+    case BudgetType::kYieldBetweenLifecyclePhases:
+      NOTIMPLEMENTED();
+      return;
+  }
+  NOTREACHED();
+}
+
+void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
+  if (old_document.View())
+    old_document.View()->UnregisterFromLifecycleNotifications(this);
+  if (element_ && element_->GetDocument().View())
+    element_->GetDocument().View()->RegisterForLifecycleNotifications(this);
+}
+
+void DisplayLockContext::WillStartLifecycleUpdate() {
+  if (state_ != kCommitting)
+    return;
+  budget_->WillStartLifecycleUpdate();
+}
+
+void DisplayLockContext::DidFinishLifecycleUpdate() {
+  if (state_ != kCommitting)
+    return;
+  bool needs_animation = budget_->DidFinishLifecycleUpdate();
+  if (needs_animation) {
+    // Note that we post a task to schedule an animation, since rAF requests can
+    // be ignored if they happen from within a lifecycle update.
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kMiscPlatformAPI)
+        ->PostTask(FROM_HERE, WTF::Bind(&DisplayLockContext::ScheduleAnimation,
+                                        WrapWeakPersistent(this)));
+  }
+}
+
+void DisplayLockContext::ScheduleAnimation() {
+  // Schedule an animation to perform the lifecycle phases.
+  GetElement()->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
+      GetElement()->GetDocument().GetFrame());
+}
+
+// Scoped objects implementation -----------------------------------------------
 
 DisplayLockContext::ScopedPendingFrameRect::ScopedPendingFrameRect(
     DisplayLockContext* context)
