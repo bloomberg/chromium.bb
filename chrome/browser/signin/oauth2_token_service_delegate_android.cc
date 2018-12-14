@@ -197,6 +197,13 @@ bool OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable(
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable"
            << " account= " << account_id;
   std::string account_name = MapAccountIdToAccountName(account_id);
+  if (account_name.empty()) {
+    // This corresponds to the case when the account with id |account_id| is not
+    // present on the device and thus was not seeded.
+    DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable"
+             << " cannot find account name for account id " << account_id;
+    return false;
+  }
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_account_id =
       ConvertUTF8ToJavaString(env, account_name);
@@ -265,8 +272,10 @@ OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher(
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::CreateAccessTokenFetcher"
            << " account= " << account_id;
   ValidateAccountId(account_id);
-  return new AndroidAccessTokenFetcher(consumer,
-                                       MapAccountIdToAccountName(account_id));
+  std::string account_name = MapAccountIdToAccountName(account_id);
+  DCHECK(!account_name.empty())
+      << "Cannot find account name for account id " << account_id;
+  return new AndroidAccessTokenFetcher(consumer, account_name);
 }
 
 void OAuth2TokenServiceDelegateAndroid::InvalidateAccessToken(
@@ -427,7 +436,8 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable(
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokenAvailable id="
            << account_id;
   std::string account_name = MapAccountIdToAccountName(account_id);
-  DCHECK(!account_name.empty());
+  DCHECK(!account_name.empty())
+      << "Cannot find account name for account id " << account_id;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_account_name =
       ConvertUTF8ToJavaString(env, account_name);
@@ -505,11 +515,7 @@ void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
 
 std::string OAuth2TokenServiceDelegateAndroid::MapAccountIdToAccountName(
     const std::string& account_id) const {
-  std::string account_name =
-      account_tracker_service_->GetAccountInfo(account_id).email;
-  DCHECK(!account_name.empty() || account_id.empty())
-      << "Can't find account name, account_id=" << account_id;
-  return account_name;
+  return account_tracker_service_->GetAccountInfo(account_id).email;
 }
 
 std::string OAuth2TokenServiceDelegateAndroid::MapAccountNameToAccountId(
