@@ -61,6 +61,7 @@
       # chromium.clang
       'CrWinAsanCov',
       'linux-win_cross-rel',
+      'ToTLinuxTSan',  # https://crbug.com/368525
       'ToTMac', # https://crbug.com/828031
       'ToTMacASan', # https://crbug.com/828031
       # chromium.fyi
@@ -318,6 +319,11 @@
         },
       },
       # chromium.clang
+      'ToTLinuxTSan': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
       'ToTLinuxUBSanVptr': {
         'swarming': {
           'shards': 5,
@@ -589,6 +595,7 @@
     'remove_from': [
       # chromium.clang
       'ToTLinuxASan',  # https://crbug.com/843732
+      'ToTLinuxTSan',  # https://crbug.com/843734
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # https://crbug.com/843732
       'Linux TSan Tests',  # https://crbug.com/843734
@@ -618,6 +625,13 @@
   },
   'interactive_ui_tests': {
     'modifications': {
+      # chromium.clang
+      'ToTLinuxTSan': {
+        # These are slow on the TSan bots for some reason, crbug.com/794372
+        'swarming': {
+          'shards': 6,
+        },
+      },
       # chromium.win
       'Win7 Tests (dbg)(1)': {
         'swarming': {
@@ -632,7 +646,7 @@
         },
       },
       'Linux TSan Tests': {
-        # These are slow on the TSan trybot for some reason, crbug.com/794372
+        # These are slow on the TSan bots for some reason, crbug.com/794372
         'swarming': {
           'shards': 6,
         },
@@ -688,6 +702,11 @@
           'shards': 16,
         },
       },
+      'ToTLinuxTSan': {
+        'swarming': {
+          'shards': 4,
+        }
+      },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
@@ -735,6 +754,8 @@
   },
   'network_service_browser_tests': {
     'remove_from': [
+      # chromium.clang
+      'ToTLinuxTSan',  # https://crbug.com/368525
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
       'Linux TSan Tests',  # No capacity, https://crbug.com/852442
