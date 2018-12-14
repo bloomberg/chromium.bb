@@ -15090,6 +15090,7 @@ Called by update_net_error_codes.py.-->
   <int value="507" label="ParentAccessCodeConfig"/>
   <int value="508" label="DeviceGpoCacheLifetime"/>
   <int value="509" label="DeviceAuthDataCacheLifetime"/>
+  <int value="510" label="CloudManagementEnrollmentToken"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
