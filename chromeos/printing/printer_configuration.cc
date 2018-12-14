@@ -4,17 +4,15 @@
 
 #include "chromeos/printing/printer_configuration.h"
 
-#include <string>
-
 #include "base/guid.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "chromeos/printing/printing_constants.h"
+#include "chromeos/printing/uri_components.h"
 #include "net/base/ip_endpoint.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_constants.h"
-
-#include "chromeos/printing/printing_constants.h"
 
 namespace chromeos {
 
@@ -65,9 +63,8 @@ base::Optional<UriComponents> ParseUri(const std::string& printer_uri) {
   }
 
   bool encrypted = scheme != kIppScheme;
-  return base::Optional<UriComponents>(base::in_place, encrypted,
-                                       scheme.as_string(), host.as_string(),
-                                       port, path.as_string());
+  return UriComponents(encrypted, scheme.as_string(), host.as_string(), port,
+                       path.as_string());
 }
 
 namespace {
@@ -103,9 +100,7 @@ base::StringPiece HostAndPort(base::StringPiece uri) {
 
 }  // namespace
 
-Printer::Printer() : source_(SRC_USER_PREFS) {
-  id_ = base::GenerateGUID();
-}
+Printer::Printer() : id_(base::GenerateGUID()), source_(SRC_USER_PREFS) {}
 
 Printer::Printer(const std::string& id) : id_(id), source_(SRC_USER_PREFS) {
   if (id_.empty())

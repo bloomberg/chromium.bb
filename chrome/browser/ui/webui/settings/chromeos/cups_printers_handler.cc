@@ -503,8 +503,7 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
     return;
   }
 
-  auto optional = printer->GetUriComponents();
-  if (!optional.has_value()) {
+  if (!printer->GetUriComponents().has_value()) {
     // If the returned optional does not contain a value then it means that the
     // printer's uri was not able to be parsed successfully.
     PRINTER_LOG(ERROR) << "Failed to parse printer URI";
@@ -884,8 +883,7 @@ void CupsPrintersHandler::HandleAddDiscoveredPrinter(
     return;
   }
 
-  auto optional = printer->GetUriComponents();
-  if (!optional.has_value()) {
+  if (!printer->GetUriComponents().has_value()) {
     PRINTER_LOG(DEBUG) << "Could not parse uri";
     // The printer uri was not parsed successfully. Fail the add.
     FireWebUIListener("on-add-cups-printer", base::Value(false),
