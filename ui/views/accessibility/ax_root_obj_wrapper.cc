@@ -11,7 +11,6 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -19,11 +18,7 @@
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
 
 AXRootObjWrapper::AXRootObjWrapper(views::AXAuraObjCache::Delegate* delegate)
-    : alert_window_(std::make_unique<aura::Window>(nullptr)),
-      delegate_(delegate) {
-  alert_window_->Init(ui::LAYER_NOT_DRAWN);
-  aura::Env::GetInstance()->AddObserver(this);
-
+    : delegate_(delegate) {
   if (display::Screen::GetScreen())
     display::Screen::GetScreen()->AddObserver(this);
 }
@@ -31,25 +26,6 @@ AXRootObjWrapper::AXRootObjWrapper(views::AXAuraObjCache::Delegate* delegate)
 AXRootObjWrapper::~AXRootObjWrapper() {
   if (display::Screen::GetScreen())
     display::Screen::GetScreen()->RemoveObserver(this);
-
-  // If alert_window_ is nullptr already, that means OnWillDestroyEnv
-  // was already called, so we shouldn't call RemoveObserver(this) again.
-  if (!alert_window_)
-    return;
-
-  aura::Env::GetInstance()->RemoveObserver(this);
-  alert_window_.reset();
-}
-
-views::AXAuraObjWrapper* AXRootObjWrapper::GetAlertForText(
-    const std::string& text) {
-  alert_window_->SetTitle(base::UTF8ToUTF16((text)));
-  views::AXWindowObjWrapper* window_obj =
-      static_cast<views::AXWindowObjWrapper*>(
-          views::AXAuraObjCache::GetInstance()->GetOrCreate(
-              alert_window_.get()));
-  window_obj->set_is_alert(true);
-  return window_obj;
 }
 
 bool AXRootObjWrapper::HasChild(views::AXAuraObjWrapper* child) {
@@ -69,8 +45,6 @@ views::AXAuraObjWrapper* AXRootObjWrapper::GetParent() {
 void AXRootObjWrapper::GetChildren(
     std::vector<views::AXAuraObjWrapper*>* out_children) {
   views::AXAuraObjCache::GetInstance()->GetTopLevelWindows(out_children);
-  out_children->push_back(
-      views::AXAuraObjCache::GetInstance()->GetOrCreate(alert_window_.get()));
 }
 
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
@@ -103,11 +77,4 @@ int32_t AXRootObjWrapper::GetUniqueId() const {
 void AXRootObjWrapper::OnDisplayMetricsChanged(const display::Display& display,
                                                uint32_t changed_metrics) {
   delegate_->OnEvent(this, ax::mojom::Event::kLocationChanged);
-}
-
-void AXRootObjWrapper::OnWindowInitialized(aura::Window* window) {}
-
-void AXRootObjWrapper::OnWillDestroyEnv() {
-  alert_window_.reset();
-  aura::Env::GetInstance()->RemoveObserver(this);
 }
