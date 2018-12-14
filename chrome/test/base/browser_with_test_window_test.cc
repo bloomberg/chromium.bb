@@ -84,6 +84,8 @@ void BrowserWithTestWindowTest::SetUp() {
 #if defined(OS_CHROMEOS)
   ash_test_helper_.SetUp(true);
   ash_test_helper_.SetRunningOutsideAsh();
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
+    ash_test_helper_.CreateMusClient();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset(new views::ScopedViewsTestHelper());
 #endif
@@ -111,23 +113,6 @@ void BrowserWithTestWindowTest::SetUp() {
   // then Browser will create the a production BrowserWindow and the subclass
   // is responsible for cleaning it up (usually by NativeWidget destruction).
   window_.reset(CreateBrowserWindow());
-
-#if defined(OS_CHROMEOS)
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
-    views::MusClient::InitParams mus_client_init_params;
-    mus_client_init_params.connector =
-        ash_test_helper()->GetWindowServiceConnector();
-    mus_client_init_params.create_wm_state = false;
-    mus_client_init_params.running_in_ws_process = true;
-    mus_client_init_params.window_tree_client =
-        aura::test::EnvTestHelper().GetWindowTreeClient();
-    mus_client_ = std::make_unique<views::MusClient>(mus_client_init_params);
-    mus_client_->SetMusPropertyMirror(
-        std::make_unique<ash::MusPropertyMirrorAsh>());
-
-    aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
-  }
-#endif
 
   browser_.reset(
       CreateBrowser(profile(), browser_type_, hosted_app_, window_.get()));
