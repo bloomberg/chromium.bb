@@ -47,7 +47,6 @@ class MediaQuerySet;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
-class SecurityOrigin;
 class StyleSheetContents;
 
 class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
@@ -136,10 +135,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     return device_dependent_media_query_results_;
   }
   void SetTitle(const String& title) { title_ = title; }
-  // Set by LinkStyle iff CORS-enabled fetch of stylesheet succeeded from this
-  // origin.
-  void SetAllowRuleAccessFromOrigin(
-      scoped_refptr<const SecurityOrigin> allowed_origin);
 
   void AddedAdoptedToTreeScope(TreeScope& tree_scope) {
     adopted_tree_scopes_.insert(&tree_scope);
@@ -257,9 +252,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   scoped_refptr<MediaQuerySet> media_queries_;
   MediaQueryResultList viewport_dependent_media_query_results_;
   MediaQueryResultList device_dependent_media_query_results_;
-
-  // TODO(falken): Remove this, it's unused.
-  scoped_refptr<const SecurityOrigin> allow_rule_access_from_origin_;
 
   Member<Node> owner_node_;
   Member<CSSRule> owner_rule_;

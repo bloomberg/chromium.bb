@@ -74,13 +74,6 @@ class LinkStyle final : public LinkResource, ResourceClient {
   void AddPendingSheet(PendingSheetType);
   void RemovePendingSheet();
 
-  void SetCrossOriginStylesheetStatus(CSSStyleSheet*);
-  void SetFetchFollowingCors() {
-    DCHECK(!fetch_following_cors_);
-    fetch_following_cors_ = true;
-  }
-  void ClearFetchFollowingCors() { fetch_following_cors_ = false; }
-
   Member<CSSStyleSheet> sheet_;
   DisabledState disabled_state_;
   PendingSheetType pending_sheet_type_;
@@ -88,7 +81,6 @@ class LinkStyle final : public LinkResource, ResourceClient {
   bool loading_;
   bool fired_load_;
   bool loaded_sheet_;
-  bool fetch_following_cors_;
 };
 
 }  // namespace blink
