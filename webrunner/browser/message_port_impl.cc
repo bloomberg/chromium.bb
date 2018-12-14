@@ -19,7 +19,7 @@
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 #include "third_party/blink/public/common/messaging/transferable_message_struct_traits.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
-#include "webrunner/browser/vmo_util.h"
+#include "webrunner/common/mem_buffer_util.h"
 #include "webrunner/fidl/chromium/web/cpp/fidl.h"
 
 namespace webrunner {

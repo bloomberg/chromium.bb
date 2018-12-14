@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrunner/browser/webrunner_browser_test.h"
+#include "webrunner/common/test/webrunner_browser_test.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -28,8 +28,9 @@ void WebRunnerBrowserTest::PreRunTestOnMainThread() {
   g_context_channel = ZX_HANDLE_INVALID;
 
   net::test_server::RegisterDefaultHandlers(embedded_test_server());
-  embedded_test_server()->ServeFilesFromSourceDirectory(
-      "webrunner/browser/test/data");
+  if (!test_server_root_.empty()) {
+    embedded_test_server()->ServeFilesFromSourceDirectory(test_server_root_);
+  }
 }
 
 void WebRunnerBrowserTest::PostRunTestOnMainThread() {

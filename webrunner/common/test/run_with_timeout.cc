@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBRUNNER_COMMON_TEST_RUN_WITH_TIMEOUT_H_
-#define WEBRUNNER_COMMON_TEST_RUN_WITH_TIMEOUT_H_
+#include "webrunner/common/test/run_with_timeout.h"
+
+#include <utility>
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -31,5 +32,3 @@ void CheckRunWithTimeout(base::RunLoop* run_loop,
 }
 
 }  // namespace webrunner
-
-#endif  // WEBRUNNER_COMMON_RUNLOOP_WITH_DEADLINE_H_

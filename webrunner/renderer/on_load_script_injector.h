@@ -5,9 +5,11 @@
 #ifndef WEBRUNNER_RENDERER_ON_LOAD_SCRIPT_INJECTOR_H_
 #define WEBRUNNER_RENDERER_ON_LOAD_SCRIPT_INJECTOR_H_
 
+#include <lib/zx/vmo.h>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
@@ -24,7 +26,7 @@ class OnLoadScriptInjector : public content::RenderFrameObserver,
 
   void BindToRequest(mojom::OnLoadScriptInjectorAssociatedRequest request);
 
-  void AddOnLoadScript(const base::string16& script) override;
+  void AddOnLoadScript(mojo::ScopedSharedBufferHandle script) override;
   void ClearOnLoadScripts() override;
 
   // RenderFrameObserver override:
@@ -35,7 +37,7 @@ class OnLoadScriptInjector : public content::RenderFrameObserver,
   // Called by OnDestruct(), when the RenderFrame is destroyed.
   ~OnLoadScriptInjector() override;
 
-  std::vector<base::string16> on_load_scripts_;
+  std::vector<mojo::ScopedSharedBufferHandle> on_load_scripts_;
   bool is_handling_clear_window_object_ = false;
   mojo::AssociatedBindingSet<mojom::OnLoadScriptInjector> bindings_;
   base::WeakPtrFactory<OnLoadScriptInjector> weak_ptr_factory_;

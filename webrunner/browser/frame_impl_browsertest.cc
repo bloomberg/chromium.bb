@@ -16,9 +16,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_constants.h"
 #include "webrunner/browser/frame_impl.h"
-#include "webrunner/browser/run_with_timeout.h"
-#include "webrunner/browser/test_common.h"
-#include "webrunner/browser/webrunner_browser_test.h"
+#include "webrunner/common/mem_buffer_util.h"
+#include "webrunner/common/test/run_with_timeout.h"
+#include "webrunner/common/test/test_common.h"
+#include "webrunner/common/test/webrunner_browser_test.h"
 #include "webrunner/service/common.h"
 
 namespace webrunner {
@@ -40,6 +41,7 @@ const char kPage1Title[] = "title 1";
 const char kPage2Title[] = "title 2";
 const char kDataUrl[] =
     "data:text/html;base64,PGI+SGVsbG8sIHdvcmxkLi4uPC9iPg==";
+const char kTestServerRoot[] = FILE_PATH_LITERAL("webrunner/browser/test/data");
 
 MATCHER(IsSet, "Checks if an optional field is set.") {
   return !arg.is_null();
@@ -49,7 +51,8 @@ MATCHER(IsSet, "Checks if an optional field is set.") {
 // navigation commands and page events.
 class FrameImplTest : public WebRunnerBrowserTest {
  public:
-  FrameImplTest() = default;
+  FrameImplTest() { set_test_server_root(base::FilePath(kTestServerRoot)); }
+
   ~FrameImplTest() = default;
 
   MOCK_METHOD1(OnServeHttpRequest,
@@ -371,19 +374,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NoNavigationObserverAttached) {
   }
 }
 
-fuchsia::mem::Buffer CreateBuffer(base::StringPiece data) {
-  fuchsia::mem::Buffer output;
-  output.size = data.size();
-
-  zx_status_t status = zx::vmo::create(data.size(), 0, &output.vmo);
-  ZX_CHECK(status == ZX_OK, ZX_OK) << "zx_vmo_create";
-
-  status = output.vmo.write(data.data(), 0, data.size());
-  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_write";
-
-  return output;
-}
-
 // Test JS injection by using Javascript to trigger document navigation.
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
   chromium::web::FramePtr frame = CreateFrame();
@@ -401,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptImmediate) {
 
   frame->ExecuteJavaScript(
       std::move(origins),
-      CreateBuffer("window.location.href = \"" + title2.spec() + "\";"),
+      MemBufferFromString("window.location.href = \"" + title2.spec() + "\";"),
       chromium::web::ExecuteMode::IMMEDIATE_ONCE,
       [](bool success) { EXPECT_TRUE(success); });
 
@@ -424,7 +414,26 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoad) {
   origins.push_back(url.GetOrigin().spec());
 
   frame->ExecuteJavaScript(std::move(origins),
-                           CreateBuffer("stashed_title = 'hello';"),
+                           MemBufferFromString("stashed_title = 'hello';"),
+                           chromium::web::ExecuteMode::ON_PAGE_LOAD,
+                           [](bool success) { EXPECT_TRUE(success); });
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  CheckLoadUrl(url.spec(), "hello", controller.get());
+}
+
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadVmoDestroyed) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
+  chromium::web::FramePtr frame = CreateFrame();
+
+  fidl::VectorPtr<fidl::StringPtr> origins =
+      fidl::VectorPtr<fidl::StringPtr>::New(0);
+  origins.push_back(url.GetOrigin().spec());
+
+  frame->ExecuteJavaScript(std::move(origins),
+                           MemBufferFromString("stashed_title = 'hello';"),
                            chromium::web::ExecuteMode::ON_PAGE_LOAD,
                            [](bool success) { EXPECT_TRUE(success); });
 
@@ -443,7 +452,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavascriptOnLoadWrongOrigin) {
   origins.push_back("http://example.com");
 
   frame->ExecuteJavaScript(std::move(origins),
-                           CreateBuffer("stashed_title = 'hello';"),
+                           MemBufferFromString("stashed_title = 'hello';"),
                            chromium::web::ExecuteMode::ON_PAGE_LOAD,
                            [](bool success) { EXPECT_TRUE(success); });
 
@@ -466,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptOnLoadWildcardOrigin) {
   origins.push_back("*");
 
   frame->ExecuteJavaScript(std::move(origins),
-                           CreateBuffer("stashed_title = 'hello';"),
+                           MemBufferFromString("stashed_title = 'hello';"),
                            chromium::web::ExecuteMode::ON_PAGE_LOAD,
                            [](bool success) { EXPECT_TRUE(success); });
 
@@ -494,11 +503,11 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteMultipleJavaScriptsOnLoad) {
       fidl::VectorPtr<fidl::StringPtr>::New(0);
   origins.push_back(url.GetOrigin().spec());
   frame->ExecuteJavaScript(origins.Clone(),
-                           CreateBuffer("stashed_title = 'hello';"),
+                           MemBufferFromString("stashed_title = 'hello';"),
                            chromium::web::ExecuteMode::ON_PAGE_LOAD,
                            [](bool success) { EXPECT_TRUE(success); });
   frame->ExecuteJavaScript(std::move(origins),
-                           CreateBuffer("stashed_title += ' there';"),
+                           MemBufferFromString("stashed_title += ' there';"),
                            chromium::web::ExecuteMode::ON_PAGE_LOAD,
                            [](bool success) { EXPECT_TRUE(success); });
 
@@ -518,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
   origins.push_back(url.GetOrigin().spec());
 
   frame->ExecuteJavaScript(origins.Clone(),
-                           CreateBuffer("stashed_title = 'hello';"),
+                           MemBufferFromString("stashed_title = 'hello';"),
                            chromium::web::ExecuteMode::ON_PAGE_LOAD,
                            [](bool success) { EXPECT_TRUE(success); });
 
@@ -527,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteOnLoadEarlyAndLateRegistrations) {
   CheckLoadUrl(url.spec(), "hello", controller.get());
 
   frame->ExecuteJavaScript(std::move(origins),
-                           CreateBuffer("stashed_title += ' there';"),
+                           MemBufferFromString("stashed_title += ' there';"),
                            chromium::web::ExecuteMode::ON_PAGE_LOAD,
                            [](bool success) { EXPECT_TRUE(success); });
 
@@ -554,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
   fidl::VectorPtr<fidl::StringPtr> origins =
       fidl::VectorPtr<fidl::StringPtr>::New(0);
   origins.push_back(url.host());
-  frame->ExecuteJavaScript(std::move(origins), CreateBuffer("true;\xfe"),
+  frame->ExecuteJavaScript(std::move(origins), MemBufferFromString("true;\xfe"),
                            chromium::web::ExecuteMode::IMMEDIATE_ONCE,
                            [&run_loop](bool success) {
                              EXPECT_FALSE(success);
@@ -715,29 +724,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, Stop) {
       context_impl()->GetFrameImplForTest(&frame)->web_contents_->IsLoading());
 }
 
-fuchsia::mem::Buffer MemBufferFromString(const std::string& data) {
-  fuchsia::mem::Buffer buffer;
-
-  zx_status_t status =
-      zx::vmo::create(data.size(), ZX_VMO_NON_RESIZABLE, &buffer.vmo);
-  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_create";
-
-  status = buffer.vmo.write(data.data(), 0, data.size());
-  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_write";
-
-  buffer.size = data.size();
-  return buffer;
-}
-
-// Reads a UTF-8 string from |buffer|.
-std::string ReadFromBufferOrDie(const fuchsia::mem::Buffer& buffer) {
-  std::string output;
-  output.resize(buffer.size);
-  zx_status_t status = buffer.vmo.read(&output[0], 0, buffer.size);
-  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_read";
-  return output;
-}
-
 IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
   chromium::web::FramePtr frame = CreateFrame();
 
@@ -791,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     message_port->ReceiveMessage(receiver.GetReceiveCallback());
     CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver->data));
+    EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
   }
 
   {
@@ -802,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     message_port->ReceiveMessage(receiver.GetReceiveCallback());
     CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("ack ping", ReadFromBufferOrDie(receiver->data));
+    EXPECT_EQ("ack ping", StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
   }
 }
@@ -834,7 +820,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     message_port->ReceiveMessage(receiver.GetReceiveCallback());
     CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver->data));
+    EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
   }
 
@@ -877,7 +863,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     message_port->ReceiveMessage(receiver.GetReceiveCallback());
     CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver->data));
+    EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
     incoming_message_port = receiver->incoming_transfer->message_port().Bind();
     EXPECT_TRUE(*post_result);
   }
@@ -912,7 +898,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     ack_message_port->ReceiveMessage(receiver.GetReceiveCallback());
     CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver->data));
+    EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
   }
 
@@ -922,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
     incoming_message_port->ReceiveMessage(receiver.GetReceiveCallback());
     CheckRunWithTimeout(&run_loop);
-    EXPECT_EQ("ack ping", ReadFromBufferOrDie(receiver->data));
+    EXPECT_EQ("ack ping", StringFromMemBufferOrDie(receiver->data));
   }
 }
 
@@ -970,7 +956,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
   Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
   message_port->ReceiveMessage(receiver.GetReceiveCallback());
   CheckRunWithTimeout(&run_loop);
-  EXPECT_EQ("got_port", ReadFromBufferOrDie(receiver->data));
+  EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
   incoming_message_port = receiver->incoming_transfer->message_port().Bind();
   EXPECT_TRUE(*post_result);
 

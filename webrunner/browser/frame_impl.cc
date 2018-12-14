@@ -17,6 +17,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -26,7 +27,7 @@
 #include "url/gurl.h"
 #include "webrunner/browser/context_impl.h"
 #include "webrunner/browser/message_port_impl.h"
-#include "webrunner/browser/vmo_util.h"
+#include "webrunner/common/mem_buffer_util.h"
 
 namespace webrunner {
 
@@ -343,23 +344,47 @@ void FrameImpl::ExecuteJavaScript(fidl::VectorPtr<::fidl::StringPtr> origins,
     return;
   }
 
-  base::string16 script_utf16;
-  if (!ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
-    DLOG(WARNING) << "Ignored non-UTF8 script passed to ExecuteJavaScript().";
-    callback(false);
-    return;
-  }
-
   std::vector<std::string> origins_strings;
   for (const auto& origin : *origins)
     origins_strings.push_back(origin);
 
+  base::string16 script_utf16;
+  if (!ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
+    callback(false);
+    return;
+  }
+
   if (mode == chromium::web::ExecuteMode::IMMEDIATE_ONCE) {
-    if (IsOriginWhitelisted(web_contents_->GetLastCommittedURL(),
-                            origins_strings))
-      web_contents_->GetMainFrame()->ExecuteJavaScript(script_utf16);
+    if (!IsOriginWhitelisted(web_contents_->GetLastCommittedURL(),
+                             origins_strings)) {
+      callback(false);
+      return;
+    }
+
+    web_contents_->GetMainFrame()->ExecuteJavaScript(script_utf16);
   } else {
-    before_load_scripts_.emplace_back(origins_strings, script_utf16);
+    // Store the script as UTF16 shared memory buffer, so that it can be
+    // used directly by renderers without string format conversions.
+
+    // Create a read-only VMO from |script|.
+    fuchsia::mem::Buffer script_buffer = MemBufferFromString16(script_utf16);
+    if (!script_buffer.vmo) {
+      LOG(WARNING) << "Couldn't read script contents from VMO.";
+      callback(false);
+      return;
+    }
+
+    // Wrap the VMO into a read-only shared-memory container that Mojo can work
+    // with.
+    base::subtle::PlatformSharedMemoryRegion script_region =
+        base::subtle::PlatformSharedMemoryRegion::Take(
+            std::move(script_buffer.vmo),
+            base::subtle::PlatformSharedMemoryRegion::Mode::kWritable,
+            script_buffer.size, base::UnguessableToken::Create());
+    script_region.ConvertToReadOnly();
+    before_load_scripts_.emplace_back(
+        origins_strings, base::ReadOnlySharedMemoryRegion::Deserialize(
+                             std::move(script_region)));
   }
   callback(true);
 }
@@ -419,10 +444,14 @@ void FrameImpl::ReadyToCommitNavigation(
   // Provision the renderer's ScriptInjector with the scripts scoped to this
   // page's origin.
   before_load_script_injector->ClearOnLoadScripts();
-  for (const OriginScopedScript& script : before_load_scripts_) {
-    if (IsOriginWhitelisted(navigation_handle->GetURL(), script.origins)) {
-      before_load_script_injector->AddOnLoadScript(script.script);
+  for (auto i = before_load_scripts_.begin();
+       i != before_load_scripts_.end();) {
+    if (IsOriginWhitelisted(navigation_handle->GetURL(), i->origins)) {
+      before_load_script_injector->AddOnLoadScript(
+          mojo::WrapReadOnlySharedMemoryRegion(i->script.Duplicate()));
     }
+
+    i++;
   }
 }
 
@@ -466,8 +495,8 @@ bool FrameImpl::DidAddMessageToConsole(content::WebContents* source,
 
 FrameImpl::OriginScopedScript::OriginScopedScript(
     std::vector<std::string> origins,
-    base::string16 script)
-    : origins(std::move(origins)), script(script) {}
+    base::ReadOnlySharedMemoryRegion script)
+    : origins(std::move(origins)), script(std::move(script)) {}
 
 FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
 

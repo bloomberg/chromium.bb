@@ -17,8 +17,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_constants.h"
-#include "webrunner/browser/test_common.h"
-#include "webrunner/browser/webrunner_browser_test.h"
+#include "webrunner/common/test/test_common.h"
+#include "webrunner/common/test/webrunner_browser_test.h"
 #include "webrunner/service/common.h"
 
 namespace webrunner {
@@ -35,7 +35,7 @@ using NavigationDetails = chromium::web::NavigationEvent;
 // functionality.
 class ContextImplTest : public WebRunnerBrowserTest {
  public:
-  ContextImplTest() : navigation_observer_binding_(&navigation_observer_) {}
+  ContextImplTest() = default;
   ~ContextImplTest() = default;
 
  protected:
@@ -47,13 +47,7 @@ class ContextImplTest : public WebRunnerBrowserTest {
   // Synchronously gets a list of cookies for this BrowserContext.
   net::CookieList GetCookies();
 
-  void TearDownOnMainThread() override {
-    navigation_observer_binding_.Unbind();
-  }
-
   testing::StrictMock<MockNavigationObserver> navigation_observer_;
-  fidl::Binding<chromium::web::NavigationEventObserver>
-      navigation_observer_binding_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContextImplTest);

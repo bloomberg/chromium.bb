@@ -4,13 +4,11 @@
 
 module webrunner.mojom;
 
-import "mojo/public/mojom/base/string16.mojom";
-
 // Interface associated with RenderFrames for managing on-load JavaScript
 // injection tasks the frame. Does not enforce script injection policies,
 // which must be implemented at a higher level.
 interface OnLoadScriptInjector {
-  AddOnLoadScript(mojo_base.mojom.String16 script);
+  AddOnLoadScript(handle<shared_buffer> script);
 
   ClearOnLoadScripts();
 };

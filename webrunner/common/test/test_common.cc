@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrunner/browser/test_common.h"
+#include "webrunner/common/test/test_common.h"
 
+#include <string>
 #include <utility>
 
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/run_loop.h"
+#include "webrunner/common/mem_buffer_util.h"
 
 namespace webrunner {
 
@@ -27,6 +30,12 @@ void MockNavigationObserver::OnNavigationStateChanged(
     OnNavigationStateChangedCallback callback) {
   MockableOnNavigationStateChanged(std::move(change));
   navigation_ack_callback_ = std::move(callback);
+}
+
+std::string StringFromMemBufferOrDie(const fuchsia::mem::Buffer& buffer) {
+  std::string output;
+  CHECK(StringFromMemBuffer(buffer, &output));
+  return output;
 }
 
 }  // namespace webrunner
