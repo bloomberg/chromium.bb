@@ -117,7 +117,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   PasswordTabHelper::CreateForWebState(web_state);
 
-  AutofillTabHelper::CreateForWebState(web_state, nullptr);
+  AutofillTabHelper::CreateForWebState(
+      web_state, PasswordTabHelper::FromWebState(web_state)
+                     ->GetPasswordGenerationManager());
 
   // Depends on favicon::WebFaviconDriver, must be created after it.
   if (base::FeatureList::IsEnabled(kCustomSearchEngines)) {

@@ -66,7 +66,7 @@ void IOSChromePasswordManagerDriver::ClearPreviewedForm() {
 
 PasswordGenerationManager*
 IOSChromePasswordManagerDriver::GetPasswordGenerationManager() {
-  return nullptr;
+  return [delegate_ passwordGenerationManager];
 }
 
 PasswordManager* IOSChromePasswordManagerDriver::GetPasswordManager() {

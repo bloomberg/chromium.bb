@@ -31,6 +31,7 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -39,6 +40,7 @@
 #import "components/password_manager/ios/password_suggestion_helper.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"
@@ -72,6 +74,7 @@ using password_manager::AccountSelectFillData;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
 using password_manager::PasswordFormManagerForUI;
+using password_manager::PasswordGenerationManager;
 using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
@@ -150,6 +153,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 @implementation PasswordController {
   std::unique_ptr<PasswordManager> _passwordManager;
+  std::unique_ptr<PasswordGenerationManager> _passwordGenerationManager;
   std::unique_ptr<PasswordManagerClient> _passwordManagerClient;
   std::unique_ptr<PasswordManagerDriver> _passwordManagerDriver;
   std::unique_ptr<CredentialManager> _credentialManager;
@@ -207,6 +211,12 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       _passwordManagerClient.reset(new IOSChromePasswordManagerClient(self));
     _passwordManager.reset(new PasswordManager(_passwordManagerClient.get()));
     _passwordManagerDriver.reset(new IOSChromePasswordManagerDriver(self));
+
+    if (experimental_flags::IsAutomaticPasswordGenerationEnabled() &&
+        !_passwordManagerClient->IsIncognito()) {
+      _passwordGenerationManager.reset(new PasswordGenerationManager(
+          _passwordManagerClient.get(), _passwordManagerDriver.get()));
+    }
 
     if (base::FeatureList::IsEnabled(features::kCredentialManager)) {
       _credentialManager = std::make_unique<CredentialManager>(
@@ -496,6 +506,10 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 - (void)onNoSavedCredentials {
   [self.suggestionHelper processWithNoSavedCredentials];
+}
+
+- (PasswordGenerationManager*)passwordGenerationManager {
+  return _passwordGenerationManager.get();
 }
 
 #pragma mark - PasswordFormHelperDelegate
