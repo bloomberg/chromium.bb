@@ -366,9 +366,6 @@ suffix (as expected by `System.loadLibrary()`).
 List of native libraries for the secondary ABI to be embedded in this APK.
 Empty if only a single ABI is supported.
 
-* `native['secondary_abi_java_libraries_list']`
-The same list as `native['second_abi_libraries']` as a Java source string.
-
 * `native['uncompress_shared_libraries']`
 A boolean indicating whether native libraries are stored uncompressed in the
 APK.
@@ -1408,14 +1405,11 @@ def main(argv):
       java_libraries_list = _CreateJavaLibrariesList(library_paths)
 
     secondary_abi_library_paths = []
-    secondary_abi_java_libraries_list = None
     secondary_abi_runtime_deps_files = build_utils.ParseGnList(
         options.secondary_abi_shared_libraries_runtime_deps or '[]')
     if secondary_abi_runtime_deps_files:
       secondary_abi_library_paths = _ExtractSharedLibsFromRuntimeDeps(
           secondary_abi_runtime_deps_files)
-      secondary_abi_java_libraries_list = _CreateJavaLibrariesList(
-          secondary_abi_library_paths)
     for gn_list in options.secondary_native_libs:
       secondary_abi_library_paths.extend(build_utils.ParseGnList(gn_list))
 
@@ -1428,7 +1422,6 @@ def main(argv):
       'libraries': library_paths,
       'secondary_abi_libraries': secondary_abi_library_paths,
       'java_libraries_list': java_libraries_list,
-      'secondary_abi_java_libraries_list': secondary_abi_java_libraries_list,
       'uncompress_shared_libraries': options.uncompress_shared_libraries,
       'extra_shared_libraries': extra_shared_libraries,
     }
