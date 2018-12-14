@@ -99,8 +99,11 @@ class BuildBot(object):
         both with and without ("ignored").
         """
         url_base = '%s/%s' % (self.builder_results_url_base(build.builder_name), build.build_number)
+        # Originally we used retry_summary.json, which is the summary of retry
+        # without patch; now we retry again with patch and ignore the flakes.
+        # See https://crbug.com/882969.
         return NetworkTransaction(return_none_on_404=True).run(
-            lambda: self.fetch_file('%s/%s' % (url_base, 'retry_summary.json')))
+            lambda: self.fetch_file('%s/%s' % (url_base, 'retry_with_patch_summary.json')))
 
     def accumulated_results_url_base(self, builder_name):
         return self.builder_results_url_base(builder_name) + '/results/layout-test-results'
