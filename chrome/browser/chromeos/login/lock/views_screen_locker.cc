@@ -97,8 +97,7 @@ ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
 }
 
 ViewsScreenLocker::~ViewsScreenLocker() {
-  if (lock_screen_apps::StateController::IsEnabled())
-    lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(nullptr);
+  lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(nullptr);
   LoginScreenClient::Get()->SetDelegate(nullptr);
 }
 
@@ -133,8 +132,7 @@ void ViewsScreenLocker::OnLockScreenReady() {
   UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
                       base::TimeTicks::Now() - lock_time_);
   screen_locker_->ScreenLockReady();
-  if (lock_screen_apps::StateController::IsEnabled())
-    lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
+  lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
   OnAllowedInputMethodsChanged();
 }
 

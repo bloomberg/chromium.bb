@@ -69,14 +69,8 @@ std::string GenerateCryptoKey() {
 }  // namespace
 
 // static
-bool StateController::IsEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableLockScreenApps);
-}
-
-// static
 StateController* StateController::Get() {
-  DCHECK(g_state_controller_instance || !IsEnabled());
+  DCHECK(g_state_controller_instance);
   return g_state_controller_instance;
 }
 
@@ -94,7 +88,6 @@ StateController::StateController()
       power_manager_client_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK(!g_state_controller_instance);
-  DCHECK(IsEnabled());
 
   g_state_controller_instance = this;
 }

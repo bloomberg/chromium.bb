@@ -243,7 +243,6 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   enum InitFlags : uint32_t {
     ENABLE_PLAY_STORE = 1 << 0,
     ENABLE_PALETTE = 1 << 1,
-    ENABLE_LOCK_SCREEN_APPS = 1 << 2,
   };
 
   static NoteTakingHelper* helper() { return NoteTakingHelper::Get(); }
@@ -290,11 +289,6 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
     if (flags & ENABLE_PALETTE) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           ash::switches::kAshForceEnableStylusTools);
-    }
-
-    if (!(flags & ENABLE_LOCK_SCREEN_APPS)) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          chromeos::switches::kDisableLockScreenApps);
     }
 
     // TODO(derat): Sigh, something in ArcAppTest appears to be re-enabling ARC.
@@ -583,7 +577,7 @@ TEST_F(NoteTakingHelperTest, ListChromeApps) {
 }
 
 TEST_F(NoteTakingHelperTest, ListChromeAppsWithLockScreenNotesSupported) {
-  Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
+  Init(ENABLE_PALETTE);
 
   ASSERT_FALSE(helper()->IsAppAvailable(profile()));
   ASSERT_TRUE(helper()->GetAvailableApps(profile()).empty());
@@ -622,7 +616,7 @@ TEST_F(NoteTakingHelperTest, ListChromeAppsWithLockScreenNotesSupported) {
 }
 
 TEST_F(NoteTakingHelperTest, PreferredAppEnabledOnLockScreen) {
-  Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
+  Init(ENABLE_PALETTE);
 
   ASSERT_FALSE(helper()->IsAppAvailable(profile()));
   ASSERT_TRUE(helper()->GetAvailableApps(profile()).empty());
@@ -666,7 +660,7 @@ TEST_F(NoteTakingHelperTest, PreferredAppEnabledOnLockScreen) {
 }
 
 TEST_F(NoteTakingHelperTest, PreferredAppWithNoLockScreenPermission) {
-  Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
+  Init(ENABLE_PALETTE);
 
   ASSERT_FALSE(helper()->IsAppAvailable(profile()));
   ASSERT_TRUE(helper()->GetAvailableApps(profile()).empty());
@@ -691,7 +685,7 @@ TEST_F(NoteTakingHelperTest, PreferredAppWithNoLockScreenPermission) {
 
 TEST_F(NoteTakingHelperTest,
        PreferredAppWithotLockSupportClearsLockScreenPref) {
-  Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
+  Init(ENABLE_PALETTE);
 
   ASSERT_FALSE(helper()->IsAppAvailable(profile()));
   ASSERT_TRUE(helper()->GetAvailableApps(profile()).empty());
@@ -741,43 +735,6 @@ TEST_F(NoteTakingHelperTest,
                   NoteTakingLockScreenSupport::kNotSupported}));
 }
 
-TEST_F(NoteTakingHelperTest,
-       PreferredAppEnabledOnLockScreen_LockScreenAppsNotEnabled) {
-  Init(ENABLE_PALETTE);
-
-  ASSERT_FALSE(helper()->IsAppAvailable(profile()));
-  ASSERT_TRUE(helper()->GetAvailableApps(profile()).empty());
-
-  scoped_refptr<const extensions::Extension> dev_extension =
-      CreateAndInstallLockScreenApp(NoteTakingHelper::kDevKeepExtensionId,
-                                    kDevKeepAppName, profile());
-
-  helper()->SetPreferredApp(profile(), NoteTakingHelper::kDevKeepExtensionId);
-  helper()->SetPreferredAppEnabledOnLockScreen(profile(), true);
-
-  EXPECT_TRUE(AvailableAppsMatch(
-      profile(),
-      {{kDevKeepAppName, NoteTakingHelper::kDevKeepExtensionId,
-        true /*preferred*/, NoteTakingLockScreenSupport::kNotSupported}}));
-}
-
-// Verify that lock screen apps are not supported if the feature is not enabled.
-TEST_F(NoteTakingHelperTest, LockScreenAppsSupportNotEnabled) {
-  Init(ENABLE_PALETTE);
-
-  ASSERT_FALSE(helper()->IsAppAvailable(profile()));
-  ASSERT_TRUE(helper()->GetAvailableApps(profile()).empty());
-
-  scoped_refptr<const extensions::Extension> dev_extension =
-      CreateAndInstallLockScreenApp(NoteTakingHelper::kDevKeepExtensionId,
-                                    kDevKeepAppName, profile());
-
-  EXPECT_TRUE(AvailableAppsMatch(
-      profile(),
-      {{kDevKeepAppName, NoteTakingHelper::kDevKeepExtensionId,
-        false /*preferred*/, NoteTakingLockScreenSupport::kNotSupported}}));
-}
-
 // Verify the note helper detects apps with "new_note" "action_handler" manifest
 // entries.
 TEST_F(NoteTakingHelperTest, CustomChromeApps) {
@@ -814,7 +771,7 @@ TEST_F(NoteTakingHelperTest, CustomChromeApps) {
 
 // Verify that non-whitelisted apps cannot be enabled on lock screen.
 TEST_F(NoteTakingHelperTest, CustomLockScreenEnabledApps) {
-  Init(ENABLE_PALETTE & ENABLE_LOCK_SCREEN_APPS);
+  Init(ENABLE_PALETTE);
 
   const extensions::ExtensionId kNewNoteId = crx_file::id_util::GenerateId("a");
   const std::string kName = "Some App";
@@ -1249,7 +1206,7 @@ TEST_F(NoteTakingHelperTest, NotifyObserverAboutPreferredAppChanges) {
 
 TEST_F(NoteTakingHelperTest,
        NotifyObserverAboutPreferredAppLockScreenSupportChanges) {
-  Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
+  Init(ENABLE_PALETTE);
   TestObserver observer;
 
   scoped_refptr<const extensions::Extension> dev_extension =
@@ -1298,7 +1255,7 @@ TEST_F(NoteTakingHelperTest,
 }
 
 TEST_F(NoteTakingHelperTest, SetAppEnabledOnLockScreen) {
-  Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
+  Init(ENABLE_PALETTE);
 
   TestObserver observer;
 
@@ -1410,7 +1367,7 @@ TEST_F(NoteTakingHelperTest, SetAppEnabledOnLockScreen) {
 
 TEST_F(NoteTakingHelperTest,
        UpdateLockScreenSupportStatusWhenWhitelistPolicyRemoved) {
-  Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
+  Init(ENABLE_PALETTE);
   TestObserver observer;
 
   // Add test app, set it as preferred and enable it on lock screen.
@@ -1454,7 +1411,7 @@ TEST_F(NoteTakingHelperTest,
 
 TEST_F(NoteTakingHelperTest,
        NoObserverCallsIfPolicyChangesBeforeLockScreenStatusIsFetched) {
-  Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
+  Init(ENABLE_PALETTE);
   TestObserver observer;
 
   scoped_refptr<const extensions::Extension> app =
@@ -1486,7 +1443,7 @@ TEST_F(NoteTakingHelperTest,
 }
 
 TEST_F(NoteTakingHelperTest, LockScreenSupportInSecondaryProfile) {
-  Init(ENABLE_PALETTE | ENABLE_LOCK_SCREEN_APPS);
+  Init(ENABLE_PALETTE);
   TestObserver observer;
 
   // Initialize secondary profile.

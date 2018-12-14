@@ -80,9 +80,6 @@ arc::mojom::IntentInfoPtr CreateIntentInfo(const GURL& clip_data_uri) {
 // Whether the app's manifest indicates that the app supports note taking on the
 // lock screen.
 bool IsLockScreenEnabled(const extensions::Extension* app) {
-  if (!lock_screen_apps::StateController::IsEnabled())
-    return false;
-
   if (!app->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kLockScreen)) {
     return false;

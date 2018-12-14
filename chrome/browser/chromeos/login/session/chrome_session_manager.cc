@@ -141,8 +141,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
 
     ProfileHelper::Get()->ProfileStartup(user_profile);
 
-    if (lock_screen_apps::StateController::IsEnabled())
-      lock_screen_apps::StateController::Get()->SetPrimaryProfile(user_profile);
+    lock_screen_apps::StateController::Get()->SetPrimaryProfile(user_profile);
 
     if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
       // App install logs are uploaded via the user's communication channel with

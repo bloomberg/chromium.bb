@@ -67,7 +67,6 @@ CHROMEOS_EXPORT extern const char kDisableFileManagerTouchMode[];
 CHROMEOS_EXPORT extern const char kDisableFineGrainedTimeZoneDetection[];
 CHROMEOS_EXPORT extern const char kDisableGaiaServices[];
 CHROMEOS_EXPORT extern const char kDisableHIDDetectionOnOOBE[];
-CHROMEOS_EXPORT extern const char kDisableLockScreenApps[];
 CHROMEOS_EXPORT extern const char kDisableLoginAnimations[];
 CHROMEOS_EXPORT extern const char kDisableMachineCertRequest[];
 CHROMEOS_EXPORT extern const char kDisableMtpWriteSupport[];

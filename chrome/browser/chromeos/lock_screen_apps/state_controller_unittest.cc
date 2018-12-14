@@ -370,24 +370,6 @@ class TestAppWindow : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TestAppWindow);
 };
 
-class LockScreenAppStateNotSupportedTest : public testing::Test {
- public:
-  LockScreenAppStateNotSupportedTest() = default;
-
-  ~LockScreenAppStateNotSupportedTest() override = default;
-
-  void SetUp() override {
-    command_line_ = std::make_unique<base::test::ScopedCommandLine>();
-    command_line_->GetProcessCommandLine()->InitFromArgv(
-        {"", "--disable-lock-screen-apps"});
-  }
-
- private:
-  std::unique_ptr<base::test::ScopedCommandLine> command_line_;
-
-  DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateNotSupportedTest);
-};
-
 class LockScreenAppStateTest : public BrowserWithTestWindowTest {
  public:
   LockScreenAppStateTest()
@@ -421,8 +403,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
             base::Bind(&ArcSessionFactory)));
 
     chromeos::NoteTakingHelper::Initialize();
-
-    ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
 
     InitExtensionSystem(profile());
 
@@ -821,10 +801,6 @@ TEST_F(LockScreenAppStateNoStylusInputTest, StylusDetectedAfterInitialization) {
   EXPECT_EQ(TrayActionState::kAvailable,
             state_controller()->GetLockScreenNoteState());
   EXPECT_EQ(TestAppManager::State::kStarted, app_manager()->state());
-}
-
-TEST_F(LockScreenAppStateNotSupportedTest, NoInstance) {
-  EXPECT_FALSE(lock_screen_apps::StateController::IsEnabled());
 }
 
 TEST_F(LockScreenAppStateTest, InitialState) {

@@ -428,10 +428,8 @@ views::WebView* WebUILoginView::web_view() {
 }
 
 void WebUILoginView::SetLockScreenAppFocusCyclerDelegate() {
-  if (lock_screen_apps::StateController::IsEnabled()) {
-    delegates_lock_screen_app_focus_cycle_ = true;
-    lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
-  }
+  delegates_lock_screen_app_focus_cycle_ = true;
+  lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(this);
 }
 
 void WebUILoginView::ClearLockScreenAppFocusCyclerDelegate() {

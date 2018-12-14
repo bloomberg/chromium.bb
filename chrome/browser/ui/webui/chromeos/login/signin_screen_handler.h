@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -51,10 +50,6 @@ enum class TrayActionState;
 namespace base {
 class DictionaryValue;
 class ListValue;
-}
-
-namespace lock_screen_apps {
-class StateController;
 }
 
 namespace chromeos {
@@ -193,7 +188,6 @@ class SigninScreenHandler
       public PowerManagerClient::Observer,
       public input_method::ImeKeyboard::Observer,
       public TabletModeClientObserver,
-      public lock_screen_apps::StateObserver,
       public OobeUI::Observer,
       public ash::mojom::WallpaperObserver {
  public:
@@ -320,9 +314,6 @@ class SigninScreenHandler
   // TabletModeClientObserver:
   void OnTabletModeToggled(bool enabled) override;
 
-  // lock_screen_apps::StateObserver:
-  void OnLockScreenNoteStateChanged(ash::mojom::TrayActionState state) override;
-
   void UpdateAddButtonStatus();
 
   // Restore input focus to current user pod.
@@ -384,9 +375,6 @@ class SigninScreenHandler
   void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
   void HandleSendFeedback();
   void HandleSendFeedbackAndResyncUserData();
-  void HandleRequestNewNoteAction(const std::string& request_type);
-  void HandleNewNoteLaunchAnimationDone();
-  void HandleCloseLockScreenApp();
 
   // Implements user sign-in.
   void AuthenticateExistingUser(const AccountId& account_id,
@@ -523,10 +511,6 @@ class SigninScreenHandler
   std::unique_ptr<LoginFeedback> login_feedback_;
 
   std::unique_ptr<AccountId> focused_pod_account_id_;
-
-  ScopedObserver<lock_screen_apps::StateController,
-                 lock_screen_apps::StateObserver>
-      lock_screen_apps_observer_;
 
   // The binding this instance uses to implement ash::mojom::WallpaperObserver.
   mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_;

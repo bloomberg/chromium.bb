@@ -1918,9 +1918,6 @@ extern const char kCrostiniUsbSupportDescription[];
 extern const char kDisableExplicitDmaFencesName[];
 extern const char kDisableExplicitDmaFencesDescription[];
 
-extern const char kDisableLockScreenAppsName[];
-extern const char kDisableLockScreenAppsDescription[];
-
 extern const char kDisableSystemTimezoneAutomaticDetectionName[];
 extern const char kDisableSystemTimezoneAutomaticDetectionDescription[];
 
