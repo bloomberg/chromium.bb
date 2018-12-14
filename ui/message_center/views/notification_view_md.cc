@@ -800,7 +800,7 @@ void NotificationViewMD::CreateOrUpdateTitleView(
 
     title_view_ = new views::Label(title);
     title_view_->SetFontList(font_list);
-    title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    title_view_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
     title_view_->SetEnabledColor(kRegularTextColorMD);
     left_content_->AddChildViewAt(title_view_, left_content_count_);
   } else {
