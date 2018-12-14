@@ -92,7 +92,6 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
     CSSValueList* animations_list = CSSValueList::CreateCommaSeparated();
     for (wtf_size_t i = 0; i < animation_data->NameList().size(); ++i) {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-      list->Append(*CSSCustomIdentValue::Create(animation_data->NameList()[i]));
       list->Append(*CSSPrimitiveValue::Create(
           CSSTimingData::GetRepeated(animation_data->DurationList(), i),
           CSSPrimitiveValue::UnitType::kSeconds));
@@ -110,6 +109,7 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
           CSSTimingData::GetRepeated(animation_data->FillModeList(), i)));
       list->Append(*ComputedStyleUtils::ValueForAnimationPlayState(
           CSSTimingData::GetRepeated(animation_data->PlayStateList(), i)));
+      list->Append(*CSSCustomIdentValue::Create(animation_data->NameList()[i]));
       animations_list->Append(*list);
     }
     return animations_list;
