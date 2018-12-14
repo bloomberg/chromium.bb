@@ -13,8 +13,8 @@ import("//device/vr/buildflags/buildflags.gni")
 # diverge when code is moved from the base library into dynamic feature
 # modules. The variables can be removed when the bundle-specific lib
 # configuration has stabilized.
-bundle_library_suffix = ""
-bundle_pak_asset_type = "apk"
+bundle_library_suffix = "_base"
+bundle_pak_asset_type = "bundle"
 
 # This template contains all common configuration for native shared libraries,
 # including libchrome, monochrome, standalone webview (also called monochrome),
