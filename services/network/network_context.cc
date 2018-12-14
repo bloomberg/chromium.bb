@@ -1627,6 +1627,21 @@ void NetworkContext::LoadHttpAuthCache(const base::UnguessableToken& cache_key,
   std::move(callback).Run();
 }
 
+void NetworkContext::LookupBasicAuthCredentials(
+    const GURL& url,
+    LookupBasicAuthCredentialsCallback callback) {
+  net::HttpAuthCache* http_auth_cache =
+      url_request_context_->http_transaction_factory()
+          ->GetSession()
+          ->http_auth_cache();
+  net::HttpAuthCache::Entry* entry =
+      http_auth_cache->LookupByPath(url.GetOrigin(), url.path());
+  if (entry && entry->scheme() == net::HttpAuth::AUTH_SCHEME_BASIC)
+    std::move(callback).Run(entry->credentials());
+  else
+    std::move(callback).Run(base::nullopt);
+}
+
 // ApplyContextParamsToBuilder represents the core configuration for
 // translating |network_context_params| into a set of configuration that can
 // be used to build a request context. All new initialization should be done
