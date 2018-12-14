@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/payments/content/developer_console_logger.h"
 #include "components/payments/content/payment_request_display_manager.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
@@ -119,6 +120,15 @@ class PaymentRequest : public mojom::PaymentRequest,
   PaymentRequestState* state() const { return state_.get(); }
 
  private:
+  // Returns true after init() has been called and the mojo connection has been
+  // established. If the mojo connection gets later disconnected, this will
+  // returns false.
+  bool IsInitialized() const;
+
+  // Returns true after show() has been called and the payment sheet is showing.
+  // If the payment sheet is later hidden, this will return false.
+  bool IsThisPaymentRequestShowing() const;
+
   // Returns true if this payment request supports skipping the Payment Sheet.
   // Typically, this means only one payment method is supported, it's a URL
   // based method, and no other info is requested from the user.
@@ -145,6 +155,7 @@ class PaymentRequest : public mojom::PaymentRequest,
                                     bool warn_localhost_or_file);
 
   content::WebContents* web_contents_;
+  DeveloperConsoleLogger log_;
   std::unique_ptr<ContentPaymentRequestDelegate> delegate_;
   // |manager_| owns this PaymentRequest.
   PaymentRequestWebContentsManager* manager_;
@@ -177,6 +188,13 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // Whether PaymentRequest.show() was invoked by skipping payment request UI.
   bool skipped_payment_request_ui_ = false;
+
+  // Whether PaymentRequest mojo connection has been initialized from the
+  // renderer.
+  bool is_initialized_ = false;
+
+  // Whether PaymentRequest.show() has been called.
+  bool is_show_called_ = false;
 
   base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_;
 
