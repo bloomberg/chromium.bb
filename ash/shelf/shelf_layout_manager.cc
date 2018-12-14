@@ -480,14 +480,14 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_OVERLAP;
   }
 
+  // If split view mode is active, make the shelf fully opapue.
+  if (Shell::Get()->IsSplitViewModeActive())
+    return SHELF_BACKGROUND_SPLIT_VIEW;
+
   if (Shell::Get()->window_selector_controller() &&
       Shell::Get()->window_selector_controller()->IsSelecting()) {
     return SHELF_BACKGROUND_OVERLAP;
   }
-
-  // If split view mode is active, make the shelf fully opapue.
-  if (Shell::Get()->IsSplitViewModeActive())
-    return SHELF_BACKGROUND_SPLIT_VIEW;
 
   return SHELF_BACKGROUND_DEFAULT;
 }
