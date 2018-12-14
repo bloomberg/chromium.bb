@@ -153,6 +153,8 @@ jumbo_static_library("sync") {
     "driver/sync_service_observer.h",
     "driver/sync_service_utils.cc",
     "driver/sync_service_utils.h",
+    "driver/sync_session_durations_metrics_recorder.cc",
+    "driver/sync_session_durations_metrics_recorder.h",
     "driver/sync_stopped_reporter.cc",
     "driver/sync_stopped_reporter.h",
     "driver/sync_token_status.cc",

@@ -11,6 +11,8 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/metrics/android_profile_session_durations_service.h"
+#include "chrome/browser/android/metrics/android_profile_session_durations_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/chrome_switches.h"
@@ -60,6 +62,11 @@ void UmaSessionStats::UmaResumeSession(JNIEnv* env,
         g_browser_process->GetMetricsServicesManager()->GetUkmService();
     if (ukm_service)
       ukm_service->OnAppEnterForeground();
+
+    AndroidProfileSessionDurationsService* psd_service =
+        AndroidProfileSessionDurationsServiceFactory::GetForActiveUserProfile();
+    if (psd_service)
+      psd_service->OnAppEnterForeground(session_start_time_);
   }
   ++active_session_count_;
 }
@@ -88,6 +95,11 @@ void UmaSessionStats::UmaEndSession(JNIEnv* env,
         g_browser_process->GetMetricsServicesManager()->GetUkmService();
     if (ukm_service)
       ukm_service->OnAppEnterBackground();
+
+    AndroidProfileSessionDurationsService* psd_service =
+        AndroidProfileSessionDurationsServiceFactory::GetForActiveUserProfile();
+    if (psd_service)
+      psd_service->OnAppEnterBackground(duration);
   }
 }
 
