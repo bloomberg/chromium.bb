@@ -65,6 +65,8 @@ source_set("dialogs_internal") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/dialogs/non_modal",
     "//ios/web",
     "//ui/base",
     "//url",

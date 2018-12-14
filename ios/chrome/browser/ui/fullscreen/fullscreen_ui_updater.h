@@ -18,6 +18,10 @@ class FullscreenUIUpdater : public FullscreenControllerObserver {
 
  private:
   // FullscreenControllerObserver:
+  void FullscreenViewportInsetRangeChanged(
+      FullscreenController* controller,
+      UIEdgeInsets min_viewport_insets,
+      UIEdgeInsets max_viewport_insets) override;
   void FullscreenProgressUpdated(FullscreenController* controller,
                                  CGFloat progress) override;
   void FullscreenEnabledStateChanged(FullscreenController* controller,

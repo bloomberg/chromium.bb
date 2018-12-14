@@ -21,7 +21,9 @@ class FullscreenControllerObserver {
   // Invoked when the maximum or minimum viewport insets for |controller| have
   // been updated.
   virtual void FullscreenViewportInsetRangeChanged(
-      FullscreenController* controller) {}
+      FullscreenController* controller,
+      UIEdgeInsets min_viewport_insets,
+      UIEdgeInsets max_viewport_insets) {}
 
   // Invoked after a scrolling event has caused |controller| to calculate
   // |progress|.  A |progress| value of 1.0 denotes that the toolbar should be

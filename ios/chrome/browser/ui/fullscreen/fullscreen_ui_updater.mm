@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,14 +20,29 @@ void FullscreenUIUpdater::FullscreenProgressUpdated(
   [ui_element_ updateForFullscreenProgress:progress];
 }
 
+void FullscreenUIUpdater::FullscreenViewportInsetRangeChanged(
+    FullscreenController* controller,
+    UIEdgeInsets min_viewport_insets,
+    UIEdgeInsets max_viewport_insets) {
+  SEL inset_range_selector = @selector(updateForFullscreenMinViewportInsets:
+                                                          maxViewportInsets:);
+  if ([ui_element_ respondsToSelector:inset_range_selector]) {
+    [ui_element_ updateForFullscreenMinViewportInsets:min_viewport_insets
+                                    maxViewportInsets:max_viewport_insets];
+  }
+}
+
 void FullscreenUIUpdater::FullscreenEnabledStateChanged(
     FullscreenController* controller,
     bool enabled) {
-  [ui_element_ updateForFullscreenEnabled:enabled];
+  if ([ui_element_ respondsToSelector:@selector(updateForFullscreenProgress:)])
+    [ui_element_ updateForFullscreenEnabled:enabled];
 }
 
 void FullscreenUIUpdater::FullscreenWillAnimate(
     FullscreenController* controller,
     FullscreenAnimator* animator) {
-  [ui_element_ animateFullscreenWithAnimator:animator];
+  SEL animator_selector = @selector(animateFullscreenWithAnimator:);
+  if ([ui_element_ respondsToSelector:animator_selector])
+    [ui_element_ animateFullscreenWithAnimator:animator];
 }

@@ -18,14 +18,19 @@
 @interface TestFullscreenUIElement : NSObject<FullscreenUIElement>
 // The values that are passed to the UI element through the UI updater.
 @property(nonatomic, readonly) CGFloat progress;
+@property(nonatomic, readonly) UIEdgeInsets minViewportInsets;
+@property(nonatomic, readonly) UIEdgeInsets maxViewportInsets;
 @property(nonatomic, readonly, getter=isEnabled) BOOL enabled;
 @property(nonatomic, readonly) FullscreenAnimator* animator;
 @end
 
 @implementation TestFullscreenUIElement
-@synthesize progress = _progress;
-@synthesize enabled = _enabled;
-@synthesize animator = _animator;
+
+- (void)updateForFullscreenMinViewportInsets:(UIEdgeInsets)minViewportInsets
+                           maxViewportInsets:(UIEdgeInsets)maxViewportInsets {
+  _minViewportInsets = minViewportInsets;
+  _maxViewportInsets = maxViewportInsets;
+}
 
 - (void)updateForFullscreenProgress:(CGFloat)progress {
   _progress = progress;
@@ -65,6 +70,18 @@ TEST_F(FullscreenUIUpdaterTest, Progress) {
   const CGFloat kProgress = 0.5;
   observer()->FullscreenProgressUpdated(nullptr, kProgress);
   EXPECT_TRUE(AreCGFloatsEqual(element().progress, kProgress));
+}
+
+// Tests that the updater correctly changes the UI elements viewport insets.
+TEST_F(FullscreenUIUpdaterTest, Insets) {
+  const UIEdgeInsets kMinInsets = UIEdgeInsetsMake(10, 10, 10, 10);
+  const UIEdgeInsets kMaxInsets = UIEdgeInsetsMake(20, 20, 20, 20);
+  observer()->FullscreenViewportInsetRangeChanged(nullptr, kMinInsets,
+                                                  kMaxInsets);
+  EXPECT_TRUE(
+      UIEdgeInsetsEqualToEdgeInsets(element().minViewportInsets, kMinInsets));
+  EXPECT_TRUE(
+      UIEdgeInsetsEqualToEdgeInsets(element().maxViewportInsets, kMaxInsets));
 }
 
 // Tests that the updater correctly changes the UI element's enabled state.
