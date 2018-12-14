@@ -44,7 +44,7 @@
 #import "ios/chrome/browser/ui/commands/settings_main_page_commands.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/autofill_credit_card_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/bandwidth_management_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
@@ -863,7 +863,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
           initWithBrowserState:_browserState];
       break;
     case ItemTypeAutofillCreditCard:
-      controller = [[AutofillCreditCardCollectionViewController alloc]
+      controller = [[AutofillCreditCardTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeAutofillProfile:

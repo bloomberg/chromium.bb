@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/autofill_credit_card_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_credit_card_table_view_controller.h"
 
 #include "base/guid.h"
 #include "base/mac/foundation_util.h"
@@ -12,8 +12,8 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,16 +21,12 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SettingsRootCollectionViewController (ExposedForTesting)
-- (void)editButtonPressed;
-@end
-
 namespace {
 
-class AutofillCreditCardCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class AutofillCreditCardTableViewControllerTest
+    : public ChromeTableViewControllerTest {
  protected:
-  AutofillCreditCardCollectionViewControllerTest() {
+  AutofillCreditCardTableViewControllerTest() {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
     // Credit card import requires a PersonalDataManager which itself needs the
@@ -39,8 +35,8 @@ class AutofillCreditCardCollectionViewControllerTest
     chrome_browser_state_->CreateWebDataService();
   }
 
-  CollectionViewController* InstantiateController() override {
-    return [[AutofillCreditCardCollectionViewController alloc]
+  ChromeTableViewController* InstantiateController() override {
+    return [[AutofillCreditCardTableViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
@@ -61,82 +57,61 @@ class AutofillCreditCardCollectionViewControllerTest
     observer.Wait();  // Wait for completion of the asynchronous operation.
   }
 
+  // Deletes the item at (section, row) and waits util condition returns true or
+  // timeout.
+  bool deleteItemAndWait(int section, int row, ConditionBlock condition) {
+    AutofillCreditCardTableViewController* view_controller =
+        base::mac::ObjCCastStrict<AutofillCreditCardTableViewController>(
+            controller());
+    [view_controller deleteItems:@[ [NSIndexPath indexPathForRow:row
+                                                       inSection:section] ]];
+    return base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForUIElementTimeout, condition);
+  }
+
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 
 // Default test case of no credit cards.
-TEST_F(AutofillCreditCardCollectionViewControllerTest, TestInitialization) {
+TEST_F(AutofillCreditCardTableViewControllerTest, TestInitialization) {
   CreateController();
   CheckController();
 
-  // Expect one header section and one subtitle section.
-  EXPECT_EQ(2, NumberOfSections());
-  // Expect header section to contain one row (the credit card Autofill toggle).
+  // Expect one switch section.
+  EXPECT_EQ(1, NumberOfSections());
+  // Expect switch section to contain one row (the credit card Autofill toggle).
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  // Expect subtitle section to contain one row (the credit card Autofill toggle
-  // subtitle).
-  EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
 // Adding a single credit card results in a credit card section.
-TEST_F(AutofillCreditCardCollectionViewControllerTest, TestOneCreditCard) {
+TEST_F(AutofillCreditCardTableViewControllerTest, TestOneCreditCard) {
   AddCreditCard("https://www.example.com/", "John Doe", "378282246310005");
   CreateController();
   CheckController();
 
-  // Expect three sections (header, subtitle, and credit card section).
-  EXPECT_EQ(3, NumberOfSections());
+  // Expect two sections (switch and credit card section).
+  EXPECT_EQ(2, NumberOfSections());
   // Expect credit card section to contain one row (the credit card itself).
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
 // Deleting the only credit card results in item deletion and section deletion.
-TEST_F(AutofillCreditCardCollectionViewControllerTest,
+TEST_F(AutofillCreditCardTableViewControllerTest,
        TestOneCreditCardItemDeleted) {
   AddCreditCard("https://www.example.com/", "John Doe", "378282246310005");
   CreateController();
   CheckController();
 
-  // Expect three sections (header, subtitle, and credit card section).
-  EXPECT_EQ(3, NumberOfSections());
-  // Expect credit card section to contain one row (the credit card itself).
-  EXPECT_EQ(1, NumberOfItemsInSection(2));
-
-  AutofillCreditCardCollectionViewController* view_controller =
-      base::mac::ObjCCastStrict<AutofillCreditCardCollectionViewController>(
-          controller());
-  // Put the collectionView in 'edit' mode.
-  [view_controller editButtonPressed];
-
-  // This is a bit of a shortcut, since actually clicking on the 'delete'
-  // button would be tough.
-  void (^delete_item_with_wait)(int, int) = ^(int i, int j) {
-    __block BOOL completion_called = NO;
-    this->DeleteItem(i, j, ^{
-      completion_called = YES;
-    });
-    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-        base::test::ios::kWaitForUIElementTimeout, ^bool() {
-          return completion_called;
-        }));
-  };
-
-  autofill::PersonalDataManager* personal_data_manager =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(
-          chrome_browser_state_.get());
-  PersonalDataManagerDataChangedObserver observer(personal_data_manager);
-
-  // This call cause a modification of the PersonalDataManager, so wait until
-  // the asynchronous task complete in addition to waiting for the UI update.
-  delete_item_with_wait(2, 0);
-  observer.Wait();  // Wait for completion of the asynchronous operation.
-
-  // Exit 'edit' mode.
-  [view_controller editButtonPressed];
-
-  // Expect credit card section to have been removed.
+  // Expect two sections (switch and credit card section).
   EXPECT_EQ(2, NumberOfSections());
+  // Expect credit card section to contain one row (the credit card itself).
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
+
+  // Delete the credit card item and check that the section is removed.
+  EXPECT_TRUE(deleteItemAndWait(1, 0, ^{
+    return NumberOfSections() == 1;
+  }));
 }
 
 }  // namespace
