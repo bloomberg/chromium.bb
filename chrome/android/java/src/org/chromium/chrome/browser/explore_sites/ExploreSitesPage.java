@@ -95,17 +95,6 @@ public class ExploreSitesPage extends BasicNativePage {
     protected void initialize(ChromeActivity activity, final NativePageHost host) {
         mHost = host;
         mTab = mHost.getActiveTab();
-        if (mTab != null) {
-            // We want to observe page load start so that we can store the recycler view layout
-            // state, for making "back" work correctly.
-            mTabObserver = new EmptyTabObserver() {
-                @Override
-                public void onPageLoadStarted(Tab tab, String url) {
-                    saveLayoutManagerState();
-                }
-            };
-            mTab.addObserver(mTabObserver);
-        }
 
         mTabModelSelector = activity.getTabModelSelector();
         mTitle = activity.getString(R.string.explore_sites_title);
@@ -187,6 +176,26 @@ public class ExploreSitesPage extends BasicNativePage {
             mModel.set(SCROLL_TO_CATEGORY_KEY,
                     Math.min(categoryListModel.size() - 1, INITIAL_SCROLL_POSITION));
         }
+        if (mTab != null) {
+            // We want to observe page load start so that we can store the recycler view layout
+            // state, for making "back" work correctly.
+            mTabObserver = new EmptyTabObserver() {
+                @Override
+                public void onPageLoadStarted(Tab tab, String url) {
+                    try {
+                        URI uri = new URI(url);
+                        if (UrlConstants.CHROME_NATIVE_SCHEME.equals(uri.getScheme())
+                                && UrlConstants.EXPLORE_HOST.equals(uri.getHost())) {
+                            return;
+                        }
+                        saveLayoutManagerState();
+                    } catch (URISyntaxException e) {
+                    }
+                }
+            };
+            mTab.addObserver(mTabObserver);
+        }
+
         mIsLoaded = true;
     }
 

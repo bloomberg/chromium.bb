@@ -180,7 +180,7 @@ public class ExploreSitesSection {
         for (final ExploreSitesCategory category : categoryList) {
             if (tileCount >= MAX_CATEGORIES) break;
             // Skip empty categories from being shown on NTP.
-            if (category.getNumDisplayed() == 0) continue;
+            if (!category.isPlaceholder() && category.getNumDisplayed() == 0) continue;
             createTileView(tileCount, category);
             tileCount++;
         }
