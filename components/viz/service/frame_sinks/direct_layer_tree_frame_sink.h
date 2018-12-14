@@ -69,6 +69,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   bool BindToClient(cc::LayerTreeFrameSinkClient* client) override;
   void DetachFromClient() override;
   void SubmitCompositorFrame(CompositorFrame frame,
+                             bool hit_test_data_changed,
                              bool show_hit_test_borders) override;
   void DidNotProduceFrame(const BeginFrameAck& ack) override;
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
@@ -123,6 +124,9 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   float device_scale_factor_ = 1.f;
   bool is_lost_ = false;
   std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
+
+  HitTestRegionList last_hit_test_data_;
+
   // Use this map to record the time when client received the BeginFrameArgs.
   base::flat_map<int64_t, PipelineReporting> pipeline_reporting_frame_times_;
   base::WeakPtrFactory<DirectLayerTreeFrameSink> weak_factory_;
