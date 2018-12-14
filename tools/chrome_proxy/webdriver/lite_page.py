@@ -207,6 +207,7 @@ class LitePage(IntegrationTest):
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
       test_driver.AddChromeArg('--enable-features='
                                'Previews,DataReductionProxyDecidesTransform')
+      test_driver.AddChromeArg('--disable-features=AndroidOmniboxPreviewsBadge')
       test_driver.AddChromeArg('--force-effective-connection-type=2G')
       # Set exp=client_test_nano to force Lite page response.
       test_driver.AddChromeArg(
