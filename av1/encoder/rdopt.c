@@ -6728,7 +6728,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       } else {
         int_mv cur_int_mv, init_int_mv;
         cur_int_mv.as_mv.col = cur_mv[id].as_mv.col >> 3;
-        cur_int_mv.as_mv.row = cur_mv[id].as_mv.col >> 3;
+        cur_int_mv.as_mv.row = cur_mv[id].as_mv.row >> 3;
         init_int_mv.as_mv.row = init_mv[id].as_mv.row >> 3;
         init_int_mv.as_mv.col = init_mv[id].as_mv.col >> 3;
         if (cur_int_mv.as_int == init_int_mv.as_int) {
