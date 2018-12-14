@@ -94,7 +94,8 @@ void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
   for (CSSStyleSheet* sheet : GetTreeScope().AdoptedStyleSheets()) {
     if (!sheet ||
         !sheet->CanBeActivated(
-            GetDocument().GetStyleEngine().PreferredStylesheetSetName()))
+            GetDocument().GetStyleEngine().PreferredStylesheetSetName()) ||
+        sheet->AssociatedDocument() != GetDocument())
       continue;
     collector.AppendSheetForList(sheet);
     collector.AppendActiveStyleSheet(
