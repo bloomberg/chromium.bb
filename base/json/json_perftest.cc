@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -74,13 +73,7 @@ class JSONPerfTest : public testing::Test {
   }
 };
 
-// Times out on Android (crbug.com/906686).
-#if defined(OS_ANDROID)
-#define MAYBE_StressTest DISABLED_StressTest
-#else
-#define MAYBE_StressTest StressTest
-#endif
-TEST_F(JSONPerfTest, MAYBE_StressTest) {
+TEST_F(JSONPerfTest, StressTest) {
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 12; ++j) {
       TestWriteAndRead(i + 1, j + 1);
