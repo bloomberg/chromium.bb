@@ -82,6 +82,10 @@ const char kDeviceRequisition[] = "deviceRequisition";
 // to perform specific enrollment-time actions (e.g. create robot accounts).
 const char kRestoreAfterRollback[] = "enrollmentRestoreAfterRollback";
 
+// String value containing an enrollment token that would be used during
+// enrollment to identify organization device is enrolled into.
+const char kEnrollmentToken[] = "enrollmentToken";
+
 // String value indicating which license type should automatically be used if
 // license selection is done on a client side.
 const char kEnrollmentLicenseType[] = "enrollmentLicenseType";
@@ -123,6 +127,8 @@ constexpr struct {
      ConfigurationHandlerSide::HANDLER_CPP},
     {kDeviceRequisition, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},
+    {kEnrollmentToken, ValueType::STRING,
+     ConfigurationHandlerSide::HANDLER_CPP},
     {kEnrollmentLicenseType, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kEnrollmentLocation, ValueType::STRING,
@@ -158,10 +164,8 @@ bool ValidateConfiguration(const base::Value& configuration) {
       clone.RemoveKey(key.key);
     }
   }
-  valid = valid && clone.DictEmpty();
-  for (const auto& item : clone.DictItems()) {
-    LOG(ERROR) << "Unknown configuration key " << item.first;
-  }
+  for (const auto& item : clone.DictItems())
+    LOG(WARNING) << "Unknown configuration key " << item.first;
   return valid;
 }
 

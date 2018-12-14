@@ -629,14 +629,9 @@ class EnterpriseEnrollmentConfigurationTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    const ::testing::TestInfo* const test_info =
-        ::testing::UnitTest::GetInstance()->current_test_info();
-    const std::string filename = std::string(test_info->name()) + ".json";
-
     // File name is based on the test name.
     base::FilePath file;
-    ASSERT_TRUE(chromeos::test_utils::GetTestDataPath("oobe_configuration",
-                                                      filename, &file));
+    ASSERT_TRUE(GetTestFileName(".json", &file));
 
     command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    file);
@@ -644,8 +639,17 @@ class EnterpriseEnrollmentConfigurationTest
     command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
     command_line->AppendSwitchASCII(switches::kArcAvailability,
                                     "officially-supported");
-
     EnterpriseEnrollmentTestBase::SetUpCommandLine(command_line);
+  }
+
+  // Stores a name of the configuration (actual test name followed by |prefix|)
+  // to |file|.
+  // Returns true iff |file| exists.
+  bool GetTestFileName(const std::string& suffix, base::FilePath* file) {
+    const ::testing::TestInfo* const test_info =
+        ::testing::UnitTest::GetInstance()->current_test_info();
+    const std::string filename = std::string(test_info->name()) + suffix;
+    return test_utils::GetTestDataPath("oobe_configuration", filename, file);
   }
 
   // Overridden from InProcessBrowserTest:
@@ -673,6 +677,19 @@ class EnterpriseEnrollmentConfigurationTest
   void TearDownOnMainThread() override {
     enrollment_screen()->enrollment_helper_.reset();
     EnterpriseEnrollmentTestBase::TearDownOnMainThread();
+  }
+
+  // Set up expectations for token enrollment.
+  void ExpectTokenEnrollment() {
+    AddEnrollmentSetupFunction(
+        [](EnterpriseEnrollmentHelperMock* enrollment_helper) {
+          EXPECT_CALL(*enrollment_helper,
+                      EnrollUsingEnrollmentToken(
+                          "00000000-1111-2222-3333-444444444444"))
+              .WillOnce(InvokeWithoutArgs([enrollment_helper]() {
+                enrollment_helper->status_consumer()->OnDeviceEnrolled("");
+              }));
+        });
   }
 
  protected:
@@ -1098,6 +1115,18 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
                              ->browser_policy_connector_chromeos()
                              ->GetDeviceCloudPolicyManager();
   EXPECT_EQ(policy_manager->GetDeviceRequisition(), "some_requisition");
+}
+
+// Check that configuration allows to skip Update screen and get to Enrollment
+// screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestEnrollUsingToken) {
+  ExpectTokenEnrollment();
+  DisableAttributePromptUpdate();
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsStepDisplayed("success"));
 }
 
 }  // namespace chromeos

@@ -2142,6 +2142,18 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
   if (restore_after_rollback_value && restore_after_rollback_value->GetBool())
     effective_config.mode = policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK;
 
+  // If enrollment token is specified via OOBE configuration use corresponding
+  // configuration.
+  auto* enrollment_token = oobe_configuration_.FindKeyOfType(
+      configuration::kEnrollmentToken, base::Value::Type::STRING);
+  if (enrollment_token && !enrollment_token->GetString().empty()) {
+    effective_config.mode =
+        policy::EnrollmentConfig::MODE_ATTESTATION_ENROLLMENT_TOKEN;
+    effective_config.auth_mechanism =
+        policy::EnrollmentConfig::AUTH_MECHANISM_ATTESTATION;
+    effective_config.enrollment_token = enrollment_token->GetString();
+  }
+
   EnrollmentScreen* screen = EnrollmentScreen::Get(screen_manager());
   screen->SetParameters(effective_config, shark_controller_.get());
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
