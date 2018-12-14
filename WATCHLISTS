@@ -381,6 +381,11 @@
     'blink_htmlparser': {
       'filepath': 'third_party/blink/renderer/core/html/parser/'
     },
+    'blink_image_codecs': {
+      'filepath': 'third_party/blink/renderer/platform/image-decoders' \
+                  '|third_party/blink/renderer/platform/image-encoders' \
+                  '|third_party/blink/perf_tests/image_decoder'
+    },
     'blink_indexed_db': {
       'filepath': 'third_party/blink/common/indexeddb' \
                   '|third_party/blink/public/common/indexeddb' \
@@ -1950,6 +1955,7 @@
     'blink_html': ['blink-reviews-html@chromium.org'],
     'blink_htmlparser': ['kinuko+watch@chromium.org',
                          'loading-reviews+parser@chromium.org'],
+    'blink_image_codecs': ['cblume+imagecodecs@chromium.org'],
     'blink_indexed_db': ['cmumford@chromium.org',
                          'jsbell+idb@chromium.org'],
     'blink_input': ['dtapuska+blinkwatch@chromium.org',
