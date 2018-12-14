@@ -30,10 +30,39 @@ cr.define('app_management', function() {
    * @param {Object} action
    * @return {AppMap}
    */
+  AppState.changeApp = function(apps, action) {
+    assert(apps[action.update.id]);
+
+    const changedAppEntry = {};
+    changedAppEntry[action.update.id] = action.update;
+    return Object.assign({}, apps, changedAppEntry);
+  };
+
+  /**
+   * @param {AppMap} apps
+   * @param {Object} action
+   * @return {AppMap}
+   */
+  AppState.removeApp = function(apps, action) {
+    assert(apps[action.id]);
+
+    delete apps[action.id];
+    return Object.assign({}, apps);
+  };
+
+  /**
+   * @param {AppMap} apps
+   * @param {Object} action
+   * @return {AppMap}
+   */
   AppState.updateApps = function(apps, action) {
     switch (action.name) {
       case 'add-apps':
         return AppState.addApps(apps, action);
+      case 'change-app':
+        return AppState.changeApp(apps, action);
+      case 'remove-app':
+        return AppState.removeApp(apps, action);
       default:
         return apps;
     }

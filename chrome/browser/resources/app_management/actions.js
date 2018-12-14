@@ -18,7 +18,29 @@ cr.define('app_management.actions', function() {
     };
   }
 
+  /**
+   * @param {appManagement.mojom.App} update
+   */
+  function changeApp(update) {
+    return {
+      name: 'change-app',
+      update: update,
+    };
+  }
+
+  /**
+   * @param {string} id
+   */
+  function removeApp(id) {
+    return {
+      name: 'remove-app',
+      id: id,
+    };
+  }
+
   return {
     addApps: addApps,
+    changeApp: changeApp,
+    removeApp: removeApp,
   };
 });

@@ -13,8 +13,11 @@ Polymer({
 
     app_management.Store.getInstance().init(
         app_management.util.createEmptyState());
-    this.listenerIds_ =
-        [callbackRouter.onAppsAdded.addListener(this.onAppsAdded.bind(this))];
+    this.listenerIds_ = [
+      callbackRouter.onAppsAdded.addListener(this.onAppsAdded.bind(this)),
+      callbackRouter.onAppChanged.addListener(this.onAppChanged.bind(this)),
+      callbackRouter.onAppRemoved.addListener(this.onAppRemoved.bind(this)),
+    ];
   },
 
   detached: function() {
@@ -23,8 +26,34 @@ Polymer({
     this.listenerIds_.forEach((id) => callbackRouter.removeListener(id));
   },
 
+  /**
+   * @param {cr.ui.Action} action
+   */
+  dispatch: function(action) {
+    app_management.Store.getInstance().dispatch(action);
+  },
+
+  /**
+   * @param {Array<appManagement.mojom.App>} apps
+   */
   onAppsAdded: function(apps) {
     const action = app_management.actions.addApps(apps);
-    app_management.Store.getInstance().dispatch(action);
+    this.dispatch(action);
+  },
+
+  /**
+   * @param {appManagement.mojom.App} app
+   */
+  onAppChanged: function(app) {
+    const action = app_management.actions.changeApp(app);
+    this.dispatch(action);
+  },
+
+  /**
+   * @param {string} appId
+   */
+  onAppRemoved: function(appId) {
+    const action = app_management.actions.removeApp(appId);
+    this.dispatch(action);
   },
 });

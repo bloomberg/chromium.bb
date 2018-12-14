@@ -14,13 +14,14 @@ suite('app state', function() {
     // Create an initial AppMap.
     apps = {
       '1': createApp('1'),
+      '2': createApp('2'),
     };
   });
 
   test('updates when apps are added', function() {
     appsToAdd = [
-      createApp('2', {type: 0, title: 'b'}),
-      createApp('3'),
+      createApp('3', {type: 1, title: 'a'}),
+      createApp('4'),
     ];
 
     action = app_management.actions.addApps(appsToAdd);
@@ -30,11 +31,37 @@ suite('app state', function() {
     assertTrue(!!apps['1']);
     assertTrue(!!apps['2']);
     assertTrue(!!apps['3']);
+    assertTrue(!!apps['4']);
 
     // Check that id corresponds to the right app.
-    let app = apps['2'];
-    assertEquals('2', app.id);
-    assertEquals(0, app.type);
-    assertEquals('b', app.title);
+    const app = apps['3'];
+    assertEquals('3', app.id);
+    assertEquals(1, app.type);
+    assertEquals('a', app.title);
+  });
+
+  test('updates when an app is changed', function() {
+    const changedApp = createApp('2', {type: 1, title: 'a'});
+    action = app_management.actions.changeApp(changedApp);
+    apps = app_management.AppState.updateApps(apps, action);
+
+    // Check that app has changed
+    const app = apps['2'];
+    assertEquals(1, app.type);
+    assertEquals('a', app.title);
+
+    // Check that number of apps hasn't changed
+    assertEquals(Object.keys(apps).length, 2);
+  });
+
+  test('updates when an app is removed', function() {
+    action = app_management.actions.removeApp('1');
+    apps = app_management.AppState.updateApps(apps, action);
+
+    // Check that app is removed
+    assertFalse(!!apps['1']);
+
+    // Check that other app is unaffected
+    assertTrue(!!apps['2']);
   });
 });
