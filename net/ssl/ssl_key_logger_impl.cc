@@ -6,67 +6,25 @@
 
 #include <stdio.h>
 
-#include <algorithm>
-
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/thread_annotations.h"
 
 namespace net {
 
-namespace {
-// Bound the number of outstanding writes to bound memory usage. Some
-// antiviruses point this at a pipe and then read too slowly. See
-// https://crbug.com/566951 and https://crbug.com/914880.
-static constexpr size_t kMaxOutstandingLines = 512;
-}  // namespace
-
-// An object which performs the blocking file operations on a background
-// SequencedTaskRunner.
-class SSLKeyLoggerImpl::Core
-    : public base::RefCountedThreadSafe<SSLKeyLoggerImpl::Core> {
+// An object which lives on the background SequencedTaskRunner and performs the
+// blocking file operations.
+class SSLKeyLoggerImpl::Core {
  public:
-  explicit Core(const base::FilePath& path) {
-    DETACH_FROM_SEQUENCE(sequence_checker_);
-    // That the user explicitly asked for debugging information would suggest
-    // waiting to flush these to disk, but some buggy antiviruses point this at
-    // a pipe and hang, so we avoid blocking shutdown. If writing to a real
-    // file, writes should complete quickly enough that this does not matter.
-    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(&Core::OpenFile, this, path));
-  }
-
-  void WriteLine(const std::string& line) {
-    bool was_empty;
-    {
-      base::AutoLock lock(lock_);
-      was_empty = buffer_.empty();
-      if (buffer_.size() < kMaxOutstandingLines) {
-        buffer_.push_back(line);
-      } else {
-        lines_dropped_ = true;
-      }
-    }
-    if (was_empty) {
-      task_runner_->PostTask(FROM_HERE, base::BindOnce(&Core::Flush, this));
-    }
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<Core>;
-  ~Core() = default;
+  Core() { DETACH_FROM_SEQUENCE(sequence_checker_); }
+  ~Core() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
   void OpenFile(const base::FilePath& path) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -76,46 +34,40 @@ class SSLKeyLoggerImpl::Core
       LOG(WARNING) << "Could not open " << path.value();
   }
 
-  void Flush() {
+  void WriteLine(const std::string& line) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-    bool lines_dropped = false;
-    std::vector<std::string> buffer;
-    {
-      base::AutoLock lock(lock_);
-      std::swap(lines_dropped, lines_dropped_);
-      std::swap(buffer, buffer_);
-    }
-
-    if (file_) {
-      for (const auto& line : buffer) {
-        fprintf(file_.get(), "%s\n", line.c_str());
-      }
-      if (lines_dropped) {
-        fprintf(file_.get(), "# Some lines were dropped due to slow writes.\n");
-      }
-      fflush(file_.get());
-    }
+    if (!file_)
+      return;
+    fprintf(file_.get(), "%s\n", line.c_str());
+    fflush(file_.get());
   }
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+ private:
   base::ScopedFILE file_;
   SEQUENCE_CHECKER(sequence_checker_);
-
-  base::Lock lock_;
-  bool lines_dropped_ GUARDED_BY(lock_) = false;
-  std::vector<std::string> buffer_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 SSLKeyLoggerImpl::SSLKeyLoggerImpl(const base::FilePath& path)
-    : core_(new Core(path)) {}
+    : core_(new Core) {
+  // The user explicitly asked for debugging information, so these tasks block
+  // shutdown to avoid dropping some log entries.
+  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Core::OpenFile, base::Unretained(core_.get()), path));
+}
 
-SSLKeyLoggerImpl::~SSLKeyLoggerImpl() = default;
+SSLKeyLoggerImpl::~SSLKeyLoggerImpl() {
+  task_runner_->DeleteSoon(FROM_HERE, core_.release());
+}
 
 void SSLKeyLoggerImpl::WriteLine(const std::string& line) {
-  core_->WriteLine(line);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Core::WriteLine, base::Unretained(core_.get()), line));
 }
 
 }  // namespace net
