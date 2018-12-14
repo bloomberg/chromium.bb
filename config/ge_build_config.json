@@ -1786,7 +1786,31 @@
       "models": [
         {
           "board_name": "fizz-accelerator",
+          "name": "fizz",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "fizz-accelerator",
           "name": "jax",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "fizz-accelerator",
+          "name": "kench",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "fizz-accelerator",
+          "name": "sion",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "fizz-accelerator",
+          "name": "teemo",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         },
@@ -1805,6 +1829,36 @@
       "builder": "RELEASE",
       "experimental": true,
       "models": [
+        {
+          "board_name": "fizz-moblab",
+          "name": "fizz",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "fizz-moblab",
+          "name": "jax",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "fizz-moblab",
+          "name": "kench",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "fizz-moblab",
+          "name": "sion",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "fizz-moblab",
+          "name": "teemo",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
         {
           "board_name": "fizz-moblab",
           "name": "wukong",
