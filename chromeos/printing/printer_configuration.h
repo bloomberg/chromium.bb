@@ -5,23 +5,19 @@
 #ifndef CHROMEOS_PRINTING_PRINTER_CONFIGURATION_H_
 #define CHROMEOS_PRINTING_PRINTER_CONFIGURATION_H_
 
-#include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/optional.h"
-#include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "net/base/host_port_pair.h"
-#include "url/third_party/mozilla/url_parse.h"
-
-#include "chromeos/printing/uri_components.h"
 
 namespace net {
 class IPEndPoint;
 }  // namespace net
 
 namespace chromeos {
+
+class UriComponents;
 
 // Parses |printer_uri| into its components and returns an optional
 // UriComponents depending on whether or not |printer_uri| was parsed
