@@ -100,9 +100,4 @@ WebFrame* WebFramesManagerImpl::GetMainWebFrame() {
   return main_web_frame_;
 }
 
-void WebFramesManagerImpl::RegisterExistingFrames() {
-  web_state_->ExecuteJavaScript(
-      base::UTF8ToUTF16("__gCrWeb.message.getExistingFrames();"));
-}
-
 }  // namespace

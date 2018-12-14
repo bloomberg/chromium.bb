@@ -86,7 +86,6 @@
 #include "ios/web/public/webui/web_ui_ios.h"
 #import "ios/web/web_state/error_translation_util.h"
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
-#import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/page_viewport_state.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
@@ -143,6 +142,16 @@ struct UserInteractionEvent {
   GURL main_document_url;
   // Time that the interaction occurred, measured in seconds since Jan 1 2001.
   CFAbsoluteTime time;
+};
+
+// Struct to store a queued script and corresponding completion block.
+struct QueuedScript {
+  QueuedScript(NSString* script, web::JavaScriptResultBlock block)
+      : script_string(script), completion_block(block) {}
+  // The script to execute.
+  NSString* script_string;
+  // The completion block to run with the result of the script execution.
+  web::JavaScriptResultBlock completion_block;
 };
 
 // Keys for JavaScript command handlers context.
@@ -364,9 +373,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   // idempotent.
   NSMutableSet* _injectedScriptManagers;
 
-  // Script manager for setting the windowID.
-  CRWJSWindowIDManager* _windowIDJSManager;
-
   // The receiver of JavaScripts.
   CRWJSInjectionReceiver* _jsInjectionReceiver;
 
@@ -408,6 +414,9 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   // cert status from |didReceiveAuthenticationChallenge:| to
   // |didFailProvisionalNavigation:| delegate method.
   std::unique_ptr<CertVerificationErrorsCacheType> _certVerificationErrors;
+
+  // Scripts queued while waiting for the main WebFrame to become available.
+  std::vector<QueuedScript> _queuedScripts;
 }
 
 // If |contentView_| contains a web view, this is the web view it contains.
@@ -622,9 +631,9 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
              senderFrame:(web::WebFrame*)senderFrame;
 // Called when web controller receives a new message from the web page.
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message;
-// Returns a new script which wraps |script| with windowID check so |script| is
-// not evaluated on windowID mismatch.
-- (NSString*)scriptByAddingWindowIDCheckForScript:(NSString*)script;
+// Returns a new script which wraps |script| with frameID check so |script| is
+// not evaluated on frameID mismatch.
+- (NSString*)scriptByAddingFrameIDCheckForScript:(NSString*)script;
 // Attempts to handle a script message. Returns YES on success, NO otherwise.
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
 // Handles frame became available message.
@@ -919,6 +928,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)createWebUIForURL:(const GURL&)URL;
 // Clears WebUI, if one exists.
 - (void)clearWebUI;
+
+// Executes the supplied JavaScript in the WebView by wrapping it with a
+// frameId check to ensure it is executed only in the expected page.
+- (void)safelyExecuteJavaScript:(NSString*)script
+              completionHandler:(web::JavaScriptResultBlock)completionHandler;
 
 @end
 
@@ -2383,7 +2397,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(web::JavaScriptResultBlock)completionHandler {
-  NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:script];
+  if (!web::WebFramesManager::FromWebState([self webState])
+           ->GetMainWebFrame()) {
+    _queuedScripts.push_back(QueuedScript(script, completionHandler));
+  } else {
+    [self safelyExecuteJavaScript:script completionHandler:completionHandler];
+  }
+}
+
+- (void)safelyExecuteJavaScript:(NSString*)script
+              completionHandler:(web::JavaScriptResultBlock)completionHandler {
+  NSString* safeScript = [self scriptByAddingFrameIDCheckForScript:script];
   web::ExecuteJavaScript(_webView, safeScript, completionHandler);
 }
 
@@ -2502,10 +2526,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 }
 
-- (NSString*)scriptByAddingWindowIDCheckForScript:(NSString*)script {
-  NSString* kTemplate = @"if (__gCrWeb['windowId'] === '%@') { %@; }";
-  return [NSString
-      stringWithFormat:kTemplate, [_windowIDJSManager windowID], script];
+- (NSString*)scriptByAddingFrameIDCheckForScript:(NSString*)script {
+  NSString* kTemplate = @"if (__gCrWeb.message.getFrameId() === '%@') { %@; }";
+  web::WebFrame* mainWebFrame =
+      web::WebFramesManager::FromWebState([self webState])->GetMainWebFrame();
+  NSString* frameID = base::SysUTF8ToNSString(mainWebFrame->GetFrameId());
+  return [NSString stringWithFormat:kTemplate, frameID, script];
 }
 
 - (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
@@ -2542,18 +2568,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
       // the main frame, even if messageFrameOrigin and _documentURL have
       // different origins.
       return NO;
-    }
-
-    std::string windowID;
-    // If windowID exists, it must match the ID from the main frame.
-    if (message->GetString("crwWindowId", &windowID)) {
-      if (base::SysNSStringToUTF8([_windowIDJSManager windowID]) != windowID) {
-        DLOG(WARNING)
-            << "Message from JS ignored due to non-matching windowID: "
-            << base::SysNSStringToUTF8([_windowIDJSManager windowID])
-            << " != " << windowID;
-        return NO;
-      }
     }
   }
 
@@ -2615,6 +2629,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
     framesManager->AddFrame(std::move(newFrame));
     _webStateImpl->OnWebFrameAvailable(framesManager->GetFrameWithId(frameID));
+  }
+
+  if (!_queuedScripts.empty() && message.frameInfo.mainFrame) {
+    std::vector<QueuedScript> queue = std::move(_queuedScripts);
+    for (const QueuedScript& queuedScript : queue) {
+      [self safelyExecuteJavaScript:queuedScript.script_string
+                  completionHandler:queuedScript.completion_block];
+    }
   }
 }
 
@@ -4068,10 +4090,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
                                       name:kFrameBecameUnavailableMessageName
                                    webView:webView];
-
-    _windowIDJSManager = [[CRWJSWindowIDManager alloc] initWithWebView:webView];
-  } else {
-    _windowIDJSManager = nil;
   }
   [_webView setNavigationDelegate:self];
   [_webView setUIDelegate:self];
@@ -4881,13 +4899,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
       !IsPlaceholderUrl(webViewURL)) {
     _injectedScriptManagers = [[NSMutableSet alloc] init];
     if ([self contentIsHTML] || [self contentIsImage] ||
+        // In unit tests MIME type will be empty, because loadHTML:forURL: does
+        // not notify web view delegate about received response, so web
+        // controller does not get a chance to properly update MIME type.
         self.webState->GetContentsMimeType().empty()) {
-      // In unit tests MIME type will be empty, because loadHTML:forURL: does
-      // not notify web view delegate about received response, so web controller
-      // does not get a chance to properly update MIME type.
-      [_windowIDJSManager inject];
-      web::WebFramesManagerImpl::FromWebState(self.webState)
-          ->RegisterExistingFrames();
+      // This JavaScript call bypasses adding the frameId check because no main
+      // frame may be registered yet until after the response triggered by this
+      // call. For example, when a page is loaded from WebKit's PageCache.
+      // TODO(crbug.com/872134): Remove this call once JavaScript pageshow and
+      // pagehide APIs are reliable.
+      NSString* registerFramesScript = @"__gCrWeb.message.getExistingFrames();";
+      web::ExecuteJavaScript(_webView, registerFramesScript, nil);
     }
   }
 
