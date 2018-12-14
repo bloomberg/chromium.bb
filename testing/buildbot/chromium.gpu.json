@@ -1278,7 +1278,14 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         },
         "test": "angle_unittests"
       },
@@ -1297,7 +1304,14 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         },
         "test": "browser_tests"
       },
@@ -1313,7 +1327,14 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         },
         "test": "gl_tests"
       },
@@ -1328,7 +1349,14 @@
               "gpu": "8086:0a2e",
               "os": "Mac-10.12.6"
             }
-          ]
+          ],
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         },
         "test": "gl_unittests"
       }
@@ -1354,7 +1382,14 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         }
       },
       {
@@ -1377,7 +1412,14 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         }
       },
       {
@@ -1400,7 +1442,14 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         }
       },
       {
@@ -1423,7 +1472,14 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         }
       },
       {
@@ -1450,7 +1506,14 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         }
       },
       {
@@ -1480,7 +1543,14 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         }
       },
       {
@@ -1518,7 +1588,14 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         }
       },
       {
@@ -1542,7 +1619,14 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         }
       },
       {
@@ -1565,7 +1649,14 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          }
         }
       },
       {
@@ -1589,6 +1680,13 @@
             }
           ],
           "idempotent": false,
+          "optional_dimensions": {
+            "600": [
+              {
+                "os": "Mac-10.13.6"
+              }
+            ]
+          },
           "shards": 2
         }
       }
