@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
@@ -268,7 +269,7 @@ class DraggedFileUtilTest : public testing::Test {
       // to simulate a drop with multiple directories.
       if (toplevel_root_map_.find(toplevel) == toplevel_root_map_.end()) {
         base::FilePath root = root_path().Append(
-            kRootPaths[(root_path_index++) % arraysize(kRootPaths)]);
+            kRootPaths[(root_path_index++) % base::size(kRootPaths)]);
         toplevel_root_map_[toplevel] = root;
         toplevels.AddPath(root.Append(path), nullptr);
       }
@@ -325,7 +326,7 @@ TEST_F(DraggedFileUtilTest, UnregisteredPathsTest) {
     {false, FILE_PATH_LITERAL("bar"), 20},
   };
 
-  for (size_t i = 0; i < arraysize(kUnregisteredCases); ++i) {
+  for (size_t i = 0; i < base::size(kUnregisteredCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kUnregisteredCases " << i);
     const FileSystemTestCaseRecord& test_case = kUnregisteredCases[i];
 
@@ -340,7 +341,7 @@ TEST_F(DraggedFileUtilTest, UnregisteredPathsTest) {
     ASSERT_EQ(test_case.is_directory, info.is_directory);
   }
 
-  for (size_t i = 0; i < arraysize(kUnregisteredCases); ++i) {
+  for (size_t i = 0; i < base::size(kUnregisteredCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kUnregisteredCases " << i);
     const FileSystemTestCaseRecord& test_case = kUnregisteredCases[i];
     FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));

@@ -8,6 +8,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -289,7 +290,7 @@ TEST_F(FileSystemContextTest, CrackFileSystemURL) {
        FPL(""), std::string()},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     const base::FilePath virtual_path =
         base::FilePath::FromUTF8Unsafe(
             kTestCases[i].root).Append(kVirtualPathNoRoot);

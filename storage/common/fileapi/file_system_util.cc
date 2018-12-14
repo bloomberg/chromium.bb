@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -165,9 +166,9 @@ bool ParseFileSystemSchemeURL(const GURL& url,
   // A path of the inner_url contains only mount type part (e.g. "/temporary").
   DCHECK(url.inner_url());
   std::string inner_path = url.inner_url()->path();
-  for (size_t i = 0; i < arraysize(kValidTypes); ++i) {
-    if (inner_path == kValidTypes[i].dir) {
-      file_system_type = kValidTypes[i].type;
+  for (const auto& valid_type : kValidTypes) {
+    if (inner_path == valid_type.dir) {
+      file_system_type = valid_type.type;
       break;
     }
   }

@@ -20,6 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -33,7 +34,7 @@ namespace content {
 namespace {
 
 const char kTestData[] = "0123456789";
-const int kTestDataSize = arraysize(kTestData) - 1;
+const int kTestDataSize = base::size(kTestData) - 1;
 
 void ReadFromReader(LocalFileStreamReader* reader,
                     std::string* data, size_t size,

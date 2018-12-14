@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,16 +54,15 @@ const base::FilePath kTestPaths[] = {
 class IsolatedContextTest : public testing::Test {
  public:
   IsolatedContextTest() {
-    for (size_t i = 0; i < arraysize(kTestPaths); ++i)
-      fileset_.insert(kTestPaths[i].NormalizePathSeparators());
+    for (const auto& path : kTestPaths)
+      fileset_.insert(path.NormalizePathSeparators());
   }
 
   void SetUp() override {
     IsolatedContext::FileInfoSet files;
-    for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
+    for (const auto& path : kTestPaths) {
       std::string name;
-      ASSERT_TRUE(
-          files.AddPath(kTestPaths[i].NormalizePathSeparators(), &name));
+      ASSERT_TRUE(files.AddPath(path.NormalizePathSeparators(), &name));
       names_.push_back(name);
     }
     id_ = IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
@@ -99,7 +99,7 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
   // See if the name of each registered kTestPaths (that is what we
   // register in SetUp() by RegisterDraggedFileSystem) is properly cracked as
   // a valid virtual path in the isolated filesystem.
-  for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
+  for (size_t i = 0; i < base::size(kTestPaths); ++i) {
     base::FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_)
         .AppendASCII(names_[i]);
     std::string cracked_id;
@@ -196,8 +196,8 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
     { FPL("foo/..\\baz"), SHOULD_FAIL_WITH_WIN_SEPARATORS },
   };
 
-  for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
-    for (size_t j = 0; j < arraysize(relatives); ++j) {
+  for (size_t i = 0; i < base::size(kTestPaths); ++i) {
+    for (size_t j = 0; j < base::size(relatives); ++j) {
       SCOPED_TRACE(testing::Message() << "Testing "
                    << kTestPaths[i].value() << " " << relatives[j].path);
       base::FilePath virtual_path =
@@ -246,8 +246,8 @@ TEST_F(IsolatedContextTest, CrackURLWithRelativePaths) {
     { FPL("foo/..\\baz"), SHOULD_FAIL_WITH_WIN_SEPARATORS },
   };
 
-  for (size_t i = 0; i < arraysize(kTestPaths); ++i) {
-    for (size_t j = 0; j < arraysize(relatives); ++j) {
+  for (size_t i = 0; i < base::size(kTestPaths); ++i) {
+    for (size_t j = 0; j < base::size(relatives); ++j) {
       SCOPED_TRACE(testing::Message() << "Testing "
                    << kTestPaths[i].value() << " " << relatives[j].path);
       base::FilePath virtual_path =
