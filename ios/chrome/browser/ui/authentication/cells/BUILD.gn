@@ -17,6 +17,8 @@ source_set("cells") {
     "signin_promo_view_configurator.mm",
     "signin_promo_view_consumer.h",
     "signin_promo_view_delegate.h",
+    "table_view_account_item.h",
+    "table_view_account_item.mm",
     "table_view_signin_promo_item.h",
     "table_view_signin_promo_item.mm",
   ]
@@ -30,6 +32,7 @@ source_set("cells") {
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/public/provider/chrome/browser",
@@ -46,6 +49,7 @@ source_set("unit_tests") {
     "account_control_item_unittest.mm",
     "signin_promo_item_unittest.mm",
     "signin_promo_view_unittest.mm",
+    "table_view_account_item_unittest.mm",
   ]
   deps = [
     ":cells",
@@ -73,6 +77,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/signin_interaction/public",
+    "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/unified_consent",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",

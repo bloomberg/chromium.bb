@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
+#import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
@@ -30,6 +31,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierText = kSectionIdentifierEnumZero,
   SectionIdentifierSettings,
   SectionIdentifierAutofill,
+  SectionIdentifierAccount,
   SectionIdentifierURL,
 };
 
@@ -52,6 +54,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSettingsSwitch,
   ItemTypeAutofillEditItem,
   ItemTypeAutofillData,
+  ItemTypeAccount,
 };
 }
 
@@ -83,6 +86,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierText];
   [model addSectionWithIdentifier:SectionIdentifierSettings];
   [model addSectionWithIdentifier:SectionIdentifierAutofill];
+  [model addSectionWithIdentifier:SectionIdentifierAccount];
   [model addSectionWithIdentifier:SectionIdentifierURL];
 
   // SectionIdentifierText.
@@ -246,6 +250,36 @@ typedef NS_ENUM(NSInteger, ItemType) {
       UITableViewCellAccessoryDisclosureIndicator;
   [model addItem:autofillItemWithAllTexts
       toSectionWithIdentifier:SectionIdentifierAutofill];
+
+  // SectionIdentifierAccount.
+  TableViewAccountItem* accountItemDetailWithError =
+      [[TableViewAccountItem alloc] initWithType:ItemTypeAccount];
+  // TODO(crbug.com/754032): ios_default_avatar image is from a downstream iOS
+  // internal repository. It should be used through a provider API instead.
+  accountItemDetailWithError.image = [UIImage imageNamed:@"ios_default_avatar"];
+  accountItemDetailWithError.text = @"Account User Name";
+  accountItemDetailWithError.detailText =
+      @"Syncing to AccountUserNameAccount@example.com";
+  accountItemDetailWithError.accessoryType =
+      UITableViewCellAccessoryDisclosureIndicator;
+  accountItemDetailWithError.shouldDisplayError = YES;
+  [model addItem:accountItemDetailWithError
+      toSectionWithIdentifier:SectionIdentifierAccount];
+
+  TableViewAccountItem* accountItemCheckMark =
+      [[TableViewAccountItem alloc] initWithType:ItemTypeAccount];
+  // TODO(crbug.com/754032): ios_default_avatar image is from a downstream iOS
+  // internal repository. It should be used through a provider API instead.
+  accountItemCheckMark.image = [UIImage imageNamed:@"ios_default_avatar"];
+  accountItemCheckMark.text = @"Lorem ipsum dolor sit amet, consectetur "
+                              @"adipiscing elit, sed do eiusmod tempor "
+                              @"incididunt ut labore et dolore magna aliqua.";
+  accountItemCheckMark.detailText =
+      @"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do "
+      @"eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+  accountItemCheckMark.accessoryType = UITableViewCellAccessoryCheckmark;
+  [model addItem:accountItemCheckMark
+      toSectionWithIdentifier:SectionIdentifierAccount];
 
   // SectionIdentifierURL.
   TableViewURLItem* item =
