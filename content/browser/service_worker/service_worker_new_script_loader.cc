@@ -186,6 +186,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
       response_head.alpn_negotiated_protocol;
   response_info->connection_info = response_head.connection_info;
   response_info->socket_address = response_head.socket_address;
+  response_info->response_time = response_head.response_time;
 
   // The following sequence is equivalent to
   // ServiceWorkerWriteToCacheJob::OnResponseStarted.
