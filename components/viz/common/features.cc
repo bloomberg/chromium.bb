@@ -68,6 +68,8 @@ bool IsVizHitTestingDebugEnabled() {
 }
 
 bool IsVizHitTestingDrawQuadEnabled() {
+  if (IsVizHitTestingSurfaceLayerEnabled())
+    return false;
   return base::FeatureList::IsEnabled(kEnableVizHitTestDrawQuad) ||
          base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
@@ -78,12 +80,9 @@ bool IsVizHitTestingEnabled() {
 }
 
 bool IsVizHitTestingSurfaceLayerEnabled() {
-  // TODO(riajiang): Check kVizDisplayCompositor feature when it works with
-  // that config.
-  return (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kUseVizHitTestSurfaceLayer) ||
-          base::FeatureList::IsEnabled(kEnableVizHitTestSurfaceLayer)) &&
-         !IsVizHitTestingDrawQuadEnabled();
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kUseVizHitTestSurfaceLayer) ||
+         base::FeatureList::IsEnabled(kEnableVizHitTestSurfaceLayer);
 }
 
 bool IsDrawOcclusionEnabled() {
