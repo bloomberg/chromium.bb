@@ -5499,7 +5499,14 @@ class ThreadedStrongificationTester {
   static volatile uintptr_t worker_object_pointer_;
 };
 
-TEST(HeapTest, ThreadedStrongification) {
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/915200
+#define MAYBE_ThreadedStrongification DISABLED_ThreadedStrongification
+#else
+#define MAYBE_ThreadedStrongification ThreadedStrongification
+#endif
+
+TEST(HeapTest, MAYBE_ThreadedStrongification) {
   ThreadedStrongificationTester::Test();
 }
 
@@ -6385,7 +6392,14 @@ void WorkerThreadMainForCrossThreadWeakPersistentTest(
 
 }  // anonymous namespace
 
-TEST(HeapTest, CrossThreadWeakPersistent) {
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/915200
+#define MAYBE_CrossThreadWeakPersistent DISABLED_CrossThreadWeakPersistent
+#else
+#define MAYBE_CrossThreadWeakPersistent CrossThreadWeakPersistent
+#endif
+
+TEST(HeapTest, MAYBE_CrossThreadWeakPersistent) {
   // Create an object in the worker thread, have a CrossThreadWeakPersistent
   // pointing to it on the main thread, clear the reference in the worker
   // thread, run a GC in the worker thread, and see if the
