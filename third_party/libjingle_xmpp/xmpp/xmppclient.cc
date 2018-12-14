@@ -14,7 +14,6 @@
 #include "third_party/libjingle_xmpp/xmpp/plainsaslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/prexmppauth.h"
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
-#include "third_party/webrtc/rtc_base/stringutils.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 #include "third_party/webrtc_overrides/rtc_base/logging.h"
 #include "xmpptask.h"
@@ -83,13 +82,6 @@ public:
   void OnSocketClosed();
 };
 
-bool IsTestServer(const std::string& server_name,
-                  const std::string& test_server_domain) {
-  return (!test_server_domain.empty() &&
-          rtc::ends_with(server_name.c_str(),
-                               test_server_domain.c_str()));
-}
-
 XmppReturnStatus XmppClient::Connect(
     const XmppClientSettings& settings,
     const std::string& lang, AsyncSocket* socket, PreXmppAuth* pre_auth) {
@@ -125,8 +117,7 @@ XmppReturnStatus XmppClient::Connect(
   if (server_name == buzz::STR_TALK_GOOGLE_COM ||
       server_name == buzz::STR_TALKX_L_GOOGLE_COM ||
       server_name == buzz::STR_XMPP_GOOGLE_COM ||
-      server_name == buzz::STR_XMPPX_L_GOOGLE_COM ||
-      IsTestServer(server_name, settings.test_server_domain())) {
+      server_name == buzz::STR_XMPPX_L_GOOGLE_COM) {
     if (settings.host() != STR_GMAIL_COM &&
         settings.host() != STR_GOOGLEMAIL_COM) {
       d_->engine_->SetTlsServer("", STR_TALK_GOOGLE_COM);
