@@ -29,3 +29,16 @@ index 5e9ac0d2..8a143d9e 100644
  
      if (U_FAILURE(status)) {
          return nullptr;
+diff --git a/source/common/wintz.h b/source/common/wintz.h
+index f98b1779..cd8565ee 100644
+--- a/source/common/wintz.h
++++ b/source/common/wintz.h
+@@ -28,7 +28,7 @@ U_CDECL_BEGIN
+ typedef struct _TIME_ZONE_INFORMATION TIME_ZONE_INFORMATION;
+ U_CDECL_END
+ 
+-U_CFUNC const char* U_EXPORT2
++U_INTERNAL const char* U_EXPORT2
+ uprv_detectWindowsTimeZone();
+ 
+ #endif /* U_PLATFORM_USES_ONLY_WIN32_API  */
