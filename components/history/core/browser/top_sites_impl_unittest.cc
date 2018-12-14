@@ -35,7 +35,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
 using testing::ContainerEq;
@@ -111,16 +110,6 @@ class TopSitesQuerier {
   DISALLOW_COPY_AND_ASSIGN(TopSitesQuerier);
 };
 
-// Returns true if t1 and t2 contain the same data.
-bool ThumbnailsAreEqual(base::RefCountedMemory* t1,
-                        base::RefCountedMemory* t2) {
-  if (!t1 || !t2)
-    return false;
-  if (t1->size() != t2->size())
-    return false;
-  return !memcmp(t1->front(), t2->front(), t1->size());
-}
-
 }  // namespace
 
 class TopSitesImplTest : public HistoryUnitTestBase {
@@ -144,14 +133,6 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     history_service_->Shutdown();
     history_service_.reset();
     pref_service_.reset();
-  }
-
-  // Creates a bitmap of the specified color. Caller takes ownership.
-  gfx::Image CreateBitmap(SkColor color) {
-    SkBitmap thumbnail;
-    thumbnail.allocN32Pixels(4, 4);
-    thumbnail.eraseColor(color);
-    return gfx::Image::CreateFrom1xBitmap(thumbnail);  // adds ref.
   }
 
   // Forces top sites to load top sites from history, then recreates top sites.
@@ -224,14 +205,6 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // Delets a url.
   void DeleteURL(const GURL& url) { history_service()->DeleteURL(url); }
 
-  // Returns true if the thumbnail equals the specified bytes.
-  bool ThumbnailEqualsBytes(const gfx::Image& image,
-                            base::RefCountedMemory* bytes) {
-    scoped_refptr<base::RefCountedBytes> encoded_image;
-    TopSitesImpl::EncodeBitmap(image, &encoded_image);
-    return ThumbnailsAreEqual(encoded_image.get(), bytes);
-  }
-
   // Recreates top sites. This forces top sites to reread from the db.
   void RecreateTopSitesAndBlock() {
     // Recreate TopSites and wait for it to load.
@@ -276,8 +249,8 @@ class TopSitesImplTest : public HistoryUnitTestBase {
     DestroyTopSites();
     DCHECK(!top_sites_impl_);
     PrepopulatedPageList prepopulated_pages;
-    prepopulated_pages.push_back(PrepopulatedPage(GURL(kPrepopulatedPageURL),
-                                                  base::string16(), -1, -1, 0));
+    prepopulated_pages.push_back(
+        PrepopulatedPage(GURL(kPrepopulatedPageURL), base::string16(), -1, 0));
     top_sites_impl_ = new TopSitesImpl(
         pref_service_.get(), history_service_.get(),
         std::make_unique<DefaultTopSitesProvider>(history_service_.get()),
@@ -557,125 +530,6 @@ TEST_F(TopSitesImplTest, DiffMostVisitedWithForced) {
   EXPECT_TRUE(delta.moved[2].url.last_forced_time.is_null());
 }
 
-// Tests SetPageThumbnail.
-TEST_F(TopSitesImplTest, SetPageThumbnail) {
-  GURL url1a("http://google.com/");
-  GURL url1b("http://www.google.com/");
-  GURL url2("http://images.google.com/");
-  GURL invalid_url("application://favicon/http://google.com/");
-
-  std::vector<MostVisitedURL> list;
-  AppendMostVisitedURL(url2, &list);
-
-  MostVisitedURL mv;
-  mv.url = url1b;
-  mv.redirects.push_back(url1a);
-  mv.redirects.push_back(url1b);
-  list.push_back(mv);
-
-  // Save our most visited data containing that one site.
-  SetTopSites(list);
-
-  // Create a dummy thumbnail.
-  gfx::Image thumbnail(CreateBitmap(SK_ColorWHITE));
-
-  base::Time now = base::Time::Now();
-  ThumbnailScore low_score(1.0, true, true, now);
-  ThumbnailScore medium_score(0.5, true, true, now);
-  ThumbnailScore high_score(0.0, true, true, now);
-
-  // Setting the thumbnail for invalid pages should fail.
-  EXPECT_FALSE(
-      top_sites()->SetPageThumbnail(invalid_url, thumbnail, medium_score));
-
-  // Setting the thumbnail for url2 should succeed, lower scores shouldn't
-  // replace it, higher scores should.
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url2, thumbnail, medium_score));
-  EXPECT_FALSE(top_sites()->SetPageThumbnail(url2, thumbnail, low_score));
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url2, thumbnail, high_score));
-
-  // Set on the redirect source should succeed. It should be replacable by
-  // the same score on the redirect destination, which in turn should not
-  // be replaced by the source again.
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url1a, thumbnail, medium_score));
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url1b, thumbnail, medium_score));
-  EXPECT_FALSE(top_sites()->SetPageThumbnail(url1a, thumbnail, medium_score));
-}
-
-// Makes sure a thumbnail is correctly removed when the page is removed.
-TEST_F(TopSitesImplTest, ThumbnailRemoved) {
-  GURL url("http://google.com/");
-
-  // Configure top sites with 'google.com'.
-  std::vector<MostVisitedURL> list;
-  AppendMostVisitedURL(url, &list);
-  SetTopSites(list);
-
-  // Create a dummy thumbnail.
-  gfx::Image thumbnail(CreateBitmap(SK_ColorRED));
-
-  base::Time now = base::Time::Now();
-  ThumbnailScore low_score(1.0, true, true, now);
-  ThumbnailScore medium_score(0.5, true, true, now);
-  ThumbnailScore high_score(0.0, true, true, now);
-
-  // Set the thumbnail.
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url, thumbnail, medium_score));
-
-  // Make sure the thumbnail was actually set.
-  scoped_refptr<base::RefCountedMemory> result;
-  EXPECT_TRUE(top_sites()->GetPageThumbnail(url, false, &result));
-  EXPECT_TRUE(ThumbnailEqualsBytes(thumbnail, result.get()));
-
-  // Reset the thumbnails and make sure we don't get it back.
-  SetTopSites(MostVisitedURLList());
-  EXPECT_FALSE(top_sites()->GetPageThumbnail(url, false, &result));
-  // Recreating the TopSites object should also not bring it back.
-  RefreshTopSitesAndRecreate();
-  EXPECT_FALSE(top_sites()->GetPageThumbnail(url, false, &result));
-}
-
-// Tests GetPageThumbnail.
-TEST_F(TopSitesImplTest, GetPageThumbnail) {
-  MostVisitedURLList url_list;
-  MostVisitedURL url1;
-  url1.url = GURL("http://asdf.com");
-  url1.redirects.push_back(url1.url);
-  url_list.push_back(url1);
-
-  MostVisitedURL url2;
-  url2.url = GURL("http://gmail.com");
-  url2.redirects.push_back(url2.url);
-  url2.redirects.push_back(GURL("http://mail.google.com"));
-  url_list.push_back(url2);
-
-  SetTopSites(url_list);
-
-  // Create a dummy thumbnail.
-  gfx::Image thumbnail(CreateBitmap(SK_ColorWHITE));
-  ThumbnailScore score(0.5, true, true, base::Time::Now());
-
-  scoped_refptr<base::RefCountedMemory> result;
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(url1.url, thumbnail, score));
-  EXPECT_TRUE(top_sites()->GetPageThumbnail(url1.url, false, &result));
-
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(GURL("http://gmail.com"),
-                                            thumbnail, score));
-  EXPECT_TRUE(top_sites()->GetPageThumbnail(GURL("http://gmail.com"),
-                                            false,
-                                            &result));
-  // Get a thumbnail via a redirect.
-  EXPECT_TRUE(top_sites()->GetPageThumbnail(GURL("http://mail.google.com"),
-                                            false,
-                                            &result));
-
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(GURL("http://mail.google.com"),
-                                            thumbnail, score));
-  EXPECT_TRUE(top_sites()->GetPageThumbnail(url2.url, false, &result));
-
-  EXPECT_TRUE(ThumbnailEqualsBytes(thumbnail, result.get()));
-}
-
 // Tests GetMostVisitedURLs.
 TEST_F(TopSitesImplTest, GetMostVisited) {
   GURL news("http://news.google.com/");
@@ -720,9 +574,9 @@ TEST_F(TopSitesImplTest, GetMostVisitedWithRedirect) {
 
   // This behavior is not desirable: even though edition.cnn.com is in the list
   // of top sites, and the the bare URL cnn.com is just a redirect to it, we're
-  // returning both. Even worse, the NTP will show the same title, icon, and
-  // thumbnail for the site, so to the user it looks like we just have the same
-  // thing twice.  (https://crbug.com/567132)
+  // returning both. Even worse, the NTP will show the same title, and icon for
+  // the site, so to the user it looks like we just have the same thing twice.
+  // (https://crbug.com/567132)
   std::vector<GURL> expected_urls = {bare, edition};  // should be {edition}.
 
   for (const auto& prepopulated : GetPrepopulatedPages()) {
@@ -752,11 +606,6 @@ TEST_F(TopSitesImplTest, SaveToDB) {
   StartQueryForMostVisited();
   WaitForHistory();
 
-  // Add a thumbnail.
-  gfx::Image tmp_bitmap(CreateBitmap(SK_ColorBLUE));
-  ASSERT_TRUE(top_sites()->SetPageThumbnail(asdf_url, tmp_bitmap,
-                                            ThumbnailScore()));
-
   RecreateTopSitesAndBlock();
 
   {
@@ -766,10 +615,6 @@ TEST_F(TopSitesImplTest, SaveToDB) {
     EXPECT_EQ(asdf_url, querier.urls()[0].url);
     EXPECT_EQ(asdf_title, querier.urls()[0].title);
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 1));
-
-    scoped_refptr<base::RefCountedMemory> read_data;
-    EXPECT_TRUE(top_sites()->GetPageThumbnail(asdf_url, false, &read_data));
-    EXPECT_TRUE(ThumbnailEqualsBytes(tmp_bitmap, read_data.get()));
   }
 
   MostVisitedURL url2;
@@ -778,11 +623,6 @@ TEST_F(TopSitesImplTest, SaveToDB) {
   url2.redirects.push_back(url2.url);
 
   AddPageToHistory(url2.url, url2.title);
-
-  // Add new thumbnail at rank 0 and shift the other result to 1.
-  ASSERT_TRUE(top_sites()->SetPageThumbnail(google_url,
-                                            tmp_bitmap,
-                                            ThumbnailScore()));
 
   // Make TopSites reread from the db.
   RefreshTopSitesAndRecreate();
@@ -818,17 +658,6 @@ TEST_F(TopSitesImplTest, SaveForcedToDB) {
   AppendForcedMostVisitedURL(GURL("http://forced4"), 4000, &list);
   SetTopSites(list);
 
-  // Add a thumbnail.
-  gfx::Image red_thumbnail(CreateBitmap(SK_ColorRED));
-  ASSERT_TRUE(top_sites()->SetPageThumbnail(
-                  GURL("http://forced1"), red_thumbnail, ThumbnailScore()));
-
-  // Get the original thumbnail for later comparison. Some compression can
-  // happen in |top_sites| and we don't want to depend on that.
-  scoped_refptr<base::RefCountedMemory> orig_thumbnail_data;
-  ASSERT_TRUE(top_sites()->GetPageThumbnail(GURL("http://forced1"), false,
-                                            &orig_thumbnail_data));
-
   // Force-flush the cache to ensure we don't reread from it inadvertently.
   EmptyThreadSafeCache();
 
@@ -842,11 +671,6 @@ TEST_F(TopSitesImplTest, SaveForcedToDB) {
   ASSERT_EQ(4u + GetPrepopulatedPages().size(), querier.urls().size());
   EXPECT_EQ(GURL("http://forced1"), querier.urls()[0].url);
   EXPECT_EQ(base::ASCIIToUTF16("forced1"), querier.urls()[0].title);
-  scoped_refptr<base::RefCountedMemory> thumbnail_data;
-  ASSERT_TRUE(top_sites()->GetPageThumbnail(GURL("http://forced1"), false,
-                                            &thumbnail_data));
-  ASSERT_TRUE(
-      ThumbnailsAreEqual(orig_thumbnail_data.get(), thumbnail_data.get()));
   EXPECT_EQ(base::Time::FromJsTime(1000), querier.urls()[0].last_forced_time);
   EXPECT_EQ(GURL("http://forced2"), querier.urls()[1].url);
   EXPECT_EQ(base::Time::FromJsTime(2000), querier.urls()[1].last_forced_time);
@@ -873,9 +697,6 @@ TEST_F(TopSitesImplTest, RealDatabase) {
   url.url = asdf_url;
   url.title = asdf_title;
   url.redirects.push_back(url.url);
-  gfx::Image asdf_thumbnail(CreateBitmap(SK_ColorRED));
-  ASSERT_TRUE(top_sites()->SetPageThumbnail(
-                  asdf_url, asdf_thumbnail, ThumbnailScore()));
 
   base::Time add_time(base::Time::Now());
   AddPageToHistory(url.url, url.title, url.redirects, add_time);
@@ -890,10 +711,6 @@ TEST_F(TopSitesImplTest, RealDatabase) {
     EXPECT_EQ(asdf_url, querier.urls()[0].url);
     EXPECT_EQ(asdf_title, querier.urls()[0].title);
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 1));
-
-    scoped_refptr<base::RefCountedMemory> read_data;
-    EXPECT_TRUE(top_sites()->GetPageThumbnail(asdf_url, false, &read_data));
-    EXPECT_TRUE(ThumbnailEqualsBytes(asdf_thumbnail, read_data.get()));
   }
 
   MostVisitedURL url2;
@@ -909,10 +726,6 @@ TEST_F(TopSitesImplTest, RealDatabase) {
   AddPageToHistory(google3_url, url2.title, url2.redirects,
                    add_time - base::TimeDelta::FromMinutes(2));
 
-  gfx::Image google_thumbnail(CreateBitmap(SK_ColorBLUE));
-  ASSERT_TRUE(top_sites()->SetPageThumbnail(
-                  url2.url, google_thumbnail, ThumbnailScore()));
-
   RefreshTopSitesAndRecreate();
 
   {
@@ -924,51 +737,10 @@ TEST_F(TopSitesImplTest, RealDatabase) {
     EXPECT_EQ(google1_url, querier.urls()[0].url);
     EXPECT_EQ(google_title, querier.urls()[0].title);
     ASSERT_EQ(3u, querier.urls()[0].redirects.size());
-    EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, false, &read_data));
-    EXPECT_TRUE(ThumbnailEqualsBytes(google_thumbnail, read_data.get()));
 
     EXPECT_EQ(asdf_url, querier.urls()[1].url);
     EXPECT_EQ(asdf_title, querier.urls()[1].title);
     ASSERT_NO_FATAL_FAILURE(ContainsPrepopulatePages(querier, 2));
-  }
-
-  gfx::Image weewar_bitmap(CreateBitmap(SK_ColorYELLOW));
-
-  base::Time thumbnail_time(base::Time::Now());
-  ThumbnailScore low_score(1.0, true, true, thumbnail_time);
-  ThumbnailScore medium_score(0.5, true, true, thumbnail_time);
-  ThumbnailScore high_score(0.0, true, true, thumbnail_time);
-
-  // 1. Set to weewar. (Writes the thumbnail to the DB.)
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(google3_url,
-                                            weewar_bitmap,
-                                            medium_score));
-  RefreshTopSitesAndRecreate();
-  {
-    scoped_refptr<base::RefCountedMemory> read_data;
-    EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, false, &read_data));
-    EXPECT_TRUE(ThumbnailEqualsBytes(weewar_bitmap, read_data.get()));
-  }
-
-  gfx::Image green_bitmap(CreateBitmap(SK_ColorGREEN));
-
-  // 2. Set to google - low score.
-  EXPECT_FALSE(top_sites()->SetPageThumbnail(google3_url,
-                                             green_bitmap,
-                                             low_score));
-
-  // 3. Set to google - high score.
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(google1_url,
-                                            green_bitmap,
-                                            high_score));
-
-  // Check that the thumbnail was updated.
-  RefreshTopSitesAndRecreate();
-  {
-    scoped_refptr<base::RefCountedMemory> read_data;
-    EXPECT_TRUE(top_sites()->GetPageThumbnail(google3_url, false, &read_data));
-    EXPECT_FALSE(ThumbnailEqualsBytes(weewar_bitmap, read_data.get()));
-    EXPECT_TRUE(ThumbnailEqualsBytes(green_bitmap, read_data.get()));
   }
 }
 
@@ -1159,53 +931,6 @@ TEST_F(TopSitesImplTest, CancelingRequestsForTopSites) {
 
   // And the canceled callback should not be notified.
   EXPECT_EQ(0, querier2.number_of_callbacks());
-}
-
-// Makes sure temporary thumbnails are copied over correctly.
-TEST_F(TopSitesImplTest, AddTemporaryThumbnail) {
-  GURL unknown_url("http://news.google.com/");
-  GURL invalid_url("application://thumb/http://google.com/");
-  GURL url1a("http://google.com/");
-  GURL url1b("http://www.google.com/");
-
-  // Create a dummy thumbnail.
-  gfx::Image thumbnail(CreateBitmap(SK_ColorRED));
-
-  ThumbnailScore medium_score(0.5, true, true, base::Time::Now());
-
-  // Don't store thumbnails for Javascript URLs.
-  EXPECT_FALSE(top_sites()->SetPageThumbnail(invalid_url,
-                                             thumbnail,
-                                             medium_score));
-  // Store thumbnails for unknown (but valid) URLs temporarily - calls
-  // AddTemporaryThumbnail.
-  EXPECT_TRUE(top_sites()->SetPageThumbnail(unknown_url,
-                                            thumbnail,
-                                            medium_score));
-
-  // We shouldn't get the thumnail back though (the url isn't in to sites yet).
-  scoped_refptr<base::RefCountedMemory> out;
-  EXPECT_FALSE(top_sites()->GetPageThumbnail(unknown_url, false, &out));
-  // But we should be able to get the temporary page thumbnail score.
-  ThumbnailScore out_score;
-  EXPECT_TRUE(top_sites()->GetTemporaryPageThumbnailScore(unknown_url,
-                                                          &out_score));
-  EXPECT_TRUE(medium_score.Equals(out_score));
-
-  std::vector<MostVisitedURL> list;
-
-  MostVisitedURL mv;
-  mv.url = unknown_url;
-  mv.redirects.push_back(mv.url);
-  mv.redirects.push_back(url1a);
-  mv.redirects.push_back(url1b);
-  list.push_back(mv);
-
-  // Update URLs. This should result in using thumbnail.
-  SetTopSites(list);
-
-  ASSERT_TRUE(top_sites()->GetPageThumbnail(unknown_url, false, &out));
-  EXPECT_TRUE(ThumbnailEqualsBytes(thumbnail, out.get()));
 }
 
 // Tests variations of blacklisting without testing prepopulated page
@@ -1657,30 +1382,6 @@ TEST_F(TopSitesImplTest, AddForcedURL) {
     EXPECT_EQ("http://forced/5", querier.urls()[3].url.spec());
     EXPECT_EQ("http://forced/3", querier.urls()[4].url.spec());
   }
-
-  // Make sure the thumbnail is not lost when the timestamp is updated.
-  gfx::Image red_thumbnail(CreateBitmap(SK_ColorRED));
-  ASSERT_TRUE(top_sites()->SetPageThumbnail(
-                  GURL("http://forced/5"), red_thumbnail, ThumbnailScore()));
-
-  // Get the original thumbnail for later comparison. Some compression can
-  // happen in |top_sites| and we don't want to depend on that.
-  scoped_refptr<base::RefCountedMemory> orig_thumbnail_data;
-  ASSERT_TRUE(top_sites()->GetPageThumbnail(GURL("http://forced/5"), false,
-                                            &orig_thumbnail_data));
-
-  EXPECT_TRUE(AddForcedURL(GURL("http://forced/5"),
-                           base::Time::FromJsTime(6000)));
-
-  // Ensure the thumbnail is still there even if the timestamp changed.
-  querier.QueryAllTopSites(top_sites(), false, true);
-  EXPECT_EQ("http://forced/5", querier.urls()[5].url.spec());
-  EXPECT_EQ(6000u, querier.urls()[5].last_forced_time.ToJsTime());
-  scoped_refptr<base::RefCountedMemory> thumbnail_data;
-  ASSERT_TRUE(top_sites()->GetPageThumbnail(GURL("http://forced/5"), false,
-                                            &thumbnail_data));
-  ASSERT_TRUE(
-      ThumbnailsAreEqual(orig_thumbnail_data.get(), thumbnail_data.get()));
 }
 
 }  // namespace history

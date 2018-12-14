@@ -292,12 +292,6 @@ HistoryAddPageArgs::HistoryAddPageArgs(const HistoryAddPageArgs& other) =
 
 HistoryAddPageArgs::~HistoryAddPageArgs() {}
 
-// ThumbnailMigration ---------------------------------------------------------
-
-ThumbnailMigration::ThumbnailMigration() {}
-
-ThumbnailMigration::~ThumbnailMigration() {}
-
 // MostVisitedThumbnails ------------------------------------------------------
 
 MostVisitedThumbnails::MostVisitedThumbnails() {}
