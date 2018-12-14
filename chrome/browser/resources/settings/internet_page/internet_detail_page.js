@@ -1351,6 +1351,15 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  showScanningSpinner_: function(networkProperties) {
+    return !!this.get('Cellular.Scanning', networkProperties);
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
   showCellularSim_: function(networkProperties) {
     return networkProperties !== undefined &&
         networkProperties.Type == CrOnc.Type.CELLULAR &&
