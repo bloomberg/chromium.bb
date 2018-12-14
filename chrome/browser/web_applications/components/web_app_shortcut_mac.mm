@@ -231,10 +231,8 @@ void UpdatePlatformShortcutsInternal(
     const base::string16& old_app_title,
     const web_app::ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  if (AppShimsDisabledForTest() &&
-      !g_app_shims_allow_update_and_launch_in_tests) {
+  if (web_app::AppShimLaunchDisabled())
     return;
-  }
 
   web_app::WebAppShortcutCreator shortcut_creator(app_data_path,
                                                   &shortcut_info);
@@ -517,6 +515,11 @@ std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
   base::UmaHistogramSparse("Apps.AppShimErrorVersion", major_version);
 
   return BuildShortcutInfoFromBundle(bundle_path);
+}
+
+bool AppShimLaunchDisabled() {
+  return AppShimsDisabledForTest() &&
+         !g_app_shims_allow_update_and_launch_in_tests;
 }
 
 WebAppShortcutCreator::WebAppShortcutCreator(const base::FilePath& app_data_dir,
@@ -944,8 +947,7 @@ base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info) {
 
 void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info,
                          LaunchAppCallback callback) {
-  if (AppShimsDisabledForTest() &&
-      !g_app_shims_allow_update_and_launch_in_tests) {
+  if (web_app::AppShimLaunchDisabled()) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(std::move(callback), base::Process()));

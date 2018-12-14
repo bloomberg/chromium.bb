@@ -283,6 +283,8 @@ AppShimHost* ExtensionAppShimHandler::FindHost(Profile* profile,
 AppShimHost* ExtensionAppShimHandler::FindOrCreateHost(
     Profile* profile,
     const std::string& app_id) {
+  if (web_app::AppShimLaunchDisabled())
+    return nullptr;
   AppShimHost*& host = hosts_[make_pair(profile, app_id)];
   if (!host)
     host = delegate_->CreateHost(app_id, profile->GetPath());
@@ -517,6 +519,10 @@ void ExtensionAppShimHandler::OnProfileLoaded(
   const std::vector<base::FilePath>& files = bootstrap->GetLaunchFiles();
 
   AppShimHost* host = FindOrCreateHost(profile, app_id);
+  if (!host) {
+    bootstrap->OnLaunchAppFailed(APP_SHIM_LAUNCH_DUPLICATE_HOST);
+    return;
+  }
   if (host->HasBootstrapConnected()) {
     // If another app shim process has already connected to this (profile,
     // app_id) pair, then focus the windows for the existing process, and

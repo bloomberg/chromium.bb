@@ -112,7 +112,7 @@ const base::Feature kBlockPromptsIfIgnoredOften{
 #if defined(OS_MACOSX)
 // Enables the new bookmark app system (e.g. Add To Applications on Mac).
 const base::Feature kBookmarkApps{"BookmarkAppsMac",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Fixes for browser hang bugs are deployed in a field trial in order to measure
@@ -188,7 +188,8 @@ const base::Feature kUsageTimeLimitPolicy{"UsageTimeLimitPolicy",
 // Enables or disables windowing related features for desktop PWAs.
 const base::Feature kDesktopPWAWindowing {
   "DesktopPWAWindowing",
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX) || \
+    defined(OS_MACOSX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

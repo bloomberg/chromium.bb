@@ -170,7 +170,7 @@ bool IsAutomaticUiAdjustmentsForTouchEnabled() {
 // When enabled, the NSWindows for apps will be created in the app's process,
 // and will forward input to the browser process.
 const base::Feature kHostWindowsInAppShimProcess{
-    "HostWindowsInAppShimProcess", base::FEATURE_DISABLED_BY_DEFAULT};
+    "HostWindowsInAppShimProcess", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool HostWindowsInAppShimProcess() {
   return base::FeatureList::IsEnabled(kHostWindowsInAppShimProcess);
