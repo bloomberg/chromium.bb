@@ -150,8 +150,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
         // Set ssl_params, and unset proxy_tcp_params
         ssl_params =
             new SSLSocketParams(proxy_tcp_params, NULL, NULL, *proxy_host_port,
-                                ssl_config_for_proxy, PRIVACY_MODE_DISABLED,
-                                session->params().ignore_certificate_errors);
+                                ssl_config_for_proxy, PRIVACY_MODE_DISABLED);
         proxy_tcp_params = NULL;
       }
 
@@ -195,8 +194,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     }
     scoped_refptr<SSLSocketParams> ssl_params = new SSLSocketParams(
         ssl_tcp_params, socks_params, http_proxy_params, origin_host_port,
-        ssl_config_for_origin, privacy_mode,
-        session->params().ignore_certificate_errors);
+        ssl_config_for_origin, privacy_mode);
     SSLClientSocketPool* ssl_pool = NULL;
     if (proxy_info.is_direct()) {
       ssl_pool = session->GetSSLSocketPool(socket_pool_type);

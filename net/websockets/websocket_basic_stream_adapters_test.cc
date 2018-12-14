@@ -74,13 +74,13 @@ class WebSocketClientSocketHandleAdapterTest
             host_port_pair_,
             false,
             OnHostResolutionCallback())),
-        ssl_params_(base::MakeRefCounted<SSLSocketParams>(transport_params_,
-                                                          nullptr,
-                                                          nullptr,
-                                                          host_port_pair_,
-                                                          SSLConfig(),
-                                                          PRIVACY_MODE_DISABLED,
-                                                          0)) {}
+        ssl_params_(
+            base::MakeRefCounted<SSLSocketParams>(transport_params_,
+                                                  nullptr,
+                                                  nullptr,
+                                                  host_port_pair_,
+                                                  SSLConfig(),
+                                                  PRIVACY_MODE_DISABLED)) {}
 
   ~WebSocketClientSocketHandleAdapterTest() override = default;
 
