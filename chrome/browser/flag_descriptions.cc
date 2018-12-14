@@ -3374,6 +3374,11 @@ const char kEnableUnifiedMultiDeviceSetupName[] =
 const char kEnableUnifiedMultiDeviceSetupDescription[] =
     "Enable the device to setup all MultiDevice services in a single workflow.";
 
+const char kEnableVideoPlayerNativeControlsName[] =
+    "Enable native controls in video player app";
+const char kEnableVideoPlayerNativeControlsDescription[] =
+    "Enable native controls in video player app";
+
 const char kEnableVirtualKeyboardUkmName[] = "Enable UKM for virtual keyboard";
 const char kEnableVirtualKeyboardUkmDescription[] =
     "Enables UKM for virtual keyboard";

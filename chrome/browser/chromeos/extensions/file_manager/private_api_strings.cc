@@ -280,6 +280,9 @@ void AddStringsForVideoPlayer(base::DictionaryValue* dict) {
              IDS_VIDEO_PLAYER_ENABLE_SUBTITLES_BUTTON_LABEL);
   SET_STRING("VIDEO_PLAYER_DISABLE_SUBTITLES_BUTTON_LABEL",
              IDS_VIDEO_PLAYER_DISABLE_SUBTITLES_BUTTON_LABEL);
+  dict->SetBoolean("VIDEO_PLAYER_NATIVE_CONTROLS_ENABLED",
+                   base::FeatureList::IsEnabled(
+                       chromeos::features::kVideoPlayerNativeControls));
 }
 
 void AddStringsForAudioPlayer(base::DictionaryValue* dict) {

@@ -2026,6 +2026,9 @@ extern const char kEnableUnifiedMultiDeviceSettingsDescription[];
 extern const char kEnableUnifiedMultiDeviceSetupName[];
 extern const char kEnableUnifiedMultiDeviceSetupDescription[];
 
+extern const char kEnableVideoPlayerNativeControlsName[];
+extern const char kEnableVideoPlayerNativeControlsDescription[];
+
 extern const char kEnableVirtualKeyboardUkmName[];
 extern const char kEnableVirtualKeyboardUkmDescription[];
 

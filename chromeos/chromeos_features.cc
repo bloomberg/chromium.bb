@@ -85,6 +85,10 @@ const base::Feature kInstantTethering{"InstantTethering",
 const base::Feature kMultiDeviceApi{"MultiDeviceApi",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable or disable native controls in video player on Chrome OS.
+const base::Feature kVideoPlayerNativeControls{
+    "VideoPlayerNativeControls", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables user activity prediction for power management on
 // Chrome OS.
 // Defined here rather than in //chrome alongside other related features so that
