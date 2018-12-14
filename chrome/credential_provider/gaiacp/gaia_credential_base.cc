@@ -22,12 +22,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/current_module.h"
-#include "base/win/i18n.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
+#include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
+#include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
@@ -216,7 +217,7 @@ HRESULT ValidateAndFixResult(base::DictionaryValue* result, BSTR* status_text) {
 
   if (has_error) {
     *status_text =
-        CGaiaCredentialBase::AllocErrorString(IDS_INVALID_UI_RESPONSE);
+        CGaiaCredentialBase::AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
     return E_UNEXPECTED;
   }
 
@@ -366,8 +367,9 @@ HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
     // an unused username can be found or kMaxAttempts has been reached.
     for (int i = 0; sid == nullptr && i < kMaxAttempts; ++i) {
       CComBSTR sid_string;
-      base::string16 fullname(GetStringResource(IDS_GAIA_ACCOUNT_FULLNAME));
-      base::string16 comment(GetStringResource(IDS_GAIA_ACCOUNT_COMMENT));
+      base::string16 fullname(
+          GetStringResource(IDS_GAIA_ACCOUNT_FULLNAME_BASE));
+      base::string16 comment(GetStringResource(IDS_GAIA_ACCOUNT_COMMENT_BASE));
       hr = CreateNewUser(manager, gaia_username, password, fullname.c_str(),
                          comment.c_str(), /*add_to_users_group=*/false,
                          &sid_string);
@@ -517,14 +519,15 @@ HRESULT CGaiaCredentialBase::GetStringValueImpl(DWORD field_id,
   HRESULT hr = E_INVALIDARG;
   switch (field_id) {
     case FID_DESCRIPTION: {
-      base::string16 description(GetStringResource(IDS_AUTH_FID_DESCRIPTION));
+      base::string16 description(
+          GetStringResource(IDS_AUTH_FID_DESCRIPTION_BASE));
       hr = ::SHStrDupW(description.c_str(), value);
       break;
     }
     case FID_PROVIDER_LABEL: {
-      UINT label_resource_id = IDS_AUTH_FID_PROVIDER_LABEL;
+      UINT label_resource_id = IDS_AUTH_FID_PROVIDER_LABEL_BASE;
       if (user_sid_.Length())
-        label_resource_id = IDS_EXISTING_AUTH_FID_PROVIDER_LABEL;
+        label_resource_id = IDS_EXISTING_AUTH_FID_PROVIDER_LABEL_BASE;
       base::string16 label(GetStringResource(label_resource_id));
       hr = ::SHStrDupW(label.c_str(), value);
       break;
@@ -607,15 +610,13 @@ HRESULT CGaiaCredentialBase::GetGlsCommandline(
 
   command_line->AppendSwitchNative(kGcpwSigninSwitch, email);
 
-  // Get the current UI language for the logon screen and pass it onto Chrome
-  // The UI language depends on whether we are using a SYSTEM logon (initial
+  // Get the language selected by the LanguageSelector and pass it onto Chrome.
+  // The language selected will depends on the curent thread UI language.
+  // The language will depend on if it is currently a SYSTEM logon (initial
   // logon) or a lock screen logon (from a user). If the user who locked the
   // screen has a specific language, that will be the one used for the UI
   // language.
-  std::vector<base::string16> languages;
-  if (base::win::i18n::GetThreadPreferredUILanguageList(&languages)) {
-    command_line->AppendSwitchNative("lang", languages[0]);
-  }
+  command_line->AppendSwitchNative("lang", GetSelectedLanguage());
 
   // The gpu process will be running on an alternative desktop since it does not
   // have access to the winlogon desktop. This mitigation is required merely to
@@ -666,7 +667,7 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
                                CPFS_DISPLAY_IN_SELECTED_TILE);
         events_->SetFieldString(
             this, FID_DESCRIPTION,
-            GetStringResource(IDS_INVALID_PASSWORD).c_str());
+            GetStringResource(IDS_INVALID_PASSWORD_BASE).c_str());
       }
       return S_FALSE;
     }
@@ -962,7 +963,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
 
     // If there is no internet connection, just abort right away.
     if (provider_->HasInternetConnection() != S_OK) {
-      BSTR error_message = AllocErrorString(IDS_NO_NETWORK);
+      BSTR error_message = AllocErrorString(IDS_NO_NETWORK_BASE);
       ::SHStrDupW(OLE2CW(error_message), status_text);
       ::SysFreeString(error_message);
 
@@ -1195,7 +1196,7 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
                            &startupinfo, &parent_handles);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "InitializeStdHandles hr=" << putHR(hr);
-    *status_text = AllocErrorString(IDS_INTERNAL_ERROR);
+    *status_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
   }
 
@@ -1210,7 +1211,7 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
     return S_OK;
   } else if (FAILED(hr)) {
     LOGFN(ERROR) << "GetCommandLineForEntryPoint hr=" << putHR(hr);
-    *status_text = AllocErrorString(IDS_INTERNAL_ERROR);
+    *status_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
   }
 
@@ -1225,7 +1226,7 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
       command_line, startupinfo.GetInfo(), &procinfo);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "CreateProcessWithTokenW hr=" << putHR(hr);
-    *status_text = AllocErrorString(IDS_INTERNAL_ERROR);
+    *status_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
   }
 
@@ -1406,7 +1407,7 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(BSTR username,
     if (username_.Length() > 0 && username_ != username) {
       LOGFN(ERROR) << "Username found '" << username << "' does not match the "
                    << "username that is set '" << username_ << "'";
-      *error_text = AllocErrorString(IDS_INTERNAL_ERROR);
+      *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
       return E_UNEXPECTED;
     }
 
@@ -1420,7 +1421,7 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(BSTR username,
     if (FAILED(hr)) {
       LOGFN(ERROR) << "Failed find SID for existing user with username '"
                    << username << "' hr=" << putHR(hr);
-      *error_text = AllocErrorString(IDS_INTERNAL_ERROR);
+      *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
       return E_UNEXPECTED;
     }
 
@@ -1434,7 +1435,7 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(BSTR username,
       if (user_sid_.Length() > 0 && user_sid_ != found_sid) {
         LOGFN(ERROR) << "SID found '" << found_sid << "' does not match the "
                      << "username that is set '" << user_sid_ << "'";
-        *error_text = AllocErrorString(IDS_INTERNAL_ERROR);
+        *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
         return E_UNEXPECTED;
       } else {
         *sid = found_sid;
@@ -1452,7 +1453,7 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(BSTR username,
   if (checkpassword_hr != HRESULT_FROM_WIN32(NERR_UserNotFound)) {
     LOGFN(ERROR) << "Unable to check password for '" << username
                  << "' hr=" << putHR(checkpassword_hr);
-    *error_text = AllocErrorString(IDS_INTERNAL_ERROR);
+    *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return checkpassword_hr;
   }
 
@@ -1460,11 +1461,11 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(BSTR username,
   // should not happen.
   if (user_sid_.Length() || username_.Length()) {
     LOGFN(ERROR) << "Failed to find existing user '" << username << "'";
-    *error_text = AllocErrorString(IDS_INTERNAL_ERROR);
+    *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return E_UNEXPECTED;
   }
 
-  base::string16 comment(GetStringResource(IDS_USER_ACCOUNT_COMMENT));
+  base::string16 comment(GetStringResource(IDS_USER_ACCOUNT_COMMENT_BASE));
   HRESULT hr = CreateNewUser(OSUserManager::Get(), OLE2CW(username),
                              OLE2CW(password), OLE2CW(fullname),
                              comment.c_str(), /*add_to_users_group=*/true, sid);
@@ -1473,7 +1474,7 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(BSTR username,
   if (FAILED(hr)) {
     LOGFN(ERROR) << "CreateNewUser hr=" << putHR(hr)
                  << " account=" << OLE2CW(username);
-    *error_text = AllocErrorString(IDS_CANT_CREATE_USER);
+    *error_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
   }
 
   return hr;
@@ -1493,7 +1494,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
       base::JSONReader::Read(json_string, base::JSON_ALLOW_TRAILING_COMMAS);
   if (!properties || !properties->is_dict()) {
     LOGFN(ERROR) << "base::JSONReader::Read failed to translate to JSON";
-    *status_text = AllocErrorString(IDS_INVALID_UI_RESPONSE);
+    *status_text = AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
     return E_FAIL;
   }
 
@@ -1530,7 +1531,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
 
   bool password_stale = hr == S_FALSE;
   if (password_stale) {
-    *status_text = AllocErrorString(IDS_PASSWORD_UPDATE_NEEDED);
+    *status_text = AllocErrorString(IDS_PASSWORD_UPDATE_NEEDED_BASE);
     if (events_) {
       events_->SetFieldState(this, FID_DESCRIPTION,
                              CPFS_DISPLAY_IN_SELECTED_TILE);
