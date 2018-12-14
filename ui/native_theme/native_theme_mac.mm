@@ -155,20 +155,12 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
 void NativeThemeMac::MaybeUpdateBrowserAppearance() {
   if (@available(macOS 10.14, *)) {
     if (!base::FeatureList::IsEnabled(features::kDarkMode)) {
-      ui::NativeTheme* theme = ui::NativeTheme::GetInstanceForNativeUi();
-      NSAppearanceName new_appearance_name;
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kForceDarkMode)) {
-        new_appearance_name =
-            theme->UsesHighContrastColors()
-                ? NSAppearanceNameAccessibilityHighContrastDarkAqua
-                : NSAppearanceNameDarkAqua;
-      } else {
-        new_appearance_name =
-            theme->UsesHighContrastColors()
-                ? NSAppearanceNameAccessibilityHighContrastAqua
-                : NSAppearanceNameAqua;
-      }
+      NSAppearanceName new_appearance_name =
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kForceDarkMode)
+              ? NSAppearanceNameDarkAqua
+              : NSAppearanceNameAqua;
+
       [NSApp setAppearance:[NSAppearance appearanceNamed:new_appearance_name]];
     }
   }
@@ -295,7 +287,6 @@ NativeThemeMac::NativeThemeMac() {
                     object:nil
                      queue:nil
                 usingBlock:^(NSNotification* notification) {
-                  ui::NativeThemeMac::MaybeUpdateBrowserAppearance();
                   ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
                 }];
   }
