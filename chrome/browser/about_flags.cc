@@ -3324,9 +3324,6 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kAsyncImageDecodingChoices)},
 
 #if defined(OS_CHROMEOS)
-    {"disable-lock-screen-apps", flag_descriptions::kDisableLockScreenAppsName,
-     flag_descriptions::kDisableLockScreenAppsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kDisableLockScreenApps)},
     {"double-tap-to-zoom-in-tablet-mode",
      flag_descriptions::kDoubleTapToZoomInTabletModeName,
      flag_descriptions::kDoubleTapToZoomInTabletModeDescription, kOsCrOS,

@@ -228,9 +228,6 @@ const char kDisableGaiaServices[] = "disable-gaia-services";
 // Disables HID-detection OOBE screen.
 const char kDisableHIDDetectionOnOOBE[] = "disable-hid-detection-on-oobe";
 
-// Enables action handler apps (e.g. creating new notes) on lock screen.
-const char kDisableLockScreenApps[] = "disable-lock-screen-apps";
-
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[] = "disable-login-animations";
 

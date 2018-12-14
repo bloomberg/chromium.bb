@@ -35,7 +35,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
@@ -136,16 +135,6 @@ const int kMaxGaiaReloadForProxyAuthDialog = 3;
 // Type of the login screen UI that is currently presented to user.
 const char kSourceGaiaSignin[] = "gaia-signin";
 const char kSourceAccountPicker[] = "account-picker";
-
-// Constants for lock screen apps activity state values:
-const char kNoLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.NONE";
-const char kForegroundLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.FOREGROUND";
-const char kAvailableLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.AVAILABLE";
-
-// Constants for new lock screen note request type.
-const char kNewNoteRequestTap[] = "NEW_NOTE_REQUEST.TAP";
-const char kNewNoteRequestSwipe[] = "NEW_NOTE_REQUEST.SWIPE";
-const char kNewNoteRequestKeyboard[] = "NEW_NOTE_REQUEST.KEYBOARD";
 
 class CallOnReturn {
  public:
@@ -248,7 +237,6 @@ SigninScreenHandler::SigninScreenHandler(
       proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
       histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
-      lock_screen_apps_observer_(this),
       observer_binding_(this),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
@@ -284,9 +272,6 @@ SigninScreenHandler::SigninScreenHandler(
   TabletModeClient* tablet_mode_client = TabletModeClient::Get();
   tablet_mode_client->AddObserver(this);
   OnTabletModeToggled(tablet_mode_client->tablet_mode_enabled());
-
-  if (lock_screen_apps::StateController::IsEnabled())
-    lock_screen_apps_observer_.Add(lock_screen_apps::StateController::Get());
 
   ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
   observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
@@ -527,12 +512,6 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("launchKioskApp", &SigninScreenHandler::HandleLaunchKioskApp);
   AddCallback("launchArcKioskApp",
               &SigninScreenHandler::HandleLaunchArcKioskApp);
-  AddCallback("closeLockScreenApp",
-              &SigninScreenHandler::HandleCloseLockScreenApp);
-  AddCallback("requestNewLockScreenNote",
-              &SigninScreenHandler::HandleRequestNewNoteAction);
-  AddCallback("newNoteLaunchAnimationDone",
-              &SigninScreenHandler::HandleNewNoteLaunchAnimationDone);
 }
 
 void SigninScreenHandler::Show(const LoginScreenContext& context,
@@ -1096,28 +1075,6 @@ void SigninScreenHandler::OnTabletModeToggled(bool enabled) {
                           enabled);
 }
 
-void SigninScreenHandler::OnLockScreenNoteStateChanged(
-    ash::mojom::TrayActionState state) {
-  if (!ScreenLocker::default_screen_locker())
-    return;
-
-  std::string lock_screen_apps_state;
-  switch (state) {
-    case ash::mojom::TrayActionState::kLaunching:
-    case ash::mojom::TrayActionState::kActive:
-      lock_screen_apps_state = kForegroundLockScreenApps;
-      break;
-    case ash::mojom::TrayActionState::kAvailable:
-      lock_screen_apps_state = kAvailableLockScreenApps;
-      break;
-    case ash::mojom::TrayActionState::kNotAvailable:
-      lock_screen_apps_state = kNoLockScreenApps;
-      break;
-  }
-  CallJSWithPrefixOrDefer("login.AccountPickerScreen.setLockScreenAppsState",
-                          lock_screen_apps_state);
-}
-
 bool SigninScreenHandler::ShouldLoadGaia() const {
   // Fetching of the extension is not started before account picker page is
   // loaded because it can affect the loading speed.
@@ -1333,10 +1290,6 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
   is_account_picker_showing_first_time_ = true;
 
-  if (lock_screen_apps::StateController::IsEnabled()) {
-    OnLockScreenNoteStateChanged(
-        lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
-  }
   // The wallpaper may have been set before the instance is initialized, so make
   // sure the colors and blur state are updated.
   WallpaperControllerClient::Get()->GetWallpaperColors(
@@ -1574,34 +1527,6 @@ void SigninScreenHandler::HandleSendFeedbackAndResyncUserData() {
       base::BindOnce(
           &SigninScreenHandler::OnUnrecoverableCryptohomeFeedbackFinished,
           weak_factory_.GetWeakPtr()));
-}
-
-void SigninScreenHandler::HandleRequestNewNoteAction(
-    const std::string& request_type) {
-  lock_screen_apps::StateController* state_controller =
-      lock_screen_apps::StateController::Get();
-
-  if (request_type == kNewNoteRequestTap) {
-    state_controller->RequestNewLockScreenNote(
-        ash::mojom::LockScreenNoteOrigin::kLockScreenButtonTap);
-  } else if (request_type == kNewNoteRequestSwipe) {
-    state_controller->RequestNewLockScreenNote(
-        ash::mojom::LockScreenNoteOrigin::kLockScreenButtonSwipe);
-  } else if (request_type == kNewNoteRequestKeyboard) {
-    state_controller->RequestNewLockScreenNote(
-        ash::mojom::LockScreenNoteOrigin::kLockScreenButtonKeyboard);
-  } else {
-    NOTREACHED() << "Unknown request type " << request_type;
-  }
-}
-
-void SigninScreenHandler::HandleNewNoteLaunchAnimationDone() {
-  lock_screen_apps::StateController::Get()->NewNoteLaunchAnimationDone();
-}
-
-void SigninScreenHandler::HandleCloseLockScreenApp() {
-  lock_screen_apps::StateController::Get()->CloseLockScreenNote(
-      ash::mojom::CloseLockScreenNoteReason::kUnlockButtonPressed);
 }
 
 bool SigninScreenHandler::AllWhitelistedUsersPresent() {

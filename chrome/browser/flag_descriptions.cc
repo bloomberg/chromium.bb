@@ -3189,12 +3189,6 @@ const char kDisableExplicitDmaFencesDescription[] =
     "Always rely on implicit syncrhonization between GPU and display "
     "controller instead of using dma-fences explcitily when available.";
 
-const char kDisableLockScreenAppsName[] = "Disable lock screen note taking";
-const char kDisableLockScreenAppsDescription[] =
-    "Disable new-note action handler apps on the lock screen. The user will "
-    "not be able to launch the preferred note-taking action from the lock "
-    "screen, provided that the app supports lock screen note taking.";
-
 const char kDisableSystemTimezoneAutomaticDetectionName[] =
     "SystemTimezoneAutomaticDetection policy support";
 const char kDisableSystemTimezoneAutomaticDetectionDescription[] =

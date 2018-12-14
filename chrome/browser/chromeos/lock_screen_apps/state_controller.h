@@ -75,13 +75,7 @@ class StateController : public ash::mojom::TrayActionClient,
                         public ui::InputDeviceEventObserver,
                         public chromeos::PowerManagerClient::Observer {
  public:
-  // Returns whether the StateController is enabled - it is currently guarded by
-  // a feature flag. If not enabled, |StateController| instance is not allowed
-  // to be created. |Get| will still work, but it will return nullptr.
-  static bool IsEnabled();
-
-  // Returns the global StateController instance. Note that this can return
-  // nullptr when lock screen apps are not enabled (see |IsEnabled|).
+  // Returns the global StateController instance.
   static StateController* Get();
 
   static void RegisterProfilePrefs(PrefRegistrySimple* pref_registry);

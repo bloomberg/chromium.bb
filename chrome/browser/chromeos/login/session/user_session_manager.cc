@@ -1511,8 +1511,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitializeCerts(profile);
     InitializeCRLSetFetcher(user);
     InitializeCertificateTransparencyComponents(user);
-    if (lock_screen_apps::StateController::IsEnabled())
-      lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
+    lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
 
     if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
       // App install logs are uploaded via the user's communication channel with

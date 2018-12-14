@@ -763,11 +763,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // loading the default profile).
   keyboard::InitializeKeyboardResources();
 
-  if (lock_screen_apps::StateController::IsEnabled()) {
-    lock_screen_apps_state_controller_ =
-        std::make_unique<lock_screen_apps::StateController>();
-    lock_screen_apps_state_controller_->Initialize();
-  }
+  lock_screen_apps_state_controller_ =
+      std::make_unique<lock_screen_apps::StateController>();
+  lock_screen_apps_state_controller_->Initialize();
 
   if (immediate_login) {
     const std::string cryptohome_id =
