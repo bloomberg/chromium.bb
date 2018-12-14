@@ -65,8 +65,8 @@ class ManifestHandler {
   virtual const std::vector<std::string> PrerequisiteKeys() const;
 
   // Associate us with our keys() in the manifest. A handler can register
-  // for multiple keys. The global registry takes ownership of this;
-  // if it has an existing handler for |key|, it replaces it with this.
+  // for multiple keys. The global registry takes ownership of this. If an
+  // existing handler exists for |key|, this will DCHECK.
   // Manifest handlers must be registered at process startup in
   // common_manifest_handlers.cc or chrome_manifest_handlers.cc:
   // (new MyManifestHandler)->Register();

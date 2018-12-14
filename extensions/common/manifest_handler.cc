@@ -127,7 +127,10 @@ void ManifestHandlerRegistry::RegisterManifestHandler(
     const char* key,
     linked_ptr<ManifestHandler> handler) {
   CHECK(!is_finalized_);
-  handlers_[key] = handler;
+
+  auto insertion = handlers_.emplace(key, handler);
+  DCHECK(insertion.second)
+      << "A ManifestHandler was already registered for key: " << key;
 }
 
 bool ManifestHandlerRegistry::ParseExtension(Extension* extension,

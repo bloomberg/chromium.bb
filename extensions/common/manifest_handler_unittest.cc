@@ -260,11 +260,6 @@ TEST_F(ManifestHandlerTest, Validate) {
   EXPECT_FALSE(
       ManifestHandler::ValidateExtension(extension.get(), &error, &warnings));
 
-  // This overrides the registered handler for "c".
-  (new TestManifestValidator(false, false, SingleKey("c")))->Register();
-  EXPECT_TRUE(
-      ManifestHandler::ValidateExtension(extension.get(), &error, &warnings));
-
   // Validates "a" and fails.
   (new TestManifestValidator(false, true, SingleKey("a")))->Register();
   EXPECT_FALSE(
