@@ -143,6 +143,13 @@ def DoGNBuild(status, context, force_clang=False, force_arch=None):
   if use_clang:
     gn_gen_args.append('is_clang=true')
 
+  # The ASan runtime requires libstdc++, and the version on the bots is older
+  # than the version in the sysroot, so ASan-built sel_ldr from the sysroot
+  # won't run. For now we disable the sysroot (this matches the SCons build)
+  # but the term fix would be to just use GN's libcxx build.
+  if context['asan']:
+    gn_gen_args.append('use_sysroot=false')
+
   # If this is a 32-bit build but the kernel reports as 64-bit,
   # then gn will set host_cpu=x64 when we want host_cpu=x86.
   if context.Linux() and arch == '32':
