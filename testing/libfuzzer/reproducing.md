@@ -5,9 +5,9 @@ if you are unable to use the tool (e.g. unsupported platform, some other tool is
 reproduce the crash manually using the steps below:
 
 *** note
-**Requirements:** For Windows, you need to convert the forward slashes (/) to back slashes (\) in
-the commands above and use `set` command instead of `export` to set the environment variable.
-Also, these commands are intended to be used with cmd.exe, not PowerShell.
+**Requirements:** For Windows, you must convert the forward slashes (/) to backslashes (\\) in
+the commands below and use `set` command instead of `export` to set the environment variable (step 4).
+Note that these commands are intended to be used with cmd.exe, not PowerShell.
 ***
 
 1. Download the testcase from ClusterFuzz. If you are CCed on an issue filed by
