@@ -43,6 +43,21 @@ class CSPHandler : public ManifestHandler {
   bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
+  // Parses the "content_security_policy" dictionary in the manifest.
+  bool ParseCSPDictionary(Extension* extension,
+                          base::string16* error,
+                          const base::Value& csp_dict);
+
+  // Parses the content security policy specified in the manifest for extension
+  // pages.
+  bool ParseExtensionPagesCSP(Extension* extension,
+                              base::string16* error,
+                              const std::string& manifest_key,
+                              const std::string& content_security_policy);
+
+  // Sets the default CSP value for the extension.
+  bool SetDefaultExtensionPagesCSP(Extension* extension);
+
   base::span<const char* const> Keys() const override;
 
   bool is_platform_app_;

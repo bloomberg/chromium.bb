@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/csp_validator.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
@@ -27,6 +28,9 @@ namespace {
 const char kDefaultContentSecurityPolicy[] =
     "script-src 'self' blob: filesystem: chrome-extension-resource:; "
     "object-src 'self' blob: filesystem:;";
+
+const char kExtensionPagesKey[] = "extension_pages";
+const char kExtensionPagesPath[] = "content_security_policy.extension_pages";
 
 #define PLATFORM_APP_LOCAL_CSP_SOURCES \
     "'self' blob: filesystem: data: chrome-extension-resource:"
@@ -74,6 +78,10 @@ int GetValidatorOptions(Extension* extension) {
   return options;
 }
 
+base::string16 GetInvalidManifestKeyError(base::StringPiece key) {
+  return ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidManifestKey, key);
+}
+
 }  // namespace
 
 CSPInfo::CSPInfo(const std::string& security_policy)
@@ -109,37 +117,80 @@ CSPHandler::~CSPHandler() {
 
 bool CSPHandler::Parse(Extension* extension, base::string16* error) {
   const std::string key = Keys()[0];
-  if (!extension->manifest()->HasPath(key)) {
-    // TODO(abarth): Should we continue to let extensions override the
-    //               default Content-Security-Policy?
-    std::string content_security_policy =
-        is_platform_app_ ? kDefaultPlatformAppContentSecurityPolicy
-                         : kDefaultContentSecurityPolicy;
+  if (!extension->manifest()->HasPath(key))
+    return SetDefaultExtensionPagesCSP(extension);
 
-    CHECK_EQ(
-        content_security_policy,
-        SanitizeContentSecurityPolicy(content_security_policy,
-                                      GetValidatorOptions(extension), NULL));
-    extension->SetManifestData(
-        keys::kContentSecurityPolicy,
-        std::make_unique<CSPInfo>(content_security_policy));
-    return true;
+  // The "content_security_policy" manifest key can either be a string or a
+  // dictionary of the format
+  // "content_security_policy" : {
+  //     "extension_pages" : ""
+  //  }
+  const base::DictionaryValue* csp_dict = nullptr;
+  std::string content_security_policy;
+  if (!is_platform_app_ && extension->manifest()->GetDictionary(key, &csp_dict))
+    return ParseCSPDictionary(extension, error, *csp_dict);
+
+  if (extension->manifest()->GetString(key, &content_security_policy)) {
+    return ParseExtensionPagesCSP(extension, error, key,
+                                  content_security_policy);
   }
 
-  std::string content_security_policy;
-  if (!extension->manifest()->GetString(key, &content_security_policy)) {
-    *error = base::ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
+  *error = GetInvalidManifestKeyError(key);
+  return false;
+}
+
+bool CSPHandler::ParseCSPDictionary(Extension* extension,
+                                    base::string16* error,
+                                    const base::Value& csp_dict) {
+  DCHECK(csp_dict.is_dict());
+
+  auto* extension_pages_csp = csp_dict.FindKey(kExtensionPagesKey);
+  if (!extension_pages_csp)
+    return SetDefaultExtensionPagesCSP(extension);
+
+  if (!extension_pages_csp->is_string()) {
+    *error = GetInvalidManifestKeyError(kExtensionPagesPath);
     return false;
   }
+
+  return ParseExtensionPagesCSP(extension, error, kExtensionPagesPath,
+                                extension_pages_csp->GetString());
+}
+
+bool CSPHandler::ParseExtensionPagesCSP(
+    Extension* extension,
+    base::string16* error,
+    const std::string& manifest_key,
+    const std::string& content_security_policy) {
   if (!ContentSecurityPolicyIsLegal(content_security_policy)) {
-    *error = base::ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
+    *error = GetInvalidManifestKeyError(manifest_key);
     return false;
   }
   std::vector<InstallWarning> warnings;
-  content_security_policy = SanitizeContentSecurityPolicy(
+  // TODO(crbug.com/914224): For manifest V3, instead of sanitizing the
+  // extension provided csp value and raising install warnings, see if we want
+  // to raise errors and prevent the extension from loading.
+  std::string sanitized_content_security_policy = SanitizeContentSecurityPolicy(
       content_security_policy, GetValidatorOptions(extension), &warnings);
   extension->AddInstallWarnings(std::move(warnings));
 
+  extension->SetManifestData(
+      keys::kContentSecurityPolicy,
+      std::make_unique<CSPInfo>(sanitized_content_security_policy));
+  return true;
+}
+
+bool CSPHandler::SetDefaultExtensionPagesCSP(Extension* extension) {
+  // TODO(abarth): Should we continue to let extensions override the
+  //               default Content-Security-Policy?
+  const char* content_security_policy =
+      is_platform_app_ ? kDefaultPlatformAppContentSecurityPolicy
+                       : kDefaultContentSecurityPolicy;
+
+  DCHECK_EQ(
+      content_security_policy,
+      SanitizeContentSecurityPolicy(content_security_policy,
+                                    GetValidatorOptions(extension), nullptr));
   extension->SetManifestData(
       keys::kContentSecurityPolicy,
       std::make_unique<CSPInfo>(content_security_policy));

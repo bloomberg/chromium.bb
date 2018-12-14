@@ -353,8 +353,6 @@ const char kInvalidContentScript[] =
     "Invalid value for 'content_scripts[*]'.";
 const char kInvalidContentScriptsList[] =
     "Invalid value for 'content_scripts'.";
-const char kInvalidContentSecurityPolicy[] =
-    "Invalid value for 'content_security_policy'.";
 const char kInvalidCSPInsecureValue[] =
     "Ignored insecure CSP value \"*\" in directive '*'.";
 const char kInvalidCSPMissingSecureSrc[] =
@@ -520,6 +518,7 @@ const char kInvalidLinkedAppIconURL[] =
 const char kInvalidLinkedAppIcons[] =
     "Invalid 'app.linked_icons'. Must be an array";
 const char kInvalidManifest[] = "Manifest file is invalid";
+const char kInvalidManifestKey[] = "Invalid value for '*'.";
 const char kInvalidManifestVersion[] =
     "Invalid value for 'manifest_version'. Must be an integer greater than "
     "zero.";
