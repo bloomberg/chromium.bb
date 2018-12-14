@@ -460,3 +460,23 @@ def UpdateLegacyBootloader(image, loop_kern):
     if ret.returncode:
       logging.error('Updating bootloader configs failed: %s', ' '.join(files))
       raise SignImageError('Updating bootloader configs failed')
+
+
+def DumpConfig(image_file):
+  """Dump kernel config for both kernels.
+
+  This implements the necessary logic for bin/dump_config, which is intended
+  primarily for debugging of images.
+
+  Args:
+    image_file: path to the image file from which to dump kernel configs.
+  """
+  with image_lib.LoopbackPartitions(image_file) as image:
+    for kernel_part in ('KERN-A', 'KERN-B'):
+      loop_kern = image.GetPartitionDevName(kernel_part)
+      config = GetKernelConfig(loop_kern, error_code_ok=True)
+      if config:
+        logging.info('Partition %s', kernel_part)
+        logging.info(config)
+      else:
+        logging.info('Partition %s has no configuration.', kernel_part)

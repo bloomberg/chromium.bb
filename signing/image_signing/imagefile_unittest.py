@@ -781,3 +781,19 @@ class TestUpdateLegacyBootloader(cros_test_lib.RunCommandTempDirTestCase):
     self.rc.assertCommandCalled(
         ['sudo', '--', 'dump_kernel_config', '/dev/loop9999p4'],
         capture_output=True, print_cmd=False, error_code_ok=False)
+
+
+class TestDumpConfig(cros_test_lib.MockTestCase):
+  """Test DumpConfig() function."""
+
+  def testSimple(self):
+    """Test the normal case."""
+    image = image_lib_unittest.LoopbackPartitionsMock('outfile')
+    self.PatchObject(image_lib, 'LoopbackPartitions', return_value=image)
+    gkc = self.PatchObject(imagefile, 'GetKernelConfig', return_value='Config')
+    imagefile.DumpConfig('image.bin')
+    expected = [
+        mock.call('/dev/loop9999p2', error_code_ok=True),
+        mock.call('/dev/loop9999p4', error_code_ok=True),
+    ]
+    self.assertEqual(expected, gkc.call_args_list)
