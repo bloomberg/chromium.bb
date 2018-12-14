@@ -1,5 +1,4 @@
-import { Test } from 'tape';
-import test from 'framework/mytape';
+import { test, Test } from 'framework/mytape';
 
 test('fail', (t: Test) => {
   t.true(false);

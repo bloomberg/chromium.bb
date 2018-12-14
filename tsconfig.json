@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    /* Basic Options */
     "target": "ES2017",
+
+    /* Using Babel for code generation instead */
+    "noEmit": true,
     "module": "commonjs",
-    "outDir": "./out",
 
     /* Strict Type-Checking Options */
     "strict": true,
@@ -18,12 +19,11 @@
     /* Additional Checks */
     "noFallthroughCasesInSwitch": true,
 
-    /* Module Resolution Options */
+    /* Module Options */
+    "moduleResolution": "node",
+    //"isolatedModules": true,
     "esModuleInterop": true,
-    "baseUrl": "src/",
-    "paths": {
-      "framework": ["node_modules/framework/index"],
-      "framework/*": ["node_modules/framework/*"],
-    }
-  },
+
+    "baseUrl": "src"
+  }
 }

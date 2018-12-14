@@ -1,6 +1,4 @@
-import { Test } from 'tape';
-import test from 'framework/mytape';
-
+import { test, Test } from 'framework/mytape';
 import './buffers';
 
 test('true', (t: Test) => {

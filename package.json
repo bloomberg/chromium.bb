@@ -4,10 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "node_modules/typescript/bin/tsc --module amd",
+    "check": "tsc",
+    "lint": "tslint -p .",
+    "build": "node build",
     "clean": "rm -rf out/",
-    "test": "ts-node --ignore=false src/node_modules/framework/unittests",
-    "cts": "ts-node --ignore=false src"
+    "test": "ts-node --ignore=false src/framework/unittests",
+    "cts": "ts-node --ignore=false src | faucet"
   },
   "repository": {
     "type": "git",
@@ -19,13 +21,21 @@
     "url": "https://github.com/kainino0x/cts-experiment/issues"
   },
   "homepage": "https://github.com/kainino0x/cts-experiment#readme",
-  "dependencies": {
-    "requirejs": "^2.3.6"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/tape": "^4.2.32",
+    "aliasify": "^2.1.0",
+    "browserify": "^16.2.3",
+    "faucet": "0.0.1",
     "tape": "^4.9.1",
     "ts-node": "^7.0.1",
+    "tsify": "^4.0.1",
+    "tslint": "^5.11.0",
     "typescript": "^3.2.1"
+  },
+  "aliasify": {
+    "aliases": {
+      "framework": "src/framework"
+    }
   }
 }
