@@ -882,6 +882,8 @@
   },
   'network_service_content_browsertests': {
     'remove_from': [
+      # chromium.clang
+      'ToTLinuxTSan',  # Match 'Linux TSan Tests' below since this is slow.
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
       'Linux TSan Tests',  # No capacity, https://crbug.com/852442
@@ -941,6 +943,8 @@
   },
   'network_service_interactive_ui_tests': {
     'remove_from': [
+      # chromium.clang
+      'ToTLinuxTSan',  # Match 'Linux TSan Tests' below since this is slow.
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
       'Linux TSan Tests',  # No capacity, https://crbug.com/852442
