@@ -4442,6 +4442,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int *bmode_costs;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const int try_palette =
+      cpi->oxcf.enable_palette &&
       av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
   uint8_t *best_palette_color_map =
       try_palette ? x->palette_buffer->best_palette_color_map : NULL;
@@ -6510,6 +6511,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 
   const int try_palette =
+      cpi->oxcf.enable_palette &&
       av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
   if (try_palette) {
     uint8_t *best_palette_color_map = x->palette_buffer->best_palette_color_map;
@@ -11819,6 +11821,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const int try_palette =
+      cpi->oxcf.enable_palette &&
       av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type);
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const struct segmentation *const seg = &cm->seg;

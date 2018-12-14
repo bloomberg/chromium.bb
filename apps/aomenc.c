@@ -495,6 +495,9 @@ static const arg_def_t enable_filter_intra =
             "(0: false, 1: true (default))");
 static const arg_def_t enable_obmc = ARG_DEF(
     NULL, "enable-obmc", 1, "Enable OBMC (0: false, 1: true (default))");
+static const arg_def_t enable_palette =
+    ARG_DEF(NULL, "enable-palette", 1,
+            "Enable palette prediction mode (0: false, 1: true (default))");
 static const arg_def_t disable_trellis_quant =
     ARG_DEF(NULL, "disable-trellis-quant", 1,
             "Disable trellis optimization of quantized coefficients (0: false ("
@@ -716,6 +719,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_warped_motion,
                                        &enable_filter_intra,
                                        &enable_obmc,
+                                       &enable_palette,
                                        &disable_trellis_quant,
                                        &enable_qm,
                                        &qm_min,
@@ -791,6 +795,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_WARPED_MOTION,
                                         AV1E_SET_ENABLE_FILTER_INTRA,
                                         AV1E_SET_ENABLE_OBMC,
+                                        AV1E_SET_ENABLE_PALETTE,
                                         AV1E_SET_DISABLE_TRELLIS_QUANT,
                                         AV1E_SET_ENABLE_QM,
                                         AV1E_SET_QM_MIN,

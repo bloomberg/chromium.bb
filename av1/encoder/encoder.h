@@ -340,6 +340,7 @@ typedef struct AV1EncoderConfig {
   int allow_warped_motion;
   int enable_filter_intra;
   int enable_superres;
+  int enable_palette;
   unsigned int save_as_annexb;
 
 #if CONFIG_DENOISE

@@ -112,6 +112,7 @@ struct av1_extracfg {
   int allow_warped_motion;       // frame level
   int enable_filter_intra;       // enable filter intra for sequence
   int enable_superres;
+  int enable_palette;
 #if CONFIG_DENOISE
   float noise_level;
   int noise_block_size;
@@ -199,6 +200,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // allow_warped_motion at frame level
   1,                            // enable filter intra at sequence level
   1,                            // superres
+  1,                            // enable palette
 #if CONFIG_DENOISE
   0,   // noise_level
   32,  // noise_block_size
@@ -550,6 +552,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_cdef = extra_cfg->enable_cdef;
   oxcf->enable_restoration = extra_cfg->enable_restoration;
   oxcf->enable_obmc = extra_cfg->enable_obmc;
+  oxcf->enable_palette = extra_cfg->enable_palette;
   oxcf->disable_trellis_quant = extra_cfg->disable_trellis_quant;
   oxcf->using_qm = extra_cfg->enable_qm;
   oxcf->qm_y = extra_cfg->qm_y;
@@ -1187,6 +1190,13 @@ static aom_codec_err_t ctrl_set_enable_superres(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_superres = CAST(AV1E_SET_ENABLE_SUPERRES, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_palette(aom_codec_alg_priv_t *ctx,
+                                               va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_palette = CAST(AV1E_SET_ENABLE_PALETTE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1943,6 +1953,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ALLOW_WARPED_MOTION, ctrl_set_allow_warped_motion },
   { AV1E_SET_ENABLE_FILTER_INTRA, ctrl_set_enable_filter_intra },
   { AV1E_SET_ENABLE_SUPERRES, ctrl_set_enable_superres },
+  { AV1E_SET_ENABLE_PALETTE, ctrl_set_enable_palette },
   { AV1E_SET_AQ_MODE, ctrl_set_aq_mode },
   { AV1E_SET_REDUCED_TX_TYPE_SET, ctrl_set_reduced_tx_type_set },
   { AV1E_SET_DELTAQ_MODE, ctrl_set_deltaq_mode },
