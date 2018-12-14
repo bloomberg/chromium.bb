@@ -422,8 +422,10 @@ TaskController.prototype.canExecuteShowOverflow = function() {
 /**
  * Updates tasks menu item to match passed task items.
  *
- * @param {!Array<!Object>} openTasks List of OPEN tasks.
- * @param {!Array<!Object>} nonOpenTasks List of non-OPEN tasks.
+ * @param {!Array<!chrome.fileManagerPrivate.FileTask>} openTasks List of OPEN
+ *     tasks.
+ * @param {!Array<!chrome.fileManagerPrivate.FileTask>} nonOpenTasks List of
+ *     non-OPEN tasks.
  * @private
  */
 TaskController.prototype.updateContextMenuTaskItems_ = function(
@@ -444,7 +446,8 @@ TaskController.prototype.updateContextMenuTaskItems_ = function(
     if (defaultTask.taskId === FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID)
       this.ui_.fileContextMenu.defaultTaskMenuItem.label = str('TASK_OPEN');
     else
-      this.ui_.fileContextMenu.defaultTaskMenuItem.label = defaultTask.title;
+      this.ui_.fileContextMenu.defaultTaskMenuItem.label =
+          defaultTask.label || defaultTask.title;
 
     this.ui_.fileContextMenu.defaultTaskMenuItem.disabled =
         !!defaultTask.disabled;
