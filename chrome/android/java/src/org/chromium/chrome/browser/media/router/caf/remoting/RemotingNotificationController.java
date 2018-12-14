@@ -6,26 +6,25 @@ package org.chromium.chrome.browser.media.router.caf.remoting;
 
 import android.content.Intent;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.router.caf.BaseNotificationController;
 import org.chromium.chrome.browser.media.router.caf.BaseSessionController;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
-import org.chromium.chrome.browser.tab.Tab;
 
 /** NotificationController implementation for remoting. */
 public class RemotingNotificationController extends BaseNotificationController {
     public RemotingNotificationController(BaseSessionController sessionController) {
         super(sessionController);
+        sessionController.addCallback(this);
     }
 
     @Override
     public Intent createContentIntent() {
-        Intent contentIntent =
-                Tab.createBringTabToFrontIntent(mSessionController.getRouteCreationInfo().tabId);
-        if (contentIntent != null) {
-            contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
-                    MediaNotificationUma.Source.MEDIA_FLING);
-        }
+        Intent contentIntent = new Intent(
+                ContextUtils.getApplicationContext(), CafExpandedControllerActivity.class);
+        contentIntent.putExtra(
+                MediaNotificationUma.INTENT_EXTRA_NAME, MediaNotificationUma.Source.MEDIA_FLING);
         return contentIntent;
     }
 

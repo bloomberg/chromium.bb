@@ -904,6 +904,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/router/caf/CastSessionController.java",
   "java/src/org/chromium/chrome/browser/media/router/caf/CastUtils.java",
   "java/src/org/chromium/chrome/browser/media/router/caf/CreateRouteRequestInfo.java",
+  "java/src/org/chromium/chrome/browser/media/router/caf/remoting/CafExpandedControllerActivity.java",
   "java/src/org/chromium/chrome/browser/media/router/caf/remoting/CafRemotingMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/caf/remoting/FlingingControllerAdapter.java",
   "java/src/org/chromium/chrome/browser/media/router/caf/remoting/RemotingNotificationController.java",

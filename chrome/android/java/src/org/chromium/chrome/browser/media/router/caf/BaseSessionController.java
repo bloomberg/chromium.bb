@@ -16,7 +16,9 @@ import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.MediaSink;
 import org.chromium.chrome.browser.media.router.MediaSource;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -27,14 +29,38 @@ import java.util.List;
 public abstract class BaseSessionController {
     private static final String TAG = "BaseSessionCtrl";
 
+    /** Callback class for listening to state changes. */
+    public static interface Callback {
+        /** Called when session started. */
+        void onSessionStarted();
+
+        /** Called when session ended. */
+        void onSessionEnded();
+    }
+
     private CastSession mCastSession;
     private final CafBaseMediaRouteProvider mProvider;
     private CreateRouteRequestInfo mRouteCreationInfo;
     private final RemoteMediaClient.Callback mRemoteMediaClientCallback;
+    private final List<WeakReference<Callback>> mCallbacks = new ArrayList<>();
 
     public BaseSessionController(CafBaseMediaRouteProvider provider) {
         mProvider = provider;
         mRemoteMediaClientCallback = new RemoteMediaClientCallback();
+    }
+
+    public void addCallback(Callback callback) {
+        mCallbacks.add(new WeakReference<>(callback));
+    }
+
+    public void removeCallback(Callback callback) {
+        Iterator<WeakReference<Callback>> iterator = mCallbacks.iterator();
+
+        while (iterator.hasNext()) {
+            if (iterator.next().get() == callback) {
+                iterator.remove();
+            }
+        }
     }
 
     public void requestSessionLaunch() {
@@ -127,12 +153,30 @@ public abstract class BaseSessionController {
 
     /** Called when session started. */
     public void onSessionStarted() {
-        getNotificationController().onSessionStarted();
+        Iterator<WeakReference<Callback>> iterator = mCallbacks.iterator();
+
+        while (iterator.hasNext()) {
+            WeakReference<Callback> callback = iterator.next();
+            if (callback.get() == null) {
+                iterator.remove();
+            } else {
+                callback.get().onSessionStarted();
+            }
+        }
     }
 
     /** Called when session ended. */
     public void onSessionEnded() {
-        getNotificationController().onSessionEnded();
+        Iterator<WeakReference<Callback>> iterator = mCallbacks.iterator();
+
+        while (iterator.hasNext()) {
+            WeakReference<Callback> callback = iterator.next();
+            if (callback.get() == null) {
+                iterator.remove();
+            } else {
+                callback.get().onSessionEnded();
+            }
+        }
         mRouteCreationInfo = null;
     }
 
