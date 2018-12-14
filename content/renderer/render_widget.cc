@@ -1273,16 +1273,6 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     text_input_mode_ = new_mode;
     can_compose_inline_ = new_can_compose_inline;
     text_input_flags_ = new_info.flags;
-
-#if defined(OS_ANDROID)
-    // If we send a new TextInputStateChanged message, we must also deliver a
-    // new RenderFrameMetadata, as the IME will need this info to be updated.
-    // TODO(ericrk): Introduce a |text_input_state_revision_| var to synchronize
-    // the RFM with the TextInputStateChanged message. https://crbug.com/912309
-    if (layer_tree_view_ && IsSurfaceSynchronizationEnabled()) {
-      layer_tree_view_->RequestNewLocalSurfaceId();
-    }
-#endif
   }
 }
 
