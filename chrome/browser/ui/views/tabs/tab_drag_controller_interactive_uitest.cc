@@ -3064,6 +3064,40 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   EXPECT_EQ(2u, browser_list->size());
 }
 
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
+                       LeftSnapShouldntCauseMergeAtEnd) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  AddTabAndResetBrowser(browser());
+
+  // Set the last mouse location at the center of tab 0. This shouldn't affect
+  // the touch behavior below. See https://crbug.com/914527#c1 for the details
+  // of how this can affect the result.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  base::RunLoop run_loop;
+  ui_controls::SendMouseMoveNotifyWhenDone(tab_0_center.x(), tab_0_center.y(),
+                                           run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Drag the tab 1 to left-snapping.
+  gfx::Point tab_1_center(GetCenterInScreenCoordinates(tab_strip->tab_at(1)));
+  ASSERT_TRUE(PressInput(tab_1_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_1_center.x(), tab_1_center.y() + GetDetachY(tab_strip),
+      base::BindLambdaForTesting([&]() {
+        gfx::Rect display_bounds =
+            display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+        ASSERT_TRUE(DragInputToNotifyWhenDone(display_bounds.x(),
+                                              display_bounds.CenterPoint().y(),
+                                              base::BindLambdaForTesting([&]() {
+                                                ASSERT_TRUE(ReleaseInput());
+                                              })));
+      })));
+  QuitWhenNotDragging();
+
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ(2u, browser_list->size());
+}
+
 namespace {
 
 // Returns true if the web contents that's accociated with |browser| is using
