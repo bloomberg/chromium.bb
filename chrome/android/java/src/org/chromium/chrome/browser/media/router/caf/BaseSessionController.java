@@ -36,6 +36,12 @@ public abstract class BaseSessionController {
 
         /** Called when session ended. */
         void onSessionEnded();
+
+        /** Called when status updated. */
+        void onStatusUpdated();
+
+        /** Called when metadata updated. */
+        void onMetadataUpdated();
     }
 
     private CastSession mCastSession;
@@ -153,31 +159,12 @@ public abstract class BaseSessionController {
 
     /** Called when session started. */
     public void onSessionStarted() {
-        Iterator<WeakReference<Callback>> iterator = mCallbacks.iterator();
-
-        while (iterator.hasNext()) {
-            WeakReference<Callback> callback = iterator.next();
-            if (callback.get() == null) {
-                iterator.remove();
-            } else {
-                callback.get().onSessionStarted();
-            }
-        }
+        notifyCallback((Callback callback) -> callback.onSessionStarted());
     }
 
     /** Called when session ended. */
     public void onSessionEnded() {
-        Iterator<WeakReference<Callback>> iterator = mCallbacks.iterator();
-
-        while (iterator.hasNext()) {
-            WeakReference<Callback> callback = iterator.next();
-            if (callback.get() == null) {
-                iterator.remove();
-            } else {
-                callback.get().onSessionEnded();
-            }
-        }
-        mRouteCreationInfo = null;
+        notifyCallback((Callback callback) -> callback.onSessionEnded());
     }
 
     protected final CafBaseMediaRouteProvider getProvider() {
@@ -210,11 +197,11 @@ public abstract class BaseSessionController {
     }
 
     protected void onStatusUpdated() {
-        getNotificationController().onStatusUpdated();
+        notifyCallback((Callback callback) -> callback.onStatusUpdated());
     }
 
     protected void onMetadataUpdated() {
-        getNotificationController().onMetadataUpdated();
+        notifyCallback((Callback callback) -> callback.onMetadataUpdated());
     }
 
     @Nullable
@@ -229,4 +216,19 @@ public abstract class BaseSessionController {
     public String getSessionId() {
         return isConnected() ? getSession().getSessionId() : null;
     }
+
+    private void notifyCallback(NotifyCallbackAction action) {
+        Iterator<WeakReference<Callback>> iterator = mCallbacks.iterator();
+
+        while (iterator.hasNext()) {
+            Callback callback = iterator.next().get();
+            if (callback == null) {
+                iterator.remove();
+            } else {
+                action.notify(callback);
+            }
+        }
+    }
+
+    private interface NotifyCallbackAction { void notify(Callback callback); }
 }

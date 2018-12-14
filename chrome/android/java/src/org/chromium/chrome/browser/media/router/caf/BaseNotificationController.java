@@ -55,6 +55,7 @@ public abstract class BaseNotificationController
     }
 
     /** Called when media status updated. */
+    @Override
     public void onStatusUpdated() {
         if (mNotificationBuilder == null) return;
         if (!mSessionController.isConnected()) return;
@@ -75,6 +76,7 @@ public abstract class BaseNotificationController
     }
 
     /** Called when media metadata updated. */
+    @Override
     public void onMetadataUpdated() {
         if (mNotificationBuilder == null) return;
         updateNotificationMetadata();

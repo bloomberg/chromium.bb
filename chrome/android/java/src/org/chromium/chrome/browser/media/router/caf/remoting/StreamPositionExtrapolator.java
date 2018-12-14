@@ -67,4 +67,9 @@ public class StreamPositionExtrapolator {
         }
         return Math.max(interpolatedStreamPosition, 0);
     }
+
+    /** Returns the stream duration. */
+    public long getDuration() {
+        return mDuration;
+    }
 }

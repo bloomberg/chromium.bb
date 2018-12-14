@@ -56,6 +56,10 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
         return mStreamPositionExtrapolator.getPosition();
     }
 
+    public long getDuration() {
+        return mStreamPositionExtrapolator.getDuration();
+    }
+
     ////////////////////////////////////////////
     // FlingingController implementation end
     ////////////////////////////////////////////
