@@ -18,6 +18,7 @@ struct PasswordFormFillData;
 namespace password_manager {
 class PasswordAutofillManager;
 class PasswordManager;
+class PasswordGenerationManager;
 }  // namespace password_manager
 
 // Defines the interface the driver needs to the controller.
@@ -34,6 +35,10 @@ class PasswordManager;
 
 // Informs delegate that there are no saved credentials for the current page.
 - (void)onNoSavedCredentials;
+
+// Gets the PasswordGenerationManager owned by this delegate.
+- (password_manager::PasswordGenerationManager*)passwordGenerationManager;
+
 @end
 
 // An iOS implementation of password_manager::PasswordManagerDriver.

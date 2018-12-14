@@ -45,6 +45,11 @@ id<PasswordFormFiller> PasswordTabHelper::GetPasswordFormFiller() {
   return controller_.passwordFormFiller;
 }
 
+password_manager::PasswordGenerationManager*
+PasswordTabHelper::GetPasswordGenerationManager() {
+  return controller_.passwordGenerationManager;
+}
+
 PasswordTabHelper::PasswordTabHelper(web::WebState* web_state)
     : controller_([[PasswordController alloc] initWithWebState:web_state]) {
   web_state->AddObserver(this);
