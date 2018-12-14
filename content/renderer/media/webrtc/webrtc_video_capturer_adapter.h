@@ -32,17 +32,13 @@ namespace content {
 class CONTENT_EXPORT WebRtcVideoCapturerAdapter
     : public cricket::VideoCapturer {
  public:
-  WebRtcVideoCapturerAdapter(
-      bool is_screencast,
-      blink::WebMediaStreamTrack::ContentHintType content_hint);
+  WebRtcVideoCapturerAdapter(bool is_screencast);
   ~WebRtcVideoCapturerAdapter() override;
 
   // OnFrameCaptured delivers video frames to libjingle. It must be called on
   // libjingles worker thread.
   // This method is virtual for testing purposes.
   virtual void OnFrameCaptured(const scoped_refptr<media::VideoFrame>& frame);
-
-  void SetContentHint(blink::WebMediaStreamTrack::ContentHintType content_hint);
 
  private:
   // cricket::VideoCapturer implementation.
@@ -60,7 +56,6 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
   base::ThreadChecker thread_checker_;
 
   const bool is_screencast_;
-  blink::WebMediaStreamTrack::ContentHintType content_hint_;
   bool running_;
 
   media::VideoFramePool scaled_frame_pool_;
