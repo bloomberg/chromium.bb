@@ -79,12 +79,9 @@ cr.define('omnibox_output', function() {
       });
     }
 
-    /**
-     * @param {string} filterText
-     * @param {boolean} filterHide
-     */
-    filter(filterText, filterHide) {
-      this.matches.forEach(match => match.filter(filterText, filterHide));
+    /** @param {string} filterText */
+    filter(filterText) {
+      this.matches.forEach(match => match.filter(filterText));
     }
 
     /** @return {!Array<!OutputMatch>} */
@@ -370,12 +367,8 @@ cr.define('omnibox_output', function() {
       });
     }
 
-    /**
-     * @param {string} filterText
-     * @param {boolean} filterHide
-     */
-    filter(filterText, filterHide) {
-      this.hidden = false;
+    /** @param {string} filterText */
+    filter(filterText) {
       this.classList.remove('filtered-highlighted');
       this.allProperties_.forEach(
           property => property.classList.remove('filtered-highlighted-nested'));
@@ -386,8 +379,7 @@ cr.define('omnibox_output', function() {
       const matchedProperties = this.allProperties_.filter(
           property => FilterUtil.filterText(property.text, filterText));
       const isMatch = matchedProperties.length > 0;
-      this.hidden = filterHide && !isMatch;
-      this.classList.toggle('filtered-highlighted', !filterHide && isMatch);
+      this.classList.toggle('filtered-highlighted', isMatch);
       matchedProperties.forEach(
           property => property.classList.add('filtered-highlighted-nested'));
     }
