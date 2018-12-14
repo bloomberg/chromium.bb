@@ -1577,6 +1577,7 @@ test("ash_content_unittests") {
 
   deps = [
     ":ash",
+    ":ash_unittests_catalog_source",
     ":test_support_with_content",
     "//ash/public/cpp",
     "//base",
@@ -1615,7 +1616,6 @@ test("ash_content_unittests") {
   ]
 
   data_deps = [
-    ":ash_unittests_catalog_copy",
     "//ash/resources:ash_test_resources_with_content_100_percent",
   ]
 }
@@ -1929,6 +1929,7 @@ test("ash_unittests") {
   deps = [
     ":ash",
     ":ash_service_resources",
+    ":ash_unittests_catalog_source",
     ":test_support_without_content",
     "//ash/app_list:test_support",
     "//ash/app_list/presenter",
@@ -2024,7 +2025,6 @@ test("ash_unittests") {
   ]
 
   data_deps = [
-    ":ash_unittests_catalog_copy",
     ":ash_service_resources",
     ":ash_service",
     "//ash/resources:ash_test_resources_100_percent",
@@ -2417,13 +2417,8 @@ catalog("ash_unittests_catalog") {
   ]
 }
 
-copy("ash_unittests_catalog_copy") {
+catalog_cpp_source("ash_unittests_catalog_source") {
   testonly = true
-  sources = get_target_outputs(":ash_unittests_catalog")
-  outputs = [
-    "${root_out_dir}/ash_unittests_catalog.json",
-  ]
-  deps = [
-    ":ash_unittests_catalog",
-  ]
+  catalog = ":ash_unittests_catalog"
+  generated_function_name = "ash::CreateUnittestsCatalog"
 }

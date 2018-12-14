@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
@@ -168,20 +167,6 @@ void Catalog::BindServiceRequest(
 void Catalog::SetDefaultCatalogManifest(
     std::unique_ptr<base::Value> static_manifest) {
   g_default_static_manifest.Get() = std::move(static_manifest);
-}
-
-// static
-void Catalog::LoadDefaultCatalogManifest(const base::FilePath& path) {
-  std::string catalog_contents;
-  base::FilePath exe_path;
-  base::PathService::Get(base::DIR_EXE, &exe_path);
-  base::FilePath catalog_path = exe_path.Append(path);
-  bool result = base::ReadFileToString(catalog_path, &catalog_contents);
-  DCHECK(result);
-  std::unique_ptr<base::Value> manifest_value =
-      base::JSONReader::Read(catalog_contents);
-  DCHECK(manifest_value);
-  catalog::Catalog::SetDefaultCatalogManifest(std::move(manifest_value));
 }
 
 Instance* Catalog::GetInstanceForGroup(const base::Token& instance_group) {

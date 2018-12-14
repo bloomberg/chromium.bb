@@ -117,6 +117,7 @@ jumbo_static_library("test_support") {
 
   deps = [
     ":mus",
+    ":views_mus_tests_catalog_source",
     "//base",
     "//base/test:test_support",
     "//mojo/core/embedder",
@@ -198,7 +199,6 @@ test("views_mus_unittests") {
   ]
 
   data_deps = [
-    ":views_mus_tests_catalog_copy",
     "//services/ws/ime/test_ime_driver",
     "//services/ws/test_ws",
   ]
@@ -265,7 +265,6 @@ test("views_mus_interactive_ui_tests") {
   ]
 
   data_deps = [
-    ":views_mus_tests_catalog_copy",
     "//services/ws/test_ws",
   ]
 
@@ -307,13 +306,8 @@ catalog("views_mus_tests_catalog") {
   ]
 }
 
-copy("views_mus_tests_catalog_copy") {
+catalog_cpp_source("views_mus_tests_catalog_source") {
   testonly = true
-  sources = get_target_outputs(":views_mus_tests_catalog")
-  outputs = [
-    "${root_out_dir}/views_mus_tests_catalog.json",
-  ]
-  deps = [
-    ":views_mus_tests_catalog",
-  ]
+  catalog = ":views_mus_tests_catalog"
+  generated_function_name = "views::CreateViewsMusTestsCatalog"
 }
