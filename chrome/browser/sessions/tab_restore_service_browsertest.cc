@@ -6,7 +6,7 @@
 // only Chrome OS or Ash?
 #if defined(USE_AURA)
 
-#include "components/sessions/core/persistent_tab_restore_service.h"
+#include "components/sessions/core/tab_restore_service.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -15,9 +15,9 @@
 
 using Window = sessions::TabRestoreService::Window;
 
-using PersistentTabRestoreServiceBrowserTest = InProcessBrowserTest;
+using TabRestoreServiceImplBrowserTest = InProcessBrowserTest;
 
-IN_PROC_BROWSER_TEST_F(PersistentTabRestoreServiceBrowserTest, RestoreApp) {
+IN_PROC_BROWSER_TEST_F(TabRestoreServiceImplBrowserTest, RestoreApp) {
   Profile* profile = browser()->profile();
   sessions::TabRestoreService* trs =
       TabRestoreServiceFactory::GetForProfile(profile);

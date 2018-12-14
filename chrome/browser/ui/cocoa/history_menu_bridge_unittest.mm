@@ -20,8 +20,8 @@
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/favicon_base/favicon_types.h"
-#include "components/sessions/core/persistent_tab_restore_service.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/core/tab_restore_service_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -30,10 +30,10 @@
 
 namespace {
 
-class MockTRS : public sessions::PersistentTabRestoreService {
+class MockTRS : public sessions::TabRestoreServiceImpl {
  public:
   MockTRS(Profile* profile)
-      : sessions::PersistentTabRestoreService(
+      : sessions::TabRestoreServiceImpl(
             base::WrapUnique(new ChromeTabRestoreServiceClient(profile)),
             nullptr) {}
   MOCK_CONST_METHOD0(entries, const sessions::TabRestoreService::Entries&());
