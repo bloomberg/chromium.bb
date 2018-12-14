@@ -32,20 +32,38 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
+#include "base/win/embedded_i18n/language_Selector.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 
 namespace credential_provider {
 
 namespace {
+
+constexpr base::win::i18n::LanguageSelector::LangToOffset
+    kLanguageOffsetPairs[] = {
+#define HANDLE_LANGUAGE(l_, o_) {L## #l_, o_},
+        DO_LANGUAGES
+#undef HANDLE_LANGUAGE
+};
+
+const base::win::i18n::LanguageSelector& GetLanguageSelector() {
+  static base::NoDestructor<base::win::i18n::LanguageSelector> instance(
+      base::string16(), &kLanguageOffsetPairs[0],
+      &kLanguageOffsetPairs[base::size(kLanguageOffsetPairs)]);
+
+  return *instance;
+}
 
 HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
                                            const base::string16& email,
@@ -634,16 +652,23 @@ HRESULT GetAuthenticationPackageId(ULONG* id) {
   return hr;
 }
 
-base::string16 GetStringResource(UINT id) {
-  // When LoadStringW receives 0 as the fourth argument (buffer length), it
-  // assumes the third argument (buffer) is a pointer.  The returned pointer
-  // is still owned by the system and must not be freed.  Furthermore the string
-  // pointed at is not null terminated, so the returned length must be used to
-  // construct the final base::string16.
-  wchar_t* str;
-  int length =
-      ::LoadStringW(CURRENT_MODULE(), id, reinterpret_cast<wchar_t*>(&str), 0);
-  return base::string16(str, length);
+base::string16 GetStringResource(int base_message_id) {
+  base::string16 localized_string;
+
+  int message_id = base_message_id + GetLanguageSelector().offset();
+  const ATLSTRINGRESOURCEIMAGE* image =
+      AtlGetStringResourceImage(_AtlBaseModule.GetModuleInstance(), message_id);
+  if (image) {
+    localized_string = base::string16(image->achString, image->nLength);
+  } else {
+    NOTREACHED() << "Unable to find resource id " << message_id;
+  }
+
+  return localized_string;
+}
+
+base::string16 GetSelectedLanguage() {
+  return GetLanguageSelector().matched_candidate();
 }
 
 base::string16 GetDictString(const base::DictionaryValue* dict,

@@ -15,7 +15,6 @@
 #include "base/win/scoped_process_information.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
-#include "chrome/credential_provider/gaiacp/grit/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/scoped_handle.h"
 
 namespace base {
