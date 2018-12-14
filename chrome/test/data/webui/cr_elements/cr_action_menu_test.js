@@ -386,7 +386,7 @@ suite('CrActionMenu', function() {
     const containerTop = 10000;
     const containerWidth = 500;
     const containerHeight = 500;
-    const menuWidth = 100;
+    const menuWidth = 150;
     const menuHeight = 200;
 
     suiteSetup(function() {
