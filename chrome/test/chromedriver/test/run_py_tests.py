@@ -181,6 +181,8 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'SessionHandlingTest.testGetSessions',
     # Flaky and affects subsequent tests: https://crbug.com/904061
     'ChromeDriverSiteIsolation.testCanClickOOPIF',
+    # Flaky due to occasional timeout in starting Chrome
+    'ZChromeStartRetryCountTest.testChromeStartRetryCount',
 ]
 
 
