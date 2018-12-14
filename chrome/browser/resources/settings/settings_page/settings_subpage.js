@@ -107,7 +107,7 @@ Polymer({
    */
   onClearSubpageSearch_: function(e) {
     e.stopPropagation();
-    this.$$('settings-subpage-search').setValue('');
+    this.$$('cr-search-field').setValue('');
   },
 
   /** @private */
@@ -124,7 +124,7 @@ Polymer({
   handleFindShortcut: function(modalContextOpen) {
     if (modalContextOpen)
       return false;
-    const subpageSearch = this.$$('settings-subpage-search');
+    const subpageSearch = this.$$('cr-search-field');
     const searchInput = subpageSearch.getSearchInput();
     if (searchInput != subpageSearch.shadowRoot.activeElement)
       searchInput.focus();

@@ -292,8 +292,7 @@ Polymer({
    * @private
    */
   onSearchChanged_: function() {
-    const searchElement = /** @type {SettingsSubpageSearchElement} */ (
-        this.$$('settings-subpage-search'));
+    const searchElement = this.$$('cr-search-field');
     this.searchQuery_ = searchElement.getSearchInput().value.toLowerCase();
   },
 

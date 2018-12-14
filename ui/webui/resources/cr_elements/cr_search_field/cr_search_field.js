@@ -4,16 +4,20 @@
 
 /**
  * @fileoverview
- * 'settings-subpage-search' shows a search field in the subpage's header.
+ * 'cr-search-field' is a simple implementation of a polymer component that
+ * uses CrSearchFieldBehavior.
  */
 
 Polymer({
-  is: 'settings-subpage-search',
+  is: 'cr-search-field',
 
   behaviors: [CrSearchFieldBehavior],
 
   properties: {
-    autofocus: Boolean,
+    autofocus: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @return {!CrInputElement} */

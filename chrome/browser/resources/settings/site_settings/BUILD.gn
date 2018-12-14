@@ -43,7 +43,7 @@ js_library("all_sites") {
   deps = [
     ":constants",
     ":site_settings_behavior",
-    "../settings_page:settings_subpage_search",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
@@ -129,7 +129,7 @@ js_library("site_data") {
     ":site_data_entry",
     ":site_settings_behavior",
     "..:global_scroll_target_behavior",
-    "../settings_page:settings_subpage_search",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",

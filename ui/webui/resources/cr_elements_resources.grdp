@@ -335,6 +335,14 @@
              file="cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector_grid.js"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_SEARCH_FIELD_HTML"
+             file="cr_elements/cr_search_field/cr_search_field.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_SEARCH_FIELD_JS"
+             file="cr_elements/cr_search_field/cr_search_field.js"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_SEARCH_FIELD_BEHAVIOR_HTML"
              file="cr_elements/cr_search_field/cr_search_field_behavior.html"
              type="chrome_html"
