@@ -290,7 +290,6 @@ extern const char kParentAccessCodeConfig[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];
-extern const char kSavingBrowserHistoryDisabled[];
 extern const char kAllowDeletingBrowserHistory[];
 #if !defined(OS_ANDROID)
 extern const char kMdHistoryMenuPromoShown[];
