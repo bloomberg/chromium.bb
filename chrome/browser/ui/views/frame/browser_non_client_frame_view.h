@@ -144,6 +144,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
     return hosted_app_button_container_;
   }
 
+  // Draws a taskbar icon for non-guest sessions, erases it otherwise.
+  void UpdateTaskbarDecoration();
+
  protected:
   // Whether the frame should be painted with theming.
   // By default, tabbed browser windows are themed but popup and app windows are
@@ -190,9 +193,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Gets a theme provider that should be non-null even before we're added to a
   // view hierarchy.
   const ui::ThemeProvider* GetThemeProviderForProfile() const;
-
-  // Draws a taskbar icon for non-guest sessions, erases it otherwise.
-  void UpdateTaskbarDecoration();
 
   // Returns the color of the given |color_id| from the theme provider or the
   // default theme properties.

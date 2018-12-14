@@ -240,6 +240,45 @@ void BrowserNonClientFrameView::OnSingleTabModeChanged() {
   SchedulePaint();
 }
 
+void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
+#if defined(OS_WIN)
+  if (browser_view_->browser()->profile()->IsGuestSession() ||
+      // Browser process and profile manager may be null in tests.
+      (g_browser_process && g_browser_process->profile_manager() &&
+       g_browser_process->profile_manager()
+               ->GetProfileAttributesStorage()
+               .GetNumberOfProfiles() <= 1)) {
+    chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), nullptr);
+    return;
+  }
+
+  // We need to draw the taskbar decoration. Even though we have an icon on the
+  // window's relaunch details, we draw over it because the user may have
+  // pinned the badge-less Chrome shortcut which will cause Windows to ignore
+  // the relaunch details.
+  // TODO(calamity): ideally this should not be necessary but due to issues
+  // with the default shortcut being pinned, we add the runtime badge for
+  // safety. See crbug.com/313800.
+  gfx::Image decoration;
+  AvatarMenu::ImageLoadStatus status = AvatarMenu::GetImageForMenuButton(
+      browser_view_->browser()->profile()->GetPath(), &decoration);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Profile.AvatarLoadStatus", status,
+      static_cast<int>(AvatarMenu::ImageLoadStatus::MAX) + 1);
+
+  // If the user is using a Gaia picture and the picture is still being loaded,
+  // wait until the load finishes. This taskbar decoration will be triggered
+  // again upon the finish of the picture load.
+  if (status == AvatarMenu::ImageLoadStatus::LOADING ||
+      status == AvatarMenu::ImageLoadStatus::PROFILE_DELETED) {
+    return;
+  }
+
+  chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), &decoration);
+#endif
+}
+
 bool BrowserNonClientFrameView::IsSingleTabModeAvailable() const {
   // Single-tab mode is only available in when the window is active.  The
   // special color we use won't be visible if there's a frame image, but since
@@ -407,45 +446,6 @@ BrowserNonClientFrameView::GetThemeProviderForProfile() const {
   // Because the frame's accessor reads the ThemeProvider from the profile and
   // not the widget, it can be called even before we're in a view hierarchy.
   return frame_->GetThemeProvider();
-}
-
-void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
-#if defined(OS_WIN)
-  if (browser_view_->browser()->profile()->IsGuestSession() ||
-      // Browser process and profile manager may be null in tests.
-      (g_browser_process && g_browser_process->profile_manager() &&
-       g_browser_process->profile_manager()
-               ->GetProfileAttributesStorage()
-               .GetNumberOfProfiles() <= 1)) {
-    chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), nullptr);
-    return;
-  }
-
-  // We need to draw the taskbar decoration. Even though we have an icon on the
-  // window's relaunch details, we draw over it because the user may have
-  // pinned the badge-less Chrome shortcut which will cause Windows to ignore
-  // the relaunch details.
-  // TODO(calamity): ideally this should not be necessary but due to issues
-  // with the default shortcut being pinned, we add the runtime badge for
-  // safety. See crbug.com/313800.
-  gfx::Image decoration;
-  AvatarMenu::ImageLoadStatus status = AvatarMenu::GetImageForMenuButton(
-      browser_view_->browser()->profile()->GetPath(), &decoration);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Profile.AvatarLoadStatus", status,
-      static_cast<int>(AvatarMenu::ImageLoadStatus::MAX) + 1);
-
-  // If the user is using a Gaia picture and the picture is still being loaded,
-  // wait until the load finishes. This taskbar decoration will be triggered
-  // again upon the finish of the picture load.
-  if (status == AvatarMenu::ImageLoadStatus::LOADING ||
-      status == AvatarMenu::ImageLoadStatus::PROFILE_DELETED) {
-    return;
-  }
-
-  chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), &decoration);
-#endif
 }
 
 SkColor BrowserNonClientFrameView::GetThemeOrDefaultColor(int color_id) const {
