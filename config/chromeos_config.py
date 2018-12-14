@@ -212,6 +212,7 @@ def GeneralTemplates(site_config, ge_build_config):
       compilecheck=True,
       build_packages=False,
       upload_standalone_images=False,
+      profile='generic_build'
   )
 
   # Incremental builders are intended to test the developer workflow.
