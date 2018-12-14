@@ -20,7 +20,6 @@ class AccessibilityWindowInfoDataWrapper : public ArcAccessibilityInfoData {
   explicit AccessibilityWindowInfoDataWrapper(
       AXTreeSourceArc* tree_source,
       mojom::AccessibilityWindowInfoData* window);
-  ~AccessibilityWindowInfoDataWrapper() override;
 
   // ArcAccessibilityInfoData overrides.
   bool IsNode() const override;
