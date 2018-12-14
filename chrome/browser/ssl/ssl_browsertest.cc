@@ -1347,52 +1347,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestBrokenHTTPSWithActiveInsecureContent) {
                                  AuthState::RAN_INSECURE_CONTENT);
 }
 
-// Checks that a console message is printed when a subresource is
-// loaded over broken HTTPS. The test will:
-// 1. Navigate to a site with broken SSL (example.test)
-// 2. Click through the interstitial
-// 3. Navigate to another site with an iframe to example.test
-// 4. Check that console message has been printed
-IN_PROC_BROWSER_TEST_P(SSLUITest, TestBrokenHTTPSConsoleMessage) {
-  ASSERT_TRUE(https_server_.Start());
-  ASSERT_TRUE(https_server_mismatched_.Start());
-
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(tab);
-  content::ConsoleObserverDelegate console_observer(
-      tab,
-      "Mixed Content: The page at * attempted to load subresource at * over "
-      "broken HTTPS.");
-  tab->SetDelegate(&console_observer);
-
-  GURL url = https_server_mismatched_.GetURL("/ssl/blank_page.html");
-  GURL::Replacements replacements;
-  replacements.SetHostStr("example.test");
-  url = url.ReplaceComponents(replacements);
-  // Navigate to a page with a certificate error and click through the
-  // interstitial.
-  ui_test_utils::NavigateToURL(browser(), url);
-  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
-                                 AuthState::SHOWING_INTERSTITIAL);
-  ProceedThroughInterstitial(tab);
-
-  net::HostPortPair pair("example.test",
-                         https_server_mismatched_.host_port_pair().port());
-  std::string replacement_path;
-  GetFilePathWithHostAndPortReplacement("/ssl/blank_page.html", pair,
-                                        &replacement_path);
-
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
-
-  ASSERT_FALSE(IsShowingInterstitial(tab));
-
-  console_observer.Wait();
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
-                                 "Mixed Content: The page at * attempted to "
-                                 "load subresource at * over broken HTTPS."));
-}
-
 namespace {
 
 // A WebContentsObserver that allows the user to wait for a same-document

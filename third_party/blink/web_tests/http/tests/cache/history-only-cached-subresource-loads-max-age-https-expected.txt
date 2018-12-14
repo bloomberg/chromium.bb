@@ -1,7 +1,3 @@
-CONSOLE ERROR: Mixed Content: The page at 'https://127.0.0.1:8443/cache/resources/max-age-resource.html' attempted to load subresource at 'https://127.0.0.1:8443/cache/resources/random-max-age.cgi' over broken HTTPS.
-CONSOLE ERROR: line 1: Mixed Content: The page at 'https://127.0.0.1:8443/cache/resources/max-age-resource.html' attempted to load subresource at 'https://127.0.0.1:8443/cache/resources/random-max-age.cgi' over broken HTTPS.
-CONSOLE ERROR: Mixed Content: The page at 'https://127.0.0.1:8443/cache/resources/max-age-resource.html' attempted to load subresource at 'https://127.0.0.1:8443/cache/resources/random-max-age.cgi' over broken HTTPS.
-CONSOLE ERROR: Mixed Content: The page at 'https://127.0.0.1:8443/cache/resources/max-age-resource-next.html' attempted to load subresource at 'https://127.0.0.1:8443/cache/resources/random-max-age.cgi' over broken HTTPS.
 This test checks that loading a subresource with "Cache-Control: max-age=0" is cached and reused in back navigation when the page is not in the page cache.
 
 We then test that loading the same subresource is refetched when used in non-stale loads such as refreshes or normal navigation.
