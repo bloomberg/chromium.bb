@@ -123,6 +123,8 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
       clockless_playback_(false),
       webaudio_attached_(false),
+      mono_output_(false),
+      fuzzing_(false),
       pipeline_(
           new PipelineImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
                            scoped_task_environment_.GetMainThreadTaskRunner(),
@@ -150,13 +152,19 @@ void PipelineIntegrationTestBase::ParseTestTypeFlags(uint8_t flags) {
   clockless_playback_ = !(flags & kNoClockless);
   webaudio_attached_ = flags & kWebAudio;
   mono_output_ = flags & kMonoOutput;
+  fuzzing_ = flags & kFuzzing;
 }
 
 // TODO(xhwang): Method definitions in this file needs to be reordered.
 
 void PipelineIntegrationTestBase::OnSeeked(base::TimeDelta seek_time,
                                            PipelineStatus status) {
-  EXPECT_EQ(seek_time, pipeline_->GetMediaTime());
+  // When fuzzing, sometimes a seek to 0 results in an actual media time > 0.
+  if (fuzzing_)
+    EXPECT_LE(seek_time, pipeline_->GetMediaTime());
+  else
+    EXPECT_EQ(seek_time, pipeline_->GetMediaTime());
+
   pipeline_status_ = status;
 }
 
@@ -585,7 +593,7 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
     FakeEncryptedMedia* encrypted_media) {
   ParseTestTypeFlags(test_type);
 
-  if (test_type & kDemuxerMayPassOrFail)
+  if (fuzzing_)
     EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AnyNumber());
   else if (!(test_type & kExpectDemuxerFailure))
     EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AtLeast(1));

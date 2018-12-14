@@ -89,7 +89,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     kUnreliableDuration = 8,
     kWebAudio = 16,
     kMonoOutput = 32,
-    kDemuxerMayPassOrFail = 64,  // e.g., for demuxer fuzzing
+    kFuzzing = 64,
   };
 
   // Setup method to intialize various state according to flags.
@@ -169,6 +169,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   bool clockless_playback_;
   bool webaudio_attached_;
   bool mono_output_;
+  bool fuzzing_;
   std::unique_ptr<Demuxer> demuxer_;
   std::unique_ptr<DataSource> data_source_;
   std::unique_ptr<PipelineImpl> pipeline_;
