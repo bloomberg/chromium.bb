@@ -514,6 +514,10 @@ void LoginShelfView::SetAddUserButtonEnabled(bool enable_add_user) {
   GetViewByID(kAddUser)->SetEnabled(enable_add_user);
 }
 
+void LoginShelfView::SetShutdownButtonEnabled(bool enable_shutdown_button) {
+  GetViewByID(kShutdown)->SetEnabled(enable_shutdown_button);
+}
+
 void LoginShelfView::OnLockScreenNoteStateChanged(
     mojom::TrayActionState state) {
   UpdateUi();

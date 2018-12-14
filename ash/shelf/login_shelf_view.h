@@ -85,6 +85,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Sets whether users can be added from the login screen.
   void SetAddUserButtonEnabled(bool enable_add_user);
 
+  // Sets whether shutdown button is enabled in the login screen.
+  void SetShutdownButtonEnabled(bool enable_shutdown_button);
+
   // views::View:
   const char* GetClassName() const override;
   void OnFocus() override;

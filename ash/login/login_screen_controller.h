@@ -154,6 +154,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void ShowKioskAppError(const std::string& message) override;
   void NotifyOobeDialogState(mojom::OobeDialogState state) override;
   void SetAddUserButtonEnabled(bool enable) override;
+  void SetShutdownButtonEnabled(bool enable) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
   void SetShowGuestButtonInOobe(bool show) override;
   void FocusLoginShelf(bool reverse) override;
