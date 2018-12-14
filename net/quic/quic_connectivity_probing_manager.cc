@@ -18,10 +18,12 @@ const int64_t kMaxProbingTimeoutMs = 2000;
 
 std::unique_ptr<base::Value> NetLogQuicConnectivityProbingTriggerCallback(
     NetworkChangeNotifier::NetworkHandle network,
+    const quic::QuicSocketAddress* peer_address,
     base::TimeDelta initial_timeout,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("network", base::Int64ToString(network));
+  dict->SetString("peer address", peer_address->ToString());
   dict->SetString("initial_timeout_ms",
                   base::Int64ToString(initial_timeout.InMilliseconds()));
   return std::move(dict);
@@ -29,12 +31,22 @@ std::unique_ptr<base::Value> NetLogQuicConnectivityProbingTriggerCallback(
 
 std::unique_ptr<base::Value> NetLogQuicConnectivityProbingResponseCallback(
     NetworkChangeNotifier::NetworkHandle network,
-    IPEndPoint* self_address,
-    quic::QuicSocketAddress* peer_address,
+    const IPEndPoint* self_address,
+    const quic::QuicSocketAddress* peer_address,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("network", base::Int64ToString(network));
   dict->SetString("self address", self_address->ToString());
+  dict->SetString("peer address", peer_address->ToString());
+  return std::move(dict);
+}
+
+std::unique_ptr<base::Value> NetLogProbingDestinationCallback(
+    NetworkChangeNotifier::NetworkHandle network,
+    const quic::QuicSocketAddress* peer_address,
+    NetLogCaptureMode capture_mode) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("network", base::Int64ToString(network));
   dict->SetString("peer address", peer_address->ToString());
   return std::move(dict);
 }
@@ -45,6 +57,7 @@ QuicConnectivityProbingManager::QuicConnectivityProbingManager(
     Delegate* delegate,
     base::SequencedTaskRunner* task_runner)
     : delegate_(delegate),
+      is_running_(false),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       retry_count_(0),
       probe_start_time_(base::TimeTicks()),
@@ -81,16 +94,18 @@ void QuicConnectivityProbingManager::OnWriteUnblocked() {}
 void QuicConnectivityProbingManager::CancelProbing(
     NetworkChangeNotifier::NetworkHandle network,
     const quic::QuicSocketAddress& peer_address) {
-  if (network == network_ && peer_address == peer_address_)
+  if (is_running_ && network == network_ && peer_address == peer_address_)
     CancelProbingIfAny();
 }
 
 void QuicConnectivityProbingManager::CancelProbingIfAny() {
-  if (network_ != NetworkChangeNotifier::kInvalidNetworkHandle) {
+  if (is_running_) {
     net_log_.AddEvent(
         NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_CANCELLED,
-        NetLog::Int64Callback("network", network_));
+        base::Bind(&NetLogProbingDestinationCallback, network_,
+                   &peer_address_));
   }
+  is_running_ = false;
   network_ = NetworkChangeNotifier::kInvalidNetworkHandle;
   peer_address_ = quic::QuicSocketAddress();
   socket_.reset();
@@ -110,16 +125,13 @@ void QuicConnectivityProbingManager::StartProbing(
     std::unique_ptr<QuicChromiumPacketReader> reader,
     base::TimeDelta initial_timeout,
     const NetLogWithSource& net_log) {
-  DCHECK_NE(network, NetworkChangeNotifier::kInvalidNetworkHandle);
-  if (network == network_ &&
-      network_ != NetworkChangeNotifier::kInvalidNetworkHandle &&
-      peer_address == peer_address_) {
-    // |network| is already under probing.
+  if (IsUnderProbing(network, peer_address))
     return;
-  }
+
   // Start a new probe will always cancel the previous one.
   CancelProbingIfAny();
 
+  is_running_ = true;
   network_ = network;
   peer_address_ = peer_address;
   socket_ = std::move(socket);
@@ -132,10 +144,11 @@ void QuicConnectivityProbingManager::StartProbing(
   writer_->set_delegate(this);
   reader_ = std::move(reader);
   initial_timeout_ = initial_timeout;
+
   net_log_.AddEvent(
       NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_TRIGGERED,
       base::Bind(&NetLogQuicConnectivityProbingTriggerCallback, network_,
-                 initial_timeout_));
+                 &peer_address_, initial_timeout_));
 
   reader_->StartReading();
   SendConnectivityProbingPacket(initial_timeout_);
@@ -201,14 +214,14 @@ void QuicConnectivityProbingManager::SendConnectivityProbingPacket(
 }
 
 void QuicConnectivityProbingManager::NotifyDelegateProbeFailed() {
-  if (network_ != NetworkChangeNotifier::kInvalidNetworkHandle) {
+  if (is_running_) {
     delegate_->OnProbeFailed(network_, peer_address_);
     CancelProbingIfAny();
   }
 }
 
 void QuicConnectivityProbingManager::MaybeResendConnectivityProbingPacket() {
-  // Use exponential backoff for the timeout
+  // Use exponential backoff for the timeout.
   retry_count_++;
   int64_t timeout_ms =
       (UINT64_C(1) << retry_count_) * initial_timeout_.InMilliseconds();

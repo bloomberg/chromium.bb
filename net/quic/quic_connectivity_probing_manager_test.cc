@@ -305,6 +305,9 @@ TEST_F(QuicConnectivityProbingManagerTest, CancelProbing) {
   EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, _)).Times(0);
   EXPECT_CALL(session_, OnProbeFailed(_, _)).Times(0);
   probing_manager_.CancelProbing(testNetworkHandle, testPeerAddress);
+  EXPECT_FALSE(
+      probing_manager_.IsUnderProbing(testNetworkHandle, testPeerAddress));
+
   test_task_runner_->RunUntilIdle();
 }
 
@@ -324,6 +327,8 @@ TEST_F(QuicConnectivityProbingManagerTest, DoNotCancelProbing) {
   // Request cancel probing for |newPeerAddress| on |testNetworkHandle| doesn't
   // affect the exisiting probing.
   probing_manager_.CancelProbing(testNetworkHandle, newPeerAddress);
+  EXPECT_TRUE(
+      probing_manager_.IsUnderProbing(testNetworkHandle, testPeerAddress));
   EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
 
   for (int retry_count = 0; retry_count < 4; retry_count++) {

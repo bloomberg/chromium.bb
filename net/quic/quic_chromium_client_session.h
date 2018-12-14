@@ -692,6 +692,18 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   //    network.
   void MigrateNetworkImmediately(NetworkChangeNotifier::NetworkHandle network);
 
+  // Called when probe |network| succeeded.
+  void OnProbeNetworkSucceeded(
+      NetworkChangeNotifier::NetworkHandle network,
+      const quic::QuicSocketAddress& peer_address,
+      const quic::QuicSocketAddress& self_address,
+      std::unique_ptr<DatagramClientSocket> socket,
+      std::unique_ptr<QuicChromiumPacketWriter> writer,
+      std::unique_ptr<QuicChromiumPacketReader> reader);
+  // Called when probe |network| failed.
+  void OnProbeNetworkFailed(NetworkChangeNotifier::NetworkHandle network,
+                            const quic::QuicSocketAddress& peer_address);
+
   void StartMigrateBackToDefaultNetworkTimer(base::TimeDelta delay);
   void CancelMigrateBackToDefaultNetworkTimer();
   void TryMigrateBackToDefaultNetwork(base::TimeDelta timeout);
