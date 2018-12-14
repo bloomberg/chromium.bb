@@ -16,7 +16,7 @@ namespace {
 // Default to 2 seconds timeout as the maximum timeout.
 const int64_t kMaxProbingTimeoutMs = 2000;
 
-std::unique_ptr<base::Value> NetLogQuicConnectivityProbingTriggerCallback(
+std::unique_ptr<base::Value> NetLogStartProbingCallback(
     NetworkChangeNotifier::NetworkHandle network,
     const quic::QuicSocketAddress* peer_address,
     base::TimeDelta initial_timeout,
@@ -29,7 +29,7 @@ std::unique_ptr<base::Value> NetLogQuicConnectivityProbingTriggerCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogQuicConnectivityProbingResponseCallback(
+std::unique_ptr<base::Value> NetLogProbeReceivedCallback(
     NetworkChangeNotifier::NetworkHandle network,
     const IPEndPoint* self_address,
     const quic::QuicSocketAddress* peer_address,
@@ -101,7 +101,7 @@ void QuicConnectivityProbingManager::CancelProbing(
 void QuicConnectivityProbingManager::CancelProbingIfAny() {
   if (is_running_) {
     net_log_.AddEvent(
-        NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_CANCELLED,
+        NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_CANCEL_PROBING,
         base::Bind(&NetLogProbingDestinationCallback, network_,
                    &peer_address_));
   }
@@ -146,9 +146,9 @@ void QuicConnectivityProbingManager::StartProbing(
   initial_timeout_ = initial_timeout;
 
   net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_TRIGGERED,
-      base::Bind(&NetLogQuicConnectivityProbingTriggerCallback, network_,
-                 &peer_address_, initial_timeout_));
+      NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_START_PROBING,
+      base::Bind(&NetLogStartProbingCallback, network_, &peer_address_,
+                 initial_timeout_));
 
   reader_->StartReading();
   SendConnectivityProbingPacket(initial_timeout_);
@@ -179,9 +179,9 @@ void QuicConnectivityProbingManager::OnConnectivityProbingReceived(
   }
 
   net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_PACKET_RECEIVED,
-      base::Bind(&NetLogQuicConnectivityProbingResponseCallback, network_,
-                 &local_address, &peer_address_));
+      NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_RECEIVED,
+      base::Bind(&NetLogProbeReceivedCallback, network_, &local_address,
+                 &peer_address_));
 
   UMA_HISTOGRAM_COUNTS_100("Net.QuicSession.ProbingRetryCountUntilSuccess",
                            retry_count_);
@@ -199,7 +199,7 @@ void QuicConnectivityProbingManager::OnConnectivityProbingReceived(
 void QuicConnectivityProbingManager::SendConnectivityProbingPacket(
     base::TimeDelta timeout) {
   net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_PACKET_SENT,
+      NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_SENT,
       NetLog::Int64Callback("sent_count", retry_count_));
   if (!delegate_->OnSendConnectivityProbingPacket(writer_.get(),
                                                   peer_address_)) {
