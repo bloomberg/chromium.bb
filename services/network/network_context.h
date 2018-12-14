@@ -333,6 +333,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) override;
   void LoadHttpAuthCache(const base::UnguessableToken& cache_key,
                          LoadHttpAuthCacheCallback callback) override;
+  void LookupBasicAuthCredentials(
+      const GURL& url,
+      LookupBasicAuthCredentialsCallback callback) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);

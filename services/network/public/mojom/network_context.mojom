@@ -816,6 +816,11 @@ interface NetworkContext {
   // copies its contents into this NetworkContext's HttpAuthCache.
   LoadHttpAuthCache(mojo_base.mojom.UnguessableToken cache_key) => ();
 
+  // Looks up credentials in the HttpAuthCache using the origin and path from
+  // |url|. Only supports basic auth scheme.
+  LookupBasicAuthCredentials(url.mojom.Url url)
+      => (AuthCredentials? credentials);
+
   [Sync]
   // Enables the checking of static PKP records.
   EnableStaticKeyPinningForTesting() => ();

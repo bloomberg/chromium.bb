@@ -52,8 +52,9 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
 
  private:
   // Called when GetAuthCredentials() finishes.
-  void GetAuthCredentialsCallback(GetAuthCredentialsCB callback,
-                                  const net::AuthCredentials& credentials);
+  void GetAuthCredentialsCallback(
+      GetAuthCredentialsCB callback,
+      const base::Optional<net::AuthCredentials>& credentials);
 
   // Called when GetPlatformPathFromFileSystemURL() finishes.
   void GetPlatformPathCallback(GetPlatformPathCB callback,
