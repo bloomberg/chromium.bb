@@ -13,12 +13,13 @@
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_key_builder.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -136,7 +137,7 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   size_t arg_size =
       value->DataSize() + primary_key->SizeEstimate() + index_keys_size;
   if (arg_size >= max_put_value_size_) {
-    callbacks->OnError(blink::WebIDBDatabaseError(
+    callbacks->OnError(IDBDatabaseError(
         blink::kWebIDBDatabaseExceptionUnknownError,
         String::Format("The serialized keys and/or value are too large"
                        " (size=%" PRIuS " bytes, max=%" PRIuS " bytes).",

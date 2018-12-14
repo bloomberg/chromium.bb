@@ -6,12 +6,12 @@
 
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
 
 using blink::mojom::blink::IDBDatabaseAssociatedPtrInfo;
@@ -50,7 +50,7 @@ IndexedDBCallbacksImpl::IndexedDBCallbacksImpl(
 IndexedDBCallbacksImpl::~IndexedDBCallbacksImpl() = default;
 
 void IndexedDBCallbacksImpl::Error(int32_t code, const WTF::String& message) {
-  callbacks_->OnError(WebIDBDatabaseError(code, String(message)));
+  callbacks_->OnError(IDBDatabaseError(code, String(message)));
   callbacks_.reset();
 }
 

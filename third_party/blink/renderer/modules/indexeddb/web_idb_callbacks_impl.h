@@ -37,12 +37,12 @@
 
 namespace blink {
 
+class IDBDatabaseError;
 class IDBKey;
 class IDBRequest;
 class IDBValue;
 class WebIDBCursor;
 class WebIDBDatabase;
-class WebIDBDatabaseError;
 struct IDBDatabaseMetadata;
 
 class WebIDBCallbacksImpl final : public WebIDBCallbacks {
@@ -54,7 +54,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
   ~WebIDBCallbacksImpl() override;
 
   // Pointers transfer ownership.
-  void OnError(const WebIDBDatabaseError&) override;
+  void OnError(const IDBDatabaseError&) override;
   void OnSuccess(const Vector<IDBNameAndVersion>&) override;
   void OnSuccess(const Vector<String>&) override;
   void OnSuccess(WebIDBCursor*,

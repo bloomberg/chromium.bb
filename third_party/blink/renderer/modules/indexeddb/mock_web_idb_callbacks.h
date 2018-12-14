@@ -9,10 +9,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 
 namespace blink {
 
@@ -20,7 +20,7 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
  public:
   MockWebIDBCallbacks();
   ~MockWebIDBCallbacks() override;
-  MOCK_METHOD1(OnError, void(const WebIDBDatabaseError&));
+  MOCK_METHOD1(OnError, void(const IDBDatabaseError&));
 
   void OnSuccess(std::unique_ptr<IDBKey>,
                  std::unique_ptr<IDBKey> primaryKey,

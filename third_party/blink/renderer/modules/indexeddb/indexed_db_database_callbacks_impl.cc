@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 
 namespace blink {
 
@@ -35,8 +34,7 @@ void IndexedDBDatabaseCallbacksImpl::VersionChange(int64_t old_version,
 void IndexedDBDatabaseCallbacksImpl::Abort(int64_t transaction_id,
                                            int32_t code,
                                            const String& message) {
-  callbacks_->OnAbort(transaction_id,
-                      blink::WebIDBDatabaseError(code, message));
+  callbacks_->OnAbort(transaction_id, IDBDatabaseError(code, message));
 }
 
 void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
