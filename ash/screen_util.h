@@ -40,6 +40,12 @@ ASH_EXPORT gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window);
 ASH_EXPORT gfx::Rect GetDisplayWorkAreaBoundsInParentForLockScreen(
     aura::Window* window);
 
+// Returns the display's work area bounds on the default container.
+ASH_EXPORT gfx::Rect GetDisplayWorkAreaBoundsInParentForDefaultContainer(
+    aura::Window* window);
+ASH_EXPORT gfx::Rect GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+    aura::Window* window);
+
 // Returns the bounds of the physical display containing the shelf for
 // |window|. Physical displays can differ from logical displays in unified
 // desktop mode.

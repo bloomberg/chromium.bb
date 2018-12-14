@@ -23,6 +23,7 @@
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -753,7 +754,7 @@ void WindowSelectorItem::OnMinimizedStateChanged() {
 void WindowSelectorItem::UpdateCannotSnapWarningVisibility() {
   // Windows which can snap will never show this warning. Or if the window is
   // the drop target window, also do not show this warning.
-  if (Shell::Get()->split_view_controller()->CanSnap(GetWindow()) ||
+  if (CanSnapInSplitview(GetWindow()) ||
       window_grid_->IsDropTargetWindow(GetWindow())) {
     caption_container_view_->SetCannotSnapLabelVisibility(false);
     return;
@@ -876,7 +877,7 @@ void WindowSelectorItem::ButtonPressed(views::Button* sender,
   CHECK(sender == caption_container_view_->listener_button());
 
   // For other cases, the event is handled in OverviewWindowDragController.
-  if (!SplitViewController::ShouldAllowSplitView())
+  if (!ShouldAllowSplitView())
     window_selector_->SelectWindow(this);
 }
 
@@ -934,7 +935,7 @@ void WindowSelectorItem::HandleDragEvent(const gfx::Point& location_in_screen) {
 
 void WindowSelectorItem::HandleLongPressEvent(
     const gfx::Point& location_in_screen) {
-  if (!SplitViewController::ShouldAllowSplitView())
+  if (!ShouldAllowSplitView())
     return;
 
   window_selector_->StartSplitViewDragMode(location_in_screen);

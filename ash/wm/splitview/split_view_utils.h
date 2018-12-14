@@ -5,7 +5,14 @@
 #ifndef ASH_WM_SPLITVIEW_SPLIT_VIEW_UTILS_H_
 #define ASH_WM_SPLITVIEW_SPLIT_VIEW_UTILS_H_
 
+#include "ash/ash_export.h"
+#include "ash/display/screen_orientation_controller.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace ui {
 class Layer;
@@ -66,6 +73,14 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer, SplitviewAnimationType type);
 void DoSplitviewTransformAnimation(ui::Layer* layer,
                                    SplitviewAnimationType type,
                                    const gfx::Transform& target_transform);
+
+// Returns true if split view mode is supported. Currently the split view
+// mode is only supported in tablet mode.
+ASH_EXPORT bool ShouldAllowSplitView();
+
+// Returns true if |window| can be activated and snapped in split screen in
+// tablet mode.
+ASH_EXPORT bool CanSnapInSplitview(aura::Window* window);
 
 }  // namespace ash
 

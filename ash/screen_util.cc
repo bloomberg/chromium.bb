@@ -7,6 +7,7 @@
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -47,6 +48,21 @@ gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
 gfx::Rect GetDisplayWorkAreaBoundsInParentForLockScreen(aura::Window* window) {
   gfx::Rect bounds = Shelf::ForWindow(window)->GetUserWorkAreaBounds();
   ::wm::ConvertRectFromScreen(window->parent(), &bounds);
+  return bounds;
+}
+
+gfx::Rect GetDisplayWorkAreaBoundsInParentForDefaultContainer(
+    aura::Window* window) {
+  aura::Window* root_window = window->GetRootWindow();
+  return GetDisplayWorkAreaBoundsInParent(
+      root_window->GetChildById(kShellWindowId_DefaultContainer));
+}
+
+gfx::Rect GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+    aura::Window* window) {
+  gfx::Rect bounds =
+      GetDisplayWorkAreaBoundsInParentForDefaultContainer(window);
+  ::wm::ConvertRectToScreen(window->GetRootWindow(), &bounds);
   return bounds;
 }
 

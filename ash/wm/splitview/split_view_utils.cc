@@ -4,11 +4,20 @@
 
 #include "ash/wm/splitview/split_view_utils.h"
 
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/public/cpp/ash_switches.h"
+#include "ash/screen_util.h"
+#include "ash/shell.h"
 #include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_state.h"
+#include "base/command_line.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -188,6 +197,50 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
   ApplyAnimationSettings(&settings, animator, duration, tween,
                          preemption_strategy, delay);
   layer->SetTransform(target_transform);
+}
+
+bool ShouldAllowSplitView() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDisableTabletSplitView)) {
+    return false;
+  }
+
+  if (!Shell::Get()
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled()) {
+    return false;
+  }
+
+  // TODO(crubg.com/853588): Disallow window dragging and split screen while
+  // ChromeVox is on until they are in a usable state.
+  if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
+    return false;
+
+  return true;
+}
+
+bool CanSnapInSplitview(aura::Window* window) {
+  if (!::wm::CanActivateWindow(window))
+    return false;
+
+  if (!wm::GetWindowState(window)->CanSnap())
+    return false;
+
+  if (window->delegate()) {
+    // If the window's minimum size is larger than half of the display's work
+    // area size, the window can't be snapped in this case.
+    const gfx::Size min_size = window->delegate()->GetMinimumSize();
+    const gfx::Rect display_area =
+        screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+            window);
+    const bool is_landscape = (display_area.width() > display_area.height());
+    if ((is_landscape && min_size.width() > display_area.width() / 2) ||
+        (!is_landscape && min_size.height() > display_area.height() / 2)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace ash

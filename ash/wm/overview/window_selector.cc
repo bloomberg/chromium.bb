@@ -29,6 +29,7 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -138,10 +139,9 @@ void UpdateShelfVisibility() {
 // clamp the bounds to a minimum size and shift the bounds offscreen.
 gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
                                 bool divider_changed) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
   gfx::Rect work_area =
-      split_view_controller->GetDisplayWorkAreaBoundsInScreen(root_window);
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          root_window);
 
   // If the shelf is in auto hide, overview will force it to be in auto hide
   // shown, but we want to place the thumbnails as if the shelf was shown, so
@@ -165,6 +165,8 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
     }
   }
 
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
   if (!split_view_controller->IsSplitViewModeActive())
     return work_area;
 
@@ -178,8 +180,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   if (!divider_changed)
     return bounds;
 
-  const bool landscape =
-      split_view_controller->IsCurrentScreenOrientationLandscape();
+  const bool landscape = IsCurrentScreenOrientationLandscape();
   const int min_length =
       (landscape ? work_area.width() : work_area.height()) / 3;
   const int current_length = landscape ? bounds.width() : bounds.height();
@@ -198,8 +199,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   //  respectively), if |opposite_position| is left AND current orientation is
   // primary, OR |opposite_position| is right AND current orientation is not
   // primary. This is an X-NOR condition.
-  const bool primary =
-      split_view_controller->IsCurrentScreenOrientationPrimary();
+  const bool primary = IsCurrentScreenOrientationPrimary();
   const bool left_or_top =
       (primary == (opposite_position == SplitViewController::LEFT));
   if (left_or_top) {
@@ -320,7 +320,7 @@ void WindowSelector::Init(const WindowList& windows,
   if (restore_focus_window_)
     restore_focus_window_->AddObserver(this);
 
-  if (SplitViewController::ShouldAllowSplitView())
+  if (ShouldAllowSplitView())
     split_view_drag_indicators_ = std::make_unique<SplitViewDragIndicators>();
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -420,9 +420,7 @@ void WindowSelector::Shutdown() {
   // Stop observing split view state changes before restoring window focus.
   // Otherwise the activation of the window triggers OnSplitViewStateChanged()
   // that will call into this function again.
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  split_view_controller->RemoveObserver(this);
+  Shell::Get()->split_view_controller()->RemoveObserver(this);
 
   size_t remaining_items = 0;
   for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {

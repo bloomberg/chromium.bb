@@ -33,6 +33,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
@@ -177,7 +178,7 @@ gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
       return split_view_controller->GetSnappedWindowBoundsInScreen(
           dragged_window, SplitViewController::LEFT);
     default:
-      return split_view_controller->GetDisplayWorkAreaBoundsInScreen(
+      return screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
           dragged_window);
   }
 }
@@ -194,7 +195,7 @@ gfx::Rect GetGridBoundsInScreenAfterDragging(aura::Window* dragged_window) {
       return split_view_controller->GetSnappedWindowBoundsInScreen(
           dragged_window, SplitViewController::LEFT);
     default:
-      return split_view_controller->GetDisplayWorkAreaBoundsInScreen(
+      return screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
           dragged_window);
   }
 }

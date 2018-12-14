@@ -146,15 +146,13 @@ bool SplitViewDragIndicators::IsCannotSnapState(
 // static
 bool SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
     IndicatorState indicator_state) {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
   // kPreviewAreaLeft and kPreviewAreaRight correspond with LEFT_SNAPPED and
   // RIGHT_SNAPPED which do not always correspond to the physical left and right
   // of the screen. See split_view_controller.h for more details.
   return (indicator_state == IndicatorState::kPreviewAreaLeft &&
-          split_view_controller->IsCurrentScreenOrientationPrimary()) ||
+          IsCurrentScreenOrientationPrimary()) ||
          (indicator_state == IndicatorState::kPreviewAreaRight &&
-          !split_view_controller->IsCurrentScreenOrientationPrimary());
+          !IsCurrentScreenOrientationPrimary());
 }
 
 // View which contains a label and can be rotated. Used by and rotated by
@@ -331,10 +329,7 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
   // animate when changing states, but not when bounds or orientation is
   // changed.
   void Layout(bool animate) {
-    const bool landscape = Shell::Get()
-                               ->split_view_controller()
-                               ->IsCurrentScreenOrientationLandscape();
-
+    const bool landscape = IsCurrentScreenOrientationLandscape();
     const int display_width = landscape ? width() : height();
     const int display_height = landscape ? height() : width();
 

@@ -9,9 +9,11 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -243,14 +245,12 @@ class DividerView : public views::View,
   void UpdateWhiteHandlerBounds() {
     // Calculate the width/height/radius for the rounded rectangle.
     int width, height, radius;
-    const int expected_width_unselected =
-        controller_->IsCurrentScreenOrientationLandscape()
-            ? kWhiteBarShortSideLength
-            : kWhiteBarLongSideLength;
-    const int expected_height_unselected =
-        controller_->IsCurrentScreenOrientationLandscape()
-            ? kWhiteBarLongSideLength
-            : kWhiteBarShortSideLength;
+    const int expected_width_unselected = IsCurrentScreenOrientationLandscape()
+                                              ? kWhiteBarShortSideLength
+                                              : kWhiteBarLongSideLength;
+    const int expected_height_unselected = IsCurrentScreenOrientationLandscape()
+                                               ? kWhiteBarLongSideLength
+                                               : kWhiteBarShortSideLength;
     if (white_bar_animation_.is_animating()) {
       width = white_bar_animation_.CurrentValueBetween(
           expected_width_unselected, kWhiteBarRadius * 2);
@@ -374,10 +374,10 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
   aura::Window* root_window =
       divider_widget_->GetNativeWindow()->GetRootWindow();
   const gfx::Rect work_area_bounds_in_screen =
-      controller_->GetDisplayWorkAreaBoundsInScreen(root_window);
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          root_window);
   const int divider_position = controller_->divider_position();
-  const OrientationLockType screen_orientation =
-      controller_->GetCurrentScreenOrientation();
+  const OrientationLockType screen_orientation = GetCurrentScreenOrientation();
   return GetDividerBoundsInScreen(work_area_bounds_in_screen,
                                   screen_orientation, divider_position,
                                   is_dragging);

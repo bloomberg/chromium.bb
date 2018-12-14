@@ -38,6 +38,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -3332,7 +3333,8 @@ TEST_F(SplitViewWindowSelectorTest, DragOverviewWindowToSnap) {
   WindowSelectorItem* selector_item3 =
       GetWindowItemForWindow(grid_index, window3.get());
   const gfx::Rect work_area_rect =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window2.get());
   const gfx::Point end_location3(work_area_rect.width(), 0);
   DragWindowTo(selector_item3, end_location3);
 
@@ -3717,9 +3719,9 @@ TEST_F(SplitViewWindowSelectorTest, WindowGridSizeWhileDraggingWithSplitView) {
   const gfx::Point center(window_width / 2, 0);
   window_selector()->Drag(selector_item, center);
   EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller()->state());
-  EXPECT_EQ(
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get()),
-      GetGridBounds());
+  EXPECT_EQ(screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+                window1.get()),
+            GetGridBounds());
 
   // Snap window1 to the left and initialize dragging for window2.
   window_selector()->Drag(selector_item, left);
@@ -4138,7 +4140,8 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   WindowSelectorItem* selector_item2 =
       GetWindowItemForWindow(grid_index, window2.get());
   gfx::Rect work_area_rect =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window2.get());
   gfx::Point end_location2(work_area_rect.width(), work_area_rect.height());
   DragWindowTo(selector_item2, end_location2);
   EXPECT_EQ(split_view_controller()->state(), svc::BOTH_SNAPPED);
@@ -4167,7 +4170,8 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   // Test that dragging |window2| to the bottom of the screen snaps it to right.
   selector_item2 = GetWindowItemForWindow(grid_index, window2.get());
   work_area_rect =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window2.get());
   end_location2 = gfx::Point(work_area_rect.width(), work_area_rect.height());
   DragWindowTo(selector_item2, end_location2, SelectorItemLocation::ORIGIN);
   EXPECT_EQ(split_view_controller()->state(), svc::BOTH_SNAPPED);
@@ -4196,7 +4200,8 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   // Test that dragging |window2| to the right of the screen snaps it to left.
   selector_item2 = GetWindowItemForWindow(grid_index, window2.get());
   work_area_rect =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window2.get());
   end_location2 = gfx::Point(work_area_rect.width(), work_area_rect.height());
   DragWindowTo(selector_item2, end_location2, SelectorItemLocation::ORIGIN);
   EXPECT_EQ(split_view_controller()->state(), svc::BOTH_SNAPPED);
@@ -4225,7 +4230,8 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
   // Test that dragging |window2| to the bottom of the screen snaps it to left.
   selector_item2 = GetWindowItemForWindow(grid_index, window2.get());
   work_area_rect =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window2.get());
   end_location2 = gfx::Point(work_area_rect.width(), work_area_rect.height());
   DragWindowTo(selector_item2, end_location2);
   EXPECT_EQ(split_view_controller()->state(), svc::BOTH_SNAPPED);
@@ -4436,7 +4442,8 @@ TEST_F(SplitViewWindowSelectorTest, DragDividerToExitTest) {
   // Drag the divider toward closing the overview window grid.
   divider_bounds = GetSplitViewDividerBounds(false /*is_dragging=*/);
   const gfx::Rect display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window2.get());
   split_view_controller()->StartResize(divider_bounds.CenterPoint());
   split_view_controller()->EndResize(display_bounds.bottom_right());
 
@@ -4517,7 +4524,8 @@ TEST_F(SplitViewWindowSelectorTest, SnappedWindowBoundsTest) {
   WindowSelectorItem* selector_item2 =
       GetWindowItemForWindow(grid_index, window2.get());
   const gfx::Rect work_area_rect =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window2.get());
   gfx::Point end_location2 =
       gfx::Point(work_area_rect.width(), work_area_rect.height());
   DragWindowTo(selector_item2, end_location2);
@@ -4724,7 +4732,8 @@ TEST_F(SplitViewWindowSelectorTest, SnappedWindowAnimationObserverTest) {
   WindowSelectorItem* selector_item2 =
       GetWindowItemForWindow(grid_index, window2.get());
   const gfx::Rect work_area_rect =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window2.get());
   const gfx::Point end_location2(work_area_rect.width(), 0);
   DragWindowTo(selector_item2, end_location2);
   EXPECT_EQ(SplitViewController::BOTH_SNAPPED,

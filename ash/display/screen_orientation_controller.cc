@@ -157,6 +157,23 @@ bool IsPortraitOrientation(OrientationLockType type) {
          type == OrientationLockType::kPortraitSecondary;
 }
 
+OrientationLockType GetCurrentScreenOrientation() {
+  // ScreenOrientationController might be nullptr during shutdown.
+  // TODO(xdai|sammiequon): See if we can reorder so that users of the function
+  // (split_view_controller) get shutddown before screen orientation controller.
+  if (!Shell::Get()->screen_orientation_controller())
+    return OrientationLockType::kAny;
+  return Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
+}
+
+bool IsCurrentScreenOrientationLandscape() {
+  return IsLandscapeOrientation(GetCurrentScreenOrientation());
+}
+
+bool IsCurrentScreenOrientationPrimary() {
+  return IsPrimaryOrientation(GetCurrentScreenOrientation());
+}
+
 std::ostream& operator<<(std::ostream& out, const OrientationLockType& lock) {
   switch (lock) {
     case OrientationLockType::kAny:

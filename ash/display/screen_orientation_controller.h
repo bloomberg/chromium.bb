@@ -33,6 +33,10 @@ bool IsPrimaryOrientation(OrientationLockType type);
 bool IsLandscapeOrientation(OrientationLockType type);
 bool IsPortraitOrientation(OrientationLockType type);
 
+ASH_EXPORT OrientationLockType GetCurrentScreenOrientation();
+ASH_EXPORT bool IsCurrentScreenOrientationLandscape();
+ASH_EXPORT bool IsCurrentScreenOrientationPrimary();
+
 ASH_EXPORT std::ostream& operator<<(std::ostream& out,
                                     const OrientationLockType& lock);
 
