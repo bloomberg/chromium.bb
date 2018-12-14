@@ -200,10 +200,6 @@ extern const char kCreditCardAssistDescription[];
 extern const char kDataSaverServerPreviewsName[];
 extern const char kDataSaverServerPreviewsDescription[];
 
-extern const char kDatasaverPromptName[];
-extern const char kDatasaverPromptDescription[];
-extern const char kDatasaverPromptDemoMode[];
-
 extern const char kDebugPackedAppName[];
 extern const char kDebugPackedAppDescription[];
 

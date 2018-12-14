@@ -13,7 +13,6 @@
 // notifications, specifically:
 // * "Chrome will use mobile data..." when cellular is the default network
 //   for the first time in a session.
-// * Prompt users to install data saver extension.
 class MobileDataNotifications : public chromeos::NetworkStateHandlerObserver {
  public:
   MobileDataNotifications();
@@ -24,16 +23,8 @@ class MobileDataNotifications : public chromeos::NetworkStateHandlerObserver {
   void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
 
-  // Shows mobile data usage warning or prompts to install data saver extension.
+  // Shows a one-time mobile data usage warning.
   void ShowOptionalMobileDataNotification();
-
-  // True if we should show notification prompting user to install data saver
-  // extension.
-  bool ShouldShowDataSaverNotification();
-
-  // True if we've shown notifications during this session. We only want to show
-  // mobile notifications once per session.
-  bool notifications_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileDataNotifications);
 };

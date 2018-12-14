@@ -868,6 +868,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if defined(OS_CHROMEOS)
   // Added 12/2017.
   profile_prefs->ClearPref(kTouchHudProjectionEnabled);
+
+  // Added 12/2018.
+  profile_prefs->ClearPref(prefs::kDataSaverPromptsShown);
 #endif
 
 #if defined(OS_ANDROID)
