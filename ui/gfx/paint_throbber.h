@@ -60,7 +60,7 @@ GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
 
 // Cycle time for the throbber above. Used to be able to smoothly transition
 // between the throbber and the determinite progress-bar animation.
-constexpr int kNewThrobberWaitingAnimationCycleMs = 1000;
+constexpr int kNewThrobberWaitingAnimationCycleMs = 800;
 
 }  // namespace gfx
 
