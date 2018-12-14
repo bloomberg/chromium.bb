@@ -318,7 +318,7 @@ bool TryGetModuleTimeDateStamp(void* module_load_address,
       return false;
 
     *time_date_stamp = GetModuleTimeDateStamp(module_load_address);
-  } __except(FilterAccessViolation(GetExceptionCode(),
+  } __except (FilterAccessViolation(GetExceptionCode(),
                                     GetExceptionInformation(),
                                     module_load_address, size_of_image)) {
     return false;
@@ -735,13 +735,13 @@ base::string16 TranslationDelegate::GetLocalizedString(
     int installer_string_id) {
   int resource_id = 0;
   switch (installer_string_id) {
-    // HANDLE_STRING is used by the DO_STRING_MAPPING macro which is in the
-    // generated header installer_util_strings.h.
+  // HANDLE_STRING is used by the DO_INSTALLER_STRING_MAPPING macro which is in
+  // the generated header installer_util_strings.h.
 #define HANDLE_STRING(base_id, chrome_id) \
   case base_id: \
     resource_id = chrome_id; \
     break;
-    DO_STRING_MAPPING
+  DO_INSTALLER_STRING_MAPPING
 #undef HANDLE_STRING
   default:
     NOTREACHED();
