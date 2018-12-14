@@ -158,7 +158,13 @@ hooks = [
     'pattern': '.',
     'action': ['python', 'tools/clang/scripts/update.py', '--if-needed'],
   },
-
+  {
+    # Update LASTCHANGE.
+    'name': 'lastchange',
+    'pattern': '.',
+    'action': ['python', 'build/util/lastchange.py',
+               '-o', 'build/util/LASTCHANGE'],
+  },
   # Pull GN binaries. This needs to be before running GYP below.
   {
     'name': 'gn_win',
