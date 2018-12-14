@@ -78,6 +78,8 @@ defaults.
       which events to extract from the tracefile to display
   --webapk=PACKAGE_NAME
       the WebAPK package name for WebAPK startup tracing
+  --extra_chrome_categories=category1,category2
+      extra chrome tracing categories to record
 ```
 
 systrace-extract-startup.py

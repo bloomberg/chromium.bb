@@ -146,6 +146,9 @@ for i in "$@"; do
         --webapk=*)
         webapk_package="${i#*=}"
         ;;
+        --extra_chrome_categories=*)
+        extra_chrome_categories="${i#*=}"
+        ;;
         --*)
         echo "Unknown option or missing option argument: $i"
         exit 1
@@ -279,6 +282,11 @@ fi
 repeat_count=1
 if [ ! -z "$repeat" ]; then
     repeat_count="$repeat"
+fi
+
+if [ ! -z "$extra_chrome_categories" ]; then
+    chrome_categories="_DEFAULT_CHROME_CATEGORIES,${extra_chrome_categories}"
+    profile_options="$profile_options --chrome_categories=${chrome_categories}"
 fi
 
 first_iteration=true
