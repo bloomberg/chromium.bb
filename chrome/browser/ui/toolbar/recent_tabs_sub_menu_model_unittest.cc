@@ -32,9 +32,9 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/menu_model_test.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/sessions/core/persistent_tab_restore_service.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_types.h"
+#include "components/sessions/core/tab_restore_service_impl.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/engine/data_type_activation_response.h"
@@ -158,7 +158,7 @@ class RecentTabsSubMenuModelTest
 
   static std::unique_ptr<KeyedService> GetTabRestoreService(
       content::BrowserContext* browser_context) {
-    return std::make_unique<sessions::PersistentTabRestoreService>(
+    return std::make_unique<sessions::TabRestoreServiceImpl>(
         base::WrapUnique(new ChromeTabRestoreServiceClient(
             Profile::FromBrowserContext(browser_context))),
         nullptr);

@@ -20,15 +20,14 @@
 
 namespace sessions {
 
-class TabRestoreService;
+class TabRestoreServiceImpl;
 class TabRestoreServiceClient;
 class LiveTabContext;
 class TabRestoreServiceObserver;
 class TimeFactory;
 
-// Helper class used to implement InMemoryTabRestoreService and
-// PersistentTabRestoreService. See tab_restore_service.h for method-level
-// comments.
+// Helper class used to implement TabRestoreService. See tab_restore_service.h
+// for method-level comments.
 class SESSIONS_EXPORT TabRestoreServiceHelper
     : public base::trace_event::MemoryDumpProvider {
  public:
@@ -128,7 +127,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   static bool ValidateEntry(const Entry& entry);
 
  private:
-  friend class PersistentTabRestoreService;
+  friend class TabRestoreServiceImpl;
 
   // Populates the tab's navigations from the LiveTab, and its browser_id and
   // pinned state from the context.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_CORE_PERSISTENT_TAB_RESTORE_SERVICE_H_
-#define COMPONENTS_SESSIONS_CORE_PERSISTENT_TAB_RESTORE_SERVICE_H_
+#ifndef COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_IMPL_H_
+#define COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_IMPL_H_
 
 #include <memory>
 #include <vector>
@@ -15,18 +15,18 @@
 #include "components/sessions/core/tab_restore_service_client.h"
 #include "components/sessions/core/tab_restore_service_helper.h"
 
-class PersistentTabRestoreServiceTest;
+class TabRestoreServiceImplTest;
 
 namespace sessions {
 
 // Tab restore service that persists data on disk.
-class SESSIONS_EXPORT PersistentTabRestoreService : public TabRestoreService {
+class SESSIONS_EXPORT TabRestoreServiceImpl : public TabRestoreService {
  public:
   // Does not take ownership of |time_factory|.
-  PersistentTabRestoreService(std::unique_ptr<TabRestoreServiceClient> client,
-                              TimeFactory* time_factory);
+  TabRestoreServiceImpl(std::unique_ptr<TabRestoreServiceClient> client,
+                        TimeFactory* time_factory);
 
-  ~PersistentTabRestoreService() override;
+  ~TabRestoreServiceImpl() override;
 
   // TabRestoreService:
   void AddObserver(TabRestoreServiceObserver* observer) override;
@@ -51,21 +51,21 @@ class SESSIONS_EXPORT PersistentTabRestoreService : public TabRestoreService {
   void Shutdown() override;
 
  private:
-  friend class ::PersistentTabRestoreServiceTest;
+  friend class ::TabRestoreServiceImplTest;
 
-  class Delegate;
+  class PersistenceDelegate;
 
   // Exposed for testing.
   Entries* mutable_entries();
   void PruneEntries();
 
   std::unique_ptr<TabRestoreServiceClient> client_;
-  std::unique_ptr<Delegate> delegate_;
+  std::unique_ptr<PersistenceDelegate> persistence_delegate_;
   TabRestoreServiceHelper helper_;
 
-  DISALLOW_COPY_AND_ASSIGN(PersistentTabRestoreService);
+  DISALLOW_COPY_AND_ASSIGN(TabRestoreServiceImpl);
 };
 
 }  // namespace sessions
 
-#endif  // COMPONENTS_SESSIONS_CORE_PERSISTENT_TAB_RESTORE_SERVICE_H_
+#endif  // COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_IMPL_H_
