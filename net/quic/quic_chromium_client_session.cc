@@ -130,13 +130,15 @@ std::unique_ptr<base::Value> NetLogQuicConnectionMigrationSuccessCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogProbingDestinationCallback(
+std::unique_ptr<base::Value> NetLogProbingResultCallback(
     NetworkChangeNotifier::NetworkHandle network,
     const quic::QuicSocketAddress* peer_address,
+    bool is_success,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("network", base::Int64ToString(network));
   dict->SetString("peer address", peer_address->ToString());
+  dict->SetBoolean("is_success", is_success);
   return std::move(dict);
 }
 
@@ -1893,9 +1895,9 @@ void QuicChromiumClientSession::OnProbeSucceeded(
   DCHECK(writer);
   DCHECK(reader);
 
-  net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_SUCCEEDED,
-      base::Bind(&NetLogProbingDestinationCallback, network, &peer_address));
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CONNECTIVITY_PROBING_FINISHED,
+                    base::Bind(&NetLogProbingResultCallback, network,
+                               &peer_address, /*is_success=*/true));
 
   if (network != NetworkChangeNotifier::kInvalidNetworkHandle) {
     OnProbeNetworkSucceeded(network, peer_address, self_address,
@@ -1965,9 +1967,9 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
 void QuicChromiumClientSession::OnProbeFailed(
     NetworkChangeNotifier::NetworkHandle network,
     const quic::QuicSocketAddress& peer_address) {
-  net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_FAILED,
-      NetLog::Int64Callback("network", network));
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CONNECTIVITY_PROBING_FINISHED,
+                    base::Bind(&NetLogProbingResultCallback, network,
+                               &peer_address, /*is_success=*/false));
 
   if (network != NetworkChangeNotifier::kInvalidNetworkHandle)
     OnProbeNetworkFailed(network, peer_address);
