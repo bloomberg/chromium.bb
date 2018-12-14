@@ -201,12 +201,11 @@ void SharedImageInterfaceProxy::DestroySharedImage(const SyncToken& sync_token,
       new_token.SetVerifyFlush();
     }
   }
-  uint32_t flush_id = host_->EnqueueDeferredMessage(
-      GpuChannelMsg_DestroySharedImage(route_id_, mailbox),
-      std::move(dependencies));
   {
     base::AutoLock lock(lock_);
-    last_flush_id_ = flush_id;
+    last_flush_id_ = host_->EnqueueDeferredMessage(
+        GpuChannelMsg_DestroySharedImage(route_id_, mailbox),
+        std::move(dependencies));
   }
 }
 
