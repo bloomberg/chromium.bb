@@ -34,6 +34,7 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/views_mus_tests_catalog_source.h"
 #include "ui/views/test/platform_test_helper.h"
 #include "ui/views/test/views_test_helper_aura.h"
 #include "ui/views/views_delegate.h"
@@ -41,9 +42,6 @@
 
 namespace views {
 namespace {
-
-const base::FilePath::CharType kCatalogFilename[] =
-    FILE_PATH_LITERAL("views_mus_tests_catalog.json");
 
 void EnsureCommandLineSwitch(const std::string& name) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -56,8 +54,7 @@ class ServiceManagerConnection {
   ServiceManagerConnection()
       : thread_("Persistent service_manager connections"),
         default_service_binding_(&default_service_) {
-    catalog::Catalog::LoadDefaultCatalogManifest(
-        base::FilePath(kCatalogFilename));
+    catalog::Catalog::SetDefaultCatalogManifest(CreateViewsMusTestsCatalog());
     base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::Thread::Options options;

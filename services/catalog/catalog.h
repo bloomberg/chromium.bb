@@ -24,7 +24,6 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
-class FilePath;
 class SequencedTaskRunner;
 class Value;
 }
@@ -51,10 +50,6 @@ class COMPONENT_EXPORT(CATALOG) Catalog : public service_manager::Service {
   // Catalog instances which are constructed with a null static manifest.
   static void SetDefaultCatalogManifest(
       std::unique_ptr<base::Value> static_manifest);
-
-  // Loads a default catalog manifest from the given FilePath. |path| is taken
-  // to be relative to the current executable's path.
-  static void LoadDefaultCatalogManifest(const base::FilePath& path);
 
   Instance* GetInstanceForGroup(const base::Token& instance_group);
 
