@@ -63,6 +63,7 @@ void LocalStateUIHandler::RegisterMessages() {
 }
 
 void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {
+  AllowJavascript();
   std::unique_ptr<base::DictionaryValue> local_state_values(
       g_browser_process->local_state()->GetPreferenceValues(
           PrefService::EXCLUDE_DEFAULTS));
@@ -78,8 +79,8 @@ void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {
   if (!result)
     json = "Error loading Local State file.";
 
-  web_ui()->CallJavascriptFunctionUnsafe("localState.setLocalState",
-                                         base::Value(json));
+  const base::Value& callback_id = args->GetList()[0];
+  ResolveJavascriptCallback(callback_id, base::Value(json));
 }
 
 // Returns true if |pref_name| starts with one of the |valid_prefixes|.
