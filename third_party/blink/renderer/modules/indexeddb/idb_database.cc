@@ -218,9 +218,8 @@ void IDBDatabase::OnChanges(
       }
 
       observer->Callback()->InvokeAndReportException(
-          observer,
-          IDBObserverChanges::Create(this, transaction, web_observations,
-                                     observations, map_entry.second));
+          observer, IDBObserverChanges::Create(this, transaction, observations,
+                                               map_entry.second));
       if (transaction)
         transaction->SetActive(false);
     }
