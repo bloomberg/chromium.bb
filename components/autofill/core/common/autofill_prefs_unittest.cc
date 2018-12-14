@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
@@ -174,6 +176,26 @@ TEST_F(AutofillPrefsTest, WalletSyncTransportPref_Clear) {
   EXPECT_TRUE(pref_service()
                   ->GetDictionary(prefs::kAutofillSyncTransportOptIn)
                   ->DictEmpty());
+}
+
+// Tests that the account id hash that we generate can be written and read from
+// JSON properly.
+TEST_F(AutofillPrefsTest, WalletSyncTransportPref_CanBeSetAndReadFromJSON) {
+  const std::string account1 = "account1";
+
+  // Set the opt-in for the first account.
+  SetUserOptedInWalletSyncTransport(pref_service(), account1, true);
+  EXPECT_FALSE(pref_service()
+                   ->GetDictionary(prefs::kAutofillSyncTransportOptIn)
+                   ->DictEmpty());
+
+  const base::DictionaryValue* dictionary =
+      pref_service()->GetDictionary(prefs::kAutofillSyncTransportOptIn);
+
+  std::string output_js;
+  EXPECT_TRUE(base::JSONWriter::Write(*dictionary, &output_js));
+  EXPECT_TRUE(dictionary->Equals(
+      base::DictionaryValue::From(base::JSONReader::Read(output_js)).get()));
 }
 
 }  // namespace prefs
