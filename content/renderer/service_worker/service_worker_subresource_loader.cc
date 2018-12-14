@@ -448,15 +448,13 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   fallback_factory_->CreateLoaderAndStart(
       url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
       resource_request_, std::move(client), traffic_annotation_);
+
   // Per spec, redirects after this point are not intercepted by the service
   // worker again (https://crbug.com/517364). So this loader is done.
   //
-  // Assume ServiceWorkerSubresourceLoaderFactory is still alive and also
-  // has a ref to fallback_factory_, so it's OK to destruct here. If that
-  // factory dies, the web context that made the request is dead so the request
-  // is moot.
-  DCHECK(!fallback_factory_->HasOneRef());
-
+  // It's OK to destruct this loader here. This loader may be the only one who
+  // has a ref to fallback_factory_ but in that case the web context that made
+  // the request is dead so the request is moot.
   RecordTimingMetrics(false /* handled */);
   delete this;
 }
