@@ -20,7 +20,6 @@
 #endif
 
 namespace {
-constexpr CGFloat kTableViewSeparatorInset = 16;
 // Height of the space used by header/footer when none is set. Default is
 // |estimatedSection{Header|Footer}Height|.
 const CGFloat kDefaultHeaderFooterHeight = 10;
@@ -99,8 +98,8 @@ NSString* const kSettingsToolbarDeleteButtonId =
   self.tableView.estimatedSectionHeaderHeight = kEstimatedHeaderFooterHeight;
   self.tableView.estimatedRowHeight = kSettingsCellDefaultHeight;
   self.tableView.estimatedSectionFooterHeight = kEstimatedHeaderFooterHeight;
-  self.tableView.separatorInset = UIEdgeInsetsMake(0, kTableViewSeparatorInset,
-                                                   0, kTableViewSeparatorInset);
+  self.tableView.separatorInset =
+      UIEdgeInsetsMake(0, kTableViewSeparatorInset, 0, 0);
   // Do not set the estimated height of the footer/header as if there is no
   // header/footer, there is an empty space.
 }
