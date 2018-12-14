@@ -89,7 +89,8 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
   // |network|.
   bool IsUnderProbing(NetworkChangeNotifier::NetworkHandle network,
                       const quic::QuicSocketAddress& peer_address) {
-    return (network == network_ && peer_address == peer_address_);
+    return (is_running_ && network == network_ &&
+            peer_address == peer_address_);
   }
 
  private:
@@ -109,9 +110,9 @@ class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
   Delegate* delegate_;  // Unowned, must outlive |this|.
   NetLogWithSource net_log_;
 
-  // Current network that is under probing, resets to
-  // NetworkChangeNotifier::kInvalidNetwork when probing results has been
-  // delivered to |delegate_|.
+  // Current path: |peer_address_| on |network_|, that is under probing
+  // if |is_running_| is true.
+  bool is_running_;
   NetworkChangeNotifier::NetworkHandle network_;
   quic::QuicSocketAddress peer_address_;
 

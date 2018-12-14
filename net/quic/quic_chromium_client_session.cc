@@ -130,6 +130,16 @@ std::unique_ptr<base::Value> NetLogQuicConnectionMigrationSuccessCallback(
   return std::move(dict);
 }
 
+std::unique_ptr<base::Value> NetLogProbingDestinationCallback(
+    NetworkChangeNotifier::NetworkHandle network,
+    const quic::QuicSocketAddress* peer_address,
+    NetLogCaptureMode capture_mode) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("network", base::Int64ToString(network));
+  dict->SetString("peer address", peer_address->ToString());
+  return std::move(dict);
+}
+
 // Histogram for recording the different reasons that a QUIC session is unable
 // to complete the handshake.
 enum HandshakeFailureReason {
@@ -1885,8 +1895,22 @@ void QuicChromiumClientSession::OnProbeSucceeded(
 
   net_log_.AddEvent(
       NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_SUCCEEDED,
-      NetLog::Int64Callback("network", network));
+      base::Bind(&NetLogProbingDestinationCallback, network, &peer_address));
 
+  if (network != NetworkChangeNotifier::kInvalidNetworkHandle) {
+    OnProbeNetworkSucceeded(network, peer_address, self_address,
+                            std::move(socket), std::move(writer),
+                            std::move(reader));
+  }
+}
+
+void QuicChromiumClientSession::OnProbeNetworkSucceeded(
+    NetworkChangeNotifier::NetworkHandle network,
+    const quic::QuicSocketAddress& peer_address,
+    const quic::QuicSocketAddress& self_address,
+    std::unique_ptr<DatagramClientSocket> socket,
+    std::unique_ptr<QuicChromiumPacketWriter> writer,
+    std::unique_ptr<QuicChromiumPacketReader> reader) {
   LogProbeResultToHistogram(current_connection_migration_cause_, true);
 
   // Remove |this| as the old packet writer's delegate. Write error on old
@@ -1945,13 +1969,21 @@ void QuicChromiumClientSession::OnProbeFailed(
       NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_FAILED,
       NetLog::Int64Callback("network", network));
 
+  if (network != NetworkChangeNotifier::kInvalidNetworkHandle)
+    OnProbeNetworkFailed(network, peer_address);
+}
+
+void QuicChromiumClientSession::OnProbeNetworkFailed(
+    NetworkChangeNotifier::NetworkHandle network,
+    const quic::QuicSocketAddress& peer_address) {
   LogProbeResultToHistogram(current_connection_migration_cause_, false);
-  // Probing failure for default network can be ignored.
-  DVLOG(1) << "Connectivity probing failed on NetworkHandle " << network;
+  // Probing failure can be ignored.
+  DVLOG(1) << "Connectivity probing failed on <network: " << network
+           << ", peer_address: " << peer_address.ToString() << ">.";
   DVLOG_IF(1, network == default_network_ &&
                   GetDefaultSocket()->GetBoundNetwork() != default_network_)
-      << "Client probing failed on the default network, QUIC still "
-         "using non-default network.";
+      << "Client probing failed on the default network, still using "
+         "non-default network.";
 }
 
 bool QuicChromiumClientSession::OnSendConnectivityProbingPacket(
