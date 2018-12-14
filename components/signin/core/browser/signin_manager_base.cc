@@ -245,20 +245,3 @@ void SigninManagerBase::AddObserver(Observer* observer) {
 void SigninManagerBase::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
-
-void SigninManagerBase::AddSigninDiagnosticsObserver(
-    signin_internals_util::SigninDiagnosticsObserver* observer) {
-  signin_diagnostics_observers_.AddObserver(observer);
-}
-
-void SigninManagerBase::RemoveSigninDiagnosticsObserver(
-    signin_internals_util::SigninDiagnosticsObserver* observer) {
-  signin_diagnostics_observers_.RemoveObserver(observer);
-}
-
-void SigninManagerBase::NotifyDiagnosticsObservers(
-    const signin_internals_util::TimedSigninStatusField& field,
-    const std::string& value) {
-  for (auto& observer : signin_diagnostics_observers_)
-    observer.NotifySigninValueChanged(field, value);
-}

@@ -154,12 +154,6 @@ class SigninManagerBase : public KeyedService {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Methods to register or remove SigninDiagnosticObservers.
-  void AddSigninDiagnosticsObserver(
-      signin_internals_util::SigninDiagnosticsObserver* observer);
-  void RemoveSigninDiagnosticsObserver(
-      signin_internals_util::SigninDiagnosticsObserver* observer);
-
   // Gives access to the SigninClient instance associated with this instance.
   SigninClient* signin_client() const { return client_; }
 
@@ -196,11 +190,6 @@ class SigninManagerBase : public KeyedService {
   // Makes sure list is empty on destruction.
   base::ObserverList<Observer, true>::Unchecked observer_list_;
 
-  // Helper method to notify all registered diagnostics observers with.
-  void NotifyDiagnosticsObservers(
-      const signin_internals_util::TimedSigninStatusField& field,
-      const std::string& value);
-
  private:
   friend class FakeSigninManagerBase;
   friend class FakeSigninManager;
@@ -217,10 +206,6 @@ class SigninManagerBase : public KeyedService {
 
   // Account id after successful authentication.
   std::string authenticated_account_id_;
-
-  // The list of SigninDiagnosticObservers.
-  base::ObserverList<signin_internals_util::SigninDiagnosticsObserver,
-                     true>::Unchecked signin_diagnostics_observers_;
 
   // The list of callbacks notified on shutdown.
   base::CallbackList<void()> on_shutdown_callback_list_;

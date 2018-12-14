@@ -17,7 +17,6 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/signin/core/browser/signin_internals_util.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -193,14 +192,10 @@ class AboutSigninInternals
         signin::AccountConsistencyMethod account_consistency);
   };
 
-  // IdentityMager::DiagnosticsObserver implementations.
+  // IdentityManager::DiagnosticsObserver implementations.
   void OnAccessTokenRequested(const std::string& account_id,
                               const std::string& consumer_id,
                               const identity::ScopeSet& scopes) override;
-
-  void NotifySigninValueChanged(
-      const signin_internals_util::TimedSigninStatusField& field,
-      const std::string& value) override;
 
   // OAuth2TokenService::DiagnosticsObserver implementations.
   void OnFetchAccessTokenComplete(const std::string& account_id,
@@ -227,6 +222,10 @@ class AboutSigninInternals
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const AccountInfo& primary_account_info) override;
+
+  void NotifyTimedSigninFieldValueChanged(
+      const signin_internals_util::TimedSigninStatusField& field,
+      const std::string& value);
 
   void NotifyObservers();
 

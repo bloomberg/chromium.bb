@@ -55,7 +55,6 @@ enum class ClearPrimaryAccountPolicy;
 class IdentityManager : public SigninManagerBase::Observer,
                         public OAuth2TokenService::DiagnosticsObserver,
                         public OAuth2TokenService::Observer,
-                        public signin_internals_util::SigninDiagnosticsObserver,
                         public GaiaCookieManagerService::Observer {
  public:
   class Observer {
@@ -143,11 +142,6 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnAccessTokenRequested(const std::string& account_id,
                                         const std::string& consumer_id,
                                         const identity::ScopeSet& scopes) {}
-
-    // Called on credentials and signin related changes.
-    virtual void NotifySigninValueChanged(
-        const signin_internals_util::TimedSigninStatusField& field,
-        const std::string& value) {}
   };
 
   IdentityManager(
@@ -378,10 +372,6 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& account_id,
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes) override;
-
-  void NotifySigninValueChanged(
-      const signin_internals_util::TimedSigninStatusField& field,
-      const std::string& value) override;
 
   // Backing signin classes. NOTE: We strive to limit synchronous access to
   // these classes in the IdentityManager implementation, as all such

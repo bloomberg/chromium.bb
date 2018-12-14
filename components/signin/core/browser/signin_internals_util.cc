@@ -37,8 +37,6 @@ std::string SigninStatusFieldToString(TimedSigninStatusField field) {
   switch (field) {
     ENUM_CASE(AUTHENTICATION_RESULT_RECEIVED);
     ENUM_CASE(REFRESH_TOKEN_RECEIVED);
-    ENUM_CASE(SIGNIN_STARTED);
-    ENUM_CASE(SIGNIN_COMPLETED);
     case TIMED_FIELDS_END:
       NOTREACHED();
       return std::string();
