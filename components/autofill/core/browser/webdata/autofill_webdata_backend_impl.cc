@@ -410,12 +410,13 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerCardMetadata(
     const CreditCard& card,
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  DCHECK_NE(CreditCard::LOCAL_CARD, card.record_type());
   if (!AutofillTable::FromWebDatabase(db)->UpdateServerCardMetadata(card))
     return WebDatabase::COMMIT_NOT_NEEDED;
 
   for (auto& db_observer : db_observer_list_) {
     db_observer.CreditCardChanged(
-        CreditCardChange(CreditCardChange::UPDATE, card.guid(), &card));
+        CreditCardChange(CreditCardChange::UPDATE, card.server_id(), &card));
   }
 
   return WebDatabase::COMMIT_NEEDED;
@@ -425,6 +426,7 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerAddressMetadata(
     const AutofillProfile& profile,
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  DCHECK_EQ(AutofillProfile::SERVER_PROFILE, profile.record_type());
   if (!AutofillTable::FromWebDatabase(db)->UpdateServerAddressMetadata(
           profile)) {
     return WebDatabase::COMMIT_NOT_NEEDED;
@@ -432,7 +434,7 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateServerAddressMetadata(
 
   for (auto& db_observer : db_observer_list_) {
     db_observer.AutofillProfileChanged(AutofillProfileChange(
-        AutofillProfileChange::UPDATE, profile.guid(), &profile));
+        AutofillProfileChange::UPDATE, profile.server_id(), &profile));
   }
 
   return WebDatabase::COMMIT_NEEDED;
