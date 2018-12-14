@@ -1046,7 +1046,7 @@ bool Textfield::HandleAccessibleAction(const ui::AXActionData& action_data) {
       return false;
     // TODO(nektar): Check that the focus_node_id matches the ID of this node.
     const gfx::Range range(action_data.anchor_offset, action_data.focus_offset);
-    return SetSelectionRange(range);
+    return SetEditableSelectionRange(range);
   }
 
   // Remaining actions cannot be performed on readonly fields.
@@ -1590,14 +1590,14 @@ bool Textfield::GetCompositionTextRange(gfx::Range* range) const {
   return true;
 }
 
-bool Textfield::GetSelectionRange(gfx::Range* range) const {
+bool Textfield::GetEditableSelectionRange(gfx::Range* range) const {
   if (!ImeEditingAllowed())
     return false;
   *range = GetRenderText()->selection();
   return true;
 }
 
-bool Textfield::SetSelectionRange(const gfx::Range& range) {
+bool Textfield::SetEditableSelectionRange(const gfx::Range& range) {
   if (!ImeEditingAllowed() || !range.IsValid())
     return false;
   OnBeforeUserAction();

@@ -240,7 +240,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
   base::string16 surrounding_text;
   if (!client->GetTextRange(&text_range) ||
       !client->GetTextFromRange(text_range, &surrounding_text) ||
-      !client->GetSelectionRange(&selection_range)) {
+      !client->GetEditableSelectionRange(&selection_range)) {
     previous_surrounding_text_.clear();
     previous_selection_range_ = gfx::Range::InvalidRange();
     return;

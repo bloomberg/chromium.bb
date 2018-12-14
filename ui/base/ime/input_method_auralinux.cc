@@ -281,7 +281,7 @@ void InputMethodAuraLinux::OnCaretBoundsChanged(const TextInputClient* client) {
   base::string16 text;
   if (client->GetTextRange(&text_range) &&
       client->GetTextFromRange(text_range, &text) &&
-      client->GetSelectionRange(&selection_range)) {
+      client->GetEditableSelectionRange(&selection_range)) {
     context_->SetSurroundingText(text, selection_range);
   }
 

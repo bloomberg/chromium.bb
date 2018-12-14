@@ -6453,7 +6453,7 @@ TEST_F(InputMethodStateAuraTest, GetTextRange) {
 }
 
 // This test is for selection range.
-TEST_F(InputMethodStateAuraTest, GetSelectionRange) {
+TEST_F(InputMethodStateAuraTest, GetEditableSelectionRange) {
   base::string16 text;
   gfx::Range expected_range(0U, 1U);
 
@@ -6464,7 +6464,8 @@ TEST_F(InputMethodStateAuraTest, GetSelectionRange) {
     gfx::Range range_from_client;
 
     // This method always returns true.
-    EXPECT_TRUE(text_input_client()->GetSelectionRange(&range_from_client));
+    EXPECT_TRUE(
+        text_input_client()->GetEditableSelectionRange(&range_from_client));
     EXPECT_EQ(expected_range, range_from_client);
 
     // Changing range to make sure that the next view has a different text

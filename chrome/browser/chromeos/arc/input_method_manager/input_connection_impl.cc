@@ -86,7 +86,7 @@ mojom::TextInputStatePtr InputConnectionImpl::GetTextInputState(
   gfx::Range text_range, selection_range;
   base::string16 text;
   client->GetTextRange(&text_range);
-  client->GetSelectionRange(&selection_range);
+  client->GetEditableSelectionRange(&selection_range);
   client->GetTextFromRange(text_range, &text);
 
   return mojom::TextInputStatePtr(
@@ -147,7 +147,7 @@ void InputConnectionImpl::FinishComposingText() {
 
   ui::TextInputClient* client = GetTextInputClient();
   gfx::Range selection_range, composition_range;
-  client->GetSelectionRange(&selection_range);
+  client->GetEditableSelectionRange(&selection_range);
   client->GetCompositionTextRange(&composition_range);
 
   std::string error;
@@ -183,7 +183,7 @@ void InputConnectionImpl::SetComposingText(
 
   ui::TextInputClient* client = GetTextInputClient();
   gfx::Range selection_range;
-  client->GetSelectionRange(&selection_range);
+  client->GetEditableSelectionRange(&selection_range);
   if (text.empty() &&
       selection_range.start() == static_cast<uint32_t>(selection_start) &&
       selection_range.end() == static_cast<uint32_t>(selection_end)) {
@@ -214,7 +214,7 @@ void InputConnectionImpl::SetSelection(const gfx::Range& new_selection_range) {
   ui::TextInputClient* client = GetTextInputClient();
 
   gfx::Range selection_range;
-  client->GetSelectionRange(&selection_range);
+  client->GetEditableSelectionRange(&selection_range);
   if (new_selection_range == selection_range) {
     // This SetSelection call is no-op.
     // Return the current state immediately.
@@ -222,7 +222,7 @@ void InputConnectionImpl::SetSelection(const gfx::Range& new_selection_range) {
   }
 
   StartStateUpdateTimer();
-  client->SetSelectionRange(new_selection_range);
+  client->SetEditableSelectionRange(new_selection_range);
 }
 
 void InputConnectionImpl::StartStateUpdateTimer() {

@@ -112,12 +112,12 @@ bool PrefixSelector::GetCompositionTextRange(gfx::Range* range) const {
   return false;
 }
 
-bool PrefixSelector::GetSelectionRange(gfx::Range* range) const {
+bool PrefixSelector::GetEditableSelectionRange(gfx::Range* range) const {
   *range = gfx::Range();
   return false;
 }
 
-bool PrefixSelector::SetSelectionRange(const gfx::Range& range) {
+bool PrefixSelector::SetEditableSelectionRange(const gfx::Range& range) {
   return false;
 }
 

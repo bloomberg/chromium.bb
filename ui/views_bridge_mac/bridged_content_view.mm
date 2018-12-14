@@ -97,7 +97,7 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
 
   // If possible, modify actual_range to correspond to caret position.
   gfx::Range selection_range;
-  if (client->GetSelectionRange(&selection_range)) {
+  if (client->GetEditableSelectionRange(&selection_range)) {
     // Caret bounds correspond to end index of selection_range.
     *actual_range = gfx::Range(selection_range.end());
   }
@@ -1377,7 +1377,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     return NO;
 
   gfx::Range selectionRange;
-  if (!textInputClient_->GetSelectionRange(&selectionRange))
+  if (!textInputClient_->GetEditableSelectionRange(&selectionRange))
     return NO;
 
   base::string16 text;
@@ -1513,7 +1513,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     return NSMakeRange(NSNotFound, 0);
 
   gfx::Range range;
-  textInputClient_->GetSelectionRange(&range);
+  textInputClient_->GetEditableSelectionRange(&range);
   return range.ToNSRange();
 }
 

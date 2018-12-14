@@ -442,7 +442,7 @@ bool ArcImeService::GetTextRange(gfx::Range* range) const {
   return true;
 }
 
-bool ArcImeService::GetSelectionRange(gfx::Range* range) const {
+bool ArcImeService::GetEditableSelectionRange(gfx::Range* range) const {
   if (!selection_range_.IsValid())
     return false;
   *range = selection_range_;
@@ -502,7 +502,7 @@ bool ArcImeService::GetCompositionTextRange(gfx::Range* range) const {
   return false;
 }
 
-bool ArcImeService::SetSelectionRange(const gfx::Range& range) {
+bool ArcImeService::SetEditableSelectionRange(const gfx::Range& range) {
   return false;
 }
 

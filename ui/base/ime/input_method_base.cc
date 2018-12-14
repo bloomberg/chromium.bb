@@ -259,7 +259,7 @@ SurroundingTextInfo InputMethodBase::GetSurroundingTextInfo() {
   TextInputClient* client = GetTextInputClient();
   if (!client->GetTextRange(&text_range) ||
       !client->GetTextFromRange(text_range, &info.surrounding_text) ||
-      !client->GetSelectionRange(&info.selection_range)) {
+      !client->GetEditableSelectionRange(&info.selection_range)) {
     return SurroundingTextInfo();
   }
   return info;

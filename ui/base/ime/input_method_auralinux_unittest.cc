@@ -252,7 +252,7 @@ class TextInputClientForTesting : public DummyTextInputClient {
     *range = text_range;
     return true;
   }
-  bool GetSelectionRange(gfx::Range* range) const override {
+  bool GetEditableSelectionRange(gfx::Range* range) const override {
     *range = selection_range;
     return true;
   }

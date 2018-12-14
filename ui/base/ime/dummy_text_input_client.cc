@@ -92,11 +92,11 @@ bool DummyTextInputClient::GetCompositionTextRange(gfx::Range* range) const {
   return false;
 }
 
-bool DummyTextInputClient::GetSelectionRange(gfx::Range* range) const {
+bool DummyTextInputClient::GetEditableSelectionRange(gfx::Range* range) const {
   return false;
 }
 
-bool DummyTextInputClient::SetSelectionRange(const gfx::Range& range) {
+bool DummyTextInputClient::SetEditableSelectionRange(const gfx::Range& range) {
   selection_history_.push_back(range);
   return false;
 }
