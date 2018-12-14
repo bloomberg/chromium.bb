@@ -72,6 +72,16 @@ let RawSiteException;
 let SiteException;
 
 /**
+ * The chooser exception after it has been converted/filtered for UI use.
+ * See also: RawChooserException.
+ * @typedef {{chooserType: !settings.ChooserType,
+ *            displayName: string,
+ *            object: Object,
+ *            sites: Array<!SiteException>}}
+ */
+let ChooserException;
+
+/**
  * @typedef {{setting: !settings.ContentSetting,
  *            source: !ContentSettingProvider}}
  */
@@ -200,6 +210,17 @@ cr.define('settings', function() {
      */
     resetCategoryPermissionForPattern(
         primaryPattern, secondaryPattern, contentType, incognito) {}
+
+    /**
+     * Removes a particular chooser object permission by origin and embedding
+     * origin.
+     * @param {settings.ChooserType} chooserType The chooser exception type
+     * @param {string} origin The origin to look up the permission for.
+     * @param {string} embeddingOrigin the embedding origin to look up.
+     * @param {!Object} exception The exception to revoke permission for.
+     */
+    resetChooserExceptionForSite(
+        chooserType, origin, embeddingOrigin, exception) {}
 
     /**
      * Sets the category permission for a given origin (expressed as primary and
@@ -387,6 +408,14 @@ cr.define('settings', function() {
       chrome.send(
           'resetCategoryPermissionForPattern',
           [primaryPattern, secondaryPattern, contentType, incognito]);
+    }
+
+    /** @override */
+    resetChooserExceptionForSite(
+        chooserType, origin, embeddingOrigin, exception) {
+      chrome.send(
+          'resetChooserExceptionForSite',
+          [chooserType, origin, embeddingOrigin, exception]);
     }
 
     /** @override */

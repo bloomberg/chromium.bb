@@ -39,6 +39,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'removeUsbDevice',
       'removeZoomLevel',
       'resetCategoryPermissionForPattern',
+      'resetChooserExceptionForSite',
       'setCategoryPermissionForPattern',
       'setDefaultValueForContentType',
       'setOriginPermissions',
@@ -299,6 +300,15 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     this.methodCalled(
         'resetCategoryPermissionForPattern',
         [primaryPattern, secondaryPattern, contentType, incognito]);
+    return Promise.resolve();
+  }
+
+  /** @override */
+  resetChooserExceptionForSite(
+      chooserType, origin, embeddingOrigin, exception) {
+    this.methodCalled(
+        'resetChooserExceptionForSite',
+        [chooserType, origin, embeddingOrigin, exception]);
     return Promise.resolve();
   }
 
