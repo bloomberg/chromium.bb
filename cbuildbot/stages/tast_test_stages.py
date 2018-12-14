@@ -180,8 +180,8 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
            '--image-path=' + image_path, '--copy-on-write',
            '--host-cmd', '--', cros_sdk, '--',
            'tast', '-verbose', 'run', '-build=false', '-extrauseflags=tast_vm',
-           '-resultsdir=' + suite_chroot_results_dir, '127.0.0.1:9222'
-          ] + test_exprs
+           '-waituntilready', '-resultsdir=' + suite_chroot_results_dir,
+           '127.0.0.1:9222'] + test_exprs
 
     result = cros_build_lib.RunCommand(
         cmd, error_code_ok=True,
