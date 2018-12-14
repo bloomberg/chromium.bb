@@ -221,11 +221,9 @@ void PipWindowResizer::RevertDrag() {
 }
 
 void PipWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_SCROLL_FLING_START) {
-    fling_velocity_x_ = event->details().velocity_x();
-    fling_velocity_y_ = event->details().velocity_y();
-    CompleteDrag();
-  }
+  fling_velocity_x_ = event->details().velocity_x();
+  fling_velocity_y_ = event->details().velocity_y();
+  CompleteDrag();
 }
 
 gfx::Rect PipWindowResizer::ComputeFlungPosition() {
