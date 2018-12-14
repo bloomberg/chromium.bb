@@ -22,8 +22,7 @@
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [TableViewTextHeaderFooterView class];
-    self.accessibilityTraits |=
-        UIAccessibilityTraitButton | UIAccessibilityTraitHeader;
+    self.accessibilityTraits |= UIAccessibilityTraitHeader;
   }
   return self;
 }
