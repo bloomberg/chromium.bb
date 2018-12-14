@@ -24,6 +24,7 @@ import sys
 import traceback
 
 import test_runner
+import xcodebuild_runner
 
 
 def main():
@@ -36,7 +37,19 @@ def main():
     os.makedirs(args.out_dir)
 
   try:
-    if args.replay_path != 'NO_PATH':
+    if args.xcode_parallelization:
+      tr = xcodebuild_runner.SimulatorParallelTestRunner(
+          args.app,
+          args.xcode_build_version,
+          args.version,
+          args.platform,
+          out_dir=args.out_dir,
+          mac_toolchain=args.mac_toolchain_cmd,
+          retry=args.retries,
+          shards=args.shards,
+          xcode_path=args.xcode_path,
+      )
+    elif args.replay_path != 'NO_PATH':
       tr = test_runner.WprProxySimulatorTestRunner(
           args.app,
           args.iossim,
@@ -112,11 +125,17 @@ def parse_args():
   parser = argparse.ArgumentParser()
 
   parser.add_argument(
+      '-x',
+      '--xcode-parallelization',
+      help='Run tests using xcodebuild\'s parallelization.',
+      action='store_true',
+  )
+  parser.add_argument(
     '-a',
     '--app',
     help='Compiled .app to run.',
     metavar='app',
-    required=True,
+    required='-x' not in sys.argv and '--xcode-parallelization' not in sys.argv,
   )
   parser.add_argument(
     '-e',
@@ -228,12 +247,17 @@ def parse_args():
   )
 
   args, test_args = parser.parse_known_args()
-  if args.iossim or args.platform or args.version:
+  if not args.xcode_parallelization and (
+      args.iossim or args.platform or args.version):
     # If any of --iossim, --platform, or --version
     # are specified then they must all be specified.
     if not (args.iossim and args.platform and args.version):
       parser.error(
         'must specify all or none of -i/--iossim, -p/--platform, -v/--version')
+
+  if args.xcode_parallelization and not (args.platform and args.version):
+    parser.error(''.join(['--xcode-parallezation also requires',
+                          'both -p/--platform and -v/--version']))
 
   args_json = json.loads(args.args_json)
   args.env_var = args.env_var or []
