@@ -206,7 +206,9 @@ void TestLoadTimingNotReused(const LoadTimingInfo& load_timing_info,
   EXPECT_LE(load_timing_info.connect_timing.connect_end,
             load_timing_info.send_start);
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
-  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_start);
+  EXPECT_LE(load_timing_info.receive_headers_start,
+            load_timing_info.receive_headers_end);
 
   EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
   EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
@@ -233,7 +235,9 @@ void TestLoadTimingNotReusedWithProxy(
   EXPECT_LE(load_timing_info.connect_timing.connect_end,
             load_timing_info.send_start);
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
-  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_start);
+  EXPECT_LE(load_timing_info.receive_headers_start,
+            load_timing_info.receive_headers_end);
 }
 
 // Same as above, but with a reused socket and proxy times.
@@ -254,7 +258,9 @@ void TestLoadTimingReusedWithProxy(
   EXPECT_LE(load_timing_info.proxy_resolve_end,
             load_timing_info.send_start);
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
-  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_start);
+  EXPECT_LE(load_timing_info.receive_headers_start,
+            load_timing_info.receive_headers_end);
 }
 
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
@@ -291,7 +297,9 @@ void TestLoadTimingCacheHitNoNetwork(
   ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
   EXPECT_LE(load_timing_info.request_start, load_timing_info.send_start);
   EXPECT_LE(load_timing_info.send_start, load_timing_info.send_end);
-  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_end);
+  EXPECT_LE(load_timing_info.send_end, load_timing_info.receive_headers_start);
+  EXPECT_LE(load_timing_info.receive_headers_start,
+            load_timing_info.receive_headers_end);
 
   EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
   EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
@@ -316,6 +324,7 @@ void TestLoadTimingNoHttpResponse(
   EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
   EXPECT_TRUE(load_timing_info.send_start.is_null());
   EXPECT_TRUE(load_timing_info.send_end.is_null());
+  EXPECT_TRUE(load_timing_info.receive_headers_start.is_null());
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 #endif
@@ -2130,7 +2139,8 @@ LoadTimingInfo NormalLoadTimingInfo(base::TimeTicks now,
 
   load_timing.send_start = now + base::TimeDelta::FromDays(9);
   load_timing.send_end = now + base::TimeDelta::FromDays(10);
-  load_timing.receive_headers_end = now + base::TimeDelta::FromDays(11);
+  load_timing.receive_headers_start = now + base::TimeDelta::FromDays(11);
+  load_timing.receive_headers_end = now + base::TimeDelta::FromDays(12);
   return load_timing;
 }
 
@@ -2148,7 +2158,8 @@ LoadTimingInfo NormalLoadTimingInfoReused(base::TimeTicks now,
 
   load_timing.send_start = now + base::TimeDelta::FromDays(9);
   load_timing.send_end = now + base::TimeDelta::FromDays(10);
-  load_timing.receive_headers_end = now + base::TimeDelta::FromDays(11);
+  load_timing.receive_headers_start = now + base::TimeDelta::FromDays(11);
+  load_timing.receive_headers_end = now + base::TimeDelta::FromDays(12);
   return load_timing;
 }
 
@@ -2173,6 +2184,8 @@ LoadTimingInfo RunURLRequestInterceptorLoadTimingTest(
   EXPECT_EQ(job_load_timing.socket_log_id, resulting_load_timing.socket_log_id);
   EXPECT_EQ(job_load_timing.send_start, resulting_load_timing.send_start);
   EXPECT_EQ(job_load_timing.send_end, resulting_load_timing.send_end);
+  EXPECT_EQ(job_load_timing.receive_headers_start,
+            resulting_load_timing.receive_headers_start);
   EXPECT_EQ(job_load_timing.receive_headers_end,
             resulting_load_timing.receive_headers_end);
   EXPECT_EQ(job_load_timing.push_start, resulting_load_timing.push_start);

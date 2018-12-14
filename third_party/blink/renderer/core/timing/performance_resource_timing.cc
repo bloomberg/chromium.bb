@@ -288,10 +288,14 @@ DOMHighResTimeStamp PerformanceResourceTiming::responseStart() const {
   if (!timing)
     return requestStart();
 
-  // FIXME: This number isn't exactly correct. See the notes in
-  // PerformanceTiming::responseStart().
+  TimeTicks response_start = timing->ReceiveHeadersStart();
+  if (response_start.is_null())
+    response_start = timing->ReceiveHeadersEnd();
+  if (response_start.is_null())
+    return requestStart();
+
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, timing->ReceiveHeadersEnd(), allow_negative_value_);
+      time_origin_, response_start, allow_negative_value_);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::responseEnd() const {

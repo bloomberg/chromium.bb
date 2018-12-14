@@ -27,6 +27,7 @@ scoped_refptr<ResourceLoadTiming> ResourceLoadTiming::DeepCopy() {
   timing->worker_ready_ = worker_ready_;
   timing->send_start_ = send_start_;
   timing->send_end_ = send_end_;
+  timing->receive_headers_start_ = receive_headers_start_;
   timing->receive_headers_end_ = receive_headers_end_;
   timing->ssl_start_ = ssl_start_;
   timing->ssl_end_ = ssl_end_;
@@ -44,6 +45,7 @@ bool ResourceLoadTiming::operator==(const ResourceLoadTiming& other) const {
          worker_start_ == other.worker_start_ &&
          worker_ready_ == other.worker_ready_ &&
          send_start_ == other.send_start_ && send_end_ == other.send_end_ &&
+         receive_headers_start_ == other.receive_headers_start_ &&
          receive_headers_end_ == other.receive_headers_end_ &&
          ssl_start_ == other.ssl_start_ && ssl_end_ == other.ssl_end_ &&
          push_start_ == other.push_start_ && push_end_ == other.push_end_;
@@ -97,6 +99,11 @@ void ResourceLoadTiming::SetSendStart(TimeTicks send_start) {
 
 void ResourceLoadTiming::SetSendEnd(TimeTicks send_end) {
   send_end_ = send_end;
+}
+
+void ResourceLoadTiming::SetReceiveHeadersStart(
+    TimeTicks receive_headers_start) {
+  receive_headers_start_ = receive_headers_start;
 }
 
 void ResourceLoadTiming::SetReceiveHeadersEnd(TimeTicks receive_headers_end) {

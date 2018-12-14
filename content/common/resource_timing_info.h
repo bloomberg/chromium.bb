@@ -48,6 +48,7 @@ struct ResourceLoadTiming {
   base::TimeTicks worker_ready;
   base::TimeTicks send_start;
   base::TimeTicks send_end;
+  base::TimeTicks receive_headers_start;
   base::TimeTicks receive_headers_end;
   base::TimeTicks ssl_start;
   base::TimeTicks ssl_end;

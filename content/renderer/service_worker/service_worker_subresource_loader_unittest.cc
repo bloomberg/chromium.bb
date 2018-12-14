@@ -643,6 +643,13 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
   EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
 
   client->RunUntilComplete();
+
+  net::LoadTimingInfo load_timing_info = client->response_head().load_timing;
+  EXPECT_FALSE(load_timing_info.receive_headers_start.is_null());
+  EXPECT_FALSE(load_timing_info.receive_headers_end.is_null());
+  EXPECT_LE(load_timing_info.receive_headers_start,
+            load_timing_info.receive_headers_end);
+
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
                                       blink::ServiceWorkerStatusCode::kOk, 1);
   histogram_tester.ExpectTotalCount(

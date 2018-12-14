@@ -135,6 +135,14 @@ void WebURLLoadTiming::SetSendEnd(base::TimeTicks end) {
   private_->SetSendEnd(end);
 }
 
+base::TimeTicks WebURLLoadTiming::ReceiveHeadersStart() const {
+  return private_->ReceiveHeadersStart();
+}
+
+void WebURLLoadTiming::SetReceiveHeadersStart(base::TimeTicks start) {
+  private_->SetReceiveHeadersStart(start);
+}
+
 base::TimeTicks WebURLLoadTiming::ReceiveHeadersEnd() const {
   return private_->ReceiveHeadersEnd();
 }

@@ -773,7 +773,9 @@ void ServiceWorkerURLRequestJob::SetResponse(
   response_time_ = response->response_time;
   CreateResponseHeader(response->status_code, response->status_text,
                        std::move(response->headers));
-  load_timing_info_.receive_headers_end = base::TimeTicks::Now();
+  load_timing_info_.receive_headers_start = base::TimeTicks::Now();
+  load_timing_info_.receive_headers_end =
+      load_timing_info_.receive_headers_start;
 
   response_is_in_cache_storage_ = response->is_in_cache_storage;
   if (response->cache_storage_cache_name) {

@@ -485,7 +485,9 @@ void ServiceWorkerSubresourceLoader::StartResponse(
       response->status_code, response->status_text, response->headers,
       &response_head_);
   response_head_.response_start = base::TimeTicks::Now();
-  response_head_.load_timing.receive_headers_end = base::TimeTicks::Now();
+  response_head_.load_timing.receive_headers_start = base::TimeTicks::Now();
+  response_head_.load_timing.receive_headers_end =
+      response_head_.load_timing.receive_headers_start;
   response_source_ = response->response_source;
 
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect

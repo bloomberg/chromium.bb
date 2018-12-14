@@ -30,6 +30,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_file_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -399,6 +400,8 @@ class HttpNetworkTransactionTest : public PlatformTest,
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     base::RunLoop().RunUntilIdle();
   }
+
+  void Check100ResponseTiming(bool use_spdy);
 
   // Either |write_failure| specifies a write failure or |read_failure|
   // specifies a read failure when using a reused socket.  In either case, the
@@ -1415,6 +1418,180 @@ TEST_F(HttpNetworkTransactionTest, Ignores1xx) {
   rv = ReadTransaction(&trans, &response_data);
   EXPECT_THAT(rv, IsOk());
   EXPECT_EQ("hello world", response_data);
+}
+
+TEST_F(HttpNetworkTransactionTest, LoadTimingMeasuresTimeToFirstByteForHttp) {
+  static const base::TimeDelta kSleepDuration =
+      base::TimeDelta::FromMilliseconds(10);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.foo.com/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  std::vector<MockWrite> data_writes = {
+      MockWrite(ASYNC, 0,
+                "GET / HTTP/1.1\r\n"
+                "Host: www.foo.com\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  std::vector<MockRead> data_reads = {
+      // Write one byte of the status line, followed by a pause.
+      MockRead(ASYNC, 1, "H"),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),
+      MockRead(ASYNC, 3, "TTP/1.1 200 OK\r\n\r\n"),
+      MockRead(ASYNC, 4, "hello world"),
+      MockRead(SYNCHRONOUS, OK, 5),
+  };
+
+  SequencedSocketData data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  TestCompletionCallback callback;
+
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  data.RunUntilPaused();
+  ASSERT_TRUE(data.IsPaused());
+  base::PlatformThread::Sleep(kSleepDuration);
+  data.Resume();
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+
+  EXPECT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info));
+  EXPECT_FALSE(load_timing_info.receive_headers_start.is_null());
+  EXPECT_FALSE(load_timing_info.connect_timing.connect_end.is_null());
+  // Ensure we didn't include the delay in the TTFB time via our prior call to
+  // PlatformThread::Sleep, which guarantees base::TimeTicks() has increased by
+  // kSleepDuration before returning the rest of the response.
+  EXPECT_LT(load_timing_info.receive_headers_start -
+                load_timing_info.connect_timing.connect_end,
+            kSleepDuration);
+
+  std::string response_data;
+  rv = ReadTransaction(&trans, &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("hello world", response_data);
+}
+
+// Tests that the time-to-first-byte reported in a transaction's load timing
+// info uses the first response, even if 1XX/informational.
+void HttpNetworkTransactionTest::Check100ResponseTiming(bool use_spdy) {
+  static const base::TimeDelta kSleepDuration =
+      base::TimeDelta::FromMilliseconds(10);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.foo.com/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  std::vector<MockWrite> data_writes;
+  std::vector<MockRead> data_reads;
+
+  spdy::SpdySerializedFrame spdy_req(
+      spdy_util_.ConstructSpdyGet(request.url.spec().c_str(), 1, LOWEST));
+
+  spdy::SpdyHeaderBlock spdy_resp1_headers;
+  spdy_resp1_headers[spdy::kHttp2StatusHeader] = "100";
+  spdy::SpdySerializedFrame spdy_resp1(
+      spdy_util_.ConstructSpdyReply(1, spdy_resp1_headers.Clone()));
+  spdy::SpdySerializedFrame spdy_resp2(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame spdy_data(
+      spdy_util_.ConstructSpdyDataFrame(1, "hello world", true));
+
+  if (use_spdy) {
+    ssl.next_proto = kProtoHTTP2;
+
+    data_writes = {CreateMockWrite(spdy_req, 0)};
+
+    data_reads = {
+        CreateMockRead(spdy_resp1, 1), MockRead(ASYNC, ERR_IO_PENDING, 2),
+        CreateMockRead(spdy_resp2, 3), CreateMockRead(spdy_data, 4),
+        MockRead(SYNCHRONOUS, OK, 5),
+    };
+  } else {
+    data_writes = {
+        MockWrite(ASYNC, 0,
+                  "GET / HTTP/1.1\r\n"
+                  "Host: www.foo.com\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+    };
+
+    data_reads = {
+        MockRead(ASYNC, 1, "HTTP/1.1 100 Continue\r\n\r\n"),
+        MockRead(ASYNC, ERR_IO_PENDING, 2),
+
+        MockRead(ASYNC, 3, "HTTP/1.1 200 OK\r\n\r\n"),
+        MockRead(ASYNC, 4, "hello world"),
+        MockRead(SYNCHRONOUS, OK, 5),
+    };
+  }
+
+  SequencedSocketData data(data_reads, data_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  TestCompletionCallback callback;
+
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  data.RunUntilPaused();
+  // We should now have parsed the 100 response and hit ERR_IO_PENDING. Insert
+  // the delay before parsing the 200 response.
+  ASSERT_TRUE(data.IsPaused());
+  base::PlatformThread::Sleep(kSleepDuration);
+  data.Resume();
+
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans.GetLoadTimingInfo(&load_timing_info));
+  EXPECT_FALSE(load_timing_info.receive_headers_start.is_null());
+  EXPECT_FALSE(load_timing_info.connect_timing.connect_end.is_null());
+  EXPECT_LT(load_timing_info.receive_headers_start -
+                load_timing_info.connect_timing.connect_end,
+            kSleepDuration);
+
+  std::string response_data;
+  rv = ReadTransaction(&trans, &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("hello world", response_data);
+}
+
+TEST_F(HttpNetworkTransactionTest, MeasuresTimeToFirst100ResponseForHttp) {
+  Check100ResponseTiming(false /* use_spdy */);
+}
+
+TEST_F(HttpNetworkTransactionTest, MeasuresTimeToFirst100ResponseForSpdy) {
+  Check100ResponseTiming(true /* use_spdy */);
 }
 
 TEST_F(HttpNetworkTransactionTest, Incomplete100ThenEOF) {

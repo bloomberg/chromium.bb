@@ -27,6 +27,7 @@ struct LoadTimingInfo {
   LoadTimingInfoConnectTiming connect_timing;
   mojo_base.mojom.TimeTicks send_start;
   mojo_base.mojom.TimeTicks send_end;
+  mojo_base.mojom.TimeTicks receive_headers_start;
   mojo_base.mojom.TimeTicks receive_headers_end;
   mojo_base.mojom.TimeTicks push_start;
   mojo_base.mojom.TimeTicks push_end;

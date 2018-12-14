@@ -140,6 +140,7 @@ void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
   url_timing->SetSSLEnd(load_timing.connect_timing.ssl_end);
   url_timing->SetSendStart(load_timing.send_start);
   url_timing->SetSendEnd(load_timing.send_end);
+  url_timing->SetReceiveHeadersStart(load_timing.receive_headers_start);
   url_timing->SetReceiveHeadersEnd(load_timing.receive_headers_end);
   url_timing->SetPushStart(load_timing.push_start);
   url_timing->SetPushEnd(load_timing.push_end);

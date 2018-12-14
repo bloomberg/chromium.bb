@@ -618,6 +618,10 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
   EXPECT_EQ(net::OK, client_.completion_status().error_code);
   const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
+  EXPECT_FALSE(info.load_timing.receive_headers_start.is_null());
+  EXPECT_FALSE(info.load_timing.receive_headers_end.is_null());
+  EXPECT_LE(info.load_timing.receive_headers_start,
+            info.load_timing.receive_headers_end);
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
 
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,

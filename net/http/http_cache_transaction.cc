@@ -554,6 +554,8 @@ bool HttpCache::Transaction::GetLoadTimingInfo(
   // This time doesn't make much sense when reading from the cache, so just use
   // the same time as send_start.
   load_timing_info->send_end = first_cache_access_since_;
+  // Provide the time immediately before parsing a cached entry.
+  load_timing_info->receive_headers_start = read_headers_since_;
   return true;
 }
 
@@ -1461,6 +1463,9 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
   TRACE_EVENT0("io", "HttpCacheTransaction::DoCacheReadResponseComplete");
   net_log_.EndEventWithNetErrorCode(NetLogEventType::HTTP_CACHE_READ_INFO,
                                     result);
+
+  // Record the time immediately before the cached response is parsed.
+  read_headers_since_ = TimeTicks::Now();
   if (result != io_buf_len_ ||
       !HttpCache::ParseResponseInfo(read_buf_->data(), io_buf_len_, &response_,
                                     &truncated_)) {

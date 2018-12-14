@@ -99,6 +99,8 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
 
   int64_t sent_bytes() const { return sent_bytes_; }
 
+  base::TimeTicks response_start_time() { return response_start_time_; }
+
   void GetSSLInfo(SSLInfo* ssl_info);
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info);
@@ -240,6 +242,10 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // caller of SendRequest may have been destroyed - this happens in the case an
   // HttpResponseBodyDrainer is used.
   HttpResponseInfo* response_;
+
+  // Time at which the first bytes of the header response are about to be
+  // parsed.
+  base::TimeTicks response_start_time_;
 
   // Indicates the content length.  If this value is less than zero
   // (and chunked_decoder_ is null), then we must read until the server
