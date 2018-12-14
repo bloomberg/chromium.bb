@@ -204,7 +204,7 @@ TEST_F(NetworkErrorLoggingEndToEndTest, MAYBE_ReportNetworkError) {
   base::DictionaryValue* body_dict;
   ASSERT_TRUE(report_dict->GetDictionary("body", &body_dict));
 
-  ExpectDictStringValue("http.response.empty", *body_dict, "type");
+  ExpectDictStringValue("http.response.invalid.empty", *body_dict, "type");
   ExpectDictIntegerValue(0, *body_dict, "status_code");
 }
 

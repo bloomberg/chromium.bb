@@ -67,8 +67,8 @@ const char kHttpErrorType[] = "http.error";
 
 const struct {
   Error error;
-  const char* phase;
-  const char* type;
+  const char* phase = nullptr;
+  const char* type = nullptr;
 } kErrorTypes[] = {
     {OK, kApplicationPhase, "ok"},
 
@@ -76,7 +76,10 @@ const struct {
     {ERR_NAME_NOT_RESOLVED, kDnsPhase, "dns.name_not_resolved"},
     {ERR_NAME_RESOLUTION_FAILED, kDnsPhase, "dns.failed"},
     {ERR_DNS_TIMED_OUT, kDnsPhase, "dns.timed_out"},
+    {ERR_DNS_MALFORMED_RESPONSE, kDnsPhase, "dns.protocol"},
+    {ERR_DNS_SERVER_FAILED, kDnsPhase, "dns.server"},
 
+    {ERR_TIMED_OUT, kConnectionPhase, "tcp.timed_out"},
     {ERR_CONNECTION_TIMED_OUT, kConnectionPhase, "tcp.timed_out"},
     {ERR_CONNECTION_CLOSED, kConnectionPhase, "tcp.closed"},
     {ERR_CONNECTION_RESET, kConnectionPhase, "tcp.reset"},
@@ -90,21 +93,44 @@ const struct {
      "tls.version_or_cipher_mismatch"},
     {ERR_BAD_SSL_CLIENT_AUTH_CERT, kConnectionPhase,
      "tls.bad_client_auth_cert"},
+    {ERR_CERT_INVALID, kConnectionPhase, "tls.cert.invalid"},
     {ERR_CERT_COMMON_NAME_INVALID, kConnectionPhase, "tls.cert.name_invalid"},
     {ERR_CERT_DATE_INVALID, kConnectionPhase, "tls.cert.date_invalid"},
     {ERR_CERT_AUTHORITY_INVALID, kConnectionPhase,
      "tls.cert.authority_invalid"},
-    {ERR_CERT_INVALID, kConnectionPhase, "tls.cert.invalid"},
     {ERR_CERT_REVOKED, kConnectionPhase, "tls.cert.revoked"},
     {ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, kConnectionPhase,
      "tls.cert.pinned_key_not_in_cert_chain"},
     {ERR_SSL_PROTOCOL_ERROR, kConnectionPhase, "tls.protocol.error"},
+    {ERR_INSECURE_RESPONSE, kConnectionPhase, "tls.failed"},
+    {ERR_SSL_UNRECOGNIZED_NAME_ALERT, kConnectionPhase,
+     "tls.unrecognized_name_alert"},
     // tls.failed?
 
+    {ERR_SPDY_PING_FAILED, kApplicationPhase, "h2.ping_failed"},
+    {ERR_SPDY_PROTOCOL_ERROR, kConnectionPhase, "h2.protocol.error"},
+
+    {ERR_QUIC_PROTOCOL_ERROR, kConnectionPhase, "h3.protocol.error"},
+
     // http.protocol.error?
-    {ERR_INVALID_HTTP_RESPONSE, kApplicationPhase, "http.response.invalid"},
     {ERR_TOO_MANY_REDIRECTS, kApplicationPhase, "http.response.redirect_loop"},
-    {ERR_EMPTY_RESPONSE, kApplicationPhase, "http.response.empty"},
+    {ERR_INVALID_RESPONSE, kApplicationPhase, "http.response.invalid"},
+    {ERR_INVALID_HTTP_RESPONSE, kApplicationPhase, "http.response.invalid"},
+    {ERR_EMPTY_RESPONSE, kApplicationPhase, "http.response.invalid.empty"},
+    {ERR_CONTENT_LENGTH_MISMATCH, kApplicationPhase,
+     "http.response.invalid.content_length_mismatch"},
+    {ERR_INCOMPLETE_CHUNKED_ENCODING, kApplicationPhase,
+     "http.response.invalid.incomplete_chunked_encoding"},
+    {ERR_INVALID_CHUNKED_ENCODING, kApplicationPhase,
+     "http.response.invalid.invalid_chunked_encoding"},
+    {ERR_REQUEST_RANGE_NOT_SATISFIABLE, kApplicationPhase,
+     "http.request.range_not_satisfiable"},
+    {ERR_RESPONSE_HEADERS_TRUNCATED, kApplicationPhase,
+     "http.response.headers.truncated"},
+    {ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION, kApplicationPhase,
+     "http.response.headers.multiple_content_disposition"},
+    {ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH, kApplicationPhase,
+     "http.response.headers.multiple_content_length"},
     // http.failed?
 
     {ERR_ABORTED, kApplicationPhase, "abandoned"},
@@ -117,6 +143,8 @@ void GetPhaseAndTypeFromNetError(Error error,
                                  std::string* phase_out,
                                  std::string* type_out) {
   for (size_t i = 0; i < arraysize(kErrorTypes); ++i) {
+    DCHECK(kErrorTypes[i].phase != nullptr);
+    DCHECK(kErrorTypes[i].type != nullptr);
     if (kErrorTypes[i].error == error) {
       *phase_out = kErrorTypes[i].phase;
       *type_out = kErrorTypes[i].type;
