@@ -316,7 +316,7 @@ class ScriptRunIteratorTest : public testing::Test {
     unsigned limit;
     UScriptCode code;
     unsigned long run_count = 0;
-    while (script_run_iterator->Consume(limit, code)) {
+    while (script_run_iterator->Consume(&limit, &code)) {
       ASSERT_LT(run_count, expect.size());
       ASSERT_EQ(expect[run_count].limit, limit);
       ASSERT_EQ(expect[run_count].code, code);
@@ -331,7 +331,7 @@ TEST_F(ScriptRunIteratorTest, Empty) {
   ScriptRunIterator script_run_iterator(empty.Characters16(), empty.length());
   unsigned limit = 0;
   UScriptCode code = USCRIPT_INVALID_CODE;
-  DCHECK(!script_run_iterator.Consume(limit, code));
+  DCHECK(!script_run_iterator.Consume(&limit, &code));
   ASSERT_EQ(limit, 0u);
   ASSERT_EQ(code, USCRIPT_INVALID_CODE);
 }
