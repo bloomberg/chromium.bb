@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WINDOW_PROXY_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WINDOW_PROXY_H_
 
-#include "base/debug/stack_trace.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -276,10 +275,6 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // to be destroyed.
   ScopedPersistent<v8::Object> global_proxy_;
   Lifecycle lifecycle_;
-
-  // TODO(dcheng): Remove this temporary code for debugging
-  // https://crbug.com/728693.
-  base::debug::StackTrace initialization_stack_;
 };
 
 }  // namespace blink

@@ -133,6 +133,9 @@ void LocalWindowProxy::Initialize() {
       ("Blink.Binding.InitializeNonMainLocalWindowProxy", 0, 10000000, 50));
   ScopedUsHistogramTimer timer(GetFrame()->IsMainFrame() ? main_frame_hist
                                                          : non_main_frame_hist);
+  // TODO(alph): Remove this temporary code for debugging
+  // https://crbug.com/728693.
+  CHECK(!GetFrame()->IsProvisional());
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
   // Inspector may request V8 interruption to process DevTools protocol
