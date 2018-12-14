@@ -126,8 +126,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
   EXPECT_TRUE(WaitForBookmarksToMatchVerifier());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
-                       ClientsCanSyncDataWhenScryptEncryptionEnabledInOne) {
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/915219
+#define MAYBE_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne \
+  DISABLED_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne
+#else
+#define MAYBE_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne \
+  ClientsCanSyncDataWhenScryptEncryptionEnabledInOne
+#endif
+
+IN_PROC_BROWSER_TEST_F(
+    TwoClientCustomPassphraseSyncTest,
+    MAYBE_ClientsCanSyncDataWhenScryptEncryptionEnabledInOne) {
   ScopedScryptFeatureToggler toggler(/*force_disabled=*/false,
                                      /*use_for_new_passphrases=*/false);
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
