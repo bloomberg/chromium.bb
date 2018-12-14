@@ -376,6 +376,7 @@ void HTMLVideoElement::PaintCurrentFrame(
   } else {
     media_flags.setAlpha(0xFF);
     media_flags.setFilterQuality(kLow_SkFilterQuality);
+    media_flags.setBlendMode(SkBlendMode::kSrc);
   }
 
   GetWebMediaPlayer()->Paint(canvas, dest_rect, media_flags,
