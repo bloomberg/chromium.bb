@@ -2488,7 +2488,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   StyleColor DecorationColorIncludingFallback(bool visited_link) const;
 
-  Color StopColor() const { return SvgStyle().StopColor(); }
+  const StyleColor& StopColor() const { return SvgStyle().StopColor(); }
   StyleColor FloodColor() const { return SvgStyle().FloodColor(); }
   StyleColor LightingColor() const { return SvgStyle().LightingColor(); }
 
