@@ -15,7 +15,6 @@ source_set("cpp") {
     "//chromeos/components/multidevice",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/multidevice_setup/public/mojom",
-    "//components/cryptauth",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
   ]
@@ -152,8 +151,6 @@ source_set("unit_tests") {
     "//chromeos/services/multidevice_setup",
     "//chromeos/services/multidevice_setup:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
-    "//components/cryptauth",
-    "//components/cryptauth:test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]

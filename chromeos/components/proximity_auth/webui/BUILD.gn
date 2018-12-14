@@ -28,7 +28,6 @@ static_library("webui") {
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/mojom",
-    "//components/cryptauth",
     "//components/prefs",
     "//components/resources",
     "//content/public/browser",

@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/chrome_proximity_auth_client.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_names.h"
@@ -161,8 +160,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     return;
   }
 
-  bool has_unlock_keys;
-  has_unlock_keys = !GetUnlockKeys().empty();
+  bool has_unlock_keys = !GetUnlockKeys().empty();
 
   // TODO(jhawkins): The enabled pref should not be tied to whether unlock keys
   // exist; instead, both of these variables should be used to determine

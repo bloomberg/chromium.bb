@@ -60,8 +60,6 @@ source_set("unit_tests") {
     "//chromeos/components/multidevice:test_support",
     "//chromeos/services/device_sync",
     "//chromeos/services/device_sync:test_support",
-    "//components/cryptauth",
-    "//components/cryptauth:test_support",
     "//components/gcm_driver:test_support",
     "//net",
     "//services/identity/public/cpp:test_support",

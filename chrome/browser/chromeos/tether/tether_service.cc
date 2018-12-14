@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,7 +27,6 @@
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
-#include "components/cryptauth/cryptauth_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -124,7 +122,6 @@ std::string TetherService::TetherFeatureStateToString(
 TetherService::TetherService(
     Profile* profile,
     chromeos::PowerManagerClient* power_manager_client,
-    cryptauth::CryptAuthService* cryptauth_service,
     chromeos::device_sync::DeviceSyncClient* device_sync_client,
     chromeos::secure_channel::SecureChannelClient* secure_channel_client,
     chromeos::multidevice_setup::MultiDeviceSetupClient*
@@ -133,7 +130,6 @@ TetherService::TetherService(
     session_manager::SessionManager* session_manager)
     : profile_(profile),
       power_manager_client_(power_manager_client),
-      cryptauth_service_(cryptauth_service),
       device_sync_client_(device_sync_client),
       secure_channel_client_(secure_channel_client),
       multidevice_setup_client_(multidevice_setup_client),

@@ -74,7 +74,6 @@ source_set("api") {
       "//chromeos/components/proximity_auth",
       "//chromeos/components/proximity_auth/logging",
       "//components/account_id",
-      "//components/cryptauth",
       "//components/strings:components_strings_grit",
       "//components/user_manager",
       "//device/bluetooth",
