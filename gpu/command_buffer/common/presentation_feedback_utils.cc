@@ -9,13 +9,6 @@
 
 namespace gpu {
 
-bool ShouldSendBufferPresented(uint32_t swap_buffer_flags,
-                               uint32_t presentation_feedback_flags) {
-  return swap_buffer_flags & SwapBuffersFlags::kPresentationFeedback ||
-         (swap_buffer_flags & SwapBuffersFlags::kVSyncParams &&
-          presentation_feedback_flags & gfx::PresentationFeedback::kVSync);
-}
-
 bool ShouldUpdateVsyncParams(const gfx::PresentationFeedback& feedback) {
   return feedback.flags & gfx::PresentationFeedback::kVSync &&
          feedback.timestamp != base::TimeTicks() &&

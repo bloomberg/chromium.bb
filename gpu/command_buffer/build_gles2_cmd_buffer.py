@@ -1684,9 +1684,6 @@ _NAMED_TYPE_INFO = {
     'is_complete': True,
     'valid': [
       '0',
-      'gpu::SwapBuffersFlags::kPresentationFeedback',
-      'gpu::SwapBuffersFlags::kVSyncParams',
-      'gpu::SwapBuffersFlags::kPresentationFeedback | '
       'gpu::SwapBuffersFlags::kVSyncParams',
     ],
   },

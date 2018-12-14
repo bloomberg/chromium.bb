@@ -104,17 +104,14 @@ void GLOutputSurfaceOffscreen::SwapBuffers(OutputSurfaceFrame frame) {
       sync_token,
       base::BindOnce(&GLOutputSurfaceOffscreen::OnSwapBuffersComplete,
                      weak_ptr_factory_.GetWeakPtr(),
-                     std::move(frame.latency_info),
-                     frame.need_presentation_feedback));
+                     std::move(frame.latency_info)));
 }
 
 void GLOutputSurfaceOffscreen::OnSwapBuffersComplete(
-    std::vector<ui::LatencyInfo> latency_info,
-    bool need_presentation_feedback) {
+    std::vector<ui::LatencyInfo> latency_info) {
   latency_tracker()->OnGpuSwapBuffersCompleted(latency_info);
   client()->DidReceiveSwapBuffersAck();
-  if (need_presentation_feedback)
-    client()->DidReceivePresentationFeedback(gfx::PresentationFeedback());
+  client()->DidReceivePresentationFeedback(gfx::PresentationFeedback());
 }
 
 }  // namespace viz

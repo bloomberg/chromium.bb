@@ -35,8 +35,7 @@ class GLOutputSurfaceOffscreen : public GLOutputSurface {
   void SwapBuffers(OutputSurfaceFrame frame) override;
 
  private:
-  void OnSwapBuffersComplete(std::vector<ui::LatencyInfo> latency_info,
-                             bool need_presentation_feedback);
+  void OnSwapBuffersComplete(std::vector<ui::LatencyInfo> latency_info);
 
   uint32_t fbo_ = 0;
   uint32_t texture_id_ = 0;

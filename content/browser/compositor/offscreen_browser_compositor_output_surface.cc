@@ -160,8 +160,7 @@ void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
       sync_token,
       base::BindOnce(
           &OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete,
-          weak_ptr_factory_.GetWeakPtr(), frame.latency_info,
-          frame.need_presentation_feedback));
+          weak_ptr_factory_.GetWeakPtr(), frame.latency_info));
 }
 
 bool OffscreenBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane()
@@ -191,12 +190,10 @@ void OffscreenBrowserCompositorOutputSurface::OnReflectorChanged() {
 }
 
 void OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete(
-    const std::vector<ui::LatencyInfo>& latency_info,
-    bool need_presentation_feedback) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck();
-  if (need_presentation_feedback)
-    client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
+  client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)

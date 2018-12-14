@@ -1485,12 +1485,10 @@ void InProcessCommandBuffer::BufferPresented(
   SwapBufferParams params = pending_presented_params_.front();
   pending_presented_params_.pop_front();
 
-  if (ShouldSendBufferPresented(params.flags, feedback.flags)) {
-    PostOrRunClientCallback(
-        base::BindOnce(&InProcessCommandBuffer::BufferPresentedOnOriginThread,
-                       client_thread_weak_ptr_factory_.GetWeakPtr(),
-                       params.swap_id, params.flags, feedback));
-  }
+  PostOrRunClientCallback(
+      base::BindOnce(&InProcessCommandBuffer::BufferPresentedOnOriginThread,
+                     client_thread_weak_ptr_factory_.GetWeakPtr(),
+                     params.swap_id, params.flags, feedback));
 }
 
 void InProcessCommandBuffer::AddFilter(IPC::MessageFilter* message_filter) {

@@ -50,16 +50,13 @@ void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FakeOutputSurface::SwapBuffersAck,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                frame.need_presentation_feedback));
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FakeOutputSurface::SwapBuffersAck(bool need_presentation_feedback) {
+void FakeOutputSurface::SwapBuffersAck() {
   client_->DidReceiveSwapBuffersAck();
-  if (need_presentation_feedback) {
-    client_->DidReceivePresentationFeedback(
-        {base::TimeTicks::Now(), base::TimeDelta(), 0});
-  }
+  client_->DidReceivePresentationFeedback(
+      {base::TimeTicks::Now(), base::TimeDelta(), 0});
 }
 
 void FakeOutputSurface::BindFramebuffer() {

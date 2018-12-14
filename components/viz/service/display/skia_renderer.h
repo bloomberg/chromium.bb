@@ -46,8 +46,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                DrawMode mode);
   ~SkiaRenderer() override;
 
-  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
-                   bool need_presentation_feedback) override;
+  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {
     disable_picture_quad_image_filtering_ = disable;

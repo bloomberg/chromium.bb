@@ -446,12 +446,8 @@ class AndroidOutputSurface : public viz::OutputSurface {
                        std::move(frame.latency_info), frame.size);
     uint32_t flags = 0;
     gpu::ContextSupport::PresentationCallback presentation_callback;
-    if (frame.need_presentation_feedback) {
-      flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
-      presentation_callback =
-          base::BindOnce(&AndroidOutputSurface::OnPresentation,
-                         weak_ptr_factory_.GetWeakPtr());
-    }
+    presentation_callback = base::BindOnce(
+        &AndroidOutputSurface::OnPresentation, weak_ptr_factory_.GetWeakPtr());
     if (frame.sub_buffer_rect) {
       DCHECK(frame.sub_buffer_rect->IsEmpty());
       context_provider_->ContextSupport()->CommitOverlayPlanes(
