@@ -39,6 +39,10 @@ class PasswordGenerationManager;
 // Gets the PasswordGenerationManager owned by this delegate.
 - (password_manager::PasswordGenerationManager*)passwordGenerationManager;
 
+// Informs delegate of form for password generation found.
+- (void)formEligibleForGenerationFound:
+    (const autofill::NewPasswordFormGenerationData&)form;
+
 @end
 
 // An iOS implementation of password_manager::PasswordManagerDriver.
@@ -57,6 +61,8 @@ class IOSChromePasswordManagerDriver
       const autofill::PasswordForm& form) override;
   void FormsEligibleForGenerationFound(
       const std::vector<autofill::PasswordFormGenerationData>& forms) override;
+  void FormEligibleForGenerationFound(
+      const autofill::NewPasswordFormGenerationData& form) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;

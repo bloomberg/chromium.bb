@@ -33,8 +33,11 @@ void IOSChromePasswordManagerDriver::InformNoSavedCredentials() {
 }
 
 void IOSChromePasswordManagerDriver::FormsEligibleForGenerationFound(
-    const std::vector<autofill::PasswordFormGenerationData>& forms) {
-  // TODO(crbug.com/569579): Implement.
+    const std::vector<autofill::PasswordFormGenerationData>& forms) {}
+
+void IOSChromePasswordManagerDriver::FormEligibleForGenerationFound(
+    const autofill::NewPasswordFormGenerationData& form) {
+  [delegate_ formEligibleForGenerationFound:form];
 }
 
 void IOSChromePasswordManagerDriver::GeneratedPasswordAccepted(
