@@ -237,12 +237,14 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
           continue;
         }
 
-        if (!SessionStore::AreValidSpecifics(specifics) ||
-            change.data().client_tag_hash !=
-                GenerateSyncableHash(syncer::SESSIONS,
-                                     SessionStore::GetClientTag(specifics))) {
+        if (!SessionStore::AreValidSpecifics(specifics)) {
           continue;
         }
+
+        // Guaranteed by the processor.
+        DCHECK_EQ(change.data().client_tag_hash,
+                  GenerateSyncableHash(syncer::SESSIONS,
+                                       SessionStore::GetClientTag(specifics)));
 
         batch->PutAndUpdateTracker(specifics, change.data().modification_time);
         // If a favicon or favicon urls are present, load the URLs and visit
@@ -280,6 +282,9 @@ void SessionSyncBridge::GetAllDataForDebugging(DataCallback callback) {
 
 std::string SessionSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
+  if (!SessionStore::AreValidSpecifics(entity_data.specifics.session())) {
+    return std::string();
+  }
   return SessionStore::GetClientTag(entity_data.specifics.session());
 }
 
