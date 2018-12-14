@@ -534,6 +534,8 @@ void SyncedBookmarkTracker::CheckAllNodesTracked(
     const bookmarks::BookmarkModel* bookmark_model) const {
   // TODO(crbug.com/516866): Introduce logic to validate the invariant of the
   // tracker.
+  CHECK(GetEntityForBookmarkNode(bookmark_model->bookmark_bar_node()));
+  CHECK(GetEntityForBookmarkNode(bookmark_model->other_node()));
 }
 
 }  // namespace sync_bookmarks
