@@ -171,7 +171,8 @@ TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_DialogFeedback', function() {
 /**
  * Test feedback when an item in an alert dialog receives focus.
  */
-TEST_F('ChromeVoxEventWatcherUnitTest', 'AlertDialogFeedback', function() {
+// Flaky on Chromium OS: crbug.com/622387.
+TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_AlertDialogFeedback', function() {
   this.loadHtml('<div>' +
       '<div role="alertdialog">' +
       '  <p>Are you sure you want to install Windows?</p>' +
