@@ -49,6 +49,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/local_ntp_resources.h"
+#include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_terms_data.h"
@@ -97,6 +98,7 @@ const char kSimpleShareDoodleUrl[] =
     "https://www.gstatic.com/logo/dev/ddljson_simple_share_button.json";
 const char kAnimatedShareDoodleUrl[] =
     "https://www.gstatic.com/logo/dev/ddljson_animated_share_button.json";
+const char kGoogleUrl[] = "https://www.google.com/";
 
 const struct Resource{
   const char* filename;
@@ -448,17 +450,18 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
   }
 
   GURL full_page_url = meta.full_page_url;
-  if (base::GetFieldTrialParamByFeatureAsBool(
-          features::kDoodlesOnLocalNtp,
-          "local_ntp_interactive_doodles_prevent_redirects",
-          /*default_value=*/true) &&
-      meta.type == search_provider_logos::LogoType::INTERACTIVE &&
-      full_page_url.is_valid()) {
-    // Prevent the server from redirecting to ccTLDs. This is a temporary
-    // workaround, until the server doesn't redirect these requests by default.
-    full_page_url = net::AppendQueryParameter(full_page_url, "gws_rd", "cr");
-  }
   result->SetString("fullPageUrl", full_page_url.spec());
+
+  // The fpdoodle url is always relative to google.com, for testing it needs to
+  // be replaced with the demo url provided on the command line via
+  // --google-base-url.
+  GURL google_base_url = google_util::CommandLineGoogleBaseURL();
+  if (google_base_url.is_valid()) {
+    std::string url = full_page_url.spec();
+    int pos = url.find(kGoogleUrl);
+    url.replace(pos, strlen(kGoogleUrl), google_base_url.spec());
+    result->SetString("fullPageUrl", url);
+  }
 
   // If support for interactive Doodles is disabled, treat them as simple
   // Doodles instead and use the full page URL as the target URL.
@@ -1028,12 +1031,14 @@ std::string LocalNtpSource::GetContentSecurityPolicy() const {
   }
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
+  GURL google_base_url = google_util::CommandLineGoogleBaseURL();
+
   // Allow embedding of the most visited iframe, as well as the account
   // switcher and the notifications dropdown from the One Google Bar, and/or
   // the iframe for interactive Doodles.
-  std::string child_src_csp =
-      base::StringPrintf("child-src %s https://*.google.com/;",
-                         chrome::kChromeSearchMostVisitedUrl);
+  std::string child_src_csp = base::StringPrintf(
+      "child-src %s https://*.google.com/ %s;",
+      chrome::kChromeSearchMostVisitedUrl, google_base_url.spec().c_str());
 
   // Restrict scripts in the main page to those listed here. However,
   // 'strict-dynamic' allows those scripts to load dependencies not listed here.
