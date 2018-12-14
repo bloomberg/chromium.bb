@@ -1809,7 +1809,7 @@
           'bullhead',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
       'GPU Linux Builder': {},
