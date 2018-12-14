@@ -380,6 +380,7 @@ enum EffectiveConnectionType {
     boolean setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
 
     [RaisesException] double monotonicTimeToZeroBasedDocumentTime(double platformTime);
+    long long currentTimeTicks();
 
     DOMString getScrollAnimationState(Node node);
 

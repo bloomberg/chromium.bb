@@ -245,7 +245,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetIsolatedWorldSecurityOrigin(int world_id,
                                       v8::Local<v8::Value> origin);
   void SetJavaScriptCanAccessClipboard(bool can_access);
-  void SetMIDIAccessorResult(bool result);
   void SetMockScreenOrientation(const std::string& orientation);
   void SetPOSIXLocale(const std::string& locale);
   void SetPageVisibility(const std::string& new_visibility);
@@ -564,8 +563,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetIsolatedWorldSecurityOrigin)
       .SetMethod("setJavaScriptCanAccessClipboard",
                  &TestRunnerBindings::SetJavaScriptCanAccessClipboard)
-      .SetMethod("setMIDIAccessorResult",
-                 &TestRunnerBindings::SetMIDIAccessorResult)
       .SetMethod("setMainFrameIsFirstResponder",
                  &TestRunnerBindings::NotImplemented)
       .SetMethod("setMockScreenOrientation",
@@ -1276,14 +1273,6 @@ void TestRunnerBindings::SetPOSIXLocale(const std::string& locale) {
     runner_->SetPOSIXLocale(locale);
 }
 
-void TestRunnerBindings::SetMIDIAccessorResult(bool result) {
-  if (runner_) {
-    runner_->SetMIDIAccessorResult(
-        result ? midi::mojom::Result::OK
-               : midi::mojom::Result::INITIALIZATION_ERROR);
-  }
-}
-
 void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
   DCHECK_GE(args->Length(), 1);
   if (!runner_)
@@ -1591,7 +1580,6 @@ void TestRunner::Reset() {
   dump_back_forward_list_ = false;
   test_repaint_ = false;
   sweep_horizontally_ = false;
-  midi_accessor_result_ = midi::mojom::Result::OK;
   animation_requires_raster_ = false;
 
   http_headers_to_clear_.clear();
@@ -1928,10 +1916,6 @@ void TestRunner::setDragImage(const SkBitmap& drag_image) {
 
 bool TestRunner::shouldDumpNavigationPolicy() const {
   return web_test_runtime_flags_.dump_navigation_policy();
-}
-
-midi::mojom::Result TestRunner::midiAccessorResult() {
-  return midi_accessor_result_;
 }
 
 void TestRunner::SetV8CacheDisabled(bool disabled) {
@@ -2560,10 +2544,6 @@ void TestRunner::ResolveBeforeInstallPromptPromise(
 
 void TestRunner::SetPOSIXLocale(const std::string& locale) {
   delegate_->SetLocale(locale);
-}
-
-void TestRunner::SetMIDIAccessorResult(midi::mojom::Result result) {
-  midi_accessor_result_ = result;
 }
 
 void TestRunner::SimulateWebNotificationClick(

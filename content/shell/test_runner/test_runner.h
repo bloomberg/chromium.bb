@@ -20,7 +20,6 @@
 #include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_test_runner.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
-#include "media/midi/midi_service.mojom.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_image.h"
 #include "v8/include/v8.h"
@@ -158,8 +157,6 @@ class TestRunner : public WebTestRunner {
   void setToolTipText(const blink::WebString&);
   void setDragImage(const SkBitmap& drag_image);
   bool shouldDumpNavigationPolicy() const;
-
-  midi::mojom::Result midiAccessorResult();
 
   bool ShouldDumpConsoleMessages() const;
   // Controls whether console messages produced by the page are dumped
@@ -487,9 +484,6 @@ class TestRunner : public WebTestRunner {
   // Resets between tests.
   void SetPOSIXLocale(const std::string& locale);
 
-  // MIDI function to control permission handling.
-  void SetMIDIAccessorResult(midi::mojom::Result result);
-
   // Simulates a click on a Web Notification.
   void SimulateWebNotificationClick(
       const std::string& title,
@@ -550,9 +544,6 @@ class TestRunner : public WebTestRunner {
   // If true and test_repaint_ is true as well, pixel dump will be produced as
   // a series of 1px-wide, view-tall paints across the width of the view.
   bool sweep_horizontally_;
-
-  // startSession() result of MockWebMIDIAccessor for testing.
-  midi::mojom::Result midi_accessor_result_;
 
   std::set<std::string> http_headers_to_clear_;
 

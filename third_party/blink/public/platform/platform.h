@@ -111,8 +111,6 @@ class WebDatabaseObserver;
 class WebGraphicsContext3DProvider;
 class WebImageCaptureFrameGrabber;
 class WebLocalFrame;
-class WebMIDIAccessor;
-class WebMIDIAccessorClient;
 class WebMediaCapabilitiesClient;
 class WebMediaPlayer;
 class WebMediaRecorderHandler;
@@ -221,13 +219,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       const WebString& device_id) {
     return nullptr;
   }
-
-  // MIDI ----------------------------------------------------------------
-
-  // Creates a platform dependent WebMIDIAccessor. MIDIAccessor under platform
-  // creates and owns it.
-  virtual std::unique_ptr<WebMIDIAccessor> CreateMIDIAccessor(
-      WebMIDIAccessorClient*);
 
   // Blob ----------------------------------------------------------------
 

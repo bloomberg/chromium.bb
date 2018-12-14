@@ -3437,6 +3437,10 @@ double Internals::monotonicTimeToZeroBasedDocumentTime(
       .InSecondsF();
 }
 
+int64_t Internals::currentTimeTicks() {
+  return base::TimeTicks::Now().since_origin().InMicroseconds();
+}
+
 String Internals::getScrollAnimationState(Node* node) const {
   if (ScrollableArea* scrollable_area = ScrollableAreaForNode(node))
     return scrollable_area->GetScrollAnimator().RunStateAsText();

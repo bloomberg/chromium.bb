@@ -13,8 +13,6 @@
 
 namespace blink {
 class WebLocalFrameClient;
-class WebMIDIAccessor;
-class WebMIDIAccessorClient;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebThemeEngine;
@@ -53,9 +51,6 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   std::unique_ptr<blink::WebRTCPeerConnectionHandler>
   CreateWebRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
-
-  std::unique_ptr<blink::WebMIDIAccessor> CreateMIDIAccessor(
-      blink::WebMIDIAccessorClient* client);
 
   TestInterfaces* GetTestInterfaces();
 

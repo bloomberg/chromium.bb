@@ -33,14 +33,13 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_accessor_client.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-using blink::WebString;
-using midi::mojom::PortState;
-using midi::mojom::Result;
+using midi::mojom::blink::PortState;
+using midi::mojom::blink::Result;
 
 namespace blink {
 
@@ -51,35 +50,37 @@ std::unique_ptr<MIDIAccessor> MIDIAccessor::Create(MIDIAccessorClient* client) {
 
 MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client) : client_(client) {
   DCHECK(client);
+}
 
-  accessor_ = Platform::Current()->CreateMIDIAccessor(this);
-
-  DCHECK(accessor_);
+MIDIAccessor::~MIDIAccessor() {
+  if (called_start_session_)
+    MIDIDispatcher::Instance().RemoveAccessor(this);
 }
 
 void MIDIAccessor::StartSession() {
-  accessor_->StartSession();
+  MIDIDispatcher::Instance().AddAccessor(this);
+  called_start_session_ = true;
 }
 
 void MIDIAccessor::SendMIDIData(unsigned port_index,
                                 const unsigned char* data,
                                 size_t length,
                                 base::TimeTicks time_stamp) {
-  accessor_->SendMIDIData(port_index, data, length, time_stamp);
+  MIDIDispatcher::Instance().SendMidiData(port_index, data, length, time_stamp);
 }
 
-void MIDIAccessor::DidAddInputPort(const WebString& id,
-                                   const WebString& manufacturer,
-                                   const WebString& name,
-                                   const WebString& version,
+void MIDIAccessor::DidAddInputPort(const String& id,
+                                   const String& manufacturer,
+                                   const String& name,
+                                   const String& version,
                                    PortState state) {
   client_->DidAddInputPort(id, manufacturer, name, version, state);
 }
 
-void MIDIAccessor::DidAddOutputPort(const WebString& id,
-                                    const WebString& manufacturer,
-                                    const WebString& name,
-                                    const WebString& version,
+void MIDIAccessor::DidAddOutputPort(const String& id,
+                                    const String& manufacturer,
+                                    const String& name,
+                                    const String& version,
                                     PortState state) {
   client_->DidAddOutputPort(id, manufacturer, name, version, state);
 }

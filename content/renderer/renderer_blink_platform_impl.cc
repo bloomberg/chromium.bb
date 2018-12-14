@@ -53,7 +53,6 @@
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio_decoder.h"
-#include "content/renderer/media/midi/renderer_webmidiaccessor_impl.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media_capture_from_element/canvas_capture_handler.h"
 #include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
@@ -91,7 +90,6 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
@@ -642,19 +640,6 @@ bool RendererBlinkPlatformImpl::DecodeAudioFileData(
     size_t data_size) {
   return content::DecodeAudioFileData(destination_bus, audio_file_data,
                                       data_size);
-}
-
-//------------------------------------------------------------------------------
-
-std::unique_ptr<blink::WebMIDIAccessor>
-RendererBlinkPlatformImpl::CreateMIDIAccessor(
-    blink::WebMIDIAccessorClient* client) {
-  std::unique_ptr<blink::WebMIDIAccessor> accessor =
-      GetContentClient()->renderer()->OverrideCreateMIDIAccessor(client);
-  if (accessor)
-    return accessor;
-
-  return std::make_unique<RendererWebMIDIAccessorImpl>(client);
 }
 
 //------------------------------------------------------------------------------

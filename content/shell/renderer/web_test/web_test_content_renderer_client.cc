@@ -34,7 +34,6 @@
 #include "media/base/audio_latency.h"
 #include "media/base/mime_util.h"
 #include "media/media_buildflags.h"
-#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
@@ -51,8 +50,6 @@ using blink::WebAudioDevice;
 using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebMediaStreamCenter;
-using blink::WebMIDIAccessor;
-using blink::WebMIDIAccessorClient;
 using blink::WebPlugin;
 using blink::WebPluginParams;
 using blink::WebRTCPeerConnectionHandler;
@@ -96,14 +93,6 @@ void WebTestContentRendererClient::RenderViewCreated(RenderView* render_view) {
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
   test_runner->Reset(false /* for_new_test */);
-}
-
-std::unique_ptr<WebMIDIAccessor>
-WebTestContentRendererClient::OverrideCreateMIDIAccessor(
-    WebMIDIAccessorClient* client) {
-  test_runner::WebTestInterfaces* interfaces =
-      WebTestRenderThreadObserver::GetInstance()->test_interfaces();
-  return interfaces->CreateMIDIAccessor(client);
 }
 
 WebThemeEngine* WebTestContentRendererClient::OverrideThemeEngine() {

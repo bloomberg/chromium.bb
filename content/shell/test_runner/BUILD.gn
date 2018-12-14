@@ -45,8 +45,6 @@ jumbo_component("test_runner") {
     "mock_spell_check.h",
     "mock_web_document_subresource_filter.cc",
     "mock_web_document_subresource_filter.h",
-    "mock_web_midi_accessor.cc",
-    "mock_web_midi_accessor.h",
     "mock_web_theme_engine.cc",
     "mock_web_theme_engine.h",
     "pixel_dump.cc",

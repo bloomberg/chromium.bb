@@ -34,21 +34,21 @@
 #include <memory>
 #include "base/time/time.h"
 #include "media/midi/midi_service.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
-#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor_client.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class MIDIAccessorClient;
 
-class MIDIAccessor final : public WebMIDIAccessorClient {
+// TODO(https://crbug.com/582328): Remove this class, and call MIDIDispatcher
+// directly.
+class MIDIAccessor final {
   USING_FAST_MALLOC(MIDIAccessor);
 
  public:
   static std::unique_ptr<MIDIAccessor> Create(MIDIAccessorClient*);
-
-  ~MIDIAccessor() override = default;
+  ~MIDIAccessor();
 
   void StartSession();
   void SendMIDIData(unsigned port_index,
@@ -60,32 +60,31 @@ class MIDIAccessor final : public WebMIDIAccessorClient {
   // once the initialization successfully finishes.
   void SetClient(MIDIAccessorClient* client) { client_ = client; }
 
-  // WebMIDIAccessorClient
-  void DidAddInputPort(const WebString& id,
-                       const WebString& manufacturer,
-                       const WebString& name,
-                       const WebString& version,
-                       midi::mojom::PortState) override;
-  void DidAddOutputPort(const WebString& id,
-                        const WebString& manufacturer,
-                        const WebString& name,
-                        const WebString& version,
-                        midi::mojom::PortState) override;
-  void DidSetInputPortState(unsigned port_index,
-                            midi::mojom::PortState) override;
-  void DidSetOutputPortState(unsigned port_index,
-                             midi::mojom::PortState) override;
-  void DidStartSession(midi::mojom::Result) override;
+  // The following methods are used by MIDIDispatcher to forward messages from
+  // the browser process.
+  void DidAddInputPort(const String& id,
+                       const String& manufacturer,
+                       const String& name,
+                       const String& version,
+                       midi::mojom::PortState);
+  void DidAddOutputPort(const String& id,
+                        const String& manufacturer,
+                        const String& name,
+                        const String& version,
+                        midi::mojom::PortState);
+  void DidSetInputPortState(unsigned port_index, midi::mojom::PortState);
+  void DidSetOutputPortState(unsigned port_index, midi::mojom::PortState);
+  void DidStartSession(midi::mojom::Result);
   void DidReceiveMIDIData(unsigned port_index,
                           const unsigned char* data,
                           size_t length,
-                          base::TimeTicks time_stamp) override;
+                          base::TimeTicks time_stamp);
 
  private:
   explicit MIDIAccessor(MIDIAccessorClient*);
 
   MIDIAccessorClient* client_;
-  std::unique_ptr<WebMIDIAccessor> accessor_;
+  bool called_start_session_ = false;
 };
 
 }  // namespace blink

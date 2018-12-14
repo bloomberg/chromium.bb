@@ -556,6 +556,9 @@ class Internals final : public ScriptWrappable {
   // document time in seconds
   double monotonicTimeToZeroBasedDocumentTime(double, ExceptionState&);
 
+  // Returns the current time ticks (in microseconds).
+  int64_t currentTimeTicks();
+
   // Returns the run state of the node's scroll animator (see
   // ScrollAnimatorCompositorCoordinater::RunState), or -1 if the node does not
   // have a scrollable area.

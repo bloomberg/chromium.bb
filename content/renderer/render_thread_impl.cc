@@ -93,7 +93,6 @@
 #include "content/renderer/low_memory_mode_controller.h"
 #include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
-#include "content/renderer/media/midi/midi_session_client_impl.h"
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/media/stream/aec_dump_message_filter.h"
 #include "content/renderer/media/stream/media_stream_center.h"
@@ -787,8 +786,6 @@ void RenderThreadImpl::Init() {
   audio_input_ipc_factory_.emplace(main_thread_runner(), GetIOTaskRunner());
 
   audio_output_ipc_factory_.emplace(GetIOTaskRunner());
-
-  midi_session_client_impl_ = std::make_unique<MidiSessionClientImpl>();
 
 #if defined(USE_AURA)
   if (features::IsMultiProcessMash())

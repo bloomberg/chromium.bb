@@ -6,7 +6,6 @@ include_rules = [
   "+device/gamepad/public/mojom",
   "+gin",
   "+gpu/command_buffer/client",
-  "+media/midi/midi_service.mojom.h",
   "+mojo/public",
   "+net/base",
   "+services/device/public/cpp/generic_sensor",
