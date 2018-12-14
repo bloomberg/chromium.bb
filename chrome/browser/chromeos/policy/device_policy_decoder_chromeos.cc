@@ -1062,6 +1062,26 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_device_gpo_cache_lifetime()) {
+    const em::DeviceGpoCacheLifetimeProto& container(
+        policy.device_gpo_cache_lifetime());
+    if (container.has_lifetime_hours()) {
+      policies->Set(key::kDeviceGpoCacheLifetime, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    DecodeIntegerValue(container.lifetime_hours()), nullptr);
+    }
+  }
+
+  if (policy.has_device_auth_data_cache_lifetime()) {
+    const em::DeviceAuthDataCacheLifetimeProto& container(
+        policy.device_auth_data_cache_lifetime());
+    if (container.has_lifetime_hours()) {
+      policies->Set(key::kDeviceAuthDataCacheLifetime, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    DecodeIntegerValue(container.lifetime_hours()), nullptr);
+    }
+  }
+
   if (policy.has_device_unaffiliated_crostini_allowed()) {
     const em::DeviceUnaffiliatedCrostiniAllowedProto& container(
         policy.device_unaffiliated_crostini_allowed());

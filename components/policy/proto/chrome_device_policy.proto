@@ -1073,6 +1073,21 @@ message DeviceMachinePasswordChangeRateProto {
   optional int32 rate_days = 1;
 }
 
+// Specifies how long cached Active Directory Group Policy Objects (GPOs) may be
+// reused until they are re-downloaded (a version change also forces a
+// re-download).
+// Applies to Active Directory management mode only.
+message DeviceGpoCacheLifetimeProto {
+  optional int32 lifetime_hours = 1;
+}
+
+// Specifies how long cached Active Directory authentication data may be reused
+// until it is refreshed. This can significantly speed up user authentication.
+// Applies to Active Directory management mode only.
+message DeviceAuthDataCacheLifetimeProto {
+  optional int32 lifetime_hours = 1;
+}
+
 // Setting to control the authentication type for newly added users which log in
 // via SAML.
 message SamlLoginAuthenticationTypeProto {
@@ -1192,4 +1207,7 @@ message ChromeDeviceSettingsProto {
       device_wifi_fast_transition_enabled = 73;
   optional DeviceDisplayResolutionProto device_display_resolution = 74;
   optional PluginVmAllowedProto plugin_vm_allowed = 75;
+  optional DeviceGpoCacheLifetimeProto device_gpo_cache_lifetime = 76;
+  optional DeviceAuthDataCacheLifetimeProto device_auth_data_cache_lifetime =
+      77;
 }
