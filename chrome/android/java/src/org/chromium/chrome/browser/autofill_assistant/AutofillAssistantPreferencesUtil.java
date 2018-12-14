@@ -12,9 +12,11 @@ class AutofillAssistantPreferencesUtil {
     // Avoid instatiation by accident.
     private AutofillAssistantPreferencesUtil() {}
 
-    /**
-     * Peference keeping track of whether the initial screen should be skipped on startup.
-     */
+    /** Peference keeping track of whether the onboarding has been accepted. */
+    private static final String AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED =
+            "AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED";
+
+    /** LEGACY preference for when the `do not show again' checkbox still existed. */
     private static final String AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN =
             "AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN";
 
@@ -24,37 +26,35 @@ class AutofillAssistantPreferencesUtil {
                 AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, true);
     }
 
-    /** Gets whether skip initial screen preference. */
-    static boolean getSkipInitScreenPreference() {
+    /** Checks whether the Autofill Assistant onboarding has been accepted. */
+    static boolean isAutofillOnboardingAccepted() {
         return ContextUtils.getAppSharedPreferences().getBoolean(
-                AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN, false);
+                       AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED, false)
+                ||
+                /* Legacy treatment: users of earlier versions should not have to see the onboarding
+                again if they checked the `do not show again' checkbox*/
+                ContextUtils.getAppSharedPreferences().getBoolean(
+                        AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN, false);
     }
 
-    /**
-     * Returns true if the switch for AutofillAssistant is turned on or the init screen can
-     * be shown. The later is important if the switched is turned off, but we can ask again
-     * to enable AutofillAssistant.
-     */
-    static boolean canShowAutofillAssistant() {
-        return isAutofillAssistantSwitchOn() || !getSkipInitScreenPreference();
+    /** Checks whether the Autofill Assistant onboarding screen should be shown. */
+    static boolean getShowOnboarding() {
+        return !isAutofillAssistantSwitchOn() || !isAutofillOnboardingAccepted();
     }
 
     /**
      * Sets preferences from the initial screen.
      *
-     * @param accept Flag indicates whether this service is accepted.
-     * @param dontShowAgain Flag indicates whether initial screen should be shown again next time.
+     * @param accept Flag indicating whether the ToS have been accepted.
      */
     static void setInitialPreferences(boolean accept) {
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, accept)
                 .apply();
-        if (accept) {
-            ContextUtils.getAppSharedPreferences()
-                    .edit()
-                    .putBoolean(AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN, true)
-                    .apply();
-        }
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putBoolean(AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED, accept)
+                .apply();
     }
 }

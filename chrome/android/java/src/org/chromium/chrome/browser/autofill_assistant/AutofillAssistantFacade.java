@@ -30,8 +30,7 @@ public class AutofillAssistantFacade {
 
     /** Returns true if all conditions are satisfied to start Autofill Assistant. */
     public static boolean isConfigured(@Nullable Bundle intentExtras) {
-        return getBooleanParameter(intentExtras, PARAMETER_ENABLED)
-                && AutofillAssistantPreferencesUtil.canShowAutofillAssistant();
+        return getBooleanParameter(intentExtras, PARAMETER_ENABLED);
     }
 
     /** Starts Autofill Assistant on the given {@code activity}. */
@@ -48,15 +47,14 @@ public class AutofillAssistantFacade {
         final AbstractAutofillAssistantUiController targetController = controller == null
                 ? new AutofillAssistantUiController(activity, parameters)
                 : controller;
-        if (!AutofillAssistantPreferencesUtil.getSkipInitScreenPreference()) {
+        if (AutofillAssistantPreferencesUtil.getShowOnboarding()) {
             FirstRunScreen.show(activity, (result) -> {
                 if (result) initiateAutofillAssistant(activity, parameters, targetController);
             });
             return;
         }
 
-        if (AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()
-                && AutofillAssistantPreferencesUtil.getSkipInitScreenPreference()) {
+        if (AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) {
             initiateAutofillAssistant(activity, parameters, targetController);
         }
         // We don't have consent to start Autofill Assistant and cannot show initial screen.
