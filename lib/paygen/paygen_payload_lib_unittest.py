@@ -13,6 +13,7 @@ import tempfile
 
 import mock
 
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -37,41 +38,41 @@ class PaygenPayloadLibTest(cros_test_lib.MockTempDirTestCase):
         channel='dev-channel',
         board='x86-alex',
         version='1620.0.0',
-        bucket='chromeos-releases-test')
+        bucket='chromeos-releases')
 
     self.old_image = gspaths.Image(
         build=self.old_build,
         key='mp-v3',
-        uri=('gs://chromeos-releases-test/dev-channel/x86-alex/1620.0.0/'
+        uri=('gs://chromeos-releases/dev-channel/x86-alex/1620.0.0/'
              'chromeos_1620.0.0_x86-alex_recovery_dev-channel_mp-v3.bin'))
 
     self.old_base_image = gspaths.Image(
         build=self.old_build,
         key='mp-v3',
         image_type='base',
-        uri=('gs://chromeos-releases-test/dev-channel/x86-alex/1620.0.0/'
+        uri=('gs://chromeos-releases/dev-channel/x86-alex/1620.0.0/'
              'chromeos_1620.0.0_x86-alex_base_dev-channel_mp-v3.bin'))
 
     self.new_build = gspaths.Build(
         channel='dev-channel',
         board='x86-alex',
         version='4171.0.0',
-        bucket='chromeos-releases-test')
+        bucket='chromeos-releases')
 
     self.new_image = gspaths.Image(
         build=self.new_build,
         key='mp-v3',
-        uri=('gs://chromeos-releases-test/dev-channel/x86-alex/4171.0.0/'
+        uri=('gs://chromeos-releases/dev-channel/x86-alex/4171.0.0/'
              'chromeos_4171.0.0_x86-alex_recovery_dev-channel_mp-v3.bin'))
 
     self.old_test_image = gspaths.UnsignedImageArchive(
         build=self.old_build,
-        uri=('gs://chromeos-releases-test/dev-channel/x86-alex/1620.0.0/'
+        uri=('gs://chromeos-releases/dev-channel/x86-alex/1620.0.0/'
              'chromeos_1620.0.0_x86-alex_recovery_dev-channel_test.bin'))
 
     self.new_test_image = gspaths.Image(
         build=self.new_build,
-        uri=('gs://chromeos-releases-test/dev-channel/x86-alex/4171.0.0/'
+        uri=('gs://chromeos-releases/dev-channel/x86-alex/4171.0.0/'
              'chromeos_4171.0.0_x86-alex_recovery_dev-channel_test.bin'))
 
     self.full_payload = gspaths.Payload(tgt_image=self.old_base_image,
@@ -151,6 +152,29 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                      '/foo/bar.json')
     self.assertEqual(gen._JsonUri('gs://foo/bar'),
                      'gs://foo/bar.json')
+
+  def testSetupSigner(self):
+    """Tests that signers are being setup properly."""
+    gen = self._GetStdGenerator(work_dir='/foo', sign=True)
+
+    gen._SetupSigner(self.new_build)
+    self.assertIsInstance(
+        gen.signer, signer_payloads_client.SignerPayloadsClientGoogleStorage)
+    self.assertFalse(gen._private_key)
+
+    build = self.new_build
+    build.bucket = "foo-bucket"
+    gen._SetupSigner(build)
+    self.assertIsInstance(
+        gen.signer, signer_payloads_client.UnofficialSignerPayloadsClient)
+    self.assertEqual(gen._private_key, os.path.join(constants.CHROMITE_DIR,
+                                                    'ssh_keys', 'testing_rsa'))
+
+    gen._private_key = 'some-foo-private-key'
+    gen._SetupSigner(build)
+    self.assertIsInstance(
+        gen.signer, signer_payloads_client.UnofficialSignerPayloadsClient)
+    self.assertEqual(gen._private_key, 'some-foo-private-key')
 
   def testRunGeneratorCmd(self):
     """Test the specialized command to run programs in chroot."""
@@ -528,6 +552,28 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--meta-sig', gen.metadata_signature_file,
            '--metadata-size', "10"]
     run_mock.assert_called_once_with(cmd)
+
+  def testVerifyPayloadPublicKey(self):
+    """Test _VerifyPayload with delta payload."""
+    payload = self.full_test_payload
+    payload.build.bucket = 'gs://chromeos-release-test'
+    gen = self._GetStdGenerator(payload=payload, work_dir='/work')
+
+    # Stub out the required functions.
+    run_mock = self.PatchObject(gen, '_RunGeneratorCmd')
+    pubkey_extract_mock = self.PatchObject(gen.signer, 'ExtractPublicKey')
+    gen.metadata_size = 10
+    gen._private_key = "foo-private-key"
+
+    # Run the test.
+    gen._VerifyPayload()
+
+    # Check the expected function calls.
+    cmd = [mock.ANY] * 17
+    public_key = os.path.join('/work/public_key.pem')
+    cmd.extend(['--key', public_key])
+    run_mock.assert_called_once_with(cmd)
+    pubkey_extract_mock.assert_called_once_with(public_key)
 
   def testPayloadJson(self):
     """Test how we store the payload description in json."""

@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import binascii
 import os
 import re
 import shutil
@@ -14,9 +15,15 @@ import tempfile
 import time
 import threading
 
+from chromite.lib import chroot_util
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
+from chromite.lib import osutils
+from chromite.lib import path_util
+
+from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 
@@ -31,16 +38,21 @@ SIGNER_PRIORITY = 45
 class SignerPayloadsClientGoogleStorage(object):
   """This class implements the Google Storage signer interface for payloads."""
 
-  def __init__(self, build, unique=None, ctx=None):
+  def __init__(self, build, work_dir=None, unique=None, ctx=None):
     """This initializer identifies the build an payload that need signatures.
 
     Args:
       build: An instance of gspaths.Build that defines the build.
+      work_dir: A directory inside the chroot to be used for temporarily
+                manipulating files. The directory should be cleaned by the
+                caller. If it is not passed, a temporary directory will be
+                created.
       unique: Force known 'unique' id. Mostly for unittests.
       ctx: GS Context to use for GS operations.
     """
     self._build = build
     self._ctx = ctx if ctx is not None else gs.GSContext()
+    self._work_dir = work_dir or chroot_util.TempDirInChroot()
 
     build_signing_uri = gspaths.ChromeosReleases.BuildPayloadsSigningUri(
         self._build)
@@ -176,12 +188,11 @@ class SignerPayloadsClientGoogleStorage(object):
       hash_names: File names expected in the signer request.
     """
     try:
-      tmp_dir = tempfile.mkdtemp()
+      tmp_dir = tempfile.mkdtemp(dir=self._work_dir)
 
       # Copy hash files into tmp_dir with standard hash names.
       for h, hash_name in zip(hashes, hash_names):
-        with open(os.path.join(tmp_dir, hash_name), 'wb') as f:
-          f.write(h)
+        osutils.WriteFile(os.path.join(tmp_dir, hash_name), h, mode='wb')
 
       cmd = ['tar', '-cjf', archive_file] + hash_names
       cros_build_lib.RunCommand(
@@ -289,12 +300,12 @@ versionrev = %(version)s
 
     results = []
     for uri in signature_uris:
-      with tempfile.NamedTemporaryFile(delete=False) as sig_file:
+      with tempfile.NamedTemporaryFile(dir=self._work_dir,
+                                       delete=False) as sig_file:
         sig_file_name = sig_file.name
       try:
         self._ctx.Copy(uri, sig_file_name)
-        with open(sig_file_name) as sig_file:
-          results.append(sig_file.read())
+        results.append(osutils.ReadFile(sig_file_name))
       finally:
         # Cleanup the temp file, in case it's still there.
         if os.path.exists(sig_file_name):
@@ -374,3 +385,89 @@ versionrev = %(version)s
     finally:
       # Clean up the signature related files from this run.
       self._CleanSignerFiles(hashes, keysets)
+
+
+class UnofficialSignerPayloadsClient(SignerPayloadsClientGoogleStorage):
+  """This class is a payload signer for local and test buckets."""
+
+  def __init__(self, private_key, work_dir=None):
+    """A signer that signs an update payload with a given key.
+
+    For example there is no test key that can be picked up by
+    gs://chromeos-release-test bucket, so this way we can reliably sign and
+    verify a payload when needed. Also it can be used to sign payloads locally
+    when needed. delta_generator accepts a --private_key flag that allows
+    signing the payload inplace. However, it is better to go through the whole
+    process of signing the payload, assuming we don't have access to the signers
+    at that time. This allows us the keep the signing process (or at least part
+    of it) tested constantly.
+
+    Args:
+      private_key: A 2048 bits private key in PEM format for signing.
+      work_dir: A directory inside the chroot to be used for temporarily
+                manipulating files. The directory should be cleaned by the
+                caller. If None is passed, the directory will be created.
+    """
+    assert private_key, 'No private key in PEM format is passed for signing.'
+
+    self._private_key = private_key
+
+    super(UnofficialSignerPayloadsClient, self).__init__(gspaths.Build(),
+                                                         work_dir)
+
+  def ExtractPublicKey(self, public_key):
+    """Extracts the public key from the given private key.
+
+    This is useful for verifying the payload signed by an unofficial key.
+
+    Args:
+      public_key: The path to the public key which needs to be fullfiled.
+
+    Returns:
+      The path to the public key generated inside the work_dir.
+    """
+    cmd = ['openssl', 'rsa', '-in', self._private_key, '-pubout', '-out',
+           public_key]
+    cros_build_lib.RunCommand(cmd, redirect_stdout=True,
+                              combine_stdout_stderr=True)
+
+  def GetHashSignatures(self, hashes, keysets=('update_signer',)):
+    """See SignerPayloadsClientGoogleStorage._GetHashsignatures().
+
+    Instead of waiting for the signers to sign the hashes, we just sign then and
+    copy them to the requested files. It doesn't really support keysets at this
+    point.
+
+    Args:
+      Look at SignerPayloadsClientGoogleStorage.GetHashsignatures()
+
+    Returns:
+      Look at SignerPayloadsClientGoogleStorage.GetHashsignatures()
+    """
+    logging.info('Signing the hashes with unoffical keys.')
+
+    key_path = os.path.join(self._work_dir, 'update_key.pem')
+    filelib.Copy(self._private_key, key_path)
+
+    signatures = []
+    for h in hashes:
+      hash_hex = binascii.hexlify(h)
+      hash_file = os.path.join(self._work_dir, 'hash-%s.bin' % hash_hex)
+      signature_file = os.path.join(self._work_dir,
+                                    'signature-%s.bin' % hash_hex)
+      osutils.WriteFile(hash_file, h, mode='wb')
+
+      sign_script = path_util.ToChrootPath(os.path.join(
+          constants.SOURCE_ROOT,
+          'src/platform/vboot_reference/scripts/image_signing/',
+          'sign_official_build.sh'))
+
+      cros_build_lib.RunCommand([sign_script, 'update_payload',
+                                 path_util.ToChrootPath(hash_file),
+                                 path_util.ToChrootPath(self._work_dir),
+                                 path_util.ToChrootPath(signature_file)],
+                                enter_chroot=True)
+
+      signatures.append([osutils.ReadFile(signature_file)])
+
+    return signatures
