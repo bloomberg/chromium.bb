@@ -108,12 +108,14 @@ URLPatternSet URLPatternSet::CreateUnion(
   //
   // Do the first merge step into a working set so that we don't mutate any of
   // the input.
+  // TODO(devlin): Looks like this creates a bunch of copies; we can probably
+  // clean that up.
   std::vector<URLPatternSet> working;
   for (size_t i = 0; i < sets.size(); i += 2) {
     if (i + 1 < sets.size())
       working.push_back(CreateUnion(sets[i], sets[i + 1]));
     else
-      working.push_back(sets[i]);
+      working.push_back(sets[i].Clone());
   }
 
   for (size_t skip = 1; skip < working.size(); skip *= 2) {
@@ -129,16 +131,12 @@ URLPatternSet URLPatternSet::CreateUnion(
 
 URLPatternSet::URLPatternSet() = default;
 
-URLPatternSet::URLPatternSet(const URLPatternSet& rhs) = default;
-
 URLPatternSet::URLPatternSet(URLPatternSet&& rhs) = default;
 
 URLPatternSet::URLPatternSet(const std::set<URLPattern>& patterns)
     : patterns_(patterns) {}
 
 URLPatternSet::~URLPatternSet() = default;
-
-URLPatternSet& URLPatternSet::operator=(const URLPatternSet& rhs) = default;
 
 URLPatternSet& URLPatternSet::operator=(URLPatternSet&& rhs) = default;
 
@@ -164,6 +162,10 @@ std::ostream& operator<<(std::ostream& out,
 
   out << "}";
   return out;
+}
+
+URLPatternSet URLPatternSet::Clone() const {
+  return URLPatternSet(patterns_);
 }
 
 bool URLPatternSet::is_empty() const {

@@ -161,11 +161,8 @@ void ActiveTabPermissionGranter::GrantIfRequested(const Extension* extension) {
       // We update all extension render views with the new tab permissions, and
       // also the tab itself.
       CreateMessageFunction update_message =
-          base::Bind(&CreateUpdateMessage,
-                     navigation_entry->GetURL(),
-                     extension->id(),
-                     new_hosts,
-                     tab_id_);
+          base::Bind(&CreateUpdateMessage, navigation_entry->GetURL(),
+                     extension->id(), new_hosts.Clone(), tab_id_);
       SendMessageToProcesses(
           ProcessManager::Get(web_contents()->GetBrowserContext())
               ->GetRenderFrameHostsForExtension(extension->id()),

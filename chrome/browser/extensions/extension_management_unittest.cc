@@ -189,7 +189,8 @@ class ExtensionManagementServiceTest : public testing::Test {
   URLPatternSet GetPolicyBlockedHosts(const std::string& id) {
     scoped_refptr<const Extension> extension =
         CreateExtension(Manifest::UNPACKED, "0.1", id, kNonExistingUpdateUrl);
-    return extension_management_->GetPolicyBlockedHosts(extension.get());
+    return extension_management_->GetPolicyBlockedHosts(extension.get())
+        .Clone();
   }
 
   // Wrapper of ExtensionManagement::GetPolicyAllowedHosts, |id| is used
@@ -197,7 +198,8 @@ class ExtensionManagementServiceTest : public testing::Test {
   URLPatternSet GetPolicyAllowedHosts(const std::string& id) {
     scoped_refptr<const Extension> extension =
         CreateExtension(Manifest::UNPACKED, "0.1", id, kNonExistingUpdateUrl);
-    return extension_management_->GetPolicyAllowedHosts(extension.get());
+    return extension_management_->GetPolicyAllowedHosts(extension.get())
+        .Clone();
   }
 
   // Wrapper of ExtensionManagement::BlockedInstallMessage, |id| is used

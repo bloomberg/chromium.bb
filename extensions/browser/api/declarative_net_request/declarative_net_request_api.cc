@@ -95,7 +95,7 @@ DeclarativeNetRequestUpdateAllowedPagesFunction::UpdateAllowedPages(
   }
 
   // Persist |new_set| as part of preferences.
-  prefs->SetDNRAllowedPages(extension_id(), new_set);
+  prefs->SetDNRAllowedPages(extension_id(), new_set.Clone());
 
   // Update the new allowed set on the IO thread.
   base::OnceClosure updated_allow_pages_io_task = base::BindOnce(

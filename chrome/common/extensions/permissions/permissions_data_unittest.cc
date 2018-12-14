@@ -718,7 +718,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   std::set<GURL> more_allowed_urls = allowed_urls;
   more_allowed_urls.insert(https_url);
   more_allowed_urls.insert(file_url);
-  URLPatternSet more_allowed_hosts = allowed_hosts;
+  URLPatternSet more_allowed_hosts = allowed_hosts.Clone();
   more_allowed_hosts.AddPattern(URLPattern(URLPattern::SCHEME_ALL,
                                            https_url.spec()));
   more_allowed_hosts.AddPattern(

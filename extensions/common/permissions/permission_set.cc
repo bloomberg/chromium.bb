@@ -13,23 +13,6 @@
 
 namespace extensions {
 
-namespace {
-
-void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
-  DCHECK(out);
-  for (auto i = set.begin(); i != set.end(); ++i) {
-    URLPattern p = *i;
-    p.SetPath("/*");
-    out->AddPattern(p);
-  }
-}
-
-}  // namespace
-
-//
-// PermissionSet
-//
-
 PermissionSet::PermissionSet() {}
 PermissionSet::PermissionSet(APIPermissionSet apis,
                              ManifestPermissionSet manifest_permissions,
@@ -37,8 +20,13 @@ PermissionSet::PermissionSet(APIPermissionSet apis,
                              const URLPatternSet& scriptable_hosts)
     : apis_(std::move(apis)),
       manifest_permissions_(std::move(manifest_permissions)),
-      scriptable_hosts_(scriptable_hosts) {
-  AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
+      scriptable_hosts_(scriptable_hosts.Clone()) {
+  for (URLPattern pattern : explicit_hosts) {
+    // Strip the paths from the incoming explicit hosts; we don't use them.
+    pattern.SetPath("/*");
+    explicit_hosts_.AddPattern(std::move(pattern));
+  }
+
   InitImplicitPermissions();
   InitEffectiveHosts();
 }
@@ -224,9 +212,9 @@ bool PermissionSet::HasEffectiveAccessToURL(const GURL& url) const {
 PermissionSet::PermissionSet(const PermissionSet& other)
     : apis_(other.apis_.Clone()),
       manifest_permissions_(other.manifest_permissions_.Clone()),
-      explicit_hosts_(other.explicit_hosts_),
-      scriptable_hosts_(other.scriptable_hosts_),
-      effective_hosts_(other.effective_hosts_) {}
+      explicit_hosts_(other.explicit_hosts_.Clone()),
+      scriptable_hosts_(other.scriptable_hosts_.Clone()),
+      effective_hosts_(other.effective_hosts_.Clone()) {}
 
 void PermissionSet::InitImplicitPermissions() {
   // The downloads permission implies the internal version as well.

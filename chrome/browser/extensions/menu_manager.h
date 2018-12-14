@@ -198,10 +198,10 @@ class MenuItem {
   void set_visible(bool visible) { visible_ = visible; }
   void set_enabled(bool enabled) { enabled_ = enabled; }
   void set_document_url_patterns(const URLPatternSet& patterns) {
-    document_url_patterns_ = patterns;
+    document_url_patterns_ = patterns.Clone();
   }
   void set_target_url_patterns(const URLPatternSet& patterns) {
-    target_url_patterns_ = patterns;
+    target_url_patterns_ = patterns.Clone();
   }
 
   // Returns the title with any instances of %s replaced by |selection|. The
