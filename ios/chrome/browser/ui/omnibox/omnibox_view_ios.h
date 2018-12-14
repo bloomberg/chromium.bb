@@ -15,14 +15,15 @@
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_provider.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_suggestions_delegate.h"
 
-struct AutocompleteMatch;
 class AutocompleteResult;
-@class AutocompleteTextFieldDelegate;
 class GURL;
+class WebOmniboxEditController;
+struct AutocompleteMatch;
+@class AutocompleteTextFieldDelegate;
+@class OmniboxClearButtonBridge;
 @class OmniboxTextFieldIOS;
 @class OmniboxTextFieldPasteDelegate;
-class WebOmniboxEditController;
-@class OmniboxClearButtonBridge;
+@protocol OmniboxFocuser;
 
 namespace ios {
 class ChromeBrowserState;
@@ -37,7 +38,8 @@ class OmniboxViewIOS : public OmniboxView,
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
                  WebOmniboxEditController* controller,
                  id<OmniboxLeftImageConsumer> left_image_consumer,
-                 ios::ChromeBrowserState* browser_state);
+                 ios::ChromeBrowserState* browser_state,
+                 id<OmniboxFocuser> omnibox_focuser);
   ~OmniboxViewIOS() override;
 
   void SetPopupProvider(OmniboxPopupProvider* provider) {
@@ -96,7 +98,7 @@ class OmniboxViewIOS : public OmniboxView,
   void OnDidBeginEditing();
   bool OnWillChange(NSRange range, NSString* new_text);
   void OnDidChange(bool processing_user_input);
-  void OnDidEndEditing();
+  void OnWillEndEditing();
   void OnAccept();
   void OnClear();
   bool OnCopy();
@@ -126,7 +128,7 @@ class OmniboxViewIOS : public OmniboxView,
 
   // Hide keyboard and call OnDidEndEditing.  This dismisses the keyboard and
   // also finalizes the editing state of the omnibox.
-  void HideKeyboardAndEndEditing();
+  void EndEditing();
 
   // Hide keyboard only.  Used when omnibox popups grab focus but editing isn't
   // complete.
@@ -185,6 +187,9 @@ class OmniboxViewIOS : public OmniboxView,
   OmniboxTextFieldPasteDelegate* paste_delegate_;
   WebOmniboxEditController* controller_;  // weak, owns us
   __weak id<OmniboxLeftImageConsumer> left_image_consumer_;
+  // Focuser, used to transition the location bar to focused/defocused state as
+  // necessary.
+  __weak id<OmniboxFocuser> omnibox_focuser_;
 
   State state_before_change_;
   NSString* marked_text_before_change_;
