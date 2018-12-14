@@ -341,6 +341,7 @@ ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
 ANDROID_MST_BUILD_BRANCH = 'git_master-arc-dev'
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
 ANDROID_PI_BUILD_BRANCH = 'git_pi-arc'
+ANDROID_VMPI_BUILD_BRANCH = 'git_pi-arcvm-dev'
 ANDROID_GTS_BUILD_TARGETS = {
     # "gts_arm64" is the build maintained by GMS team.
     'XTS': ('linux-gts_arm64', r'\.zip$'),
@@ -386,6 +387,11 @@ ANDROID_PI_BUILD_TARGETS = {
                                  r'\.zip$'),
     'SDK_GOOGLE_X86_64_USERDEBUG': ('linux-sdk_cheets_x86_64-userdebug',
                                     r'\.zip$'),
+}
+ANDROID_VMPI_BUILD_TARGETS = {
+    'ARM_USERDEBUG': ('linux-bertha_arm-userdebug', r'\.zip$'),
+    'X86_USERDEBUG': ('linux-bertha_x86-userdebug', r'\.zip$'),
+    'X86_64_USERDEBUG': ('linux-bertha_x86_64-userdebug', r'\.zip$'),
 }
 
 ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
@@ -1167,6 +1173,7 @@ BLUESTREAK_PRE_CQ = 'bluestreak-pre-cq'
 MST_ANDROID_PFQ_MASTER = 'master-mst-android-pfq'
 NYC_ANDROID_PFQ_MASTER = 'master-nyc-android-pfq'
 PI_ANDROID_PFQ_MASTER = 'master-pi-android-pfq'
+VMPI_ANDROID_PFQ_MASTER = 'master-vmpi-android-pfq'
 TOOLCHAIN_MASTTER = 'master-toolchain'
 
 

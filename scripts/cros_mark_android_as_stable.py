@@ -454,6 +454,8 @@ def MakeBuildTargetDict(build_branch):
     return constants.ANDROID_NYC_BUILD_TARGETS
   elif build_branch == constants.ANDROID_PI_BUILD_BRANCH:
     return constants.ANDROID_PI_BUILD_TARGETS
+  elif build_branch == constants.ANDROID_VMPI_BUILD_BRANCH:
+    return constants.ANDROID_VMPI_BUILD_TARGETS
   else:
     raise ValueError('Unknown branch: %s' % build_branch)
 

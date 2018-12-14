@@ -1353,7 +1353,7 @@ def AndroidTemplates(site_config):
       android_gts_build_branch='git_nyc-mr2-dev',
   )
 
-  # Template for Android Master.
+  # Template for Android Pi.
   site_config.AddTemplate(
       'pi_android_pfq',
       site_config.templates.generic_android_pfq,
@@ -1361,6 +1361,16 @@ def AndroidTemplates(site_config):
       display_label=config_lib.DISPLAY_LABEL_PI_ANDROID_PFQ,
       android_package='android-container-pi',
       android_import_branch=constants.ANDROID_PI_BUILD_BRANCH,
+  )
+
+  # Template for Android VM Pi.
+  site_config.AddTemplate(
+      'vmpi_android_pfq',
+      site_config.templates.generic_android_pfq,
+      site_config.templates.internal,
+      display_label=config_lib.DISPLAY_LABEL_VMPI_ANDROID_PFQ,
+      android_package='android-vm-pi',
+      android_import_branch=constants.ANDROID_VMPI_BUILD_BRANCH,
   )
 
   # Template for Android Master.
@@ -1433,6 +1443,23 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'betty-arcnext'
   ])
   _pi_vmtest_experimental_boards = frozenset([])
+
+  # Android VM PI master.
+  vmpi_master_config = site_config.Add(
+      constants.VMPI_ANDROID_PFQ_MASTER,
+      site_config.templates.vmpi_android_pfq,
+      site_config.templates.master_android_pfq_mixin,
+      schedule='with 1440m interval',
+  )
+
+  _vmpi_no_hwtest_boards = frozenset([])
+  _vmpi_no_hwtest_experimental_boards = frozenset([])
+  _vmpi_hwtest_boards = frozenset([])
+  _vmpi_hwtest_experimental_boards = frozenset([
+      'eve-arcvm',
+  ])
+  _vmpi_vmtest_boards = frozenset([])
+  _vmpi_vmtest_experimental_boards = frozenset([])
 
   # Android NYC master.
   nyc_master_config = site_config.Add(
@@ -1535,6 +1562,55 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           _pi_vmtest_experimental_boards,
           board_configs,
           site_config.templates.pi_android_pfq,
+          important=False,
+          vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                            test_suite='smoke')],
+      )
+  )
+
+  # Android VM PI slaves.
+  vmpi_master_config.AddSlaves(
+      site_config.AddForBoards(
+          'vmpi-android-pfq',
+          _vmpi_hwtest_boards,
+          board_configs,
+          site_config.templates.vmpi_android_pfq,
+          hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'vmpi-android-pfq',
+          _vmpi_no_hwtest_boards,
+          board_configs,
+          site_config.templates.vmpi_android_pfq,
+      ) +
+      site_config.AddForBoards(
+          'vmpi-android-pfq',
+          _vmpi_no_hwtest_experimental_boards,
+          board_configs,
+          site_config.templates.vmpi_android_pfq,
+          important=False,
+      ) +
+      site_config.AddForBoards(
+          'vmpi-android-pfq',
+          _vmpi_hwtest_experimental_boards,
+          board_configs,
+          site_config.templates.vmpi_android_pfq,
+          important=False,
+          hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'vmpi-android-pfq',
+          _vmpi_vmtest_boards,
+          board_configs,
+          site_config.templates.vmpi_android_pfq,
+          vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                            test_suite='smoke')],
+      ) +
+      site_config.AddForBoards(
+          'vmpi-android-pfq',
+          _vmpi_vmtest_experimental_boards,
+          board_configs,
+          site_config.templates.vmpi_android_pfq,
           important=False,
           vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
                                             test_suite='smoke')],

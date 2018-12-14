@@ -541,6 +541,10 @@
   config-updater
   luci-scheduler-updater
 
+== vmpi_android_pfq ==
+  master-vmpi-android-pfq
+    eve-arcvm-vmpi-android-pfq
+
 == tryjob ==
   amd64-generic-asan-paladin-tryjob
   amd64-generic-asan-tryjob
@@ -1356,6 +1360,7 @@
   eve-arcvm-tot-chrome-pfq-informational-tryjob
   eve-arcvm-tot-chromium-pfq-informational-tryjob
   eve-arcvm-unittest-stress
+  eve-arcvm-vmpi-android-pfq-tryjob
   eve-campfire-chrome-pfq-tryjob
   eve-campfire-chromium-pfq-tryjob
   eve-campfire-compile-only-pre-cq
@@ -2767,6 +2772,8 @@
     amd64-llvm-next-toolchain
     arm-llvm-next-toolchain
     arm64-llvm-next-toolchain
+  master-vmpi-android-pfq-tryjob
+    eve-arcvm-vmpi-android-pfq
   mccloud-chrome-pfq-tryjob
   mccloud-chromium-pfq-tryjob
   mccloud-compile-only-pre-cq
