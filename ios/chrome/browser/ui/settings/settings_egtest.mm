@@ -22,7 +22,6 @@
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -662,10 +661,10 @@ id<GREYMatcher> BandwidthSettingsButton() {
       assertWithMatcher:grey_notNil()];
 
   // Verify that the Settings register keyboard commands.
-  MainController* mainController = chrome_test_util::GetMainController();
-  BrowserViewController* bvc =
-      [[mainController browserViewInformation] currentBVC];
-  UIViewController* settings = bvc.presentedViewController;
+  UIViewController* viewController =
+      chrome_test_util::GetMainController()
+          .interfaceProvider.mainInterface.viewController;
+  UIViewController* settings = viewController.presentedViewController;
   GREYAssertNotNil(settings.keyCommands,
                    @"Settings should register key commands when presented.");
 

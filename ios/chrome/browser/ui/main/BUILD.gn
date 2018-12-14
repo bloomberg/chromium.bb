@@ -7,7 +7,7 @@ source_set("main") {
   sources = [
     "browser_coordinator.h",
     "browser_coordinator.mm",
-    "browser_view_information.h",
+    "browser_interface_provider.h",
     "browser_view_wrangler.h",
     "browser_view_wrangler.mm",
     "bvc_container_view_controller.h",

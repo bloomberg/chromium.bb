@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_APP_APPLICATION_DELEGATE_BROWSER_LAUNCHER_H_
 #define IOS_CHROME_APP_APPLICATION_DELEGATE_BROWSER_LAUNCHER_H_
 
-#import "ios/chrome/browser/ui/main/browser_view_information.h"
+#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 
 // Possible stages of the browser initialization. These states will be reached
 // in sequence, each stage is a requiremant for the following one.
@@ -32,8 +32,7 @@ enum BrowserInitializationStageType {
     BrowserInitializationStageType browserInitializationStage;
 
 // Browser view information created during startup.
-@property(nonatomic, readonly) id<BrowserViewInformation>
-    browserViewInformation;
+@property(nonatomic, readonly) id<BrowserInterfaceProvider> interfaceProvider;
 
 // Initializes the application up to |stage|.
 - (void)startUpBrowserToStage:(BrowserInitializationStageType)stage;

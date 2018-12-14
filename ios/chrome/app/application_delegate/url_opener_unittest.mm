@@ -8,11 +8,13 @@
 
 #include "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/app/application_delegate/mock_tab_opener.h"
-#include "ios/chrome/app/main_controller.h"
-#import "ios/chrome/app/main_controller_private.h"
+#include "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/main/test/stub_browser_interface.h"
+#import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest_mac.h"
@@ -24,56 +26,53 @@
 #error "This file requires ARC support."
 #endif
 
+@interface StubStartupInformation : NSObject <StartupInformation>
+@end
+@implementation StubStartupInformation
+@synthesize isPresentingFirstRunUI = _isPresentingFirstRunUI;
+@synthesize isColdStart = _isColdStart;
+@synthesize startupParameters = _startupParameters;
+@synthesize appLaunchTime = _appLaunchTime;
+- (FirstUserActionRecorder*)firstUserActionRecorder {
+  return nil;
+}
+
+- (void)resetFirstUserActionRecorder {
+}
+
+- (void)expireFirstUserActionRecorder {
+}
+
+- (void)expireFirstUserActionRecorderAfterDelay:(NSTimeInterval)delay {
+}
+
+- (void)activateFirstUserActionRecorderWithBackgroundTime:
+    (NSTimeInterval)backgroundTime {
+}
+
+- (void)stopChromeMain {
+}
+
+@end
+
 class URLOpenerTest : public PlatformTest {
  protected:
   void TearDown() override {
-    [main_controller_ stopChromeMain];
     PlatformTest::TearDown();
-  }
-
-  MainController* GetMainController() {
-    if (!main_controller_) {
-      main_controller_ = [[MainController alloc] init];
-
-      id mainTabModel = [OCMockObject mockForClass:[TabModel class]];
-      [[mainTabModel stub] resetSessionMetrics];
-      [[mainTabModel stub] browserStateDestroyed];
-      [[mainTabModel stub] addObserver:[OCMArg any]];
-      [[mainTabModel stub] removeObserver:[OCMArg any]];
-      [[main_controller_ browserViewInformation] setMainTabModel:mainTabModel];
-
-      id otrTabModel = [OCMockObject mockForClass:[TabModel class]];
-      [[otrTabModel stub] resetSessionMetrics];
-      [[otrTabModel stub] browserStateDestroyed];
-      [[otrTabModel stub] addObserver:[OCMArg any]];
-      [[otrTabModel stub] removeObserver:[OCMArg any]];
-      [[main_controller_ browserViewInformation] setOtrTabModel:otrTabModel];
-      [main_controller_
-          setUpAsForegroundedWithBrowserState:GetChromeBrowserState()];
-    }
-    return main_controller_;
-  }
-
-  ios::ChromeBrowserState* GetChromeBrowserState() {
-    if (!chrome_browser_state_.get()) {
-      TestChromeBrowserState::Builder builder;
-      chrome_browser_state_ = builder.Build();
-    }
-    return chrome_browser_state_.get();
   }
 
  private:
   web::TestWebThreadBundle thread_bundle_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  MainController* main_controller_;
 };
 
 TEST_F(URLOpenerTest, HandleOpenURL) {
   // A set of tests for robustness of
   // application:openURL:options:tabOpener:startupInformation:
-  // It verifies that the function handles correctly differents URL parsed by
+  // It verifies that the function handles correctly different URLs parsed by
   // ChromeAppStartupParameters.
-  MainController* controller = GetMainController();
+
+  id<StartupInformation> startupInformation =
+      [[StubStartupInformation alloc] init];
 
   // The array with the different states to tests (active, not active).
   NSArray* applicationStatesToTest = @[ @YES, @NO ];
@@ -84,52 +83,57 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
   // The keys for this dictionary is the URL to call openURL:. The value
   // from the key is either YES or NO to indicate if this is a valid URL
   // or not.
-  NSNumber* kIsValid = [NSNumber numberWithBool:YES];
-  NSNumber* kNotValid = [NSNumber numberWithBool:NO];
-  NSDictionary* urlsToTest = [NSDictionary
-      dictionaryWithObjectsAndKeys:
-          kNotValid, [NSNull null],
-          // Tests for http, googlechrome, and chromium scheme URLs.
-          kNotValid, @"", kIsValid, @"http://www.google.com/", kIsValid,
-          @"https://www.google.com/settings/account/", kIsValid,
-          @"googlechrome://www.google.com/", kIsValid,
-          @"googlechromes://www.google.com/settings/account/", kIsValid,
-          @"chromium://www.google.com/", kIsValid,
-          @"chromiums://www.google.com/settings/account/",
-          // Google search results page URLs.
-          kIsValid, @"https://www.google.com/search?q=pony&"
-                     "sugexp=chrome,mod=7&sourceid=chrome&ie=UTF-8",
-          kIsValid, @"googlechromes://www.google.com/search?q=pony&"
-                     "sugexp=chrome,mod=7&sourceid=chrome&ie=UTF-8",
-          // Other protocols.
-          kIsValid, @"chromium-x-callback://x-callback-url/open?url=https://"
-                     "www.google.com&x-success=http://success",
-          kIsValid, @"file://localhost/path/to/file.pdf",
-          // Invalid format input URL will be ignored.
-          kNotValid, @"this.is.not.a.valid.url",
-          // Valid format but invalid data.
-          kIsValid, @"this://is/garbage/but/valid", nil];
-  NSArray* sourcesToTest = [NSArray
-      arrayWithObjects:[NSNull null], @"", @"com.google.GoogleMobile",
-                       @"com.google.GooglePlus", @"com.google.SomeOtherProduct",
-                       @"com.apple.mobilesafari",
-                       @"com.othercompany.otherproduct", nil];
+
+  NSDictionary* urlsToTest = @{
+    [NSNull null] : @NO,
+    @"" : @NO,
+    // Tests for http, googlechrome, and chromium scheme URLs.
+    @"http://www.google.com/" : @YES,
+    @"https://www.google.com/settings/account/" : @YES,
+    @"googlechrome://www.google.com/" : @YES,
+    @"googlechromes://www.google.com/settings/account/" : @YES,
+    @"chromium://www.google.com/" : @YES,
+    @"chromiums://www.google.com/settings/account/" : @YES,
+
+    // Google search results page URLs.
+    @"https://www.google.com/search?q=pony&"
+     "sugexp=chrome,mod=7&sourceid=chrome&ie=UTF-8" : @YES,
+    @"googlechromes://www.google.com/search?q=pony&"
+     "sugexp=chrome,mod=7&sourceid=chrome&ie=UTF-8" : @YES,
+
+    // Other protocols.
+    @"chromium-x-callback://x-callback-url/open?url=https://"
+     "www.google.com&x-success=http://success" : @YES,
+    @"file://localhost/path/to/file.pdf" : @YES,
+
+    // Invalid format input URL will be ignored.
+    @"this.is.not.a.valid.url" : @NO,
+
+    // Valid format but invalid data.
+    @"this://is/garbage/but/valid" : @YES
+  };
+
+  NSArray* sourcesToTest = @[
+    [NSNull null], @"", @"com.google.GoogleMobile", @"com.google.GooglePlus",
+    @"com.google.SomeOtherProduct", @"com.apple.mobilesafari",
+    @"com.othercompany.otherproduct"
+  ];
   // See documentation for |annotation| property in
-  // UIDocumentInteractionController Class Reference.  The following values are
-  // mostly to detect garbage-in situations and ensure that the app won't crash
-  // or garbage out.
-  NSArray* annotationsToTest = [NSArray
-      arrayWithObjects:[NSNull null],
-                       [NSArray arrayWithObjects:@"foo", @"bar", nil],
-                       [NSDictionary dictionaryWithObject:@"bar" forKey:@"foo"],
-                       @"a string annotation object", nil];
+  // UIDocumentInteractionstartupInformation Class Reference.  The following
+  // values are mostly to detect garbage-in situations and ensure that the app
+  // won't crash or garbage out.
+  NSArray* annotationsToTest = @[
+    [NSNull null], [NSArray arrayWithObjects:@"foo", @"bar", nil],
+    [NSDictionary dictionaryWithObject:@"bar" forKey:@"foo"],
+    @"a string annotation object"
+  ];
   for (id urlString in [urlsToTest allKeys]) {
     for (id source in sourcesToTest) {
       for (id annotation in annotationsToTest) {
         for (NSNumber* applicationActive in applicationStatesToTest) {
           BOOL applicationIsActive = [applicationActive boolValue];
 
-          controller.startupParameters = nil;
+          startupInformation.startupParameters = nil;
           [tabOpener resetURL];
           NSURL* testUrl = urlString == [NSNull null]
                                ? nil
@@ -153,20 +157,20 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
                          applicationActive:applicationIsActive
                                    options:options
                                  tabOpener:tabOpener
-                        startupInformation:controller];
+                        startupInformation:startupInformation];
 
           // Tests.
           EXPECT_EQ(isValid, result);
           if (!applicationIsActive) {
             if (result)
               EXPECT_EQ([params externalURL],
-                        controller.startupParameters.externalURL);
+                        startupInformation.startupParameters.externalURL);
             else
-              EXPECT_EQ(nil, controller.startupParameters);
+              EXPECT_EQ(nil, startupInformation.startupParameters);
           } else if (result) {
             EXPECT_EQ([params externalURL], [tabOpener url]);
             tabOpener.completionBlock();
-            EXPECT_EQ(nil, controller.startupParameters);
+            EXPECT_EQ(nil, startupInformation.startupParameters);
           }
         }
       }

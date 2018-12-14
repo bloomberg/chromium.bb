@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/main/browser_view_information.h"
+#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 
 @protocol ApplicationCommands;
 @class BrowserCoordinator;
@@ -27,30 +27,30 @@ class ChromeBrowserState;
 // Wrangler (a class in need of further refactoring) for handling the creation
 // and ownership of BrowserViewController instances and their associated
 // TabModels, and a few related methods.
-@interface BrowserViewWrangler : NSObject<BrowserViewInformation>
+@interface BrowserViewWrangler : NSObject <BrowserInterfaceProvider>
 
 // Initialize a new instance of this class using |browserState| as the primary
 // browser state for the tab models and BVCs, and setting |tabModelObserver|, if
 // not nil, as the tab model delegate for any tab models that are created.
 // |applicationCommandEndpoint| is the object that methods in the
 // ApplicationCommands protocol should be dispatched to by any BVCs that are
-// created.
+// created. |storageSwitcher| is used to manage changing any storage associated
+// with the interfaces when the current interface changes; this is handled in
+// the implementation of -setCurrentInterface:.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                     tabModelObserver:(id<TabModelObserver>)tabModelObserver
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint
+                     storageSwitcher:
+                         (id<BrowserStateStorageSwitching>)storageSwitcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Set the current BrowserCoordinator to be |browserCoordinator|, and use
-// |storageSwitcher| to handle the storage switch. |browserCoordinator| should
-// be one of the BrowserCoordinator instances already owned by the receiver
-// (either |mainBrowserCoordinator| or |incognitoBrowserCoordinator|), and this
-// method does not retain or take ownership of |browserCoordinator|.
-- (void)setCurrentBrowserCoordinator:(BrowserCoordinator*)browserCoordinator
-                     storageSwitcher:
-                         (id<BrowserStateStorageSwitching>)storageSwitcher;
+// Creates the main tab model used by the receiver, using the browser state
+// and tab model observer it was configured with. This should be done before
+// the main interface is accessed, usually immediatley after initialization.
+- (void)createMainTabModel;
 
 // Update the device sharing manager. This should be done after updates to the
 // tab model. This class creates and manages the state of the sharing manager.
@@ -66,6 +66,8 @@ class ChromeBrowserState;
 
 @interface BrowserViewWrangler (Testing)
 @property(nonatomic, readonly) DeviceSharingManager* deviceSharingManager;
+@property(nonatomic) TabModel* mainTabModel;
+@property(nonatomic) TabModel* otrTabModel;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MAIN_BROWSER_VIEW_WRANGLER_H_

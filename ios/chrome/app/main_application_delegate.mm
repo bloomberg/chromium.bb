@@ -204,7 +204,7 @@
                  completionHandler:completionHandler
                          tabOpener:_tabOpener
                 startupInformation:_startupInformation
-            browserViewInformation:[_mainController browserViewInformation]];
+                 interfaceProvider:_mainController.interfaceProvider];
 }
 
 #pragma mark Opening a URL-Specified Resource

@@ -43,8 +43,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/main/browser_coordinator.h"
-#import "ios/chrome/browser/ui/main/browser_view_information.h"
+#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/net/cookies/cookie_store_ios.h"
@@ -220,13 +219,13 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   }
 
   // Do not save cookies if it is already in progress.
-  if ([[_browserLauncher browserViewInformation] currentBVC].browserState &&
-      !_savingCookies) {
+  id<BrowserInterface> currentInterface =
+      _browserLauncher.interfaceProvider.currentInterface;
+  if (currentInterface.browserState && !_savingCookies) {
     // Save cookies to disk. The empty critical closure guarantees that the task
     // will be run before backgrounding.
     scoped_refptr<net::URLRequestContextGetter> getter =
-        [[_browserLauncher browserViewInformation] currentBVC]
-            .browserState->GetRequestContext();
+        currentInterface.browserState->GetRequestContext();
     _savingCookies = YES;
     __block base::OnceClosure criticalClosure =
         base::MakeCriticalClosure(base::BindOnce(^{
@@ -292,12 +291,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   [MetricsMediator
       logLaunchMetricsWithStartupInformation:_startupInformation
-                      browserViewInformation:[_browserLauncher
-                                                 browserViewInformation]];
+                           interfaceProvider:_browserLauncher
+                                                 .interfaceProvider];
   [memoryHelper resetForegroundMemoryWarningCount];
 
   ios::ChromeBrowserState* currentBrowserState =
-      [[_browserLauncher browserViewInformation] currentBrowserState];
+      _browserLauncher.interfaceProvider.currentInterface.browserState;
   if ([SignedInAccountsViewController
           shouldBePresentedForBrowserState:currentBrowserState]) {
     [appNavigation presentSignedInAccountsViewControllerForBrowserState:
@@ -305,9 +304,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   }
 
   // Use the mainBVC as the ContentSuggestions can only be started in non-OTR.
-  [ContentSuggestionsSchedulerNotifications
-      notifyForeground:[[[_browserLauncher browserViewInformation] mainBVC]
-                           browserState]];
+  ios::ChromeBrowserState* mainBrowserState =
+      _browserLauncher.interfaceProvider.mainInterface.browserState;
+  [ContentSuggestionsSchedulerNotifications notifyForeground:mainBrowserState];
 
   // If the current browser state is not OTR, check for cookie loss.
   if (currentBrowserState && !currentBrowserState->IsOffTheRecord() &&
@@ -339,33 +338,31 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   DCHECK([_browserLauncher browserInitializationStage] ==
          INITIALIZATION_STAGE_FOREGROUND);
   _sessionStartTime = base::TimeTicks::Now();
-  [[[_browserLauncher browserViewInformation] mainTabModel]
-      resetSessionMetrics];
+  TabModel* mainTabModel =
+      _browserLauncher.interfaceProvider.mainInterface.tabModel;
+  [mainTabModel resetSessionMetrics];
 
+  id<BrowserInterface> currentInterface =
+      _browserLauncher.interfaceProvider.currentInterface;
   if ([_startupInformation startupParameters]) {
     [UserActivityHandler
         handleStartupParametersWithTabOpener:tabOpener
                           startupInformation:_startupInformation
-                      browserViewInformation:[_browserLauncher
-                                                 browserViewInformation]];
-  } else if ([tabOpener shouldOpenNTPTabOnActivationOfTabModel:
-                            [[_browserLauncher browserViewInformation]
-                                currentTabModel]]) {
+                           interfaceProvider:_browserLauncher
+                                                 .interfaceProvider];
+  } else if ([tabOpener shouldOpenNTPTabOnActivationOfTabModel:currentInterface
+                                                                   .tabModel]) {
     // Opens an NTP if needed.
     // TODO(crbug.com/623491): opening a tab when the application is launched
     // without a tab should not be counted as a user action. Revisit the way tab
     // creation is counted.
     if (![tabSwitcher openNewTabFromTabSwitcher]) {
-      BrowserViewController* bvc =
-          [[_browserLauncher browserViewInformation] currentBVC];
-      BOOL incognito =
-          bvc == [[_browserLauncher browserViewInformation] otrBVC];
-      [bvc.dispatcher
-          openURLInNewTab:[OpenNewTabCommand commandWithIncognito:incognito]];
+      OpenNewTabCommand* command =
+          [OpenNewTabCommand commandWithIncognito:currentInterface.incognito];
+      [currentInterface.bvc.dispatcher openURLInNewTab:command];
     }
   } else {
-    [[[_browserLauncher browserViewInformation] currentBVC]
-        presentBubblesIfEligible];
+    [currentInterface.bvc presentBubblesIfEligible];
   }
 
   [MetricsMediator logStartupDuration:_startupInformation];
@@ -391,7 +388,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   // down.
   if ([_browserLauncher browserInitializationStage] >=
       INITIALIZATION_STAGE_FOREGROUND) {
-    [[_browserLauncher browserViewInformation] cleanDeviceSharingManager];
+    [_browserLauncher.interfaceProvider cleanDeviceSharingManager];
   }
 
   // Cancel any in-flight distribution notifications.
@@ -403,8 +400,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   // closing the tabs. Set the BVC to inactive to cancel all the dialogs.
   if ([_browserLauncher browserInitializationStage] >=
       INITIALIZATION_STAGE_FOREGROUND) {
-    [[_browserLauncher browserViewInformation] haltAllTabs];
-    _browserLauncher.browserViewInformation.currentBrowserCoordinator.active =
+    [_browserLauncher.interfaceProvider haltAllTabs];
+    _browserLauncher.interfaceProvider.currentInterface.userInteractionEnabled =
         NO;
   }
 
@@ -431,8 +428,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   UMA_HISTOGRAM_CUSTOM_TIMES("Session.TotalDurationMax1Day", duration,
                              base::TimeDelta::FromMilliseconds(1),
                              base::TimeDelta::FromHours(24), 50);
-  [[[_browserLauncher browserViewInformation] mainTabModel]
-      recordSessionMetrics];
+  [_browserLauncher.interfaceProvider.currentInterface
+          .tabModel recordSessionMetrics];
 }
 
 - (BOOL)requiresHandlingAfterLaunchWithOptions:(NSDictionary*)launchOptions

@@ -107,14 +107,14 @@ ios::ChromeBrowserState* GetCurrentIncognitoBrowserState() {
 }
 
 NSUInteger GetRegisteredKeyCommandsCount() {
-  BrowserViewController* mainBVC =
-      GetMainController().browserViewInformation.mainBVC;
-  return mainBVC.keyCommands.count;
+  UIViewController* mainViewController =
+      GetMainController().interfaceProvider.mainInterface.viewController;
+  return mainViewController.keyCommands.count;
 }
 
 id<BrowserCommands> BrowserCommandDispatcherForMainBVC() {
   BrowserViewController* mainBVC =
-      GetMainController().browserViewInformation.mainBVC;
+      GetMainController().interfaceProvider.mainInterface.bvc;
   return mainBVC.dispatcher;
 }
 

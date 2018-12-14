@@ -26,12 +26,77 @@
 #error "This file requires ARC support."
 #endif
 
+// Internal implementation of BrowserInterface -- for the most part a wrapper
+// around BrowserCoordinator.
+@interface WrangledBrowser : NSObject <BrowserInterface>
+
+@property(nonatomic, weak, readonly) BrowserCoordinator* coordinator;
+
+- (instancetype)initWithCoordinator:(BrowserCoordinator*)coordinator;
+
+@end
+
+@implementation WrangledBrowser
+
+- (instancetype)initWithCoordinator:(BrowserCoordinator*)coordinator {
+  if (self = [super init]) {
+    _coordinator = coordinator;
+  }
+  return self;
+}
+
+- (UIViewController*)viewController {
+  return self.coordinator.viewController;
+}
+
+- (BrowserViewController*)bvc {
+  return self.coordinator.viewController;
+}
+
+- (TabModel*)tabModel {
+  return self.coordinator.tabModel;
+}
+
+- (ios::ChromeBrowserState*)browserState {
+  return self.coordinator.viewController.browserState;
+}
+
+- (BOOL)userInteractionEnabled {
+  return self.coordinator.active;
+}
+
+- (void)setUserInteractionEnabled:(BOOL)userInteractionEnabled {
+  self.coordinator.active = userInteractionEnabled;
+}
+
+- (BOOL)incognito {
+  return self.browserState->IsOffTheRecord();
+}
+
+- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
+                           dismissOmnibox:(BOOL)dismissOmnibox {
+  [self.coordinator clearPresentedStateWithCompletion:completion
+                                       dismissOmnibox:dismissOmnibox];
+}
+
+@end
+
 @interface BrowserViewWrangler ()<TabModelObserver> {
   ios::ChromeBrowserState* _browserState;
   __weak id<TabModelObserver> _tabModelObserver;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
+  __weak id<BrowserStateStorageSwitching> _storageSwitcher;
   BOOL _isShutdown;
 }
+
+@property(nonatomic, strong, readwrite) WrangledBrowser* mainInterface;
+@property(nonatomic, strong, readwrite) WrangledBrowser* incognitoInterface;
+
+// Backing objects.
+@property(nonatomic) BrowserCoordinator* mainBrowserCoordinator;
+@property(nonatomic) BrowserCoordinator* incognitoBrowserCoordinator;
+@property(nonatomic) TabModel* mainTabModel;
+@property(nonatomic) TabModel* otrTabModel;
 
 // Responsible for maintaining all state related to sharing to other devices.
 // Redeclared readwrite from the readonly declaration in the Testing interface.
@@ -58,23 +123,21 @@
 
 @implementation BrowserViewWrangler
 
-// Properties defined in the BrowserViewInformation protocol.
-@synthesize mainBrowserCoordinator = _mainBrowserCoordinator;
-@synthesize incognitoBrowserCoordinator = _incognitoBrowserCoordinator;
-@synthesize currentBrowserCoordinator = _currentBrowserCoordinator;
+@synthesize currentInterface = _currentInterface;
 @synthesize mainTabModel = _mainTabModel;
 @synthesize otrTabModel = _otrTabModel;
-// Private properies.
-@synthesize deviceSharingManager = _deviceSharingManager;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                     tabModelObserver:(id<TabModelObserver>)tabModelObserver
           applicationCommandEndpoint:
-              (id<ApplicationCommands>)applicationCommandEndpoint {
+              (id<ApplicationCommands>)applicationCommandEndpoint
+                     storageSwitcher:
+                         (id<BrowserStateStorageSwitching>)storageSwitcher {
   if ((self = [super init])) {
     _browserState = browserState;
     _tabModelObserver = tabModelObserver;
     _applicationCommandEndpoint = applicationCommandEndpoint;
+    _storageSwitcher = storageSwitcher;
   }
   return self;
 }
@@ -83,32 +146,78 @@
   DCHECK(_isShutdown) << "-shutdown must be called before -dealloc";
 }
 
+- (void)createMainTabModel {
+  self.mainTabModel = [self tabModelForBrowserState:_browserState empty:NO];
+  // Follow loaded URLs in the main tab model to send those in case of
+  // crashes.
+  breakpad::MonitorURLsForTabModel(_mainTabModel);
+  ios::GetChromeBrowserProvider()->InitializeCastService(_mainTabModel);
+}
+
 #pragma mark - BrowserViewInformation property implementations
 
-- (BrowserCoordinator*)mainBrowserCoordinator {
-  if (!_mainBrowserCoordinator) {
+- (void)setCurrentInterface:(WrangledBrowser*)interface {
+  DCHECK(interface);
+  // |interface| must be one of the interfaces this class already owns.
+  DCHECK(self.mainInterface == interface ||
+         self.incognitoInterface == interface);
+  if (self.currentInterface == interface) {
+    return;
+  }
+
+  if (self.currentInterface) {
+    // Tell the current BVC it moved to the background.
+    [self.currentInterface.bvc setPrimary:NO];
+
+    // Data storage for the browser is always owned by the current BVC, so it
+    // must be updated when switching between BVCs.
+    [_storageSwitcher
+        changeStorageFromBrowserState:self.currentInterface.browserState
+                       toBrowserState:interface.browserState];
+  }
+
+  _currentInterface = interface;
+
+  // The internal state of the Handoff Manager depends on the current BVC.
+  [self updateDeviceSharingManager];
+}
+
+- (id<BrowserInterface>)mainInterface {
+  if (!_mainInterface) {
+    // The backing coordinator should not have been created yet.
+    DCHECK(!_mainBrowserCoordinator);
     _mainBrowserCoordinator =
         [self coordinatorForBrowserState:_browserState
                                 tabModel:self.mainTabModel];
     [_mainBrowserCoordinator start];
     DCHECK(_mainBrowserCoordinator.viewController);
+    _mainInterface =
+        [[WrangledBrowser alloc] initWithCoordinator:_mainBrowserCoordinator];
   }
-  return _mainBrowserCoordinator;
+  return _mainInterface;
 }
 
-- (BrowserViewController*)mainBVC {
-  DCHECK(self.mainBrowserCoordinator.viewController);
-  return self.mainBrowserCoordinator.viewController;
+- (id<BrowserInterface>)incognitoInterface {
+  if (!_incognitoInterface) {
+    // The backing coordinator should not have been created yet.
+    DCHECK(!_incognitoBrowserCoordinator);
+    ios::ChromeBrowserState* otrBrowserState =
+        _browserState->GetOffTheRecordChromeBrowserState();
+    DCHECK(otrBrowserState);
+    _incognitoBrowserCoordinator =
+        [self coordinatorForBrowserState:otrBrowserState
+                                tabModel:self.otrTabModel];
+    [_incognitoBrowserCoordinator start];
+    DCHECK(_incognitoBrowserCoordinator.viewController);
+    _incognitoInterface = [[WrangledBrowser alloc]
+        initWithCoordinator:_incognitoBrowserCoordinator];
+  }
+  return _incognitoInterface;
 }
 
 - (TabModel*)mainTabModel {
-  if (!_mainTabModel) {
-    self.mainTabModel = [self tabModelForBrowserState:_browserState empty:NO];
-    // Follow loaded URLs in the main tab model to send those in case of
-    // crashes.
-    breakpad::MonitorURLsForTabModel(_mainTabModel);
-    ios::GetChromeBrowserProvider()->InitializeCastService(_mainTabModel);
-  }
+  DCHECK(_mainTabModel)
+      << "-createMainTabModel must be called before -mainTabModel is accessed.";
   return _mainTabModel;
 }
 
@@ -127,25 +236,6 @@
   }
 
   _mainTabModel = mainTabModel;
-}
-
-- (BrowserCoordinator*)incognitoBrowserCoordinator {
-  if (!_incognitoBrowserCoordinator) {
-    ios::ChromeBrowserState* otrBrowserState =
-        _browserState->GetOffTheRecordChromeBrowserState();
-    DCHECK(otrBrowserState);
-    _incognitoBrowserCoordinator =
-        [self coordinatorForBrowserState:otrBrowserState
-                                tabModel:self.otrTabModel];
-    [_incognitoBrowserCoordinator start];
-    DCHECK(_incognitoBrowserCoordinator.viewController);
-  }
-  return _incognitoBrowserCoordinator;
-}
-
-- (BrowserViewController*)otrBVC {
-  DCHECK(self.incognitoBrowserCoordinator.viewController);
-  return self.incognitoBrowserCoordinator.viewController;
 }
 
 - (TabModel*)otrTabModel {
@@ -171,49 +261,7 @@
   _otrTabModel = otrTabModel;
 }
 
-- (void)setCurrentBrowserCoordinator:(BrowserCoordinator*)browserCoordinator
-                     storageSwitcher:
-                         (id<BrowserStateStorageSwitching>)storageSwitcher {
-  DCHECK(browserCoordinator);
-  // |browserCoordinator| should be one of the BrowserCoordinators this class
-  // already owns.
-  DCHECK(self.mainBrowserCoordinator == browserCoordinator ||
-         self.incognitoBrowserCoordinator == browserCoordinator);
-  if (self.currentBrowserCoordinator == browserCoordinator) {
-    return;
-  }
-
-  if (self.currentBrowserCoordinator) {
-    // Tell the current BVC it moved to the background.
-    [self.currentBrowserCoordinator.viewController setPrimary:NO];
-
-    // Data storage for the browser is always owned by the current BVC, so it
-    // must be updated when switching between BVCs.
-    [storageSwitcher
-        changeStorageFromBrowserState:self.currentBrowserCoordinator
-                                          .browserState
-                       toBrowserState:browserCoordinator.browserState];
-  }
-
-  _currentBrowserCoordinator = browserCoordinator;
-
-  // The internal state of the Handoff Manager depends on the current BVC.
-  [self updateDeviceSharingManager];
-}
-
-- (BrowserViewController*)currentBVC {
-  return self.currentBrowserCoordinator.viewController;
-}
-
 #pragma mark - BrowserViewInformation methods
-
-- (TabModel*)currentTabModel {
-  return self.currentBrowserCoordinator.tabModel;
-}
-
-- (ios::ChromeBrowserState*)currentBrowserState {
-  return self.currentBrowserCoordinator.browserState;
-}
 
 - (void)haltAllTabs {
   [self.mainTabModel haltAllTabs];
@@ -246,10 +294,9 @@
   [self.deviceSharingManager updateBrowserState:_browserState];
 
   GURL activeURL;
-  Tab* currentTab = self.currentBrowserCoordinator.tabModel.currentTab;
+  Tab* currentTab = self.currentInterface.tabModel.currentTab;
   // Set the active URL if there's a current tab and the current BVC is not OTR.
-  if (currentTab.webState &&
-      self.currentBrowserCoordinator != self.incognitoBrowserCoordinator) {
+  if (currentTab.webState && !self.currentInterface.incognito) {
     activeURL = currentTab.webState->GetVisibleURL();
   }
   [self.deviceSharingManager updateActiveURL:activeURL];
@@ -267,19 +314,19 @@
 
   // At this stage, a new incognitoBrowserCoordinator shouldn't be lazily
   // constructed by calling the property getter.
-  BOOL otrBVCIsCurrent =
-      self.currentBrowserCoordinator == _incognitoBrowserCoordinator;
+  BOOL otrBVCIsCurrent = self.currentInterface == self.incognitoInterface;
   @autoreleasepool {
     // At this stage, a new incognitoBrowserCoordinator shouldn't be lazily
     // constructed by calling the property getter.
     [_incognitoBrowserCoordinator stop];
     _incognitoBrowserCoordinator = nil;
+    _incognitoInterface = nil;
 
     // There's no guarantee the tab model was ever added to the BVC (or even
     // that the BVC was created), so ensure the tab model gets notified.
     self.otrTabModel = nil;
     if (otrBVCIsCurrent) {
-      _currentBrowserCoordinator = nil;
+      _currentInterface = nil;
     }
   }
 
@@ -294,7 +341,7 @@
   DCHECK(_browserState->HasOffTheRecordChromeBrowserState());
 
   if (otrBVCIsCurrent) {
-    _currentBrowserCoordinator = self.incognitoBrowserCoordinator;
+    self.currentInterface = self.incognitoInterface;
   }
 }
 

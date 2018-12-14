@@ -94,9 +94,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
   // controller presentation as the signal that QLPreviewController UI is shown.
-  UIViewController* BVC = GetMainController().browserViewInformation.mainBVC;
+  id<BrowserInterface> interface =
+      GetMainController().interfaceProvider.mainInterface;
+  UIViewController* viewController = interface.viewController;
   bool shown = WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
-    UIViewController* presentedController = BVC.presentedViewController;
+    UIViewController* presentedController =
+        viewController.presentedViewController;
     return [presentedController class] == [QLPreviewController class];
   });
   GREYAssert(shown, @"QLPreviewController was not shown.");
@@ -116,9 +119,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
   // controller presentation as the signal that QLPreviewController UI is shown.
-  UIViewController* BVC = GetMainController().browserViewInformation.mainBVC;
+  id<BrowserInterface> interface =
+      GetMainController().interfaceProvider.mainInterface;
+  UIViewController* viewController = interface.viewController;
   bool shown = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    UIViewController* presentedController = BVC.presentedViewController;
+    UIViewController* presentedController =
+        viewController.presentedViewController;
     return [presentedController class] == [QLPreviewController class];
   });
   GREYAssertFalse(shown, @"QLPreviewController should not have shown.");
@@ -138,9 +144,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
   // controller presentation as the signal that QLPreviewController UI is shown.
-  UIViewController* BVC = GetMainController().browserViewInformation.mainBVC;
+  id<BrowserInterface> interface =
+      GetMainController().interfaceProvider.mainInterface;
+  UIViewController* viewController = interface.viewController;
   bool shown = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    UIViewController* presentedController = BVC.presentedViewController;
+    UIViewController* presentedController =
+        viewController.presentedViewController;
     return [presentedController class] == [QLPreviewController class];
   });
   GREYAssertFalse(shown, @"QLPreviewController should not have shown.");
@@ -160,9 +169,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
   // controller presentation as the signal that QLPreviewController UI is shown.
-  UIViewController* BVC = GetMainController().browserViewInformation.mainBVC;
+  id<BrowserInterface> interface =
+      GetMainController().interfaceProvider.mainInterface;
+  UIViewController* viewController = interface.viewController;
   bool shown = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    UIViewController* presentedController = BVC.presentedViewController;
+    UIViewController* presentedController =
+        viewController.presentedViewController;
     return [presentedController class] == [QLPreviewController class];
   });
   GREYAssertFalse(shown, @"QLPreviewController should not have shown.");
