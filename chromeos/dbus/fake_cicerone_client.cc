@@ -11,29 +11,24 @@
 namespace chromeos {
 
 FakeCiceroneClient::FakeCiceroneClient() {
-  launch_container_application_response_.Clear();
   launch_container_application_response_.set_success(true);
 
-  container_app_icon_response_.Clear();
-
-  get_linux_package_info_response_.Clear();
   get_linux_package_info_response_.set_success(true);
   get_linux_package_info_response_.set_package_id("Fake Package;1.0;x86-64");
   get_linux_package_info_response_.set_summary("A package that is fake");
 
-  install_linux_package_response_.Clear();
   install_linux_package_response_.set_status(
       vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
 
-  create_lxd_container_response_.Clear();
+  uninstall_package_owning_file_response_.set_status(
+      vm_tools::cicerone::UninstallPackageOwningFileResponse::STARTED);
+
   create_lxd_container_response_.set_status(
       vm_tools::cicerone::CreateLxdContainerResponse::CREATING);
 
-  start_lxd_container_response_.Clear();
   start_lxd_container_response_.set_status(
       vm_tools::cicerone::StartLxdContainerResponse::STARTED);
 
-  setup_lxd_container_user_response_.Clear();
   setup_lxd_container_user_response_.set_status(
       vm_tools::cicerone::SetUpLxdContainerUserResponse::SUCCESS);
 }
@@ -72,6 +67,10 @@ bool FakeCiceroneClient::IsInstallLinuxPackageProgressSignalConnected() {
   return is_install_linux_package_progress_signal_connected_;
 }
 
+bool FakeCiceroneClient::IsUninstallPackageProgressSignalConnected() {
+  return is_uninstall_package_progress_signal_connected_;
+}
+
 void FakeCiceroneClient::LaunchContainerApplication(
     const vm_tools::cicerone::LaunchContainerApplicationRequest& request,
     DBusMethodCallback<vm_tools::cicerone::LaunchContainerApplicationResponse>
@@ -104,6 +103,15 @@ void FakeCiceroneClient::InstallLinuxPackage(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), install_linux_package_response_));
+}
+
+void FakeCiceroneClient::UninstallPackageOwningFile(
+    const vm_tools::cicerone::UninstallPackageOwningFileRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::UninstallPackageOwningFileResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                uninstall_package_owning_file_response_));
 }
 
 void FakeCiceroneClient::WaitForServiceToBeAvailable(

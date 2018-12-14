@@ -1006,8 +1006,7 @@ void CrostiniManager::InstallLinuxPackage(
     // detect when the install completes, successfully or otherwise.
     LOG(ERROR)
         << "Attempted to install package when progress signal not connected.";
-    std::move(callback).Run(CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED,
-                            std::string());
+    std::move(callback).Run(CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED);
     return;
   }
 
@@ -1020,6 +1019,32 @@ void CrostiniManager::InstallLinuxPackage(
   GetCiceroneClient()->InstallLinuxPackage(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnInstallLinuxPackage,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void CrostiniManager::UninstallPackageOwningFile(
+    std::string vm_name,
+    std::string container_name,
+    std::string desktop_file_id,
+    UninstallPackageOwningFileCallback callback) {
+  if (!GetCiceroneClient()->IsUninstallPackageProgressSignalConnected()) {
+    // Technically we could still start the uninstall, but we wouldn't be able
+    // to detect when the uninstall completes, successfully or otherwise.
+    LOG(ERROR)
+        << "Attempted to uninstall package when progress signal not connected.";
+    std::move(callback).Run(CrostiniResult::UNINSTALL_PACKAGE_FAILED);
+    return;
+  }
+
+  vm_tools::cicerone::UninstallPackageOwningFileRequest request;
+  request.set_owner_id(owner_id_);
+  request.set_vm_name(std::move(vm_name));
+  request.set_container_name(std::move(container_name));
+  request.set_desktop_file_id(std::move(desktop_file_id));
+
+  GetCiceroneClient()->UninstallPackageOwningFile(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnUninstallPackageOwningFile,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -1187,14 +1212,14 @@ void CrostiniManager::AddRemoveCrostiniCallback(
   remove_crostini_callbacks_.emplace_back(std::move(remove_callback));
 }
 
-void CrostiniManager::AddInstallLinuxPackageProgressObserver(
-    InstallLinuxPackageProgressObserver* observer) {
-  install_linux_package_progress_observers_.AddObserver(observer);
+void CrostiniManager::AddLinuxPackageOperationProgressObserver(
+    LinuxPackageOperationProgressObserver* observer) {
+  linux_package_operation_progress_observers_.AddObserver(observer);
 }
 
-void CrostiniManager::RemoveInstallLinuxPackageProgressObserver(
-    InstallLinuxPackageProgressObserver* observer) {
-  install_linux_package_progress_observers_.RemoveObserver(observer);
+void CrostiniManager::RemoveLinuxPackageOperationProgressObserver(
+    LinuxPackageOperationProgressObserver* observer) {
+  linux_package_operation_progress_observers_.RemoveObserver(observer);
 }
 
 void CrostiniManager::OnCreateDiskImage(
@@ -1419,6 +1444,7 @@ void CrostiniManager::OnInstallLinuxPackageProgress(
       break;
     case vm_tools::cicerone::InstallLinuxPackageProgressSignal::FAILED:
       status = InstallLinuxPackageProgressStatus::FAILED;
+      LOG(ERROR) << "Install failed: " << signal.failure_details();
       break;
     case vm_tools::cicerone::InstallLinuxPackageProgressSignal::DOWNLOADING:
       status = InstallLinuxPackageProgressStatus::DOWNLOADING;
@@ -1430,11 +1456,77 @@ void CrostiniManager::OnInstallLinuxPackageProgress(
       NOTREACHED();
   }
 
-  for (auto& observer : install_linux_package_progress_observers_) {
-    observer.OnInstallLinuxPackageProgress(
-        signal.vm_name(), signal.container_name(), status,
-        signal.progress_percent(), signal.failure_details());
+  for (auto& observer : linux_package_operation_progress_observers_) {
+    observer.OnInstallLinuxPackageProgress(signal.vm_name(),
+                                           signal.container_name(), status,
+                                           signal.progress_percent());
   }
+}
+
+void CrostiniManager::OnUninstallPackageProgress(
+    const vm_tools::cicerone::UninstallPackageProgressSignal& signal) {
+  if (signal.owner_id() != owner_id_)
+    return;
+
+  if (signal.progress_percent() < 0 || signal.progress_percent() > 100) {
+    LOG(ERROR) << "Received uninstall progress with invalid progress of "
+               << signal.progress_percent() << "%.";
+    return;
+  }
+
+  UninstallPackageProgressStatus status;
+  switch (signal.status()) {
+    case vm_tools::cicerone::UninstallPackageProgressSignal::SUCCEEDED:
+      status = UninstallPackageProgressStatus::SUCCEEDED;
+      break;
+    case vm_tools::cicerone::UninstallPackageProgressSignal::FAILED:
+      status = UninstallPackageProgressStatus::FAILED;
+      LOG(ERROR) << "Uninstalled failed: " << signal.failure_details();
+      break;
+    case vm_tools::cicerone::UninstallPackageProgressSignal::UNINSTALLING:
+      status = UninstallPackageProgressStatus::UNINSTALLING;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  for (auto& observer : linux_package_operation_progress_observers_) {
+    observer.OnUninstallPackageProgress(signal.vm_name(),
+                                        signal.container_name(), status,
+                                        signal.progress_percent());
+  }
+}
+
+void CrostiniManager::OnUninstallPackageOwningFile(
+    UninstallPackageOwningFileCallback callback,
+    base::Optional<vm_tools::cicerone::UninstallPackageOwningFileResponse>
+        reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to uninstall Linux package. Empty response.";
+    std::move(callback).Run(CrostiniResult::UNINSTALL_PACKAGE_FAILED);
+    return;
+  }
+  vm_tools::cicerone::UninstallPackageOwningFileResponse response =
+      reply.value();
+
+  if (response.status() ==
+      vm_tools::cicerone::UninstallPackageOwningFileResponse::FAILED) {
+    LOG(ERROR) << "Failed to uninstall Linux package: "
+               << response.failure_reason();
+    std::move(callback).Run(CrostiniResult::UNINSTALL_PACKAGE_FAILED);
+    return;
+  }
+
+  if (response.status() ==
+      vm_tools::cicerone::UninstallPackageOwningFileResponse::
+          BLOCKING_OPERATION_IN_PROGRESS) {
+    LOG(WARNING) << "Failed to uninstall Linux package, another operation is "
+                    "already active.";
+    std::move(callback).Run(CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE);
+    return;
+  }
+
+  std::move(callback).Run(CrostiniResult::SUCCESS);
 }
 
 void CrostiniManager::OnCreateLxdContainer(
@@ -1671,8 +1763,8 @@ void CrostiniManager::OnInstallLinuxPackage(
     base::Optional<vm_tools::cicerone::InstallLinuxPackageResponse> reply) {
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to install Linux package. Empty response.";
-    std::move(callback).Run(CrostiniResult::LAUNCH_CONTAINER_APPLICATION_FAILED,
-                            std::string());
+    std::move(callback).Run(
+        CrostiniResult::LAUNCH_CONTAINER_APPLICATION_FAILED);
     return;
   }
   vm_tools::cicerone::InstallLinuxPackageResponse response = reply.value();
@@ -1681,20 +1773,18 @@ void CrostiniManager::OnInstallLinuxPackage(
       vm_tools::cicerone::InstallLinuxPackageResponse::FAILED) {
     LOG(ERROR) << "Failed to install Linux package: "
                << response.failure_reason();
-    std::move(callback).Run(CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED,
-                            response.failure_reason());
+    std::move(callback).Run(CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED);
     return;
   }
 
   if (response.status() ==
       vm_tools::cicerone::InstallLinuxPackageResponse::INSTALL_ALREADY_ACTIVE) {
     LOG(WARNING) << "Failed to install Linux package, install already active.";
-    std::move(callback).Run(
-        CrostiniResult::INSTALL_LINUX_PACKAGE_ALREADY_ACTIVE, std::string());
+    std::move(callback).Run(CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE);
     return;
   }
 
-  std::move(callback).Run(CrostiniResult::SUCCESS, std::string());
+  std::move(callback).Run(CrostiniResult::SUCCESS);
 }
 
 void CrostiniManager::OnGetContainerSshKeys(

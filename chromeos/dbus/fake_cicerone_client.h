@@ -32,6 +32,9 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   // This should be true prior to calling InstallLinuxPackage.
   bool IsInstallLinuxPackageProgressSignalConnected() override;
 
+  // This should be true prior to calling UninstallPackageOwningFile.
+  bool IsUninstallPackageProgressSignalConnected() override;
+
   // This should be true prior to calling CreateLxdContainer or
   // StartLxdContainer.
   bool IsLxdContainerCreatedSignalConnected() override;
@@ -71,6 +74,14 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   void InstallLinuxPackage(
       const vm_tools::cicerone::InstallLinuxPackageRequest& request,
       DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
+          callback) override;
+
+  // Fake version of the method that uninstalls an application inside a running
+  // Container. |callback| is called after the method call finishes. This does
+  // not cause progress events to be fired.
+  void UninstallPackageOwningFile(
+      const vm_tools::cicerone::UninstallPackageOwningFileRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::UninstallPackageOwningFileResponse>
           callback) override;
 
   // Fake version of the method that creates a new Container.
@@ -121,6 +132,11 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
     is_install_linux_package_progress_signal_connected_ = connected;
   }
 
+  // Set IsUninstallPackageProgressSignalConnected state
+  void set_uninstall_package_progress_signal_connected(bool connected) {
+    is_uninstall_package_progress_signal_connected_ = connected;
+  }
+
   // Set LxdContainerCreatedSignalConnected state
   void set_lxd_container_created_signal_connected(bool connected) {
     is_lxd_container_created_signal_connected_ = connected;
@@ -165,6 +181,13 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
     install_linux_package_response_ = install_linux_package_response;
   }
 
+  void set_uninstall_package_owning_file_response(
+      const vm_tools::cicerone::UninstallPackageOwningFileResponse&
+          uninstall_package_owning_file_response) {
+    uninstall_package_owning_file_response_ =
+        uninstall_package_owning_file_response;
+  }
+
   void set_create_lxd_container_response(
       const vm_tools::cicerone::CreateLxdContainerResponse&
           create_lxd_container_response) {
@@ -204,6 +227,7 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   bool is_container_started_signal_connected_ = true;
   bool is_container_shutdown_signal_connected_ = true;
   bool is_install_linux_package_progress_signal_connected_ = true;
+  bool is_uninstall_package_progress_signal_connected_ = true;
   bool is_lxd_container_created_signal_connected_ = true;
   bool is_lxd_container_downloading_signal_connected_ = true;
   bool is_tremplin_started_signal_connected_ = true;
@@ -218,6 +242,8 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   vm_tools::cicerone::LinuxPackageInfoResponse get_linux_package_info_response_;
   vm_tools::cicerone::InstallLinuxPackageResponse
       install_linux_package_response_;
+  vm_tools::cicerone::UninstallPackageOwningFileResponse
+      uninstall_package_owning_file_response_;
   vm_tools::cicerone::CreateLxdContainerResponse create_lxd_container_response_;
   vm_tools::cicerone::StartLxdContainerResponse start_lxd_container_response_;
   vm_tools::cicerone::GetLxdContainerUsernameResponse
