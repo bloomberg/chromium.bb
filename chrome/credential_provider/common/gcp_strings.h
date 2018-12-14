@@ -44,10 +44,14 @@ extern const wchar_t kRegUpdaterClientsAppPath[];
 extern const char kGcpwSigninSwitch[];
 extern const char kEmailDomainSwitch[];
 
+// Parameter appended to sign in URL to pass domain hint to GAIA.
 extern const char kEmailDomainSigninPromoParameter[];
 
 // Crashpad related constants
 extern const wchar_t kRunAsCrashpadHandlerEntryPoint[];
+
+// HKCU account information path in the hive of the OS user.
+extern const wchar_t kRegHkcuAccountsPath[];
 
 }  // namespace credential_provider
 

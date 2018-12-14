@@ -56,6 +56,7 @@ void SigninManagerBase::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
   registry->RegisterInt64Pref(prefs::kSignedInTime,
                               base::Time().ToInternalValue());
+  registry->RegisterBooleanPref(prefs::kSignedInWithCredentialProvider, false);
 
   // Deprecated prefs: will be removed in a future release.
   registry->RegisterStringPref(prefs::kGoogleServicesUsername, std::string());

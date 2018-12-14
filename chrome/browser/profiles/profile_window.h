@@ -130,6 +130,26 @@ void CreateSystemProfileForUserManager(
 void BubbleViewModeFromAvatarBubbleMode(BrowserWindow::AvatarBubbleMode mode,
                                         BubbleViewMode* bubble_view_mode);
 
+// Handles running a callback when a new Browser for the given profile
+// has been completely created.  This object deletes itself once the browser
+// is created and the callback is executed.
+class BrowserAddedForProfileObserver : public BrowserListObserver {
+ public:
+  BrowserAddedForProfileObserver(Profile* profile,
+                                 ProfileManager::CreateCallback callback);
+  ~BrowserAddedForProfileObserver() override;
+
+ private:
+  // Overridden from BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override;
+
+  // Profile for which the browser should be opened.
+  Profile* profile_;
+  ProfileManager::CreateCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserAddedForProfileObserver);
+};
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_WINDOW_H_

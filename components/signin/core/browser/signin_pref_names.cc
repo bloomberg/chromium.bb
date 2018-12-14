@@ -86,6 +86,11 @@ const char kReverseAutologinRejectedEmailList[] =
 // to the browser.
 const char kSignedInTime[] = "signin.signedin_time";
 
+// Boolean indicating if this profile was signed in with information from a
+// credential provider.
+const char kSignedInWithCredentialProvider[] =
+    "signin.with_credential_provider";
+
 // Boolean which stores if the user is allowed to signin to chrome.
 const char kSigninAllowed[] = "signin.allowed";
 
