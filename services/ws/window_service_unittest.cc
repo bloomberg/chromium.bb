@@ -200,7 +200,7 @@ TEST(WindowServiceTest, ScheduleEmbedForExistingClientUsingLocalWindow) {
   local_window->Init(ui::LAYER_NOT_DRAWN);
   ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
       local_window.get(), token, /* embed_flags */ 0));
-  EXPECT_TRUE(WindowService::HasRemoteClient(local_window.get()));
+  EXPECT_TRUE(WindowService::IsProxyWindow(local_window.get()));
 }
 
 TEST(WindowServiceTest,
@@ -227,11 +227,11 @@ TEST(WindowServiceTest,
   local_window->Init(ui::LAYER_NOT_DRAWN);
   ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
       local_window.get(), token, /* embed_flags */ 0));
-  EXPECT_TRUE(WindowService::HasRemoteClient(local_window.get()));
+  EXPECT_TRUE(WindowService::IsProxyWindow(local_window.get()));
 
-  // Deleting |window_tree2| should remove the remote client.
+  // Deleting |window_tree2| should make |local_window| no longer a proxy.
   window_tree2.reset();
-  EXPECT_FALSE(WindowService::HasRemoteClient(local_window.get()));
+  EXPECT_FALSE(WindowService::IsProxyWindow(local_window.get()));
 }
 
 }  // namespace ws

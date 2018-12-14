@@ -8,7 +8,7 @@
 #include "ash/laser/laser_pointer_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "services/ws/server_window.h"
+#include "services/ws/proxy_window.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -158,11 +158,10 @@ TEST_F(LaserPointerControllerTest, LaserPointerPrediction) {
 TEST_F(LaserPointerControllerTest, LaserPointerWorksWithRemoteApp) {
   std::unique_ptr<aura::Window> window =
       CreateTestWindow(gfx::Rect(50, 50, 100, 100));
-  ws::ServerWindow* server_window =
-      ws::ServerWindow::GetMayBeNull(window.get());
-  ASSERT_TRUE(server_window);
+  ws::ProxyWindow* proxy_window = ws::ProxyWindow::GetMayBeNull(window.get());
+  ASSERT_TRUE(proxy_window);
   // Setting the client area triggers slightly different logic.
-  server_window->SetClientArea(gfx::Insets(10), std::vector<gfx::Rect>());
+  proxy_window->SetClientArea(gfx::Insets(10), std::vector<gfx::Rect>());
 
   // The laser pointer mode only works with stylus.
   ui::test::EventGenerator* event_generator = GetEventGenerator();

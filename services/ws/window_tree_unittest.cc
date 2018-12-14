@@ -15,10 +15,10 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/test/fake_host_frame_sink_client.h"
 #include "services/ws/event_test_utils.h"
+#include "services/ws/proxy_window.h"
+#include "services/ws/proxy_window_test_helper.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
-#include "services/ws/server_window.h"
-#include "services/ws/server_window_test_helper.h"
 #include "services/ws/window_delegate_impl.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_test_setup.h"
@@ -1218,17 +1218,16 @@ TEST(WindowTreeTest, PointerDownResetOnCaptureChange) {
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(5, 5);
   event_generator.PressLeftButton();
-  ServerWindow* top_level_server_window = ServerWindow::GetMayBeNull(top_level);
-  ASSERT_TRUE(top_level_server_window);
-  ServerWindowTestHelper top_level_server_window_helper(
-      top_level_server_window);
-  EXPECT_TRUE(top_level_server_window_helper.IsHandlingPointerPress(
+  ProxyWindow* top_level_proxy_window = ProxyWindow::GetMayBeNull(top_level);
+  ASSERT_TRUE(top_level_proxy_window);
+  ProxyWindowTestHelper top_level_proxy_window_helper(top_level_proxy_window);
+  EXPECT_TRUE(top_level_proxy_window_helper.IsHandlingPointerPress(
       ui::MouseEvent::kMousePointerId));
 
   // Set capture on |window|, top_level should no longer be in pointer-down
   // (because capture changed).
   EXPECT_TRUE(setup.window_tree_test_helper()->SetCapture(window));
-  EXPECT_FALSE(top_level_server_window_helper.IsHandlingPointerPress(
+  EXPECT_FALSE(top_level_proxy_window_helper.IsHandlingPointerPress(
       ui::MouseEvent::kMousePointerId));
 }
 
@@ -1245,16 +1244,15 @@ TEST(WindowTreeTest, PointerDownResetOnHide) {
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(5, 5);
   event_generator.PressLeftButton();
-  ServerWindow* top_level_server_window = ServerWindow::GetMayBeNull(top_level);
-  ASSERT_TRUE(top_level_server_window);
-  ServerWindowTestHelper top_level_server_window_helper(
-      top_level_server_window);
-  EXPECT_TRUE(top_level_server_window_helper.IsHandlingPointerPress(
+  ProxyWindow* top_level_proxy_window = ProxyWindow::GetMayBeNull(top_level);
+  ASSERT_TRUE(top_level_proxy_window);
+  ProxyWindowTestHelper top_level_proxy_window_helper(top_level_proxy_window);
+  EXPECT_TRUE(top_level_proxy_window_helper.IsHandlingPointerPress(
       ui::MouseEvent::kMousePointerId));
 
   // Hiding should implicitly cancel capture.
   top_level->Hide();
-  EXPECT_FALSE(top_level_server_window_helper.IsHandlingPointerPress(
+  EXPECT_FALSE(top_level_proxy_window_helper.IsHandlingPointerPress(
       ui::MouseEvent::kMousePointerId));
 }
 
@@ -1342,7 +1340,7 @@ TEST(WindowTreeTest, Embed) {
   const Id embed_window_transport_id =
       setup.window_tree_test_helper()->TransportIdForWindow(embed_window);
   EXPECT_EQ(embed_window_transport_id, (*setup.changes())[0].window_id);
-  EXPECT_EQ(ServerWindow::GetMayBeNull(embed_window)->frame_sink_id(),
+  EXPECT_EQ(ProxyWindow::GetMayBeNull(embed_window)->frame_sink_id(),
             (*setup.changes())[0].frame_sink_id);
 }
 
@@ -1543,10 +1541,10 @@ TEST(WindowTreeTest, DeleteEmbededTreeFromScheduleEmbedForExistingClient) {
                      &embed_result));
   EXPECT_TRUE(embed_callback_called);
   EXPECT_TRUE(embed_result);
-  EXPECT_TRUE(ServerWindow::GetMayBeNull(window_in_parent)->HasEmbedding());
+  EXPECT_TRUE(ProxyWindow::GetMayBeNull(window_in_parent)->HasEmbedding());
 
   tree2.reset();
-  EXPECT_FALSE(ServerWindow::GetMayBeNull(window_in_parent)->HasEmbedding());
+  EXPECT_FALSE(ProxyWindow::GetMayBeNull(window_in_parent)->HasEmbedding());
 }
 
 TEST(WindowTreeTest, StackAtTop) {
@@ -2044,15 +2042,15 @@ TEST(WindowTreeTest, DsfChanges) {
       setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
   top_level->Show();
-  ServerWindow* top_level_server_window = ServerWindow::GetMayBeNull(top_level);
+  ProxyWindow* top_level_proxy_window = ProxyWindow::GetMayBeNull(top_level);
   const base::Optional<viz::LocalSurfaceId> initial_surface_id =
-      top_level_server_window->local_surface_id();
+      top_level_proxy_window->local_surface_id();
   EXPECT_TRUE(initial_surface_id);
 
   // Changing the scale factor should change the LocalSurfaceId.
   setup.aura_test_helper()->test_screen()->SetDeviceScaleFactor(2.0f);
-  EXPECT_TRUE(top_level_server_window->local_surface_id());
-  EXPECT_NE(*top_level_server_window->local_surface_id(), *initial_surface_id);
+  EXPECT_TRUE(top_level_proxy_window->local_surface_id());
+  EXPECT_NE(*top_level_proxy_window->local_surface_id(), *initial_surface_id);
 }
 
 TEST(WindowTreeTest, DontSendGestures) {
@@ -2142,16 +2140,16 @@ TEST(WindowTreeTest, AttachFrameSinkId) {
       test_frame_sink_id, &test_host_frame_sink_client,
       viz::ReportFirstSurfaceActivation::kYes);
   EXPECT_EQ(test_frame_sink_id,
-            ServerWindow::GetMayBeNull(child_window)->attached_frame_sink_id());
+            ProxyWindow::GetMayBeNull(child_window)->attached_frame_sink_id());
   top_level->AddChild(child_window);
   EXPECT_TRUE(host_frame_sink_manager->IsFrameSinkHierarchyRegistered(
-      ServerWindow::GetMayBeNull(top_level)->frame_sink_id(),
+      ProxyWindow::GetMayBeNull(top_level)->frame_sink_id(),
       test_frame_sink_id));
 
   // Removing the window should remove the association.
   top_level->RemoveChild(child_window);
   EXPECT_FALSE(host_frame_sink_manager->IsFrameSinkHierarchyRegistered(
-      ServerWindow::GetMayBeNull(top_level)->frame_sink_id(),
+      ProxyWindow::GetMayBeNull(top_level)->frame_sink_id(),
       test_frame_sink_id));
 
   setup.window_tree_test_helper()->DeleteWindow(child_window);

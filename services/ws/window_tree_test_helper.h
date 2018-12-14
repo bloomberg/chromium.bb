@@ -90,7 +90,7 @@ class WindowTreeTestHelper {
                          uint32_t change_id = 1);
 
   // Creates a new embedding. On success the new Embedding is returned. The
-  // returned Embedding is owned by the ServerWindow for |window|.
+  // returned Embedding is owned by the ProxyWindow for |window|.
   Embedding* Embed(aura::Window* window,
                    mojom::WindowTreeClientPtr client_ptr,
                    mojom::WindowTreeClient* client,

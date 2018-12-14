@@ -4,7 +4,7 @@
 
 #include "services/ws/window_tree_test_helper.h"
 
-#include "services/ws/server_window.h"
+#include "services/ws/proxy_window.h"
 #include "services/ws/window_tree_binding.h"
 
 namespace ws {
@@ -123,7 +123,7 @@ Embedding* WindowTreeTestHelper::Embed(aura::Window* window,
                                std::move(client_ptr), client, embed_flags)) {
     return nullptr;
   }
-  return ServerWindow::GetMayBeNull(window)->embedding();
+  return ProxyWindow::GetMayBeNull(window)->embedding();
 }
 
 void WindowTreeTestHelper::SetEventTargetingPolicy(

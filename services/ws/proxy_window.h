@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_WS_SERVER_WINDOW_H_
-#define SERVICES_WS_SERVER_WINDOW_H_
+#ifndef SERVICES_WS_PROXY_WINDOW_H_
+#define SERVICES_WS_PROXY_WINDOW_H_
 
 #include <string>
 #include <vector>
@@ -36,29 +36,29 @@ class Embedding;
 class WindowTree;
 
 // Tracks any state associated with an aura::Window for the WindowService.
-// ServerWindow is created for every window created at the request of a client,
+// ProxyWindow is created for every window created at the request of a client,
 // including the root window of ClientRoots.
-class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
+class COMPONENT_EXPORT(WINDOW_SERVICE) ProxyWindow {
  public:
-  ~ServerWindow();
+  ~ProxyWindow();
 
-  // Creates a new ServerWindow. The lifetime of the ServerWindow is tied to
-  // that of the Window (the Window ends up owning the ServerWindow).
+  // Creates a new ProxyWindow. The lifetime of the ProxyWindow is tied to
+  // that of the Window (the Window ends up owning the ProxyWindow).
   // |is_top_level| is true if the window represents a top-level window.
-  static ServerWindow* Create(aura::Window* window,
-                              WindowTree* tree,
-                              const viz::FrameSinkId& frame_sink_id,
-                              bool is_top_level);
+  static ProxyWindow* Create(aura::Window* window,
+                             WindowTree* tree,
+                             const viz::FrameSinkId& frame_sink_id,
+                             bool is_top_level);
 
-  // Returns the ServerWindow associated with a window, null if not created yet.
-  static ServerWindow* GetMayBeNull(aura::Window* window) {
-    return const_cast<ServerWindow*>(
+  // Returns the ProxyWindow associated with a window, null if not created yet.
+  static ProxyWindow* GetMayBeNull(aura::Window* window) {
+    return const_cast<ProxyWindow*>(
         GetMayBeNull(const_cast<const aura::Window*>(window)));
   }
-  static const ServerWindow* GetMayBeNull(const aura::Window* window);
+  static const ProxyWindow* GetMayBeNull(const aura::Window* window);
 
-  // Explicitly deletes this ServerWindow. This should very rarely be called.
-  // The typical use case is ServerWindow is owned by the aura::Window, and
+  // Explicitly deletes this ProxyWindow. This should very rarely be called.
+  // The typical use case is ProxyWindow is owned by the aura::Window, and
   // deleted when the associated window is deleted.
   void Destroy();
 
@@ -143,12 +143,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   std::string GetIdForDebugging();
 
  private:
-  friend class ServerWindowTestHelper;
+  friend class ProxyWindowTestHelper;
 
-  ServerWindow(aura::Window*,
-               WindowTree* tree,
-               const viz::FrameSinkId& frame_sink_id,
-               bool is_top_level);
+  ProxyWindow(aura::Window*,
+              WindowTree* tree,
+              const viz::FrameSinkId& frame_sink_id,
+              bool is_top_level);
 
   // Forwards to TopLevelEventHandler, see it for details.
   // NOTE: this is only applicable to top-levels.
@@ -209,9 +209,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   // FrameSinkId set by way of mojom::WindowTree::AttachFrameSinkId().
   viz::FrameSinkId attached_frame_sink_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerWindow);
+  DISALLOW_COPY_AND_ASSIGN(ProxyWindow);
 };
 
 }  // namespace ws
 
-#endif  // SERVICES_WS_SERVER_WINDOW_H_
+#endif  // SERVICES_WS_PROXY_WINDOW_H_

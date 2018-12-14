@@ -79,7 +79,7 @@ bool EventQueue::ShouldQueueEvent(HostEventQueue* host_queue,
   DCHECK(targeter);
   aura::Window* target =
       targeter->FindTargetForKeyEvent(host_queue->window_tree_host()->window());
-  return target && WindowService::HasRemoteClient(target);
+  return target && WindowService::IsProxyWindow(target);
 }
 
 void EventQueue::NotifyWhenReadyToDispatch(base::OnceClosure closure) {

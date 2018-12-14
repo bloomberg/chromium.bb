@@ -37,7 +37,7 @@ class SurfaceInfo;
 
 namespace ws {
 
-class ServerWindow;
+class ProxyWindow;
 class WindowTree;
 
 // WindowTree creates a ClientRoot for each window the client is embedded in. A
@@ -68,15 +68,15 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientRoot
   // Called when the LocalSurfaceId of the embedder changes.
   void OnLocalSurfaceIdChanged();
 
-  // Attaches/unattaches server_window->attached_frame_sink_id() to the
+  // Attaches/unattaches proxy_window->attached_frame_sink_id() to the
   // HostFrameSinkManager.
-  void AttachChildFrameSinkId(ServerWindow* server_window);
-  void UnattachChildFrameSinkId(ServerWindow* server_window);
+  void AttachChildFrameSinkId(ProxyWindow* proxy_window);
+  void UnattachChildFrameSinkId(ProxyWindow* proxy_window);
 
   // Recurses through all descendants with the same WindowTree calling
   // AttachChildFrameSinkId()/UnattachChildFrameSinkId().
-  void AttachChildFrameSinkIdRecursive(ServerWindow* server_window);
-  void UnattachChildFrameSinkIdRecursive(ServerWindow* server_window);
+  void AttachChildFrameSinkIdRecursive(ProxyWindow* proxy_window);
+  void UnattachChildFrameSinkIdRecursive(ProxyWindow* proxy_window);
 
  private:
   friend class ClientRootTestHelper;

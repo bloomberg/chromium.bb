@@ -223,7 +223,7 @@ bool AshWindowTreeHostPlatform::ShouldSendKeyEventToIme() {
   // Don't send key events to IME if they are going to go to a remote client.
   // Remote clients handle forwarding to IME (as necessary).
   aura::Window* target = window()->targeter()->FindTargetForKeyEvent(window());
-  return !target || !ws::WindowService::HasRemoteClient(target);
+  return !target || !ws::WindowService::IsProxyWindow(target);
 }
 
 void AshWindowTreeHostPlatform::SetTextInputState(

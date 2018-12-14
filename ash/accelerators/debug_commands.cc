@@ -88,7 +88,7 @@ void PrintWindowHierarchy(ws::WindowService* window_service,
   const gfx::Vector2dF& subpixel_position_offset =
       window->layer()->subpixel_position_offset();
   *out << indent_str;
-  if (window_service && ws::WindowService::HasRemoteClient(window))
+  if (window_service && ws::WindowService::IsProxyWindow(window))
     *out << " [proxy] id=" << window_service->GetIdForDebugging(window) << " ";
   *out << name << " (" << window << ")"
        << " type=" << window->type();

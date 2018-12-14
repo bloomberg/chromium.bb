@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ws/server_window.h"
+#include "services/ws/proxy_window.h"
 
 #include <memory>
 
@@ -20,7 +20,7 @@
 
 namespace ws {
 
-TEST(ServerWindow, FindTargetForWindowWithEasyResizeTargeter) {
+TEST(ProxyWindow, FindTargetForWindowWithEasyResizeTargeter) {
   WindowServiceTestSetup setup;
   std::unique_ptr<wm::EasyResizeWindowTargeter> easy_resize_window_targeter =
       std::make_unique<wm::EasyResizeWindowTargeter>(
@@ -51,7 +51,7 @@ TEST(ServerWindow, FindTargetForWindowWithEasyResizeTargeter) {
                            setup.root(), &mouse_event2));
 }
 
-TEST(ServerWindow, FindTargetForWindowWithResizeInset) {
+TEST(ProxyWindow, FindTargetForWindowWithResizeInset) {
   WindowServiceTestSetup setup;
 
   aura::Window* top_level =
@@ -89,7 +89,7 @@ TEST(ServerWindow, FindTargetForWindowWithResizeInset) {
                            setup.root(), &mouse_event_2));
 }
 
-TEST(ServerWindow, SetClientAreaPropagatesToClientSurfaceEmbedder) {
+TEST(ProxyWindow, SetClientAreaPropagatesToClientSurfaceEmbedder) {
   WindowServiceTestSetup setup;
 
   aura::Window* top_level =

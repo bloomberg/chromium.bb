@@ -384,8 +384,8 @@ bool Shell::IsSystemModalWindowOpen() {
 }
 
 // static
-bool Shell::HasRemoteClient(aura::Window* window) {
-  return ws::WindowService::HasRemoteClient(window);
+bool Shell::IsProxyWindow(aura::Window* window) {
+  return ws::WindowService::IsProxyWindow(window);
 }
 
 // static

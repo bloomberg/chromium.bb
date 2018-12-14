@@ -23,7 +23,7 @@ bool IsTopLevelWindow(aura::Window* window) {
   // ui::LAYER_TEXTURED is for non-mash environment. For Mash, browser windows
   // are not with LAYER_TEXTURED but have a remote client.
   return window->layer()->type() == ui::LAYER_TEXTURED ||
-         ws::WindowService::HasRemoteClient(window);
+         ws::WindowService::IsProxyWindow(window);
 }
 
 // Returns true if |window| can be a target at |screen_point| by |targeter|.

@@ -73,7 +73,7 @@ bool IsTopLevelWindow(aura::Window* window) {
       !window->delegate()) {
     return false;
   }
-  if (ws::WindowService::HasRemoteClient(window))
+  if (ws::WindowService::IsProxyWindow(window))
     return ws::WindowService::IsTopLevelWindow(window);
   return true;
 }
