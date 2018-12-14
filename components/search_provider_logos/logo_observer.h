@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_TRACKER_H_
-#define COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_TRACKER_H_
+#ifndef COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_OBSERVER_H_
+#define COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_OBSERVER_H_
 
 #include "components/search_provider_logos/logo_common.h"
 
@@ -22,14 +22,13 @@ class LogoObserver {
   // again.
   virtual void OnLogoAvailable(const Logo* logo, bool from_cache) = 0;
 
-  // Called when the LogoTracker will no longer send updates to this
+  // Called when the LogoService will no longer send updates to this
   // LogoObserver. For example: after the cached logo is validated, after
-  // OnFreshLogoAvailable() is called, or when the LogoTracker is destructed.
-  // This is not called when an observer is removed using
-  // LogoTracker::RemoveObserver().
+  // OnFreshLogoAvailable() is called, or when the LogoService is destructed.
+  // This is not called when an observer is removed using RemoveObserver().
   virtual void OnObserverRemoved() = 0;
 };
 
 }  // namespace search_provider_logos
 
-#endif  // COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_TRACKER_H_
+#endif  // COMPONENTS_SEARCH_PROVIDER_LOGOS_LOGO_OBSERVER_H_
