@@ -50,6 +50,7 @@ namespace {
 // The HTML DOM ID used in Javascript.
 constexpr char kPreviewsAllowedHtmlId[] = "previews-allowed-status";
 constexpr char kOfflinePreviewsHtmlId[] = "offline-preview-status";
+constexpr char kLitePageRedirectHtmlId[] = "lite-page-redirect-status";
 constexpr char kResourceLoadingHintsHtmlId[] = "resource-loading-hints-status";
 constexpr char kNoScriptPreviewsHtmlId[] = "noscript-preview-status";
 constexpr char kClientLoFiPreviewsHtmlId[] = "client-lofi-preview-status";
@@ -57,6 +58,8 @@ constexpr char kClientLoFiPreviewsHtmlId[] = "client-lofi-preview-status";
 // Descriptions for previews.
 constexpr char kPreviewsAllowedDescription[] = "Previews Allowed";
 constexpr char kOfflineDesciption[] = "Offline Previews";
+constexpr char kLitePageRedirectDescription[] =
+    "Lite Page Redirect / Server Previews";
 constexpr char kResourceLoadingHintsDescription[] =
     "ResourceLoadingHints Previews";
 constexpr char kNoScriptDescription[] = "NoScript Previews";
@@ -64,6 +67,7 @@ constexpr char kClientLoFiDescription[] = "Client LoFi Previews";
 
 // The HTML DOM ID used in Javascript.
 constexpr char kOfflinePageFlagHtmlId[] = "offline-page-flag";
+constexpr char kLitePageRedirectFlagHtmlId[] = "lite-page-redirect-flag";
 constexpr char kResourceLoadingHintsFlagHtmlId[] =
     "resource-loading-hints-flag";
 constexpr char kNoScriptFlagHtmlId[] = "noscript-flag";
@@ -76,6 +80,8 @@ constexpr char kDataSaverAltConfigHtmlId[] =
 // Links to flags in chrome://flags.
 constexpr char kOfflinePageFlagLink[] =
     "chrome://flags/#enable-offline-previews";
+constexpr char kLitePageRedirectFlagLink[] =
+    "chrome://flags/#enable-lite-page-server-previews";
 constexpr char kResourceLoadingHintsFlagLink[] =
     "chrome://flags/#enable-resource-loading-hints";
 constexpr char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
@@ -88,6 +94,7 @@ constexpr char kDataSaverAltConfigLink[] =
 
 // Flag features names.
 constexpr char kOfflinePageFeatureName[] = "OfflinePreviews";
+constexpr char kLitePageRedirectFeatureName[] = "LitePageServerPreviews";
 constexpr char kResourceLoadingHintsFeatureName[] = "ResourceLoadingHints";
 constexpr char kNoScriptFeatureName[] = "NoScriptPreviews";
 
@@ -310,7 +317,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetPreviewsEnabledCount) {
   page_handler_->GetPreviewsEnabled(
       base::BindOnce(&MockGetPreviewsEnabledCallback));
 
-  constexpr size_t expected = 5;
+  constexpr size_t expected = 6;
   EXPECT_EQ(expected, passed_in_modes.size());
 }
 
@@ -445,11 +452,39 @@ TEST_F(InterventionsInternalsPageHandlerTest, OfflinePreviewsEnabled) {
   EXPECT_TRUE(offline_previews->second->enabled);
 }
 
+TEST_F(InterventionsInternalsPageHandlerTest, LitePageRedirectDisabled) {
+  // Init with kLitePageRedirect disabled.
+  scoped_feature_list_->InitWithFeatures(
+      {}, {previews::features::kLitePageServerPreviews});
+
+  page_handler_->GetPreviewsEnabled(
+      base::BindOnce(&MockGetPreviewsEnabledCallback));
+  auto resource_loading_hints = passed_in_modes.find(kLitePageRedirectHtmlId);
+  ASSERT_NE(passed_in_modes.end(), resource_loading_hints);
+  EXPECT_EQ(kLitePageRedirectDescription,
+            resource_loading_hints->second->description);
+  EXPECT_FALSE(resource_loading_hints->second->enabled);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, LitePageRedirectEnabled) {
+  // Init with kLitePageRedirect enabled.
+  scoped_feature_list_->InitWithFeatures(
+      {previews::features::kLitePageServerPreviews}, {});
+
+  page_handler_->GetPreviewsEnabled(
+      base::BindOnce(&MockGetPreviewsEnabledCallback));
+  auto resource_loading_hints = passed_in_modes.find(kLitePageRedirectHtmlId);
+  ASSERT_NE(passed_in_modes.end(), resource_loading_hints);
+  EXPECT_EQ(kLitePageRedirectDescription,
+            resource_loading_hints->second->description);
+  EXPECT_TRUE(resource_loading_hints->second->enabled);
+}
+
 TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsCount) {
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
 
-  constexpr size_t expected = 7;
+  constexpr size_t expected = 8;
   EXPECT_EQ(expected, passed_in_flags.size());
 }
 
@@ -642,6 +677,38 @@ TEST_F(InterventionsInternalsPageHandlerTest,
   EXPECT_EQ(kDisabledFlagValue, resource_loading_hints_flag->second->value);
   EXPECT_EQ(kResourceLoadingHintsFlagLink,
             resource_loading_hints_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       GetFlagsLitePageRedirectDefaultValue) {
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto lite_page_redirect_flag =
+      passed_in_flags.find(kLitePageRedirectFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), lite_page_redirect_flag);
+  EXPECT_EQ(flag_descriptions::kEnableLitePageServerPreviewsName,
+            lite_page_redirect_flag->second->description);
+  EXPECT_EQ(kDefaultFlagValue, lite_page_redirect_flag->second->value);
+  EXPECT_EQ(kLitePageRedirectFlagLink, lite_page_redirect_flag->second->link);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsLitePageRedirectEnabled) {
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                  kLitePageRedirectFeatureName);
+
+  page_handler_->GetPreviewsFlagsDetails(
+      base::BindOnce(&MockGetPreviewsFlagsCallback));
+  auto lite_page_redirect_flag =
+      passed_in_flags.find(kLitePageRedirectFlagHtmlId);
+
+  ASSERT_NE(passed_in_flags.end(), lite_page_redirect_flag);
+  EXPECT_EQ(flag_descriptions::kEnableLitePageServerPreviewsName,
+            lite_page_redirect_flag->second->description);
+  EXPECT_EQ(kEnabledFlagValue, lite_page_redirect_flag->second->value);
+  EXPECT_EQ(kLitePageRedirectFlagLink, lite_page_redirect_flag->second->link);
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsAltConfigCustomValue) {
