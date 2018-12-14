@@ -25,7 +25,7 @@
 #include "components/search_provider_logos/fixed_logo_api.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "components/search_provider_logos/logo_cache.h"
-#include "components/search_provider_logos/logo_tracker.h"
+#include "components/search_provider_logos/logo_observer.h"
 #include "components/search_provider_logos/switches.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "net/http/http_status_code.h"

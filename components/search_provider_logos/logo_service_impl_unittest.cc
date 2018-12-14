@@ -35,7 +35,7 @@
 #include "components/search_provider_logos/fixed_logo_api.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "components/search_provider_logos/logo_cache.h"
-#include "components/search_provider_logos/logo_tracker.h"
+#include "components/search_provider_logos/logo_observer.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -349,8 +349,8 @@ class LogoServiceImplTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    // |logo_service_|'s LogoTracker owns |logo_cache_|, which gets destroyed on
-    // a background sequence after the LogoTracker's destruction. Ensure that
+    // |logo_service_|'s owns |logo_cache_|, which gets destroyed on
+    // a background sequence after the LogoService's destruction. Ensure that
     // |logo_cache_| is actually destroyed before the test ends to make gmock
     // happy.
     logo_service_.reset();
@@ -360,12 +360,12 @@ class LogoServiceImplTest : public ::testing::Test {
   // Returns the response that the server would send for the given logo.
   std::string ServerResponse(const Logo& logo);
 
-  // Sets the response to be returned when the LogoTracker fetches the logo.
+  // Sets the response to be returned when the LogoService fetches the logo.
   void SetServerResponse(const std::string& response,
                          int error_code = net::OK,
                          net::HttpStatusCode response_code = net::HTTP_OK);
 
-  // Sets the response to be returned when the LogoTracker fetches the logo and
+  // Sets the response to be returned when the LogoService fetches the logo and
   // provides the given fingerprint.
   void SetServerResponseWhenFingerprint(
       const std::string& fingerprint,

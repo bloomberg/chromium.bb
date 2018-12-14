@@ -14,11 +14,11 @@ static_library("search_provider_logos") {
     "logo_cache.h",
     "logo_common.cc",
     "logo_common.h",
+    "logo_observer.h",
     "logo_service.cc",
     "logo_service.h",
     "logo_service_impl.cc",
     "logo_service_impl.h",
-    "logo_tracker.h",
     "switches.cc",
     "switches.h",
   ]
