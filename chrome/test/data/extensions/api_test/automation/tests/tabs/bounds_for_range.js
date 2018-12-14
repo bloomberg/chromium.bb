@@ -89,26 +89,31 @@ var allTests = [
         chrome.test.succeed();
       });
     });
-
   },
 
   function boundsForRangeClips() {
-    let clipped = rootNode.find({attributes: {
-        name: "This text overflows"}});
+    let clipped = rootNode.find(
+        {role: 'inlineTextBox', attributes: {name: 'This text overflows'}});
     clipped.boundsForRange(0, clipped.name.length, (clippedBounds) => {
       assertTrue(
           clipped.parent.location.width < clipped.unclippedLocation.width);
       assertEq(clipped.parent.location.width, clippedBounds.width);
     });
 
-    let hidden = rootNode.find({attributes: {
-      name: "This text is hidden"});
-    hidden.boundsForRange(0, hidden.name.length, (hiddenBounds) => {
-      assertTrue(hidden.parent.location.width < hidden.unclippedLocation.width);
+    // The static text parent has 4 children, one for each word. The small box
+    // size causes the words to be layed out on different lines, creating four
+    // individual inlineTextBox nodes.
+    let hiddenParent = rootNode.find(
+        {role: 'staticText', attributes: {name: 'This text is hidden'}});
+    assertEq(hiddenParent.children.length, 4);
+    let hiddenChild = hiddenParent.children[0];
+    hiddenChild.boundsForRange(0, hiddenChild.name.length, (hiddenBounds) => {
       assertTrue(
-          hidden.parent.location.height < hidden.unclippedLocation.height);
-      assertEq(hidden.parent.location.width, hiddenBounds.width);
-      assertEq(hidden.parent.location.height, hiddenBounds.height);
+          hiddenParent.location.width < hiddenChild.unclippedLocation.width);
+      assertTrue(
+          hiddenParent.location.height < hiddenChild.unclippedLocation.height);
+      assertEq(hiddenParent.location.width, hiddenBounds.width);
+      assertEq(hiddenParent.location.height, hiddenBounds.height);
     });
 
     chrome.test.succeed();
