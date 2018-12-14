@@ -31,7 +31,7 @@ ScriptValue IDBObserverChanges::records(ScriptState* script_state) {
 IDBObserverChanges* IDBObserverChanges::Create(
     IDBDatabase* database,
     IDBTransaction* transaction,
-    const HeapVector<Member<IDBObservation>>& observations,
+    const Vector<Persistent<IDBObservation>>& observations,
     const Vector<int32_t>& observation_indices) {
   return MakeGarbageCollected<IDBObserverChanges>(
       database, transaction, observations, observation_indices);
@@ -40,14 +40,14 @@ IDBObserverChanges* IDBObserverChanges::Create(
 IDBObserverChanges::IDBObserverChanges(
     IDBDatabase* database,
     IDBTransaction* transaction,
-    const HeapVector<Member<IDBObservation>>& observations,
+    const Vector<Persistent<IDBObservation>>& observations,
     const Vector<int32_t>& observation_indices)
     : database_(database), transaction_(transaction) {
   ExtractChanges(observations, observation_indices);
 }
 
 void IDBObserverChanges::ExtractChanges(
-    const HeapVector<Member<IDBObservation>>& observations,
+    const Vector<Persistent<IDBObservation>>& observations,
     const Vector<int32_t>& observation_indices) {
   // TODO(dmurph): Avoid getting and setting repeated times.
   for (const auto& idx : observation_indices) {

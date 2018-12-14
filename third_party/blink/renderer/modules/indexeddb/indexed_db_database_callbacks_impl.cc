@@ -9,14 +9,13 @@
 
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_observation.h"
 
 using blink::WebIDBDatabaseCallbacks;
-using blink::WebIDBObservation;
 
 namespace blink {
 
@@ -48,8 +47,8 @@ void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
 
 void IndexedDBDatabaseCallbacksImpl::Changes(
     mojom::blink::IDBObserverChangesPtr changes) {
-  Vector<WebIDBObservation> web_observations;
-  web_observations.ReserveInitialCapacity(changes->observations.size());
+  Vector<Persistent<IDBObservation>> observations;
+  observations.ReserveInitialCapacity(changes->observations.size());
   for (const auto& observation : changes->observations) {
     IDBKeyRange* key_range = observation->key_range.To<IDBKeyRange*>();
     std::unique_ptr<IDBValue> value;
@@ -59,9 +58,9 @@ void IndexedDBDatabaseCallbacksImpl::Changes(
       value = IDBValue::Create(scoped_refptr<SharedBuffer>(),
                                Vector<WebBlobInfo>());
     }
-    web_observations.emplace_back(observation->object_store_id,
-                                  observation->type, key_range,
-                                  std::move(value));
+    observations.emplace_back(
+        IDBObservation::Create(observation->object_store_id, observation->type,
+                               key_range, std::move(value)));
   }
 
   std::unordered_map<int32_t, Vector<int32_t>> observation_index_map;
@@ -81,7 +80,7 @@ void IndexedDBDatabaseCallbacksImpl::Changes(
             std::move(transaction_pair.value->scope));
   }
 
-  callbacks_->OnChanges(observation_index_map, std::move(web_observations),
+  callbacks_->OnChanges(observation_index_map, std::move(observations),
                         observer_transactions);
 }
 

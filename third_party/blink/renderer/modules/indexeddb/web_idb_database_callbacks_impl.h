@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_observation.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -51,7 +50,7 @@ class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
   void OnAbort(long long transaction_id, const WebIDBDatabaseError&) override;
   void OnComplete(long long transaction_id) override;
   void OnChanges(const ObservationIndexMap&,
-                 Vector<WebIDBObservation> observations,
+                 Vector<Persistent<IDBObservation>> observations,
                  const TransactionMap& transactions) override;
   void Detach() override;
 

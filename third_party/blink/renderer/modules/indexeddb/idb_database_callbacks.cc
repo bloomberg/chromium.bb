@@ -27,7 +27,6 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_observation.h"
 
 namespace blink {
 
@@ -67,7 +66,7 @@ void IDBDatabaseCallbacks::OnComplete(int64_t transaction_id) {
 
 void IDBDatabaseCallbacks::OnChanges(
     const WebIDBDatabaseCallbacks::ObservationIndexMap& observation_index_map,
-    Vector<WebIDBObservation> observations,
+    Vector<Persistent<IDBObservation>> observations,
     const WebIDBDatabaseCallbacks::TransactionMap& transactions) {
   if (!database_)
     return;

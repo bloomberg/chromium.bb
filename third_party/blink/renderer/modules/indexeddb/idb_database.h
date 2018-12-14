@@ -53,8 +53,8 @@ namespace blink {
 class DOMException;
 class ExceptionState;
 class ExecutionContext;
+class IDBObservation;
 class IDBObserver;
-struct WebIDBObservation;
 
 class MODULES_EXPORT IDBDatabase final
     : public EventTargetWithInlineData,
@@ -123,7 +123,7 @@ class MODULES_EXPORT IDBDatabase final
   void OnAbort(int64_t, DOMException*);
   void OnComplete(int64_t);
   void OnChanges(const WebIDBDatabaseCallbacks::ObservationIndexMap&,
-                 Vector<WebIDBObservation> observations,
+                 Vector<Persistent<IDBObservation>> observations,
                  const WebIDBDatabaseCallbacks::TransactionMap& transactions);
 
   // ScriptWrappable

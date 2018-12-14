@@ -26,16 +26,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_CALLBACKS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_CALLBACKS_H_
 
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/renderer/modules/modules_export.h"
-
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+
 namespace blink {
 
-struct WebIDBObservation;
+class IDBObservation;
 
 class WebIDBDatabaseCallbacks {
  public:
@@ -55,7 +56,7 @@ class WebIDBDatabaseCallbacks {
                        const WebIDBDatabaseError&) = 0;
   virtual void OnComplete(long long transaction_id) = 0;
   virtual void OnChanges(const ObservationIndexMap&,
-                         Vector<WebIDBObservation> observations,
+                         Vector<Persistent<IDBObservation>> observations,
                          const TransactionMap& transactions) = 0;
   virtual void Detach() = 0;
 };

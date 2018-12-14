@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_observation.h"
 
 namespace blink {
 
@@ -81,7 +80,7 @@ void WebIDBDatabaseCallbacksImpl::OnComplete(long long transaction_id) {
 
 void WebIDBDatabaseCallbacksImpl::OnChanges(
     const ObservationIndexMap& observation_index_map,
-    Vector<WebIDBObservation> observations,
+    Vector<Persistent<IDBObservation>> observations,
     const TransactionMap& transactions) {
   if (callbacks_) {
     callbacks_->OnChanges(observation_index_map, std::move(observations),
