@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
@@ -55,6 +56,7 @@ SharedImageFactory::SharedImageFactory(
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
+      using_vulkan_(context_state && context_state->use_vulkan_gr_context),
       backing_factory_(
           std::make_unique<SharedImageBackingFactoryGLTexture>(gpu_preferences,
                                                                workarounds,
@@ -88,17 +90,26 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   return RegisterBacking(std::move(backing), !using_wrapped_sk_image);
 }
 
-bool SharedImageFactory::CreateSharedImage(
-    const Mailbox& mailbox,
-    viz::ResourceFormat format,
-    const gfx::Size& size,
-    const gfx::ColorSpace& color_space,
-    uint32_t usage,
-    base::span<const uint8_t> pixel_data) {
-  std::unique_ptr<SharedImageBacking> backing =
-      backing_factory_->CreateSharedImage(mailbox, format, size, color_space,
-                                          usage, pixel_data);
-  return RegisterBacking(std::move(backing), true);
+bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
+                                           viz::ResourceFormat format,
+                                           const gfx::Size& size,
+                                           const gfx::ColorSpace& color_space,
+                                           uint32_t usage,
+                                           base::span<const uint8_t> data) {
+  std::unique_ptr<SharedImageBacking> backing;
+  bool vulkan_data_upload = using_vulkan_ && !data.empty();
+  bool oop_rasterization = usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+  bool using_wrapped_sk_image =
+      (wrapped_sk_image_factory_ && (vulkan_data_upload || oop_rasterization));
+  if (using_wrapped_sk_image) {
+    backing = wrapped_sk_image_factory_->CreateSharedImage(
+        mailbox, format, size, color_space, usage, data);
+  } else {
+    backing = backing_factory_->CreateSharedImage(mailbox, format, size,
+                                                  color_space, usage, data);
+  }
+
+  return RegisterBacking(std::move(backing), !using_wrapped_sk_image);
 }
 
 bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
