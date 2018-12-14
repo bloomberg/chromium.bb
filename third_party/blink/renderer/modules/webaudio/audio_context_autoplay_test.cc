@@ -14,15 +14,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
-#include "third_party/blink/renderer/core/frame/frame_owner.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
-#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
-#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_thread.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
@@ -98,12 +96,15 @@ class AudioContextAutoplayTest
   using AutoplayStatus = AudioContext::AutoplayStatus;
 
   void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create();
-    dummy_frame_owner_ = DummyFrameOwner::Create();
+    helper_.Initialize();
+    frame_test_helpers::LoadFrame(helper_.LocalMainFrame(),
+                                  "data:text/html,<iframe></iframe>");
+
     GetDocument().UpdateSecurityOrigin(
         SecurityOrigin::Create("https", "example.com", 80));
 
-    CreateChildFrame();
+    ChildDocument().UpdateSecurityOrigin(
+        SecurityOrigin::Create("https", "cross-origin.com", 80));
 
     GetDocument().GetSettings()->SetAutoplayPolicy(GetParam());
     ChildDocument().GetSettings()->SetAutoplayPolicy(GetParam());
@@ -111,26 +112,15 @@ class AudioContextAutoplayTest
     histogram_tester_ = std::make_unique<HistogramTester>();
   }
 
-  void TearDown() override {
-    if (child_frame_)
-      child_frame_->Detach(FrameDetachType::kRemove);
+  Document& GetDocument() {
+    return *helper_.LocalMainFrame()->GetFrame()->GetDocument();
   }
 
-  void CreateChildFrame() {
-    child_frame_ = LocalFrame::Create(
-        MockCrossOriginLocalFrameClient::Create(GetDocument().GetFrame()),
-        *GetDocument().GetFrame()->GetPage(), dummy_frame_owner_.Get());
-    child_frame_->SetView(
-        LocalFrameView::Create(*child_frame_, IntSize(500, 500)));
-    child_frame_->Init();
-
-    ChildDocument().UpdateSecurityOrigin(
-        SecurityOrigin::Create("https", "cross-origin.com", 80));
+  Document& ChildDocument() {
+    return *ToWebLocalFrameImpl(helper_.LocalMainFrame()->FirstChild())
+                ->GetFrame()
+                ->GetDocument();
   }
-
-  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
-
-  Document& ChildDocument() { return *child_frame_->GetDocument(); }
 
   ScriptState* GetScriptStateFrom(const Document& document) {
     return ToScriptStateForMainWorld(document.GetFrame());
@@ -149,9 +139,7 @@ class AudioContextAutoplayTest
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  Persistent<DummyFrameOwner> dummy_frame_owner_;
-  Persistent<LocalFrame> child_frame_;
+  frame_test_helpers::WebViewHelper helper_;
   std::unique_ptr<HistogramTester> histogram_tester_;
   ScopedTestingPlatformSupport<AudioContextAutoplayTestPlatform> platform_;
 };
