@@ -632,23 +632,23 @@ void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
   root_layer_->SetBounds(gfx::Rect(new_size));
 
   const bool create_ink_drop_ripple = !!ink_drop_ripple_;
-  const bool activated =
-      ink_drop_ripple_ &&
-      ink_drop_ripple_->target_ink_drop_state() == InkDropState::ACTIVATED;
+  const InkDropState state = GetTargetInkDropState();
   DestroyInkDropRipple();
 
-  const bool create_ink_drop_highlight = !!highlight_;
-  DestroyInkDropHighlight();
-
-  // Both the ripple and the highlight must have been destroyed before
-  // recreating either of them otherwise the mask will not get recreated.
-  if (create_ink_drop_ripple)
-    CreateInkDropRipple();
-  if (activated)
-    ink_drop_ripple_->SnapToActivated();
-
-  if (create_ink_drop_highlight)
+  if (highlight_) {
+    bool visible = highlight_->IsFadingInOrVisible();
+    DestroyInkDropHighlight();
+    // Both the ripple and the highlight must have been destroyed before
+    // recreating either of them otherwise the mask will not get recreated.
     CreateInkDropHighlight();
+    if (visible)
+      highlight_->FadeIn(base::TimeDelta());
+  }
+
+  if (create_ink_drop_ripple) {
+    CreateInkDropRipple();
+    ink_drop_ripple_->SnapToState(state);
+  }
 }
 
 InkDropState InkDropImpl::GetTargetInkDropState() const {
