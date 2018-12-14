@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/values.h"
@@ -80,9 +82,12 @@ class ContentVerifierTest
     // Manually register handlers since the |ContentScriptsHandler| is not
     // usually registered in extensions_unittests.
     ScopedTestingManifestHandlerRegistry registry;
-    (new BackgroundManifestHandler)->Register();
-    (new ContentScriptsHandler)->Register();
-    ManifestHandler::FinalizeRegistration();
+    {
+      ManifestHandlerRegistry* registry = ManifestHandlerRegistry::Get();
+      registry->RegisterHandler(std::make_unique<BackgroundManifestHandler>());
+      registry->RegisterHandler(std::make_unique<ContentScriptsHandler>());
+      ManifestHandler::FinalizeRegistration();
+    }
 
     extension_ = CreateTestExtension();
     ExtensionRegistry::Get(browser_context())->AddEnabled(extension_);
