@@ -157,7 +157,7 @@ class SSLClientSocketPoolTest : public TestWithScopedTaskEnvironment {
                                             : NULL,
         proxy == ProxyServer::SCHEME_SOCKS5 ? socks_socket_params_ : NULL,
         proxy == ProxyServer::SCHEME_HTTP ? http_proxy_socket_params_ : NULL,
-        HostPortPair("host", 443), ssl_config_, PRIVACY_MODE_DISABLED, 0);
+        HostPortPair("host", 443), ssl_config_, PRIVACY_MODE_DISABLED);
   }
 
   void AddAuthToCache() {
@@ -1005,9 +1005,9 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
   SocketTag tag2(getuid(), tag_val2);
   scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
       test_server.host_port_pair(), false, OnHostResolutionCallback()));
-  scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
-      tcp_params, NULL, NULL, test_server.host_port_pair(), ssl_config_,
-      PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */));
+  scoped_refptr<SSLSocketParams> params(
+      new SSLSocketParams(tcp_params, NULL, NULL, test_server.host_port_pair(),
+                          ssl_config_, PRIVACY_MODE_DISABLED));
 
   // Test socket is tagged before connected.
   uint64_t old_traffic = GetTaggedBytes(tag_val1);
@@ -1074,9 +1074,9 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
   SocketTag tag2(getuid(), tag_val2);
   scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
       test_server.host_port_pair(), false, OnHostResolutionCallback()));
-  scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
-      tcp_params, NULL, NULL, test_server.host_port_pair(), ssl_config_,
-      PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */));
+  scoped_refptr<SSLSocketParams> params(
+      new SSLSocketParams(tcp_params, NULL, NULL, test_server.host_port_pair(),
+                          ssl_config_, PRIVACY_MODE_DISABLED));
 
   // Test connect jobs that are orphaned and then adopted, appropriately apply
   // new tag. Request socket with |tag1|.
@@ -1137,9 +1137,9 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
   SocketTag tag2(getuid(), tag_val2);
   scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
       test_server.host_port_pair(), false, OnHostResolutionCallback()));
-  scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
-      tcp_params, NULL, NULL, test_server.host_port_pair(), ssl_config_,
-      PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */));
+  scoped_refptr<SSLSocketParams> params(
+      new SSLSocketParams(tcp_params, NULL, NULL, test_server.host_port_pair(),
+                          ssl_config_, PRIVACY_MODE_DISABLED));
 
   // Test that sockets paused by a full underlying socket pool are properly
   // connected and tagged when underlying pool is freed up.

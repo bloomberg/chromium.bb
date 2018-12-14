@@ -51,8 +51,7 @@ class NET_EXPORT_PRIVATE SSLSocketParams
                   const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
                   const HostPortPair& host_and_port,
                   const SSLConfig& ssl_config,
-                  PrivacyMode privacy_mode,
-                  bool ignore_certificate_errors);
+                  PrivacyMode privacy_mode);
 
   // Returns the type of the underlying connection.
   ConnectionType GetConnectionType() const;
@@ -72,7 +71,6 @@ class NET_EXPORT_PRIVATE SSLSocketParams
   const HostPortPair& host_and_port() const { return host_and_port_; }
   const SSLConfig& ssl_config() const { return ssl_config_; }
   PrivacyMode privacy_mode() const { return privacy_mode_; }
-  bool ignore_certificate_errors() const { return ignore_certificate_errors_; }
 
  private:
   friend class base::RefCounted<SSLSocketParams>;
@@ -84,7 +82,6 @@ class NET_EXPORT_PRIVATE SSLSocketParams
   const HostPortPair host_and_port_;
   const SSLConfig ssl_config_;
   const PrivacyMode privacy_mode_;
-  const bool ignore_certificate_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLSocketParams);
 };

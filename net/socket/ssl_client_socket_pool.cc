@@ -42,15 +42,13 @@ SSLSocketParams::SSLSocketParams(
     const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
-    PrivacyMode privacy_mode,
-    bool ignore_certificate_errors)
+    PrivacyMode privacy_mode)
     : direct_params_(direct_params),
       socks_proxy_params_(socks_proxy_params),
       http_proxy_params_(http_proxy_params),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
-      privacy_mode_(privacy_mode),
-      ignore_certificate_errors_(ignore_certificate_errors) {
+      privacy_mode_(privacy_mode) {
   // Only one set of lower level pool params should be non-NULL.
   DCHECK((direct_params_ && !socks_proxy_params_ && !http_proxy_params_) ||
          (!direct_params_ && socks_proxy_params_ && !http_proxy_params_) ||

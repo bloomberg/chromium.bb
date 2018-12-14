@@ -159,7 +159,7 @@ class HttpProxyClientSocketPoolTest
         new TransportSocketParams(HostPortPair(kHttpsProxyHost, 443), false,
                                   OnHostResolutionCallback()),
         NULL, NULL, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
-        PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */);
+        PRIVACY_MODE_DISABLED);
   }
 
   // Returns the a correctly constructed HttpProxyParms
