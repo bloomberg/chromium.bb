@@ -1788,11 +1788,13 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
   if (shelf_->ProcessGestureEvent(*event))
     event->StopPropagation();
   else if (is_overflow_mode()) {
-    // If the event hasn't been processed and the overflow shelf is showing,
-    // let the bubble process the event.
-    main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(*event);
-    event->StopPropagation();
-    return;
+    // If the event hasn't been processed yet and the overflow shelf is showing,
+    // give the bubble a chance to process the event.
+    if (main_shelf_->overflow_bubble()->bubble_view()->ProcessGestureEvent(
+            *event)) {
+      event->StopPropagation();
+      return;
+    }
   }
 }
 
