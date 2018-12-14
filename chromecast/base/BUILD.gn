@@ -186,6 +186,13 @@ test("cast_base_unittests") {
   ]
 }
 
+if (build_for_android_things_n) {
+  config("absence-no-function-error") {
+    # for n build doesn't use all functions
+    cflags = [ "-Wno-unused-function" ]
+  }
+}
+
 cast_source_set("cast_sys_info") {
   sources = [
     "cast_sys_info_dummy.cc",
@@ -199,11 +206,14 @@ cast_source_set("cast_sys_info") {
       "cast_sys_info_android.h",
       "cast_sys_info_android_factory.cc",
     ]
-    if (is_android_things && !build_for_android_things_n) {
+    if (is_android_things) {
       sources += [
         "cast_sys_info_android_things.cc",
         "cast_sys_info_android_things.h",
       ]
+      if (build_for_android_things_n) {
+        configs += [ ":absence-no-function-error" ]
+      }
     }
   }
 
