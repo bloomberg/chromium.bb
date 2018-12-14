@@ -461,13 +461,17 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, VerifyCommandsInLockedFullscreen) {
                                       "updateWindowToLockedFullscreen"))
       << message_;
 
-  // IDC_EXIT is not enabled in locked fullscreen.
+  // IDC_EXIT should always be disabled in locked fullscreen.
   EXPECT_FALSE(browser()->command_controller()->IsCommandEnabled(IDC_EXIT));
+
+  // Some other disabled commands.
+  EXPECT_FALSE(browser()->command_controller()->IsCommandEnabled(IDC_FIND));
+  EXPECT_FALSE(
+      browser()->command_controller()->IsCommandEnabled(IDC_ZOOM_PLUS));
 
   // Verify some whitelisted commands.
   EXPECT_TRUE(browser()->command_controller()->IsCommandEnabled(IDC_COPY));
-  EXPECT_TRUE(browser()->command_controller()->IsCommandEnabled(IDC_FIND));
-  EXPECT_TRUE(browser()->command_controller()->IsCommandEnabled(IDC_ZOOM_PLUS));
+  EXPECT_TRUE(browser()->command_controller()->IsCommandEnabled(IDC_PASTE));
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
