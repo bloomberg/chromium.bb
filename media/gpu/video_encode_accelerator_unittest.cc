@@ -500,7 +500,8 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
       bool run_at_fps,
       bool needs_encode_latency,
       bool verify_all_output)
-      : test_stream_data_(std::move(data)),
+      : rendering_thread_("GLRenderingVEAClientThread"),
+        test_stream_data_(std::move(data)),
         log_path_(log_path),
         frame_stats_path_(frame_stats_path),
         run_at_fps_(run_at_fps),
@@ -520,12 +521,38 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
     ui::OzonePlatform::InitParams params;
     params.single_process = false;
     ui::OzonePlatform::InitializeForUI(params);
+
+    base::Thread::Options options;
+    options.message_loop_type = base::MessageLoop::TYPE_UI;
+    ASSERT_TRUE(rendering_thread_.StartWithOptions(options));
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
+    rendering_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VideoEncodeAcceleratorTestEnvironment::SetupOzone,
+                       &done));
+    done.Wait();
+
+    // To create dmabuf through gbm, Ozone needs to be set up.
+    gpu_helper.reset(new ui::OzoneGpuTestHelper());
+    gpu_helper->Initialize(base::ThreadTaskRunnerHandle::Get());
+
+#else
+    ASSERT_TRUE(rendering_thread_.Start());
 #endif
   }
 
   virtual void TearDown() {
     log_file_.reset();
+
+    rendering_thread_.Stop();
   }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetRenderingTaskRunner() const {
+    return rendering_thread_.task_runner();
+  }
+
+  void FlushRenderingThread() { rendering_thread_.FlushForTesting(); }
 
   // Log one entry of machine-readable data to file and LOG(INFO).
   // The log has one data entry per line in the format of "<key>: <value>".
@@ -557,6 +584,7 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
   std::vector<std::unique_ptr<TestStream>> test_streams_;
 
  private:
+  base::Thread rendering_thread_;
   std::unique_ptr<base::FilePath::StringType> test_stream_data_;
   base::FilePath log_path_;
   base::FilePath frame_stats_path_;
@@ -564,6 +592,20 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
   bool run_at_fps_;
   bool needs_encode_latency_;
   bool verify_all_output_;
+
+#if defined(USE_OZONE)
+  std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper;
+
+  static void SetupOzone(base::WaitableEvent* done) {
+    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    cmd_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationEGLName);
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForGPU(params);
+    ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
+    done->Signal();
+  }
+#endif
 };
 
 enum ClientState {
@@ -2340,34 +2382,6 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
   encoder_->Encode(video_frame, false);
 }
 
-#if defined(USE_OZONE)
-void SetupOzone(base::WaitableEvent* done) {
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  cmd_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationEGLName);
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForGPU(params);
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
-  done->Signal();
-}
-#endif
-
-void StartVEAThread(base::Thread* vea_client_thread) {
-#if defined(USE_OZONE)
-  // If USE_OZONE, some additional setups are required.
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_UI;
-  ASSERT_TRUE(vea_client_thread->StartWithOptions(options));
-  base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                           base::WaitableEvent::InitialState::NOT_SIGNALED);
-  vea_client_thread->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&SetupOzone, &done));
-  done.Wait();
-#else
-  ASSERT_TRUE(vea_client_thread->Start());
-#endif
-}
-
 // Test parameters:
 // - Number of concurrent encoders. The value takes effect when there is only
 //   one input stream; otherwise, one encoder per input stream will be
@@ -2401,15 +2415,6 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
       std::unique_ptr<media::test::ClientStateNotification<ClientState>>>
       notes;
   std::vector<std::unique_ptr<VEAClient>> clients;
-  base::Thread vea_client_thread("EncoderClientThread");
-  StartVEAThread(&vea_client_thread);
-
-#if defined(USE_OZONE)
-  std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper;
-  // To create dmabuf through gbm, Ozone needs to be set up.
-  gpu_helper.reset(new ui::OzoneGpuTestHelper());
-  gpu_helper->Initialize(base::ThreadTaskRunnerHandle::Get());
-#endif
 
   if (g_env->test_streams_.size() > 1)
     num_concurrent_encoders = g_env->test_streams_.size();
@@ -2430,7 +2435,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
         mid_stream_bitrate_switch, mid_stream_framerate_switch, verify_output,
         verify_output_timestamp));
 
-    vea_client_thread.task_runner()->PostTask(
+    g_env->GetRenderingTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&VEAClient::CreateEncoder,
                                   base::Unretained(clients.back().get())));
   }
@@ -2457,13 +2462,12 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   }
 
   for (size_t i = 0; i < num_concurrent_encoders; ++i) {
-    vea_client_thread.task_runner()->PostTask(
+    g_env->GetRenderingTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&VEAClient::DestroyEncoder,
                                   base::Unretained(clients[i].get())));
   }
 
-  // This ensures all tasks have finished.
-  vea_client_thread.Stop();
+  g_env->FlushRenderingThread();
 }
 
 // Test parameters:
