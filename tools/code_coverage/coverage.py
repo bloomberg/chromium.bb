@@ -59,10 +59,6 @@
   If you need to pass arguments to run_web_tests.py, use
     -wt='arguments to run_web_tests.py e.g. test directories'
 
-  Note: Generating coverage over entire suite can take minimum of 3 hours due to
-  --batch-size=1 argument added by default. This is needed since otherwise any
-  crash will cause us to lose coverage from prior successful test runs.
-
   For more options, please refer to tools/code_coverage/coverage.py -h.
 
   For an overview of how code coverage works in Chromium, please refer to
@@ -785,7 +781,7 @@ def _GetCommandForWebTests(arguments):
       'third_party/blink/tools/run_web_tests.py',
       '--additional-driver-flag=--no-sandbox',
       '--additional-env-var=LLVM_PROFILE_FILE=%s' %
-      LLVM_PROFILE_FILE_PATH_SUBSTITUTION, '--batch-size=1',
+      LLVM_PROFILE_FILE_PATH_SUBSTITUTION,
       '--child-processes=%d' % max(1, int(multiprocessing.cpu_count() / 2)),
       '--disable-breakpad', '--no-show-results', '--skip-failing-tests',
       '--target=%s' % os.path.basename(BUILD_DIR), '--time-out-ms=30000'
