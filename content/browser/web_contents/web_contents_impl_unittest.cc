@@ -271,12 +271,6 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
         ->media_web_contents_observer()
         ->has_audio_wake_lock_for_testing();
   }
-
-  bool has_video_wake_lock() {
-    return contents()
-        ->media_web_contents_observer()
-        ->has_video_wake_lock_for_testing();
-  }
 };
 
 class TestWebContentsObserver : public WebContentsObserver {
@@ -3206,16 +3200,8 @@ TEST_F(WebContentsImplTest, DISABLED_NoEarlyStop) {
 }
 
 TEST_F(WebContentsImplTest, MediaWakeLock) {
-  // Verify that both negative and positive player ids don't blow up.
-  const int kPlayerAudioVideoId = 15;
-  const int kPlayerAudioOnlyId = -15;
-  const int kPlayerVideoOnlyId = 30;
-  const int kPlayerRemoteId = -30;
-
   EXPECT_FALSE(has_audio_wake_lock());
-  EXPECT_FALSE(has_video_wake_lock());
 
-  TestRenderFrameHost* rfh = main_test_rfh();
   AudioStreamMonitor* monitor = contents()->audio_stream_monitor();
 
   // Ensure RenderFrame is initialized before simulating events coming from it.
@@ -3233,111 +3219,9 @@ TEST_F(WebContentsImplTest, MediaWakeLock) {
   contents()->NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
   EXPECT_FALSE(has_audio_wake_lock());
 
-  // Start a player with both audio and video.  A video wake lock
-  // should be created.  If audio stream monitoring is available, an audio power
-  // save blocker should be created too.
-  rfh->OnMessageReceived(MediaPlayerDelegateHostMsg_OnMediaPlaying(
-      0, kPlayerAudioVideoId, true, true, false,
-      media::MediaContentType::Persistent));
-  EXPECT_TRUE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Upon hiding the video wake lock should be released.
-  contents()->WasHidden();
-  EXPECT_FALSE(has_video_wake_lock());
-
-  // Start another player that only has video.  There should be no change in
-  // the wake locks.  The notification should take into account the
-  // visibility state of the WebContents.
-  rfh->OnMessageReceived(MediaPlayerDelegateHostMsg_OnMediaPlaying(
-      0, kPlayerVideoOnlyId, true, false, false,
-      media::MediaContentType::Persistent));
-  EXPECT_FALSE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Showing the WebContents should result in the creation of the blocker.
-  contents()->WasShown();
-  EXPECT_TRUE(has_video_wake_lock());
-
-  // Start another player that only has audio.  There should be no change in
-  // the wake locks.
-  rfh->OnMessageReceived(MediaPlayerDelegateHostMsg_OnMediaPlaying(
-      0, kPlayerAudioOnlyId, false, true, false,
-      media::MediaContentType::Persistent));
-  EXPECT_TRUE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Start a remote player. There should be no change in the power save
-  // blockers.
-  rfh->OnMessageReceived(MediaPlayerDelegateHostMsg_OnMediaPlaying(
-      0, kPlayerRemoteId, true, true, true,
-      media::MediaContentType::Persistent));
-  EXPECT_TRUE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Destroy the original audio video player.  Both wake locks should
-  // remain.
-  rfh->OnMessageReceived(
-      MediaPlayerDelegateHostMsg_OnMediaPaused(0, kPlayerAudioVideoId, false));
-  EXPECT_TRUE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Destroy the audio only player.  The video wake lock should remain.
-  rfh->OnMessageReceived(
-      MediaPlayerDelegateHostMsg_OnMediaPaused(0, kPlayerAudioOnlyId, false));
-  EXPECT_TRUE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Destroy the video only player.  No wake locks should remain.
-  rfh->OnMessageReceived(
-      MediaPlayerDelegateHostMsg_OnMediaPaused(0, kPlayerVideoOnlyId, false));
-  EXPECT_FALSE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Destroy the remote player. No wake locks should remain.
-  rfh->OnMessageReceived(
-      MediaPlayerDelegateHostMsg_OnMediaPaused(0, kPlayerRemoteId, false));
-  EXPECT_FALSE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Start a player with both audio and video.  A video wake lock
-  // should be created.  If audio stream monitoring is available, an audio power
-  // save blocker should be created too.
-  rfh->OnMessageReceived(MediaPlayerDelegateHostMsg_OnMediaPlaying(
-      0, kPlayerAudioVideoId, true, true, false,
-      media::MediaContentType::Persistent));
-  EXPECT_TRUE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  viz::SurfaceId surface_id =
-      viz::SurfaceId(viz::FrameSinkId(1, 1),
-                     viz::LocalSurfaceId(
-                         11, base::UnguessableToken::Deserialize(0x111111, 0)));
-
-  // Send the video in Picture-in-Picture mode, power blocker should still be
-  // on.
-  rfh->OnMessageReceived(
-      MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted(
-          0, kPlayerAudioVideoId, surface_id, gfx::Size(), 0, true));
-  EXPECT_TRUE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Hiding the window should keep the power blocker.
-  contents()->WasHidden();
-  EXPECT_TRUE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Leaving Picture-in-Picture should reset the power blocker.
-  rfh->OnMessageReceived(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded(
-      0, kPlayerAudioVideoId, 1 /* request_id */));
-  EXPECT_FALSE(has_video_wake_lock());
-  EXPECT_FALSE(has_audio_wake_lock());
-
-  // Crash the renderer.
   main_test_rfh()->GetProcess()->SimulateCrash();
 
   // Verify that all the wake locks have been released.
-  EXPECT_FALSE(has_video_wake_lock());
   EXPECT_FALSE(has_audio_wake_lock());
 }
 

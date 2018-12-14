@@ -45,6 +45,7 @@ class ImageBitmapOptions;
 class MediaCustomControlsFullscreenDetector;
 class MediaRemotingInterstitial;
 class PictureInPictureInterstitial;
+class VideoWakeLock;
 
 class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
                                            public CanvasImageSource,
@@ -200,6 +201,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
     image_loader_->SetImageForTest(content);
   }
 
+  VideoWakeLock* wake_lock_for_tests() const { return wake_lock_; }
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -232,6 +235,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   Member<HTMLImageLoader> image_loader_;
   Member<MediaCustomControlsFullscreenDetector>
       custom_controls_fullscreen_detector_;
+  Member<VideoWakeLock> wake_lock_;
 
   Member<MediaRemotingInterstitial> remoting_interstitial_;
   Member<PictureInPictureInterstitial> picture_in_picture_interstitial_;

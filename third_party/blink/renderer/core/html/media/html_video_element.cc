@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/media/media_remoting_interstitial.h"
 #include "third_party/blink/renderer/core/html/media/picture_in_picture_interstitial.h"
+#include "third_party/blink/renderer/core/html/media/video_wake_lock.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
@@ -95,6 +96,8 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
     overridden_intrinsic_size_ =
         IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
   }
+
+  wake_lock_ = MakeGarbageCollected<VideoWakeLock>(*this);
 }
 
 HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
@@ -107,6 +110,7 @@ HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
 void HTMLVideoElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(image_loader_);
   visitor->Trace(custom_controls_fullscreen_detector_);
+  visitor->Trace(wake_lock_);
   visitor->Trace(remoting_interstitial_);
   visitor->Trace(picture_in_picture_interstitial_);
   HTMLMediaElement::Trace(visitor);

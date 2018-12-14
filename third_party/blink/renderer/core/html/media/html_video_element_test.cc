@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -25,24 +26,6 @@ class HTMLVideoElementMockMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_METHOD1(OnDisplayTypeChanged, void(WebMediaPlayer::DisplayType));
 };
 
-class HTMLVideoElementFrameClient : public EmptyLocalFrameClient {
- public:
-  HTMLVideoElementFrameClient(std::unique_ptr<WebMediaPlayer> player)
-      : player_(std::move(player)) {}
-
-  std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
-      HTMLMediaElement&,
-      const WebMediaPlayerSource&,
-      WebMediaPlayerClient* client,
-      WebLayerTreeView*) override {
-    DCHECK(player_) << " Empty injected player - already used?";
-    return std::move(player_);
-  }
-
- private:
-  std::unique_ptr<WebMediaPlayer> player_;
-};
-
 class HTMLVideoElementTest : public PageTestBase {
  public:
   void SetUp() override {
@@ -50,10 +33,10 @@ class HTMLVideoElementTest : public PageTestBase {
         std::make_unique<HTMLVideoElementMockMediaPlayer>();
     media_player_ = mock_media_player.get();
 
-    SetupPageWithClients(nullptr,
-                         MakeGarbageCollected<HTMLVideoElementFrameClient>(
-                             std::move(mock_media_player)),
-                         nullptr);
+    SetupPageWithClients(
+        nullptr,
+        test::MediaStubLocalFrameClient::Create(std::move(mock_media_player)),
+        nullptr);
     video_ = HTMLVideoElement::Create(GetDocument());
     GetDocument().body()->appendChild(video_);
   }
