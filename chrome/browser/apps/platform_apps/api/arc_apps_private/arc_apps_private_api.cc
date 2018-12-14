@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/arc_apps_private_api.h"
+#include "chrome/browser/apps/platform_apps/api/arc_apps_private/arc_apps_private_api.h"
 
 #include <string>
 #include <vector>
@@ -11,41 +11,45 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/common/extensions/api/arc_apps_private.h"
+#include "chrome/common/apps/platform_apps/api/arc_apps_private.h"
 #include "ui/events/event_constants.h"
 
-namespace extensions {
+namespace chrome_apps {
+namespace api {
 
 // static
-BrowserContextKeyedAPIFactory<ArcAppsPrivateAPI>*
+extensions::BrowserContextKeyedAPIFactory<ArcAppsPrivateAPI>*
 ArcAppsPrivateAPI::GetFactoryInstance() {
-  static base::NoDestructor<BrowserContextKeyedAPIFactory<ArcAppsPrivateAPI>>
+  static base::NoDestructor<
+      extensions::BrowserContextKeyedAPIFactory<ArcAppsPrivateAPI>>
       instance;
   return instance.get();
 }
 
 ArcAppsPrivateAPI::ArcAppsPrivateAPI(content::BrowserContext* context)
     : context_(context), scoped_prefs_observer_(this) {
-  EventRouter::Get(context_)->RegisterObserver(
+  extensions::EventRouter::Get(context_)->RegisterObserver(
       this, api::arc_apps_private::OnInstalled::kEventName);
 }
 
 ArcAppsPrivateAPI::~ArcAppsPrivateAPI() = default;
 
 void ArcAppsPrivateAPI::Shutdown() {
-  EventRouter::Get(context_)->UnregisterObserver(this);
+  extensions::EventRouter::Get(context_)->UnregisterObserver(this);
   scoped_prefs_observer_.RemoveAll();
 }
 
-void ArcAppsPrivateAPI::OnListenerAdded(const EventListenerInfo& details) {
+void ArcAppsPrivateAPI::OnListenerAdded(
+    const extensions::EventListenerInfo& details) {
   DCHECK_EQ(details.event_name, api::arc_apps_private::OnInstalled::kEventName);
   auto* prefs = ArcAppListPrefs::Get(Profile::FromBrowserContext(context_));
   if (prefs && !scoped_prefs_observer_.IsObserving(prefs))
     scoped_prefs_observer_.Add(prefs);
 }
 
-void ArcAppsPrivateAPI::OnListenerRemoved(const EventListenerInfo& details) {
-  if (!EventRouter::Get(context_)->HasEventListener(
+void ArcAppsPrivateAPI::OnListenerRemoved(
+    const extensions::EventListenerInfo& details) {
+  if (!extensions::EventRouter::Get(context_)->HasEventListener(
           api::arc_apps_private::OnInstalled::kEventName)) {
     scoped_prefs_observer_.RemoveAll();
   }
@@ -58,11 +62,11 @@ void ArcAppsPrivateAPI::OnAppRegistered(
     return;
   api::arc_apps_private::AppInfo app_info_result;
   app_info_result.package_name = app_info.package_name;
-  auto event = std::make_unique<Event>(
-      events::ARC_APPS_PRIVATE_ON_INSTALLED,
+  auto event = std::make_unique<extensions::Event>(
+      extensions::events::ARC_APPS_PRIVATE_ON_INSTALLED,
       api::arc_apps_private::OnInstalled::kEventName,
       api::arc_apps_private::OnInstalled::Create(app_info_result), context_);
-  EventRouter::Get(context_)->BroadcastEvent(std::move(event));
+  extensions::EventRouter::Get(context_)->BroadcastEvent(std::move(event));
 }
 
 ArcAppsPrivateGetLaunchableAppsFunction::
@@ -116,4 +120,5 @@ ExtensionFunction::ResponseAction ArcAppsPrivateLaunchAppFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-}  // namespace extensions
+}  // namespace api
+}  // namespace chrome_apps

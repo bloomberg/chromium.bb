@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 // Use the <code>chrome.arcAppsPrivate</code> API to manage ARC apps.
-[platforms=("chromeos"),
- implemented_in="chrome/browser/chromeos/extensions/arc_apps_private_api.h",
- nodoc]
+[platforms=("chromeos"), nodoc]
 namespace arcAppsPrivate {
 
   dictionary AppInfo {

@@ -17,6 +17,10 @@ chrome_apps_api_schema_files_ = [
   "webstore_widget_private.idl",
 ]
 
+if (is_chromeos) {
+  chrome_apps_api_schema_files_ += [ "arc_apps_private.idl" ]
+}
+
 chrome_apps_uncompiled_schema_files_ = [ "music_manager_private.idl" ]
 
 chrome_apps_api_schema_files =

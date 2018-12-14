@@ -26,6 +26,8 @@ source_set("api") {
   sources = [
     "browser/browser_api.cc",
     "browser/browser_api.h",
+    "browser_context_keyed_service_factories.cc",
+    "browser_context_keyed_service_factories.h",
     "media_galleries/blob_data_source_factory.cc",
     "media_galleries/blob_data_source_factory.h",
     "media_galleries/media_galleries_api.cc",
@@ -59,6 +61,8 @@ source_set("api") {
 
   if (is_chromeos) {
     sources += [
+      "arc_apps_private/arc_apps_private_api.cc",
+      "arc_apps_private/arc_apps_private_api.h",
       "webstore_widget_private/app_installer.cc",
       "webstore_widget_private/app_installer.h",
       "webstore_widget_private/webstore_widget_private_api.cc",
