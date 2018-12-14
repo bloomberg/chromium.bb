@@ -6,9 +6,7 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
@@ -55,7 +53,6 @@
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/view_type_utils.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
@@ -175,16 +172,7 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
       kAccelSendFeedback;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i) {
-    if (!features::IsMultiProcessMash()) {
-      // To make reset accelerator work while system tray is open, register it
-      // at accelerator controller.
-      ash::Shell::Get()->accelerator_controller()->Register({i->first}, this);
-    } else {
-      // TODO(crbug.com/782072): In mash, accelerators are not available if
-      // system tray is open.
-      NOTIMPLEMENTED();
-      AddAccelerator(i->first);
-    }
+    AddAccelerator(i->first);
   }
 
   if (LoginScreenClient::HasInstance()) {
@@ -199,10 +187,7 @@ WebUILoginView::~WebUILoginView() {
 
   if (observing_system_tray_focus_)
     LoginScreenClient::Get()->RemoveSystemTrayFocusObserver(this);
-  if (!features::IsMultiProcessMash()) {
-    ash::Shell::Get()->accelerator_controller()->UnregisterAll(this);
-    ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
-  }
+  ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
 
   // Clear any delegates we have set on the WebView.
   WebContents* web_contents = web_view()->GetWebContents();
