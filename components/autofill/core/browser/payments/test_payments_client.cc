@@ -32,11 +32,12 @@ void TestPaymentsClient::GetUploadDetails(
                             const base::string16&,
                             std::unique_ptr<base::DictionaryValue>)> callback,
     const int billable_service_number,
-    PaymentsClient::MigrationSource migration_source) {
+    PaymentsClient::UploadCardSource upload_card_source) {
   upload_details_addresses_ = addresses;
   detected_values_ = detected_values;
   active_experiments_ = active_experiments;
-  migration_source_ = migration_source;
+  billable_service_number_ = billable_service_number;
+  upload_card_source_ = upload_card_source;
   std::move(callback).Run(app_locale == "en-US"
                               ? AutofillClient::SUCCESS
                               : AutofillClient::PERMANENT_FAILURE,

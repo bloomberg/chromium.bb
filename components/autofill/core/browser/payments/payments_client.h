@@ -111,15 +111,24 @@ class PaymentsClient {
   };
 
   // An enum set in the GetUploadDetailsRequest indicating the source of the
-  // request. It should stay consistent with the same enum in Google Payments
-  // server code.
-  enum MigrationSource {
-    // Source unknown or unnecessary (such as during single credit card upload).
-    UNKNOWN_MIGRATION_SOURCE,
-    // Migration request comes from the checkout flow.
-    CHECKOUT_FLOW,
-    // Migration request comes from settings page.
-    SETTINGS_PAGE,
+  // request when uploading a card to Google Payments. It should stay consistent
+  // with the same enum in Google Payments server code.
+  enum UploadCardSource {
+    // Source unknown.
+    UNKNOWN_UPLOAD_CARD_SOURCE,
+    // Single card is being uploaded from the normal credit card offer-to-save
+    // prompt during a checkout flow.
+    UPSTREAM_CHECKOUT_FLOW,
+    // Single card is being uploaded from chrome://settings/payments.
+    UPSTREAM_SETTINGS_PAGE,
+    // Single card is being uploaded after being scanned by OCR.
+    UPSTREAM_CARD_OCR,
+    // 1+ cards are being uploaded from a migration request that started during
+    // a checkout flow.
+    LOCAL_CARD_MIGRATION_CHECKOUT_FLOW,
+    // 1+ cards are being uploaded from a migration request that was initiated
+    // from chrome://settings/payments.
+    LOCAL_CARD_MIGRATION_SETTINGS_PAGE,
   };
 
   // |url_loader_factory| is reference counted so it has no lifetime or
@@ -160,7 +169,7 @@ class PaymentsClient {
   // billable service number in the GetUploadDetails request. If the conditions
   // are met, the legal message will be returned via |callback|.
   // |active_experiments| is used by Payments server to track requests that were
-  // triggered by enabled features. |migration_source| is used by Payments
+  // triggered by enabled features. |upload_card_source| is used by Payments
   // server metrics to track the source of the request.
   virtual void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
@@ -171,8 +180,8 @@ class PaymentsClient {
                               const base::string16&,
                               std::unique_ptr<base::DictionaryValue>)> callback,
       const int billable_service_number,
-      MigrationSource migration_source =
-          MigrationSource::UNKNOWN_MIGRATION_SOURCE);
+      UploadCardSource upload_card_source =
+          UploadCardSource::UNKNOWN_UPLOAD_CARD_SOURCE);
 
   // The user has indicated that they would like to upload a card with the given
   // cvc. This request will fail server-side if a successful call to
