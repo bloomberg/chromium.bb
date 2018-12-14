@@ -147,8 +147,7 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
                            UnloadedExtensionReason reason) override;
 
   // ui::MediaKeysListener::Delegate:
-  ui::MediaKeysListener::MediaKeysHandleResult OnMediaKeysAccelerator(
-      const ui::Accelerator& accelerator) override;
+  void OnMediaKeysAccelerator(const ui::Accelerator& accelerator) override;
 
   // Returns true if the |extension| matches our extension filter.
   bool ExtensionMatchesFilter(const extensions::Extension* extension);
@@ -159,9 +158,6 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver,
   // executed.
   bool ExecuteCommands(const ui::Accelerator& accelerator,
                        const std::string& extension_id);
-
-  // Whether or not any media keys are currently registered.
-  bool IsAnyMediaKeyRegistered() const;
 
   // The content notification registrar for listening to extension events.
   content::NotificationRegistrar registrar_;

@@ -73,11 +73,12 @@ void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
     if (target_list.empty()) {
       // Let each platform-specific implementation get a chance to clean up.
       RemoveExtensionKeybindingImpl(old->first, command_name);
-      event_targets_.erase(old);
 
-      if (media_keys_listener_ && !IsAnyMediaKeyRegistered()) {
-        media_keys_listener_->StopWatchingMediaKeys();
-      }
+      // If the key is a media key, inform the MediaKeysListener.
+      if (media_keys_listener_ && Command::IsMediaKey(old->first))
+        media_keys_listener_->StopWatchingMediaKey(old->first.key_code());
+
+      event_targets_.erase(old);
 
       // If a specific command_name was requested, it has now been deleted so no
       // further work is required.
@@ -150,17 +151,10 @@ void ExtensionKeybindingRegistry::AddEventTarget(
       std::make_pair(extension_id, command_name));
   // Shortcuts except media keys have only one target in the list. See comment
   // about |event_targets_|.
-  if (!Command::IsMediaKey(accelerator)) {
+  if (!Command::IsMediaKey(accelerator))
     DCHECK_EQ(1u, event_targets_[accelerator].size());
-  }
-
-  if (media_keys_listener_ && !media_keys_listener_->IsWatchingMediaKeys() &&
-      IsAnyMediaKeyRegistered()) {
-    // If media keys were not already being watched, this must have been the
-    // first.
-    DCHECK(Command::IsMediaKey(accelerator));
-    media_keys_listener_->StartWatchingMediaKeys();
-  }
+  else if (media_keys_listener_)
+    media_keys_listener_->StartWatchingMediaKey(accelerator.key_code());
 }
 
 bool ExtensionKeybindingRegistry::GetFirstTarget(
@@ -242,13 +236,9 @@ void ExtensionKeybindingRegistry::Observe(
   }
 }
 
-ui::MediaKeysListener::MediaKeysHandleResult
-ExtensionKeybindingRegistry::OnMediaKeysAccelerator(
+void ExtensionKeybindingRegistry::OnMediaKeysAccelerator(
     const ui::Accelerator& accelerator) {
-  return NotifyEventTargets(accelerator)
-             ? ui::MediaKeysListener::MediaKeysHandleResult::
-                   kSuppressPropagation
-             : ui::MediaKeysListener::MediaKeysHandleResult::kIgnore;
+  NotifyEventTargets(accelerator);
 }
 
 bool ExtensionKeybindingRegistry::ExtensionMatchesFilter(
@@ -286,15 +276,6 @@ bool ExtensionKeybindingRegistry::ExecuteCommands(
   }
 
   return executed;
-}
-
-bool ExtensionKeybindingRegistry::IsAnyMediaKeyRegistered() const {
-  for (const auto& iter : event_targets_) {
-    if (Command::IsMediaKey(iter.first)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace extensions

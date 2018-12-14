@@ -49,8 +49,7 @@ class GlobalShortcutListenerMac : public GlobalShortcutListener,
   void UnregisterAcceleratorImpl(const ui::Accelerator& accelerator) override;
 
   // ui::MediaKeysListener::Delegate:
-  ui::MediaKeysListener::MediaKeysHandleResult OnMediaKeysAccelerator(
-      const ui::Accelerator& accelerator) override;
+  void OnMediaKeysAccelerator(const ui::Accelerator& accelerator) override;
 
   // Mac-specific functions for registering hot keys with modifiers.
   bool RegisterHotKey(const ui::Accelerator& accelerator, KeyId hot_key_id);
@@ -59,9 +58,6 @@ class GlobalShortcutListenerMac : public GlobalShortcutListener,
   // Enable and disable the hot key event handler.
   void StartWatchingHotKeys();
   void StopWatchingHotKeys();
-
-  // Whether or not any media keys are currently registered.
-  bool IsAnyMediaKeyRegistered();
 
   // Whether or not any hot keys are currently registered.
   bool IsAnyHotKeyRegistered();
