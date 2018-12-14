@@ -93,17 +93,16 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
   void SetHistorySync(bool sync_history) {
     browser_sync::ProfileSyncServiceMock* sync_service =
         static_cast<browser_sync::ProfileSyncServiceMock*>(
-            ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
+            ProfileSyncServiceFactory::GetForProfile(profile()));
 
-    syncer::ModelTypeSet result;
+    ON_CALL(*sync_service->GetUserSettingsMock(), IsFirstSetupComplete())
+        .WillByDefault(Return(true));
+    syncer::ModelTypeSet types;
     if (sync_history) {
-      result.Put(syncer::TYPED_URLS);
-      result.Put(syncer::HISTORY_DELETE_DIRECTIVES);
-      result.Put(syncer::SESSIONS);
+      types.Put(syncer::TYPED_URLS);
     }
-    ON_CALL(*sync_service, IsFirstSetupComplete()).WillByDefault(Return(true));
-    ON_CALL(*sync_service, GetPreferredDataTypes())
-        .WillByDefault(Return(result));
+    ON_CALL(*sync_service->GetUserSettingsMock(), GetChosenDataTypes())
+        .WillByDefault(Return(types));
   }
 
   identity::IdentityTestEnvironment* identity_test_env() {

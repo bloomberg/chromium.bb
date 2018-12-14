@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/browser_sync/sync_user_settings_mock.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -22,7 +23,11 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   explicit ProfileSyncServiceMock(InitParams init_params);
   ~ProfileSyncServiceMock() override;
 
+  SyncUserSettingsMock* GetUserSettingsMock();
+
   // SyncService overrides.
+  syncer::SyncUserSettings* GetUserSettings() override;
+  const syncer::SyncUserSettings* GetUserSettings() const override;
   MOCK_CONST_METHOD0(GetDisableReasons, int());
   MOCK_CONST_METHOD0(GetTransportState, TransportState());
   // TODO(crbug.com/871221): Remove this override. This is overridden here to
@@ -35,7 +40,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                std::unique_ptr<syncer::SyncSetupInProgressHandle>());
   MOCK_CONST_METHOD0(IsSetupInProgress, bool());
 
-  MOCK_CONST_METHOD0(GetPreferredDataTypes, syncer::ModelTypeSet());
+  MOCK_CONST_METHOD0(GetRegisteredDataTypes, syncer::ModelTypeSet());
+  syncer::ModelTypeSet GetPreferredDataTypes() const override;
   MOCK_CONST_METHOD0(GetActiveDataTypes, syncer::ModelTypeSet());
 
   MOCK_METHOD0(StopAndClear, void());
@@ -43,13 +49,13 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(AddObserver, void(syncer::SyncServiceObserver*));
   MOCK_METHOD1(RemoveObserver, void(syncer::SyncServiceObserver*));
 
-  MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());
-  MOCK_CONST_METHOD0(GetExplicitPassphraseTime, base::Time());
-  MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
-  MOCK_METHOD0(EnableEncryptEverything, void());
-  MOCK_CONST_METHOD0(IsEncryptEverythingEnabled, bool());
-  MOCK_METHOD1(SetEncryptionPassphrase, void(const std::string& passphrase));
-  MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string& passphrase));
+  bool IsPassphraseRequiredForDecryption() const override;
+  base::Time GetExplicitPassphraseTime() const override;
+  bool IsUsingSecondaryPassphrase() const override;
+  void EnableEncryptEverything() override;
+  bool IsEncryptEverythingEnabled() const override;
+  void SetEncryptionPassphrase(const std::string& passphrase) override;
+  bool SetDecryptionPassphrase(const std::string& passphrase) override;
 
   MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
 
@@ -78,7 +84,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(OnConfigureStart, void());
 
   // DataTypeEncryptionHandler overrides.
-  MOCK_CONST_METHOD0(IsPassphraseRequired, bool());
+  bool IsPassphraseRequired() const override;
 
   // syncer::UnrecoverableErrorHandler overrides.
   MOCK_METHOD2(OnUnrecoverableError,
@@ -86,17 +92,13 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                     const std::string& message));
 
   // ProfileSyncService overrides.
-  MOCK_CONST_METHOD0(IsFirstSetupComplete, bool());
-  MOCK_METHOD0(SetFirstSetupComplete, void());
-  MOCK_METHOD0(RequestStart, void());
-  MOCK_METHOD2(OnUserChoseDatatypes,
-               void(bool sync_everything, syncer::ModelTypeSet chosen_types));
+  bool IsFirstSetupComplete() const override;
+  void SetFirstSetupComplete() override;
 
-  MOCK_CONST_METHOD0(GetRegisteredDataTypes, syncer::ModelTypeSet());
   MOCK_CONST_METHOD1(IsDataTypeControllerRunning, bool(syncer::ModelType));
 
-  MOCK_CONST_METHOD0(GetPassphraseType, syncer::PassphraseType());
-  MOCK_CONST_METHOD0(IsEncryptEverythingAllowed, bool());
+  syncer::PassphraseType GetPassphraseType() const override;
+  bool IsEncryptEverythingAllowed() const override;
 
   MOCK_METHOD0(StartUpSlowEngineComponents, void());
 
@@ -105,6 +107,9 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   // Gives access to the real implementation of ProfileSyncService methods:
   std::unique_ptr<syncer::SyncSetupInProgressHandle>
   GetSetupInProgressHandleConcrete();
+
+ private:
+  testing::NiceMock<SyncUserSettingsMock> user_settings_;
 };
 
 }  // namespace browser_sync

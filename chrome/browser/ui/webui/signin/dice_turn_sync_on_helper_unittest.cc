@@ -624,7 +624,9 @@ TEST_F(DiceTurnSyncOnHelperTest, UndoSync) {
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
   SetExpectationsForSyncStartupCompleted();
-  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(0);
+  EXPECT_CALL(*GetProfileSyncServiceMock()->GetUserSettingsMock(),
+              SetFirstSetupComplete())
+      .Times(0);
 
   // Signin flow.
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
@@ -642,7 +644,9 @@ TEST_F(DiceTurnSyncOnHelperTest, ConfigureSync) {
   expected_sync_confirmation_shown_ = true;
   expected_sync_settings_shown_ = true;
   SetExpectationsForSyncStartupCompleted();
-  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(0);
+  EXPECT_CALL(*GetProfileSyncServiceMock()->GetUserSettingsMock(),
+              SetFirstSetupComplete())
+      .Times(0);
 
   // Configure the test.
   sync_confirmation_result_ =
@@ -662,7 +666,9 @@ TEST_F(DiceTurnSyncOnHelperTest, StartSync) {
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
   SetExpectationsForSyncStartupCompleted();
-  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(1);
+  EXPECT_CALL(*GetProfileSyncServiceMock()->GetUserSettingsMock(),
+              SetFirstSetupComplete())
+      .Times(1);
   // Configure the test.
   sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
       SYNC_WITH_DEFAULT_SETTINGS;
@@ -684,7 +690,9 @@ TEST_F(DiceTurnSyncOnHelperTest, ShowSyncDialogForEndConsumerAccount) {
   sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
       SYNC_WITH_DEFAULT_SETTINGS;
   SetExpectationsForSyncStartupCompleted();
-  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(1);
+  EXPECT_CALL(*GetProfileSyncServiceMock()->GetUserSettingsMock(),
+              SetFirstSetupComplete())
+      .Times(1);
 
   // Signin flow.
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
@@ -706,7 +714,9 @@ TEST_F(DiceTurnSyncOnHelperTestWithUnifiedConsent,
   sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
       SYNC_WITH_DEFAULT_SETTINGS;
   SetExpectationsForSyncStartupCompleted();
-  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(1);
+  EXPECT_CALL(*GetProfileSyncServiceMock()->GetUserSettingsMock(),
+              SetFirstSetupComplete())
+      .Times(1);
   using Service = UnifiedConsentServiceClient::Service;
   using ServiceState = UnifiedConsentServiceClient::ServiceState;
   PrefService* pref_service = profile()->GetPrefs();
@@ -770,7 +780,9 @@ TEST_F(DiceTurnSyncOnHelperTest,
 
   // Simulate that sync startup has completed.
   expected_sync_confirmation_shown_ = true;
-  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(1);
+  EXPECT_CALL(*GetProfileSyncServiceMock()->GetUserSettingsMock(),
+              SetFirstSetupComplete())
+      .Times(1);
   sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
       SYNC_WITH_DEFAULT_SETTINGS;
   dice_sync_starter->SyncStartupCompleted();
@@ -802,7 +814,9 @@ TEST_F(DiceTurnSyncOnHelperTest,
 
   // Simulate that sync startup has failed.
   expected_sync_confirmation_shown_ = true;
-  EXPECT_CALL(*GetProfileSyncServiceMock(), SetFirstSetupComplete()).Times(1);
+  EXPECT_CALL(*GetProfileSyncServiceMock()->GetUserSettingsMock(),
+              SetFirstSetupComplete())
+      .Times(1);
   sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
       SYNC_WITH_DEFAULT_SETTINGS;
   dice_sync_starter->SyncStartupFailed();

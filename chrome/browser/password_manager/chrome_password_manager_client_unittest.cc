@@ -189,7 +189,8 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
             ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
                 profile(), base::BindRepeating(&BuildMockProfileSyncService)));
 
-    EXPECT_CALL(*mock_sync_service, IsFirstSetupComplete())
+    EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+                IsFirstSetupComplete())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_sync_service, GetTransportState())
         .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
@@ -199,7 +200,8 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
   // Make a navigation entry that will accept an annotation.
   void SetupNavigationForAnnotation() {
     ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
-    EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+    EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+                IsUsingSecondaryPassphrase())
         .WillRepeatedly(Return(false));
     metrics_enabled_ = true;
     NavigateAndCommit(GURL("about:blank"));
@@ -291,7 +293,8 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
   active_types.Put(syncer::PASSWORDS);
   EXPECT_CALL(*mock_sync_service, GetActiveDataTypes())
       .WillRepeatedly(Return(active_types));
-  EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
 
   ChromePasswordManagerClient* client = GetClient();
@@ -301,7 +304,8 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
             client->GetPasswordSyncState());
 
   // Again, using a custom passphrase.
-  EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(true));
 
   EXPECT_EQ(password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE,
@@ -316,7 +320,8 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
   EXPECT_EQ(password_manager::NOT_SYNCING, client->GetPasswordSyncState());
 
   // Again, without a custom passphrase.
-  EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
 
   EXPECT_EQ(password_manager::NOT_SYNCING, client->GetPasswordSyncState());
@@ -575,7 +580,8 @@ TEST_F(ChromePasswordManagerClientTest, WebUINoLogging) {
 TEST_F(ChromePasswordManagerClientTest,
        AnnotateNavigationEntryWithMetricsNoCustom) {
   ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
-  EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   metrics_enabled_ = true;
 
@@ -591,7 +597,8 @@ TEST_F(ChromePasswordManagerClientTest,
 TEST_F(ChromePasswordManagerClientTest,
        AnnotateNavigationEntryNoMetricsNoCustom) {
   ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
-  EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   metrics_enabled_ = false;
 
@@ -607,7 +614,8 @@ TEST_F(ChromePasswordManagerClientTest,
 TEST_F(ChromePasswordManagerClientTest,
        AnnotateNavigationEntryWithMetricsWithCustom) {
   ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
-  EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(true));
   metrics_enabled_ = true;
 
@@ -623,7 +631,8 @@ TEST_F(ChromePasswordManagerClientTest,
 TEST_F(ChromePasswordManagerClientTest,
        AnnotateNavigationEntryNoMetricsWithCustom) {
   ProfileSyncServiceMock* mock_sync_service = SetupBasicMockSync();
-  EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())
+  EXPECT_CALL(*mock_sync_service->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(true));
   metrics_enabled_ = false;
 

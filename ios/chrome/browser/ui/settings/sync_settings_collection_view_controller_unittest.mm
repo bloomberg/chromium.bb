@@ -193,7 +193,8 @@ class SyncSettingsCollectionViewControllerTest
     ON_CALL(*mock_profile_sync_service_, GetRegisteredDataTypes())
         .WillByDefault(Return(syncer::ModelTypeSet()));
     mock_profile_sync_service_->Initialize();
-    EXPECT_CALL(*mock_profile_sync_service_, GetPreferredDataTypes())
+    EXPECT_CALL(*mock_profile_sync_service_->GetUserSettingsMock(),
+                GetChosenDataTypes())
         .WillRepeatedly(Return(syncer::UserSelectableTypes()));
   }
 

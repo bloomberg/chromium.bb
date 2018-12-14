@@ -56,7 +56,8 @@ class SyncEncryptionTableViewControllerTest
                 chrome_browser_state_.get()));
     ON_CALL(*mock_profile_sync_service_, GetTransportState())
         .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
-    ON_CALL(*mock_profile_sync_service_, IsUsingSecondaryPassphrase())
+    ON_CALL(*mock_profile_sync_service_->GetUserSettingsMock(),
+            IsUsingSecondaryPassphrase())
         .WillByDefault(Return(true));
 
     CreateController();

@@ -159,7 +159,8 @@ class AuthenticationServiceTest : public PlatformTest,
   }
 
   void SetExpectationsForSignIn() {
-    EXPECT_CALL(*profile_sync_service_mock_, RequestStart());
+    EXPECT_CALL(*profile_sync_service_mock_->GetUserSettingsMock(),
+                SetSyncRequested(true));
     EXPECT_CALL(*sync_setup_service_mock_, PrepareForFirstSyncSetup());
   }
 
