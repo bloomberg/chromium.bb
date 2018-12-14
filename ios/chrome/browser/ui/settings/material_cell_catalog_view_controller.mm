@@ -10,7 +10,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/grit/components_scaled_resources.h"
-#import "ios/chrome/browser/ui/authentication/cells/account_control_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/legacy_account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
@@ -597,7 +597,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 }
 
 - (CollectionViewItem*)accountControlItem {
-  AccountControlItem* item = [[AccountControlItem alloc]
+  LegacyAccountControlItem* item = [[LegacyAccountControlItem alloc]
       initWithType:ItemTypeAccountControlDynamicHeight];
   item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.image = [UIImage imageNamed:@"settings_sync"];
@@ -608,7 +608,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 }
 
 - (CollectionViewItem*)accountControlItemWithExtraLongText {
-  AccountControlItem* item = [[AccountControlItem alloc]
+  LegacyAccountControlItem* item = [[LegacyAccountControlItem alloc]
       initWithType:ItemTypeAccountControlDynamicHeight];
   item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.image = [ChromeIcon infoIcon];

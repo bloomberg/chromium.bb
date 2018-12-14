@@ -184,7 +184,7 @@ class ChromeSigninViewControllerTest
       NSString* view_name = NSStringFromClass([view class]);
       // Views that don't display strings.
       NSArray* other_views = @[
-        @"AccountControlCell",
+        @"LegacyAccountControlCell",
         @"CollectionViewFooterCell",
         @"IdentityPickerView",
         @"IdentityView",

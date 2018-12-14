@@ -1,12 +1,10 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/authentication/cells/account_control_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/legacy_account_control_item.h"
 
-#include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -15,12 +13,13 @@
 #error "This file requires ARC support."
 #endif
 
-using AccountControlItemTest = PlatformTest;
+using LegacyAccountControlItemTest = PlatformTest;
 
 // Tests that the cell is properly configured with image and texts after a call
-// to |configureCell:withStyler:|. All other cell decorations are default.
-TEST_F(AccountControlItemTest, ConfigureCellDefault) {
-  AccountControlItem* item = [[AccountControlItem alloc] initWithType:0];
+// to |configureCell:|. All other cell decorations are default.
+TEST_F(LegacyAccountControlItemTest, ConfigureCellDefault) {
+  LegacyAccountControlItem* item =
+      [[LegacyAccountControlItem alloc] initWithType:0];
   UIImage* image = [[UIImage alloc] init];
   NSString* mainText = @"Main text";
   NSString* detailText = @"Detail text";
@@ -30,30 +29,31 @@ TEST_F(AccountControlItemTest, ConfigureCellDefault) {
   item.detailText = detailText;
 
   id cell = [[[item cellClass] alloc] init];
-  ASSERT_TRUE([cell isMemberOfClass:[AccountControlCell class]]);
+  ASSERT_TRUE([cell isMemberOfClass:[LegacyAccountControlCell class]]);
 
-  AccountControlCell* accountCell = cell;
+  LegacyAccountControlCell* accountCell = cell;
   [accountCell prepareForReuse];
   EXPECT_FALSE(accountCell.imageView.image);
   EXPECT_FALSE(accountCell.textLabel.text);
   EXPECT_FALSE(accountCell.detailTextLabel.text);
-  EXPECT_EQ(UITableViewCellAccessoryNone, accountCell.accessoryType);
-  EXPECT_NSEQ(UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor),
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, accountCell.accessoryType);
+  EXPECT_NSEQ([[MDCPalette greyPalette] tint700],
               accountCell.detailTextLabel.textColor);
 
-  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
+  [item configureCell:cell];
   EXPECT_NSEQ(image, accountCell.imageView.image);
   EXPECT_NSEQ(mainText, accountCell.textLabel.text);
   EXPECT_NSEQ(detailText, accountCell.detailTextLabel.text);
-  EXPECT_EQ(UITableViewCellAccessoryNone, accountCell.accessoryType);
-  EXPECT_NSEQ(UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor),
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, accountCell.accessoryType);
+  EXPECT_NSEQ([[MDCPalette greyPalette] tint700],
               accountCell.detailTextLabel.textColor);
 }
 
 // Tests that the cell is properly configured with error and an accessory after
-// a call to |configureCell:withStyler:|.
-TEST_F(AccountControlItemTest, ConfigureCellWithErrorAndAccessory) {
-  AccountControlItem* item = [[AccountControlItem alloc] initWithType:0];
+// a call to |configureCell:|.
+TEST_F(LegacyAccountControlItemTest, ConfigureCellWithErrorAndAccessory) {
+  LegacyAccountControlItem* item =
+      [[LegacyAccountControlItem alloc] initWithType:0];
   UIImage* image = [[UIImage alloc] init];
   NSString* mainText = @"Main text";
   NSString* detailText = @"Detail text";
@@ -61,25 +61,26 @@ TEST_F(AccountControlItemTest, ConfigureCellWithErrorAndAccessory) {
   item.image = image;
   item.text = mainText;
   item.detailText = detailText;
-  item.accessoryType = UITableViewCellAccessoryCheckmark;
+  item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
   item.shouldDisplayError = YES;
 
   id cell = [[[item cellClass] alloc] init];
-  ASSERT_TRUE([cell isMemberOfClass:[AccountControlCell class]]);
+  ASSERT_TRUE([cell isMemberOfClass:[LegacyAccountControlCell class]]);
 
-  AccountControlCell* accountCell = cell;
+  LegacyAccountControlCell* accountCell = cell;
   [accountCell prepareForReuse];
   EXPECT_FALSE(accountCell.imageView.image);
   EXPECT_FALSE(accountCell.textLabel.text);
   EXPECT_FALSE(accountCell.detailTextLabel.text);
-  EXPECT_EQ(UITableViewCellAccessoryNone, accountCell.accessoryType);
-  EXPECT_NSEQ(UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor),
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone, accountCell.accessoryType);
+  EXPECT_NSEQ([[MDCPalette greyPalette] tint700],
               accountCell.detailTextLabel.textColor);
 
-  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
+  [item configureCell:cell];
   EXPECT_NSEQ(image, accountCell.imageView.image);
   EXPECT_NSEQ(mainText, accountCell.textLabel.text);
   EXPECT_NSEQ(detailText, accountCell.detailTextLabel.text);
-  EXPECT_EQ(UITableViewCellAccessoryCheckmark, accountCell.accessoryType);
-  EXPECT_NSEQ(UIColor.redColor, accountCell.detailTextLabel.textColor);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark, accountCell.accessoryType);
+  EXPECT_NSEQ([[MDCPalette cr_redPalette] tint700],
+              accountCell.detailTextLabel.textColor);
 }
