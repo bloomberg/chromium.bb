@@ -1270,6 +1270,10 @@ class CONTENT_EXPORT ContentBrowserClient {
       const base::FilePath& relative_partition_path);
 
 #if defined(OS_ANDROID)
+  // Configures whether StoragePartition needs to create a
+  // net::URLRequestContext in the browser when the network service is enabled.
+  virtual bool NeedURLRequestContext();
+
   // Only used by Android WebView.
   // Returns:
   //   true  - The check was successfully performed without throwing a

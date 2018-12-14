@@ -4791,6 +4791,12 @@ ChromeContentBrowserClient::CreateNetworkContext(
   return profile->CreateNetworkContext(in_memory, relative_partition_path);
 }
 
+#if defined(OS_ANDROID)
+bool ChromeContentBrowserClient::NeedURLRequestContext() {
+  return false;
+}
+#endif
+
 bool ChromeContentBrowserClient::AllowRenderingMhtmlOverHttp(
     content::NavigationUIData* navigation_ui_data) {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

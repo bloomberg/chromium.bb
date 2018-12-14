@@ -69,6 +69,9 @@ class ProfileImplIOData : public ProfileIOData {
             const base::FilePath& partition_path,
             bool in_memory) const;
 
+    // Called to initialize Data Reduction Proxy.
+    void InitializeDataReductionProxy() const;
+
    private:
     typedef std::map<StoragePartitionDescriptor,
                      scoped_refptr<ChromeURLRequestContextGetter>,
