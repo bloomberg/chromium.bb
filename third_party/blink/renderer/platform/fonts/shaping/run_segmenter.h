@@ -47,9 +47,11 @@ class PLATFORM_EXPORT RunSegmenter {
   }
 
  private:
-  void ConsumeOrientationIteratorPastLastSplit();
-  void ConsumeScriptIteratorPastLastSplit();
-  void ConsumeSymbolsIteratorPastLastSplit();
+  template <class Iterator, typename SegmentationCategory>
+  void ConsumeIteratorPastLastSplit(
+      std::unique_ptr<Iterator>& iterator,
+      unsigned* iterator_position,
+      SegmentationCategory* segmentation_category);
 
   unsigned buffer_size_;
   RunSegmenterRange candidate_range_;

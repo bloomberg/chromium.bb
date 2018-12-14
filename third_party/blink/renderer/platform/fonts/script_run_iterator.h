@@ -31,7 +31,7 @@ class PLATFORM_EXPORT ScriptRunIterator {
   // the process.
   ScriptRunIterator(const UChar* text, wtf_size_t length, const ScriptData*);
 
-  bool Consume(unsigned& limit, UScriptCode&);
+  bool Consume(unsigned* limit, UScriptCode*);
 
   static constexpr int kMaxScriptCount = 20;
   using UScriptCodeList = Vector<UScriptCode, kMaxScriptCount>;
