@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBRUNNER_BROWSER_RUN_WITH_TIMEOUT_H_
-#define WEBRUNNER_BROWSER_RUN_WITH_TIMEOUT_H_
+#ifndef WEBRUNNER_COMMON_TEST_RUN_WITH_TIMEOUT_H_
+#define WEBRUNNER_COMMON_TEST_RUN_WITH_TIMEOUT_H_
 
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
@@ -19,4 +19,4 @@ void CheckRunWithTimeout(
 
 }  // namespace webrunner
 
-#endif  // WEBRUNNER_BROWSER_RUN_WITH_TIMEOUT_H_
+#endif  // WEBRUNNER_COMMON_TEST_RUN_WITH_TIMEOUT_H_

@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBRUNNER_BROWSER_TEST_COMMON_H_
-#define WEBRUNNER_BROWSER_TEST_COMMON_H_
+#ifndef WEBRUNNER_COMMON_TEST_TEST_COMMON_H_
+#define WEBRUNNER_COMMON_TEST_TEST_COMMON_H_
 
-#include "base/optional.h"
+#include <string>
+#include <utility>
+
 #include "content/public/browser/web_contents_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webrunner/fidl/chromium/web/cpp/fidl.h"
@@ -57,17 +59,22 @@ class Promise {
  public:
   explicit Promise(base::RepeatingClosure on_capture = base::DoNothing())
       : on_capture_(std::move(on_capture)) {}
+
+  Promise(Promise&& other) = default;
+
   ~Promise() = default;
 
   // Returns a fit::function<> which will receive and store a value T.
   fit::function<void(T)> GetReceiveCallback() {
-    return [this](T value) {
-      captured_ = std::move(value);
-      on_capture_.Run();
-    };
+    return [this](T value) { ReceiveValue(std::move(value)); };
   }
 
-  bool has_value() const { return captured_.has_value(); };
+  void ReceiveValue(T value) {
+    captured_ = std::move(value);
+    on_capture_.Run();
+  }
+
+  bool has_value() const { return captured_.has_value(); }
 
   T& operator*() {
     CHECK(captured_.has_value());
@@ -86,6 +93,9 @@ class Promise {
   DISALLOW_COPY_AND_ASSIGN(Promise<T>);
 };
 
+// Reads the contents of |buffer| in a std::string.
+std::string StringFromMemBufferOrDie(const fuchsia::mem::Buffer& buffer);
+
 }  // namespace webrunner
 
-#endif  // WEBRUNNER_BROWSER_TEST_COMMON_H_
+#endif  // WEBRUNNER_COMMON_TEST_TEST_COMMON_H_

@@ -4,10 +4,13 @@
 
 #include "webrunner/renderer/on_load_script_injector.h"
 
+#include <lib/zx/vmo.h>
 #include <utility>
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/memory/shared_memory_handle.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
@@ -36,12 +39,20 @@ void OnLoadScriptInjector::DidClearWindowObject() {
 
   base::AutoReset<bool> clear_window_reset(&is_handling_clear_window_object_,
                                            true);
-  for (const base::string16& script : on_load_scripts_)
-    render_frame()->ExecuteJavaScript(script);
+
+  for (mojo::ScopedSharedBufferHandle& script : on_load_scripts_) {
+    DCHECK_EQ(script->GetSize() % 2, 0u);  // Crude check to see this is UTF-16.
+
+    auto mapping = script->Map(script->GetSize());
+    base::string16 script_converted(static_cast<base::char16*>(mapping.get()),
+                                    script->GetSize() / sizeof(base::char16));
+    render_frame()->ExecuteJavaScript(script_converted);
+  }
 }
 
-void OnLoadScriptInjector::AddOnLoadScript(const base::string16& script) {
-  on_load_scripts_.push_back(script);
+void OnLoadScriptInjector::AddOnLoadScript(
+    mojo::ScopedSharedBufferHandle script) {
+  on_load_scripts_.push_back(std::move(script));
 }
 
 void OnLoadScriptInjector::ClearOnLoadScripts() {

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBRUNNER_BROWSER_WEBRUNNER_BROWSER_TEST_H_
-#define WEBRUNNER_BROWSER_WEBRUNNER_BROWSER_TEST_H_
+#ifndef WEBRUNNER_COMMON_TEST_WEBRUNNER_BROWSER_TEST_H_
+#define WEBRUNNER_COMMON_TEST_WEBRUNNER_BROWSER_TEST_H_
 
 #include <lib/fidl/cpp/binding_set.h>
 #include <memory>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
@@ -43,12 +44,17 @@ class WebRunnerBrowserTest : public content::BrowserTestBase {
     return navigation_observer_bindings_;
   }
 
+  void set_test_server_root(const base::FilePath& path) {
+    test_server_root_ = path;
+  }
+
   // content::BrowserTestBase implementation.
   void PreRunTestOnMainThread() override;
   void PostRunTestOnMainThread() override;
   void TearDownOnMainThread() override;
 
  private:
+  base::FilePath test_server_root_;
   chromium::web::ContextPtr context_;
   fidl::BindingSet<chromium::web::NavigationEventObserver>
       navigation_observer_bindings_;
@@ -58,4 +64,4 @@ class WebRunnerBrowserTest : public content::BrowserTestBase {
 
 }  // namespace webrunner
 
-#endif  // WEBRUNNER_BROWSER_WEBRUNNER_BROWSER_TEST_H_
+#endif  // WEBRUNNER_COMMON_TEST_WEBRUNNER_BROWSER_TEST_H_

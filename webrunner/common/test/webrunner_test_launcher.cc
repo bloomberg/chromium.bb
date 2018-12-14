@@ -10,7 +10,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_launcher.h"
 #include "ui/ozone/public/ozone_switches.h"
-#include "webrunner/browser/webrunner_browser_test.h"
+#include "webrunner/common/test/webrunner_browser_test.h"
 #include "webrunner/fidl/chromium/web/cpp/fidl.h"
 #include "webrunner/service/common.h"
 #include "webrunner/service/webrunner_main_delegate.h"

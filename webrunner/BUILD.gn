@@ -139,6 +139,34 @@ test("castrunner_tests") {
       ] ]
 }
 
+source_set("named_message_port_connector") {
+  sources = [
+    "common/named_message_port_connector.cc",
+    "common/named_message_port_connector.h",
+  ]
+  data = [
+    "common/named_message_port_connector.js",
+  ]
+  deps = [
+    ":common",
+    ":web_fidl",
+    "//base",
+    "//third_party/fuchsia-sdk/sdk:mem",
+  ]
+}
+
+source_set("common") {
+  sources = [
+    "common/mem_buffer_util.cc",
+    "common/mem_buffer_util.h",
+    "common/webrunner_export.h",
+  ]
+  deps = [
+    "//base",
+    "//third_party/fuchsia-sdk/sdk:mem",
+  ]
+}
+
 fuchsia_package("webrunner_pkg") {
   binary = ":webrunner_exe"
   package_name_override = "web_runner"
@@ -224,7 +252,7 @@ fuchsia_package_runner("service_runner") {
   install_only = true
 }
 
-mojom("mojo_bindings") {
+mojom("mojom") {
   sources = [
     "common/on_load_script_injector.mojom",
   ]
@@ -236,7 +264,8 @@ mojom("mojo_bindings") {
 
 component("service_lib") {
   deps = [
-    ":mojo_bindings",
+    ":common",
+    ":mojom",
     ":service_pak",
     "//base",
     "//components/version_info",
@@ -276,8 +305,6 @@ component("service_lib") {
     "browser/frame_impl.h",
     "browser/message_port_impl.cc",
     "browser/message_port_impl.h",
-    "browser/vmo_util.cc",
-    "browser/vmo_util.h",
     "browser/webrunner_browser_context.cc",
     "browser/webrunner_browser_context.h",
     "browser/webrunner_browser_main.cc",
@@ -294,7 +321,6 @@ component("service_lib") {
     "browser/webrunner_url_request_context_getter.h",
     "common/webrunner_content_client.cc",
     "common/webrunner_content_client.h",
-    "common/webrunner_export.h",
     "renderer/on_load_script_injector.cc",
     "renderer/on_load_script_injector.h",
     "renderer/webrunner_content_renderer_client.cc",
@@ -348,27 +374,64 @@ repack("service_pak") {
   output = "$root_out_dir/webrunner.pak"
 }
 
-test("webrunner_browsertests") {
+source_set("test_common") {
+  testonly = true
   sources = [
-    "browser/context_impl_browsertest.cc",
-    "browser/frame_impl_browsertest.cc",
-    "browser/run_with_timeout.cc",
-    "browser/run_with_timeout.h",
-    "browser/test_common.cc",
-    "browser/test_common.h",
-    "browser/webrunner_browser_test.cc",
-    "browser/webrunner_browser_test.h",
-    "browser/webrunner_test_launcher.cc",
+    "common/test/run_with_timeout.cc",
+    "common/test/run_with_timeout.h",
+    "common/test/test_common.cc",
+    "common/test/test_common.h",
   ]
-  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-  data = [
-    "browser/test/data",
+  deps = [
+    ":common",
+    ":web_fidl",
+    "//base",
+    "//base/test:test_config",
+    "//content/test:test_support",
+  ]
+}
+
+source_set("browsertest_common") {
+  testonly = true
+  sources = [
+    "common/test/webrunner_browser_test.cc",
+    "common/test/webrunner_browser_test.h",
+    "common/test/webrunner_test_launcher.cc",
   ]
   deps = [
     ":service_lib",
     ":web_fidl",
-    "//base/test:test_support",
+    "//content/public/browser",
     "//content/test:test_support",
+    "//net:test_support",
+    "//testing/gtest",
+    "//ui/ozone",
+  ]
+}
+
+test("webrunner_browsertests") {
+  sources = [
+    "browser/context_impl_browsertest.cc",
+    "browser/frame_impl_browsertest.cc",
+    "common/named_message_port_connector_browsertest.cc",
+  ]
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+  data = [
+    "browser/test/data",
+    "common/test/data",
+  ]
+  data_deps = [
+    ":common",
+  ]
+  deps = [
+    ":browsertest_common",
+    ":common",
+    ":named_message_port_connector",
+    ":service_lib",
+    ":test_common",
+    ":web_fidl",
+    "//base/test:test_support",
+    "//content/public/browser",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

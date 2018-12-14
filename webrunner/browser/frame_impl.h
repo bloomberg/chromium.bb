@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/platform_shared_memory_region.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/aura/window_tree_host.h"
@@ -82,11 +83,14 @@ class FrameImpl : public chromium::web::Frame,
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, Stop);
 
   struct OriginScopedScript {
-    OriginScopedScript(std::vector<std::string> origins, base::string16 script);
+    OriginScopedScript(std::vector<std::string> origins,
+                       base::ReadOnlySharedMemoryRegion script);
     ~OriginScopedScript();
 
     std::vector<std::string> origins;
-    base::string16 script;
+
+    // A shared memory buffer containing the script, encoded as UTF16.
+    base::ReadOnlySharedMemoryRegion script;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(OriginScopedScript);
