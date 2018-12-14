@@ -245,3 +245,13 @@ message RemountOptionsProto {
 message HostnamesProto {
   repeated string hostnames = 1;
 }
+
+// Used for passing inputs into Smbprovider.UpdateMountCredentials().
+message UpdateMountCredentialsOptionsProto {
+  // Mount ID of the mount to be updated.
+  optional int32 mount_id = 1;
+  // Updated workgroup.
+  optional string workgroup = 2;
+  // Updated username.
+  optional string username = 3;
+}
