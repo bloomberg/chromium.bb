@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SIGNIN_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 #define CHROME_BROWSER_SIGNIN_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
@@ -64,8 +65,7 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
                                 const std::string& token);
 
   // Maps account ids to info.
-  typedef std::map<std::string, linked_ptr<AccountInfo>> AccountInfoMap;
-  AccountInfoMap refresh_tokens_;
+  std::map<std::string, std::unique_ptr<AccountInfo>> refresh_tokens_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;

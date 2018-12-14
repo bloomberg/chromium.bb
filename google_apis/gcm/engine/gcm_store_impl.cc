@@ -1002,7 +1002,7 @@ bool GCMStoreImpl::Backend::LoadOutgoingMessages(
     }
     DVLOG(1) << "Found outgoing message with id " << id << " of type "
              << base::UintToString(tag);
-    (*outgoing_messages)[id] = make_linked_ptr(message.release());
+    (*outgoing_messages)[id] = std::move(message);
   }
 
   return true;
