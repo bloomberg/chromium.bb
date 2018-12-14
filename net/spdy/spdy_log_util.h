@@ -17,13 +17,14 @@
 
 namespace base {
 class ListValue;
+class Value;
 }  // namespace base
 
 namespace net {
 
 // Given an HTTP/2 GOAWAY frame |debug_data|, returns the elided version
 // according to |capture_mode|.
-NET_EXPORT_PRIVATE std::string ElideGoAwayDebugDataForNetLog(
+NET_EXPORT_PRIVATE base::Value ElideGoAwayDebugDataForNetLog(
     NetLogCaptureMode capture_mode,
     base::StringPiece debug_data);
 

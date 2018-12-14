@@ -13,14 +13,13 @@
 
 namespace net {
 
-std::string ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
+base::Value ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
                                           base::StringPiece debug_data) {
-  if (capture_mode.include_cookies_and_credentials()) {
-    return debug_data.as_string();
-  }
+  if (capture_mode.include_cookies_and_credentials())
+    return NetLogStringValue(debug_data);
 
-  return std::string("[") + base::NumberToString(debug_data.size()) +
-         std::string(" bytes were stripped]");
+  return NetLogStringValue(base::StrCat(
+      {"[", base::NumberToString(debug_data.size()), " bytes were stripped]"}));
 }
 
 std::unique_ptr<base::ListValue> ElideSpdyHeaderBlockForNetLog(

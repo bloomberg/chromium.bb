@@ -9,14 +9,27 @@
 
 namespace net {
 
+std::string ElideGoAwayDebugDataForNetLogAsString(
+    NetLogCaptureMode capture_mode,
+    base::StringPiece debug_data) {
+  auto value = ElideGoAwayDebugDataForNetLog(capture_mode, debug_data);
+  std::string str;
+  EXPECT_TRUE(value.GetAsString(&str));
+  return str;
+}
+
 TEST(SpdyLogUtilTest, ElideGoAwayDebugDataForNetLog) {
   // Only elide for appropriate log level.
-  EXPECT_EQ(
-      "[6 bytes were stripped]",
-      ElideGoAwayDebugDataForNetLog(NetLogCaptureMode::Default(), "foobar"));
+  EXPECT_EQ("[6 bytes were stripped]",
+            ElideGoAwayDebugDataForNetLogAsString(NetLogCaptureMode::Default(),
+                                                  "foobar"));
   EXPECT_EQ("foobar",
-            ElideGoAwayDebugDataForNetLog(
+            ElideGoAwayDebugDataForNetLogAsString(
                 NetLogCaptureMode::IncludeCookiesAndCredentials(), "foobar"));
+  EXPECT_EQ(
+      "%ESCAPED:\xE2\x80\x8B %FE%FF",
+      ElideGoAwayDebugDataForNetLogAsString(
+          NetLogCaptureMode::IncludeCookiesAndCredentials(), "\xfe\xff\x00"));
 }
 
 TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLog) {
