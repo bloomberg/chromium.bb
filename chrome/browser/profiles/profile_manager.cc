@@ -119,11 +119,10 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/metrics/android_profile_session_durations_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_notifier_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
-#endif
-
-#if !defined(OS_ANDROID)
+#else
 #include "chrome/browser/first_run/first_run.h"
 #endif
 
@@ -1367,6 +1366,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   UnifiedConsentServiceFactory::GetForProfile(profile);
 
 #if defined(OS_ANDROID)
+  AndroidProfileSessionDurationsServiceFactory::GetForProfile(profile);
   // TODO(b/678590): create services during profile startup.
   // Service is responsible for fetching content snippets for the NTP.
   ContentSuggestionsServiceFactory::GetForProfile(profile);

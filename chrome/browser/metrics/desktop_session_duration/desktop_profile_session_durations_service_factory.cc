@@ -12,7 +12,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/browser_context.h"
 
 namespace metrics {
@@ -34,7 +33,7 @@ DesktopProfileSessionDurationsServiceFactory::GetInstance() {
 DesktopProfileSessionDurationsServiceFactory::
     DesktopProfileSessionDurationsServiceFactory()
     : BrowserContextKeyedServiceFactory(
-          "DesktopProfileSessionDurations",
+          "DesktopProfileSessionDurationsService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
@@ -48,8 +47,8 @@ KeyedService*
 DesktopProfileSessionDurationsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
   GaiaCookieManagerService* cookie_manager =
       GaiaCookieManagerServiceFactory::GetForProfile(profile);
   DesktopSessionDurationTracker* tracker = DesktopSessionDurationTracker::Get();
