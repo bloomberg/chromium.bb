@@ -998,13 +998,13 @@ std::string WaitForDdllogResponse(content::WebContents* tab,
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab,
       base::StringPrintf(R"js(
-        if (numDdllogResponsesReceived == %i) {
-          window.domAutomationController.send(lastDdllogResponse);
+        if (doodles.numDdllogResponsesReceived == %i) {
+          window.domAutomationController.send(doodles.lastDdllogResponse);
         } else {
-          onDdllogResponse = function() {
-            if (numDdllogResponsesReceived == %i) {
-              window.domAutomationController.send(lastDdllogResponse);
-              onDdllogResponse = null;
+          doodles.onDdllogResponse = function() {
+            if (doodles.numDdllogResponsesReceived == %i) {
+              window.domAutomationController.send(doodles.lastDdllogResponse);
+              doodles.onDdllogResponse = null;
             }
           }
         }                )js",

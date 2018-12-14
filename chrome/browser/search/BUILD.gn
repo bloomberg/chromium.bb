@@ -7,18 +7,20 @@ local_ntp_resources = "//chrome/browser/resources/local_ntp"
 action("local_ntp_code_generate") {
   script = "tools/generate_integrity_header.py"
   header_path = "$target_gen_dir/local_ntp_js_integrity.h"
-  local_ntp_js = local_ntp_resources + "/local_ntp.js"
-  voice_js = local_ntp_resources + "/voice.js"
-  custom_bg_js = local_ntp_resources + "/custom_backgrounds.js"
-  utils_js = local_ntp_resources + "/utils.js"
   animations_js = local_ntp_resources + "/animations.js"
+  custom_bg_js = local_ntp_resources + "/custom_backgrounds.js"
+  doodles_js = local_ntp_resources + "/doodles.js"
+  local_ntp_js = local_ntp_resources + "/local_ntp.js"
+  utils_js = local_ntp_resources + "/utils.js"
+  voice_js = local_ntp_resources + "/voice.js"
 
   inputs = [
-    local_ntp_js,
-    voice_js,
-    custom_bg_js,
-    utils_js,
     animations_js,
+    custom_bg_js,
+    doodles_js,
+    local_ntp_js,
+    utils_js,
+    voice_js,
   ]
 
   outputs = [
@@ -27,11 +29,12 @@ action("local_ntp_code_generate") {
 
   args = [
     "--output_path=" + rebase_path(header_path, root_build_dir),
-    rebase_path(local_ntp_js, root_build_dir),
-    rebase_path(voice_js, root_build_dir),
-    rebase_path(custom_bg_js, root_build_dir),
-    rebase_path(utils_js, root_build_dir),
     rebase_path(animations_js, root_build_dir),
+    rebase_path(custom_bg_js, root_build_dir),
+    rebase_path(doodles_js, root_build_dir),
+    rebase_path(local_ntp_js, root_build_dir),
+    rebase_path(utils_js, root_build_dir),
+    rebase_path(voice_js, root_build_dir),
   ]
 }
 

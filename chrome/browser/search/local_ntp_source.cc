@@ -84,48 +84,50 @@ namespace {
 // Signifies a locally constructed resource, i.e. not from grit/.
 const int kLocalResource = -1;
 
+const char kAnimatedShareDoodleUrl[] =
+    "https://www.gstatic.com/logo/dev/ddljson_animated_share_button.json";
 const char kConfigDataFilename[] = "config.js";
-const char kThemeCSSFilename[] = "theme.css";
+const char kDoodleScriptFilename[] = "doodle.js";
+const char kGoogleUrl[] = "https://www.google.com/";
+const char kIntegrityFormat[] = "integrity=\"sha256-%s\"";
 const char kMainHtmlFilename[] = "local-ntp.html";
 const char kNtpBackgroundCollectionScriptFilename[] =
     "ntp-background-collections.js";
 const char kNtpBackgroundImageScriptFilename[] = "ntp-background-images.js";
 const char kOneGoogleBarScriptFilename[] = "one-google.js";
 const char kPromoScriptFilename[] = "promo.js";
-const char kDoodleScriptFilename[] = "doodle.js";
-const char kIntegrityFormat[] = "integrity=\"sha256-%s\"";
 const char kSimpleShareDoodleUrl[] =
     "https://www.gstatic.com/logo/dev/ddljson_simple_share_button.json";
-const char kAnimatedShareDoodleUrl[] =
-    "https://www.gstatic.com/logo/dev/ddljson_animated_share_button.json";
-const char kGoogleUrl[] = "https://www.google.com/";
+const char kThemeCSSFilename[] = "theme.css";
 
 const struct Resource{
   const char* filename;
   int identifier;
   const char* mime_type;
 } kResources[] = {
-    {kMainHtmlFilename, kLocalResource, "text/html"},
-    {"local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript"},
-    {"voice.js", IDR_LOCAL_NTP_VOICE_JS, "application/javascript"},
-    {"custom-backgrounds.js", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_JS,
-     "application/javascript"},
+    {"animations.css", IDR_LOCAL_NTP_ANIMATIONS_CSS, "text/css"},
     {"animations.js", IDR_LOCAL_NTP_ANIMATIONS_JS, "application/javascript"},
-    {"utils.js", IDR_LOCAL_NTP_UTILS_JS, "application/javascript"},
-    {kConfigDataFilename, kLocalResource, "application/javascript"},
-    {kThemeCSSFilename, kLocalResource, "text/css"},
-    {"local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css"},
-    {"voice.css", IDR_LOCAL_NTP_VOICE_CSS, "text/css"},
     {"custom-backgrounds.css", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_CSS,
      "text/css"},
-    {"animations.css", IDR_LOCAL_NTP_ANIMATIONS_CSS, "text/css"},
+    {"custom-backgrounds.js", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_JS,
+     "application/javascript"},
+    {"doodles.css", IDR_LOCAL_NTP_DOODLES_CSS, "text/css"},
+    {"doodles.js", IDR_LOCAL_NTP_DOODLES_JS, "application/javascript"},
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
+    {"local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css"},
+    {"local-ntp.js", IDR_LOCAL_NTP_JS, "application/javascript"},
+    {"utils.js", IDR_LOCAL_NTP_UTILS_JS, "application/javascript"},
+    {"voice.css", IDR_LOCAL_NTP_VOICE_CSS, "text/css"},
+    {"voice.js", IDR_LOCAL_NTP_VOICE_JS, "application/javascript"},
+    {kConfigDataFilename, kLocalResource, "application/javascript"},
+    {kDoodleScriptFilename, kLocalResource, "text/javascript"},
+    {kMainHtmlFilename, kLocalResource, "text/html"},
     {kNtpBackgroundCollectionScriptFilename, kLocalResource, "text/javascript"},
     {kNtpBackgroundImageScriptFilename, kLocalResource, "text/javascript"},
     {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
     {kPromoScriptFilename, kLocalResource, "text/javascript"},
-    {kDoodleScriptFilename, kLocalResource, "text/javascript"},
+    {kThemeCSSFilename, kLocalResource, "text/css"},
     // Image may not be a jpeg but the .jpg extension here still works for other
     // filetypes. Special handling for different extensions isn't worth the
     // added complexity.
@@ -906,27 +908,6 @@ void LocalNtpSource::StartDataRequest(
                            .GetRawDataResource(IDR_LOCAL_NTP_HTML)
                            .as_string();
 
-    std::string local_ntp_integrity =
-        base::StringPrintf(kIntegrityFormat, LOCAL_NTP_JS_INTEGRITY);
-    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{LOCAL_NTP_INTEGRITY}}",
-                                           local_ntp_integrity);
-
-    std::string local_ntp_voice_integrity =
-        base::StringPrintf(kIntegrityFormat, VOICE_JS_INTEGRITY);
-    base::ReplaceFirstSubstringAfterOffset(
-        &html, 0, "{{LOCAL_NTP_VOICE_INTEGRITY}}", local_ntp_voice_integrity);
-
-    std::string local_ntp_custom_bg_integrity =
-        base::StringPrintf(kIntegrityFormat, CUSTOM_BACKGROUNDS_JS_INTEGRITY);
-    base::ReplaceFirstSubstringAfterOffset(&html, 0,
-                                           "{{LOCAL_NTP_CUSTOM_BG_INTEGRITY}}",
-                                           local_ntp_custom_bg_integrity);
-
-    std::string utils_integrity =
-        base::StringPrintf(kIntegrityFormat, UTILS_JS_INTEGRITY);
-    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{UTILS_INTEGRITY}}",
-                                           utils_integrity);
-
     std::string animations_integrity =
         base::StringPrintf(kIntegrityFormat, ANIMATIONS_JS_INTEGRITY);
     base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{ANIMATIONS_INTEGRITY}}",
@@ -937,6 +918,31 @@ void LocalNtpSource::StartDataRequest(
         search_config_provider_->config_data_integrity().c_str());
     base::ReplaceFirstSubstringAfterOffset(
         &html, 0, "{{CONFIG_DATA_INTEGRITY}}", config_data_integrity);
+
+    std::string custom_bg_integrity =
+        base::StringPrintf(kIntegrityFormat, CUSTOM_BACKGROUNDS_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(
+        &html, 0, "{{LOCAL_NTP_CUSTOM_BG_INTEGRITY}}", custom_bg_integrity);
+
+    std::string doodles_integrity =
+        base::StringPrintf(kIntegrityFormat, DOODLES_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{DOODLES_INTEGRITY}}",
+                                           doodles_integrity);
+
+    std::string local_ntp_integrity =
+        base::StringPrintf(kIntegrityFormat, LOCAL_NTP_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{LOCAL_NTP_INTEGRITY}}",
+                                           local_ntp_integrity);
+
+    std::string utils_integrity =
+        base::StringPrintf(kIntegrityFormat, UTILS_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{UTILS_INTEGRITY}}",
+                                           utils_integrity);
+
+    std::string voice_integrity =
+        base::StringPrintf(kIntegrityFormat, VOICE_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(
+        &html, 0, "{{LOCAL_NTP_VOICE_INTEGRITY}}", voice_integrity);
 
     base::ReplaceFirstSubstringAfterOffset(
         &html, 0, "{{CONTENT_SECURITY_POLICY}}", GetContentSecurityPolicy());
@@ -1044,10 +1050,10 @@ std::string LocalNtpSource::GetContentSecurityPolicy() const {
   // 'strict-dynamic' allows those scripts to load dependencies not listed here.
   std::string script_src_csp = base::StringPrintf(
       "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s' 'sha256-%s' "
-      "'sha256-%s' 'sha256-%s' 'sha256-%s';",
-      LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY,
-      CUSTOM_BACKGROUNDS_JS_INTEGRITY, UTILS_JS_INTEGRITY,
-      ANIMATIONS_JS_INTEGRITY,
+      "'sha256-%s' 'sha256-%s' 'sha256-%s' 'sha256-%s';",
+      ANIMATIONS_JS_INTEGRITY, CUSTOM_BACKGROUNDS_JS_INTEGRITY,
+      DOODLES_JS_INTEGRITY, LOCAL_NTP_JS_INTEGRITY, UTILS_JS_INTEGRITY,
+      VOICE_JS_INTEGRITY,
       search_config_provider_->config_data_integrity().c_str());
 
   return GetContentSecurityPolicyObjectSrc() +
