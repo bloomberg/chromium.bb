@@ -1,23 +1,19 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_COLLECTION_VIEW_CELLS_COLLECTION_VIEW_ACCOUNT_ITEM_H_
-#define IOS_CHROME_BROWSER_UI_COLLECTION_VIEW_CELLS_COLLECTION_VIEW_ACCOUNT_ITEM_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_TABLE_VIEW_ACCOUNT_ITEM_H_
+#define IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_TABLE_VIEW_ACCOUNT_ITEM_H_
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_style.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 @class ChromeIdentity;
 
-// TODO(crbug.com/894800): Remove this.
 // Item for account avatar, used everywhere an account cell is shown.
-@interface CollectionViewAccountItem : CollectionViewItem
+@interface TableViewAccountItem : TableViewItem
 
-@property(nonatomic, assign) CollectionViewCellStyle cellStyle;
 @property(nonatomic, strong) UIImage* image;
 @property(nonatomic, copy) NSString* text;
 @property(nonatomic, copy) NSString* detailText;
@@ -26,17 +22,17 @@
 @property(nonatomic, assign, getter=isEnabled) BOOL enabled;
 
 // The accessory type for the represented cell.
-@property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
+@property(nonatomic, assign) UITableViewCellAccessoryType accessoryType;
 
 @end
 
 // Cell for account avatar with a leading avatar imageView, title text label,
 // and detail text label. This looks very similar to the
-// MDCCollectionViewDetailCell, except that it applies a circular mask to the
+// TableViewDetailCell, except that it applies a circular mask to the
 // imageView. The imageView is vertical-centered and leading aligned.
 // If item/cell is disabled the image and text alpha will be set to 0.5 and
 // user interaction will be disabled.
-@interface CollectionViewAccountCell : MDCCollectionViewCell
+@interface TableViewAccountCell : UITableViewCell
 
 // Rounded image used for the account user picture.
 @property(nonatomic, readonly, strong) UIImageView* imageView;
@@ -49,4 +45,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_COLLECTION_VIEW_CELLS_COLLECTION_VIEW_ACCOUNT_ITEM_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_CELLS_TABLE_VIEW_ACCOUNT_ITEM_H_
