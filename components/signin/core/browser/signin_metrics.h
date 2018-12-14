@@ -342,7 +342,8 @@ enum class SourceForRefreshTokenOperation {
   kDiceResponseHandler_Signin,
   kDiceResponseHandler_Signout,
   kDiceTurnOnSyncHelper_Abort,
-  kMaxValue = kDiceTurnOnSyncHelper_Abort
+  kMachineLogon_CredentialProvider,
+  kMaxValue = kMachineLogon_CredentialProvider
 };
 
 // Different types of reporting. This is used as a histogram suffix.

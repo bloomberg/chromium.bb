@@ -148,7 +148,12 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/signin/signin_util_win.h"
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#endif  // defined(OS_WIN)
 
 using base::UserMetricsAction;
 using content::BrowserThread;
@@ -1367,6 +1372,10 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   ContentSuggestionsServiceFactory::GetForProfile(profile);
   // Generates notifications from the above, if experiment is enabled.
   ContentSuggestionsNotifierServiceFactory::GetForProfile(profile);
+#endif
+
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_DICE_SUPPORT)
+  signin_util::SigninWithCredentialProviderIfPossible(profile);
 #endif
 }
 

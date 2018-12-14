@@ -47675,6 +47675,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="DiceResponseHandler::Signin"/>
   <int value="14" label="DiceResponseHandler::Signout"/>
   <int value="15" label="DiceTurnOnSyncHelper::Abort"/>
+  <int value="16" label="MachineLogon::CredentialProvider"/>
 </enum>
 
 <enum name="SpareProcessMaybeTakeAction">

@@ -51,4 +51,10 @@ const char kEmailDomainSigninPromoParameter[] = "emailDomain";
 
 const wchar_t kRunAsCrashpadHandlerEntryPoint[] = L"RunAsCrashpadHandler";
 
+#if defined(GOOGLE_CHROME_BUILD)
+const wchar_t kRegHkcuAccountsPath[] = L"Software\\Google\\Accounts";
+#else
+const wchar_t kRegHkcuAccountsPath[] = L"Software\\Chromium\\Accounts";
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
 }  // namespace credential_provider

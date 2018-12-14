@@ -22,13 +22,6 @@ namespace credential_provider {
 
 namespace {
 
-// Registry key under HKCU to write account info into.
-#if defined(GOOGLE_CHROME_BUILD)
-const wchar_t kRegAccountsPath[] = L"Software\\Google\\Accounts";
-#else
-const wchar_t kRegAccountsPath[] = L"Software\\Chromium\\Accounts";
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
 // Retry count when attempting to determine if the user's OS profile has
 // been created.  In slow envrionments, like VMs used for testing, it may
 // take some time to create the OS profile so checks are done periodically.
@@ -177,7 +170,7 @@ HRESULT ScopedUserProfile::SaveAccountInfo(
   {
     wchar_t key_name[128];
     swprintf_s(key_name, base::size(key_name), L"%s\\%s\\%s", sid.c_str(),
-               kRegAccountsPath, id.c_str());
+               kRegHkcuAccountsPath, id.c_str());
     LOGFN(INFO) << "HKU\\" << key_name;
 
     base::win::RegKey key;
@@ -247,7 +240,7 @@ bool ScopedUserProfile::WaitForProfileCreation(const base::string16& sid) {
   base::win::RegKey key;
   wchar_t key_name[128];
   swprintf_s(key_name, base::size(key_name), L"%s\\%s", sid.c_str(),
-             kRegAccountsPath);
+             kRegHkcuAccountsPath);
   LOGFN(INFO) << "HKU\\" << key_name;
 
   for (int i = 0; i < kWaitForProfileCreationRetryCount; ++i) {

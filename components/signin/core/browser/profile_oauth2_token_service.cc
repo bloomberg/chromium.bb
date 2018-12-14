@@ -49,6 +49,8 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
       return "DiceResponseHandler::Signout";
     case SourceForRefreshTokenOperation::kDiceTurnOnSyncHelper_Abort:
       return "DiceTurnOnSyncHelper::Abort";
+    case SourceForRefreshTokenOperation::kMachineLogon_CredentialProvider:
+      return "MachineLogon::CredentialProvider";
   }
 }
 }  // namespace

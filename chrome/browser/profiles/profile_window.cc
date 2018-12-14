@@ -89,42 +89,6 @@ void UnblockExtensions(Profile* profile) {
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-// Handles running a callback when a new Browser for the given profile
-// has been completely created.
-class BrowserAddedForProfileObserver : public BrowserListObserver {
- public:
-  BrowserAddedForProfileObserver(
-      Profile* profile,
-      ProfileManager::CreateCallback callback)
-      : profile_(profile),
-        callback_(callback) {
-    DCHECK(!callback_.is_null());
-    BrowserList::AddObserver(this);
-  }
-  ~BrowserAddedForProfileObserver() override {}
-
- private:
-  // Overridden from BrowserListObserver:
-  void OnBrowserAdded(Browser* browser) override {
-    if (browser->profile() == profile_) {
-      BrowserList::RemoveObserver(this);
-      // By the time the browser is added a tab (or multiple) are about to be
-      // added. Post the callback to the message loop so it gets executed after
-      // the tabs are created.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(callback_, profile_,
-                                    Profile::CREATE_STATUS_INITIALIZED));
-      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
-    }
-  }
-
-  // Profile for which the browser should be opened.
-  Profile* profile_;
-  ProfileManager::CreateCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserAddedForProfileObserver);
-};
-
 // Called after a |system_profile| is available to be used by the user manager.
 // Runs |callback|, if it exists. Depending on the value of
 // |user_manager_action|, executes an action once the user manager displays or
@@ -478,6 +442,29 @@ void BubbleViewModeFromAvatarBubbleMode(BrowserWindow::AvatarBubbleMode mode,
       return;
     default:
       *bubble_view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
+  }
+}
+
+BrowserAddedForProfileObserver::BrowserAddedForProfileObserver(
+    Profile* profile,
+    ProfileManager::CreateCallback callback)
+    : profile_(profile), callback_(callback) {
+  DCHECK(!callback_.is_null());
+  BrowserList::AddObserver(this);
+}
+
+BrowserAddedForProfileObserver::~BrowserAddedForProfileObserver() {}
+
+void BrowserAddedForProfileObserver::OnBrowserAdded(Browser* browser) {
+  if (browser->profile() == profile_) {
+    BrowserList::RemoveObserver(this);
+    // By the time the browser is added a tab (or multiple) are about to be
+    // added. Post the callback to the message loop so it gets executed after
+    // the tabs are created.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback_, profile_,
+                                  Profile::CREATE_STATUS_INITIALIZED));
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   }
 }
 
