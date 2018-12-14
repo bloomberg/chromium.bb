@@ -5,17 +5,30 @@
 package org.chromium.chrome.browser.vr;
 
 import android.app.Activity;
-import android.content.Context;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.compat.ApiHelperForN;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeActivity;
 
 /**
- * Fallback {@link VrDelegate} and {@link VrIntentDelegate} implementation if the VR module is not
- * available.
+ * Fallback {@link VrDelegate} implementation if the VR module is not available.
  */
-/* package */ class VrDelegateFallback implements VrDelegate, VrIntentDelegate {
+/* package */ class VrDelegateFallback extends VrDelegate {
+    private static final String TAG = "VrDelegateFallback";
+    private static final boolean DEBUG_LOGS = false;
+    private static final String DEFAULT_VR_MODE_PACKAGE = "com.google.vr.vrcore";
+    private static final String DEFAULT_VR_MODE_CLASS =
+            "com.google.vr.vrcore.common.VrCoreListenerService";
+
     @Override
     public void forceExitVrImmediately() {}
 
@@ -100,24 +113,45 @@ import org.chromium.chrome.browser.ChromeActivity;
     public void onNewIntentWithNative(ChromeActivity activity, Intent intent) {}
 
     @Override
-    public void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {}
+    public void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
+        if (!VrModuleProvider.getIntentDelegate().isLaunchingIntoVr(activity, intent)) return;
+        if (bootsToVr() && relaunchOnMainDisplayIfNecessary(activity, intent)) return;
 
-    @Override
-    public void setVrModeEnabled(Activity activity, boolean enabled) {
-        assert false;
+        if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
+
+        // We add a black overlay view so that we can show black while the VR UI is loading. See
+        // more details in {VrShellDelegate#maybeHandleVrIntentPreNative}.
+        addBlackOverlayViewForActivity(activity);
+        setSystemUiVisibilityForVr(activity);
     }
 
     @Override
-    public void doPreInflationStartup(ChromeActivity activity, Bundle savedInstanceState) {}
+    public void setVrModeEnabled(Activity activity, boolean enabled) {}
 
     @Override
-    public boolean bootsToVr() {
-        return false;
+    public void doPreInflationStartup(ChromeActivity activity, Bundle savedInstanceState) {
+        if (!VrModuleProvider.getIntentDelegate().isLaunchingIntoVr(
+                    activity, activity.getIntent())) {
+            return;
+        }
+
+        if (bootsToVr() && !setVrMode(activity, true)) {
+            activity.finish();
+            return;
+        }
+
+        VrModuleProvider.installModule(this::onVrModuleInstallFinished);
+
+        ThreadUtils.postOnUiThreadDelayed(() -> {
+            if (VrModuleProvider.isModuleInstalled()) return;
+            onVrModuleInstallFailure(activity);
+        }, 2000);
     }
 
     @Override
     public boolean isDaydreamReadyDevice() {
-        return false;
+        return ContextUtils.getApplicationContext().getPackageManager().hasSystemFeature(
+                PackageManager.FEATURE_VR_MODE_HIGH_PERFORMANCE);
     }
 
     @Override
@@ -126,33 +160,61 @@ import org.chromium.chrome.browser.ChromeActivity;
     }
 
     @Override
-    public boolean isVrIntent(Intent intent) {
-        return false;
-    }
-
-    @Override
-    public boolean isLaunchingIntoVr(Activity activity, Intent intent) {
-        return false;
-    }
-
-    @Override
-    public Intent setupVrFreIntent(Context context, Intent freIntent) {
-        assert false;
-        return freIntent;
-    }
-
-    @Override
-    public Bundle getVrIntentOptions(Context context) {
-        assert false;
-        return null;
-    }
-
-    @Override
     public boolean willChangeDensityInVr(ChromeActivity activity) {
+        // TODO(tiborg): Handle density changes if VR module not installed.
         assert false;
         return false;
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {}
+
+    private void onVrModuleInstallFinished(boolean success) {
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (!(activity instanceof ChromeActivity)) return;
+
+        if (!success) {
+            onVrModuleInstallFailure(activity);
+            return;
+        }
+        assert VrModuleProvider.isModuleInstalled();
+
+        VrDelegate delegate = VrModuleProvider.getDelegate();
+        if (LibraryLoader.getInstance().isInitialized()) {
+            delegate.onNativeLibraryAvailable();
+        }
+
+        boolean shouldEnterVr =
+                ApplicationStatus.getStateForActivity(activity) == ActivityState.RESUMED;
+        if (shouldEnterVr) {
+            delegate.enterVrIfNecessary();
+        } else {
+            delegate.maybeRegisterVrEntryHook((ChromeActivity) activity);
+        }
+    }
+
+    private void onVrModuleInstallFailure(Activity activity) {
+        // For SVR close Chrome. For standalones launch into 2D-in-VR (if that fails, close Chrome).
+        if (bootsToVr()) {
+            if (!setVrMode(activity, false)) {
+                activity.finish();
+                return;
+            }
+            // Set up 2D-in-VR.
+            removeBlackOverlayView(activity, false);
+        } else {
+            activity.finish();
+        }
+    }
+
+    private boolean setVrMode(Activity activity, boolean enabled) {
+        try {
+            ApiHelperForN.setVrModeEnabled(activity, enabled,
+                    new ComponentName(DEFAULT_VR_MODE_PACKAGE, DEFAULT_VR_MODE_CLASS));
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Cannot unset VR mode", e);
+        }
+        return false;
+    }
 }

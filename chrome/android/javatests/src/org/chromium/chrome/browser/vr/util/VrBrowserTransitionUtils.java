@@ -16,7 +16,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.vr.TestVrShellDelegate;
-import org.chromium.chrome.browser.vr.VrIntentUtils;
+import org.chromium.chrome.browser.vr.VrIntentDelegate;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.vr.VrShell;
 import org.chromium.chrome.browser.vr.VrShellDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -106,8 +107,8 @@ public class VrBrowserTransitionUtils extends VrTransitionUtils {
                 new Intent(ContextUtils.getApplicationContext(), ChromeLauncherActivity.class);
         intent.setAction(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
-        intent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
-        VrIntentUtils.setupVrIntent(intent);
+        intent.addCategory(VrIntentDelegate.DAYDREAM_CATEGORY);
+        VrModuleProvider.getIntentDelegate().setupVrIntent(intent);
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { VrShellDelegate.getVrDaydreamApi().launchInVr(intent); });
