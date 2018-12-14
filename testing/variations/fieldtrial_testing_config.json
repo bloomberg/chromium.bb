@@ -2902,6 +2902,7 @@
                     "params": {
                         "new-user-modules": "nux-email,nux-google-apps,nux-set-as-default,signin-view",
                         "onboarding-group": "EmailAppsThenEmailInterstitial-001",
+                        "returning-user-modules": "nux-set-as-default",
                         "show-email-interstitial": "true"
                     },
                     "enable_features": [
