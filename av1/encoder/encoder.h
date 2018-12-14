@@ -275,6 +275,7 @@ typedef struct AV1EncoderConfig {
 
   int min_gf_interval;
   int max_gf_interval;
+  int gf_max_pyr_height;
 
   int row_mt;
   int tile_columns;

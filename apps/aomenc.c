@@ -571,6 +571,9 @@ static const arg_def_t min_gf_interval = ARG_DEF(
 static const arg_def_t max_gf_interval = ARG_DEF(
     NULL, "max-gf-interval", 1,
     "max gf/arf frame interval (default 0, indicating in-built behavior)");
+static const arg_def_t gf_max_pyr_height =
+    ARG_DEF(NULL, "gf-max-pyr-height", 1,
+            "maximum height for GF group pyramid structure (1 to 4 (default))");
 
 static const struct arg_enum_list color_primaries_enum[] = {
   { "bt709", AOM_CICP_CP_BT_709 },
@@ -730,6 +733,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &input_chroma_sample_position,
                                        &min_gf_interval,
                                        &max_gf_interval,
+                                       &gf_max_pyr_height,
                                        &superblock_size,
                                        &num_tg,
                                        &mtu_size,
@@ -803,6 +807,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_CHROMA_SAMPLE_POSITION,
                                         AV1E_SET_MIN_GF_INTERVAL,
                                         AV1E_SET_MAX_GF_INTERVAL,
+                                        AV1E_SET_GF_MAX_PYRAMID_HEIGHT,
                                         AV1E_SET_SUPERBLOCK_SIZE,
                                         AV1E_SET_NUM_TG,
                                         AV1E_SET_MTU,
