@@ -29809,6 +29809,7 @@ from previous Chrome versions.
   <int value="-1454397907" label="OptimizationHints:disabled"/>
   <int value="-1451644187" label="OverviewSwipeToClose:enabled"/>
   <int value="-1450576851" label="OmniboxUIExperimentVerticalLayout:enabled"/>
+  <int value="-1447147245" label="VideoPlayerNativeControls:enabled"/>
   <int value="-1446425986" label="ProtectSyncCredentialOnReauth:disabled"/>
   <int value="-1444051091" label="ash-disable-night-light"/>
   <int value="-1443796945" label="OfflinePagesSharing:disabled"/>
@@ -30745,6 +30746,7 @@ from previous Chrome versions.
   <int value="274103741" label="enable-ntp-popular-sites"/>
   <int value="278756320" label="disable-app-list-app-info"/>
   <int value="280644887" label="mash"/>
+  <int value="282636212" label="VideoPlayerNativeControls:disabled"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="288012253" label="CrostiniFiles:enabled"/>
   <int value="292560715" label="ViewsCastDialog:disabled"/>

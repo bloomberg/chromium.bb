@@ -1439,6 +1439,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-native-controls",
+    "owners": [ "chrome-media-ux@google.com" ],
+    "expiry_milestone": 75
+  },
+  {
     "name": "enable-native-google-assistant",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 76

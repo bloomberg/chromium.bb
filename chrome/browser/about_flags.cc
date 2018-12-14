@@ -4068,6 +4068,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kMyFilesVolume)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_CHROMEOS)
+    {"enable-native-controls",
+     flag_descriptions::kEnableVideoPlayerNativeControlsName,
+     flag_descriptions::kEnableVideoPlayerNativeControlsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kVideoPlayerNativeControls)},
+#endif
+
 #if defined(OS_ANDROID)
     {"background-task-component-update",
      flag_descriptions::kBackgroundTaskComponentUpdateName,
