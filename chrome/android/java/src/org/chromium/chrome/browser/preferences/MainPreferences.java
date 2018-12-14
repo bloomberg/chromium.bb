@@ -161,11 +161,9 @@ public class MainPreferences extends PreferenceFragment
         }
 
         // This checks whether Autofill Assistant is enabled.
-        // Unconditionally remove the Autofill Assistant preference entry. This is an intermediate
-        // step before completely removing that preference.
-        // TODO(crbug.com/806868): Show the preference when autofill assistant has explicitly been
-        // accepted in the first run screen.
-        getPreferenceScreen().removePreference(findPreference(PREF_AUTOFILL_ASSISTANT));
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)) {
+            getPreferenceScreen().removePreference(findPreference(PREF_AUTOFILL_ASSISTANT));
+        }
     }
 
     /**
