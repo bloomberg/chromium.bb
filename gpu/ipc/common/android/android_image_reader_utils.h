@@ -13,11 +13,14 @@
 
 namespace gpu {
 
+// Create and inserts an egl fence and exports a ScopedFD from it.
+base::ScopedFD CreateEglFenceAndExportFd();
+
 // Delete the AImage asynchronously by inserting an android native fence sync.
 bool DeleteAImageAsync(AImage* image,
                        base::android::AndroidImageReader* loader);
 
-// Create and insert an EGL fence using the provided fence fd.
+// Create and insert an EGL fence and imports the provided fence fd.
 bool InsertEglFenceAndWait(base::ScopedFD acquire_fence_fd);
 
 // Create an EGL image from the AImage via AHardwarebuffer. Bind this EGL image
