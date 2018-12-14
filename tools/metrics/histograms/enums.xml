@@ -1141,6 +1141,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Gpu"/>
 </enum>
 
+<enum name="AndroidResourceBundleLocaleFailures">
+  <int value="0" label="Locale Pak file was not found"/>
+  <int value="1" label="LoadDataPackFromLocalePak() primary call failed"/>
+  <int value="2" label="LoadDataPackFromLocalePak() secondary call failed"/>
+</enum>
+
 <enum name="AndroidResourceExtractionStatus">
   <int value="0" label="No extraction performed"/>
   <int value="1" label="Extraction success"/>
