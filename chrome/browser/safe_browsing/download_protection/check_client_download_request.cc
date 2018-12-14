@@ -369,6 +369,8 @@ bool CheckClientDownloadRequest::IsSupportedDownload(
 
 CheckClientDownloadRequest::~CheckClientDownloadRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (item_)
+    item_->RemoveObserver(this);
   weakptr_factory_.InvalidateWeakPtrs();
 }
 
@@ -806,6 +808,7 @@ void CheckClientDownloadRequest::FinishRequest(
   if (reason != REASON_DOWNLOAD_DESTROYED)
     callback_.Run(result);
   item_->RemoveObserver(this);
+  item_ = nullptr;
   service_->RequestFinished(this);
   // DownloadProtectionService::RequestFinished may delete us.
 }
