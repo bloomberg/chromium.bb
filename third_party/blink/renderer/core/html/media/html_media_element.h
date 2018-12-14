@@ -363,6 +363,7 @@ class CORE_EXPORT HTMLMediaElement
   // Friend class for testing.
   friend class ContextMenuControllerTest;
   friend class MediaElementFillingViewportTest;
+  friend class VideoWakeLockTest;
 
   void ResetMediaPlayerAndMediaSource();
 

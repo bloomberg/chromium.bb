@@ -85,7 +85,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
-  void OnVisibilityChanged(content::Visibility visibility) override;
   void DidUpdateAudioMutingState(bool muted) override;
 
   // TODO(zqzhang): this method is temporarily in MediaWebContentsObserver as
@@ -105,8 +104,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   bool has_audio_wake_lock_for_testing() const {
     return has_audio_wake_lock_for_testing_;
   }
-
-  bool has_video_wake_lock_for_testing() const { return has_video_wake_lock_; }
 
   void SetAudibleMetricsForTest(AudibleMetrics* audible_metrics) {
     audible_metrics_ = audible_metrics;
@@ -161,7 +158,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void ClearWakeLocks(RenderFrameHost* render_frame_host);
 
   device::mojom::WakeLock* GetAudioWakeLock();
-  device::mojom::WakeLock* GetVideoWakeLock();
 
   // WakeLock related methods for audio and video.
   void LockAudio();
@@ -194,12 +190,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   ActiveMediaPlayerMap active_audio_players_;
   ActiveMediaPlayerMap active_video_players_;
   device::mojom::WakeLockPtr audio_wake_lock_;
-  device::mojom::WakeLockPtr video_wake_lock_;
   base::Optional<MediaPlayerId> fullscreen_player_;
   base::Optional<MediaPlayerId> pip_player_;
   base::Optional<bool> picture_in_picture_allowed_in_fullscreen_;
   bool has_audio_wake_lock_for_testing_ = false;
-  bool has_video_wake_lock_ = false;
 
   MediaSessionControllersManager session_controllers_manager_;
 

@@ -163,11 +163,6 @@ bool MediaWebContentsObserver::OnMessageReceived(
   return handled;
 }
 
-void MediaWebContentsObserver::OnVisibilityChanged(
-    content::Visibility visibility) {
-  UpdateVideoLock();
-}
-
 void MediaWebContentsObserver::DidUpdateAudioMutingState(bool muted) {
   session_controllers_manager_.WebContentsMutedStateChanged(muted);
 }
@@ -217,8 +212,6 @@ void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
   const bool removed_video =
       RemoveMediaPlayerEntry(player_id, &active_video_players_);
 
-  UpdateVideoLock();
-
   if (!web_contents()->IsBeingDestroyed() && pip_player_ == player_id) {
     PictureInPictureWindowControllerImpl* pip_controller =
         PictureInPictureWindowControllerImpl::FromWebContents(
@@ -252,9 +245,9 @@ void MediaWebContentsObserver::OnMediaPlaying(
     bool has_audio,
     bool is_remote,
     media::MediaContentType media_content_type) {
-  // Ignore the videos playing remotely and don't hold the wake lock for the
-  // screen. TODO(dalecurtis): Is this correct? It means observers will not
-  // receive play and pause messages.
+  // TODO(mlamouri): this used to be done to avoid video wake lock. However, it
+  // was doing much more. Removing will be done in a follow-up CL to avoid
+  // regressions to be pinpoint to the wake lock refactor.
   if (is_remote)
     return;
 
@@ -262,11 +255,8 @@ void MediaWebContentsObserver::OnMediaPlaying(
   if (has_audio)
     AddMediaPlayerEntry(id, &active_audio_players_);
 
-  if (has_video) {
+  if (has_video)
     AddMediaPlayerEntry(id, &active_video_players_);
-
-    UpdateVideoLock();
-  }
 
   if (!session_controllers_manager_.RequestPlay(
           id, has_audio, is_remote, media_content_type)) {
@@ -336,8 +326,6 @@ void MediaWebContentsObserver::OnPictureInPictureModeStarted(
     bool show_play_pause_button) {
   DCHECK(surface_id.is_valid());
   pip_player_ = MediaPlayerId(render_frame_host, delegate_id);
-
-  UpdateVideoLock();
 
   gfx::Size window_size =
       web_contents_impl()->EnterPictureInPicture(surface_id, natural_size);
@@ -409,8 +397,6 @@ void MediaWebContentsObserver::ClearWakeLocks(
                  audio_players.begin(), audio_players.end(),
                  std::inserter(removed_players, removed_players.end()));
 
-  UpdateVideoLock();
-
   // Notify all observers the player has been "paused".
   for (const auto& id : removed_players) {
     auto it = video_players.find(id);
@@ -439,23 +425,6 @@ device::mojom::WakeLock* MediaWebContentsObserver::GetAudioWakeLock() {
   return audio_wake_lock_.get();
 }
 
-device::mojom::WakeLock* MediaWebContentsObserver::GetVideoWakeLock() {
-  // Here is a lazy binding, and will not reconnect after connection error.
-  if (!video_wake_lock_) {
-    device::mojom::WakeLockRequest request =
-        mojo::MakeRequest(&video_wake_lock_);
-    device::mojom::WakeLockContext* wake_lock_context =
-        web_contents()->GetWakeLockContext();
-    if (wake_lock_context) {
-      wake_lock_context->GetWakeLock(
-          device::mojom::WakeLockType::kPreventDisplaySleep,
-          device::mojom::WakeLockReason::kVideoPlayback, "Playing video",
-          std::move(request));
-    }
-  }
-  return video_wake_lock_.get();
-}
-
 void MediaWebContentsObserver::LockAudio() {
   GetAudioWakeLock()->RequestWakeLock();
   has_audio_wake_lock_for_testing_ = true;
@@ -464,27 +433,6 @@ void MediaWebContentsObserver::LockAudio() {
 void MediaWebContentsObserver::CancelAudioLock() {
   GetAudioWakeLock()->CancelWakeLock();
   has_audio_wake_lock_for_testing_ = false;
-}
-
-void MediaWebContentsObserver::UpdateVideoLock() {
-  if (active_video_players_.empty() ||
-      (web_contents()->GetVisibility() == Visibility::HIDDEN &&
-       !web_contents()->IsBeingCaptured() && !pip_player_.has_value())) {
-    // Need to release a wake lock if one is held.
-    if (!has_video_wake_lock_)
-      return;
-
-    GetVideoWakeLock()->CancelWakeLock();
-    has_video_wake_lock_ = false;
-    return;
-  }
-
-  // Need to take a wake lock if not already done.
-  if (has_video_wake_lock_)
-    return;
-
-  GetVideoWakeLock()->RequestWakeLock();
-  has_video_wake_lock_ = true;
 }
 
 void MediaWebContentsObserver::OnMediaMutedStatusChanged(
@@ -542,8 +490,6 @@ void MediaWebContentsObserver::ExitPictureInPictureInternal() {
   // Reset must happen after notifying the WebContents because it may interact
   // with it.
   ResetPictureInPictureVideoMediaPlayerId();
-
-  UpdateVideoLock();
 }
 
 WebContentsImpl* MediaWebContentsObserver::web_contents_impl() const {

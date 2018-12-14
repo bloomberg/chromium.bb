@@ -505,6 +505,8 @@ blink_core_sources("html") {
     "media/remote_playback_controller.cc",
     "media/remote_playback_controller.h",
     "media/remote_playback_observer.h",
+    "media/video_wake_lock.cc",
+    "media/video_wake_lock.h",
     "plugin_document.cc",
     "plugin_document.h",
     "portal/document_portals.cc",
