@@ -76,9 +76,10 @@ void CrostiniAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
       if (app_id() == crostini::kCrostiniTerminalId) {
         crostini::ShowCrostiniUninstallerView(
             profile(), crostini::CrostiniUISurface::kAppList);
-        return;
+      } else {
+        crostini::ShowCrostiniAppUninstallerView(profile(), app_id());
       }
-      break;
+      return;
 
     case ash::STOP_APP:
       if (app_id() == crostini::kCrostiniTerminalId) {

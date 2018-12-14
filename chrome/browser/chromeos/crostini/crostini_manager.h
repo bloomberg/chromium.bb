@@ -47,7 +47,8 @@ enum class CrostiniResult {
   CONTAINER_START_FAILED,
   LAUNCH_CONTAINER_APPLICATION_FAILED,
   INSTALL_LINUX_PACKAGE_FAILED,
-  INSTALL_LINUX_PACKAGE_ALREADY_ACTIVE,
+  BLOCKING_OPERATION_ALREADY_ACTIVE,
+  UNINSTALL_PACKAGE_FAILED,
   SSHFS_MOUNT_ERROR,
   OFFLINE_WHEN_UPGRADE_REQUIRED,
   LOAD_COMPONENT_FAILED,
@@ -65,6 +66,12 @@ enum class VmState {
   STARTING,
   STARTED,
   STOPPING,
+};
+
+enum class UninstallPackageProgressStatus {
+  SUCCEEDED,
+  FAILED,
+  UNINSTALLING,  // In progress
 };
 
 // Return type when getting app icons from within a container.
@@ -91,19 +98,24 @@ struct LinuxPackageInfo {
   std::string description;
 };
 
-class InstallLinuxPackageProgressObserver {
+class LinuxPackageOperationProgressObserver {
  public:
   // A successfully started package install will continually fire progress
   // events until it returns a status of SUCCEEDED or FAILED. The
   // |progress_percent| field is given as a percentage of the given step,
-  // DOWNLOADING or INSTALLING. |failure_reason| is returned from the container
-  // for a FAILED case, and not necessarily localized.
+  // DOWNLOADING or INSTALLING.
   virtual void OnInstallLinuxPackageProgress(
       const std::string& vm_name,
       const std::string& container_name,
       InstallLinuxPackageProgressStatus status,
-      int progress_percent,
-      const std::string& failure_reason) = 0;
+      int progress_percent) = 0;
+
+  // A successfully started package uninstall will continually fire progress
+  // events until it returns a status of SUCCEEDED or FAILED.
+  virtual void OnUninstallPackageProgress(const std::string& vm_name,
+                                          const std::string& container_name,
+                                          UninstallPackageProgressStatus status,
+                                          int progress_percent) = 0;
 };
 
 // CrostiniManager is a singleton which is used to check arguments for
@@ -152,11 +164,9 @@ class CrostiniManager : public KeyedService,
   using GetLinuxPackageInfoCallback =
       base::OnceCallback<void(const LinuxPackageInfo&)>;
   // The type of the callback for CrostiniManager::InstallLinuxPackage.
-  // |failure_reason| is returned from the container upon failure
-  // (INSTALL_LINUX_PACKAGE_FAILED), and not necessarily localized.
-  using InstallLinuxPackageCallback =
-      base::OnceCallback<void(CrostiniResult result,
-                              const std::string& failure_reason)>;
+  using InstallLinuxPackageCallback = CrostiniResultCallback;
+  // The type of the callback for CrostiniManager::UninstallPackageOwningFile.
+  using UninstallPackageOwningFileCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::GetContainerSshKeys.
   using GetContainerSshKeysCallback =
       base::OnceCallback<void(CrostiniResult result,
@@ -319,11 +329,21 @@ class CrostiniManager : public KeyedService,
 
   // Begin installation of a Linux Package inside the container. If the
   // installation is successfully started, further updates will be sent to
-  // added InstallLinuxPackageProgressObservers.
+  // added LinuxPackageOperationProgressObservers.
   void InstallLinuxPackage(std::string vm_name,
                            std::string container_name,
                            std::string package_path,
                            InstallLinuxPackageCallback callback);
+
+  // Begin uninstallation of a Linux Package inside the container. The package
+  // is identified by its associated .desktop file's ID; we don't use package_id
+  // to avoid problems with stale package_ids (such as after upgrades). If the
+  // uninstallation is successfully started, further updates will be sent to
+  // added LinuxPackageOperationProgressObservers.
+  void UninstallPackageOwningFile(std::string vm_name,
+                                  std::string container_name,
+                                  std::string desktop_file_id,
+                                  UninstallPackageOwningFileCallback callback);
 
   // Asynchronously gets SSH server public key of container and trusted SSH
   // client private key which can be used to connect to the container.
@@ -375,11 +395,11 @@ class CrostiniManager : public KeyedService,
   // Adds a callback to receive uninstall notification.
   void AddRemoveCrostiniCallback(RemoveCrostiniCallback remove_callback);
 
-  // Add/remove observers for package install progress.
-  void AddInstallLinuxPackageProgressObserver(
-      InstallLinuxPackageProgressObserver* observer);
-  void RemoveInstallLinuxPackageProgressObserver(
-      InstallLinuxPackageProgressObserver* observer);
+  // Add/remove observers for package install and uninstall progress.
+  void AddLinuxPackageOperationProgressObserver(
+      LinuxPackageOperationProgressObserver* observer);
+  void RemoveLinuxPackageOperationProgressObserver(
+      LinuxPackageOperationProgressObserver* observer);
 
   // ConciergeClient::Observer:
   void OnContainerStartupFailed(
@@ -392,6 +412,9 @@ class CrostiniManager : public KeyedService,
       const vm_tools::cicerone::ContainerShutdownSignal& signal) override;
   void OnInstallLinuxPackageProgress(
       const vm_tools::cicerone::InstallLinuxPackageProgressSignal& signal)
+      override;
+  void OnUninstallPackageProgress(
+      const vm_tools::cicerone::UninstallPackageProgressSignal& signal)
       override;
   void OnLxdContainerCreated(
       const vm_tools::cicerone::LxdContainerCreatedSignal& signal) override;
@@ -530,6 +553,12 @@ class CrostiniManager : public KeyedService,
       InstallLinuxPackageCallback callback,
       base::Optional<vm_tools::cicerone::InstallLinuxPackageResponse> reply);
 
+  // Callback for CrostiniManager::UninstallPackageOwningFile.
+  void OnUninstallPackageOwningFile(
+      UninstallPackageOwningFileCallback callback,
+      base::Optional<vm_tools::cicerone::UninstallPackageOwningFileResponse>
+          reply);
+
   // Callback for CrostiniManager::GetContainerSshKeys. Called after the
   // Concierge service finishes.
   void OnGetContainerSshKeys(
@@ -591,8 +620,8 @@ class CrostiniManager : public KeyedService,
 
   std::vector<RemoveCrostiniCallback> remove_crostini_callbacks_;
 
-  base::ObserverList<InstallLinuxPackageProgressObserver>::Unchecked
-      install_linux_package_progress_observers_;
+  base::ObserverList<LinuxPackageOperationProgressObserver>::Unchecked
+      linux_package_operation_progress_observers_;
 
   // Restarts by <vm_name, container_name>. Only one restarter flow is actually
   // running for a given container, other restarters will just have their

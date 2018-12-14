@@ -20,7 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/crostini/crostini_package_installer_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_package_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_share_path.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -784,14 +784,12 @@ FileManagerPrivateInternalGetLinuxPackageInfoFunction::Run() {
     return RespondNow(Error("Invalid url: " + params->url));
   }
 
-  crostini::CrostiniPackageInstallerService::GetForProfile(profile)
-      ->GetLinuxPackageInfo(
-          crostini::kCrostiniDefaultVmName,
-          crostini::kCrostiniDefaultContainerName, path.value(),
-          base::BindOnce(
-              &FileManagerPrivateInternalGetLinuxPackageInfoFunction::
-                  OnGetLinuxPackageInfo,
-              this));
+  crostini::CrostiniPackageService::GetForProfile(profile)->GetLinuxPackageInfo(
+      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      path.value(),
+      base::BindOnce(&FileManagerPrivateInternalGetLinuxPackageInfoFunction::
+                         OnGetLinuxPackageInfo,
+                     this));
   return RespondLater();
 }
 
@@ -832,20 +830,17 @@ FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
     return RespondNow(Error("Invalid url: " + params->url));
   }
 
-  crostini::CrostiniPackageInstallerService::GetForProfile(profile)
-      ->InstallLinuxPackage(
-          crostini::kCrostiniDefaultVmName,
-          crostini::kCrostiniDefaultContainerName, path.value(),
-          base::BindOnce(
-              &FileManagerPrivateInternalInstallLinuxPackageFunction::
-                  OnInstallLinuxPackage,
-              this));
+  crostini::CrostiniPackageService::GetForProfile(profile)->InstallLinuxPackage(
+      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      path.value(),
+      base::BindOnce(&FileManagerPrivateInternalInstallLinuxPackageFunction::
+                         OnInstallLinuxPackage,
+                     this));
   return RespondLater();
 }
 
 void FileManagerPrivateInternalInstallLinuxPackageFunction::
-    OnInstallLinuxPackage(crostini::CrostiniResult result,
-                          const std::string& failure_reason) {
+    OnInstallLinuxPackage(crostini::CrostiniResult result) {
   extensions::api::file_manager_private::InstallLinuxPackageResponse response;
   switch (result) {
     case crostini::CrostiniResult::SUCCESS:
@@ -856,16 +851,15 @@ void FileManagerPrivateInternalInstallLinuxPackageFunction::
       response = extensions::api::file_manager_private::
           INSTALL_LINUX_PACKAGE_RESPONSE_FAILED;
       break;
-    case crostini::CrostiniResult::INSTALL_LINUX_PACKAGE_ALREADY_ACTIVE:
+    case crostini::CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE:
       response = extensions::api::file_manager_private::
           INSTALL_LINUX_PACKAGE_RESPONSE_INSTALL_ALREADY_ACTIVE;
       break;
     default:
       NOTREACHED();
   }
-  Respond(ArgumentList(
-      extensions::api::file_manager_private_internal::InstallLinuxPackage::
-          Results::Create(response, failure_reason)));
+  Respond(ArgumentList(extensions::api::file_manager_private_internal::
+                           InstallLinuxPackage::Results::Create(response)));
 }
 
 FileManagerPrivateInternalGetCustomActionsFunction::

@@ -119,11 +119,15 @@ class CrostiniManagerTest : public testing::Test {
 
   void InstallLinuxPackageCallback(base::OnceClosure closure,
                                    CrostiniResult expected_result,
-                                   const std::string& expected_failure_reason,
-                                   CrostiniResult result,
-                                   const std::string& failure_reason) {
+                                   CrostiniResult result) {
     EXPECT_EQ(expected_result, result);
-    EXPECT_EQ(expected_failure_reason, failure_reason);
+    std::move(closure).Run();
+  }
+
+  void UninstallPackageOwningFileCallback(base::OnceClosure closure,
+                                          CrostiniResult expected_result,
+                                          CrostiniResult result) {
+    EXPECT_EQ(expected_result, result);
     std::move(closure).Run();
   }
 
@@ -314,8 +318,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalNotConnectedError) {
       kVmName, kContainerName, "/tmp/package.deb",
       base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED,
-                     std::string()));
+                     CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED));
   run_loop()->Run();
 }
 
@@ -327,7 +330,7 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalSuccess) {
       kVmName, kContainerName, "/tmp/package.deb",
       base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::SUCCESS, std::string()));
+                     CrostiniResult::SUCCESS));
   run_loop()->Run();
 }
 
@@ -341,8 +344,70 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalFailure) {
       kVmName, kContainerName, "/tmp/package.deb",
       base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
                      base::Unretained(this), run_loop()->QuitClosure(),
-                     CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED,
-                     failure_reason));
+                     CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalOperationBlocked) {
+  vm_tools::cicerone::InstallLinuxPackageResponse response;
+  response.set_status(
+      vm_tools::cicerone::InstallLinuxPackageResponse::INSTALL_ALREADY_ACTIVE);
+  fake_cicerone_client_->set_install_linux_package_response(response);
+  crostini_manager()->InstallLinuxPackage(
+      kVmName, kContainerName, "/tmp/package.deb",
+      base::BindOnce(&CrostiniManagerTest::InstallLinuxPackageCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalNotConnectedError) {
+  fake_cicerone_client_->set_uninstall_package_progress_signal_connected(false);
+  crostini_manager()->UninstallPackageOwningFile(
+      kVmName, kContainerName, "emacs",
+      base::BindOnce(&CrostiniManagerTest::UninstallPackageOwningFileCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::UNINSTALL_PACKAGE_FAILED));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalSuccess) {
+  vm_tools::cicerone::UninstallPackageOwningFileResponse response;
+  response.set_status(
+      vm_tools::cicerone::UninstallPackageOwningFileResponse::STARTED);
+  fake_cicerone_client_->set_uninstall_package_owning_file_response(response);
+  crostini_manager()->UninstallPackageOwningFile(
+      kVmName, kContainerName, "emacs",
+      base::BindOnce(&CrostiniManagerTest::UninstallPackageOwningFileCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalFailure) {
+  vm_tools::cicerone::UninstallPackageOwningFileResponse response;
+  response.set_status(
+      vm_tools::cicerone::UninstallPackageOwningFileResponse::FAILED);
+  response.set_failure_reason("Didn't feel like it");
+  fake_cicerone_client_->set_uninstall_package_owning_file_response(response);
+  crostini_manager()->UninstallPackageOwningFile(
+      kVmName, kContainerName, "emacs",
+      base::BindOnce(&CrostiniManagerTest::UninstallPackageOwningFileCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::UNINSTALL_PACKAGE_FAILED));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerTest, UninstallPackageOwningFileSignalOperationBlocked) {
+  vm_tools::cicerone::UninstallPackageOwningFileResponse response;
+  response.set_status(vm_tools::cicerone::UninstallPackageOwningFileResponse::
+                          BLOCKING_OPERATION_IN_PROGRESS);
+  fake_cicerone_client_->set_uninstall_package_owning_file_response(response);
+  crostini_manager()->UninstallPackageOwningFile(
+      kVmName, kContainerName, "emacs",
+      base::BindOnce(&CrostiniManagerTest::UninstallPackageOwningFileCallback,
+                     base::Unretained(this), run_loop()->QuitClosure(),
+                     CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE));
   run_loop()->Run();
 }
 

@@ -36,6 +36,11 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
         const vm_tools::cicerone::InstallLinuxPackageProgressSignal&
             signal) = 0;
 
+    // This is signaled from the container while a package is being uninstalled
+    // via UninstallPackageOwningFile.
+    virtual void OnUninstallPackageProgress(
+        const vm_tools::cicerone::UninstallPackageProgressSignal& signal) = 0;
+
     // OnLxdContainerCreated is signaled from Cicerone when the long running
     // creation of an Lxd container is complete.
     virtual void OnLxdContainerCreated(
@@ -75,6 +80,9 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   // This should be true prior to calling InstallLinuxPackage.
   virtual bool IsInstallLinuxPackageProgressSignalConnected() = 0;
 
+  // This should be true prior to calling UninstallPackageOwningFile.
+  virtual bool IsUninstallPackageProgressSignalConnected() = 0;
+
   // This should be true prior to calling CreateLxdContainer or
   // StartLxdContainer.
   virtual bool IsLxdContainerCreatedSignalConnected() = 0;
@@ -113,6 +121,13 @@ class CHROMEOS_EXPORT CiceroneClient : public DBusClient {
   virtual void InstallLinuxPackage(
       const vm_tools::cicerone::InstallLinuxPackageRequest& request,
       DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>
+          callback) = 0;
+
+  // Uninstalls the package that owns the indicated .desktop file.
+  // |callback| is called after the method call finishes.
+  virtual void UninstallPackageOwningFile(
+      const vm_tools::cicerone::UninstallPackageOwningFileRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::UninstallPackageOwningFileResponse>
           callback) = 0;
 
   // Creates a new Lxd Container.

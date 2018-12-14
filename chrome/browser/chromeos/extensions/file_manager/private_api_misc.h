@@ -399,8 +399,7 @@ class FileManagerPrivateInternalInstallLinuxPackageFunction
 
  private:
   ResponseAction Run() override;
-  void OnInstallLinuxPackage(crostini::CrostiniResult result,
-                             const std::string& failure_reason);
+  void OnInstallLinuxPackage(crostini::CrostiniResult result);
   DISALLOW_COPY_AND_ASSIGN(
       FileManagerPrivateInternalInstallLinuxPackageFunction);
 };

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/optional.h"
@@ -107,6 +108,9 @@ void ShowCrostiniInstallerView(Profile* profile, CrostiniUISurface ui_surface);
 // Shows the Crostini Uninstaller dialog.
 void ShowCrostiniUninstallerView(Profile* profile,
                                  CrostiniUISurface ui_surface);
+// Shows the Crostini App Uninstaller dialog.
+void ShowCrostiniAppUninstallerView(Profile* profile,
+                                    const std::string& app_id);
 // Shows the Crostini Upgrade dialog.
 void ShowCrostiniUpgradeView(Profile* profile, CrostiniUISurface ui_surface);
 
