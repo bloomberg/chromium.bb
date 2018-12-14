@@ -107,7 +107,7 @@ class MemoryCacheTest : public testing::Test {
     // Save the global memory cache to restore it upon teardown.
     global_memory_cache_ = ReplaceMemoryCacheForTesting(
         MemoryCache::Create(platform_->test_task_runner()));
-    fetcher_ = ResourceFetcher::Create(
+    fetcher_ = MakeGarbageCollected<ResourceFetcher>(
         MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource));
   }
 

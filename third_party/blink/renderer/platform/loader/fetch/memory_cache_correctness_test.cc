@@ -119,7 +119,7 @@ class MemoryCacheCorrectnessTest : public testing::Test {
     security_origin_ = SecurityOrigin::CreateUniqueOpaque();
     context->SetSecurityOrigin(security_origin_);
 
-    fetcher_ = ResourceFetcher::Create(context);
+    fetcher_ = MakeGarbageCollected<ResourceFetcher>(context);
   }
   void TearDown() override {
     GetMemoryCache()->EvictResources();

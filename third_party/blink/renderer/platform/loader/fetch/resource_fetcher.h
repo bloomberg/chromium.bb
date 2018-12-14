@@ -74,10 +74,6 @@ class PLATFORM_EXPORT ResourceFetcher
   USING_PRE_FINALIZER(ResourceFetcher, ClearPreloads);
 
  public:
-  static ResourceFetcher* Create(FetchContext* context) {
-    return MakeGarbageCollected<ResourceFetcher>(context);
-  }
-
   ResourceFetcher(FetchContext*);
   virtual ~ResourceFetcher();
   virtual void Trace(blink::Visitor*);
