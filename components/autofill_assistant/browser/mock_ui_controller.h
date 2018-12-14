@@ -72,6 +72,7 @@ class MockUiController : public UiController {
                void(bool enabled, const std::vector<RectF>& areas));
   MOCK_CONST_METHOD0(GetDebugContext, std::string());
   MOCK_CONST_METHOD0(Terminate, bool());
+  MOCK_METHOD0(ExpandBottomSheet, void());
 };
 
 }  // namespace autofill_assistant

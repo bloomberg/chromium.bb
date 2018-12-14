@@ -66,6 +66,7 @@ class UiControllerAndroid : public UiController,
   void UpdateTouchableArea(bool enabled,
                            const std::vector<RectF>& areas) override;
   std::string GetDebugContext() const override;
+  void ExpandBottomSheet() override;
 
   // Overrides Client:
   std::string GetApiKey() override;

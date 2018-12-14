@@ -460,6 +460,11 @@ void UiControllerAndroid::UpdateTouchableArea(bool enabled,
       base::android::ToJavaFloatArray(env, flattened));
 }
 
+void UiControllerAndroid::ExpandBottomSheet() {
+  Java_AutofillAssistantUiController_expandBottomSheet(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+}
+
 std::string UiControllerAndroid::GetDebugContext() const {
   return ui_delegate_->GetDebugContext();
 }

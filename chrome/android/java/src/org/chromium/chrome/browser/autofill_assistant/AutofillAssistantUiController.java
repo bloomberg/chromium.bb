@@ -414,6 +414,11 @@ public class AutofillAssistantUiController extends AbstractAutofillAssistantUiCo
         AccountManagerFacade.get().invalidateAuthToken(accessToken);
     }
 
+    @CalledByNative
+    private void expandBottomSheet() {
+        mUiDelegateHolder.performUiOperation(AutofillAssistantUiDelegate::expandBottomSheet);
+    }
+
     /** Choose an account to authenticate as for making RPCs to the backend. */
     private void chooseAccountAsync(@Nullable String accountFromParameter, Bundle extras) {
         AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {

@@ -134,6 +134,9 @@ class UiController {
   // when analyzing feedback forms and for debugging in general.
   virtual std::string GetDebugContext() const = 0;
 
+  // Force the bottom sheet to be in the expanded state.
+  virtual void ExpandBottomSheet() = 0;
+
  protected:
   UiController() = default;
 };
