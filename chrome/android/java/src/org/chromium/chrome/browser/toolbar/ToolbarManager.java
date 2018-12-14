@@ -736,6 +736,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mLoadProgressSimulator = new LoadProgressSimulator(this);
 
         mToolbar.setTabCountProvider(mTabCountProvider);
+        mToolbar.setIncognitoStateProvider(mIncognitoStateProvider);
     }
 
     /**

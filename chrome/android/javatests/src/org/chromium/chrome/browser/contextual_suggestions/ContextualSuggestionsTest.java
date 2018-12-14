@@ -588,29 +588,6 @@ public class ContextualSuggestionsTest {
     @MediumTest
     @Feature({"ContextualSuggestions"})
     @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)
-    public void testToolbarButton_ToggleTabSwitcher() throws Exception {
-        View toolbarButton = getToolbarButton();
-
-        assertEquals(
-                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
-
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivityTestRule.getActivity().getLayoutManager().showOverview(false); });
-
-        assertEquals("Toolbar button should be invisible", View.INVISIBLE,
-                toolbarButton.getVisibility());
-
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivityTestRule.getActivity().getLayoutManager().hideOverview(false); });
-
-        assertEquals(
-                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"ContextualSuggestions"})
-    @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)
     public void testToolbarButton_SwitchTabs() throws Exception {
         View toolbarButton = getToolbarButton();
 
@@ -639,8 +616,8 @@ public class ContextualSuggestionsTest {
     public void testToolbarButton_ResponseInTabSwitcher() throws Exception {
         View toolbarButton = getToolbarButton();
 
-        assertEquals(
-                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+        assertEquals("Toolbar button should be visible before resetting suggestions", View.VISIBLE,
+                toolbarButton.getVisibility());
 
         // Simulate suggestions being cleared.
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -665,14 +642,14 @@ public class ContextualSuggestionsTest {
             }
         });
 
-        assertEquals("Toolbar button should be invisible", View.INVISIBLE,
+        assertEquals("Toolbar button should be visible after response received", View.VISIBLE,
                 toolbarButton.getVisibility());
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().getLayoutManager().hideOverview(false); });
 
-        assertEquals(
-                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+        assertEquals("Toolbar button should still be visible after exiting tab switcher",
+                View.VISIBLE, toolbarButton.getVisibility());
     }
 
     @Test

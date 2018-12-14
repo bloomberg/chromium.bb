@@ -100,7 +100,6 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
                         !DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
                         && FeatureUtilities.shouldInflateToolbarOnBackgroundThread());
                 toolbarStub.inflate();
-
             } else {
                 ViewStub toolbarStub = (ViewStub) viewStub;
                 toolbarStub.setLayoutResource(toolbarLayoutId);

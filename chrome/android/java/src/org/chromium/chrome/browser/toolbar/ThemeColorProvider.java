@@ -18,7 +18,7 @@ public interface ThemeColorProvider {
     }
 
     /**
-     * @param observer Add an observer that will have events broadcast to.
+     * @param observer An observer to be notified of theme color changes.
      */
     void addObserver(ThemeColorObserver observer);
 

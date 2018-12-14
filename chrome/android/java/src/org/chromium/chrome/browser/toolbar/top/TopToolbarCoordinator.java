@@ -14,6 +14,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -21,6 +22,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibil
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -33,8 +35,16 @@ import org.chromium.ui.AsyncViewProvider;
  * A coordinator for the top toolbar component.
  */
 public class TopToolbarCoordinator implements Toolbar {
+    static final int TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS = 200;
+
     private final AsyncViewProvider<ToolbarLayout> mToolbarProvider;
     private @Nullable ToolbarLayout mToolbarLayout;
+
+    /**
+     * The coordinator for the tab switcher mode toolbar (phones only). This will be lazily created
+     * after ToolbarLayout is inflated.
+     */
+    private @Nullable TabSwitcherModeTTCoordinatorPhone mTabSwitcherModeCoordinatorPhone;
 
     private HomepageManager.HomepageStateListener mHomepageStateListener =
             new HomepageManager.HomepageStateListener() {
@@ -58,6 +68,11 @@ public class TopToolbarCoordinator implements Toolbar {
         mToolbarProvider = toolbarProvider;
         mToolbarProvider.whenLoaded((toolbar) -> {
             mToolbarLayout = toolbar;
+            if (mToolbarLayout instanceof ToolbarPhone) {
+                mTabSwitcherModeCoordinatorPhone = new TabSwitcherModeTTCoordinatorPhone(
+                        controlContainer.getRootView().findViewById(
+                                R.id.tab_switcher_toolbar_stub));
+            }
             controlContainer.setToolbar(this);
             HomepageManager.getInstance().addListener(mHomepageStateListener);
         });
@@ -72,6 +87,9 @@ public class TopToolbarCoordinator implements Toolbar {
     public void initialize(ToolbarDataProvider toolbarDataProvider,
             ToolbarTabController tabController, AppMenuButtonHelper appMenuButtonHelper) {
         mToolbarLayout.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setAppMenuButtonHelper(appMenuButtonHelper);
+        }
     }
 
     /**
@@ -92,12 +110,17 @@ public class TopToolbarCoordinator implements Toolbar {
             LayoutManager layoutManager, OnClickListener tabSwitcherClickHandler,
             OnClickListener newTabClickHandler, OnClickListener bookmarkClickHandler,
             OnClickListener customTabsBackClickHandler) {
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setOnTabSwitcherClickHandler(tabSwitcherClickHandler);
+            mTabSwitcherModeCoordinatorPhone.setOnNewTabClickHandler(newTabClickHandler);
+            mTabSwitcherModeCoordinatorPhone.setTabModelSelector(tabModelSelector);
+        }
+
         mToolbarLayout.setTabModelSelector(tabModelSelector);
         getLocationBar().updateVisualsForState();
         getLocationBar().setUrlToPageUrl();
         mToolbarLayout.setBrowserControlsVisibilityDelegate(controlsVisibilityDelegate);
         mToolbarLayout.setOnTabSwitcherClickHandler(tabSwitcherClickHandler);
-        mToolbarLayout.setOnNewTabClickHandler(newTabClickHandler);
         mToolbarLayout.setBookmarkClickHandler(bookmarkClickHandler);
         mToolbarLayout.setCustomTabCloseClickHandler(customTabsBackClickHandler);
         mToolbarLayout.setLayoutUpdateHost(layoutManager);
@@ -112,6 +135,9 @@ public class TopToolbarCoordinator implements Toolbar {
         if (mToolbarLayout != null) {
             HomepageManager.getInstance().removeListener(mHomepageStateListener);
             mToolbarProvider.destroy((toolbar) -> mToolbarLayout.destroy());
+        }
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.destroy();
         }
     }
 
@@ -240,8 +266,12 @@ public class TopToolbarCoordinator implements Toolbar {
      * @param enabled Whether or not accessibility is enabled.
      */
     public void onAccessibilityStatusChanged(boolean enabled) {
-        mToolbarProvider.whenLoaded(
-                (toolbar) -> mToolbarLayout.onAccessibilityStatusChanged(enabled));
+        mToolbarProvider.whenLoaded((toolbar) -> {
+            mToolbarLayout.onAccessibilityStatusChanged(enabled);
+            if (mTabSwitcherModeCoordinatorPhone != null) {
+                mTabSwitcherModeCoordinatorPhone.onAccessibilityStatusChanged(enabled);
+            }
+        });
     }
 
     /**
@@ -353,6 +383,9 @@ public class TopToolbarCoordinator implements Toolbar {
     public void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
         mToolbarLayout.setTabSwitcherMode(inTabSwitcherMode, showToolbar, delayAnimation);
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setTabSwitcherMode(inTabSwitcherMode);
+        }
     }
 
     /**
@@ -369,6 +402,18 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void setTabCountProvider(TabCountProvider tabCountProvider) {
         mToolbarLayout.setTabCountProvider(tabCountProvider);
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setTabCountProvider(tabCountProvider);
+        }
+    }
+
+    /**
+     * @param provider The provider used to determine incognito state.
+     */
+    public void setIncognitoStateProvider(IncognitoStateProvider provider) {
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setIncognitoStateProvider(provider);
+        }
     }
 
     /**
