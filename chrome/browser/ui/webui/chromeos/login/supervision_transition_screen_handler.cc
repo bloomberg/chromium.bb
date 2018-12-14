@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_prefs.h"
 #include "components/login/localized_values_builder.h"
@@ -90,6 +91,10 @@ void SupervisionTransitionScreenHandler::Show() {
           &SupervisionTransitionScreenHandler::OnSupervisionTransitionFinished,
           weak_factory_.GetWeakPtr()));
 
+  // Disable system tray, shutdown button and prevent login as guest when
+  // supervision transition screen is shown.
+  SystemTrayClient::Get()->SetPrimaryTrayEnabled(false);
+  LoginScreenClient::Get()->login_screen()->SetShutdownButtonEnabled(false);
   LoginScreenClient::Get()->login_screen()->SetAllowLoginAsGuest(false);
   LoginScreenClient::Get()->login_screen()->SetShowGuestButtonInOobe(false);
 
@@ -114,6 +119,9 @@ void SupervisionTransitionScreenHandler::Initialize() {
 
 void SupervisionTransitionScreenHandler::OnSupervisionTransitionFailed() {
   LOG(ERROR) << "Supervision transition failed; resetting ARC++ data.";
+  // Prevent ARC++ data removal below from triggering the success flow (since it
+  // will reset the supervision transition pref).
+  registrar_.RemoveAll();
   arc::ArcSessionManager::Get()->RequestArcDataRemoval();
   arc::ArcSessionManager::Get()->StopAndEnableArc();
   if (screen_) {
@@ -123,6 +131,12 @@ void SupervisionTransitionScreenHandler::OnSupervisionTransitionFailed() {
 }
 
 void SupervisionTransitionScreenHandler::OnSupervisionTransitionFinished() {
+  // This method is called both when supervision transition succeeds (observing
+  // pref changes) and when it fails ("OK" button from error screen, see
+  // RegisterMessages()). Once this screen exits, user session will be started,
+  // so there's no need to re-enable shutdown button from login screen, only the
+  // system tray.
+  SystemTrayClient::Get()->SetPrimaryTrayEnabled(true);
   if (screen_)
     screen_->OnSupervisionTransitionFinished();
 }

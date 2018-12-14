@@ -498,5 +498,26 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterAddButtonStatusChange) {
   EXPECT_TRUE(IsButtonEnabled(LoginShelfView::kAddUser));
 }
 
+TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterShutdownButtonStatusChange) {
+  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
+  EXPECT_TRUE(IsButtonEnabled(LoginShelfView::kShutdown));
+
+  login_shelf_view_->SetShutdownButtonEnabled(false /*enable_shutdown_button*/);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
+  EXPECT_FALSE(IsButtonEnabled(LoginShelfView::kShutdown));
+
+  login_shelf_view_->SetShutdownButtonEnabled(true /*enable_shutdown_button*/);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
+  EXPECT_TRUE(IsButtonEnabled(LoginShelfView::kShutdown));
+}
+
 }  // namespace
 }  // namespace ash

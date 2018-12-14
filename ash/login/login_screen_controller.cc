@@ -529,6 +529,13 @@ void LoginScreenController::SetAddUserButtonEnabled(bool enable) {
       ->SetAddUserButtonEnabled(enable);
 }
 
+void LoginScreenController::SetShutdownButtonEnabled(bool enable) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->SetShutdownButtonEnabled(enable);
+}
+
 void LoginScreenController::LaunchKioskApp(const std::string& app_id) {
   login_screen_client_->LaunchKioskApp(app_id);
 }

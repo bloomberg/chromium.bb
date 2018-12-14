@@ -208,6 +208,9 @@ interface LoginScreen {
   // Sets whether users can be added from the login screen.
   SetAddUserButtonEnabled(bool enable);
 
+  // Sets whether shutdown button is enabled in the login screen.
+  SetShutdownButtonEnabled(bool enable);
+
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.
   SetAllowLoginAsGuest(bool allow_guest);
