@@ -671,7 +671,7 @@ void BlinkTestController::CompositeAllFramesThen(
     return;
   }
   // Build the frame storage and depth first queue.
-  Node* root = BuildFrameTree(main_window_->web_contents()->GetAllFrames());
+  Node* root = BuildFrameTree(main_window_->web_contents());
   BuildDepthFirstQueue(root);
   // Now asynchronously run through the node queue.
   CompositeNodeQueueThen(std::move(callback));
@@ -684,8 +684,6 @@ void BlinkTestController::CompositeNodeQueueThen(
   // still valid before using it. To do that, grab the list of all frames
   // again, and make sure it contains the one we're about to composite.
   // See crbug.com/899465 for an example of this problem.
-  std::vector<RenderFrameHost*> current_frames(
-      main_window_->web_contents()->GetAllFrames());
   RenderFrameHost* next_node_host;
   do {
     if (composite_all_frames_node_queue_.empty()) {
@@ -695,9 +693,12 @@ void BlinkTestController::CompositeNodeQueueThen(
     }
     next_node_host =
         composite_all_frames_node_queue_.front()->render_frame_host;
+    GlobalFrameRoutingId next_node_id =
+        composite_all_frames_node_queue_.front()->render_frame_host_id;
     composite_all_frames_node_queue_.pop();
-    if (std::find(current_frames.begin(), current_frames.end(),
-                  next_node_host) == current_frames.end()) {
+    if (RenderFrameHost::FromID(next_node_id.child_id,
+                                next_node_id.frame_routing_id) !=
+        next_node_host) {
       next_node_host = nullptr;  // This one is now gone
     }
   } while (!next_node_host || !next_node_host->IsRenderFrameLive());
@@ -714,41 +715,68 @@ void BlinkTestController::BuildDepthFirstQueue(Node* node) {
 }
 
 BlinkTestController::Node* BlinkTestController::BuildFrameTree(
-    const std::vector<RenderFrameHost*>& frames) {
-  // Ensure we don't reallocate during tree construction.
-  composite_all_frames_node_storage_.reserve(frames.size());
-
+    WebContents* web_contents) {
   // Returns a Node for a given RenderFrameHost, or nullptr if doesn't exist.
   auto node_for_frame = [this](RenderFrameHost* rfh) {
     auto it = std::find_if(
         composite_all_frames_node_storage_.begin(),
         composite_all_frames_node_storage_.end(),
-        [rfh](const Node& node) { return node.render_frame_host == rfh; });
-    return it == composite_all_frames_node_storage_.end() ? nullptr : &*it;
+        [rfh](auto& node) { return node->render_frame_host == rfh; });
+    return it == composite_all_frames_node_storage_.end() ? nullptr : it->get();
   };
 
-  // Add all of the frames to storage.
-  for (auto* frame : frames) {
-    DCHECK(!node_for_frame(frame)) << "Frame seen multiple times.";
-    composite_all_frames_node_storage_.emplace_back(frame);
-  }
+  Node* outer_root = nullptr;
+  std::vector<WebContents*> all_web_contents(1, web_contents);
+  for (unsigned i = 0; i < all_web_contents.size(); i++) {
+    WebContents* contents = all_web_contents[i];
 
-  // Construct a tree rooted at |root|.
-  Node* root = nullptr;
-  for (auto* frame : frames) {
-    Node* node = node_for_frame(frame);
-    DCHECK(node);
-    if (!frame->GetParent()) {
-      DCHECK(!root) << "Multiple roots found.";
-      root = node;
-    } else {
-      Node* parent = node_for_frame(frame->GetParent());
-      DCHECK(parent);
-      parent->children.push_back(node);
+    //  Collect all live frames in contents.
+    std::vector<RenderFrameHost*> frames;
+    for (auto* frame : contents->GetAllFrames()) {
+      if (frame->IsRenderFrameLive())
+        frames.push_back(frame);
     }
+
+    // Add all of the frames to storage.
+    for (auto* frame : frames) {
+      DCHECK(!node_for_frame(frame)) << "Frame seen multiple times.";
+      composite_all_frames_node_storage_.emplace_back(
+          std::make_unique<Node>(frame));
+    }
+
+    // Construct a tree rooted at |root|.
+    Node* root = nullptr;
+    for (auto* frame : frames) {
+      Node* node = node_for_frame(frame);
+      DCHECK(node);
+      if (!frame->GetParent()) {
+        DCHECK(!root) << "Multiple roots found.";
+        root = node;
+      } else {
+        Node* parent = node_for_frame(frame->GetParent());
+        DCHECK(parent);
+        parent->children.push_back(node);
+      }
+    }
+    DCHECK(root) << "No root found.";
+
+    // Connect the inner root to the outer node.
+    if (auto* outer_frame = contents->GetOuterWebContentsFrame()) {
+      Node* parent = node_for_frame(outer_frame);
+      DCHECK(parent);
+      parent->children.push_back(root);
+    } else {
+      DCHECK(!outer_root) << "Multiple outer roots found.";
+      outer_root = root;
+    }
+
+    // Traverse all inner contents.
+    for (auto* inner_contents : contents->GetInnerWebContents())
+      all_web_contents.push_back(inner_contents);
   }
-  DCHECK(root) << "No root found.";
-  return root;
+  DCHECK(outer_root) << "No outer root found";
+
+  return outer_root;
 }
 
 bool BlinkTestController::IsMainWindow(WebContents* web_contents) const {
@@ -1371,7 +1399,8 @@ void BlinkTestController::HandleWebTestControlError(
 
 BlinkTestController::Node::Node() = default;
 BlinkTestController::Node::Node(RenderFrameHost* host)
-    : render_frame_host(host) {}
+    : render_frame_host(host),
+      render_frame_host_id(host->GetProcess()->GetID(), host->GetRoutingID()) {}
 BlinkTestController::Node::Node(Node&& other) = default;
 BlinkTestController::Node::~Node() = default;
 

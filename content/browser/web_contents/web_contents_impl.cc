@@ -236,9 +236,8 @@ void ResetAccessibility(RenderFrameHost* rfh) {
 }
 
 // Helper for GetInnerWebContents().
-bool GetInnerWebContentsHelper(
-    std::vector<WebContentsImpl*>* all_guest_contents,
-    WebContents* guest_contents) {
+bool GetInnerWebContentsHelper(std::vector<WebContents*>* all_guest_contents,
+                               WebContents* guest_contents) {
   auto* web_contents_impl = static_cast<WebContentsImpl*>(guest_contents);
   if (web_contents_impl->GetBrowserPluginGuest()->attached() &&
       !GuestMode::IsCrossProcessFrameGuest(web_contents_impl)) {
@@ -1219,25 +1218,12 @@ WebContentsBindingSet* WebContentsImpl::GetBindingSet(
   return it->second;
 }
 
-std::vector<WebContentsImpl*> WebContentsImpl::GetInnerWebContents() {
-  std::vector<WebContentsImpl*> all_inner_contents;
-  if (browser_plugin_embedder_) {
-    GetBrowserContext()->GetGuestManager()->ForEachGuest(
-        this,
-        base::BindRepeating(&GetInnerWebContentsHelper, &all_inner_contents));
-  }
-  const auto& inner_contents = node_.GetInnerWebContents();
-  all_inner_contents.insert(all_inner_contents.end(), inner_contents.begin(),
-                            inner_contents.end());
-  return all_inner_contents;
-}
-
 std::vector<WebContentsImpl*> WebContentsImpl::GetWebContentsAndAllInner() {
   std::vector<WebContentsImpl*> all_contents(1, this);
 
   for (size_t i = 0; i != all_contents.size(); ++i) {
     for (auto* inner_contents : all_contents[i]->GetInnerWebContents()) {
-      all_contents.push_back(inner_contents);
+      all_contents.push_back(static_cast<WebContentsImpl*>(inner_contents));
     }
   }
 
@@ -5433,6 +5419,19 @@ void WebContentsImpl::RemoveBrowserPluginEmbedder() {
     browser_plugin_embedder_.reset();
 }
 
+RenderFrameHostImpl* WebContentsImpl::GetOuterWebContentsFrame() {
+  if (GetOuterDelegateFrameTreeNodeId() ==
+      FrameTreeNode::kFrameTreeNodeInvalidId) {
+    return nullptr;
+  }
+
+  FrameTreeNode* outer_node =
+      FrameTreeNode::GloballyFindByID(GetOuterDelegateFrameTreeNodeId());
+  // The outer node should be in the outer WebContents.
+  DCHECK_EQ(outer_node->frame_tree(), GetOuterWebContents()->GetFrameTree());
+  return outer_node->parent()->current_frame_host();
+}
+
 WebContentsImpl* WebContentsImpl::GetOuterWebContents() {
   if (GuestMode::IsCrossProcessFrameGuest(this))
     return node_.outer_web_contents();
@@ -5441,6 +5440,19 @@ WebContentsImpl* WebContentsImpl::GetOuterWebContents() {
     return browser_plugin_guest_->embedder_web_contents();
 
   return node_.outer_web_contents();
+}
+
+std::vector<WebContents*> WebContentsImpl::GetInnerWebContents() {
+  std::vector<WebContents*> all_inner_contents;
+  if (browser_plugin_embedder_) {
+    GetBrowserContext()->GetGuestManager()->ForEachGuest(
+        this,
+        base::BindRepeating(&GetInnerWebContentsHelper, &all_inner_contents));
+  }
+  const auto& inner_contents = node_.GetInnerWebContents();
+  all_inner_contents.insert(all_inner_contents.end(), inner_contents.begin(),
+                            inner_contents.end());
+  return all_inner_contents;
 }
 
 WebContentsImpl* WebContentsImpl::GetFocusedWebContents() {
@@ -6500,13 +6512,14 @@ FindRequestManager* WebContentsImpl::GetOrCreateFindRequestManager() {
 
   // Concurrent find sessions must not overlap, so destroy any existing
   // FindRequestManagers in any inner WebContentses.
-  for (WebContentsImpl* contents : GetWebContentsAndAllInner()) {
-    if (contents == this)
+  for (WebContents* contents : GetWebContentsAndAllInner()) {
+    auto* web_contents_impl = static_cast<WebContentsImpl*>(contents);
+    if (web_contents_impl == this)
       continue;
-    if (contents->find_request_manager_) {
-      contents->find_request_manager_->StopFinding(
-          content::STOP_FIND_ACTION_CLEAR_SELECTION);
-      contents->find_request_manager_.release();
+    if (web_contents_impl->find_request_manager_) {
+      web_contents_impl->find_request_manager_->StopFinding(
+          STOP_FIND_ACTION_CLEAR_SELECTION);
+      web_contents_impl->find_request_manager_.release();
     }
   }
 

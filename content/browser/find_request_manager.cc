@@ -39,7 +39,9 @@ std::vector<FrameTreeNode*> GetChildren(FrameTreeNode* node) {
     contents = WebContentsImpl::FromFrameTreeNode(node);
     if (node->IsMainFrame() && contents->GetBrowserPluginEmbedder()) {
       for (auto* inner_contents : contents->GetInnerWebContents()) {
-        children.push_back(inner_contents->GetMainFrame()->frame_tree_node());
+        children.push_back(static_cast<WebContentsImpl*>(inner_contents)
+                               ->GetMainFrame()
+                               ->frame_tree_node());
       }
     }
   }

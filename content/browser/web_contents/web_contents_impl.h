@@ -269,14 +269,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // frame. Otherwise, returns this WebContents.
   WebContentsImpl* GetFocusedWebContents();
 
-  // TODO(paulmeyer): Once GuestViews are no longer implemented as
-  // BrowserPluginGuests, frame traversal across WebContents should be moved to
-  // be handled by FrameTreeNode, and |GetInnerWebContents| and
-  // |GetWebContentsAndAllInner| can be removed.
-
-  // Returns a vector to the inner WebContents within this WebContents.
-  std::vector<WebContentsImpl*> GetInnerWebContents();
-
   // Returns a vector containing this WebContents and all inner WebContents
   // within it (recursively).
   std::vector<WebContentsImpl*> GetWebContentsAndAllInner();
@@ -369,8 +361,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void AttachToOuterWebContentsFrame(
       std::unique_ptr<WebContents> current_web_contents,
       RenderFrameHost* outer_contents_frame) override;
+  RenderFrameHostImpl* GetOuterWebContentsFrame() override;
   WebContentsImpl* GetOuterWebContents() override;
   WebContentsImpl* GetOutermostWebContents() override;
+  std::vector<WebContents*> GetInnerWebContents() override;
   void DidChangeVisibleSecurityState() override;
   void NotifyPreferencesChanged() override;
 
