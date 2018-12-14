@@ -387,10 +387,8 @@ void JumpList::ProcessTopSitesNotification() {
   scoped_refptr<history::TopSites> top_sites =
       TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
-    top_sites->GetMostVisitedURLs(
-        base::Bind(&JumpList::OnMostVisitedURLsAvailable,
-                   weak_ptr_factory_.GetWeakPtr()),
-        false);
+    top_sites->GetMostVisitedURLs(base::Bind(
+        &JumpList::OnMostVisitedURLsAvailable, weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

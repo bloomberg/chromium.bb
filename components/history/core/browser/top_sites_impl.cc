@@ -41,24 +41,12 @@ namespace {
 
 void RunOrPostGetMostVisitedURLsCallback(
     base::TaskRunner* task_runner,
-    bool include_forced_urls,
     const TopSitesImpl::GetMostVisitedURLsCallback& callback,
-    const MostVisitedURLList& all_urls,
-    const MostVisitedURLList& nonforced_urls) {
-  const MostVisitedURLList& urls =
-      include_forced_urls ? all_urls : nonforced_urls;
+    const MostVisitedURLList& urls) {
   if (task_runner->RunsTasksInCurrentSequence())
     callback.Run(urls);
   else
     task_runner->PostTask(FROM_HERE, base::BindOnce(callback, urls));
-}
-
-// Compares two MostVisitedURL having a non-null |last_forced_time|.
-bool ForcedURLComparator(const MostVisitedURL& first,
-                         const MostVisitedURL& second) {
-  DCHECK(!first.last_forced_time.is_null() &&
-         !second.last_forced_time.is_null());
-  return first.last_forced_time < second.last_forced_time;
 }
 
 // Checks if the titles stored in |old_list| and |new_list| have changes.
@@ -131,27 +119,19 @@ void TopSitesImpl::Init(const base::FilePath& db_name) {
 
 // WARNING: this function may be invoked on any thread.
 void TopSitesImpl::GetMostVisitedURLs(
-    const GetMostVisitedURLsCallback& callback,
-    bool include_forced_urls) {
+    const GetMostVisitedURLsCallback& callback) {
   MostVisitedURLList filtered_urls;
   {
     base::AutoLock lock(lock_);
     if (!loaded_) {
       // A request came in before we finished loading. Store the callback and
       // we'll run it on current thread when we finish loading.
-      pending_callbacks_.push_back(
-          base::Bind(&RunOrPostGetMostVisitedURLsCallback,
-                     base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
-                     include_forced_urls, callback));
+      pending_callbacks_.push_back(base::Bind(
+          &RunOrPostGetMostVisitedURLsCallback,
+          base::RetainedRef(base::ThreadTaskRunnerHandle::Get()), callback));
       return;
     }
-    if (include_forced_urls) {
-      filtered_urls = thread_safe_cache_->top_sites();
-    } else {
-      filtered_urls.assign(thread_safe_cache_->top_sites().begin() +
-                              thread_safe_cache_->GetNumForcedURLs(),
-                           thread_safe_cache_->top_sites().end());
-    }
+    filtered_urls = thread_safe_cache_->top_sites();
   }
   callback.Run(filtered_urls);
 }
@@ -224,12 +204,8 @@ bool TopSitesImpl::IsKnownURL(const GURL& url) {
   return loaded_ && cache_->IsKnownURL(url);
 }
 
-bool TopSitesImpl::IsNonForcedFull() {
-  return loaded_ && cache_->GetNumNonForcedURLs() >= kNonForcedTopSitesNumber;
-}
-
-bool TopSitesImpl::IsForcedFull() {
-  return loaded_ && cache_->GetNumForcedURLs() >= kForcedTopSitesNumber;
+bool TopSitesImpl::IsFull() {
+  return loaded_ && cache_->GetNumURLs() >= kTopSitesNumber;
 }
 
 PrepopulatedPageList TopSitesImpl::GetPrepopulatedPages() {
@@ -238,46 +214,6 @@ PrepopulatedPageList TopSitesImpl::GetPrepopulatedPages() {
 
 bool TopSitesImpl::loaded() const {
   return loaded_;
-}
-
-bool TopSitesImpl::AddForcedURL(const GURL& url, const base::Time& time) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!loaded_) {
-    // Optimally we could cache this and apply it after the load completes, but
-    // in practice it's not an issue since AddForcedURL will be called again
-    // next time the user hits the NTP.
-    return false;
-  }
-
-  size_t num_forced = cache_->GetNumForcedURLs();
-  MostVisitedURLList new_list(cache_->top_sites());
-  MostVisitedURL new_url;
-
-  if (cache_->IsKnownURL(url)) {
-    size_t index = cache_->GetURLIndex(url);
-    // Do nothing if we currently have that URL as non-forced.
-    if (new_list[index].last_forced_time.is_null())
-      return false;
-
-    // Update the |last_forced_time| of the already existing URL. Delete it and
-    // reinsert it at the right location.
-    new_url = new_list[index];
-    new_list.erase(new_list.begin() + index);
-    num_forced--;
-  } else {
-    new_url.url = url;
-    new_url.redirects.push_back(url);
-  }
-  new_url.last_forced_time = time;
-  // Add forced URLs and sort. Added to the end of the list of forced URLs
-  // since this is almost always where it needs to go, unless the user's local
-  // clock is fiddled with.
-  auto mid = new_list.begin() + num_forced;
-  mid = new_list.insert(mid, new_url);
-  std::inplace_merge(new_list.begin(), mid, mid + 1, ForcedURLComparator);
-  SetTopSites(new_list, CALL_LOCATION_FROM_FORCED_URLS);
-  return true;
 }
 
 void TopSitesImpl::OnNavigationCommitted(const GURL& url) {
@@ -328,28 +264,17 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
   // Add all the old URLs for quick lookup. This maps URLs to the corresponding
   // index in the input.
   std::map<GURL, size_t> all_old_urls;
-  size_t num_old_forced = 0;
-  for (size_t i = 0; i < old_list.size(); i++) {
-    if (!old_list[i].last_forced_time.is_null())
-      num_old_forced++;
-    DCHECK(old_list[i].last_forced_time.is_null() || i < num_old_forced)
-        << "Forced URLs must all appear before non-forced URLs.";
+  for (size_t i = 0; i < old_list.size(); i++)
     all_old_urls[old_list[i].url] = i;
-  }
 
   // Check all the URLs in the new set to see which ones are new or just moved.
   // When we find a match in the old set, we'll reset its index to our special
   // marker. This allows us to quickly identify the deleted ones in a later
   // pass.
   const size_t kAlreadyFoundMarker = static_cast<size_t>(-1);
-  int rank = -1;  // Forced URLs have a rank of -1.
+  int rank = -1;
   for (size_t i = 0; i < new_list.size(); i++) {
-    // Increase the rank if we're going through forced URLs. This works because
-    // non-forced URLs all come after forced URLs.
-    if (new_list[i].last_forced_time.is_null())
-      rank++;
-    DCHECK(new_list[i].last_forced_time.is_null() == (rank != -1))
-        << "Forced URLs must all appear before non-forced URLs.";
+    rank++;
     auto found = all_old_urls.find(new_list[i].url);
     if (found == all_old_urls.end()) {
       MostVisitedURLWithRank added;
@@ -359,11 +284,8 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
     } else {
       DCHECK(found->second != kAlreadyFoundMarker)
           << "Same URL appears twice in the new list.";
-      int old_rank = found->second >= num_old_forced ?
-          found->second - num_old_forced : -1;
-      if (old_rank != rank ||
-          old_list[found->second].last_forced_time !=
-              new_list[i].last_forced_time) {
+      int old_rank = found->second;
+      if (old_rank != rank) {
         MostVisitedURLWithRank moved;
         moved.url = new_list[i];
         moved.rank = rank;
@@ -392,57 +314,16 @@ int TopSitesImpl::GetRedirectDistanceForURL(const MostVisitedURL& most_visited,
   return 0;
 }
 
-bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls,
-                                        size_t num_forced_urls) const {
+bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls) const {
   bool added = false;
   for (const auto& prepopulated_page : prepopulated_pages_) {
-    if (urls->size() - num_forced_urls < kNonForcedTopSitesNumber &&
+    if (urls->size() < kTopSitesNumber &&
         IndexOf(*urls, prepopulated_page.most_visited.url) == -1) {
       urls->push_back(prepopulated_page.most_visited);
       added = true;
     }
   }
   return added;
-}
-
-size_t TopSitesImpl::MergeCachedForcedURLs(MostVisitedURLList* new_list) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Add all the new URLs for quick lookup. Take that opportunity to count the
-  // number of forced URLs in |new_list|.
-  std::set<GURL> all_new_urls;
-  size_t num_forced = 0;
-  for (size_t i = 0; i < new_list->size(); ++i) {
-    for (size_t j = 0; j < (*new_list)[i].redirects.size(); j++)
-      all_new_urls.insert((*new_list)[i].redirects[j]);
-
-    if (!(*new_list)[i].last_forced_time.is_null())
-      ++num_forced;
-  }
-
-  // Keep the forced URLs from |cache_| that are not found in |new_list|.
-  MostVisitedURLList filtered_forced_urls;
-  for (size_t i = 0; i < cache_->GetNumForcedURLs(); ++i) {
-    if (all_new_urls.find(cache_->top_sites()[i].url) == all_new_urls.end())
-      filtered_forced_urls.push_back(cache_->top_sites()[i]);
-  }
-  num_forced += filtered_forced_urls.size();
-
-  // Prepend forced URLs and sort in order of ascending |last_forced_time|.
-  new_list->insert(new_list->begin(), filtered_forced_urls.begin(),
-                   filtered_forced_urls.end());
-  std::inplace_merge(
-      new_list->begin(), new_list->begin() + filtered_forced_urls.size(),
-      new_list->begin() + num_forced, ForcedURLComparator);
-
-  // Drop older forced URLs if the list overflows. Since forced URLs are always
-  // sort in increasing order of |last_forced_time|, drop the first ones.
-  if (num_forced > kForcedTopSitesNumber) {
-    new_list->erase(new_list->begin(),
-                    new_list->begin() + (num_forced - kForcedTopSitesNumber));
-    num_forced = kForcedTopSitesNumber;
-  }
-
-  return num_forced;
 }
 
 void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
@@ -454,21 +335,12 @@ void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
   UMA_HISTOGRAM_BOOLEAN("TopSites.NumberOfApplyBlacklist", true);
   UMA_HISTOGRAM_COUNTS_100("TopSites.NumberOfBlacklistedItems",
       (blacklist ? blacklist->size() : 0));
-  size_t num_non_forced_urls = 0;
-  size_t num_forced_urls = 0;
+  size_t num_urls = 0;
   for (size_t i = 0; i < urls.size(); ++i) {
     if (!IsBlacklisted(urls[i].url)) {
-      if (urls[i].last_forced_time.is_null()) {
-        // Non-forced URL.
-        if (num_non_forced_urls >= kNonForcedTopSitesNumber)
-          continue;
-        num_non_forced_urls++;
-      } else {
-        // Forced URL.
-        if (num_forced_urls >= kForcedTopSitesNumber)
-          continue;
-        num_forced_urls++;
-      }
+      if (num_urls >= kTopSitesNumber)
+        break;
+      num_urls++;
       out->push_back(urls[i]);
     }
   }
@@ -486,8 +358,7 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   MostVisitedURLList top_sites(new_top_sites);
-  size_t num_forced_urls = MergeCachedForcedURLs(&top_sites);
-  AddPrepopulatedPages(&top_sites, num_forced_urls);
+  AddPrepopulatedPages(&top_sites);
 
   TopSitesDelta delta;
   DiffMostVisited(cache_->top_sites(), top_sites, &delta);
@@ -536,14 +407,13 @@ int TopSitesImpl::num_results_to_request_from_history() const {
 
   const base::DictionaryValue* blacklist =
       pref_service_->GetDictionary(kMostVisitedURLsBlacklist);
-  return kNonForcedTopSitesNumber + (blacklist ? blacklist->size() : 0);
+  return kTopSitesNumber + (blacklist ? blacklist->size() : 0);
 }
 
 void TopSitesImpl::MoveStateToLoaded() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  MostVisitedURLList filtered_urls_all;
-  MostVisitedURLList filtered_urls_nonforced;
+  MostVisitedURLList urls;
   PendingCallbacks pending_callbacks;
   {
     base::AutoLock lock(lock_);
@@ -555,18 +425,13 @@ void TopSitesImpl::MoveStateToLoaded() {
     // Now that we're loaded we can service the queued up callbacks. Copy them
     // here and service them outside the lock.
     if (!pending_callbacks_.empty()) {
-      // We always filter out forced URLs because callers of GetMostVisitedURLs
-      // are not interested in them.
-      filtered_urls_all = thread_safe_cache_->top_sites();
-      filtered_urls_nonforced.assign(thread_safe_cache_->top_sites().begin() +
-                                       thread_safe_cache_->GetNumForcedURLs(),
-                                     thread_safe_cache_->top_sites().end());
+      urls = thread_safe_cache_->top_sites();
       pending_callbacks.swap(pending_callbacks_);
     }
   }
 
   for (size_t i = 0; i < pending_callbacks.size(); i++)
-    pending_callbacks[i].Run(filtered_urls_all, filtered_urls_nonforced);
+    pending_callbacks[i].Run(urls);
 
   if (history_service_)
     history_service_observer_.Add(history_service_);

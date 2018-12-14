@@ -128,18 +128,6 @@ TEST_F(TopSitesCacheTest, IsKnownUrl) {
   EXPECT_FALSE(cache_.IsKnownURL(GURL("http://www.youtube.com/a")));
 }
 
-// This test ensures forced URLs behave in the expected way.
-TEST_F(TopSitesCacheTest, CacheForcedURLs) {
-  // Forced URLs must always appear at the beginning of the list.
-  BuildTopSites(kTopSitesSpecBasic, arraysize(kTopSitesSpecBasic));
-  top_sites_[0].last_forced_time = base::Time::FromJsTime(1000);
-  top_sites_[1].last_forced_time =  base::Time::FromJsTime(2000);
-  cache_.SetTopSites(top_sites_);
-
-  EXPECT_EQ(2u, cache_.GetNumForcedURLs());
-  EXPECT_EQ(2u, cache_.GetNumNonForcedURLs());
-}
-
 }  // namespace
 
 }  // namespace history

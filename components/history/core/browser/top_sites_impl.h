@@ -54,11 +54,8 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // callable multiple time and during the whole lifetime of TopSitesImpl.
   using CanAddURLToHistoryFn = base::Callback<bool(const GURL&)>;
 
-  // How many non-forced top sites to store in the cache.
-  static constexpr size_t kNonForcedTopSitesNumber = 10;
-
-  // How many forced top sites to store in the cache.
-  static constexpr size_t kForcedTopSitesNumber = 10;
+  // How many top sites to store in the cache.
+  static constexpr size_t kTopSitesNumber = 10;
 
   TopSitesImpl(PrefService* pref_service,
                HistoryService* history_service,
@@ -70,8 +67,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   void Init(const base::FilePath& db_name);
 
   // TopSites implementation.
-  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback,
-                          bool include_forced_urls) override;
+  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback) override;
   void SyncWithHistory() override;
   bool HasBlacklistedItems() const override;
   void AddBlacklistedURL(const GURL& url) override;
@@ -79,11 +75,9 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   bool IsBlacklisted(const GURL& url) override;
   void ClearBlacklistedURLs() override;
   bool IsKnownURL(const GURL& url) override;
-  bool IsNonForcedFull() override;
-  bool IsForcedFull() override;
+  bool IsFull() override;
   PrepopulatedPageList GetPrepopulatedPages() override;
   bool loaded() const override;
-  bool AddForcedURL(const GURL& url, const base::Time& time) override;
   void OnNavigationCommitted(const GURL& url) override;
 
   // RefcountedKeyedService:
@@ -106,8 +100,6 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   enum CallLocation {
     // SetTopSites is called from function OnGotMostVisitedURLs.
     CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_URLS,
-    // SetTopSites is called from AddForcedURLs.
-    CALL_LOCATION_FROM_FORCED_URLS,
     // All other situations.
     CALL_LOCATION_FROM_OTHER_PLACES,
   };
@@ -116,8 +108,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   FRIEND_TEST_ALL_PREFIXES(TopSitesImplTest, DiffMostVisited);
   FRIEND_TEST_ALL_PREFIXES(TopSitesImplTest, DiffMostVisitedWithForced);
 
-  typedef base::Callback<void(const MostVisitedURLList&,
-                              const MostVisitedURLList&)> PendingCallback;
+  typedef base::Callback<void(const MostVisitedURLList&)> PendingCallback;
 
   typedef std::vector<PendingCallback> PendingCallbacks;
 
@@ -128,14 +119,12 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   // Generates the diff of things that happened between "old" and "new."
   //
-  // This treats forced URLs separately than non-forced URLs.
+  // The URLs that are in "new" but not "old" will be have their index from
+  // "new" placed in |added_urls|. The URLs that are in "old" but not "new" will
+  // have their index from "old" placed in |deleted_urls|.
   //
-  // The URLs that are in "new" but not "old" will be have their index into
-  // "new" put in |added_urls|. The non-forced URLs that are in "old" but not
-  // "new" will have their index into "old" put into |deleted_urls|.
-  //
-  // URLs appearing in both old and new lists but having different indices will
-  // have their index into "new" be put into |moved_urls|.
+  // URLs that appear in both lists but have different indices will have their
+  // index from "new" placed in |moved_urls|.
   static void DiffMostVisited(const MostVisitedURLList& old_list,
                               const MostVisitedURLList& new_list,
                               TopSitesDelta* delta);
@@ -147,31 +136,18 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
                                        const GURL& url);
 
   // Adds prepopulated pages to TopSites. Returns true if any pages were added.
-  bool AddPrepopulatedPages(MostVisitedURLList* urls,
-                            size_t num_forced_urls) const;
-
-  // Adds all the forced URLs from |cache_| into |new_list|, making sure not to
-  // add any URL that's already in |new_list|'s non-forced URLs. The forced URLs
-  // in |cache_| and |new_list| are assumed to appear at the front of the list
-  // and be sorted in increasing |last_forced_time|. This will still be true
-  // after the call. If the list of forced URLs overflows the older ones are
-  // dropped. Returns the number of forced URLs after the merge.
-  size_t MergeCachedForcedURLs(MostVisitedURLList* new_list) const;
+  bool AddPrepopulatedPages(MostVisitedURLList* urls) const;
 
   // Takes |urls|, produces it's copy in |out| after removing blacklisted URLs.
-  // Also ensures we respect the maximum number of forced URLs and non-forced
-  // URLs.
+  // Also ensures we respect the maximum number TopSites URLs.
   void ApplyBlacklist(const MostVisitedURLList& urls, MostVisitedURLList* out);
 
   // Returns an MD5 hash of the URL. Hashing is required for blacklisted URLs.
   static std::string GetURLHash(const GURL& url);
 
-  // Updates URLs in |cache_| and the db (in the background).
-  // The non-forced URLs in |new_top_sites| replace those in |cache_|.
-  // The forced URLs of |new_top_sites| are merged with those in |cache_|,
-  // if the list of forced URLs overflows, the oldest ones are dropped.
-  // All mutations to cache_ *must* go through this. Should
-  // be called from the UI thread.
+  // Updates URLs in |cache_| and the db (in the background). The URLs in
+  // |new_top_sites| replace those in |cache_|. All mutations to cache_ *must*
+  // go through this. Should be called from the UI thread.
   void SetTopSites(const MostVisitedURLList& new_top_sites,
                    const CallLocation location);
 

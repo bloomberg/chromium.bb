@@ -38,8 +38,7 @@ class FakeEmptyTopSites : public history::TopSites {
   }
 
   // history::TopSites:
-  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback,
-                          bool include_forced_urls) override;
+  void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback) override;
   void SyncWithHistory() override {}
   bool HasBlacklistedItems() const override {
     return false;
@@ -53,20 +52,12 @@ class FakeEmptyTopSites : public history::TopSites {
   bool IsKnownURL(const GURL& url) override {
     return false;
   }
-  bool IsNonForcedFull() override {
-    return false;
-  }
-  bool IsForcedFull() override {
-    return false;
-  }
+  bool IsFull() override { return false; }
   bool loaded() const override {
     return false;
   }
   history::PrepopulatedPageList GetPrepopulatedPages() override {
     return history::PrepopulatedPageList();
-  }
-  bool AddForcedURL(const GURL& url, const base::Time& time) override {
-    return false;
   }
   void OnNavigationCommitted(const GURL& url) override {}
 
@@ -92,8 +83,7 @@ class FakeEmptyTopSites : public history::TopSites {
 };
 
 void FakeEmptyTopSites::GetMostVisitedURLs(
-    const GetMostVisitedURLsCallback& callback,
-    bool include_forced_urls)  {
+    const GetMostVisitedURLsCallback& callback) {
   callbacks.push_back(callback);
 }
 

@@ -414,8 +414,7 @@ void MostVisitedSites::InitiateTopSitesQuery() {
     return;  // Ongoing query.
   top_sites_->GetMostVisitedURLs(
       base::Bind(&MostVisitedSites::OnMostVisitedURLsAvailable,
-                 top_sites_weak_ptr_factory_.GetWeakPtr()),
-      false);
+                 top_sites_weak_ptr_factory_.GetWeakPtr()));
 }
 
 base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {

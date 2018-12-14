@@ -217,8 +217,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
 - (void)addAllLocalTopSitesItems {
   _topSites->GetMostVisitedURLs(
       base::Bind(&SpotlightTopSitesCallbackBridge::OnMostVisitedURLsAvailable,
-                 _topSitesCallbackBridge->AsWeakPtr()),
-      true);
+                 _topSitesCallbackBridge->AsWeakPtr()));
 }
 
 - (void)addAllSuggestionsTopSitesItems {
