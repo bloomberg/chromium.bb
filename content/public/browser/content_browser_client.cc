@@ -765,6 +765,10 @@ network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
 }
 
 #if defined(OS_ANDROID)
+bool ContentBrowserClient::NeedURLRequestContext() {
+  return true;
+}
+
 bool ContentBrowserClient::ShouldOverrideUrlLoading(
     int frame_tree_node_id,
     bool browser_initiated,
