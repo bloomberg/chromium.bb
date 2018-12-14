@@ -262,18 +262,24 @@ XMLHttpRequest* XMLHttpRequest::Create(ScriptState* script_state) {
   DOMWrapperWorld& world = script_state->World();
   v8::Isolate* isolate = script_state->GetIsolate();
 
-  return world.IsIsolatedWorld()
-             ? MakeGarbageCollected<XMLHttpRequest>(
-                   context, isolate, true, world.IsolatedWorldSecurityOrigin())
-             : MakeGarbageCollected<XMLHttpRequest>(context, isolate, false,
-                                                    nullptr);
+  XMLHttpRequest* xml_http_request =
+      world.IsIsolatedWorld()
+          ? MakeGarbageCollected<XMLHttpRequest>(
+                context, isolate, true, world.IsolatedWorldSecurityOrigin())
+          : MakeGarbageCollected<XMLHttpRequest>(context, isolate, false,
+                                                 nullptr);
+  xml_http_request->PauseIfNeeded();
+  return xml_http_request;
 }
 
 XMLHttpRequest* XMLHttpRequest::Create(ExecutionContext* context) {
   v8::Isolate* isolate = context->GetIsolate();
   CHECK(isolate);
 
-  return MakeGarbageCollected<XMLHttpRequest>(context, isolate, false, nullptr);
+  XMLHttpRequest* xml_http_request =
+      MakeGarbageCollected<XMLHttpRequest>(context, isolate, false, nullptr);
+  xml_http_request->PauseIfNeeded();
+  return xml_http_request;
 }
 
 XMLHttpRequest::XMLHttpRequest(
@@ -281,7 +287,7 @@ XMLHttpRequest::XMLHttpRequest(
     v8::Isolate* isolate,
     bool is_isolated_world,
     scoped_refptr<SecurityOrigin> isolated_world_security_origin)
-    : ContextLifecycleObserver(context),
+    : PausableObject(context),
       progress_event_throttle_(
           XMLHttpRequestProgressEventThrottle::Create(this)),
       isolate_(isolate),
@@ -1959,6 +1965,14 @@ void XMLHttpRequest::HandleDidTimeout() {
                      expected_length);
 }
 
+void XMLHttpRequest::Pause() {
+  progress_event_throttle_->Pause();
+}
+
+void XMLHttpRequest::Unpause() {
+  progress_event_throttle_->Unpause();
+}
+
 void XMLHttpRequest::ContextDestroyed(ExecutionContext*) {
   Dispose();
 
@@ -1984,7 +1998,7 @@ const AtomicString& XMLHttpRequest::InterfaceName() const {
 }
 
 ExecutionContext* XMLHttpRequest::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return PausableObject::GetExecutionContext();
 }
 
 void XMLHttpRequest::ReportMemoryUsageToV8() {
@@ -2017,7 +2031,7 @@ void XMLHttpRequest::Trace(blink::Visitor* visitor) {
   XMLHttpRequestEventTarget::Trace(visitor);
   ThreadableLoaderClient::Trace(visitor);
   DocumentParserClient::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  PausableObject::Trace(visitor);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const XMLHttpRequest* xhr) {
