@@ -2,37 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.customtabs;
-
-import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME;
-import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_HOST_LIST;
-import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME;
-import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.PENDING_URL_KEY;
-import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.URL_KEY;
+package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
 import android.content.ComponentName;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.test.InstrumentationRegistry;
 
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_HOST_LIST;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME;
+import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.PENDING_URL_KEY;
+import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.URL_KEY;
+
 import org.junit.Assert;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.AppHooksModule;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.BaseActivityDelegate;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.BaseModuleEntryPoint;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.IActivityDelegate;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.IActivityHost;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.IModuleHost;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.IObjectWrapper;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -193,32 +187,60 @@ public class CustomTabsDynamicModuleTestUtils {
     }
 
     /**
-     * Creates the simplest intent that is sufficient to let {@link ChromeLauncherActivity} launch
-     * the {@link CustomTabActivity} with fake dynamic module.
+     * Class to build an {@link Intent} to start a CCT with a dynamic module.
      *
-     * @see #makeDynamicModuleIntent(ComponentName, String, String)
+     * By default the intent contains extras to load {@link FakeCCTDynamicModule}.
      */
-    public static Intent makeDynamicModuleIntent(String url, @Nullable String managedUrlsRegex) {
-        return makeDynamicModuleIntent(FAKE_MODULE_COMPONENT_NAME, url, managedUrlsRegex);
-    }
+    /* package */ static class IntentBuilder {
+        private final Intent mIntent;
 
-    /**
-     * Creates the simplest intent that is sufficient to let {@link ChromeLauncherActivity} launch
-     * the {@link CustomTabActivity} with dynamic module.
-     */
-    public static Intent makeDynamicModuleIntent(
-            ComponentName componentName, String url, @Nullable String managedUrlsRegex) {
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getTargetContext(), url);
-        intent.putExtra(EXTRA_MODULE_PACKAGE_NAME, componentName.getPackageName());
-        intent.putExtra(EXTRA_MODULE_CLASS_NAME, componentName.getClassName());
-
-        if (managedUrlsRegex != null) {
-            intent.putStringArrayListExtra(EXTRA_MODULE_MANAGED_HOST_LIST,
-                    new ArrayList<>(Arrays.asList(Uri.parse(url).getHost())));
-            intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
-                    managedUrlsRegex);
+        public Intent build() {
+            return mIntent;
         }
-        return intent;
+
+        IntentBuilder(String url) {
+            mIntent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                    InstrumentationRegistry.getTargetContext(), url);
+            setModuleComponentName(FAKE_MODULE_COMPONENT_NAME);
+        }
+
+        IntentBuilder setModuleFailToLoadComponentName() {
+            setModulePackageName(FAKE_MODULE_PACKAGE_NAME);
+            setModuleClassName("ClassName");
+            return this;
+        }
+
+        IntentBuilder setModuleComponentName(ComponentName componentName) {
+            setModulePackageName(componentName.getPackageName());
+            setModuleClassName(componentName.getClassName());
+            return this;
+        }
+
+        IntentBuilder setModulePackageName(@Nullable String packageName) {
+            if (packageName == null) mIntent.removeExtra(EXTRA_MODULE_PACKAGE_NAME);
+            mIntent.putExtra(EXTRA_MODULE_PACKAGE_NAME, packageName);
+            return this;
+        }
+
+        IntentBuilder setModuleClassName(@Nullable String className) {
+            if (className == null) mIntent.removeExtra(EXTRA_MODULE_CLASS_NAME);
+            mIntent.putExtra(EXTRA_MODULE_CLASS_NAME, className);
+            return this;
+        }
+
+        IntentBuilder setModuleManagedUrlRegex(String urlRegex) {
+            mIntent.putExtra(EXTRA_MODULE_MANAGED_URLS_REGEX, urlRegex);
+            return this;
+        }
+
+        IntentBuilder setModuleHostList(ArrayList<String> moduleHostList) {
+            mIntent.putStringArrayListExtra(EXTRA_MODULE_MANAGED_HOST_LIST, moduleHostList);
+            return this;
+        }
+
+        IntentBuilder setHideCCTHeader(boolean isEnabled) {
+            mIntent.putExtra(EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, isEnabled);
+            return this;
+        }
     }
 }

@@ -132,25 +132,28 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
             "android.support.customtabs.extra.SEND_TO_EXTERNAL_HANDLER";
 
     /** Key for the intent extra used to define an array list of module managed hosts. */
-    /* package */ static final String EXTRA_MODULE_MANAGED_HOST_LIST =
+    @VisibleForTesting
+    public static final String EXTRA_MODULE_MANAGED_HOST_LIST =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_MANAGED_HOST_LIST";
 
     /** Extra that defines the module managed URLs regex. */
-    /* package */ static final String EXTRA_MODULE_MANAGED_URLS_REGEX =
+    @VisibleForTesting
+    public static final String EXTRA_MODULE_MANAGED_URLS_REGEX =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_MANAGED_URLS_REGEX";
 
     /** The APK package to load the module from. */
     @VisibleForTesting
-    /* package */ static final String EXTRA_MODULE_PACKAGE_NAME =
+    public static final String EXTRA_MODULE_PACKAGE_NAME =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_PACKAGE_NAME";
 
     /** The class name of the module entry point. */
     @VisibleForTesting
-    /* package */ static final String EXTRA_MODULE_CLASS_NAME =
+    public static final String EXTRA_MODULE_CLASS_NAME =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_CLASS_NAME";
 
     /** Extra that indicates whether to hide the CCT header on module managed URLs. */
-    /* package */ static final String EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS =
+    @VisibleForTesting
+    public static final String EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS =
             "org.chromium.chrome.browser.customtabs.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS";
 
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;

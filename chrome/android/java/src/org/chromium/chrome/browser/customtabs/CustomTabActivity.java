@@ -1198,7 +1198,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
      *         purposes only.
      */
     @VisibleForTesting
-    CustomTabIntentDataProvider getIntentDataProvider() {
+    public CustomTabIntentDataProvider getIntentDataProvider() {
         return mIntentDataProvider;
     }
 

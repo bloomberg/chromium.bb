@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.customtabs;
+package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import static org.chromium.chrome.browser.customtabs.CustomTabsDynamicModuleTestUtils.FAKE_MODULE_COMPONENT_NAME;
+import static org.chromium.chrome.browser.customtabs.dynamicmodule
+        .CustomTabsDynamicModuleTestUtils.FAKE_MODULE_COMPONENT_NAME;
 
 import android.support.test.filters.SmallTest;
 
@@ -21,8 +22,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleEntryPoint;
-import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 
@@ -34,7 +33,6 @@ import java.util.concurrent.TimeoutException;
  * Tests for {@link ModuleLoader}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@SmallTest
 public class CustomTabsDynamicModuleLoaderTest {
     @Before
     public void setUp() throws Exception {
