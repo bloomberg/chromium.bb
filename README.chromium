@@ -304,3 +304,11 @@ D. Local Modifications
   - patches/arm_align.patch
   - upstream bug:
     https://unicode-org.atlassian.net/browse/ICU-20001
+
+17. Windows 7 timezone detection fix
+
+  - patches/win7_tz.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20302
+  - Fix:
+    https://github.com/unicode-org/icu/pull/315
