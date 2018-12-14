@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -200,8 +201,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::AccountManagerUIHandler>(
             account_manager,
-            AccountTrackerServiceFactory::GetInstance()->GetForProfile(
-                profile)));
+            AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile),
+            IdentityManagerFactory::GetForProfile(profile)));
   }
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());

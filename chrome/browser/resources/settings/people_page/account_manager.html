@@ -33,21 +33,39 @@
         cursor: pointer;
       }
     </style>
+
     <div class="settings-box first">$i18n{accountManagerDescription}</div>
+
     <div class="settings-box first">
       <h2>$i18n{accountListHeader}</h2>
     </div>
+
     <div id="outer" class="layout vertical nowrap">
       <template is="dom-repeat" id="account-list" items="[[accounts_]]">
         <div class="settings-box">
+
           <div class="profile-icon"
               style="background-image: [[getIconImageSet_(item.pic)]]"></div>
+
           <div class="middle two-line no-min-width">
             <div class="flex text-elide">
-              <span>[[item.fullName]]</span>
+              <!-- If account is signed in, display the full name -->
+              <template is="dom-if" if="[[item.isSignedIn]]">
+                <span>[[item.fullName]]</span>
+              </template>
+              <!-- Else, display a re-authentication message -->
+              <template is="dom-if" if="[[!item.isSignedIn]]">
+                <span style="color:red">$i18n{accountManagerSignedOutAccountName}</span>
+              </template>
+
               <div class="secondary">[[item.email]]</div>
             </div>
           </div>
+
+          <template is="dom-if" if="[[shouldShowReauthenticationButton_(item)]]">
+            <paper-button on-click="onReauthenticationTap_">$i18n{accountManagerReauthenticationLabel}</paper-button>
+          </template>
+
           <paper-icon-button-light class="icon-more-vert"
               hidden="[[item.isDeviceAccount]]">
             <button title="$i18n{moreActions}"
@@ -59,6 +77,7 @@
       <div id="add-account-button" class="settings-box" on-tap="addAccount_">
         $i18n{addAccountLabel}
       </div>
+
       <div class="clear settings-box"></div>
 
       <cr-action-menu>
