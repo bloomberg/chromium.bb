@@ -374,7 +374,7 @@ group("sqlite") {
   ]
 }
 
-if (is_linux || is_mac) {
+if (is_win || is_mac || is_linux) {
   executable("sqlite_shell") {
     include_dirs = [
       # shell.c contains an '#include "sqlite3.h", which we want to be
@@ -393,8 +393,6 @@ if (is_linux || is_mac) {
       sources += [ "src/src/shell_icu_linux.c" ]
     }
 
-    # TODO(pwnall): Re-enable the shell on Windows when compilation errors are
-    #               fixed upstream.
     if (is_win) {
       sources += [ "src/src/shell_icu_win.c" ]
     }
