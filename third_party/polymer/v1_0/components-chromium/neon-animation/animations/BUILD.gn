@@ -6,12 +6,6 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
-js_library("cascaded-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
 js_library("fade-in-animation-extracted") {
   deps = [
     "..:neon-animation-behavior-extracted",
@@ -19,96 +13,6 @@ js_library("fade-in-animation-extracted") {
 }
 
 js_library("fade-out-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("hero-animation-extracted") {
-  deps = [
-    "..:neon-shared-element-animation-behavior-extracted",
-  ]
-}
-
-js_library("opaque-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("reverse-ripple-animation-extracted") {
-  deps = [
-    "..:neon-shared-element-animation-behavior-extracted",
-  ]
-}
-
-js_library("ripple-animation-extracted") {
-  deps = [
-    "..:neon-shared-element-animation-behavior-extracted",
-  ]
-}
-
-js_library("scale-down-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("scale-up-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("slide-down-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("slide-from-bottom-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("slide-from-left-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("slide-from-right-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("slide-from-top-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("slide-left-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("slide-right-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("slide-up-animation-extracted") {
-  deps = [
-    "..:neon-animation-behavior-extracted",
-  ]
-}
-
-js_library("transform-animation-extracted") {
   deps = [
     "..:neon-animation-behavior-extracted",
   ]
