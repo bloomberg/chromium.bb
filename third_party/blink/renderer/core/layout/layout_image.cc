@@ -210,6 +210,21 @@ void LayoutImage::UpdateIntrinsicSizeIfNeeded(const LayoutSize& new_size) {
   SetIntrinsicSize(new_size);
 }
 
+bool LayoutImage::NeedsLayoutOnIntrinsicSizeChange() const {
+  // If the actual area occupied by the image has changed and it is not
+  // constrained by style then a layout is required.
+  bool image_size_is_constrained = StyleRef().LogicalWidth().IsSpecified() &&
+                                   StyleRef().LogicalHeight().IsSpecified();
+  if (!image_size_is_constrained)
+    return true;
+
+  // FIXME: We only need to recompute the containing block's preferred size if
+  // the containing block's size depends on the image's size (i.e., the
+  // container uses shrink-to-fit sizing). There's no easy way to detect that
+  // shrink-to-fit is needed, always force a layout.
+  return HasRelativeLogicalWidth();
+}
+
 void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
     CanDeferInvalidation defer) {
   LayoutSize old_intrinsic_size = IntrinsicSize();
@@ -225,30 +240,14 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
   if (!ContainingBlock())
     return;
 
-  bool image_source_has_changed_size = old_intrinsic_size != new_intrinsic_size;
-  if (image_source_has_changed_size)
+  if (old_intrinsic_size != new_intrinsic_size) {
     SetPreferredLogicalWidthsDirty();
 
-  // If the actual area occupied by the image has changed and it is not
-  // constrained by style then a layout is required.
-  bool image_size_is_constrained = StyleRef().LogicalWidth().IsSpecified() &&
-                                   StyleRef().LogicalHeight().IsSpecified();
-
-  // FIXME: We only need to recompute the containing block's preferred size if
-  // the containing block's size depends on the image's size (i.e., the
-  // container uses shrink-to-fit sizing). There's no easy way to detect that
-  // shrink-to-fit is needed, always force a layout.
-  bool containing_block_needs_to_recompute_preferred_size =
-      StyleRef().LogicalWidth().IsPercentOrCalc() ||
-      StyleRef().LogicalMaxWidth().IsPercentOrCalc() ||
-      StyleRef().LogicalMinWidth().IsPercentOrCalc();
-
-  if (image_source_has_changed_size &&
-      (!image_size_is_constrained ||
-       containing_block_needs_to_recompute_preferred_size)) {
-    SetNeedsLayoutAndFullPaintInvalidation(
-        layout_invalidation_reason::kSizeChanged);
-    return;
+    if (NeedsLayoutOnIntrinsicSizeChange()) {
+      SetNeedsLayoutAndFullPaintInvalidation(
+          layout_invalidation_reason::kSizeChanged);
+      return;
+    }
   }
 
   SetShouldDoFullPaintInvalidationWithoutGeometryChange(
