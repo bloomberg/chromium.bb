@@ -98,23 +98,20 @@ TEST_F(AgentRegistryTest, AgentInitialization) {
   size_t num_calls = 0;
   MockAgent agent1;
   RegisterAgent(agent1.CreateAgentPtr());
-  registry_->SetAgentInitializationCallback(base::BindRepeating(
-      [](size_t* num_calls, tracing::AgentRegistry::AgentEntry* entry) {
-        (*num_calls)++;
-      },
-      base::Unretained(&num_calls)));
+  size_t num_initialized_agents = registry_->SetAgentInitializationCallback(
+      base::BindRepeating(
+          [](size_t* num_calls, tracing::AgentRegistry::AgentEntry* entry) {
+            (*num_calls)++;
+          },
+          base::Unretained(&num_calls)),
+      false);
   // Since an agent was already registered, the callback should be run once.
+  EXPECT_EQ(1u, num_initialized_agents);
   EXPECT_EQ(1u, num_calls);
 
   // The callback should be run on future agents, too.
   MockAgent agent2;
   RegisterAgent(agent2.CreateAgentPtr());
-  EXPECT_EQ(2u, num_calls);
-
-  // The callback should not be run on future agents if it is removed.
-  registry_->RemoveAgentInitializationCallback();
-  MockAgent agent3;
-  RegisterAgent(agent3.CreateAgentPtr());
   EXPECT_EQ(2u, num_calls);
 }
 

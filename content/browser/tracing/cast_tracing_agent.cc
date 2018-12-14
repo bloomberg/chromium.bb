@@ -301,8 +301,9 @@ void CastTracingAgent::StartTracing(const std::string& config,
 
 void CastTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // We should only be called after starting the trace session succeeded.
-  DCHECK(session_);
+  // This may be called even if we are not tracing.
+  if (!session_)
+    return;
   recorder_ = std::move(recorder);
   session_->StopTracing(base::BindRepeating(&CastTracingAgent::HandleTraceData,
                                             base::Unretained(this)));

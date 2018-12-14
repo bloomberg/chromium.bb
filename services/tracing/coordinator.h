@@ -72,6 +72,9 @@ class Coordinator : public mojom::Coordinator {
   void SendStartTracingToAgent(AgentRegistry::AgentEntry* agent_entry);
   void OnTracingStarted(AgentRegistry::AgentEntry* agent_entry, bool success);
   void StopAndFlushInternal();
+  void SendStopTracingToAgent(AgentRegistry::AgentEntry* agent_entry);
+  void SendStopTracingWithNoOpRecorderToAgent(
+      AgentRegistry::AgentEntry* agent_entry);
   void SendRecorder(base::WeakPtr<AgentRegistry::AgentEntry> agent_entry,
                     mojom::RecorderPtr recorder);
   void OnFlushDone();

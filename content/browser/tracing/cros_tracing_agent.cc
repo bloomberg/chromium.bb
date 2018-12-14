@@ -239,8 +239,9 @@ void CrOSTracingAgent::StartTracing(const std::string& config,
 }
 
 void CrOSTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
-  // We should only be called after starting the trace session succeeded.
-  DCHECK(session_);
+  // This may be called even if we are not tracing.
+  if (!session_)
+    return;
   recorder_ = std::move(recorder);
   session_->StopTracing(
       base::BindOnce(&CrOSTracingAgent::RecorderProxy, base::Unretained(this)));

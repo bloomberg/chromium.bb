@@ -264,7 +264,7 @@ TracingControllerImpl::GenerateMetadataDict() const {
   // metadata filters, so we temporarily filter here as the controller is
   // what assembles the full trace data.
   MetadataFilterPredicate metadata_filter;
-  if (trace_config_->IsArgumentFilterEnabled()) {
+  if (trace_config_ && trace_config_->IsArgumentFilterEnabled()) {
     if (delegate_)
       metadata_filter = delegate_->GetMetadataFilterPredicate();
   }
