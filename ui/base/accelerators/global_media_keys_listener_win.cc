@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
@@ -18,7 +19,10 @@ bool GlobalMediaKeysListenerWin::has_instance_ = false;
 
 GlobalMediaKeysListenerWin::GlobalMediaKeysListenerWin(
     MediaKeysListener::Delegate* delegate)
-    : delegate_(delegate), thread_("KeyboardHookThread") {
+    : delegate_(delegate),
+      thread_("KeyboardHookThread"),
+      main_thread_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      weak_factory_(this) {
   DCHECK(delegate_);
   DCHECK(!has_instance_);
   has_instance_ = true;
@@ -29,11 +33,38 @@ GlobalMediaKeysListenerWin::~GlobalMediaKeysListenerWin() {
   // currently running. This guarantees that |hook_| will be empty before its
   // destructor is called on this thread, so we will avoid accessing |hook_| on
   // this thread.
-  StopWatchingMediaKeys();
+  DeleteKeyboardHookIfNecessary();
   has_instance_ = false;
 }
 
-void GlobalMediaKeysListenerWin::StartWatchingMediaKeys() {
+void GlobalMediaKeysListenerWin::StartWatchingMediaKey(KeyboardCode key_code) {
+  DCHECK(IsMediaKeycode(key_code));
+
+  {
+    base::AutoLock lock(key_codes_lock_);
+    key_codes_.insert(key_code);
+  }
+  CreateKeyboardHookIfNecessary();
+}
+
+void GlobalMediaKeysListenerWin::StopWatchingMediaKey(KeyboardCode key_code) {
+  DCHECK(IsMediaKeycode(key_code));
+
+  bool should_delete;
+  // Don't hold the lock when we delete the hook, or else we may deadlock while
+  // joining on |thread_| if |thread_| attempts to access |key_codes_|.
+  {
+    base::AutoLock lock(key_codes_lock_);
+    key_codes_.erase(key_code);
+    should_delete = key_codes_.empty();
+  }
+
+  // If we're not watching any more keys, delete the hook.
+  if (should_delete)
+    DeleteKeyboardHookIfNecessary();
+}
+
+void GlobalMediaKeysListenerWin::CreateKeyboardHookIfNecessary() {
   // Create the keyboard hook if it doesn't already exist.
   if (!thread_.IsRunning()) {
     bool started = thread_.StartWithOptions(
@@ -46,7 +77,7 @@ void GlobalMediaKeysListenerWin::StartWatchingMediaKeys() {
   }
 }
 
-void GlobalMediaKeysListenerWin::StopWatchingMediaKeys() {
+void GlobalMediaKeysListenerWin::DeleteKeyboardHookIfNecessary() {
   // Delete the keyboard hook if it exists.
   if (thread_.IsRunning()) {
     thread_.task_runner()->PostTask(
@@ -57,10 +88,6 @@ void GlobalMediaKeysListenerWin::StopWatchingMediaKeys() {
   }
 }
 
-bool GlobalMediaKeysListenerWin::IsWatchingMediaKeys() const {
-  return thread_.IsRunning();
-}
-
 void GlobalMediaKeysListenerWin::EnsureHookOnInternalThread() {
   DCHECK(thread_.task_runner()->RunsTasksInCurrentSequence());
   DCHECK(!hook_);
@@ -69,8 +96,12 @@ void GlobalMediaKeysListenerWin::EnsureHookOnInternalThread() {
       base::Unretained(this)));
 
   if (hook_) {
-    // Notify the delegate that the keyboard hook has been registered.
-    delegate_->OnStartedWatchingMediaKeys();
+    // Notify the delegate that we're ready to receive events for that key.
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &GlobalMediaKeysListenerWin::OnStartedWatchingMediaKeysOnMainThread,
+            weak_factory_.GetWeakPtr()));
   } else {
     LOG(ERROR) << "failed to create keyboard hook";
   }
@@ -84,16 +115,49 @@ void GlobalMediaKeysListenerWin::DeleteHookOnInternalThread() {
 void GlobalMediaKeysListenerWin::KeyEventCallbackOnInternalThread(
     KeyEvent* event) {
   DCHECK(thread_.task_runner()->RunsTasksInCurrentSequence());
+
+  {
+    // Ignore key events that we don't care about.
+    base::AutoLock lock(key_codes_lock_);
+    if (!key_codes_.contains(event->key_code()))
+      return;
+  }
+
   Accelerator::KeyState state = (event->type() == ET_KEY_PRESSED)
                                     ? Accelerator::KeyState::PRESSED
                                     : Accelerator::KeyState::RELEASED;
   const ui::Accelerator accelerator(event->key_code(), 0, state);
-  if (delegate_->OnMediaKeysAccelerator(accelerator) ==
-      MediaKeysListener::MediaKeysHandleResult::kSuppressPropagation) {
-    // Marking the event as handled will prevent propagation in the
-    // KeyboardHook.
-    event->SetHandled();
+
+  // Send the key event to the delegate on the main thread.
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GlobalMediaKeysListenerWin::KeyEventCallbackOnMainThread,
+                     weak_factory_.GetWeakPtr(), accelerator));
+
+  // Marking the event as handled will prevent propagation in the
+  // KeyboardHook.
+  event->SetHandled();
+}
+
+void GlobalMediaKeysListenerWin::KeyEventCallbackOnMainThread(
+    const Accelerator& accelerator) {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+
+  // Don't hold the lock for |delegate_|'s callback in case delegate_ calls
+  // Start/StopWatchingMediaKey().
+  {
+    // If we get a key event that we no longer care about, ignore it.
+    base::AutoLock lock(key_codes_lock_);
+    if (!key_codes_.contains(accelerator.key_code()))
+      return;
   }
+
+  delegate_->OnMediaKeysAccelerator(accelerator);
+}
+
+void GlobalMediaKeysListenerWin::OnStartedWatchingMediaKeysOnMainThread() {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  delegate_->OnStartedWatchingMediaKeys();
 }
 
 }  // namespace ui

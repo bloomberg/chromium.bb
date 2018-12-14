@@ -21,8 +21,7 @@ class MockMediaKeysListenerDelegate : public MediaKeysListener::Delegate {
   ~MockMediaKeysListenerDelegate() override = default;
 
   // MediaKeysListener::Delegate implementation.
-  MediaKeysListener::MediaKeysHandleResult OnMediaKeysAccelerator(
-      const Accelerator& accelerator) override {
+  void OnMediaKeysAccelerator(const Accelerator& accelerator) override {
     received_events_.push_back(accelerator.ToKeyEvent());
 
     // If we've received the events we're waiting for, stop waiting.
@@ -30,9 +29,6 @@ class MockMediaKeysListenerDelegate : public MediaKeysListener::Delegate {
         received_events_.size() >= num_key_events_to_wait_for_) {
       key_event_wait_loop_->Quit();
     }
-
-    // Never let the test key presses out to the OS.
-    return MediaKeysListener::MediaKeysHandleResult::kSuppressPropagation;
   }
 
   void OnStartedWatchingMediaKeys() override {
@@ -104,6 +100,16 @@ class GlobalMediaKeysListenerWinInteractiveTest : public testing::Test {
     SendInput(1, &input, sizeof(INPUT));
   }
 
+  void StartListeningAndWaitForHookRegistration(
+      GlobalMediaKeysListenerWin& listener,
+      MockMediaKeysListenerDelegate& delegate,
+      ui::KeyboardCode key_code) {
+    base::RunLoop hook_registration_loop;
+    delegate.SetHookRegistrationCallback(hook_registration_loop.QuitClosure());
+    listener.StartWatchingMediaKey(key_code);
+    hook_registration_loop.Run();
+  }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   DWORD time_stamp_ = 0;
@@ -115,11 +121,8 @@ TEST_F(GlobalMediaKeysListenerWinInteractiveTest, SimplePlayPauseTest) {
   MockMediaKeysListenerDelegate delegate;
   GlobalMediaKeysListenerWin listener(&delegate);
 
-  // Start listening and wait for hook registration.
-  base::RunLoop hook_registration_loop;
-  delegate.SetHookRegistrationCallback(hook_registration_loop.QuitClosure());
-  listener.StartWatchingMediaKeys();
-  hook_registration_loop.Run();
+  StartListeningAndWaitForHookRegistration(listener, delegate,
+                                           ui::VKEY_MEDIA_PLAY_PAUSE);
 
   // Send a key down event and validate that it was received by the delegate.
   SendKeyDown(ui::VKEY_MEDIA_PLAY_PAUSE);
@@ -139,19 +142,15 @@ TEST_F(GlobalMediaKeysListenerWinInteractiveTest, HookCanBeRestarted) {
   GlobalMediaKeysListenerWin listener(&delegate);
 
   // Start listening to create the hook.
-  base::RunLoop hook_registration_loop1;
-  delegate.SetHookRegistrationCallback(hook_registration_loop1.QuitClosure());
-  listener.StartWatchingMediaKeys();
-  hook_registration_loop1.Run();
+  StartListeningAndWaitForHookRegistration(listener, delegate,
+                                           ui::VKEY_MEDIA_NEXT_TRACK);
 
   // Stop listening to delete the hook.
-  listener.StopWatchingMediaKeys();
+  listener.StopWatchingMediaKey(ui::VKEY_MEDIA_NEXT_TRACK);
 
   // Start listening to recreate the hook.
-  base::RunLoop hook_registration_loop2;
-  delegate.SetHookRegistrationCallback(hook_registration_loop2.QuitClosure());
-  listener.StartWatchingMediaKeys();
-  hook_registration_loop2.Run();
+  StartListeningAndWaitForHookRegistration(listener, delegate,
+                                           ui::VKEY_MEDIA_PREV_TRACK);
 
   // Send a key down event and validate that it was received by the delegate.
   SendKeyDown(ui::VKEY_MEDIA_PREV_TRACK);
@@ -163,6 +162,39 @@ TEST_F(GlobalMediaKeysListenerWinInteractiveTest, HookCanBeRestarted) {
   SendKeyUp(ui::VKEY_MEDIA_PREV_TRACK);
   delegate.WaitForKeyEvents(2);
   delegate.ExpectReceivedEvent(/*index=*/1, ui::VKEY_MEDIA_PREV_TRACK,
+                               ET_KEY_RELEASED);
+}
+
+TEST_F(GlobalMediaKeysListenerWinInteractiveTest, ListenForMultipleKeys) {
+  MockMediaKeysListenerDelegate delegate;
+  GlobalMediaKeysListenerWin listener(&delegate);
+
+  StartListeningAndWaitForHookRegistration(listener, delegate,
+                                           ui::VKEY_MEDIA_PLAY_PAUSE);
+  listener.StartWatchingMediaKey(ui::VKEY_MEDIA_STOP);
+
+  // Send a key down event and validate that it was received by the delegate.
+  SendKeyDown(ui::VKEY_MEDIA_PLAY_PAUSE);
+  delegate.WaitForKeyEvents(1);
+  delegate.ExpectReceivedEvent(/*index=*/0, ui::VKEY_MEDIA_PLAY_PAUSE,
+                               ET_KEY_PRESSED);
+
+  // Send a key up event and validate that it was received by the delegate.
+  SendKeyUp(ui::VKEY_MEDIA_PLAY_PAUSE);
+  delegate.WaitForKeyEvents(2);
+  delegate.ExpectReceivedEvent(/*index=*/1, ui::VKEY_MEDIA_PLAY_PAUSE,
+                               ET_KEY_RELEASED);
+
+  // Send a key down event and validate that it was received by the delegate.
+  SendKeyDown(ui::VKEY_MEDIA_STOP);
+  delegate.WaitForKeyEvents(3);
+  delegate.ExpectReceivedEvent(/*index=*/2, ui::VKEY_MEDIA_STOP,
+                               ET_KEY_PRESSED);
+
+  // Send a key up event and validate that it was received by the delegate.
+  SendKeyUp(ui::VKEY_MEDIA_STOP);
+  delegate.WaitForKeyEvents(4);
+  delegate.ExpectReceivedEvent(/*index=*/3, ui::VKEY_MEDIA_STOP,
                                ET_KEY_RELEASED);
 }
 

@@ -16,6 +16,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "ui/base/accelerators/media_keys_listener.h"
 
 namespace extensions {
 
@@ -239,10 +240,7 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
     return ui::Accelerator();
   }
 
-  if ((key == ui::VKEY_MEDIA_NEXT_TRACK ||
-       key == ui::VKEY_MEDIA_PREV_TRACK ||
-       key == ui::VKEY_MEDIA_PLAY_PAUSE ||
-       key == ui::VKEY_MEDIA_STOP) &&
+  if (ui::MediaKeysListener::IsMediaKeycode(key) &&
       (shift || ctrl || alt || command)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidKeyBindingMediaKeyWithModifier,
@@ -429,10 +427,7 @@ bool Command::IsMediaKey(const ui::Accelerator& accelerator) {
   if (accelerator.modifiers() != 0)
     return false;
 
-  return (accelerator.key_code() == ui::VKEY_MEDIA_NEXT_TRACK ||
-          accelerator.key_code() == ui::VKEY_MEDIA_PREV_TRACK ||
-          accelerator.key_code() == ui::VKEY_MEDIA_PLAY_PAUSE ||
-          accelerator.key_code() == ui::VKEY_MEDIA_STOP);
+  return ui::MediaKeysListener::IsMediaKeycode(accelerator.key_code());
 }
 
 bool Command::Parse(const base::DictionaryValue* command,
