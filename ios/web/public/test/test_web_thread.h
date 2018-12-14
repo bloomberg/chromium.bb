@@ -47,6 +47,8 @@ class TestWebThread {
  private:
   std::unique_ptr<TestWebThreadImpl> impl_;
 
+  const WebThread::ID identifier_;
+
   DISALLOW_COPY_AND_ASSIGN(TestWebThread);
 };
 

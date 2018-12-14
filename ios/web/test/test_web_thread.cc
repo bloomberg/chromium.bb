@@ -24,16 +24,34 @@ class TestWebThreadImpl : public WebThreadImpl {
 };
 
 TestWebThread::TestWebThread(WebThread::ID identifier)
-    : impl_(new TestWebThreadImpl(identifier)) {
-}
+    : impl_(new TestWebThreadImpl(identifier)), identifier_(identifier) {}
 
 TestWebThread::TestWebThread(WebThread::ID identifier,
                              base::MessageLoop* message_loop)
-    : impl_(new TestWebThreadImpl(identifier, message_loop)) {
-}
+    : impl_(new TestWebThreadImpl(identifier, message_loop)),
+      identifier_(identifier) {}
 
 TestWebThread::~TestWebThread() {
-  Stop();
+  // The upcoming WebThreadImpl::ResetGlobalsForTesting() call requires that
+  // |impl_| have triggered the shutdown phase for its WebThread::ID. This
+  // either happens when the thread is stopped (if real) or destroyed (when fake
+  // -- i.e. using an externally provided MessageLoop).
+  impl_.reset();
+
+  // Resets WebThreadImpl's globals so that |impl_| is no longer bound to
+  // |identifier_|. This is fine since the underlying MessageLoop has already
+  // been flushed and deleted in Stop(). In the case of an externally provided
+  // MessageLoop however, this means that TaskRunners obtained through
+  // |WebThreadImpl::GetTaskRunnerForThread(identifier_)| will no longer
+  // recognize their WebThreadImpl for RunsTasksInCurrentSequence(). This
+  // happens most often when such verifications are made from
+  // MessageLoop::DestructionObservers. Callers that care to work around that
+  // should instead use this shutdown sequence:
+  //   1) TestWebThread::Stop()
+  //   2) ~MessageLoop()
+  //   3) ~TestWebThread()
+  // (~TestWebThreadBundle() does this).
+  WebThreadImpl::ResetGlobalsForTesting(identifier_);
 }
 
 bool TestWebThread::Start() {
