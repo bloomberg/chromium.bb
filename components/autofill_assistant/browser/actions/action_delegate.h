@@ -67,7 +67,7 @@ class ActionDelegate {
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
       const Selector& selector,
-      base::OnceCallback<void(bool)> callback) = 0;
+      base::OnceCallback<void(ProcessedActionStatusProto)> callback) = 0;
 
   // Click or tap the element given by |selector| on the web page.
   virtual void ClickOrTapElement(const Selector& selector,

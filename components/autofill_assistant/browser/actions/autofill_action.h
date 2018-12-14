@@ -34,7 +34,7 @@ class AutofillAction : public Action {
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
 
-  void EndAction(bool successful);
+  void EndAction(ProcessedActionStatusProto status);
 
   // Called when the user selected the data.
   void OnDataSelected(ActionDelegate* delegate,

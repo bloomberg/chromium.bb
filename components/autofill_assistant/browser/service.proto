@@ -299,10 +299,40 @@ message ProcessedActionProto {
 
 enum ProcessedActionStatusProto {
   UNKNOWN_ACTION_STATUS = 0;
+
+  // Element could not be found.
   ELEMENT_RESOLUTION_FAILED = 1;
+
+  // The action was applied successfully.
   ACTION_APPLIED = 2;
+
+  // The action failed (generic error).
   OTHER_ACTION_STATUS = 3;
+
+  // The action failed to get payment information.
   PAYMENT_REQUEST_ERROR = 4;
+
+  // Server asked the client to execute an unknown or unsupported action.
+  UNSUPPORTED_ACTION = 5;
+
+  // The action decided to fallback to manual mode, stopping the script.
+  //
+  // This can happen:
+  // - if an autofill action or an update details action cancels the script,
+  //   possibly, not necessarily, as a result of a user action.
+  // - if an interrupt explicitly stops the main script, for wait for dom
+  MANUAL_FALLBACK = 6;
+
+  // The WaitForDom action failed because an interrupt that ran during
+  // that action failed.
+  INTERRUPT_FAILED = 7;
+
+  // The script was canceled by the user, while it was running.
+  //
+  // This only report such events that happen while a script is running. It can
+  // affect any action. It is a signal that the action or script ran in an
+  // abnormal situation and its outcome cannot be trusted.
+  USER_ABORTED_ACTION = 8;
 }
 
 // The pseudo type values come from

@@ -91,7 +91,7 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // useful when analyzing feedback forms and for debugging in general.
   base::Value GetDebugContext() const;
 
-  // Initiates a script tracker shutdown.
+  // Terminates any running scripts.
   //
   // This function returns false when it needs more time to properly shut down
   // the script tracker. It usually means that it either has to wait for a

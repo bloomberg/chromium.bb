@@ -26,6 +26,7 @@ using ::testing::_;
 using ::testing::AllOf;
 using ::testing::Contains;
 using ::testing::DoAll;
+using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Field;
 using ::testing::Invoke;
@@ -33,6 +34,7 @@ using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::Pair;
+using ::testing::Property;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::SizeIs;
@@ -131,7 +133,7 @@ class ScriptExecutorTest : public testing::Test,
     wait_action->set_allow_interrupt(true);
     interruptible.add_actions()->mutable_tell()->set_message(path);
     EXPECT_CALL(mock_service_, OnGetActions(StrEq(path), _, _, _, _, _))
-        .WillOnce(RunOnceCallback<5>(true, Serialize(interruptible)));
+        .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interruptible)));
   }
 
   // Creates an interrupt that contains a tell. It will always succeed.
@@ -279,7 +281,7 @@ TEST_F(ScriptExecutorTest, UnsupportedAction) {
   executor_->Run(executor_callback_.Get());
 
   ASSERT_EQ(1u, processed_actions_capture.size());
-  EXPECT_EQ(UNKNOWN_ACTION_STATUS, processed_actions_capture[0].status());
+  EXPECT_EQ(UNSUPPORTED_ACTION, processed_actions_capture[0].status());
 }
 
 TEST_F(ScriptExecutorTest, StopAfterEnd) {
@@ -626,6 +628,10 @@ TEST_F(ScriptExecutorTest, ForwardMainScriptPayloadWhenInterruptFails) {
                                               "payload for interrupt", _, _))
       .WillOnce(RunOnceCallback<3>(false, ""));
 
+  EXPECT_CALL(mock_service_, OnGetNextActions("global payload for interrupt",
+                                              "main script payload", _, _))
+      .WillOnce(RunOnceCallback<3>(false, ""));
+
   EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(executor_callback_.Get());
 
@@ -688,7 +694,19 @@ TEST_F(ScriptExecutorTest, InterruptFailsMainScript) {
   SetupInterruptibleScript(kScriptPath, "element");
   SetupInterrupt("interrupt", "interrupt_trigger");
 
+  // The interrupt fails.
   EXPECT_CALL(mock_service_, OnGetNextActions(_, "payload for interrupt", _, _))
+      .WillOnce(RunOnceCallback<3>(false, ""));
+
+  // The main script gets a report of the failure from the interrupt, and fails
+  // in turn.
+  EXPECT_CALL(
+      mock_service_,
+      OnGetNextActions(
+          _, "main script payload",
+          ElementsAre(Property(&ProcessedActionProto::status,
+                               ProcessedActionStatusProto::INTERRUPT_FAILED)),
+          _))
       .WillOnce(RunOnceCallback<3>(false, ""));
 
   EXPECT_CALL(executor_callback_,
@@ -710,11 +728,15 @@ TEST_F(ScriptExecutorTest, InterruptReturnsShutdown) {
   ActionsResponseProto interrupt_actions;
   interrupt_actions.add_actions()->mutable_stop();
 
+  // Get interrupt actions
   EXPECT_CALL(mock_service_, OnGetActions(StrEq("interrupt"), _, _, _, _, _))
       .WillRepeatedly(RunOnceCallback<5>(true, Serialize(interrupt_actions)));
 
+  // We expect to get result of interrupt action, then result of the main script
+  // action.
   EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _))
-      .WillOnce(RunOnceCallback<3>(true, ""));
+      .Times(2)
+      .WillRepeatedly(RunOnceCallback<3>(true, ""));
 
   EXPECT_CALL(executor_callback_,
               Run(AllOf(Field(&ScriptExecutor::Result::success, true),

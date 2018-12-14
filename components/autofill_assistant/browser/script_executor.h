@@ -69,7 +69,13 @@ class ScriptExecutor : public ActionDelegate {
     CLOSE_CUSTOM_TAB,
 
     // Reset all state and restart.
-    RESTART
+    RESTART,
+
+    // Autofill Assistant is shutting down.
+    //
+    // Returned after ScriptExecutor::Terminate has been called while running a
+    // script.
+    TERMINATE,
   };
 
   // Contains the result of the Run operation.
@@ -86,15 +92,20 @@ class ScriptExecutor : public ActionDelegate {
   using RunScriptCallback = base::OnceCallback<void(const Result&)>;
   void Run(RunScriptCallback callback);
 
+  // Terminates the running scripts. The script finishes running the current
+  // action, then returns a result with at_end set to TERMINATE.
+  void Terminate();
+
   // Override ActionDelegate:
   std::unique_ptr<BatchElementChecker> CreateBatchElementChecker() override;
   void ShortWaitForElementExist(
       const Selector& selector,
       base::OnceCallback<void(bool)> callback) override;
-  void WaitForElementVisible(base::TimeDelta max_wait_time,
-                             bool allow_interrupt,
-                             const Selector& selector,
-                             base::OnceCallback<void(bool)> callback) override;
+  void WaitForElementVisible(
+      base::TimeDelta max_wait_time,
+      bool allow_interrupt,
+      const Selector& selector,
+      base::OnceCallback<void(ProcessedActionStatusProto)> callback) override;
   void ShowStatusMessage(const std::string& message) override;
   void ClickOrTapElement(const Selector& selector,
                          base::OnceCallback<void(bool)> callback) override;
@@ -179,7 +190,7 @@ class ScriptExecutor : public ActionDelegate {
     ~WaitWithInterrupts() override;
 
     void Run();
-    void Shutdown();
+    void Terminate();
 
    private:
     // Implements ScriptExecutor::Listener
@@ -238,6 +249,7 @@ class ScriptExecutor : public ActionDelegate {
   friend class WaitWithInterrupts;
 
   void OnGetActions(bool result, const std::string& response);
+  bool ProcessNextActionResponse(const std::string& response);
   void ReportPayloadsToListener();
   void ReportScriptsUpdateToListener(
       std::vector<std::unique_ptr<Script>> scripts);
@@ -252,10 +264,13 @@ class ScriptExecutor : public ActionDelegate {
                       const Selector& selectors,
                       base::OnceCallback<void(bool)> callback);
   void OnWaitForElement(base::OnceCallback<void(bool)> callback);
-  void OnWaitForElementVisible(
-      base::OnceCallback<void(bool)> element_found_callback,
+  void OnWaitForElementVisibleWithInterrupts(
+      base::OnceCallback<void(ProcessedActionStatusProto)> callback,
       bool element_found,
       const Result* interrupt_result);
+  void OnWaitForElementVisibleNoInterrupts(
+      base::OnceCallback<void(ProcessedActionStatusProto)> callback,
+      bool element_found);
   void OnChosen(base::OnceCallback<void(const std::string&)> callback,
                 const std::string& chosen);
 
@@ -277,6 +292,9 @@ class ScriptExecutor : public ActionDelegate {
   std::vector<Selector> touchable_elements_;
   std::map<std::string, ScriptStatusProto>* scripts_state_;
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
+
+  // Paths of the interrupts that were run during the current action.
+  std::vector<std::string> ran_interrupts_;
 
   // Set of interrupts that might run during wait for dom actions with
   // allow_interrupt. Sorted by priority; an interrupt that appears on the

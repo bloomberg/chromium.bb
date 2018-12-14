@@ -132,7 +132,7 @@ void ScriptTracker::ClearRunnableScripts() {
 
 bool ScriptTracker::Terminate() {
   if (running()) {
-    executor_->Shutdown();
+    executor_->Terminate();
     return false;
   }
   TerminatePendingChecks();
