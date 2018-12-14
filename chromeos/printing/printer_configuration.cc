@@ -191,22 +191,11 @@ bool Printer::HasNetworkProtocol() const {
 }
 
 std::string Printer::UriForCups() const {
-  if (!effective_uri_.empty()) {
-    return effective_uri_;
-  } else {
-    return uri_;
-  }
+  return effective_uri_.empty() ? uri_ : effective_uri_;
 }
 
 base::Optional<UriComponents> Printer::GetUriComponents() const {
   return chromeos::ParseUri(uri_);
-}
-
-bool Printer::PpdReference::operator==(
-    const Printer::PpdReference& other) const {
-  return user_supplied_ppd_url == other.user_supplied_ppd_url &&
-         effective_make_and_model == other.effective_make_and_model &&
-         autoconf == other.autoconf;
 }
 
 }  // namespace chromeos
