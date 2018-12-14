@@ -274,13 +274,6 @@ const char kDataSaverServerPreviewsName[] = "Data Saver Server Previews";
 const char kDataSaverServerPreviewsDescription[] =
     "Allow the Data Reduction Proxy to serve previews.";
 
-const char kDatasaverPromptName[] = "Cellular Data Saver Prompt";
-const char kDatasaverPromptDescription[] =
-    "Enables a prompt, which appears when a cellular network connection is "
-    "detected, to take the user to the Data Saver extension page on Chrome Web "
-    "Store.";
-const char kDatasaverPromptDemoMode[] = "Demo mode";
-
 const char kDebugPackedAppName[] = "Debugging for packed apps";
 const char kDebugPackedAppDescription[] =
     "Enables debugging context menu options such as Inspect Element for packed "

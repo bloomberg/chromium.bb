@@ -164,9 +164,6 @@ const char kCrosRegionsModeHide[] = "hide";
 // "Override" value for kCrosRegionsMode (region's data is read first).
 const char kCrosRegionsModeOverride[] = "override";
 
-// Optional value for Data Saver prompt on cellular networks.
-const char kDataSaverPromptDemoMode[] = "demo";
-
 // Indicates that the wallpaper images specified by
 // kAshDefaultWallpaper{Large,Small} are OEM-specific (i.e. they are not
 // downloadable from Google).
@@ -198,9 +195,6 @@ const char kDisableCaptivePortalBypassProxy[] =
 
 // Disables cloud backup feature.
 const char kDisableCloudImport[] = "disable-cloud-import";
-
-// Disables Data Saver prompt on cellular networks.
-const char kDisableDataSaverPrompt[] = "disable-datasaver-prompt";
 
 // Disables the Chrome OS demo.
 const char kDisableDemoMode[] = "disable-demo-mode";
@@ -310,9 +304,6 @@ const char kEnableChromevoxDeveloperOption[] =
 
 // Enables consumer kiosk mode for Chrome OS.
 const char kEnableConsumerKiosk[] = "enable-consumer-kiosk";
-
-// Enables Data Saver prompt on cellular networks.
-const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 
 // Enables encryption migration for user's cryptohome to run latest Arc.
 const char kEnableEncryptionMigration[] = "enable-encryption-migration";

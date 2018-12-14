@@ -549,17 +549,6 @@ const FeatureEntry::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
      switches::kMaterialDesignInkDropAnimationSpeed,
      switches::kMaterialDesignInkDropAnimationSpeedSlow}};
 
-const FeatureEntry::Choice kDataSaverPromptChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flags_ui::kGenericExperimentChoiceEnabled,
-     chromeos::switches::kEnableDataSaverPrompt, ""},
-    {flags_ui::kGenericExperimentChoiceDisabled,
-     chromeos::switches::kDisableDataSaverPrompt, ""},
-    {flag_descriptions::kDatasaverPromptDemoMode,
-     chromeos::switches::kEnableDataSaverPrompt,
-     chromeos::switches::kDataSaverPromptDemoMode},
-};
-
 const FeatureEntry::Choice kUiShowCompositedLayerBordersChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kUiShowCompositedLayerBordersRenderPass,
@@ -2220,11 +2209,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"disable-mtp-write-support", flag_descriptions::kMtpWriteSupportName,
      flag_descriptions::kMtpWriteSupportDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableMtpWriteSupport)},
-#endif  // OS_CHROMEOS
-#if defined(OS_CHROMEOS)
-    {"enable-datasaver-prompt", flag_descriptions::kDatasaverPromptName,
-     flag_descriptions::kDatasaverPromptDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kDataSaverPromptChoices)},
 #endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
     {"autofill-keyboard-accessory-view",

@@ -4,28 +4,29 @@
 
 #include "chrome/browser/ui/ash/network/mobile_data_notifications.h"
 
+#include <gtest/gtest.h>
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using chromeos::DBusThreadManager;
@@ -36,7 +37,7 @@ namespace {
 const char kCellularDevicePath[] = "/device/stub_cellular_device1";
 const char kCellularServicePath[] = "/service/cellular1";
 const char kCellularGuid[] = "cellular1_guid";
-const char kNotificationId[] = "chrome://settings/internet/data_saver";
+const char kNotificationId[] = "chrome://settings/internet/mobile_data";
 const char kTestUserName[] = "test-user@example.com";
 
 class NetworkConnectTestDelegate : public chromeos::NetworkConnect::Delegate {
@@ -65,8 +66,6 @@ class MobileDataNotificationsTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kEnableDataSaverPrompt);
     DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
     mobile_data_notifications_.reset(new MobileDataNotifications);
@@ -145,6 +144,10 @@ class MobileDataNotificationsTest : public testing::Test {
         kCellularServicePath, shill::kConnectableProperty, base::Value(true));
   }
 
+  PrefService* pref_service() {
+    return ProfileManager::GetActiveUserProfile()->GetPrefs();
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
   std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
@@ -156,15 +159,44 @@ class MobileDataNotificationsTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MobileDataNotificationsTest);
 };
 
-TEST_F(MobileDataNotificationsTest, DataSaverNotification) {
-  // Network setup shouldn't be enough to activate notification.
+// Verify that basic network setup does not trigger notification.
+TEST_F(MobileDataNotificationsTest, SimpleSetup) {
+  pref_service()->SetBoolean(prefs::kShowMobileDataNotification, true);
   EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
+}
+
+// Verify that switching to cellular whiile pref is false does not display a
+// notification.
+TEST_F(MobileDataNotificationsTest, NotificationAlreadyShown) {
+  pref_service()->SetBoolean(prefs::kShowMobileDataNotification, false);
 
   chromeos::NetworkConnect::Get()->ConnectToNetworkId(kCellularGuid);
+  // Wait for async ConnectToNetworkId to take effect.
   base::RunLoop().RunUntilIdle();
-  // Connecting to cellular network (which here makes it the default network)
-  // should trigger the Data Saver notification.
+
+  EXPECT_FALSE(display_service_->GetNotification(kNotificationId));
+}
+
+// Verify that switching to cellular while pref is true displays notification.
+TEST_F(MobileDataNotificationsTest, DisplayNotification) {
+  pref_service()->SetBoolean(prefs::kShowMobileDataNotification, true);
+
+  chromeos::NetworkConnect::Get()->ConnectToNetworkId(kCellularGuid);
+  // Wait for async ConnectToNetworkId to take effect.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(display_service_->GetNotification(kNotificationId));
+}
+
+// Verify that displaying the notification toggles the profile pref.
+TEST_F(MobileDataNotificationsTest, TogglesPref) {
+  pref_service()->SetBoolean(prefs::kShowMobileDataNotification, true);
+
+  chromeos::NetworkConnect::Get()->ConnectToNetworkId(kCellularGuid);
+  // Wait for async ConnectToNetworkId to take effect.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(pref_service()->GetBoolean(prefs::kShowMobileDataNotification));
 }
 
 }  // namespace
