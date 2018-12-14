@@ -394,6 +394,10 @@ void SearchResultView::OnItemInstalled() {
   list_view_->OnSearchResultInstalled(this);
 }
 
+void SearchResultView::OnResultDestroying() {
+  SetResult(nullptr);
+}
+
 void SearchResultView::OnSearchResultActionActivated(size_t index,
                                                      int event_flags) {
   // |result_| could be NULL when result list is changing.
