@@ -213,10 +213,11 @@ TEST_F(CWVSyncControllerTest, CurrentIdentity) {
 
 // Verifies CWVSyncController's passphrase API.
 TEST_F(CWVSyncControllerTest, Passphrase) {
-  EXPECT_CALL(*profile_sync_service_, IsPassphraseRequiredForDecryption())
+  EXPECT_CALL(*profile_sync_service_->GetUserSettingsMock(),
+              IsPassphraseRequiredForDecryption())
       .WillOnce(Return(true));
   EXPECT_TRUE(sync_controller_.passphraseNeeded);
-  EXPECT_CALL(*profile_sync_service_,
+  EXPECT_CALL(*profile_sync_service_->GetUserSettingsMock(),
               SetDecryptionPassphrase("dummy-passphrase"))
       .WillOnce(Return(true));
   EXPECT_TRUE([sync_controller_ unlockWithPassphrase:@"dummy-passphrase"]);

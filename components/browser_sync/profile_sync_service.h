@@ -216,7 +216,7 @@ class ProfileSyncService : public syncer::SyncService,
   void OnDataTypeRequestsSyncStartup(syncer::ModelType type) override;
   void StopAndClear() override;
   void RequestStop(SyncStopDataFate data_fate);
-  virtual void RequestStart();  // Virtual for testing.
+  void RequestStart();
   void AddObserver(syncer::SyncServiceObserver* observer) override;
   void RemoveObserver(syncer::SyncServiceObserver* observer) override;
   bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
@@ -224,9 +224,8 @@ class ProfileSyncService : public syncer::SyncService,
   syncer::ModelTypeSet GetForcedDataTypes() const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
-  // Virtual for testing.
-  virtual void OnUserChoseDatatypes(bool sync_everything,
-                                    syncer::ModelTypeSet chosen_types);
+  void OnUserChoseDatatypes(bool sync_everything,
+                            syncer::ModelTypeSet chosen_types);
   virtual void SetFirstSetupComplete();  // Virtual for testing.
   std::unique_ptr<syncer::SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;

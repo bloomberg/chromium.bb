@@ -179,11 +179,13 @@ TEST_F(ClearBrowsingDataCollectionViewControllerTest,
       .WillRepeatedly(Return(syncer::SyncService::DISABLE_REASON_NONE));
   EXPECT_CALL(*mock_sync_service_, GetTransportState())
       .WillRepeatedly(Return(syncer::SyncService::TransportState::ACTIVE));
-  EXPECT_CALL(*mock_sync_service_, IsFirstSetupComplete())
+  EXPECT_CALL(*mock_sync_service_->GetUserSettingsMock(),
+              IsFirstSetupComplete())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_sync_service_, GetActiveDataTypes())
       .WillRepeatedly(Return(syncer::ModelTypeSet()));
-  EXPECT_CALL(*mock_sync_service_, IsUsingSecondaryPassphrase())
+  EXPECT_CALL(*mock_sync_service_->GetUserSettingsMock(),
+              IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(true));
 
   identity_test_env()->SetPrimaryAccount("syncuser@example.com");

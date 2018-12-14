@@ -87,7 +87,7 @@ void PassphraseCollectionViewControllerTest::SetUp() {
   fake_sync_service_->Initialize();
 
   // Set up non-default return values for our sync service mock.
-  ON_CALL(*fake_sync_service_, IsPassphraseRequired())
+  ON_CALL(*fake_sync_service_->GetUserSettingsMock(), IsPassphraseRequired())
       .WillByDefault(Return(true));
   ON_CALL(*fake_sync_service_, GetTransportState())
       .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
