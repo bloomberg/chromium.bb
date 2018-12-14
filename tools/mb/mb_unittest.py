@@ -443,6 +443,31 @@ class UnitTest(unittest.TestCase):
     self.assertIn('c:\\fake_src\\out\\Default\\cc_perftests.isolated.gen.json',
                   mbw.files)
 
+  def test_gen_fuzzer(self):
+    files = {
+      '/tmp/swarming_targets': 'cc_perftests_fuzzer\n',
+      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
+          "{'cc_perftests_fuzzer': {"
+          "  'label': '//cc:cc_perftests_fuzzer',"
+          "  'type': 'fuzzer',"
+          "}}\n"
+      ),
+      'c:\\fake_src\out\Default\cc_perftests_fuzzer.exe.runtime_deps': (
+          "cc_perftests_fuzzer\n"
+      ),
+    }
+    mbw = self.fake_mbw(files=files, win32=True)
+    self.check(['gen',
+                '-c', 'debug_goma',
+                '--swarming-targets-file', '/tmp/swarming_targets',
+                '--isolate-map-file',
+                '/fake_src/testing/buildbot/gn_isolate_map.pyl',
+                '//out/Default'], mbw=mbw, ret=0)
+    self.assertIn('c:\\fake_src\\out\\Default\\cc_perftests_fuzzer.isolate',
+                  mbw.files)
+    self.assertIn(
+        'c:\\fake_src\\out\\Default\\cc_perftests_fuzzer.isolated.gen.json',
+        mbw.files)
 
   def test_multiple_isolate_maps(self):
     files = {
