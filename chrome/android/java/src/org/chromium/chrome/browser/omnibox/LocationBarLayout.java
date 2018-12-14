@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
+import org.chromium.chrome.browser.omnibox.status.StatusView;
 import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.AutocompleteDelegate;
@@ -556,25 +557,25 @@ public class LocationBarLayout extends FrameLayout
         return mToolbarDataProvider;
     }
 
-    private static @StatusViewCoordinator.NavigationButtonType
-    int suggestionTypeToNavigationButtonType(OmniboxSuggestion suggestion) {
+    private static @StatusView.NavigationButtonType int suggestionTypeToNavigationButtonType(
+            OmniboxSuggestion suggestion) {
         if (suggestion.isUrlSuggestion()) {
-            return StatusViewCoordinator.NavigationButtonType.PAGE;
+            return StatusView.NavigationButtonType.PAGE;
         } else {
-            return StatusViewCoordinator.NavigationButtonType.MAGNIFIER;
+            return StatusView.NavigationButtonType.MAGNIFIER;
         }
     }
 
     // Updates the navigation button based on the URL string
     private void updateNavigationButton() {
-        @StatusViewCoordinator.NavigationButtonType
-        int type = StatusViewCoordinator.NavigationButtonType.EMPTY;
+        @StatusView.NavigationButtonType
+        int type = StatusView.NavigationButtonType.EMPTY;
         if (mIsTablet && mAutocompleteCoordinator.getSuggestionCount() > 0) {
             // If there are suggestions showing, show the icon for the default suggestion.
             type = suggestionTypeToNavigationButtonType(
                     mAutocompleteCoordinator.getSuggestionAt(0));
         } else if (mIsTablet) {
-            type = StatusViewCoordinator.NavigationButtonType.PAGE;
+            type = StatusView.NavigationButtonType.PAGE;
         }
 
         mStatusViewCoordinator.setNavigationButtonType(type);
@@ -1019,7 +1020,8 @@ public class LocationBarLayout extends FrameLayout
      */
     @Override
     public void updateVisualsForState() {
-        if (updateUseDarkColors()) mStatusViewCoordinator.setUseDarkColors(mUseDarkColors);
+        updateUseDarkColors();
+
         int id = mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint;
         ColorStateList colorStateList = AppCompatResources.getColorStateList(getContext(), id);
         ApiCompatibilityUtils.setImageTintList(mMicButton, colorStateList);
@@ -1031,6 +1033,7 @@ public class LocationBarLayout extends FrameLayout
             setUrlToPageUrl();
         }
 
+        mStatusViewCoordinator.setUseDarkColors(mUseDarkColors);
         mAutocompleteCoordinator.updateVisualsForState(mUseDarkColors);
     }
 
