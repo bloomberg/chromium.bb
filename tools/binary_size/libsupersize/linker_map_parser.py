@@ -22,6 +22,7 @@ from __future__ import print_function
 
 import argparse
 import code
+import itertools
 import logging
 import os
 import re
@@ -294,7 +295,6 @@ class MapFileParserGold(object):
 
 class MapFileParserLld(object):
   """Parses a linker map file from LLD."""
-  # TODO(huangs): Add LTO support.
   # Map file writer for LLD linker (for ELF):
   # https://github.com/llvm-mirror/lld/blob/HEAD/ELF/MapFile.cpp
   _LINE_RE_V0 = re.compile(r'([0-9a-f]+)\s+([0-9a-f]+)\s+(\d+) ( *)(.*)')
@@ -306,6 +306,86 @@ class MapFileParserLld(object):
     self._linker_name = linker_name
     self._common_symbols = []
     self._section_sizes = {}
+
+  @staticmethod
+  def ParseArmAnnotations(tok):
+    """Decides whether a Level 3 token is an annotation.
+
+    Returns:
+      A 2-tuple (is_annotation, next_thumb2_mode):
+        is_annotation: Whether |tok| is an annotation.
+        next_thumb2_mode: New |thumb2_mode| value, or None if keep old value.
+    """
+    # Annotations for ARM match '$t', '$d.1', but not '$_21::invoke'.
+    if tok.startswith('$') and (len(tok) == 2 or
+                                (len(tok) >= 3 and tok[2] == '.')):
+      if tok.startswith('$t'):
+        return True, True  # Is annotation, enter Thumb2 mode.
+      if tok.startswith('$a'):
+        return True, False  # Is annotation, enter ARM32 mode.
+      return True, None  # Is annotation, keep old |thumb2_mode| value.
+    return False, None  # Not annotation, keep old |thumb2_mode| value.
+
+  def Tokenize(self, lines):
+    """Generator to filter and tokenize linker map lines."""
+    # Extract e.g., 'lld_v0' -> 0, or 'lld-lto_v1' -> 1.
+    map_file_version = int(self._linker_name.split('_v')[1])
+    pattern = MapFileParserLld._LINE_RE[map_file_version]
+
+    # A Level 3 symbol can have |size == 0| in some situations (e.g., assembly
+    # code symbols). To provided better size estimates in this case, the "span"
+    # of a Level 3 symbol is computed as:
+    #  (A) The |address| difference compared to the next Level 3 symbol.
+    #  (B) If the Level 3 symbol is the last one among Level 3 lines nested
+    #      in a Level 2 line: The difference between the Level 3 symbol's
+    #      |address| with the containing Level 2 line's end address.
+    # To handle (A), |lines| is visited using a one-step lookahead, using
+    # |sentinel| to handle the last line. To handle (B), |level2_end_address|
+    # is updated whenever a Level 2 line is processed.
+    sentinel = '0 0 0 0 THE_END'
+    assert pattern.match(sentinel)
+    level2_end_address = None
+    thumb2_mode = False
+    (line, address, size, level, tok) = (None, None, None, None, None)
+    for next_line in itertools.chain(lines, (sentinel,)):
+      m = pattern.match(next_line)
+      if m is None:
+        continue
+      next_address = int(m.group(1), 16)
+      next_size = int(m.group(2), 16)
+      next_level = (len(m.group(4)) // 8) + 1  # Add 1 to agree with comments.
+      next_tok = m.group(5)
+
+      if next_level == 3:
+        assert level >= 2, 'Cannot jump from Level 1 to Level 3.'
+        # Detect annotations. If found, maybe update |thumb2_mode|, then skip.
+        (is_annotation, next_thumb2_mode) = (
+            MapFileParserLld.ParseArmAnnotations(next_tok))
+        if is_annotation:
+          if next_thumb2_mode:
+            thumb2_mode = next_thumb2_mode
+          continue  # Skip annotations.
+        if thumb2_mode:
+          # Adjust odd address to even. Alignment is not guanteed for all
+          # symbols (e.g., data, or x86), so this is judiciously applied.
+          next_address &= ~1
+      else:
+        thumb2_mode = False  # Resets on leaving Level 3.
+
+      if address is not None:
+        span = None
+        if level == 3:
+          span = next_address if next_level == 3 else level2_end_address
+          span -= address
+        elif level == 2:
+          level2_end_address = address + size
+        yield (line, address, size, level, span, tok)
+
+      line = next_line
+      address = next_address
+      size = next_size
+      level = next_level
+      tok = next_tok
 
   def Parse(self, lines):
     """Parses a linker map file.
@@ -348,25 +428,17 @@ class MapFileParserLld(object):
 # 00000000002010c0 0000000000000000     0                 frame_dummy
 # 00000000002010ed 0000000000000071     1         a.o:(.text)
 # 00000000002010ed 0000000000000071     0                 main
-    # Extract e.g., 'lld_v0' -> 0, or 'lld-lto_v1' -> 1.
-    map_file_version = int(self._linker_name.split('_v')[1])
-    pattern = MapFileParserLld._LINE_RE[map_file_version]
-
     syms = []
     cur_section = None
     cur_section_is_useful = None
     promoted_name_count = 0
 
-    for line in lines:
-      m = pattern.match(line)
-      if m is None:
-        continue
-      address = int(m.group(1), 16)
-      size = int(m.group(2), 16)
-      indent_size = len(m.group(4))
-      tok = m.group(5)
-
-      if indent_size == 0:
+    tokenizer = self.Tokenize(lines)
+    # TODO(huangs): Use |span| from |tokenizer| to fix http://crbug.com/892648.
+    for (line, address, size, level, _, tok) in tokenizer:
+      # Level 1 data match the "Out" column. They specify sections or
+      # PROVIDE_HIDDEN lines.
+      if level == 1:
         if not tok.startswith('PROVIDE_HIDDEN'):
           self._section_sizes[tok] = size
         cur_section = tok
@@ -379,12 +451,14 @@ class MapFileParserLld(object):
             cur_section.startswith(models.SECTION_DATA))
 
       elif cur_section_is_useful:
-        if indent_size == 8:
-          # Create preliminary Symbol, which can be modified as sym[-1].
+        # Level 2 data match the "In" column. They specify object paths and
+        # section names within objects, or '<internal>:...'.
+        if level == 2:
+          # Create symbol, which can be modified as sym[-1] by Level 3 parsing.
           syms.append(models.Symbol(cur_section, size, address=address))
           # E.g. path.o:(.text._name)
           cur_obj, paren_value = tok.split(':')
-          # "(.text._name)" -> "_name".
+          # '(.text._name)' -> '_name'.
           mangled_name = paren_value[mangled_start_idx:-1]
           # As of 2017/11 LLD does not distinguish merged strings from other
           # merged data. Feature request is filed under:
@@ -403,16 +477,20 @@ class MapFileParserLld(object):
           else:
             syms[-1].object_path = cur_obj
 
-        elif indent_size == 16:
+        # Level 3 data match the "Symbol" column. They specify symbol names or
+        # special names such as '.L_MergeGlobals'. Annotations such as '$d',
+        # '$t.42' also appear at Level 3, but they are consumed by |tokenizer|,
+        # so don't appear hear.
+        elif level == 3:
           # Ignore anything with '.L_MergedGlobals' prefix. This seems to only
           # happen for ARM (32-bit) builds.
           if tok.startswith('.L_MergedGlobals'):
             continue
-          # If multiple entries exist, take the first on that reports a size.
-          # Zero-length symbols look like "$t.4", "$d.5".
+          # Multiple Level 3 entries may exist. Take the first with |size != 0|.
+          # TODO(huangs): Process all entries to fix http://crbug.com/892648.
           if size and not syms[-1].full_name:
             # Outlined functions have names like OUTLINED_FUNCTION_0, which can
-            # appear 1000+ time that can cause false aliasing. We treat these as
+            # appear 1000+ time, and can cause false aliasing. We treat these as
             # special cases by designating them as a placeholder symbols and
             # renaming them to '** outlined function'.
             if tok.startswith('OUTLINED_FUNCTION_'):

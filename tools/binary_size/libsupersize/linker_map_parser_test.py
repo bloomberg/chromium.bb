@@ -63,6 +63,46 @@ class LinkerMapParserTest(unittest.TestCase):
       ret.append(repr(sym))
     return ret
 
+  def test_ParseArmAnnotations(self):
+    fun = linker_map_parser.MapFileParserLld.ParseArmAnnotations
+
+    # Annotations.
+    self.assertEquals((True, False), fun('$a'))
+    self.assertEquals((True, False), fun('$a.0'))
+    self.assertEquals((True, False), fun('$a.137'))
+    self.assertEquals((True, True), fun('$t'))
+    self.assertEquals((True, True), fun('$t.42'))
+    self.assertEquals((True, None), fun('$d'))
+    self.assertEquals((True, None), fun('$d.7'))
+
+    # Annotations that should not appear, but get handled anyway.
+    self.assertEquals((True, False), fun('$a.'))
+    self.assertEquals((True, True), fun('$t.'))
+    self.assertEquals((True, None), fun('$d.'))
+    self.assertEquals((True, None), fun('$$.'))
+
+    # Non-annotations.
+    self.assertEquals((False, None), fun('$_21::invoke'))
+    self.assertEquals((False, None), fun('$aa'))
+    self.assertEquals((False, None), fun('$tt.'))
+    self.assertEquals((False, None), fun('$'))
+    self.assertEquals((False, None), fun(''))
+    self.assertEquals((False, None), fun('void foo()'))
+    self.assertEquals((False, None), fun('OUTLINED_FUNCTION_'))
+    self.assertEquals((False, None), fun('abc'))
+
+  @_CompareWithGolden()
+  def test_Tokenize(self):
+    ret = []
+    map_file = _ReadMapFile(_TEST_MAP_PATH)
+    linker_name = linker_map_parser.DetectLinkerNameFromMapFile(iter(map_file))
+    parser = linker_map_parser.MapFileParserLld(linker_name)
+    tokenizer = parser.Tokenize(iter(map_file))
+    for (_, address, size, level, span, tok) in tokenizer:
+      ret.append('%8X %8X (%d) %s %s' % (address, size, level, '-' * 8 if
+                                         span is None else '%8X' % span, tok))
+    return ret
+
 
 def main():
   argv = sys.argv
