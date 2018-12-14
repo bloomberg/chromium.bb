@@ -29,15 +29,7 @@ UIViewController* MailtoHandlerProvider::MailtoHandlerSettingsController()
 void MailtoHandlerProvider::DismissAllMailtoHandlerInterfaces() const {}
 
 void MailtoHandlerProvider::HandleMailtoURL(NSURL* url) const {
-  if ([[UIApplication sharedApplication]
-          respondsToSelector:@selector(openURL:options:completionHandler:)]) {
-    [[UIApplication sharedApplication] openURL:url
-                                       options:@{}
-                             completionHandler:nil];
-  } else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [[UIApplication sharedApplication] openURL:url];
-#pragma clang diagnostic pop
-  }
+  [[UIApplication sharedApplication] openURL:url
+                                     options:@{}
+                           completionHandler:nil];
 }
