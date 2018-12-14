@@ -64,8 +64,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
 
   bool use_swap_with_bounds() const { return use_swap_with_bounds_; }
 
-  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
-                   bool need_presentation_feedback) override;
+  void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
   void SwapBuffersComplete() override;
 
   void DidReceiveTextureInUseResponses(

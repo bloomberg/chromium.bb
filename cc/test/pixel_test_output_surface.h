@@ -48,7 +48,7 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   }
 
  private:
-  void SwapBuffersCallback(bool need_presentation_feedback);
+  void SwapBuffersCallback();
 
   bool external_stencil_test_ = false;
   viz::OutputSurfaceClient* client_ = nullptr;

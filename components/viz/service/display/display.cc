@@ -108,7 +108,8 @@ Display::Display(
       scheduler_(std::move(scheduler)),
       current_task_runner_(std::move(current_task_runner)),
       swapped_trace_id_(GetStartingTraceId()),
-      last_acked_trace_id_(swapped_trace_id_) {
+      last_acked_trace_id_(swapped_trace_id_),
+      last_presented_trace_id_(last_acked_trace_id_) {
   DCHECK(output_surface_);
   DCHECK(frame_sink_id_.is_valid());
   if (scheduler_)
@@ -488,9 +489,7 @@ bool Display::DrawAndSwap() {
                                                  "Display::DrawAndSwap");
 
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
-    const bool need_presentation_feedback = true;
-    renderer_->SwapBuffers(std::move(frame.metadata.latency_info),
-                           need_presentation_feedback);
+    renderer_->SwapBuffers(std::move(frame.metadata.latency_info));
     if (scheduler_)
       scheduler_->DidSwapBuffers();
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
@@ -538,8 +537,8 @@ bool Display::DrawAndSwap() {
 
 void Display::DidReceiveSwapBuffersAck() {
   ++last_acked_trace_id_;
-  TRACE_EVENT_ASYNC_END0("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
-                         last_acked_trace_id_);
+  TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
+                               last_acked_trace_id_, "WaitForPresentation");
   if (scheduler_)
     scheduler_->DidReceiveSwapBuffersAck();
   if (renderer_)
@@ -566,6 +565,10 @@ void Display::DidSwapWithSize(const gfx::Size& pixel_size) {
 void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
   DCHECK(!pending_presented_callbacks_.empty());
+  ++last_presented_trace_id_;
+  TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+      "viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
+      last_presented_trace_id_, feedback.timestamp);
   auto& callbacks = pending_presented_callbacks_.front().second;
   const auto swap_time = pending_presented_callbacks_.front().first;
   auto copy_feedback = SanitizePresentationFeedback(feedback, swap_time);

@@ -244,9 +244,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
       return;
     swap_start = base::TimeTicks::Now();
     OnSwapBuffers();
-    gl_surface_->SwapBuffers(frame.need_presentation_feedback
-                                 ? buffer_presented_callback_
-                                 : base::DoNothing());
+    gl_surface_->SwapBuffers(buffer_presented_callback_);
     swap_end = base::TimeTicks::Now();
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)

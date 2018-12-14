@@ -79,8 +79,7 @@ void SoftwareOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   // Update refresh_interval_ as well.
 
   software_device()->OnSwapBuffers(base::BindOnce(
-      &SoftwareOutputSurface::SwapBuffersCallback, weak_factory_.GetWeakPtr(),
-      frame.need_presentation_feedback));
+      &SoftwareOutputSurface::SwapBuffersCallback, weak_factory_.GetWeakPtr()));
 }
 
 bool SoftwareOutputSurface::IsDisplayedAsOverlayPlane() const {
@@ -113,16 +112,13 @@ uint32_t SoftwareOutputSurface::GetFramebufferCopyTextureFormat() {
   return 0;
 }
 
-void SoftwareOutputSurface::SwapBuffersCallback(
-    bool need_presentation_feedback) {
+void SoftwareOutputSurface::SwapBuffersCallback() {
   latency_tracker_.OnGpuSwapBuffersCompleted(stored_latency_info_);
   client_->DidFinishLatencyInfo(stored_latency_info_);
   std::vector<ui::LatencyInfo>().swap(stored_latency_info_);
   client_->DidReceiveSwapBuffersAck();
-  if (need_presentation_feedback) {
-    client_->DidReceivePresentationFeedback(gfx::PresentationFeedback(
-        base::TimeTicks::Now(), refresh_interval_, 0u));
-  }
+  client_->DidReceivePresentationFeedback(
+      gfx::PresentationFeedback(base::TimeTicks::Now(), refresh_interval_, 0u));
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)

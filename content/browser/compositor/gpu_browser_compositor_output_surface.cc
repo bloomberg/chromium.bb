@@ -125,12 +125,9 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
       weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info));
   uint32_t flags = gpu::SwapBuffersFlags::kVSyncParams;
   gpu::ContextSupport::PresentationCallback presentation_callback;
-  if (frame.need_presentation_feedback) {
-    flags |= gpu::SwapBuffersFlags::kPresentationFeedback;
-    presentation_callback =
-        base::BindOnce(&GpuBrowserCompositorOutputSurface::OnPresentation,
-                       weak_ptr_factory_.GetWeakPtr());
-  }
+  presentation_callback =
+      base::BindOnce(&GpuBrowserCompositorOutputSurface::OnPresentation,
+                     weak_ptr_factory_.GetWeakPtr());
   if (frame.sub_buffer_rect) {
     DCHECK(frame.content_bounds.empty());
     context_provider_->ContextSupport()->PartialSwapBuffers(

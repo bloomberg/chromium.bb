@@ -407,11 +407,8 @@ void GLES2CommandBufferStub::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
   SwapBufferParams params = pending_presented_params_.front();
   pending_presented_params_.pop_front();
-
-  if (ShouldSendBufferPresented(params.flags, feedback.flags)) {
-    Send(new GpuCommandBufferMsg_BufferPresented(route_id_, params.swap_id,
-                                                 feedback));
-  }
+  Send(new GpuCommandBufferMsg_BufferPresented(route_id_, params.swap_id,
+                                               feedback));
 }
 
 void GLES2CommandBufferStub::AddFilter(IPC::MessageFilter* message_filter) {

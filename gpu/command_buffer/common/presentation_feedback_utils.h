@@ -15,11 +15,6 @@ struct PresentationFeedback;
 
 namespace gpu {
 
-// Returns true if command buffer should send buffer presented message to
-// client.
-GPU_EXPORT bool ShouldSendBufferPresented(uint32_t swap_buffer_flags,
-                                          uint32_t presentation_feedback_flags);
-
 // Returns true if command buffer should update vsync timing paramters based on
 // presentation feedback.
 GPU_EXPORT bool ShouldUpdateVsyncParams(

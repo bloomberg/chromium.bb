@@ -85,19 +85,15 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
 
   software_device()->OnSwapBuffers(base::BindOnce(
       &SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback,
-      weak_factory_.GetWeakPtr(), frame.latency_info,
-      frame.need_presentation_feedback));
+      weak_factory_.GetWeakPtr(), frame.latency_info));
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback(
-    const std::vector<ui::LatencyInfo>& latency_info,
-    bool need_presentation_feedback) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck();
-  if (need_presentation_feedback) {
-    client_->DidReceivePresentationFeedback(gfx::PresentationFeedback(
-        base::TimeTicks::Now(), refresh_interval_, 0u));
-  }
+  client_->DidReceivePresentationFeedback(
+      gfx::PresentationFeedback(base::TimeTicks::Now(), refresh_interval_, 0u));
 }
 
 void SoftwareBrowserCompositorOutputSurface::UpdateVSyncCallback(

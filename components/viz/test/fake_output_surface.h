@@ -124,7 +124,7 @@ class FakeOutputSurface : public OutputSurface {
   gfx::Rect last_set_draw_rectangle_;
 
  private:
-  void SwapBuffersAck(bool need_presentation_feedback);
+  void SwapBuffersAck();
 
   base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_;
 };
