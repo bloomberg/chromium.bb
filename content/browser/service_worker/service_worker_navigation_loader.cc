@@ -412,7 +412,9 @@ void ServiceWorkerNavigationLoader::StartResponse(
 
   response_head_.did_service_worker_navigation_preload =
       did_navigation_preload_;
-  response_head_.load_timing.receive_headers_end = base::TimeTicks::Now();
+  response_head_.load_timing.receive_headers_start = base::TimeTicks::Now();
+  response_head_.load_timing.receive_headers_end =
+      response_head_.load_timing.receive_headers_start;
 
   // Make the navigated page inherit the SSLInfo from its controller service
   // worker's script. This affects the HTTPS padlock, etc, shown by the

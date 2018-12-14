@@ -233,16 +233,16 @@ unsigned long long PerformanceTiming::requestStart() const {
 
 unsigned long long PerformanceTiming::responseStart() const {
   ResourceLoadTiming* timing = GetResourceLoadTiming();
-  if (!timing || timing->ReceiveHeadersEnd().is_null())
+  if (!timing)
     return requestStart();
 
-  // FIXME: Response start needs to be the time of the first received byte.
-  // However, the ResourceLoadTiming API currently only supports the time
-  // the last header byte was received. For many responses with reasonable
-  // sized cookies, the HTTP headers fit into a single packet so this time
-  // is basically equivalent. But for some responses, particularly those with
-  // headers larger than a single packet, this time will be too late.
-  return MonotonicTimeToIntegerMilliseconds(timing->ReceiveHeadersEnd());
+  TimeTicks response_start = timing->ReceiveHeadersStart();
+  if (response_start.is_null())
+    response_start = timing->ReceiveHeadersEnd();
+  if (response_start.is_null())
+    return requestStart();
+
+  return MonotonicTimeToIntegerMilliseconds(response_start);
 }
 
 unsigned long long PerformanceTiming::responseEnd() const {

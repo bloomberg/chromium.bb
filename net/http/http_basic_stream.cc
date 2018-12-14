@@ -106,8 +106,14 @@ int64_t HttpBasicStream::GetTotalSentBytes() const {
 
 bool HttpBasicStream::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
-  return state_.connection()->GetLoadTimingInfo(IsConnectionReused(),
-                                                load_timing_info);
+  if (!state_.connection()->GetLoadTimingInfo(IsConnectionReused(),
+                                              load_timing_info) ||
+      !parser()) {
+    return false;
+  }
+
+  load_timing_info->receive_headers_start = parser()->response_start_time();
+  return true;
 }
 
 bool HttpBasicStream::GetAlternativeService(

@@ -633,6 +633,7 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   base::TimeTicks entry_lock_waiting_since_;
   base::TimeTicks first_cache_access_since_;
   base::TimeTicks send_request_since_;
+  base::TimeTicks read_headers_since_;
   base::Time open_entry_last_used_;
   base::TimeDelta stale_entry_freshness_;
   base::TimeDelta stale_entry_age_;

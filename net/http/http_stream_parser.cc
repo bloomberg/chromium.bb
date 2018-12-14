@@ -866,6 +866,13 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
   if (read_buf_->offset() == 0)
     response_->response_time = base::Time::Now();
 
+  // For |response_start_time_|, use the time that we received the first byte of
+  // *any* response- including 1XX, as per the resource timing spec for
+  // responseStart (see note at
+  // https://www.w3.org/TR/resource-timing-2/#dom-performanceresourcetiming-responsestart).
+  if (response_start_time_.is_null())
+    response_start_time_ = base::TimeTicks::Now();
+
   read_buf_->set_offset(read_buf_->offset() + result);
   DCHECK_LE(read_buf_->offset(), read_buf_->capacity());
   DCHECK_GT(result, 0);

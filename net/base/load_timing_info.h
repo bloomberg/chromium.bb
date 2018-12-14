@@ -36,6 +36,7 @@ namespace net {
 // connect_end
 // send_start
 // send_end
+// receive_headers_start
 // receive_headers_end
 //
 // Times represent when a request starts/stops blocking on an event(*), not the
@@ -150,9 +151,10 @@ struct NET_EXPORT LoadTimingInfo {
   base::TimeTicks send_start;
   base::TimeTicks send_end;
 
-  // The time at which the end of the HTTP headers were received.
-  // Corresponds to |responseStart| in ResourceTiming
+  // The time at which the first / last byte of the HTTP headers were received.
+  // |receive_headers_start| corresponds to |responseStart| in ResourceTiming
   // (http://www.w3.org/TR/resource-timing/) for Web-surfacing requests.
+  base::TimeTicks receive_headers_start;
   base::TimeTicks receive_headers_end;
 
   // In case the resource was proactively pushed by the server, these are

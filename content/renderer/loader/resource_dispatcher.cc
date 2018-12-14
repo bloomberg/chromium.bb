@@ -846,6 +846,7 @@ void ResourceDispatcher::ToResourceResponseInfo(
   RemoteToLocalTimeTicks(converter, &load_timing->connect_timing.ssl_end);
   RemoteToLocalTimeTicks(converter, &load_timing->send_start);
   RemoteToLocalTimeTicks(converter, &load_timing->send_end);
+  RemoteToLocalTimeTicks(converter, &load_timing->receive_headers_start);
   RemoteToLocalTimeTicks(converter, &load_timing->receive_headers_end);
   RemoteToLocalTimeTicks(converter, &load_timing->push_start);
   RemoteToLocalTimeTicks(converter, &load_timing->push_end);

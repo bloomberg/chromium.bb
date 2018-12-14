@@ -53,6 +53,7 @@ class PLATFORM_EXPORT ResourceLoadTiming
   void SetWorkerReady(TimeTicks);
   void SetSendStart(TimeTicks);
   void SetSendEnd(TimeTicks);
+  void SetReceiveHeadersStart(TimeTicks);
   void SetReceiveHeadersEnd(TimeTicks);
   void SetSslStart(TimeTicks);
   void SetSslEnd(TimeTicks);
@@ -70,6 +71,7 @@ class PLATFORM_EXPORT ResourceLoadTiming
   TimeTicks WorkerReady() const { return worker_ready_; }
   TimeTicks SendStart() const { return send_start_; }
   TimeTicks SendEnd() const { return send_end_; }
+  TimeTicks ReceiveHeadersStart() const { return receive_headers_start_; }
   TimeTicks ReceiveHeadersEnd() const { return receive_headers_end_; }
   TimeTicks SslStart() const { return ssl_start_; }
   TimeTicks SslEnd() const { return ssl_end_; }
@@ -103,6 +105,7 @@ class PLATFORM_EXPORT ResourceLoadTiming
   TimeTicks worker_ready_;
   TimeTicks send_start_;
   TimeTicks send_end_;
+  TimeTicks receive_headers_start_;
   TimeTicks receive_headers_end_;
   TimeTicks ssl_start_;
   TimeTicks ssl_end_;

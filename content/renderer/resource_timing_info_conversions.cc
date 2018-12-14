@@ -38,6 +38,8 @@ ResourceTimingInfo WebResourceTimingInfoToResourceTimingInfo(
     resource_timing.timing->worker_ready = info.timing.WorkerReady();
     resource_timing.timing->send_start = info.timing.SendStart();
     resource_timing.timing->send_end = info.timing.SendEnd();
+    resource_timing.timing->receive_headers_start =
+        info.timing.ReceiveHeadersStart();
     resource_timing.timing->receive_headers_end =
         info.timing.ReceiveHeadersEnd();
     resource_timing.timing->ssl_start = info.timing.SslStart();
@@ -96,6 +98,8 @@ blink::WebResourceTimingInfo ResourceTimingInfoToWebResourceTimingInfo(
     info.timing.SetWorkerReady(resource_timing.timing->worker_ready);
     info.timing.SetSendStart(resource_timing.timing->send_start);
     info.timing.SetSendEnd(resource_timing.timing->send_end);
+    info.timing.SetReceiveHeadersStart(
+        resource_timing.timing->receive_headers_start);
     info.timing.SetReceiveHeadersEnd(
         resource_timing.timing->receive_headers_end);
     info.timing.SetSSLStart(resource_timing.timing->ssl_start);
