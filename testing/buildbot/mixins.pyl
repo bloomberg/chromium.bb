@@ -424,6 +424,20 @@
       },
     },
   },
+  'optional_mac_gpu_slicing': {
+    'swarming': {
+      'optional_dimensions': {
+        # Wait 10 minutes for 10.13 and then fall back to the specified
+        # dimensions (usually 10.12).  The format for optional dimensions
+        # is: expiration: [{key, value}, ..].
+        600: [
+          {
+            'os': 'Mac-10.13.6',
+          }
+        ],
+      },
+    }
+  },
   'oreo': {
     'swarming': {
       'dimensions': {

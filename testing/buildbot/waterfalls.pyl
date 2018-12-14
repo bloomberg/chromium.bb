@@ -1856,6 +1856,7 @@
         'os_type': 'mac',
         'mixins': [
           'mac_mini_intel_gpu',
+          'optional_mac_gpu_slicing',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
