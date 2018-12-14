@@ -51,6 +51,8 @@ bool EqualStringView(const StringView& a, const StringView& b) {
     return a.IsNull() == b.IsNull();
   if (a.length() != b.length())
     return false;
+  if (a.Bytes() == b.Bytes() && a.Is8Bit() == b.Is8Bit())
+    return true;
   if (a.Is8Bit()) {
     if (b.Is8Bit())
       return Equal(a.Characters8(), b.Characters8(), a.length());
@@ -92,6 +94,8 @@ bool EqualIgnoringASCIICase(const StringView& a, const StringView& b) {
     return a.IsNull() == b.IsNull();
   if (a.length() != b.length())
     return false;
+  if (a.Bytes() == b.Bytes() && a.Is8Bit() == b.Is8Bit())
+    return true;
   if (a.Is8Bit()) {
     if (b.Is8Bit())
       return EqualIgnoringASCIICase(a.Characters8(), b.Characters8(),
