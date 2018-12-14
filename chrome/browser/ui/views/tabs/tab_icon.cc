@@ -28,11 +28,11 @@
 
 namespace {
 
-constexpr int kFinishedLoadingAnimationTimeMs = 400;
-constexpr int kFinishedLoadingFadeOutTimeMs = 200;
-constexpr int kFaviconFadeInMs = 500;
-constexpr int kFaviconPlaceholderFadeInMs = 500;
-constexpr int kFaviconPlaceholderFadeOutMs = 200;
+constexpr int kFinishedLoadingAnimationTimeMs = 250;
+constexpr int kFinishedLoadingFadeOutTimeMs = 150;
+constexpr int kFaviconFadeInMs = 250;
+constexpr int kFaviconPlaceholderFadeInMs = 400;
+constexpr int kFaviconPlaceholderFadeOutMs = 150;
 
 bool UseNewLoadingAnimation() {
   return base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation);
@@ -426,7 +426,11 @@ void TabIcon::MaybePaintFaviconPlaceholder(gfx::Canvas* canvas,
   if (!animation_state_.favicon_placeholder_alpha)
     return;
   cc::PaintFlags flags;
-  double placeholder_alpha = *animation_state_.favicon_placeholder_alpha;
+  double placeholder_alpha = gfx::Tween::CalculateValue(
+      !pending_animation_state_.favicon_fade_in_progress
+          ? gfx::Tween::LINEAR_OUT_SLOW_IN
+          : gfx::Tween::SLOW_OUT_LINEAR_IN,
+      *animation_state_.favicon_placeholder_alpha);
   const SkColor placeholder_color =
       color_utils::IsDark(bg_color_)
           ? SkColorSetA(SK_ColorWHITE, 32 * placeholder_alpha)
