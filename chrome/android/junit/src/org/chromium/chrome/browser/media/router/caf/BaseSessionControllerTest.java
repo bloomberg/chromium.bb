@@ -92,6 +92,7 @@ public class BaseSessionControllerTest {
                         .addControlCategory(CastMediaControlIntent.categoryForCast(APP_ID))
                         .build();
         mController = new TestSessionController(mProvider, mNotificationController);
+        mController.addCallback(mNotificationController);
         mRequestInfo = new CreateRouteRequestInfo(mSource, mSink, PRESENTATION_ID, ORIGIN, TAB_ID,
                 false, 1, mMediaRouterHelper.getCastRoute());
 

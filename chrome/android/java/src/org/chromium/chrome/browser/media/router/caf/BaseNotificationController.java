@@ -17,7 +17,8 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.chromium.services.media_session.MediaMetadata;
 
 /** Base controller for updating media notification for Casting and MediaFling. */
-public abstract class BaseNotificationController implements MediaNotificationListener {
+public abstract class BaseNotificationController
+        implements MediaNotificationListener, BaseSessionController.Callback {
     private MediaNotificationInfo.Builder mNotificationBuilder;
     protected final BaseSessionController mSessionController;
 
@@ -25,7 +26,7 @@ public abstract class BaseNotificationController implements MediaNotificationLis
         mSessionController = sessionController;
     }
 
-    /** Called when session started. */
+    @Override
     public void onSessionStarted() {
         mNotificationBuilder =
                 new MediaNotificationInfo.Builder()
@@ -47,9 +48,9 @@ public abstract class BaseNotificationController implements MediaNotificationLis
         MediaNotificationManager.show(mNotificationBuilder.build());
     }
 
-    /** Called when session ended. */
+    @Override
     public void onSessionEnded() {
-        MediaNotificationManager.clear(R.id.presentation_notification);
+        MediaNotificationManager.clear(getNotificationId());
         mNotificationBuilder = null;
     }
 

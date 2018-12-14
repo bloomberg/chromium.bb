@@ -755,6 +755,16 @@ by a child template that "extends" this file.
             android:excludeFromRecents="true">
         </activity>
 
+        <activity android:name="org.chromium.chrome.browser.media.router.caf.remoting.CafExpandedControllerActivity"
+            android:theme="@style/MainTheme"
+            android:label="Chrome.CafExpandedControllerActivity"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleTask"
+            android:noHistory="true"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:excludeFromRecents="true">
+        </activity>
+
         <!-- This activity is used to restart the main Chrome process.  Should never be exported. -->
         <activity android:name="org.chromium.chrome.browser.BrowserRestartActivity"
             android:launchMode="singleInstance"

@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.tab.Tab;
 public class CafNotificationController extends BaseNotificationController {
     public CafNotificationController(BaseSessionController sessionController) {
         super(sessionController);
+        sessionController.addCallback(this);
     }
 
     @Override
