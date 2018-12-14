@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -25,86 +26,35 @@
 
 namespace chromeos {
 namespace {
-constexpr base::TimeDelta kJsConditionCheckFrequency =
-    base::TimeDelta::FromMilliseconds(200);
-constexpr base::TimeDelta kLoginDisplayHostCheckFrequency =
-    base::TimeDelta::FromMilliseconds(200);
 
-// Waits for js condition to be fulfilled.
-class JsConditionWaiter {
- public:
-  enum class Options {
-    kNone,
-    kSatisfyIfOobeDestroyed,
-  };
-
-  // If |options| is true, we are waiting for the end condition, so it is
-  // automatically fullfilled if LoginDisplayHost is already destroyed.
-  JsConditionWaiter(const std::string& js_condition, Options options)
-      : js_condition_(js_condition), options_(options) {}
-
-  ~JsConditionWaiter() = default;
-
-  void Wait() {
-    if (IsConditionFulfilled())
-      return;
-
-    timer_.Start(FROM_HERE, kJsConditionCheckFrequency, this,
-                 &JsConditionWaiter::CheckCondition);
-    run_loop_.Run();
-  }
-
- private:
-  bool IsConditionFulfilled() {
-    return (options_ == Options::kSatisfyIfOobeDestroyed &&
-            !LoginDisplayHost::default_host()) ||
-           test::OobeJS().GetBool(js_condition_);
-  }
-
-  void CheckCondition() {
-    if (IsConditionFulfilled()) {
-      run_loop_.Quit();
-      timer_.Stop();
-    }
-  }
-
-  const std::string js_condition_;
-  const Options options_;
-
-  base::RepeatingTimer timer_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsConditionWaiter);
+enum class JsWaitOptions {
+  kNone,
+  kSatisfyIfOobeDestroyed,
 };
 
-// Waits for LoginDisplayHost to shut down.
-class LoginDisplayHostShutdownWaiter {
- public:
-  LoginDisplayHostShutdownWaiter() = default;
-  ~LoginDisplayHostShutdownWaiter() = default;
-
-  void Wait() {
-    if (!LoginDisplayHost::default_host())
-      return;
-
-    timer_.Start(FROM_HERE, kLoginDisplayHostCheckFrequency, this,
-                 &LoginDisplayHostShutdownWaiter::CheckCondition);
-    run_loop_.Run();
+// If |options| is kSatisfyIfOobeDestroyed, we are waiting for the end
+// condition, so it is automatically fullfilled if LoginDisplayHost is already
+// destroyed.
+void WaitForJsCondition(const std::string& js_condition,
+                        JsWaitOptions options) {
+  if (options == JsWaitOptions::kSatisfyIfOobeDestroyed) {
+    return test::TestConditionWaiter(
+               base::BindRepeating(
+                   [](const std::string& js_condition) {
+                     return !LoginDisplayHost::default_host() ||
+                            test::OobeJS().GetBool(js_condition);
+                   },
+                   js_condition))
+        .Wait();
   }
-
- private:
-  void CheckCondition() {
-    if (!LoginDisplayHost::default_host()) {
-      run_loop_.Quit();
-      timer_.Stop();
-    }
-  }
-
-  base::RepeatingTimer timer_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostShutdownWaiter);
-};
+  return test::TestConditionWaiter(base::BindRepeating(
+                                       [](const std::string& js_condition) {
+                                         return test::OobeJS().GetBool(
+                                             js_condition);
+                                       },
+                                       js_condition))
+      .Wait();
+}
 
 class ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver {
  public:
@@ -194,7 +144,9 @@ class OobeInteractiveUITest
 
     LOG(INFO)
         << "OobeInteractiveUITest: Waiting for LoginDisplayHost to shut down.";
-    LoginDisplayHostShutdownWaiter().Wait();
+    test::TestConditionWaiter(base::BindRepeating([]() {
+      return !LoginDisplayHost::default_host();
+    })).Wait();
     LOG(INFO) << "OobeInteractiveUITest: LoginDisplayHost is down.";
   }
 
@@ -204,9 +156,8 @@ class OobeInteractiveUITest
         content::NotificationService::AllSources());
     observer.Wait();
 
-    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'connect'",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("Oobe.getInstance().currentScreen.id == 'connect'",
+                       JsWaitOptions::kNone);
   }
 
   void RunWelcomeScreenChecks() {
@@ -235,10 +186,9 @@ class OobeInteractiveUITest
   }
 
   void WaitForNetworkSelectionScreen() {
-    JsConditionWaiter(
+    WaitForJsCondition(
         "Oobe.getInstance().currentScreen.id == 'network-selection'",
-        JsConditionWaiter::Options::kNone)
-        .Wait();
+        JsWaitOptions::kNone);
     LOG(INFO)
         << "OobeInteractiveUITest: Switched to 'network-selection' screen.";
   }
@@ -256,17 +206,15 @@ class OobeInteractiveUITest
   }
 
   void WaitForEulaScreen() {
-    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'eula'",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("Oobe.getInstance().currentScreen.id == 'eula'",
+                       JsWaitOptions::kNone);
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'eula' screen.";
   }
 
   void RunEulaScreenChecks() {
     // Wait for actual EULA to appear.
-    JsConditionWaiter("!$('oobe-eula-md').$.eulaDialog.hidden",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("!$('oobe-eula-md').$.eulaDialog.hidden",
+                       JsWaitOptions::kNone);
     test::OobeJS().ExpectTrue("!$('oobe-eula-md').$.acceptButton.disabled");
   }
 
@@ -275,11 +223,9 @@ class OobeInteractiveUITest
   }
 
   void WaitForUpdateScreen() {
-    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'update'",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
-    JsConditionWaiter("!$('update').hidden", JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("Oobe.getInstance().currentScreen.id == 'update'",
+                       JsWaitOptions::kNone);
+    WaitForJsCondition("!$('update').hidden", JsWaitOptions::kNone);
 
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'update' screen.";
   }
@@ -294,9 +240,8 @@ class OobeInteractiveUITest
   }
 
   void WaitForGaiaSignInScreen() {
-    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'gaia-signin'",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("Oobe.getInstance().currentScreen.id == 'gaia-signin'",
+                       JsWaitOptions::kNone);
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'gaia-signin' screen.";
   }
 
@@ -312,9 +257,8 @@ class OobeInteractiveUITest
 
   void WaitForSyncConsentScreen() {
     LOG(INFO) << "OobeInteractiveUITest: Waiting for 'sync-consent' screen.";
-    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'sync-consent'",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("Oobe.getInstance().currentScreen.id == 'sync-consent'",
+                       JsWaitOptions::kNone);
   }
 
   void ExitScreenSyncConsent() {
@@ -326,33 +270,27 @@ class OobeInteractiveUITest
     screen->OnStateChanged(nullptr);
     LOG(INFO) << "OobeInteractiveUITest: Waiting for 'sync-consent' screen "
                  "to close.";
-    JsConditionWaiter("Oobe.getInstance().currentScreen.id != 'sync-consent'",
-                      JsConditionWaiter::Options::kSatisfyIfOobeDestroyed)
-        .Wait();
+    WaitForJsCondition("Oobe.getInstance().currentScreen.id != 'sync-consent'",
+                       JsWaitOptions::kSatisfyIfOobeDestroyed);
   }
 
   void WaitForFingerprintScreen() {
     LOG(INFO)
         << "OobeInteractiveUITest: Waiting for 'fingerprint-setup' screen.";
-    JsConditionWaiter(
+    WaitForJsCondition(
         "Oobe.getInstance().currentScreen.id == 'fingerprint-setup'",
-        JsConditionWaiter::Options::kNone)
-        .Wait();
+        JsWaitOptions::kNone);
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to show.";
-    JsConditionWaiter("!$('fingerprint-setup').hidden",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("!$('fingerprint-setup').hidden", JsWaitOptions::kNone);
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to initializes.";
-    JsConditionWaiter("!$('fingerprint-setup-impl').hidden",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("!$('fingerprint-setup-impl').hidden",
+                       JsWaitOptions::kNone);
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to show setupFingerprint.";
-    JsConditionWaiter("!$('fingerprint-setup-impl').$.setupFingerprint.hidden",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("!$('fingerprint-setup-impl').$.setupFingerprint.hidden",
+                       JsWaitOptions::kNone);
   }
 
   void RunFingerprintScreenChecks() {
@@ -366,9 +304,8 @@ class OobeInteractiveUITest
         "$('fingerprint-setup-impl').$.setupFingerprint.hidden");
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup "
                  "to switch to placeFinger.";
-    JsConditionWaiter("!$('fingerprint-setup-impl').$.placeFinger.hidden",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("!$('fingerprint-setup-impl').$.placeFinger.hidden",
+                       JsWaitOptions::kNone);
   }
 
   void ExitFingerprintPinSetupScreen() {
@@ -381,18 +318,16 @@ class OobeInteractiveUITest
         "$('fingerprint-setup-impl').$.setupFingerprintLater.click()");
     LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup screen "
                  "to close.";
-    JsConditionWaiter(
+    WaitForJsCondition(
         "Oobe.getInstance().currentScreen.id !="
         "'fingerprint-setup'",
-        JsConditionWaiter::Options::kSatisfyIfOobeDestroyed)
-        .Wait();
+        JsWaitOptions::kSatisfyIfOobeDestroyed);
     LOG(INFO) << "OobeInteractiveUITest: 'fingerprint-setup' screen done.";
   }
 
   void WaitForDiscoverScreen() {
-    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'discover'",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("Oobe.getInstance().currentScreen.id == 'discover'",
+                       JsWaitOptions::kNone);
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'discover' screen.";
   }
 
@@ -417,16 +352,14 @@ class OobeInteractiveUITest
     test::OobeJS().ExecuteAsync(
         "$('discover-impl').root.querySelector('discover-pin-setup-module')."
         "$.setupSkipButton.click()");
-    JsConditionWaiter("Oobe.getInstance().currentScreen.id != 'discover'",
-                      JsConditionWaiter::Options::kSatisfyIfOobeDestroyed)
-        .Wait();
+    WaitForJsCondition("Oobe.getInstance().currentScreen.id != 'discover'",
+                       JsWaitOptions::kSatisfyIfOobeDestroyed);
     LOG(INFO) << "OobeInteractiveUITest: 'discover' screen done.";
   }
 
   void WaitForUserImageScreen() {
-    JsConditionWaiter("Oobe.getInstance().currentScreen.id == 'user-image'",
-                      JsConditionWaiter::Options::kNone)
-        .Wait();
+    WaitForJsCondition("Oobe.getInstance().currentScreen.id == 'user-image'",
+                       JsWaitOptions::kNone);
 
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'user-image' screen.";
   }

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -21,8 +22,6 @@
 
 namespace chromeos {
 namespace {
-constexpr base::TimeDelta kJsConditionCheckFrequency =
-    base::TimeDelta::FromMilliseconds(2000);
 
 class ConsentRecordedWaiter
     : public SyncConsentScreen::SyncConsentScreenTestDelegate {
@@ -77,41 +76,15 @@ class ConsentRecordedWaiter
 };
 
 // Waits for js condition to be fulfilled.
-class JsConditionWaiter {
- public:
-  JsConditionWaiter(const test::JSChecker& js_checker,
-                    const std::string& js_condition)
-      : js_checker_(js_checker), js_condition_(js_condition) {}
-
-  ~JsConditionWaiter() = default;
-
-  void Wait() {
-    if (IsConditionFulfilled())
-      return;
-
-    timer_.Start(FROM_HERE, kJsConditionCheckFrequency, this,
-                 &JsConditionWaiter::CheckCondition);
-    run_loop_.Run();
-  }
-
- private:
-  bool IsConditionFulfilled() { return js_checker_.GetBool(js_condition_); }
-
-  void CheckCondition() {
-    if (IsConditionFulfilled()) {
-      run_loop_.Quit();
-      timer_.Stop();
-    }
-  }
-
-  test::JSChecker js_checker_;
-  const std::string js_condition_;
-
-  base::RepeatingTimer timer_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsConditionWaiter);
-};
+void WaitForJsCondition(const std::string& js_condition) {
+  return test::TestConditionWaiter(base::BindRepeating(
+                                       [](const std::string& js_condition) {
+                                         return test::OobeJS().GetBool(
+                                             js_condition);
+                                       },
+                                       js_condition))
+      .Wait();
+}
 
 std::string GetLocalizedConsentString(const int id) {
   std::string sanitized_string =
@@ -148,11 +121,12 @@ class SyncConsentTest : public OobeBaseTest {
 
   void SwitchLanguage(const std::string& language) {
     const char get_num_reloads[] = "Oobe.getInstance().reloadContentNumEvents_";
-    const int prev_reloads = JS().GetInt(get_num_reloads);
-    JS().Evaluate("$('connect').onLanguageSelected_('" + language + "');");
+    const int prev_reloads = test::OobeJS().GetInt(get_num_reloads);
+    test::OobeJS().Evaluate("$('connect').onLanguageSelected_('" + language +
+                            "');");
     const std::string condition =
         base::StringPrintf("%s > %d", get_num_reloads, prev_reloads);
-    JsConditionWaiter(js_checker_, condition).Wait();
+    WaitForJsCondition(condition);
   }
 
   void LoginToSyncConsentScreen() {
@@ -166,9 +140,7 @@ class SyncConsentTest : public OobeBaseTest {
                                   OobeBaseTest::kFakeUserPassword,
                                   OobeBaseTest::kEmptyUserServices);
 
-    JsConditionWaiter(js_checker_,
-                      "Oobe.getInstance().currentScreen.id == 'sync-consent'")
-        .Wait();
+    WaitForJsCondition("Oobe.getInstance().currentScreen.id == 'sync-consent'");
   }
 
  protected:
@@ -185,9 +157,10 @@ class SyncConsentTest : public OobeBaseTest {
     screen->SetProfileSyncEngineInitializedForTesting(true);
     screen->OnStateChanged(nullptr);
 
-    JsConditionWaiter(js_checker_, "!$('sync-consent-impl').hidden").Wait();
-    JsExpect("!$('sync-consent-impl').$.syncConsentOverviewDialog.hidden");
-    JS().Evaluate(
+    WaitForJsCondition("!$('sync-consent-impl').hidden");
+    test::OobeJS().ExpectTrue(
+        "!$('sync-consent-impl').$.syncConsentOverviewDialog.hidden");
+    test::OobeJS().Evaluate(
         "$('sync-consent-impl').$. settingsSaveAndContinueButton.click()");
     consent_recorded_waiter.Wait();
     screen->SetDelegateForTesting(nullptr);  // cleanup
@@ -304,9 +277,7 @@ IN_PROC_BROWSER_TEST_P(SyncConsenPolicyDisabledTest,
   screen->OnStateChanged(nullptr);
 
   // Expect to see "user image selection" or some other screen here.
-  JsConditionWaiter(js_checker_,
-                    "Oobe.getInstance().currentScreen.id != 'sync-consent'")
-      .Wait();
+  WaitForJsCondition("Oobe.getInstance().currentScreen.id != 'sync-consent'");
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
