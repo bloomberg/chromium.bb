@@ -42,8 +42,6 @@ namespace blink {
 class WebElement;
 class WebFrame;
 class WebLocalFrame;
-class WebMIDIAccessor;
-class WebMIDIAccessorClient;
 class WebPlugin;
 class WebPrescientNetworking;
 class WebSpeechSynthesizer;
@@ -165,11 +163,6 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool DeferMediaLoad(RenderFrame* render_frame,
                               bool has_played_media_before,
                               base::OnceClosure closure);
-
-  // Allows the embedder to override creating a WebMIDIAccessor.  If it
-  // returns NULL the content layer will create the MIDI accessor.
-  virtual std::unique_ptr<blink::WebMIDIAccessor> OverrideCreateMIDIAccessor(
-      blink::WebMIDIAccessorClient* client);
 
   // Allows the embedder to override the WebThemeEngine used. If it returns NULL
   // the content layer will provide an engine.

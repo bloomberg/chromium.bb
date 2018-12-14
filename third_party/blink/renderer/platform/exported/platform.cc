@@ -39,7 +39,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -262,11 +261,6 @@ service_manager::Connector* Platform::GetConnector() {
 
 InterfaceProvider* Platform::GetInterfaceProvider() {
   return InterfaceProvider::GetEmptyInterfaceProvider();
-}
-
-std::unique_ptr<WebMIDIAccessor> Platform::CreateMIDIAccessor(
-    WebMIDIAccessorClient*) {
-  return nullptr;
 }
 
 std::unique_ptr<WebStorageNamespace> Platform::CreateLocalStorageNamespace() {

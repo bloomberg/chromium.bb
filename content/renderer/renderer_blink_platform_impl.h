@@ -145,9 +145,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                            const char* audio_file_data,
                            size_t data_size) override;
 
-  std::unique_ptr<blink::WebMIDIAccessor> CreateMIDIAccessor(
-      blink::WebMIDIAccessorClient* client) override;
-
   blink::WebBlobRegistry* GetBlobRegistry() override;
   std::unique_ptr<blink::WebRTCPeerConnectionHandler>
   CreateRTCPeerConnectionHandler(

@@ -6,12 +6,12 @@
 
 #include <utility>
 
-#include "content/shell/test_runner/mock_web_midi_accessor.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
-#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
+#include "content/shell/test_runner/web_widget_test_client.h"
+#include "content/shell/test_runner/web_widget_test_proxy.h"
 
 namespace test_runner {
 
@@ -54,11 +54,6 @@ blink::WebThemeEngine* WebTestInterfaces::ThemeEngine() {
 
 TestInterfaces* WebTestInterfaces::GetTestInterfaces() {
   return interfaces_.get();
-}
-
-std::unique_ptr<blink::WebMIDIAccessor> WebTestInterfaces::CreateMIDIAccessor(
-    blink::WebMIDIAccessorClient* client) {
-  return std::make_unique<MockWebMIDIAccessor>(client, interfaces_.get());
 }
 
 std::unique_ptr<WebFrameTestClient> WebTestInterfaces::CreateWebFrameTestClient(

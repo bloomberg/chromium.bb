@@ -2,26 +2,18 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../http/tests/resources/permissions-helper.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/media/midi/midi_service.mojom.js"></script>
+<script src="../http/tests/webmidi/mock-midiservice.js"></script>
 <script>
 async_test(t => {
-  var sysexHeader = [ 0xf0, 0x00, 0x02, 0x0d, 0x7f ];
-  var sysexFooter = [ 0xf7 ];
-  var sysexPayloadToAddInputAsConnected = [ 0x00, 0x00 ];
-  var sysexPayloadToAddOutputAsConnected = [ 0x00, 0x01 ];
-  var sysexPayloadToAddInputAsOpened = [ 0x00, 0x02 ];
-  var sysexPayloadToAddOutputAsOpened = [ 0x00, 0x03 ];
-  var noteOn = [ 0x90, 0x45, 0x7f ];
-
-  function createSysex(payload) {
-    return sysexHeader.concat(payload).concat(sysexFooter);
-  }
+  let noteOn = [ 0x90, 0x45, 0x7f ];
 
   t.step(() => {
     Promise.all([
         PermissionsHelper.setPermission('midi', 'granted'),
-        PermissionsHelper.setPermission('midi-sysex', 'granted')
     ]).then(() => {
-      return navigator.requestMIDIAccess({sysex : true});
+      return navigator.requestMIDIAccess();
     }).then(a => {
       var started = false;
       var receivedMessages = 0;
@@ -56,11 +48,10 @@ async_test(t => {
 
       output = a.outputs.values().next().value;
 
-      // Send sysex messages to request dynamically adding mock devices.
-      output.send(createSysex(sysexPayloadToAddInputAsConnected));
-      output.send(createSysex(sysexPayloadToAddOutputAsConnected));
-      output.send(createSysex(sysexPayloadToAddInputAsOpened));
-      output.send(createSysex(sysexPayloadToAddOutputAsOpened));
+      mockMIDIService.addInputPort(midi.mojom.PortState.CONNECTED);
+      mockMIDIService.addOutputPort(midi.mojom.PortState.CONNECTED);
+      mockMIDIService.addInputPort(midi.mojom.PortState.OPENED);
+      mockMIDIService.addOutputPort(midi.mojom.PortState.OPENED);
     }).catch(e => assert_unreached(e));
   });
 }, "Test if newly connected ports work correctly");
