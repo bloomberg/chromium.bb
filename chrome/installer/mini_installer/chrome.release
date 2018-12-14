@@ -67,6 +67,12 @@ SmallLogoDev.png: %(VersionDir)s\VisualElements\
 swiftshader\libEGL.dll: %(VersionDir)s\swiftshader\
 swiftshader\libGLESv2.dll: %(VersionDir)s\swiftshader\
 
+#
+# MEI Preload sub dir
+#
+MEIPreload\manifest.json: %(VersionDir)s\MEIPreload\
+MEIPreload\preloaded_data.pb: %(VersionDir)s\MEIPreload\
+
 [HIDPI]
 chrome_200_percent.pak: %(VersionDir)s\
 
@@ -84,9 +90,3 @@ WidevineCdm\_platform_specific\win_x86\widevinecdm.dll: %(VersionDir)s\WidevineC
 WidevineCdm\_platform_specific\win_x86\widevinecdm.dll.sig: %(VersionDir)s\WidevineCdm\_platform_specific\win_x86\
 WidevineCdm\_platform_specific\win_x64\widevinecdm.dll: %(VersionDir)s\WidevineCdm\_platform_specific\win_x64\
 WidevineCdm\_platform_specific\win_x64\widevinecdm.dll.sig: %(VersionDir)s\WidevineCdm\_platform_specific\win_x64\
-
-#
-# MEI Preload sub dir
-#
-MEIPreload\manifest.json: %(VersionDir)s\MEIPreload\
-MEIPreload\preloaded_data.pb: %(VersionDir)s\MEIPreload\
