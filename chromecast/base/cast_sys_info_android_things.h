@@ -6,6 +6,7 @@
 #define CHROMECAST_BASE_CAST_SYS_INFO_ANDROID_THINGS_H_
 
 #include "chromecast/base/cast_sys_info_android.h"
+#include "chromecast/chromecast_buildflags.h"
 
 namespace chromecast {
 
@@ -14,11 +15,13 @@ class CastSysInfoAndroidThings : public CastSysInfoAndroid {
   CastSysInfoAndroidThings();
   ~CastSysInfoAndroidThings() override;
 
+#if !BUILDFLAG(USE_ANDROID_THINGS_N)
   // CastSysInfo implementation:
   std::string GetProductName() override;
   std::string GetDeviceModel() override;
   std::string GetManufacturer() override;
   std::string GetSystemReleaseChannel() override;
+#endif
 };
 
 }  // namespace chromecast

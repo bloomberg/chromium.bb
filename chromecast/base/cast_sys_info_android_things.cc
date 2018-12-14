@@ -16,6 +16,7 @@ namespace chromecast {
 CastSysInfoAndroidThings::CastSysInfoAndroidThings() = default;
 CastSysInfoAndroidThings::~CastSysInfoAndroidThings() = default;
 
+#if !BUILDFLAG(USE_ANDROID_THINGS_N)
 std::string CastSysInfoAndroidThings::GetProductName() {
 #if BUILDFLAG(IS_ANDROID_THINGS_NON_PUBLIC)
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -55,6 +56,7 @@ std::string CastSysInfoAndroidThings::GetSystemReleaseChannel() {
   return "";
 #endif
 }
+#endif
 
 // static
 std::vector<std::string> CastSysInfo::GetFactoryLocaleList() {
