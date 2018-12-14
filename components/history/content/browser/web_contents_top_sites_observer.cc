@@ -44,7 +44,10 @@ void WebContentsTopSitesObserver::NavigationEntryCommitted(
       (load_details.type == content::NavigationType::NAVIGATION_TYPE_NEW_PAGE ||
        load_details.type ==
            content::NavigationType::NAVIGATION_TYPE_EXISTING_PAGE)) {
-    top_sites_->OnNavigationCommitted(load_details.entry->GetURL());
+    // Only report the Virtual URL. The virtual URL, when it differs from the
+    // actual URL that is loaded in the renderer, is the one meant to be shown
+    // to the user in all UI.
+    top_sites_->OnNavigationCommitted(load_details.entry->GetVirtualURL());
   }
 }
 
