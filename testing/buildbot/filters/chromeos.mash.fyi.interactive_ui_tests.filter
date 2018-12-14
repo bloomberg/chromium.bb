@@ -30,6 +30,7 @@
 -StickyKeysBrowserTest.OpenTrayMenu
 -StickyKeysBrowserTest.OverlayShown
 -StickyKeysBrowserTest.SearchLeftOmnibox
+-SwitchAccessTest.IgnoresVirtualKeyEvents
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ChromeVoxNextTabRecovery/0
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ChromeVoxNextTabRecovery/1
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ChromeVoxShiftSearch/0
