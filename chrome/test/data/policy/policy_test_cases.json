@@ -2388,6 +2388,8 @@
       ]
   },
 
+  "CloudManagementEnrollmentToken": {},
+
   "CloudManagementEnrollmentMandatory": {
     "os": ["win", "linux", "mac"],
     "test_policy": {"CloudManagementEnrollmentMandatory": true},

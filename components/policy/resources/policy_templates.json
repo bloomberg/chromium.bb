@@ -12531,6 +12531,24 @@
       'id': 428,
       'caption': '''The enrollment token of cloud policy on desktop''',
       'tags': [],
+      'deprecated': True,
+      'desc': '''
+        This policy is deprecated in M72. Please use CloudManagementEnrollmentToken instead.
+        ''',
+    },
+    {
+      'name': 'CloudManagementEnrollmentToken',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome.*:72-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': '37185d02-e055-11e7-80c1-9a214cf093ae',
+      'id': 510,
+      'caption': '''The enrollment token of cloud policy on desktop''',
+      'tags': [],
       'desc': '''
         If this policy is set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will try to register itself and apply associated cloud policy for all profiles.
 
@@ -14252,5 +14270,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 509,
+  'highest_id_currently_used': 510,
 }
