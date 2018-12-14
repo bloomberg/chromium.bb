@@ -146,13 +146,15 @@ void ProxyWebWidgetClient::StartDragging(network::mojom::ReferrerPolicy policy,
 }
 
 WebViewTestProxyBase::WebViewTestProxyBase()
-    : accessibility_controller_(new AccessibilityController(this)),
-      text_input_controller_(new TextInputController(this)),
+    : WebWidgetTestProxyBase(/*main_frame_widget=*/true),
+      accessibility_controller_(
+          std::make_unique<AccessibilityController>(this)),
+      text_input_controller_(std::make_unique<TextInputController>(this)),
       // TODO(danakj): We should collapse WebViewTestProxy and
       // WebViewTestProxyBase into one class really. They are both
       // concrete types now.
-      view_test_runner_(
-          new TestRunnerForSpecificView(static_cast<WebViewTestProxy*>(this))) {
+      view_test_runner_(std::make_unique<TestRunnerForSpecificView>(
+          static_cast<WebViewTestProxy*>(this))) {
   WebWidgetTestProxyBase::set_web_view_test_proxy_base(this);
 }
 
@@ -186,8 +188,8 @@ void WebViewTestProxy::Initialize(WebTestInterfaces* interfaces,
   // On WebViewTestProxyBase.
   set_delegate(delegate);
 
-  auto test_widget_client = std::make_unique<WebWidgetTestClient>(
-      /*main_frame_widget=*/true, web_widget_test_proxy_base());
+  auto test_widget_client =
+      std::make_unique<WebWidgetTestClient>(web_widget_test_proxy_base());
   // This passes calls through to the the |test_widget_client| as well as the
   // production client pulled from RenderViewImpl as needed.
   auto proxy_widget_client = std::make_unique<ProxyWebWidgetClient>(

@@ -23,10 +23,8 @@
 namespace test_runner {
 
 WebWidgetTestClient::WebWidgetTestClient(
-    bool main_frame_widget,
     WebWidgetTestProxyBase* web_widget_test_proxy_base)
-    : main_frame_widget_(main_frame_widget),
-      web_widget_test_proxy_base_(web_widget_test_proxy_base),
+    : web_widget_test_proxy_base_(web_widget_test_proxy_base),
       animation_scheduled_(false),
       weak_factory_(this) {
   DCHECK(web_widget_test_proxy_base_);
@@ -61,7 +59,7 @@ void WebWidgetTestClient::AnimateNow() {
   // TODO(danakj): This means that an OOPIF's popup, which is attached to a
   // WebView without a main frame, would have no opportunity to execute this
   // method call.
-  if (main_frame_widget_) {
+  if (web_widget_test_proxy_base_->main_frame_widget()) {
     blink::WebView* view =
         web_widget_test_proxy_base_->web_view_test_proxy_base()->web_view();
     if (blink::WebPagePopup* popup = view->GetPagePopup()) {
