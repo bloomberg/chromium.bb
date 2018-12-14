@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -141,7 +140,6 @@ class CastDialogViewTest : public ChromeViewsTestBase {
     return dialog_->sources_menu_runner_for_test();
   }
 
-  content::TestBrowserThreadBundle test_thread_bundle_;
   std::unique_ptr<views::Widget> anchor_widget_;
   MockCastDialogController controller_;
   CastDialogView* dialog_ = nullptr;

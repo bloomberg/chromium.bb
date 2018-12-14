@@ -204,9 +204,6 @@ class ImageWriterUnitTestBase : public testing::Test {
 
   ImageWriterTestUtils test_utils_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-
- private:
   content::TestBrowserThreadBundle thread_bundle_;
 };
 

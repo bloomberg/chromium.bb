@@ -17,7 +17,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
@@ -98,7 +97,6 @@ class CastToolbarButtonTest : public ChromeViewsTestBase {
     return gfx::Image(button_->GetImage(views::Button::STATE_NORMAL));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<BrowserWindow> window_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<CastToolbarButton> button_;

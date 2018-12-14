@@ -118,9 +118,8 @@ class TestObserver : public PowerManagerClient::Observer {
 class AdapterTest : public testing::Test {
  public:
   AdapterTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
-        thread_bundle_(content::TestBrowserThreadBundle::PLAIN_MAINLOOP) {
+      : thread_bundle_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
         std::make_unique<chromeos::FakePowerManagerClient>());
     power_manager::SetBacklightBrightnessRequest request;
@@ -128,7 +127,7 @@ class AdapterTest : public testing::Test {
     chromeos::DBusThreadManager::Get()
         ->GetPowerManagerClient()
         ->SetScreenBrightness(request);
-    scoped_task_environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
 
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
         &test_observer_);
@@ -187,8 +186,7 @@ class AdapterTest : public testing::Test {
         profile_.get(), &fake_als_reader_, &fake_brightness_monitor_,
         &fake_modeller_, nullptr /* metrics_reporter */,
         chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
-    adapter_->SetTickClockForTesting(
-        scoped_task_environment_.GetMockTickClock());
+    adapter_->SetTickClockForTesting(thread_bundle_.GetMockTickClock());
   }
 
   void Init(AlsReader::AlsInitStatus als_reader_status,
@@ -201,11 +199,10 @@ class AdapterTest : public testing::Test {
     fake_brightness_monitor_.set_status(brightness_monitor_status);
     fake_modeller_.InitModellerWithCurves(global_curve, personal_curve);
     SetUpAdapter(params, brightness_set_by_policy);
-    scoped_task_environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   TestObserver test_observer_;
@@ -286,7 +283,7 @@ TEST_F(AdapterTest, AlsReaderEnabledOnNotification) {
 
   fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
   fake_als_reader_.ReportReaderInitialized();
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
   EXPECT_EQ(*adapter_->GetGlobalCurveForTesting(), *global_curve_);
@@ -316,7 +313,7 @@ TEST_F(AdapterTest, BrightnessMonitorEnabledOnNotification) {
 
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
   fake_brightness_monitor_.ReportBrightnessMonitorInitialized();
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
   EXPECT_EQ(*adapter_->GetGlobalCurveForTesting(), *global_curve_);
@@ -328,7 +325,7 @@ TEST_F(AdapterTest, ModellerDisabledOnNotification) {
   fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
   SetUpAdapter(default_params_);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kInitializing);
 
   fake_modeller_.InitModellerWithCurves(base::nullopt, base::nullopt);
@@ -343,7 +340,7 @@ TEST_F(AdapterTest, ModellerEnabledOnNotification) {
   fake_als_reader_.set_als_init_status(AlsReader::AlsInitStatus::kSuccess);
   fake_brightness_monitor_.set_status(BrightnessMonitor::Status::kSuccess);
   SetUpAdapter(default_params_);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kInitializing);
 
   fake_modeller_.InitModellerWithCurves(global_curve_, personal_curve_);
@@ -367,38 +364,38 @@ TEST_F(AdapterTest, SequenceOfBrightnessUpdatesWithDefaultParams) {
 
   // Forward by 1sec because in real implementation, |first_als_time_| is zero
   // if there's no ALS reading received.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Brightness is changed after the 1st ALS reading comes in.
   fake_als_reader_.ReportAmbientLightUpdate(10);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
 
   // Another ALS value is received in 3 sec, but no brightness update is done.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(3));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(3));
   fake_als_reader_.ReportAmbientLightUpdate(20);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
 
   // |params.min_time_between_brightness_changes| has elapsed since we've made
   // the change, but there's no new ALS value, hence no brightness change is
   // triggered.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   EXPECT_EQ(test_observer_.num_changes(), 1);
 
   // A new ALS value triggers a brightness change.
   fake_als_reader_.ReportAmbientLightUpdate(40);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 2);
 
   // Adapter is disabled after a user manual adjustment.
   fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
 
   // Another user manual adjustment came in.
   fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
 
 }
@@ -415,12 +412,12 @@ TEST_F(AdapterTest, UserBrightnessRequestBeforeAnyModelUpdate) {
 
   // Adapter is disabled after a user manual adjustment.
   fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
 
   // Another user manual adjustment came in.
   fake_brightness_monitor_.ReportUserBrightnessChangeRequested();
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
 }
 
@@ -435,12 +432,12 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
   EXPECT_EQ(*adapter_->GetPersonalCurveForTesting(), *personal_curve_);
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Brightness is changed after the 1st ALS value, and the thresholds are
   // changed.
   fake_als_reader_.ReportAmbientLightUpdate(20);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
   EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(), 20);
   EXPECT_DOUBLE_EQ(adapter_->GetBrighteningThresholdForTesting(), 22);
@@ -448,7 +445,7 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
 
   // A 2nd ALS comes in, but average ambient is within the thresholds, hence
   // brightness isn't changed and thresholds aren't updated.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(20));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(20));
   fake_als_reader_.ReportAmbientLightUpdate(21);
   EXPECT_EQ(1, test_observer_.num_changes());
   EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(), (20 + 21) / 2.0);
@@ -466,7 +463,7 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   // A 4th ALS makes average value below the darkening threshold, hence
   // brightness is changed. Thresholds are also changed.
   fake_als_reader_.ReportAmbientLightUpdate(7);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(test_observer_.num_changes(), 2);
   const double expected_average_ambient = (20 + 21 + 15 + 7) / 4.0;
@@ -480,12 +477,12 @@ TEST_F(AdapterTest, BrightnessLuxThresholds) {
   // Next check |ambient_light_values_| has capacity
   // |Adapter::kNumberAmbientValuesToTrack|.
   fake_als_reader_.ReportAmbientLightUpdate(8);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(),
                    (20 + 21 + 15 + 7 + 8) / 5.0);
 
   fake_als_reader_.ReportAmbientLightUpdate(9);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 
   EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(),
                    (21 + 15 + 7 + 8 + 9) / 5.0);
@@ -505,25 +502,25 @@ TEST_F(AdapterTest, ImmediateBrightnessTransitionThresholds) {
   EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
   EXPECT_EQ(*adapter_->GetPersonalCurveForTesting(), *personal_curve_);
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Brightness is changed after the 1st ALS reading comes in.
   fake_als_reader_.ReportAmbientLightUpdate(10);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
 
   // Another ALS value is received in 1 sec, brightness is changed because it
   // exceeds immediate transition threshold.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_als_reader_.ReportAmbientLightUpdate(17);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 2);
 
   // Another ALS value is received in 2 sec, brightness is changed because it
   // exceeds immediate transition threshold.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(2));
   fake_als_reader_.ReportAmbientLightUpdate(1);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 3);
 }
 
@@ -536,20 +533,20 @@ TEST_F(AdapterTest, BrightnessNotUpdatedOnStartup) {
 
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // 1st ALS reading doesn't trigger a brightness change.
   fake_als_reader_.ReportAmbientLightUpdate(10);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 0);
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(5));
   EXPECT_EQ(test_observer_.num_changes(), 0);
 
   // 2nd ALS comes in so that we have |kAmbientLightShortHorizonSeconds| of
   // data, hence brightness is changed.
   fake_als_reader_.ReportAmbientLightUpdate(20);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
 }
 
@@ -565,17 +562,17 @@ TEST_F(AdapterTest, UsePersonalCurve) {
 
   // ALS comes in but no brightness change is triggered because there is no
   // personal curve.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_als_reader_.ReportAmbientLightUpdate(10);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 0);
 
   // Personal curve is received.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_modeller_.ReportModelTrained(*personal_curve_);
   EXPECT_EQ(test_observer_.num_changes(), 0);
   fake_als_reader_.ReportAmbientLightUpdate(20);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
   EXPECT_EQ(test_observer_.GetCause(),
             power_manager::BacklightBrightnessChange_Cause_MODEL);
@@ -598,9 +595,9 @@ TEST_F(AdapterTest, UseGlobalCurve) {
 
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_als_reader_.ReportAmbientLightUpdate(10);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 1);
   EXPECT_DOUBLE_EQ(adapter_->GetAverageAmbientForTesting(), 10);
 
@@ -610,10 +607,10 @@ TEST_F(AdapterTest, UseGlobalCurve) {
                    expected_brightness_percent1);
 
   // A new personal curve is received but adapter still uses the global curve.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(20));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(20));
   fake_modeller_.ReportModelTrained(*personal_curve_);
   fake_als_reader_.ReportAmbientLightUpdate(20);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 2);
   EXPECT_EQ(test_observer_.GetCause(),
             power_manager::BacklightBrightnessChange_Cause_MODEL);
@@ -634,9 +631,9 @@ TEST_F(AdapterTest, BrightnessSetByPolicy) {
 
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   fake_als_reader_.ReportAmbientLightUpdate(10);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 0);
 }
 
@@ -653,11 +650,11 @@ TEST_F(AdapterTest, FeatureDisabled) {
   EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
   EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
 
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Brightness not changed after the 1st ALS reading comes in.
   fake_als_reader_.ReportAmbientLightUpdate(10);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 0);
 }
 

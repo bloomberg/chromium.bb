@@ -7,7 +7,6 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -55,9 +54,8 @@ CastMessageType GetMessageType(const CastMessage& message) {
 class CastMessageHandlerTest : public testing::Test {
  public:
   CastMessageHandlerTest()
-      : environment_(
+      : thread_bundle_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
-        thread_bundle_(content::TestBrowserThreadBundle::PLAIN_MAINLOOP),
         cast_socket_service_(new base::TestSimpleTaskRunner()),
         handler_(&cast_socket_service_,
                  /* connector */ nullptr,
@@ -99,7 +97,6 @@ class CastMessageHandlerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment environment_;
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<base::RunLoop> run_loop_;
   MockCastSocketService cast_socket_service_;
@@ -229,7 +226,7 @@ TEST_F(CastMessageHandlerTest, RequestAppAvailabilityTimesOut) {
                      base::Unretained(this)));
   EXPECT_CALL(*this, DoOnAppAvailability("ABCDEFAB",
                                          GetAppAvailabilityResult::kUnknown));
-  environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(5));
 }
 
 TEST_F(CastMessageHandlerTest, AppAvailabilitySentOnlyOnceWhilePending) {
@@ -276,7 +273,7 @@ TEST_F(CastMessageHandlerTest, CloseConnectionFromReceiver) {
   })");
   OnMessage(response);
   // Wait for message to be parsed and handled.
-  environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 
   // Re-open virtual connection should cause message to be sent.
   EXPECT_CALL(*cast_socket_.mock_transport(), SendMessage(_, _));
@@ -344,7 +341,7 @@ TEST_F(CastMessageHandlerTest, LaunchSessionTimedOut) {
             GetMessageType(virtual_connection_request));
   EXPECT_EQ(CastMessageType::kLaunch, GetMessageType(launch_session_request));
 
-  environment_.FastForwardBy(base::TimeDelta::FromSeconds(30));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(30));
   EXPECT_EQ(1, session_launch_response_count_);
 }
 

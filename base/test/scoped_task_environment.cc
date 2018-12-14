@@ -297,7 +297,8 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
     ExecutionMode execution_control_mode,
     NowSource now_source,
     NotATraitTag)
-    : execution_control_mode_(execution_control_mode),
+    : main_thread_type_(main_thread_type),
+      execution_control_mode_(execution_control_mode),
       mock_time_domain_(MockTimeDomain::Create(main_thread_type, now_source)),
       sequence_manager_(
           CreateSequenceManagerForMainThreadType(main_thread_type)),
@@ -314,6 +315,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
       task_tracker_(new TestTaskTracker()) {
   CHECK(now_source == NowSource::REAL_TIME || mock_time_domain_)
       << "NowSource must be REAL_TIME unless we're using mock time";
+  CHECK(!base::ThreadTaskRunnerHandle::IsSet());
   CHECK(!TaskScheduler::GetInstance())
       << "Someone has already initialized TaskScheduler. If nothing in your "
          "test does so, then a test that ran earlier may have initialized one, "
@@ -385,14 +387,24 @@ ScopedTaskEnvironment::~ScopedTaskEnvironment() {
   // on their main thread.
   ScopedAllowBaseSyncPrimitivesForTesting allow_waits_to_destroy_task_tracker;
   TaskScheduler::SetInstance(nullptr);
+  task_queue_ = nullptr;
+  NotifyDestructionObserversAndReleaseSequenceManager();
+}
+
+void ScopedTaskEnvironment::
+    NotifyDestructionObserversAndReleaseSequenceManager() {
+  // A derived classes may call this method early.
+  if (!sequence_manager_)
+    return;
 
   LifetimeObserver* observer = environment_lifetime_observer.Get().Get();
   if (observer)
     observer->OnScopedTaskEnvironmentDestroyed();
 
-  task_queue_ = nullptr;
   if (mock_time_domain_)
     sequence_manager_->UnregisterTimeDomain(mock_time_domain_.get());
+
+  sequence_manager_.reset();
 }
 
 scoped_refptr<sequence_manager::TaskQueue>

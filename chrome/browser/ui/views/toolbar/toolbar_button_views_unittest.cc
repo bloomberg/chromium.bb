@@ -90,8 +90,6 @@ class ToolbarButtonViewsTest : public ChromeViewsTestBase {
   ToolbarButtonViewsTest() {}
 
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
-
   DISALLOW_COPY_AND_ASSIGN(ToolbarButtonViewsTest);
 };
 

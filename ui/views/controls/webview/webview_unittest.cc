@@ -125,7 +125,9 @@ class WebViewTestWebContentsDelegate : public content::WebContentsDelegate {
 // Provides functionality to test a WebView.
 class WebViewUnitTest : public views::test::WidgetTest {
  public:
-  WebViewUnitTest() = default;
+  WebViewUnitTest()
+      : views::test::WidgetTest(
+            std::make_unique<content::TestBrowserThreadBundle>()) {}
 
   ~WebViewUnitTest() override {}
 
@@ -187,7 +189,6 @@ class WebViewUnitTest : public views::test::WidgetTest {
   }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   content::RenderViewHostTestEnabler rvh_enabler_;
   std::unique_ptr<content::TestBrowserContext> browser_context_;
   content::TestContentBrowserClient test_browser_client_;

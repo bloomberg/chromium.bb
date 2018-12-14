@@ -44,7 +44,10 @@ class WidgetTest : public ViewsTestBase {
 
   using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
 
-  WidgetTest();
+  explicit WidgetTest(
+      std::unique_ptr<ScopedTaskEnvironment> scoped_task_environment =
+          std::make_unique<ScopedTaskEnvironment>(
+              ScopedTaskEnvironment::MainThreadType::UI));
   ~WidgetTest() override;
 
   // Create Widgets with |native_widget| in InitParams set to an instance of

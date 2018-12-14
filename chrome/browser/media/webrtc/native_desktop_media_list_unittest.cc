@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/webrtc/desktop_media_list_observer.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -317,8 +316,6 @@ class NativeDesktopMediaListTest : public ChromeViewsTestBase {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
-
   // Must be listed before |model_|, so it's destroyed last.
   MockObserver observer_;
 

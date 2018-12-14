@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,10 +22,7 @@ namespace system_logs {
 
 class SingleLogFileLogSourceTest : public ::testing::Test {
  public:
-  SingleLogFileLogSourceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        num_callback_calls_(0) {
+  SingleLogFileLogSourceTest() : num_callback_calls_(0) {
     InitializeTestLogDir();
   }
 
@@ -93,7 +89,7 @@ class SingleLogFileLogSourceTest : public ::testing::Test {
   void FetchFromSource() {
     source_->Fetch(base::Bind(&SingleLogFileLogSourceTest::OnFileRead,
                               base::Unretained(this)));
-    scoped_task_environment_.RunUntilIdle();
+    browser_thread_bundle_.RunUntilIdle();
   }
 
   // Callback for fetching logs from |source_|. Overwrites the previous stored
@@ -116,11 +112,7 @@ class SingleLogFileLogSourceTest : public ::testing::Test {
   const base::FilePath& log_file_path() const { return log_file_path_; }
 
  private:
-  // For running scheduled tasks.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-
-  // Creates the necessary browser threads. Defined after
-  // |scoped_task_environment_| in order to use the MessageLoop it created.
+  // Creates the necessary browser threads.
   content::TestBrowserThreadBundle browser_thread_bundle_;
 
   // Unit under test.

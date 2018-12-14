@@ -134,7 +134,7 @@ class ScopedTaskEnvironment {
 
   // Waits until no undelayed TaskScheduler tasks remain. Then, unregisters the
   // TaskScheduler and the (Thread|Sequenced)TaskRunnerHandle.
-  ~ScopedTaskEnvironment();
+  virtual ~ScopedTaskEnvironment();
 
   class LifetimeObserver {
    public:
@@ -200,6 +200,16 @@ class ScopedTaskEnvironment {
   // TaskRunner.
   TimeDelta NextMainThreadPendingTaskDelay() const;
 
+ protected:
+  MainThreadType main_thread_type() const { return main_thread_type_; }
+
+  ExecutionMode execution_control_mode() const {
+    return execution_control_mode_;
+  }
+
+  // Derived classes may need to control when the sequence manager goes away.
+  void NotifyDestructionObserversAndReleaseSequenceManager();
+
  private:
   class MockTimeDomain;
   class TestTaskTracker;
@@ -221,10 +231,11 @@ class ScopedTaskEnvironment {
 
   scoped_refptr<sequence_manager::TaskQueue> CreateDefaultTaskQueue();
 
+  const MainThreadType main_thread_type_;
   const ExecutionMode execution_control_mode_;
 
   const std::unique_ptr<MockTimeDomain> mock_time_domain_;
-  const std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
+  std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
 
   scoped_refptr<sequence_manager::TaskQueue> task_queue_;
 

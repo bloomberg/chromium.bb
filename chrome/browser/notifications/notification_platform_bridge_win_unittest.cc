@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
@@ -50,9 +49,8 @@ constexpr char kProfileId[] = "Default";
 class NotificationPlatformBridgeWinTest : public testing::Test {
  public:
   NotificationPlatformBridgeWinTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
-        thread_bundle_(content::TestBrowserThreadBundle::PLAIN_MAINLOOP) {}
+      : thread_bundle_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
 
   ~NotificationPlatformBridgeWinTest() override = default;
 
@@ -94,7 +92,6 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
     return toast2;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
 
  private:

@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media_router {
@@ -33,7 +32,6 @@ class CastDialogNoSinksViewTest : public ChromeViewsTestBase {
   }
 
  private:
-  content::TestBrowserThreadBundle test_thread_bundle_;
   std::unique_ptr<CastDialogNoSinksView> no_sinks_view_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDialogNoSinksViewTest);

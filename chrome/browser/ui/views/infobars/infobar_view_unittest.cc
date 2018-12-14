@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
 
 class TestInfoBarDelegate : public infobars::InfoBarDelegate {
@@ -44,7 +43,6 @@ class InfoBarViewTest : public ChromeViewsTestBase {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   content::TestWebContentsFactory web_contents_factory_;
   content::WebContents* web_contents_;

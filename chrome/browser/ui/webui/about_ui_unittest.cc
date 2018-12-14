@@ -17,7 +17,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/scoped_browser_locale.h"
@@ -65,9 +64,7 @@ class TestDataReceiver {
 // Base class for ChromeOS offline terms tests.
 class ChromeOSTermsTest : public testing::Test {
  protected:
-  ChromeOSTermsTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  ChromeOSTermsTest() {}
   ~ChromeOSTermsTest() override = default;
 
   void SetUp() override {
@@ -126,14 +123,13 @@ class ChromeOSTermsTest : public testing::Test {
         request_url, std::move(wc_getter),
         base::BindRepeating(&TestDataReceiver::OnDataReceived,
                             base::Unretained(data_receiver)));
-    scoped_task_environment_.RunUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
   }
 
  private:
   base::ScopedTempDir root_dir_;
   base::FilePath arc_tos_dir_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
