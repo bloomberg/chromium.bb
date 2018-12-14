@@ -258,7 +258,9 @@ void BookmarkModelTypeProcessor::SetFaviconService(
 size_t BookmarkModelTypeProcessor::EstimateMemoryUsage() const {
   using base::trace_event::EstimateMemoryUsage;
   size_t memory_usage = 0;
-  memory_usage += bookmark_tracker_->EstimateMemoryUsage();
+  if (bookmark_tracker_) {
+    memory_usage += bookmark_tracker_->EstimateMemoryUsage();
+  }
   memory_usage += EstimateMemoryUsage(cache_guid_);
   return memory_usage;
 }
@@ -509,9 +511,13 @@ void BookmarkModelTypeProcessor::GetStatusCountersForDebugging(
 void BookmarkModelTypeProcessor::RecordMemoryUsageAndCountsHistograms() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SyncRecordModelTypeMemoryHistogram(syncer::BOOKMARKS, EstimateMemoryUsage());
-  SyncRecordModelTypeCountHistogram(
-      syncer::BOOKMARKS,
-      bookmark_tracker_->TrackedBookmarksCountForDebugging());
+  if (bookmark_tracker_) {
+    SyncRecordModelTypeCountHistogram(
+        syncer::BOOKMARKS,
+        bookmark_tracker_->TrackedBookmarksCountForDebugging());
+  } else {
+    SyncRecordModelTypeCountHistogram(syncer::BOOKMARKS, 0);
+  }
 }
 
 }  // namespace sync_bookmarks
