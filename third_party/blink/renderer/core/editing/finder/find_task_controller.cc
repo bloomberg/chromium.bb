@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
-#include "third_party/blink/renderer/core/editing/finder/find_buffer.h"
 #include "third_party/blink/renderer/core/editing/finder/find_options.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/editing/iterators/search_buffer.h"
@@ -107,38 +106,41 @@ class FindTaskController::IdleFindTask
 
     int match_count = 0;
     bool full_range_searched = false;
-    PositionInFlatTree next_task_start_position;
+    PositionInFlatTree next_scoping_start;
     do {
-      // Find in the whole block.
-      FindBuffer buffer(search_start);
-      std::unique_ptr<FindBuffer::Results> match_results =
-          buffer.FindMatches(search_text_, *options_);
-      for (FindBuffer::BufferMatchResult match : *match_results) {
-        const EphemeralRangeInFlatTree ephemeral_match_range =
-            buffer.RangeFromBufferIndex(match.start,
-                                        match.start + match.length);
-        Range* const match_range = Range::Create(
-            ephemeral_match_range.GetDocument(),
-            ToPositionInDOMTree(ephemeral_match_range.StartPosition()),
-            ToPositionInDOMTree(ephemeral_match_range.EndPosition()));
-        if (match_range->collapsed()) {
-          // resultRange will be collapsed if the matched text spans over
-          // multiple TreeScopes.  TODO(rakina): Show such matches to users.
-          next_task_start_position = ephemeral_match_range.EndPosition();
-          continue;
-        }
-        ++match_count;
-        controller_->DidFindMatch(identifier_, match_range);
-      }
-      // At this point, all text in the block collected above has been
-      // processed. Now we move to the next block if there's any,
-      // otherwise we should stop.
-      search_start = buffer.PositionAfterBlock();
-      if (search_start.IsNull()) {
+      // Find next occurrence of the search string.
+      // FIXME: (http://crbug.com/6818) This WebKit operation may run for longer
+      // than the timeout value, and is not interruptible as it is currently
+      // written. We may need to rewrite it with interruptibility in mind, or
+      // find an alternative.
+      const EphemeralRangeInFlatTree result = FindPlainText(
+          EphemeralRangeInFlatTree(search_start, search_end), search_text_,
+          options_->match_case ? 0 : kCaseInsensitive);
+      if (result.IsCollapsed()) {
+        // Not found.
         full_range_searched = true;
         break;
       }
-      next_task_start_position = search_start;
+      Range* result_range = Range::Create(
+          result.GetDocument(), ToPositionInDOMTree(result.StartPosition()),
+          ToPositionInDOMTree(result.EndPosition()));
+      if (result_range->collapsed()) {
+        // resultRange will be collapsed if the matched text spans over multiple
+        // TreeScopes.  FIXME: Show such matches to users.
+        search_start = result.EndPosition();
+        if (deadline->timeRemaining() > 0)
+          continue;
+        break;
+      }
+      ++match_count;
+      controller_->DidFindMatch(identifier_, result_range);
+
+      // Set the new start for the search range to be the end of the previous
+      // result range. There is no need to use a VisiblePosition here,
+      // since findPlainText will use a TextIterator to go over the visible
+      // text nodes.
+      search_start = result.EndPosition();
+      next_scoping_start = search_start;
     } while (deadline->timeRemaining() > 0);
 
     const TimeDelta time_spent = CurrentTimeTicks() - start_time;
@@ -146,7 +148,7 @@ class FindTaskController::IdleFindTask
                         time_spent - time_available);
 
     controller_->DidFinishTask(identifier_, search_text_, *options_,
-                               full_range_searched, next_task_start_position,
+                               full_range_searched, next_scoping_start,
                                match_count);
   }
 
