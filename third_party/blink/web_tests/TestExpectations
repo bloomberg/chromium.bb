@@ -369,6 +369,7 @@ Bug(none) [ Android ] virtual/not-blink-gen-property-trees [ Skip ]
 Bug(none) [ Fuchsia ] virtual/not-blink-gen-property-trees [ Skip ]
 Bug(none) [ Mac ] virtual/not-blink-gen-property-trees [ Skip ]
 Bug(none) [ Win ] virtual/not-blink-gen-property-trees [ Skip ]
+crbug.com/914990 [ Linux ] virtual/not-blink-gen-property-trees [ Skip ]
 
 # Paint invalidation does not change with BlinkGenPropertyTrees. There are many tests
 # in the paint/invalidation directory so they are skipped so bot resources are not wasted.
