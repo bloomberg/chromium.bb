@@ -47,15 +47,6 @@
       "5107DE9024C329EEA9C9A72D94C16723790C6422"   // Apps Developer Tool Dev.
     ]
   },
-  "arcAppsPrivate": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
-    "whitelist": [
-      "46578A13607D38F1DC8E280C4F499FB0A2F9565C", // http://crbug.com/819404
-      "898FB5A39687D210766B8998BA4530B99C9E6586", // http://crbug.com/819404
-      "82F30B65397BC3E4ADE627BBD857AB8A58210648"  // http://crbug.com/819404
-    ]
-  },
   "autofillPrivate": {
     "channel": "trunk",
     "extension_types": ["extension", "platform_app"],

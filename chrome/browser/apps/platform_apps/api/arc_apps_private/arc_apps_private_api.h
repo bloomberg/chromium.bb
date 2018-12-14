@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_ARC_APPS_PRIVATE_API_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_ARC_APPS_PRIVATE_API_H_
+#ifndef CHROME_BROWSER_APPS_PLATFORM_APPS_API_ARC_APPS_PRIVATE_ARC_APPS_PRIVATE_API_H_
+#define CHROME_BROWSER_APPS_PLATFORM_APPS_API_ARC_APPS_PRIVATE_ARC_APPS_PRIVATE_API_H_
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -13,34 +13,36 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
 
-namespace extensions {
+namespace chrome_apps {
+namespace api {
 
-class ArcAppsPrivateAPI : public BrowserContextKeyedAPI,
-                          public EventRouter::Observer,
+class ArcAppsPrivateAPI : public extensions::BrowserContextKeyedAPI,
+                          public extensions::EventRouter::Observer,
                           public ArcAppListPrefs::Observer {
  public:
-  static BrowserContextKeyedAPIFactory<ArcAppsPrivateAPI>* GetFactoryInstance();
+  static extensions::BrowserContextKeyedAPIFactory<ArcAppsPrivateAPI>*
+  GetFactoryInstance();
 
   explicit ArcAppsPrivateAPI(content::BrowserContext* context);
   ~ArcAppsPrivateAPI() override;
 
-  // BrowserContextKeyedAPI:
+  // extensions::BrowserContextKeyedAPI:
   void Shutdown() override;
 
-  // EventRouter::Observer:
-  void OnListenerAdded(const EventListenerInfo& details) override;
-  void OnListenerRemoved(const EventListenerInfo& details) override;
+  // extensions::EventRouter::Observer:
+  void OnListenerAdded(const extensions::EventListenerInfo& details) override;
+  void OnListenerRemoved(const extensions::EventListenerInfo& details) override;
 
   // ArcAppListPrefs::Observer:
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override;
 
  private:
-  friend class BrowserContextKeyedAPIFactory<ArcAppsPrivateAPI>;
+  friend class extensions::BrowserContextKeyedAPIFactory<ArcAppsPrivateAPI>;
 
   static const char* service_name() { return "ArcAppsPrivateAPI"; }
 
-  // BrowserContextKeyedAPI:
+  // extensions::BrowserContextKeyedAPI:
   static const bool kServiceIsNULLWhileTesting = true;
 
   content::BrowserContext* const context_;
@@ -48,16 +50,6 @@ class ArcAppsPrivateAPI : public BrowserContextKeyedAPI,
   ScopedObserver<ArcAppListPrefs, ArcAppsPrivateAPI> scoped_prefs_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppsPrivateAPI);
-};
-
-template <>
-struct BrowserContextFactoryDependencies<ArcAppsPrivateAPI> {
-  static void DeclareFactoryDependencies(
-      BrowserContextKeyedAPIFactory<ArcAppsPrivateAPI>* factory) {
-    factory->DependsOn(
-        ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-    factory->DependsOn(ArcAppListPrefsFactory::GetInstance());
-  }
 };
 
 class ArcAppsPrivateGetLaunchableAppsFunction
@@ -95,6 +87,19 @@ class ArcAppsPrivateLaunchAppFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(ArcAppsPrivateLaunchAppFunction);
 };
 
-}  // namespace extensions
+}  // namespace api
+}  // namespace chrome_apps
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_ARC_APPS_PRIVATE_API_H_
+template <>
+struct extensions::BrowserContextFactoryDependencies<
+    chrome_apps::api::ArcAppsPrivateAPI> {
+  static void DeclareFactoryDependencies(
+      extensions::BrowserContextKeyedAPIFactory<
+          chrome_apps::api::ArcAppsPrivateAPI>* factory) {
+    factory->DependsOn(
+        ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+    factory->DependsOn(ArcAppListPrefsFactory::GetInstance());
+  }
+};
+
+#endif  // CHROME_BROWSER_APPS_PLATFORM_APPS_API_ARC_APPS_PRIVATE_ARC_APPS_PRIVATE_API_H_

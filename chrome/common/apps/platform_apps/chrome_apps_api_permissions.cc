@@ -21,6 +21,7 @@ std::unique_ptr<extensions::APIPermission> CreateAPIPermission(
 // add the corresponding permission message rule to
 // ChromePermissionMessageProvider::GetPermissionMessages as well.
 constexpr extensions::APIPermissionInfo::InitInfo permissions_to_register[] = {
+    {extensions::APIPermission::kArcAppsPrivate, "arcAppsPrivate"},
     {extensions::APIPermission::kBrowser, "browser"},
     {extensions::APIPermission::kMusicManagerPrivate, "musicManagerPrivate",
      extensions::APIPermissionInfo::kFlagCannotBeOptional},
