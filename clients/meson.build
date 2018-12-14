@@ -235,7 +235,7 @@ demo_clients = [
 			text_input_unstable_v1_client_protocol_h,
 			text_input_unstable_v1_protocol_c,
 		],
-		'add_deps': [ dependency('pangocairo') ]
+		'deps': [ 'pangocairo' ]
 	},
 	{ 'basename': 'eventdemo' },
 	{ 'basename': 'flower' },
@@ -267,7 +267,7 @@ demo_clients = [
 	{ 'basename': 'stacking' },
 	{
 		'basename': 'subsurfaces',
-		'add_deps': [ dep_egl, dep_glesv2, dep_wl_egl ]
+		'deps': [ 'egl', 'glesv2', 'wayland-egl' ]
 	},
 	{ 'basename': 'transformed' },
 ]
@@ -276,7 +276,14 @@ if get_option('demo-clients')
 	foreach t : demo_clients
 		t_name = 'weston-' + t.get('basename')
 		t_srcs = [ t.get('basename') + '.c' ] + t.get('add_sources', [])
-		t_deps = [ dep_toytoolkit ] + t.get('add_deps', [])
+		t_deps = [ dep_toytoolkit ]
+		foreach depname : t.get('deps', [])
+			dep = dependency(depname, required: false)
+			if not dep.found()
+				error('@0@ requires \'@1@\' which was not found. If you rather not build this, set \'-Ddemo-clients=false\'.'.format(t_name, depname))
+			endif
+			t_deps += dep
+		endforeach
 
 		executable(
 			t_name, t_srcs,
