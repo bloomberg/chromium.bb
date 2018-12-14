@@ -180,10 +180,15 @@ void FCMInvalidationService::StartInvalidator() {
   DCHECK(!invalidator_);
   DCHECK(IsReadyToStart());
 
-  PopulateClientID();
   auto network = std::make_unique<syncer::FCMNetworkHandler>(
       gcm_driver_, instance_id_driver_);
+  // The order of calls is important. Do not change.
+  // We should start listening before requesting the id, because
+  // valid id is only generated, once there is an app handler
+  // for the app. StartListening registers the app handler.
   network->StartListening();
+  PopulateClientID();
+
   invalidator_ = std::make_unique<syncer::FCMInvalidator>(
       std::move(network), identity_provider_, pref_service_, loader_factory_,
       parse_json_);
