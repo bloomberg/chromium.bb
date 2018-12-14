@@ -10,11 +10,11 @@ cr.define('settings_subpage', function() {
 
     test('clear search (event)', function() {
       const subpage = document.createElement('settings-subpage');
-      // Having a searchLabel will create the settings-subpage-search.
+      // Having a searchLabel will create the cr-search-field.
       subpage.searchLabel = 'test';
       document.body.appendChild(subpage);
       Polymer.dom.flush();
-      const search = subpage.$$('settings-subpage-search');
+      const search = subpage.$$('cr-search-field');
       assertTrue(!!search);
       search.setValue('Hello');
       subpage.fire('clear-subpage-search');
@@ -24,11 +24,11 @@ cr.define('settings_subpage', function() {
 
     test('clear search (click)', function() {
       const subpage = document.createElement('settings-subpage');
-      // Having a searchLabel will create the settings-subpage-search.
+      // Having a searchLabel will create the cr-search-field.
       subpage.searchLabel = 'test';
       document.body.appendChild(subpage);
       Polymer.dom.flush();
-      const search = subpage.$$('settings-subpage-search');
+      const search = subpage.$$('cr-search-field');
       assertTrue(!!search);
       search.setValue('Hello');
       assertEquals(null, search.root.activeElement);
@@ -72,7 +72,7 @@ cr.define('settings_subpage', function() {
   suite('SettingsSubpageSearch', function() {
     test('host autofocus propagates to <cr-input>', function() {
       PolymerTest.clearBody();
-      const element = document.createElement('settings-subpage-search');
+      const element = document.createElement('cr-search-field');
       element.setAttribute('autofocus', true);
       document.body.appendChild(element);
 

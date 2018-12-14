@@ -192,7 +192,7 @@ cr.define('languages_page_tests', function() {
       // Test that searching languages works whether the displayed or native
       // language name is queried.
       test('search languages', function() {
-        const searchInput = dialog.$$('settings-subpage-search');
+        const searchInput = dialog.$$('cr-search-field');
 
         const getItems = function() {
           return dialog.$.dialog.querySelectorAll('.list-item:not([hidden])');
@@ -223,7 +223,7 @@ cr.define('languages_page_tests', function() {
       });
 
       test('Escape key behavior', function() {
-        const searchInput = dialog.$$('settings-subpage-search');
+        const searchInput = dialog.$$('cr-search-field');
         searchInput.setValue('dummyquery');
 
         // Test that dialog is not closed if 'Escape' is pressed on the input

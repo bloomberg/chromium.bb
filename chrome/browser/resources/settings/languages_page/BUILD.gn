@@ -86,7 +86,7 @@ js_library("add_languages_dialog") {
     ":languages",
     ":languages_types",
     "..:find_shortcut_behavior",
-    "../settings_page:settings_subpage_search",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
   ]
 }
