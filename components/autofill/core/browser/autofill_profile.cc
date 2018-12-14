@@ -1120,7 +1120,8 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
             << profile.language_code() << " "
             << UTF16ToUTF8(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)) << " "
             << profile.GetClientValidityBitfieldValue() << " "
-            << profile.use_count() << " " << profile.use_date();
+            << profile.has_converted() << " " << profile.use_count() << " "
+            << profile.use_date();
 }
 
 }  // namespace autofill
