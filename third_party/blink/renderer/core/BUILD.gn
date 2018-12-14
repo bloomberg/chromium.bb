@@ -1796,6 +1796,7 @@ jumbo_source_set("unit_tests") {
     "css/threaded/filter_operation_resolver_threaded_test.cc",
     "css/threaded/font_object_threaded_test.cc",
     "css/threaded/text_renderer_threaded_test.cc",
+    "display_lock/display_lock_budget_test.cc",
     "display_lock/display_lock_context_test.cc",
     "dom/attr_test.cc",
     "dom/document_statistics_collector_test.cc",

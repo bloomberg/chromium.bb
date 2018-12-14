@@ -8,6 +8,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_budget.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 
@@ -20,14 +22,34 @@ class DisplayLockScopedLogger;
 class CORE_EXPORT DisplayLockContext final
     : public ScriptWrappable,
       public ActiveScriptWrappable<DisplayLockContext>,
-      public ContextLifecycleObserver {
+      public ContextLifecycleObserver,
+      public LocalFrameView::LifecycleNotificationObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DisplayLockContext);
   USING_PRE_FINALIZER(DisplayLockContext, Dispose);
 
  public:
-  // Conceptually the states are private, but made public for debugging /
-  // logging.
+  // Determines what type of budget to use. This can be overridden via
+  // DisplayLockContext::SetBudgetType().
+  // - kDoNotYield:
+  //     This will effectively do all of the lifecycle phases when we're
+  //     committing. That is, this is the "no budget" option.
+  // - kStrictYieldBetweenLifecyclePhases:
+  //     This type always yields between each lifecycle phase, even if that
+  //     phase was quick.
+  // - kYieldBetweenLifecyclePhases:
+  //     This type will only yield between lifecycle phases (not in the middle
+  //     of one). However, if there is sufficient time left (TODO(vmpstr):
+  //     define this), then it will continue on to the next lifecycle phase.
+  enum class BudgetType {
+    kDoNotYield,
+    kStrictYieldBetweenLifecyclePhases,
+    kYieldBetweenLifecyclePhases,
+    kDefault = kStrictYieldBetweenLifecyclePhases
+  };
+
+  // Conceptually the states are private, but made public for testing.
+  // TODO(vmpstr): Make this private and update the tests.
   enum State {
     kUninitialized,
     kSuspended,
@@ -38,14 +60,7 @@ class CORE_EXPORT DisplayLockContext final
     kResolved
   };
 
-  enum LifecycleUpdateState {
-    kNeedsStyle,
-    kNeedsLayout,
-    kNeedsPrePaint,
-    kNeedsPaint,
-    kDone
-  };
-
+  // See GetScopedPendingFrameRect() for description.
   class ScopedPendingFrameRect {
    public:
     ScopedPendingFrameRect(ScopedPendingFrameRect&&);
@@ -59,6 +74,7 @@ class CORE_EXPORT DisplayLockContext final
     UntracedMember<DisplayLockContext> context_ = nullptr;
   };
 
+  // See GetScopedForcedUpdate() for description.
   class ScopedForcedUpdate {
    public:
     ScopedForcedUpdate(ScopedForcedUpdate&&);
@@ -142,9 +158,31 @@ class CORE_EXPORT DisplayLockContext final
   // time.
   ScopedForcedUpdate GetScopedForcedUpdate();
 
+  // This is called when the element with which this context is associated is
+  // moved to a new document.
+  void DidMoveToNewDocument(Document& old_document);
+
+  // LifecycleNotificationObserver overrides.
+  void WillStartLifecycleUpdate() override;
+  void DidFinishLifecycleUpdate() override;
+
  private:
   friend class DisplayLockContextTest;
   friend class DisplayLockSuspendedHandle;
+  friend class DisplayLockBudget;
+
+  // Sets a new budget type. Note that since this is static, all of the existing
+  // locks will be affected as well (unless they already have a budget). This is
+  // meant to be used to set the budget type once (such as in a test), but
+  // technically could be used outside of tests as well to force a certain
+  // budget type. Use with caution. Note that if a budget already exists on the
+  // lock, then it will continue to use the existing budget until a new budget
+  // is requested.
+  static void SetBudgetType(BudgetType type) {
+    if (s_budget_type_ == type)
+      return;
+    s_budget_type_ = type;
+  }
 
   // Schedules a new callback. If this is the first callback to be scheduled,
   // then a valid ScriptState must be provided, which will be used to create a
@@ -181,6 +219,8 @@ class CORE_EXPORT DisplayLockContext final
   // its subtree were dirty, and false otherwise.
   bool MarkAncestorsForStyleRecalcIfNeeded();
   bool MarkAncestorsForLayoutIfNeeded();
+  bool MarkAncestorsForPaintInvalidationCheckIfNeeded();
+  bool MarkPaintLayerNeedsRepaint();
 
   // Marks the display lock as being disconnected. Note that this removes the
   // strong reference to the element in case the element is deleted. Once we're
@@ -201,6 +241,17 @@ class CORE_EXPORT DisplayLockContext final
   // When ScopedForcedUpdate is destroyed, it calls this function. See
   // GetScopedForcedUpdate() for more information.
   void NotifyForcedUpdateScopeEnded();
+
+  // This resets the existing budget (if any) and establishes a new budget
+  // starting "now".
+  void ResetNewBudget();
+
+  // Helper to schedule an animation to delay lifecycle updates for the next
+  // frame.
+  void ScheduleAnimation();
+
+  static BudgetType s_budget_type_;
+  std::unique_ptr<DisplayLockBudget> budget_;
 
   HeapVector<Member<V8DisplayLockCallback>> callbacks_;
   Member<ScriptPromiseResolver> resolver_;
@@ -232,7 +283,6 @@ class CORE_EXPORT DisplayLockContext final
 
   unsigned suspended_count_ = 0;
   State state_ = kUninitialized;
-  LifecycleUpdateState lifecycle_update_state_ = kNeedsStyle;
   LayoutRect pending_frame_rect_;
   base::Optional<LayoutRect> locked_frame_rect_;
 
