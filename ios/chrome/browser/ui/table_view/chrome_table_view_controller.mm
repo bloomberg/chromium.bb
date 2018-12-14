@@ -19,6 +19,9 @@
 #error "This file requires ARC support."
 #endif
 
+const CGFloat kTableViewSeparatorInset = 16;
+const CGFloat kTableViewSeparatorInsetWithIcon = 56;
+
 @interface ChromeTableViewController ()
 // The loading displayed by [self startLoadingIndicatorWithLoadingMessage:].
 @property(nonatomic, strong) TableViewLoadingView* loadingView;
@@ -86,7 +89,9 @@
 
   [self.tableView setBackgroundColor:self.styler.tableViewBackgroundColor];
   [self.tableView setSeparatorColor:self.styler.cellSeparatorColor];
-  [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 56, 0, 0)];
+  [self.tableView
+      setSeparatorInset:UIEdgeInsetsMake(0, kTableViewSeparatorInsetWithIcon, 0,
+                                         0)];
 
   // Configure the app bar if needed.
   if (_appBarViewController) {

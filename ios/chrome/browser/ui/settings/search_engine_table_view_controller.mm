@@ -43,7 +43,7 @@ const char kUmaSelectDefaultSearchEngine[] =
 
 }  // namespace
 
-@interface SearchEngineTableViewController ()<SearchEngineObserving>
+@interface SearchEngineTableViewController () <SearchEngineObserving>
 @end
 
 @implementation SearchEngineTableViewController {
