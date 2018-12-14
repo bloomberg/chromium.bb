@@ -30,8 +30,6 @@
 // Called when the alert is dismissed to perform cleanup.
 - (void)alertDismissed;
 
-- (UIAlertController*)alertControllerWithTitle:(NSString*)title
-                                       message:(NSString*)message;
 @end
 
 @implementation AlertCoordinator

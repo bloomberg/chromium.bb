@@ -74,7 +74,9 @@ void FullscreenMediator::Disconnect() {
 void FullscreenMediator::FullscreenModelToolbarHeightsUpdated(
     FullscreenModel* model) {
   for (auto& observer : observers_) {
-    observer.FullscreenViewportInsetRangeChanged(controller_);
+    observer.FullscreenViewportInsetRangeChanged(controller_,
+                                                 model_->min_toolbar_insets(),
+                                                 model_->max_toolbar_insets());
   }
 }
 

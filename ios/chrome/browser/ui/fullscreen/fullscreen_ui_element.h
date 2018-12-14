@@ -16,7 +16,20 @@
 // Tells the UI to update its state for |progress|.  A fullscreen |progress|
 // value denotes that the toolbar should be completely visible, and a |progress|
 // value of 0.0 denotes that the toolbar should be completely hidden.
+//
+// NOTE: Since this selector is called for every scroll offset, it's not
+// optional, as checking |-respondsToSelector:| for every FullscreenUIElement
+// at every scroll offset can introduce performance issues.
 - (void)updateForFullscreenProgress:(CGFloat)progress;
+
+@optional
+
+// Tells the UI to update its state after the max and min viewport insets have
+// been updated to new values.  |progress| is the current progress value, and
+// can be used to update the UI at the current progress with the new viewport
+// inset range.
+- (void)updateForFullscreenMinViewportInsets:(UIEdgeInsets)minViewportInsets
+                           maxViewportInsets:(UIEdgeInsets)maxViewportInsets;
 
 // Tells the UI that fullscreen is enabled or disabled.  When disabled, the UI
 // should immediately be updated to the state corresponding with a progress

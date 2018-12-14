@@ -12,9 +12,11 @@
 #endif
 
 void TestFullscreenControllerObserver::FullscreenViewportInsetRangeChanged(
-    FullscreenController* controller) {
-  min_viewport_insets_ = controller->GetMinViewportInsets();
-  max_viewport_insets_ = controller->GetMaxViewportInsets();
+    FullscreenController* controller,
+    UIEdgeInsets min_viewport_insets,
+    UIEdgeInsets max_viewport_insets) {
+  min_viewport_insets_ = min_viewport_insets;
+  max_viewport_insets_ = max_viewport_insets;
   current_viewport_insets_ = controller->GetCurrentViewportInsets();
 }
 
