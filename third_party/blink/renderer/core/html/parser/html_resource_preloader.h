@@ -50,8 +50,6 @@ class CORE_EXPORT HTMLResourcePreloader
 
   explicit HTMLResourcePreloader(Document&);
 
-  int CountPreloads();
-  Document* GetDocument() { return document_.Get(); }
   void Trace(blink::Visitor*);
 
  protected:

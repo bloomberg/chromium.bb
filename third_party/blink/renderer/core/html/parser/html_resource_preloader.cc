@@ -46,12 +46,6 @@ void HTMLResourcePreloader::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
 }
 
-int HTMLResourcePreloader::CountPreloads() {
-  if (document_->Loader())
-    return document_->Loader()->Fetcher()->CountPreloads();
-  return 0;
-}
-
 static void PreconnectHost(
     PreloadRequest* request,
     const NetworkHintsInterface& network_hints_interface) {
