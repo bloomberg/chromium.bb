@@ -595,9 +595,9 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
       extension->permissions_data()->UsesDefaultPolicyHostRestrictions();
   if (!params.uses_default_policy_host_restrictions) {
     params.policy_blocked_hosts =
-        extension->permissions_data()->policy_blocked_hosts();
+        extension->permissions_data()->policy_blocked_hosts().Clone();
     params.policy_allowed_hosts =
-        extension->permissions_data()->policy_allowed_hosts();
+        extension->permissions_data()->policy_allowed_hosts().Clone();
   }
 
   // Send the new permissions to the renderers.
@@ -637,8 +637,8 @@ void PermissionsUpdater::NotifyDefaultPolicyHostRestrictionsUpdated(
   Profile* profile = Profile::FromBrowserContext(browser_context_);
 
   ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params params;
-  params.default_policy_blocked_hosts = default_runtime_blocked_hosts;
-  params.default_policy_allowed_hosts = default_runtime_allowed_hosts;
+  params.default_policy_blocked_hosts = default_runtime_blocked_hosts.Clone();
+  params.default_policy_allowed_hosts = default_runtime_allowed_hosts.Clone();
 
   // Send the new policy to the renderers.
   for (RenderProcessHost::iterator host_iterator(

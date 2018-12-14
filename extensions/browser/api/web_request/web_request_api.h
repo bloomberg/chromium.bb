@@ -289,8 +289,11 @@ class ExtensionWebRequestEventRouter {
   // filter what network events an extension cares about.
   struct RequestFilter {
     RequestFilter();
-    RequestFilter(const RequestFilter& other);
     ~RequestFilter();
+
+    // TODO(devlin): Make these a move constructor/operator.
+    RequestFilter(const RequestFilter& other);
+    RequestFilter& operator=(const RequestFilter& other);
 
     // Returns false if there was an error initializing. If it is a user error,
     // an error message is provided, otherwise the error is internal (and

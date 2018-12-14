@@ -917,13 +917,23 @@ ExtensionWebRequestEventRouter::EventResponse::~EventResponse() {
 }
 
 ExtensionWebRequestEventRouter::RequestFilter::RequestFilter()
-    : tab_id(-1), window_id(-1) {
-}
+    : tab_id(-1), window_id(-1) {}
+ExtensionWebRequestEventRouter::RequestFilter::~RequestFilter() = default;
 
 ExtensionWebRequestEventRouter::RequestFilter::RequestFilter(
-    const RequestFilter& other) = default;
-
-ExtensionWebRequestEventRouter::RequestFilter::~RequestFilter() {
+    const RequestFilter& other)
+    : urls(other.urls.Clone()),
+      types(other.types),
+      tab_id(other.tab_id),
+      window_id(other.window_id) {}
+ExtensionWebRequestEventRouter::RequestFilter&
+ExtensionWebRequestEventRouter::RequestFilter::operator=(
+    const RequestFilter& other) {
+  urls = other.urls.Clone();
+  types = other.types;
+  tab_id = other.tab_id;
+  window_id = other.window_id;
+  return *this;
 }
 
 //

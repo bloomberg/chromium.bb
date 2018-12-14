@@ -139,9 +139,9 @@ void RendererStartupHelper::InitializeProcess(
   // of the ExtensionSettings policy.
   ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params params;
   params.default_policy_blocked_hosts =
-      PermissionsData::default_policy_blocked_hosts();
+      PermissionsData::default_policy_blocked_hosts().Clone();
   params.default_policy_allowed_hosts =
-      PermissionsData::default_policy_allowed_hosts();
+      PermissionsData::default_policy_allowed_hosts().Clone();
   process->Send(new ExtensionMsg_UpdateDefaultPolicyHostRestrictions(params));
 
   // Loaded extensions.

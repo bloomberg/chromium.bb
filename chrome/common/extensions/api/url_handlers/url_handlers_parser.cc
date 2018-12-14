@@ -57,6 +57,8 @@ namespace merrors = manifest_errors;
 UrlHandlerInfo::UrlHandlerInfo() {
 }
 
+UrlHandlerInfo::UrlHandlerInfo(UrlHandlerInfo&& other) = default;
+
 UrlHandlerInfo::~UrlHandlerInfo() {
 }
 
@@ -151,7 +153,7 @@ bool ParseUrlHandler(const std::string& handler_id,
     handler.patterns.AddPattern(pattern);
   }
 
-  url_handlers->push_back(handler);
+  url_handlers->push_back(std::move(handler));
 
   return true;
 }

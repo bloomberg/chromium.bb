@@ -153,7 +153,7 @@ const URLPatternSet& PermissionsData::default_policy_allowed_hosts() {
 
 const URLPatternSet PermissionsData::policy_blocked_hosts() const {
   base::AutoLock auto_lock(runtime_lock_);
-  return PolicyBlockedHostsUnsafe();
+  return PolicyBlockedHostsUnsafe().Clone();
 }
 
 const URLPatternSet& PermissionsData::PolicyBlockedHostsUnsafe() const {
@@ -165,7 +165,7 @@ const URLPatternSet& PermissionsData::PolicyBlockedHostsUnsafe() const {
 
 const URLPatternSet PermissionsData::policy_allowed_hosts() const {
   base::AutoLock auto_lock(runtime_lock_);
-  return PolicyAllowedHostsUnsafe();
+  return PolicyAllowedHostsUnsafe().Clone();
 }
 
 const URLPatternSet& PermissionsData::PolicyAllowedHostsUnsafe() const {
@@ -192,8 +192,8 @@ void PermissionsData::SetPolicyHostRestrictions(
     const URLPatternSet& policy_blocked_hosts,
     const URLPatternSet& policy_allowed_hosts) const {
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
-  policy_blocked_hosts_unsafe_ = policy_blocked_hosts;
-  policy_allowed_hosts_unsafe_ = policy_allowed_hosts;
+  policy_blocked_hosts_unsafe_ = policy_blocked_hosts.Clone();
+  policy_allowed_hosts_unsafe_ = policy_allowed_hosts.Clone();
   uses_default_policy_host_restrictions = false;
 }
 
@@ -207,9 +207,9 @@ void PermissionsData::SetDefaultPolicyHostRestrictions(
     const URLPatternSet& default_policy_blocked_hosts,
     const URLPatternSet& default_policy_allowed_hosts) {
   default_policy_restrictions.Get().blocked_hosts =
-      default_policy_blocked_hosts;
+      default_policy_blocked_hosts.Clone();
   default_policy_restrictions.Get().allowed_hosts =
-      default_policy_allowed_hosts;
+      default_policy_allowed_hosts.Clone();
 }
 
 void PermissionsData::SetActivePermissions(
@@ -272,7 +272,8 @@ bool PermissionsData::CheckAPIPermissionWithParam(
 
 URLPatternSet PermissionsData::GetEffectiveHostPermissions() const {
   base::AutoLock auto_lock(runtime_lock_);
-  URLPatternSet effective_hosts = active_permissions_unsafe_->effective_hosts();
+  URLPatternSet effective_hosts =
+      active_permissions_unsafe_->effective_hosts().Clone();
   for (const auto& val : tab_specific_permissions_)
     effective_hosts.AddPatterns(val.second->effective_hosts());
   return effective_hosts;

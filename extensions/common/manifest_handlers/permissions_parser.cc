@@ -301,7 +301,7 @@ void RemoveOverlappingHostPermissions(
   if (!install_warnings.empty())
     extension->AddInstallWarnings(std::move(install_warnings));
 
-  *optional_host_permissions = new_optional_host_permissions;
+  *optional_host_permissions = std::move(new_optional_host_permissions);
 }
 
 }  // namespace
@@ -406,7 +406,8 @@ void PermissionsParser::SetScriptableHosts(
     const URLPatternSet& scriptable_hosts) {
   DCHECK(extension->permissions_parser());
   extension->permissions_parser()
-      ->initial_required_permissions_->scriptable_hosts = scriptable_hosts;
+      ->initial_required_permissions_->scriptable_hosts =
+      scriptable_hosts.Clone();
 }
 
 // static
