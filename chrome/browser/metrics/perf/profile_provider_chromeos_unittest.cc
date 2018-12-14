@@ -90,6 +90,7 @@ class TestProfileProvider : public ProfileProvider {
     test_params.resume_from_suspend.sampling_factor = 1;
     test_params.restore_session.sampling_factor = 1;
 
+    collectors_.clear();
     collectors_.push_back(
         std::make_unique<TestMetricCollector<100>>(test_params));
     collectors_.push_back(

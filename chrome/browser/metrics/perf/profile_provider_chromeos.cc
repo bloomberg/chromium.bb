@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/perf/profile_provider_chromeos.h"
 
+#include "chrome/browser/metrics/perf/perf_events_collector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace metrics {
@@ -18,7 +19,10 @@ bool IsNormalUserLoggedIn() {
 
 }  // namespace
 
-ProfileProvider::ProfileProvider() : weak_factory_(this) {}
+ProfileProvider::ProfileProvider() : weak_factory_(this) {
+  // Register a perf events collector.
+  collectors_.push_back(std::make_unique<PerfCollector>());
+}
 
 ProfileProvider::~ProfileProvider() {
   chromeos::LoginState::Get()->RemoveObserver(this);

@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
+#include "chrome/browser/metrics/perf/perf_events_collector.h"
 
 #include <stdint.h>
 
@@ -29,19 +29,16 @@ namespace metrics {
 
 namespace {
 
-const char kPerfRecordCyclesCmd[] =
-  "perf record -a -e cycles -c 1000003";
-const char kPerfRecordCallgraphCmd[] =
-  "perf record -a -e cycles -g -c 4000037";
-const char kPerfRecordLBRCmd[] =
-  "perf record -a -e r20c4 -b -c 200011";
+const char kPerfRecordCyclesCmd[] = "perf record -a -e cycles -c 1000003";
+const char kPerfRecordCallgraphCmd[] = "perf record -a -e cycles -g -c 4000037";
+const char kPerfRecordLBRCmd[] = "perf record -a -e r20c4 -b -c 200011";
 const char kPerfRecordCacheMissesCmd[] =
     "perf record -a -e cache-misses -c 10007";
 const char kPerfStatMemoryBandwidthCmd[] =
-  "perf stat -a -e cycles -e instructions "
-  "-e uncore_imc/data_reads/ -e uncore_imc/data_writes/ "
-  "-e cpu/event=0xD0,umask=0x11,name=MEM_UOPS_RETIRED-STLB_MISS_LOADS/ "
-  "-e cpu/event=0xD0,umask=0x12,name=MEM_UOPS_RETIRED-STLB_MISS_STORES/";
+    "perf stat -a -e cycles -e instructions "
+    "-e uncore_imc/data_reads/ -e uncore_imc/data_writes/ "
+    "-e cpu/event=0xD0,umask=0x11,name=MEM_UOPS_RETIRED-STLB_MISS_LOADS/ "
+    "-e cpu/event=0xD0,umask=0x12,name=MEM_UOPS_RETIRED-STLB_MISS_STORES/";
 
 // Converts a protobuf to serialized format as a byte vector.
 std::vector<uint8_t> SerializeMessageToVector(
@@ -56,7 +53,7 @@ std::vector<uint8_t> SerializeMessageToVector(
 // |proto| is an output parameter that will contain the created protobuf.
 PerfDataProto GetExamplePerfDataProto() {
   PerfDataProto proto;
-  proto.set_timestamp_sec(1435604013);  // Time since epoch in seconds->
+  proto.set_timestamp_sec(1435604013);  // Time since epoch in seconds.
 
   PerfDataProto_PerfFileAttr* file_attr = proto.add_file_attrs();
   file_attr->add_ids(61);
@@ -121,7 +118,7 @@ std::string SerializeStringFieldWithTag(int field, const std::string& value) {
   return result;
 }
 
-// Allows testing of PerfProvider behavior when an incognito window is opened.
+// Allows testing of PerfCollector behavior when an incognito window is opened.
 class TestIncognitoObserver : public WindowedIncognitoObserver {
  public:
   // Factory function to create a TestIncognitoObserver object contained in a
@@ -142,57 +139,53 @@ class TestIncognitoObserver : public WindowedIncognitoObserver {
 };
 
 // Allows access to some private methods for testing.
-class TestPerfProvider : public PerfProvider {
+class TestPerfCollector : public PerfCollector {
  public:
-  TestPerfProvider() {}
+  TestPerfCollector() {}
 
-  using PerfProvider::PerfSubcommand;
-  using PerfProvider::ParseOutputProtoIfValid;
-  using PerfProvider::OnSessionRestoreDone;
-  using PerfProvider::Deactivate;
-  using PerfProvider::collection_params;
-  using PerfProvider::command_selector;
-  using PerfProvider::timer;
+  using PerfCollector::collection_params;
+  using PerfCollector::command_selector;
+  using PerfCollector::Deactivate;
+  using PerfCollector::OnSessionRestoreDone;
+  using PerfCollector::ParseOutputProtoIfValid;
+  using PerfCollector::PerfSubcommand;
+  using PerfCollector::timer;
 
  private:
-  std::vector<SampledProfile> stored_profiles_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPerfProvider);
+  DISALLOW_COPY_AND_ASSIGN(TestPerfCollector);
 };
 
 }  // namespace
 
-class PerfProviderTest : public testing::Test {
+class PerfCollectorTest : public testing::Test {
  public:
-  PerfProviderTest()
+  PerfCollectorTest()
       : task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
         task_runner_handle_(task_runner_),
         perf_data_proto_(GetExamplePerfDataProto()),
         perf_stat_proto_(GetExamplePerfStatProto()) {}
 
   void SetUp() override {
-    // PerfProvider requires chromeos::LoginState and
+    // PerfCollector requires chromeos::LoginState and
     // chromeos::DBusThreadManagerto be initialized.
     chromeos::LoginState::Initialize();
     chromeos::DBusThreadManager::Initialize();
 
-    perf_provider_ = std::make_unique<TestPerfProvider>();
-    perf_provider_->Init();
+    perf_collector_ = std::make_unique<TestPerfCollector>();
+    perf_collector_->Init();
 
-    // PerfProvider requires the user to be logged in.
-    chromeos::LoginState::Get()->SetLoggedInState(
-        chromeos::LoginState::LOGGED_IN_ACTIVE,
-        chromeos::LoginState::LOGGED_IN_USER_REGULAR);
+    // PerfCollector requires the user to be logged in.
+    perf_collector_->OnUserLoggedIn();
   }
 
   void TearDown() override {
-    perf_provider_.reset();
+    perf_collector_.reset();
     chromeos::DBusThreadManager::Shutdown();
     chromeos::LoginState::Shutdown();
   }
 
  protected:
-  std::unique_ptr<TestPerfProvider> perf_provider_;
+  std::unique_ptr<TestPerfCollector> perf_collector_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -201,52 +194,49 @@ class PerfProviderTest : public testing::Test {
   PerfDataProto perf_data_proto_;
   PerfStatProto perf_stat_proto_;
 
-  DISALLOW_COPY_AND_ASSIGN(PerfProviderTest);
+  DISALLOW_COPY_AND_ASSIGN(PerfCollectorTest);
 };
 
-TEST_F(PerfProviderTest, CheckSetup) {
+TEST_F(PerfCollectorTest, CheckSetup) {
   EXPECT_GT(perf_data_proto_.ByteSize(), 0);
   EXPECT_GT(perf_stat_proto_.ByteSize(), 0);
 
   std::vector<SampledProfile> stored_profiles;
-  EXPECT_FALSE(perf_provider_->GetSampledProfiles(&stored_profiles));
+  EXPECT_FALSE(perf_collector_->GetSampledProfiles(&stored_profiles));
   EXPECT_TRUE(stored_profiles.empty());
 
-  EXPECT_FALSE(
-      TestIncognitoObserver::CreateWithIncognitoLaunched(false)->
-          incognito_launched());
-  EXPECT_TRUE(
-      TestIncognitoObserver::CreateWithIncognitoLaunched(true)->
-          incognito_launched());
+  EXPECT_FALSE(TestIncognitoObserver::CreateWithIncognitoLaunched(false)
+                   ->incognito_launched());
+  EXPECT_TRUE(TestIncognitoObserver::CreateWithIncognitoLaunched(true)
+                  ->incognito_launched());
 }
 
 // If quipper fails, or the DBus call fails, no data will be returned.
-TEST_F(PerfProviderTest, NoPerfData) {
+TEST_F(PerfCollectorTest, NoPerfData) {
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
-      std::string());
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_RECORD, std::string());
 
   std::vector<SampledProfile> stored_profiles;
-  EXPECT_FALSE(perf_provider_->GetSampledProfiles(&stored_profiles));
+  EXPECT_FALSE(perf_collector_->GetSampledProfiles(&stored_profiles));
 }
 
-TEST_F(PerfProviderTest, PerfDataProto) {
+TEST_F(PerfCollectorTest, PerfDataProto) {
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_RECORD,
       perf_data_proto_.SerializeAsString());
 
   std::vector<SampledProfile> stored_profiles;
-  EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles));
+  EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles));
   ASSERT_EQ(1U, stored_profiles.size());
 
   const SampledProfile& profile = stored_profiles[0];
@@ -259,7 +249,7 @@ TEST_F(PerfProviderTest, PerfDataProto) {
             SerializeMessageToVector(profile.perf_data()));
 }
 
-TEST_F(PerfProviderTest, PerfDataProto_UnknownFieldsDiscarded) {
+TEST_F(PerfCollectorTest, PerfDataProto_UnknownFieldsDiscarded) {
   // First add some unknown fields to MMapEvent, CommEvent, PerfBuildID, and
   // StringAndMd5sumPrefix. The known field values don't have to make sense for
   // perf data. They are just padding to avoid having an otherwise empty proto.
@@ -307,18 +297,17 @@ TEST_F(PerfProviderTest, PerfDataProto_UnknownFieldsDiscarded) {
   PerfDataProto temp_proto;
   EXPECT_TRUE(temp_proto.ParseFromString(perf_data_string));
 
-  // Now pass it to |perf_provider_|.
+  // Now pass it to |perf_collector_|.
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
-      perf_data_string);
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_RECORD, perf_data_string);
 
   std::vector<SampledProfile> stored_profiles;
-  EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles));
+  EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles));
   ASSERT_EQ(1U, stored_profiles.size());
 
   const SampledProfile& profile = stored_profiles[0];
@@ -364,18 +353,18 @@ TEST_F(PerfProviderTest, PerfDataProto_UnknownFieldsDiscarded) {
             stored_metadata.perf_command_line_whole().unknown_fields().size());
 }
 
-TEST_F(PerfProviderTest, PerfStatProto) {
+TEST_F(PerfCollectorTest, PerfStatProto) {
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_STAT,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_STAT,
       perf_stat_proto_.SerializeAsString());
 
   std::vector<SampledProfile> stored_profiles;
-  EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles));
+  EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles));
   ASSERT_EQ(1U, stored_profiles.size());
 
   const SampledProfile& profile = stored_profiles[0];
@@ -389,45 +378,45 @@ TEST_F(PerfProviderTest, PerfStatProto) {
 }
 
 // Change |sampled_profile| between calls to ParseOutputProtoIfValid().
-TEST_F(PerfProviderTest, MultipleCalls) {
+TEST_F(PerfCollectorTest, MultipleCalls) {
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_RECORD,
       perf_data_proto_.SerializeAsString());
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
   sampled_profile->set_ms_after_restore(3000);
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_STAT,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_STAT,
       perf_stat_proto_.SerializeAsString());
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   sampled_profile->set_suspend_duration_ms(60000);
   sampled_profile->set_ms_after_resume(1500);
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_RECORD,
       perf_data_proto_.SerializeAsString());
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_STAT,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_STAT,
       perf_stat_proto_.SerializeAsString());
 
   std::vector<SampledProfile> stored_profiles;
-  EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles));
+  EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles));
   ASSERT_EQ(4U, stored_profiles.size());
 
   const SampledProfile& profile1 = stored_profiles[0];
@@ -468,18 +457,18 @@ TEST_F(PerfProviderTest, MultipleCalls) {
 
 // Simulate opening and closing of incognito window in between calls to
 // ParseOutputProtoIfValid().
-TEST_F(PerfProviderTest, IncognitoWindowOpened) {
+TEST_F(PerfCollectorTest, IncognitoWindowOpened) {
   auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_RECORD,
       perf_data_proto_.SerializeAsString());
 
   std::vector<SampledProfile> stored_profiles1;
-  EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles1));
+  EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles1));
   ASSERT_EQ(1U, stored_profiles1.size());
 
   const SampledProfile& profile1 = stored_profiles1[0];
@@ -493,14 +482,14 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
   sampled_profile->set_ms_after_restore(3000);
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_STAT,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_STAT,
       perf_stat_proto_.SerializeAsString());
 
   std::vector<SampledProfile> stored_profiles2;
-  EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles2));
+  EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles2));
   ASSERT_EQ(1U, stored_profiles2.size());
 
   const SampledProfile& profile2 = stored_profiles2[0];
@@ -515,39 +504,39 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   // An incognito window opens.
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(true),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_RECORD,
       perf_data_proto_.SerializeAsString());
 
   std::vector<SampledProfile> stored_profiles_empty;
-  EXPECT_FALSE(perf_provider_->GetSampledProfiles(&stored_profiles_empty));
+  EXPECT_FALSE(perf_collector_->GetSampledProfiles(&stored_profiles_empty));
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
   // Incognito window is still open.
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(true),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_STAT,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_STAT,
       perf_stat_proto_.SerializeAsString());
 
-  EXPECT_FALSE(perf_provider_->GetSampledProfiles(&stored_profiles_empty));
+  EXPECT_FALSE(perf_collector_->GetSampledProfiles(&stored_profiles_empty));
 
   sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   sampled_profile->set_suspend_duration_ms(60000);
   sampled_profile->set_ms_after_resume(1500);
   // Incognito window closes.
-  perf_provider_->ParseOutputProtoIfValid(
+  perf_collector_->ParseOutputProtoIfValid(
       TestIncognitoObserver::CreateWithIncognitoLaunched(false),
       std::move(sampled_profile),
-      TestPerfProvider::PerfSubcommand::PERF_COMMAND_RECORD,
+      TestPerfCollector::PerfSubcommand::PERF_COMMAND_RECORD,
       perf_data_proto_.SerializeAsString());
 
   std::vector<SampledProfile> stored_profiles3;
-  EXPECT_TRUE(perf_provider_->GetSampledProfiles(&stored_profiles3));
+  EXPECT_TRUE(perf_collector_->GetSampledProfiles(&stored_profiles3));
   ASSERT_EQ(1U, stored_profiles3.size());
 
   const SampledProfile& profile3 = stored_profiles3[0];
@@ -561,7 +550,7 @@ TEST_F(PerfProviderTest, IncognitoWindowOpened) {
             SerializeMessageToVector(profile3.perf_data()));
 }
 
-TEST_F(PerfProviderTest, DefaultCommandsBasedOnUarch_IvyBridge) {
+TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_IvyBridge) {
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
   cpuid.vendor = "GenuineIntel";
@@ -573,27 +562,25 @@ TEST_F(PerfProviderTest, DefaultCommandsBasedOnUarch_IvyBridge) {
   ASSERT_GE(cmds.size(), 2UL);
   EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
   EXPECT_EQ(cmds[1].value, kPerfRecordCallgraphCmd);
-  auto found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfStatMemoryBandwidthCmd;
-      });
+  auto found =
+      std::find_if(cmds.begin(), cmds.end(),
+                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                     return cmd.value == kPerfStatMemoryBandwidthCmd;
+                   });
   EXPECT_NE(cmds.end(), found);
-  found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfRecordLBRCmd;
-      });
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordLBRCmd;
+                       });
   EXPECT_NE(cmds.end(), found);
-  found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfRecordCacheMissesCmd;
-      });
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordCacheMissesCmd;
+                       });
   EXPECT_NE(cmds.end(), found);
 }
 
-TEST_F(PerfProviderTest, DefaultCommandsBasedOnUarch_SandyBridge) {
+TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_SandyBridge) {
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
   cpuid.vendor = "GenuineIntel";
@@ -605,27 +592,25 @@ TEST_F(PerfProviderTest, DefaultCommandsBasedOnUarch_SandyBridge) {
   ASSERT_GE(cmds.size(), 2UL);
   EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
   EXPECT_EQ(cmds[1].value, kPerfRecordCallgraphCmd);
-  auto found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfStatMemoryBandwidthCmd;
-      });
+  auto found =
+      std::find_if(cmds.begin(), cmds.end(),
+                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                     return cmd.value == kPerfStatMemoryBandwidthCmd;
+                   });
   EXPECT_EQ(cmds.end(), found) << "SandyBridge does not support this command";
-  found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfRecordLBRCmd;
-      });
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordLBRCmd;
+                       });
   EXPECT_NE(cmds.end(), found);
-  found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfRecordCacheMissesCmd;
-      });
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordCacheMissesCmd;
+                       });
   EXPECT_NE(cmds.end(), found);
 }
 
-TEST_F(PerfProviderTest, DefaultCommandsBasedOnArch_Arm) {
+TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm) {
   CPUIdentity cpuid;
   cpuid.arch = "armv7l";
   cpuid.vendor = "";
@@ -637,21 +622,20 @@ TEST_F(PerfProviderTest, DefaultCommandsBasedOnArch_Arm) {
   ASSERT_GE(cmds.size(), 2UL);
   EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
   EXPECT_EQ(cmds[1].value, kPerfRecordCallgraphCmd);
-  auto found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfRecordLBRCmd;
-      });
+  auto found =
+      std::find_if(cmds.begin(), cmds.end(),
+                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                     return cmd.value == kPerfRecordLBRCmd;
+                   });
   EXPECT_EQ(cmds.end(), found) << "ARM does not support this command";
-  found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfRecordCacheMissesCmd;
-      });
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordCacheMissesCmd;
+                       });
   EXPECT_EQ(cmds.end(), found) << "ARM does not support this command";
 }
 
-TEST_F(PerfProviderTest, DefaultCommandsBasedOnArch_x86_32) {
+TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_x86_32) {
   CPUIdentity cpuid;
   cpuid.arch = "x86";
   cpuid.vendor = "GenuineIntel";
@@ -663,27 +647,25 @@ TEST_F(PerfProviderTest, DefaultCommandsBasedOnArch_x86_32) {
   ASSERT_GE(cmds.size(), 2UL);
   EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
   EXPECT_EQ(cmds[1].value, kPerfRecordCallgraphCmd);
-  auto found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfStatMemoryBandwidthCmd;
-      });
+  auto found =
+      std::find_if(cmds.begin(), cmds.end(),
+                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                     return cmd.value == kPerfStatMemoryBandwidthCmd;
+                   });
   EXPECT_EQ(cmds.end(), found) << "x86_32 does not support this command";
-  found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfRecordLBRCmd;
-      });
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordLBRCmd;
+                       });
   EXPECT_EQ(cmds.end(), found) << "x86_32 does not support this command";
-  found = std::find_if(
-      cmds.begin(), cmds.end(),
-      [](const RandomSelector::WeightAndValue& cmd) -> bool {
-        return cmd.value == kPerfRecordCacheMissesCmd;
-      });
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfRecordCacheMissesCmd;
+                       });
   EXPECT_EQ(cmds.end(), found) << "x86_32 does not support this command";
 }
 
-TEST_F(PerfProviderTest, DefaultCommandsBasedOnArch_Unknown) {
+TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Unknown) {
   CPUIdentity cpuid;
   cpuid.arch = "nonsense";
   cpuid.vendor = "";
@@ -696,13 +678,13 @@ TEST_F(PerfProviderTest, DefaultCommandsBasedOnArch_Unknown) {
   EXPECT_EQ(cmds[0].value, kPerfRecordCyclesCmd);
 }
 
-TEST_F(PerfProviderTest, CommandMatching_Empty) {
+TEST_F(PerfCollectorTest, CommandMatching_Empty) {
   CPUIdentity cpuid = {};
   std::map<std::string, std::string> params;
   EXPECT_EQ("", internal::FindBestCpuSpecifierFromParams(params, cpuid));
 }
 
-TEST_F(PerfProviderTest, CommandMatching_NoPerfCommands) {
+TEST_F(PerfCollectorTest, CommandMatching_NoPerfCommands) {
   CPUIdentity cpuid = {};
   std::map<std::string, std::string> params;
   params.insert(std::make_pair("NotEvenClose", ""));
@@ -713,7 +695,7 @@ TEST_F(PerfProviderTest, CommandMatching_NoPerfCommands) {
   EXPECT_EQ("", internal::FindBestCpuSpecifierFromParams(params, cpuid));
 }
 
-TEST_F(PerfProviderTest, CommandMatching_NoMatch) {
+TEST_F(PerfCollectorTest, CommandMatching_NoMatch) {
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
   cpuid.vendor = "GenuineIntel";
@@ -729,7 +711,7 @@ TEST_F(PerfProviderTest, CommandMatching_NoMatch) {
   EXPECT_EQ("", internal::FindBestCpuSpecifierFromParams(params, cpuid));
 }
 
-TEST_F(PerfProviderTest, CommandMatching_default) {
+TEST_F(PerfCollectorTest, CommandMatching_default) {
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
   cpuid.vendor = "GenuineIntel";
@@ -746,7 +728,7 @@ TEST_F(PerfProviderTest, CommandMatching_default) {
   EXPECT_EQ("default", internal::FindBestCpuSpecifierFromParams(params, cpuid));
 }
 
-TEST_F(PerfProviderTest, CommandMatching_SystemArch) {
+TEST_F(PerfCollectorTest, CommandMatching_SystemArch) {
   CPUIdentity cpuid;
   cpuid.arch = "nothing_in_particular";
   cpuid.vendor = "";
@@ -774,7 +756,7 @@ TEST_F(PerfProviderTest, CommandMatching_SystemArch) {
   EXPECT_EQ("x86_64", internal::FindBestCpuSpecifierFromParams(params, cpuid));
 }
 
-TEST_F(PerfProviderTest, CommandMatching_Microarchitecture) {
+TEST_F(PerfCollectorTest, CommandMatching_Microarchitecture) {
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
   cpuid.vendor = "GenuineIntel";
@@ -785,14 +767,14 @@ TEST_F(PerfProviderTest, CommandMatching_Microarchitecture) {
   params.insert(std::make_pair("PerfCommand::default::0", "perf command"));
   params.insert(std::make_pair("PerfCommand::x86_64::0", "perf command"));
   params.insert(std::make_pair("PerfCommand::Broadwell::0", "perf command"));
-  params.insert(std::make_pair("PerfCommand::interesting-model-500x::0",
-                               "perf command"));
+  params.insert(
+      std::make_pair("PerfCommand::interesting-model-500x::0", "perf command"));
 
   EXPECT_EQ("Broadwell",
             internal::FindBestCpuSpecifierFromParams(params, cpuid));
 }
 
-TEST_F(PerfProviderTest, CommandMatching_SpecificModel) {
+TEST_F(PerfCollectorTest, CommandMatching_SpecificModel) {
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
   cpuid.vendor = "GenuineIntel";
@@ -803,14 +785,14 @@ TEST_F(PerfProviderTest, CommandMatching_SpecificModel) {
   params.insert(std::make_pair("PerfCommand::default::0", "perf command"));
   params.insert(std::make_pair("PerfCommand::x86_64::0", "perf command"));
   params.insert(std::make_pair("PerfCommand::Broadwell::0", "perf command"));
-  params.insert(std::make_pair("PerfCommand::interesting-model-500x::0",
-                               "perf command"));
+  params.insert(
+      std::make_pair("PerfCommand::interesting-model-500x::0", "perf command"));
 
   EXPECT_EQ("interesting-model-500x",
             internal::FindBestCpuSpecifierFromParams(params, cpuid));
 }
 
-TEST_F(PerfProviderTest, CommandMatching_SpecificModel_LongestMatch) {
+TEST_F(PerfCollectorTest, CommandMatching_SpecificModel_LongestMatch) {
   CPUIdentity cpuid;
   cpuid.arch = "x86_64";
   cpuid.vendor = "GenuineIntel";
@@ -821,31 +803,30 @@ TEST_F(PerfProviderTest, CommandMatching_SpecificModel_LongestMatch) {
   params.insert(std::make_pair("PerfCommand::default::0", "perf command"));
   params.insert(std::make_pair("PerfCommand::x86_64::0", "perf command"));
   params.insert(std::make_pair("PerfCommand::Broadwell::0", "perf command"));
-  params.insert(std::make_pair("PerfCommand::model-500x::0",
-                               "perf command"));
-  params.insert(std::make_pair("PerfCommand::interesting-model-500x::0",
-                               "perf command"));
-  params.insert(std::make_pair("PerfCommand::interesting-model::0",
-                               "perf command"));
+  params.insert(std::make_pair("PerfCommand::model-500x::0", "perf command"));
+  params.insert(
+      std::make_pair("PerfCommand::interesting-model-500x::0", "perf command"));
+  params.insert(
+      std::make_pair("PerfCommand::interesting-model::0", "perf command"));
 
   EXPECT_EQ("interesting-model-500x",
             internal::FindBestCpuSpecifierFromParams(params, cpuid));
 }
 
-class PerfProviderCollectionParamsTest : public testing::Test {
+class PerfCollectorCollectionParamsTest : public testing::Test {
  public:
-  PerfProviderCollectionParamsTest()
+  PerfCollectorCollectionParamsTest()
       : task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
         task_runner_handle_(task_runner_),
         field_trial_list_(nullptr) {}
 
   void SetUp() override {
-    // PerfProvider requires chromeos::LoginState and
+    // PerfCollector requires chromeos::LoginState and
     // chromeos::DBusThreadManagerto be initialized.
     chromeos::LoginState::Initialize();
     chromeos::DBusThreadManager::Initialize();
 
-    // PerfProvider requires the user to be logged in.
+    // PerfCollector requires the user to be logged in.
     chromeos::LoginState::Get()->SetLoggedInState(
         chromeos::LoginState::LOGGED_IN_ACTIVE,
         chromeos::LoginState::LOGGED_IN_USER_REGULAR);
@@ -862,18 +843,18 @@ class PerfProviderCollectionParamsTest : public testing::Test {
   base::ThreadTaskRunnerHandle task_runner_handle_;
   base::FieldTrialList field_trial_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(PerfProviderCollectionParamsTest);
+  DISALLOW_COPY_AND_ASSIGN(PerfCollectorCollectionParamsTest);
 };
 
-TEST_F(PerfProviderCollectionParamsTest, Commands_InitializedAfterVariations) {
-  TestPerfProvider perf_provider;
+TEST_F(PerfCollectorCollectionParamsTest, Commands_InitializedAfterVariations) {
+  TestPerfCollector perf_provider;
   EXPECT_TRUE(perf_provider.command_selector().odds().empty());
   // Init would be called after VariationsService is initialized.
   perf_provider.Init();
   EXPECT_FALSE(perf_provider.command_selector().odds().empty());
 }
 
-TEST_F(PerfProviderCollectionParamsTest, Commands_EmptyExperiment) {
+TEST_F(PerfCollectorCollectionParamsTest, Commands_EmptyExperiment) {
   std::vector<RandomSelector::WeightAndValue> default_cmds =
       internal::GetDefaultCommandsForCpu(GetCPUIdentity());
   std::map<std::string, std::string> params;
@@ -882,13 +863,13 @@ TEST_F(PerfProviderCollectionParamsTest, Commands_EmptyExperiment) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "ChromeOSWideProfilingCollection", "group_name"));
 
-  TestPerfProvider perf_provider;
+  TestPerfCollector perf_provider;
   EXPECT_TRUE(perf_provider.command_selector().odds().empty());
   perf_provider.Init();
   EXPECT_EQ(default_cmds, perf_provider.command_selector().odds());
 }
 
-TEST_F(PerfProviderCollectionParamsTest, Commands_InvalidValues) {
+TEST_F(PerfCollectorCollectionParamsTest, Commands_InvalidValues) {
   std::vector<RandomSelector::WeightAndValue> default_cmds =
       internal::GetDefaultCommandsForCpu(GetCPUIdentity());
   std::map<std::string, std::string> params;
@@ -897,10 +878,10 @@ TEST_F(PerfProviderCollectionParamsTest, Commands_InvalidValues) {
   params.insert(std::make_pair("PerfCommand::default::0", ""));
   params.insert(std::make_pair("PerfCommand::default::1", " "));
   params.insert(std::make_pair("PerfCommand::default::2", " leading space"));
-  params.insert(std::make_pair("PerfCommand::default::3",
-                               "no-spaces-or-numbers"));
-  params.insert(std::make_pair("PerfCommand::default::4",
-                               "NaN-trailing-space "));
+  params.insert(
+      std::make_pair("PerfCommand::default::3", "no-spaces-or-numbers"));
+  params.insert(
+      std::make_pair("PerfCommand::default::4", "NaN-trailing-space "));
   params.insert(std::make_pair("PerfCommand::default::5", "NaN x"));
   params.insert(std::make_pair("PerfCommand::default::6", "perf command"));
   ASSERT_TRUE(variations::AssociateVariationParams(
@@ -908,33 +889,33 @@ TEST_F(PerfProviderCollectionParamsTest, Commands_InvalidValues) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "ChromeOSWideProfilingCollection", "group_name"));
 
-  TestPerfProvider perf_provider;
+  TestPerfCollector perf_provider;
   EXPECT_TRUE(perf_provider.command_selector().odds().empty());
   perf_provider.Init();
   EXPECT_EQ(default_cmds, perf_provider.command_selector().odds());
 }
 
-TEST_F(PerfProviderCollectionParamsTest, Commands_Override) {
+TEST_F(PerfCollectorCollectionParamsTest, Commands_Override) {
   using WeightAndValue = RandomSelector::WeightAndValue;
   std::vector<RandomSelector::WeightAndValue> default_cmds =
       internal::GetDefaultCommandsForCpu(GetCPUIdentity());
   std::map<std::string, std::string> params;
   // Use the "default" cpu specifier since we don't want to predict what CPU
   // this test is running on. (CPU detection is tested above.)
-  params.insert(std::make_pair("PerfCommand::default::0",
-                               "50 perf record foo"));
-  params.insert(std::make_pair("PerfCommand::default::1",
-                               "25 perf record bar"));
-  params.insert(std::make_pair("PerfCommand::default::2",
-                               "25 perf record baz"));
-  params.insert(std::make_pair("PerfCommand::another-cpu::0",
-                               "7 perf record bar"));
+  params.insert(
+      std::make_pair("PerfCommand::default::0", "50 perf record foo"));
+  params.insert(
+      std::make_pair("PerfCommand::default::1", "25 perf record bar"));
+  params.insert(
+      std::make_pair("PerfCommand::default::2", "25 perf record baz"));
+  params.insert(
+      std::make_pair("PerfCommand::another-cpu::0", "7 perf record bar"));
   ASSERT_TRUE(variations::AssociateVariationParams(
       "ChromeOSWideProfilingCollection", "group_name", params));
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "ChromeOSWideProfilingCollection", "group_name"));
 
-  TestPerfProvider perf_provider;
+  TestPerfCollector perf_provider;
   EXPECT_TRUE(perf_provider.command_selector().odds().empty());
   perf_provider.Init();
 
@@ -946,7 +927,7 @@ TEST_F(PerfProviderCollectionParamsTest, Commands_Override) {
   EXPECT_EQ(expected_cmds, perf_provider.command_selector().odds());
 }
 
-TEST_F(PerfProviderCollectionParamsTest, Parameters_Override) {
+TEST_F(PerfCollectorCollectionParamsTest, Parameters_Override) {
   std::map<std::string, std::string> params;
   params.insert(std::make_pair("ProfileCollectionDurationSec", "15"));
   params.insert(std::make_pair("PeriodicProfilingIntervalMs", "3600000"));
@@ -959,7 +940,7 @@ TEST_F(PerfProviderCollectionParamsTest, Parameters_Override) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "ChromeOSWideProfilingCollection", "group_name"));
 
-  TestPerfProvider perf_provider;
+  TestPerfCollector perf_provider;
   const auto& parsed_params = perf_provider.collection_params();
 
   // Not initialized yet:
@@ -984,36 +965,6 @@ TEST_F(PerfProviderCollectionParamsTest, Parameters_Override) {
   EXPECT_EQ(2, parsed_params.restore_session.sampling_factor);
   EXPECT_EQ(base::TimeDelta::FromSeconds(20),
             parsed_params.restore_session.max_collection_delay);
-}
-
-// Setting "::SamplingFactor" to zero should disable the trigger.
-// Otherwise, it could cause a div-by-zero crash.
-TEST_F(PerfProviderCollectionParamsTest, ZeroSamplingFactorDisablesTrigger) {
-  std::map<std::string, std::string> params;
-  params.insert(std::make_pair("ResumeFromSuspend::SamplingFactor", "0"));
-  params.insert(std::make_pair("RestoreSession::SamplingFactor", "0"));
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      "ChromeOSWideProfilingCollection", "group_name", params));
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "ChromeOSWideProfilingCollection", "group_name"));
-
-  TestPerfProvider perf_provider;
-  chromeos::PowerManagerClient::Observer& pm_observer = perf_provider;
-  perf_provider.Init();
-
-  // Cancel the background collection.
-  perf_provider.Deactivate();
-  EXPECT_FALSE(perf_provider.timer().IsRunning())
-      << "Sanity: timer should not be running.";
-
-  // Calling SuspendDone or OnSessionRestoreDone should not start the timer
-  // that triggers collection.
-
-  pm_observer.SuspendDone(base::TimeDelta::FromMinutes(10));
-  EXPECT_FALSE(perf_provider.timer().IsRunning());
-
-  perf_provider.OnSessionRestoreDone(100);
-  EXPECT_FALSE(perf_provider.timer().IsRunning());
 }
 
 }  // namespace metrics
