@@ -524,6 +524,81 @@ class ArcAppModelBuilderRecreate : public ArcAppModelBuilderTest {
   DISALLOW_COPY_AND_ASSIGN(ArcAppModelBuilderRecreate);
 };
 
+class ArcAppModelIconTest : public ArcAppModelBuilderRecreate {
+ public:
+  ArcAppModelIconTest() = default;
+  ~ArcAppModelIconTest() override = default;
+
+  void SetUp() override {
+    ArcAppModelBuilderRecreate::SetUp();
+
+    std::vector<ui::ScaleFactor> supported_scale_factors;
+    supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
+    supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
+    scoped_supported_scale_factors_ =
+        std::make_unique<ui::test::ScopedSetSupportedScaleFactors>(
+            supported_scale_factors);
+  }
+
+  void TearDown() override {
+    scoped_supported_scale_factors_.reset();
+    ArcAppModelBuilderRecreate::TearDown();
+  }
+
+ protected:
+  // Simulates one test app is ready in the system.
+  std::string StartApp(int package_version) {
+    DCHECK(!fake_apps().empty());
+
+    const arc::mojom::AppInfo app = test_app();
+    const std::string app_id = ArcAppTest::GetAppId(app);
+
+    ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+    DCHECK(prefs);
+
+    app_instance()->RefreshAppList();
+    app_instance()->SendRefreshAppList({app});
+    auto package = CreatePackage(app.package_name);
+    package->package_version = package_version;
+    AddPackage(std::move(package));
+    return app_id;
+  }
+
+  // Simulates package of the test app is updated.
+  void UpdatePackage(int package_version) {
+    const arc::mojom::AppInfo app = test_app();
+    auto package = CreatePackage(app.package_name);
+    package->package_version = package_version;
+    app_instance()->SendPackageAppListRefreshed(package->package_name, {app});
+    app_instance()->SendPackageModified(std::move(package));
+  }
+
+  // Ensures that icons for the test app were updated for each scale factor.
+  void EnsureIconsUpdated() {
+    const arc::mojom::AppInfo app = test_app();
+    const std::string app_id = ArcAppTest::GetAppId(app);
+
+    const std::vector<std::unique_ptr<arc::FakeAppInstance::IconRequest>>&
+        icon_requests = app_instance()->icon_requests();
+    ASSERT_EQ(2U, icon_requests.size());
+    ASSERT_TRUE(icon_requests[0]->IsForApp(app));
+    ASSERT_EQ(GetAppListIconDimensionForScaleFactor(ui::SCALE_FACTOR_100P),
+              icon_requests[0]->dimension());
+    ASSERT_TRUE(icon_requests[1]->IsForApp(app));
+    ASSERT_EQ(GetAppListIconDimensionForScaleFactor(ui::SCALE_FACTOR_200P),
+              icon_requests[1]->dimension());
+
+    WaitForIconUpdates(profile_.get(), app_id, 2);
+  }
+
+  arc::mojom::AppInfo test_app() const { return fake_apps()[0]; }
+
+ private:
+  std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>
+      scoped_supported_scale_factors_;
+  DISALLOW_COPY_AND_ASSIGN(ArcAppModelIconTest);
+};
+
 class ArcDefaulAppTest : public ArcAppModelBuilderRecreate {
  public:
   ArcDefaulAppTest() = default;
@@ -1860,28 +1935,11 @@ TEST_P(ArcAppModelBuilderTest, IconLoader) {
   EXPECT_EQ(1 + scale_factors.size(), delegate.update_image_count());
 }
 
-TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
-  std::vector<ui::ScaleFactor> supported_scale_factors;
-  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
-  supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
-  ui::test::ScopedSetSupportedScaleFactors scoped_supported_scale_factors(
-      supported_scale_factors);
+TEST_P(ArcAppModelIconTest, IconInvalidation) {
+  ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
 
-  ASSERT_FALSE(fake_apps().empty());
-  std::vector<arc::mojom::AppInfo> apps = std::vector<arc::mojom::AppInfo>(
-      fake_apps().begin(), fake_apps().begin() + 1);
-
-  const arc::mojom::AppInfo& app = apps[0];
-  const std::string app_id = ArcAppTest::GetAppId(app);
-
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
-  ASSERT_NE(nullptr, prefs);
-
-  app_instance()->RefreshAppList();
-  app_instance()->SendRefreshAppList(apps);
-  auto package = CreatePackage(fake_apps()[0].package_name);
-  AddPackage(package);
-
+  const std::string app_id = StartApp(1 /* package_version */);
   prefs->MaybeRequestIcon(app_id,
                           GetAppListIconDescriptor(ui::SCALE_FACTOR_100P));
 
@@ -1889,63 +1947,54 @@ TEST_P(ArcAppModelBuilderRecreate, IconInvalidation) {
 
   // Simulate ARC restart.
   RestartArc();
-
-  prefs = ArcAppListPrefs::Get(profile_.get());
-  ASSERT_NE(nullptr, prefs);
-  app_instance()->RefreshAppList();
-  app_instance()->SendRefreshAppList(apps);
-  app_instance()->SendPackageModified(package->Clone());
+  StartApp(1 /* package_version */);
 
   // No icon update requests on restart. Icons were not invalidated.
   EXPECT_TRUE(app_instance()->icon_requests().empty());
 
   // Send new apps for the package. This should invalidate package icons.
-  package->package_version = 2;
-  app_instance()->SendPackageAppListRefreshed(apps[0].package_name, apps);
-  app_instance()->SendPackageModified(package->Clone());
-  base::RunLoop().RunUntilIdle();
+  UpdatePackage(2 /* package_version */);
 
-  // Requests to reload icons are issued for all supported scales.
-  const std::vector<std::unique_ptr<arc::FakeAppInstance::IconRequest>>&
-      icon_requests = app_instance()->icon_requests();
-  ASSERT_EQ(2U, icon_requests.size());
-  EXPECT_TRUE(icon_requests[0]->IsForApp(app));
-  EXPECT_EQ(GetAppListIconDimensionForScaleFactor(ui::SCALE_FACTOR_100P),
-            icon_requests[0]->dimension());
-  EXPECT_TRUE(icon_requests[1]->IsForApp(app));
-  EXPECT_EQ(GetAppListIconDimensionForScaleFactor(ui::SCALE_FACTOR_200P),
-            icon_requests[1]->dimension());
-
-  WaitForIconUpdates(profile_.get(), app_id, 2);
+  EnsureIconsUpdated();
 
   // Simulate ARC restart again.
   RestartArc();
-
-  prefs = ArcAppListPrefs::Get(profile_.get());
-  ASSERT_NE(nullptr, prefs);
-  app_instance()->RefreshAppList();
-  app_instance()->SendRefreshAppList(apps);
-  app_instance()->SendPackageModified(package->Clone());
+  StartApp(2 /* package_version */);
 
   // No new icon update requests on restart. Icons were invalidated and updated.
   EXPECT_TRUE(app_instance()->icon_requests().empty());
 }
 
-TEST_P(ArcAppModelBuilderTest, IconLoadNonSupportedScales) {
-  std::vector<ui::ScaleFactor> supported_scale_factors;
-  supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
-  supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
-  ui::test::ScopedSetSupportedScaleFactors scoped_supported_scale_factors(
-      supported_scale_factors);
+// This verifies that app icons are invalidated in case icon version was
+// changed which means ARC sends icons using updated processing.
+TEST_P(ArcAppModelIconTest, IconInvalidationOnIconVersionUpdate) {
+  ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
 
-  // Initialize one ARC app.
-  const arc::mojom::AppInfo& app = fake_apps()[0];
-  const std::string app_id = ArcAppTest::GetAppId(app);
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
-  ASSERT_NE(nullptr, prefs);
-  app_instance()->RefreshAppList();
-  app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
-      fake_apps().begin(), fake_apps().begin() + 1));
+  const std::string app_id = StartApp(1 /* package_version */);
+
+  // Simulate ARC restart.
+  RestartArc();
+  // Simulate new icons version.
+  ArcAppListPrefs::UprevCurrentIconsVersionForTesting();
+  StartApp(1 /* package_version */);
+
+  // Requests to reload icons are issued for all supported scales.
+  EnsureIconsUpdated();
+
+  // Next start should be without invalidation.
+  RestartArc();
+  StartApp(1 /* package_version */);
+
+  // No new icon update requests on restart. Icons were invalidated and updated.
+  EXPECT_TRUE(app_instance()->icon_requests().empty());
+}
+
+TEST_P(ArcAppModelIconTest, IconLoadNonSupportedScales) {
+  ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  const std::string app_id = StartApp(1 /* package_version */);
 
   FakeAppIconLoaderDelegate delegate;
   ArcAppIconLoader icon_loader(
@@ -2589,4 +2638,7 @@ INSTANTIATE_TEST_CASE_P(,
                         ::testing::ValuesIn(kUnmanagedArcStatesWithPlayStore));
 INSTANTIATE_TEST_CASE_P(,
                         ArcAppModelBuilderRecreate,
+                        ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_CASE_P(,
+                        ArcAppModelIconTest,
                         ::testing::ValuesIn(kUnmanagedArcStates));
