@@ -1150,19 +1150,20 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
 
   base::AutoLock lock(lock_);
   auto state = security_state_.find(child_id);
-  bool is_valid_child_id = state != security_state_.end();
-  bool can_access = is_valid_child_id && state->second->CanAccessDataForOrigin(
-                                             expected_process_lock);
+  if (state == security_state_.end()) {
+    // TODO(nick): Returning true instead of false here is a temporary
+    // workaround for https://crbug.com/600441
+    return true;
+  }
+  bool can_access =
+      state->second->CanAccessDataForOrigin(expected_process_lock);
   if (!can_access) {
     // Returning false here will result in a renderer kill.  Set some crash
     // keys that will help understand the circumstances of that kill.
     base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
                                    expected_process_lock.spec());
-
     base::debug::SetCrashKeyString(bad_message::GetKilledProcessOriginLockKey(),
-                                   is_valid_child_id
-                                       ? state->second->origin_lock().spec()
-                                       : "(child id not found)");
+                                   state->second->origin_lock().spec());
 
     static auto* requested_origin_key = base::debug::AllocateCrashKeyString(
         "requested_origin", base::debug::CrashKeySize::Size64);
