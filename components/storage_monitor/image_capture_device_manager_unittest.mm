@@ -11,7 +11,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/weak_ptr.h"
-#include "base/test/scoped_task_environment.h"
 #include "components/storage_monitor/image_capture_device.h"
 #include "components/storage_monitor/image_capture_device_manager.h"
 #include "components/storage_monitor/test_storage_monitor.h"
@@ -239,9 +238,7 @@ class TestCameraListener
 
 class ImageCaptureDeviceManagerTest : public testing::Test {
  public:
-  ImageCaptureDeviceManagerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  ImageCaptureDeviceManagerTest() {}
 
   void SetUp() override { monitor_ = TestStorageMonitor::CreateAndInstall(); }
 
@@ -266,10 +263,9 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
                   moreGoing:NO];
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { thread_bundle_.RunUntilIdle(); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestStorageMonitor* monitor_;
   TestCameraListener listener_;

@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_storage_impl.h"
@@ -44,12 +43,10 @@ const char kSessionOnlyManifest[] = "http://www.sessiononly.com/cache.manifest";
 class ChromeAppCacheServiceTest : public testing::Test {
  public:
   ChromeAppCacheServiceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : thread_bundle_(base::test::ScopedTaskEnvironment::MainThreadType::IO),
         kProtectedManifestURL(kProtectedManifest),
         kNormalManifestURL(kNormalManifest),
-        kSessionOnlyManifestURL(kSessionOnlyManifest),
-        thread_bundle_(TestBrowserThreadBundle::Options::IO_MAINLOOP) {}
+        kSessionOnlyManifestURL(kSessionOnlyManifest) {}
 
  protected:
   scoped_refptr<ChromeAppCacheService> CreateAppCacheServiceImpl(
@@ -57,14 +54,13 @@ class ChromeAppCacheServiceTest : public testing::Test {
       bool init_storage);
   void InsertDataIntoAppCache(ChromeAppCacheService* appcache_service);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   const GURL kProtectedManifestURL;
   const GURL kNormalManifestURL;
   const GURL kSessionOnlyManifestURL;
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
   TestBrowserContext browser_context_;
 };
 
@@ -86,14 +82,14 @@ ChromeAppCacheServiceTest::CreateAppCacheServiceImpl(
           base::RetainedRef(browser_context_.GetRequestContext()),
           mock_policy));
   // Steps needed to initialize the storage of AppCache data.
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   if (init_storage) {
     AppCacheStorageImpl* storage =
         static_cast<AppCacheStorageImpl*>(
             appcache_service->storage());
     storage->database_->db_connection();
     storage->disk_cache();
-    scoped_task_environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
   }
   return appcache_service;
 }
@@ -131,7 +127,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
 
   // Test: delete the ChromeAppCacheService
   appcache_service = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 
   // Recreate the appcache (for reading the data back)
   appcache_service = CreateAppCacheServiceImpl(appcache_path, false);
@@ -153,7 +149,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
 
   // Delete and let cleanup tasks run prior to returning.
   appcache_service = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
@@ -173,7 +169,7 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
 
   // Test: delete the ChromeAppCacheService
   appcache_service = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 
   // Recreate the appcache (for reading the data back)
   appcache_service = CreateAppCacheServiceImpl(appcache_path, false);
@@ -195,7 +191,7 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
 
   // Delete and let cleanup tasks run prior to returning.
   appcache_service = nullptr;
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 }
 
 }  // namespace content

@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/after_startup_task_utils.h"
 #include "content/browser/scheduler/browser_task_executor.h"
@@ -36,13 +35,39 @@ base::test::ScopedTaskEnvironment::MainThreadType GetThreadTypeFromOptions(
 
 }  // namespace
 
-TestBrowserThreadBundle::TestBrowserThreadBundle()
-    : TestBrowserThreadBundle(DEFAULT) {}
+TestBrowserThreadBundle::TestBrowserThreadBundle(
+    base::test::ScopedTaskEnvironment::MainThreadType main_thread_type,
+    base::test::ScopedTaskEnvironment::ExecutionMode execution_control_mode,
+    int options)
+    : base::test::ScopedTaskEnvironment(main_thread_type,
+                                        execution_control_mode),
+      options_(options),
+      threads_created_(false) {
+  // Infer |options_| from |main_thread_type|.
+  switch (main_thread_type) {
+    case base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT:
+    case base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME:
+      options_ |= TestBrowserThreadBundle::PLAIN_MAINLOOP;
+      break;
+    case base::test::ScopedTaskEnvironment::MainThreadType::IO:
+      options_ |= TestBrowserThreadBundle::IO_MAINLOOP;
+      break;
+    case base::test::ScopedTaskEnvironment::MainThreadType::UI:
+    case base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME:
+      break;
 
-TestBrowserThreadBundle::TestBrowserThreadBundle(int options)
-    : options_(options), threads_created_(false) {
+    default:
+      NOTREACHED();
+  }
+
   Init();
 }
+
+TestBrowserThreadBundle::TestBrowserThreadBundle(int options)
+    : TestBrowserThreadBundle(
+          GetThreadTypeFromOptions(options),
+          base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
+          options) {}
 
 TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   CHECK(threads_created_);
@@ -57,13 +82,11 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   ui_thread_->Stop();
   base::RunLoop().RunUntilIdle();
 
-  // Skip the following step when TaskScheduler isn't managed by this
-  // TestBrowserThreadBundle, otherwise it can hang (e.g.
-  // RunAllTasksUntilIdle() hangs when the TaskScheduler is managed
-  // by an external ScopedTaskEnvironment with ExecutionMode::QUEUED). This is
-  // fine as (1) it's rare and (2) it mimics production where BrowserThreads are
-  // shutdown before TaskScheduler.
-  if (scoped_task_environment_) {
+  // Skip the following steps when RunAllTasksUntilIdle might result in a hang
+  // (ExecutionMode::QUEUED) or for MainThreadType::MOCK_TIME where we haven't
+  // enforced there being no pending tasks.
+  if (main_thread_type() != MainThreadType::MOCK_TIME &&
+      execution_control_mode() != ExecutionMode::QUEUED) {
     // This is required to ensure we run all remaining MessageLoop and
     // TaskScheduler tasks in an atomic step. This is a bit different than
     // production where the main thread is not flushed after it's done running
@@ -72,15 +95,14 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
     // blocked upon it could make a test flaky whereas by flushing we guarantee
     // it will blow up).
     RunAllTasksUntilIdle();
-    CHECK(!scoped_task_environment_->MainThreadHasPendingTask());
+    CHECK(!MainThreadHasPendingTask());
   }
 
   BrowserTaskExecutor::ResetForTesting();
 
-  // |scoped_task_environment_| needs to explicitly go away before fake threads
-  // in order for DestructionObservers hooked to the main MessageLoop to be able
-  // to invoke BrowserThread::CurrentlyOn() -- ref. ~TestBrowserThread().
-  scoped_task_environment_.reset();
+  // Run DestructionObservers before our fake threads go away to ensure
+  // BrowserThread::CurrentlyOn() returns the results expected by the observers.
+  NotifyDestructionObserversAndReleaseSequenceManager();
 
 #if defined(OS_WIN)
   com_initializer_.reset();
@@ -109,15 +131,6 @@ void TestBrowserThreadBundle::Init() {
 
   BrowserTaskExecutor::Create();
 
-  // Create the ScopedTaskEnvironment if it doesn't already exist. A
-  // ScopedTaskEnvironment may already exist if this TestBrowserThreadBundle is
-  // instantiated in a test whose parent fixture provides a
-  // ScopedTaskEnvironment.
-  if (!base::ThreadTaskRunnerHandle::IsSet()) {
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            GetThreadTypeFromOptions(options_));
-  }
   if (options_ & IO_MAINLOOP)
     CHECK(base::MessageLoopCurrentForIO::IsSet());
   else if (!(options_ & PLAIN_MAINLOOP))
@@ -147,10 +160,6 @@ void TestBrowserThreadBundle::CreateBrowserThreads() {
   // Consider startup complete such that after-startup-tasks always run in
   // the scope of the test they were posted from (http://crbug.com/732018).
   SetBrowserStartupIsCompleteForTesting();
-}
-
-void TestBrowserThreadBundle::RunUntilIdle() {
-  scoped_task_environment_->RunUntilIdle();
 }
 
 void TestBrowserThreadBundle::RunIOThreadUntilIdle() {

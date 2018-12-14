@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 #include "chrome/test/base/testing_profile.h"
@@ -355,9 +354,7 @@ class NativeBackendGnomeTest : public testing::Test {
     SYNCED,
   };
 
-  NativeBackendGnomeTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  NativeBackendGnomeTest() {}
 
   void SetUp() override {
     ASSERT_TRUE(MockGnomeKeyringLoader::LoadMockGnomeKeyring());
@@ -514,7 +511,7 @@ class NativeBackendGnomeTest : public testing::Test {
                    target_form, &form_list),
         base::Bind(&CheckTrue));
 
-    scoped_task_environment_.RunUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
 
     EXPECT_EQ(1u, mock_keyring_items.size());
     if (mock_keyring_items.size() > 0)
@@ -559,7 +556,7 @@ class NativeBackendGnomeTest : public testing::Test {
                    m_facebook_lookup, &form_list),
         base::Bind(&CheckTrue));
 
-    scoped_task_environment_.RunUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
 
     EXPECT_EQ(1u, mock_keyring_items.size());
     EXPECT_EQ(1u, form_list.size());
@@ -574,7 +571,7 @@ class NativeBackendGnomeTest : public testing::Test {
         base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                        base::Unretained(&backend), m_facebook));
 
-    scoped_task_environment_.RunUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
 
     EXPECT_EQ(2u, mock_keyring_items.size());
 
@@ -610,7 +607,7 @@ class NativeBackendGnomeTest : public testing::Test {
         break;
     }
 
-    scoped_task_environment_.RunUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
 
     EXPECT_EQ(2u, mock_keyring_items.size());
 
@@ -621,7 +618,7 @@ class NativeBackendGnomeTest : public testing::Test {
                    m_facebook_lookup, &form_list),
         base::Bind(&CheckTrue));
 
-    scoped_task_environment_.RunUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
 
     // There should be two results -- the exact one, and the PSL-matched one.
     EXPECT_EQ(2u, form_list.size());
@@ -640,7 +637,7 @@ class NativeBackendGnomeTest : public testing::Test {
                    PasswordStore::FormDigest(form_facebook_), &form_list),
         base::Bind(&CheckTrue));
 
-    scoped_task_environment_.RunUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
 
     // There should be two results -- the exact one, and the PSL-matched one.
     EXPECT_EQ(2u, form_list.size());
@@ -714,7 +711,7 @@ class NativeBackendGnomeTest : public testing::Test {
         base::Bind(&CheckPasswordChangesWithResult, &expected_changes,
                    &changes));
 
-    scoped_task_environment_.RunUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
 
     EXPECT_EQ(1u, mock_keyring_items.size());
     if (mock_keyring_items.size() > 0)
@@ -731,18 +728,11 @@ class NativeBackendGnomeTest : public testing::Test {
         base::Bind(&CheckPasswordChangesWithResult, &expected_changes,
                    &changes));
 
-    scoped_task_environment_.RunUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
 
     EXPECT_EQ(0u, mock_keyring_items.size());
   }
 
-  // Create the ScopedTaskEnvirnment first to ensure that
-  // CreateSequencedTaskRunnerWithTraits will work correctly. Then create also
-  // TestBrowserThreadBundle so that BrowserThread::UI has an associated
-  // TaskRunner. The order is important because the bundle can detect that the
-  // MessageLoop used by the environment exists and reuse it, but not vice
-  // versa.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   // Provide some test forms to avoid having to set them up in each test.
@@ -765,7 +755,7 @@ TEST_F(NativeBackendGnomeTest, BasicAddLogin) {
           PasswordStoreChangeList(
               1, PasswordStoreChange(PasswordStoreChange::ADD, form_google_))));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -788,7 +778,7 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
                  base::Unretained(&backend), &form_list),
       base::Bind(&CheckTrue));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   // Quick check that we got something back.
   EXPECT_EQ(1u, form_list.size());
@@ -898,7 +888,7 @@ TEST_F(NativeBackendGnomeTest, BasicUpdateLogin) {
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   PasswordForm new_form_google(form_google_);
   new_form_google.times_used = 1;
@@ -918,7 +908,7 @@ TEST_F(NativeBackendGnomeTest, BasicUpdateLogin) {
                  new_form_google, &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -934,7 +924,7 @@ TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -949,7 +939,7 @@ TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {
                  form_google_, &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(0u, mock_keyring_items.size());
 }
@@ -964,7 +954,7 @@ TEST_F(NativeBackendGnomeTest, RemoveLoginActionMismatch) {
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -982,7 +972,7 @@ TEST_F(NativeBackendGnomeTest, RemoveLoginActionMismatch) {
                  form_google_, &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(0u, mock_keyring_items.size());
 }
@@ -997,7 +987,7 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1020,7 +1010,7 @@ TEST_F(NativeBackendGnomeTest, RemoveNonexistentLogin) {
                  base::Unretained(&backend), &form_list),
       base::Bind(&CheckTrue));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   // Quick check that we got something back.
   EXPECT_EQ(1u, form_list.size());
@@ -1040,7 +1030,7 @@ TEST_F(NativeBackendGnomeTest, UpdateNonexistentLogin) {
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1055,7 +1045,7 @@ TEST_F(NativeBackendGnomeTest, UpdateNonexistentLogin) {
       base::Bind(&CheckPasswordChangesWithResult,
                  base::Owned(new PasswordStoreChangeList), &changes));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1072,7 +1062,7 @@ TEST_F(NativeBackendGnomeTest, UpdateSameLogin) {
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1087,7 +1077,7 @@ TEST_F(NativeBackendGnomeTest, UpdateSameLogin) {
                  form_google_, &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1121,7 +1111,7 @@ TEST_F(NativeBackendGnomeTest, AddDuplicateLogin) {
                  form_google_),
       base::Bind(&CheckPasswordChanges, changes));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
@@ -1157,7 +1147,7 @@ TEST_F(NativeBackendGnomeTest, AndroidCredentials) {
                  observed_android_form, &form_list),
       base::Bind(&CheckTrue));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, form_list.size());
   EXPECT_EQ(saved_android_form, *form_list[0]);
@@ -1186,7 +1176,7 @@ TEST_F(NativeBackendGnomeTest, DisableAutoSignInForOrigins) {
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_facebook_));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(2u, mock_keyring_items.size());
   for (const auto& item : mock_keyring_items)
@@ -1211,7 +1201,7 @@ TEST_F(NativeBackendGnomeTest, DisableAutoSignInForOrigins) {
           &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(2u, mock_keyring_items.size());
   CheckStringAttribute(
@@ -1242,7 +1232,7 @@ TEST_F(NativeBackendGnomeTest, ReadDuplicateForms) {
       base::BindOnce(base::IgnoreResult(&NativeBackendGnome::AddLogin),
                      base::Unretained(&backend), form_google_));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   // Read the raw value back. Change the |unique_string| to
   // |unique_string_replacement| so the forms become unique.
@@ -1263,7 +1253,7 @@ TEST_F(NativeBackendGnomeTest, ReadDuplicateForms) {
                  base::Unretained(&backend), &form_list),
       base::Bind(&CheckTrue));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(1u, form_list.size());
   EXPECT_EQ(form_google_, *form_list[0]);
@@ -1294,7 +1284,7 @@ TEST_F(NativeBackendGnomeTest, GetAllLogins) {
                  &form_list),
       base::Bind(&CheckTrue));
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(2u, form_list.size());
   EXPECT_THAT(form_list, UnorderedElementsAre(Pointee(form_google_),

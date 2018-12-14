@@ -18,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -111,10 +110,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
       DeviceIdPrefIdsMap;
 
   MediaGalleriesPreferencesTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        profile_(new TestingProfile()),
-        default_galleries_count_(0) {}
+      : profile_(new TestingProfile()), default_galleries_count_(0) {}
 
   ~MediaGalleriesPreferencesTest() override {}
 
@@ -357,8 +353,6 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   MediaGalleriesPrefInfoMap expected_galleries_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-
   // Needed for extension service & friends to work.
   content::TestBrowserThreadBundle thread_bundle_;
 

@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
@@ -52,7 +51,7 @@ class PasswordManagerPresenterTest : public testing::Test {
 
   ~PasswordManagerPresenterTest() override {
     store_->ShutdownOnUIThread();
-    scoped_task_environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
   }
 
   void AddPasswordEntry(const GURL& origin,
@@ -76,15 +75,13 @@ class PasswordManagerPresenterTest : public testing::Test {
 
   void UpdatePasswordLists() {
     mock_controller_.GetPasswordManagerPresenter()->UpdatePasswordLists();
-    scoped_task_environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
   }
 
   MockPasswordUIView& GetUIController() { return mock_controller_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  content::TestBrowserThreadBundle thread_bundle_{
-      content::TestBrowserThreadBundle::PLAIN_MAINLOOP};
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   MockPasswordUIView mock_controller_{&profile_};
   scoped_refptr<password_manager::PasswordStore> store_;

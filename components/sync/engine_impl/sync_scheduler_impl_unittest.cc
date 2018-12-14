@@ -303,6 +303,13 @@ class SyncSchedulerImplTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
 
  private:
+  static const base::TickClock* tick_clock_;
+  static base::TimeTicks GetMockTimeTicks() {
+    if (!tick_clock_)
+      return base::TimeTicks();
+    return tick_clock_->NowTicks();
+  }
+
   syncable::Directory* directory() {
     return test_user_share_.user_share()->directory.get();
   }
@@ -320,6 +327,8 @@ class SyncSchedulerImplTest : public testing::Test {
   scoped_refptr<ExtensionsActivity> extensions_activity_;
   base::WeakPtrFactory<SyncSchedulerImplTest> weak_ptr_factory_;
 };
+
+const base::TickClock* SyncSchedulerImplTest::tick_clock_ = nullptr;
 
 void RecordSyncShareImpl(SyncShareTimes* times) {
   times->push_back(TimeTicks::Now());

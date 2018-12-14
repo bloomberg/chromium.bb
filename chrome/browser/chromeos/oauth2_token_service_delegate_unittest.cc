@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -110,9 +109,7 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
 
 class CrOSOAuthDelegateTest : public testing::Test {
  public:
-  CrOSOAuthDelegateTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  CrOSOAuthDelegateTest() {}
   ~CrOSOAuthDelegateTest() override = default;
 
  protected:
@@ -128,7 +125,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
     account_manager_.Initialize(tmp_dir_.GetPath(),
                                 client_->GetURLLoaderFactory(),
                                 immediate_callback_runner_);
-    scoped_task_environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
 
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
 
@@ -170,9 +167,6 @@ class CrOSOAuthDelegateTest : public testing::Test {
         GetValidTokenResponse("token", 3600));
   }
 
-  // Check base/test/scoped_task_environment.h. This must be the first member /
-  // declared before any member that cares about tasks.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   // Needed because
   // |content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver| in
   // |ChromeOSOAuth2TokenServiceDelegate|'s constructor CHECKs that we are
@@ -292,11 +286,11 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
       AccountManager::AccountKey{account1.gaia, ACCOUNT_TYPE_GAIA}, "token1");
   account_manager_.UpsertToken(
       AccountManager::AccountKey{account2.gaia, ACCOUNT_TYPE_GAIA}, "token2");
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 
   AccountManager account_manager;
   // AccountManager will not be fully initialized until
-  // |scoped_task_environment_.RunUntilIdle()| is called.
+  // |thread_bundle_.RunUntilIdle()| is called.
   account_manager.Initialize(tmp_dir_.GetPath(), client_->GetURLLoaderFactory(),
                              immediate_callback_runner_);
 
@@ -307,7 +301,7 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   TokenServiceObserver observer;
   delegate->AddObserver(&observer);
   // Wait until AccountManager is fully initialized.
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
 
   // Tests
 
@@ -417,9 +411,9 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsTriggerredForTransientErrors) {
       delegate_->CreateAccessTokenFetcher(account_info_.account_id,
                                           delegate_->GetURLLoaderFactory(),
                                           &access_token_consumer));
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   fetcher->Start("client_id", "client_secret", scopes);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_success_);
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
   // Expect a positive backoff time.
@@ -431,7 +425,7 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsTriggerredForTransientErrors) {
       account_info_.account_id, delegate_->GetURLLoaderFactory(),
       &access_token_consumer));
   fetcher->Start("client_id", "client_secret", scopes);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_success_);
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
 }
@@ -454,9 +448,9 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsResetOnNetworkChange) {
       delegate_->CreateAccessTokenFetcher(account_info_.account_id,
                                           delegate_->GetURLLoaderFactory(),
                                           &access_token_consumer));
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   fetcher->Start("client_id", "client_secret", scopes);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_success_);
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
   // Expect a positive backoff time.
@@ -469,7 +463,7 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsResetOnNetworkChange) {
       account_info_.account_id, delegate_->GetURLLoaderFactory(),
       &access_token_consumer));
   fetcher->Start("client_id", "client_secret", scopes);
-  scoped_task_environment_.RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_success_);
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
 }

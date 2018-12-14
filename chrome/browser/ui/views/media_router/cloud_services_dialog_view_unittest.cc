@@ -10,7 +10,6 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget.h"
 
@@ -65,7 +64,6 @@ class CloudServicesDialogViewTest : public ChromeViewsTestBase {
                          prefs::kMediaRouterCloudServicesPrefSet));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<BrowserWindow> window_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<views::Widget> anchor_widget_;

@@ -47,9 +47,8 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 class WhitelistCheckerClientTest : public testing::Test {
  public:
   WhitelistCheckerClientTest()
-      : environment_(
+      : thread_bundle_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
-        thread_bundle_(content::TestBrowserThreadBundle::PLAIN_MAINLOOP),
         target_url_("http://foo.bar") {}
 
   void SetUp() override {
@@ -63,11 +62,10 @@ class WhitelistCheckerClientTest : public testing::Test {
     // Verify no callback is remaining.
     // TODO(nparker): We should somehow EXPECT that no entry is remaining,
     // rather than just invoking it.
-    environment_.FastForwardUntilNoTasksRemain();
+    thread_bundle_.FastForwardUntilNoTasksRemain();
   }
 
  protected:
-  base::test::ScopedTaskEnvironment environment_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   GURL target_url_;
@@ -118,11 +116,11 @@ TEST_F(WhitelistCheckerClientTest, TestAsyncTimeout) {
   MockBoolCallback callback;
   WhitelistCheckerClient::StartCheckCsdWhitelist(database_manager_, target_url_,
                                                  callback.Get());
-  environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
   // No callback yet.
 
   EXPECT_CALL(callback, Run(true /* is_whitelisted */));
-  environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(5));
 }
 
 }  // namespace safe_browsing

@@ -27,7 +27,6 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/test_location_bar_model.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/ime/input_method.h"
@@ -235,7 +234,6 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   TemplateURLServiceFactoryTestUtil util_;
   CommandUpdaterImpl command_updater_;

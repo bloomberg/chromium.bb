@@ -7,7 +7,6 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/appcache_fuzzer.pb.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -26,10 +25,7 @@ namespace content {
 namespace {
 
 struct Env {
-  Env()
-      : scoped_task_environment(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        thread_bundle(TestBrowserThreadBundle::Options::IO_MAINLOOP) {
+  Env() : thread_bundle(base::test::ScopedTaskEnvironment::MainThreadType::IO) {
     base::CommandLine::Init(0, nullptr);
     logging::SetMinLogLevel(logging::LOG_FATAL);
     mojo::core::Init();
@@ -58,10 +54,9 @@ struct Env {
                        /*resource_context=*/nullptr,
                        /*request_context_getter=*/nullptr,
                        /*special_storage_policy=*/nullptr));
-    scoped_task_environment.RunUntilIdle();
+    thread_bundle.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
   TestBrowserThreadBundle thread_bundle;
   base::test::ScopedFeatureList feature_list;
   scoped_refptr<ChromeAppCacheService> appcache_service;
@@ -226,7 +221,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
         break;
       }
       case fuzzing::proto::Command::kRunUntilIdle: {
-        SingletonEnv().scoped_task_environment.RunUntilIdle();
+        SingletonEnv().thread_bundle.RunUntilIdle();
         break;
       }
       case fuzzing::proto::Command::COMMAND_NOT_SET: {
@@ -238,7 +233,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
   host.reset();
   // TODO(nedwilliamson): Investigate removing this or reinitializing
   // the appcache service as a fuzzer command.
-  SingletonEnv().scoped_task_environment.RunUntilIdle();
+  SingletonEnv().thread_bundle.RunUntilIdle();
 }
 
 }  // namespace content

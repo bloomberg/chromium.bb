@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -132,9 +131,9 @@ class CrostiniManagerTest : public testing::Test {
   }
 
   CrostiniManagerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        test_browser_thread_bundle_(
+      : test_browser_thread_bundle_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
             content::TestBrowserThreadBundle::REAL_IO_THREAD) {
     chromeos::DBusThreadManager::Initialize();
     fake_cicerone_client_ = static_cast<chromeos::FakeCiceroneClient*>(
@@ -173,7 +172,6 @@ class CrostiniManagerTest : public testing::Test {
   bool create_container_fails_callback_called_ = false;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   DISALLOW_COPY_AND_ASSIGN(CrostiniManagerTest);
 };

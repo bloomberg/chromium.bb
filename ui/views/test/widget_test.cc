@@ -30,7 +30,9 @@ void WidgetTest::WidgetCloser::operator()(Widget* widget) const {
   widget->CloseNow();
 }
 
-WidgetTest::WidgetTest() {}
+WidgetTest::WidgetTest(
+    std::unique_ptr<ScopedTaskEnvironment> scoped_task_environment)
+    : ViewsTestBase(std::move(scoped_task_environment)) {}
 WidgetTest::~WidgetTest() {}
 
 Widget* WidgetTest::CreateTopLevelPlatformWidget() {

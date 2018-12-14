@@ -85,12 +85,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 
 namespace base {
-namespace test {
-class ScopedTaskEnvironment;
-}  // namespace test
 #if defined(OS_WIN)
 namespace win {
 class ScopedCOMInitializer;
@@ -104,7 +102,7 @@ class TestBrowserThread;
 
 // Note: to drive these threads (e.g. run all tasks until idle), see
 // content/public/test/test_utils.h.
-class TestBrowserThreadBundle {
+class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
  public:
   // Used to specify the type of MessageLoop that backs the UI thread, and
   // which of the named BrowserThreads should be backed by a real
@@ -123,8 +121,16 @@ class TestBrowserThreadBundle {
     PLAIN_MAINLOOP = 1 << 3,
   };
 
-  TestBrowserThreadBundle();
+  // Deprecated.
   explicit TestBrowserThreadBundle(int options);
+
+  // |options| here to support REAL_IO_THREAD & DONT_CREATE_BROWSER_THREADS.
+  TestBrowserThreadBundle(
+      base::test::ScopedTaskEnvironment::MainThreadType main_thread_type =
+          base::test::ScopedTaskEnvironment::MainThreadType::UI,
+      base::test::ScopedTaskEnvironment::ExecutionMode execution_control_mode =
+          base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
+      int options = DEFAULT);
 
   // Creates browser threads; should only be called from other classes if the
   // DONT_CREATE_BROWSER_THREADS option was used when the bundle was created.
@@ -145,19 +151,17 @@ class TestBrowserThreadBundle {
   //   KickoffAsyncFoo(run_loop.QuitClosure());
   //   run_loop.Run();
   //
-  void RunUntilIdle();
 
   // Flush the IO thread. Replacement for RunLoop::RunUntilIdle() for tests that
   // have a REAL_IO_THREAD. As with RunUntilIdle() above, prefer using
   // RunLoop+QuitClosure() to await an async condition.
   void RunIOThreadUntilIdle();
 
-  ~TestBrowserThreadBundle();
+  ~TestBrowserThreadBundle() override;
 
  private:
   void Init();
 
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<TestBrowserThread> ui_thread_;
   std::unique_ptr<TestBrowserThread> io_thread_;
 

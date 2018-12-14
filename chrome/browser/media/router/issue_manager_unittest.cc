@@ -31,14 +31,12 @@ IssueInfo CreateTestIssue(IssueInfo::Severity severity) {
 class IssueManagerTest : public ::testing::Test {
  protected:
   IssueManagerTest()
-      : environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
-        thread_bundle_(content::TestBrowserThreadBundle::PLAIN_MAINLOOP) {
-    manager_.set_task_runner_for_test(environment_.GetMainThreadTaskRunner());
+      : thread_bundle_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+    manager_.set_task_runner_for_test(thread_bundle_.GetMainThreadTaskRunner());
   }
   ~IssueManagerTest() override {}
 
-  base::test::ScopedTaskEnvironment environment_;
   content::TestBrowserThreadBundle thread_bundle_;
   IssueManager manager_;
 };
@@ -112,8 +110,8 @@ TEST_F(IssueManagerTest, NonBlockingIssuesGetAutoDismissed) {
   EXPECT_CALL(observer, OnIssuesCleared()).Times(1);
   base::TimeDelta timeout = IssueManager::GetAutoDismissTimeout(issue_info1);
   EXPECT_FALSE(timeout.is_zero());
-  EXPECT_TRUE(environment_.MainThreadHasPendingTask());
-  environment_.FastForwardBy(timeout);
+  EXPECT_TRUE(thread_bundle_.MainThreadHasPendingTask());
+  thread_bundle_.FastForwardBy(timeout);
 
   EXPECT_CALL(observer, OnIssue(_)).Times(1);
   IssueInfo issue_info2 = CreateTestIssue(IssueInfo::Severity::WARNING);
@@ -122,9 +120,9 @@ TEST_F(IssueManagerTest, NonBlockingIssuesGetAutoDismissed) {
   EXPECT_CALL(observer, OnIssuesCleared()).Times(1);
   timeout = IssueManager::GetAutoDismissTimeout(issue_info2);
   EXPECT_FALSE(timeout.is_zero());
-  EXPECT_TRUE(environment_.MainThreadHasPendingTask());
-  environment_.FastForwardBy(timeout);
-  EXPECT_FALSE(environment_.MainThreadHasPendingTask());
+  EXPECT_TRUE(thread_bundle_.MainThreadHasPendingTask());
+  thread_bundle_.FastForwardBy(timeout);
+  EXPECT_FALSE(thread_bundle_.MainThreadHasPendingTask());
 }
 
 TEST_F(IssueManagerTest, IssueAutoDismissNoopsIfAlreadyCleared) {
@@ -138,13 +136,13 @@ TEST_F(IssueManagerTest, IssueAutoDismissNoopsIfAlreadyCleared) {
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer));
 
   EXPECT_CALL(observer, OnIssuesCleared()).Times(1);
-  EXPECT_TRUE(environment_.MainThreadHasPendingTask());
+  EXPECT_TRUE(thread_bundle_.MainThreadHasPendingTask());
   manager_.ClearIssue(issue1.id());
 
   EXPECT_CALL(observer, OnIssuesCleared()).Times(0);
   base::TimeDelta timeout = IssueManager::GetAutoDismissTimeout(issue_info1);
   EXPECT_FALSE(timeout.is_zero());
-  EXPECT_FALSE(environment_.MainThreadHasPendingTask());
+  EXPECT_FALSE(thread_bundle_.MainThreadHasPendingTask());
 }
 
 TEST_F(IssueManagerTest, BlockingIssuesDoNotGetAutoDismissed) {
@@ -160,7 +158,7 @@ TEST_F(IssueManagerTest, BlockingIssuesDoNotGetAutoDismissed) {
 
   base::TimeDelta timeout = IssueManager::GetAutoDismissTimeout(issue_info1);
   EXPECT_TRUE(timeout.is_zero());
-  EXPECT_FALSE(environment_.MainThreadHasPendingTask());
+  EXPECT_FALSE(thread_bundle_.MainThreadHasPendingTask());
 
   // FATAL issues are always blocking.
   IssueInfo issue_info2 = CreateTestIssue(IssueInfo::Severity::FATAL);
@@ -168,7 +166,7 @@ TEST_F(IssueManagerTest, BlockingIssuesDoNotGetAutoDismissed) {
 
   timeout = IssueManager::GetAutoDismissTimeout(issue_info2);
   EXPECT_TRUE(timeout.is_zero());
-  EXPECT_FALSE(environment_.MainThreadHasPendingTask());
+  EXPECT_FALSE(thread_bundle_.MainThreadHasPendingTask());
 }
 
 TEST_F(IssueManagerTest, ClearNonBlockingIssues) {

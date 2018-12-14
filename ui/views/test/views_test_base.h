@@ -26,7 +26,13 @@ namespace views {
 // to drive UI events and takes care of OLE initialization for windows.
 class ViewsTestBase : public PlatformTest {
  public:
-  ViewsTestBase();
+  using ScopedTaskEnvironment = base::test::ScopedTaskEnvironment;
+
+  explicit ViewsTestBase(
+      std::unique_ptr<ScopedTaskEnvironment> scoped_task_environment =
+          std::make_unique<ScopedTaskEnvironment>(
+              ScopedTaskEnvironment::MainThreadType::UI));
+
   ~ViewsTestBase() override;
 
   // Returns true if running aura-mus in a client configuration (not the window
@@ -63,7 +69,7 @@ class ViewsTestBase : public PlatformTest {
   gfx::NativeWindow GetContext();
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<TestViewsDelegate> views_delegate_for_setup_;
   std::unique_ptr<ScopedViewsTestHelper> test_helper_;
   bool setup_called_;

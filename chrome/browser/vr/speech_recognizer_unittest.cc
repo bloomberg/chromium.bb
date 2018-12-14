@@ -19,7 +19,6 @@
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -271,7 +270,6 @@ class SpeechRecognizerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
   std::unique_ptr<MockBrowserUiInterface> ui_;

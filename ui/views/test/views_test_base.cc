@@ -46,9 +46,9 @@ bool InitializeVisuals() {
 
 }  // namespace
 
-ViewsTestBase::ViewsTestBase()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+ViewsTestBase::ViewsTestBase(
+    std::unique_ptr<ScopedTaskEnvironment> scoped_task_environment)
+    : scoped_task_environment_(std::move(scoped_task_environment)),
       setup_called_(false),
       teardown_called_(false),
       has_compositing_manager_(InitializeVisuals()) {}

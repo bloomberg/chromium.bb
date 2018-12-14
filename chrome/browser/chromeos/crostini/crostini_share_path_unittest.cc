@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -118,9 +117,9 @@ class CrostiniSharePathTest : public testing::Test {
   }
 
   CrostiniSharePathTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        test_browser_thread_bundle_(
+      : test_browser_thread_bundle_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
             content::TestBrowserThreadBundle::REAL_IO_THREAD) {
     chromeos::DBusThreadManager::Initialize();
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
@@ -192,7 +191,6 @@ class CrostiniSharePathTest : public testing::Test {
   chromeos::FakeChromeUserManager user_manager;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   DISALLOW_COPY_AND_ASSIGN(CrostiniSharePathTest);
 };

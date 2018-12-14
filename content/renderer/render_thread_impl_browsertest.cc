@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -153,34 +152,12 @@ class QuitOnTestMsgFilter : public IPC::MessageFilter {
 
 class RenderThreadImplBrowserTest : public testing::Test {
  public:
-  // Managing our own main MessageLoop also forces us to manage our own
-  // TaskScheduler. This ensures a basic TaskScheduler is in scope during this
-  // test.
-  class TestTaskScheduler {
-   public:
-    TestTaskScheduler() {
-      base::TaskScheduler::CreateAndStartWithDefaultParams(
-          "RenderThreadImplBrowserTest");
-    }
-
-    ~TestTaskScheduler() {
-      base::TaskScheduler::GetInstance()->Shutdown();
-      base::TaskScheduler::GetInstance()->JoinForTesting();
-      base::TaskScheduler::SetInstance(nullptr);
-    }
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(TestTaskScheduler);
-  };
-
   RenderThreadImplBrowserTest() : field_trial_list_(nullptr) {}
 
   void SetUp() override {
     content_renderer_client_.reset(new ContentRendererClient());
     SetRendererClientForTesting(content_renderer_client_.get());
 
-    main_message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
-    test_task_scheduler_.reset(new TestTaskScheduler);
     browser_threads_.reset(
         new TestBrowserThreadBundle(TestBrowserThreadBundle::REAL_IO_THREAD));
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
@@ -263,8 +240,6 @@ class RenderThreadImplBrowserTest : public testing::Test {
   TestContentClientInitializer content_client_initializer_;
   std::unique_ptr<ContentRendererClient> content_renderer_client_;
 
-  std::unique_ptr<base::MessageLoop> main_message_loop_;
-  std::unique_ptr<TestTaskScheduler> test_task_scheduler_;
   std::unique_ptr<TestBrowserThreadBundle> browser_threads_;
   std::unique_ptr<TestServiceManagerContext> shell_context_;
   std::unique_ptr<ChildConnection> child_connection_;
@@ -302,9 +277,11 @@ class RenderThreadImplBrowserTest : public testing::Test {
 // Disabled under LeakSanitizer due to memory leaks.
 TEST_F(RenderThreadImplBrowserTest,
        WILL_LEAK(NonResourceDispatchIPCTasksDontGoThroughScheduler)) {
+  // This seems to deflake the test on Android.
+  browser_threads_->RunIOThreadUntilIdle();
+
   // NOTE other than not being a resource message, the actual message is
   // unimportant.
-
   sender()->Send(new TestMsg_QuitRunLoop());
 
   run_loop_->Run();

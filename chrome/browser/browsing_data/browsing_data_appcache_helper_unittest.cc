@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -44,19 +43,18 @@ class TestCompletionCallback {
 class CannedBrowsingDataAppCacheHelperTest : public testing::Test {
  public:
   CannedBrowsingDataAppCacheHelperTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : thread_bundle_(base::test::ScopedTaskEnvironment::MainThreadType::UI,
+                       base::test::ScopedTaskEnvironment::ExecutionMode::ASYNC,
+                       content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   void TearDown() override {
     // Make sure we run all pending tasks on IO thread before testing
     // profile is destructed.
     content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
-    scoped_task_environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 };
