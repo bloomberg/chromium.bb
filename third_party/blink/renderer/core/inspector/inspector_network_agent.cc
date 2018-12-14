@@ -410,6 +410,22 @@ String GetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
   return protocol::Network::Request::ReferrerPolicyEnum::
       NoReferrerWhenDowngrade;
 }
+
+std::unique_ptr<protocol::Network::WebSocketFrame> WebSocketMessageToProtocol(
+    int op_code,
+    bool masked,
+    const char* payload,
+    size_t payload_length) {
+  return protocol::Network::WebSocketFrame::create()
+      .setOpcode(op_code)
+      .setMask(masked)
+      // Only interpret the payload as UTF-8 when it's a text message
+      .setPayloadData(op_code == 1 ? String::FromUTF8WithLatin1Fallback(
+                                         payload, payload_length)
+                                   : Base64Encode(payload, payload_length))
+      .build();
+}
+
 }  // namespace
 
 void InspectorNetworkAgent::Restore() {
@@ -1262,16 +1278,10 @@ void InspectorNetworkAgent::DidReceiveWebSocketMessage(unsigned long identifier,
                                                        bool masked,
                                                        const char* payload,
                                                        size_t payload_length) {
-  std::unique_ptr<protocol::Network::WebSocketFrame> frame_object =
-      protocol::Network::WebSocketFrame::create()
-          .setOpcode(op_code)
-          .setMask(masked)
-          .setPayloadData(
-              String::FromUTF8WithLatin1Fallback(payload, payload_length))
-          .build();
   GetFrontend()->webSocketFrameReceived(
       IdentifiersFactory::SubresourceRequestId(identifier),
-      CurrentTimeTicksInSeconds(), std::move(frame_object));
+      CurrentTimeTicksInSeconds(),
+      WebSocketMessageToProtocol(op_code, masked, payload, payload_length));
 }
 
 void InspectorNetworkAgent::DidSendWebSocketMessage(unsigned long identifier,
@@ -1279,16 +1289,10 @@ void InspectorNetworkAgent::DidSendWebSocketMessage(unsigned long identifier,
                                                     bool masked,
                                                     const char* payload,
                                                     size_t payload_length) {
-  std::unique_ptr<protocol::Network::WebSocketFrame> frame_object =
-      protocol::Network::WebSocketFrame::create()
-          .setOpcode(op_code)
-          .setMask(masked)
-          .setPayloadData(
-              String::FromUTF8WithLatin1Fallback(payload, payload_length))
-          .build();
   GetFrontend()->webSocketFrameSent(
       IdentifiersFactory::RequestId(nullptr, identifier),
-      CurrentTimeTicksInSeconds(), std::move(frame_object));
+      CurrentTimeTicksInSeconds(),
+      WebSocketMessageToProtocol(op_code, masked, payload, payload_length));
 }
 
 void InspectorNetworkAgent::DidReceiveWebSocketMessageError(
