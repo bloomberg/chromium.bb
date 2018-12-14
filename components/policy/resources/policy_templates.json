@@ -14025,6 +14025,7 @@
       'name': 'ParentAccessCodeConfig',
       'type': 'dict',
       'schema': {
+        'sensitiveValue': True,
         'type': 'object',
         'properties': {
           'current_config': {
@@ -14059,7 +14060,6 @@
           }
         },
       },
-      'sensitiveValue': True,
       'supported_on': ['chrome_os:73-'],
       'features': {
         'dynamic_refresh': True,
