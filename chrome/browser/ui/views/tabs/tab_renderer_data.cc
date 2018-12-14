@@ -19,8 +19,7 @@ TabRendererData::~TabRendererData() = default;
 
 bool TabRendererData::operator==(const TabRendererData& other) const {
   return favicon.BackedBySameObjectAs(other.favicon) &&
-         network_state == other.network_state &&
-         load_progress == other.load_progress && title == other.title &&
+         network_state == other.network_state && title == other.title &&
          url == other.url && crashed_status == other.crashed_status &&
          incognito == other.incognito && show_icon == other.show_icon &&
          pinned == other.pinned && blocked == other.blocked &&

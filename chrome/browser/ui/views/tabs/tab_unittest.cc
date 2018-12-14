@@ -327,10 +327,6 @@ class TabTest : public ChromeViewsTestBase {
     icon->animation_state_ = icon->pending_animation_state_;
   }
 
-  static float GetLoadingProgress(TabIcon* icon) {
-    return icon->target_loading_progress_;
-  }
-
  protected:
   void InitWidget(Widget* widget) {
     Widget::InitParams params(CreateParams(Widget::InitParams::TYPE_WINDOW));
@@ -700,90 +696,6 @@ TEST_F(TabTest, LayeredThrobber) {
   tab.SetData(data);
   FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
-}
-
-// This is enforced as the loading progress is used for painting the progress
-// bar. When the progress bar is done loading and is fading out we want it to be
-// painted to the full width.
-TEST_F(TabTest, LoadingProgressIsFixedTo100PercentWhenNotLoading) {
-  Widget widget;
-  InitWidget(&widget);
-
-  FakeTabController tab_controller;
-  Tab tab(&tab_controller, nullptr);
-  widget.GetContentsView()->AddChildView(&tab);
-  tab.SizeToPreferredSize();
-
-  TabIcon* icon = GetTabIcon(tab);
-  TabRendererData data;
-  data.url = GURL("http://example.com");
-  data.network_state = TabNetworkState::kWaiting;
-  EXPECT_FLOAT_EQ(1.0, GetLoadingProgress(icon));
-  data.load_progress = 0.2;
-  tab.SetData(data);
-  EXPECT_FLOAT_EQ(1.0, GetLoadingProgress(icon));
-}
-
-TEST_F(TabTest, LoadingProgressMonotonicallyIncreases) {
-  if (!UsingNewLoadingAnimation())
-    return;
-  Widget widget;
-  InitWidget(&widget);
-
-  FakeTabController tab_controller;
-  Tab tab(&tab_controller, nullptr);
-  widget.GetContentsView()->AddChildView(&tab);
-  tab.SizeToPreferredSize();
-
-  TabIcon* icon = GetTabIcon(tab);
-  TabRendererData data;
-  data.network_state = TabNetworkState::kLoading;
-  data.load_progress = 0.2;
-  tab.SetData(data);
-  float initial_reported_progress = GetLoadingProgress(icon);
-  // Reported progress should interpolate to something between itself and 1.0.
-  EXPECT_GE(initial_reported_progress, 0.2);
-  EXPECT_LT(initial_reported_progress, 1.0);
-
-  // Decrease load progress, icon's load progress should not change.
-  data.load_progress = 0.1;
-  tab.SetData(data);
-  EXPECT_FLOAT_EQ(initial_reported_progress, GetLoadingProgress(icon));
-
-  // Though increasing it should be respected.
-  data.load_progress = 0.5;
-  tab.SetData(data);
-  // A higher load progress should be interpolate to larger value (less than 1).
-  EXPECT_GT(GetLoadingProgress(icon), initial_reported_progress);
-  EXPECT_LT(GetLoadingProgress(icon), 1.0);
-}
-
-TEST_F(TabTest, LoadingProgressGoesTo100PercentAfterLoadingIsDone) {
-  if (!UsingNewLoadingAnimation())
-    return;
-
-  Widget widget;
-  InitWidget(&widget);
-
-  FakeTabController tab_controller;
-  Tab tab(&tab_controller, nullptr);
-  widget.GetContentsView()->AddChildView(&tab);
-  tab.SizeToPreferredSize();
-
-  TabIcon* icon = GetTabIcon(tab);
-  TabRendererData data;
-  data.network_state = TabNetworkState::kLoading;
-  data.load_progress = 0.2;
-  tab.SetData(data);
-  // Reported progress should interpolate to something between itself and 1.0.
-  EXPECT_GE(GetLoadingProgress(icon), 0.2);
-  EXPECT_LT(GetLoadingProgress(icon), 1.0);
-
-  // Finish loading. Regardless of reported |data.load_progress|, load_progress
-  // should be drawn at 100%.
-  data.network_state = TabNetworkState::kNone;
-  tab.SetData(data);
-  EXPECT_FLOAT_EQ(1.0, GetLoadingProgress(icon));
 }
 
 TEST_F(TabTest, TitleHiddenWhenSmall) {

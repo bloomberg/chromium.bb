@@ -72,9 +72,8 @@ class TabIcon : public views::View {
     LoadingAnimationState();
 
     base::TimeDelta elapsed_time;
-    bool loading_progress_animation_pending = false;
-    base::Optional<double> loading_progress;
-    base::Optional<double> loading_progress_fade_out;
+    base::Optional<double> finished_loading_animation;
+    base::Optional<double> finished_loading_animation_fade_out;
 
     base::Optional<double> favicon_placeholder_alpha;
     // TODO(pbos): Make this a type that can represent "not started" and "ended"
@@ -128,7 +127,7 @@ class TabIcon : public views::View {
   // For certain types of tabs the loading animation is not desired so the
   // caller can set inhibit_loading_animation to true. When false, the loading
   // animation state will be derived from the network state.
-  void SetNetworkState(TabNetworkState network_state, float load_progress);
+  void SetNetworkState(TabNetworkState network_state);
 
   // Sets whether the tab should paint as crashed or not.
   void SetIsCrashed(bool is_crashed);
@@ -177,12 +176,15 @@ class TabIcon : public views::View {
   // it will be drawn off the bottom.
   double hiding_fraction_ = 0.0;
 
-  // Loading progress used for drawing the progress indicator.
-  double target_loading_progress_ = 1.0;
-
   base::TimeTicks last_animation_update_time_;
-  LoadingAnimationState animation_state_;
+  // True if the loading animation should keep looping until it hits the start.
+  // We don't want to start the finished-loading animation until it's there.
+  bool keep_loading_animation_running_ = false;
+  // Animation state to be used for the next painted frame. This state updates
+  // on state transitions and timer updates.
   LoadingAnimationState pending_animation_state_;
+  // Last painted animation state.
+  LoadingAnimationState animation_state_;
 
   // Crash animation (in place of favicon). Lazily created since most of the
   // time it will be unneeded.
