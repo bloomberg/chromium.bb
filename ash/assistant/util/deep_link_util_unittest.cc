@@ -19,8 +19,20 @@ namespace util {
 using DeepLinkUnitTest = AshTestBase;
 
 TEST_F(DeepLinkUnitTest, CreateAssistantQueryDeepLink) {
-  ASSERT_EQ(GURL("googleassistant://send-query?q=query"),
-            CreateAssistantQueryDeepLink("query"));
+  const std::map<std::string, std::string> test_cases = {
+      // OK: Simple query.
+      {"query", "googleassistant://send-query?q=query"},
+
+      // OK: Query containing spaces and special characters.
+      {"query with spaces & special characters?",
+       "googleassistant://"
+       "send-query?q=query+with+spaces+%26+special+characters%3F"},
+  };
+
+  for (const auto& test_case : test_cases) {
+    ASSERT_EQ(GURL(test_case.second),
+              CreateAssistantQueryDeepLink(test_case.first));
+  }
 }
 
 TEST_F(DeepLinkUnitTest, CreateAssistantSettingsDeepLink) {
@@ -79,8 +91,9 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParam) {
   AssertDeepLinkParamEq("true", DeepLinkParam::kRelaunch);
 
   // Case: Deep link parameter present, URL encoded.
-  params["q"] = "multiple+word+query";
-  AssertDeepLinkParamEq("multiple word query", DeepLinkParam::kQuery);
+  params["q"] = "query+with+spaces+%26+special+characters%3F";
+  AssertDeepLinkParamEq("query with spaces & special characters?",
+                        DeepLinkParam::kQuery);
 
   // Case: Deep link parameters absent.
   params.clear();
