@@ -457,6 +457,10 @@ static const arg_def_t enable_interintra_comp =
     ARG_DEF(NULL, "enable-interintra-comp", 1,
             "Enable interintra compound "
             "(0: false, 1: true (default))");
+static const arg_def_t enable_smooth_interintra =
+    ARG_DEF(NULL, "enable-smooth-interintra", 1,
+            "Enable smooth interintra mode "
+            "(0: false, 1: true (default))");
 static const arg_def_t enable_diff_wtd_comp =
     ARG_DEF(NULL, "enable-diff-wtd-comp", 1,
             "Enable difference-weighted compound "
@@ -691,6 +695,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_dist_wtd_comp,
                                        &enable_masked_comp,
                                        &enable_interintra_comp,
+                                       &enable_smooth_interintra,
                                        &enable_diff_wtd_comp,
                                        &enable_interinter_wedge,
                                        &enable_interintra_wedge,
@@ -762,6 +767,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_DIST_WTD_COMP,
                                         AV1E_SET_ENABLE_MASKED_COMP,
                                         AV1E_SET_ENABLE_INTERINTRA_COMP,
+                                        AV1E_SET_ENABLE_SMOOTH_INTERINTRA,
                                         AV1E_SET_ENABLE_DIFF_WTD_COMP,
                                         AV1E_SET_ENABLE_INTERINTER_WEDGE,
                                         AV1E_SET_ENABLE_INTERINTRA_WEDGE,

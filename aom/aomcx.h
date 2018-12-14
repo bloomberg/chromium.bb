@@ -785,6 +785,15 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_INTERINTRA_COMP,
 
+  /*!\brief Codec control function to turn on / off smooth inter-intra
+   * mode for a sequence.
+   *
+   * This will enable or disable usage of smooth inter-intra mode.
+   * The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_SMOOTH_INTERINTRA,
+
   /*!\brief Codec control function to turn on / off difference weighted
    * compound.
    *
@@ -1140,6 +1149,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_MASKED_COMP, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_INTERINTRA_COMP, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_INTERINTRA_COMP
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_SMOOTH_INTERINTRA, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_SMOOTH_INTERINTRA
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DIFF_WTD_COMP, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_DIFF_WTD_COMP
