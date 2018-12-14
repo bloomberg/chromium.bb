@@ -306,8 +306,7 @@ CORE_EXPORT void ResolveInlineMargins(
 // text-align, direction and amount of unused space.
 CORE_EXPORT LayoutUnit LineOffsetForTextAlign(ETextAlign,
                                               TextDirection,
-                                              LayoutUnit space_left,
-                                              LayoutUnit trailing_spaces_width);
+                                              LayoutUnit space_left);
 
 // Same as |LineOffsetForTextAlign| but returns the logical inline offset
 // instead of line-left offset.

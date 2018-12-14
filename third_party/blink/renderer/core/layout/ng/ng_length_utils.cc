@@ -921,8 +921,7 @@ void ResolveInlineMargins(const ComputedStyle& style,
 
 LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
                                   TextDirection direction,
-                                  LayoutUnit space_left,
-                                  LayoutUnit trailing_spaces_width) {
+                                  LayoutUnit space_left) {
   bool is_ltr = IsLtr(direction);
   if (text_align == ETextAlign::kStart || text_align == ETextAlign::kJustify)
     text_align = is_ltr ? ETextAlign::kLeft : ETextAlign::kRight;
@@ -943,7 +942,7 @@ LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
     case ETextAlign::kWebkitRight: {
       // In RTL, trailing spaces appear on the left of the line.
       if (UNLIKELY(!is_ltr))
-        return space_left - trailing_spaces_width;
+        return space_left;
       // Wide lines spill out of the block based off direction.
       // So even if text-align is right, if direction is LTR, wide lines
       // should overflow out of the right side of the block.
@@ -957,9 +956,9 @@ LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
         return (space_left / 2).ClampNegativeToZero();
       // In RTL, trailing spaces appear on the left of the line.
       if (space_left > LayoutUnit())
-        return (space_left / 2).ClampNegativeToZero() - trailing_spaces_width;
+        return (space_left / 2).ClampNegativeToZero();
       // In RTL, wide lines should spill out to the left, same as kRight.
-      return space_left - trailing_spaces_width;
+      return space_left;
     }
     default:
       NOTREACHED();
@@ -971,7 +970,7 @@ LayoutUnit InlineOffsetForTextAlign(const ComputedStyle& container_style,
                                     LayoutUnit space_left) {
   TextDirection direction = container_style.Direction();
   LayoutUnit line_offset = LineOffsetForTextAlign(
-      container_style.GetTextAlign(), direction, space_left, LayoutUnit());
+      container_style.GetTextAlign(), direction, space_left);
   return IsLtr(direction) ? line_offset : space_left - line_offset;
 }
 
