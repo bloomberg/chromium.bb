@@ -57,3 +57,23 @@ paper-styles/classes/global.html
 paper-styles/element-styles/paper-item-styles.html
 paper-styles/paper-styles-classes.html
 paper-styles/paper-styles.html
+
+# neon-animations
+neon-animation/animations/cascaded-animation.html
+neon-animation/animations/hero-animation.html
+neon-animation/animations/opaque-animation.html
+neon-animation/animations/reverse-ripple-animation.html
+neon-animation/animations/ripple-animation.html
+neon-animation/animations/scale-down-animation.html
+neon-animation/animations/scale-up-animation.html
+neon-animation/animations/slide-down-animation.html
+neon-animation/animations/slide-from-bottom-animation.html
+neon-animation/animations/slide-from-left-animation.html
+neon-animation/animations/slide-from-right-animation.html
+neon-animation/animations/slide-from-top-animation.html
+neon-animation/animations/slide-left-animation.html
+neon-animation/animations/slide-right-animation.html
+neon-animation/animations/slide-up-animation.html
+neon-animation/animations/transform-animation.html
+neon-animation/neon-animation.html
+neon-animation/neon-animations.html
