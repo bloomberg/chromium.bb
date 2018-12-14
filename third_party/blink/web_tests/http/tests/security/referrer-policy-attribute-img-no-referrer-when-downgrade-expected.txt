@@ -1,1 +1,0 @@
-CONSOLE ERROR: Mixed Content: The page at 'https://127.0.0.1:8443/security/referrer-policy-attribute-img-no-referrer-when-downgrade.html' attempted to load subresource at 'https://127.0.0.1:8443/resources/get-host-info.js' over broken HTTPS.
