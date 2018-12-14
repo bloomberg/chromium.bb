@@ -1702,6 +1702,10 @@
                   '|third_party/libovr'\
                   '|third_party/openvr',
     },
+    'vulkan': {
+      'filepath': 'gpu/vulkan'\
+                  '|third_party/vulkan'
+    },
     'wake_lock': {
       'filepath': 'wake_lock',
     },
@@ -2507,6 +2511,7 @@
                          'dfaden+virtualkb@google.com',
                          'yhanada+watchvk@chromium.org'],
     'virtual_reality': ['feature-vr-reviews@chromium.org'],
+    'vulkan': ['cblume+vulkan@chromium.org'],
     'wake_lock': ['mattreynolds+watch@chromium.org'],
     'web_dev_style': ['dbeam+watch-web-dev-style@chromium.org'],
     'web_package': ['twifkak+watch@chromium.org'],
