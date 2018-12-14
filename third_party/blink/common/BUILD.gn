@@ -69,6 +69,7 @@ jumbo_source_set("common") {
     "//base",
     "//mojo/public/cpp/system",
     "//net",
+    "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/cpp:cpp",
   ]
 
