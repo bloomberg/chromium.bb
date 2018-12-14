@@ -3235,12 +3235,30 @@ be describing additional metrics about the same event.
       end of each page load. See http://bit.ly/fcp_plus_plus for more details.
     </summary>
   </metric>
+  <metric
+      name="Experimental.PaintTiming.NavigationToLargestImagePaint.BeforeUserInput">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest image within
+      viewport after the image finishes loading, before user input. See
+      http://bit.ly/fcp_plus_plus for more details.
+    </summary>
+  </metric>
   <metric name="Experimental.PaintTiming.NavigationToLargestTextPaint">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest text within
       viewport. The value is recorded at the end of each page load. See
       http://bit.ly/fcp_plus_plus for more details.
+    </summary>
+  </metric>
+  <metric
+      name="Experimental.PaintTiming.NavigationToLargestTextPaint.BeforeUserInput">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest text within
+      viewport, before user input. See http://bit.ly/fcp_plus_plus for more
+      details.
     </summary>
   </metric>
   <metric name="Experimental.PaintTiming.NavigationToLastImagePaint">

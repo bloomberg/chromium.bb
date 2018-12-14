@@ -55,6 +55,11 @@ class UkmPageLoadMetricsObserver
       const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
+  void OnUserInput(
+      const blink::WebInputEvent& event,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
 
@@ -79,6 +84,11 @@ class UkmPageLoadMetricsObserver
   void ReportMainResourceTimingMetrics(ukm::builders::PageLoad* builder);
 
   void ReportLayoutStability(const page_load_metrics::PageLoadExtraInfo& info);
+
+  void RecordBeforeUserInputMetrics(
+      ukm::builders::PageLoad* builder,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info);
 
   // Guaranteed to be non-null during the lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
@@ -107,6 +117,8 @@ class UkmPageLoadMetricsObserver
 
   // True if the page main resource was served from disk cache.
   bool was_cached_ = false;
+
+  bool recorded_before_user_input_metrics_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };
