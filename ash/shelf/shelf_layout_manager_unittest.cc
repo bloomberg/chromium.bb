@@ -2279,6 +2279,15 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorInSplitView) {
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   EXPECT_EQ(SHELF_BACKGROUND_SPLIT_VIEW, GetShelfWidget()->GetBackgroundType());
 
+  // Should still keep SHELF_BACKGROUND_SPLIT_VIEW when both overview and
+  // splitview are active.
+  wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
+  wm::GetWindowState(window1.get())->OnWMEvent(&minimize_event);
+  EXPECT_EQ(split_view_controller->IsSplitViewModeActive(), true);
+  EXPECT_EQ(split_view_controller->state(), SplitViewController::RIGHT_SNAPPED);
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(SHELF_BACKGROUND_SPLIT_VIEW, GetShelfWidget()->GetBackgroundType());
+
   // Ending split view mode will maximize the two windows.
   split_view_controller->EndSplitView();
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
