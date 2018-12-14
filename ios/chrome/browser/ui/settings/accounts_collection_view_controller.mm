@@ -26,7 +26,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/cells/account_control_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/legacy_account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
@@ -293,8 +293,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)syncItem {
-  AccountControlItem* item =
-      [[AccountControlItem alloc] initWithType:ItemTypeSync];
+  LegacyAccountControlItem* item =
+      [[LegacyAccountControlItem alloc] initWithType:ItemTypeSync];
   item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SYNC_TITLE);
   item.accessibilityIdentifier = kSettingsAccountsSyncCellId;
@@ -305,7 +305,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Updates the sync item according to the sync status (in progress, sync error,
 // mdm error, sync disabled or sync enabled).
-- (void)updateSyncItem:(AccountControlItem*)syncItem {
+- (void)updateSyncItem:(LegacyAccountControlItem*)syncItem {
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(_browserState);
   if (!syncSetupService->HasFinishedInitialSetup()) {
@@ -348,8 +348,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)googleActivityControlsItem {
-  AccountControlItem* item =
-      [[AccountControlItem alloc] initWithType:ItemTypeGoogleActivityControls];
+  LegacyAccountControlItem* item = [[LegacyAccountControlItem alloc]
+      initWithType:ItemTypeGoogleActivityControls];
   item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_GOOGLE_TITLE);
   item.detailText =
@@ -442,8 +442,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewModel* model = self.collectionViewModel;
   if ([model numberOfSections] > index.section &&
       [model numberOfItemsInSection:index.section] > index.row) {
-    AccountControlItem* item = base::mac::ObjCCastStrict<AccountControlItem>(
-        [model itemAtIndexPath:index]);
+    LegacyAccountControlItem* item =
+        base::mac::ObjCCastStrict<LegacyAccountControlItem>(
+            [model itemAtIndexPath:index]);
     [self updateSyncItem:item];
     [self.collectionView reloadItemsAtIndexPaths:@[ index ]];
   }

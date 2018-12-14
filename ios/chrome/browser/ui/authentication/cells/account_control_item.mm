@@ -1,41 +1,17 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/authentication/cells/account_control_item.h"
 
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Padding used on the leading and trailing edges of the cell.
-const CGFloat kHorizontalPadding = 16;
-
-// Padding used on the top and bottom edges of the cell.
-const CGFloat kVerticalPadding = 16;
-
-// Padding used between the image and text.
-const CGFloat kHorizontalPaddingBetweenImageAndText = 16;
-
-// Padding between top label and detail label.
-const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
-}  // namespace
-
 @implementation AccountControlItem
-
-@synthesize cellStyle = _cellStyle;
-@synthesize image = _image;
-@synthesize text = _text;
-@synthesize detailText = _detailText;
-@synthesize accessoryType = _accessoryType;
-@synthesize shouldDisplayError = _shouldDisplayError;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -46,36 +22,22 @@ const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
   return self;
 }
 
-#pragma mark - CollectionViewItem
+#pragma mark - TableViewItem
 
-- (void)configureCell:(AccountControlCell*)cell {
-  [super configureCell:cell];
+- (void)configureCell:(AccountControlCell*)cell
+           withStyler:(ChromeTableViewStyler*)styler {
+  [super configureCell:cell withStyler:styler];
   cell.imageView.image = self.image;
-  [cell cr_setAccessoryType:self.accessoryType];
+  cell.accessoryType = self.accessoryType;
 
-  BOOL uikitStyle = self.cellStyle == CollectionViewCellStyle::kUIKit;
-  UIFont* textFont = uikitStyle ? [UIFont systemFontOfSize:kUIKitMainFontSize]
-                                : [MDCTypography body2Font];
-  UIColor* textColor = uikitStyle ? UIColorFromRGB(kUIKitMainTextColor)
-                                  : [[MDCPalette greyPalette] tint900];
-  UIFont* detailTextFont =
-      uikitStyle ? [UIFont systemFontOfSize:kUIKitMultilineDetailFontSize]
-                 : [MDCTypography body1Font];
+  cell.textLabel.text = self.text;
+  cell.textLabel.textColor = UIColor.blackColor;
 
-  UIColor* detailTextColor =
-      uikitStyle ? UIColorFromRGB(kUIKitMultilineDetailTextColor)
-                 : [[MDCPalette greyPalette] tint700];
-  if (self.shouldDisplayError) {
-    detailTextColor = [[MDCPalette cr_redPalette] tint700];
-  }
-
-  cell.textLabel.attributedText = [self attributedStringForText:self.text
-                                                           font:textFont
-                                                          color:textColor];
-  cell.detailTextLabel.attributedText =
-      [self attributedStringForText:self.detailText
-                               font:detailTextFont
-                              color:detailTextColor];
+  cell.detailTextLabel.text = self.detailText;
+  cell.detailTextLabel.textColor =
+      self.shouldDisplayError
+          ? UIColor.redColor
+          : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
 }
 
 #pragma mark - Helper methods
@@ -109,12 +71,12 @@ const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
 @synthesize textLabel = _textLabel;
 @synthesize detailTextLabel = _detailTextLabel;
 
-- (instancetype)initWithFrame:(CGRect)frame {
-  self = [super initWithFrame:frame];
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)reuseIdentifier {
+  self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     self.isAccessibilityElement = YES;
     [self addSubviews];
-    [self setDefaultViewStyling];
     [self setViewConstraints];
   }
   return self;
@@ -127,25 +89,24 @@ const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
 
   _imageView = [[UIImageView alloc] init];
   _imageView.translatesAutoresizingMaskIntoConstraints = NO;
+  [_imageView
+      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
+                                      forAxis:UILayoutConstraintAxisHorizontal];
   [contentView addSubview:_imageView];
 
   _textLabel = [[UILabel alloc] init];
+  _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  _textLabel.adjustsFontForContentSizeCategory = YES;
   _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
   [contentView addSubview:_textLabel];
 
   _detailTextLabel = [[UILabel alloc] init];
+  _detailTextLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+  _detailTextLabel.adjustsFontForContentSizeCategory = YES;
   _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  [contentView addSubview:_detailTextLabel];
-}
-
-// Set default imageView styling and default font and text colors for labels.
-- (void)setDefaultViewStyling {
-  _imageView.contentMode = UIViewContentModeCenter;
-
-  _textLabel.font = [MDCTypography body2Font];
-  _textLabel.textColor = [[MDCPalette greyPalette] tint900];
-  _detailTextLabel.font = [MDCTypography body1Font];
   _detailTextLabel.numberOfLines = 0;
+  [contentView addSubview:_detailTextLabel];
 }
 
 // Set constraints on subviews.
@@ -157,30 +118,32 @@ const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
 
   [NSLayoutConstraint activateConstraints:@[
     // Set leading anchors.
-    [_imageView.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor
-                                             constant:kHorizontalPadding],
+    [_imageView.leadingAnchor
+        constraintEqualToAnchor:contentView.leadingAnchor
+                       constant:kTableViewHorizontalSpacing],
     [_detailTextLabel.leadingAnchor
         constraintEqualToAnchor:_textLabel.leadingAnchor],
     _textLeadingAnchorConstraint,
 
     // Set vertical anchors.
-    [_textLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
-                                         constant:kVerticalPadding],
+    [_textLabel.topAnchor
+        constraintEqualToAnchor:contentView.topAnchor
+                       constant:kTableViewLargeVerticalSpacing],
     [_textLabel.bottomAnchor
         constraintEqualToAnchor:_detailTextLabel.topAnchor
-                       constant:-kVerticalPaddingBetweenLabelAndDetailLabel],
+                       constant:-kTableViewVerticalSpacing],
     [_imageView.centerYAnchor constraintEqualToAnchor:_textLabel.centerYAnchor],
     [_detailTextLabel.bottomAnchor
         constraintEqualToAnchor:contentView.bottomAnchor
-                       constant:-kVerticalPadding],
+                       constant:-kTableViewLargeVerticalSpacing],
 
     // Set trailing anchors.
     [_textLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:contentView.trailingAnchor
-                                 constant:-kHorizontalPadding],
+                                 constant:-kTableViewHorizontalSpacing],
     [_detailTextLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:contentView.trailingAnchor
-                                 constant:-kHorizontalPadding],
+                                 constant:-kTableViewHorizontalSpacing],
   ]];
 }
 
@@ -191,33 +154,23 @@ const CGFloat kVerticalPaddingBetweenLabelAndDetailLabel = 8;
 
   // Adjust the text label preferredMaxLayoutWidth when the parent's width
   // changes, for instance on screen rotation.
-  CGFloat parentWidth = self.contentView.frame.size.width;
   if (_imageView.image) {
-    _detailTextLabel.preferredMaxLayoutWidth =
-        parentWidth - 2.f * kHorizontalPadding -
-        kHorizontalPaddingBetweenImageAndText - _imageView.image.size.width;
-    _textLeadingAnchorConstraint.constant =
-        kHorizontalPaddingBetweenImageAndText;
+    _textLeadingAnchorConstraint.constant = kTableViewHorizontalSpacing;
   } else {
-    _detailTextLabel.preferredMaxLayoutWidth =
-        parentWidth - 2.f * kHorizontalPadding;
     _textLeadingAnchorConstraint.constant = 0;
   }
-
-  // Re-layout with the new preferred width to allow the label to adjust its
-  // height.
-  [super layoutSubviews];
 }
 
-#pragma mark - UICollectionReusableView
+#pragma mark - UITableViewCell
 
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.imageView.image = nil;
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
-  self.accessoryType = MDCCollectionViewCellAccessoryNone;
-  self.detailTextLabel.textColor = [[MDCPalette greyPalette] tint700];
+  self.detailTextLabel.textColor =
+      UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+  self.accessoryType = UITableViewCellAccessoryNone;
 }
 
 #pragma mark - NSObject(Accessibility)

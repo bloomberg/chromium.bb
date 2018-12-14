@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,15 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_style.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 // Item for account collection view and sign-in confirmation view.
-@interface AccountControlItem : CollectionViewItem
-
-// The style to use for the cell.
-@property(nonatomic, assign) CollectionViewCellStyle cellStyle;
+@interface AccountControlItem : TableViewItem
 
 @property(nonatomic, strong) UIImage* image;
 @property(nonatomic, copy) NSString* text;
@@ -23,13 +18,13 @@
 @property(nonatomic, assign) BOOL shouldDisplayError;
 
 // The accessory type for the represented cell.
-@property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
+@property(nonatomic) UITableViewCellAccessoryType accessoryType;
 
 @end
 
 // Cell for account settings view with a leading imageView, title text label,
 // and detail text label. The imageView is top-leading aligned.
-@interface AccountControlCell : MDCCollectionViewCell
+@interface AccountControlCell : UITableViewCell
 
 @property(nonatomic, readonly, strong) UIImageView* imageView;
 @property(nonatomic, readonly, strong) UILabel* textLabel;

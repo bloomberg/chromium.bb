@@ -4,8 +4,10 @@
 
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
+#import "ios/chrome/browser/ui/authentication/cells/account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
@@ -279,6 +281,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
       @"eiusmod tempor incididunt ut labore et dolore magna aliqua.";
   accountItemCheckMark.accessoryType = UITableViewCellAccessoryCheckmark;
   [model addItem:accountItemCheckMark
+      toSectionWithIdentifier:SectionIdentifierAccount];
+
+  AccountControlItem* accountControlItem =
+      [[AccountControlItem alloc] initWithType:ItemTypeAccount];
+  accountControlItem.image = [UIImage imageNamed:@"settings_sync"];
+  accountControlItem.text = @"Account Sync Settings";
+  accountControlItem.detailText = @"Detail text";
+  accountControlItem.accessoryType =
+      UITableViewCellAccessoryDisclosureIndicator;
+  [model addItem:accountControlItem
+      toSectionWithIdentifier:SectionIdentifierAccount];
+
+  AccountControlItem* accountControlItemWithExtraLongText =
+      [[AccountControlItem alloc] initWithType:ItemTypeAccount];
+  accountControlItemWithExtraLongText.image = [ChromeIcon infoIcon];
+  accountControlItemWithExtraLongText.text =
+      @"Account Control Settings - long title";
+  accountControlItemWithExtraLongText.detailText =
+      @"Detail text detail text detail text detail text detail text.";
+  accountControlItemWithExtraLongText.accessoryType =
+      UITableViewCellAccessoryDisclosureIndicator;
+  [model addItem:accountControlItemWithExtraLongText
       toSectionWithIdentifier:SectionIdentifierAccount];
 
   // SectionIdentifierURL.

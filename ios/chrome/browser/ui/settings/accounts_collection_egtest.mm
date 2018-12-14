@@ -15,7 +15,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/authentication/cells/account_control_item.h"
+#import "ios/chrome/browser/ui/authentication/cells/legacy_account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -249,9 +249,10 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   // Check that account sync button displays the expected detail text label and
   // an image.
   GREYPerformBlock block = ^BOOL(id element, NSError* __strong* errorOrNil) {
-    GREYAssertTrue([element isKindOfClass:[AccountControlCell class]],
-                   @"Should be AccountControlCell type");
-    AccountControlCell* cell = static_cast<AccountControlCell*>(element);
+    GREYAssertTrue([element isKindOfClass:[LegacyAccountControlCell class]],
+                   @"Should be LegacyAccountControlCell type");
+    LegacyAccountControlCell* cell =
+        static_cast<LegacyAccountControlCell*>(element);
     return
         [cell.detailTextLabel.text isEqualToString:expectedDetailTextLabel] &&
         cell.imageView.image != nil;
