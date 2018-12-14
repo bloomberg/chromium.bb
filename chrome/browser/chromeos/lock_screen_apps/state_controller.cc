@@ -371,6 +371,13 @@ void StateController::OnWindowVisibilityChanged(aura::Window* window,
   }
 }
 
+void StateController::OnWindowDestroying(aura::Window* window) {
+  if (window != note_app_window_->GetNativeWindow())
+    return;
+  ResetNoteTakingWindowAndMoveToNextState(
+      false /*close_window*/, CloseLockScreenNoteReason::kAppWindowClosed);
+}
+
 void StateController::OnAppWindowAdded(extensions::AppWindow* app_window) {
   if (note_app_window_ != app_window)
     return;

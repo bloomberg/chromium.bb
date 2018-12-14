@@ -140,6 +140,7 @@ class StateController : public ash::mojom::TrayActionClient,
 
   // aura::WindowObserver:
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   // extensions::AppWindowRegistry::Observer:
   void OnAppWindowAdded(extensions::AppWindow* app_window) override;
