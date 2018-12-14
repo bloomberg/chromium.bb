@@ -44,7 +44,6 @@ AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
                                        aura::Window* window)
     : aura_obj_cache_(aura_obj_cache),
       window_(window),
-      is_alert_(false),
       is_root_window_(AXAuraWindowUtils::Get()->IsRootWindow(window)) {
   window->AddObserver(this);
 
@@ -91,8 +90,7 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   if (role != ax::mojom::Role::kNone)
     out_node_data->role = role;
   else
-    out_node_data->role =
-        is_alert_ ? ax::mojom::Role::kAlert : ax::mojom::Role::kWindow;
+    out_node_data->role = ax::mojom::Role::kWindow;
   out_node_data->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                     base::UTF16ToUTF8(window_->GetTitle()));
   if (!window_->IsVisible())

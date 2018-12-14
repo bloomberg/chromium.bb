@@ -23,6 +23,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/views/accessibility/accessibility_alert_window.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/accessibility/ax_root_obj_wrapper.h"
 #include "ui/views/view.h"
@@ -85,13 +86,8 @@ void AutomationManagerAura::HandleEvent(BrowserContext* context,
 
 void AutomationManagerAura::HandleAlert(content::BrowserContext* context,
                                         const std::string& text) {
-  if (!enabled_)
-    return;
-
-  views::AXAuraObjWrapper* obj =
-      static_cast<AXRootObjWrapper*>(current_tree_->GetRoot())
-          ->GetAlertForText(text);
-  SendEvent(context, obj, ax::mojom::Event::kAlert);
+  if (alert_window_.get())
+    alert_window_->HandleAlert(text);
 }
 
 void AutomationManagerAura::PerformAction(const ui::AXActionData& data) {
@@ -127,9 +123,22 @@ void AutomationManagerAura::Reset(bool reset_serializer) {
     current_tree_ =
         std::make_unique<AXTreeSourceAura>(desktop_root_.get(), ax_tree_id());
   }
-  reset_serializer ? current_tree_serializer_.reset()
-                   : current_tree_serializer_.reset(
-                         new AuraAXTreeSerializer(current_tree_.get()));
+  if (reset_serializer) {
+    current_tree_serializer_.reset();
+    alert_window_.reset();
+  } else {
+    current_tree_serializer_ =
+        std::make_unique<AuraAXTreeSerializer>(current_tree_.get());
+#if defined(OS_CHROMEOS)
+    ash::Shell* shell = ash::Shell::Get();
+    // Windows within the overlay container get moved to the new monitor when
+    // the primary display gets swapped.
+    alert_window_ = std::make_unique<views::AccessibilityAlertWindow>(
+        shell->GetContainer(shell->GetPrimaryRootWindow(),
+                            ash::kShellWindowId_OverlayContainer),
+        views::AXAuraObjCache::GetInstance());
+#endif  // defined(OS_CHROMEOS)
+  }
 }
 
 void AutomationManagerAura::SendEvent(BrowserContext* context,
