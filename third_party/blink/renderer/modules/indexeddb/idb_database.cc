@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_version_change_event.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_observation.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"

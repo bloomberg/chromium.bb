@@ -47,7 +47,6 @@
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
 using blink::WebIDBDatabaseError;
-using blink::WebIDBKeyPath;
 using blink::WebIDBNameAndVersion;
 
 namespace blink {
