@@ -3941,7 +3941,7 @@ if (enable_java_templates) {
         output = _unsplit_dex_zip
       }
 
-      _dexsplitter_target = "${_unsplit_dex_target}__dexspliter"
+      _dexsplitter_target = "${_unsplit_dex_target}__dexsplitter"
       dexsplitter(_dexsplitter_target) {
         input_dex_zip = _unsplit_dex_zip
         proguard_mapping = _proguard_mapping_path

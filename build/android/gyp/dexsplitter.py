@@ -110,7 +110,7 @@ def main(args):
       with build_utils.AtomicOutput(dest) as f:
         if curr_location.endswith('.zip'):
           if dest.endswith('.zip'):
-            shutil.move(curr_location, f.name)
+            shutil.copy(curr_location, f.name)
           else:
             with zipfile.ZipFile(curr_location, 'r') as z:
               namelist = z.namelist()
