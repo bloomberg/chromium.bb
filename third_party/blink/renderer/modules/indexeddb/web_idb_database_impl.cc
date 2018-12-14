@@ -19,8 +19,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_key_builder.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key_path.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -33,7 +31,7 @@ WebIDBDatabaseImpl::~WebIDBDatabaseImpl() = default;
 void WebIDBDatabaseImpl::CreateObjectStore(long long transaction_id,
                                            long long object_store_id,
                                            const String& name,
-                                           const WebIDBKeyPath& key_path,
+                                           const IDBKeyPath& key_path,
                                            bool auto_increment) {
   database_->CreateObjectStore(transaction_id, object_store_id, name, key_path,
                                auto_increment);
@@ -249,7 +247,7 @@ void WebIDBDatabaseImpl::CreateIndex(long long transaction_id,
                                      long long object_store_id,
                                      long long index_id,
                                      const String& name,
-                                     const WebIDBKeyPath& key_path,
+                                     const IDBKeyPath& key_path,
                                      bool unique,
                                      bool multi_entry) {
   database_->CreateIndex(transaction_id, object_store_id, index_id, name,

@@ -133,37 +133,6 @@ IDBKeyPath::IDBKeyPath(const StringOrStringSequence& key_path) {
   }
 }
 
-IDBKeyPath::IDBKeyPath(const WebIDBKeyPath& key_path) {
-  type_ = key_path.KeyPathType();
-  switch (key_path.KeyPathType()) {
-    case mojom::IDBKeyPathType::Null:
-      return;
-
-    case mojom::IDBKeyPathType::String:
-      string_ = key_path.String();
-      return;
-
-    case mojom::IDBKeyPathType::Array:
-      for (size_t i = 0, size = key_path.Array().size(); i < size; ++i)
-        array_.push_back(key_path.Array()[i]);
-      return;
-  }
-  NOTREACHED();
-}
-
-IDBKeyPath::operator WebIDBKeyPath() const {
-  switch (type_) {
-    case mojom::IDBKeyPathType::Null:
-      return WebIDBKeyPath();
-    case mojom::IDBKeyPathType::String:
-      return WebIDBKeyPath(String(string_));
-    case mojom::IDBKeyPathType::Array:
-      return WebIDBKeyPath(array_);
-  }
-  NOTREACHED();
-  return WebIDBKeyPath();
-}
-
 bool IDBKeyPath::IsValid() const {
   switch (type_) {
     case mojom::IDBKeyPathType::Null:

@@ -38,7 +38,6 @@ namespace blink {
 
 class IDBKeyRange;
 class WebIDBCallbacks;
-class WebIDBKeyPath;
 
 class MODULES_EXPORT WebIDBDatabase {
  public:
@@ -47,7 +46,7 @@ class MODULES_EXPORT WebIDBDatabase {
   virtual void CreateObjectStore(long long transaction_id,
                                  long long object_store_id,
                                  const String& name,
-                                 const WebIDBKeyPath&,
+                                 const IDBKeyPath&,
                                  bool auto_increment) = 0;
   virtual void DeleteObjectStore(long long transaction_id,
                                  long long object_store_id) = 0;
@@ -67,7 +66,7 @@ class MODULES_EXPORT WebIDBDatabase {
                            long long object_store_id,
                            long long index_id,
                            const String& name,
-                           const WebIDBKeyPath&,
+                           const IDBKeyPath&,
                            bool unique,
                            bool multi_entry) = 0;
   virtual void DeleteIndex(long long transaction_id,

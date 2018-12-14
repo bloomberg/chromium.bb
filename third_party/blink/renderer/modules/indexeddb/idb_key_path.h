@@ -26,8 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_KEY_PATH_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_KEY_PATH_H_
 
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key_path.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -52,9 +52,6 @@ class MODULES_EXPORT IDBKeyPath {
   explicit IDBKeyPath(const String&);
   explicit IDBKeyPath(const Vector<String>& array);
   explicit IDBKeyPath(const StringOrStringSequence& key_path);
-  IDBKeyPath(const WebIDBKeyPath&);
-
-  operator WebIDBKeyPath() const;
 
   mojom::IDBKeyPathType GetType() const { return type_; }
 

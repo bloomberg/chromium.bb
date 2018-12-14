@@ -23,7 +23,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                void(long long transaction_id,
                     long long object_store_id,
                     const String& name,
-                    const WebIDBKeyPath&,
+                    const IDBKeyPath&,
                     bool auto_increment));
   MOCK_METHOD2(DeleteObjectStore,
                void(long long transaction_id, long long object_store_id));
@@ -44,7 +44,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     long long object_store_id,
                     long long index_id,
                     const String& name,
-                    const WebIDBKeyPath&,
+                    const IDBKeyPath&,
                     bool unique,
                     bool multi_entry));
   MOCK_METHOD3(DeleteIndex,
