@@ -63,9 +63,12 @@
 67DF,	C7,	AMD Radeon (TM) RX 480 Graphics
 67DF,	CF,	AMD Radeon (TM) RX 470 Graphics
 67DF,	D7,	Radeon(TM) RX 470 Graphics
+67DF,	E0,	Radeon RX 470 Series
+67DF,	E1,	Radeon RX 590 Series
 67DF,	E3,	Radeon RX Series
 67DF,	E7,	Radeon RX 580 Series
 67DF,	EF,	Radeon RX 570 Series
+67DF,	F7,	Radeon RX P30PH
 67C2,	01,	AMD Radeon (TM) Pro V7350x2
 67C2,	02,	AMD Radeon (TM) Pro V7300X
 67C4,	00,	AMD Radeon (TM) Pro WX 7100 Graphics
@@ -85,6 +88,7 @@
 67EF,	C5,	AMD Radeon (TM) RX 460 Graphics
 67EF,	C7,	AMD Radeon (TM) RX Graphics
 67EF,	CF,	AMD Radeon (TM) RX 460 Graphics
+67EF,	E2,	RX 560X
 67EF,	E0,	Radeon RX 560 Series
 67EF,	E1,	Radeon RX Series
 67EF,	E3,	Radeon RX Series
@@ -127,21 +131,23 @@
 683D,	0,	AMD Radeon HD 7700 Series
 683F,	0,	AMD Radeon HD 7700 Series
 6860,	00,	Radeon Instinct MI25
-6860,	01,	Radeon Pro V320
+6860,	01,	Radeon Instinct MI25
 6860,	02,	Radeon Instinct MI25
 6860,	03,	Radeon Pro V340
 6860,	04,	Radeon Instinct MI25x2
-6861,	00,	Radeon(TM) Pro WX9100
+6861,	00,	Radeon Pro WX 9100
 6862,	00,	Radeon Pro SSG
 6863,	00,	Radeon Vega Frontier Edition
 6864,	03,	Radeon Pro V340
 6864,	04,	Instinct MI25x2
-6868,	00,	Radeon(TM) Pro WX8100
-686C,	00,	GLXT (Radeon Instinct MI25) MxGPU VFID
-686C,	01,	GLXT (Radeon Pro V320) MxGPU
-686C,	02,	GLXT (Radeon Instinct MI25) MxGPU
-686C,	03,	GLXT (Radeon Pro V340) MxGPU
-686C,	04,	GLXT (Radeon Instinct MI25x2) MxGPU
+6868,	00,	Radeon (TM) PRO WX 8200
+686C,	00,	Radeon Instinct MI25 MxGPU
+686C,	01,	Radeon Instinct MI25 MxGPU
+686C,	02,	Radeon Instinct MI25 MxGPU
+686C,	03,	Radeon Pro V340 MxGPU
+686C,	04,	Radeon Instinct MI25x2 MxGPU
+686C,	05,	Radeon Pro V340L MxGPU
+686C,	06,	Radeon Instinct MI25 MxGPU
 687F,	C0,	Radeon RX Vega
 687F,	C1,	Radeon RX Vega
 687F,	C3,	Radeon RX Vega
@@ -165,12 +171,15 @@
 6980,	00,	Radeon Pro WX3100
 6985,	00,	AMD Radeon Pro WX3100
 6987,	80,	AMD Embedded Radeon E9171
+6987,	C0,	Radeon 550X Series
+6987,	C3,	Radeon 540X Series
 6995,	00,	AMD Radeon Pro WX2100
 6997,	00,	Radeon Pro WX2100
 699F,	81,	AMD Embedded Radeon E9170 Series
 699F,	C0,	Radeon 500 Series
+699F,	C1,	Radeon 540 Series
 699F,	C3,	Radeon 500 Series
-699F,	C7,	Radeon RX 550 Series
+699F,	C7,	Radeon 550 Series
 7300,	C1,	AMD FirePro (TM) S9300 x2
 7300,	C8,	AMD Radeon (TM) R9 Fury Series
 7300,	C9,	Radeon (TM) Pro Duo
@@ -185,3 +194,4 @@
 9874,	87,	AMD Radeon R5 Graphics
 9874,	85,	AMD Radeon R6 Graphics
 9874,	84,	AMD Radeon R7 Graphics
+6FDF,	EF,	AMD Radeon RX 580 2048SP
