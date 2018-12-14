@@ -4,9 +4,6 @@
 
 """Test runners for iOS."""
 
-from multiprocessing import pool
-
-import argparse
 import collections
 import errno
 import glob
@@ -96,14 +93,14 @@ class XcodeVersionNotFoundError(TestRunnerError):
   """The requested version of Xcode was not found."""
   def __init__(self, xcode_version):
     super(XcodeVersionNotFoundError, self).__init__(
-        'Xcode version not found: %s', xcode_version)
+        'Xcode version not found: %s' % xcode_version)
 
 
 class XCTestPlugInNotFoundError(TestRunnerError):
   """The .xctest PlugIn was not found."""
   def __init__(self, xctest_path):
     super(XCTestPlugInNotFoundError, self).__init__(
-        'XCTest not found: %s', xctest_path)
+        'XCTest not found: %s' % xctest_path)
 
 
 class MacToolchainNotFoundError(TestRunnerError):
