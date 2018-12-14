@@ -103,6 +103,8 @@ class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
   // Record of the last login time.
   base::TimeTicks login_time_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
  private:
   // For scheduling collection of profile data.
   base::OneShotTimer timer_;
@@ -112,8 +114,6 @@ class MetricCollector : public base::SupportsWeakPtr<MetricCollector> {
 
   // Tracks the last time a session restore was collected.
   base::TimeTicks last_session_restore_collection_time_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(MetricCollector);
 };
