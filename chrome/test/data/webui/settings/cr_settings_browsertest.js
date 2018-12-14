@@ -610,7 +610,7 @@ CrSettingsPeoplePageSyncControlsTest.prototype = {
     '../test_browser_proxy.js',
     'test_sync_browser_proxy.js',
     'test_util.js',
-    'people_page_sync_controls.js',
+    'people_page_sync_controls_test.js',
   ]),
 };
 
