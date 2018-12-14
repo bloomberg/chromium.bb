@@ -238,7 +238,7 @@ crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/at
 # Fails due to flaws in the SPv1 architecture. Can be fixed with composite-after-paint.
 crbug.com/862483 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 crbug.com/862483 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
-crbug.com/862483 virtual/not-blink-gen-property-trees/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
+crbug.com/862483 virtual/stable/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 
 crbug.com/805134 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/805134 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
@@ -261,7 +261,7 @@ crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-
 # This is a missing event and increasing the timeout or using run-after-layout-and-paint doesn't
 # seem to fix it.
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
-crbug.com/309675 virtual/not-blink-gen-property-trees/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
+crbug.com/309675 virtual/stable/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
 crbug.com/845267 [ Mac ] http/tests/inspector-protocol/page/page-lifecycleEvents.js [ Failure Pass ]
 
@@ -269,7 +269,7 @@ crbug.com/845267 [ Mac ] http/tests/inspector-protocol/page/page-lifecycleEvents
 crbug.com/726075 [ Win ] compositing/3d-cube.html [ Failure ]
 crbug.com/726075 [ Linux ] compositing/3d-cube.html [ Failure ]
 crbug.com/726075 [ Mac ] compositing/3d-cube.html [ Failure ]
-crbug.com/726075 [ Linux ] virtual/not-blink-gen-property-trees/compositing/3d-cube.html [ Failure ]
+crbug.com/726075 [ Linux ] virtual/stable/compositing/3d-cube.html [ Failure ]
 
 # Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
@@ -298,7 +298,7 @@ crbug.com/841567 virtual/threaded/fast/scrolling/same-page-navigate.html [ Failu
 
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
-crbug.com/736052 virtual/not-blink-gen-property-trees/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
+crbug.com/736052 virtual/stable/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
 # New OffscreenCanvas Tests that are breaking LayoutTest
 crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.font.parse.invalid.html [ Skip ]
@@ -363,24 +363,27 @@ crbug.com/846747 virtual/stable/http/tests/navigation/navigation-interrupted-by-
 
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
-# The not-blink-gen-property-trees virtual suite ensures regressions are not introduced as BlinkGenPropertyTrees rolls out.
-# To reduce bot resources and rebaseline works, only linux is used.
-Bug(none) [ Android ] virtual/not-blink-gen-property-trees [ Skip ]
-Bug(none) [ Fuchsia ] virtual/not-blink-gen-property-trees [ Skip ]
-Bug(none) [ Mac ] virtual/not-blink-gen-property-trees [ Skip ]
-Bug(none) [ Win ] virtual/not-blink-gen-property-trees [ Skip ]
-crbug.com/914990 [ Linux ] virtual/not-blink-gen-property-trees [ Skip ]
+# The stable/{paint,compositing} directories ensure regressions are not introduced as BlinkGenPropertyTrees rolls out.
+# To reduce bot resources and rebaseline works, only linux runs these tests.
+Bug(none) [ Android ] virtual/stable/paint [ Skip ]
+Bug(none) [ Fuchsia ] virtual/stable/paint [ Skip ]
+Bug(none) [ Mac ] virtual/stable/paint [ Skip ]
+Bug(none) [ Win ] virtual/stable/paint [ Skip ]
+Bug(none) [ Android ] virtual/stable/compositing [ Skip ]
+Bug(none) [ Fuchsia ] virtual/stable/compositing [ Skip ]
+Bug(none) [ Mac ] virtual/stable/compositing [ Skip ]
+Bug(none) [ Win ] virtual/stable/compositing [ Skip ]
 
 # Paint invalidation does not change with BlinkGenPropertyTrees. There are many tests
 # in the paint/invalidation directory so they are skipped so bot resources are not wasted.
-Bug(none) virtual/not-blink-gen-property-trees/paint/invalidation [ Skip ]
+Bug(none) virtual/stable/paint/invalidation [ Skip ]
 
 # The following tests are fixed with BlinkGenPropertyTrees and are expected to fail without it.
-Bug(none) virtual/not-blink-gen-property-trees/compositing/composited-canvas-with-overflowing-object-fit.html [ Failure ]
-Bug(none) virtual/not-blink-gen-property-trees/compositing/gestures/gesture-tapHighlight-with-filter.html [ Failure ]
-Bug(none) virtual/not-blink-gen-property-trees/compositing/masks/mask-with-added-filters.html [ Failure ]
-Bug(none) virtual/not-blink-gen-property-trees/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
-Bug(none) virtual/not-blink-gen-property-trees/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
+Bug(none) virtual/stable/compositing/composited-canvas-with-overflowing-object-fit.html [ Failure ]
+Bug(none) virtual/stable/compositing/gestures/gesture-tapHighlight-with-filter.html [ Failure ]
+Bug(none) virtual/stable/compositing/masks/mask-with-added-filters.html [ Failure ]
+Bug(none) virtual/stable/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
+Bug(none) virtual/stable/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 
 # These tests are no longer applicable with layer list mode (BGPT). Move to NeverFixTests later.
 Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ Skip ]
@@ -1896,6 +1899,9 @@ crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.htm
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-fixed.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-edge-pixels.html [ Pass Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation.html [ Failure ]
+# Until backdrop filter is enabled by default, backdrop tests will not pass in virtual/stable.
+Bug(none) virtual/stable/compositing/layer-creation/fixed-position-out-of-view-with-backdrop-filter.html [ Skip ]
+Bug(none) virtual/stable/compositing/overflow/scroll-parent-absolute-with-backdrop-filter.html [ Skip ]
 # Flaky (timeout) tests:
 crbug.com/912748 external/wpt/css/filter-effects/backdrop-filter-plus-filter.html [ Skip ]
 crbug.com/913114 css3/filters/backdrop-filter-plus-filter.html [ Skip ]
@@ -2361,6 +2367,16 @@ crbug.com/441553 virtual/stable/web-animations-api [ Skip ]
 # These tests *only* run in stable, to verify that these features are unsupported and throw exceptions.
 crbug.com/441559 virtual/stable/web-animations-api/partial-keyframes-unsupported.html [ Pass ]
 crbug.com/437696 virtual/stable/web-animations-api/additive-animations-unsupported.html [ Pass ]
+
+# Web animations are not enabled in stable so these tests do not pass.
+Bug(none) virtual/stable/compositing/animation/animated-composited-inside-hidden.html [ Skip ]
+Bug(none) virtual/stable/compositing/reflections/animation-inside-reflection.html [ Skip ]
+Bug(none) virtual/stable/compositing/reflections/nested-reflection-animated.html [ Skip ]
+Bug(none) virtual/stable/compositing/reflections/nested-reflection-transition.html [ Skip ]
+Bug(none) virtual/stable/compositing/transitions/scale-transition-no-start.html [ Skip ]
+Bug(none) virtual/stable/compositing/transitions/singular-scale-transition.html [ Skip ]
+Bug(none) virtual/stable/compositing/animation/animations-establish-stacking-context.html [ Skip ]
+Bug(none) virtual/stable/compositing/overflow/overflow-positioning.html [ Skip ]
 
 # switching to apache-win32: needs triaging.
 crbug.com/528062 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]
@@ -4570,7 +4586,7 @@ crbug.com/746904 [ Win7 ] fast/text/ellipsis-in-relative-inline.html [ Failure P
 # Tests failing when enabling new modern media controls
 crbug.com/831942 media/webkit-media-controls-webkit-appearance.html [ Failure Pass ]
 crbug.com/831957 compositing/video/video-controls-layer-creation-squashing.html [ Failure Pass ]
-crbug.com/831957 virtual/not-blink-gen-property-trees/compositing/video/video-controls-layer-creation-squashing.html [ Failure Pass ]
+crbug.com/831957 virtual/stable/compositing/video/video-controls-layer-creation-squashing.html [ Failure Pass ]
 crbug.com/832157 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-rendering-after-controls-added.html [ Skip ]
 crbug.com/832169 media/media-controls-fit-properly-while-zoomed.html [ Failure Pass ]
 crbug.com/832169 virtual/video-surface-layer/media/media-controls-fit-properly-while-zoomed.html [ Failure Pass ]

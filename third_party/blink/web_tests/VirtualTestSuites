@@ -110,6 +110,16 @@
   },
   {
     "prefix": "stable",
+    "base": "compositing",
+    "args": ["--stable-release-mode"]
+  },
+  {
+    "prefix": "stable",
+    "base": "paint",
+    "args": ["--stable-release-mode"]
+  },
+  {
+    "prefix": "stable",
     "base": "webexposed",
     "args": ["--stable-release-mode"]
   },
@@ -265,16 +275,6 @@
     "prefix": "composite-after-paint",
     "base": "paint",
     "args": ["--enable-blink-features=CompositeAfterPaint"]
-  },
-  {
-    "prefix": "not-blink-gen-property-trees",
-    "base": "compositing",
-    "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
-  },
-  {
-    "prefix": "not-blink-gen-property-trees",
-    "base": "paint",
-    "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
   },
   {
     "prefix": "scalefactor200",
