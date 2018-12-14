@@ -106,6 +106,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
 }
 
 GraphicsLayer::~GraphicsLayer() {
+  CcLayer()->ClearClient();
   CcLayer()->SetLayerClient(nullptr);
   SetContentsLayer(nullptr);
   for (size_t i = 0; i < link_highlights_.size(); ++i)
