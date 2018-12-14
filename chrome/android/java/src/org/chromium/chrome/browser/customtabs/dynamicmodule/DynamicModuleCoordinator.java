@@ -148,7 +148,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
      *
      * @return whether or not module loading starts.
      */
-    private void loadModule() {
+    @VisibleForTesting
+    /* package */ void loadModule() {
         ComponentName componentName = mIntentDataProvider.getModuleComponentName();
 
         ModuleLoader moduleLoader = mConnection.getModuleLoader(componentName);
@@ -313,12 +314,11 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
         }
     }
 
-    private boolean isModuleLoaded() {
+    /* package */ boolean isModuleLoaded() {
         return mModuleEntryPoint != null;
     }
 
-    @VisibleForTesting
-    public boolean isModuleLoading() {
+    /* package */ boolean isModuleLoading() {
         return mModuleCallback != null;
     }
 

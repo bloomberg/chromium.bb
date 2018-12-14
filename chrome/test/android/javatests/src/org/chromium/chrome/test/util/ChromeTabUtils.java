@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
@@ -51,7 +52,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class ChromeTabUtils {
     private static final String TAG = "cr_ChromeTabUtils";
-
+    public static final int TITLE_UPDATE_TIMEOUT_MS = 3000;
     /**
      * An observer that waits for a Tab to load a page.
      *
@@ -746,6 +747,16 @@ public class ChromeTabUtils {
         TabWebContentsObserver observer = TabWebContentsObserver.get(tab);
         if (observer != null) {
             observer.simulateRendererKilledForTesting(wasOomProtected);
+        }
+    }
+
+    public static void waitForTitle(Tab tab, String newTitle) throws InterruptedException {
+        TabTitleObserver titleObserver = new TabTitleObserver(tab, newTitle);
+        try {
+            titleObserver.waitForTitleUpdate(TITLE_UPDATE_TIMEOUT_MS);
+        } catch (TimeoutException e) {
+            Assert.fail(String.format(Locale.ENGLISH,
+                    "Tab title didn't update to %s in time.", newTitle));
         }
     }
 }
