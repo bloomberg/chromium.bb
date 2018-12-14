@@ -555,11 +555,6 @@ Document* CSSStyleSheet::OwnerDocument() const {
   return root->ownerNode() ? &root->ownerNode()->GetDocument() : nullptr;
 }
 
-void CSSStyleSheet::SetAllowRuleAccessFromOrigin(
-    scoped_refptr<const SecurityOrigin> allowed_origin) {
-  allow_rule_access_from_origin_ = std::move(allowed_origin);
-}
-
 bool CSSStyleSheet::SheetLoaded() {
   DCHECK(owner_node_);
   SetLoadCompleted(owner_node_->SheetLoaded());

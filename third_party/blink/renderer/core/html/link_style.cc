@@ -45,8 +45,7 @@ LinkStyle::LinkStyle(HTMLLinkElement* owner)
       pending_sheet_type_(kNone),
       loading_(false),
       fired_load_(false),
-      loaded_sheet_(false),
-      fetch_following_cors_(false) {}
+      loaded_sheet_(false) {}
 
 LinkStyle::~LinkStyle() = default;
 
@@ -103,7 +102,6 @@ void LinkStyle::NotifyFinished(Resource* resource) {
     sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
     if (owner_->IsInDocumentTree())
       SetSheetTitle(owner_->title());
-    SetCrossOriginStylesheetStatus(sheet_.Get());
 
     loading_ = false;
     parsed_sheet->CheckLoaded();
@@ -121,7 +119,6 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
   if (owner_->IsInDocumentTree())
     SetSheetTitle(owner_->title());
-  SetCrossOriginStylesheetStatus(sheet_.Get());
 
   style_sheet->ParseAuthorStyleSheet(cached_style_sheet,
                                      GetDocument().GetSecurityOrigin());
@@ -241,17 +238,6 @@ void LinkStyle::SetDisabledState(bool disabled) {
     Process();
 }
 
-void LinkStyle::SetCrossOriginStylesheetStatus(CSSStyleSheet* sheet) {
-  if (fetch_following_cors_ && GetResource() &&
-      !GetResource()->ErrorOccurred()) {
-    // Record the security origin the CORS access check succeeded at, if cross
-    // origin.  Only origins that are script accessible to it may access the
-    // stylesheet's rules.
-    sheet->SetAllowRuleAccessFromOrigin(GetDocument().GetSecurityOrigin());
-  }
-  fetch_following_cors_ = false;
-}
-
 LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
     const LinkLoadParameters& params,
     const WTF::TextEncoding& charset) {
@@ -263,7 +249,6 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   if (GetResource()) {
     RemovePendingSheet();
     ClearResource();
-    ClearFetchFollowingCors();
   }
 
   if (!owner_->ShouldLoadLink())
@@ -290,10 +275,6 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   bool blocking = media_query_matches && !owner_->IsAlternate() &&
                   owner_->IsCreatedByParser();
   AddPendingSheet(blocking ? kBlocking : kNonBlocking);
-
-  if (params.cross_origin != kCrossOriginAttributeNotSet) {
-    SetFetchFollowingCors();
-  }
 
   // Load stylesheets that are not needed for the layout immediately with low
   // priority.  When the link element is created by scripts, load the
