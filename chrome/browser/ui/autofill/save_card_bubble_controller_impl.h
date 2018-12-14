@@ -118,6 +118,7 @@ class SaveCardBubbleControllerImpl
   const LegalMessageLines& GetLegalMessageLines() const override;
   bool IsUploadSave() const override;
   BubbleType GetBubbleType() const override;
+  AutofillSyncSigninState GetSyncState() const override;
 
  protected:
   explicit SaveCardBubbleControllerImpl(content::WebContents* web_contents);
@@ -133,9 +134,6 @@ class SaveCardBubbleControllerImpl
 
   // Gets the security level of the page.
   virtual security_state::SecurityLevel GetSecurityLevel() const;
-
-  // Gets the current sync state.
-  virtual AutofillSyncSigninState GetSyncState() const;
 
  private:
   friend class content::WebContentsUserData<SaveCardBubbleControllerImpl>;

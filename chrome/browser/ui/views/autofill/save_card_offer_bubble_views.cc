@@ -60,8 +60,8 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
 }
 
 views::View* SaveCardOfferBubbleViews::CreateExtraView() {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillSaveCardImprovedUserConsent)) {
+  if (controller()->GetSyncState() !=
+      AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
     return nullptr;
   }
 

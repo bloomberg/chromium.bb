@@ -464,6 +464,10 @@ BubbleType SaveCardBubbleControllerImpl::GetBubbleType() const {
   return current_bubble_type_;
 }
 
+AutofillSyncSigninState SaveCardBubbleControllerImpl::GetSyncState() const {
+  return personal_data_manager_->GetSyncSigninState();
+}
+
 void SaveCardBubbleControllerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -641,10 +645,6 @@ void SaveCardBubbleControllerImpl::OpenUrl(const GURL& url) {
 security_state::SecurityLevel SaveCardBubbleControllerImpl::GetSecurityLevel()
     const {
   return security_level_;
-}
-
-AutofillSyncSigninState SaveCardBubbleControllerImpl::GetSyncState() const {
-  return personal_data_manager_->GetSyncSigninState();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SaveCardBubbleControllerImpl)
