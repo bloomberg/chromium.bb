@@ -55405,6 +55405,13 @@ Full version information for the fingerprint enum values:
   <int value="3" label="AsyncForciblyTerminated"/>
 </enum>
 
+<enum name="WorkerTopLevelScriptOriginType">
+  <int value="0" label="same-origin"/>
+  <int value="1" label="data: URL"/>
+  <int value="2" label="cross-origin (from extension)"/>
+  <int value="3" label="cross-origin (others)"/>
+</enum>
+
 <enum name="WrenchMenuAction">
   <int value="0" label="New tab"/>
   <int value="1" label="New window"/>
