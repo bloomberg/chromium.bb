@@ -44,6 +44,10 @@ void UpdateAndLaunchShim(std::unique_ptr<web_app::ShortcutInfo> shortcut_info);
 std::unique_ptr<web_app::ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
     const base::FilePath& bundle_path);
 
+// Return true if launching and updating app shims will fail because of the
+// testing environment.
+bool AppShimLaunchDisabled();
+
 // Creates a shortcut for a web application. The shortcut is a stub app
 // that simply loads the browser framework and runs the given app.
 class WebAppShortcutCreator {
