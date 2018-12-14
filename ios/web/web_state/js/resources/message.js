@@ -104,21 +104,6 @@ function sendQueue_(queueObject) {
     return;
   }
 
-  var windowId = null;
-  try {
-    windowId = window.top.__gCrWeb['windowId'];
-    // Do nothing if windowId has not been set.
-    if (typeof windowId != 'string') {
-      return;
-    }
-  } catch (e) {
-    // A SecurityError will be thrown if this is a cross origin iframe. Allow
-    // sending the message in this case and it will be filtered by frameID.
-    if (e.name !== 'SecurityError') {
-      throw e;
-    }
-  }
-
   // Some pages/plugins implement Object.prototype.toJSON, which can result
   // in serializing messageQueue_ to an invalid format.
   var originalObjectToJSON = Object.prototype.toJSON;
@@ -129,9 +114,6 @@ function sendQueue_(queueObject) {
       'crwCommand': command,
       'crwFrameId': __gCrWeb.message['getFrameId']()
     };
-    if (windowId) {
-      message['crwWindowId'] = windowId;
-    }
     __gCrWeb.common.sendWebKitMessage(queueObject.scheme, message);
   });
   queueObject.reset();
