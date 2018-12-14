@@ -160,7 +160,7 @@ class ProgressivePipelineIntegrationFuzzerTest
   ~ProgressivePipelineIntegrationFuzzerTest() override = default;
 
   void RunTest(const uint8_t* data, size_t size) {
-    if (PIPELINE_OK != Start(data, size, kUnreliableDuration))
+    if (PIPELINE_OK != Start(data, size, kUnreliableDuration | kFuzzing))
       return;
 
     Play();
@@ -210,10 +210,9 @@ class MediaSourcePipelineIntegrationFuzzerTest
     // in pieces/append near play-head/vary append mode/etc), perhaps using
     // CustomMutator and Seed to insert/update the variation information into/in
     // the |data| we process here.  See https://crbug.com/750818.
-    // Use |kDemuxerMayPassOrFail| test type to allow pipeline start to either
-    // pass or fail without emitting a gtest failure.
-    if (PIPELINE_OK !=
-        StartPipelineWithMediaSource(&source, kDemuxerMayPassOrFail, nullptr))
+    // Use |kFuzzing| test type to allow pipeline start to either pass or fail
+    // without emitting a gtest failure.
+    if (PIPELINE_OK != StartPipelineWithMediaSource(&source, kFuzzing, nullptr))
       return;
 
     Play();
