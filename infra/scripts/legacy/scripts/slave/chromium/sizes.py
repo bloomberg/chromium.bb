@@ -407,6 +407,24 @@ def main_win(options, args, results_collector):
   return 0
 
 
+def format_for_histograms_conversion(data):
+  # We need to do two things to the provided data to make it compatible with the
+  # conversion script:
+  # 1. Add a top-level "benchmark_name" key.
+  # 2. Pull out the "identifier" value to be the story name.
+  formatted_data = {}
+  for metric, metric_data in data.iteritems():
+    story = metric_data['identifier']
+    formatted_data[metric] = {
+      story: metric_data.copy()
+    }
+    del formatted_data[metric][story]['identifier']
+  return {
+    'benchmark_name': 'sizes',
+    'charts': formatted_data
+  }
+
+
 def main():
   if sys.platform in ('win32', 'cygwin'):
     default_platform = 'win'
@@ -467,13 +485,10 @@ def main():
 
   if options.output_dir:
     histogram_path = os.path.join(options.output_dir, 'perf_results.json')
-    # We need to add a bit more data to the results, otherwise the conversion
-    # fails due to the provided data being malformed.
-    updated_results = {
-      'format_version': '1.0',
-      'benchmark_name': 'sizes',
-      'charts': results_collector.results,
-    }
+    # We need to add a bit more data to the results and rearrange some things,
+    # otherwise the conversion fails due to the provided data being malformed.
+    updated_results = format_for_histograms_conversion(
+        results_collector.results)
     with open(histogram_path, 'w') as f:
       json.dump(updated_results, f)
     histogram_result = convert_chart_json.ConvertChartJson(histogram_path)
