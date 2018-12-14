@@ -139,7 +139,7 @@ class AudioInputBufferImpl : public assistant_client::AudioBuffer {
 
 AudioInputImpl::AudioInputImpl(service_manager::Connector* connector)
     : connector_(connector),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DETACH_FROM_SEQUENCE(observer_sequence_checker_);
 

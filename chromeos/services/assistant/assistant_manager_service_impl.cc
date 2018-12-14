@@ -38,7 +38,7 @@
 
 // A macro which ensures we are running on the main thread.
 #define ENSURE_MAIN_THREAD(method, ...)                                     \
-  if (!service_->main_task_runner()->BelongsToCurrentThread()) {            \
+  if (!service_->main_task_runner()->RunsTasksInCurrentSequence()) {        \
     service_->main_task_runner()->PostTask(                                 \
         FROM_HERE,                                                          \
         base::BindOnce(method, weak_factory_.GetWeakPtr(), ##__VA_ARGS__)); \
@@ -750,7 +750,7 @@ AssistantManagerServiceImpl::StartAssistantInternal(
 void AssistantManagerServiceImpl::PostInitAssistant(
     base::OnceClosure post_init_callback,
     std::unique_ptr<assistant_client::AssistantManager>* assistant_manager) {
-  DCHECK(service_->main_task_runner()->BelongsToCurrentThread());
+  DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
 
   assistant_manager_ = std::move(*assistant_manager);
   assistant_manager_internal_ =
