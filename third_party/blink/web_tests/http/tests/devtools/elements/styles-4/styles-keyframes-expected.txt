@@ -7,7 +7,6 @@ element.style { ()
 [expanded] 
 #element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
-        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
         animation-timing-function: ease, ease, ease, ease;
         animation-delay: 2s, 0s, 0s, 0s;
@@ -15,6 +14,7 @@ element.style { ()
         animation-direction: normal, normal, normal, normal;
         animation-fill-mode: none, none, none, none;
         animation-play-state: running, running, running, running;
+        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
 
 [expanded] 
 div { (user agent stylesheet)
@@ -59,7 +59,6 @@ element.style { ()
 [expanded] 
 #element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
-        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
         animation-timing-function: ease, ease, ease, ease;
         animation-delay: 2s, 0s, 0s, 0s;
@@ -67,6 +66,7 @@ element.style { ()
         animation-direction: normal, normal, normal, normal;
         animation-fill-mode: none, none, none, none;
         animation-play-state: running, running, running, running;
+        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
 
 [expanded] 
 div { (user agent stylesheet)
@@ -111,7 +111,6 @@ element.style { ()
 [expanded] 
 #element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
-        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
         animation-timing-function: ease, ease, ease, ease;
         animation-delay: 2s, 0s, 0s, 0s;
@@ -119,6 +118,7 @@ element.style { ()
         animation-direction: normal, normal, normal, normal;
         animation-fill-mode: none, none, none, none;
         animation-play-state: running, running, running, running;
+        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
 
 [expanded] 
 div { (user agent stylesheet)
@@ -163,7 +163,6 @@ element.style { ()
 [expanded] 
 #element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
-        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
         animation-timing-function: ease, ease, ease, ease;
         animation-delay: 2s, 0s, 0s, 0s;
@@ -171,6 +170,7 @@ element.style { ()
         animation-direction: normal, normal, normal, normal;
         animation-fill-mode: none, none, none, none;
         animation-play-state: running, running, running, running;
+        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
 
 [expanded] 
 div { (user agent stylesheet)
@@ -215,7 +215,6 @@ element.style { ()
 [expanded] 
 #element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
-        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
         animation-timing-function: ease, ease, ease, ease;
         animation-delay: 2s, 0s, 0s, 0s;
@@ -223,6 +222,7 @@ element.style { ()
         animation-direction: normal, normal, normal, normal;
         animation-fill-mode: none, none, none, none;
         animation-play-state: running, running, running, running;
+        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
 
 [expanded] 
 div { (user agent stylesheet)
