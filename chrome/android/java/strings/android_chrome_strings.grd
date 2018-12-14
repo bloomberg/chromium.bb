@@ -4005,10 +4005,10 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       </message>
       <!-- Autofill Assistant preferences -->
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_TITLE" desc="Title for the Autofill Assistant preferences screen. [CHAR-LIMIT=32]">
-        Autofill Assistant
+        Google Assistant for Chrome
       </message>
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_SWITCH" desc="Title for the switch toggling whether Autofill Assistant is enabled. [CHAR-LIMIT=32]">
-        Automate
+        Assistant Triggered Checkout
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_DESCRIPTION" desc="Message linking to the Google terms and conditions for Fast Checkout.">
         By continuing you agree to the Google terms and conditions for Fast Checkout. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Read more<ph name="END_LINK">&lt;/link&gt;</ph>
