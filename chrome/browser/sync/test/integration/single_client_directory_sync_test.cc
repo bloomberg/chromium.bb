@@ -76,8 +76,16 @@ class SyncUnrecoverableErrorChecker : public SingleClientStatusChangeChecker {
   }
 };
 
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/915219
+#define MAYBE_StopThenDisableDeletesDirectory \
+  DISABLED_StopThenDisableDeletesDirectory
+#else
+#define MAYBE_StopThenDisableDeletesDirectory StopThenDisableDeletesDirectory
+#endif
+
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
-                       StopThenDisableDeletesDirectory) {
+                       MAYBE_StopThenDisableDeletesDirectory) {
   // If SyncStandaloneTransport is enabled, then the sync service will
   // immediately restart (and thus recreate directory files) after StopAndClear.
   // TODO(crbug.com/856179): Rewrite this test to pass with

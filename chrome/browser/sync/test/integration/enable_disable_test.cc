@@ -377,8 +377,18 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   EXPECT_EQ(0, GetNumUpdatesDownloadedInLastCycle());
 }
 
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
-                       DoesNotRedownloadAfterKeepDataWithStandaloneTransport) {
+#if defined(THREAD_SANITIZER)
+// https://crbug.com/915219
+#define MAYBE_DoesNotRedownloadAfterKeepDataWithStandaloneTransport \
+  DISABLEDDoesNotRedownloadAfterKeepDataWithStandaloneTransport
+#else
+#define MAYBE_DoesNotRedownloadAfterKeepDataWithStandaloneTransport \
+  DoesNotRedownloadAfterKeepDataWithStandaloneTransport
+#endif
+
+IN_PROC_BROWSER_TEST_F(
+    EnableDisableSingleClientTest,
+    MAYBE_DoesNotRedownloadAfterKeepDataWithStandaloneTransport) {
   base::test::ScopedFeatureList enable_standalone_transport;
   enable_standalone_transport.InitAndEnableFeature(
       switches::kSyncStandaloneTransport);

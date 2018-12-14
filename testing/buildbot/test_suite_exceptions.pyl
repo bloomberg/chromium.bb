@@ -1042,6 +1042,19 @@
   },
   'sync_integration_tests': {
     'modifications': {
+      # chromium.clang
+      'ToTLinuxTSan': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      # chromium.memory
+      'Linux TSan Tests': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      # chromium.win
       'Win7 Tests (dbg)(1)': {
         'swarming': {
           'shards': 2,
@@ -1051,10 +1064,6 @@
         'experiment_percentage': 100, # https://crbug.com/840369
       },
     },
-    'remove_from': [
-      # chromium.memory
-      'Linux TSan Tests',  # https://crbug.com/852002
-    ],
   },
   'tab_capture_end2end_tests': {
     # Run these only on Release bots.
