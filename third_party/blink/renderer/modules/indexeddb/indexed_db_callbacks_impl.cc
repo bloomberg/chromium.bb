@@ -14,8 +14,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
 
-using blink::WebIDBCallbacks;
-using blink::WebIDBDatabase;
 using blink::mojom::blink::IDBDatabaseAssociatedPtrInfo;
 
 namespace blink {

@@ -44,8 +44,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-using blink::WebIDBDatabase;
-
 namespace blink {
 
 IDBTransaction* IDBTransaction::CreateObserver(
