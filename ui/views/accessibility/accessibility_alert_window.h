@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_ACCESSIBILITY_ACCESSIBILITY_ALERT_WINDOW_H_
 #define UI_VIEWS_ACCESSIBILITY_ACCESSIBILITY_ALERT_WINDOW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
