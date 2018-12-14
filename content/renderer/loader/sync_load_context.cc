@@ -171,7 +171,7 @@ void SyncLoadContext::CancelRedirect() {
   response_->redirect_info = net::RedirectInfo();
   response_->context_for_redirect = nullptr;
   response_->error_code = net::ERR_ABORTED;
-  CompleteRequest(true);
+  CompleteRequest();
 }
 
 void SyncLoadContext::OnReceivedResponse(
@@ -214,7 +214,7 @@ void SyncLoadContext::OnCompletedRequest(
     request_completed_ = true;
     return;
   }
-  CompleteRequest(true /* remove_pending_request */);
+  CompleteRequest();
 }
 
 scoped_refptr<base::TaskRunner> SyncLoadContext::GetTaskRunner() {
@@ -227,13 +227,13 @@ void SyncLoadContext::OnFinishCreatingBlob(
   blob_finished_ = true;
   response_->downloaded_blob = std::move(blob);
   if (request_completed_)
-    CompleteRequest(true /* remove_pending_request */);
+    CompleteRequest();
 }
 
 void SyncLoadContext::OnAbort(base::WaitableEvent* event) {
   DCHECK(!Completed());
   response_->error_code = net::ERR_ABORTED;
-  CompleteRequest(true /* remove_pending_request */);
+  CompleteRequest();
 }
 
 void SyncLoadContext::OnTimeout() {
@@ -241,18 +241,16 @@ void SyncLoadContext::OnTimeout() {
   // the OneShotTimer must have been stopped.
   DCHECK(!Completed());
   response_->error_code = net::ERR_TIMED_OUT;
-  CompleteRequest(true /* remove_pending_request */);
+  CompleteRequest();
 }
 
-void SyncLoadContext::CompleteRequest(bool remove_pending_request) {
+void SyncLoadContext::CompleteRequest() {
   signals_->SignalRedirectOrResponseComplete();
   signals_ = nullptr;
   response_ = nullptr;
 
-  if (remove_pending_request) {
-    // This will indirectly cause this object to be deleted.
-    resource_dispatcher_->RemovePendingRequest(request_id_, task_runner_);
-  }
+  // This will indirectly cause this object to be deleted.
+  resource_dispatcher_->RemovePendingRequest(request_id_, task_runner_);
 }
 
 bool SyncLoadContext::Completed() const {

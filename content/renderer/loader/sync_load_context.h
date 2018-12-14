@@ -86,7 +86,7 @@ class SyncLoadContext : public RequestPeer {
   void OnAbort(base::WaitableEvent* event);
   void OnTimeout();
 
-  void CompleteRequest(bool remove_pending_request);
+  void CompleteRequest();
   bool Completed() const;
 
   // This raw pointer will remain valid for the lifetime of this object because
