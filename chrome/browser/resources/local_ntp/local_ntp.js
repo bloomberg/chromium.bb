@@ -17,12 +17,6 @@
 var tilesAreLoaded = false;
 
 
-var numDdllogResponsesReceived = 0;
-var lastDdllogResponse = '';
-
-var onDdllogResponse = null;
-
-
 /**
  * Whether the Most Visited and edit custom link iframes should be created while
  * running tests. Currently the SimpleJavascriptTests are flaky due to some
@@ -80,7 +74,6 @@ var CLASSES = {
   DARK: 'dark',
   DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
-  FADE: 'fade',  // Enables opacity transition on logo and doodle.
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
   SHOW_EDIT_DIALOG: 'show',          // Displays the edit custom link dialog.
   HIDE_BODY_OVERFLOW: 'hidden',      // Prevents scrolling while the edit custom
@@ -101,7 +94,6 @@ var CLASSES = {
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
   RTL: 'rtl',              // Right-to-left language text.
-  SHOW_LOGO: 'show-logo',  // Marks logo/doodle that should be shown.
 };
 
 
@@ -115,16 +107,6 @@ var IDS = {
   ATTRIBUTION_TEXT: 'attribution-text',
   CUSTOM_LINKS_EDIT_IFRAME: 'custom-links-edit',
   CUSTOM_LINKS_EDIT_IFRAME_DIALOG: 'custom-links-edit-dialog',
-  DOODLE_SHARE_BUTTON: 'ddlsb',
-  DOODLE_SHARE_BUTTON_IMG: 'ddlsb-img',
-  DOODLE_SHARE_DIALOG: 'ddlsd',
-  DOODLE_SHARE_DIALOG_CLOSE_BUTTON: 'ddlsd-close',
-  DOODLE_SHARE_DIALOG_COPY_LINK_BUTTON: 'ddlsd-copy',
-  DOODLE_SHARE_DIALOG_FACEBOOK_BUTTON: 'ddlsd-fbb',
-  DOODLE_SHARE_DIALOG_LINK: 'ddlsd-text',
-  DOODLE_SHARE_DIALOG_MAIL_BUTTON: 'ddlsd-emb',
-  DOODLE_SHARE_DIALOG_TITLE: 'ddlsd-title',
-  DOODLE_SHARE_DIALOG_TWITTER_BUTTON: 'ddlsd-twb',
   ERROR_NOTIFICATION: 'error-notice',
   ERROR_NOTIFICATION_CONTAINER: 'error-notice-container',
   ERROR_NOTIFICATION_LINK: 'error-notice-link',
@@ -134,13 +116,6 @@ var IDS = {
   FAKEBOX_TEXT: 'fakebox-text',
   FAKEBOX_MICROPHONE: 'fakebox-microphone',
   LOGO: 'logo',
-  LOGO_DEFAULT: 'logo-default',
-  LOGO_DOODLE: 'logo-doodle',
-  LOGO_DOODLE_IMAGE: 'logo-doodle-image',
-  LOGO_DOODLE_IFRAME: 'logo-doodle-iframe',
-  LOGO_DOODLE_CONTAINER: 'logo-doodle-container',
-  LOGO_DOODLE_BUTTON: 'logo-doodle-button',
-  LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
   MOST_VISITED: 'most-visited',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CONTAINER: 'mv-notice-container',
@@ -240,13 +215,6 @@ var KEYCODE = {ENTER: 13, SPACE: 32};
  * @type {number}
  */
 const NOTIFICATION_TIMEOUT = 10000;
-
-
-/**
- * The ID of the doodle app for Facebook. Used to share doodles to Facebook.
- * @type {number}
- */
-const FACEBOOK_APP_ID = 738026486351791;
 
 
 /**
@@ -914,21 +882,7 @@ function handlePostMessage(event) {
 
     ntpApiHandle.deleteMostVisitedItem(args.tid);
   } else if (cmd === 'resizeDoodle') {
-    let width = args.width || null;
-    let height = args.height || null;
-    let duration = args.duration || '0s';
-    let iframe = $(IDS.LOGO_DOODLE_IFRAME);
-
-    var transitionCallback = function() {
-      iframe.removeEventListener('webkitTransitionEnd', transitionCallback);
-      iframe.contentWindow.postMessage(
-          {cmd: 'resizeComplete'}, 'https://www.google.com');
-    };
-    iframe.addEventListener('webkitTransitionEnd', transitionCallback, false);
-
-    document.body.style.setProperty('--logo-iframe-resize-duration', duration);
-    document.body.style.setProperty('--logo-iframe-height', height);
-    document.body.style.setProperty('--logo-iframe-width', width);
+    doodles.resizeDoodleHandler(args);
   } else if (cmd === 'startEditLink') {
     $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
         .contentWindow.postMessage({cmd: 'linkData', tid: args.tid}, '*');
@@ -1085,48 +1039,7 @@ function init() {
       searchboxApiHandle.startCapturingKeyStrokes();
     }
 
-    // Load the Doodle. After the first request completes (getting cached
-    // data), issue a second request for fresh Doodle data.
-    loadDoodle(/*v=*/null, function(ddl) {
-      if (ddl === null) {
-        // Got no ddl object at all, the feature is probably disabled. Just show
-        // the logo.
-        showLogoOrDoodle(/*fromCache=*/true);
-        return;
-      }
-
-      // Got a (possibly empty) ddl object. Show logo or doodle.
-      targetDoodle.image = ddl.image || null;
-      targetDoodle.metadata = ddl.metadata || null;
-      showLogoOrDoodle(/*fromCache=*/true);
-      // Never hide an interactive doodle if it was already shown.
-      if (ddl.metadata && (ddl.metadata.type === LOGO_TYPE.INTERACTIVE))
-        return;
-      // If we got a valid ddl object (from cache), load a fresh one.
-      if (ddl.v !== null) {
-        loadDoodle(ddl.v, function(ddl2) {
-          if (ddl2.usable) {
-            targetDoodle.image = ddl2.image || null;
-            targetDoodle.metadata = ddl2.metadata || null;
-            fadeToLogoOrDoodle();
-          }
-        });
-      }
-    });
-
-    // Set up doodle notifier (but it may be invisible).
-    var doodleNotifier = $(IDS.LOGO_DOODLE_NOTIFIER);
-    doodleNotifier.title = configData.translatedStrings.clickToViewDoodle;
-    doodleNotifier.addEventListener('click', function(e) {
-      e.preventDefault();
-      var state = window.history.state || {};
-      state.notheme = true;
-      window.history.replaceState(state, document.title);
-      onThemeChange();
-      if (e.detail === 0) {  // Activated by keyboard.
-        $(IDS.LOGO_DOODLE_BUTTON).focus();
-      }
-    });
+    doodles.init();
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
@@ -1303,467 +1216,6 @@ function injectOneGoogleBar(ogb) {
 
   ntpApiHandle.logEvent(LOG_TYPE.NTP_ONE_GOOGLE_BAR_SHOWN);
 }
-
-
-/** Loads the Doodle. On success, the loaded script declares a global variable
- * ddl, which onload() receives as its single argument. On failure, onload() is
- * called with null as the argument. If v is null, then the call requests a
- * cached logo. If non-null, it must be the ddl.v of a previous request for a
- * cached logo, and the corresponding fresh logo is returned.
- * @param {?number} v
- * @param {function(?{v, usable, image, metadata})} onload
- */
-var loadDoodle = function(v, onload) {
-  var ddlScript = document.createElement('script');
-  ddlScript.src = 'chrome-search://local-ntp/doodle.js';
-  if (v !== null)
-    ddlScript.src += '?v=' + v;
-  ddlScript.onload = function() {
-    onload(ddl);
-  };
-  ddlScript.onerror = function() {
-    onload(null);
-  };
-  // TODO(treib,sfiera): Add a timeout in case something goes wrong?
-  document.body.appendChild(ddlScript);
-};
-
-
-/** Handles the response of a doodle impression ping, i.e. stores the
- * appropriate interactionLogUrl or onClickUrlExtraParams.
- *
- * @param {!Object} ddllog Response object from the ddllog ping.
- * @param {!boolean} isAnimated
- */
-var handleDdllogResponse = function(ddllog, isAnimated) {
-  if (ddllog && ddllog.interaction_log_url) {
-    let interactionLogUrl =
-        new URL(ddllog.interaction_log_url, configData.googleBaseUrl);
-    if (isAnimated) {
-      targetDoodle.animatedInteractionLogUrl = interactionLogUrl;
-    } else {
-      targetDoodle.staticInteractionLogUrl = interactionLogUrl;
-    }
-    lastDdllogResponse = 'interaction_log_url ' + ddllog.interaction_log_url;
-  } else if (ddllog && ddllog.target_url_params) {
-    targetDoodle.onClickUrlExtraParams =
-        new URLSearchParams(ddllog.target_url_params);
-    lastDdllogResponse = 'target_url_params ' + ddllog.target_url_params;
-  } else {
-    console.log('Invalid or missing ddllog response:');
-    console.log(ddllog);
-  }
-};
-
-
-/** Logs a doodle impression at the given logUrl, and handles the response via
- * handleDdllogResponse.
- *
- * @param {!string} logUrl
- * @param {!boolean} isAnimated
- */
-var logDoodleImpression = function(logUrl, isAnimated) {
-  lastDdllogResponse = '';
-  fetch(logUrl, {credentials: 'omit'})
-      .then(function(response) {
-        return response.text();
-      })
-      .then(function(text) {
-        // Remove the optional XSS preamble.
-        const preamble = ')]}\'';
-        if (text.startsWith(preamble)) {
-          text = text.substr(preamble.length);
-        }
-        try {
-          var json = JSON.parse(text);
-        } catch (error) {
-          console.log('Failed to parse doodle impression response as JSON:');
-          console.log(error);
-          return;
-        }
-        handleDdllogResponse(json.ddllog, isAnimated);
-      })
-      .catch(function(error) {
-        console.log('Error logging doodle impression to "' + logUrl + '":');
-        console.log(error);
-      })
-      .finally(function() {
-        ++numDdllogResponsesReceived;
-        if (onDdllogResponse !== null) {
-          onDdllogResponse();
-        }
-      });
-};
-
-
-/** Returns true if the target doodle is currently visible. If |image| is null,
- * returns true when the default logo is visible; if non-null, checks that it
- * matches the doodle that is currently visible. Here, "visible" means
- * fully-visible or fading in.
- *
- * @returns {boolean}
- */
-var isDoodleCurrentlyVisible = function() {
-  var haveDoodle = ($(IDS.LOGO_DOODLE).classList.contains(CLASSES.SHOW_LOGO));
-  var wantDoodle =
-      (targetDoodle.image !== null) && (targetDoodle.metadata !== null);
-  if (!haveDoodle || !wantDoodle) {
-    return haveDoodle === wantDoodle;
-  }
-
-  // Have a visible doodle and a target doodle. Test that they match.
-  if (targetDoodle.metadata.type === LOGO_TYPE.INTERACTIVE) {
-    var logoDoodleIframe = $(IDS.LOGO_DOODLE_IFRAME);
-    return logoDoodleIframe.classList.contains(CLASSES.SHOW_LOGO) &&
-        (logoDoodleIframe.src === targetDoodle.metadata.fullPageUrl);
-  } else {
-    var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
-    var logoDoodleContainer = $(IDS.LOGO_DOODLE_CONTAINER);
-    return logoDoodleContainer.classList.contains(CLASSES.SHOW_LOGO) &&
-        ((logoDoodleImage.src === targetDoodle.image) ||
-         (logoDoodleImage.src === targetDoodle.metadata.animatedUrl));
-  }
-};
-
-
-/** The image and metadata that should be shown, according to the latest fetch.
- * After a logo fades out, onDoodleFadeOutComplete fades in a logo according to
- * targetDoodle.
- */
-var targetDoodle = {
-  image: null,
-  metadata: null,
-  // The log URLs and params may be filled with the response from the
-  // corresponding impression log URL.
-  staticInteractionLogUrl: null,
-  animatedInteractionLogUrl: null,
-  onClickUrlExtraParams: null,
-};
-
-
-var getDoodleTargetUrl = function() {
-  let url = new URL(targetDoodle.metadata.onClickUrl);
-  if (targetDoodle.onClickUrlExtraParams) {
-    for (var param of targetDoodle.onClickUrlExtraParams) {
-      url.searchParams.append(param[0], param[1]);
-    }
-  }
-  return url;
-};
-
-
-var showLogoOrDoodle = function(fromCache) {
-  const cachedInteractiveOffline = fromCache &&
-      targetDoodle.metadata !== null &&
-      targetDoodle.metadata.type == LOGO_TYPE.INTERACTIVE &&
-      !window.navigator.onLine;
-  if (targetDoodle.metadata !== null && !cachedInteractiveOffline) {
-    applyDoodleMetadata();
-    if (targetDoodle.metadata.type === LOGO_TYPE.INTERACTIVE) {
-      $(IDS.LOGO_DOODLE_CONTAINER).classList.remove(CLASSES.SHOW_LOGO);
-      $(IDS.LOGO_DOODLE_IFRAME).classList.add(CLASSES.SHOW_LOGO);
-    } else {
-      $(IDS.LOGO_DOODLE_IMAGE).src = targetDoodle.image;
-      $(IDS.LOGO_DOODLE_CONTAINER).classList.add(CLASSES.SHOW_LOGO);
-      $(IDS.LOGO_DOODLE_IFRAME).classList.remove(CLASSES.SHOW_LOGO);
-
-      // Log the impression in Chrome metrics.
-      var isCta = !!targetDoodle.metadata.animatedUrl;
-      var eventType = isCta ?
-          (fromCache ? LOG_TYPE.NTP_CTA_LOGO_SHOWN_FROM_CACHE :
-                       LOG_TYPE.NTP_CTA_LOGO_SHOWN_FRESH) :
-          (fromCache ? LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FROM_CACHE :
-                       LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FRESH);
-      ntpApiHandle.logEvent(eventType);
-
-      // Ping the proper impression logging URL if it exists.
-      var logUrl = isCta ? targetDoodle.metadata.ctaLogUrl :
-                           targetDoodle.metadata.logUrl;
-      if (logUrl) {
-        logDoodleImpression(logUrl, /*isAnimated=*/false);
-      }
-    }
-    $(IDS.LOGO_DOODLE).classList.add(CLASSES.SHOW_LOGO);
-  } else {
-    // No doodle. Just show the default logo.
-    $(IDS.LOGO_DEFAULT).classList.add(CLASSES.SHOW_LOGO);
-  }
-};
-
-
-/**
- * Starts fading out the given element, which should be either the default logo
- * or the doodle.
- *
- * @param {HTMLElement} element
- */
-var startFadeOut = function(element) {
-  if (!element.classList.contains(CLASSES.SHOW_LOGO)) {
-    return;
-  }
-
-  // Compute style now, to ensure that the transition from 1 -> 0 is properly
-  // recognized. Otherwise, if a 0 -> 1 -> 0 transition is too fast, the
-  // element might stay invisible instead of appearing then fading out.
-  window.getComputedStyle(element).opacity;
-
-  element.classList.add(CLASSES.FADE);
-  element.classList.remove(CLASSES.SHOW_LOGO);
-  element.addEventListener('transitionend', onDoodleFadeOutComplete);
-};
-
-
-/**
- * Integrates a fresh doodle into the page as appropriate. If the correct logo
- * or doodle is already shown, just updates the metadata. Otherwise, initiates
- * a fade from the currently-shown logo/doodle to the new one.
- */
-var fadeToLogoOrDoodle = function() {
-  // If the image is already visible, there's no need to start a fade-out.
-  // However, metadata may have changed, so update the doodle's alt text and
-  // href, if applicable.
-  if (isDoodleCurrentlyVisible()) {
-    if (targetDoodle.metadata !== null) {
-      applyDoodleMetadata();
-    }
-    return;
-  }
-
-  // It's not the same doodle. Clear any loging URLs/params we might have.
-  targetDoodle.staticInteractionLogUrl = null;
-  targetDoodle.animatedInteractionLogUrl = null;
-  targetDoodle.onClickUrlExtraParams = null;
-
-  // Start fading out the current logo or doodle. onDoodleFadeOutComplete will
-  // apply the change when the fade-out finishes.
-  startFadeOut($(IDS.LOGO_DEFAULT));
-  startFadeOut($(IDS.LOGO_DOODLE));
-};
-
-
-var onDoodleFadeOutComplete = function(e) {
-  // Fade-out finished. Start fading in the appropriate logo.
-  $(IDS.LOGO_DOODLE).classList.add(CLASSES.FADE);
-  $(IDS.LOGO_DEFAULT).classList.add(CLASSES.FADE);
-  showLogoOrDoodle(/*fromCache=*/false);
-
-  this.removeEventListener('transitionend', onDoodleFadeOutComplete);
-};
-
-
-var applyDoodleMetadata = function() {
-  var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
-  var logoDoodleButton = $(IDS.LOGO_DOODLE_BUTTON);
-  var logoDoodleIframe = $(IDS.LOGO_DOODLE_IFRAME);
-
-  var logoDoodleShareButton = null;
-  var logoDoodleShareDialog = null;
-
-  switch (targetDoodle.metadata.type) {
-    case LOGO_TYPE.SIMPLE:
-      logoDoodleImage.title = targetDoodle.metadata.altText;
-
-      // On click, navigate to the target URL.
-      logoDoodleButton.onclick = function() {
-        // Log the click in Chrome metrics.
-        ntpApiHandle.logEvent(LOG_TYPE.NTP_STATIC_LOGO_CLICKED);
-
-        // Ping the static interaction_log_url if there is one.
-        if (targetDoodle.staticInteractionLogUrl) {
-          navigator.sendBeacon(targetDoodle.staticInteractionLogUrl);
-          targetDoodle.staticInteractionLogUrl = null;
-        }
-
-        window.location = getDoodleTargetUrl();
-      };
-
-      insertShareButton();
-      updateShareDialog();
-      break;
-
-    case LOGO_TYPE.ANIMATED:
-      logoDoodleImage.title = targetDoodle.metadata.altText;
-      // The CTA image is currently shown; on click, show the animated one.
-      logoDoodleButton.onclick = function(e) {
-        e.preventDefault();
-
-        // Log the click in Chrome metrics.
-        ntpApiHandle.logEvent(LOG_TYPE.NTP_CTA_LOGO_CLICKED);
-
-        // Ping the static interaction_log_url if there is one.
-        if (targetDoodle.staticInteractionLogUrl) {
-          navigator.sendBeacon(targetDoodle.staticInteractionLogUrl);
-          targetDoodle.staticInteractionLogUrl = null;
-        }
-
-        // Once the animated image loads, ping the impression log URL.
-        if (targetDoodle.metadata.logUrl) {
-          logoDoodleImage.onload = function() {
-            logDoodleImpression(
-                targetDoodle.metadata.logUrl, /*isAnimated=*/true);
-          };
-        }
-        logoDoodleImage.src = targetDoodle.metadata.animatedUrl;
-
-        // When the animated image is clicked, navigate to the target URL.
-        logoDoodleButton.onclick = function() {
-          // Log the click in Chrome metrics.
-          ntpApiHandle.logEvent(LOG_TYPE.NTP_ANIMATED_LOGO_CLICKED);
-
-          // Ping the animated interaction_log_url if there is one.
-          if (targetDoodle.animatedInteractionLogUrl) {
-            navigator.sendBeacon(targetDoodle.animatedInteractionLogUrl);
-            targetDoodle.animatedInteractionLogUrl = null;
-          }
-
-          window.location = getDoodleTargetUrl();
-        };
-
-        insertShareButton();
-        updateShareDialog();
-      };
-      break;
-
-    case LOGO_TYPE.INTERACTIVE:
-      logoDoodleIframe.title = targetDoodle.metadata.altText;
-      logoDoodleIframe.src = targetDoodle.metadata.fullPageUrl;
-      document.body.style.setProperty(
-          '--logo-iframe-width', targetDoodle.metadata.iframeWidthPx + 'px');
-      document.body.style.setProperty(
-          '--logo-iframe-height', targetDoodle.metadata.iframeHeightPx + 'px');
-      document.body.style.setProperty(
-          '--logo-iframe-initial-height',
-          targetDoodle.metadata.iframeHeightPx + 'px');
-      break;
-  }
-};
-
-/**
- * Creates a share button for static/animated doodles which opens the share
- * dialog upon click.
- */
-var insertShareButton = function() {
-  // Terminates early if share button data are missing or incomplete.
-  if (!targetDoodle.metadata || !targetDoodle.metadata.shareButtonX ||
-      !targetDoodle.metadata.shareButtonY ||
-      !targetDoodle.metadata.shareButtonBg ||
-      !targetDoodle.metadata.shareButtonIcon) {
-    return;
-  }
-  var shareDialog = $(IDS.DOODLE_SHARE_DIALOG);
-
-  var shareButtonWrapper = document.createElement('button');
-  shareButtonWrapper.id = IDS.DOODLE_SHARE_BUTTON;
-  var shareButtonImg = document.createElement('img');
-  shareButtonImg.id = IDS.DOODLE_SHARE_BUTTON_IMG;
-  shareButtonWrapper.appendChild(shareButtonImg);
-  shareButtonWrapper.title = configData.translatedStrings.shareDoodle;
-
-  shareButtonWrapper.style.left = targetDoodle.metadata.shareButtonX + 'px';
-  shareButtonWrapper.style.top = targetDoodle.metadata.shareButtonY + 'px';
-
-  // Alpha-less background color represented as an RGB HEX string.
-  // Share button opacity represented as a double between 0 to 1.
-  // Final background color is an RGBA HEX string created by combining
-  // both.
-  var backgroundColor = targetDoodle.metadata.shareButtonBg;
-  if (!!targetDoodle.metadata.shareButtonOpacity ||
-      targetDoodle.metadata.shareButtonOpacity == 0) {
-    var backgroundOpacityHex =
-        parseInt(targetDoodle.metadata.shareButtonOpacity * 255, 10)
-            .toString(16);
-    backgroundColor += backgroundOpacityHex;
-  }
-
-  shareButtonWrapper.style.backgroundColor = backgroundColor;
-  shareButtonImg.src =
-      'data:image/png;base64,' + targetDoodle.metadata.shareButtonIcon;
-  shareButtonWrapper.onclick = function() {
-    shareDialog.showModal();
-  };
-
-  var oldButton = $(IDS.DOODLE_SHARE_BUTTON);
-  if (oldButton) {
-    oldButton.remove();
-  }
-
-  var logoContainer = $(IDS.LOGO_DOODLE_CONTAINER);
-  if (logoContainer) {
-    logoContainer.appendChild(shareButtonWrapper);
-  }
-};
-
-/**
- * Initiates the buttons on the doodle share dialog. Also updates the doodle
- * title and short link.
- */
-var updateShareDialog = function() {
-  var shareDialog = $(IDS.DOODLE_SHARE_DIALOG);
-  var shareDialogTitle = $(IDS.DOODLE_SHARE_DIALOG_TITLE);
-  var closeButton = $(IDS.DOODLE_SHARE_DIALOG_CLOSE_BUTTON);
-  var facebookButton = $(IDS.DOODLE_SHARE_DIALOG_FACEBOOK_BUTTON);
-  var twitterButton = $(IDS.DOODLE_SHARE_DIALOG_TWITTER_BUTTON);
-  var mailButton = $(IDS.DOODLE_SHARE_DIALOG_MAIL_BUTTON);
-  var copyButton = $(IDS.DOODLE_SHARE_DIALOG_COPY_LINK_BUTTON);
-  var linkText = $(IDS.DOODLE_SHARE_DIALOG_LINK);
-
-  if (!targetDoodle.metadata || !targetDoodle.metadata.shortLink ||
-      !targetDoodle.metadata.altText) {
-    return;
-  }
-
-  var closeDialog = function() {
-    shareDialog.close();
-  };
-
-  closeButton.onclick = closeDialog;
-  closeButton.title = configData.translatedStrings.shareClose;
-  shareDialog.onclick = function(e) {
-    if (e.target == shareDialog) {
-      closeDialog();
-    }
-  };
-
-  var title = targetDoodle.metadata.altText;
-
-  shareDialogTitle.innerHTML = title;
-  var shortLink = targetDoodle.metadata.shortLink;
-
-  facebookButton.onclick = function() {
-    var url = 'https://www.facebook.com/dialog/share' +
-        '?app_id=' + FACEBOOK_APP_ID +
-        '&href=' + encodeURIComponent(shortLink) +
-        '&hashtag=' + encodeURIComponent('#GoogleDoodle');
-    window.open(url);
-  };
-  facebookButton.title = configData.translatedStrings.shareFacebook;
-
-  twitterButton.onclick = function() {
-    var url = 'https://twitter.com/intent/tweet' +
-        '?text=' + encodeURIComponent(title + '\n' + shortLink);
-    window.open(url);
-  };
-  twitterButton.title = configData.translatedStrings.shareTwitter;
-
-  mailButton.onclick = function() {
-    var url = 'mailto:?subject=' + encodeURIComponent(title) +
-        '&body=' + encodeURIComponent(shortLink);
-    document.location.href = url;
-  };
-  mailButton.title = configData.translatedStrings.shareMail;
-
-  linkText.value = shortLink;
-  linkText.onclick = function() {
-    linkText.select();
-  };
-  linkText.setAttribute('readonly', true);
-  linkText.title = configData.translatedStrings.shareLink;
-  copyButton.onclick = function() {
-    linkText.select();
-    document.execCommand('copy');
-  };
-  copyButton.title = configData.translatedStrings.copyLink;
-};
 
 
 return {
