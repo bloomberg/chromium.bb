@@ -151,7 +151,7 @@ cr.define('settings_people_page_sync_page', function() {
       assertFalse(syncSection.hidden);
       assertTrue(otherItems.classList.contains('list-frame'));
       assertEquals(
-          otherItems.querySelectorAll(':scope > .list-item').length, 4);
+          otherItems.querySelectorAll(':scope > .list-item').length, 3);
 
       // Test sync paused state.
       syncPage.syncStatus = {
@@ -469,19 +469,6 @@ cr.define('settings_people_page_sync_page', function() {
         assertEquals('-1', encryptWithGoogle.getAttribute('tabindex'));
         assertEquals('-1', encryptWithPassphrase.getAttribute('tabindex'));
       });
-    });
-
-    test('SyncAdvancedRow', function() {
-      syncPage.unifiedConsentEnabled = true;
-      Polymer.dom.flush();
-
-      const syncAdvancedRow = syncPage.$$('#sync-advanced-row');
-      assertFalse(syncAdvancedRow.hidden);
-
-      syncAdvancedRow.click();
-      Polymer.dom.flush();
-
-      assertEquals(settings.routes.SYNC_ADVANCED, settings.getCurrentRoute());
     });
 
     if (!cr.isChromeOS) {

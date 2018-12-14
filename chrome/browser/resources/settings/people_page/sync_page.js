@@ -184,18 +184,10 @@ Polymer({
     if (settings.getCurrentRoute() == settings.routes.SYNC)
       this.onNavigateToPage_();
   },
-  /**
-   * Can be called from subpages to notify this page (=main sync page) that sync
-   * setup was cancelled.
-   */
-  cancelSyncSetup: function() {
-    this.didAbort_ = true;
-    settings.navigateTo(settings.routes.BASIC);
-  },
 
   /** @override */
   detached: function() {
-    if (settings.routes.SYNC.contains(settings.getCurrentRoute()))
+    if (settings.getCurrentRoute() == settings.routes.SYNC)
       this.onNavigateAwayFromPage_();
 
     if (this.beforeunloadCallback_) {
@@ -228,7 +220,7 @@ Polymer({
   currentRouteChanged: function() {
     if (settings.getCurrentRoute() == settings.routes.SYNC)
       this.onNavigateToPage_();
-    else if (!settings.routes.SYNC.contains(settings.getCurrentRoute()))
+    else
       this.onNavigateAwayFromPage_();
   },
 
@@ -449,6 +441,12 @@ Polymer({
     }
   },
 
+  /** @private */
+  onCancelSyncClick_: function() {
+    this.didAbort_ = true;
+    settings.navigateTo(settings.routes.BASIC);
+  },
+
   /**
    * When unified-consent enabled, the non-toggle items on the bottom of sync
    * section should be wrapped with 'list-frame' in order to be indented
@@ -508,11 +506,6 @@ Polymer({
   shouldShowExistingPassphraseInSyncSection_: function() {
     return !this.unifiedConsentEnabled && this.syncPrefs !== undefined &&
         !!this.syncPrefs.passphraseRequired;
-  },
-
-  /** @private */
-  onSyncAdvancedTap_: function() {
-    settings.navigateTo(settings.routes.SYNC_ADVANCED);
   },
 });
 
