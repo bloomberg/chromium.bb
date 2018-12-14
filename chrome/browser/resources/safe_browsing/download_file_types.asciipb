@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 24
+version_id: 25
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -1219,6 +1219,18 @@ file_types {
     platform: PLATFORM_WINDOWS
     danger_level: ALLOW_ON_USER_GESTURE
     auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # Control Panel Item. Executable used for adding icons to Control Panel.
+  # Added in crbug.com/914400
+  extension: "cpi"
+  uma_value: 321
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
   }
 }
 

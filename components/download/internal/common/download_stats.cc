@@ -403,6 +403,7 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".pyd"),
     FILE_PATH_LITERAL(".pyo"),      // 319
     FILE_PATH_LITERAL(".desktop"),  // 320
+    FILE_PATH_LITERAL(".cpi"),      // 321
     // NOTE! When you add a type here, please add the UMA value as a comment.
     // These must all match DownloadItem.DangerousFileType in
     // enums.xml. From 263 onward, they should also match
