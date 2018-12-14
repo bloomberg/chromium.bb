@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
@@ -59,9 +60,6 @@ constexpr char kIsConfirmationDialogHiddenQuery[] =
 
 constexpr char kDefaultNetworkServicePath[] = "/service/eth1";
 constexpr char kDefaultNetworkName[] = "eth1";
-
-constexpr base::TimeDelta kJsConditionCheckFrequency =
-    base::TimeDelta::FromMilliseconds(10);
 
 constexpr int kInvokeDemoModeGestureTapsCount = 10;
 
@@ -128,41 +126,15 @@ std::string ScreenToContentQuery(OobeScreen screen) {
 }
 
 // Waits for js condition to be fulfilled.
-class JsConditionWaiter {
- public:
-  JsConditionWaiter(const test::JSChecker& js_checker,
-                    const std::string& js_condition)
-      : js_checker_(js_checker), js_condition_(js_condition) {}
-
-  ~JsConditionWaiter() = default;
-
-  void Wait() {
-    if (IsConditionFulfilled())
-      return;
-
-    timer_.Start(FROM_HERE, kJsConditionCheckFrequency, this,
-                 &JsConditionWaiter::CheckCondition);
-    run_loop_.Run();
-  }
-
- private:
-  bool IsConditionFulfilled() { return js_checker_.GetBool(js_condition_); }
-
-  void CheckCondition() {
-    if (IsConditionFulfilled()) {
-      run_loop_.Quit();
-      timer_.Stop();
-    }
-  }
-
-  test::JSChecker js_checker_;
-  const std::string js_condition_;
-
-  base::RepeatingTimer timer_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsConditionWaiter);
-};
+void WaitForJsCondition(const std::string& js_condition) {
+  return test::TestConditionWaiter(base::BindRepeating(
+                                       [](const std::string& js_condition) {
+                                         return test::OobeJS().GetBool(
+                                             js_condition);
+                                       },
+                                       js_condition))
+      .Wait();
+}
 
 }  // namespace
 
@@ -378,7 +350,7 @@ class DemoSetupTest : public LoginManagerTest {
     const std::string query =
         base::StrCat({"!", ScreenToContentQuery(screen), ".$.",
                       DialogToStringId(dialog), ".hidden"});
-    JsConditionWaiter(test::OobeJS(), query).Wait();
+    WaitForJsCondition(query);
   }
 
   void SkipToScreen(OobeScreen screen) {
@@ -488,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, ShowConfirmationDialogAndProceed) {
 
   ClickOkOnConfirmationDialog();
 
-  JsConditionWaiter(test::OobeJS(), kIsConfirmationDialogHiddenQuery).Wait();
+  WaitForJsCondition(kIsConfirmationDialogHiddenQuery);
   EXPECT_TRUE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
 }
 
@@ -507,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, MAYBE_ShowConfirmationDialogAndCancel) {
 
   ClickCancelOnConfirmationDialog();
 
-  JsConditionWaiter(test::OobeJS(), kIsConfirmationDialogHiddenQuery).Wait();
+  WaitForJsCondition(kIsConfirmationDialogHiddenQuery);
   EXPECT_FALSE(IsScreenShown(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES));
 }
 

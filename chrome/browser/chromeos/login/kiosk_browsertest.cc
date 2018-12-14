@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -316,46 +317,16 @@ class ScopedCanConfigureNetwork {
   DISALLOW_COPY_AND_ASSIGN(ScopedCanConfigureNetwork);
 };
 
-// Helper class to wait until a js condition becomes true.
-class JsConditionWaiter {
- public:
-  JsConditionWaiter(content::WebContents* web_contents, const std::string& js)
-      : web_contents_(web_contents), js_(js) {}
-
-  void Wait() {
-    if (CheckJs())
-      return;
-
-    base::RepeatingTimer check_timer;
-    check_timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10), this,
-                      &JsConditionWaiter::OnTimer);
-
-    runner_ = new content::MessageLoopRunner;
-    runner_->Run();
-  }
-
- private:
-  bool CheckJs() {
-    bool result;
-    CHECK(content::ExecuteScriptAndExtractBool(
-        web_contents_,
-        "window.domAutomationController.send(!!(" + js_ + "));",
-        &result));
-    return result;
-  }
-
-  void OnTimer() {
-    DCHECK(runner_.get());
-    if (CheckJs())
-      runner_->Quit();
-  }
-
-  content::WebContents* web_contents_;
-  const std::string js_;
-  scoped_refptr<content::MessageLoopRunner> runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsConditionWaiter);
-};
+// Waits for js condition to be fulfilled.
+void WaitForJsCondition(const std::string& js_condition) {
+  return test::TestConditionWaiter(base::BindRepeating(
+                                       [](const std::string& js_condition) {
+                                         return test::OobeJS().GetBool(
+                                             js_condition);
+                                       },
+                                       js_condition))
+      .Wait();
+}
 
 class KioskFakeDiskMountManager : public file_manager::FakeDiskMountManager {
  public:
@@ -1022,22 +993,19 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchInDiagnosticMode) {
 
   LaunchApp(kTestKioskApp, true);
 
-  content::WebContents* login_contents = GetLoginUI()->GetWebContents();
-
   bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
-  JsConditionWaiter(login_contents, new_kiosk_ui ? kCheckDiagnosticModeNewAPI
-                                                 : kCheckDiagnosticModeOldAPI)
-      .Wait();
+  WaitForJsCondition(new_kiosk_ui ? kCheckDiagnosticModeNewAPI
+                                  : kCheckDiagnosticModeOldAPI);
 
   std::string diagnosticMode(new_kiosk_ui ?
       kCheckDiagnosticModeNewAPI : kCheckDiagnosticModeOldAPI);
-  ASSERT_TRUE(content::ExecuteScript(
-      login_contents,
+  test::OobeJS().Evaluate(
       "(function() {"
-         "var e = new Event('click');" +
-         diagnosticMode + "."
-             "okButton_.dispatchEvent(e);"
-      "})();"));
+      "var e = new Event('click');" +
+      diagnosticMode +
+      "."
+      "okButton_.dispatchEvent(e);"
+      "})();");
 
   WaitForAppLaunchSuccess();
   EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
