@@ -108,10 +108,6 @@ id ExecuteJavaScript(NSString* javascript,
 + (void)loadURL:(const GURL&)URL {
   chrome_test_util::LoadUrl(URL);
   [ChromeEarlGrey waitForPageToFinishLoading];
-
-  web::WebState* webState = chrome_test_util::GetCurrentWebState();
-  if (webState->ContentIsHTML())
-    web::WaitUntilWindowIdInjected(webState);
 }
 
 + (void)reload {
