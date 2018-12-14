@@ -3098,6 +3098,35 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   EXPECT_EQ(2u, browser_list->size());
 }
 
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
+                       FlingDownAtEndOfDrag) {
+  // Reduce the minimum fling velocity for this specific test case to cause the
+  // fling-down gesture in the middle of tab-dragging. This should end up with
+  // minimizing the window. See https://crbug.com/902897 for the details.
+  ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(1);
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  int detach_y = GetDetachY(tab_strip);
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + detach_y,
+      base::BindLambdaForTesting([&]() {
+        // Drag down again; this should cause a fling-down event.
+        ASSERT_TRUE(DragInputToNotifyWhenDone(tab_0_center.x(),
+                                              tab_0_center.y() + detach_y * 2,
+                                              base::BindLambdaForTesting([&]() {
+                                                ASSERT_TRUE(ReleaseInput());
+                                              })));
+      })));
+  QuitWhenNotDragging();
+
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_TRUE(browser()->window()->IsMinimized());
+  EXPECT_FALSE(browser()->window()->IsVisible());
+}
+
 namespace {
 
 // Returns true if the web contents that's accociated with |browser| is using
