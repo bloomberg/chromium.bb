@@ -8152,6 +8152,15 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "blink_heap_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "blink_platform_unittests"
       },
       {
