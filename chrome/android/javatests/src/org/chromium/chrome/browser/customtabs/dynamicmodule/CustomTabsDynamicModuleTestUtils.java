@@ -4,13 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
-import android.content.ComponentName;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsCallback;
-import android.support.test.InstrumentationRegistry;
-
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_HOST_LIST;
@@ -19,8 +12,16 @@ import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.PENDING_URL_KEY;
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.URL_KEY;
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsCallback;
+import android.support.test.InstrumentationRegistry;
+
 import org.junit.Assert;
 
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.AppHooksModule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
@@ -64,6 +65,7 @@ public class CustomTabsDynamicModuleTestUtils {
     /**
      * This class is used to test CCT module loader.
      */
+    @UsedByReflection("dynamicmodule.ModuleLoader$LoadClassTask")
     public static class FakeCCTDynamicModule extends BaseModuleEntryPoint {
         @Override
         public void init(IModuleHost moduleHost) {
