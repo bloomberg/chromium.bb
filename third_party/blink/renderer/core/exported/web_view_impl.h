@@ -111,7 +111,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   static bool UseExternalPopupMenus();
 
   // WebView methods:
-  bool IsWebView() const override { return true; }
   void SetPrerendererClient(WebPrerendererClient*) override;
   WebSettings* GetSettings() override;
   WebString PageEncoding() const override;

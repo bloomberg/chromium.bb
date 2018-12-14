@@ -67,8 +67,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetFocus(bool) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool IsAcceleratedCompositingActive() const override;
-  bool IsWebView() const override { return false; }
-  bool IsPagePopup() const override { return false; }
   void WillCloseLayerTreeView() override;
   SkColor BackgroundColor() const override;
   WebURL GetURLForDebugTrace() override;

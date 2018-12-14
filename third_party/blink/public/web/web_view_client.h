@@ -43,10 +43,10 @@ namespace blink {
 
 class WebDateTimeChooserCompletion;
 class WebNode;
+class WebPagePopup;
 class WebURL;
 class WebURLRequest;
 class WebView;
-class WebWidget;
 enum class WebSandboxFlags;
 struct WebDateTimeChooserParams;
 struct WebRect;
@@ -78,7 +78,7 @@ class WebViewClient {
   }
 
   // Create a new popup WebWidget.
-  virtual WebWidget* CreatePopup(WebLocalFrame*) { return nullptr; }
+  virtual WebPagePopup* CreatePopup(WebLocalFrame*) { return nullptr; }
 
   // Returns the session storage namespace id associated with this WebView.
   virtual base::StringPiece GetSessionStorageNamespaceId() {
