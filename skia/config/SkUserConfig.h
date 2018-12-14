@@ -144,10 +144,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_USE_LEGACY_DISTANCE_FIELDS
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_FONTMETRICS_IN_PAINT
-#define SK_SUPPORT_LEGACY_FONTMETRICS_IN_PAINT
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_PAINT_TEXTMEASURE
 #define SK_SUPPORT_LEGACY_PAINT_TEXTMEASURE
 #endif
