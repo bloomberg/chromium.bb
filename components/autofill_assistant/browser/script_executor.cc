@@ -134,6 +134,7 @@ void ScriptExecutor::Choose(
     // through a previous call to the focus action with touchable_elements set.
     delegate_->SetTouchableElementArea(touchable_elements_);
     delegate_->GetUiController()->HideOverlay();
+    AllowShowingSoftKeyboard(true);
 
     // The touchable_elements_ currently set in the script is reset, so that it
     // won't affect the real end of the script.
@@ -215,6 +216,10 @@ void ScriptExecutor::ShowOverlay() {
 
 void ScriptExecutor::HideOverlay() {
   delegate_->GetUiController()->HideOverlay();
+}
+
+void ScriptExecutor::AllowShowingSoftKeyboard(bool enabled) {
+  delegate_->GetUiController()->AllowShowingSoftKeyboard(enabled);
 }
 
 void ScriptExecutor::SetFieldValue(const Selector& selector,
@@ -645,6 +650,7 @@ void ScriptExecutor::OnChosen(
     base::OnceCallback<void(const std::string&)> callback,
     const std::string& payload) {
   delegate_->GetUiController()->ShowOverlay();
+  AllowShowingSoftKeyboard(false);
   delegate_->ClearTouchableElementArea();
   std::move(callback).Run(payload);
 }

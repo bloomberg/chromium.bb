@@ -164,6 +164,7 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(HideProgressBar, void());
   MOCK_METHOD0(ShowOverlay, void());
   MOCK_METHOD0(HideOverlay, void());
+  MOCK_METHOD1(AllowShowingSoftKeyboard, void(bool));
 };
 
 }  // namespace autofill_assistant

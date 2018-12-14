@@ -54,6 +54,8 @@ import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
+import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
+import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -114,6 +116,14 @@ class AutofillAssistantUiDelegate {
     private ValueAnimator mDetailsPulseAnimation;
 
     private AutofillAssistantPaymentRequest mPaymentRequest;
+
+    /**
+     * If set to true soft keyboard will be disabled.
+     */
+    private boolean mAllowShowingSoftKeyboard = true;
+    private final ActivityKeyboardVisibilityDelegate mKeyboardDelegate;
+    private final KeyboardVisibilityListener mKeyboardVisibilityListener =
+            this::onKeyboardVisibilityChanged;
 
     /**
      * This is a client interface that relays interactions from the UI.
@@ -300,7 +310,26 @@ class AutofillAssistantUiDelegate {
             mTouchEventFilter.setGrayOutColor(overlayColor);
         }
 
+        mKeyboardDelegate = activity.getWindowAndroid().getKeyboardDelegate();
         // TODO(crbug.com/806868): Listen for contextual search shown so as to hide this UI.
+    }
+
+    /**
+     * Allows enabling/disabling the software keyboard.
+     */
+    void allowShowingSoftKeyboard(boolean allowed) {
+        this.mAllowShowingSoftKeyboard = allowed;
+        if (!allowed) {
+            mKeyboardDelegate.hideKeyboard(mActivity.getCompositorViewHolder());
+        }
+    }
+
+    // TODO(crbug.com/806868): Current solution only hides the keyboard once it has been already
+    // shown. We should improve it and prevent from the showing in the first place.
+    private void onKeyboardVisibilityChanged(boolean isShowing) {
+        if (isShowing && !mAllowShowingSoftKeyboard) {
+            mKeyboardDelegate.hideKeyboard(mActivity.getCompositorViewHolder());
+        }
     }
 
     /**
@@ -441,11 +470,14 @@ class AutofillAssistantUiDelegate {
             // Set the initial progress. It is OK to make multiple calls to this method as it will
             // have an effect only on the first one.
             mProgressBar.maybeIncreaseProgress(PROGRESS_BAR_INITIAL_PROGRESS);
+
+            mKeyboardDelegate.addKeyboardVisibilityListener(mKeyboardVisibilityListener);
         }
     }
 
     public void hide() {
         mTouchEventFilter.deInit();
+        mKeyboardDelegate.removeKeyboardVisibilityListener(mKeyboardVisibilityListener);
         mFullContainer.setVisibility(View.GONE);
     }
 

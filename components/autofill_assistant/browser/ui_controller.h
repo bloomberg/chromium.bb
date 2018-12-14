@@ -52,6 +52,9 @@ class UiController {
   // Hide the overlay.
   virtual void HideOverlay() = 0;
 
+  // Allows disabling/enabling the soft keyboard.
+  virtual void AllowShowingSoftKeyboard(bool enabled) = 0;
+
   // Shuts down Autofill Assistant: hide the UI and frees any associated state.
   //
   // Warning: this indirectly deletes the caller.

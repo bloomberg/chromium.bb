@@ -178,6 +178,12 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @CalledByNative
+    private void onAllowShowingSoftKeyboard(boolean allowed) {
+        this.mUiDelegateHolder.performUiOperation(
+                uiDelegate -> uiDelegate.allowShowingSoftKeyboard(allowed));
+    }
+
+    @CalledByNative
     private void onShowStatusMessage(String message) {
         mStatusMessage = message;
         mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showStatusMessage(message));

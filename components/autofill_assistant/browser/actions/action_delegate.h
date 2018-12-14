@@ -213,6 +213,9 @@ class ActionDelegate {
   // Hide the overlay.
   virtual void HideOverlay() = 0;
 
+  // Allows disabling/enabling the soft keyboard.
+  virtual void AllowShowingSoftKeyboard(bool enabled) = 0;
+
  protected:
   ActionDelegate() = default;
 };

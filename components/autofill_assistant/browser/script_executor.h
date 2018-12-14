@@ -155,6 +155,7 @@ class ScriptExecutor : public ActionDelegate {
   void HideProgressBar() override;
   void ShowOverlay() override;
   void HideOverlay() override;
+  void AllowShowingSoftKeyboard(bool enabled) override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to
