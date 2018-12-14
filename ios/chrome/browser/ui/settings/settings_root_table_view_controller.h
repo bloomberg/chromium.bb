@@ -61,6 +61,19 @@ extern NSString* const kSettingsToolbarDeleteButtonId;
 // Default implementation removes the items.
 - (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths;
 
+// Prevents user interaction until |-allowUserInteraction| is called by doing
+// the following:
+// * Disables user interaction with the navigation bar.
+// * Replaces the done button with an activity indicator.
+// * Covers the TableView with a transparent veil.
+- (void)preventUserInteraction;
+
+// Allows user interaction:
+// * Enables user interaction with the navigation bar.
+// * Restores the done button.
+// * Removes the transparent veil.
+- (void)allowUserInteraction;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_ROOT_TABLE_VIEW_CONTROLLER_H_
