@@ -35,60 +35,6 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
-namespace {
-
-// Represents a data struct that are needed for 'text-align' and justifications.
-struct NGLineAlign {
-  STACK_ALLOCATED();
-
- public:
-  NGLineAlign(const NGLineInfo&);
-  NGLineAlign() = delete;
-
-  // The space to align or justify. This includes trailing spaces if exists.
-  LayoutUnit space;
-
-  // The end offset with trailing spaces excluded.
-  unsigned end_offset;
-  LayoutUnit trailing_spaces_width;
-};
-
-NGLineAlign::NGLineAlign(const NGLineInfo& line_info) {
-  // NGLineInfo::WidthForAlignment may return a negative value, as text-indent
-  // can accept negative values. We need to use this un-clamped value for
-  // alginment, instead of just NGLineInfo::Width.
-  space = line_info.AvailableWidth() - line_info.WidthForAlignment();
-
-  // Compute the end text offset of this line for the alignment purpose.
-  // Trailing spaces are not part of the alignment space even when they are
-  // preserved.
-  const NGInlineItemResults& item_results = line_info.Results();
-  for (auto it = item_results.rbegin(); it != item_results.rend(); ++it) {
-    const NGInlineItemResult& item_result = *it;
-
-    // If this item is opaque to whitespace collapsing, whitespace before this
-    // item maybe collapsed. Keep looking for previous items.
-    if (item_result.item && item_result.item->EndCollapseType() ==
-                                NGInlineItem::kOpaqueToCollapsing) {
-      continue;
-    }
-
-    if (item_result.has_only_trailing_spaces) {
-      trailing_spaces_width += item_result.inline_size;
-      continue;
-    }
-
-    end_offset = item_result.end_offset;
-    space += trailing_spaces_width;
-    return;
-  }
-
-  // An empty line, or only trailing spaces.
-  end_offset = line_info.StartOffset();
-  space += trailing_spaces_width;
-}
-
-}  // namespace
 
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGInlineNode inline_node,
@@ -223,13 +169,9 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   // Apply justification before placing items, because it affects size/position
   // of items, which are needed to compute inline static positions.
-  const ComputedStyle& line_style = line_info->LineStyle();
-  ETextAlign text_align = line_style.GetTextAlign(line_info->IsLastLine());
-  if (text_align == ETextAlign::kJustify) {
-    if (!ApplyJustify(line_info))
-      text_align = ETextAlign::kStart;
-  }
+  LayoutUnit line_offset_for_text_align = ApplyTextAlign(line_info);
 
+  const ComputedStyle& line_style = line_info->LineStyle();
   NGLineHeightMetrics line_metrics(line_style, baseline_type_);
   NGLineHeightMetrics line_metrics_with_leading = line_metrics;
   line_metrics_with_leading.AddLeading(line_style.ComputedLineHeightAsFixed());
@@ -339,9 +281,8 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   // Other 'text-align' values than 'justify' move line boxes as a whole, but
   // indivisual items do not change their relative position to the line box.
-  LayoutUnit bfc_line_offset = line_info->BfcOffset().line_offset;
-  if (text_align != ETextAlign::kJustify)
-    bfc_line_offset += OffsetForTextAlign(*line_info, text_align);
+  LayoutUnit bfc_line_offset =
+      line_info->BfcOffset().line_offset + line_offset_for_text_align;
 
   if (IsLtr(line_info->BaseDirection()))
     bfc_line_offset += line_info->TextIndent();
@@ -582,19 +523,26 @@ void NGInlineLayoutAlgorithm::PlaceListMarker(const NGInlineItem& item,
 
 // Justify the line. This changes the size of items by adding spacing.
 // Returns false if justification failed and should fall back to start-aligned.
-bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
+bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
+                                           NGLineInfo* line_info) {
   // Empty lines should align to start.
   if (line_info->IsEmptyLine())
     return false;
 
-  NGLineAlign align(*line_info);
-  if (align.space <= 0)
-    return false;  // no expansion is needed.
+  // Justify the end of visible text, ignoring preserved trailing spaces.
+  unsigned end_offset;
+  LayoutUnit trailing_spaces_width =
+      line_info->ComputeTrailingSpaceWidth(&end_offset);
+  space += trailing_spaces_width;
+
+  // If this line overflows, fallback to 'text-align: start'.
+  if (space <= 0)
+    return false;
 
   // Construct the line text to compute spacing for.
   String line_text =
       StringView(line_info->ItemsData().text_content, line_info->StartOffset(),
-                 align.end_offset - line_info->StartOffset())
+                 end_offset - line_info->StartOffset())
           .ToString();
 
   // Append a hyphen if the last word is hyphenated. The hyphen is in
@@ -607,7 +555,7 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
 
   // Compute the spacing to justify.
   ShapeResultSpacing<String> spacing(line_text);
-  spacing.SetExpansion(align.space, line_info->BaseDirection(),
+  spacing.SetExpansion(space, line_info->BaseDirection(),
                        line_info->LineStyle().GetTextJustify());
   if (!spacing.HasExpansion())
     return false;  // no expansion opportunities exist.
@@ -643,16 +591,28 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
   return true;
 }
 
-// Compute the offset to shift the line box for the 'text-align' property.
-LayoutUnit NGInlineLayoutAlgorithm::OffsetForTextAlign(
-    const NGLineInfo& line_info,
-    ETextAlign text_align) const {
-  // Justification is applied in earlier phase, see PlaceItems().
-  DCHECK_NE(text_align, ETextAlign::kJustify);
+// Apply the 'text-align' property to |line_info|. Returns the amount to move
+// the line in the inline direction.
+LayoutUnit NGInlineLayoutAlgorithm::ApplyTextAlign(NGLineInfo* line_info) {
+  // NGLineInfo::WidthForAlignment may return a negative value, as text-indent
+  // can accept negative values. We need to use this un-clamped value for
+  // alginment, instead of just NGLineInfo::Width.
+  LayoutUnit space =
+      line_info->AvailableWidth() - line_info->WidthForAlignment();
 
-  NGLineAlign align(line_info);
-  return LineOffsetForTextAlign(text_align, line_info.BaseDirection(),
-                                align.space, align.trailing_spaces_width);
+  const ComputedStyle& line_style = line_info->LineStyle();
+  ETextAlign text_align = line_style.GetTextAlign(line_info->IsLastLine());
+  if (text_align == ETextAlign::kJustify) {
+    // If justification succeeds, no offset is needed. Expansions are set to
+    // each |NGInlineItemResult| in |line_info|.
+    if (ApplyJustify(space, line_info))
+      return LayoutUnit();
+
+    // If justification fails, fallback to 'text-align: start'.
+    text_align = ETextAlign::kStart;
+  }
+
+  return LineOffsetForTextAlign(text_align, line_info->BaseDirection(), space);
 }
 
 LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(

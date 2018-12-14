@@ -166,8 +166,18 @@ class CORE_EXPORT NGLineInfo {
 
   NGBfcOffset BfcOffset() const { return bfc_offset_; }
   LayoutUnit AvailableWidth() const { return available_width_; }
+
+  // The width of this line. Includes trailing spaces if they were preserved.
+  // Negative width created by negative 'text-indent' is clamped to zero.
   LayoutUnit Width() const { return width_.ClampNegativeToZero(); }
+  // Same as |Width()| but returns negative value as is.
   LayoutUnit WidthForAlignment() const { return width_; }
+  // The width of preserved trailing spaces.
+  LayoutUnit ComputeTrailingSpaceWidth(
+      unsigned* end_offset_out = nullptr) const;
+  // Compute |Width()| from |Results()|. Used during line breaking, before
+  // |Width()| is set. After line breaking, this should match to |Width()|
+  // without clamping.
   LayoutUnit ComputeWidth() const;
 
   // True if this line has overflow, excluding preserved trailing spaces.

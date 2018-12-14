@@ -49,6 +49,78 @@ void NGInlineItemResult::CheckConsistency(bool during_line_break) const {
 }
 #endif
 
+LayoutUnit NGLineInfo::ComputeTrailingSpaceWidth(
+    unsigned* end_offset_out) const {
+  // TODO(kojii): Consider adding a flag to skip this function when not needed.
+  // In many common cases, NGLineBreaker knows that there are no trailing
+  // spaces, so we can leverage the knowledge without adding the cost to compute
+  // the flag. We use this function only for 'text-align: justify', so the cost
+  // to compute the flag should not be more expensive than it benefits.
+  const NGInlineItemResults& item_results = Results();
+  LayoutUnit trailing_spaces_width;
+  for (auto it = item_results.rbegin(); it != item_results.rend(); ++it) {
+    const NGInlineItemResult& item_result = *it;
+    DCHECK(item_result.item);
+    const NGInlineItem& item = *item_result.item;
+
+    // If this item is opaque to whitespace collapsing, whitespace before this
+    // item maybe collapsed. Keep looking for previous items.
+    if (item.EndCollapseType() == NGInlineItem::kOpaqueToCollapsing) {
+      continue;
+    }
+    // These items should be opaque-to-collapsing.
+    DCHECK(item.Type() != NGInlineItem::kFloating &&
+           item.Type() != NGInlineItem::kOutOfFlowPositioned &&
+           item.Type() != NGInlineItem::kBidiControl);
+
+    if (item.Type() == NGInlineItem::kControl ||
+        item_result.has_only_trailing_spaces) {
+      trailing_spaces_width += item_result.inline_size;
+      continue;
+    }
+
+    // The last text item may contain trailing spaces if this is a last line,
+    // has a forced break, or is 'white-space: pre'.
+    unsigned end_offset = item_result.end_offset;
+    DCHECK(end_offset);
+    if (item.Type() == NGInlineItem::kText) {
+      const String& text = items_data_->text_content;
+      if (end_offset && text[end_offset - 1] == kSpaceCharacter) {
+        do {
+          --end_offset;
+        } while (end_offset > item_result.start_offset &&
+                 text[end_offset - 1] == kSpaceCharacter);
+
+        // If all characters in this item_result are spaces, check next item.
+        if (end_offset == item_result.start_offset) {
+          trailing_spaces_width += item_result.inline_size;
+          continue;
+        }
+
+        // To compute the accurate width, we need to reshape if |end_offset| is
+        // not safe-to-break. We avoid reshaping in this case because the cost
+        // is high and the difference is subtle for the purpose of this
+        // function.
+        // TODO(kojii): Compute this without |CreateShapeResult|.
+        scoped_refptr<ShapeResult> shape_result =
+            item_result.shape_result->CreateShapeResult();
+        float end_position = shape_result->PositionForOffset(
+            end_offset - shape_result->StartIndex());
+        trailing_spaces_width += shape_result->Width() - end_position;
+      }
+    }
+
+    if (end_offset_out)
+      *end_offset_out = end_offset;
+    return trailing_spaces_width;
+  }
+
+  // An empty line, or only trailing spaces.
+  if (end_offset_out)
+    *end_offset_out = StartOffset();
+  return trailing_spaces_width;
+}
+
 LayoutUnit NGLineInfo::ComputeWidth() const {
   LayoutUnit inline_size = TextIndent();
   for (const NGInlineItemResult& item_result : Results())
