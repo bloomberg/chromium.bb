@@ -23,8 +23,6 @@ namespace blink {
 
 FindBuffer::FindBuffer(const PositionInFlatTree& start_position) {
   DCHECK(start_position.ComputeContainerNode());
-  DCHECK(start_position == PositionInFlatTree::FirstPositionInNode(
-                               *start_position.ComputeContainerNode()));
   CollectTextUntilBlockBoundary(*start_position.ComputeContainerNode());
 }
 
