@@ -236,6 +236,7 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
   // set at all, the creator of the Widget is expected to call SetBounds()
   // before calling Widget::Show() to avoid a kWindowSizeDeterminedLater-sized
   // (i.e. 1x1) window appearing.
+  UpdateLocalWindowFrame(params.bounds);
   bridge()->SetInitialBounds(params.bounds, widget->GetMinimumSize());
 
   // TODO(ccameron): Correctly set these based |local_window_|.
@@ -248,6 +249,7 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
 }
 
 void BridgedNativeWidgetHostImpl::SetBounds(const gfx::Rect& bounds) {
+  UpdateLocalWindowFrame(bounds);
   bridge()->SetBounds(bounds,
                       native_widget_mac_->GetWidget()->GetMinimumSize());
 }
@@ -461,6 +463,13 @@ void BridgedNativeWidgetHostImpl::RankNSViewsRecursive(
     rank->emplace(it->second, rank->size());
   for (int i = 0; i < view->child_count(); ++i)
     RankNSViewsRecursive(view->child_at(i), rank);
+}
+
+void BridgedNativeWidgetHostImpl::UpdateLocalWindowFrame(
+    const gfx::Rect& frame) {
+  if (!bridge_ptr_)
+    return;
+  [local_window_ setFrame:gfx::ScreenRectToNSRect(frame) display:NO animate:NO];
 }
 
 // static
@@ -685,15 +694,7 @@ bool BridgedNativeWidgetHostImpl::GetIsFocusedViewTextual(bool* is_textual) {
 void BridgedNativeWidgetHostImpl::OnWindowGeometryChanged(
     const gfx::Rect& new_window_bounds_in_screen,
     const gfx::Rect& new_content_bounds_in_screen) {
-  // If we are accessing the BridgedNativeWidget through mojo, then
-  // |local_window_| is not the true window that was just resized. Update
-  // the frame of |local_window_| to keep it in sync for any native calls
-  // that may use it (e.g, for context menu positioning).
-  if (bridge_ptr_) {
-    [local_window_ setFrame:gfx::ScreenRectToNSRect(new_window_bounds_in_screen)
-                    display:NO
-                    animate:NO];
-  }
+  UpdateLocalWindowFrame(new_window_bounds_in_screen);
 
   bool window_has_moved =
       new_window_bounds_in_screen.origin() != window_bounds_in_screen_.origin();
