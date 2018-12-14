@@ -162,6 +162,15 @@ class POLICY_EXPORT CloudPolicyClient {
   // to determine which version of policy was fetched.
   void SetInvalidationInfo(int64_t version, const std::string& payload);
 
+  // Sets OAuth token to be used as an additional authentication in requests to
+  // DMServer. It is used for child user. This class does not track validity of
+  // the |oauth_token|. It should be provided with a fresh token when the
+  // previous token expires. If OAuth token is set for the client, it will be
+  // automatically included in the folllowing requests:
+  //  * policy fetch
+  //  * status report upload
+  virtual void SetOAuthTokenAsAdditionalAuth(const std::string& oauth_token);
+
   // Requests a policy fetch. The client being registered is a prerequisite to
   // this operation and this call will CHECK if the client is not in registered
   // state. FetchPolicy() triggers a policy fetch from the cloud. A policy
@@ -491,6 +500,10 @@ class POLICY_EXPORT CloudPolicyClient {
   const std::string brand_code_;
   PolicyTypeSet types_to_fetch_;
   std::vector<std::string> state_keys_to_upload_;
+
+  // OAuth token that if set is used as an additional form of authentication
+  // (next to |dm_token_|) in policy fetch requests.
+  std::string oauth_token_;
 
   std::string dm_token_;
   std::unique_ptr<base::DictionaryValue> configuration_seed_;

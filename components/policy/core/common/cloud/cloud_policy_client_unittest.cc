@@ -385,6 +385,18 @@ class CloudPolicyClientTest : public testing::Test {
                          MatchProto(policy_request_)));
   }
 
+  void ExpectPolicyFetchWithAdditionalAuth(const std::string& dm_token,
+                                           const std::string& oauth_token) {
+    EXPECT_CALL(service_,
+                CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
+                          shared_url_loader_factory_))
+        .WillOnce(service_.SucceedJob(policy_response_));
+    EXPECT_CALL(service_,
+                StartJob(dm_protocol::kValueRequestPolicy, std::string(),
+                         oauth_token, dm_token, std::string(), client_id_,
+                         MatchProto(policy_request_)));
+  }
+
   void ExpectUnregistration(const std::string& dm_token) {
     EXPECT_CALL(service_,
                 CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION,
@@ -415,6 +427,17 @@ class CloudPolicyClientTest : public testing::Test {
     EXPECT_CALL(service_,
                 StartJob(dm_protocol::kValueRequestUploadStatus, std::string(),
                          std::string(), kDMToken, std::string(), client_id_,
+                         MatchProto(upload_status_request_)));
+  }
+
+  void ExpectUploadStatusWithOAuthToken() {
+    EXPECT_CALL(service_,
+                CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_STATUS,
+                          shared_url_loader_factory_))
+        .WillOnce(service_.SucceedJob(upload_status_response_));
+    EXPECT_CALL(service_,
+                StartJob(dm_protocol::kValueRequestUploadStatus, std::string(),
+                         kOAuthToken, kDMToken, std::string(), client_id_,
                          MatchProto(upload_status_request_)));
   }
 
@@ -614,6 +637,23 @@ TEST_F(CloudPolicyClientTest, SetupRegistrationAndPolicyFetch) {
   CheckPolicyResponse();
 }
 
+TEST_F(CloudPolicyClientTest, SetupRegistrationAndPolicyFetchWithOAuthToken) {
+  EXPECT_CALL(service_, CreateJob(_, _)).Times(0);
+  EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
+  EXPECT_CALL(device_dmtoken_callback_observer_, OnDeviceDMTokenRequested(_))
+      .WillOnce(Return(kDeviceDMToken));
+  client_->SetupRegistration(kDMToken, client_id_, std::vector<std::string>());
+  client_->SetOAuthTokenAsAdditionalAuth(kOAuthToken);
+  EXPECT_TRUE(client_->is_registered());
+  EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
+
+  ExpectPolicyFetchWithAdditionalAuth(kDMToken, kOAuthToken);
+  EXPECT_CALL(observer_, OnPolicyFetched(_));
+  client_->FetchPolicy();
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+  CheckPolicyResponse();
+}
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     defined(OS_LINUX) && !defined(OS_CHROMEOS)
 TEST_F(CloudPolicyClientTest, RegistrationWithTokenAndPolicyFetch) {
@@ -649,6 +689,28 @@ TEST_F(CloudPolicyClientTest, RegistrationAndPolicyFetch) {
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 
   ExpectPolicyFetch(kDMToken);
+  EXPECT_CALL(observer_, OnPolicyFetched(_));
+  client_->FetchPolicy();
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+  CheckPolicyResponse();
+}
+
+TEST_F(CloudPolicyClientTest, RegistrationAndPolicyFetchWithOAuthToken) {
+  ExpectRegistration(kOAuthToken);
+  EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
+  EXPECT_CALL(device_dmtoken_callback_observer_, OnDeviceDMTokenRequested(_))
+      .WillOnce(Return(kDeviceDMToken));
+  client_->Register(em::DeviceRegisterRequest::USER,
+                    em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
+                    em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
+                    em::LicenseType::UNDEFINED, kOAuthToken, std::string(),
+                    std::string(), std::string());
+  client_->SetOAuthTokenAsAdditionalAuth(kOAuthToken);
+  EXPECT_TRUE(client_->is_registered());
+  EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+
+  ExpectPolicyFetchWithAdditionalAuth(kDMToken, kOAuthToken);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
   client_->FetchPolicy();
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
@@ -844,6 +906,24 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithInvalidationNoPayload) {
   client_->FetchPolicy();
   CheckPolicyResponse();
   EXPECT_EQ(-12345, client_->fetched_invalidation_version());
+}
+
+// Tests that previous OAuth token is no longer sent in policy fetch after its
+// value was cleared.
+TEST_F(CloudPolicyClientTest, PolicyFetchClearOAuthToken) {
+  Register();
+
+  ExpectPolicyFetchWithAdditionalAuth(kDMToken, kOAuthToken);
+  EXPECT_CALL(observer_, OnPolicyFetched(_));
+  client_->SetOAuthTokenAsAdditionalAuth(kOAuthToken);
+  client_->FetchPolicy();
+  CheckPolicyResponse();
+
+  ExpectPolicyFetch(kDMToken);
+  EXPECT_CALL(observer_, OnPolicyFetched(_));
+  client_->SetOAuthTokenAsAdditionalAuth("");
+  client_->FetchPolicy();
+  CheckPolicyResponse();
 }
 
 TEST_F(CloudPolicyClientTest, BadPolicyResponse) {
@@ -1079,6 +1159,32 @@ TEST_F(CloudPolicyClientTest, UploadStatus) {
       base::Unretained(&callback_observer_));
   em::DeviceStatusReportRequest device_status;
   em::SessionStatusReportRequest session_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, UploadStatusWithOAuthToken) {
+  Register();
+
+  // Test that OAuth token is sent in status upload.
+  client_->SetOAuthTokenAsAdditionalAuth(kOAuthToken);
+
+  ExpectUploadStatusWithOAuthToken();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
+  CloudPolicyClient::StatusCallback callback =
+      base::BindRepeating(&MockStatusCallbackObserver::OnCallbackComplete,
+                          base::Unretained(&callback_observer_));
+  em::DeviceStatusReportRequest device_status;
+  em::SessionStatusReportRequest session_status;
+  client_->UploadDeviceStatus(&device_status, &session_status, callback);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+
+  // Tests that previous OAuth token is no longer sent in status upload after
+  // its value was cleared.
+  client_->SetOAuthTokenAsAdditionalAuth("");
+
+  ExpectUploadStatus();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
   client_->UploadDeviceStatus(&device_status, &session_status, callback);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
