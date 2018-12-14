@@ -271,7 +271,7 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
                                                   Document* document) {
   FrameFetchContext* context =
       MakeGarbageCollected<FrameFetchContext>(loader, document);
-  ResourceFetcher* fetcher = ResourceFetcher::Create(context);
+  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context);
 
   if (loader && context->GetSettings()->GetSavePreviousDocumentResources() !=
                     SavePreviousDocumentResources::kNever) {

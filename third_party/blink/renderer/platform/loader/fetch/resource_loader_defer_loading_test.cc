@@ -163,7 +163,7 @@ ResourceLoaderDefersLoadingTest::ResourceLoaderDefersLoadingTest()
 }
 
 TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchCheckDefers) {
-  ResourceFetcher* fetcher = ResourceFetcher::Create(context_);
+  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -190,7 +190,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchSyncReturn) {
         std::move(callback).Run(base::Time(), std::vector<uint8_t>());
       }));
 
-  ResourceFetcher* fetcher = ResourceFetcher::Create(context_);
+  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -207,7 +207,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, CodeCacheFetchSyncReturn) {
 }
 
 TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToFalse) {
-  ResourceFetcher* fetcher = ResourceFetcher::Create(context_);
+  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -228,7 +228,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToFalse) {
 }
 
 TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToTrue) {
-  ResourceFetcher* fetcher = ResourceFetcher::Create(context_);
+  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
 
   ResourceRequest request;
   request.SetURL(test_url_);
@@ -253,7 +253,7 @@ TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersToTrue) {
 }
 
 TEST_F(ResourceLoaderDefersLoadingTest, ChangeDefersMultipleTimes) {
-  ResourceFetcher* fetcher = ResourceFetcher::Create(context_);
+  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
 
   ResourceRequest request;
   request.SetURL(test_url_);

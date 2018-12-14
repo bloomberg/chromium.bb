@@ -47,7 +47,7 @@ TEST_F(FontResourceTest,
 
   MockFetchContext* context =
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
-  ResourceFetcher* fetcher = ResourceFetcher::Create(context);
+  ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context);
 
   // Fetch to cache a resource.
   ResourceRequest request1(url);

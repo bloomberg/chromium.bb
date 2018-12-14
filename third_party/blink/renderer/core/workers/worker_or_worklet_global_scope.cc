@@ -135,7 +135,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
   WorkerFetchContext* fetch_context = WorkerFetchContext::Create(
       *this, web_worker_fetch_context_, subresource_filter_,
       fetch_client_settings_object);
-  ResourceFetcher* resource_fetcher = ResourceFetcher::Create(fetch_context);
+  ResourceFetcher* resource_fetcher =
+      MakeGarbageCollected<ResourceFetcher>(fetch_context);
   if (IsContextPaused())
     resource_fetcher->SetDefersLoading(true);
   resource_fetchers_.insert(resource_fetcher);

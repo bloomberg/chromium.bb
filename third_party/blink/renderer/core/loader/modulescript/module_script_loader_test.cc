@@ -168,7 +168,7 @@ void ModuleScriptLoaderTest::InitializeForDocument() {
   auto* fetch_context =
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
   fetch_context->SetSecurityOrigin(security_origin_);
-  fetcher_ = ResourceFetcher::Create(fetch_context);
+  fetcher_ = MakeGarbageCollected<ResourceFetcher>(fetch_context);
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       ToScriptStateForMainWorld(&GetFrame()));
 }
@@ -177,7 +177,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   auto* fetch_context =
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
   fetch_context->SetSecurityOrigin(security_origin_);
-  fetcher_ = ResourceFetcher::Create(fetch_context);
+  fetcher_ = MakeGarbageCollected<ResourceFetcher>(fetch_context);
   reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       url_, mojom::ScriptType::kModule, "UserAgent",

@@ -165,7 +165,7 @@ TEST_F(ResourceLoaderTest, ResponseType) {
                  << test.original_response_type);
 
     context_->SetSecurityOrigin(origin);
-    ResourceFetcher* fetcher = ResourceFetcher::Create(context_);
+    ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
 
     ResourceRequest request;
     request.SetURL(test.url);
