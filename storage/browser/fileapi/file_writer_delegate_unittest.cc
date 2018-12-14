@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
@@ -51,7 +52,7 @@ const GURL kOrigin("http://example.com");
 const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
 
 const char kData[] = "The quick brown fox jumps over the lazy dog.\n";
-const int kDataSize = arraysize(kData) - 1;
+const int kDataSize = base::size(kData) - 1;
 
 class Result {
  public:

@@ -19,6 +19,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -341,7 +342,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     EXPECT_EQ(0, GetSize(data_path));
 
     const char data[] = "test data";
-    const int length = arraysize(data) - 1;
+    const int length = base::size(data) - 1;
 
     if (!file.IsValid()) {
       file.Initialize(data_path,
@@ -1341,7 +1342,7 @@ TEST_F(ObfuscatedFileUtilTest, TestCopyOrMoveFileSuccess) {
   const int64_t kSourceLength = 5;
   const int64_t kDestLength = 50;
 
-  for (size_t i = 0; i < arraysize(kCopyMoveTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kCopyMoveTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "kCopyMoveTestCase " << i);
     const CopyMoveTestCaseRecord& test_case = kCopyMoveTestCases[i];
     SCOPED_TRACE(testing::Message() << "\t is_copy_not_move " <<
@@ -1587,7 +1588,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
   std::set<GURL> origins_expected;
   origins_expected.insert(origin());
 
-  for (size_t i = 0; i < arraysize(kOriginEnumerationTestRecords); ++i) {
+  for (size_t i = 0; i < base::size(kOriginEnumerationTestRecords); ++i) {
     SCOPED_TRACE(testing::Message() <<
         "Validating kOriginEnumerationTestRecords " << i);
     const OriginEnumerationTestRecord& record =
@@ -1629,10 +1630,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
     origins_found.insert(origin_url);
     SCOPED_TRACE(testing::Message() << "Handling " << origin_url.spec());
     bool found = false;
-    for (size_t i = 0; !found && i < arraysize(kOriginEnumerationTestRecords);
-        ++i) {
-      const OriginEnumerationTestRecord& record =
-          kOriginEnumerationTestRecords[i];
+    for (const auto& record : kOriginEnumerationTestRecords) {
       if (origin_url != record.origin_url)
         continue;
       found = true;
@@ -1790,11 +1788,11 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   const FileSystemURL empty_path = CreateURL(base::FilePath());
   std::unique_ptr<FileSystemOperationContext> context;
 
-  for (size_t i = 0; i < arraysize(kPath); ++i) {
+  for (const auto& path : kPath) {
     bool created = false;
     context.reset(NewContext(nullptr));
     EXPECT_EQ(base::File::FILE_OK,
-              ofu()->EnsureFileExists(context.get(), kPath[i], &created));
+              ofu()->EnsureFileExists(context.get(), path, &created));
     EXPECT_TRUE(created);
   }
 
@@ -1813,7 +1811,7 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
   EXPECT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::ReadDirectory(
                 file_system_context(), empty_path, &entries));
-  EXPECT_EQ(arraysize(kPath) - 1, entries.size());
+  EXPECT_EQ(base::size(kPath) - 1, entries.size());
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {

@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,8 +119,8 @@ TEST(FileSystemURLTest, CompareURLs) {
   };
 
   FileSystemURL::Comparator compare;
-  for (size_t i = 0; i < arraysize(urls); ++i) {
-    for (size_t j = 0; j < arraysize(urls); ++j) {
+  for (size_t i = 0; i < base::size(urls); ++i) {
+    for (size_t j = 0; j < base::size(urls); ++j) {
       SCOPED_TRACE(testing::Message() << i << " < " << j);
       EXPECT_EQ(urls[i] < urls[j],
                 compare(FileSystemURL::CreateForTest(urls[i]),
@@ -181,11 +182,8 @@ TEST(FileSystemURLTest, ToGURL) {
     "filesystem:http://chromium.org/test/plus%2B/space%20/colon%3A",
   };
 
-  for (size_t i = 0; i < arraysize(kTestURL); ++i) {
-    EXPECT_EQ(
-        kTestURL[i],
-        FileSystemURL::CreateForTest(GURL(kTestURL[i])).ToGURL().spec());
-  }
+  for (const char* url : kTestURL)
+    EXPECT_EQ(url, FileSystemURL::CreateForTest(GURL(url)).ToGURL().spec());
 }
 
 TEST(FileSystemURLTest, DebugString) {

@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -110,19 +111,16 @@ TEST(ExternalMountPointsTest, AddMountPoint) {
   };
 
   // Test adding mount points.
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    EXPECT_EQ(
-        kTestCases[i].success,
-        mount_points->RegisterFileSystem(kTestCases[i].name,
-                                         storage::kFileSystemTypeNativeLocal,
-                                         storage::FileSystemMountOption(),
-                                         base::FilePath(kTestCases[i].path)))
-        << "Adding mount point: " << kTestCases[i].name << " with path "
-        << kTestCases[i].path;
+  for (const auto& test : kTestCases) {
+    EXPECT_EQ(test.success,
+              mount_points->RegisterFileSystem(
+                  test.name, storage::kFileSystemTypeNativeLocal,
+                  storage::FileSystemMountOption(), base::FilePath(test.path)))
+        << "Adding mount point: " << test.name << " with path " << test.path;
   }
 
   // Test that final mount point presence state is as expected.
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     base::FilePath found_path;
     EXPECT_EQ(kTestCases[i].registered_path != nullptr,
               mount_points->GetRegisteredPath(kTestCases[i].name, &found_path))
@@ -218,22 +216,22 @@ TEST(ExternalMountPointsTest, GetVirtualPath) {
 #endif
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (const auto& test_case : kTestCases) {
     // Initialize virtual path with a value.
     base::FilePath virtual_path(DRIVE FPL("/mount"));
-    base::FilePath local_path(kTestCases[i].local_path);
-    EXPECT_EQ(kTestCases[i].success,
+    base::FilePath local_path(test_case.local_path);
+    EXPECT_EQ(test_case.success,
               mount_points->GetVirtualPath(local_path, &virtual_path))
-        << "Resolving " << kTestCases[i].local_path;
+        << "Resolving " << test_case.local_path;
 
     // There are no guarantees for |virtual_path| value if |GetVirtualPath|
     // fails.
-    if (!kTestCases[i].success)
+    if (!test_case.success)
       continue;
 
-    base::FilePath expected_virtual_path(kTestCases[i].virtual_path);
+    base::FilePath expected_virtual_path(test_case.virtual_path);
     EXPECT_EQ(expected_virtual_path.NormalizePathSeparators(), virtual_path)
-        << "Resolving " << kTestCases[i].local_path;
+        << "Resolving " << test_case.local_path;
   }
 }
 
@@ -349,7 +347,7 @@ TEST(ExternalMountPointsTest, CreateCrackedFileSystemURL) {
 #endif
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     FileSystemURL cracked = mount_points->CreateCrackedFileSystemURL(
         kTestOrigin,
         storage::kFileSystemTypeExternal,
@@ -443,7 +441,7 @@ TEST(ExternalMountPointsTest, CrackVirtualPath) {
 #endif
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     std::string cracked_name;
     storage::FileSystemType cracked_type;
     std::string cracked_id;

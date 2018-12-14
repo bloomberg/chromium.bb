@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -72,10 +73,10 @@ TEST_F(FileSystemUtilTest, VirtualPathBaseName) {
     { FILE_PATH_LITERAL("////bar"), FILE_PATH_LITERAL("bar") },
     { FILE_PATH_LITERAL("bar"), FILE_PATH_LITERAL("bar") }
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    base::FilePath input = base::FilePath(test_cases[i].path);
+  for (const auto& test_case : test_cases) {
+    base::FilePath input = base::FilePath(test_case.path);
     base::FilePath base_name = VirtualPath::BaseName(input);
-    EXPECT_EQ(test_cases[i].base_name, base_name.value());
+    EXPECT_EQ(test_case.base_name, base_name.value());
   }
 }
 
@@ -112,10 +113,10 @@ TEST_F(FileSystemUtilTest, VirtualPathDirName) {
     { FILE_PATH_LITERAL("\\\\\\\\bar"), FILE_PATH_LITERAL("\\") },
 #endif
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    base::FilePath input = base::FilePath(test_cases[i].path);
+  for (const auto& test_case : test_cases) {
+    base::FilePath input = base::FilePath(test_case.path);
     base::FilePath dir_name = VirtualPath::DirName(input);
-    EXPECT_EQ(test_cases[i].dir_name, dir_name.value());
+    EXPECT_EQ(test_case.dir_name, dir_name.value());
   }
 }
 
@@ -132,11 +133,11 @@ TEST_F(FileSystemUtilTest, GetNormalizedFilePath) {
     { FILE_PATH_LITERAL("\\foo"), FILE_PATH_LITERAL("/foo") },
 #endif
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    base::FilePath input = base::FilePath(test_cases[i].path);
+  for (const auto& test_case : test_cases) {
+    base::FilePath input = base::FilePath(test_case.path);
     base::FilePath::StringType normalized_path_string =
         VirtualPath::GetNormalizedFilePath(input);
-    EXPECT_EQ(test_cases[i].normalized_path, normalized_path_string);
+    EXPECT_EQ(test_case.normalized_path, normalized_path_string);
   }
 }
 
@@ -197,21 +198,21 @@ TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
       { FILE_PATH_LITERAL("c:"), FILE_PATH_LITERAL("bar") } },
 #endif
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    base::FilePath input = base::FilePath(test_cases[i].path);
+  for (const auto& test_case : test_cases) {
+    base::FilePath input = base::FilePath(test_case.path);
     std::vector<base::FilePath::StringType> components =
         VirtualPath::GetComponents(input);
-    EXPECT_EQ(test_cases[i].count, components.size());
+    EXPECT_EQ(test_case.count, components.size());
     for (size_t j = 0; j < components.size(); ++j)
-      EXPECT_EQ(test_cases[i].components[j], components[j]);
+      EXPECT_EQ(test_case.components[j], components[j]);
   }
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    base::FilePath input = base::FilePath(test_cases[i].path);
+  for (const auto& test_case : test_cases) {
+    base::FilePath input = base::FilePath(test_case.path);
     std::vector<std::string> components =
         VirtualPath::GetComponentsUTF8Unsafe(input);
-    EXPECT_EQ(test_cases[i].count, components.size());
+    EXPECT_EQ(test_case.count, components.size());
     for (size_t j = 0; j < components.size(); ++j) {
-      EXPECT_EQ(base::FilePath(test_cases[i].components[j]).AsUTF8Unsafe(),
+      EXPECT_EQ(base::FilePath(test_case.components[j]).AsUTF8Unsafe(),
                 components[j]);
     }
   }

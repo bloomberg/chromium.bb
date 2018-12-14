@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
@@ -309,8 +310,8 @@ bool DatabaseCheckHelper::ScanDirectory() {
       if (!path_.AppendRelativePath(absolute_file_path, &relative_file_path))
         return false;
 
-      if (std::find(kExcludes, kExcludes + arraysize(kExcludes),
-                    relative_file_path) != kExcludes + arraysize(kExcludes))
+      if (std::find(kExcludes, kExcludes + base::size(kExcludes),
+                    relative_file_path) != kExcludes + base::size(kExcludes))
         continue;
 
       if (find_info.IsDirectory()) {
@@ -402,8 +403,8 @@ bool VerifyDataPath(const base::FilePath& data_path) {
       base::FilePath(kDirectoryDatabaseName),
       base::FilePath(storage::FileSystemUsageCache::kUsageFileName),
   };
-  for (size_t i = 0; i < arraysize(kExcludes); ++i) {
-    if (data_path == kExcludes[i] || kExcludes[i].IsParent(data_path))
+  for (const auto& exclude : kExcludes) {
+    if (data_path == exclude || exclude.IsParent(data_path))
       return false;
   }
   return true;

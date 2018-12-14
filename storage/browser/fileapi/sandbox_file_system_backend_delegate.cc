@@ -211,7 +211,7 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
       !file_task_runner_->RunsTasksInCurrentSequence()) {
     std::vector<std::string> types_to_prepopulate(
         &kPrepopulateTypes[0],
-        &kPrepopulateTypes[arraysize(kPrepopulateTypes)]);
+        &kPrepopulateTypes[base::size(kPrepopulateTypes)]);
     file_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&ObfuscatedFileUtil::MaybePrepopulateDatabase,
                                   base::Unretained(obfuscated_file_util()),
@@ -545,12 +545,12 @@ bool SandboxFileSystemBackendDelegate::IsAccessValid(
   // http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
   base::FilePath filename = VirtualPath::BaseName(url.path());
   // See if the name is allowed to create.
-  for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
-    if (filename.value() == kRestrictedNames[i])
+  for (const auto* const restricted_name : kRestrictedNames) {
+    if (filename.value() == restricted_name)
       return false;
   }
-  for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
-    if (filename.value().find(kRestrictedChars[i]) !=
+  for (const auto& restricted_char : kRestrictedChars) {
+    if (filename.value().find(restricted_char) !=
         base::FilePath::StringType::npos)
       return false;
   }

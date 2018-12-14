@@ -634,9 +634,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
     {false, FILE_PATH_LITERAL("file 3"), 0},
   };
 
-  helper.VerifyTestCaseFiles(dest,
-                             kMoveDirResultCases,
-                             arraysize(kMoveDirResultCases));
+  helper.VerifyTestCaseFiles(dest, kMoveDirResultCases,
+                             base::size(kMoveDirResultCases));
 }
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFileNoValidator) {
@@ -736,7 +735,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   base::FilePath dest_path = temp_dir.GetPath().AppendASCII("dest");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   base::WriteFile(source_path, kTestData,
-                  arraysize(kTestData) - 1);  // Exclude trailing '\0'.
+                  base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
   base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");
@@ -792,8 +791,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   base::FilePath dest_path = temp_dir.GetPath().AppendASCII("dest");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   base::WriteFile(source_path, kTestData,
-                  arraysize(kTestData) - 1);  // Exclude trailing '\0'.
-
+                  base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
   base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");
@@ -845,7 +843,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   base::FilePath dest_path = temp_dir.GetPath().AppendASCII("dest");
   const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   base::WriteFile(source_path, kTestData,
-                  arraysize(kTestData) - 1);  // Exclude trailing '\0'.
+                  base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
   base::MessageLoopForIO message_loop;
   base::Thread file_thread("file_thread");

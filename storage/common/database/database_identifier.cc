@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "url/url_canon.h"
@@ -117,8 +118,8 @@ DatabaseIdentifier DatabaseIdentifier::Parse(const std::string& identifier) {
   if (identifier.find("..") != std::string::npos)
     return DatabaseIdentifier();
   char forbidden[] = {'\\', '/', ':' ,'\0'};
-  if (identifier.find_first_of(forbidden, 0, arraysize(forbidden)) !=
-          std::string::npos) {
+  if (identifier.find_first_of(forbidden, 0, base::size(forbidden)) !=
+      std::string::npos) {
     return DatabaseIdentifier();
   }
 
