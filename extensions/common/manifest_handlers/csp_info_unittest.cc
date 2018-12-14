@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
+#include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_test.h"
 
 namespace extensions {
@@ -69,6 +70,43 @@ TEST_F(CSPInfoUnitTest, SandboxedPages) {
                errors::kInvalidSandboxedPagesCSP),
       Testcase("sandboxed_pages_invalid_5.json",
                errors::kInvalidSandboxedPagesCSP)};
+  RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
+}
+
+TEST_F(CSPInfoUnitTest, CSPKey) {
+  const char kDefaultCSP[] =
+      "script-src 'self' blob: filesystem: chrome-extension-resource:; "
+      "object-src 'self' blob: filesystem:;";
+  struct {
+    const char* file_name;
+    const char* csp;
+  } success_cases[] = {
+      {"csp_string_valid.json", "script-src 'self'; default-src 'none';"},
+      {"csp_dictionary_valid.json", "default-src 'none';"},
+      {"csp_empty_valid.json", "script-src 'self'; object-src 'self';"},
+      {"csp_empty_dictionary_valid.json", kDefaultCSP}};
+
+  for (const auto& test_case : success_cases) {
+    SCOPED_TRACE(test_case.file_name);
+    scoped_refptr<Extension> extension =
+        LoadAndExpectSuccess(test_case.file_name);
+    ASSERT_TRUE(extension.get());
+    EXPECT_EQ(test_case.csp,
+              CSPInfo::GetContentSecurityPolicy(extension.get()));
+  }
+
+  auto get_invalid_manifest_key_error = [](base::StringPiece key) {
+    return ErrorUtils::FormatErrorMessage(errors::kInvalidManifestKey, key);
+  };
+
+  const char* kExtensionPagesKey = "content_security_policy.extension_pages";
+  const char* kCSPKey = "content_security_policy";
+  Testcase testcases[] = {
+      Testcase("csp_invalid_1.json", get_invalid_manifest_key_error(kCSPKey)),
+      Testcase("csp_invalid_2.json",
+               get_invalid_manifest_key_error(kExtensionPagesKey)),
+      Testcase("csp_invalid_3.json",
+               get_invalid_manifest_key_error(kExtensionPagesKey))};
   RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
 }
 
