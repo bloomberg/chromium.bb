@@ -132,8 +132,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location2) {
       << message_;
 }
 
-// TODO(https://crbug.com/908509): sarakato to investigate cause of flakiness.
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_BoundsForRange) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, BoundsForRange) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs",
                                   "bounds_for_range.html"))
