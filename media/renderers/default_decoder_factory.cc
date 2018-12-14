@@ -97,14 +97,13 @@ void DefaultDecoderFactory::CreateVideoDecoders(
     // factories, require that their message loops are identical.
     DCHECK_EQ(gpu_factories->GetTaskRunner(), task_runner);
 
-    if (external_decoder_factory_) {
+    // MojoVideoDecoder replaces any VDA for this platform when it's enabled.
+    if (external_decoder_factory_ &&
+        base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
       external_decoder_factory_->CreateVideoDecoders(
           task_runner, gpu_factories, media_log, request_overlay_info_cb,
           target_color_space, video_decoders);
-    }
-
-    // MojoVideoDecoder replaces any VDA for this platform when it's enabled.
-    if (!base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
+    } else {
       video_decoders->push_back(std::make_unique<GpuVideoDecoder>(
           gpu_factories, request_overlay_info_cb, target_color_space,
           media_log));
