@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 
 namespace base {
+// Not ready for public consumption yet.
+namespace experimental {
 
 // A substitute for RTTI that uses the linker to uniquely reserve an address in
 // the binary for each type.
@@ -61,6 +63,7 @@ constexpr char TypeId::TypeTag<Type>::dummy_var;
 
 BASE_EXPORT std::ostream& operator<<(std::ostream& out, const TypeId& type_id);
 
+}  // namespace experimental
 }  // namespace base
 
 #endif  // BASE_TYPE_ID_H_

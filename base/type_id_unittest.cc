@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-
+namespace experimental {
 namespace {
 
 struct T {};
@@ -85,4 +85,12 @@ TEST(TypeId, IdenticalTypesFromDifferentCompilationUnitsMatch) {
             TypeIdTestSupportB::GetTypeIdForUniquePtrInt());
 }
 
+TEST(TypeId, DISABLED_IdenticalTypesFromComponentAndStaticLibrary) {
+  // Code generated for the test itself is statically linked. Make sure it works
+  // with components
+  constexpr TypeId static_linked_type = TypeId::Create<std::unique_ptr<int>>();
+  EXPECT_EQ(static_linked_type, TypeIdTestSupportA::GetTypeIdForUniquePtrInt());
+}
+
+}  // namespace experimental
 }  // namespace base
