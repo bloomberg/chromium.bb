@@ -680,7 +680,7 @@ class TestPlanStage(generic_stages.BoardSpecificBuilderStage):
         stage_class = HWTestStage
 
       if (builder_run.config.enable_skylab_hw_tests and
-          suite_config.enable_skylab):
+          suite_config.enable_skylab and model.enable_skylab):
         if suite_config.async:
           stage_class = ASyncSkylabHWTestStage
         else:
