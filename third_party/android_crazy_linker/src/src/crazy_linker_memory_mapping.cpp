@@ -10,7 +10,7 @@ MemoryMapping::~MemoryMapping() {
   Deallocate();
 }
 
-MemoryMapping& MemoryMapping::operator=(MemoryMapping&& other) {
+MemoryMapping& MemoryMapping::operator=(MemoryMapping&& other) noexcept {
   if (this != &other) {
     Deallocate();
     map_ = other.map_;

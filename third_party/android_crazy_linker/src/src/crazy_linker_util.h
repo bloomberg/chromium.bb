@@ -37,6 +37,19 @@ class ScopedPtr {
   explicit ScopedPtr(T* ptr) : ptr_(ptr) {}
   ~ScopedPtr() { Reset(NULL); }
 
+  ScopedPtr(ScopedPtr&& other) noexcept : ptr_(other.ptr_) {
+    other.ptr_ = nullptr;
+  }
+
+  ScopedPtr& operator=(ScopedPtr&& other) noexcept {
+    if (this != &other) {
+      delete ptr_;
+      ptr_ = other.ptr_;
+      other.ptr_ = nullptr;
+    }
+    return *this;
+  }
+
   T* Release() {
     T* ret = ptr_;
     ptr_ = NULL;
@@ -44,8 +57,7 @@ class ScopedPtr {
   }
 
   void Reset(T* ptr) {
-    if (ptr_)
-      delete ptr_;
+    delete ptr_;
     ptr_ = ptr;
   }
 
@@ -72,7 +84,7 @@ class String {
   String();
   String(const char* str, size_t len);
   String(const String& other);
-  String(String&& other);
+  String(String&& other) noexcept;
 
   explicit String(const char* str);
   explicit String(char ch);
@@ -102,7 +114,7 @@ class String {
     return *this;
   }
 
-  String& operator=(String&& other);
+  String& operator=(String&& other) noexcept;
 
   String& operator=(const char* str) {
     Assign(str, strlen(str));
@@ -187,8 +199,8 @@ class VectorBase {
   VectorBase& operator=(const VectorBase&) = delete;
 
   // Allow move operations.
-  VectorBase(VectorBase&& other);
-  VectorBase& operator=(VectorBase&& other);
+  VectorBase(VectorBase&& other) noexcept;
+  VectorBase& operator=(VectorBase&& other) noexcept;
 
   // Return true iff vector is empty.
   constexpr bool IsEmpty() const { return count_ == 0U; }

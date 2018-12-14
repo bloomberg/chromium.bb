@@ -19,9 +19,11 @@ class AshmemRegion {
   AshmemRegion(const AshmemRegion& other) = delete;
   AshmemRegion& operator=(const AshmemRegion& other) = delete;
 
-  AshmemRegion(AshmemRegion&& other) : fd_(other.fd_) { other.fd_ = -1; }
+  AshmemRegion(AshmemRegion&& other) noexcept : fd_(other.fd_) {
+    other.fd_ = -1;
+  }
 
-  AshmemRegion& operator=(AshmemRegion&& other) {
+  AshmemRegion& operator=(AshmemRegion&& other) noexcept {
     if (this != &other) {
       fd_ = other.fd_;
       other.fd_ = -1;
