@@ -15088,6 +15088,8 @@ Called by update_net_error_codes.py.-->
   <int value="505" label="CloudManagementEnrollmentMandatory"/>
   <int value="506" label="PrintingSendUsernameAndFilenameEnabled"/>
   <int value="507" label="ParentAccessCodeConfig"/>
+  <int value="508" label="DeviceGpoCacheLifetime"/>
+  <int value="509" label="DeviceAuthDataCacheLifetime"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
