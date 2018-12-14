@@ -740,7 +740,32 @@
     <Icon Id="chromoting.ico" SourceFile="chromoting.ico"/>
     <Property Id="ARPPRODUCTICON" Value="chromoting.ico" />
 
+    <CustomAction Id="set_maintenance" Property="MAINTENANCE" Value="true" />
+
+    <!-- Set to reinstall all features. -->
+    <CustomAction Id="set_reinstall_all_property"
+                  Property="REINSTALL"
+                  Value="ALL" />
+    <!-- "amus" will force reinstall all files.
+         See https://docs.microsoft.com/en-us/windows/desktop/Msi/reinstallmode -->
+    <CustomAction Id="set_reinstallmode_property"
+                  Property="REINSTALLMODE"
+                  Value="amus" />
+
     <InstallExecuteSequence>
+      <!-- Set REINSTALL=all and REINSTALLMODE=amus if the user reruns the
+           MSI, which will force reinstalling all files and services.  -->
+      <Custom Action="set_maintenance" Before="set_reinstall_all_property">
+        Installed AND (NOT REMOVE) AND (NOT UPGRADINGPRODUCTCODE)
+      </Custom>
+      <Custom Action="set_reinstall_all_property"
+              Before="set_reinstallmode_property">
+        MAINTENANCE
+      </Custom>
+      <Custom Action="set_reinstallmode_property" Before="LaunchConditions">
+        MAINTENANCE
+      </Custom>
+
       <Custom Action="query_auto_start_service" Before="InstallInitialize"/>
       <Custom Action="start_chromoting_service" After="StartServices">
         <![CDATA[NOT REMOVE AND (auto_start_service = "#2")]]>
