@@ -2404,11 +2404,7 @@ if (enable_java_templates) {
           _native_lib_placeholders != []) {
         args += [ "--android-abi=$android_app_abi" ]
       }
-      if (defined(invoker.secondary_abi_native_libs_filearg) ||
-          (defined(invoker.secondary_abi_loadable_modules) &&
-           invoker.secondary_abi_loadable_modules != []) ||
-          _secondary_native_lib_placeholders != []) {
-        assert(defined(android_app_secondary_abi))
+      if (defined(android_app_secondary_abi)) {
         args += [ "--secondary-android-abi=$android_app_secondary_abi" ]
       }
       if (invoker.native_libs != []) {
