@@ -11,8 +11,9 @@
 
 namespace test_runner {
 
-WebWidgetTestProxyBase::WebWidgetTestProxyBase()
-    : event_sender_(std::make_unique<EventSender>(this)) {}
+WebWidgetTestProxyBase::WebWidgetTestProxyBase(bool main_frame_widget)
+    : main_frame_widget_(main_frame_widget),
+      event_sender_(std::make_unique<EventSender>(this)) {}
 
 WebWidgetTestProxyBase::~WebWidgetTestProxyBase() = default;
 
@@ -35,8 +36,7 @@ void WebWidgetTestProxy::Initialize(
   // On WebWidgetTestProxyBase.
   set_web_widget(web_widget);
   set_web_view_test_proxy_base(view_proxy_for_local_root);
-  set_widget_test_client(
-      std::make_unique<WebWidgetTestClient>(/*main_frame_widget=*/false, this));
+  set_widget_test_client(std::make_unique<WebWidgetTestClient>(this));
 }
 
 void WebWidgetTestProxy::ScheduleAnimation() {
