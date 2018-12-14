@@ -394,12 +394,18 @@ def BuildScript(status, context):
         else:
           flags += ' -m64'
           sysroot_arch = 'amd64'
-        flags += (' --sysroot=../../build/linux/debian_jessie_%s-sysroot' %
+        flags += (' --sysroot=../../build/linux/debian_sid_%s-sysroot' %
                   sysroot_arch)
         configure_args += [cc + flags, cxx + flags]
-        configure_args += ['CXXFLAGS=-I../..']  # For third_party/lss
-      Command(context, cwd='breakpad-out',
+        configure_args += ['CXXFLAGS=-I../..',  # For third_party/lss
+                           'LDFLAGS=-fuse-ld=lld']
+      try:
+       Command(context, cwd='breakpad-out',
               cmd=['bash', '../../breakpad/configure'] + configure_args)
+      except:
+        f = open(os.path.join('breakpad-out', 'config.log')).read()
+        print f
+        raise
 
     with Step('breakpad make', status):
       Command(context, cmd=['make', '-j%d' % context['max_jobs'],

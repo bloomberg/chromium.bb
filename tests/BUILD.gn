@@ -10,7 +10,7 @@ source_set("test_utils") {
     "test_runner.cc",
   ]
   deps = [
-    "//testing/gtest",
+    "//native_client/src/third_party/gtest",
   ]
 }
 
