@@ -4825,8 +4825,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                             BLOCK_SIZE plane_bsize, ENTROPY_CONTEXT *ta,
                             ENTROPY_CONTEXT *tl, TXFM_CONTEXT *tx_above,
                             TXFM_CONTEXT *tx_left, RD_STATS *rd_stats,
-                            int64_t ref_best_rd, int *is_cost_valid,
-                            FAST_TX_SEARCH_MODE ftxs_mode,
+                            int64_t prev_level_rd, int64_t ref_best_rd,
+                            int *is_cost_valid, FAST_TX_SEARCH_MODE ftxs_mode,
                             TXB_RD_INFO_NODE *rd_info_node);
 
 static void try_tx_block_split(
@@ -4851,6 +4851,10 @@ static void try_tx_block_split(
 
   assert(tx_size < TX_SIZES_ALL);
 
+  const int nblks =
+      (tx_size_high_unit[tx_size] / bsh) * (tx_size_wide_unit[tx_size] / bsw);
+  assert(nblks > 0);
+
   int blk_idx = 0;
   for (int r = 0; r < tx_size_high_unit[tx_size]; r += bsh) {
     for (int c = 0; c < tx_size_wide_unit[tx_size]; c += bsw, ++blk_idx) {
@@ -4860,8 +4864,8 @@ static void try_tx_block_split(
       assert(blk_idx < 4);
       select_tx_block(
           cpi, x, offsetr, offsetc, block, sub_txs, depth + 1, plane_bsize, ta,
-          tl, tx_above, tx_left, &this_rd_stats, ref_best_rd - tmp_rd,
-          &this_cost_valid, ftxs_mode,
+          tl, tx_above, tx_left, &this_rd_stats, no_split_rd / nblks,
+          ref_best_rd - tmp_rd, &this_cost_valid, ftxs_mode,
           (rd_info_node != NULL) ? rd_info_node->children[blk_idx] : NULL);
 
       if (!this_cost_valid) goto LOOP_EXIT;
@@ -4889,8 +4893,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                             BLOCK_SIZE plane_bsize, ENTROPY_CONTEXT *ta,
                             ENTROPY_CONTEXT *tl, TXFM_CONTEXT *tx_above,
                             TXFM_CONTEXT *tx_left, RD_STATS *rd_stats,
-                            int64_t ref_best_rd, int *is_cost_valid,
-                            FAST_TX_SEARCH_MODE ftxs_mode,
+                            int64_t prev_level_rd, int64_t ref_best_rd,
+                            int *is_cost_valid, FAST_TX_SEARCH_MODE ftxs_mode,
                             TXB_RD_INFO_NODE *rd_info_node) {
   assert(tx_size < TX_SIZES_ALL);
   av1_init_rd_stats(rd_stats);
@@ -4934,6 +4938,13 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
     if (cpi->sf.txb_split_cap) {
       if (p->eobs[block] == 0) try_split = 0;
+    }
+
+    if (cpi->sf.adaptive_txb_search_level &&
+        (no_split.rd -
+         (no_split.rd >> (2 + cpi->sf.adaptive_txb_search_level))) >
+            prev_level_rd) {
+      try_split = 0;
     }
   }
 
@@ -5034,8 +5045,8 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                 : (ref_best_rd - (AOMMIN(skip_rd, this_rd)));
         select_tx_block(cpi, x, idy, idx, block, max_tx_size, init_depth,
                         plane_bsize, ctxa, ctxl, tx_above, tx_left,
-                        &pn_rd_stats, best_rd_sofar, &is_cost_valid, ftxs_mode,
-                        rd_info_tree);
+                        &pn_rd_stats, INT64_MAX, best_rd_sofar, &is_cost_valid,
+                        ftxs_mode, rd_info_tree);
         if (!is_cost_valid || pn_rd_stats.rate == INT_MAX) {
           av1_invalid_rd_stats(rd_stats);
           return;
