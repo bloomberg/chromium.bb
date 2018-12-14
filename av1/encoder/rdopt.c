@@ -3601,22 +3601,15 @@ static int get_search_init_depth(int mi_width, int mi_height, int is_inter,
 static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
                                         MACROBLOCK *x, RD_STATS *rd_stats,
                                         int64_t ref_best_rd, BLOCK_SIZE bs) {
+  av1_invalid_rd_stats(rd_stats);
+
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  int64_t rd = INT64_MAX;
-  int n;
+  const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bs];
+  const int tx_select = cm->tx_mode == TX_MODE_SELECT;
   int start_tx;
   int depth;
-  int64_t best_rd = INT64_MAX;
-  const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bs];
-  TX_SIZE best_tx_size = max_rect_tx_size;
-  TX_TYPE best_txk_type[TXK_TYPE_BUF_LEN];
-  uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
-  const int n4 = bsize_to_num_blk(bs);
-  const int tx_select = cm->tx_mode == TX_MODE_SELECT;
-
-  av1_invalid_rd_stats(rd_stats);
 
   if (tx_select) {
     start_tx = max_rect_tx_size;
@@ -3630,16 +3623,22 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
   prune_tx(cpi, bs, x, xd, EXT_TX_SET_ALL16);
 
-  for (n = start_tx; depth <= MAX_TX_DEPTH; depth++, n = sub_tx_size_map[n]) {
+  TX_TYPE best_txk_type[TXK_TYPE_BUF_LEN];
+  uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
+  TX_SIZE best_tx_size = max_rect_tx_size;
+  int64_t best_rd = INT64_MAX;
+  const int n4 = bsize_to_num_blk(bs);
+  x->rd_model = FULL_TXFM_RD;
+  for (int n = start_tx; depth <= MAX_TX_DEPTH;
+       depth++, n = sub_tx_size_map[n]) {
 #if CONFIG_DIST_8X8
     if (x->using_dist_8x8) {
       if (tx_size_wide[n] < 8 || tx_size_high[n] < 8) continue;
     }
 #endif
     RD_STATS this_rd_stats;
-    if (mbmi->ref_mv_idx > 0) x->rd_model = LOW_TXFM_RD;
-    rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, n, FTXS_NONE);
-    x->rd_model = FULL_TXFM_RD;
+    const int64_t rd =
+        txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, n, FTXS_NONE);
 
     if (rd < best_rd) {
       memcpy(best_txk_type, mbmi->txk_type,
