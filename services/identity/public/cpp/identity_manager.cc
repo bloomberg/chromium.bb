@@ -360,6 +360,14 @@ void IdentityManager::OnGaiaAccountsInCookieUpdated(
   }
 }
 
+void IdentityManager::OnAddAccountToCookieCompleted(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  for (auto& observer : observer_list_) {
+    observer.OnAddAccountToCookieCompleted(account_id, error);
+  }
+}
+
 void IdentityManager::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,

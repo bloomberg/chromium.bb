@@ -121,6 +121,13 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnAccountsInCookieUpdated(
         const std::vector<AccountInfo>& accounts) {}
 
+    // Called whenever an attempt to add |account_id| to the list of Gaia
+    // accounts in the cookie jar has finished. If |error| is equal to
+    // GoogleServiceAuthError::AuthErrorNone() then the addittion succeeded.
+    virtual void OnAddAccountToCookieCompleted(
+        const std::string& account_id,
+        const GoogleServiceAuthError& error) {}
+
     // Called before a batch of refresh token state changes is started.
     virtual void OnStartBatchOfRefreshTokenStateChanges() {}
 
@@ -365,6 +372,9 @@ class IdentityManager : public SigninManagerBase::Observer,
   void OnGaiaAccountsInCookieUpdated(
       const std::vector<gaia::ListedAccount>& accounts,
       const std::vector<gaia::ListedAccount>& signed_out_accounts,
+      const GoogleServiceAuthError& error) override;
+  void OnAddAccountToCookieCompleted(
+      const std::string& account_id,
       const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::DiagnosticsObserver:

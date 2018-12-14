@@ -246,6 +246,16 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     return accounts_from_cookie_change_callback_;
   }
 
+  const std::string& account_from_add_account_to_cookie_completed_callback()
+      const {
+    return account_from_add_account_to_cookie_completed_callback_;
+  }
+
+  const GoogleServiceAuthError&
+  error_from_add_account_to_cookie_completed_callback() const {
+    return error_from_add_account_to_cookie_completed_callback_;
+  }
+
   const GoogleServiceAuthError& error_from_signin_failed_callback() const {
     return google_signin_failed_error_;
   }
@@ -300,6 +310,13 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     if (on_accounts_in_cookie_updated_callback_)
       std::move(on_accounts_in_cookie_updated_callback_).Run();
   }
+  void OnAddAccountToCookieCompleted(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) override {
+    account_from_add_account_to_cookie_completed_callback_ = account_id;
+    error_from_add_account_to_cookie_completed_callback_ = error;
+  }
+
   void OnStartBatchOfRefreshTokenStateChanges() override {
     EXPECT_FALSE(is_inside_batch_);
     is_inside_batch_ = true;
@@ -326,6 +343,8 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   AccountInfo account_from_refresh_token_updated_callback_;
   std::string account_from_refresh_token_removed_callback_;
   std::vector<AccountInfo> accounts_from_cookie_change_callback_;
+  std::string account_from_add_account_to_cookie_completed_callback_;
+  GoogleServiceAuthError error_from_add_account_to_cookie_completed_callback_;
   GoogleServiceAuthError google_signin_failed_error_;
   bool is_inside_batch_ = false;
   std::vector<std::vector<std::string>> batch_change_records_;
@@ -487,6 +506,17 @@ class IdentityManagerTest : public testing::Test {
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(
         new TestIdentityManagerDiagnosticsObserver(identity_manager_.get()));
+  }
+
+  void SimulateAdditionOfAccountToCookieSuccess(GaiaAuthConsumer* consumer,
+                                                const std::string& data) {
+    consumer->OnMergeSessionSuccess(data);
+  }
+
+  void SimulateAdditionOfAccountToCookieSuccessFailure(
+      GaiaAuthConsumer* consumer,
+      const GoogleServiceAuthError& error) {
+    consumer->OnMergeSessionFailure(error);
   }
 
  private:
@@ -1754,6 +1784,36 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
       account_info2.account_id);
   EXPECT_EQ(kTestGaiaId2, account_info2.gaia);
   EXPECT_EQ(kTestEmail2, account_info2.email);
+}
+
+TEST_F(IdentityManagerTest, CallbackSentOnSuccessfulAdditionOfAccountToCookie) {
+  const char kTestAccountId[] = "account_id";
+  gaia_cookie_manager_service()->AddAccountToCookie(kTestAccountId,
+                                                    gaia::GaiaSource::kChrome);
+  SimulateAdditionOfAccountToCookieSuccess(gaia_cookie_manager_service(),
+                                           "token");
+  EXPECT_EQ(identity_manager_observer()
+                ->account_from_add_account_to_cookie_completed_callback(),
+            kTestAccountId);
+  EXPECT_EQ(identity_manager_observer()
+                ->error_from_add_account_to_cookie_completed_callback(),
+            GoogleServiceAuthError::AuthErrorNone());
+}
+
+TEST_F(IdentityManagerTest, CallbackSentOnFailureAdditionOfAccountToCookie) {
+  const char kTestAccountId[] = "account_id";
+  gaia_cookie_manager_service()->AddAccountToCookie(kTestAccountId,
+                                                    gaia::GaiaSource::kChrome);
+
+  GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_ERROR);
+  SimulateAdditionOfAccountToCookieSuccessFailure(gaia_cookie_manager_service(),
+                                                  error);
+  EXPECT_EQ(identity_manager_observer()
+                ->account_from_add_account_to_cookie_completed_callback(),
+            kTestAccountId);
+  EXPECT_EQ(identity_manager_observer()
+                ->error_from_add_account_to_cookie_completed_callback(),
+            error);
 }
 
 TEST_F(IdentityManagerTest,
