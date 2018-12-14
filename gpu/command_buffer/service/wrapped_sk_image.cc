@@ -112,19 +112,33 @@ class WrappedSkImage : public SharedImageBacking {
     DCHECK(!!context_state_);
   }
 
-  bool Initialize(const SkImageInfo& info) {
+  bool Initialize(const SkImageInfo& info, base::span<const uint8_t> data) {
     if (context_state_->context_lost())
       return false;
     DCHECK(context_state_->IsCurrent(nullptr));
 
     context_state_->need_context_state_reset = true;
 
-    auto surface = SkSurface::MakeRenderTarget(context_state_->gr_context,
-                                               SkBudgeted::kNo, info);
-    if (!surface)
-      return false;
+    if (data.empty()) {
+      auto surface = SkSurface::MakeRenderTarget(context_state_->gr_context,
+                                                 SkBudgeted::kNo, info);
+      if (!surface)
+        return false;
 
-    image_ = surface->makeImageSnapshot();
+      image_ = surface->makeImageSnapshot();
+    } else {
+      SkBitmap bitmap;
+      if (!bitmap.installPixels(info, const_cast<uint8_t*>(data.data()),
+                                info.minRowBytes())) {
+        return false;
+      }
+      sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+      if (!image)
+        return false;
+      image_ = image->makeTextureImage(context_state_->gr_context,
+                                       image->colorSpace());
+    }
+
     if (!image_ || !image_->isTextureBacked())
       return false;
 
@@ -223,17 +237,8 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  auto info = SkImageInfo::Make(size.width(), size.height(),
-                                ResourceFormatToClosestSkColorType(
-                                    /*gpu_compositing=*/true, format),
-                                kOpaque_SkAlphaType);
-  size_t estimated_size = info.computeMinByteSize();
-  std::unique_ptr<WrappedSkImage> texture(
-      new WrappedSkImage(mailbox, format, size, color_space, usage,
-                         estimated_size, context_state_));
-  if (!texture->Initialize(info))
-    return nullptr;
-  return texture;
+  return CreateSharedImage(mailbox, format, size, color_space, usage,
+                           base::span<uint8_t>());
 }
 
 std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
@@ -242,9 +247,18 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,
-    base::span<const uint8_t> pixel_data) {
-  NOTREACHED();
-  return nullptr;
+    base::span<const uint8_t> data) {
+  auto info = SkImageInfo::Make(size.width(), size.height(),
+                                ResourceFormatToClosestSkColorType(
+                                    /*gpu_compositing=*/true, format),
+                                kOpaque_SkAlphaType);
+  size_t estimated_size = info.computeMinByteSize();
+  std::unique_ptr<WrappedSkImage> texture(
+      new WrappedSkImage(mailbox, format, size, color_space, usage,
+                         estimated_size, context_state_));
+  if (!texture->Initialize(info, data))
+    return nullptr;
+  return texture;
 }
 
 std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
