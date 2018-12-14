@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_version_change_event.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_observation.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -189,14 +188,10 @@ void IDBDatabase::OnComplete(int64_t transaction_id) {
 
 void IDBDatabase::OnChanges(
     const WebIDBDatabaseCallbacks::ObservationIndexMap& observation_index_map,
-    Vector<WebIDBObservation> web_observations,
+    Vector<Persistent<IDBObservation>> observations,
     const WebIDBDatabaseCallbacks::TransactionMap& transactions) {
-  HeapVector<Member<IDBObservation>> observations;
-  observations.ReserveInitialCapacity(
-      SafeCast<wtf_size_t>(web_observations.size()));
-  for (WebIDBObservation& web_observation : web_observations) {
-    observations.emplace_back(
-        IDBObservation::Create(std::move(web_observation), isolate_));
+  for (const auto& observation : observations) {
+    observation->SetIsolate(isolate_);
   }
 
   for (const auto& map_entry : observation_index_map) {

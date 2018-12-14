@@ -23,12 +23,12 @@ class IDBObserverChanges final : public ScriptWrappable {
   static IDBObserverChanges* Create(
       IDBDatabase*,
       IDBTransaction*,
-      const HeapVector<Member<IDBObservation>>& observations,
+      const Vector<Persistent<IDBObservation>>& observations,
       const Vector<int32_t>& observation_indices);
 
   IDBObserverChanges(IDBDatabase*,
                      IDBTransaction*,
-                     const HeapVector<Member<IDBObservation>>& observations,
+                     const Vector<Persistent<IDBObservation>>& observations,
                      const Vector<int32_t>& observation_indices);
 
   void Trace(blink::Visitor*) override;
@@ -39,7 +39,7 @@ class IDBObserverChanges final : public ScriptWrappable {
   ScriptValue records(ScriptState*);
 
  private:
-  void ExtractChanges(const HeapVector<Member<IDBObservation>>& observations,
+  void ExtractChanges(const Vector<Persistent<IDBObservation>>& observations,
                       const Vector<int32_t>& observation_indices);
 
   Member<IDBDatabase> database_;

@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_observation.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
@@ -66,19 +65,27 @@ const String& IDBObservation::type() const {
   }
 }
 
-IDBObservation* IDBObservation::Create(WebIDBObservation observation,
-                                       v8::Isolate* isolate) {
-  return MakeGarbageCollected<IDBObservation>(std::move(observation), isolate);
+IDBObservation* IDBObservation::Create(int64_t object_store_id,
+                                       mojom::IDBOperationType type,
+                                       IDBKeyRange* key_range,
+                                       std::unique_ptr<IDBValue> value) {
+  return MakeGarbageCollected<IDBObservation>(object_store_id, type, key_range,
+                                              std::move(value));
 }
 
-IDBObservation::IDBObservation(WebIDBObservation observation,
-                               v8::Isolate* isolate)
-    : key_range_(observation.key_range),
-      operation_type_(observation.type),
-      object_store_id_(observation.object_store_id) {
-  std::unique_ptr<IDBValue> value = std::move(observation.value);
-  value->SetIsolate(isolate);
+IDBObservation::IDBObservation(int64_t object_store_id,
+                               mojom::IDBOperationType type,
+                               IDBKeyRange* key_range,
+                               std::unique_ptr<IDBValue> value)
+    : object_store_id_(object_store_id),
+      operation_type_(type),
+      key_range_(key_range) {
   value_ = IDBAny::Create(std::move(value));
+}
+
+void IDBObservation::SetIsolate(v8::Isolate* isolate) {
+  DCHECK(value_ && value_->Value());
+  value_->Value()->SetIsolate(isolate);
 }
 
 void IDBObservation::Trace(blink::Visitor* visitor) {
