@@ -18,14 +18,6 @@
  */
 
 (function () {
-  /**
-   * @type {number} the value for cursor position we sent with the most
-   *     recent request.  We need to remember this in order to display it
-   *     in the output; otherwise it's hard or impossible to determine
-   *     from screen captures or print-to-PDFs.
-   */
-  let cursorPosition = -1;
-
   class BrowserProxy {
     constructor() {
       /** @private {!mojom.OmniboxPageCallbackRouter} */
@@ -95,8 +87,6 @@
                                 omniboxOutput.copyDelegate.copyJsonOutput();
     });
     omniboxInputs.addEventListener(
-        'filter-input-changed',
-        event => omniboxOutput.filter(
-            event.detail.filterText, event.detail.filterHide));
+        'filter-input-changed', event => omniboxOutput.filter(event.detail));
   });
 })();

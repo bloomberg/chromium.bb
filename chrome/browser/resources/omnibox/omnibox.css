@@ -9,10 +9,6 @@ output-results-group:not([hidden]) {
   margin-bottom: 60px;
 }
 
-.left-20 {
-  margin-left: 20px
-}
-
 .check-mark,
 .x-mark {
   background-position: center;
