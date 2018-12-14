@@ -7,16 +7,15 @@
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h"
 
 using blink::WebIDBCallbacks;
 using blink::WebIDBDatabase;
-using blink::WebIDBNameAndVersion;
 using blink::mojom::blink::IDBDatabaseAssociatedPtrInfo;
 
 namespace blink {
@@ -35,10 +34,9 @@ std::unique_ptr<IDBValue> ConvertReturnValue(
   return output;
 }
 
-WebIDBNameAndVersion ConvertNameVersion(
+IDBNameAndVersion ConvertNameVersion(
     const mojom::blink::IDBNameAndVersionPtr& name_and_version) {
-  return WebIDBNameAndVersion(name_and_version->name,
-                              name_and_version->version);
+  return IDBNameAndVersion(name_and_version->name, name_and_version->version);
 }
 
 }  // namespace
@@ -60,7 +58,7 @@ void IndexedDBCallbacksImpl::Error(int32_t code, const WTF::String& message) {
 
 void IndexedDBCallbacksImpl::SuccessNamesAndVersionsList(
     Vector<mojom::blink::IDBNameAndVersionPtr> names_and_versions) {
-  Vector<WebIDBNameAndVersion> output_names_and_versions;
+  Vector<IDBNameAndVersion> output_names_and_versions;
   output_names_and_versions.ReserveInitialCapacity(names_and_versions.size());
   for (const mojom::blink::IDBNameAndVersionPtr& name_version :
        names_and_versions)

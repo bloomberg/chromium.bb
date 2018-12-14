@@ -44,7 +44,6 @@ class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBDatabaseError;
 struct IDBDatabaseMetadata;
-struct WebIDBNameAndVersion;
 
 class WebIDBCallbacksImpl final : public WebIDBCallbacks {
   USING_FAST_MALLOC(WebIDBCallbacksImpl);
@@ -56,7 +55,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
 
   // Pointers transfer ownership.
   void OnError(const WebIDBDatabaseError&) override;
-  void OnSuccess(const Vector<WebIDBNameAndVersion>&) override;
+  void OnSuccess(const Vector<IDBNameAndVersion>&) override;
   void OnSuccess(const Vector<String>&) override;
   void OnSuccess(WebIDBCursor*,
                  std::unique_ptr<IDBKey>,

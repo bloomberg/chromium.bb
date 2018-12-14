@@ -16,9 +16,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h"
 #include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_factory.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
@@ -64,10 +64,10 @@ TEST_F(IDBFactoryTest, WebIDBGetDBInfoCallbacksResolvesPromise) {
   scope.GetDocument().SetSecurityOrigin(
       SecurityOrigin::Create(KURL("https://example.com")));
   std::unique_ptr<MockWebIDBFactory> web_factory = MockWebIDBFactory::Create();
-  std::unique_ptr<WebIDBCallbacks> wc;
+  std::unique_ptr<WebIDBCallbacks> callbacks;
   EXPECT_CALL(*web_factory, GetDatabaseInfo(testing::_, testing::_, testing::_))
       .Times(1)
-      .WillOnce(SaveUniquePointer<0>(&wc));
+      .WillOnce(SaveUniquePointer<0>(&callbacks));
   IDBFactory* factory = IDBFactory::CreateForTest(std::move(web_factory));
 
   DummyExceptionStateForTesting exception_state;
@@ -82,8 +82,8 @@ TEST_F(IDBFactoryTest, WebIDBGetDBInfoCallbacksResolvesPromise) {
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);
 
-  const Vector<WebIDBNameAndVersion> wv;
-  wc->OnSuccess(wv);
+  const Vector<IDBNameAndVersion> name_and_info_list;
+  callbacks->OnSuccess(name_and_info_list);
 
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);
@@ -99,10 +99,10 @@ TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksRejectsPromise) {
   scope.GetDocument().SetSecurityOrigin(
       SecurityOrigin::Create(KURL("https://example.com")));
   std::unique_ptr<MockWebIDBFactory> web_factory = MockWebIDBFactory::Create();
-  std::unique_ptr<WebIDBCallbacks> wc;
+  std::unique_ptr<WebIDBCallbacks> callbacks;
   EXPECT_CALL(*web_factory, GetDatabaseInfo(testing::_, testing::_, testing::_))
       .Times(1)
-      .WillOnce(SaveUniquePointer<0>(&wc));
+      .WillOnce(SaveUniquePointer<0>(&callbacks));
   IDBFactory* factory = IDBFactory::CreateForTest(std::move(web_factory));
 
   DummyExceptionStateForTesting exception_state;
@@ -117,8 +117,7 @@ TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksRejectsPromise) {
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);
 
-  const Vector<WebIDBNameAndVersion> wv;
-  wc->OnError(WebIDBDatabaseError(1));
+  callbacks->OnError(WebIDBDatabaseError(1));
 
   EXPECT_FALSE(on_fulfilled);
   EXPECT_FALSE(on_rejected);
