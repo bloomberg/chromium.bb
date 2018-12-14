@@ -3240,6 +3240,7 @@ jumbo_split_static_library("browser") {
     }
   } else {  # Non-ChromeOS.
     sources += [
+      "badging/badge_service_delegate.h",
       "fullscreen.h",
       "policy/browser_signin_policy_handler.cc",
       "policy/browser_signin_policy_handler.h",

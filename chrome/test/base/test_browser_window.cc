@@ -175,6 +175,12 @@ bool TestBrowserWindow::IsToolbarShowing() const {
   return false;
 }
 
+#if !defined(OS_CHROMEOS)
+BadgeServiceDelegate* TestBrowserWindow::GetBadgeServiceDelegate() const {
+  return nullptr;
+}
+#endif
+
 ShowTranslateBubbleResult TestBrowserWindow::ShowTranslateBubble(
     content::WebContents* contents,
     translate::TranslateStep step,

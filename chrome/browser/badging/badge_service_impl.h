@@ -8,18 +8,23 @@
 #include "content/public/browser/frame_service_base.h"
 #include "third_party/blink/public/platform/modules/badging/badging.mojom.h"
 
-namespace badging {
-class BadgeManager;
-}
-
 namespace content {
 class RenderFrameHost;
 class BrowserContext;
+class WebContents;
 }  // namespace content
 
 namespace extensions {
 class Extension;
 }
+
+#if defined(OS_CHROMEOS)
+namespace badging {
+class BadgeManager;
+}
+#else
+class BadgeServiceDelegate;
+#endif
 
 // Desktop implementation of the BadgeService mojo service.
 class BadgeServiceImpl
@@ -35,8 +40,6 @@ class BadgeServiceImpl
 
  private:
   BadgeServiceImpl(content::RenderFrameHost* render_frame_host,
-                   content::BrowserContext* browser_context,
-                   badging::BadgeManager* badge_manager,
                    blink::mojom::BadgeServiceRequest request);
   ~BadgeServiceImpl() override;
 
@@ -44,7 +47,13 @@ class BadgeServiceImpl
 
   content::RenderFrameHost* render_frame_host_;
   content::BrowserContext* browser_context_;
+  content::WebContents* web_contents_;
+#if defined(OS_CHROMEOS)
   badging::BadgeManager* badge_manager_;
+#else
+  BadgeServiceDelegate* delegate_;
+  bool is_hosted_app_;
+#endif
 };
 
 #endif  // CHROME_BROWSER_BADGING_BADGE_SERVICE_IMPL_H_

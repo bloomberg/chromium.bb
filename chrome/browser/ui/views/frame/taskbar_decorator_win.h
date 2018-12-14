@@ -13,6 +13,9 @@ class Image;
 
 namespace chrome {
 
+// Add a numeric badge to the taskbar.
+void DrawNumericTaskbarDecoration(gfx::NativeWindow window);
+
 // Draws a scaled version of the avatar in |image| on the taskbar button
 // associated with top level, visible |window|. Currently only implemented
 // for Windows 7 and above.

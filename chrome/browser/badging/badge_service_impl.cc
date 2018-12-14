@@ -9,8 +9,11 @@
 #include "base/logging.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
+#include "chrome/browser/badging/badge_service_delegate.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
@@ -20,45 +23,59 @@ void BadgeServiceImpl::Create(blink::mojom::BadgeServiceRequest request,
                               content::RenderFrameHost* render_frame_host) {
   DCHECK(render_frame_host);
 
-  auto* browser_context =
-      content::WebContents::FromRenderFrameHost(render_frame_host)
-          ->GetBrowserContext();
-  auto* badge_manager =
-      badging::BadgeManagerFactory::GetInstance()->GetForProfile(
-          Profile::FromBrowserContext(browser_context));
-
   // Lifetime managed through FrameServiceBase.
-  new BadgeServiceImpl(render_frame_host, browser_context, badge_manager,
-                       std::move(request));
+  new BadgeServiceImpl(render_frame_host, std::move(request));
 }
 
 void BadgeServiceImpl::SetBadge() {
+#if defined(OS_CHROMEOS)
   const extensions::Extension* extension = ExtensionFromLastUrl();
 
   if (!extension)
     return;
 
   badge_manager_->UpdateBadge(extension->id(), base::nullopt);
+#else
+  if (!is_hosted_app_)
+    return;
+
+  delegate_->SetBadge(web_contents_);
+#endif
 }
 
 void BadgeServiceImpl::ClearBadge() {
+#if defined(OS_CHROMEOS)
   const extensions::Extension* extension = ExtensionFromLastUrl();
 
   if (!extension)
     return;
 
   badge_manager_->ClearBadge(extension->id());
+#else
+  if (!is_hosted_app_)
+    return;
+
+  delegate_->ClearBadge(web_contents_);
+#endif
 }
 
 BadgeServiceImpl::BadgeServiceImpl(content::RenderFrameHost* render_frame_host,
-                                   content::BrowserContext* browser_context,
-                                   badging::BadgeManager* badge_manager,
                                    blink::mojom::BadgeServiceRequest request)
     : content::FrameServiceBase<blink::mojom::BadgeService>(render_frame_host,
                                                             std::move(request)),
-      render_frame_host_(render_frame_host),
-      browser_context_(browser_context),
-      badge_manager_(badge_manager) {}
+      render_frame_host_(render_frame_host) {
+  web_contents_ = content::WebContents::FromRenderFrameHost(render_frame_host_);
+  browser_context_ = web_contents_->GetBrowserContext();
+
+#if defined(OS_CHROMEOS)
+  badge_manager_ = badging::BadgeManagerFactory::GetInstance()->GetForProfile(
+      Profile::FromBrowserContext(browser_context_));
+#else
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  is_hosted_app_ = browser->hosted_app_controller();
+  delegate_ = browser->window()->GetBadgeServiceDelegate();
+#endif
+}
 
 BadgeServiceImpl::~BadgeServiceImpl() = default;
 
