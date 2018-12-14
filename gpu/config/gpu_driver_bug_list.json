@@ -3053,6 +3053,18 @@
       "features": [
         "clamp_texture_base_level_and_max_level"
       ]
+    },
+    {
+      "id": 285,
+      "cr_bugs": [914976],
+      "description": "Context flush ordering doesn't seem to work on AMD",
+      "vendor_id": "0x1002",
+      "os": {
+        "type": "linux"
+      },
+      "features": [
+        "use_virtualized_gl_contexts"
+      ]
     }
   ]
 }
