@@ -240,27 +240,31 @@ void ImageBitmapFactories::DidFinishLoading(ImageBitmapLoader* loader) {
   pending_loaders_.erase(loader);
 }
 
+void ImageBitmapFactories::Trace(blink::Visitor* visitor) {
+  visitor->Trace(pending_loaders_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
+  Supplement<WorkerGlobalScope>::Trace(visitor);
+}
+
 ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(
     ImageBitmapFactories& factory,
     base::Optional<IntRect> crop_rect,
     ScriptState* script_state,
     const ImageBitmapOptions* options)
-    : loader_(
+    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+      loader_(
           FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer, this)),
       factory_(&factory),
       resolver_(ScriptPromiseResolver::Create(script_state)),
       crop_rect_(crop_rect),
       options_(options) {}
 
-void ImageBitmapFactories::ImageBitmapLoader::LoadBlobAsync(
-    Blob* blob) {
+void ImageBitmapFactories::ImageBitmapLoader::LoadBlobAsync(Blob* blob) {
   loader_->Start(blob->GetBlobDataHandle());
 }
 
-void ImageBitmapFactories::Trace(blink::Visitor* visitor) {
-  visitor->Trace(pending_loaders_);
-  Supplement<LocalDOMWindow>::Trace(visitor);
-  Supplement<WorkerGlobalScope>::Trace(visitor);
+ImageBitmapFactories::ImageBitmapLoader::~ImageBitmapLoader() {
+  DCHECK(!loader_);
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::RejectPromise(
@@ -279,11 +283,20 @@ void ImageBitmapFactories::ImageBitmapLoader::RejectPromise(
     default:
       NOTREACHED();
   }
+  loader_.reset();
   factory_->DidFinishLoading(this);
+}
+
+void ImageBitmapFactories::ImageBitmapLoader::ContextDestroyed(
+    ExecutionContext*) {
+  if (loader_)
+    factory_->DidFinishLoading(this);
+  loader_.reset();
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::DidFinishLoading() {
   DOMArrayBuffer* array_buffer = loader_->ArrayBufferResult();
+  loader_.reset();
   if (!array_buffer) {
     RejectPromise(kAllocationFailureImageBitmapRejectionReason);
     return;
@@ -361,6 +374,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::Trace(blink::Visitor* visitor) {
+  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(factory_);
   visitor->Trace(resolver_);
   visitor->Trace(options_);
