@@ -39,6 +39,26 @@ Polymer({
      */
     model: Object,
 
+    /**
+     * If the site represented is part of a chooser exception, the chooser type
+     * will be stored here to allow the permission to be manipulated.
+     * @private {!settings.ChooserType}
+     */
+    chooserType: {
+      type: String,
+      value: settings.ChooserType.NONE,
+    },
+
+    /**
+     * If the site represented is part of a chooser exception, the chooser
+     * object will be stored here to allow the permission to be manipulated.
+     * @private
+     */
+    chooserObject: {
+      type: Object,
+      value: null,
+    },
+
     /** @private */
     siteDescription_: {
       type: String,
@@ -144,6 +164,15 @@ Polymer({
 
   /** @private */
   onResetButtonTap_: function() {
+    // Use the appropriate method to reset a chooser exception.
+    if (this.chooserType !== settings.ChooserType.NONE &&
+        this.chooserObject != null) {
+      this.browserProxy.resetChooserExceptionForSite(
+          this.chooserType, this.model.origin, this.model.embeddingOrigin,
+          this.chooserObject);
+      return;
+    }
+
     this.browserProxy.resetCategoryPermissionForPattern(
         this.model.origin, this.model.embeddingOrigin, this.model.category,
         this.model.incognito);
@@ -151,6 +180,10 @@ Polymer({
 
   /** @private */
   onShowActionMenuTap_: function() {
+    // Chooser exceptions do not support the action menu, so do nothing.
+    if (this.chooserType !== settings.ChooserType.NONE)
+      return;
+
     this.fire(
         'show-action-menu',
         {anchor: this.$.actionMenuButton, model: this.model});

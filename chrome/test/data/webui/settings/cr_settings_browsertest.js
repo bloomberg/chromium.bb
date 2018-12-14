@@ -1063,6 +1063,33 @@ TEST_F('CrSettingsSiteDataDetailsTest', 'All', function() {
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
+function CrSettingsChooserExceptionListEntryTest() {}
+
+CrSettingsChooserExceptionListEntryTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/site_settings/chooser_exception_list_entry.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../cr_elements/cr_policy_strings.js',
+    '../test_browser_proxy.js',
+    'chooser_exception_list_entry_tests.js',
+    'test_site_settings_prefs_browser_proxy.js',
+    'test_util.js',
+  ]),
+};
+
+TEST_F('CrSettingsChooserExceptionListEntryTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
 function CrSettingsCategoryDefaultSettingTest() {}
 
 CrSettingsCategoryDefaultSettingTest.prototype = {

@@ -111,6 +111,7 @@ CrSettingsCategorySettingExceptionsTest.*
 CrSettingsCertificateManagerTest.*
 CrSettingsChangePasswordPageTest.*
 CrSettingsCheckboxTest.*
+CrSettingsChooserExceptionListEntryTest.*
 CrSettingsChromeCleanupPageTest.*
 CrSettingsCrostiniPageTest.*
 CrSettingsDateTimePageTest.*

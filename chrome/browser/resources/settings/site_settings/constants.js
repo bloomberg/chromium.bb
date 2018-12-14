@@ -53,6 +53,17 @@ settings.ContentSetting = {
 };
 
 /**
+ * All possible ChooserTypes that we currently support configuring in the UI.
+ * This should be kept in sync with the |kChooserTypeGroupNames| array in
+ * chrome/browser/ui/webui/site_settings_helper.cc
+ * @enum {string}
+ */
+settings.ChooserType = {
+  NONE: '',
+  USB_DEVICES: 'usb-devices',
+};
+
+/**
  * Contains the possible sources of a ContentSetting.
  * This should be kept in sync with the |SiteSettingSource| enum in
  * chrome/browser/ui/webui/site_settings_helper.h
