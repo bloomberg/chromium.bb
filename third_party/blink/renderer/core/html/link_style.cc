@@ -91,8 +91,8 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   }
 
   CSSParserContext* parser_context = CSSParserContext::Create(
-      GetDocument(), cached_style_sheet->GetResponse().CurrentRequestUrl(),
-      cached_style_sheet->GetResponse().IsOpaqueResponseFromServiceWorker(),
+      GetDocument(), cached_style_sheet->GetResponse().ResponseUrl(),
+      cached_style_sheet->GetResponse().IsCorsSameOrigin(),
       cached_style_sheet->GetReferrerPolicy(), cached_style_sheet->Encoding());
 
   if (StyleSheetContents* parsed_sheet =

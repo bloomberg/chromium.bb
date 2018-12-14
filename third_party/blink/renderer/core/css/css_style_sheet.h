@@ -258,6 +258,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   MediaQueryResultList viewport_dependent_media_query_results_;
   MediaQueryResultList device_dependent_media_query_results_;
 
+  // TODO(falken): Remove this, it's unused.
   scoped_refptr<const SecurityOrigin> allow_rule_access_from_origin_;
 
   Member<Node> owner_node_;

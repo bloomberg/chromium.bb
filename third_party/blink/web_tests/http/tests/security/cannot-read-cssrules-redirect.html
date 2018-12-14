@@ -21,9 +21,13 @@ test(() => {
 
 test(() => {
   var sheet2 = document.styleSheets[1];
-  assert_not_equals(sheet2.cssRules, null);
-  assert_not_equals(sheet2.rules, null);
-}, "Can access Same-Origin sheets that were redirected to from Cross-Origin");
+  assert_throws("SecurityError", () => {
+    sheet2.cssRules;
+  });
+  assert_throws("SecurityError", () => {
+    sheet2.rules;
+  });
+}, "Can't access Same-Origin sheets that were redirected to from Cross-Origin");
 
 </script>
 </head>

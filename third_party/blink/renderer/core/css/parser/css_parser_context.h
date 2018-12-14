@@ -45,7 +45,7 @@ class CORE_EXPORT CSSParserContext
   static CSSParserContext* Create(
       const CSSParserContext* other,
       const KURL& base_url_override,
-      bool is_opaque_response_from_service_worker,
+      bool origin_clean,
       network::mojom::ReferrerPolicy referrer_policy_override,
       const WTF::TextEncoding& charset_override,
       const Document* use_counter_document);
@@ -59,7 +59,7 @@ class CORE_EXPORT CSSParserContext
   static CSSParserContext* Create(
       const Document&,
       const KURL& base_url_override,
-      bool is_opaque_response_from_service_worker,
+      bool origin_clean,
       network::mojom::ReferrerPolicy referrer_policy_override,
       const WTF::TextEncoding& charset = WTF::TextEncoding(),
       SelectorProfile = kLiveProfile);
@@ -67,7 +67,7 @@ class CORE_EXPORT CSSParserContext
   static CSSParserContext* Create(const ExecutionContext&);
 
   CSSParserContext(const KURL& base_url,
-                   bool is_opaque_response_from_service_worker,
+                   bool origin_clean,
                    const WTF::TextEncoding& charset,
                    CSSParserMode,
                    CSSParserMode match_mode,
@@ -92,9 +92,7 @@ class CORE_EXPORT CSSParserContext
   bool IsHTMLDocument() const { return is_html_document_; }
   bool IsLiveProfile() const { return profile_ == kLiveProfile; }
 
-  // See documentation in StyleSheetContents for this function.
-  bool IsOpaqueResponseFromServiceWorker() const;
-
+  bool IsOriginClean() const;
   bool IsSecureContext() const;
 
   // This quirk is to maintain compatibility with Android apps built on
@@ -136,7 +134,11 @@ class CORE_EXPORT CSSParserContext
 
  private:
   KURL base_url_;
-  const bool is_opaque_response_from_service_worker_;
+
+  // If true, allows reading and modifying of the CSS rules.
+  // https://drafts.csswg.org/cssom/#concept-css-style-sheet-origin-clean-flag
+  const bool origin_clean_;
+
   WTF::TextEncoding charset_;
   CSSParserMode mode_;
   CSSParserMode match_mode_;

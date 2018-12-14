@@ -79,8 +79,8 @@ void StyleRuleImport::NotifyFinished(Resource* resource) {
     context = parent_style_sheet_->ParserContext();
   }
   context = CSSParserContext::Create(
-      context, cached_style_sheet->GetResponse().CurrentRequestUrl(),
-      cached_style_sheet->GetResponse().IsOpaqueResponseFromServiceWorker(),
+      context, cached_style_sheet->GetResponse().ResponseUrl(),
+      cached_style_sheet->GetResponse().IsCorsSameOrigin(),
       cached_style_sheet->GetReferrerPolicy(), cached_style_sheet->Encoding(),
       document);
 
