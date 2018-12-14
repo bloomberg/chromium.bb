@@ -274,3 +274,13 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-11053
   - Fix:
     https://github.com/unicode-org/icu/pull/300
+
+12. Windows 7 timezone detection fix
+
+  - patches/win7_tz.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20302
+  - Fix:
+    https://github.com/unicode-org/icu/pull/315
+
+   
