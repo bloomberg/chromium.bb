@@ -125,14 +125,14 @@ static void model_rd_with_surffit(const AV1_COMP *const cpi,
                                   int64_t sse, int num_samples, int *rate,
                                   int64_t *dist);
 
-typedef enum {
+enum {
   MODELRD_LEGACY,
   MODELRD_CURVFIT,
   MODELRD_SUFFIT,
   MODELRD_DNN,
   MODELRD_FULLRDY,
   MODELRD_TYPES
-} ModelRdType;
+} UENUM1BYTE(ModelRdType);
 
 static model_rd_for_sb_type model_rd_sb_fn[MODELRD_TYPES] = {
   model_rd_for_sb, model_rd_for_sb_with_curvfit, model_rd_for_sb_with_surffit,
@@ -183,12 +183,12 @@ typedef struct {
   MV_REFERENCE_FRAME ref_frame[2];
 } REF_DEFINITION;
 
-typedef enum {
+enum {
   FTXS_NONE = 0,
   FTXS_DCT_AND_1D_DCT_ONLY = 1 << 0,
   FTXS_DISABLE_TRELLIS_OPT = 1 << 1,
   FTXS_USE_TRANSFORM_DOMAIN = 1 << 2
-} FAST_TX_SEARCH_MODE;
+} UENUM1BYTE(FAST_TX_SEARCH_MODE);
 
 static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
                             RD_STATS *rd_stats, BLOCK_SIZE bsize,

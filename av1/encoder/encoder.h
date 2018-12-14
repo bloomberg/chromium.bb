@@ -59,7 +59,7 @@ typedef struct {
   FRAME_CONTEXT fc;
 } CODING_CONTEXT;
 
-typedef enum {
+enum {
   // regular inter frame
   REGULAR_FRAME = 0,
   // alternate reference frame
@@ -73,22 +73,22 @@ typedef enum {
   // extra alternate reference frame
   EXT_ARF_FRAME = 5,
   FRAME_CONTEXT_INDEXES
-} FRAME_CONTEXT_INDEX;
+} UENUM1BYTE(FRAME_CONTEXT_INDEX);
 
-typedef enum {
+enum {
   NORMAL = 0,
   FOURFIVE = 1,
   THREEFIVE = 2,
   ONETWO = 3
-} AOM_SCALING;
+} UENUM1BYTE(AOM_SCALING);
 
-typedef enum {
+enum {
   // Good Quality Fast Encoding. The encoder balances quality with the amount of
   // time it takes to encode the output. Speed setting controls how fast.
   GOOD
-} MODE;
+} UENUM1BYTE(MODE);
 
-typedef enum {
+enum {
   FRAMEFLAGS_KEY = 1 << 0,
   FRAMEFLAGS_GOLDEN = 1 << 1,
   FRAMEFLAGS_BWDREF = 1 << 2,
@@ -97,30 +97,30 @@ typedef enum {
   FRAMEFLAGS_INTRAONLY = 1 << 4,
   FRAMEFLAGS_SWITCH = 1 << 5,
   FRAMEFLAGS_ERROR_RESILIENT = 1 << 6,
-} FRAMETYPE_FLAGS;
+} UENUM1BYTE(FRAMETYPE_FLAGS);
 
-typedef enum {
+enum {
   NO_AQ = 0,
   VARIANCE_AQ = 1,
   COMPLEXITY_AQ = 2,
   CYCLIC_REFRESH_AQ = 3,
   AQ_MODE_COUNT  // This should always be the last member of the enum
-} AQ_MODE;
-typedef enum {
+} UENUM1BYTE(AQ_MODE);
+enum {
   NO_DELTA_Q = 0,
   DELTA_Q_ONLY = 1,
   DELTA_Q_LF = 2,
   DELTAQ_MODE_COUNT  // This should always be the last member of the enum
-} DELTAQ_MODE;
+} UENUM1BYTE(DELTAQ_MODE);
 
-typedef enum {
+enum {
   RESIZE_NONE = 0,    // No frame resizing allowed.
   RESIZE_FIXED = 1,   // All frames are coded at the specified scale.
   RESIZE_RANDOM = 2,  // All frames are coded at a random scale.
   RESIZE_MODES
-} RESIZE_MODE;
+} UENUM1BYTE(RESIZE_MODE);
 
-typedef enum {
+enum {
   SUPERRES_NONE = 0,     // No frame superres allowed
   SUPERRES_FIXED = 1,    // All frames are coded at the specified scale,
                          // and super-resolved.
@@ -129,7 +129,7 @@ typedef enum {
   SUPERRES_QTHRESH = 3,  // Superres scale for a frame is determined based on
                          // q_index
   SUPERRES_MODES
-} SUPERRES_MODE;
+} UENUM1BYTE(SUPERRES_MODE);
 
 typedef struct TplDepStats {
   int64_t intra_cost;
@@ -572,13 +572,13 @@ typedef struct ActiveMap {
 
 #if CONFIG_INTERNAL_STATS
 // types of stats
-typedef enum {
+enum {
   STAT_Y,
   STAT_U,
   STAT_V,
   STAT_ALL,
   NUM_STAT_TYPES  // This should always be the last member of the enum
-} StatType;
+} UENUM1BYTE(StatType);
 
 typedef struct IMAGE_STAT {
   double stat[NUM_STAT_TYPES];

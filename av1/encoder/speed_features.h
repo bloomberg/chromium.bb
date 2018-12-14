@@ -73,7 +73,7 @@ enum {
                               (1 << THR_ALTR) | (1 << THR_GOLD)
 };
 
-typedef enum {
+enum {
   TXFM_CODING_SF = 1,
   INTER_PRED_SF = 2,
   INTRA_PRED_SF = 4,
@@ -82,9 +82,9 @@ typedef enum {
   RD_SKIP_SF = 32,
   RESERVE_2_SF = 64,
   RESERVE_3_SF = 128,
-} DEV_SPEED_FEATURES;
+} UENUM1BYTE(DEV_SPEED_FEATURES);
 
-typedef enum {
+enum {
   DIAMOND = 0,
   NSTEP = 1,
   HEX = 2,
@@ -92,9 +92,9 @@ typedef enum {
   SQUARE = 4,
   FAST_HEX = 5,
   FAST_DIAMOND = 6
-} SEARCH_METHODS;
+} UENUM1BYTE(SEARCH_METHODS);
 
-typedef enum {
+enum {
   // No recode.
   DISALLOW_RECODE = 0,
   // Allow recode for KF and exceeding maximum frame bandwidth.
@@ -103,28 +103,28 @@ typedef enum {
   ALLOW_RECODE_KFARFGF = 2,
   // Allow recode for all frames based on bitrate constraints.
   ALLOW_RECODE = 3,
-} RECODE_LOOP_TYPE;
+} UENUM1BYTE(RECODE_LOOP_TYPE);
 
-typedef enum {
+enum {
   SUBPEL_TREE = 0,
   SUBPEL_TREE_PRUNED = 1,           // Prunes 1/2-pel searches
   SUBPEL_TREE_PRUNED_MORE = 2,      // Prunes 1/2-pel searches more aggressively
   SUBPEL_TREE_PRUNED_EVENMORE = 3,  // Prunes 1/2- and 1/4-pel searches
   // Other methods to come
-} SUBPEL_SEARCH_METHODS;
+} UENUM1BYTE(SUBPEL_SEARCH_METHODS);
 
-typedef enum {
+enum {
   USE_FULL_RD = 0,
   USE_FAST_RD,
   USE_LARGESTALL,
-} TX_SIZE_SEARCH_METHOD;
+} UENUM1BYTE(TX_SIZE_SEARCH_METHOD);
 
-typedef enum {
+enum {
   NOT_IN_USE = 0,
   RELAXED_NEIGHBORING_MIN_MAX = 1
-} AUTO_MIN_MAX_MODE;
+} UENUM1BYTE(AUTO_MIN_MAX_MODE);
 
-typedef enum {
+enum {
   // Try the full image with different values.
   LPF_PICK_FROM_FULL_IMAGE,
   // Try a small portion of the image with different values.
@@ -133,9 +133,9 @@ typedef enum {
   LPF_PICK_FROM_Q,
   // Pick 0 to disable LPF if LPF was enabled last frame
   LPF_PICK_MINIMAL_LPF
-} LPF_PICK_METHOD;
+} UENUM1BYTE(LPF_PICK_METHOD);
 
-typedef enum {
+enum {
   // Terminate search early based on distortion so far compared to
   // qp step, distortion in the neighborhood of the frame, etc.
   FLAG_EARLY_TERMINATE = 1 << 0,
@@ -152,9 +152,9 @@ typedef enum {
 
   // Skips intra modes other than DC_PRED if the source variance is small
   FLAG_SKIP_INTRA_LOWVAR = 1 << 5,
-} MODE_SEARCH_SKIP_LOGIC;
+} UENUM1BYTE(MODE_SEARCH_SKIP_LOGIC);
 
-typedef enum {
+enum {
   NO_PRUNE = 0,
   // eliminates one tx type in vertical and horizontal direction
   PRUNE_ONE = 1,
@@ -165,7 +165,7 @@ typedef enum {
   PRUNE_2D_ACCURATE = 3,
   // similar, but applies much more aggressive pruning to get better speed-up
   PRUNE_2D_FAST = 4,
-} TX_TYPE_PRUNE_MODE;
+} UENUM1BYTE(TX_TYPE_PRUNE_MODE);
 
 typedef struct {
   TX_TYPE_PRUNE_MODE prune_mode;
@@ -184,7 +184,7 @@ typedef struct {
   int skip_tx_search;
 } TX_TYPE_SEARCH;
 
-typedef enum {
+enum {
   // Search partitions using RD criterion
   SEARCH_PARTITION,
 
@@ -192,9 +192,14 @@ typedef enum {
   FIXED_PARTITION,
 
   REFERENCE_PARTITION
-} PARTITION_SEARCH_TYPE;
+} UENUM1BYTE(PARTITION_SEARCH_TYPE);
 
-typedef enum { EIGHTH_PEL, QUARTER_PEL, HALF_PEL, FULL_PEL } SUBPEL_FORCE_STOP;
+enum {
+  EIGHTH_PEL,
+  QUARTER_PEL,
+  HALF_PEL,
+  FULL_PEL
+} UENUM1BYTE(SUBPEL_FORCE_STOP);
 
 typedef struct MV_SPEED_FEATURES {
   // Motion search method (Diamond, NSTEP, Hex, Big Diamond, Square, etc).
@@ -228,35 +233,35 @@ typedef struct MESH_PATTERN {
   int interval;
 } MESH_PATTERN;
 
-typedef enum {
+enum {
   GM_FULL_SEARCH,
   GM_REDUCED_REF_SEARCH,
   GM_DISABLE_SEARCH
-} GM_SEARCH_TYPE;
+} UENUM1BYTE(GM_SEARCH_TYPE);
 
-typedef enum {
+enum {
   GM_ERRORADV_TR_0,
   GM_ERRORADV_TR_1,
   GM_ERRORADV_TR_2,
   GM_ERRORADV_TR_TYPES,
-} GM_ERRORADV_TYPE;
+} UENUM1BYTE(GM_ERRORADV_TYPE);
 
-typedef enum {
+enum {
   NO_TRELLIS_OPT,         // No trellis optimization
   FULL_TRELLIS_OPT,       // Trellis optimization in all stages
   FINAL_PASS_TRELLIS_OPT  // Trellis optimization in only the final encode pass
-} TRELLIS_OPT_TYPE;
+} UENUM1BYTE(TRELLIS_OPT_TYPE);
 
-typedef enum {
+enum {
   FULL_TXFM_RD,
   LOW_TXFM_RD,
-} TXFM_RD_MODEL;
+} UENUM1BYTE(TXFM_RD_MODEL);
 
-typedef enum {
+enum {
   JNT_COMP_ENABLED,
   JNT_COMP_SKIP_MV_SEARCH,
   JNT_COMP_DISABLED,
-} JNT_COMP_FLAG;
+} UENUM1BYTE(JNT_COMP_FLAG);
 
 typedef struct SPEED_FEATURES {
   MV_SPEED_FEATURES mv;

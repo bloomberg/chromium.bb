@@ -23,7 +23,7 @@ struct AV1_COMP;
 struct AV1Common;
 struct ThreadData;
 
-typedef enum {
+enum {
   // Search all the partition types in this plane.
   SEARCH_FULL_PLANE = 0,
   // Only search none_partition coding block.
@@ -32,7 +32,7 @@ typedef enum {
   SEARCH_SAME_PLANE = 2,
   // Skip search partition on this plane. Go split directly.
   SPLIT_PLANE = 3,
-} CB_TREE_SEARCH;
+} UENUM1BYTE(CB_TREE_SEARCH);
 
 // Structure to hold snapshot of coding context during the mode picking process
 typedef struct {

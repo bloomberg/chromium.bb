@@ -48,7 +48,7 @@ extern "C" {
 
 // This enumerator type needs to be kept aligned with the mode order in
 // const MODE_DEFINITION av1_mode_order[MAX_MODES] used in the rd code.
-typedef enum {
+enum {
   THR_NEARESTMV,
   THR_NEARESTL2,
   THR_NEARESTL3,
@@ -246,9 +246,9 @@ typedef enum {
   MAX_SINGLE_REF_MODES = LAST_SINGLE_REF_MODES + 1,
   LAST_COMP_REF_MODES = THR_COMP_GLOBAL_GLOBALBA,
   MAX_COMP_REF_MODES = LAST_COMP_REF_MODES + 1
-} THR_MODES;
+} UENUM1BYTE(THR_MODES);
 
-typedef enum {
+enum {
   THR_LAST,
   THR_LAST2,
   THR_LAST3,
@@ -275,7 +275,7 @@ typedef enum {
   THR_INTRA,
 
   MAX_REFS
-} THR_MODES_SUB8X8;
+} UENUM1BYTE(THR_MODES_SUB8X8);
 
 typedef struct RD_OPT {
   // Thresh_mult is used to set a threshold for the rd score. A higher value

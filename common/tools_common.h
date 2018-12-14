@@ -78,11 +78,11 @@ enum VideoFileType {
 };
 
 // Used in lightfield example.
-typedef enum OUTPUT_FORMAT {
+enum {
   YUV1D,  // 1D tile output for conformance test.
   YUV,    // Tile output in YUV format.
   NV12,   // Tile output in NV12 format.
-} OUTPUT_FORMAT;
+} UENUM1BYTE(OUTPUT_FORMAT);
 
 struct FileTypeDetectionBuffer {
   char buf[4];

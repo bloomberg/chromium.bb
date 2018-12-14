@@ -116,11 +116,11 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
                               rate_cost, cpi->oxcf.sharpness);
 }
 
-typedef enum QUANT_FUNC {
+enum {
   QUANT_FUNC_LOWBD = 0,
   QUANT_FUNC_HIGHBD = 1,
   QUANT_FUNC_TYPES = 2
-} QUANT_FUNC;
+} UENUM1BYTE(QUANT_FUNC);
 
 static AV1_QUANT_FACADE
     quant_func_list[AV1_XFORM_QUANT_TYPES][QUANT_FUNC_TYPES] = {

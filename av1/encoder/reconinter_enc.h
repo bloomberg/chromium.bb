@@ -46,7 +46,7 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                InterpFilters interp_filters,
                                const WarpTypesAllowed *warp_types, int p_col,
                                int p_row, int plane, int ref,
-                               enum mv_precision precision, int x, int y,
+                               mv_precision precision, int x, int y,
                                const MACROBLOCKD *xd, int can_use_previous);
 
 // Detect if the block have sub-pixel level motion vectors

@@ -47,7 +47,7 @@ extern "C" {
 #define WEDGE_NONE -1
 
 // Angles are with respect to horizontal anti-clockwise
-typedef enum {
+enum {
   WEDGE_HORIZONTAL = 0,
   WEDGE_VERTICAL = 1,
   WEDGE_OBLIQUE27 = 2,
@@ -55,7 +55,7 @@ typedef enum {
   WEDGE_OBLIQUE117 = 4,
   WEDGE_OBLIQUE153 = 5,
   WEDGE_DIRECTIONS
-} WedgeDirectionType;
+} UENUM1BYTE(WedgeDirectionType);
 
 // 3-tuple: {direction, x_offset, y_offset}
 typedef struct {

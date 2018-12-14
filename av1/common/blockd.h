@@ -38,19 +38,19 @@ extern "C" {
 #define MAX_DIFFWTD_MASK_BITS 1
 
 // DIFFWTD_MASK_TYPES should not surpass 1 << MAX_DIFFWTD_MASK_BITS
-typedef enum ATTRIBUTE_PACKED {
+enum {
   DIFFWTD_38 = 0,
   DIFFWTD_38_INV,
   DIFFWTD_MASK_TYPES,
-} DIFFWTD_MASK_TYPE;
+} UENUM1BYTE(DIFFWTD_MASK_TYPE);
 
-typedef enum ATTRIBUTE_PACKED {
+enum {
   KEY_FRAME = 0,
   INTER_FRAME = 1,
   INTRA_ONLY_FRAME = 2,  // replaces intra-only
   S_FRAME = 3,
   FRAME_TYPES,
-} FRAME_TYPE;
+} UENUM1BYTE(FRAME_TYPE);
 
 static INLINE int is_comp_ref_allowed(BLOCK_SIZE bsize) {
   return AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
@@ -372,7 +372,7 @@ static INLINE void mi_to_pixel_loc(int *pixel_c, int *pixel_r, int mi_col,
 }
 #endif
 
-enum ATTRIBUTE_PACKED mv_precision { MV_PRECISION_Q3, MV_PRECISION_Q4 };
+enum { MV_PRECISION_Q3, MV_PRECISION_Q4 } UENUM1BYTE(mv_precision);
 
 struct buf_2d {
   uint8_t *buf;

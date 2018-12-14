@@ -2348,14 +2348,14 @@ const int complexity_16x16_blocks_threshold[BLOCK_SIZES] = {
   8, 8, 10
 };
 
-typedef enum {
+enum {
   MV_ZERO = 0,
   MV_LEFT = 1,
   MV_UP = 2,
   MV_RIGHT = 3,
   MV_DOWN = 4,
   MV_INVALID
-} MOTION_DIRECTION;
+} UENUM1BYTE(MOTION_DIRECTION);
 
 static INLINE MOTION_DIRECTION get_motion_direction_fp(uint8_t fp_byte) {
   if (fp_byte & FPMB_MOTION_ZERO_MASK) {

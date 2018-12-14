@@ -63,7 +63,7 @@ void highbd_quan64x64_wrapper(QUAN_PARAM_LIST) {
   HBD_QUAN_FUNC;
 }
 
-typedef enum { TYPE_B, TYPE_DC, TYPE_FP } QuantType;
+enum { TYPE_B, TYPE_DC, TYPE_FP } UENUM1BYTE(QuantType);
 
 using ::testing::tuple;
 typedef tuple<QuantizeFunc, QuantizeFunc, TX_SIZE, QuantType, aom_bit_depth_t>

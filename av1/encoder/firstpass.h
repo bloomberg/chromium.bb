@@ -86,7 +86,7 @@ typedef struct {
   double raw_error_stdev;
 } FIRSTPASS_STATS;
 
-typedef enum {
+enum {
   KF_UPDATE = 0,
   LF_UPDATE = 1,
   GF_UPDATE = 2,
@@ -98,14 +98,14 @@ typedef enum {
   INTNL_OVERLAY_UPDATE = 8,  // Internal Overlay Frame
   INTNL_ARF_UPDATE = 9,      // Internal Altref Frame (candidate for ALTREF2)
   FRAME_UPDATE_TYPES = 10
-} FRAME_UPDATE_TYPE;
+} UENUM1BYTE(FRAME_UPDATE_TYPE);
 
 #define FC_ANIMATION_THRESH 0.15
-typedef enum {
+enum {
   FC_NORMAL = 0,
   FC_GRAPHICS_ANIMATION = 1,
   FRAME_CONTENT_TYPES = 2
-} FRAME_CONTENT_TYPE;
+} UENUM1BYTE(FRAME_CONTENT_TYPE);
 
 typedef struct {
   unsigned char index;

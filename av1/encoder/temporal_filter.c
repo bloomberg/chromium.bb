@@ -42,7 +42,7 @@ static void temporal_filter_predictors_mb_c(
     int stride, int uv_block_width, int uv_block_height, int mv_row, int mv_col,
     uint8_t *pred, struct scale_factors *scale, int x, int y,
     int can_use_previous, int num_planes, MV *blk_mvs, int use_32x32) {
-  enum mv_precision mv_precision_uv;
+  mv_precision mv_precision_uv;
   int uv_stride;
   // TODO(angiebird): change plane setting accordingly
   ConvolveParams conv_params = get_conv_params(0, 0, xd->bd);
