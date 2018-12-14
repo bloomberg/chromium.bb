@@ -95,7 +95,7 @@ STDAPI DllRegisterServer(void) {
     } else {
       sts = key.WriteValue(
           L"name",
-          credential_provider::GetStringResource(IDS_PROJNAME).c_str());
+          credential_provider::GetStringResource(IDS_PROJNAME_BASE).c_str());
       if (sts != ERROR_SUCCESS) {
         hr = HRESULT_FROM_WIN32(sts);
         LOGFN(ERROR) << "key.WriteValue(name) hr=" << putHR(hr);

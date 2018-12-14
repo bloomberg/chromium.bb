@@ -7,7 +7,6 @@
 
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
-#include "chrome/credential_provider/gaiacp/grit/gaia_resources.h"
 
 namespace credential_provider {
 

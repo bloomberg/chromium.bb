@@ -12,21 +12,43 @@
 #include <limits>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
+#include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/atl.h"
+#include "base/win/embedded_i18n/language_Selector.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/installer_util_strings.h"
-#include "chrome/installer/util/language_selector.h"
 
 namespace {
 
-const installer::LanguageSelector& GetLanguageSelector() {
-  static const installer::LanguageSelector instance;
+constexpr base::win::i18n::LanguageSelector::LangToOffset
+    kLanguageOffsetPairs[] = {
+#define HANDLE_LANGUAGE(l_, o_) {L## #l_, o_},
+        DO_LANGUAGES
+#undef HANDLE_LANGUAGE
+};
 
-  return instance;
+// Returns the language under which Chrome was downloaded, or an empty string if
+// no such language is specified.
+base::string16 GetPreferredLanguageFromGoogleUpdate() {
+  base::string16 language;
+  GoogleUpdateSettings::GetLanguage(&language);
+  return language;
+}
+
+const base::win::i18n::LanguageSelector& GetLanguageSelector() {
+  static base::NoDestructor<base::win::i18n::LanguageSelector> instance(
+      GetPreferredLanguageFromGoogleUpdate(), &kLanguageOffsetPairs[0],
+      &kLanguageOffsetPairs[base::size(kLanguageOffsetPairs)]);
+
+  return *instance;
 }
 
 installer::TranslationDelegate* g_translation_delegate = NULL;
