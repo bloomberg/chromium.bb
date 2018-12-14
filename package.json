@@ -8,8 +8,8 @@
     "lint": "tslint -p .",
     "build": "node build",
     "clean": "rm -rf out/",
-    "test": "ts-node --ignore=false src/framework/unittests",
-    "cts": "ts-node --ignore=false src | faucet"
+    "test": "ts-node run.js ./src/framework/unittests",
+    "cts": "ts-node run.js ./src | faucet"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "aliasify": "^2.1.0",
     "browserify": "^16.2.3",
     "faucet": "0.0.1",
+    "module-alias": "^2.1.0",
     "tape": "^4.9.1",
     "ts-node": "^7.0.1",
     "tsify": "^4.0.1",
