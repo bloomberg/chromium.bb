@@ -164,7 +164,6 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
   }
 
   void SetVdaStateToUnitialized() {
-    base::AutoLock auto_lock(vda_.lock_);
     vda_.state_ = VaapiVideoDecodeAccelerator::kUninitialized;
   }
 
