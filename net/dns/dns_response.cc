@@ -126,6 +126,8 @@ DnsRecordParser::DnsRecordParser(const void* packet,
 
 unsigned DnsRecordParser::ReadName(const void* const vpos,
                                    std::string* out) const {
+  static const char kAbortMsg[] = "Abort parsing of noncompliant DNS record.";
+
   const char* const pos = reinterpret_cast<const char*>(vpos);
   DCHECK(packet_);
   DCHECK_LE(packet_, pos);
@@ -137,6 +139,12 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
   unsigned seen = 0;
   // Remember how many bytes were consumed before first jump.
   unsigned consumed = 0;
+  // The length of the encoded name (sum of label octets and label lengths).
+  // For context, RFC 1034 states that the total number of octets representing a
+  // domain name (the sum of all label octets and label lengths) is limited to
+  // 255. RFC 1035 introduces message compression as a way to reduce packet size
+  // on the wire, not to increase the maximum domain name length.
+  unsigned encoded_name_len = 0;
 
   if (pos >= end)
     return 0;
@@ -151,8 +159,10 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
     // either a direct length or a pointer to the remainder of the name.
     switch (*p & dns_protocol::kLabelMask) {
       case dns_protocol::kLabelPointer: {
-        if (p + sizeof(uint16_t) > end)
+        if (p + sizeof(uint16_t) > end) {
+          VLOG(1) << kAbortMsg << " Truncated or missing label pointer.";
           return 0;
+        }
         if (consumed == 0) {
           consumed = p - pos + sizeof(uint16_t);
           if (!out)
@@ -160,19 +170,30 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
         }
         seen += sizeof(uint16_t);
         // If seen the whole packet, then we must be in a loop.
-        if (seen > length_)
+        if (seen > length_) {
+          VLOG(1) << kAbortMsg << " Detected loop in label pointers.";
           return 0;
+        }
         uint16_t offset;
         base::ReadBigEndian<uint16_t>(p, &offset);
         offset &= dns_protocol::kOffsetMask;
         p = packet_ + offset;
-        if (p >= end)
+        if (p >= end) {
+          VLOG(1) << kAbortMsg << " Label pointer points outside packet.";
           return 0;
+        }
         break;
       }
       case dns_protocol::kLabelDirect: {
         uint8_t label_len = *p;
         ++p;
+        // Add one octet for the length and |label_len| for the number of
+        // following octets.
+        encoded_name_len += 1 + label_len;
+        if (encoded_name_len > dns_protocol::kMaxNameLength) {
+          VLOG(1) << kAbortMsg << " Name is too long.";
+          return 0;
+        }
         // Note: root domain (".") is NOT included.
         if (label_len == 0) {
           if (consumed == 0) {
@@ -180,8 +201,10 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
           }  // else we set |consumed| before first jump
           return consumed;
         }
-        if (p + label_len >= end)
+        if (p + label_len >= end) {
+          VLOG(1) << kAbortMsg << " Truncated or missing label.";
           return 0;  // Truncated or missing label.
+        }
         if (out) {
           if (!out->empty())
             out->append(".");
@@ -193,6 +216,7 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
       }
       default:
         // unhandled label type
+        VLOG(1) << kAbortMsg << " Unhandled label type.";
         return 0;
     }
   }

@@ -103,6 +103,93 @@ TEST(DnsRecordParserTest, ReadNameFail) {
   EXPECT_EQ(0u, parser.ReadName(data + 0x0e, &out));
 }
 
+// Returns an RFC 1034 style domain name with a length of |name_len|.
+// Also writes the expected dotted string representation into |dotted_str|,
+// which must be non-null.
+std::vector<uint8_t> BuildRfc1034Name(const size_t name_len,
+                                      std::string* dotted_str) {
+  CHECK(dotted_str != nullptr);
+  auto ChoosePrintableCharLambda = [](uint8_t n) { return n % 26 + 'A'; };
+  const size_t max_label_len = 63;
+  std::vector<uint8_t> data;
+
+  dotted_str->clear();
+  while (data.size() < name_len) {
+    // Write the null label representing the root node.
+    if (data.size() == name_len - 1) {
+      data.push_back(0);
+      break;
+    }
+
+    // Compute the size of the next label.
+    //
+    // Suppose |name_len| is 8 and |data.size()| is 4. We want |label_len| to be
+    // 2 so that we are correctly aligned to put 0 in the final position.
+    //
+    //    3  'A' 'B' 'C'  _   _   _   _
+    //    0   1   2   3   4   5   6   7
+    const size_t label_len =
+        std::min(name_len - data.size() - 2, max_label_len);
+    // Write the length octet
+    data.push_back(label_len);
+
+    // Write |label_len| bytes of label data
+    const size_t size_with_label = data.size() + label_len;
+    while (data.size() < size_with_label) {
+      const uint8_t chr = ChoosePrintableCharLambda(data.size());
+      data.push_back(chr);
+      dotted_str->push_back(chr);
+
+      CHECK(data.size() <= name_len);
+    }
+
+    // Write a trailing dot after every label
+    dotted_str->push_back('.');
+  }
+
+  // Omit the final dot
+  if (!dotted_str->empty())
+    dotted_str->pop_back();
+
+  CHECK(data.size() == name_len);
+  return data;
+}
+
+TEST(DnsRecordParserTest, ReadNameGoodLength) {
+  const size_t name_len_cases[] = {1, 10, 40, 250, 254, 255};
+
+  for (auto name_len : name_len_cases) {
+    std::string expected_name;
+    const std::vector<uint8_t> data_vector =
+        BuildRfc1034Name(name_len, &expected_name);
+    const uint8_t* data = data_vector.data();
+
+    DnsRecordParser parser(data, name_len, 0);
+    ASSERT_TRUE(parser.IsValid());
+
+    std::string out;
+    EXPECT_EQ(name_len, parser.ReadName(data, &out));
+    EXPECT_EQ(expected_name, out);
+  }
+}
+
+TEST(DnsRecordParserTest, ReadNameTooLongFail) {
+  const size_t name_len_cases[] = {256, 257, 258, 300, 10000};
+
+  for (auto name_len : name_len_cases) {
+    std::string expected_name;
+    const std::vector<uint8_t> data_vector =
+        BuildRfc1034Name(name_len, &expected_name);
+    const uint8_t* data = data_vector.data();
+
+    DnsRecordParser parser(data, name_len, 0);
+    ASSERT_TRUE(parser.IsValid());
+
+    std::string out;
+    EXPECT_EQ(0u, parser.ReadName(data, &out));
+  }
+}
+
 TEST(DnsRecordParserTest, ReadRecord) {
   const uint8_t data[] = {
       // Type CNAME record.
