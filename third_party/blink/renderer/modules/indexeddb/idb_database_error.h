@@ -26,26 +26,26 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_ERROR_H_
-#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_ERROR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_ERROR_H_
 
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-class WebIDBDatabaseError {
+class IDBDatabaseError {
  public:
-  explicit WebIDBDatabaseError(unsigned short code) : code_(code) {}
+  explicit IDBDatabaseError(unsigned short code) : code_(code) {}
 
-  WebIDBDatabaseError(unsigned short code, String message)
+  IDBDatabaseError(unsigned short code, String message)
       : code_(code), message_(std::move(message)) {}
 
-  WebIDBDatabaseError(const WebIDBDatabaseError& error) = default;
+  IDBDatabaseError(const IDBDatabaseError& error) = default;
 
-  ~WebIDBDatabaseError() = default;
+  ~IDBDatabaseError() = default;
 
-  WebIDBDatabaseError& operator=(const WebIDBDatabaseError& error) = default;
+  IDBDatabaseError& operator=(const IDBDatabaseError& error) = default;
 
   unsigned short Code() const { return code_; }
   const String& Message() const { return message_; }
@@ -57,4 +57,4 @@ class WebIDBDatabaseError {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_ERROR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_ERROR_H_

@@ -36,11 +36,11 @@ class String;
 
 namespace blink {
 
+class IDBDatabaseError;
 class IDBKey;
 class IDBValue;
 class WebIDBCursor;
 class WebIDBDatabase;
-class WebIDBDatabaseError;
 struct IDBDatabaseMetadata;
 struct IDBNameAndVersion;
 
@@ -49,7 +49,7 @@ class WebIDBCallbacks {
   virtual ~WebIDBCallbacks() = default;
 
   // Pointers transfer ownership.
-  virtual void OnError(const WebIDBDatabaseError&) = 0;
+  virtual void OnError(const IDBDatabaseError&) = 0;
   virtual void OnSuccess(const Vector<IDBNameAndVersion>&) = 0;
   virtual void OnSuccess(const Vector<WTF::String>&) = 0;
   virtual void OnSuccess(WebIDBCursor*,

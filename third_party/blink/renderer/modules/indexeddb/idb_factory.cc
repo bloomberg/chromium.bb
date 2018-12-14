@@ -92,7 +92,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     }
   }
 
-  void OnError(const WebIDBDatabaseError& error) override {
+  void OnError(const IDBDatabaseError& error) override {
     if (!promise_resolver_)
       return;
 

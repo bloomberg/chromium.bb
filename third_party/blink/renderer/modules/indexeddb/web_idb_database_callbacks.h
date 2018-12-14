@@ -30,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
@@ -52,8 +52,7 @@ class WebIDBDatabaseCallbacks {
   virtual void OnVersionChange(long long old_version,
                                long long new_version) = 0;
 
-  virtual void OnAbort(long long transaction_id,
-                       const WebIDBDatabaseError&) = 0;
+  virtual void OnAbort(long long transaction_id, const IDBDatabaseError&) = 0;
   virtual void OnComplete(long long transaction_id) = 0;
   virtual void OnChanges(const ObservationIndexMap&,
                          Vector<Persistent<IDBObservation>> observations,

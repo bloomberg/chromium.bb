@@ -30,10 +30,10 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 
 namespace blink {
 
@@ -64,7 +64,7 @@ void WebIDBDatabaseCallbacksImpl::OnVersionChange(long long old_version,
 }
 
 void WebIDBDatabaseCallbacksImpl::OnAbort(long long transaction_id,
-                                          const WebIDBDatabaseError& error) {
+                                          const IDBDatabaseError& error) {
   if (callbacks_) {
     callbacks_->OnAbort(
         transaction_id,
