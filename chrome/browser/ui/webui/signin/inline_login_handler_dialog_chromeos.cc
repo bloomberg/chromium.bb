@@ -10,7 +10,9 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chrome/common/webui_url_constants.h"
+#include "net/base/url_util.h"
 #include "ui/aura/window.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 
@@ -21,20 +23,26 @@ InlineLoginHandlerDialogChromeOS* dialog = nullptr;
 }  // namespace
 
 // static
-void InlineLoginHandlerDialogChromeOS::Show() {
+void InlineLoginHandlerDialogChromeOS::Show(const std::string& email) {
   if (dialog) {
     dialog->dialog_window()->Focus();
     return;
   }
 
+  GURL url(chrome::kChromeUIChromeSigninURL);
+  if (!email.empty()) {
+    url = net::AppendQueryParameter(url, "email", email);
+    url = net::AppendQueryParameter(url, "readOnlyEmail", "true");
+  }
+
   // Will be deleted by |SystemWebDialogDelegate::OnDialogClosed|.
-  dialog = new InlineLoginHandlerDialogChromeOS();
+  dialog = new InlineLoginHandlerDialogChromeOS(url);
   dialog->ShowSystemDialog();
 }
 
-InlineLoginHandlerDialogChromeOS::InlineLoginHandlerDialogChromeOS()
-    : SystemWebDialogDelegate(GURL(chrome::kChromeUIChromeSigninURL),
-                              base::string16() /* title */) {}
+InlineLoginHandlerDialogChromeOS::InlineLoginHandlerDialogChromeOS(
+    const GURL& url)
+    : SystemWebDialogDelegate(url, base::string16() /* title */) {}
 
 InlineLoginHandlerDialogChromeOS::~InlineLoginHandlerDialogChromeOS() {
   DCHECK_EQ(this, dialog);

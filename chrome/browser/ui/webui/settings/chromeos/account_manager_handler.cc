@@ -19,8 +19,12 @@
 #include "chromeos/account_manager/account_manager_factory.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/user_manager/user.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 namespace settings {
@@ -51,9 +55,11 @@ AccountManager::AccountKey GetAccountKeyFromJsCallback(
 
 AccountManagerUIHandler::AccountManagerUIHandler(
     AccountManager* account_manager,
-    AccountTrackerService* account_tracker_service)
+    AccountTrackerService* account_tracker_service,
+    identity::IdentityManager* identity_manager)
     : account_manager_(account_manager),
       account_tracker_service_(account_tracker_service),
+      identity_manager_(identity_manager),
       account_mapper_util_(account_tracker_service_),
       account_manager_observer_(this),
       account_tracker_service_observer_(this),
@@ -72,6 +78,10 @@ void AccountManagerUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "addAccount",
       base::BindRepeating(&AccountManagerUIHandler::HandleAddAccount,
+                          weak_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "reauthenticateAccount",
+      base::BindRepeating(&AccountManagerUIHandler::HandleReauthenticateAccount,
                           weak_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "removeAccount",
@@ -110,7 +120,8 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
         account_tracker_service_->FindAccountInfoByGaiaId(account_key.id);
     DCHECK(!account_info.IsEmpty());
 
-    if (account_info.full_name.empty()) {
+    if (account_manager_->IsTokenAvailable(account_key) &&
+        account_info.full_name.empty()) {
       // Account info has not been fully fetched yet from GAIA. Ignore this
       // account.
       continue;
@@ -120,11 +131,30 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
     account.SetString("id", account_key.id);
     account.SetInteger("accountType", account_key.account_type);
     account.SetBoolean("isDeviceAccount", false);
+
+    const std::string oauth_account_id =
+        account_mapper_util_.AccountKeyToOAuthAccountId(account_key);
+    account.SetBoolean(
+        "isSignedIn",
+        identity_manager_->HasAccountWithRefreshToken(oauth_account_id) &&
+            !identity_manager_
+                 ->HasAccountWithRefreshTokenInPersistentErrorState(
+                     oauth_account_id));
     account.SetString("fullName", account_info.full_name);
     account.SetString("email", account_info.email);
     gfx::Image icon =
         account_tracker_service_->GetAccountImage(account_info.account_id);
-    account.SetString("pic", webui::GetBitmapDataUrl(icon.AsBitmap()));
+    if (!icon.IsEmpty()) {
+      account.SetString("pic", webui::GetBitmapDataUrl(icon.AsBitmap()));
+    } else {
+      // TODO(crbug.com/914751): Badge this icon with an exclamation mark.
+      gfx::ImageSkia default_icon =
+          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+              IDR_LOGIN_DEFAULT_USER);
+      account.SetString("pic",
+                        webui::GetBitmapDataUrl(
+                            default_icon.GetRepresentation(1.0f).GetBitmap()));
+    }
 
     if (account_mapper_util_.IsEqual(account_key, device_account_id)) {
       device_account = std::move(account);
@@ -146,6 +176,16 @@ void AccountManagerUIHandler::GetAccountsCallbackHandler(
 void AccountManagerUIHandler::HandleAddAccount(const base::ListValue* args) {
   AllowJavascript();
   InlineLoginHandlerDialogChromeOS::Show();
+}
+
+void AccountManagerUIHandler::HandleReauthenticateAccount(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  std::string account_email;
+  args->GetList()[0].GetAsString(&account_email);
+
+  InlineLoginHandlerDialogChromeOS::Show(account_email);
 }
 
 void AccountManagerUIHandler::HandleRemoveAccount(const base::ListValue* args) {

@@ -67,6 +67,29 @@ Polymer({
   },
 
   /**
+   * @param {!settings.Account} account
+   * @return {boolean} True if the account reauthentication button should be
+   *    shown, false otherwise.
+   * @private
+   */
+  shouldShowReauthenticationButton_: function(account) {
+    // Device account re-authentication cannot be handled in-session, primarily
+    // because the user may have changed their password (leading to an LST
+    // invalidation) and we do not have a mechanism to change the cryptohome
+    // password in-session.
+    return !account.isDeviceAccount && !account.isSignedIn;
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onReauthenticationTap_: function(event) {
+    this.browserProxy_.reauthenticateAccount(
+      this.$['account-list'].itemForElement(event.path[0]).email);
+  },
+
+  /**
    * @private
    */
   refreshAccounts_: function() {
