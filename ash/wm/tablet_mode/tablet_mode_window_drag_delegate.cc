@@ -14,7 +14,9 @@
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform_util.h"
@@ -183,7 +185,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   dragged_window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
   SplitViewController::SnapPosition snap_position = SplitViewController::NONE;
   if (result == wm::WmToplevelWindowEventHandler::DragResult::SUCCESS &&
-      split_view_controller_->CanSnap(dragged_window_)) {
+      CanSnapInSplitview(dragged_window_)) {
     snap_position = GetSnapPosition(location_in_screen);
   }
 
@@ -227,7 +229,7 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
     const gfx::Point& location_in_screen) const {
   SplitViewController::SnapPosition snap_position =
       GetSnapPosition(location_in_screen);
-  const bool can_snap = split_view_controller_->CanSnap(dragged_window_);
+  const bool can_snap = CanSnapInSplitview(dragged_window_);
   if (snap_position != SplitViewController::NONE &&
       !split_view_controller_->IsSplitViewModeActive() && can_snap) {
     return snap_position == SplitViewController::LEFT
@@ -251,7 +253,7 @@ IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
   }
 
   // No top drag indicator if in portrait screen orientation.
-  if (split_view_controller_->IsCurrentScreenOrientationLandscape())
+  if (IsCurrentScreenOrientationLandscape())
     return can_snap ? IndicatorState::kDragArea : IndicatorState::kCannotSnap;
 
   return can_snap ? IndicatorState::kDragAreaRight
@@ -271,17 +273,15 @@ int TabletModeWindowDragDelegate::GetIndicatorsVerticalThreshold(
 
 SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
     const gfx::Point& location_in_screen) const {
-  if (!split_view_controller_->CanSnap(dragged_window_))
+  if (!CanSnapInSplitview(dragged_window_))
     return SplitViewController::NONE;
 
   // If split view mode is active during dragging, the dragged window will be
   // either snapped left or right (if it's not merged into overview window),
   // depending on the relative position of |location_in_screen| and the current
   // divider position.
-  const bool is_landscape =
-      split_view_controller_->IsCurrentScreenOrientationLandscape();
-  const bool is_primary =
-      split_view_controller_->IsCurrentScreenOrientationPrimary();
+  const bool is_landscape = IsCurrentScreenOrientationLandscape();
+  const bool is_primary = IsCurrentScreenOrientationPrimary();
   if (split_view_controller_->IsSplitViewModeActive()) {
     const int position =
         is_landscape ? location_in_screen.x() : location_in_screen.y();
@@ -409,14 +409,13 @@ bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
 
   const gfx::Point location_in_screen = GetEventLocationInScreen(event);
   const IndicatorState indicator_state = GetIndicatorState(location_in_screen);
-  const bool is_landscape =
-      split_view_controller_->IsCurrentScreenOrientationLandscape();
+  const bool is_landscape = IsCurrentScreenOrientationLandscape();
   const float velocity = is_landscape ? event->details().velocity_x()
                                       : event->details().velocity_y();
 
   // Drop the window into overview if fling with large enough velocity to the
   // opposite snap position when preview area is shown.
-  if (split_view_controller_->IsCurrentScreenOrientationPrimary()) {
+  if (IsCurrentScreenOrientationPrimary()) {
     if (indicator_state == IndicatorState::kPreviewAreaLeft)
       return velocity > kFlingToOverviewFromSnappingAreaThreshold;
     else if (indicator_state == IndicatorState::kPreviewAreaRight)

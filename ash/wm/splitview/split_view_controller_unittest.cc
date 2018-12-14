@@ -27,6 +27,7 @@
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -165,10 +166,6 @@ class SplitViewControllerTest : public AshTestBase {
 
   SplitViewDivider* split_view_divider() {
     return split_view_controller()->split_view_divider();
-  }
-
-  OrientationLockType screen_orientation() {
-    return split_view_controller()->GetCurrentScreenOrientation();
   }
 
   int divider_position() { return split_view_controller()->divider_position(); }
@@ -1053,19 +1050,20 @@ TEST_F(SplitViewControllerTest, ExitTabletModeEndSplitView) {
 TEST_F(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
 
   const gfx::Rect display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window1.get());
   aura::test::TestWindowDelegate* delegate =
       static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
   delegate->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.5f, display_bounds.height()));
-  EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
 
   delegate->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
-  EXPECT_FALSE(split_view_controller()->CanSnap(window1.get()));
+  EXPECT_FALSE(CanSnapInSplitview(window1.get()));
 }
 
 // Tests that the snapped window can not be moved outside of work area when its
@@ -1090,8 +1088,9 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             OrientationLockType::kLandscapePrimary);
 
   gfx::Rect display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
-  EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window1.get());
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.4f, display_bounds.height()));
@@ -1121,10 +1120,11 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             OrientationLockType::kPortraitPrimary);
 
   display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window1.get());
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width(), display_bounds.height() * 0.4f));
-  EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
   divider_bounds = split_view_divider()->GetDividerBoundsInScreen(false);
@@ -1149,10 +1149,11 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             OrientationLockType::kLandscapeSecondary);
 
   display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window1.get());
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.4f, display_bounds.height()));
-  EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   split_view_controller()->SnapWindow(window1.get(),
                                       SplitViewController::RIGHT);
   EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
@@ -1179,10 +1180,11 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
             OrientationLockType::kPortraitSecondary);
 
   display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window1.get());
   delegate1->set_minimum_size(
       gfx::Size(display_bounds.width(), display_bounds.height() * 0.4f));
-  EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
+  EXPECT_TRUE(CanSnapInSplitview(window1.get()));
   split_view_controller()->SnapWindow(window1.get(),
                                       SplitViewController::RIGHT);
   EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
@@ -1212,9 +1214,11 @@ TEST_F(SplitViewControllerTest,
   aura::test::TestWindowDelegate* delegate1 =
       static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
   ui::test::EventGenerator* generator = GetEventGenerator();
-  EXPECT_EQ(OrientationLockType::kLandscapePrimary, screen_orientation());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+            GetCurrentScreenOrientation());
   gfx::Rect workarea_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window1.get());
 
   // Snap the divider to one third position when there is only left window with
   // minimum size larger than one third of the display's width. The divider
@@ -1293,7 +1297,8 @@ TEST_F(SplitViewControllerTest,
   const gfx::Rect bounds(0, 0, 200, 300);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   const gfx::Rect workarea_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window1.get());
 
   // Divider should be moved to the middle at the beginning.
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
@@ -1434,7 +1439,9 @@ TEST_F(SplitViewControllerTest,
   gfx::Rect divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
   const int screen_width =
-      screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
+      screen_util::GetDisplayWorkAreaBoundsInParentForDefaultContainer(
+          window1.get())
+          .width();
   GetEventGenerator()->set_current_screen_location(
       divider_bounds.CenterPoint());
   GetEventGenerator()->PressLeftButton();
@@ -1707,7 +1714,8 @@ TEST_F(SplitViewControllerTest, DividerClosestRatioOnWorkArea) {
   gfx::Rect divider_bounds =
       split_view_divider()->GetDividerBoundsInScreen(false);
   gfx::Rect workarea_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window.get());
   generator->set_current_screen_location(divider_bounds.CenterPoint());
   // Drag the divider to one third position of the work area's width.
   generator->DragMouseTo(
@@ -2214,7 +2222,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
       static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
   delegate->set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
-  EXPECT_FALSE(split_view_controller()->CanSnap(window1.get()));
+  EXPECT_FALSE(CanSnapInSplitview(window1.get()));
   resizer = StartDrag(window1.get(), window2.get());
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   DragWindowTo(resizer.get(),
@@ -2688,7 +2696,8 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
           window1->GetRootWindow());
   EXPECT_TRUE(current_grid->GetDropTarget());
   const gfx::Rect work_area_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window1.get());
   EXPECT_EQ(current_grid->bounds(), work_area_bounds);
   // The drop target should be visible.
   views::Widget* drop_target_widget =
@@ -3561,7 +3570,8 @@ TEST_F(SplitViewAppDraggingTest, DragNoneActiveMaximizedWindow) {
   std::unique_ptr<aura::Window> window = CreateTestWindowWithWidget(false);
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
   gfx::Rect display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window.get());
   const float long_scroll_delta = display_bounds.height() / 4 + 5;
 
   const gfx::Point start;
@@ -3589,7 +3599,8 @@ TEST_F(SplitViewAppDraggingTest, DragActiveMaximizedWindow) {
   std::unique_ptr<aura::Window> window = CreateTestWindowWithWidget();
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
   gfx::Rect display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window.get());
 
   // Move the window by a small amount of distance will maximize the window
   // again.
@@ -3648,7 +3659,8 @@ TEST_F(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
   ShelfLayoutManager* shelf_layout_manager =
       AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
   gfx::Rect display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window.get());
 
   // Shelf will be auto-hidden if the winodw requests to be fullscreened.
   wm::WindowState* window_state = wm::GetWindowState(window.get());
@@ -3761,7 +3773,8 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
   std::unique_ptr<aura::Window> window = CreateTestWindowWithWidget();
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
   gfx::Rect display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window.get());
 
   const float long_scroll_delta = display_bounds.height() / 4 + 5;
   float large_velocity =
@@ -3833,7 +3846,8 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
                                       SplitViewController::RIGHT);
 
   gfx::Rect display_bounds =
-      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+      screen_util::GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
+          window1.get());
   const float long_scroll_y = display_bounds.bottom() - 10;
   float large_velocity =
       TabletModeWindowDragDelegate::kFlingToOverviewFromSnappingAreaThreshold +

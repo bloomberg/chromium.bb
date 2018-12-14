@@ -80,28 +80,11 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   SplitViewController();
   ~SplitViewController() override;
 
-  // Returns true if split view mode is supported. Currently the split view
-  // mode is only supported in tablet mode.
-  static bool ShouldAllowSplitView();
-
   // Binds the mojom::SplitViewController interface to this object.
   void BindRequest(mojom::SplitViewControllerRequest request);
 
-  // Returns true if |window| can be activated and snapped.
-  bool CanSnap(aura::Window* window);
-
   // Returns true if split view mode is active.
   bool IsSplitViewModeActive() const;
-
-  OrientationLockType GetCurrentScreenOrientation() const;
-
-  // Returns true if |screen_orientation_| is a landscape orientation.
-  bool IsCurrentScreenOrientationLandscape() const;
-
-  // Returns true if |screen_orientation_| is a primary orientation. Note,
-  // |left_window_| should be placed on the left or top side if the screen is
-  // primary orientation.
-  bool IsCurrentScreenOrientationPrimary() const;
 
   // Snaps window to left/right. It will try to remove |window| from the
   // overview window grid first before snapping it if |window| is currently
@@ -127,8 +110,6 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
                                            SnapPosition snap_position);
   gfx::Rect GetSnappedWindowBoundsInScreen(aura::Window* window,
                                            SnapPosition snap_position);
-  gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window) const;
-  gfx::Rect GetDisplayWorkAreaBoundsInScreen(aura::Window* window) const;
 
   // Gets the desired snapped window bounds accoridng to the snap state
   // |snap_state| and the divider pistion |divider_position_|.
@@ -296,7 +277,8 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // moved to the positions in |kFixedPositionRatios|. Whether the divider can
   // be moved to |kOneThirdPositionRatio| or |kTwoThirdPositionRatio| depends
   // on the minimum size of current snapped windows.
-  void GetDividerOptionalPositionRatios(std::vector<float>* positionRatios);
+  void GetDividerOptionalPositionRatios(
+      std::vector<float>* out_position_ratios);
 
   // Gets the expected window component depending on current screen orientation
   // for resizing purpose.
@@ -319,6 +301,7 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // translation to the snapped window to make it visually be placed outside of
   // the workspace area.
   void SetWindowsTransformDuringResizing();
+
   // Restore the snapped windows transform to identity transform after resizing.
   void RestoreWindowsTransformAfterResizing();
 

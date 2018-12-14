@@ -15,6 +15,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_util.h"
@@ -72,15 +73,6 @@ gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
       screen_util::GetDisplayWorkAreaBoundsInParent(state_object->window());
   work_area_in_parent.ClampToCenteredSize(bounds_in_parent.size());
   return work_area_in_parent;
-}
-
-// Returns true if the window can snap in tablet mode.
-bool CanSnap(wm::WindowState* window_state) {
-  // If split view mode is not allowed in tablet mode, do not allow snapping
-  // windows.
-  if (!SplitViewController::ShouldAllowSplitView())
-    return false;
-  return window_state->CanSnap();
 }
 
 // Returns the maximized/full screen and/or centered bounds of a window.
@@ -433,8 +425,9 @@ mojom::WindowStateType TabletModeWindowState::GetSnappedWindowStateType(
     mojom::WindowStateType target_state) {
   DCHECK(target_state == mojom::WindowStateType::LEFT_SNAPPED ||
          target_state == mojom::WindowStateType::RIGHT_SNAPPED);
-  return CanSnap(window_state) ? target_state
-                               : GetMaximizedOrCenteredWindowType(window_state);
+  return CanSnapInSplitview(window_state->window())
+             ? target_state
+             : GetMaximizedOrCenteredWindowType(window_state);
 }
 
 void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,

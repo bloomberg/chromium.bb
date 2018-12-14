@@ -22,6 +22,7 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -394,7 +395,7 @@ bool WindowSelectorController::AcceptSelection() {
 void WindowSelectorController::OnOverviewButtonTrayLongPressed(
     const gfx::Point& event_location) {
   // Do nothing if split view is not enabled.
-  if (!SplitViewController::ShouldAllowSplitView())
+  if (!ShouldAllowSplitView())
     return;
 
   // Depending on the state of the windows and split view, a long press has many
@@ -452,7 +453,7 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
     }
 
     // Show a toast if the window cannot be snapped.
-    if (!split_view_controller->CanSnap(active_window)) {
+    if (!CanSnapInSplitview(active_window)) {
       split_view_controller->ShowAppCannotSnapToast();
       return;
     }
@@ -482,10 +483,8 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
 
   // Do nothing if no item was retrieved, or if the retrieved item is
   // unsnappable.
-  if (!item_to_snap ||
-      !split_view_controller->CanSnap(item_to_snap->GetWindow())) {
+  if (!item_to_snap || !CanSnapInSplitview(item_to_snap->GetWindow()))
     return;
-  }
 
   split_view_controller->SnapWindow(item_to_snap->GetWindow(),
                                     SplitViewController::LEFT);

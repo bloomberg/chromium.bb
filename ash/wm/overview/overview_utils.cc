@@ -16,6 +16,7 @@
 #include "ash/wm/overview/start_animation_observer.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "base/no_destructor.h"
@@ -110,7 +111,7 @@ bool CanCoverAvailableWorkspace(aura::Window* window) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   if (split_view_controller->IsSplitViewModeActive())
-    return split_view_controller->CanSnap(window);
+    return CanSnapInSplitview(window);
   return wm::GetWindowState(window)->IsMaximizedOrFullscreenOrPinned();
 }
 

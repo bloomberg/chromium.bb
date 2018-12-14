@@ -9,6 +9,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/wm_event.h"
 #include "ui/aura/client/aura_constants.h"
@@ -180,7 +181,7 @@ gfx::Rect BaseState::GetSnappedWindowBoundsInParent(
     aura::Window* window,
     const mojom::WindowStateType state_type) {
   gfx::Rect bounds_in_parent;
-  if (SplitViewController::ShouldAllowSplitView()) {
+  if (ShouldAllowSplitView()) {
     bounds_in_parent =
         Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInParent(
             window, (state_type == mojom::WindowStateType::LEFT_SNAPPED)
