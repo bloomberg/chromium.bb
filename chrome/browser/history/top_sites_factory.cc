@@ -83,7 +83,7 @@ void InitializePrepopulatedPageList(
         GURL(l10n_util::GetStringUTF8(page.url_id)),
         l10n_util::GetStringUTF16(page.title_id),
         features::IsMDIconsEnabled() ? page.large_favicon_id : page.favicon_id,
-        /*thumbnail_id=*/-1, page.color));
+        page.color));
   }
 #endif
 }

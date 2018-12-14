@@ -38,25 +38,8 @@ class FakeEmptyTopSites : public history::TopSites {
   }
 
   // history::TopSites:
-  bool SetPageThumbnail(const GURL& url,
-                        const gfx::Image& thumbnail,
-                        const history::ThumbnailScore& score) override {
-    return false;
-  }
   void GetMostVisitedURLs(const GetMostVisitedURLsCallback& callback,
                           bool include_forced_urls) override;
-  bool GetPageThumbnail(const GURL& url, bool prefix_match,
-                        scoped_refptr<base::RefCountedMemory>* bytes) override {
-    return false;
-  }
-  bool GetPageThumbnailScore(const GURL& url,
-                             history::ThumbnailScore* score) override {
-    return false;
-  }
-  bool GetTemporaryPageThumbnailScore(const GURL& url,
-                                      history::ThumbnailScore* score) override {
-    return false;
-  }
   void SyncWithHistory() override {}
   bool HasBlacklistedItems() const override {
     return false;

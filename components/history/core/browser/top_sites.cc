@@ -8,17 +8,14 @@
 
 namespace history {
 
-PrepopulatedPage::PrepopulatedPage()
-    : favicon_id(-1), thumbnail_id(-1), color() {}
+PrepopulatedPage::PrepopulatedPage() : favicon_id(-1), color() {}
 
 PrepopulatedPage::PrepopulatedPage(const GURL& url,
                                    const base::string16& title,
                                    int favicon_id,
-                                   int thumbnail_id,
                                    SkColor color)
     : most_visited(url, title),
       favicon_id(favicon_id),
-      thumbnail_id(thumbnail_id),
       color(color) {
   most_visited.redirects.push_back(url);
 }

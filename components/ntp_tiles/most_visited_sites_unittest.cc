@@ -155,25 +155,9 @@ MostVisitedURL MakeMostVisitedURL(const std::string& title,
 class MockTopSites : public TopSites {
  public:
   MOCK_METHOD0(ShutdownOnUIThread, void());
-  MOCK_METHOD3(SetPageThumbnail,
-               bool(const GURL& url,
-                    const gfx::Image& thumbnail,
-                    const history::ThumbnailScore& score));
-  MOCK_METHOD3(SetPageThumbnailToJPEGBytes,
-               bool(const GURL& url,
-                    const base::RefCountedMemory* memory,
-                    const history::ThumbnailScore& score));
   MOCK_METHOD2(GetMostVisitedURLs,
                void(const GetMostVisitedURLsCallback& callback,
                     bool include_forced_urls));
-  MOCK_METHOD3(GetPageThumbnail,
-               bool(const GURL& url,
-                    bool prefix_match,
-                    scoped_refptr<base::RefCountedMemory>* bytes));
-  MOCK_METHOD2(GetPageThumbnailScore,
-               bool(const GURL& url, history::ThumbnailScore* score));
-  MOCK_METHOD2(GetTemporaryPageThumbnailScore,
-               bool(const GURL& url, history::ThumbnailScore* score));
   MOCK_METHOD0(SyncWithHistory, void());
   MOCK_CONST_METHOD0(HasBlacklistedItems, bool());
   MOCK_METHOD1(AddBlacklistedURL, void(const GURL& url));

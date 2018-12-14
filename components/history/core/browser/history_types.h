@@ -440,17 +440,6 @@ struct TopSitesDelta {
   MostVisitedURLWithRankList moved;
 };
 
-typedef std::map<GURL, scoped_refptr<base::RefCountedBytes>> URLToThumbnailMap;
-
-// Used when migrating most visited thumbnails out of history and into topsites.
-struct ThumbnailMigration {
-  ThumbnailMigration();
-  ~ThumbnailMigration();
-
-  MostVisitedURLList most_visited;
-  URLToThumbnailMap url_to_thumbnail_map;
-};
-
 typedef std::map<GURL, Images> URLToImagesMap;
 
 class MostVisitedThumbnails
