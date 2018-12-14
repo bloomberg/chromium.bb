@@ -1760,6 +1760,9 @@
                   '|chrome/browser/chromeos/wm_' \
                   '|ui/base/x/'
     },
+    'zlib': {
+      'filepath': 'third_party/zlib'
+    },
     'zoom': {
       'filepath': 'chrome/browser/ui/zoom/' \
                   '|components/ui/zoom/' \
@@ -2515,6 +2518,7 @@
     'x11': ['derat+watch@chromium.org',
             'sadrul@chromium.org',
             'yusukes+watch@chromium.org'],
+    'zlib': ['cblume+zlib@chromium.org'],
     'zoom': ['wjmaclean@chromium.org'],
   },
 }
