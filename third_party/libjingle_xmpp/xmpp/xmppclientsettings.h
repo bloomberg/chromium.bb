@@ -34,9 +34,6 @@ class XmppUserSettings {
   void set_resource(const std::string& resource) { resource_ = resource; }
   void set_use_tls(const TlsOptions use_tls) { use_tls_ = use_tls; }
   void set_allow_plain(bool f) { allow_plain_ = f; }
-  void set_test_server_domain(const std::string& test_server_domain) {
-    test_server_domain_ = test_server_domain;
-  }
   void set_token_service(const std::string& token_service) {
     token_service_ = token_service;
   }
@@ -49,7 +46,6 @@ class XmppUserSettings {
   const std::string& resource() const { return resource_; }
   TlsOptions use_tls() const { return use_tls_; }
   bool allow_plain() const { return allow_plain_; }
-  const std::string& test_server_domain() const { return test_server_domain_; }
   const std::string& token_service() const { return token_service_; }
 
  private:
@@ -61,7 +57,6 @@ class XmppUserSettings {
   std::string resource_;
   TlsOptions use_tls_;
   bool allow_plain_;
-  std::string test_server_domain_;
   std::string token_service_;
 };
 
