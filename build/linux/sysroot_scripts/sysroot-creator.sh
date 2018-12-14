@@ -99,7 +99,7 @@ DownloadOrCopy() {
   fi
 
   HTTP=0
-  echo "$1" | grep -qs ^http:// && HTTP=1
+  echo "$1" | grep -Eqs '^https?://' && HTTP=1
   if [ "$HTTP" = "1" ]; then
     SubBanner "downloading from $1 -> $2"
     # Appending the "$$" shell pid is necessary here to prevent concurrent
