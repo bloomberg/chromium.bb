@@ -48,13 +48,13 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -105,22 +105,22 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     promise_resolver_.Clear();
   }
 
-  void OnSuccess(const Vector<WebIDBNameAndVersion>&
-                     web_database_name_and_version_list) override {
+  void OnSuccess(
+      const Vector<IDBNameAndVersion>& idb_name_and_version_list) override {
     if (!promise_resolver_)
       return;
 
-    HeapVector<Member<IDBDatabaseInfo>> database_name_and_version_list;
-    for (size_t i = 0; i < web_database_name_and_version_list.size(); ++i) {
+    HeapVector<Member<IDBDatabaseInfo>> name_and_version_list;
+    for (size_t i = 0; i < idb_name_and_version_list.size(); ++i) {
       IDBDatabaseInfo* idb_info = IDBDatabaseInfo::Create();
-      idb_info->setName(web_database_name_and_version_list[i].name);
-      idb_info->setVersion(web_database_name_and_version_list[i].version);
-      database_name_and_version_list.push_back(idb_info);
+      idb_info->setName(idb_name_and_version_list[i].name);
+      idb_info->setVersion(idb_name_and_version_list[i].version);
+      name_and_version_list.push_back(idb_info);
     }
     probe::AsyncTask async_task(
         ExecutionContext::From(promise_resolver_->GetScriptState()), this,
         "success");
-    promise_resolver_->Resolve(database_name_and_version_list);
+    promise_resolver_->Resolve(name_and_version_list);
     promise_resolver_.Clear();
   }
 

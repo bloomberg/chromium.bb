@@ -32,6 +32,7 @@ blink_modules_sources("indexeddb") {
     "idb_key_range.h",
     "idb_metadata.cc",
     "idb_metadata.h",
+    "idb_name_and_version.h",
     "idb_object_store.cc",
     "idb_object_store.h",
     "idb_observation.cc",
@@ -88,7 +89,6 @@ blink_modules_sources("indexeddb") {
     "web_idb_factory.h",
     "web_idb_factory_impl.cc",
     "web_idb_factory_impl.h",
-    "web_idb_name_and_version.h",
     "web_idb_observation.h",
   ]
 

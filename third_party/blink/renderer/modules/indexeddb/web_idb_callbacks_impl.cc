@@ -35,19 +35,18 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
 using blink::WebIDBDatabaseError;
-using blink::WebIDBNameAndVersion;
 
 namespace blink {
 
@@ -83,7 +82,7 @@ void WebIDBCallbacksImpl::OnError(const WebIDBDatabaseError& error) {
 }
 
 void WebIDBCallbacksImpl::OnSuccess(
-    const Vector<WebIDBNameAndVersion>& name_and_version_list) {
+    const Vector<IDBNameAndVersion>& name_and_version_list) {
   // Only implemented in idb_factory.cc for the promise-based databases() call.
   NOTREACHED();
 }
