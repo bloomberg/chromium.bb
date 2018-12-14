@@ -1493,6 +1493,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
       base::JSONReader::Read(json_string, base::JSON_ALLOW_TRAILING_COMMAS);
   if (!properties || !properties->is_dict()) {
     LOGFN(ERROR) << "base::JSONReader::Read failed to translate to JSON";
+    *status_text = AllocErrorString(IDS_INVALID_UI_RESPONSE);
     return E_FAIL;
   }
 
