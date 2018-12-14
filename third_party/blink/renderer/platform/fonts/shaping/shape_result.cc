@@ -335,7 +335,8 @@ void ShapeResult::RunInfo::CharacterIndexForXPosition(
   // representing a sequence of glyphs, of size glyph_sequence_advance. We
   // linearly interpolate how much space each character takes, and reduce the
   // sequence to only match the character size.
-  if (break_glyphs_option == BreakGlyphs) {
+  if (break_glyphs_option == BreakGlyphs &&
+      glyph_sequence_end > glyph_sequence_start) {
     int graphemes = NumGraphemes(glyph_sequence_start, glyph_sequence_end);
     if (graphemes > 1) {
       float unit_size = result->advance / graphemes;
