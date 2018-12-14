@@ -27,12 +27,8 @@ void CapturerReleaseOriginalFrame(
 
 }  // anonymous namespace
 
-WebRtcVideoCapturerAdapter::WebRtcVideoCapturerAdapter(
-    bool is_screencast,
-    blink::WebMediaStreamTrack::ContentHintType content_hint)
-    : is_screencast_(is_screencast),
-      content_hint_(content_hint),
-      running_(false) {
+WebRtcVideoCapturerAdapter::WebRtcVideoCapturerAdapter(bool is_screencast)
+    : is_screencast_(is_screencast), running_(false) {
   thread_checker_.DetachFromThread();
 }
 
@@ -185,12 +181,6 @@ bool WebRtcVideoCapturerAdapter::GetPreferredFourccs(
   DCHECK(fourccs->empty());
   fourccs->push_back(cricket::FOURCC_I420);
   return true;
-}
-
-void WebRtcVideoCapturerAdapter::SetContentHint(
-    blink::WebMediaStreamTrack::ContentHintType content_hint) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  content_hint_ = content_hint;
 }
 
 bool WebRtcVideoCapturerAdapter::IsScreencast() const {

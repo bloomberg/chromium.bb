@@ -121,8 +121,6 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
   // destroyed.
   void ReleaseSourceOnMainThread();
 
-  void SetContentHint(blink::WebMediaStreamTrack::ContentHintType content_hint);
-
   void OnVideoFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
                         base::TimeTicks estimated_capture_time);
 
@@ -131,9 +129,6 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
 
   void OnVideoFrameOnWorkerThread(
       const scoped_refptr<media::VideoFrame>& frame);
-
-  void SetContentHintOnWorkerThread(
-      blink::WebMediaStreamTrack::ContentHintType content_hint);
 
   virtual ~WebRtcVideoSourceAdapter();
 
@@ -227,24 +222,6 @@ void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
   video_source_ = nullptr;
 }
 
-void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::SetContentHint(
-    blink::WebMediaStreamTrack::ContentHintType content_hint) {
-  DCHECK(render_thread_checker_.CalledOnValidThread());
-  libjingle_worker_thread_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WebRtcVideoSourceAdapter::SetContentHintOnWorkerThread,
-                     this, content_hint));
-}
-
-void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
-    SetContentHintOnWorkerThread(
-        blink::WebMediaStreamTrack::ContentHintType content_hint) {
-  DCHECK(libjingle_worker_thread_->BelongsToCurrentThread());
-  base::AutoLock auto_lock(capture_adapter_stop_lock_);
-  if (capture_adapter_)
-    capture_adapter_->SetContentHint(content_hint);
-}
-
 void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::OnVideoFrameOnIO(
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks estimated_capture_time) {
@@ -314,8 +291,8 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
   // by removing the need for and dependency on a cricket::VideoCapturer.
   video_source_ = scoped_refptr<WebRtcVideoSource>(
       new rtc::RefCountedObject<WebRtcVideoSource>(
-          new WebRtcVideoCapturerAdapter(is_screencast, track.ContentHint()),
-          is_screencast, needs_denoising));
+          new WebRtcVideoCapturerAdapter(is_screencast), is_screencast,
+          needs_denoising));
 
   // TODO(pbos): Consolidate the local video track with the source proxy and
   // move into PeerConnectionDependencyFactory. This now separately holds on a
@@ -361,7 +338,6 @@ void MediaStreamVideoWebRtcSink::OnEnabledChanged(bool enabled) {
 void MediaStreamVideoWebRtcSink::OnContentHintChanged(
     blink::WebMediaStreamTrack::ContentHintType content_hint) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  source_adapter_->SetContentHint(content_hint);
   video_track_->set_content_hint(
       ContentHintTypeToWebRtcContentHint(content_hint));
 }

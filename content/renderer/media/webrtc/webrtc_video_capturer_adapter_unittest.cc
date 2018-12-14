@@ -18,9 +18,7 @@ class WebRtcVideoCapturerAdapterTest
       public ::testing::Test {
  public:
   WebRtcVideoCapturerAdapterTest()
-      : adapter_(new WebRtcVideoCapturerAdapter(
-            false,
-            blink::WebMediaStreamTrack::ContentHintType::kNone)),
+      : adapter_(new WebRtcVideoCapturerAdapter(false)),
         output_frame_width_(0),
         output_frame_height_(0) {
     adapter_->AddOrUpdateSink(this, rtc::VideoSinkWants());
@@ -51,52 +49,6 @@ class WebRtcVideoCapturerAdapterTest
   void OnFrame(const webrtc::VideoFrame& frame) override {
     output_frame_width_ = frame.width();
     output_frame_height_ = frame.height();
-  }
-
-  void TestContentHintResolutionAdaptation(
-      bool is_screencast,
-      blink::WebMediaStreamTrack::ContentHintType construction_content_hint,
-      bool expect_initial_downscale,
-      blink::WebMediaStreamTrack::ContentHintType set_content_hint,
-      bool expect_final_downscale) {
-    // Reset and configure adapter to the test.
-    adapter_->RemoveSink(this);
-    adapter_.reset(new WebRtcVideoCapturerAdapter(is_screencast,
-                                                  construction_content_hint));
-
-    const int kInputWidth = 1280;
-    const int kInputHeight = 720;
-    const gfx::Size kSize(kInputWidth, kInputHeight);
-    scoped_refptr<media::VideoFrame> frame = media::VideoFrame::CreateFrame(
-        media::PIXEL_FORMAT_I420, kSize, gfx::Rect(kSize), kSize,
-        base::TimeDelta());
-
-    // Request smaller scale to make sure scaling normally kicks in.
-    rtc::VideoSinkWants wants;
-    // TODO(sprang): Remove this type hack when webrtc has updated the sink
-    // wants api. https://codereview.webrtc.org/2781433002/
-    using MaxPixelCountType = decltype(wants.max_pixel_count);
-    wants.max_pixel_count = MaxPixelCountType(kInputWidth * kInputHeight / 2);
-    adapter_->AddOrUpdateSink(this, wants);
-
-    adapter_->OnFrameCaptured(frame);
-    if (expect_initial_downscale) {
-      EXPECT_LT(output_frame_width_, kInputWidth);
-      EXPECT_LT(output_frame_height_, kInputHeight);
-    } else {
-      EXPECT_EQ(kInputWidth, output_frame_width_);
-      EXPECT_EQ(kInputHeight, output_frame_height_);
-    }
-
-    adapter_->SetContentHint(set_content_hint);
-    adapter_->OnFrameCaptured(frame);
-    if (expect_final_downscale) {
-      EXPECT_LT(output_frame_width_, kInputWidth);
-      EXPECT_LT(output_frame_height_, kInputHeight);
-    } else {
-      EXPECT_EQ(kInputWidth, output_frame_width_);
-      EXPECT_EQ(kInputHeight, output_frame_height_);
-    }
   }
 
  private:
