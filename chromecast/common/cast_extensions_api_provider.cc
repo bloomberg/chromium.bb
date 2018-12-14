@@ -4,6 +4,8 @@
 
 #include "chromecast/common/cast_extensions_api_provider.h"
 
+#include <memory>
+
 #include "chromecast/common/cast_redirect_manifest_handler.h"
 #include "chromecast/common/extensions_api/cast_api_features.h"
 #include "chromecast/common/extensions_api/cast_api_permissions.h"
@@ -60,8 +62,13 @@ void CastExtensionsAPIProvider::RegisterPermissions(
 }
 
 void CastExtensionsAPIProvider::RegisterManifestHandlers() {
-  (new AutomationHandler)->Register();  // TODO(crbug/837773) De-dupe later.
-  (new chromecast::CastRedirectHandler)->Register();
+  // TODO(devlin): Pass in |registry| rather than Get()ing it.
+  ManifestHandlerRegistry* registry = ManifestHandlerRegistry::Get();
+
+  // TODO(crbug/837773) De-dupe later.
+  registry->RegisterHandler(std::make_unique<AutomationHandler>());
+  registry->RegisterHandler(
+      std::make_unique<chromecast::CastRedirectHandler>());
 }
 
 }  // namespace extensions
