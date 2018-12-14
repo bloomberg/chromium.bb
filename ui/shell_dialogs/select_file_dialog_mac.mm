@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #import "ui/base/cocoa/nib_loading.h"
+#include "ui/base/cocoa/remote_views_window.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -147,6 +148,14 @@ void SelectFileDialogImpl::SelectFileImpl(
          type == SELECT_EXISTING_FOLDER || type == SELECT_OPEN_FILE ||
          type == SELECT_OPEN_MULTI_FILE || type == SELECT_SAVEAS_FILE);
   NSWindow* owning_window = owning_native_window.GetNativeNSWindow();
+  // TODO(https://crbug.com/913303): The select file dialog's interface to
+  // Cocoa should be wrapped in a mojo interface in order to allow instantiating
+  // across processes. As a temporary solution, raise the remote windows'
+  // transparent in-process window to the front.
+  if (ui::IsWindowUsingRemoteViews(owning_window)) {
+    [owning_window makeKeyAndOrderFront:nil];
+    [owning_window setLevel:NSModalPanelWindowLevel];
+  }
   parents_.insert(owning_window);
 
   // Note: we need to retain the dialog as owning_window can be null.

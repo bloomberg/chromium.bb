@@ -205,6 +205,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void DestroyCompositor();
   void RankNSViewsRecursive(View* view, std::map<NSView*, int>* rank) const;
 
+  // If we are accessing the BridgedNativeWidget through mojo, then
+  // |local_window_| is not the true window that is resized. This function
+  // updates the frame of |local_window_| to keep it in sync for any native
+  // calls that may use it (e.g, for context menu positioning).
+  void UpdateLocalWindowFrame(const gfx::Rect& frame);
+
   // BridgedNativeWidgetHostHelper:
   id GetNativeViewAccessible() override;
   void DispatchKeyEvent(ui::KeyEvent* event) override;
