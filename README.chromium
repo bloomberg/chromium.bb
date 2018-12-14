@@ -266,3 +266,11 @@ D. Local Modifications
   - Fix:
     https://github.com/unicode-org/icu/pull/265
     https://github.com/unicode-org/icu/pull/278
+
+11. Windows 7 timezone detection fix
+
+  - patches/win7_tz.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20302
+  - Fix:
+    https://github.com/unicode-org/icu/pull/315
