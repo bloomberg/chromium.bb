@@ -8,7 +8,6 @@ import com.google.android.gms.cast.framework.CastSession;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.CastSessionUtil;
-import org.chromium.chrome.browser.media.router.FlingingController;
 import org.chromium.chrome.browser.media.router.caf.BaseNotificationController;
 import org.chromium.chrome.browser.media.router.caf.BaseSessionController;
 import org.chromium.chrome.browser.media.router.caf.CafBaseMediaRouteProvider;
@@ -57,12 +56,12 @@ public class RemotingSessionController extends BaseSessionController {
 
     @Override
     protected void onStatusUpdated() {
-        super.onStatusUpdated();
         mFlingingControllerAdapter.onStatusUpdated();
+        super.onStatusUpdated();
     }
 
     @Override
-    public FlingingController getFlingingController() {
+    public FlingingControllerAdapter getFlingingController() {
         return mFlingingControllerAdapter;
     }
 
