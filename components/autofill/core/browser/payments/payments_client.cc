@@ -320,7 +320,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
                               const base::string16&,
                               std::unique_ptr<base::DictionaryValue>)> callback,
       const int billable_service_number,
-      PaymentsClient::MigrationSource migration_source)
+      PaymentsClient::UploadCardSource upload_card_source)
       : addresses_(addresses),
         detected_values_(detected_values),
         active_experiments_(active_experiments),
@@ -328,7 +328,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
         app_locale_(app_locale),
         callback_(std::move(callback)),
         billable_service_number_(billable_service_number),
-        migration_source_(migration_source) {}
+        upload_card_source_(upload_card_source) {}
   ~GetUploadDetailsRequest() override {}
 
   std::string GetRequestUrlPath() override {
@@ -371,15 +371,27 @@ class GetUploadDetailsRequest : public PaymentsRequest {
 
     SetActiveExperiments(active_experiments_, &request_dict);
 
-    switch (migration_source_) {
-      case PaymentsClient::MigrationSource::UNKNOWN_MIGRATION_SOURCE:
-        request_dict.SetString("migration_source", "UNKNOWN_MIGRATION_SOURCE");
+    switch (upload_card_source_) {
+      case PaymentsClient::UploadCardSource::UNKNOWN_UPLOAD_CARD_SOURCE:
+        request_dict.SetString("upload_card_source",
+                               "UNKNOWN_UPLOAD_CARD_SOURCE");
         break;
-      case PaymentsClient::MigrationSource::CHECKOUT_FLOW:
-        request_dict.SetString("migration_source", "CHECKOUT_FLOW");
+      case PaymentsClient::UploadCardSource::UPSTREAM_CHECKOUT_FLOW:
+        request_dict.SetString("upload_card_source", "UPSTREAM_CHECKOUT_FLOW");
         break;
-      case PaymentsClient::MigrationSource::SETTINGS_PAGE:
-        request_dict.SetString("migration_source", "SETTINGS_PAGE");
+      case PaymentsClient::UploadCardSource::UPSTREAM_SETTINGS_PAGE:
+        request_dict.SetString("upload_card_source", "UPSTREAM_SETTINGS_PAGE");
+        break;
+      case PaymentsClient::UploadCardSource::UPSTREAM_CARD_OCR:
+        request_dict.SetString("upload_card_source", "UPSTREAM_CARD_OCR");
+        break;
+      case PaymentsClient::UploadCardSource::LOCAL_CARD_MIGRATION_CHECKOUT_FLOW:
+        request_dict.SetString("upload_card_source",
+                               "LOCAL_CARD_MIGRATION_CHECKOUT_FLOW");
+        break;
+      case PaymentsClient::UploadCardSource::LOCAL_CARD_MIGRATION_SETTINGS_PAGE:
+        request_dict.SetString("upload_card_source",
+                               "LOCAL_CARD_MIGRATION_SETTINGS_PAGE");
         break;
       default:
         NOTREACHED();
@@ -419,7 +431,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   base::string16 context_token_;
   std::unique_ptr<base::DictionaryValue> legal_message_;
   const int billable_service_number_;
-  PaymentsClient::MigrationSource migration_source_;
+  PaymentsClient::UploadCardSource upload_card_source_;
 };
 
 class UploadCardRequest : public PaymentsRequest {
@@ -718,12 +730,12 @@ void PaymentsClient::GetUploadDetails(
                             const base::string16&,
                             std::unique_ptr<base::DictionaryValue>)> callback,
     const int billable_service_number,
-    MigrationSource migration_source) {
+    UploadCardSource upload_card_source) {
   IssueRequest(
       std::make_unique<GetUploadDetailsRequest>(
           addresses, detected_values, active_experiments,
           account_info_getter_->IsSyncFeatureEnabled(), app_locale,
-          std::move(callback), billable_service_number, migration_source),
+          std::move(callback), billable_service_number, upload_card_source),
       false);
 }
 

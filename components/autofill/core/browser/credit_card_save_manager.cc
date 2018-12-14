@@ -231,7 +231,8 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
       app_locale_,
       base::BindOnce(&CreditCardSaveManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr()),
-      payments::kUploadCardBillableServiceNumber);
+      payments::kUploadCardBillableServiceNumber,
+      payments::PaymentsClient::UploadCardSource::UPSTREAM_CHECKOUT_FLOW);
   // Query the Autofill LegacyStrikeDatabase on if we should pop up the
   // offer-to-save prompt for this card.
   if (base::FeatureList::IsEnabled(

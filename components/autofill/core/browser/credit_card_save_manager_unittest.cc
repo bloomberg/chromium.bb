@@ -3946,6 +3946,63 @@ TEST_F(CreditCardSaveManagerTest,
   EXPECT_TRUE(payments_client_->active_experiments_in_request().empty());
 }
 
+TEST_F(CreditCardSaveManagerTest,
+       UploadCreditCard_ShouldAddUploadCardBillableServiceNumberInRequest) {
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  // Confirm that the preflight request contained
+  // kUploadCardBillableServiceNumber in the request.
+  FormSubmitted(credit_card_form);
+  EXPECT_EQ(payments::kUploadCardBillableServiceNumber,
+            payments_client_->billable_service_number_in_request());
+}
+
+TEST_F(CreditCardSaveManagerTest,
+       UploadCreditCard_ShouldAddUploadCardSourceInRequest) {
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  // Confirm that the preflight request contained the correct UploadCardSource.
+  FormSubmitted(credit_card_form);
+  EXPECT_EQ(payments::PaymentsClient::UploadCardSource::UPSTREAM_CHECKOUT_FLOW,
+            payments_client_->upload_card_source_in_request());
+}
+
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_EloDisallowed) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillUpstreamDisallowElo);
