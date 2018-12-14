@@ -75,6 +75,11 @@ const int kLocationAuthorizationStatusCount = 4;
 @property(nonatomic, strong) LocationBarMediator* mediator;
 @property(nonatomic, strong) LocationBarViewController* viewController;
 
+// Tracks calls in progress to -cancelOmniboxEdit to avoid calling it from
+// itself when -resignFirstResponder causes -textFieldWillResignFirstResponder
+// delegate call.
+@property(nonatomic, assign) BOOL isCancellingOmniboxEdit;
+
 @end
 
 @implementation LocationBarCoordinator
@@ -274,8 +279,13 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 - (void)cancelOmniboxEdit {
+  if (self.isCancellingOmniboxEdit) {
+    return;
+  }
+  self.isCancellingOmniboxEdit = YES;
   [self.omniboxCoordinator endEditing];
   [self.omniboxPopupCoordinator closePopup];
+  self.isCancellingOmniboxEdit = NO;
 }
 
 #pragma mark - LocationBarDelegate
