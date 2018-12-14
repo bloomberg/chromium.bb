@@ -65,7 +65,7 @@
         padding-bottom: 8px;
       }
 
-      #other-sync-items > .list-item:not(.first) {
+      #other-sync-items > .list-item {
         border-top: var(--settings-separator-line);
       }
 
@@ -147,11 +147,11 @@
       </div>
     </template>
 
-    <div id="sync-section" hidden="[[syncSectionDisabled_]]">
-      <div class="settings-box first" hidden="[[!unifiedConsentEnabled]]">
-        <h2 class="start">$i18n{sync}</h2>
-      </div>
+    <div class="settings-box first" hidden="[[!unifiedConsentEnabled]]">
+      <h2 class="start">$i18n{sync}</h2>
+    </div>
 
+    <div id="sync-section" hidden="[[syncSectionDisabled_]]">
       <div id="[[pages_.SPINNER]]" class="settings-box first settings-box-text"
           hidden$="[[!isStatus_(pages_.SPINNER, pageStatus_)]]">
         $i18n{syncLoading}
@@ -194,26 +194,10 @@
           </div>
         </template>
 
-        <template is="dom-if" if="[[!unifiedConsentEnabled]]">
-          <settings-sync-controls sync-status="syncStatus">
-          </settings-sync-controls>
-        </template>
+        <settings-sync-controls></settings-sync-controls>
 
         <div id="other-sync-items"
             class$="[[getListFrameClass_(unifiedConsentEnabled)]]">
-
-          <template is="dom-if" if="[[unifiedConsentEnabled]]">
-            <div id="sync-advanced-row" class="list-item first"
-                on-click="onSyncAdvancedTap_" actionable>
-              <div class="start">
-                $i18n{syncAdvancedPageTitle}
-              </div>
-              <paper-icon-button-light class="subpage-arrow">
-                <button aria-label="$i18n{syncAdvancedPageTitle}"></button>
-              </paper-icon-button-light>
-            </div>
-          </template>
-
           <template is="dom-if" if="[[driveSuggestAvailable_]]">
             <settings-toggle-button
                 class$="[[getListItemClass_(unifiedConsentEnabled)]]"
@@ -329,7 +313,7 @@
 <if expr="not chromeos">
     <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
       <div>$i18n{syncWillStart}</div>
-      <paper-button on-click="cancelSyncSetup">
+      <paper-button on-click="onCancelSyncClick_">
         $i18n{cancelSync}
       </paper-button>
     </cr-toast>
