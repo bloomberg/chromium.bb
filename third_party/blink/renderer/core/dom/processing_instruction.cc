@@ -206,8 +206,8 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
     DCHECK(is_css_);
     CSSStyleSheetResource* style_resource = ToCSSStyleSheetResource(resource);
     CSSParserContext* parser_context = CSSParserContext::Create(
-        GetDocument(), style_resource->GetResponse().CurrentRequestUrl(),
-        style_resource->GetResponse().IsOpaqueResponseFromServiceWorker(),
+        GetDocument(), style_resource->GetResponse().ResponseUrl(),
+        style_resource->GetResponse().IsCorsSameOrigin(),
         style_resource->GetReferrerPolicy(), style_resource->Encoding());
 
     StyleSheetContents* new_sheet =

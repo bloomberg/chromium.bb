@@ -34,7 +34,14 @@
         return produceOutput(new Promise(function(resolve, reject) {
             var iframe = document.createElement('iframe');
             iframe.onload = function() {
-                var didLoad = iframe.contentDocument.styleSheets.length > 0 && iframe.contentDocument.styleSheets[0].rules.length > 0;
+                var didLoad = false;
+                try {
+                  if (iframe.contentDocument.styleSheets.length > 0 && iframe.contentDocument.styleSheets[0].rules.length > 0)
+                    didLoad = true;
+                } catch (error) {
+                  // Accessing rules throws a SecurityError on failure to load.
+                  didLoad = false;
+                }
                 (shouldLoad == didLoad) ? resolve() : reject(new Error());
                 setTimeout(function() { iframe.remove(); }, 0);
             };
