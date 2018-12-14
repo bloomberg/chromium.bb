@@ -94,8 +94,9 @@ struct av1_extracfg {
   const char *film_grain_table_filename;
   unsigned int motion_vector_unit_test;
   unsigned int cdf_update_mode;
-  int enable_order_hint;
-  int enable_dist_wtd_comp;
+  int enable_intra_edge_filter;  // enable intra-edge filter for sequence
+  int enable_order_hint;         // enable order hint for sequence
+  int enable_dist_wtd_comp;      // enable dist wtd compound for sequence
   int enable_ref_frame_mvs;      // sequence level
   int allow_ref_frame_mvs;       // frame level
   int enable_masked_comp;        // enable masked compound for sequence
@@ -107,7 +108,7 @@ struct av1_extracfg {
   int enable_global_motion;      // enable global motion usage for sequence
   int enable_warped_motion;      // sequence level
   int allow_warped_motion;       // frame level
-  int enable_filter_intra;
+  int enable_filter_intra;       // enable filter intra for sequence
   int enable_superres;
 #if CONFIG_DENOISE
   float noise_level;
@@ -178,8 +179,9 @@ static struct av1_extracfg default_extra_cfg = {
   0,                            // film_grain_table_filename
   0,                            // motion_vector_unit_test
   1,                            // CDF update mode
+  1,                            // enable intra edge filter
   1,                            // frame order hint
-  1,                            // jnt_comp
+  1,                            // dist-wtd compound
   1,                            // enable_ref_frame_mvs sequence level
   1,                            // allow ref_frame_mvs frame level
   1,                            // enable masked compound at sequence level
@@ -682,6 +684,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->monochrome = cfg->monochrome;
   oxcf->full_still_picture_hdr = cfg->full_still_picture_hdr;
   oxcf->enable_dual_filter = extra_cfg->enable_dual_filter;
+  oxcf->enable_intra_edge_filter = extra_cfg->enable_intra_edge_filter;
   oxcf->enable_order_hint = extra_cfg->enable_order_hint;
   oxcf->enable_dist_wtd_comp =
       extra_cfg->enable_dist_wtd_comp & extra_cfg->enable_order_hint;
@@ -1052,6 +1055,14 @@ static aom_codec_err_t ctrl_set_enable_dual_filter(aom_codec_alg_priv_t *ctx,
                                                    va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_dual_filter = CAST(AV1E_SET_ENABLE_DUAL_FILTER, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_intra_edge_filter(
+    aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_intra_edge_filter =
+      CAST(AV1E_SET_ENABLE_INTRA_EDGE_FILTER, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1893,6 +1904,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ERROR_RESILIENT_MODE, ctrl_set_error_resilient_mode },
   { AV1E_SET_S_FRAME_MODE, ctrl_set_s_frame_mode },
   { AV1E_SET_ENABLE_DUAL_FILTER, ctrl_set_enable_dual_filter },
+  { AV1E_SET_ENABLE_INTRA_EDGE_FILTER, ctrl_set_enable_intra_edge_filter },
   { AV1E_SET_ENABLE_ORDER_HINT, ctrl_set_enable_order_hint },
   { AV1E_SET_ENABLE_DIST_WTD_COMP, ctrl_set_enable_dist_wtd_comp },
   { AV1E_SET_ENABLE_REF_FRAME_MVS, ctrl_set_enable_ref_frame_mvs },

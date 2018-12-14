@@ -441,6 +441,10 @@ static const arg_def_t enable_dual_filter =
     ARG_DEF(NULL, "enable-dual-filter", 1,
             "Enable dual filter "
             "(0: false, 1: true (default))");
+static const arg_def_t enable_intra_edge_filter =
+    ARG_DEF(NULL, "enable-intra-edge-filter", 1,
+            "Enable intra edge filtering "
+            "(0: false, 1: true (default))");
 static const arg_def_t enable_order_hint =
     ARG_DEF(NULL, "enable-order-hint", 1,
             "Enable order hint "
@@ -691,6 +695,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_cdef,
                                        &enable_restoration,
                                        &enable_dual_filter,
+                                       &enable_intra_edge_filter,
                                        &enable_order_hint,
                                        &enable_dist_wtd_comp,
                                        &enable_masked_comp,
@@ -763,6 +768,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_CDEF,
                                         AV1E_SET_ENABLE_RESTORATION,
                                         AV1E_SET_ENABLE_DUAL_FILTER,
+                                        AV1E_SET_ENABLE_INTRA_EDGE_FILTER,
                                         AV1E_SET_ENABLE_ORDER_HINT,
                                         AV1E_SET_ENABLE_DIST_WTD_COMP,
                                         AV1E_SET_ENABLE_MASKED_COMP,
