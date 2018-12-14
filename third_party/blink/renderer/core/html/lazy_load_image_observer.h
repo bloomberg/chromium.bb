@@ -26,7 +26,8 @@ class LazyLoadImageObserver final
     bool is_initially_intersecting = false;
     bool has_initial_intersection_been_set = false;
 
-    bool has_visibility_metrics_been_recorded = false;
+    // True if metrics need to be recorded and has not been recorded yet.
+    bool record_visibility_metrics = false;
 
     // Set when the image first becomes visible (i.e. appears in the viewport).
     TimeTicks time_when_first_visible;
