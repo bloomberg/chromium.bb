@@ -3996,9 +3996,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_INIT_OK" desc="Init screen confirmation text.">
         Let's go
       </message>
-      <message name="IDS_DONT_DISPLAY_AGAIN" desc="Description for the checkbox that prevents the screen to be displayed again.">
-        Don't display again
-      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE" desc="Onboarding message describing autofill assistant's capability.">
         The Google Assistant saves you time by speeding you through the website's checkout.
       </message>

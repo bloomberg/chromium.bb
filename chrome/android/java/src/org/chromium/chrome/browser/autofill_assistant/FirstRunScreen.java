@@ -9,7 +9,6 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
@@ -60,9 +59,7 @@ class FirstRunScreen {
             boolean accept, View initView, ChromeActivity activity, Callback<Boolean> callback) {
         ViewGroup coordinatorView = (ViewGroup) activity.findViewById(
                 org.chromium.chrome.autofill_assistant.R.id.coordinator);
-        CheckBox checkBox = initView.findViewById(
-                org.chromium.chrome.autofill_assistant.R.id.checkbox_dont_show_init_again);
-        AutofillAssistantPreferencesUtil.setInitialPreferences(accept, checkBox.isChecked());
+        AutofillAssistantPreferencesUtil.setInitialPreferences(accept);
         coordinatorView.removeView(initView);
 
         callback.onResult(accept);

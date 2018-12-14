@@ -82,18 +82,8 @@
                 android:paddingEnd="35dp"
                 android:text="@string/autofill_assistant_init_message" />
 
-            <!-- Don't show again checkbox surrounded by padding space -->
-            <Space android:layout_width="0dp" android:layout_height="25dp"/>
-            <CheckBox
-                android:id="@+id/checkbox_dont_show_init_again"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/BlackBodyDefault"
-                android:paddingStart="10dp"
-                android:text="@string/dont_display_again"/>
-            <Space android:layout_width="0dp" android:layout_height="25dp"/>
-
             <!-- Terms and Conditions message and link -->
+            <Space android:layout_width="0dp" android:layout_height="25dp"/>
             <LinearLayout
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
