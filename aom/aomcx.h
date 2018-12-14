@@ -710,14 +710,6 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ANS_WINDOW_SIZE_LOG2,
 
-  /*!\brief Codec control function to turn on / off dual filter
-   * enabling/disabling.
-   *
-   * This will enable or disable dual filter. The default value is 1
-   *
-   */
-  AV1E_SET_ENABLE_DF,
-
   /*!\brief Codec control function to turn on / off frame order hint for a
    * few tools:
    *
@@ -1125,9 +1117,6 @@ AOM_CTRL_USE_TYPE(AV1E_SET_MTU, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_TIMING_INFO_TYPE, int) /* aom_timing_info_type_t */
 #define AOM_CTRL_AV1E_SET_TIMING_INFO_TYPE
-
-AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DF, unsigned int)
-#define AOM_CTRL_AV1E_SET_ENABLE_DF
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_ORDER_HINT, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_ORDER_HINT

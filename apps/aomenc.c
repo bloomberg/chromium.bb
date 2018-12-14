@@ -808,8 +808,6 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_DENOISE_BLOCK_SIZE,
 #endif
                                         AV1E_SET_ENABLE_REF_FRAME_MVS,
-                                        AV1E_SET_ENABLE_DF,
-                                        AV1E_SET_ENABLE_SUPERRES,
                                         0 };
 #endif  // CONFIG_AV1_ENCODER
 
