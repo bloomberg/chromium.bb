@@ -45,8 +45,8 @@ namespace {
 
 // Returns the tab model for non-incognito tabs.
 TabModel* GetNormalTabModel() {
-  return [[chrome_test_util::GetMainController() browserViewInformation]
-      mainTabModel];
+  return chrome_test_util::GetMainController()
+      .interfaceProvider.mainInterface.tabModel;
 }
 
 // Shows the tab switcher by tapping the switcher button.  Works on both phone

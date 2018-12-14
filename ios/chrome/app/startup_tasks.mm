@@ -18,7 +18,6 @@
 #import "ios/chrome/browser/omaha/omaha_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
-#import "ios/chrome/browser/ui/main/browser_view_information.h"
 #import "ios/chrome/browser/upgrade/upgrade_center.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

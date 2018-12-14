@@ -24,7 +24,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/main/browser_view_information.h"
+#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #include "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
@@ -115,9 +115,10 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
 + (void)logLaunchMetricsWithStartupInformation:
             (id<StartupInformation>)startupInformation
-                        browserViewInformation:
-                            (id<BrowserViewInformation>)browserViewInformation {
-  int numTabs = static_cast<int>([[browserViewInformation mainTabModel] count]);
+                             interfaceProvider:(id<BrowserInterfaceProvider>)
+                                                   interfaceProvider {
+  int numTabs =
+      static_cast<int>(interfaceProvider.mainInterface.tabModel.count);
   if (startupInformation.isColdStart) {
     [self recordNumTabAtStartup:numTabs];
   } else {
@@ -140,7 +141,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
     [startupInformation
         activateFirstUserActionRecorderWithBackgroundTime:interval];
 
-    Tab* currentTab = [[browserViewInformation currentTabModel] currentTab];
+    Tab* currentTab = interfaceProvider.currentInterface.tabModel.currentTab;
     if (currentTab.webState &&
         currentTab.webState->GetLastCommittedURL() == kChromeUINewTabURL) {
       startupInformation.firstUserActionRecorder->RecordStartOnNTP();

@@ -397,10 +397,6 @@ enum class ShowTabSwitcherSnapshotResult {
   StartupTasks* _startupTasks;
 }
 
-// Redefined from BrowserViewInformation.
-@property(nonatomic, weak, readwrite)
-    BrowserCoordinator* currentBrowserCoordinator;
-
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the main view controller. This property should not be accessed before the
 // browser has started up to the FOREGROUND stage.
@@ -559,20 +555,21 @@ enum class ShowTabSwitcherSnapshotResult {
 
 @implementation MainController
 
-@synthesize mainCoordinator = _mainCoordinator;
-@synthesize appState = _appState;
-@synthesize appLaunchTime = _appLaunchTime;
+// Defined by public protocols.
+// - AppNavigation
+@synthesize settingsNavigationController = _settingsNavigationController;
+// - BrowserLauncher
+@synthesize launchOptions = _launchOptions;
 @synthesize browserInitializationStage = _browserInitializationStage;
-@synthesize window = _window;
+// - StartupInformation
 @synthesize isPresentingFirstRunUI = _isPresentingFirstRunUI;
 @synthesize isColdStart = _isColdStart;
+@synthesize startupParameters = _startupParameters;
+@synthesize appLaunchTime = _appLaunchTime;
+// Defined in private interface
+@synthesize mainCoordinator = _mainCoordinator;
 @synthesize NTPActionAfterTabSwitcherDismissal =
     _NTPActionAfterTabSwitcherDismissal;
-@synthesize launchOptions = _launchOptions;
-@synthesize startupParameters = _startupParameters;
-@synthesize metricsMediator = _metricsMediator;
-@synthesize incognitoContentVisible = _incognitoContentVisible;
-@synthesize settingsNavigationController = _settingsNavigationController;
 @synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
 
 #pragma mark - Application lifecycle
@@ -718,7 +715,8 @@ enum class ShowTabSwitcherSnapshotResult {
   _browserViewWrangler =
       [[BrowserViewWrangler alloc] initWithBrowserState:_mainBrowserState
                                        tabModelObserver:self
-                             applicationCommandEndpoint:self];
+                             applicationCommandEndpoint:self
+                                        storageSwitcher:self];
 
   // Force an obvious initialization of the AuthenticationService. This must
   // be done before creation of the UI to ensure the service is initialised
@@ -736,7 +734,7 @@ enum class ShowTabSwitcherSnapshotResult {
       ->NotifyEvent(feature_engagement::events::kChromeOpened);
 
   // Ensure the main tab model is created.
-  ignore_result([_browserViewWrangler mainTabModel]);
+  [_browserViewWrangler createMainTabModel];
 
   _spotlightManager =
       [SpotlightManager spotlightManagerWithBrowserState:_mainBrowserState];
@@ -770,8 +768,9 @@ enum class ShowTabSwitcherSnapshotResult {
                                           : ApplicationMode::NORMAL)];
 
   [self scheduleStartupCleanupTasks];
-  [MetricsMediator logLaunchMetricsWithStartupInformation:self
-                                   browserViewInformation:_browserViewWrangler];
+  [MetricsMediator
+      logLaunchMetricsWithStartupInformation:self
+                           interfaceProvider:self.interfaceProvider];
   if (self.isColdStart) {
     [ContentSuggestionsSchedulerNotifications
         notifyColdStart:_mainBrowserState];
@@ -886,14 +885,14 @@ enum class ShowTabSwitcherSnapshotResult {
   if (browsingDataRemover && browsingDataRemover->IsRemoving())
     return;
 
-  [self.mainBrowserCoordinator setActive:YES];
-  [self.incognitoBrowserCoordinator setActive:YES];
+  self.interfaceProvider.mainInterface.userInteractionEnabled = YES;
+  self.interfaceProvider.incognitoInterface.userInteractionEnabled = YES;
   [self.currentBVC setPrimary:YES];
 }
 
 #pragma mark - Property implementation.
 
-- (id<BrowserViewInformation>)browserViewInformation {
+- (id<BrowserInterfaceProvider>)interfaceProvider {
   return _browserViewWrangler;
 }
 
@@ -966,16 +965,6 @@ enum class ShowTabSwitcherSnapshotResult {
 
 - (BOOL)isTabSwitcherActive {
   return _tabSwitcherIsActive;
-}
-
-#pragma mark - BrowserViewInformation implementation.
-
-- (void)haltAllTabs {
-  [_browserViewWrangler haltAllTabs];
-}
-
-- (void)cleanDeviceSharingManager {
-  [_browserViewWrangler cleanDeviceSharingManager];
 }
 
 #pragma mark - Startup tasks
@@ -1280,10 +1269,10 @@ enum class ShowTabSwitcherSnapshotResult {
   TabModel* tabModel;
   if (launchMode == ApplicationMode::INCOGNITO) {
     tabModel = otrTabModel;
-    self.currentBrowserCoordinator = self.incognitoBrowserCoordinator;
+    [self setCurrentInterfaceForMode:ApplicationMode::INCOGNITO];
   } else {
     tabModel = mainTabModel;
-    self.currentBrowserCoordinator = self.mainBrowserCoordinator;
+    [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
   }
   if (_tabSwitcherIsActive) {
     DCHECK(!_dismissingTabSwitcher);
@@ -1485,13 +1474,11 @@ enum class ShowTabSwitcherSnapshotResult {
                                        transition:ui::PAGE_TRANSITION_TYPED
                                        completion:nil];
     } else {
+      ApplicationMode mode = command.inIncognito ? ApplicationMode::INCOGNITO
+                                                 : ApplicationMode::NORMAL;
       [self
           dismissModalDialogsWithCompletion:^{
-            self.currentBrowserCoordinator =
-                [command inIncognito] ? self.incognitoBrowserCoordinator
-                                      : self.mainBrowserCoordinator;
-            DCHECK(self.currentBVC.browserState->IsOffTheRecord() ==
-                   command.inIncognito);
+            [self setCurrentInterfaceForMode:mode];
             [self.currentBVC webPageOrderedOpen:command];
           }
                              dismissOmnibox:YES];
@@ -1752,76 +1739,55 @@ enum class ShowTabSwitcherSnapshotResult {
   }
 }
 
-#pragma mark - BrowserViewInformation properties
+#pragma mark - Helper methods backed by interfaces.
 
 - (BrowserViewController*)mainBVC {
-  DCHECK(_browserViewWrangler);
-  return [_browserViewWrangler mainBVC];
+  DCHECK(self.interfaceProvider);
+  return self.interfaceProvider.mainInterface.bvc;
 }
 
 - (TabModel*)mainTabModel {
-  DCHECK(_browserViewWrangler);
-  return [_browserViewWrangler mainTabModel];
-}
-
-- (void)setMainTabModel:(TabModel*)mainTabModel {
-  DCHECK(_browserViewWrangler);
-  [_browserViewWrangler setMainTabModel:mainTabModel];
+  DCHECK(self.interfaceProvider);
+  return self.interfaceProvider.mainInterface.tabModel;
 }
 
 - (BrowserViewController*)otrBVC {
-  DCHECK(_browserViewWrangler);
-  return [_browserViewWrangler otrBVC];
+  DCHECK(self.interfaceProvider);
+  return self.interfaceProvider.incognitoInterface.bvc;
 }
 
 - (TabModel*)otrTabModel {
-  DCHECK(_browserViewWrangler);
-  return [_browserViewWrangler otrTabModel];
-}
-
-- (void)setOtrTabModel:(TabModel*)otrTabModel {
-  DCHECK(_browserViewWrangler);
-  [_browserViewWrangler setOtrTabModel:otrTabModel];
+  DCHECK(self.interfaceProvider);
+  return self.interfaceProvider.incognitoInterface.tabModel;
 }
 
 - (BrowserViewController*)currentBVC {
-  DCHECK(_browserViewWrangler);
-  return [_browserViewWrangler currentBVC];
-}
-
-- (BrowserCoordinator*)mainBrowserCoordinator {
-  DCHECK(_browserViewWrangler);
-  return _browserViewWrangler.mainBrowserCoordinator;
-}
-
-- (BrowserCoordinator*)incognitoBrowserCoordinator {
-  DCHECK(_browserViewWrangler);
-  return _browserViewWrangler.incognitoBrowserCoordinator;
+  DCHECK(self.interfaceProvider);
+  return self.interfaceProvider.currentInterface.bvc;
 }
 
 // Note that the current tab of |browserCoordinator|'s BVC will normally be
 // reloaded by this method. If a new tab is about to be added, call
 // expectNewForegroundTab on the BVC first to avoid extra work and possible page
 // load side-effects for the tab being replaced.
-- (void)setCurrentBrowserCoordinator:(BrowserCoordinator*)browserCoordinator {
-  DCHECK(browserCoordinator);
-  if (self.currentBrowserCoordinator == browserCoordinator)
+- (void)setCurrentInterfaceForMode:(ApplicationMode)mode {
+  DCHECK(self.interfaceProvider);
+  BOOL incognitio = mode == ApplicationMode::INCOGNITO;
+  id<BrowserInterface> currentInterface =
+      self.interfaceProvider.currentInterface;
+  id<BrowserInterface> newInterface =
+      incognitio ? self.interfaceProvider.incognitoInterface
+                 : self.interfaceProvider.mainInterface;
+  if (currentInterface && currentInterface == newInterface)
     return;
 
-  DCHECK(_browserViewWrangler);
-  [_browserViewWrangler setCurrentBrowserCoordinator:browserCoordinator
-                                     storageSwitcher:self];
+  self.interfaceProvider.currentInterface = newInterface;
 
   if (!_dismissingTabSwitcher)
     [self displayCurrentBVCAndFocusOmnibox:NO];
 
   // Tell the BVC that was made current that it can use the web.
   [self activateBVCAndMakeCurrentBVCPrimary];
-}
-
-- (BrowserCoordinator*)currentBrowserCoordinator {
-  DCHECK(_browserViewWrangler);
-  return _browserViewWrangler.currentBrowserCoordinator;
 }
 
 #pragma mark - Tab closure handlers
@@ -1857,7 +1823,7 @@ enum class ShowTabSwitcherSnapshotResult {
   if ([self.currentTabModel count] == 0U) {
     [self showTabSwitcher];
   } else {
-    self.currentBrowserCoordinator = self.mainBrowserCoordinator;
+    [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
   }
 }
 
@@ -1878,12 +1844,14 @@ enum class ShowTabSwitcherSnapshotResult {
 #pragma mark - Mode Switching
 
 - (void)switchModesAndOpenNewTab:(OpenNewTabCommand*)command {
-  BrowserCoordinator* browserCoordinator =
-      command.inIncognito ? self.incognitoBrowserCoordinator
-                          : self.mainBrowserCoordinator;
-  DCHECK(browserCoordinator);
-  [browserCoordinator.viewController expectNewForegroundTab];
-  self.currentBrowserCoordinator = browserCoordinator;
+  id<BrowserInterface> interface =
+      command.inIncognito ? self.interfaceProvider.incognitoInterface
+                          : self.interfaceProvider.mainInterface;
+  DCHECK(interface);
+  [interface.bvc expectNewForegroundTab];
+  [self setCurrentInterfaceForMode:command.inIncognito
+                                       ? ApplicationMode::INCOGNITO
+                                       : ApplicationMode::NORMAL];
   [self openURLInNewTab:command];
 }
 
@@ -2053,10 +2021,10 @@ enum class ShowTabSwitcherSnapshotResult {
   DCHECK(tabModel == self.mainTabModel || tabModel == self.otrTabModel);
 
   _dismissingTabSwitcher = YES;
-  BrowserCoordinator* targetBrowserCoordinator =
-      (tabModel == self.mainTabModel) ? self.mainBrowserCoordinator
-                                      : self.incognitoBrowserCoordinator;
-  self.currentBrowserCoordinator = targetBrowserCoordinator;
+  ApplicationMode mode = (tabModel == self.mainTabModel)
+                             ? ApplicationMode::NORMAL
+                             : ApplicationMode::INCOGNITO;
+  [self setCurrentInterfaceForMode:mode];
 
   // The call to set currentBVC above does not actually display the BVC, because
   // _dismissingTabSwitcher is YES.  So: Force the BVC transition to start.
@@ -2071,10 +2039,10 @@ enum class ShowTabSwitcherSnapshotResult {
 
   if (_modeToDisplayOnTabSwitcherDismissal ==
       TabSwitcherDismissalMode::NORMAL) {
-    self.currentBrowserCoordinator = self.mainBrowserCoordinator;
+    [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
   } else if (_modeToDisplayOnTabSwitcherDismissal ==
              TabSwitcherDismissalMode::INCOGNITO) {
-    self.currentBrowserCoordinator = self.incognitoBrowserCoordinator;
+    [self setCurrentInterfaceForMode:ApplicationMode::INCOGNITO];
   }
 
   _modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
@@ -2111,8 +2079,8 @@ enum class ShowTabSwitcherSnapshotResult {
       // Disables browsing and purges web views.
       // Must be called only on the main thread.
       DCHECK([NSThread isMainThread]);
-      [self.mainBrowserCoordinator setActive:NO];
-      [self.incognitoBrowserCoordinator setActive:NO];
+      self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
+      self.interfaceProvider.incognitoInterface.userInteractionEnabled = NO;
     }
 
     BrowsingDataRemoverFactory::GetForBrowserState(browserState)
@@ -2120,8 +2088,10 @@ enum class ShowTabSwitcherSnapshotResult {
                    // Activates browsing and enables web views.
                    // Must be called only on the main thread.
                    DCHECK([NSThread isMainThread]);
-                   [self.mainBrowserCoordinator setActive:YES];
-                   [self.incognitoBrowserCoordinator setActive:YES];
+                   self.interfaceProvider.mainInterface.userInteractionEnabled =
+                       YES;
+                   self.interfaceProvider.incognitoInterface
+                       .userInteractionEnabled = YES;
                    [self.currentBVC setPrimary:YES];
 
                    if (completionBlock)
@@ -2271,11 +2241,11 @@ enum class ShowTabSwitcherSnapshotResult {
                       withURL:(const GURL&)url
                    transition:(ui::PageTransition)transition
                    completion:(ProceduralBlock)completion {
-  BrowserCoordinator* targetBrowserCoordinator =
-      targetMode == ApplicationMode::NORMAL ? self.mainBrowserCoordinator
-                                            : self.incognitoBrowserCoordinator;
-  TabModel* targetTabModel = targetBrowserCoordinator.tabModel;
-  NSUInteger tabIndex = targetTabModel.count;
+  id<BrowserInterface> targetInterface =
+      targetMode == ApplicationMode::NORMAL
+          ? self.interfaceProvider.mainInterface
+          : self.interfaceProvider.incognitoInterface;
+  NSUInteger tabIndex = NSNotFound;
   ProceduralBlock startupCompletion =
       [self completionBlockForTriggeringAction:[_startupParameters
                                                    postOpeningAction]];
@@ -2306,9 +2276,8 @@ enum class ShowTabSwitcherSnapshotResult {
           targetMode == ApplicationMode::NORMAL
               ? TabSwitcherDismissalMode::NORMAL
               : TabSwitcherDismissalMode::INCOGNITO;
-      [targetBrowserCoordinator.viewController
-          appendTabAddedCompletion:tabOpenedCompletion];
-      tab = [targetTabModel
+      [targetInterface.bvc appendTabAddedCompletion:tabOpenedCompletion];
+      tab = [targetInterface.tabModel
           insertTabWithLoadParams:CreateWebLoadParams(url, transition,
                                                       /*post_data=*/nullptr)
                            opener:nil
@@ -2321,16 +2290,17 @@ enum class ShowTabSwitcherSnapshotResult {
       self.NTPActionAfterTabSwitcherDismissal =
           [_startupParameters postOpeningAction];
       [self setStartupParameters:nil];
-      tab = [_tabSwitcher dismissWithNewTabAnimationToModel:targetTabModel
-                                                    withURL:url
-                                                    atIndex:tabIndex
-                                                 transition:transition];
+      tab = [_tabSwitcher
+          dismissWithNewTabAnimationToModel:targetInterface.tabModel
+                                    withURL:url
+                                    atIndex:tabIndex
+                                 transition:transition];
     }
   } else {
     if (!self.currentBVC.presentedViewController) {
-      [targetBrowserCoordinator.viewController expectNewForegroundTab];
+      [targetInterface.bvc expectNewForegroundTab];
     }
-    self.currentBrowserCoordinator = targetBrowserCoordinator;
+    [self setCurrentInterfaceForMode:targetMode];
     tab = [self openOrReuseTabInMode:targetMode
                              withURL:url
                           transition:transition
@@ -2376,7 +2346,7 @@ enum class ShowTabSwitcherSnapshotResult {
     DCHECK(self.currentBVC);
     DCHECK(![self isTabSwitcherActive]);
     // This will dismiss the SSO view controller.
-    [self.currentBrowserCoordinator
+    [self.interfaceProvider.currentInterface
         clearPresentedStateWithCompletion:completion
                            dismissOmnibox:dismissOmnibox];
   };
@@ -2637,25 +2607,6 @@ enum class ShowTabSwitcherSnapshotResult {
   _startupParameters = [ChromeAppStartupParameters
       newChromeAppStartupParametersWithURL:net::NSURLWithGURL(launchURL)
                      fromSourceApplication:sourceApplication];
-}
-
-- (void)setUpAsForegroundedWithBrowserState:
-    (ios::ChromeBrowserState*)browserState {
-  _isColdStart = NO;
-  _browserInitializationStage = INITIALIZATION_STAGE_FOREGROUND;
-  // Create a BrowserViewWrangler with a null browser state. This will trigger
-  // assertions if the BrowserViewWrangler is asked to create any BVC or
-  // tabModel objects, but it will accept assignments to them.
-  [_browserViewWrangler shutdown];
-  _browserViewWrangler =
-      [[BrowserViewWrangler alloc] initWithBrowserState:browserState
-                                       tabModelObserver:self
-                             applicationCommandEndpoint:self];
-  // This is a test utility method that bypasses the ususal setup steps, so
-  // verify that the main coordinator hasn't been created yet, then start it
-  // via lazy initialization.
-  DCHECK(!_mainCoordinator);
-  [self.mainCoordinator start];
 }
 
 @end

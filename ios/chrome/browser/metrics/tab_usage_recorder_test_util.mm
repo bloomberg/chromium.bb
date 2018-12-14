@@ -10,7 +10,7 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/main/browser_view_information.h"
+#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -82,8 +82,8 @@ void SwitchToNormalMode() {
   ShowTabSwitcher();
 
   // Switch modes and exit the tab grid.
-  TabModel* model = [[chrome_test_util::GetMainController()
-      browserViewInformation] mainTabModel];
+  TabModel* model = chrome_test_util::GetMainController()
+                        .interfaceProvider.mainInterface.tabModel;
   const int tab_index = model.webStateList->active_index();
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::TabGridOpenTabsPanelButton()]

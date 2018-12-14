@@ -105,9 +105,12 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   // PKAddPassesViewController UI is rendered out of host process so EarlGrey
   // matcher can not find PassKit Dialog UI. Instead this test relies on view
   // controller presentation as the signal that PassKit Dialog is shown.
-  UIViewController* BVC = GetMainController().browserViewInformation.mainBVC;
+  id<BrowserInterface> interface =
+      GetMainController().interfaceProvider.mainInterface;
+  UIViewController* viewController = interface.viewController;
   bool dialogShown = WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
-    UIViewController* presentedController = BVC.presentedViewController;
+    UIViewController* presentedController =
+        viewController.presentedViewController;
     return [presentedController class] == [PKAddPassesViewController class];
   });
   GREYAssert(dialogShown, @"PassKit dialog was not shown");

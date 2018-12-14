@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/u2f/u2f_controller.h"
+#import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -135,7 +136,7 @@
 typedef void (^startupParameterBlock)(id,
                                       id<TabOpening>,
                                       id<StartupInformation>,
-                                      id<BrowserViewInformation>);
+                                      id<BrowserInterfaceProvider>);
 
 // A block that takes a BOOL argument and returns nothing.
 typedef void (^conditionBlock)(BOOL);
@@ -150,8 +151,7 @@ class UserActivityHandlerTest : public PlatformTest {
     user_activity_handler_swizzler_.reset(new ScopedBlockSwizzler(
         [UserActivityHandler class],
         @selector(handleStartupParametersWithTabOpener:
-                                    startupInformation:
-                                browserViewInformation:),
+                                    startupInformation:interfaceProvider:),
         swizzle_block_));
   }
 
@@ -497,14 +497,14 @@ TEST_F(UserActivityHandlerNoFixtureTest, handleStartupParamsNonU2F) {
   MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
   // The test will fail is a method of this object is called.
-  id browserViewMock =
-      [OCMockObject mockForProtocol:@protocol(BrowserViewInformation)];
+  id interfaceProviderMock =
+      [OCMockObject mockForProtocol:@protocol(BrowserInterfaceProvider)];
 
   // Action.
   [UserActivityHandler
       handleStartupParametersWithTabOpener:tabOpener
                         startupInformation:startupInformationMock
-                    browserViewInformation:browserViewMock];
+                         interfaceProvider:interfaceProviderMock];
   [tabOpener completionBlock]();
 
   // Tests.
@@ -516,9 +516,10 @@ TEST_F(UserActivityHandlerNoFixtureTest, handleStartupParamsNonU2F) {
 // Tests that handleStartupParameters with a U2F url opens in the correct tab.
 TEST_F(UserActivityHandlerNoFixtureTest, handleStartupParamsU2F) {
   // Setup.
-  UserActivityHandlerTabModelMock* tabModel =
+  UserActivityHandlerTabModelMock* mockTabModel =
       [[UserActivityHandlerTabModelMock alloc] init];
-  UserActivityHandlerTabMock* tabMock = [tabModel addMockTab];
+  UserActivityHandlerTabMock* tabMock = [mockTabModel addMockTab];
+  id tabModel = static_cast<id>(mockTabModel);
 
   std::string urlRepresentation =
       base::StringPrintf("chromium://u2f-callback?isU2F=1&tabID=%s",
@@ -535,12 +536,10 @@ TEST_F(UserActivityHandlerNoFixtureTest, handleStartupParamsU2F) {
   [[[startupInformationMock stub] andReturn:startupParams] startupParameters];
   [[startupInformationMock expect] setStartupParameters:nil];
 
-  id browserViewInformationMock =
-      [OCMockObject mockForProtocol:@protocol(BrowserViewInformation)];
-  [[[browserViewInformationMock stub] andReturn:(TabModel*)tabModel]
-      mainTabModel];
-  [[[browserViewInformationMock stub] andReturn:(TabModel*)tabModel]
-      otrTabModel];
+  StubBrowserInterfaceProvider* interfaceProvider =
+      [[StubBrowserInterfaceProvider alloc] init];
+  interfaceProvider.mainInterface.tabModel = tabModel;
+  interfaceProvider.incognitoInterface.tabModel = tabModel;
 
   MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
@@ -548,7 +547,7 @@ TEST_F(UserActivityHandlerNoFixtureTest, handleStartupParamsU2F) {
   [UserActivityHandler
       handleStartupParametersWithTabOpener:tabOpener
                         startupInformation:startupInformationMock
-                    browserViewInformation:browserViewInformationMock];
+                         interfaceProvider:interfaceProvider];
 
   // Tests.
   EXPECT_OCMOCK_VERIFY(startupInformationMock);
@@ -583,16 +582,15 @@ TEST_F(UserActivityHandlerTest, performActionForShortcutItemWithRealShortcut) {
 
     // The test will fail is a method of those objects is called.
     id tabOpenerMock = [OCMockObject mockForProtocol:@protocol(TabOpening)];
-    id browserViewInformationMock =
-        [OCMockObject mockForProtocol:@protocol(BrowserViewInformation)];
+    id interfaceProviderMock =
+        [OCMockObject mockForProtocol:@protocol(BrowserInterfaceProvider)];
 
     // Action.
-    [UserActivityHandler
-        performActionForShortcutItem:shortcut
-                   completionHandler:getCompletionHandler()
-                           tabOpener:tabOpenerMock
-                  startupInformation:fakeStartupInformation
-              browserViewInformation:browserViewInformationMock];
+    [UserActivityHandler performActionForShortcutItem:shortcut
+                                    completionHandler:getCompletionHandler()
+                                            tabOpener:tabOpenerMock
+                                   startupInformation:fakeStartupInformation
+                                    interfaceProvider:interfaceProviderMock];
 
     // Tests.
     EXPECT_EQ(gurlNewTab,
@@ -623,15 +621,15 @@ TEST_F(UserActivityHandlerTest, performActionForShortcutItemWithFirstRunUI) {
 
   // The test will fail is a method of those objects is called.
   id tabOpenerMock = [OCMockObject mockForProtocol:@protocol(TabOpening)];
-  id browserViewInformationMock =
-      [OCMockObject mockForProtocol:@protocol(BrowserViewInformation)];
+  id interfaceProviderMock =
+      [OCMockObject mockForProtocol:@protocol(BrowserInterfaceProvider)];
 
   // Action.
   [UserActivityHandler performActionForShortcutItem:shortcut
                                   completionHandler:getCompletionHandler()
                                           tabOpener:tabOpenerMock
                                  startupInformation:startupInformationMock
-                             browserViewInformation:browserViewInformationMock];
+                                  interfaceProvider:interfaceProviderMock];
 
   // Tests.
   EXPECT_TRUE(completionHandlerExecuted());

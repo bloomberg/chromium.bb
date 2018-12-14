@@ -9,15 +9,12 @@
 
 @protocol AppNavigation;
 @protocol BrowserLauncher;
-@protocol BrowserViewInformation;
-@protocol TabOpening;
-@protocol TabSwitching;
-@protocol StartupInformation;
-@class DeviceSharingManager;
 @class MainApplicationDelegate;
 @class MemoryWarningHelper;
 @class MetricsMediator;
-@class TabModel;
+@protocol StartupInformation;
+@protocol TabOpening;
+@protocol TabSwitching;
 
 // Represents the application state and responds to application state changes
 // and system events.

@@ -250,7 +250,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // checks if all its views and buttons are visible. Checks that no alerts are
 // presented.
 - (void)showQRScannerAndCheckLayoutWithCameraMock:(id)mock {
-  UIViewController* bvc = [self currentBVC];
+  UIViewController* bvc = [self currentViewController];
   [self assertModalOfClass:[QRScannerViewController class]
           isNotPresentedBy:bvc];
   [self assertModalOfClass:[UIAlertController class] isNotPresentedBy:bvc];
@@ -270,14 +270,14 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [self addCameraControllerDismissalExpectations:mock];
   TapButton(QrScannerCloseButton());
   [self waitForModalOfClass:[QRScannerViewController class]
-       toDisappearFromAbove:[self currentBVC]];
+       toDisappearFromAbove:[self currentViewController]];
 }
 
 // Returns the current BrowserViewController.
-- (UIViewController*)currentBVC {
+- (UIViewController*)currentViewController {
   // TODO(crbug.com/629516): Evaluate moving this into a common utility.
   MainController* mainController = chrome_test_util::GetMainController();
-  return [[mainController browserViewInformation] currentBVC];
+  return mainController.interfaceProvider.mainInterface.viewController;
 }
 
 // Checks that the omnibox is visible and contains |text|.
@@ -354,7 +354,8 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // that the title of this alert corresponds to |state|.
 - (void)assertQRScannerIsPresentingADialogForState:(CameraState)state {
   [self assertModalOfClass:[UIAlertController class]
-             isPresentedBy:[[self currentBVC] presentedViewController]];
+             isPresentedBy:[[self currentViewController]
+                               presentedViewController]];
   [[EarlGrey
       selectElementWithMatcher:grey_text([self dialogTitleForState:state])]
       assertWithMatcher:grey_notNil()];
@@ -443,28 +444,32 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Calls |cameraStateChanged:| on the presented QRScannerViewController.
 - (void)callCameraStateChanged:(CameraState)state {
   QRScannerViewController* vc =
-      (QRScannerViewController*)[[self currentBVC] presentedViewController];
+      (QRScannerViewController*)[[self currentViewController]
+          presentedViewController];
   [vc cameraStateChanged:state];
 }
 
 // Calls |torchStateChanged:| on the presented QRScannerViewController.
 - (void)callTorchStateChanged:(BOOL)torchIsOn {
   QRScannerViewController* vc =
-      (QRScannerViewController*)[[self currentBVC] presentedViewController];
+      (QRScannerViewController*)[[self currentViewController]
+          presentedViewController];
   [vc torchStateChanged:torchIsOn];
 }
 
 // Calls |torchAvailabilityChanged:| on the presented QRScannerViewController.
 - (void)callTorchAvailabilityChanged:(BOOL)torchIsAvailable {
   QRScannerViewController* vc =
-      (QRScannerViewController*)[[self currentBVC] presentedViewController];
+      (QRScannerViewController*)[[self currentViewController]
+          presentedViewController];
   [vc torchAvailabilityChanged:torchIsAvailable];
 }
 
 // Calls |receiveQRScannerResult:| on the presented QRScannerViewController.
 - (void)callReceiveQRScannerResult:(NSString*)result {
   QRScannerViewController* vc =
-      (QRScannerViewController*)[[self currentBVC] presentedViewController];
+      (QRScannerViewController*)[[self currentViewController]
+          presentedViewController];
   [vc receiveQRScannerResult:result loadImmediately:NO];
 }
 
@@ -623,7 +628,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Tests that a UIAlertController is presented instead of the
 // QRScannerViewController if the camera is unavailable.
 - (void)testCameraUnavailableDialog {
-  UIViewController* bvc = [self currentBVC];
+  UIViewController* bvc = [self currentViewController];
   [self assertModalOfClass:[QRScannerViewController class]
           isNotPresentedBy:bvc];
   [self assertModalOfClass:[UIAlertController class] isNotPresentedBy:bvc];
@@ -661,7 +666,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
     // Close the dialog.
     [self addCameraControllerDismissalExpectations:cameraControllerMock];
     TapButton(DialogCancelButton());
-    UIViewController* bvc = [self currentBVC];
+    UIViewController* bvc = [self currentViewController];
     [self waitForModalOfClass:[QRScannerViewController class]
          toDisappearFromAbove:bvc];
     [self assertModalOfClass:[UIAlertController class] isNotPresentedBy:bvc];
@@ -698,9 +703,9 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [self addCameraControllerDismissalExpectations:cameraControllerMock];
   TapButton(DialogCancelButton());
   [self waitForModalOfClass:[QRScannerViewController class]
-       toDisappearFromAbove:[self currentBVC]];
+       toDisappearFromAbove:[self currentViewController]];
   [self assertModalOfClass:[UIAlertController class]
-          isNotPresentedBy:[self currentBVC]];
+          isNotPresentedBy:[self currentViewController]];
 
   [cameraControllerMock verify];
 }
@@ -756,7 +761,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [self callReceiveQRScannerResult:base::SysUTF8ToNSString(result)];
 
   [self waitForModalOfClass:[QRScannerViewController class]
-       toDisappearFromAbove:[self currentBVC]];
+       toDisappearFromAbove:[self currentViewController]];
   [cameraControllerMock verify];
 
   // Optionally edit the text in the omnibox before pressing return.
@@ -772,7 +777,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
   [self assertModalOfClass:[QRScannerViewController class]
-          isNotPresentedBy:[self currentBVC]];
+          isNotPresentedBy:[self currentViewController]];
 }
 
 // Test that the correct page is loaded if the scanner result is a URL.
