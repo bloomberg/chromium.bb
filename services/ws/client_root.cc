@@ -10,7 +10,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/client_change.h"
 #include "services/ws/client_change_tracker.h"
-#include "services/ws/server_window.h"
+#include "services/ws/proxy_window.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -47,15 +47,14 @@ ClientRoot::ClientRoot(WindowTree* window_tree,
 }
 
 ClientRoot::~ClientRoot() {
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
   window_->RemoveObserver(this);
   if (window_->GetHost())
     window_->GetHost()->RemoveObserver(this);
 
   viz::HostFrameSinkManager* host_frame_sink_manager =
       window_->env()->context_factory_private()->GetHostFrameSinkManager();
-  host_frame_sink_manager->InvalidateFrameSinkId(
-      server_window->frame_sink_id());
+  host_frame_sink_manager->InvalidateFrameSinkId(proxy_window->frame_sink_id());
 }
 
 void ClientRoot::SetClientAreaInsets(const gfx::Insets& client_area_insets) {
@@ -70,7 +69,7 @@ void ClientRoot::RegisterVizEmbeddingSupport() {
   viz::HostFrameSinkManager* host_frame_sink_manager =
       window_->env()->context_factory_private()->GetHostFrameSinkManager();
   viz::FrameSinkId frame_sink_id =
-      ServerWindow::GetMayBeNull(window_)->frame_sink_id();
+      ProxyWindow::GetMayBeNull(window_)->frame_sink_id();
   host_frame_sink_manager->RegisterFrameSinkId(
       frame_sink_id, this, viz::ReportFirstSurfaceActivation::kYes);
   window_->SetEmbedFrameSinkId(frame_sink_id);
@@ -83,8 +82,8 @@ bool ClientRoot::ShouldAssignLocalSurfaceId() {
   // WindowService. First level embeddings have no embeddings above them.
   if (is_top_level_)
     return true;
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
-  return server_window->owning_window_tree() == nullptr;
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
+  return proxy_window->owning_window_tree() == nullptr;
 }
 
 void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
@@ -93,14 +92,14 @@ void ClientRoot::UpdateLocalSurfaceIdIfNecessary() {
 
   gfx::Size size_in_pixels =
       ui::ConvertSizeToPixel(window_->layer(), window_->bounds().size());
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
   // It's expected by cc code that any time the size changes a new
   // LocalSurfaceId is used.
   if (last_surface_size_in_pixels_ != size_in_pixels ||
-      !server_window->local_surface_id().has_value() ||
+      !proxy_window->local_surface_id().has_value() ||
       last_device_scale_factor_ != window_->layer()->device_scale_factor()) {
     parent_local_surface_id_allocator_.GenerateId();
-    server_window->set_local_surface_id(
+    proxy_window->set_local_surface_id(
         parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
             .local_surface_id());
     last_surface_size_in_pixels_ = size_in_pixels;
@@ -116,28 +115,28 @@ void ClientRoot::OnLocalSurfaceIdChanged() {
                                                 : window_->bounds());
 }
 
-void ClientRoot::AttachChildFrameSinkId(ServerWindow* server_window) {
-  DCHECK(server_window->attached_frame_sink_id().is_valid());
-  DCHECK(ServerWindow::GetMayBeNull(window_)->frame_sink_id().is_valid());
+void ClientRoot::AttachChildFrameSinkId(ProxyWindow* proxy_window) {
+  DCHECK(proxy_window->attached_frame_sink_id().is_valid());
+  DCHECK(ProxyWindow::GetMayBeNull(window_)->frame_sink_id().is_valid());
   viz::HostFrameSinkManager* host_frame_sink_manager =
       window_->env()->context_factory_private()->GetHostFrameSinkManager();
   const viz::FrameSinkId& frame_sink_id =
-      server_window->attached_frame_sink_id();
+      proxy_window->attached_frame_sink_id();
   if (host_frame_sink_manager->IsFrameSinkIdRegistered(frame_sink_id)) {
     host_frame_sink_manager->RegisterFrameSinkHierarchy(
-        ServerWindow::GetMayBeNull(window_)->frame_sink_id(), frame_sink_id);
+        ProxyWindow::GetMayBeNull(window_)->frame_sink_id(), frame_sink_id);
   }
 }
 
-void ClientRoot::UnattachChildFrameSinkId(ServerWindow* server_window) {
-  DCHECK(server_window->attached_frame_sink_id().is_valid());
-  DCHECK(ServerWindow::GetMayBeNull(window_)->frame_sink_id().is_valid());
+void ClientRoot::UnattachChildFrameSinkId(ProxyWindow* proxy_window) {
+  DCHECK(proxy_window->attached_frame_sink_id().is_valid());
+  DCHECK(ProxyWindow::GetMayBeNull(window_)->frame_sink_id().is_valid());
   viz::HostFrameSinkManager* host_frame_sink_manager =
       window_->env()->context_factory_private()->GetHostFrameSinkManager();
   const viz::FrameSinkId& root_frame_sink_id =
-      ServerWindow::GetMayBeNull(window_)->frame_sink_id();
+      ProxyWindow::GetMayBeNull(window_)->frame_sink_id();
   const viz::FrameSinkId& window_frame_sink_id =
-      server_window->attached_frame_sink_id();
+      proxy_window->attached_frame_sink_id();
   if (host_frame_sink_manager->IsFrameSinkHierarchyRegistered(
           root_frame_sink_id, window_frame_sink_id)) {
     host_frame_sink_manager->UnregisterFrameSinkHierarchy(root_frame_sink_id,
@@ -145,35 +144,34 @@ void ClientRoot::UnattachChildFrameSinkId(ServerWindow* server_window) {
   }
 }
 
-void ClientRoot::AttachChildFrameSinkIdRecursive(ServerWindow* server_window) {
-  if (server_window->attached_frame_sink_id().is_valid())
-    AttachChildFrameSinkId(server_window);
+void ClientRoot::AttachChildFrameSinkIdRecursive(ProxyWindow* proxy_window) {
+  if (proxy_window->attached_frame_sink_id().is_valid())
+    AttachChildFrameSinkId(proxy_window);
 
-  for (aura::Window* child : server_window->window()->children()) {
-    ServerWindow* child_server_window = ServerWindow::GetMayBeNull(child);
-    if (child_server_window->owning_window_tree() == window_tree_)
-      AttachChildFrameSinkIdRecursive(child_server_window);
+  for (aura::Window* child : proxy_window->window()->children()) {
+    ProxyWindow* child_proxy_window = ProxyWindow::GetMayBeNull(child);
+    if (child_proxy_window->owning_window_tree() == window_tree_)
+      AttachChildFrameSinkIdRecursive(child_proxy_window);
   }
 }
 
-void ClientRoot::UnattachChildFrameSinkIdRecursive(
-    ServerWindow* server_window) {
-  if (server_window->attached_frame_sink_id().is_valid())
-    UnattachChildFrameSinkId(server_window);
+void ClientRoot::UnattachChildFrameSinkIdRecursive(ProxyWindow* proxy_window) {
+  if (proxy_window->attached_frame_sink_id().is_valid())
+    UnattachChildFrameSinkId(proxy_window);
 
-  for (aura::Window* child : server_window->window()->children()) {
-    ServerWindow* child_server_window = ServerWindow::GetMayBeNull(child);
-    if (child_server_window->owning_window_tree() == window_tree_)
-      UnattachChildFrameSinkIdRecursive(child_server_window);
+  for (aura::Window* child : proxy_window->window()->children()) {
+    ProxyWindow* child_proxy_window = ProxyWindow::GetMayBeNull(child);
+    if (child_proxy_window->owning_window_tree() == window_tree_)
+      UnattachChildFrameSinkIdRecursive(child_proxy_window);
   }
 }
 
 void ClientRoot::UpdatePrimarySurfaceId() {
   UpdateLocalSurfaceIdIfNecessary();
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
-  if (server_window->local_surface_id().has_value()) {
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
+  if (proxy_window->local_surface_id().has_value()) {
     client_surface_embedder_->SetSurfaceId(viz::SurfaceId(
-        window_->GetFrameSinkId(), *server_window->local_surface_id()));
+        window_->GetFrameSinkId(), *proxy_window->local_surface_id()));
     if (fallback_surface_info_) {
       client_surface_embedder_->SetFallbackSurfaceInfo(*fallback_surface_info_);
       fallback_surface_info_.reset();
@@ -203,7 +201,7 @@ void ClientRoot::NotifyClientOfNewBounds(const gfx::Rect& old_bounds) {
   last_bounds_ = window_->GetBoundsInScreen();
   window_tree_->window_tree_client_->OnWindowBoundsChanged(
       window_tree_->TransportIdForWindow(window_), old_bounds, last_bounds_,
-      ServerWindow::GetMayBeNull(window_)->local_surface_id());
+      ProxyWindow::GetMayBeNull(window_)->local_surface_id());
 }
 
 void ClientRoot::OnPositionInRootChanged() {
@@ -303,8 +301,8 @@ void ClientRoot::OnHostResized(aura::WindowTreeHost* host) {
 
 void ClientRoot::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
-  if (server_window->local_surface_id().has_value()) {
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
+  if (proxy_window->local_surface_id().has_value()) {
     DCHECK(!fallback_surface_info_);
     if (!client_surface_embedder_->HasPrimarySurfaceId())
       UpdatePrimarySurfaceId();
@@ -315,7 +313,7 @@ void ClientRoot::OnFirstSurfaceActivation(
   if (!window_tree_->client_name().empty()) {
     // OnFirstSurfaceActivation() should only be called after
     // AttachCompositorFrameSink().
-    DCHECK(server_window->attached_compositor_frame_sink());
+    DCHECK(proxy_window->attached_compositor_frame_sink());
     window_tree_->window_service()->OnFirstSurfaceActivation(
         window_tree_->client_name());
   }

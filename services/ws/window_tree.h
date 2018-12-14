@@ -38,7 +38,7 @@ class ClientRoot;
 class Embedding;
 class EventObserverHelper;
 class FocusHandler;
-class ServerWindow;
+class ProxyWindow;
 class TopmostWindowObserver;
 class WindowManagerInterface;
 class WindowService;
@@ -107,7 +107,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   bool IsTopLevel(aura::Window* window);
 
   // Asks the client to close |window|. |window| must be a top-level window.
-  void RequestClose(ServerWindow* window);
+  void RequestClose(ProxyWindow* window);
 
   // Called when an Embedding is destroyed. This is only called for Embeddings
   // that do not own the WindowTree (see Embedding for more details on when this
@@ -220,7 +220,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   bool IsWindowRootOfAnotherClient(aura::Window* window) const;
 
   // Returns true if |window| has an ancestor that intercepts events.
-  bool DoesAnyAncestorInterceptEvents(ServerWindow* window);
+  bool DoesAnyAncestorInterceptEvents(ProxyWindow* window);
 
   // Called when one of the windows known to the client loses capture.
   // |lost_capture| is the window that had capture.

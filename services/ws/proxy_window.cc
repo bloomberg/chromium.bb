@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ws/server_window.h"
+#include "services/ws/proxy_window.h"
 
 #include <utility>
 
@@ -24,19 +24,19 @@
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ws::ServerWindow*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ws::ProxyWindow*);
 
 namespace ws {
 namespace {
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ServerWindow, kServerWindowKey, nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ProxyWindow, kProxyWindowKey, nullptr);
 
 // Returns true if |location| is in the non-client area (or outside the bounds
 // of the window). A return value of false means the location is in the client
 // area.
 bool IsLocationInNonClientArea(const aura::Window* window,
                                const gfx::Point& location) {
-  const ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  if (!server_window || !server_window->IsTopLevel())
+  const ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window);
+  if (!proxy_window || !proxy_window->IsTopLevel())
     return false;
 
   // Locations inside bounds but within the resize insets count as non-client
@@ -57,11 +57,11 @@ bool IsLocationInNonClientArea(const aura::Window* window,
   }
 
   gfx::Rect client_area(window->bounds().size());
-  client_area.Inset(server_window->client_area());
+  client_area.Inset(proxy_window->client_area());
   if (client_area.Contains(location))
     return false;
 
-  for (const auto& rect : server_window->additional_client_areas()) {
+  for (const auto& rect : proxy_window->additional_client_areas()) {
     if (rect.Contains(location))
       return false;
   }
@@ -95,16 +95,16 @@ ui::PointerId GetPointerId(const ui::Event& event) {
   return event.AsTouchEvent()->pointer_details().id;
 }
 
-// WindowTargeter used for ServerWindows. This is used for two purposes:
+// WindowTargeter used for ProxyWindows. This is used for two purposes:
 // . If the location is in the non-client area, then child Windows are not
 //   considered. This is done to ensure the delegate of the window (which is
 //   local) sees the event.
 // . To ensure |WindowTree::intercepts_events_| is honored.
-class ServerWindowTargeter : public aura::WindowTargeter {
+class ProxyWindowTargeter : public aura::WindowTargeter {
  public:
-  explicit ServerWindowTargeter(ServerWindow* server_window)
-      : server_window_(server_window) {}
-  ~ServerWindowTargeter() override = default;
+  explicit ProxyWindowTargeter(ProxyWindow* proxy_window)
+      : proxy_window_(proxy_window) {}
+  ~ProxyWindowTargeter() override = default;
 
   // aura::WindowTargeter:
   bool SubtreeShouldBeExploredForEvent(aura::Window* window,
@@ -113,7 +113,7 @@ class ServerWindowTargeter : public aura::WindowTargeter {
     // parent's WindowTargeter. This is necessary for targeters such as
     // EasyResizeWindowTargeter to work correctly.
     if (mouse_extend().IsEmpty() && touch_extend().IsEmpty() &&
-        server_window_->IsTopLevel() && window->parent()) {
+        proxy_window_->IsTopLevel() && window->parent()) {
       aura::WindowTargeter* parent_targeter =
           static_cast<WindowTargeter*>(window->parent()->targeter());
       if (parent_targeter)
@@ -125,8 +125,8 @@ class ServerWindowTargeter : public aura::WindowTargeter {
   ui::EventTarget* FindTargetForEvent(ui::EventTarget* event_target,
                                       ui::Event* event) override {
     aura::Window* window = static_cast<aura::Window*>(event_target);
-    DCHECK_EQ(window, server_window_->window());
-    if (server_window_->DoesOwnerInterceptEvents()) {
+    DCHECK_EQ(window, proxy_window_->window());
+    if (proxy_window_->DoesOwnerInterceptEvents()) {
       // If the owner intercepts events, then don't recurse (otherwise events
       // would go to a descendant).
       return event_target->CanAcceptEvent(*event) ? window : nullptr;
@@ -143,28 +143,28 @@ class ServerWindowTargeter : public aura::WindowTargeter {
   }
 
  private:
-  ServerWindow* const server_window_;
+  ProxyWindow* const proxy_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerWindowTargeter);
+  DISALLOW_COPY_AND_ASSIGN(ProxyWindowTargeter);
 };
 
-// ServerWindowEventHandler is used to forward events to the client.
-// ServerWindowEventHandler adds itself to the pre-phase to ensure it's
+// ProxyWindowEventHandler is used to forward events to the client.
+// ProxyWindowEventHandler adds itself to the pre-phase to ensure it's
 // considered before the Window's delegate (or other EventHandlers).
-class ServerWindowEventHandler : public ui::EventHandler {
+class ProxyWindowEventHandler : public ui::EventHandler {
  public:
-  explicit ServerWindowEventHandler(ServerWindow* server_window)
-      : server_window_(server_window) {
+  explicit ProxyWindowEventHandler(ProxyWindow* proxy_window)
+      : proxy_window_(proxy_window) {
     // Use |kDefault| so as not to conflict with other important pre-target
     // handlers (such as laser pointer).
     window()->AddPreTargetHandler(this, ui::EventTarget::Priority::kDefault);
   }
-  ~ServerWindowEventHandler() override {
+  ~ProxyWindowEventHandler() override {
     window()->RemovePreTargetHandler(this);
   }
 
-  ServerWindow* server_window() { return server_window_; }
-  aura::Window* window() { return server_window_->window(); }
+  ProxyWindow* proxy_window() { return proxy_window_; }
+  aura::Window* window() { return proxy_window_->window(); }
 
   // ui::EventHandler:
   void OnEvent(ui::Event* event) override {
@@ -178,19 +178,19 @@ class ServerWindowEventHandler : public ui::EventHandler {
     if (HandleInterceptedEvent(event) || ShouldIgnoreEvent(*event))
       return;
 
-    auto* owning = server_window_->owning_window_tree();
-    auto* embedded = server_window_->embedded_window_tree();
+    auto* owning = proxy_window_->owning_window_tree();
+    auto* embedded = proxy_window_->embedded_window_tree();
     WindowTree* target_client = nullptr;
-    if (server_window_->DoesOwnerInterceptEvents()) {
+    if (proxy_window_->DoesOwnerInterceptEvents()) {
       // A client that intercepts events, always gets the event regardless of
       // focus/capture.
       target_client = owning;
     } else if (event->IsKeyEvent()) {
-      if (!server_window_->focus_owner())
+      if (!proxy_window_->focus_owner())
         return;  // The local environment is going to process the event.
-      target_client = server_window_->focus_owner();
-    } else if (server_window()->capture_owner()) {
-      target_client = server_window()->capture_owner();
+      target_client = proxy_window_->focus_owner();
+    } else if (proxy_window()->capture_owner()) {
+      target_client = proxy_window()->capture_owner();
     } else {
       // Prefer embedded over owner.
       target_client = !embedded ? owning : embedded;
@@ -213,7 +213,7 @@ class ServerWindowEventHandler : public ui::EventHandler {
       return true;
 
     if (static_cast<aura::Window*>(event.target()) != window()) {
-      // As ServerWindow is a EP_PRETARGET EventHandler it gets events *before*
+      // As ProxyWindow is a EP_PRETARGET EventHandler it gets events *before*
       // descendants. Ignore all such events, and only process when
       // window() is the the target.
       return true;
@@ -245,10 +245,10 @@ class ServerWindowEventHandler : public ui::EventHandler {
       return false;
 
     // KeyEvents, and events when there is capture, do not go through through
-    // ServerWindowTargeter. As a result ServerWindowEventHandler has to check
+    // ProxyWindowTargeter. As a result ProxyWindowEventHandler has to check
     // for a client intercepting events.
-    if (server_window_->DoesOwnerInterceptEvents()) {
-      server_window_->owning_window_tree()->SendEventToClient(window(), *event);
+    if (proxy_window_->DoesOwnerInterceptEvents()) {
+      proxy_window_->owning_window_tree()->SendEventToClient(window(), *event);
       if (event->cancelable())
         event->StopPropagation();
       return true;
@@ -257,9 +257,9 @@ class ServerWindowEventHandler : public ui::EventHandler {
   }
 
  private:
-  ServerWindow* const server_window_;
+  ProxyWindow* const proxy_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerWindowEventHandler);
+  DISALLOW_COPY_AND_ASSIGN(ProxyWindowEventHandler);
 };
 
 class TopLevelEventHandler;
@@ -300,13 +300,13 @@ class PointerPressHandler : public aura::client::CaptureClientObserver,
 // area are not sent to the client, instead are handled locally. For example,
 // if a press occurs in the non-client area, then the event is not sent to
 // the client, it's handled locally.
-class TopLevelEventHandler : public ServerWindowEventHandler {
+class TopLevelEventHandler : public ProxyWindowEventHandler {
  public:
-  explicit TopLevelEventHandler(ServerWindow* server_window)
-      : ServerWindowEventHandler(server_window) {
+  explicit TopLevelEventHandler(ProxyWindow* proxy_window)
+      : ProxyWindowEventHandler(proxy_window) {
     // Top-levels should always have an owning_window_tree().
     // OnEvent() assumes this.
-    DCHECK(server_window->owning_window_tree());
+    DCHECK(proxy_window->owning_window_tree());
   }
 
   ~TopLevelEventHandler() override = default;
@@ -330,7 +330,7 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
     pointer_press_handlers_.clear();
   }
 
-  // ServerWindowEventHandler:
+  // ProxyWindowEventHandler:
   void OnEvent(ui::Event* event) override {
     if (event->phase() != ui::EP_PRETARGET) {
       // All work is done in the pre-phase. If this branch is hit, it means
@@ -343,7 +343,7 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
       return;
 
     if (!event->IsLocatedEvent()) {
-      ServerWindowEventHandler::OnEvent(event);
+      ProxyWindowEventHandler::OnEvent(event);
       return;
     }
 
@@ -353,8 +353,8 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
     // If there is capture, send the event to the client that owns it. A null
     // capture owner means the local environment should handle the event.
     if (wm::CaptureController::Get()->GetCaptureWindow()) {
-      if (server_window()->capture_owner()) {
-        server_window()->capture_owner()->SendEventToClient(window(), *event);
+      if (proxy_window()->capture_owner()) {
+        proxy_window()->capture_owner()->SendEventToClient(window(), *event);
         if (event->cancelable())
           event->StopPropagation();
         return;
@@ -368,7 +368,7 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
     //   local, otherwise remote client.
     // . mouse-moves (not drags) go to both targets.
     bool stop_propagation = false;
-    if (server_window()->HasNonClientArea() && IsPointerEvent(*event)) {
+    if (proxy_window()->HasNonClientArea() && IsPointerEvent(*event)) {
       const ui::PointerId pointer_id = GetPointerId(*event);
       if (!pointer_press_handlers_.count(pointer_id)) {
         if (IsPointerPressedEvent(*event)) {
@@ -393,7 +393,7 @@ class TopLevelEventHandler : public ServerWindowEventHandler {
         stop_propagation = true;
       }
     }
-    server_window()->owning_window_tree()->SendEventToClient(window(), *event);
+    proxy_window()->owning_window_tree()->SendEventToClient(window(), *event);
     if (stop_propagation && event->cancelable())
       event->StopPropagation();
   }
@@ -439,47 +439,47 @@ void PointerPressHandler::OnWindowVisibilityChanged(aura::Window* window,
 
 }  // namespace
 
-ServerWindow::~ServerWindow() {
+ProxyWindow::~ProxyWindow() {
   // WindowTree/ClientRoot should have reset |attached_frame_sink_id_| before
   // the Window is destroyed.
   DCHECK(!attached_frame_sink_id_.is_valid());
 }
 
 // static
-ServerWindow* ServerWindow::Create(aura::Window* window,
-                                   WindowTree* tree,
-                                   const viz::FrameSinkId& frame_sink_id,
-                                   bool is_top_level) {
+ProxyWindow* ProxyWindow::Create(aura::Window* window,
+                                 WindowTree* tree,
+                                 const viz::FrameSinkId& frame_sink_id,
+                                 bool is_top_level) {
   DCHECK(!GetMayBeNull(window));
   // Owned by |window|.
-  ServerWindow* server_window =
-      new ServerWindow(window, tree, frame_sink_id, is_top_level);
-  return server_window;
+  ProxyWindow* proxy_window =
+      new ProxyWindow(window, tree, frame_sink_id, is_top_level);
+  return proxy_window;
 }
 
 // static
-const ServerWindow* ServerWindow::GetMayBeNull(const aura::Window* window) {
-  return window ? window->GetProperty(kServerWindowKey) : nullptr;
+const ProxyWindow* ProxyWindow::GetMayBeNull(const aura::Window* window) {
+  return window ? window->GetProperty(kProxyWindowKey) : nullptr;
 }
 
-void ServerWindow::Destroy() {
+void ProxyWindow::Destroy() {
   // This should only be called for windows created locally for an embedding
   // (not created by a remote client). Such windows do not have an owner.
   DCHECK(!owning_window_tree_);
   // static_cast is needed to determine which function SetProperty() applies
   // to.
-  window_->SetProperty(kServerWindowKey, static_cast<ServerWindow*>(nullptr));
+  window_->SetProperty(kProxyWindowKey, static_cast<ProxyWindow*>(nullptr));
 }
 
-WindowTree* ServerWindow::embedded_window_tree() {
+WindowTree* ProxyWindow::embedded_window_tree() {
   return embedding_ ? embedding_->embedded_tree() : nullptr;
 }
 
-const WindowTree* ServerWindow::embedded_window_tree() const {
+const WindowTree* ProxyWindow::embedded_window_tree() const {
   return embedding_ ? embedding_->embedded_tree() : nullptr;
 }
 
-void ServerWindow::SetClientArea(
+void ProxyWindow::SetClientArea(
     const gfx::Insets& insets,
     const std::vector<gfx::Rect>& additional_client_areas) {
   if (client_area_ == insets &&
@@ -496,12 +496,12 @@ void ServerWindow::SetClientArea(
     client_root->SetClientAreaInsets(insets);
 }
 
-void ServerWindow::SetHitTestInsets(const gfx::Insets& mouse,
-                                    const gfx::Insets& touch) {
+void ProxyWindow::SetHitTestInsets(const gfx::Insets& mouse,
+                                   const gfx::Insets& touch) {
   window_targeter_->SetInsets(mouse, touch);
 }
 
-void ServerWindow::SetCaptureOwner(WindowTree* owner) {
+void ProxyWindow::SetCaptureOwner(WindowTree* owner) {
   capture_owner_ = owner;
   if (!IsTopLevel())
     return;
@@ -510,28 +510,28 @@ void ServerWindow::SetCaptureOwner(WindowTree* owner) {
       ->OnCaptureOwnerChanged();
 }
 
-void ServerWindow::StoreCursor(const ui::Cursor& cursor) {
+void ProxyWindow::StoreCursor(const ui::Cursor& cursor) {
   cursor_ = cursor;
 }
 
-bool ServerWindow::DoesOwnerInterceptEvents() const {
+bool ProxyWindow::DoesOwnerInterceptEvents() const {
   return embedding_ && embedding_->embedding_tree_intercepts_events();
 }
 
-void ServerWindow::SetEmbedding(std::unique_ptr<Embedding> embedding) {
+void ProxyWindow::SetEmbedding(std::unique_ptr<Embedding> embedding) {
   embedding_ = std::move(embedding);
 }
 
-bool ServerWindow::HasNonClientArea() const {
+bool ProxyWindow::HasNonClientArea() const {
   return owning_window_tree_ && owning_window_tree_->IsTopLevel(window_) &&
          (!client_area_.IsEmpty() || !additional_client_areas_.empty());
 }
 
-bool ServerWindow::IsTopLevel() const {
+bool ProxyWindow::IsTopLevel() const {
   return owning_window_tree_ && owning_window_tree_->IsTopLevel(window_);
 }
 
-void ServerWindow::AttachCompositorFrameSink(
+void ProxyWindow::AttachCompositorFrameSink(
     viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
     viz::mojom::CompositorFrameSinkClientPtr client) {
   attached_compositor_frame_sink_ = true;
@@ -541,32 +541,32 @@ void ServerWindow::AttachCompositorFrameSink(
       frame_sink_id_, std::move(compositor_frame_sink), std::move(client));
 }
 
-void ServerWindow::SetDragDropDelegate(
+void ProxyWindow::SetDragDropDelegate(
     std::unique_ptr<DragDropDelegate> drag_drop_delegate) {
   drag_drop_delegate_ = std::move(drag_drop_delegate);
 }
 
-std::string ServerWindow::GetIdForDebugging() {
+std::string ProxyWindow::GetIdForDebugging() {
   return owning_window_tree_
              ? owning_window_tree_->ClientWindowIdForWindow(window_).ToString()
              : frame_sink_id_.ToString();
 }
 
-ServerWindow::ServerWindow(aura::Window* window,
-                           WindowTree* tree,
-                           const viz::FrameSinkId& frame_sink_id,
-                           bool is_top_level)
+ProxyWindow::ProxyWindow(aura::Window* window,
+                         WindowTree* tree,
+                         const viz::FrameSinkId& frame_sink_id,
+                         bool is_top_level)
     : window_(window),
       owning_window_tree_(tree),
       frame_sink_id_(frame_sink_id) {
-  window_->SetProperty(kServerWindowKey, this);
+  window_->SetProperty(kProxyWindowKey, this);
   if (is_top_level)
     event_handler_ = std::make_unique<TopLevelEventHandler>(this);
   else
-    event_handler_ = std::make_unique<ServerWindowEventHandler>(this);
-  auto server_window_targeter = std::make_unique<ServerWindowTargeter>(this);
-  window_targeter_ = server_window_targeter.get();
-  window_->SetEventTargeter(std::move(server_window_targeter));
+    event_handler_ = std::make_unique<ProxyWindowEventHandler>(this);
+  auto proxy_window_targeter = std::make_unique<ProxyWindowTargeter>(this);
+  window_targeter_ = proxy_window_targeter.get();
+  window_->SetEventTargeter(std::move(proxy_window_targeter));
   // In order for a window to receive events it must have a target_handler()
   // (see Window::CanAcceptEvent()). Normally the delegate is the TargetHandler,
   // but if the delegate is null, then so is the target_handler(). Set
@@ -576,7 +576,7 @@ ServerWindow::ServerWindow(aura::Window* window,
     window_->SetTargetHandler(event_handler_.get());
 }
 
-bool ServerWindow::IsHandlingPointerPressForTesting(ui::PointerId pointer_id) {
+bool ProxyWindow::IsHandlingPointerPressForTesting(ui::PointerId pointer_id) {
   DCHECK(IsTopLevel());
   return static_cast<TopLevelEventHandler*>(event_handler_.get())
       ->IsHandlingPointerPress(pointer_id);

@@ -65,7 +65,7 @@ class HostEventDispatcher;
 class HostEventQueue;
 class RemotingEventInjector;
 class ScreenProvider;
-class ServerWindow;
+class ProxyWindow;
 class UserActivityMonitor;
 class WindowServiceDelegate;
 class WindowServiceObserver;
@@ -93,8 +93,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Manger.
   void BindServiceRequest(service_manager::mojom::ServiceRequest request);
 
-  // Gets the ServerWindow for |window|, creating if necessary.
-  ServerWindow* GetServerWindowForWindowCreateIfNecessary(aura::Window* window);
+  // Gets the ProxyWindow for |window|, creating if necessary.
+  ProxyWindow* GetProxyWindowForWindowCreateIfNecessary(aura::Window* window);
 
   // Creates a new WindowTree, caller must call one of the Init() functions on
   // the returned object.
@@ -110,8 +110,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // over mojo to all remote clients.
   void SetDisplayForNewWindows(int64_t display_id);
 
-  // Whether |window| hosts a remote client.
-  static bool HasRemoteClient(const aura::Window* window);
+  // Returns true if |window| is a proxy window.
+  static bool IsProxyWindow(const aura::Window* window);
 
   // Returns true if |window| hosts a remote client and is a toplevel window.
   static bool IsTopLevelWindow(const aura::Window* window);
@@ -179,7 +179,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
       aura::WindowTreeHost* window_tree_host,
       HostEventDispatcher* dispatcher);
 
-  // Returns an id useful for debugging. See ServerWindow::GetIdForDebugging()
+  // Returns an id useful for debugging. See ProxyWindow::GetIdForDebugging()
   // for details.
   std::string GetIdForDebugging(aura::Window* window);
 

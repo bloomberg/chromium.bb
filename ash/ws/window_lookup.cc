@@ -28,7 +28,7 @@ ws::Id GetTransportId(aura::Window* window) {
 }  // namespace
 
 bool IsProxyWindow(aura::Window* window) {
-  return ws::WindowService::HasRemoteClient(window);
+  return ws::WindowService::IsProxyWindow(window);
 }
 
 aura::Window* GetProxyWindowForClientWindow(aura::Window* window) {

@@ -5,7 +5,7 @@
 #include "services/ws/window_delegate_impl.h"
 
 #include "services/ws/embedding.h"
-#include "services/ws/server_window.h"
+#include "services/ws/proxy_window.h"
 #include "services/ws/window_properties.h"
 #include "services/ws/window_tree.h"
 #include "ui/aura/window.h"
@@ -32,23 +32,23 @@ gfx::NativeCursor WindowDelegateImpl::GetCursor(const gfx::Point& point) {
   // Find the cursor of the embed root for an embedded Window, or the toplevel
   // if it's not an embedded client. This is done to match the behavior of Aura,
   // which sets the cursor on the root.
-  for (ServerWindow* server_window = ServerWindow::GetMayBeNull(window_);
-       server_window; server_window = ServerWindow::GetMayBeNull(
-                          server_window->window()->parent())) {
-    if (server_window->IsTopLevel()) {
-      if (server_window->window() == window_)
-        return server_window->cursor();
+  for (ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window_);
+       proxy_window; proxy_window = ProxyWindow::GetMayBeNull(
+                         proxy_window->window()->parent())) {
+    if (proxy_window->IsTopLevel()) {
+      if (proxy_window->window() == window_)
+        return proxy_window->cursor();
       gfx::Point toplevel_point = point;
-      aura::Window::ConvertPointToTarget(window_, server_window->window(),
+      aura::Window::ConvertPointToTarget(window_, proxy_window->window(),
                                          &toplevel_point);
-      return server_window->window()->delegate()->GetCursor(toplevel_point);
+      return proxy_window->window()->delegate()->GetCursor(toplevel_point);
     }
 
     // Assume that if the embedder is intercepting events, it's also responsible
     // for the cursor (which is the case with content embeddings).
-    if (server_window->HasEmbedding() &&
-        !server_window->embedding()->embedding_tree_intercepts_events()) {
-      return server_window->cursor();
+    if (proxy_window->HasEmbedding() &&
+        !proxy_window->embedding()->embedding_tree_intercepts_events()) {
+      return proxy_window->cursor();
     }
   }
 
@@ -90,10 +90,10 @@ void WindowDelegateImpl::OnWindowTargetVisibilityChanged(bool visible) {}
 void WindowDelegateImpl::OnWindowOcclusionChanged(
     aura::Window::OcclusionState occlusion_state,
     const SkRegion&) {
-  ServerWindow* const server_window = ServerWindow::GetMayBeNull(window_);
+  ProxyWindow* const proxy_window = ProxyWindow::GetMayBeNull(window_);
   // TODO: Send occluded region.
-  if (server_window)
-    server_window->owning_window_tree()->SendOcclusionState(window_);
+  if (proxy_window)
+    proxy_window->owning_window_tree()->SendOcclusionState(window_);
 }
 
 bool WindowDelegateImpl::HasHitTestMask() const {
