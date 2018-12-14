@@ -45,8 +45,6 @@ enum TimedSigninStatusField {
   TIMED_FIELDS_BEGIN = TIMED_FIELDS_BEGIN_UNTYPED,
   AUTHENTICATION_RESULT_RECEIVED = TIMED_FIELDS_BEGIN,
   REFRESH_TOKEN_RECEIVED,
-  SIGNIN_STARTED,
-  SIGNIN_COMPLETED,
   TIMED_FIELDS_END
 };
 
@@ -64,14 +62,6 @@ std::string TokenPrefPath(const std::string& service_name);
 // Returns the name of a SigninStatus field.
 std::string SigninStatusFieldToString(UntimedSigninStatusField field);
 std::string SigninStatusFieldToString(TimedSigninStatusField field);
-
-// An Observer class for authentication and token diagnostic information.
-class SigninDiagnosticsObserver {
- public:
-  // Credentials and signin related changes.
-  virtual void NotifySigninValueChanged(const TimedSigninStatusField& field,
-                                        const std::string& value) {}
-};
 
 // Gets the first 6 hex characters of the SHA256 hash of the passed in string.
 // These are enough to perform equality checks across a single users tokens,

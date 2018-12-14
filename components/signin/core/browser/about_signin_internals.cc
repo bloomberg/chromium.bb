@@ -124,10 +124,6 @@ std::string SigninStatusFieldToLabel(
       return "Gaia Authentication Result";
     case signin_internals_util::REFRESH_TOKEN_RECEIVED:
       return "RefreshToken Received";
-    case signin_internals_util::SIGNIN_STARTED:
-      return "SigninManager Started";
-    case signin_internals_util::SIGNIN_COMPLETED:
-      return "SigninManager Completed";
     case signin_internals_util::TIMED_FIELDS_END:
       NOTREACHED();
       return "Error";
@@ -247,7 +243,7 @@ void AboutSigninInternals::RemoveSigninObserver(
   signin_observers_.RemoveObserver(observer);
 }
 
-void AboutSigninInternals::NotifySigninValueChanged(
+void AboutSigninInternals::NotifyTimedSigninFieldValueChanged(
     const signin_internals_util::TimedSigninStatusField& field,
     const std::string& value) {
   unsigned int field_index = field - signin_internals_util::TIMED_FIELDS_BEGIN;
@@ -269,8 +265,6 @@ void AboutSigninInternals::NotifySigninValueChanged(
   if (field == signin_internals_util::AUTHENTICATION_RESULT_RECEIVED) {
     ClearPref(client_->GetPrefs(),
               signin_internals_util::REFRESH_TOKEN_RECEIVED);
-    ClearPref(client_->GetPrefs(), signin_internals_util::SIGNIN_STARTED);
-    ClearPref(client_->GetPrefs(), signin_internals_util::SIGNIN_COMPLETED);
   }
 
   NotifyObservers();
@@ -424,13 +418,13 @@ void AboutSigninInternals::OnAccessTokenRemoved(
 }
 
 void AboutSigninInternals::OnRefreshTokenReceived(const std::string& status) {
-  NotifySigninValueChanged(signin_internals_util::REFRESH_TOKEN_RECEIVED,
-                           status);
+  NotifyTimedSigninFieldValueChanged(
+      signin_internals_util::REFRESH_TOKEN_RECEIVED, status);
 }
 
 void AboutSigninInternals::OnAuthenticationResultReceived(
     const std::string& status) {
-  NotifySigninValueChanged(
+  NotifyTimedSigninFieldValueChanged(
       signin_internals_util::AUTHENTICATION_RESULT_RECEIVED, status);
 }
 
