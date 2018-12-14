@@ -135,8 +135,6 @@ class PictureBufferManagerImpl : public PictureBufferManager {
 
   bool DismissPictureBuffer(int32_t picture_buffer_id) override {
     DVLOG(2) << __func__ << "(" << picture_buffer_id << ")";
-    DCHECK(gpu_task_runner_);
-    DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
     base::AutoLock lock(picture_buffers_lock_);
 
@@ -163,6 +161,20 @@ class PictureBufferManagerImpl : public PictureBufferManager {
     }
 
     return true;
+  }
+
+  void DismissAllPictureBuffers() override {
+    DVLOG(2) << __func__;
+
+    std::vector<int32_t> assigned_picture_buffer_ids;
+    {
+      base::AutoLock lock(picture_buffers_lock_);
+      for (const auto& it : picture_buffers_)
+        assigned_picture_buffer_ids.push_back(it.first);
+    }
+
+    for (int32_t picture_buffer_id : assigned_picture_buffer_ids)
+      DismissPictureBuffer(picture_buffer_id);
   }
 
   scoped_refptr<VideoFrame> CreateVideoFrame(Picture picture,

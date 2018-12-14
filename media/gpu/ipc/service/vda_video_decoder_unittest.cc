@@ -202,7 +202,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
     RunUntilIdle();
   }
 
-  scoped_refptr<VideoFrame> PictureReady(
+  scoped_refptr<VideoFrame> PictureReady_NoRunUntilIdle(
       int32_t bitstream_buffer_id,
       int32_t picture_buffer_id,
       gfx::Rect visible_rect = gfx::Rect(1920, 1080)) {
@@ -221,6 +221,15 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
           base::BindOnce(&VideoDecodeAccelerator::Client::PictureReady,
                          base::Unretained(client_), picture));
     }
+    return frame;
+  }
+
+  scoped_refptr<VideoFrame> PictureReady(
+      int32_t bitstream_buffer_id,
+      int32_t picture_buffer_id,
+      gfx::Rect visible_rect = gfx::Rect(1920, 1080)) {
+    scoped_refptr<VideoFrame> frame = PictureReady_NoRunUntilIdle(
+        bitstream_buffer_id, picture_buffer_id, visible_rect);
     RunUntilIdle();
     return frame;
   }
@@ -414,7 +423,7 @@ TEST_P(VdaVideoDecoderTest, Decode_OutputAndDismiss) {
   NotifyEndOfBitstreamBuffer(bitstream_id);
   int32_t picture_buffer_id = ProvidePictureBuffer();
   scoped_refptr<VideoFrame> frame =
-      PictureReady(bitstream_id, picture_buffer_id);
+      PictureReady_NoRunUntilIdle(bitstream_id, picture_buffer_id);
   DismissPictureBuffer(picture_buffer_id);
 
   // Dropping the frame still requires a SyncPoint to wait on.
