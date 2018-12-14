@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_index.h"
 
 #include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
@@ -37,10 +38,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-
-using blink::WebIDBCallbacks;
-using blink::WebIDBCursor;
-using blink::WebIDBDatabase;
 
 namespace blink {
 

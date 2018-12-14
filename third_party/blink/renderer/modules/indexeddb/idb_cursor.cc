@@ -41,9 +41,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
-using blink::WebIDBCursor;
-using blink::WebIDBDatabase;
-
 namespace blink {
 
 IDBCursor* IDBCursor::Create(std::unique_ptr<WebIDBCursor> backend,

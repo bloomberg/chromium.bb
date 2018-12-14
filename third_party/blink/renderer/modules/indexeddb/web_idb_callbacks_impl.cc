@@ -44,10 +44,6 @@
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
-using blink::WebIDBCursor;
-using blink::WebIDBDatabase;
-using blink::WebIDBDatabaseError;
-
 namespace blink {
 
 // static

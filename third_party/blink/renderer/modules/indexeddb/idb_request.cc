@@ -55,8 +55,6 @@
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-using blink::WebIDBCursor;
-
 namespace blink {
 
 IDBRequest::AsyncTraceState::AsyncTraceState(const char* trace_event_name)

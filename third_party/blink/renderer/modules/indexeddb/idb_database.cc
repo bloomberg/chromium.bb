@@ -25,6 +25,9 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 
+#include <limits>
+#include <memory>
+
 #include "base/atomic_sequence_num.h"
 #include "base/optional.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
@@ -48,11 +51,6 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-
-#include <limits>
-#include <memory>
-
-using blink::WebIDBDatabase;
 
 namespace blink {
 

@@ -51,11 +51,6 @@
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "v8/include/v8.h"
 
-using blink::WebBlobInfo;
-using blink::WebIDBCallbacks;
-using blink::WebIDBCursor;
-using blink::WebIDBDatabase;
-
 namespace blink {
 
 IDBObjectStore::IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata> metadata,
