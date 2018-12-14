@@ -237,7 +237,6 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // notified.
   base::ObserverList<Observer>::Unchecked observers_;
 
-  mojom::AddressErrorsPtr shipping_address_errors_;
   mojom::PayerErrorsPtr payer_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSpec);
