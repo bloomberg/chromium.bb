@@ -184,6 +184,7 @@ class BlinkTestController : public WebContentsObserver,
     ~Node();
 
     RenderFrameHost* render_frame_host = nullptr;
+    GlobalFrameRoutingId render_frame_host_id;
     std::vector<Node*> children;
 
     DISALLOW_COPY_AND_ASSIGN(Node);
@@ -241,7 +242,7 @@ class BlinkTestController : public WebContentsObserver,
   void CompositeAllFramesThen(base::OnceCallback<void()> callback);
 
  private:
-  Node* BuildFrameTree(const std::vector<RenderFrameHost*>& frames);
+  Node* BuildFrameTree(WebContents* web_contents);
   void CompositeNodeQueueThen(base::OnceCallback<void()> callback);
   void BuildDepthFirstQueue(Node* node);
 
@@ -319,7 +320,7 @@ class BlinkTestController : public WebContentsObserver,
   bool waiting_for_pixel_results_ = false;
   bool waiting_for_main_frame_dump_ = false;
 
-  std::vector<Node> composite_all_frames_node_storage_;
+  std::vector<std::unique_ptr<Node>> composite_all_frames_node_storage_;
   std::queue<Node*> composite_all_frames_node_queue_;
 
   // Map from one frame to one mojo pipe.

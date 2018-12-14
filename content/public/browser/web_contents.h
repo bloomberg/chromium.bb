@@ -542,6 +542,10 @@ class WebContents : public PageNavigator,
       std::unique_ptr<WebContents> current_web_contents,
       RenderFrameHost* outer_contents_frame) = 0;
 
+  // Returns the outer WebContents frame, the same frame that this WebContents
+  // was attached in AttachToOuterWebContentsFrame().
+  virtual RenderFrameHost* GetOuterWebContentsFrame() = 0;
+
   // Returns the outer WebContents of this WebContents if any.
   // Otherwise, return nullptr.
   virtual WebContents* GetOuterWebContents() = 0;
@@ -549,6 +553,9 @@ class WebContents : public PageNavigator,
   // Returns the root WebContents of the WebContents tree. Always returns
   // non-null value.
   virtual WebContents* GetOutermostWebContents() = 0;
+
+  // Returns a vector to the inner WebContents within this WebContents.
+  virtual std::vector<WebContents*> GetInnerWebContents() = 0;
 
   // Invoked when visible security state changes.
   virtual void DidChangeVisibleSecurityState() = 0;
