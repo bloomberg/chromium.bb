@@ -136,6 +136,7 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
 
   void InvalidatePaintAndMarkForLayoutIfNeeded(CanDeferInvalidation);
   void UpdateIntrinsicSizeIfNeeded(const LayoutSize&);
+  bool NeedsLayoutOnIntrinsicSizeChange() const;
   // Override intrinsic sizing info by HTMLImageElement "intrinsicsize"
   // attribute if enabled and exists.
   bool OverrideIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
