@@ -1784,20 +1784,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
     const float page_scale_factor =
         render_frame_submission_observer.LastRenderFrameMetadata()
             .page_scale_factor;
-    const gfx::PointF point_in_child(
+    const gfx::PointF point_in_root(
         (child_bounds.x() - root_bounds.x() + 10) * page_scale_factor,
         (child_bounds.y() - root_bounds.y() + 10) * page_scale_factor);
-    gfx::PointF dont_care;
-    ASSERT_EQ(rwhv_child->GetRenderWidgetHost(),
-              router->GetRenderWidgetHostAtPoint(rwhv_root, point_in_child,
-                                                 &dont_care));
 
     blink::WebTouchEvent touch_event(
         blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests());
     touch_event.touches_length = 1;
     touch_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
-    SetWebEventPositions(&touch_event.touches[0], point_in_child, rwhv_root);
+    SetWebEventPositions(&touch_event.touches[0], point_in_root, rwhv_root);
     touch_event.unique_touch_event_id = 1;
     InputEventAckWaiter waiter(rwhv_child->GetRenderWidgetHost(),
                                blink::WebInputEvent::kTouchStart);
