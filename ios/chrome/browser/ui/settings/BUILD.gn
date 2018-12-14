@@ -11,10 +11,10 @@ source_set("settings") {
     "accounts_collection_view_controller.mm",
     "alpha_animated_collection_view_flow_layout.h",
     "alpha_animated_collection_view_flow_layout.mm",
-    "autofill_credit_card_collection_view_controller.h",
-    "autofill_credit_card_collection_view_controller.mm",
     "autofill_credit_card_edit_table_view_controller.h",
     "autofill_credit_card_edit_table_view_controller.mm",
+    "autofill_credit_card_table_view_controller.h",
+    "autofill_credit_card_table_view_controller.mm",
     "autofill_edit_table_view_controller+protected.h",
     "autofill_edit_table_view_controller.h",
     "autofill_edit_table_view_controller.mm",
@@ -269,7 +269,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "about_chrome_table_view_controller_unittest.mm",
-    "autofill_credit_card_collection_view_controller_unittest.mm",
+    "autofill_credit_card_table_view_controller_unittest.mm",
     "autofill_profile_edit_table_view_controller_unittest.mm",
     "autofill_profile_table_view_controller_unittest.mm",
     "bandwidth_management_table_view_controller_unittest.mm",
