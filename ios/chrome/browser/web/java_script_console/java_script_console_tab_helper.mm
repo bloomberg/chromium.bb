@@ -18,9 +18,6 @@
 namespace {
 // Name of message to which javascript console messages are sent.
 static const char* kCommandPrefix = "console";
-
-// Standard User Defaults key for "Log JS" debug setting.
-NSString* const kLogJavaScript = @"LogJavascript";
 }
 
 JavaScriptConsoleTabHelper::JavaScriptConsoleTabHelper(
@@ -39,27 +36,27 @@ bool JavaScriptConsoleTabHelper::OnJavaScriptConsoleMessage(
     bool has_user_gesture,
     bool main_frame,
     web::WebFrame* sender_frame) {
-  const base::Value* log_message = message.FindKey("message");
-  const base::Value* log_level_value = message.FindKey("method");
-  const base::Value* origin_value = message.FindKey("origin");
-  if (!log_message || !log_level_value || !log_level_value->is_string() ||
-      !origin_value || !origin_value->is_string()) {
-    return false;
-  }
-  std::string log_level = log_level_value->GetString();
-  std::string origin = origin_value->GetString();
-
-  if ([[NSUserDefaults standardUserDefaults] boolForKey:kLogJavaScript]) {
-    DVLOG(0) << origin << " [" << log_level << "] " << log_message;
-  }
-
+  // Completely skip processing the message if no delegate exists.
   if (!delegate_) {
     return true;
   }
 
+  const base::Value* log_message = message.FindKey("message");
+  if (!log_message) {
+    return false;
+  }
+  const base::Value* log_level_value = message.FindKey("method");
+  if (!log_level_value || !log_level_value->is_string()) {
+    return false;
+  }
+  const base::Value* origin_value = message.FindKey("origin");
+  if (!origin_value || !origin_value->is_string()) {
+    return false;
+  }
+
   JavaScriptConsoleMessage frame_message;
-  frame_message.level = log_level;
-  frame_message.origin = GURL(origin);
+  frame_message.level = log_level_value->GetString();
+  frame_message.origin = GURL(origin_value->GetString());
   frame_message.message = base::Value::ToUniquePtrValue(log_message->Clone());
   delegate_->DidReceiveConsoleMessage(frame_message);
   return true;

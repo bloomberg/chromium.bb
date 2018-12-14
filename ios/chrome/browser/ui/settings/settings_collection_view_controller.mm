@@ -136,7 +136,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAboutChrome,
   ItemTypeMemoryDebugging,
   ItemTypeViewSource,
-  ItemTypeLogJavascript,
   ItemTypeCollectionCellCatalog,
   ItemTypeTableCellCatalog,
   ItemTypeArticlesForYou,
@@ -144,7 +143,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #if CHROMIUM_BUILD && !defined(NDEBUG)
 NSString* kDevViewSourceKey = @"DevViewSource";
-NSString* kLogJavascriptKey = @"LogJavascript";
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
 
 #pragma mark - IdentityObserverBridge Class
@@ -461,8 +459,6 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 #if CHROMIUM_BUILD && !defined(NDEBUG)
   [model addItem:[self viewSourceSwitchItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
-  [model addItem:[self logJavascriptConsoleSwitchItem]
-      toSectionWithIdentifier:SectionIdentifierDebug];
   [model addItem:[self collectionViewCatalogDetailItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
   [model addItem:[self tableViewCatalogDetailItem]
@@ -663,13 +659,6 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
                   withDefaultsKey:kDevViewSourceKey];
 }
 
-- (LegacySettingsSwitchItem*)logJavascriptConsoleSwitchItem {
-  return [self switchItemWithType:ItemTypeLogJavascript
-                            title:@"Log JS"
-                    iconImageName:kSettingsDebugImageName
-                  withDefaultsKey:kLogJavascriptKey];
-}
-
 - (LegacySettingsDetailItem*)collectionViewCatalogDetailItem {
   return [self detailItemWithType:ItemTypeCollectionCellCatalog
                              text:@"Collection Cell Catalog"
@@ -799,18 +788,6 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
       break;
     }
-    case ItemTypeLogJavascript: {
-#if CHROMIUM_BUILD && !defined(NDEBUG)
-      LegacySettingsSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
-      [switchCell.switchView addTarget:self
-                                action:@selector(logJSSwitchToggled:)
-                      forControlEvents:UIControlEventValueChanged];
-#else
-      NOTREACHED();
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
-      break;
-    }
     default:
       break;
   }
@@ -891,7 +868,6 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
       break;
     case ItemTypeMemoryDebugging:
     case ItemTypeViewSource:
-    case ItemTypeLogJavascript:
       // Taps on these don't do anything. They have a switch as accessory view
       // and only the switch is tappable.
       break;
@@ -941,7 +917,6 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
   switch (type) {
-    case ItemTypeLogJavascript:
     case ItemTypeMemoryDebugging:
     case ItemTypeSigninPromo:
     case ItemTypeViewSource:
@@ -994,20 +969,6 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   BOOL newSwitchValue = sender.isOn;
   switchItem.on = newSwitchValue;
   [self setBooleanNSUserDefaultsValue:newSwitchValue forKey:kDevViewSourceKey];
-}
-
-- (void)logJSSwitchToggled:(UISwitch*)sender {
-  NSIndexPath* switchPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeLogJavascript
-                                   sectionIdentifier:SectionIdentifierDebug];
-
-  LegacySettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
-          [self.collectionViewModel itemAtIndexPath:switchPath]);
-
-  BOOL newSwitchValue = sender.isOn;
-  switchItem.on = newSwitchValue;
-  [self setBooleanNSUserDefaultsValue:newSwitchValue forKey:kLogJavascriptKey];
 }
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
 

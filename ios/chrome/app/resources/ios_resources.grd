@@ -8,6 +8,8 @@
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_IOS_INSPECT_HTML" file="inspect/inspect.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+      <include name="IDR_IOS_INSPECT_JS" file="inspect/inspect.js" type="BINDATA" compress="gzip" />
       <include name="IDR_IOS_OMAHA_HTML" file="omaha/omaha.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_IOS_OMAHA_JS" file="omaha/omaha.js" type="BINDATA" compress="gzip" />
       <include name="IDR_CHROME_BROWSER_MANIFEST_OVERLAY" file="${root_gen_dir}/ios/chrome/app/chrome_browser_manifest_overlay.json" use_base_dir="false" type="BINDATA" />
