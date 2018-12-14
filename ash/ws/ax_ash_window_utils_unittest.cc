@@ -9,7 +9,6 @@
 #include "ash/test/ash_test_helper.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
@@ -21,10 +20,10 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
-#include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_root_obj_wrapper.h"
 #include "ui/views/accessibility/ax_tree_source_views.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -70,29 +69,14 @@ bool HasNodeWithValue(ui::AXNode* node, const std::string& value) {
   return false;
 }
 
-class AXAshWindowUtilsTest : public AshTestBase {
+class AXAshWindowUtilsTest : public SingleProcessMashTestBase {
  public:
   AXAshWindowUtilsTest() = default;
   ~AXAshWindowUtilsTest() override = default;
 
   // AshTestBase:
   void SetUp() override {
-    original_aura_env_mode_ =
-        aura::test::EnvTestHelper().SetMode(aura::Env::Mode::MUS);
-    feature_list_.InitWithFeatures({::features::kSingleProcessMash}, {});
-    AshTestBase::SetUp();
-
-    // AXRootObjWrapper creates a raw aura::Window with no env, which triggers
-    // some of the DCHECKs ensuring Shell's Env is used.
-    SetRunningOutsideAsh();
-
-    // Configure views backed by mus.
-    MusClient::InitParams mus_client_init_params;
-    mus_client_init_params.connector =
-        ash_test_helper()->GetWindowServiceConnector();
-    mus_client_init_params.create_wm_state = false;
-    mus_client_init_params.running_in_ws_process = true;
-    mus_client_ = std::make_unique<MusClient>(mus_client_init_params);
+    SingleProcessMashTestBase::SetUp();
 
     // Create a widget with a child view.
     widget_ = std::make_unique<Widget>();
@@ -101,7 +85,7 @@ class AXAshWindowUtilsTest : public AshTestBase {
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 200, 200);
     params.native_widget =
-        mus_client_->CreateNativeWidget(params, widget_.get());
+        MusClient::Get()->CreateNativeWidget(params, widget_.get());
     widget_->Init(params);
     widget_->Show();
 
@@ -111,22 +95,16 @@ class AXAshWindowUtilsTest : public AshTestBase {
 
     // Flush all messages from the WindowTreeClient to ensure the window service
     // has finished Widget creation.
-    aura::WindowTreeClientTestApi(mus_client_->window_tree_client())
+    aura::WindowTreeClientTestApi(MusClient::Get()->window_tree_client())
         .FlushForTesting();
   }
 
   void TearDown() override {
     widget_.reset();
-    AshTestBase::TearDown();
-    // Must happen after AshTestBase::TearDown() spins the message loop.
-    mus_client_.reset();
-    aura::test::EnvTestHelper().SetMode(original_aura_env_mode_);
+    SingleProcessMashTestBase::TearDown();
   }
 
  protected:
-  aura::Env::Mode original_aura_env_mode_ = aura::Env::Mode::LOCAL;
-  base::test::ScopedFeatureList feature_list_;
-  std::unique_ptr<MusClient> mus_client_;
   std::unique_ptr<Widget> widget_;
   Textfield* textfield_ = nullptr;  // Owned by views hierarchy.
 
