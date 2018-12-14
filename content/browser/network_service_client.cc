@@ -362,7 +362,7 @@ WebContents* GetWebContents(int process_id, int routing_id) {
   return WebContents::FromFrameTreeNodeId(routing_id);
 }
 
-BrowserContext* GetBrowserContext(int process_id, int routing_id) {
+BrowserContext* GetBrowserContextFromIds(int process_id, int routing_id) {
   WebContents* web_contents = GetWebContents(process_id, routing_id);
   if (web_contents)
     return web_contents->GetBrowserContext();
@@ -569,7 +569,7 @@ void NetworkServiceClient::OnClearSiteData(int process_id,
                                            int load_flags,
                                            OnClearSiteDataCallback callback) {
   auto browser_context_getter =
-      base::BindRepeating(GetBrowserContext, process_id, routing_id);
+      base::BindRepeating(GetBrowserContextFromIds, process_id, routing_id);
   auto web_contents_getter =
       base::BindRepeating(GetWebContents, process_id, routing_id);
   ClearSiteDataHandler::HandleHeader(browser_context_getter,
