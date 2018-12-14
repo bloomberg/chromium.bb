@@ -9,6 +9,7 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -820,10 +821,12 @@ public class ModalDialogManagerTest {
     private void checkBrowserControls(boolean restricted) {
         if (restricted) {
             Assert.assertTrue("All tabs should be obscured", mActivity.isViewObscuringAllTabs());
-            onView(withId(R.id.menu_button)).check(matches(not(isEnabled())));
+            onView(allOf(withId(R.id.menu_button), isDescendantOfA(withId(R.id.toolbar))))
+                    .check(matches(not(isEnabled())));
         } else {
             Assert.assertFalse("Tabs shouldn't be obscured", mActivity.isViewObscuringAllTabs());
-            onView(withId(R.id.menu_button)).check(matches(isEnabled()));
+            onView(allOf(withId(R.id.menu_button), isDescendantOfA(withId(R.id.toolbar))))
+                    .check(matches(isEnabled()));
         }
     }
 

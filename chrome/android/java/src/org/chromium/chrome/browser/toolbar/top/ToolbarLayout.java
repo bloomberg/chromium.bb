@@ -420,12 +420,6 @@ public abstract class ToolbarLayout extends FrameLayout {
     void setOnTabSwitcherClickHandler(OnClickListener listener) {}
 
     /**
-     * Sets the OnClickListener that will be notified when the New Tab button is pressed.
-     * @param listener The callback that will be notified when the New Tab button is pressed.
-     */
-    void setOnNewTabClickHandler(OnClickListener listener) {}
-
-    /**
      * Sets the OnClickListener that will be notified when the bookmark button is pressed.
      * @param listener The callback that will be notified when the bookmark button is pressed.
      */
@@ -585,8 +579,8 @@ public abstract class ToolbarLayout extends FrameLayout {
     void setContentAttached(boolean attached) {}
 
     /**
-     * Gives inheriting classes the chance to show or hide the TabSwitcher mode of this toolbar.
-     * @param inTabSwitcherMode Whether or not TabSwitcher mode should be shown or hidden.
+     * Called when tab switcher mode is entered or exited.
+     * @param inTabSwitcherMode Whether or not tab switcher mode is being shown or hidden.
      * @param showToolbar    Whether or not to show the normal toolbar while animating.
      * @param delayAnimation Whether or not to delay the animation until after the transition has
      *                       finished (which can be detected by a call to

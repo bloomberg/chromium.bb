@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
 
 /** A provider that notifies its observers when incognito mode is entered or exited. */
 public class IncognitoStateProvider implements ThemeColorProvider {
@@ -69,10 +68,19 @@ public class IncognitoStateProvider implements ThemeColorProvider {
     }
 
     /**
-     * @param observer Add an observer that will have events broadcast to.
+     * @return Whether incognito mode is currently selected.
      */
-    public void addObserver(IncognitoStateObserver observer) {
+    public boolean isIncognitoSelected() {
+        return mTabModelSelector != null ? mTabModelSelector.isIncognitoSelected() : false;
+    }
+
+    /**
+     * @param observer Add an observer to be notified of incognito state changes. Calls
+     *                 #onIncognitoStateChanged() on the added observer.
+     */
+    public void addIncognitoStateObserverAndTrigger(IncognitoStateObserver observer) {
         mIncognitoStateObservers.addObserver(observer);
+        observer.onIncognitoStateChanged(isIncognitoSelected());
     }
 
     /**

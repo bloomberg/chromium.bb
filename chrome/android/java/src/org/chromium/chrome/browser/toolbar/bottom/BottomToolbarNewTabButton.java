@@ -69,7 +69,7 @@ class BottomToolbarNewTabButton
 
     void setIncognitoStateProvider(IncognitoStateProvider incognitoStateProvider) {
         mIncognitoStateProvider = incognitoStateProvider;
-        mIncognitoStateProvider.addObserver((IncognitoStateObserver) this);
+        mIncognitoStateProvider.addIncognitoStateObserverAndTrigger(this);
     }
 
     @Override

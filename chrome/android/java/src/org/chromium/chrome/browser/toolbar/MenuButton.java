@@ -145,7 +145,7 @@ public class MenuButton extends FrameLayout implements ThemeColorObserver {
         }
     }
 
-    ImageButton getImageButton() {
+    public ImageButton getImageButton() {
         return mMenuImageButton;
     }
 

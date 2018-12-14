@@ -9,16 +9,27 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="@dimen/control_container_height" >
+
+    <ViewStub
+        android:id="@+id/tab_switcher_toolbar_stub"
+        android:layout_width="match_parent"
+        android:layout_marginTop="@dimen/tab_strip_height"
+        android:layout_height="@dimen/toolbar_height_no_shadow"
+        android:inflatedId="@+id/tab_switcher_toolbar"
+        android:layout="@layout/tab_switcher_toolbar" />
+
     <view
         class="org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer$ToolbarViewResourceFrameLayout"
         android:id="@+id/toolbar_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content" >
+
         <org.chromium.ui.AsyncViewStub
             android:id="@+id/toolbar_stub"
             android:layout_width="match_parent"
             android:layout_marginTop="@dimen/tab_strip_height"
             android:layout_height="@dimen/toolbar_height_no_shadow" />
+
         <ImageView
             android:id="@+id/toolbar_shadow"
             android:src="@drawable/modern_toolbar_shadow"
@@ -27,6 +38,7 @@
             android:layout_marginTop="@dimen/tab_strip_and_toolbar_height"
             android:scaleType="fitXY"
             tools:ignore="ContentDescription" />
+
         <ViewStub
             android:id="@+id/find_toolbar_stub"
             android:inflatedId="@+id/find_toolbar"
@@ -35,6 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/toolbar_height_no_shadow"
             android:layout="@layout/find_toolbar" />
+
         <ViewStub
             android:id="@+id/find_toolbar_tablet_stub"
             android:inflatedId="@+id/find_toolbar"

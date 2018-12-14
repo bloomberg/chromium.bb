@@ -1617,6 +1617,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/toolbar/top/ActionModeController.java",
   "java/src/org/chromium/chrome/browser/toolbar/top/CustomTabToolbar.java",
   "java/src/org/chromium/chrome/browser/toolbar/top/CustomTabToolbarAnimationDelegate.java",
+  "java/src/org/chromium/chrome/browser/toolbar/top/TabSwitcherModeTTCoordinatorPhone.java",
+  "java/src/org/chromium/chrome/browser/toolbar/top/TabSwitcherModeTTPhone.java",
   "java/src/org/chromium/chrome/browser/toolbar/top/ToggleTabStackButton.java",
   "java/src/org/chromium/chrome/browser/toolbar/top/Toolbar.java",
   "java/src/org/chromium/chrome/browser/toolbar/top/ToolbarActionModeCallback.java",

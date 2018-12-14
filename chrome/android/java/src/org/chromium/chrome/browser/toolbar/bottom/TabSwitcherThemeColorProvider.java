@@ -67,7 +67,7 @@ public class TabSwitcherThemeColorProvider implements ThemeColorProvider, Incogn
 
     void setIncognitoStateProvider(IncognitoStateProvider provider) {
         mIncognitoStateProvider = provider;
-        mIncognitoStateProvider.addObserver(this);
+        mIncognitoStateProvider.addIncognitoStateObserverAndTrigger(this);
     }
 
     @Override
