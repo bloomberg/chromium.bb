@@ -14,7 +14,6 @@
 #include "base/base_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/thread_heap_usage_tracker.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -158,11 +157,6 @@ class TestSequencedTaskRunner : public SequencedTaskRunner {
       CreateSequencedTaskRunnerWithTraits({});
   bool enabled_ = true;
   unsigned num_of_post_tasks_ = 0;
-};
-
-class TestingThreadHeapUsageTracker : public debug::ThreadHeapUsageTracker {
- public:
-  using ThreadHeapUsageTracker::DisableHeapTrackingForTesting;
 };
 
 }  // namespace
