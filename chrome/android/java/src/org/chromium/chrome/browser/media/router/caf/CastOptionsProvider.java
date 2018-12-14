@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.media.router.caf;
 
 import android.content.Context;
 
+import com.google.android.gms.cast.LaunchOptions;
 import com.google.android.gms.cast.framework.CastOptions;
 import com.google.android.gms.cast.framework.OptionsProvider;
 import com.google.android.gms.cast.framework.SessionProvider;
@@ -19,6 +20,7 @@ public class CastOptionsProvider implements OptionsProvider {
         return new CastOptions.Builder()
                 .setCastMediaOptions(null)
                 .setEnableReconnectionService(false)
+                .setLaunchOptions(new LaunchOptions.Builder().setRelaunchIfRunning(true).build())
                 .setResumeSavedSession(false)
                 .setStopReceiverApplicationWhenEndingSession(true)
                 .build();
