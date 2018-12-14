@@ -19,6 +19,7 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
         taskId: 'crostini-app-id|crostini|open-with',
         title: 'Crostini App',
         verb: 'open_with',
+        isDefault: true,
       }
     ]);
   };
@@ -70,11 +71,16 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = (done) => {
         return test.waitForElement('#default-tasks-list');
       })
       .then(() => {
+        // Ensure that the default tasks label is shown correctly.
+        const item = document.querySelector('#default-task-menu-item span');
+        assertEquals('Open with Crostini App', item.innerText);
+      })
+      .then(() => {
         // Ensure picker shows both options.  Click on 'Crostini App'.  Ensure
         // share path dialog is shown.
         const list = document.querySelectorAll('#default-tasks-list li div');
         assertEquals(2, list.length);
-        assertEquals('Open with Crostini App', list[0].innerText);
+        assertEquals('Crostini App (default)', list[0].innerText);
         assertEquals('Open with Text', list[1].innerText);
         assertTrue(test.fakeMouseClick('#default-tasks-list li'));
         // Ensure fmp.sharePathsWithCrostini, fmp.executeTask called.
