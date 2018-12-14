@@ -404,8 +404,8 @@ std::unique_ptr<base::Value> NetLogSpdyRecvGoAwayCallback(
   dict->SetString(
       "error_code",
       base::StringPrintf("%u (%s)", error_code, ErrorCodeToString(error_code)));
-  dict->SetString("debug_data",
-                  ElideGoAwayDebugDataForNetLog(capture_mode, debug_data));
+  dict->SetKey("debug_data",
+               ElideGoAwayDebugDataForNetLog(capture_mode, debug_data));
   return std::move(dict);
 }
 
