@@ -62,21 +62,6 @@ class AutoplayMetricsBrowserTest : public InProcessBrowserTest {
   content::RenderFrameHost* second_child() const {
     return web_contents()->GetAllFrames()[2];
   }
-
-  static const ukm::mojom::UkmEntry* FindDocumentCreatedEntry(
-      ukm::TestUkmRecorder& ukm_recorder,
-      ukm::SourceId source_id) {
-    using Entry = ukm::builders::DocumentCreated;
-    auto entries = ukm_recorder.GetEntriesByName(Entry::kEntryName);
-
-    for (auto* entry : entries) {
-      if (entry->source_id == source_id)
-        return entry;
-    }
-
-    NOTREACHED();
-    return nullptr;
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(AutoplayMetricsBrowserTest, RecordAutoplayAttemptUkm) {
@@ -115,8 +100,9 @@ IN_PROC_BROWSER_TEST_F(AutoplayMetricsBrowserTest, RecordAutoplayAttemptUkm) {
     // Check that a DocumentCreated entry was also created that was not keyed to
     // any URL. However, we can use the navigation source ID to link this source
     // to the top frame URL.
-    auto* dc_entry =
-        FindDocumentCreatedEntry(test_ukm_recorder, ukm_entries[1]->source_id);
+    auto* dc_entry = test_ukm_recorder.GetDocumentCreatedEntryForSourceId(
+        ukm_entries[1]->source_id);
+    EXPECT_TRUE(dc_entry);
     EXPECT_EQ(ukm_entries[1]->source_id, dc_entry->source_id);
     EXPECT_FALSE(test_ukm_recorder.GetSourceForSourceId(dc_entry->source_id));
     EXPECT_EQ(main_url,
@@ -143,8 +129,9 @@ IN_PROC_BROWSER_TEST_F(AutoplayMetricsBrowserTest, RecordAutoplayAttemptUkm) {
     // Check that a DocumentCreated entry was also created that was not keyed to
     // any URL. However, we can use the navigation source ID to link this source
     // to the top frame URL.
-    auto* dc_entry =
-        FindDocumentCreatedEntry(test_ukm_recorder, ukm_entries[2]->source_id);
+    auto* dc_entry = test_ukm_recorder.GetDocumentCreatedEntryForSourceId(
+        ukm_entries[2]->source_id);
+    EXPECT_TRUE(dc_entry);
     EXPECT_EQ(ukm_entries[2]->source_id, dc_entry->source_id);
     EXPECT_FALSE(test_ukm_recorder.GetSourceForSourceId(dc_entry->source_id));
     EXPECT_EQ(main_url,

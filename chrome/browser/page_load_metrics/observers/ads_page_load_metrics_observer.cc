@@ -13,6 +13,7 @@
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/common/chrome_features.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -233,19 +234,8 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   content::RenderFrameHost* ad_host = FindFrameMaybeUnsafe(navigation_handle);
 
   if (navigation_handle->IsDownload()) {
-    bool sandboxed = ad_host->IsSandboxed(blink::WebSandboxFlags::kDownloads);
-    bool gesture = navigation_handle->HasUserGesture();
-
-    unsigned value = 0;
-    if (sandboxed)
-      value |= blink::DownloadStats::kSandboxBit;
-    if (!IsSubframeSameOriginToMainFrame(ad_host, /*use_parent_origin=*/false))
-      value |= blink::DownloadStats::kCrossOriginBit;
-    if (ad_types.any())
-      value |= blink::DownloadStats::kAdBit;
-    if (gesture)
-      value |= blink::DownloadStats::kGestureBit;
-    blink::DownloadStats::RecordSubframeSandboxOriginAdGesture(value);
+    bool has_sandbox = ad_host->IsSandboxed(blink::WebSandboxFlags::kDownloads);
+    bool has_gesture = navigation_handle->HasUserGesture();
 
     std::vector<blink::mojom::WebFeature> web_features;
     if (ad_types.any()) {
@@ -254,16 +244,16 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
       // originated from clicking on <a download> link that results in direct
       // download.
       web_features.push_back(
-          gesture
+          has_gesture
               ? blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture
               : blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture);
     }
-    if (sandboxed) {
+    if (has_sandbox) {
       web_features.push_back(
-          gesture ? blink::mojom::WebFeature::
-                        kNavigationDownloadInSandboxWithUserGesture
-                  : blink::mojom::WebFeature::
-                        kNavigationDownloadInSandboxWithoutUserGesture);
+          has_gesture ? blink::mojom::WebFeature::
+                            kNavigationDownloadInSandboxWithUserGesture
+                      : blink::mojom::WebFeature::
+                            kNavigationDownloadInSandboxWithoutUserGesture);
     }
     if (!web_features.empty()) {
       page_load_metrics::mojom::PageLoadFeatures page_load_features(
@@ -272,6 +262,18 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
       page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
           ad_host, page_load_features);
     }
+
+    blink::DownloadStats::DownloadFlags flags;
+    flags.has_sandbox = has_sandbox;
+    flags.is_cross_origin =
+        !IsSubframeSameOriginToMainFrame(ad_host, /*use_parent_origin=*/false);
+    flags.is_ad_frame = ad_types.any();
+    flags.has_gesture = has_gesture;
+    blink::DownloadStats::RecordSubframeDownloadFlags(
+        flags,
+        ukm::GetSourceIdForWebContentsDocument(
+            navigation_handle->GetWebContents()),
+        ukm::UkmRecorder::Get());
   }
 
   RecordAdFrameData(frame_tree_node_id, ad_types, ad_host,
@@ -284,7 +286,10 @@ void AdsPageLoadMetricsObserver::OnDidInternalNavigationAbort(
   // Main frame navigation
   if (navigation_handle->IsDownload()) {
     blink::DownloadStats::RecordMainFrameHasGesture(
-        navigation_handle->HasUserGesture());
+        navigation_handle->HasUserGesture(),
+        ukm::GetSourceIdForWebContentsDocument(
+            navigation_handle->GetWebContents()),
+        ukm::UkmRecorder::Get());
   }
 }
 

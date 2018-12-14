@@ -60,21 +60,22 @@ namespace {
 
 void RecordDownloadMetrics(LocalFrame* frame) {
   if (frame->IsMainFrame()) {
+    bool has_gesture = LocalFrame::HasTransientUserActivation(frame);
     DownloadStats::RecordMainFrameHasGesture(
-        LocalFrame::HasTransientUserActivation(frame));
+        has_gesture, frame->GetDocument()->UkmSourceID(),
+        frame->GetDocument()->UkmRecorder());
     return;
   }
 
-  unsigned value = 0;
-  if (frame->GetDocument()->IsSandboxed(kSandboxDownloads))
-    value |= DownloadStats::kSandboxBit;
-  if (frame->IsCrossOriginSubframe())
-    value |= DownloadStats::kCrossOriginBit;
-  if (frame->IsAdSubframe())
-    value |= DownloadStats::kAdBit;
-  if (LocalFrame::HasTransientUserActivation(frame))
-    value |= DownloadStats::kGestureBit;
-  DownloadStats::RecordSubframeSandboxOriginAdGesture(value);
+  DownloadStats::DownloadFlags flags;
+  flags.has_sandbox = frame->GetDocument()->IsSandboxed(kSandboxDownloads);
+  flags.is_cross_origin = frame->IsCrossOriginSubframe();
+  flags.is_ad_frame = frame->IsAdSubframe();
+  flags.has_gesture = LocalFrame::HasTransientUserActivation(frame);
+
+  DownloadStats::RecordSubframeDownloadFlags(
+      flags, frame->GetDocument()->UkmSourceID(),
+      frame->GetDocument()->UkmRecorder());
 }
 
 }  // namespace

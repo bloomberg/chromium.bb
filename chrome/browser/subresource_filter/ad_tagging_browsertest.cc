@@ -329,21 +329,6 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, SameOriginFrameTagging) {
   EXPECT_TRUE(*observer.GetIsAdSubframe(ad_frame->GetFrameTreeNodeId()));
 }
 
-const ukm::mojom::UkmEntry* FindDocumentCreatedEntry(
-    const ukm::TestUkmRecorder& ukm_recorder,
-    ukm::SourceId source_id) {
-  auto entries =
-      ukm_recorder.GetEntriesByName(ukm::builders::DocumentCreated::kEntryName);
-
-  for (auto* entry : entries) {
-    if (entry->source_id == source_id)
-      return entry;
-  }
-
-  NOTREACHED();
-  return nullptr;
-}
-
 void ExpectWindowOpenUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
                               bool from_main_frame,
                               const GURL& main_frame_url,
@@ -365,7 +350,9 @@ void ExpectWindowOpenUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
   // |main_frame_url| only if it was from the top frame. However, we can always
   // use the navigation source ID to link this source to |main_frame_url|.
   const ukm::mojom::UkmEntry* dc_entry =
-      FindDocumentCreatedEntry(ukm_recorder, entries.back()->source_id);
+      ukm_recorder.GetDocumentCreatedEntryForSourceId(
+          entries.back()->source_id);
+  EXPECT_TRUE(dc_entry);
   EXPECT_EQ(entries.back()->source_id, dc_entry->source_id);
   if (from_main_frame) {
     ukm_recorder.ExpectEntrySourceHasUrl(dc_entry, main_frame_url);
