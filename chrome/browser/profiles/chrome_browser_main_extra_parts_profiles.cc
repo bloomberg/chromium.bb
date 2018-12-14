@@ -111,7 +111,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
-#include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder_factory.h"
@@ -241,7 +240,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   CertificateReportingServiceFactory::GetInstance();
   ChromeBrowsingDataRemoverDelegateFactory::GetInstance();
 #if defined(OS_CHROMEOS)
-  chromeos::ChromeCryptAuthServiceFactory::GetInstance();
   chromeos::android_sms::AndroidSmsServiceFactory::GetInstance();
 #endif
   ChromeSigninClientFactory::GetInstance();

@@ -36,10 +36,6 @@ class NotificationPresenter;
 }  // namespace tether
 }  // namespace chromeos
 
-namespace cryptauth {
-class CryptAuthService;
-}  // namespace cryptauth
-
 namespace session_manager {
 class SessionManager;
 }  // namespace session_manager
@@ -67,7 +63,6 @@ class TetherService
   TetherService(
       Profile* profile,
       chromeos::PowerManagerClient* power_manager_client,
-      cryptauth::CryptAuthService* cryptauth_service,
       chromeos::device_sync::DeviceSyncClient* device_sync_client,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client,
       chromeos::multidevice_setup::MultiDeviceSetupClient*
@@ -297,7 +292,6 @@ class TetherService
 
   Profile* profile_;
   chromeos::PowerManagerClient* power_manager_client_;
-  cryptauth::CryptAuthService* cryptauth_service_;
   chromeos::device_sync::DeviceSyncClient* device_sync_client_;
   chromeos::secure_channel::SecureChannelClient* secure_channel_client_;
   chromeos::multidevice_setup::MultiDeviceSetupClient*

@@ -1752,7 +1752,6 @@ jumbo_split_static_library("ui") {
       "//components/arc",
       "//components/captive_portal",
       "//components/consent_auditor:consent_auditor",
-      "//components/cryptauth",
       "//components/drive:drive_chromeos",
       "//components/exo",
       "//components/login",
