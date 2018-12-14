@@ -12,7 +12,6 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
 import android.view.View;
@@ -22,9 +21,11 @@ import android.widget.ImageView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.chrome.browser.omnibox.status.StatusView.NavigationButtonType;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;
@@ -35,17 +36,6 @@ import java.lang.annotation.RetentionPolicy;
  * verbose status text.
  */
 public class StatusViewCoordinator implements View.OnClickListener {
-    /**
-     * Specifies the types of buttons shown to signify different types of navigation elements.
-     */
-    @IntDef({NavigationButtonType.PAGE, NavigationButtonType.MAGNIFIER, NavigationButtonType.EMPTY})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface NavigationButtonType {
-        int PAGE = 0;
-        int MAGNIFIER = 1;
-        int EMPTY = 2;
-    }
-
     /** Specifies which button should be shown in location bar, if any. */
     @IntDef({LocationBarButtonType.NONE, LocationBarButtonType.SECURITY_ICON,
             LocationBarButtonType.NAVIGATION_ICON})
@@ -72,6 +62,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
     private final Delegate mDelegate;
     private final boolean mIsTablet;
     private final StatusView mStatusView;
+    private final StatusMediator mMediator;
 
     private final float mUrlMinWidth;
     private final float mVerboseStatusMinWidth;
@@ -79,9 +70,6 @@ public class StatusViewCoordinator implements View.OnClickListener {
 
     private ToolbarDataProvider mToolbarDataProvider;
     private WindowAndroid mWindowAndroid;
-
-    // The type of the navigation button currently showing.
-    private @NavigationButtonType int mNavigationButtonType;
 
     // The type of the security icon currently active.
     @DrawableRes
@@ -95,7 +83,6 @@ public class StatusViewCoordinator implements View.OnClickListener {
     private AnimatorSet mNavigationIconShowAnimator;
 
     private boolean mUrlHasFocus;
-    private boolean mUseDarkColors;
     private float mUnfocusedLocationBarWidth;
     private int mVerboseStatusTextMaxWidth;
     private boolean mHasSpaceForVerboseStatus;
@@ -112,7 +99,13 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mStatusView = statusView;
         mDelegate = delegate;
 
-        mNavigationButtonType = mIsTablet ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
+        PropertyModel model = new PropertyModel(StatusProperties.ALL_KEYS);
+        PropertyModelChangeProcessor.create(model, mStatusView, new StatusViewBinder());
+        mMediator = new StatusMediator(model);
+
+        if (mIsTablet) {
+            mMediator.setNavigationButtonType(NavigationButtonType.PAGE);
+        }
 
         mSecurityIconResource = 0;
 
@@ -205,9 +198,11 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * @param useDarkColors Whether dark colors should be for the status icon and text.
      */
     public void setUseDarkColors(boolean useDarkColors) {
-        mUseDarkColors = useDarkColors;
+        mMediator.setUseDarkColors(useDarkColors);
+
+        // TODO(ender): remove this once icon selection has complete set of
+        // corresponding properties (for tinting etc).
         updateSecurityIcon();
-        setNavigationButtonType(mNavigationButtonType);
     }
 
     @LocationBarButtonType
@@ -319,30 +314,12 @@ public class StatusViewCoordinator implements View.OnClickListener {
         ImageView navigationButton = mStatusView.getNavigationButton();
         // TODO(twellington): Return early if the navigation button type and tint hasn't changed.
         if (!mIsTablet) return;
-        switch (buttonType) {
-            case NavigationButtonType.PAGE:
-                Drawable page = TintedDrawable.constructTintedDrawable(mStatusView.getContext(),
-                        R.drawable.ic_omnibox_page,
-                        mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
-                navigationButton.setImageDrawable(page);
-                break;
-            case NavigationButtonType.MAGNIFIER:
-                Drawable search = TintedDrawable.constructTintedDrawable(mStatusView.getContext(),
-                        R.drawable.omnibox_search,
-                        mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
-                navigationButton.setImageDrawable(search);
-                break;
-            case NavigationButtonType.EMPTY:
-                navigationButton.setImageDrawable(null);
-                break;
-            default:
-                assert false;
-        }
+
+        mMediator.setNavigationButtonType(buttonType);
 
         if (navigationButton.getVisibility() != View.VISIBLE) {
             navigationButton.setVisibility(View.VISIBLE);
         }
-        mNavigationButtonType = buttonType;
 
         updateLocationBarIconContainerVisibility();
     }
@@ -388,12 +365,11 @@ public class StatusViewCoordinator implements View.OnClickListener {
 
         mStatusView.getVerboseStatusTextView().setText(
                 mToolbarDataProvider.getVerboseStatusString());
-        mStatusView.getVerboseStatusTextView().setTextColor(
-                mToolbarDataProvider.getVerboseStatusTextColor(
-                        mStatusView.getResources(), mUseDarkColors));
 
-        separator.setBackgroundColor(mToolbarDataProvider.getVerboseStatusSeparatorColor(
-                mStatusView.getResources(), mUseDarkColors));
+        // TODO(ender): turn around logic for ToolbarDataProvider to offer
+        // notifications rather than polling for these attributes.
+        mMediator.setPageIsOffline(mToolbarDataProvider.isOfflinePage());
+        mMediator.setPageIsPreview(mToolbarDataProvider.isPreview());
     }
 
     /**
