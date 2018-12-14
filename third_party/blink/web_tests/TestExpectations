@@ -5536,6 +5536,8 @@ crbug.com/869492 external/wpt/feature-policy/experimental-features/lazyload/lazy
 crbug.com/869492 virtual/threaded/external/wpt/feature-policy/experimental-features/lazyload/lazyload-enabled-tentative.sub.html [ Failure ]
 crbug.com/869492 virtual/video-surface-layer/external/wpt/feature-policy/experimental-features/lazyload/lazyload-disabled-tentative.sub.html [ Failure ]
 
+crbug.com/914441 external/wpt/user-timing/mark-measure-feature-detection.html [ Failure ]
+
 # The below is only supported with network service.
 crbug.com/896924 http/tests/inspector-protocol/network/interception-multiclient.js [ Skip ]
 crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-basic.js [ Timeout ]
