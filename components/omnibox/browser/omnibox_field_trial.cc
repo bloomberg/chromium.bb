@@ -176,15 +176,10 @@ const base::Feature kSearchProviderWarmUpOnFocus{
 const base::Feature kZeroSuggestRedirectToChrome{
     "ZeroSuggestRedirectToChrome", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to swap the title and URL when providing zero suggest
-// suggestions.
-const base::Feature kZeroSuggestSwapTitleAndUrl{
-    "ZeroSuggestSwapTitleAndUrl", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used to display the title of the current URL match.
 const base::Feature kDisplayTitleForCurrentUrl{
   "OmniboxDisplayTitleForCurrentUrl",
-#if defined(OS_ANDROID)
+#if !defined(OS_IOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -730,12 +725,6 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
 
   // Touch-optimized UI always swaps title and URL.
   if (ui::MaterialDesignController::touch_ui())
-    return EMPHASIZE_WHEN_NONEMPTY;
-
-  // Check the feature that swaps the title and URL only for zero suggest
-  // suggestions.
-  if (input.from_omnibox_focus() &&
-      base::FeatureList::IsEnabled(omnibox::kZeroSuggestSwapTitleAndUrl))
     return EMPHASIZE_WHEN_NONEMPTY;
 
   // Look up the parameter named kEmphasizeTitlesRule + "_" + input.type(),
