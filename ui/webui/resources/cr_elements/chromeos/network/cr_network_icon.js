@@ -41,6 +41,13 @@ Polymer({
   },
 
   /**
+   * Number of network icons for different cellular or wifi network signal
+   * strengths.
+   * @private @const
+   */
+  networkIconCount_: 5,
+
+  /**
    * @return {string} The name of the svg icon image to show.
    * @private
    */
@@ -81,13 +88,20 @@ Polymer({
 
   /**
    * @param {number} strength The signal strength from [0 - 100].
-   * @return {number} An index from 0-4 corresponding to |strength|.
+   * @return {number} An index from 0 to |this.networkIconCount_ - 1|
+   * corresponding to |strength|.
    * @private
    */
   strengthToIndex_: function(strength) {
-    if (strength == 0)
+    if (strength <= 0)
       return 0;
-    return Math.min(Math.trunc((strength - 1) / 25) + 1, 4);
+
+    if (strength >= 100)
+      return this.networkIconCount_ - 1;
+
+    const zeroBasedIndex =
+        Math.trunc((strength - 1) * (this.networkIconCount_ - 1) / 100);
+    return zeroBasedIndex + 1;
   },
 
   /**

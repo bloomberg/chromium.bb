@@ -292,15 +292,16 @@ Badge ConnectingVpnBadge(double animation, IconType icon_type) {
 }
 
 int StrengthIndex(int strength) {
-  if (strength == 0)
+  if (strength <= 0)
     return 0;
+
+  if (strength >= 100)
+    return kNumNetworkImages - 1;
+
   // Return an index in the range [1, kNumNetworkImages - 1].
   // This logic is equivalent to cr_network_icon.js:strengthToIndex_().
-  const float findex = (static_cast<float>(strength - 1) / 100.0f) *
-                       static_cast<float>(kNumNetworkImages - 1);
-  int index = 1 + static_cast<int>(findex);
-  index = std::max(std::min(index, kNumNetworkImages - 1), 1);
-  return index;
+  int zero_based_index = (strength - 1) * (kNumNetworkImages - 1) / 100;
+  return zero_based_index + 1;
 }
 
 Badge BadgeForNetworkTechnology(const NetworkState* network,
