@@ -13,6 +13,7 @@
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_crash_reporting.h"
+#include "chrome/credential_provider/gaiacp/grit/gaia_static_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "content/public/common/content_switches.h"
