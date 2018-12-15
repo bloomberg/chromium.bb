@@ -186,6 +186,24 @@ enum zaura_surface_frame_type {
 };
 #endif /* ZAURA_SURFACE_FRAME_TYPE_ENUM */
 
+#ifndef ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_ENUM
+#define ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_ENUM
+/**
+ * @ingroup iface_zaura_surface
+ * occlusion change reason
+ *
+ * Enum describing why an occlusion change happened. An occlusion change as a
+ * result of a user action could include things like the user moving a window,
+ * changing occlusion, or opening/closing a window, changing the occlusion.
+ */
+enum zaura_surface_occlusion_change_reason {
+	/**
+	 * occlusion changed as a result of a user action
+	 */
+	ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_USER_ACTION = 1,
+};
+#endif /* ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_ENUM */
+
 /**
  * @ingroup iface_zaura_surface
  * @struct zaura_surface_interface
@@ -251,8 +269,32 @@ struct zaura_surface_interface {
 	void (*set_client_surface_id)(struct wl_client *client,
 				      struct wl_resource *resource,
 				      int32_t client_surface_id);
+	/**
+	 * set tracked occlusion region
+	 *
+	 * Sets occlusion tracking on this surface. The client will be
+	 * updated with a new occlusion fraction when the amount of
+	 * occlusion of this surface changes.
+	 * @since 8
+	 */
+	void (*set_occlusion_tracking)(struct wl_client *client,
+				       struct wl_resource *resource);
+	/**
+	 * unset tracked occlusion region
+	 *
+	 * Unsets occlusion tracking for this surface.
+	 * @since 8
+	 */
+	void (*unset_occlusion_tracking)(struct wl_client *client,
+					 struct wl_resource *resource);
 };
 
+#define ZAURA_SURFACE_OCCLUSION_CHANGED 0
+
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_OCCLUSION_CHANGED_SINCE_VERSION 8
 
 /**
  * @ingroup iface_zaura_surface
@@ -278,6 +320,25 @@ struct zaura_surface_interface {
  * @ingroup iface_zaura_surface
  */
 #define ZAURA_SURFACE_SET_CLIENT_SURFACE_ID_SINCE_VERSION 7
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_SET_OCCLUSION_TRACKING_SINCE_VERSION 8
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_UNSET_OCCLUSION_TRACKING_SINCE_VERSION 8
+
+/**
+ * @ingroup iface_zaura_surface
+ * Sends an occlusion_changed event to the client owning the resource.
+ * @param resource_ The client's resource
+ */
+static inline void
+zaura_surface_send_occlusion_changed(struct wl_resource *resource_, wl_fixed_t occlusion_fraction, uint32_t occlusion_reason)
+{
+	wl_resource_post_event(resource_, ZAURA_SURFACE_OCCLUSION_CHANGED, occlusion_fraction, occlusion_reason);
+}
 
 #ifndef ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
 #define ZAURA_OUTPUT_SCALE_PROPERTY_ENUM

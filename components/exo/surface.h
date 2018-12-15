@@ -240,6 +240,12 @@ class Surface final : public ui::PropertyHandler {
     return pending_damage_.Contains(damage);
   }
 
+  // Set occlusion tracking region for surface.
+  void SetOcclusionTracking(bool tracking);
+
+  // Triggers sending an occlusion update to observers.
+  void OnWindowOcclusionChanged();
+
  private:
   struct State {
     State();
@@ -393,6 +399,9 @@ class Surface final : public ui::PropertyHandler {
 
   // Surface observer list. Surface does not own the observers.
   base::ObserverList<SurfaceObserver, true>::Unchecked observers_;
+
+  // Whether this surface is tracking occlusion for the client.
+  bool is_tracking_occlusion_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

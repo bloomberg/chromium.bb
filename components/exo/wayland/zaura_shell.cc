@@ -30,7 +30,8 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasAuraSurfaceKey, false);
 
 class AuraSurface : public SurfaceObserver {
  public:
-  explicit AuraSurface(Surface* surface) : surface_(surface) {
+  AuraSurface(Surface* surface, wl_resource* resource)
+      : surface_(surface), resource_(resource) {
     surface_->AddSurfaceObserver(this);
     surface_->SetProperty(kSurfaceHasAuraSurfaceKey, true);
   }
@@ -72,14 +73,59 @@ class AuraSurface : public SurfaceObserver {
       surface_->SetClientSurfaceId(client_surface_id);
   }
 
+  void SetOcclusionTracking(bool tracking) {
+    if (surface_)
+      surface_->SetOcclusionTracking(tracking);
+  }
+
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override {
     surface->RemoveSurfaceObserver(this);
     surface_ = nullptr;
   }
 
+  void OnWindowOcclusionChanged(Surface* surface) override {
+    if (wl_resource_get_version(resource_) < 8)
+      return;
+
+    auto* window = surface->window();
+    const gfx::Rect bounds_in_screen = window->GetBoundsInScreen();
+    const int tracked_area =
+        bounds_in_screen.width() * bounds_in_screen.height();
+    int occluded_area = 0;
+    switch (window->occlusion_state()) {
+      case aura::Window::OcclusionState::VISIBLE: {
+        SkRegion tracked_and_occluded_region = window->occluded_region();
+        tracked_and_occluded_region.op(gfx::RectToSkIRect(bounds_in_screen),
+                                       SkRegion::Op::kIntersect_Op);
+        for (SkRegion::Iterator i(tracked_and_occluded_region); !i.done();
+             i.next()) {
+          occluded_area += i.rect().width() * i.rect().height();
+        }
+        break;
+      }
+      case aura::Window::OcclusionState::OCCLUDED:
+      case aura::Window::OcclusionState::HIDDEN:
+        occluded_area = tracked_area;
+        break;
+      case aura::Window::OcclusionState::UNKNOWN:
+        return;  // Window is not tracked.
+    }
+
+    const float fraction_occluded =
+        static_cast<float>(occluded_area) / static_cast<float>(tracked_area);
+
+    // TODO(edcourtney): For now, we are treating every occlusion change as
+    // from a user action.
+    zaura_surface_send_occlusion_changed(
+        resource_, wl_fixed_from_double(fraction_occluded),
+        ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_USER_ACTION);
+    wl_client_flush(wl_resource_get_client(resource_));
+  }
+
  private:
   Surface* surface_;
+  wl_resource* const resource_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraSurface);
 };
@@ -140,10 +186,25 @@ void aura_surface_set_client_surface_id(wl_client* client,
   GetUserDataAs<AuraSurface>(resource)->SetClientSurfaceId(client_surface_id);
 }
 
+void aura_surface_set_occlusion_tracking(wl_client* client,
+                                         wl_resource* resource) {
+  GetUserDataAs<AuraSurface>(resource)->SetOcclusionTracking(true);
+}
+
+void aura_surface_unset_occlusion_tracking(wl_client* client,
+                                           wl_resource* resource) {
+  GetUserDataAs<AuraSurface>(resource)->SetOcclusionTracking(false);
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
-    aura_surface_set_frame,          aura_surface_set_parent,
-    aura_surface_set_frame_colors,   aura_surface_set_startup_id,
-    aura_surface_set_application_id, aura_surface_set_client_surface_id};
+    aura_surface_set_frame,
+    aura_surface_set_parent,
+    aura_surface_set_frame_colors,
+    aura_surface_set_startup_id,
+    aura_surface_set_application_id,
+    aura_surface_set_client_surface_id,
+    aura_surface_set_occlusion_tracking,
+    aura_surface_unset_occlusion_tracking};
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura_output_interface:
@@ -236,8 +297,9 @@ void aura_shell_get_aura_surface(wl_client* client,
   wl_resource* aura_surface_resource = wl_resource_create(
       client, &zaura_surface_interface, wl_resource_get_version(resource), id);
 
-  SetImplementation(aura_surface_resource, &aura_surface_implementation,
-                    std::make_unique<AuraSurface>(surface));
+  SetImplementation(
+      aura_surface_resource, &aura_surface_implementation,
+      std::make_unique<AuraSurface>(surface, aura_surface_resource));
 }
 
 void aura_shell_get_aura_output(wl_client* client,

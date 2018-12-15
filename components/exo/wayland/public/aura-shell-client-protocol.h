@@ -215,13 +215,67 @@ enum zaura_surface_frame_type {
 };
 #endif /* ZAURA_SURFACE_FRAME_TYPE_ENUM */
 
+#ifndef ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_ENUM
+#define ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_ENUM
+/**
+ * @ingroup iface_zaura_surface
+ * occlusion change reason
+ *
+ * Enum describing why an occlusion change happened. An occlusion change as a
+ * result of a user action could include things like the user moving a window,
+ * changing occlusion, or opening/closing a window, changing the occlusion.
+ */
+enum zaura_surface_occlusion_change_reason {
+	/**
+	 * occlusion changed as a result of a user action
+	 */
+	ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_USER_ACTION = 1,
+};
+#endif /* ZAURA_SURFACE_OCCLUSION_CHANGE_REASON_ENUM */
+
+/**
+ * @ingroup iface_zaura_surface
+ * @struct zaura_surface_listener
+ */
+struct zaura_surface_listener {
+	/**
+	 * Notifies on an occlusion change
+	 *
+	 * Notifies when there is a change in the amount this surface is
+	 * occluded. The occlusion update is sent as a fixed point number
+	 * from 0 to 1, representing the proportion of occlusion.
+	 * @since 8
+	 */
+	void (*occlusion_changed)(void *data,
+				  struct zaura_surface *zaura_surface,
+				  wl_fixed_t occlusion_fraction,
+				  uint32_t occlusion_reason);
+};
+
+/**
+ * @ingroup iface_zaura_surface
+ */
+static inline int
+zaura_surface_add_listener(struct zaura_surface *zaura_surface,
+			   const struct zaura_surface_listener *listener, void *data)
+{
+	return wl_proxy_add_listener((struct wl_proxy *) zaura_surface,
+				     (void (**)(void)) listener, data);
+}
+
 #define ZAURA_SURFACE_SET_FRAME 0
 #define ZAURA_SURFACE_SET_PARENT 1
 #define ZAURA_SURFACE_SET_FRAME_COLORS 2
 #define ZAURA_SURFACE_SET_STARTUP_ID 3
 #define ZAURA_SURFACE_SET_APPLICATION_ID 4
 #define ZAURA_SURFACE_SET_CLIENT_SURFACE_ID 5
+#define ZAURA_SURFACE_SET_OCCLUSION_TRACKING 6
+#define ZAURA_SURFACE_UNSET_OCCLUSION_TRACKING 7
 
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_OCCLUSION_CHANGED_SINCE_VERSION 8
 
 /**
  * @ingroup iface_zaura_surface
@@ -247,6 +301,14 @@ enum zaura_surface_frame_type {
  * @ingroup iface_zaura_surface
  */
 #define ZAURA_SURFACE_SET_CLIENT_SURFACE_ID_SINCE_VERSION 7
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_SET_OCCLUSION_TRACKING_SINCE_VERSION 8
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_UNSET_OCCLUSION_TRACKING_SINCE_VERSION 8
 
 /** @ingroup iface_zaura_surface */
 static inline void
@@ -346,6 +408,31 @@ zaura_surface_set_client_surface_id(struct zaura_surface *zaura_surface, int32_t
 {
 	wl_proxy_marshal((struct wl_proxy *) zaura_surface,
 			 ZAURA_SURFACE_SET_CLIENT_SURFACE_ID, client_surface_id);
+}
+
+/**
+ * @ingroup iface_zaura_surface
+ *
+ * Sets occlusion tracking on this surface. The client will be updated with a
+ * new occlusion fraction when the amount of occlusion of this surface changes.
+ */
+static inline void
+zaura_surface_set_occlusion_tracking(struct zaura_surface *zaura_surface)
+{
+	wl_proxy_marshal((struct wl_proxy *) zaura_surface,
+			 ZAURA_SURFACE_SET_OCCLUSION_TRACKING);
+}
+
+/**
+ * @ingroup iface_zaura_surface
+ *
+ * Unsets occlusion tracking for this surface.
+ */
+static inline void
+zaura_surface_unset_occlusion_tracking(struct zaura_surface *zaura_surface)
+{
+	wl_proxy_marshal((struct wl_proxy *) zaura_surface,
+			 ZAURA_SURFACE_UNSET_OCCLUSION_TRACKING);
 }
 
 #ifndef ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
