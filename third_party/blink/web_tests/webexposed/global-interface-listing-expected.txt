@@ -5637,7 +5637,6 @@ interface RTCQuicStream : EventTarget
     getter transport
     getter writeBufferedAmount
     method constructor
-    method finish
     method readInto
     method reset
     method waitForReadable

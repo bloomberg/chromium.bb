@@ -23,8 +23,7 @@ enum RTCQuicStreamState {
     readonly attribute unsigned long writeBufferedAmount;
     readonly attribute unsigned long maxWriteBufferedAmount;
     [RaisesException] RTCQuicStreamReadResult readInto(Uint8Array data);
-    [RaisesException] void write(Uint8Array data);
-    void finish();
+    [RaisesException] void write(RTCQuicStreamWriteParameters data);
     void reset();
     [CallWith=ScriptState, RaisesException]
     Promise<void> waitForWriteBufferedAmountBelow(unsigned long amount);
