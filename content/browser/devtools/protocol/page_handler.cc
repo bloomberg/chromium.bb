@@ -591,6 +591,20 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
   return Response::InvalidParams("No entry with passed id");
 }
 
+static bool ReturnTrue(const NavigationEntry& entry) {
+  return true;
+}
+
+Response PageHandler::ResetNavigationHistory() {
+  WebContentsImpl* web_contents = GetWebContents();
+  if (!web_contents)
+    return Response::InternalError();
+
+  NavigationController& controller = web_contents->GetController();
+  controller.DeleteNavigationEntries(base::BindRepeating(&ReturnTrue));
+  return Response::OK();
+}
+
 void PageHandler::CaptureSnapshot(
     Maybe<std::string> format,
     std::unique_ptr<CaptureSnapshotCallback> callback) {
