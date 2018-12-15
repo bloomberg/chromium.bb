@@ -39,6 +39,7 @@ class Device(object):
     self.ssh_port = None
     self.board = opts.board
 
+    self.use_sudo = False
     self.cmd = opts.args[1:] if opts.cmd else None
     self.private_key = opts.private_key
     self.dry_run = opts.dry_run
@@ -73,6 +74,22 @@ class Device(object):
 
     if result.returncode != 0:
       raise DeviceError('WaitForBoot failed: %s.' % result.error)
+
+  def RunCommand(self, *args, **kwargs):
+    """Use SudoRunCommand or RunCommand as necessary.
+
+    Args:
+      args and kwargs: positional and optional args to RunCommand.
+
+    Returns:
+      cros_build_lib.CommandResult object.
+    """
+    if self.dry_run:
+      return self._DryRunCommand(*args)
+    elif self.use_sudo:
+      return cros_build_lib.SudoRunCommand(*args, **kwargs)
+    else:
+      return cros_build_lib.RunCommand(*args, **kwargs)
 
   def RemoteCommand(self, cmd, stream_output=False, **kwargs):
     """Run a remote command.

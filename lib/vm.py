@@ -314,22 +314,6 @@ class VM(device.Device):
 
     self.InitRemote()
 
-  def RunCommand(self, *args, **kwargs):
-    """Use SudoRunCommand or RunCommand as necessary.
-
-    Args:
-      args and kwargs: positional and optional args to RunCommand.
-
-    Returns:
-      cros_build_lib.CommandResult object.
-    """
-    if self.dry_run:
-      return self._DryRunCommand(*args)
-    elif self.use_sudo:
-      return cros_build_lib.SudoRunCommand(*args, **kwargs)
-    else:
-      return cros_build_lib.RunCommand(*args, **kwargs)
-
   def _CreateVMDir(self):
     """Safely create vm_dir."""
     if not osutils.SafeMakedirs(self.vm_dir):
