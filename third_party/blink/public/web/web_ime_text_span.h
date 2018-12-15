@@ -94,6 +94,7 @@ struct WebImeTextSpan {
   ws::mojom::ImeTextSpanThickness thickness;
   SkColor background_color;
   SkColor suggestion_highlight_color;
+  bool remove_on_finish_composing;
   std::vector<std::string> suggestions;
 };
 

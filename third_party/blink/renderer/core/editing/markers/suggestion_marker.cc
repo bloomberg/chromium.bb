@@ -21,6 +21,7 @@ SuggestionMarker::SuggestionMarker(unsigned start_offset,
       tag_(NextTag()),
       suggestions_(properties.Suggestions()),
       suggestion_type_(properties.Type()),
+      remove_on_finish_composing_(properties.RemoveOnFinishComposing()),
       suggestion_highlight_color_(properties.HighlightColor()) {
   DCHECK_GT(tag_, 0);
 }
@@ -39,6 +40,10 @@ const Vector<String>& SuggestionMarker::Suggestions() const {
 
 bool SuggestionMarker::IsMisspelling() const {
   return suggestion_type_ == SuggestionType::kMisspelling;
+}
+
+bool SuggestionMarker::NeedsRemovalOnFinishComposing() const {
+  return remove_on_finish_composing_ == RemoveOnFinishComposing::kRemove;
 }
 
 Color SuggestionMarker::SuggestionHighlightColor() const {

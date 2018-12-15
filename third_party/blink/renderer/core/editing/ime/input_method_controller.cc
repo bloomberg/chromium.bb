@@ -393,6 +393,8 @@ inline Editor& InputMethodController::GetEditor() const {
 }
 
 void InputMethodController::Clear() {
+  RemoveSuggestionMarkerInCompositionRange();
+
   has_composition_ = false;
   if (composition_range_) {
     composition_range_->setStart(&GetDocument(), 0);
@@ -620,6 +622,8 @@ void InputMethodController::AddImeTextSpans(
                 .SetUnderlineColor(ime_text_span.UnderlineColor())
                 .SetThickness(ime_text_span.Thickness())
                 .SetBackgroundColor(ime_text_span.BackgroundColor())
+                .SetRemoveOnFinishComposing(
+                    ime_text_span.NeedsRemovalOnFinishComposing())
                 .Build());
         break;
     }
@@ -1046,6 +1050,13 @@ bool InputMethodController::SetEditableSelectionOffsets(
   if (!GetEditor().CanEdit())
     return false;
   return SetSelectionOffsets(selection_offsets, typing_continuation);
+}
+
+void InputMethodController::RemoveSuggestionMarkerInCompositionRange() {
+  if (HasComposition()) {
+    GetDocument().Markers().RemoveSuggestionMarkerInRangeOnFinish(
+        EphemeralRangeInFlatTree(composition_range_.Get()));
+  }
 }
 
 PlainTextRange InputMethodController::CreateRangeForSelection(

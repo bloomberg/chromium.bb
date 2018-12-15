@@ -16,12 +16,14 @@ ImeTextSpan::ImeTextSpan(Type type,
                          ws::mojom::ImeTextSpanThickness thickness,
                          const Color& background_color,
                          const Color& suggestion_highlight_color,
+                         bool remove_on_finish_composing,
                          const Vector<String>& suggestions)
     : type_(type),
       underline_color_(underline_color),
       thickness_(thickness),
       background_color_(background_color),
       suggestion_highlight_color_(suggestion_highlight_color),
+      remove_on_finish_composing_(remove_on_finish_composing),
       suggestions_(suggestions) {
   // Sanitize offsets by ensuring a valid range corresponding to the last
   // possible position.
@@ -66,6 +68,7 @@ ImeTextSpan::ImeTextSpan(const WebImeTextSpan& ime_text_span)
                   ime_text_span.thickness,
                   Color(ime_text_span.background_color),
                   Color(ime_text_span.suggestion_highlight_color),
+                  ime_text_span.remove_on_finish_composing,
                   ConvertStdVectorOfStdStringsToVectorOfStrings(
                       ime_text_span.suggestions)) {}
 }  // namespace blink
