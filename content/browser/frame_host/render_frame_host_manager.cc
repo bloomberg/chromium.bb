@@ -80,11 +80,11 @@ RenderFrameHostManager::~RenderFrameHostManager() {
   if (speculative_render_frame_host_)
     UnsetSpeculativeRenderFrameHost();
 
-  // Delete any RenderFrameProxyHosts and swapped out RenderFrameHosts.
-  // It is important to delete those prior to deleting the current
-  // RenderFrameHost, since the CrossProcessFrameConnector (owned by
-  // RenderFrameProxyHost) points to the RenderWidgetHostView associated with
-  // the current RenderFrameHost and uses it during its destructor.
+  // Delete any RenderFrameProxyHosts. It is important to delete those prior to
+  // deleting the current RenderFrameHost, since the CrossProcessFrameConnector
+  // (owned by RenderFrameProxyHost) points to the RenderWidgetHostView
+  // associated with the current RenderFrameHost and uses it during its
+  // destructor.
   ResetProxyHosts();
 
   // We should always have a current RenderFrameHost except in some tests.
