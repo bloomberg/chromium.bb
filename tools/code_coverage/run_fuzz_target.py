@@ -29,7 +29,7 @@ _DUMMY_CORPUS_DIRECTORY = 'dummy_corpus_dir_which_should_be_empty'
 # need to use merge pool specifier to have profraw files for every library used.
 _LLVM_PROFILE_FILENAME_FORMAT = '{fuzzer}.%1m.profraw'
 
-_LIBFUZZER_FLAGS = ['-merge=1', '-timeout=60', '-rss_limit_mb=4096']
+_LIBFUZZER_FLAGS = ['-merge=1', '-timeout=60', '-rss_limit_mb=8192']
 
 _SLEEP_DURATION_SECONDS = 8
 
