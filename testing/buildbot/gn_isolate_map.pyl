@@ -1292,10 +1292,6 @@
     "label": "//third_party/libaddressinput:libaddressinput_parse_format_rule_fuzzer",
     "type": "fuzzer",
   },
-  "libfuzzer_tests": {
-    "label": "//testing/libfuzzer/tests:libfuzzer_tests",
-    "type": "fuzzer",
-  },
   "libjingle_xmpp_unittests": {
     "label": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests",
     "type": "console_test_launcher",

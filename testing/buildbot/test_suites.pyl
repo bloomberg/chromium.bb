@@ -1163,11 +1163,6 @@
           'can_use_on_swarming_builders': False,
         },
       },
-      'libfuzzer_tests': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
       'libpng_progressive_read_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,

@@ -8070,14 +8070,6 @@
       },
       {
         "isolate_coverage_data": true,
-        "isolate_name": "libfuzzer_tests",
-        "name": "libfuzzer_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        }
-      },
-      {
-        "isolate_coverage_data": true,
         "isolate_name": "libpng_progressive_read_fuzzer",
         "name": "libpng_progressive_read_fuzzer",
         "swarming": {
