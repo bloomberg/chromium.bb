@@ -99,8 +99,14 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, E2E_ENABLED(Race)) {
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
 }
 
+// Flaky on TSAN: crbug.com/915383
+#if defined(THREAD_SANITIZER)
+#define MAYBE_SetPassphraseAndAddPassword DISABLED_SetPassphraseAndAddPassword
+#else
+#define MAYBE_SetPassphraseAndAddPassword SetPassphraseAndAddPassword
+#endif
 IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest,
-                       E2E_ENABLED(SetPassphraseAndAddPassword)) {
+                       E2E_ENABLED(MAYBE_SetPassphraseAndAddPassword)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   GetSyncService(0)->SetEncryptionPassphrase(kValidPassphrase);
