@@ -108,6 +108,7 @@ class PageHandler : public DevToolsDomainHandler,
       int* current_index,
       std::unique_ptr<NavigationEntries>* entries) override;
   Response NavigateToHistoryEntry(int entry_id) override;
+  Response ResetNavigationHistory() override;
 
   void CaptureScreenshot(
       Maybe<std::string> format,
