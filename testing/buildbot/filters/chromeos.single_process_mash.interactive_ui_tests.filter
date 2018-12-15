@@ -8,9 +8,5 @@
 # ChromeOS.
 -BrowserKeyEventsTest.AccessKeys
 
-# crbug.com/913549
--StickyKeysBrowserTest.OpenTrayMenu
--StickyKeysBrowserTest.SearchLeftOmnibox
-
 # This test is flaky. https://crbug.com/897879
 -ExtensionApiTest.DisplayModeWindowIsInFullscreen

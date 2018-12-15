@@ -7,12 +7,10 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "services/ws/event_queue.h"
-#include "services/ws/host_event_queue.h"
 #include "services/ws/injected_event_handler.h"
 #include "services/ws/window_service.h"
+#include "services/ws/window_service_delegate.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 
@@ -20,7 +18,7 @@ namespace ws {
 
 struct EventInjector::EventAndHost {
   std::unique_ptr<ui::Event> event;
-  aura::WindowTreeHost* window_tree_host = nullptr;
+  aura::WindowTreeHost* host = nullptr;
 };
 
 struct EventInjector::HandlerAndCallback {
@@ -30,9 +28,8 @@ struct EventInjector::HandlerAndCallback {
 };
 
 struct EventInjector::QueuedEvent {
-  int64_t display_id;
-  // |callback| is the callback supplied by the client.
-  EventInjector::InjectEventCallback callback;
+  base::WeakPtr<aura::WindowTreeHost> host;  // May be destroyed while queued.
+  EventInjector::InjectEventCallback callback;  // Supplied by the client.
   std::unique_ptr<ui::Event> event;
 };
 
@@ -65,21 +62,15 @@ void EventInjector::OnEventDispatched(InjectedEventHandler* handler) {
   NOTREACHED();
 }
 
-aura::WindowTreeHost* EventInjector::GetWindowTreeHostForDisplayId(
-    int64_t display_id) {
-  HostEventQueue* host_event_queue =
-      window_service_->event_queue()->GetHostEventQueueForDisplay(display_id);
-  return host_event_queue ? host_event_queue->window_tree_host() : nullptr;
-}
-
 EventInjector::EventAndHost EventInjector::DetermineEventAndHost(
     int64_t display_id,
     std::unique_ptr<ui::Event> event) {
   EventAndHost event_and_host;
-  aura::WindowTreeHost* window_tree_host =
-      GetWindowTreeHostForDisplayId(display_id);
-  if (!window_tree_host) {
-    DVLOG(1) << "InjectEvent(): invalid display " << display_id;
+  aura::Window* window =
+      window_service_->delegate()->GetRootWindowForDisplayId(display_id);
+  event_and_host.host = window ? window->GetHost() : nullptr;
+  if (!event_and_host.host) {
+    DVLOG(1) << "InjectEvent(): invalid or destroyed display " << display_id;
     return event_and_host;
   }
 
@@ -96,7 +87,6 @@ EventInjector::EventAndHost EventInjector::DetermineEventAndHost(
     // https://chromium.googlesource.com/chromium/src/+/ae087c53f5ce4557bfb0b92a13651342336fe18a/services/ws/event_injector.cc#22
   }
 
-  event_and_host.window_tree_host = window_tree_host;
   event_and_host.event = std::move(event);
   return event_and_host;
 }
@@ -106,9 +96,7 @@ void EventInjector::DispatchNextQueuedEvent() {
   QueuedEvent queued_event = std::move(queued_events_.front());
   queued_events_.pop_front();
 
-  aura::WindowTreeHost* window_tree_host =
-      GetWindowTreeHostForDisplayId(queued_event.display_id);
-  if (!window_tree_host) {
+  if (!queued_event.host) {
     std::move(queued_event.callback).Run(false);
     return;
   }
@@ -116,8 +104,8 @@ void EventInjector::DispatchNextQueuedEvent() {
   std::unique_ptr<HandlerAndCallback> handler_and_callback =
       std::make_unique<HandlerAndCallback>();
   handler_and_callback->callback = std::move(queued_event.callback);
-  handler_and_callback->handler =
-      std::make_unique<InjectedEventHandler>(window_service_, window_tree_host);
+  handler_and_callback->handler = std::make_unique<InjectedEventHandler>(
+      window_service_, queued_event.host.get());
   InjectedEventHandler* handler = handler_and_callback->handler.get();
   handlers_.push_back(std::move(handler_and_callback));
   auto callback = base::BindOnce(&EventInjector::OnEventDispatched,
@@ -130,7 +118,7 @@ void EventInjector::InjectEventNoAckImpl(int64_t display_id,
                                          bool honor_rewriters) {
   EventAndHost event_and_host =
       DetermineEventAndHost(display_id, std::move(event));
-  if (!event_and_host.window_tree_host)
+  if (!event_and_host.host || !event_and_host.event)
     return;
 
   // Reset the latency time. This way telemetry doesn't include the time from
@@ -143,9 +131,12 @@ void EventInjector::InjectEventNoAckImpl(int64_t display_id,
       ui::INPUT_EVENT_LATENCY_UI_COMPONENT, event_time, 1);
   event_and_host.event->set_latency(latency_info);
 
-  EventQueue::DispatchOrQueueEvent(window_service_,
-                                   event_and_host.window_tree_host,
-                                   event_and_host.event.get(), honor_rewriters);
+  // SendEventToSink send events through rewriters; DeliverEventToSink does not.
+  // The event may be queued before actually being delivered to the EventSink.
+  if (honor_rewriters)
+    event_and_host.host->SendEventToSink(event_and_host.event.get());
+  else
+    event_and_host.host->DeliverEventToSink(event_and_host.event.get());
 }
 
 void EventInjector::InjectEvent(int64_t display_id,
@@ -153,15 +144,15 @@ void EventInjector::InjectEvent(int64_t display_id,
                                 InjectEventCallback cb) {
   EventAndHost event_and_host =
       DetermineEventAndHost(display_id, std::move(event));
-  if (!event_and_host.window_tree_host) {
+  if (!event_and_host.host || !event_and_host.event) {
     std::move(cb).Run(false);
     return;
   }
 
   QueuedEvent queued_event;
-  queued_event.display_id = display_id;
-  queued_event.callback = std::move(cb);
+  queued_event.host = event_and_host.host->GetWeakPtr();
   queued_event.event = std::move(event_and_host.event);
+  queued_event.callback = std::move(cb);
   queued_events_.push_back(std::move(queued_event));
 
   // Both EventQueue and |this| are owned by WindowService, so Unretained() is
@@ -172,15 +163,13 @@ void EventInjector::InjectEvent(int64_t display_id,
 
 void EventInjector::InjectEventNoAck(int64_t display_id,
                                      std::unique_ptr<ui::Event> event) {
-  InjectEventNoAckImpl(display_id, std::move(event),
-                       /* honor_rewriters */ true);
+  InjectEventNoAckImpl(display_id, std::move(event), /*honor_rewriters*/ true);
 }
 
 void EventInjector::InjectEventNoAckNoRewriters(
     int64_t display_id,
     std::unique_ptr<ui::Event> event) {
-  InjectEventNoAckImpl(display_id, std::move(event),
-                       /* honor_rewriters */ false);
+  InjectEventNoAckImpl(display_id, std::move(event), /*honor_rewriters*/ false);
 }
 
 }  // namespace ws

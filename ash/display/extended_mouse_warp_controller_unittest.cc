@@ -66,7 +66,7 @@ class ExtendedMouseWarpControllerTest : public AshTestBase {
                                 location_in_host_native, ui::EventTimeForNow(),
                                 event_flag1, event_flag2);
     ui::MouseEvent mouseev(&native_event);
-    host->DispatchEventFromQueue(&mouseev);
+    host->DispatchEvent(&mouseev);
 
     // The test relies on the last_mouse_location, which will be updated by
     // a synthesized event posted asynchronusly. Wait until the synthesized

@@ -17,6 +17,7 @@
 
 namespace aura {
 class PropertyConverter;
+class TestScreen;
 class Window;
 class WindowTreeClient;
 class WindowTreeHost;
@@ -86,6 +87,7 @@ class WMTestHelper : public aura::client::WindowParentingClient,
                          int64_t display_id_for_new_windows) override;
 
   std::unique_ptr<WMState> wm_state_;
+  std::unique_ptr<aura::TestScreen> test_screen_;
   std::unique_ptr<ws::InputDeviceClient> input_device_client_;
   std::unique_ptr<aura::PropertyConverter> property_converter_;
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;

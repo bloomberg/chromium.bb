@@ -14,7 +14,6 @@
 #include "services/ws/embedding.h"
 #include "services/ws/event_injector.h"
 #include "services/ws/event_queue.h"
-#include "services/ws/host_event_queue.h"
 #include "services/ws/proxy_window.h"
 #include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -248,13 +247,6 @@ std::string WindowService::GetIdForDebugging(aura::Window* window) {
   if (!proxy_window)
     return std::string();
   return proxy_window->GetIdForDebugging();
-}
-
-std::unique_ptr<HostEventQueue> WindowService::RegisterHostEventDispatcher(
-    aura::WindowTreeHost* window_tree_host,
-    HostEventDispatcher* dispatcher) {
-  return event_queue_->RegisterHostEventDispatcher(window_tree_host,
-                                                   dispatcher);
 }
 
 void WindowService::OnStart() {

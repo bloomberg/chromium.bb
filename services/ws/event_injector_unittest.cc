@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "services/ws/event_injector.h"
+#include "services/ws/window_delegate_impl.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_test_helper.h"
 #include "services/ws/window_service_test_setup.h"
@@ -33,17 +34,15 @@ std::unique_ptr<ui::Event> CreateTestEvent() {
 TEST(EventInjectorTest, NoAck) {
   WindowServiceTestSetup test_setup;
   test_setup.service()->OnStart();
-  ui::EventSource* event_source =
-      test_setup.aura_test_helper()->root_window()->GetHost()->GetEventSource();
+  auto* event_source = test_setup.root()->GetHost()->GetEventSource();
   ui::test::TestEventRewriter test_event_rewriter;
   event_source->AddEventRewriter(&test_event_rewriter);
 
-  const int64_t display_id =
-      display::Screen::GetScreen()->GetPrimaryDisplay().id();
   EventInjector* event_injector =
       WindowServiceTestHelper(test_setup.service()).event_injector();
   mojom::EventInjector* mojom_event_injector =
       static_cast<mojom::EventInjector*>(event_injector);
+  auto display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   mojom_event_injector->InjectEventNoAck(display_id, CreateTestEvent());
   EXPECT_EQ(1, test_event_rewriter.events_seen());
   EXPECT_FALSE(event_injector->HasQueuedEvents());

@@ -5,7 +5,6 @@
 #include "services/ws/injected_event_handler.h"
 
 #include "base/memory/ptr_util.h"
-#include "services/ws/event_queue.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_delegate.h"
 #include "ui/aura/env.h"
@@ -57,16 +56,14 @@ void InjectedEventHandler::Inject(std::unique_ptr<ui::Event> event,
   auto this_ref = weak_factory_.GetWeakPtr();
   pre_target_register_ = std::make_unique<ScopedPreTargetRegister>(
       window_service_->delegate()->GetGlobalEventTarget(), this);
-  auto result = EventQueue::DispatchOrQueueEvent(window_service_,
-                                                 window_tree_host_, event.get(),
-                                                 /* honors_rewriters */ true);
+  auto result = window_tree_host_->SendEventToSink(event.get());
   if (!this_ref)
     return;
   // |pre_target_register_| needs to be a member to ensure it's destroyed
   // if |this| is destroyed.
   pre_target_register_.reset();
 
-  if (result && result->event_discarded) {
+  if (result.event_discarded) {
     DCHECK(!event_id_);
     NotifyCallback();
   }

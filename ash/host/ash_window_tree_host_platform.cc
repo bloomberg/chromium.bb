@@ -14,7 +14,7 @@
 #include "ash/ws/window_service_owner.h"
 #include "base/feature_list.h"
 #include "base/trace_event/trace_event.h"
-#include "services/ws/host_event_queue.h"
+#include "services/ws/event_queue.h"
 #include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/window_service.h"
@@ -181,17 +181,11 @@ void AshWindowTreeHostPlatform::SetBoundsInPixels(
   ConfineCursorToRootWindow();
 }
 
-void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
-  host_event_queue_->DispatchOrQueueEvent(event);
-}
-
 void AshWindowTreeHostPlatform::CommonInit() {
   transformer_helper_.Init();
 
-  host_event_queue_ = Shell::Get()
-                          ->window_service_owner()
-                          ->window_service()
-                          ->RegisterHostEventDispatcher(this, this);
+  event_queue_ =
+      Shell::Get()->window_service_owner()->window_service()->event_queue();
 
   if (!base::FeatureList::IsEnabled(features::kMash))
     return;
@@ -199,14 +193,6 @@ void AshWindowTreeHostPlatform::CommonInit() {
   input_method_ = std::make_unique<aura::InputMethodMus>(this, this);
   input_method_->Init(Shell::Get()->connector());
   SetSharedInputMethod(input_method_.get());
-}
-
-ui::EventDispatchDetails AshWindowTreeHostPlatform::DispatchEventFromQueue(
-    ui::Event* event) {
-  TRACE_EVENT0("input", "AshWindowTreeHostPlatform::DispatchEvent");
-  if (event->IsLocatedEvent())
-    TranslateLocatedEvent(static_cast<ui::LocatedEvent*>(event));
-  return SendEventToSink(event);
 }
 
 void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {
@@ -224,6 +210,20 @@ bool AshWindowTreeHostPlatform::ShouldSendKeyEventToIme() {
   // Remote clients handle forwarding to IME (as necessary).
   aura::Window* target = window()->targeter()->FindTargetForKeyEvent(window());
   return !target || !ws::WindowService::IsProxyWindow(target);
+}
+
+void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
+  TRACE_EVENT0("input", "AshWindowTreeHostPlatform::DispatchEvent");
+  if (event->IsLocatedEvent())
+    TranslateLocatedEvent(event->AsLocatedEvent());
+  return aura::WindowTreeHostPlatform::DispatchEvent(event);
+}
+
+ui::EventDispatchDetails AshWindowTreeHostPlatform::DeliverEventToSink(
+    ui::Event* event) {
+  // Queue the event if needed, or deliver it directly to the sink.
+  auto result = event_queue_->DeliverOrQueueEvent(this, event);
+  return result.value_or(ui::EventDispatchDetails());
 }
 
 void AshWindowTreeHostPlatform::SetTextInputState(

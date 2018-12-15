@@ -139,6 +139,10 @@ ui::EventSink* WindowTreeHost::event_sink() {
   return dispatcher_.get();
 }
 
+base::WeakPtr<WindowTreeHost> WindowTreeHost::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 gfx::Transform WindowTreeHost::GetRootTransform() const {
   gfx::Transform transform;
   transform.Scale(device_scale_factor_, device_scale_factor_);
@@ -272,6 +276,10 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
     dispatcher_->set_skip_ime(false);
   CallDispatchKeyEventPostIMEAck(event, std::move(ack_callback));
   return dispatch_details;
+}
+
+ui::EventSink* WindowTreeHost::GetEventSink() {
+  return dispatcher_.get();
 }
 
 int64_t WindowTreeHost::GetDisplayId() {
@@ -493,10 +501,6 @@ void WindowTreeHost::OnHostLostWindowCapture() {
   Window* capture_window = client::GetCaptureWindow(window());
   if (capture_window && capture_window->GetRootWindow() == window())
     capture_window->ReleaseCapture();
-}
-
-ui::EventSink* WindowTreeHost::GetEventSink() {
-  return dispatcher_.get();
 }
 
 void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,

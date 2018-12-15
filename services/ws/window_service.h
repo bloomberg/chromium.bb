@@ -34,7 +34,6 @@
 namespace aura {
 class Env;
 class Window;
-class WindowTreeHost;
 namespace client {
 class FocusClient;
 }
@@ -61,8 +60,6 @@ namespace ws {
 class EventInjector;
 class EventQueue;
 class GpuInterfaceProvider;
-class HostEventDispatcher;
-class HostEventQueue;
 class RemotingEventInjector;
 class ScreenProvider;
 class ProxyWindow;
@@ -172,12 +169,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // |changed_metrics| is a bitmask of the DisplayObserver::DisplayMetric.
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics);
-
-  // Registers the HostEventDispatcher for a WindowTreeHost and returns the
-  // HostEventQueue that |window_tree_host| should use to dispatch events.
-  std::unique_ptr<HostEventQueue> RegisterHostEventDispatcher(
-      aura::WindowTreeHost* window_tree_host,
-      HostEventDispatcher* dispatcher);
 
   // Returns an id useful for debugging. See ProxyWindow::GetIdForDebugging()
   // for details.
