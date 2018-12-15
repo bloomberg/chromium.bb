@@ -102,10 +102,10 @@ constexpr int kButtonRoundedBorderRadiusDp = 20;
 
 // The color of the button background.
 constexpr SkColor kButtonBackgroundColor =
-    SkColorSetARGB(0x19, 0xF1, 0xF3, 0xF4);
+    SkColorSetA(gfx::kGoogleGrey100, 0x19);
 
 // The color of the button text.
-constexpr SkColor kButtonTextColor = SkColorSetRGB(0xF1, 0xF3, 0xF4);
+constexpr SkColor kButtonTextColor = gfx::kGoogleGrey100;
 
 // The color of the button icon.
 constexpr SkColor kButtonIconColor = SkColorSetRGB(0xEB, 0xEA, 0xED);

@@ -41,6 +41,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font_list.h"
@@ -206,7 +207,7 @@ std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
   canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
 
   // Draw the gray background.
-  constexpr SkColor kFaviconBackground = SkColorSetRGB(0xF1, 0xF3, 0xF4);
+  constexpr SkColor kFaviconBackground = gfx::kGoogleGrey100;
   DrawCircleInCanvas(&canvas, icon_size, /*offset=*/0,
                      /*background_color=*/kFaviconBackground);
   DrawFavicon(favicon, &canvas, icon_size);
