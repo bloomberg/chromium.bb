@@ -19,8 +19,8 @@ Polymer({
     },
   },
 
-  /** @private {!print_preview.PrintSettingsUiMetricsContext} */
-  metrics_: new print_preview.PrintSettingsUiMetricsContext(),
+  /** @private {!print_preview.MetricsContext} */
+  metrics_: print_preview.MetricsContext.printSettingsUi(),
 
   /**
    * Toggles the expand button within the element being listened to.

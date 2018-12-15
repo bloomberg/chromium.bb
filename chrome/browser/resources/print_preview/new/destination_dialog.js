@@ -79,8 +79,8 @@ Polymer({
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
 
-  /** @private {!print_preview.DestinationSearchMetricsContext} */
-  metrics_: new print_preview.DestinationSearchMetricsContext(),
+  /** @private {!print_preview.MetricsContext} */
+  metrics_: print_preview.MetricsContext.destinationSearch(),
 
   // <if expr="chromeos">
   /** @private {?print_preview.Destination} */
@@ -190,7 +190,7 @@ Polymer({
     if (!observerDepsDefined(Array.from(arguments)))
       return [];
 
-    let recentDestinations = [];
+    const recentDestinations = [];
     const filterAccount = this.userInfo.activeUser;
     this.recentDestinations.forEach((recentDestination) => {
       const destination = this.destinationStore.getDestination(

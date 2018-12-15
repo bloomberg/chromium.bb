@@ -35,8 +35,8 @@ Polymer({
   /** @private {!Array<Node>} */
   bubbles_: [],
 
-  /** @private {!print_preview.PrintSettingsUiMetricsContext} */
-  metrics_: new print_preview.PrintSettingsUiMetricsContext(),
+  /** @private {!print_preview.MetricsContext} */
+  metrics_: print_preview.MetricsContext.printSettingsUi(),
 
   /** @override */
   attached: function() {
@@ -76,7 +76,7 @@ Polymer({
       return true;
 
     cr.search_highlight_utils.removeHighlights(this.highlights_);
-    for (let bubble of this.bubbles_)
+    for (const bubble of this.bubbles_)
       bubble.remove();
     this.highlights_ = [];
     this.bubbles_ = [];
