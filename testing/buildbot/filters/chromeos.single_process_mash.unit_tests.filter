@@ -1,11 +1,5 @@
 # Multi profile: https://crbug.com/910241
--MultiUserWindowManagerChromeOSTest.*
--MultiUserWindowManagerChromeOSMashTest.*
--MultiUserWindowManagerClientImpl*
--MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest.*
--MultiUserContextMenuChromeOSTest.*
 -BrowserFinderChromeOSTest.FindBrowserOwnedByAnotherProfile
--BrowserFinderChromeOSTest.IncognitoBrowserMatchTest
 -ChromeLauncherControllerMultiProfileWithArcTest.ArcMultiUser
 
 # Immersive mode: https://crbug.com/910249

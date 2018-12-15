@@ -65,6 +65,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl_test_helper.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
@@ -114,9 +115,11 @@
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_parenting_client.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
@@ -386,6 +389,16 @@ void SelectItem(ash::ShelfItemDelegate* delegate) {
       ui::EF_NONE, 0);
   delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,
                          ash::LAUNCH_FROM_UNKNOWN, base::DoNothing());
+}
+
+// Flushes the binding related classes (including the window service) used by
+// this code to ensure state propagations have completed.
+void FlushBindings() {
+  // Flush all window-service related changed.
+  aura::test::WaitForAllChangesToComplete();
+
+  // And flush the MultiUserWindowManagerClient pipe.
+  MultiUserWindowManagerClientImplTestHelper::FlushBindings();
 }
 
 }  // namespace
@@ -1178,6 +1191,9 @@ class V2App {
     window_->Init(GURL(std::string()),
                   new extensions::AppWindowContentsImpl(window_),
                   creator_web_contents_->GetMainFrame(), params);
+    // The visibility may be controlled by ash. Call FlushBindings() to ensure
+    // ash has completed processing the newly added window.
+    FlushBindings();
   }
 
   virtual ~V2App() {
@@ -1271,6 +1287,9 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     ash::MultiUserWindowManager::Get()->SetAnimationSpeedForTest(
         ash::MultiUserWindowManager::ANIMATION_SPEED_DISABLED);
     ash::MultiUserWindowManager::Get()->OnActiveUserSessionChanged(account_id);
+    // Call FlushBindings() to ensure ash has completed processing of the
+    // switch.
+    FlushBindings();
     launcher_controller_->browser_status_monitor_for_test()->ActiveUserChanged(
         account_id.GetUserEmail());
 
@@ -3511,6 +3530,9 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // Teleport the app from user #1 to the desktop #2 should show it.
   client->ShowWindowForUser(v2_app_1.window()->GetNativeWindow(), account_id2);
+  // FlushBindings() to ensure ash has completed processing, which results in
+  // changing visibility of windows.
+  FlushBindings();
   EXPECT_TRUE(v2_app_1.window()->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(v2_app_2.window()->GetNativeWindow()->IsVisible());
 

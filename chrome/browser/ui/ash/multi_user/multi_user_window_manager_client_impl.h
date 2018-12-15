@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/ws/common/types.h"
 #include "ui/aura/window_observer.h"
 
@@ -86,8 +87,18 @@ class MultiUserWindowManagerClientImpl
 
  private:
   friend class ash::MultiUserWindowManagerClientImplTest;
+  friend class MultiUserWindowManagerClientImplTestHelper;
 
-  struct ClassicSupport;
+  // Used only in classic mode. In classic mode a mojo Binding is used that
+  // results in the delegate being notified async. Doing this gives the same
+  // async delay seen when the WindowService is used.
+  struct ClassicSupport {
+    explicit ClassicSupport(MultiUserWindowManagerClientImpl* host);
+    ~ClassicSupport();
+
+    ash::mojom::MultiUserWindowManagerClientPtr client_ptr;
+    mojo::Binding<ash::mojom::MultiUserWindowManagerClient> binding;
+  };
 
   class WindowEntry {
    public:
@@ -126,21 +137,23 @@ class MultiUserWindowManagerClientImpl
   void OnTransitionUserShelfToNewAccount() override;
   void OnDidSwitchActiveAccount() override;
 
-  void FlushForTesting();
+  // Add a browser window to the system so that the owner can be remembered.
+  void AddBrowserWindow(Browser* browser);
 
-  using AccountIdToAppWindowObserver = std::map<AccountId, AppObserver*>;
+  // The single instance of MultiUserWindowManagerClientImpl, tracked solely for
+  // tests.
+  static MultiUserWindowManagerClientImpl* instance_;
+
+  std::unique_ptr<ClassicSupport> classic_support_;
 
   using WindowToEntryMap =
       std::map<aura::Window*, std::unique_ptr<WindowEntry>>;
 
-  // Add a browser window to the system so that the owner can be remembered.
-  void AddBrowserWindow(Browser* browser);
-
-  std::unique_ptr<ClassicSupport> classic_support_;
-
   // A lookup to see to which user the given window belongs to, where and if it
   // should get shown.
   WindowToEntryMap window_to_entry_;
+
+  using AccountIdToAppWindowObserver = std::map<AccountId, AppObserver*>;
 
   // A list of all known users and their app window observers.
   AccountIdToAppWindowObserver account_id_to_app_observer_;

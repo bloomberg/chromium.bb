@@ -25,7 +25,6 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_mus.h"
@@ -132,20 +131,21 @@ class AppObserver : public extensions::AppWindowRegistry::Observer {
   DISALLOW_COPY_AND_ASSIGN(AppObserver);
 };
 
-// Used only in classic mode. In classic mode a mojo Binding is used that
-// results in the delegate being notified async. Doing this gives the same
-// async delay seen when the WindowService is used.
-struct MultiUserWindowManagerClientImpl::ClassicSupport {
-  explicit ClassicSupport(MultiUserWindowManagerClientImpl* host)
-      : binding(host) {}
+// static
+MultiUserWindowManagerClientImpl* MultiUserWindowManagerClientImpl::instance_ =
+    nullptr;
 
-  ash::mojom::MultiUserWindowManagerClientPtr client_ptr;
-  mojo::Binding<ash::mojom::MultiUserWindowManagerClient> binding;
-};
+MultiUserWindowManagerClientImpl::ClassicSupport::ClassicSupport(
+    MultiUserWindowManagerClientImpl* host)
+    : binding(host) {}
+
+MultiUserWindowManagerClientImpl::ClassicSupport::~ClassicSupport() = default;
 
 MultiUserWindowManagerClientImpl::MultiUserWindowManagerClientImpl(
     const AccountId& current_account_id)
     : current_account_id_(current_account_id) {
+  DCHECK(!instance_);
+  instance_ = this;
   ash::mojom::MultiUserWindowManagerClient* client = nullptr;
   if (features::IsUsingWindowService()) {
     // This path doesn't set |client| as it'll be wired up in ash when it
@@ -171,6 +171,9 @@ MultiUserWindowManagerClientImpl::MultiUserWindowManagerClientImpl(
 }
 
 MultiUserWindowManagerClientImpl::~MultiUserWindowManagerClientImpl() {
+  DCHECK_EQ(instance_, this);
+  instance_ = nullptr;
+
   // This may trigger callbacks to us, delete it early on.
   ash_multi_user_window_manager_.reset();
 
@@ -459,9 +462,4 @@ void MultiUserWindowManagerClientImpl::OnWindowOwnerEntryChanged(
 
   OnOwnerEntryChanged(widget->GetNativeWindow(), account_id, was_minimized,
                       teleported);
-}
-
-void MultiUserWindowManagerClientImpl::FlushForTesting() {
-  DCHECK(!features::IsUsingWindowService());
-  classic_support_->binding.FlushForTesting();
 }
