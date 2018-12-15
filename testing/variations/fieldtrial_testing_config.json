@@ -5426,6 +5426,21 @@
             ]
         }
     ],
+    "WebRTC-Audio-NetEqForceTargetDelayPercentile": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled-99"
+                }
+            ]
+        }
+    ],
     "WebRTC-Audio-NetEqPostponeDecodingAfterExpand": [
         {
             "platforms": [
