@@ -230,6 +230,13 @@ public class ContextualSearchPanel extends OverlayPanel {
         return projectedState;
     }
 
+    @Override
+    public boolean onBackPressed() {
+        if (!isShowing()) return false;
+        mManagementDelegate.hideContextualSearch(StateChangeReason.BACK_PRESS);
+        return true;
+    }
+
     // ============================================================================================
     // Contextual Search Manager Integration
     // ============================================================================================
