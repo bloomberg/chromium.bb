@@ -5,7 +5,16 @@ import { TestTree } from "framework";
     import("./unittests"),
     import("./conformance"),
   ]);
-  const it = trunk.run();
-  for await (const x of trunk.run()) {
+
+  // Print test listing
+  for await (const t of trunk.iterate()) {
+  }
+
+  // tslint:disable-next-line:no-console
+  console.log("");
+
+  // Actually run tests
+  for await (const t of trunk.iterate()) {
+    t();
   }
 })();

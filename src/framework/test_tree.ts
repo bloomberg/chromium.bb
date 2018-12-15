@@ -16,7 +16,7 @@ export class TestTree {
   public static async trunk(modules: Array<Promise<ITestTreeModule>>): Promise<TestTree> {
     const trunk = new TestTree("", "");
     for (const m of modules) {
-      trunk.recurse(await m);
+      await trunk.recurse(await m);
     }
     return trunk;
   }
@@ -27,7 +27,7 @@ export class TestTree {
 
   private constructor(name: string, description: string) {
     this.name = name;
-    this.description = description;
+    this.description = description.trim();
     this.subtrees = [];
     this.tests = [];
   }
@@ -50,16 +50,16 @@ export class TestTree {
     });
   }
 
-  public async * run(path: string[] = []): AsyncIterable<void> {
+  public async * iterate(path: string[] = []): AsyncIterable<Test> {
     const subtrees = await Promise.all(this.subtrees);
     for (const t of this.tests) {
-      await t();
+      yield t;
     }
     for (const st of subtrees) {
       const subpath = path.concat([st.name]);
       // tslint:disable-next-line:no-console
       console.log("* " + subpath.join("/"));
-      yield* st.run(subpath);
+      yield* st.iterate(subpath);
     }
   }
 
@@ -67,7 +67,7 @@ export class TestTree {
     const tt = new TestTree(m.name, m.description);
     if (m.subtrees) {
       for (const st of m.subtrees) {
-        await this.recurse(await st);
+        await tt.recurse(await st);
       }
     }
     if (m.add) {

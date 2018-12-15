@@ -4,5 +4,3 @@ export type ParamIterator = IterableIterator<object>;
 export * from "./combine";
 export * from "./options";
 export * from "./unit";
-
-// TODO: pfilter() or params.skip([{...}])
