@@ -136,8 +136,7 @@ class FlexItem {
 
   bool frozen;
 
-  // TODO(dgrogan): Change this to NGBlockNode when all items are blockified.
-  NGLayoutInputNode ng_input_node;
+  NGBlockNode ng_input_node;
   scoped_refptr<NGLayoutResult> layout_result;
 };
 
