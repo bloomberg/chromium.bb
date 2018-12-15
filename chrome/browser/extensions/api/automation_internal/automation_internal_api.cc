@@ -494,10 +494,10 @@ AutomationInternalPerformActionFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
-  ui::AXHostDelegate* delegate =
-      registry->GetHostDelegate(ui::AXTreeID::FromString(params->args.tree_id));
-  if (delegate) {
-    // Handle an AXHostDelegate with a rfh first. Some actions require a rfh ->
+  ui::AXActionHandler* action_handler = registry->GetActionHandler(
+      ui::AXTreeID::FromString(params->args.tree_id));
+  if (action_handler) {
+    // Handle an AXActionHandler with a rfh first. Some actions require a rfh ->
     // web contents and this api requires web contents to perform a permissions
     // check.
     content::RenderFrameHost* rfh = content::RenderFrameHost::FromAXTreeID(
@@ -537,7 +537,7 @@ AutomationInternalPerformActionFunction::Run() {
     ui::AXActionData data;
     ExtensionFunction::ResponseAction result =
         ConvertToAXActionData(params.get(), &data);
-    delegate->PerformAction(data);
+    action_handler->PerformAction(data);
     return result;
   }
   return RespondNow(Error("Unable to perform action on unknown tree."));

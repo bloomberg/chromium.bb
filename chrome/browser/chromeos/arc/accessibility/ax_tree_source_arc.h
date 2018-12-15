@@ -33,7 +33,7 @@ using AXTreeArcSerializer = ui::
 class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
                                                 ui::AXNodeData,
                                                 ui::AXTreeData>,
-                        public ui::AXHostDelegate {
+                        public ui::AXActionHandler {
  public:
   class Delegate {
    public:
@@ -108,7 +108,7 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   void ComputeEnclosingBoundsInternal(ArcAccessibilityInfoData* info_data,
                                       gfx::Rect& computed_bounds) const;
 
-  // AXHostDelegate overrides.
+  // AXActionHandler overrides.
   void PerformAction(const ui::AXActionData& data) override;
 
   // Resets tree state.

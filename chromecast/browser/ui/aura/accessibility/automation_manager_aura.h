@@ -39,7 +39,7 @@ using AuraAXTreeSerializer = ui::
     AXTreeSerializer<views::AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>;
 
 // Manages a tree of automation nodes.
-class AutomationManagerAura : public ui::AXHostDelegate,
+class AutomationManagerAura : public ui::AXActionHandler,
                               public views::AXAuraObjCache::Delegate {
  public:
   // Get the single instance of this class.
@@ -58,7 +58,7 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   void HandleAlert(content::BrowserContext* context, const std::string& text);
 
-  // AXHostDelegate implementation.
+  // AXActionHandler implementation.
   void PerformAction(const ui::AXActionData& data) override;
 
   // views::AXAuraObjCache::Delegate implementation.
