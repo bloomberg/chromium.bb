@@ -166,14 +166,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   bool HasWrongProcessForURL(const GURL& url);
 
   // Increase the number of active frames in this SiteInstance. This is
-  // increased when a frame is created, or a currently swapped out frame
-  // is swapped in.
+  // increased when a frame is created.
   void IncrementActiveFrameCount();
 
   // Decrease the number of active frames in this SiteInstance. This is
-  // decreased when a frame is destroyed, or a currently active frame is
-  // swapped out. Decrementing this to zero will notify observers, and may
-  // trigger deletion of proxies.
+  // decreased when a frame is destroyed. Decrementing this to zero will notify
+  // observers, and may trigger deletion of proxies.
   void DecrementActiveFrameCount();
 
   // Get the number of active frames which belong to this SiteInstance.  If
