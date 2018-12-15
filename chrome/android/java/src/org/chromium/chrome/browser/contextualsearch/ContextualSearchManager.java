@@ -394,10 +394,7 @@ public class ContextualSearchManager
         mSelectionController.onContextMenuShown();
     }
 
-    /**
-     * Hides the Contextual Search UX by changing into the IDLE state.
-     * @param reason The {@link StateChangeReason} for hiding Contextual Search.
-     */
+    @Override
     public void hideContextualSearch(@StateChangeReason int reason) {
         mInternalStateController.reset(reason);
     }
@@ -438,13 +435,6 @@ public class ContextualSearchManager
         mIsShowingPromo = false;
         mSearchPanel.setIsPromoActive(false, false);
         notifyHideContextualSearch();
-    }
-
-    /** Called when the system back button is pressed. Will hide the layout. */
-    public boolean onBackPressed() {
-        if (!mIsInitialized || !isSearchPanelShowing()) return false;
-        hideContextualSearch(StateChangeReason.BACK_PRESS);
-        return true;
     }
 
     /**

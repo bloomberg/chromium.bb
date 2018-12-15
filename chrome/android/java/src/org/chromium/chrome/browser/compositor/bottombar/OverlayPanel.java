@@ -911,7 +911,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     @Override
     public boolean onBackPressed() {
-        if (!isPanelOpened()) return false;
+        if (!isShowing()) return false;
         closePanel(StateChangeReason.BACK_PRESS, true);
         return true;
     }

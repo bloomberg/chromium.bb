@@ -2010,8 +2010,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return;
         }
 
-        if (mContextualSearchManager != null && mContextualSearchManager.onBackPressed()) return;
-
         if (handleBackPressed()) return;
 
         super.onBackPressed();
