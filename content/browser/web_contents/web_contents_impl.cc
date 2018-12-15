@@ -923,9 +923,7 @@ BrowserContext* WebContentsImpl::GetBrowserContext() {
 }
 
 const GURL& WebContentsImpl::GetURL() {
-  // We may not have a navigation entry yet.
-  NavigationEntry* entry = controller_.GetVisibleEntry();
-  return entry ? entry->GetVirtualURL() : GURL::EmptyGURL();
+  return GetVisibleURL();
 }
 
 const GURL& WebContentsImpl::GetVisibleURL() {
