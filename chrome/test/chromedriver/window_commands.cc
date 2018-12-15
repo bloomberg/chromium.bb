@@ -996,6 +996,9 @@ Status ProcessInputActionSequence(
           kInvalidArgument,
           "each argument in the action sequence must be a dictionary");
 
+    action->SetString("id", id);
+    action->SetString("type", type);
+
     if (type == "none") {
       // process none action
       std::string subtype;
@@ -1003,8 +1006,6 @@ Status ProcessInputActionSequence(
         return Status(kInvalidArgument,
                       "type of action must be the  string 'pause'");
 
-      action->SetString("id", id);
-      action->SetString("type", "none");
       action->SetString("subtype", subtype);
 
       Status status = ProcessPauseAction(action_item, action.get());
@@ -1019,8 +1020,6 @@ Status ProcessInputActionSequence(
             kInvalidArgument,
             "type of action must be the string 'keyUp', 'keyDown' or 'pause'");
 
-      action->SetString("id", id);
-      action->SetString("type", "key");
       action->SetString("subtype", subtype);
 
       if (subtype == "pause") {
@@ -1046,7 +1045,8 @@ Status ProcessInputActionSequence(
                       "type of action must be the string 'pointerUp', "
                       "'pointerDown', 'pointerMove' or 'pause'");
 
-      action->SetString("type", subtype);
+      action->SetString("subtype", subtype);
+
       if (subtype == "pointerDown" || subtype == "pointerUp") {
         if (pointer_type == "mouse") {
           int button;
@@ -1167,8 +1167,8 @@ Status ExecutePerformActions(Session* session,
     action_sequence->GetList("actions", &actions);
     DCHECK(actions);
 
-    type = input_source_types.back();
-    input_source_types.pop_back();
+    type = input_source_types.front();
+    input_source_types.pop_front();
 
     // key actions
     if (type == "key") {
@@ -1180,7 +1180,7 @@ Status ExecutePerformActions(Session* session,
           return Status(kInvalidArgument, "each argument must be a dictionary");
         std::string subtype;
         if (!action->GetString("subtype", &subtype))
-          return Status(kInvalidArgument, "'type' must be a string");
+          return Status(kInvalidArgument, "'subtype' must be a string");
 
         std::string id;
         if (!action->GetString("id", &id))
@@ -1260,7 +1260,7 @@ Status ExecutePerformActions(Session* session,
         const base::DictionaryValue* mouse_action;
         actions->GetDictionary(j, &mouse_action);
         std::string action_type;
-        mouse_action->GetString("type", &action_type);
+        mouse_action->GetString("subtype", &action_type);
         if (action_type == "pointerMove") {
           mouse_action->GetDouble("x", &x);
           mouse_action->GetDouble("y", &y);
