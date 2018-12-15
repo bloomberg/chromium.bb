@@ -28,21 +28,9 @@ cca.views.Settings = function() {
   document.querySelector('#settings-feedback').hidden =
       !cca.util.isChromeVersionAbove(72); // Feedback available since M72.
 
-  // Add event listeners for menu header and items.
-  document.querySelector('#settings-back').addEventListener(
-      'click', () => this.leave());
-  var items = [
-    ['#settings-feedback', 'onFeedbackClicked_'],
-    ['#settings-help', 'onHelpClicked_'],
-  ];
-  items.forEach(([selector, fn]) => {
-    var element = document.querySelector(selector);
-    var button = element.querySelector('button');
-    button.addEventListener('click', (event) => {
-      this[fn]();
-      event.stopPropagation();
-    });
-    element.addEventListener('click', (event) => button.click());
+  cca.views.settings.util.setupMenu(this, {
+    'settings-feedback': this.onFeedbackClicked_.bind(this),
+    'settings-help': this.onHelpClicked_.bind(this),
   });
 };
 

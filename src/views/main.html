@@ -22,7 +22,9 @@
     <script src="../js/views/camera/recordtime.js"></script>
     <script src="../js/views/dialog.js"></script>
     <script src="../js/views/browser.js"></script>
+    <script src="../js/views/settings/util.js"></script>
     <script src="../js/views/settings.js"></script>
+    <script src="../js/views/gridsettings.js"></script>
     <script src="../js/views/warning.js"></script>
     <script src="../js/nav.js"></script>
     <script src="../js/main.js"></script>
@@ -51,7 +53,7 @@
       </div>
       <div class="top-stripe right-stripe buttons">
         <input type="checkbox" id="toggle-mic" tabindex="0"
-               i18n-label="toggleMicButton">
+               i18n-label="toggleMicButton" data-key="toggleMic" checked>
       </div>
       <div class="top-stripe left-stripe buttons">
         <button id="open-settings" tabindex="0"
@@ -59,11 +61,13 @@
       </div>
       <div class="left-stripe options-group buttons">
         <input type="checkbox" id="toggle-mirror" tabindex="0"
-               i18n-label="toggleMirrorButton" checked>
+               i18n-label="toggleMirrorButton" data-css="mirror" checked>
         <input type="checkbox" id="toggle-grid" tabindex="0"
-               i18n-label="toggleGridButton">
+               i18n-label="toggleGridButton" data-css="grid"
+               data-key="toggleGrid">
         <input type="checkbox" id="toggle-timer" tabindex="0"
-               i18n-label="toggleTimerButton">
+               i18n-label="toggleTimerButton" data-css="timer"
+               data-key="toggleTimer">
       </div>
       <div class="bottom-stripe left-stripe buttons circle">
         <button id="switch-device" disabled tabindex="0"
@@ -85,19 +89,38 @@
     <div id="settings">
       <div class="menu" role="menu" i18n-aria-label="settingsButton">
         <div class="menu-header buttons circle">
-          <button class="icon" id="settings-back" tabindex="0"
+          <button class="icon" tabindex="0"
                   i18n-aria-label="backButton"></button>
-          <div i18n-content="settingsButton"></div>
+          <div i18n-content="settingsButton" aria-hidden="true"></div>
         </div>
         <div class="menu-item buttons circle" id="settings-feedback">
           <div class="icon"></div>
-          <div i18n-content="feedbackButton"></div>
+          <div i18n-content="feedbackButton" aria-hidden="true"></div>
           <button tabindex="0" i18n-aria-label="feedbackButton"></button>
         </div>
         <div class="menu-item buttons circle" id="settings-help">
           <div class="icon"></div>
-          <div i18n-content="helpButton"></div>
+          <div i18n-content="helpButton" aria-hidden="true"></div>
           <button tabindex="0" i18n-aria-label="helpButton"></button>
+        </div>
+      </div>
+    </div>
+    <div id="gridsettings">
+      <div class="menu" role="menu" i18n-aria-label="gridTypeButton">
+        <div class="menu-header buttons circle">
+          <button class="icon" tabindex="0"
+                  i18n-aria-label="backButton"></button>
+          <div i18n-content="gridTypeButton" aria-hidden="true"></div>
+        </div>
+        <div class="menu-item buttons circle">
+          <input type="radio" tabindex="0" i18n-aria-label="labelGrid3x3"
+                 name="grid-type" checked>
+          <span aria-hidden="true">3 x 3</span>
+        </div>
+        <div class="menu-item buttons circle">
+          <input type="radio" tabindex="0" i18n-aria-label="labelGridGolden"
+                 name="grid-type" data-css="golden" data-key="toggleGolden">
+          <span i18n-content="labelGridGolden" aria-hidden="true"></span>
         </div>
       </div>
     </div>

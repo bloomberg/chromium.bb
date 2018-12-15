@@ -100,7 +100,8 @@ body {
   content: '';
 }
 
-.buttons.circle button:focus:after {
+.buttons.circle button:focus:after,
+.buttons.circle input:focus:after {
   border-radius: 50%;
 }
 
@@ -429,6 +430,7 @@ body.mode-switching:not(.capturing) #camera-mode {
 
 #camera,
 #settings,
+#gridsettings,
 #browser,
 #dialog,
 #warning {
@@ -442,13 +444,15 @@ body.mode-switching:not(.capturing) #camera-mode {
   visibility: hidden;
 }
 
-#settings {
+#settings,
+#gridsettings {
   /* Delay invisibility for menu sliding-out. */
   transition: opacity 100ms, visibility 100ms;
 }
 
 body.camera #camera,
 body.settings #settings,
+body.gridsettings #gridsettings,
 body.browser #browser,
 body.dialog #dialog,
 body.warning #warning {
@@ -457,7 +461,9 @@ body.warning #warning {
   transition: opacity 100ms;
 }
 
-body.settings .left-stripe {
+body.settings .left-stripe,
+body.gridsettings .left-stripe,
+body.gridsettings #settings {
   opacity: 0;
 }
 
@@ -558,6 +564,12 @@ body.capturing.grid #preview-grid-horizontal {
   -webkit-transform: translateY(-50%) scaleY(0.33333);
 }
 
+body.capturing.grid.golden #preview-grid-horizontal {
+  border-bottom-width: 4px;
+  border-top-width: 4px;
+  -webkit-transform: translateY(-50%) scaleY(0.23607);
+}
+
 #preview-grid-vertical {
   border-left: 1px solid white;
   border-right: 1px solid white;
@@ -573,6 +585,12 @@ body.capturing.grid #preview-grid-vertical {
   border-left-width: 3px;
   border-right-width: 3px;
   -webkit-transform: translateX(-50%) scaleX(0.33333);
+}
+
+body.capturing.grid.golden #preview-grid-vertical {
+  border-left-width: 4px;
+  border-right-width: 4px;
+  -webkit-transform: translateX(-50%) scaleX(0.23607);
 }
 
 #preview-grid-horizontal.animate,
@@ -770,7 +788,8 @@ body.capturing.grid #preview-grid-vertical {
   }
 }
 
-#settings .menu {
+#settings .menu,
+#gridsettings .menu {
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
@@ -784,7 +803,8 @@ body.capturing.grid #preview-grid-vertical {
   transition: -webkit-transform 150ms ease-in;
 }
 
-body.settings #settings .menu {
+body.settings #settings .menu,
+body.gridsettings #gridsettings .menu {
   -webkit-transform: translateX(0);
 }
 
@@ -792,7 +812,7 @@ body.settings #settings .menu {
 .buttons.menu-item {
   flex-shrink: 0;
   justify-content: flex-start;
-  padding: 0 24px;
+  padding: 0 20px 0 24px;
   height: 64px;
   color: #f1f3f4;
   font-size: 13px;
@@ -805,27 +825,55 @@ body.settings #settings .menu {
   font-size: 20px;
 }
 
-.buttons.menu-header .icon,
-.buttons.menu-item .icon {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  margin-right: 6px;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
 .buttons.menu-item {
   pointer-events: auto;
 }
 
+.buttons.menu-header .icon,
+.buttons.menu-item .icon,
+.buttons.menu-item button,
+.buttons.menu-item input {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.buttons.menu-header .icon,
+.buttons.menu-item .icon,
+.buttons.menu-item input {
+  margin-right: 6px;
+}
+
 .buttons.menu-item button {
-  width: 36px;
-  height: 36px;
   margin-left: auto;
 }
 
-#settings-back {
+.buttons.menu-item input:before {
+  position: absolute;
+  top: 13px;
+  left: 13px;
+  bottom: 13px;
+  right: 13px;
+  box-shadow: 0px 0px 0px 2px #f1f3f4;
+  border-radius: 50%;
+  content: '';
+}
+
+.buttons.menu-item input:checked:before {
+  top: 12px;
+  left: 12px;
+  bottom: 12px;
+  right: 12px;
+  box-shadow: 0px 0px 0px 1px #f1f3f4;
+  background-color: #f1f3f4;
+  background-clip: padding-box;
+  border: 4px solid transparent;
+  transition: border-width 100ms ease-in;
+}
+
+.menu-header button {
   background-image: url(../images/settings_button_back.svg);
 }
 
