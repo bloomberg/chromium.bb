@@ -74,6 +74,10 @@ class CORE_EXPORT ImagePaintTimingDetector final
  private:
   ImageRecord* FindLargestPaintCandidate();
   ImageRecord* FindLastPaintCandidate();
+  ImageRecord* FindCandidate(
+      std::set<base::WeakPtr<ImageRecord>,
+               bool (*)(const base::WeakPtr<ImageRecord>&,
+                        const base::WeakPtr<ImageRecord>&)>& heap);
   void PopulateTraceValue(TracedValue&,
                           const ImageRecord& first_image_paint,
                           unsigned report_count) const;
@@ -93,16 +97,15 @@ class CORE_EXPORT ImagePaintTimingDetector final
 
   HashSet<DOMNodeId> size_zero_ids_;
   HashMap<DOMNodeId, std::unique_ptr<ImageRecord>> id_record_map_;
-  std::priority_queue<base::WeakPtr<ImageRecord>,
-                      std::vector<base::WeakPtr<ImageRecord>>,
-                      bool (*)(const base::WeakPtr<ImageRecord>&,
-                               const base::WeakPtr<ImageRecord>&)>
-      largest_image_heap_;
-  std::priority_queue<base::WeakPtr<ImageRecord>,
-                      std::vector<base::WeakPtr<ImageRecord>>,
-                      bool (*)(const base::WeakPtr<ImageRecord>&,
-                               const base::WeakPtr<ImageRecord>&)>
-      latest_image_heap_;
+  std::set<base::WeakPtr<ImageRecord>,
+           bool (*)(const base::WeakPtr<ImageRecord>&,
+                    const base::WeakPtr<ImageRecord>&)>
+      size_ordered_set_;
+  std::set<base::WeakPtr<ImageRecord>,
+           bool (*)(const base::WeakPtr<ImageRecord>&,
+                    const base::WeakPtr<ImageRecord>&)>
+      time_ordered_set_;
+  HashSet<DOMNodeId> detached_ids_;
 
   // Node-ids of records pending swap time are stored in this queue until they
   // get a swap time.

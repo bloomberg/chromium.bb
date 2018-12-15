@@ -99,27 +99,23 @@ bool IsLoaded(const LayoutObject& object) {
 // capped. Exceeding such limit will deactivate the algorithm.
 constexpr size_t kImageNodeNumberLimit = 5000;
 
-static bool LargeImageOnTop(const base::WeakPtr<ImageRecord>& a,
+static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
                             const base::WeakPtr<ImageRecord>& b) {
-  // null value should be at the bottom of the priority queue, so:
-  // * When a == null && b!=null, we treat b as larger, return true.
-  // * When a != null && b==null, we treat b as no larger than a, return false.
-  // * When a == null && b==null, we treat b as no larger than a, return false.
-  return (a && b) ? (a->first_size < b->first_size) : bool(b);
+  DCHECK(a);
+  DCHECK(b);
+  return a->first_size > b->first_size;
 }
 
-static bool LateImageOnTop(const base::WeakPtr<ImageRecord>& a,
+static bool LateImageFirst(const base::WeakPtr<ImageRecord>& a,
                            const base::WeakPtr<ImageRecord>& b) {
-  // null value should be at the bottom of the priority queue, so:
-  // * When a == null && b!=null, we treat b as larger, return true.
-  // * When a != null && b==null, we treat b as no larger than a, return false.
-  // * When a == null && b==null, we treat b as no larger than a, return false.
-  return (a && b) ? (a->first_paint_index < b->first_paint_index) : bool(b);
+  DCHECK(a);
+  DCHECK(b);
+  return a->first_paint_index > b->first_paint_index;
 }
 
 ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
-    : largest_image_heap_(&LargeImageOnTop),
-      latest_image_heap_(&LateImageOnTop),
+    : size_ordered_set_(&LargeImageFirst),
+      time_ordered_set_(&LateImageFirst),
       frame_view_(frame_view) {}
 
 void ImagePaintTimingDetector::PopulateTraceValue(
@@ -195,8 +191,9 @@ void ImagePaintTimingDetector::OnPrePaintFinished() {
   // If the last frame index of queue has changed, it means there are new
   // records pending timing.
   DOMNodeId node_id = records_pending_timing_.back();
-  if (!id_record_map_.Contains(node_id))
-    return;
+  // As we never remove nodes from |id_record_map_|, all of |id_record_map_|
+  // must exist.
+  DCHECK(id_record_map_.Contains(node_id));
   unsigned last_frame_index = id_record_map_.at(node_id)->frame_index;
   if (last_frame_index_queued_for_timing_ >= last_frame_index)
     return;
@@ -210,11 +207,11 @@ void ImagePaintTimingDetector::OnPrePaintFinished() {
 void ImagePaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
   if (id_record_map_.Contains(node_id)) {
     // We assume that the removed node's id wouldn't be recycled, so we don't
-    // bother to remove these records from largest_image_heap_ or
-    // latest_image_heap_, to reduce computation.
-    id_record_map_.erase(node_id);
+    // bother to remove these records from size_ordered_set_ or
+    // time_ordered_set_, to reduce computation.
+    detached_ids_.insert(node_id);
 
-    if (id_record_map_.size() == 0) {
+    if (id_record_map_.size() - detached_ids_.size() == 0) {
       const bool largest_image_paint_invalidated =
           largest_image_paint_ != base::TimeTicks();
       const bool last_image_paint_invalidated =
@@ -325,6 +322,9 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
   DOMNodeId node_id = DOMNodeIds::IdForNode(node);
   if (size_zero_ids_.Contains(node_id))
     return;
+  // The node is reattached.
+  if (id_record_map_.Contains(node_id) && detached_ids_.Contains(node_id))
+    detached_ids_.erase(node_id);
 
   if (!id_record_map_.Contains(node_id) && is_recording_) {
     LayoutRect invalidated_rect = object.FirstFragment().VisualRect();
@@ -348,9 +348,9 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
     record->node_id = node_id;
     record->image_url = GetImageUrl(object);
     // Mind that first_size has to be assigned at the push of
-    // largest_image_heap_ since it's the sorting key.
+    // size_ordered_set_ since it's the sorting key.
     record->first_size = rect_size;
-    largest_image_heap_.push(record->AsWeakPtr());
+    size_ordered_set_.insert(record->AsWeakPtr());
     id_record_map_.insert(node_id, std::move(record));
     if (id_record_map_.size() + size_zero_ids_.size() > kImageNodeNumberLimit)
       Deactivate();
@@ -368,9 +368,9 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
     // image is attached to DOM. This causes last image paint to base its order
     // on load time other than attachment time.
     // Mind that first_paint_index has to be assigned at the push of
-    // latest_image_heap_ since it's the sorting key.
+    // time_ordered_set_ since it's the sorting key.
     record->first_paint_index = ++first_paint_index_max_;
-    latest_image_heap_.push(record->AsWeakPtr());
+    time_ordered_set_.insert(record->AsWeakPtr());
   }
 }
 
@@ -383,31 +383,27 @@ void ImagePaintTimingDetector::Deactivate() {
 }
 
 ImageRecord* ImagePaintTimingDetector::FindLargestPaintCandidate() {
-  while (!largest_image_heap_.empty() && !largest_image_heap_.top()) {
-    // Discard the elements that have been removed from |id_record_map_|.
-    largest_image_heap_.pop();
-  }
-  // We report the result as the first paint after the largest image finishes
-  // loading. If the largest image is still loading, we report nothing and come
-  // back later to see if the largest image by then has finished loading.
-  if (!largest_image_heap_.empty() && largest_image_heap_.top()->loaded) {
-    DCHECK(id_record_map_.Contains(largest_image_heap_.top()->node_id));
-    return largest_image_heap_.top().get();
-  }
-  return nullptr;
+  return FindCandidate(size_ordered_set_);
 }
 
 ImageRecord* ImagePaintTimingDetector::FindLastPaintCandidate() {
-  while (!latest_image_heap_.empty() && !latest_image_heap_.top()) {
-    // Discard the elements that have been removed from |id_record_map_|.
-    latest_image_heap_.pop();
-  }
-  // We report the result as the first paint after the latest image finishes
-  // loading. If the latest image is still loading, we report nothing and come
-  // back later to see if the latest image at that time has finished loading.
-  if (!latest_image_heap_.empty() && latest_image_heap_.top()->loaded) {
-    DCHECK(id_record_map_.Contains(latest_image_heap_.top()->node_id));
-    return latest_image_heap_.top().get();
+  return FindCandidate(time_ordered_set_);
+}
+
+ImageRecord* ImagePaintTimingDetector::FindCandidate(
+    std::set<base::WeakPtr<ImageRecord>,
+             bool (*)(const base::WeakPtr<ImageRecord>&,
+                      const base::WeakPtr<ImageRecord>&)>& ordered_set) {
+  for (auto it = ordered_set.begin(); it != ordered_set.end(); ++it) {
+    if (detached_ids_.Contains((*it)->node_id))
+      continue;
+    DCHECK(id_record_map_.Contains((*it)->node_id));
+    // If the largest/latest image is still loading, we report nothing and come
+    // back later to see if the largest/latest image at that time has finished
+    // loading.
+    if (!(*it)->loaded)
+      return nullptr;
+    return (*it).get();
   }
   return nullptr;
 }
