@@ -1426,16 +1426,11 @@ void TabDragController::EndDragImpl(EndDragType type) {
     // is false, the user just clicked and released and didn't move the mouse
     // enough to trigger a drag.
     if (previous_state != DragState::kNotStarted) {
-      // After the drag ends, sometimes it shouldn't restore the focus, because
-      // - if |attached_tabstrip_| is showing in overview mode, overview mode
-      //   may be ended unexpectly because of the window activation.
-      // - Some dragging gesture (like fling down) minimizes the window, but the
-      //   window activation cancels minimized status. See
-      //   https://crbug.com/902897
-      if (!IsShowingInOverview(attached_tabstrip_) &&
-          !attached_tabstrip_->GetWidget()->IsMinimized()) {
+      // After the drag ends, if |attached_tabstrip_| is showing in overview
+      // mode, do not restore focus, otherwise overview mode may be ended
+      // unexpectly because of the window activation.
+      if (!IsShowingInOverview(attached_tabstrip_))
         RestoreFocus();
-      }
 
       if (type == CANCELED)
         RevertDrag();
