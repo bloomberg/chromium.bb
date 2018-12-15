@@ -156,11 +156,16 @@ function clearAttachedFile() {
  * Sets up the event handlers for the given |anchorElement|.
  * @param {HTMLElement} anchorElement The <a> html element.
  * @param {string} url The destination URL for the link.
+ * @param {boolean} useAppWindow true if the URL should be opened inside a new
+ *                  App Window, false if it should be opened in a new tab.
  */
-function setupLinkHandlers(anchorElement, url) {
+function setupLinkHandlers(anchorElement, url, useAppWindow) {
   anchorElement.onclick = function(e) {
     e.preventDefault();
-    openUrlInAppWindow(url);
+    if (useAppWindow)
+      openUrlInAppWindow(url);
+    else
+      window.open(url, '_blank');
   };
 
   anchorElement.onauxclick = function(e) {
@@ -360,7 +365,7 @@ function initialize() {
 
         $('srt-accept-button').onclick = function() {
           chrome.feedbackPrivate.logSrtPromptResult(SrtPromptResult.ACCEPTED);
-          openUrlInAppWindow(SRT_DOWNLOAD_PAGE);
+          window.open(SRT_DOWNLOAD_PAGE, '_blank');
           scheduleWindowClose();
         };
 
@@ -510,23 +515,30 @@ function initialize() {
         var histogramUrlElement = $('histograms-url');
         if (histogramUrlElement) {
           // Opens a new window showing the histogram metrics.
-          setupLinkHandlers(histogramUrlElement, 'chrome://histograms');
+          setupLinkHandlers(
+              histogramUrlElement, 'chrome://histograms',
+              true /* useAppWindow */);
         }
 
         var legalHelpPageUrlElement = $('legal-help-page-url');
-        if (legalHelpPageUrlElement)
-          setupLinkHandlers(legalHelpPageUrlElement, FEEDBACK_LEGAL_HELP_URL);
+        if (legalHelpPageUrlElement) {
+          setupLinkHandlers(
+              legalHelpPageUrlElement, FEEDBACK_LEGAL_HELP_URL,
+              false /* useAppWindow */);
+        }
 
         var privacyPolicyUrlElement = $('privacy-policy-url');
         if (privacyPolicyUrlElement) {
           setupLinkHandlers(
-              privacyPolicyUrlElement, FEEDBACK_PRIVACY_POLICY_URL);
+              privacyPolicyUrlElement, FEEDBACK_PRIVACY_POLICY_URL,
+              false /* useAppWindow */);
         }
 
         var termsOfServiceUrlElement = $('terms-of-service-url');
         if (termsOfServiceUrlElement) {
           setupLinkHandlers(
-              termsOfServiceUrlElement, FEEDBACK_TERM_OF_SERVICE_URL);
+              termsOfServiceUrlElement, FEEDBACK_TERM_OF_SERVICE_URL,
+              false /* useAppWindow */);
         }
 
         var bluetoothLogsInfoLinkElement = $('bluetooth-logs-info-link');

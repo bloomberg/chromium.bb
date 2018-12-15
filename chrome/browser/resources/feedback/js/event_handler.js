@@ -190,7 +190,7 @@ class FeedbackRequest {
                       chrome.feedbackPrivate.LandingPageType.NORMAL ?
                   FEEDBACK_LANDING_PAGE :
                   FEEDBACK_LANDING_PAGE_TECHSTOP;
-              openUrlInAppWindow(landingPage);
+              window.open(landingPage, '_blank');
             }
           } else {
             console.log(
