@@ -19,6 +19,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/app_list_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -2571,6 +2572,31 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseEvents) {
   generator->PressLeftButton();
   generator->ReleaseLeftButton();
   EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
+}
+
+// Tests that tap shelf item in auto-hide shelf should do nothing.
+TEST_F(ShelfLayoutManagerTest, TapShelfItemInAutoHideShelf) {
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  // Create a normal unmaximized window; the shelf should be hidden.
+  aura::Window* window = CreateTestWindow();
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->Show();
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Tap app list button should not open the app list and shelf should keep
+  // hidden.
+  gfx::Rect app_list_button_bounds =
+      shelf->GetShelfViewForTesting()->GetAppListButton()->GetBoundsInScreen();
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  app_list_button_bounds.Intersect(display_bounds);
+  GetEventGenerator()->GestureTapAt(app_list_button_bounds.CenterPoint());
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {

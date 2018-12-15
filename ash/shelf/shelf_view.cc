@@ -521,6 +521,13 @@ gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
 void ShelfView::ButtonPressed(views::Button* sender,
                               const ui::Event& event,
                               views::InkDrop* ink_drop) {
+  // Press the shelf item in the auto-hide shelf should not open the
+  // corresponding app window. The event can still be received by auto-hide
+  // shelf since we reserved portion of the auto-hide shelf within the screen
+  // bounds.
+  if (!shelf_->IsVisible())
+    return;
+
   if (sender == overflow_button_) {
     ToggleOverflowBubble();
     shelf_button_pressed_metric_tracker_.ButtonPressed(event, sender,
@@ -1790,7 +1797,6 @@ void ShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
-
   // Convert the event location from current view to screen, since swiping up on
   // the shelf can open the fullscreen app list. Updating the bounds of the app
   // list during dragging is based on screen coordinate space.
