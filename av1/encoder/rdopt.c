@@ -766,7 +766,7 @@ void av1_inter_mode_data_init(TileDataEnc *tile_data) {
   }
 }
 
-static int get_est_rate_dist(TileDataEnc *tile_data, BLOCK_SIZE bsize,
+static int get_est_rate_dist(const TileDataEnc *tile_data, BLOCK_SIZE bsize,
                              int64_t sse, int *est_residue_cost,
                              int64_t *est_dist) {
   aom_clear_system_state();
@@ -2525,12 +2525,18 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_COLLECT_RD_STATS == 1
 
 #if CONFIG_COLLECT_RD_STATS >= 2
-static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
+static void PrintPredictionUnitStats(const AV1_COMP *const cpi,
+                                     const TileDataEnc *tile_data,
+                                     MACROBLOCK *x,
                                      const RD_STATS *const rd_stats,
                                      BLOCK_SIZE plane_bsize) {
   if (rd_stats->invalid_rate) return;
   if (rd_stats->rate == INT_MAX || rd_stats->dist == INT64_MAX) return;
 
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+  if (!tile_data->inter_mode_rd_models[plane_bsize].ready) return;
+#endif
+  (void)tile_data;
   // Generate small sample to restrict output size.
   static unsigned int seed = 95014;
   if (lcg_rand16(&seed) % 256 > 0) return;
@@ -2604,6 +2610,22 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   const double model_dist_norm = (double)model_dist / num_samples;
   fprintf(fout, " %g %g %g", model_rate_norm, model_dist_norm,
           model_rdcost_norm);
+
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+  // TODO(angiebird): make sure the prediction for YUV planes are ready
+  const int64_t overall_sse = get_sse(cpi, x);
+  assert(tile_data->inter_mode_rd_models[plane_bsize].ready);
+  int est_residue_cost = 0;
+  int64_t est_dist = 0;
+  get_est_rate_dist(tile_data, plane_bsize, overall_sse, &est_residue_cost,
+                    &est_dist);
+  const double est_residue_cost_norm = (double)est_residue_cost / num_samples;
+  const double est_dist_norm = (double)est_dist / num_samples;
+  const double est_rdcost_norm =
+      (double)RDCOST(x->rdmult, est_residue_cost, est_dist) / num_samples;
+  fprintf(fout, " %g %g %g", est_residue_cost_norm, est_dist_norm,
+          est_rdcost_norm);
+#endif
 
   double mean = get_mean(src_diff, diff_stride, bw, bh);
   mean /= (1 << shift);
@@ -8144,12 +8166,12 @@ static INLINE int get_switchable_rate(MACROBLOCK *const x,
 
 // calculate the rdcost of given interpolation_filter
 static INLINE int64_t interpolation_filter_rd(
-    MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
-    int mi_row, int mi_col, BUFFER_SET *const orig_dst, int64_t *const rd,
-    int *const switchable_rate, int *const skip_txfm_sb,
-    int64_t *const skip_sse_sb, const BUFFER_SET *dst_bufs[2], int filter_idx,
-    const int switchable_ctx[2], const int skip_pred, int *rate,
-    int64_t *dist) {
+    MACROBLOCK *const x, const AV1_COMP *const cpi,
+    const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
+    BUFFER_SET *const orig_dst, int64_t *const rd, int *const switchable_rate,
+    int *const skip_txfm_sb, int64_t *const skip_sse_sb,
+    const BUFFER_SET *dst_bufs[2], int filter_idx, const int switchable_ctx[2],
+    const int skip_pred, int *rate, int64_t *dist) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -8168,6 +8190,8 @@ static INLINE int64_t interpolation_filter_rd(
     return 0;
   }
 
+  (void)tile_data;
+
   assert(skip_pred != 2);
   assert((skip_pred >= 0) && (skip_pred <= cpi->default_interp_skip_flags));
   assert(rate[0] >= 0);
@@ -8185,7 +8209,7 @@ static INLINE int64_t interpolation_filter_rd(
 #if CONFIG_COLLECT_RD_STATS == 3
       RD_STATS rd_stats_y;
       select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
-      PrintPredictionUnitStats(cpi, x, &rd_stats_y, bsize);
+      PrintPredictionUnitStats(cpi, tile_data, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
       model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
           cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &tmp_rate[0], &tmp_dist[0],
@@ -8261,12 +8285,13 @@ static INLINE int64_t interpolation_filter_rd(
 
 // Find the best interp filter if dual_interp_filter = 0
 static INLINE void find_best_non_dual_interp_filter(
-    MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
-    int mi_row, int mi_col, BUFFER_SET *const orig_dst, int64_t *const rd,
-    int *const switchable_rate, int *const skip_txfm_sb,
-    int64_t *const skip_sse_sb, const BUFFER_SET *dst_bufs[2],
-    const int switchable_ctx[2], const int skip_ver, const int skip_hor,
-    int *rate, int64_t *dist, int filter_set_size) {
+    MACROBLOCK *const x, const AV1_COMP *const cpi,
+    const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
+    BUFFER_SET *const orig_dst, int64_t *const rd, int *const switchable_rate,
+    int *const skip_txfm_sb, int64_t *const skip_sse_sb,
+    const BUFFER_SET *dst_bufs[2], const int switchable_ctx[2],
+    const int skip_ver, const int skip_hor, int *rate, int64_t *dist,
+    int filter_set_size) {
   int16_t i;
 
   // Regular filter evaluation should have been done and hence the same should
@@ -8293,10 +8318,10 @@ static INLINE void find_best_non_dual_interp_filter(
     for (i = filter_set_size - 1; i > 0; i -= (SWITCHABLE_FILTERS + 1)) {
       // This assert tells that (filter_x == filter_y) for non-dual filter case
       assert((filter_sets[i] & 0xffff) == (filter_sets[i] >> 16));
-      interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
-                              switchable_rate, skip_txfm_sb, skip_sse_sb,
-                              dst_bufs, i, switchable_ctx, skip_pred, rate,
-                              dist);
+      interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
+                              orig_dst, rd, switchable_rate, skip_txfm_sb,
+                              skip_sse_sb, dst_bufs, i, switchable_ctx,
+                              skip_pred, rate, dist);
       skip_pred = (skip_hor & skip_ver);
     }
   } else {
@@ -8305,10 +8330,10 @@ static INLINE void find_best_non_dual_interp_filter(
          i += (SWITCHABLE_FILTERS + 1)) {
       // This assert tells that (filter_x == filter_y) for non-dual filter case
       assert((filter_sets[i] & 0xffff) == (filter_sets[i] >> 16));
-      interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
-                              switchable_rate, skip_txfm_sb, skip_sse_sb,
-                              dst_bufs, i, switchable_ctx, skip_pred, rate,
-                              dist);
+      interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
+                              orig_dst, rd, switchable_rate, skip_txfm_sb,
+                              skip_sse_sb, dst_bufs, i, switchable_ctx,
+                              skip_pred, rate, dist);
       // In first iteration, smooth filter is evaluated. If smooth filter
       // (which is less sharper) is the winner among regular and smooth filters,
       // sharp filter evaluation is skipped
@@ -8368,10 +8393,11 @@ static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
 }
 
 static int64_t interpolation_filter_search(
-    MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
-    int mi_row, int mi_col, const BUFFER_SET *const tmp_dst,
-    BUFFER_SET *const orig_dst, InterpFilter (*const single_filter)[REF_FRAMES],
-    int64_t *const rd, int *const switchable_rate, int *const skip_txfm_sb,
+    MACROBLOCK *const x, const AV1_COMP *const cpi,
+    const TileDataEnc *tile_data, BLOCK_SIZE bsize, int mi_row, int mi_col,
+    const BUFFER_SET *const tmp_dst, BUFFER_SET *const orig_dst,
+    InterpFilter (*const single_filter)[REF_FRAMES], int64_t *const rd,
+    int *const switchable_rate, int *const skip_txfm_sb,
     int64_t *const skip_sse_sb, const int skip_build_pred,
     HandleInterModeArgs *args, int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
@@ -8409,7 +8435,7 @@ static int64_t interpolation_filter_search(
 #if CONFIG_COLLECT_RD_STATS == 3
   RD_STATS rd_stats_y;
   select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
-  PrintPredictionUnitStats(cpi, x, &rd_stats_y, bsize);
+  PrintPredictionUnitStats(cpi, tile_data, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
   model_rd_sb_fn[MODELRD_TYPE_INTERP_FILTER](
       cpi, bsize, x, xd, 0, 0, mi_row, mi_col, &tmp_rate[0], &tmp_dist[0],
@@ -8516,10 +8542,10 @@ static int64_t interpolation_filter_search(
     const int bw = block_size_wide[bsize];
     int skip_pred = bw <= 4 ? cpi->default_interp_skip_flags : skip_hor;
     for (i = (SWITCHABLE_FILTERS - 1); i >= 1; --i) {
-      if (interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
-                                  switchable_rate, best_skip_txfm_sb,
-                                  best_skip_sse_sb, dst_bufs, i, switchable_ctx,
-                                  skip_pred, tmp_rate, tmp_dist)) {
+      if (interpolation_filter_rd(
+              x, cpi, tile_data, bsize, mi_row, mi_col, orig_dst, rd,
+              switchable_rate, best_skip_txfm_sb, best_skip_sse_sb, dst_bufs, i,
+              switchable_ctx, skip_pred, tmp_rate, tmp_dist)) {
         best_dual_mode = i;
       }
       skip_pred = skip_hor;
@@ -8530,22 +8556,22 @@ static int64_t interpolation_filter_search(
     assert(filter_set_size == DUAL_FILTER_SET_SIZE);
     for (i = (best_dual_mode + (SWITCHABLE_FILTERS * 2));
          i >= (best_dual_mode + SWITCHABLE_FILTERS); i -= SWITCHABLE_FILTERS) {
-      interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
-                              switchable_rate, best_skip_txfm_sb,
+      interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
+                              orig_dst, rd, switchable_rate, best_skip_txfm_sb,
                               best_skip_sse_sb, dst_bufs, i, switchable_ctx,
                               skip_pred, tmp_rate, tmp_dist);
       skip_pred = skip_ver;
     }
   } else if (cm->seq_params.enable_dual_filter == 0) {
     find_best_non_dual_interp_filter(
-        x, cpi, bsize, mi_row, mi_col, orig_dst, rd, switchable_rate,
+        x, cpi, tile_data, bsize, mi_row, mi_col, orig_dst, rd, switchable_rate,
         best_skip_txfm_sb, best_skip_sse_sb, dst_bufs, switchable_ctx, skip_ver,
         skip_hor, tmp_rate, tmp_dist, filter_set_size);
   } else {
     // EIGHTTAP_REGULAR mode is calculated beforehand
     for (i = 1; i < filter_set_size; ++i) {
-      interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
-                              switchable_rate, best_skip_txfm_sb,
+      interpolation_filter_rd(x, cpi, tile_data, bsize, mi_row, mi_col,
+                              orig_dst, rd, switchable_rate, best_skip_txfm_sb,
                               best_skip_sse_sb, dst_bufs, i, switchable_ctx,
                               (skip_hor & skip_ver), tmp_rate, tmp_dist);
     }
@@ -8571,10 +8597,11 @@ static int64_t interpolation_filter_search(
   return 0;
 }
 
-static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                       int mi_row, int mi_col, RD_STATS *rd_stats,
-                       RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
-                       int mode_rate, int64_t ref_best_rd) {
+static int txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
+                       MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row, int mi_col,
+                       RD_STATS *rd_stats, RD_STATS *rd_stats_y,
+                       RD_STATS *rd_stats_uv, int mode_rate,
+                       int64_t ref_best_rd) {
   /*
    * This function combines y and uv planes' transform search processes
    * together, when the prediction is generated. It first does subtration to
@@ -8598,6 +8625,7 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   // Account for minimum skip and non_skip rd.
   // Eventually either one of them will be added to mode_rate
   const int64_t min_header_rd_possible = RDCOST(x->rdmult, min_header_rate, 0);
+  (void)tile_data;
 
   if (min_header_rd_possible > ref_best_rd) {
     av1_invalid_rd_stats(rd_stats_y);
@@ -8613,7 +8641,7 @@ static int txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
     pick_tx_size_type_yrd(cpi, x, rd_stats_y, bsize, mi_row, mi_col, rd_thresh);
 #if CONFIG_COLLECT_RD_STATS == 2
-    PrintPredictionUnitStats(cpi, x, rd_stats_y, bsize);
+    PrintPredictionUnitStats(cpi, tile_data, x, rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 2
   } else {
     super_block_yrd(cpi, x, rd_stats_y, bsize, rd_thresh);
@@ -8904,17 +8932,15 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
 
 // TODO(afergs): Refactor the MBMI references in here - there's four
 // TODO(afergs): Refactor optional args - add them to a struct or remove
-static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                              BLOCK_SIZE bsize, RD_STATS *rd_stats,
-                              RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
-                              int *disable_skip, int mi_row, int mi_col,
-                              HandleInterModeArgs *const args,
-                              int64_t ref_best_rd, const int *refs,
-                              int *rate_mv, BUFFER_SET *orig_dst
+static int64_t motion_mode_rd(
+    const AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *const x,
+    BLOCK_SIZE bsize, RD_STATS *rd_stats, RD_STATS *rd_stats_y,
+    RD_STATS *rd_stats_uv, int *disable_skip, int mi_row, int mi_col,
+    HandleInterModeArgs *const args, int64_t ref_best_rd, const int *refs,
+    int *rate_mv, BUFFER_SET *orig_dst
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-                              ,
-                              TileDataEnc *tile_data, int64_t *best_est_rd,
-                              int do_tx_search, InterModesInfo *inter_modes_info
+    ,
+    int64_t *best_est_rd, int do_tx_search, InterModesInfo *inter_modes_info
 #endif
 ) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -8936,6 +8962,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
   assert(mbmi->ref_frame[1] != INTRA_FRAME);
   const MV_REFERENCE_FRAME ref_frame_1 = mbmi->ref_frame[1];
+  (void)tile_data;
   av1_invalid_rd_stats(&best_rd_stats);
   aom_clear_system_state();
   mbmi->num_proj_ref = 1;  // assume num_proj_ref >=1
@@ -9181,8 +9208,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
     } else {
 #endif  // CONFIG_COLLECT_INTER_MODE_RD_STATS
-      if (!txfm_search(cpi, x, bsize, mi_row, mi_col, rd_stats, rd_stats_y,
-                       rd_stats_uv, rd_stats->rate, ref_best_rd)) {
+      if (!txfm_search(cpi, tile_data, x, bsize, mi_row, mi_col, rd_stats,
+                       rd_stats_y, rd_stats_uv, rd_stats->rate, ref_best_rd)) {
         if (rd_stats_y->rate == INT_MAX && mode_index == 0) {
           simple_states->early_skipped = 1;
           return INT64_MAX;
@@ -9597,7 +9624,8 @@ typedef struct {
   int_mv mv;
 } inter_mode_info;
 
-static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
+static int64_t handle_inter_mode(const AV1_COMP *const cpi,
+                                 TileDataEnc *tile_data, MACROBLOCK *x,
                                  BLOCK_SIZE bsize, RD_STATS *rd_stats,
                                  RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
                                  int *disable_skip, int mi_row, int mi_col,
@@ -9606,8 +9634,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  CompoundTypeRdBuffers *rd_buffers
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
                                  ,
-                                 TileDataEnc *tile_data, int64_t *best_est_rd,
-                                 const int do_tx_search,
+                                 int64_t *best_est_rd, const int do_tx_search,
                                  InterModesInfo *inter_modes_info
 #endif
 ) {
@@ -9894,7 +9921,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
 
       ret_val = interpolation_filter_search(
-          x, cpi, bsize, mi_row, mi_col, &tmp_dst, &orig_dst,
+          x, cpi, tile_data, bsize, mi_row, mi_col, &tmp_dst, &orig_dst,
           args->single_filter, &rd, &rs, &skip_txfm_sb, &skip_sse_sb,
           skip_build_pred, args, ref_best_rd);
       if (args->modelled_rd != NULL && !is_comp_pred) {
@@ -9955,12 +9982,12 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         rd_stats_uv->dist = plane_dist[1] + plane_dist[2];
       } else {
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
-        ret_val = motion_mode_rd(
-            cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv, disable_skip,
-            mi_row, mi_col, args, ref_best_rd, refs, &rate_mv, &orig_dst,
-            tile_data, best_est_rd, do_tx_search, inter_modes_info);
+        ret_val = motion_mode_rd(cpi, tile_data, x, bsize, rd_stats, rd_stats_y,
+                                 rd_stats_uv, disable_skip, mi_row, mi_col,
+                                 args, ref_best_rd, refs, &rate_mv, &orig_dst,
+                                 best_est_rd, do_tx_search, inter_modes_info);
 #else
-        ret_val = motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y,
+        ret_val = motion_mode_rd(cpi, tile_data, x, bsize, rd_stats, rd_stats_y,
                                  rd_stats_uv, disable_skip, mi_row, mi_col,
                                  args, ref_best_rd, refs, &rate_mv, &orig_dst);
 #endif
@@ -12006,13 +12033,14 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         }
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
         this_rd = handle_inter_mode(
-            cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv, &disable_skip,
-            mi_row, mi_col, &args, ref_best_rd, tmp_buf, &rd_buffers, tile_data,
-            &best_est_rd, do_tx_search, inter_modes_info);
+            cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
+            &disable_skip, mi_row, mi_col, &args, ref_best_rd, tmp_buf,
+            &rd_buffers, &best_est_rd, do_tx_search, inter_modes_info);
 #else
-        this_rd = handle_inter_mode(cpi, x, bsize, &rd_stats, &rd_stats_y,
-                                    &rd_stats_uv, &disable_skip, mi_row, mi_col,
-                                    &args, ref_best_rd, tmp_buf, &rd_buffers);
+        this_rd =
+            handle_inter_mode(cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y,
+                              &rd_stats_uv, &disable_skip, mi_row, mi_col,
+                              &args, ref_best_rd, tmp_buf, &rd_buffers);
 #endif
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
@@ -12169,8 +12197,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       if (mbmi->motion_mode == OBMC_CAUSAL)
         av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 
-      if (!txfm_search(cpi, x, bsize, mi_row, mi_col, &rd_stats, &rd_stats_y,
-                       &rd_stats_uv, mode_rate, search_state.best_rd)) {
+      if (!txfm_search(cpi, tile_data, x, bsize, mi_row, mi_col, &rd_stats,
+                       &rd_stats_y, &rd_stats_uv, mode_rate,
+                       search_state.best_rd)) {
         continue;
       } else {
         const int skip_ctx = av1_get_skip_context(xd);
