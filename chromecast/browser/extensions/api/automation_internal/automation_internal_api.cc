@@ -36,8 +36,8 @@
 #include "extensions/common/manifest_handlers/automation.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_enum_util.h"
-#include "ui/accessibility/ax_host_delegate.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 
 #if defined(USE_AURA)

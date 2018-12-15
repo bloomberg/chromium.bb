@@ -18,7 +18,7 @@
 #include "components/arc/common/accessibility_helper.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_action_handler.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/wm/public/activation_change_observer.h"
 

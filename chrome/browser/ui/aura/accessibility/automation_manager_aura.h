@@ -14,7 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_event_observer.h"

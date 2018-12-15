@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_action_handler.h"
 
 #include "ui/accessibility/ax_tree_id_registry.h"
 

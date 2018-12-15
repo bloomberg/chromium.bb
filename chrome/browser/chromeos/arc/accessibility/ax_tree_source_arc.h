@@ -11,7 +11,7 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_info_data.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
-#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"
