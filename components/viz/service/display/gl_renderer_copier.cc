@@ -395,11 +395,13 @@ namespace {
 class GLPixelBufferRGBAResult : public CopyOutputResult {
  public:
   GLPixelBufferRGBAResult(const gfx::Rect& result_rect,
+                          const gfx::ColorSpace& color_space,
                           scoped_refptr<ContextProvider> context_provider,
                           GLuint transfer_buffer,
                           bool is_upside_down,
                           bool swap_red_and_blue)
       : CopyOutputResult(CopyOutputResult::Format::RGBA_BITMAP, result_rect),
+        color_space_(color_space),
         context_provider_(std::move(context_provider)),
         transfer_buffer_(transfer_buffer),
         is_upside_down_(is_upside_down),
@@ -451,6 +453,8 @@ class GLPixelBufferRGBAResult : public CopyOutputResult {
     return !!pixels;
   }
 
+  gfx::ColorSpace GetRGBAColorSpace() const final { return color_space_; }
+
   const SkBitmap& AsSkBitmap() const final {
     if (rect().IsEmpty())
       return *cached_bitmap();  // Return "null" bitmap for empty result.
@@ -459,8 +463,8 @@ class GLPixelBufferRGBAResult : public CopyOutputResult {
       return *cached_bitmap();
 
     SkBitmap result_bitmap;
-    result_bitmap.allocPixels(
-        SkImageInfo::MakeN32Premul(size().width(), size().height()));
+    result_bitmap.allocPixels(SkImageInfo::MakeN32Premul(
+        size().width(), size().height(), GetRGBAColorSpace().ToSkColorSpace()));
     ReadRGBAPlane(static_cast<uint8_t*>(result_bitmap.getPixels()),
                   result_bitmap.rowBytes());
     *cached_bitmap() = result_bitmap;
@@ -472,6 +476,7 @@ class GLPixelBufferRGBAResult : public CopyOutputResult {
   }
 
  private:
+  const gfx::ColorSpace color_space_;
   const scoped_refptr<ContextProvider> context_provider_;
   mutable GLuint transfer_buffer_;
   const bool is_upside_down_;
@@ -498,12 +503,14 @@ class ReadPixelsWorkflow {
                      bool flipped_source,
                      bool swap_red_and_blue,
                      const gfx::Rect& result_rect,
+                     const gfx::ColorSpace& color_space,
                      scoped_refptr<ContextProvider> context_provider,
                      GLenum readback_format)
       : copy_request_(std::move(copy_request)),
         flipped_source_(flipped_source),
         swap_red_and_blue_(swap_red_and_blue),
         result_rect_(result_rect),
+        color_space_(color_space),
         context_provider_(std::move(context_provider)) {
     DCHECK(readback_format == GL_RGBA || readback_format == GL_BGRA_EXT);
 
@@ -543,8 +550,8 @@ class ReadPixelsWorkflow {
   // transfer buffer, and a CopyOutputResult is sent to the requestor.
   void Finish() {
     auto result = std::make_unique<GLPixelBufferRGBAResult>(
-        result_rect_, context_provider_, transfer_buffer_, flipped_source_,
-        swap_red_and_blue_);
+        result_rect_, color_space_, context_provider_, transfer_buffer_,
+        flipped_source_, swap_red_and_blue_);
     transfer_buffer_ = 0;  // Ownerhip was transferred to the result.
     if (!copy_request_->SendsResultsInCurrentSequence()) {
       // Force readback into a SkBitmap now, because after PostTask we don't
@@ -559,6 +566,7 @@ class ReadPixelsWorkflow {
   const bool flipped_source_;
   const bool swap_red_and_blue_;
   const gfx::Rect result_rect_;
+  const gfx::ColorSpace color_space_;
   const scoped_refptr<ContextProvider> context_provider_;
   GLuint transfer_buffer_ = 0;
   GLuint query_ = 0;
@@ -578,7 +586,7 @@ void GLRendererCopier::StartReadbackFromFramebuffer(
   auto workflow = std::make_unique<ReadPixelsWorkflow>(
       std::move(request), readback_offset, flipped_source,
       ShouldSwapRedAndBlueForBitmapReadback() != swapped_red_and_blue,
-      result_rect, context_provider_, GetOptimalReadbackFormat());
+      result_rect, color_space, context_provider_, GetOptimalReadbackFormat());
   const GLuint query = workflow->query();
   context_provider_->ContextSupport()->SignalQuery(
       query, base::BindOnce(&ReadPixelsWorkflow::Finish, std::move(workflow)));

@@ -29,7 +29,9 @@
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "gpu/vulkan/buildflags.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/private/SkDeferredDisplayList.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -324,6 +326,7 @@ void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
 void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     RenderPassId id,
     const gfx::Rect& copy_rect,
+    const gfx::ColorSpace& color_space,
     const gfx::Rect& result_rect,
     std::unique_ptr<CopyOutputRequest> request) {
   // TODO(crbug.com/914502): Do this on the GPU instead of CPU with GL.
@@ -365,6 +368,15 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
         surface->makeImageSnapshot(RectToSkIRect(copy_rect));
     copy_image->asLegacyBitmap(&bitmap);
   }
+
+  // TODO(crbug.com/795132): Plumb color space throughout SkiaRenderer up to the
+  // the SkSurface/SkImage here. Until then, play "musical chairs" with the
+  // SkPixelRef to hack-in the RenderPass's |color_space|.
+  sk_sp<SkPixelRef> pixels(SkSafeRef(bitmap.pixelRef()));
+  SkIPoint origin = bitmap.pixelRefOrigin();
+  bitmap.setInfo(bitmap.info().makeColorSpace(color_space.ToSkColorSpace()),
+                 bitmap.rowBytes());
+  bitmap.setPixelRef(std::move(pixels), origin.x(), origin.y());
 
   // Deliver the result. SkiaRenderer supports RGBA_BITMAP and I420_PLANES
   // only. For legacy reasons, if a RGBA_TEXTURE request is being made, clients

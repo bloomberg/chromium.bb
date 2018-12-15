@@ -561,6 +561,10 @@ void SoftwareRenderer::CopyDrawnRenderPass(
   if (result_rect.IsEmpty())
     return;
 
+  sk_sp<SkColorSpace> color_space =
+      current_frame()->current_render_pass->color_space.ToSkColorSpace();
+  DCHECK(color_space);
+
   SkBitmap bitmap;
   if (request->is_scaled()) {
     // Resolve the source for the scaling input: Initialize a SkPixmap that
@@ -571,10 +575,12 @@ void SoftwareRenderer::CopyDrawnRenderPass(
       return;
     {
       const gfx::Rect subrect = MoveFromDrawToWindowSpace(output_rect);
-      render_pass_output = SkPixmap(
-          render_pass_output.info().makeWH(subrect.width(), subrect.height()),
-          render_pass_output.addr(subrect.x(), subrect.y()),
-          render_pass_output.rowBytes());
+      render_pass_output =
+          SkPixmap(render_pass_output.info()
+                       .makeWH(subrect.width(), subrect.height())
+                       .makeColorSpace(std::move(color_space)),
+                   render_pass_output.addr(subrect.x(), subrect.y()),
+                   render_pass_output.rowBytes());
     }
 
     // Execute the scaling: For downscaling, use the RESIZE_BETTER strategy
@@ -596,9 +602,9 @@ void SoftwareRenderer::CopyDrawnRenderPass(
   } else /* if (!request->is_scaled()) */ {
     const gfx::Rect window_copy_rect =
         MoveFromDrawToWindowSpace(result_rect + output_rect.OffsetFromOrigin());
-    bitmap.allocPixels(SkImageInfo::MakeN32Premul(
-        window_copy_rect.width(), window_copy_rect.height(),
-        current_canvas_->imageInfo().refColorSpace()));
+    bitmap.allocPixels(SkImageInfo::MakeN32Premul(window_copy_rect.width(),
+                                                  window_copy_rect.height(),
+                                                  std::move(color_space)));
     if (!current_canvas_->readPixels(bitmap, window_copy_rect.x(),
                                      window_copy_rect.y()))
       return;

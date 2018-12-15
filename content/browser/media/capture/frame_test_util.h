@@ -15,6 +15,10 @@ class Rect;
 class RectF;
 }  // namespace gfx
 
+namespace media {
+class VideoFrame;
+}  // namespace media
+
 namespace content {
 
 class FrameTestUtil {
@@ -24,6 +28,23 @@ class FrameTestUtil {
     double g;
     double b;
   };
+
+  // Converts the image data in the given |frame| to a new SkBitmap. The result
+  // uses the sRGB color space.
+  static SkBitmap ConvertToBitmap(const media::VideoFrame& frame);
+
+  // Helper functions to adjust the rects to account for the "fuzzy border"
+  // between regions. These are typically used to generate the |include_rect|
+  // and |exclude_rect| arguments passed to ComputeAverageColor() below. This
+  // improves test accuracy, since the capturer's scaling can cause blended
+  // colors at the border between regions. ToSafeIncludeRect() is used to
+  // crop-out the outer fuzzy pixels of a region, while ToSafeExcludeRect()
+  // is used to include an extra border of possible fuzziness around a region
+  // that should be omitted.
+  static gfx::Rect ToSafeIncludeRect(const gfx::RectF& rect_f,
+                                     int fuzzy_border = 4);
+  static gfx::Rect ToSafeExcludeRect(const gfx::RectF& rect_f,
+                                     int fuzzy_border = 4);
 
   // Returns the average RGB color in |include_rect| except for pixels also in
   // |exclude_rect|.
@@ -44,16 +65,11 @@ class FrameTestUtil {
                                        const gfx::RectF& transformed,
                                        const gfx::Rect& rect);
 
-  // The default maximum color value difference, assuming there will be a little
-  // error due to pixel boundaries being rounded after coordinate system
-  // transforms.
-  static constexpr int kMaxColorDifference = 16;
-
-  // A very relaxed maximum color value difference, assuming errors caused by
-  // indifference towards color space concerns (and also "studio" versus "jpeg"
-  // YUV ranges).
-  // TODO(crbug/810131): Once color space issues are fixed, remove this.
-  static constexpr int kMaxInaccurateColorDifference = 64;
+  // The default maximum color value difference.
+  static constexpr int kMaxColorDifference = 4;
+  // Only use this for platform/use-case combinations where a trade-off has been
+  // made explicitly for performance reasons.
+  static constexpr int kVeryLooseMaxColorDifference = 64;
 };
 
 // A convenience for logging and gtest expectations output.

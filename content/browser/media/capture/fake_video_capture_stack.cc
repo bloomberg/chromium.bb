@@ -9,11 +9,12 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "content/browser/media/capture/frame_test_util.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libyuv/include/libyuv.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
@@ -115,21 +116,7 @@ FakeVideoCaptureStack::CreateFrameReceiver() {
 SkBitmap FakeVideoCaptureStack::NextCapturedFrame() {
   CHECK(!frames_.empty());
   media::VideoFrame& frame = *(frames_.front());
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(frame.visible_rect().width(),
-                        frame.visible_rect().height());
-  // TODO(crbug/810131): CHECK_EQ(frame.ColorSpace(), REC709);
-  // libyuv::H420ToARGB() converts from I420 planes in the REC709 color space to
-  // sRGB.
-  libyuv::H420ToARGB(frame.visible_data(media::VideoFrame::kYPlane),
-                     frame.stride(media::VideoFrame::kYPlane),
-                     frame.visible_data(media::VideoFrame::kUPlane),
-                     frame.stride(media::VideoFrame::kUPlane),
-                     frame.visible_data(media::VideoFrame::kVPlane),
-                     frame.stride(media::VideoFrame::kVPlane),
-                     reinterpret_cast<uint8_t*>(bitmap.getPixels()),
-                     static_cast<int>(bitmap.rowBytes()), bitmap.width(),
-                     bitmap.height());
+  SkBitmap bitmap = FrameTestUtil::ConvertToBitmap(frame);
   frames_.pop_front();
   return bitmap;
 }
@@ -158,6 +145,8 @@ void FakeVideoCaptureStack::OnReceivedFrame(
   // Frame timestamps should be monotionically increasing.
   EXPECT_LT(last_frame_timestamp_, frame->timestamp());
   last_frame_timestamp_ = frame->timestamp();
+
+  EXPECT_TRUE(frame->ColorSpace().IsValid());
 
   frames_.emplace_back(std::move(frame));
 }

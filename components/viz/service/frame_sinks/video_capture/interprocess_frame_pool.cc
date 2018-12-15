@@ -106,7 +106,10 @@ scoped_refptr<VideoFrame> InterprocessFramePool::ResurrectLastVideoFrame(
   // Wrap the buffer in a VideoFrame and return it.
   PooledBuffer resurrected = std::move(*it);
   available_buffers_.erase(it.base() - 1);
-  return WrapBuffer(std::move(resurrected), expected_format, expected_size);
+  auto frame =
+      WrapBuffer(std::move(resurrected), expected_format, expected_size);
+  frame->set_color_space(last_delivered_color_space_);
+  return frame;
 }
 
 base::ReadOnlySharedMemoryRegion InterprocessFramePool::CloneHandleForDelivery(
@@ -122,6 +125,7 @@ base::ReadOnlySharedMemoryRegion InterprocessFramePool::CloneHandleForDelivery(
   resurrectable_buffer_memory_ = frame->data(0);
   last_delivered_format_ = frame->format();
   last_delivered_size_ = frame->coded_size();
+  last_delivered_color_space_ = frame->ColorSpace();
 
   return it->second.Duplicate();
 }

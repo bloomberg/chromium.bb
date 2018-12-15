@@ -31,6 +31,10 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace gfx {
+class ColorSpace;
+}
+
 namespace gl {
 class GLSurface;
 }
@@ -99,6 +103,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void RemoveRenderPassResource(std::vector<RenderPassId> ids);
   void CopyOutput(RenderPassId id,
                   const gfx::Rect& copy_rect,
+                  const gfx::ColorSpace& color_space,
                   const gfx::Rect& result_rect,
                   std::unique_ptr<CopyOutputRequest> request);
 

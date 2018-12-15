@@ -60,7 +60,8 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
 
   // Convenience to provide this result in SkBitmap form. Returns a
   // !readyToDraw() bitmap if this result is empty or if a conversion is not
-  // possible in the current implementation.
+  // possible in the current implementation. The returned SkBitmap also carries
+  // its color space information.
   virtual const SkBitmap& AsSkBitmap() const;
 
   // Returns a pointer with the gpu::Mailbox referencing a RGBA_TEXTURE result,
@@ -94,9 +95,14 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
   // |y_out|, |u_out| and |v_out| point to the start of the memory regions to
   // receive each plane. These memory regions must have the following sizes:
   //
-  //   Y plane: y_out_stride * size().height() bytes
-  //   U plane: u_out_stride * CEIL(size().height() / 2) bytes
-  //   V plane: v_out_stride * CEIL(size().height() / 2) bytes
+  //   Y plane: y_out_stride * size().height() bytes, with
+  //            y_out_stride >= size().width()
+  //   U plane: u_out_stride * CEIL(size().height() / 2) bytes, with
+  //            u_out_stride >= CEIL(size().width() / 2)
+  //   V plane: v_out_stride * CEIL(size().height() / 2) bytes, with
+  //            v_out_stride >= CEIL(size().width() / 2)
+  //
+  // The color space is always Rec.709 (see gfx::ColorSpace::CreateREC709()).
   virtual bool ReadI420Planes(uint8_t* y_out,
                               int y_out_stride,
                               uint8_t* u_out,
@@ -108,6 +114,9 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
   // form. Returns true if successful, or false if: 1) the result is empty, or
   // 2) the result format is not RGBA_BITMAP and conversion is not implemented.
   virtual bool ReadRGBAPlane(uint8_t* dest, int stride) const;
+
+  // Returns the color space of the image data returned by ReadRGBAPlane().
+  virtual gfx::ColorSpace GetRGBAColorSpace() const;
 
  protected:
   // Accessor for subclasses to initialize the cached SkBitmap.

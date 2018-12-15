@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/libyuv/include/libyuv.h"
+#include "ui/gfx/color_space.h"
 
 namespace viz {
 
@@ -35,6 +36,7 @@ bool CopyOutputResult::IsEmpty() const {
 }
 
 const SkBitmap& CopyOutputResult::AsSkBitmap() const {
+  DCHECK(!cached_bitmap_.readyToDraw() || cached_bitmap_.colorSpace());
   return cached_bitmap_;
 }
 
@@ -58,7 +60,11 @@ bool CopyOutputResult::ReadI420Planes(uint8_t* y_out,
   if (!bitmap.readyToDraw())
     return false;
   const uint8_t* pixels = static_cast<uint8_t*>(bitmap.getPixels());
-  // TODO(crbug/758057): The conversion below ignores color space completely.
+  // The conversion below ignores color space completely, and it's not even
+  // sRGB→Rec.709. Unfortunately, hand-optimized routines are not available, and
+  // a perfect conversion using gfx::ColorTransform would execute way too
+  // slowly. See SoftwareRenderer for related comments on its lack of color
+  // space management (due to performance concerns).
   if (bitmap.colorType() == kBGRA_8888_SkColorType) {
     return 0 == libyuv::ARGBToI420(pixels, bitmap.rowBytes(), y_out,
                                    y_out_stride, u_out, u_out_stride, v_out,
@@ -81,10 +87,20 @@ bool CopyOutputResult::ReadRGBAPlane(uint8_t* dest, int stride) const {
   const SkBitmap& bitmap = AsSkBitmap();
   if (!bitmap.readyToDraw())
     return false;
-  SkImageInfo image_info = SkImageInfo::MakeN32(bitmap.width(), bitmap.height(),
-                                                kPremul_SkAlphaType);
+  DCHECK(bitmap.colorSpace());
+  SkImageInfo image_info =
+      SkImageInfo::MakeN32(bitmap.width(), bitmap.height(), kPremul_SkAlphaType,
+                           bitmap.refColorSpace());
   bitmap.readPixels(image_info, dest, stride, 0, 0);
   return true;
+}
+
+gfx::ColorSpace CopyOutputResult::GetRGBAColorSpace() const {
+  const SkBitmap& bitmap = AsSkBitmap();
+  if (!bitmap.readyToDraw())
+    return gfx::ColorSpace();
+  DCHECK(bitmap.colorSpace());
+  return gfx::ColorSpace(*(bitmap.colorSpace()));
 }
 
 CopyOutputSkBitmapResult::CopyOutputSkBitmapResult(const gfx::Rect& rect,
@@ -98,6 +114,7 @@ CopyOutputSkBitmapResult::CopyOutputSkBitmapResult(
     : CopyOutputResult(format, rect) {
   DCHECK(format == Format::RGBA_BITMAP || format == Format::I420_PLANES);
   if (!rect.IsEmpty()) {
+    DCHECK(!bitmap.readyToDraw() || bitmap.colorSpace());
     // Hold a reference to the |bitmap|'s pixels, for AsSkBitmap().
     *(cached_bitmap()) = bitmap;
   }
@@ -143,6 +160,8 @@ CopyOutputTextureResult::CopyOutputTextureResult(
       release_callback_(std::move(release_callback)) {
   DCHECK_EQ(rect.IsEmpty(), mailbox.IsZero());
   DCHECK_EQ(!release_callback_, mailbox.IsZero());
+  DCHECK(texture_result_.mailbox.IsZero() ||
+         texture_result_.color_space.IsValid());
 }
 
 CopyOutputTextureResult::~CopyOutputTextureResult() {
