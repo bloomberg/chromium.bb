@@ -79,15 +79,12 @@
         </div>
 
         <!-- Manage search engines -->
-        <div id="engines-subpage-trigger" class="settings-box"
-            on-click="onManageSearchEnginesTap_" actionable>
-          <div class="start">
-            $i18n{searchEnginesManage}
-          </div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{searchEnginesManage}"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row
+            icon-class="subpage-arrow"
+            id="engines-subpage-trigger"
+            label="$i18n{searchEnginesManage}"
+            on-click="onManageSearchEnginesTap_">
+        </cr-link-row>
 
 <if expr="chromeos">
         <!-- Google Assistant -->
