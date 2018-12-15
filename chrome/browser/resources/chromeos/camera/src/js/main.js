@@ -72,6 +72,7 @@ cca.App = function(aspectRatio) {
 
   document.title = chrome.i18n.getMessage('name');
   this.setupI18nElements_();
+  this.setupToggles_();
 };
 
 /**
@@ -91,6 +92,51 @@ cca.App.prototype.setupI18nElements_ = function() {
       (element) => setAriaLabel(element, 'i18n-aria-label'));
   cca.tooltip.setup(getElements('i18n-label')).forEach(
       (element) => setAriaLabel(element, 'i18n-label'));
+};
+
+/**
+ * Sets up toggles (checkbox and radio) by data attributes.
+ * @private
+ */
+cca.App.prototype.setupToggles_ = function() {
+  document.querySelectorAll('input').forEach((element) => {
+    element.addEventListener('keypress', (event) =>
+        cca.util.getShortcutIdentifier(event) == 'Enter' && element.click());
+
+    var css = element.getAttribute('data-css');
+    var key = element.getAttribute('data-key');
+    var payload = () => {
+      var keys = {};
+      keys[key] = element.checked;
+      return keys;
+    };
+    element.addEventListener('change', (event) => {
+      if (css) {
+        document.body.classList.toggle(css, element.checked);
+      }
+      if (event.isTrusted) {
+        element.save();
+        if (element.type == 'radio' && element.checked) {
+          // Handle unchecked grouped sibling radios.
+          var grouped = `input[type=radio][name=${element.name}]:not(:checked)`;
+          document.querySelectorAll(grouped).forEach((radio) =>
+              radio.dispatchEvent(new Event('change')) && radio.save());
+        }
+      }
+    });
+    element.toggleChecked = (checked) => {
+      element.checked = checked;
+      element.dispatchEvent(new Event('change')); // Trigger toggling css.
+    };
+    element.save = () => {
+      return key && chrome.storage.local.set(payload());
+    };
+    if (key) {
+      // Restore the previously saved state on startup.
+      chrome.storage.local.get(payload(),
+          (values) => element.toggleChecked(values[key]));
+    }
+  });
 };
 
 /**
