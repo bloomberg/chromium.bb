@@ -14,8 +14,6 @@
     <structures>
       <structure name="IDR_PRINT_PREVIEW_NEW_HTML"
                  file="print_preview_new.html"
-                 flattenhtml="true"
-                 allowexternalscript="true"
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_APP_HTML"
                  file="new/app.html"
@@ -23,7 +21,8 @@
                  preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_NEW_APP_JS"
                  file="new/app.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_PRINT_PREVIEW_NEW_MODEL_HTML"
                  file="new/model.html"
                  type="chrome_html" />
@@ -208,9 +207,7 @@
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_SETTINGS_SECTION_HTML"
                  file="new/settings_section.html"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_SETTINGS_SECTION_JS"
                  file="new/settings_section.js"
                  type="chrome_html" />
@@ -294,9 +291,7 @@
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_MORE_SETTINGS_HTML"
                  file="new/more_settings.html"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_ADVANCED_OPTIONS_SETTINGS_JS"
                  file="new/advanced_options_settings.js"
                  type="chrome_html" />
@@ -330,9 +325,7 @@
       </if>
       <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_DIALOG_HTML"
                  file="new/destination_dialog.html"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_DIALOG_JS"
                  file="new/destination_dialog.js"
                  type="chrome_html"
@@ -359,9 +352,7 @@
                  type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_SEARCH_BOX_HTML"
                  file="new/print_preview_search_box.html"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_SEARCH_BOX_JS"
                  file="new/print_preview_search_box.js"
                  type="chrome_html" />
