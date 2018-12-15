@@ -259,7 +259,8 @@ cr.define('downloads', function() {
       if (this.data === undefined)
         return '';
 
-      return !this.isInProgress_ && this.data.resume ? 'action-button' : '';
+      return !this.isInProgress_ && this.data.resume ? 'action-button' :
+                                                       'pause-button';
     },
 
     /**
