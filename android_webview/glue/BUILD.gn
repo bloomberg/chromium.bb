@@ -27,6 +27,7 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/CallbackConverter.java",
     "java/src/com/android/webview/chromium/ContentSettingsAdapter.java",
     "java/src/com/android/webview/chromium/CookieManagerAdapter.java",
+    "java/src/com/android/webview/chromium/DrawFunctor.java",
     "java/src/com/android/webview/chromium/DrawGLFunctor.java",
     "java/src/com/android/webview/chromium/FontPreloadingWorkaround.java",
     "java/src/com/android/webview/chromium/GeolocationPermissionsAdapter.java",

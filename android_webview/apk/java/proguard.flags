@@ -34,6 +34,11 @@
   public *;
 }
 
+# Functor classes with native methods implemented in Android.
+-keep class com.android.webview.chromium.DrawFunctor
+-keep class com.android.webview.chromium.DrawGLFunctor
+-keep class com.android.webview.chromium.GraphicsUtils
+
 # Linker dynamically casts to $TestRunner when running tests. We don't run these
 # tests in WebView.
 -dontnote org.chromium.base.library_loader.Linker$TestRunner
