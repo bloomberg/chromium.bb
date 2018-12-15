@@ -22,26 +22,32 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestAudioFocusObserver
   TestAudioFocusObserver();
   ~TestAudioFocusObserver() override;
 
-  void OnFocusGained(media_session::mojom::MediaSessionInfoPtr session,
-                     media_session::mojom::AudioFocusType type) override;
-  void OnFocusLost(media_session::mojom::MediaSessionInfoPtr session) override;
+  void OnFocusGained(
+      media_session::mojom::AudioFocusRequestStatePtr session) override;
+  void OnFocusLost(
+      media_session::mojom::AudioFocusRequestStatePtr session) override;
   void OnActiveSessionChanged(
       media_session::mojom::AudioFocusRequestStatePtr session) override;
 
   void WaitForGainedEvent();
   void WaitForLostEvent();
 
-  media_session::mojom::AudioFocusType focus_gained_type() const {
-    DCHECK(!focus_gained_session_.is_null());
-    return focus_gained_type_;
-  }
-
   void BindToMojoRequest(media_session::mojom::AudioFocusObserverRequest);
 
-  // These store the values we received.
-  media_session::mojom::MediaSessionInfoPtr focus_gained_session_;
-  media_session::mojom::MediaSessionInfoPtr focus_lost_session_;
-  media_session::mojom::AudioFocusRequestStatePtr active_session_;
+  const media_session::mojom::AudioFocusRequestStatePtr& focus_gained_session()
+      const {
+    return focus_gained_session_;
+  }
+
+  const media_session::mojom::AudioFocusRequestStatePtr& focus_lost_session()
+      const {
+    return focus_lost_session_;
+  }
+
+  const media_session::mojom::AudioFocusRequestStatePtr& active_session()
+      const {
+    return active_session_;
+  }
 
   // These store the order of notifications that were received by the observer.
   enum class NotificationType {
@@ -55,7 +61,11 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestAudioFocusObserver
 
  private:
   mojo::Binding<mojom::AudioFocusObserver> binding_;
-  media_session::mojom::AudioFocusType focus_gained_type_;
+
+  // These store the values we received.
+  media_session::mojom::AudioFocusRequestStatePtr focus_gained_session_;
+  media_session::mojom::AudioFocusRequestStatePtr focus_lost_session_;
+  media_session::mojom::AudioFocusRequestStatePtr active_session_;
 
   // If either of these are true we will quit the run loop if we observe a gain
   // or lost event.

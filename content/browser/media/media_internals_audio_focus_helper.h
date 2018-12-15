@@ -25,10 +25,10 @@ class MediaInternalsAudioFocusHelper
   void SendAudioFocusState();
 
   // AudioFocusObserver implementation.
-  void OnFocusGained(media_session::mojom::MediaSessionInfoPtr media_session,
-                     media_session::mojom::AudioFocusType type) override;
+  void OnFocusGained(
+      media_session::mojom::AudioFocusRequestStatePtr session) override;
   void OnFocusLost(
-      media_session::mojom::MediaSessionInfoPtr media_session) override;
+      media_session::mojom::AudioFocusRequestStatePtr session) override;
   void OnActiveSessionChanged(
       media_session::mojom::AudioFocusRequestStatePtr session) override {}
 

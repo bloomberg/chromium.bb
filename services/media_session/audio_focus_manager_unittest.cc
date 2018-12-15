@@ -417,7 +417,7 @@ TEST_P(AudioFocusManagerTest, AbandonAudioFocus_MultipleCalls) {
   media_session.AbandonAudioFocusFromClient();
 
   EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
-  EXPECT_TRUE(observer->focus_lost_session_.is_null());
+  EXPECT_TRUE(observer->focus_lost_session().is_null());
 }
 
 TEST_P(AudioFocusManagerTest, AbandonAudioFocus_RemovesTransientMayDuckEntry) {
@@ -432,7 +432,7 @@ TEST_P(AudioFocusManagerTest, AbandonAudioFocus_RemovesTransientMayDuckEntry) {
     media_session.AbandonAudioFocusFromClient();
 
     EXPECT_EQ(0, GetTransientMaybeDuckCount());
-    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session)));
   }
 }
@@ -448,7 +448,7 @@ TEST_P(AudioFocusManagerTest, AbandonAudioFocus_RemovesTransientEntry) {
     media_session.AbandonAudioFocusFromClient();
 
     EXPECT_EQ(0, GetTransientCount());
-    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session)));
   }
 }
@@ -696,8 +696,8 @@ TEST_P(AudioFocusManagerTest, AudioFocusObserver_RequestNoop) {
         RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
 
     EXPECT_EQ(request_id, GetAudioFocusedSession());
-    EXPECT_EQ(mojom::AudioFocusType::kGain, observer->focus_gained_type());
-    EXPECT_FALSE(observer->focus_gained_session_.is_null());
+    EXPECT_EQ(mojom::AudioFocusType::kGain,
+              observer->focus_gained_session()->audio_focus_type);
   }
 
   {
@@ -705,7 +705,7 @@ TEST_P(AudioFocusManagerTest, AudioFocusObserver_RequestNoop) {
     RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
 
     EXPECT_EQ(request_id, GetAudioFocusedSession());
-    EXPECT_TRUE(observer->focus_gained_session_.is_null());
+    EXPECT_TRUE(observer->focus_gained_session().is_null());
   }
 }
 
@@ -719,8 +719,7 @@ TEST_P(AudioFocusManagerTest, AudioFocusObserver_TransientMayDuck) {
 
     EXPECT_EQ(1, GetTransientMaybeDuckCount());
     EXPECT_EQ(mojom::AudioFocusType::kGainTransientMayDuck,
-              observer->focus_gained_type());
-    EXPECT_FALSE(observer->focus_gained_session_.is_null());
+              observer->focus_gained_session()->audio_focus_type);
   }
 
   {
@@ -728,7 +727,7 @@ TEST_P(AudioFocusManagerTest, AudioFocusObserver_TransientMayDuck) {
     media_session.AbandonAudioFocusFromClient();
 
     EXPECT_EQ(0, GetTransientMaybeDuckCount());
-    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session)));
   }
 }
@@ -940,9 +939,9 @@ TEST_P(AudioFocusManagerTest,
     media_session.AbandonAudioFocusFromClient();
 
     EXPECT_EQ(0, GetTransientMaybeDuckCount());
-    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session)));
-    EXPECT_TRUE(observer->focus_gained_session_.is_null());
+    EXPECT_TRUE(observer->focus_gained_session().is_null());
 
     auto notifications = observer->notifications();
     EXPECT_EQ(1u, notifications.size());
@@ -975,9 +974,10 @@ TEST_P(AudioFocusManagerTest,
     media_session_2.AbandonAudioFocusFromClient();
 
     EXPECT_EQ(0, GetTransientMaybeDuckCount());
-    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session_2)));
-    EXPECT_TRUE(observer->focus_gained_session_.Equals(media_session_1_info));
+    EXPECT_TRUE(observer->focus_gained_session()->session_info.Equals(
+        media_session_1_info));
 
     // FocusLost should always come before FocusGained so observers always know
     // the current session that has focus.
@@ -1003,7 +1003,7 @@ TEST_P(AudioFocusManagerTest, ObserverActiveSessionChanged) {
               GetState(&media_session_1));
 
     EXPECT_EQ(media_session_1.GetRequestIdFromClient(),
-              observer->active_session_->request_id);
+              observer->active_session()->request_id);
   }
 
   {
@@ -1016,7 +1016,7 @@ TEST_P(AudioFocusManagerTest, ObserverActiveSessionChanged) {
     EXPECT_NE(
         test::TestAudioFocusObserver::NotificationType::kActiveSessionChanged,
         observer->notifications().back());
-    EXPECT_TRUE(observer->active_session_.is_null());
+    EXPECT_TRUE(observer->active_session().is_null());
   }
 
   {
@@ -1026,7 +1026,7 @@ TEST_P(AudioFocusManagerTest, ObserverActiveSessionChanged) {
     EXPECT_NE(
         test::TestAudioFocusObserver::NotificationType::kActiveSessionChanged,
         observer->notifications().back());
-    EXPECT_TRUE(observer->active_session_.is_null());
+    EXPECT_TRUE(observer->active_session().is_null());
   }
 
   {
@@ -1036,7 +1036,7 @@ TEST_P(AudioFocusManagerTest, ObserverActiveSessionChanged) {
     EXPECT_EQ(
         test::TestAudioFocusObserver::NotificationType::kActiveSessionChanged,
         observer->notifications().back());
-    EXPECT_TRUE(observer->active_session_.is_null());
+    EXPECT_TRUE(observer->active_session().is_null());
   }
 }
 
@@ -1163,5 +1163,8 @@ TEST_P(AudioFocusManagerTest, AudioFocusGrouping_TransientSameGroup) {
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
             GetState(&media_session_2));
 }
+
+// TODO: Fix //content
+// TODO: Fix //ash
 
 }  // namespace media_session

@@ -32,10 +32,10 @@ class ASH_EXPORT MediaNotificationController
   ~MediaNotificationController() override;
 
   // media_session::mojom::AudioFocusObserver:
-  void OnFocusGained(media_session::mojom::MediaSessionInfoPtr session_info,
-                     media_session::mojom::AudioFocusType type) override {}
+  void OnFocusGained(
+      media_session::mojom::AudioFocusRequestStatePtr session) override {}
   void OnFocusLost(
-      media_session::mojom::MediaSessionInfoPtr session_info) override {}
+      media_session::mojom::AudioFocusRequestStatePtr session) override {}
   void OnActiveSessionChanged(
       media_session::mojom::AudioFocusRequestStatePtr session) override;
 
