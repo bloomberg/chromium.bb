@@ -246,20 +246,20 @@ class UIControlsOzone : public ui_controls::UIControlsAura,
                                1.0f, 1.0f, 0.0f);
     if (action & ui_controls::PRESS) {
       ui::TouchEvent event(ui::ET_TOUCH_PRESSED, host_location,
-                           base::TimeTicks::Now(), details);
+                           ui::EventTimeForNow(), details);
       SendEventToSink(
           &event, display_id,
           (has_move || has_release) ? base::OnceClosure() : std::move(task));
     }
     if (has_move) {
       ui::TouchEvent event(ui::ET_TOUCH_MOVED, host_location,
-                           base::TimeTicks::Now(), details);
+                           ui::EventTimeForNow(), details);
       SendEventToSink(&event, display_id,
                       has_release ? base::OnceClosure() : std::move(task));
     }
     if (has_release) {
       ui::TouchEvent event(ui::ET_TOUCH_RELEASED, host_location,
-                           base::TimeTicks::Now(), details);
+                           ui::EventTimeForNow(), details);
       SendEventToSink(&event, display_id, std::move(task));
     }
     return true;
