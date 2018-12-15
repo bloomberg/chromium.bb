@@ -10,7 +10,6 @@
 // <include src="oobe-screen.js">
 
 // <include src="oobe_dialog_host_behavior.js">
-// <include src="controller-pairing-screen.js">
 // <include src="gaia_buttons.js">
 // <include src="gaia_card.js">
 // <include src="gaia_header.js">
@@ -18,7 +17,6 @@
 // <include src="gaia_input.js">
 // <include src="gaia_password_changed.js">
 // <include src="hd-iron-icon.js">
-// <include src="host-pairing-screen.js">
 // <include src="html-echo.js">
 // <include src="network_select_login.js">
 // <include src="notification_card.js">

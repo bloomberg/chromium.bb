@@ -219,7 +219,7 @@ void EnrollmentScreenHandler::RegisterMessages() {
 // EnrollmentScreenHandler
 //      EnrollmentScreenActor implementation -----------------------------------
 
-void EnrollmentScreenHandler::SetParameters(
+void EnrollmentScreenHandler::SetEnrollmentConfig(
     Controller* controller,
     const policy::EnrollmentConfig& config) {
   CHECK(config.should_enroll());

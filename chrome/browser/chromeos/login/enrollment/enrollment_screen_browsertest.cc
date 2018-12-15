@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentScreenTest, DISABLED_TestSuccess) {
   ASSERT_EQ(WizardController::default_controller()->current_screen(),
             enrollment_screen);
 
-  enrollment_screen->OnDeviceEnrolled("");
+  enrollment_screen->OnDeviceEnrolled();
   run_loop.RunUntilIdle();
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
 

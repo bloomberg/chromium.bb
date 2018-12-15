@@ -88,8 +88,6 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kDeviceRegistered, -1);
   registry->RegisterBooleanPref(prefs::kEnrollmentRecoveryRequired, false);
   registry->RegisterStringPref(prefs::kInitialLocale, "en-US");
-  registry->RegisterBooleanPref(prefs::kIsBootstrappingSlave, false);
-  registry->RegisterBooleanPref(prefs::kOobeControllerDetected, false);
 }
 
 // static
@@ -114,8 +112,6 @@ void StartupUtils::MarkOobeCompleted() {
   // side-effects.
   g_browser_process->local_state()->ClearPref(prefs::kOobeScreenPending);
   SaveBoolPreferenceForced(prefs::kOobeComplete, true);
-
-  g_browser_process->local_state()->ClearPref(prefs::kIsBootstrappingSlave);
 
   // Successful enrollment implies that recovery is not required.
   SaveBoolPreferenceForced(prefs::kEnrollmentRecoveryRequired, false);

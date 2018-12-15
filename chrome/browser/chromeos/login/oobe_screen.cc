@@ -42,8 +42,6 @@ const char* kScreenNames[] = {
     "arc-kiosk-splash",                // SCREEN_ARC_KIOSK_SPLASH
     "confirm-password",                // SCREEN_CONFIRM_PASSWORD
     "fatal-error",                     // SCREEN_FATAL_ERROR
-    "controller-pairing",              // SCREEN_OOBE_CONTROLLER_PAIRING
-    "host-pairing",                    // SCREEN_OOBE_HOST_PAIRING
     "device-disabled",                 // SCREEN_DEVICE_DISABLED
     "unrecoverable-cryptohome-error",  // SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR
     "userBoard",                       // SCREEN_USER_SELECTION

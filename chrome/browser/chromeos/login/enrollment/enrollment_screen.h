@@ -28,10 +28,6 @@ namespace base {
 class ElapsedTimer;
 }
 
-namespace pairing_chromeos {
-class ControllerPairingController;
-}
-
 namespace chromeos {
 
 class BaseScreenDelegate;
@@ -52,11 +48,7 @@ class EnrollmentScreen
   static EnrollmentScreen* Get(ScreenManager* manager);
 
   // Setup how this screen will handle enrollment.
-  //   |shark_controller| is an interface that is used to communicate with a
-  //     remora device or a slave device for remote enrollment.
-  void SetParameters(
-      const policy::EnrollmentConfig& enrollment_config,
-      pairing_chromeos::ControllerPairingController* shark_controller);
+  void SetEnrollmentConfig(const policy::EnrollmentConfig& enrollment_config);
 
   // BaseScreen implementation:
   void Show() override;
@@ -83,7 +75,7 @@ class EnrollmentScreen
       const EnrollmentLicenseMap& licenses) override;
   void OnEnrollmentError(policy::EnrollmentStatus status) override;
   void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;
-  void OnDeviceEnrolled(const std::string& additional_token) override;
+  void OnDeviceEnrolled() override;
   void OnDeviceAttributeUploadCompleted(bool success) override;
   void OnDeviceAttributeUpdatePermission(bool granted) override;
   void OnRestoreAfterRollbackCompleted() override;
@@ -151,9 +143,6 @@ class EnrollmentScreen
   // Used as a callback for EnterpriseEnrollmentHelper::ClearAuth.
   virtual void OnAuthCleared(const base::Closure& callback);
 
-  // Sends an enrollment access token to a remote device.
-  void SendEnrollmentAuthToken(const std::string& token);
-
   // Shows successful enrollment status after all enrollment related file
   // operations are completed.
   void ShowEnrollmentStatusOnSuccess();
@@ -198,8 +187,6 @@ class EnrollmentScreen
                                const std::string& username,
                                authpolicy::ErrorType error,
                                const std::string& machine_domain);
-
-  pairing_chromeos::ControllerPairingController* shark_controller_ = nullptr;
 
   EnrollmentScreenView* view_;
   policy::EnrollmentConfig config_;

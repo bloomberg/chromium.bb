@@ -26,11 +26,9 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/pairing/controller_pairing_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
-using namespace pairing_chromeos;
 using policy::EnrollmentConfig;
 
 // Do not change the UMA histogram parameters without renaming the histograms!
@@ -116,9 +114,8 @@ EnrollmentScreen::~EnrollmentScreen() {
          DBusThreadManager::Get()->IsUsingFakes());
 }
 
-void EnrollmentScreen::SetParameters(
-    const policy::EnrollmentConfig& enrollment_config,
-    pairing_chromeos::ControllerPairingController* shark_controller) {
+void EnrollmentScreen::SetEnrollmentConfig(
+    const policy::EnrollmentConfig& enrollment_config) {
   enrollment_config_ = enrollment_config;
   switch (enrollment_config_.auth_mechanism) {
     case EnrollmentConfig::AUTH_MECHANISM_INTERACTIVE:
@@ -139,7 +136,6 @@ void EnrollmentScreen::SetParameters(
       NOTREACHED();
       break;
   }
-  shark_controller_ = shark_controller;
   SetConfig();
 }
 
@@ -157,7 +153,7 @@ void EnrollmentScreen::SetConfig() {
                        ? policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED
                        : policy::EnrollmentConfig::MODE_ATTESTATION;
   }
-  view_->SetParameters(this, config_);
+  view_->SetEnrollmentConfig(this, config_);
   enrollment_helper_ = nullptr;
 }
 
@@ -256,8 +252,8 @@ void EnrollmentScreen::OnLoginDone(const std::string& user,
 
   view_->ShowEnrollmentSpinnerScreen();
   CreateEnrollmentHelper();
-  enrollment_helper_->EnrollUsingAuthCode(
-      auth_code, shark_controller_ != nullptr /* fetch_additional_token */);
+  enrollment_helper_->EnrollUsingAuthCode(auth_code,
+                                          false /* fetch_additional_token */);
 }
 
 void EnrollmentScreen::OnLicenseTypeSelected(const std::string& license_type) {
@@ -390,11 +386,8 @@ void EnrollmentScreen::OnOtherError(
     AutomaticRetry();
 }
 
-void EnrollmentScreen::OnDeviceEnrolled(const std::string& additional_token) {
+void EnrollmentScreen::OnDeviceEnrolled() {
   enrollment_succeeded_ = true;
-  if (!additional_token.empty())
-    SendEnrollmentAuthToken(additional_token);
-
   enrollment_helper_->GetDeviceAttributeUpdatePermission();
 }
 
@@ -496,11 +489,6 @@ void EnrollmentScreen::ShowAttributePromptScreen() {
   }
 
   view_->ShowAttributePromptScreen(asset_id, location);
-}
-
-void EnrollmentScreen::SendEnrollmentAuthToken(const std::string& token) {
-  DCHECK(shark_controller_);
-  shark_controller_->OnAuthenticationDone(enrolling_user_domain_, token);
 }
 
 void EnrollmentScreen::ShowEnrollmentStatusOnSuccess() {

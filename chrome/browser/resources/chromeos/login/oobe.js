@@ -10,13 +10,11 @@
 // <include src="md_login_shared.js">
 // <include src="login_non_lock_shared.js">
 // <include src="oobe_screen_auto_enrollment_check.js">
-// <include src="oobe_screen_controller_pairing.js">
 // <include src="oobe_screen_demo_setup.js">
 // <include src="oobe_screen_demo_preferences.js">
 // <include src="oobe_screen_enable_debugging.js">
 // <include src="oobe_screen_eula.js">
 // <include src="oobe_screen_hid_detection.js">
-// <include src="oobe_screen_host_pairing.js">
 // <include src="oobe_screen_network.js">
 // <include src="oobe_screen_update.js">
 // <include src="oobe_screen_welcome.js">
@@ -60,8 +58,6 @@ cr.define('cr.ui.Oobe', function() {
       login.ArcKioskSplashScreen.register();
       login.ConfirmPasswordScreen.register();
       login.FatalErrorScreen.register();
-      login.ControllerPairingScreen.register();
-      login.HostPairingScreen.register();
       login.DeviceDisabledScreen.register();
       login.ActiveDirectoryPasswordChangeScreen.register(/* lazyInit= */ true);
       login.VoiceInteractionValuePropScreen.register();

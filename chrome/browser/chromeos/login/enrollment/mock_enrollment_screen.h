@@ -26,7 +26,7 @@ class MockEnrollmentScreenView : public EnrollmentScreenView {
   MockEnrollmentScreenView();
   virtual ~MockEnrollmentScreenView();
 
-  MOCK_METHOD2(SetParameters,
+  MOCK_METHOD2(SetEnrollmentConfig,
                void(Controller*, const policy::EnrollmentConfig& config));
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());

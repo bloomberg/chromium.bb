@@ -66,8 +66,8 @@ class EnrollmentScreenHandler
   void RegisterMessages() override;
 
   // Implements EnrollmentScreenView:
-  void SetParameters(Controller* controller,
-                     const policy::EnrollmentConfig& config) override;
+  void SetEnrollmentConfig(Controller* controller,
+                           const policy::EnrollmentConfig& config) override;
   void Show() override;
   void Hide() override;
   void ShowSigninScreen() override;

@@ -129,10 +129,6 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   builder->Add("timezoneSectionTitle", IDS_TIMEZONE_SECTION_TITLE);
   builder->Add("advancedOptionsSectionTitle",
                IDS_OOBE_ADVANCED_OPTIONS_SCREEN_TITLE);
-  builder->Add("advancedOptionsEEBootstrappingTitle",
-               IDS_OOBE_ADVANCED_OPTIONS_EE_BOOTSTRAPPING_TITLE);
-  builder->Add("advancedOptionsEEBootstrappingSubtitle",
-               IDS_OOBE_ADVANCED_OPTIONS_EE_BOOTSTRAPPING_SUBTITLE);
   builder->Add("advancedOptionsCFMSetupTitle",
                IDS_OOBE_ADVANCED_OPTIONS_CFM_SETUP_TITLE);
   builder->Add("advancedOptionsCFMSetupSubtitle",
@@ -181,7 +177,7 @@ void WelcomeScreenHandler::GetAdditionalParameters(
     language_list = GetMinimalUILanguageList();
 
   // GetAdditionalParameters() is called when OOBE language is updated.
-  // This happens in three different cases:
+  // This happens in two different cases:
   //
   // 1) User selects new locale on OOBE screen. We need to sync active input
   // methods with locale, so EnableLoginLayouts() is needed.
@@ -199,16 +195,8 @@ void WelcomeScreenHandler::GetAdditionalParameters(
   //
   // So we need to disable activation of login layouts if we are already in
   // active user session.
-  //
-  // 3) This is the bootstrapping process for a "Slave" device. The locale &
-  // input of the "Slave" device is set up by a "Master" device. In this case we
-  // don't want EnableLoginLayout() to reset the input method to the hardware
-  // default method.
-  const bool is_slave = g_browser_process->local_state()->GetBoolean(
-      prefs::kOobeControllerDetected);
-
   const bool enable_layouts =
-      !user_manager::UserManager::Get()->IsUserLoggedIn() && !is_slave;
+      !user_manager::UserManager::Get()->IsUserLoggedIn();
 
   dict->Set("languageList", std::move(language_list));
   dict->Set("inputMethodsList",

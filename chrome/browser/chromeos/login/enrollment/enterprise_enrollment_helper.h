@@ -65,11 +65,8 @@ class EnterpriseEnrollmentHelper {
     // Called when some other error happens.
     virtual void OnOtherError(OtherError error) = 0;
 
-    // Called when enrollment finishes successfully. |additional_token| keeps
-    // the additional access token, if it was requested by setting the
-    // |fetch_additional_token| param of EnrollUsingProfile() to true.
-    // Otherwise, |additional_token| is empty.
-    virtual void OnDeviceEnrolled(const std::string& additional_token) = 0;
+    // Called when enrollment finishes successfully.
+    virtual void OnDeviceEnrolled() = 0;
 
     // Called when device attribute update permission granted,
     // |granted| indicates whether permission granted or not.
@@ -111,6 +108,7 @@ class EnterpriseEnrollmentHelper {
   // and passes it to the |status_consumer| on successful enrollment.
   // EnrollUsingAuthCode can be called only once during this object's lifetime,
   // and only if none of the EnrollUsing* methods was called before.
+  // TODO (alemate): Remove unused |fetch_additional_token| parameter.
   virtual void EnrollUsingAuthCode(const std::string& auth_code,
                                    bool fetch_additional_token) = 0;
 

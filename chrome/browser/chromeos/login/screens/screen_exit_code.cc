@@ -50,8 +50,6 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "TERMS_OF_SERVICE_ACCEPTED";
     case ScreenExitCode::WRONG_HWID_WARNING_SKIPPED:
       return "WRONG_HWID_WARNING_SKIPPED";
-    case ScreenExitCode::CONTROLLER_PAIRING_FINISHED:
-      return "CONTROLLER_PAIRING_FINISHED";
     case ScreenExitCode::ENABLE_DEBUGGING_FINISHED:
       return "ENABLE_DEBUGGING_FINISHED";
     case ScreenExitCode::ENABLE_DEBUGGING_CANCELED:

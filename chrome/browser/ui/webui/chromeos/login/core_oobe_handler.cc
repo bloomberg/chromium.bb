@@ -219,8 +219,6 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableDebuggingScreen);
   AddCallback("headerBarVisible", &CoreOobeHandler::HandleHeaderBarVisible);
   AddCallback("raiseTabKeyEvent", &CoreOobeHandler::HandleRaiseTabKeyEvent);
-  AddCallback("setOobeBootstrappingSlave",
-              &CoreOobeHandler::HandleSetOobeBootstrappingSlave);
   // Note: Used by enterprise_RemoraRequisitionDisplayUsage.py:
   // TODO(felixe): Use chrome.system.display or cros_display_config.mojom,
   // https://crbug.com/858958.
@@ -641,16 +639,6 @@ void CoreOobeHandler::HandleRaiseTabKeyEvent(bool reverse) {
   if (reverse)
     event.set_flags(ui::EF_SHIFT_DOWN);
   SendEventToSink(&event);
-}
-
-void CoreOobeHandler::HandleSetOobeBootstrappingSlave() {
-  const bool is_slave = g_browser_process->local_state()->GetBoolean(
-      prefs::kIsBootstrappingSlave);
-  if (is_slave)
-    return;
-  g_browser_process->local_state()->SetBoolean(prefs::kIsBootstrappingSlave,
-                                               true);
-  chrome::AttemptRestart();
 }
 
 void CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting(
