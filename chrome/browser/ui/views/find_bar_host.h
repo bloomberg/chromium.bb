@@ -119,6 +119,10 @@ class FindBarHost : public DropdownBarHost,
   // Overridden from DropdownBarHost:
   void OnVisibilityChanged() override;
 
+  // views::WidgetDelegate:
+  ax::mojom::Role GetAccessibleWindowRole() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
+
  private:
   friend class FindInPageTest;
 
