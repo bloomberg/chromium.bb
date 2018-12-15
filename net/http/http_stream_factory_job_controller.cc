@@ -813,9 +813,13 @@ int HttpStreamFactory::JobController::DoCreateJobs() {
   HostPortPair destination(HostPortPair::FromURL(request_info_.url));
   GURL origin_url = ApplyHostMappingRules(request_info_.url, &destination);
 
-  // Create an alternative job if alternative service is set up for this domain.
-  alternative_service_info_ =
-      GetAlternativeServiceInfoFor(request_info_, delegate_, stream_type_);
+  // Create an alternative job if alternative service is set up for this domain,
+  // but only if we'll be speaking directly to the server, since QUIC through
+  // proxies is not supported.
+  if (proxy_info_.is_direct()) {
+    alternative_service_info_ =
+        GetAlternativeServiceInfoFor(request_info_, delegate_, stream_type_);
+  }
   quic::QuicTransportVersion quic_version = quic::QUIC_VERSION_UNSUPPORTED;
   if (alternative_service_info_.protocol() == kProtoQUIC) {
     quic_version =
