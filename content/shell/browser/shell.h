@@ -26,10 +26,6 @@
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
 
-namespace display {
-class Screen;
-}
-
 namespace wm {
 class WMTestHelper;
 }
@@ -293,7 +289,6 @@ class Shell : public WebContentsDelegate,
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
   static wm::WMTestHelper* wm_test_helper_;
-  static display::Screen* test_screen_;
 #else
   static wm::WMState* wm_state_;
 #endif

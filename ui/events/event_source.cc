@@ -43,6 +43,12 @@ EventDispatchDetails EventSource::SendEventToSink(Event* event) {
   return SendEventToSinkFromRewriter(event, nullptr);
 }
 
+EventDispatchDetails EventSource::DeliverEventToSink(Event* event) {
+  EventSink* sink = GetEventSink();
+  CHECK(sink);
+  return sink->OnEventFromSource(event);
+}
+
 EventDispatchDetails EventSource::SendEventToSinkFromRewriter(
     Event* event,
     const EventRewriter* rewriter) {
@@ -100,12 +106,6 @@ EventDispatchDetails EventSource::SendEventToSinkFromRewriter(
     rewritten_event = std::move(new_event);
   }
   return EventDispatchDetails();
-}
-
-EventDispatchDetails EventSource::DeliverEventToSink(Event* event) {
-  EventSink* sink = GetEventSink();
-  CHECK(sink);
-  return sink->OnEventFromSource(event);
 }
 
 }  // namespace ui

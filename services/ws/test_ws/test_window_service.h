@@ -34,8 +34,6 @@ class ContextFactoryPrivate;
 
 namespace ws {
 
-class HostEventQueue;
-class TestHostEventDispatcher;
 class WindowService;
 
 namespace test {
@@ -79,6 +77,7 @@ class TestWindowService : public service_manager::Service,
                    DragDropCompletedCallback callback) override;
   void CancelDragLoop(aura::Window* window) override;
   ui::EventTarget* GetGlobalEventTarget() override;
+  aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
 
   // service_manager::Service:
   void OnStart() override;
@@ -143,10 +142,6 @@ class TestWindowService : public service_manager::Service,
   // Whether the service is used in process. Not using features because it
   // is used in service_unittests where ui features is not used there.
   bool is_in_process_ = false;
-
-  std::unique_ptr<TestHostEventDispatcher> test_host_event_dispatcher_;
-
-  std::unique_ptr<HostEventQueue> host_event_queue_;
 
   std::unique_ptr<VisibilitySynchronizer> visibility_synchronizer_;
 

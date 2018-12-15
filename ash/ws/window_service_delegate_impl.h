@@ -43,6 +43,7 @@ class WindowServiceDelegateImpl : public ws::WindowServiceDelegate {
   void SetModalType(aura::Window* window, ui::ModalType type) override;
   ui::SystemInputInjector* GetSystemInputInjector() override;
   ui::EventTarget* GetGlobalEventTarget() override;
+  aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   aura::Window* GetTopmostWindowAtPoint(const gfx::Point& location_in_screen,
                                         const std::set<aura::Window*>& ignores,
                                         aura::Window** real_topmost) override;
