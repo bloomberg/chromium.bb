@@ -785,6 +785,29 @@ void DocumentMarkerController::RemoveSpellingMarkersUnderWords(
   }
 }
 
+void DocumentMarkerController::RemoveSuggestionMarkerInRangeOnFinish(
+    const EphemeralRangeInFlatTree& range) {
+  // MarkersIntersectingRange() might be expensive. In practice, we hope we will
+  // only check one node for composing range.
+  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+      node_marker_pairs = MarkersIntersectingRange(
+          range, DocumentMarker::MarkerTypes::Suggestion());
+  for (const auto& node_marker_pair : node_marker_pairs) {
+    SuggestionMarker* suggestion_marker =
+        ToSuggestionMarker(node_marker_pair.second);
+    if (suggestion_marker->NeedsRemovalOnFinishComposing()) {
+      const Text& text = ToText(*node_marker_pair.first);
+      DocumentMarkerList* const list =
+          ListForType(markers_.at(&text), DocumentMarker::kSuggestion);
+      // RemoveMarkerByTag() might be expensive. In practice, we have at most
+      // one suggestion marker needs to be removed.
+      ToSuggestionMarkerListImpl(list)->RemoveMarkerByTag(
+          suggestion_marker->Tag());
+      InvalidatePaintForNode(text);
+    }
+  }
+}
+
 void DocumentMarkerController::RemoveSuggestionMarkerByTag(const Text& text,
                                                            int32_t marker_tag) {
   MarkerLists* markers = markers_.at(&text);

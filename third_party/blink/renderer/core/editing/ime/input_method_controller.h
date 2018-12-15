@@ -182,6 +182,14 @@ class CORE_EXPORT InputMethodController final
   // Returns true if selection offsets were successfully set.
   bool SetSelectionOffsets(const PlainTextRange&, TypingContinuation);
 
+  // There are few cases we need to remove suggestion markers which are also in
+  // composing range. (SuggestionSpan with FLAG_AUTO_CORRECTION and
+  // Spanned#SPAN_COMPOSING)
+  //   1) FinishComposingText()
+  //   2) CommitText()
+  //   3) SetComposingText() (SetComposition())
+  void RemoveSuggestionMarkerInCompositionRange();
+
   FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
                            InputModeOfFocusedElement);
 

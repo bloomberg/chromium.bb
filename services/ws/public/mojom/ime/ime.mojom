@@ -87,6 +87,7 @@ struct ImeTextSpan {
   ImeTextSpanThickness thickness;
   uint32 background_color;
   uint32 suggestion_highlight_color;
+  bool remove_on_finish_composing;
   array<string> suggestions;
 };
 
