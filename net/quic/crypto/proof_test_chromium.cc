@@ -127,9 +127,7 @@ INSTANTIATE_TEST_CASE_P(
     ProofTest,
     ::testing::ValuesIn(quic::AllSupportedTransportVersions()));
 
-// TODO(rtenneti): Enable testing of quic::ProofVerifier. See
-// http://crbug.com/514468.
-TEST_P(ProofTest, DISABLED_Verify) {
+TEST_P(ProofTest, Verify) {
   std::unique_ptr<quic::ProofSource> source(
       quic::test::crypto_test_utils::ProofSourceForTesting());
   std::unique_ptr<quic::ProofVerifier> verifier(
