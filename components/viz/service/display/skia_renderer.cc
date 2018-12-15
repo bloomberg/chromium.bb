@@ -37,6 +37,7 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkOverdrawCanvas.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/effects/SkShaderMaskFilter.h"
@@ -1185,11 +1186,12 @@ void SkiaRenderer::CopyDrawnRenderPass(
     case DrawMode::DDL: {
       // Root framebuffer uses id 0 in SkiaOutputSurface.
       RenderPassId render_pass_id = 0;
-      if (current_frame()->root_render_pass !=
-          current_frame()->current_render_pass) {
-        render_pass_id = current_frame()->current_render_pass->id;
+      const auto* const render_pass = current_frame()->current_render_pass;
+      if (render_pass != current_frame()->root_render_pass) {
+        render_pass_id = render_pass->id;
       }
-      skia_output_surface_->CopyOutput(render_pass_id, copy_rect, result_rect,
+      skia_output_surface_->CopyOutput(render_pass_id, copy_rect,
+                                       render_pass->color_space, result_rect,
                                        std::move(request));
       break;
     }
@@ -1211,6 +1213,17 @@ void SkiaRenderer::CopyDrawnRenderPass(
       // Send copy request by copying into a bitmap.
       SkBitmap bitmap;
       copy_image->asLegacyBitmap(&bitmap);
+      // TODO(crbug.com/795132): Plumb color space throughout SkiaRenderer up to
+      // the SkSurface/SkImage here. Until then, play "musical chairs" with the
+      // SkPixelRef to hack-in the RenderPass's |color_space|.
+      sk_sp<SkPixelRef> pixels(SkSafeRef(bitmap.pixelRef()));
+      SkIPoint origin = bitmap.pixelRefOrigin();
+      bitmap.setInfo(
+          bitmap.info().makeColorSpace(
+              current_frame()
+                  ->current_render_pass->color_space.ToSkColorSpace()),
+          bitmap.rowBytes());
+      bitmap.setPixelRef(std::move(pixels), origin.x(), origin.y());
       request->SendResult(
           std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
       break;

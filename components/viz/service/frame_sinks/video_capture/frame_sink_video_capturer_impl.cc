@@ -126,8 +126,10 @@ void FrameSinkVideoCapturerImpl::SetFormat(media::VideoPixelFormat format,
   if (!color_space_copy.IsValid()) {
     color_space_copy = kDefaultColorSpace;
   }
-  // TODO(crbug/758057): Plumb output color space through to the
-  // CopyOutputRequests.
+  // TODO(crbug/758057): Remove the color space argument from SetFormat(). This
+  // is already incorrect/misleading when PIXEL_FORMAT_ARGB is being used. The
+  // better strategy is for the consumer to always accept whatever it is given,
+  // and do the conversion downstream if absolutely necessary.
   if (color_space_copy != gfx::ColorSpace::CreateREC709()) {
     LOG(DFATAL) << "Unsupported color space: Only BT.709 is supported.";
   } else {
@@ -479,9 +481,6 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
         base::saturated_cast<int>(utilization * 100.0f + 0.5f));
   }
 
-  // See TODO in SetFormat(). For now, always assume Rec. 709.
-  frame->set_color_space(gfx::ColorSpace::CreateREC709());
-
   // At this point, the capture is going to proceed. Populate the VideoFrame's
   // metadata, and notify the oracle.
   VideoFrameMetadata* const metadata = frame->metadata();
@@ -527,8 +526,10 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   if (content_rect.IsEmpty()) {
     if (pixel_format_ == media::PIXEL_FORMAT_I420) {
       media::FillYUV(frame.get(), 0x00, 0x80, 0x80);
+      frame->set_color_space(gfx::ColorSpace::CreateREC709());
     } else {
       media::LetterboxVideoFrame(frame.get(), gfx::Rect());
+      frame->set_color_space(gfx::ColorSpace::CreateSRGB());
     }
     dirty_rect_ = gfx::Rect();
     DidCaptureFrame(frame_number, oracle_frame_number, gfx::Rect(),
@@ -552,8 +553,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
                      capture_weak_factory_.GetWeakPtr(), frame_number,
                      oracle_frame_number, content_rect,
                      VideoCaptureOverlay::MakeCombinedRenderer(
-                         GetOverlaysInOrder(), content_rect, frame->format(),
-                         frame->ColorSpace()),
+                         GetOverlaysInOrder(), content_rect, frame->format()),
                      std::move(frame))));
   request->set_source(copy_request_source_);
   request->set_area(gfx::Rect(source_size));
@@ -601,7 +601,11 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
     uint8_t* const v = frame->visible_data(VideoFrame::kVPlane) +
                        (content_rect.y() / 2) * v_stride +
                        (content_rect.x() / 2);
-    if (!result->ReadI420Planes(y, y_stride, u, u_stride, v, v_stride)) {
+    if (result->ReadI420Planes(y, y_stride, u, u_stride, v, v_stride)) {
+      // Per CopyOutputResult header comments, I420_PLANES results are always in
+      // the Rec.709 color space.
+      frame->set_color_space(gfx::ColorSpace::CreateREC709());
+    } else {
       frame = nullptr;
     }
   } else {
@@ -609,7 +613,9 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
     DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format_);
     uint8_t* const pixels = frame->visible_data(VideoFrame::kARGBPlane) +
                             content_rect.y() * stride + content_rect.x() * 4;
-    if (!result->ReadRGBAPlane(pixels, stride)) {
+    if (result->ReadRGBAPlane(pixels, stride)) {
+      frame->set_color_space(result->GetRGBAColorSpace());
+    } else {
       frame = nullptr;
     }
   }
@@ -716,6 +722,7 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   info->pixel_format = frame->format();
   info->coded_size = frame->coded_size();
   info->visible_rect = frame->visible_rect();
+  DCHECK(frame->ColorSpace().IsValid());  // Ensure it was set by this point.
   info->color_space = frame->ColorSpace();
   const gfx::Rect update_rect = frame->visible_rect();
 

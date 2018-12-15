@@ -360,6 +360,8 @@ void LameWindowCapturerChromeOS::DeliverFrame(
   info->pixel_format = frame->format();
   info->coded_size = frame->coded_size();
   info->visible_rect = frame->visible_rect();
+  DCHECK(frame->ColorSpace().IsValid());  // Ensure it was set by this point.
+  info->color_space = frame->ColorSpace();
   const gfx::Rect update_rect = frame->visible_rect();
   const gfx::Rect content_rect = in_flight_frame->content_rect();
 

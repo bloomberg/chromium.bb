@@ -20,6 +20,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
@@ -104,6 +105,7 @@ class VIZ_SERVICE_EXPORT InterprocessFramePool {
   const void* resurrectable_buffer_memory_ = nullptr;
   media::VideoPixelFormat last_delivered_format_ = media::PIXEL_FORMAT_UNKNOWN;
   gfx::Size last_delivered_size_;
+  gfx::ColorSpace last_delivered_color_space_;
 
   // The time at which the last shared memory allocation or mapping failed.
   base::TimeTicks last_fail_log_time_;

@@ -18,11 +18,13 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/shell_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display_switches.h"
 #include "url/gurl.h"
 
 using net::test_server::BasicHttpResponse;
@@ -183,7 +185,18 @@ void ContentCaptureDeviceBrowserTestBase::SetUp() {
 
 void ContentCaptureDeviceBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
+  ContentBrowserTest::SetUpCommandLine(command_line);
+
   IsolateAllSitesForTesting(command_line);
+
+  // Use a small window size to reduce test running time (since screen captures
+  // must be analyzed).
+  command_line->AppendSwitchASCII(switches::kContentShellHostWindowSize,
+                                  "200x150");
+
+  // Ensure the web renderer AND display compositor are both speaking "sRGB."
+  command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
+  command_line->AppendSwitchASCII(switches::kForceRasterColorProfile, "srgb");
 }
 
 void ContentCaptureDeviceBrowserTestBase::SetUpOnMainThread() {
@@ -220,19 +233,19 @@ ContentCaptureDeviceBrowserTestBase::HandleRequest(const HttpRequest& request) {
     const GURL& inner_frame_url =
         embedded_test_server()->GetURL(kInnerFrameHostname, kInnerFramePath);
     response->set_content(base::StringPrintf(
-        "<!doctype html>"
-        "<body style='background-color: #ffffff;'>"
-        "<iframe src='%s' style='position:absolute; "
-        "top:0px; left:0px; margin:none; padding:none; border:none;'>"
-        "</iframe>"
-        "<script>"
-        "window.addEventListener('load', () => {"
-        "  const iframe = document.getElementsByTagName('iframe')[0];"
-        "  iframe.width = document.documentElement.clientWidth / 2;"
-        "  iframe.height = document.documentElement.clientHeight / 2;"
-        "});"
-        "</script>"
-        "</body>",
+        "<!doctype html>\n"
+        "<html>\n"
+        "<style>\n"
+        "* { border:none; margin:none; padding:none; }\n"
+        "html, body { min-width:100vw; background-color:#ffffff; }\n"
+        "iframe { position:absolute; top:0px; left:0px; "
+        "border:none; margin:none; padding:none; }\n"
+        "</style>\n"
+        "<body>\n"
+        "<iframe src='%s' width=50%% height=50%%>\n"
+        "</iframe>\n"
+        "</body>\n"
+        "</html>\n",
         inner_frame_url.spec().c_str()));
   } else {
     // A page whose solid fill color is based on a query parameter, or

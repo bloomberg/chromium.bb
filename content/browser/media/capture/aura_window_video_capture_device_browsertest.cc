@@ -31,7 +31,8 @@ namespace content {
 namespace {
 
 class AuraWindowVideoCaptureDeviceBrowserTest
-    : public ContentCaptureDeviceBrowserTestBase {
+    : public ContentCaptureDeviceBrowserTestBase,
+      public FrameTestUtil {
  public:
   AuraWindowVideoCaptureDeviceBrowserTest() = default;
   ~AuraWindowVideoCaptureDeviceBrowserTest() override = default;
@@ -90,47 +91,49 @@ class AuraWindowVideoCaptureDeviceBrowserTest
         // Compute the Rects representing where the three regions would be in
         // the frame.
         const gfx::RectF window_in_frame_rect_f(
-            IsFixedAspectRatioTest() ? media::ComputeLetterboxRegion(
-                                           gfx::Rect(frame_size), window_size)
-                                     : gfx::Rect(frame_size));
-        const gfx::RectF webcontents_in_frame_rect_f =
-            FrameTestUtil::TransformSimilarly(gfx::Rect(window_size),
-                                              window_in_frame_rect_f,
-                                              webcontents_rect);
-        const gfx::Rect window_in_frame_rect =
-            gfx::ToEnclosingRect(window_in_frame_rect_f);
-        const gfx::Rect webcontents_in_frame_rect =
-            gfx::ToEnclosingRect(webcontents_in_frame_rect_f);
+            media::ComputeLetterboxRegion(gfx::Rect(frame_size), window_size));
+        const gfx::RectF webcontents_in_frame_rect_f = TransformSimilarly(
+            gfx::Rect(window_size), window_in_frame_rect_f, webcontents_rect);
+
+#if defined(OS_CHROMEOS)
+        // Browser window capture on ChromeOS uses the
+        // LameWindowCapturerChromeOS, which takes RGB snapshots and then
+        // software-converts them to YUV, and color accuracy is greatly reduced.
+        // See comments in viz::CopyOutputResult::ReadI420Planes() for further
+        // details on why this has to be.
+        constexpr int max_color_diff = kVeryLooseMaxColorDifference;
+#else
+        // viz::SoftwareRenderer does not do color space management. Otherwise
+        // (normal case), be strict about color differences.
+        const int max_color_diff = IsSoftwareCompositingTest()
+                                       ? kVeryLooseMaxColorDifference
+                                       : kMaxColorDifference;
+#endif
 
         // Determine the average RGB color in the three regions of the frame.
-        const auto average_webcontents_rgb = FrameTestUtil::ComputeAverageColor(
-            rgb_frame, webcontents_in_frame_rect, gfx::Rect());
-        const auto average_window_rgb = FrameTestUtil::ComputeAverageColor(
-            rgb_frame, window_in_frame_rect, webcontents_in_frame_rect);
-        const auto average_letterbox_rgb = FrameTestUtil::ComputeAverageColor(
-            rgb_frame, gfx::Rect(frame_size), window_in_frame_rect);
-
-        // TODO(crbug/810131): Once color space issues are fixed, remove this.
-        // At first, it seemed only to affect ChromeOS; but then on Linux, in
-        // software compositing mode, it seems that sometimes compositing is
-        // switching color spaces during the test (e.g., expected a 255 red, but
-        // we see two frames of 238 followed by a "close-enough" frame of 251).
-        constexpr int max_color_diff =
-            FrameTestUtil::kMaxInaccurateColorDifference;
+        const auto average_webcontents_rgb = ComputeAverageColor(
+            rgb_frame, ToSafeIncludeRect(webcontents_in_frame_rect_f),
+            gfx::Rect());
+        const auto average_window_rgb = ComputeAverageColor(
+            rgb_frame, ToSafeIncludeRect(window_in_frame_rect_f),
+            ToSafeExcludeRect(webcontents_in_frame_rect_f));
+        const auto average_letterbox_rgb =
+            ComputeAverageColor(rgb_frame, gfx::Rect(frame_size),
+                                ToSafeExcludeRect(window_in_frame_rect_f));
 
         VLOG(1) << "Video frame analysis: size=" << frame_size.ToString()
-                << ", captured webcontents should be at "
-                << webcontents_in_frame_rect.ToString()
+                << ", captured webcontents should be bound by approx. "
+                << ToSafeIncludeRect(webcontents_in_frame_rect_f).ToString()
                 << " and has average color " << average_webcontents_rgb
-                << ", captured window should be at "
-                << window_in_frame_rect.ToString() << " and has average color "
-                << average_window_rgb << ", letterbox region has average color "
-                << average_letterbox_rgb
-                << ", maximum color error=" << max_color_diff;
+                << ", captured window should be bound by approx. "
+                << ToSafeIncludeRect(window_in_frame_rect_f).ToString()
+                << " and has average color " << average_window_rgb
+                << ", letterbox region has average color "
+                << average_letterbox_rgb;
 
         // The letterboxed region should always be black.
         if (IsFixedAspectRatioTest()) {
-          EXPECT_TRUE(FrameTestUtil::IsApproximatelySameColor(
+          EXPECT_TRUE(IsApproximatelySameColor(
               SK_ColorBLACK, average_letterbox_rgb, max_color_diff));
         }
 
@@ -141,8 +144,8 @@ class AuraWindowVideoCaptureDeviceBrowserTest
         }
 
         // Return if the WebContents region now has the new |color|.
-        if (FrameTestUtil::IsApproximatelySameColor(
-                color, average_webcontents_rgb, max_color_diff)) {
+        if (IsApproximatelySameColor(color, average_webcontents_rgb,
+                                     max_color_diff)) {
           VLOG(1) << "Observed desired frame.";
           return;
         } else {

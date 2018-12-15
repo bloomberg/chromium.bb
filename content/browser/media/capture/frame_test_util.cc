@@ -8,6 +8,10 @@
 
 #include <cmath>
 
+#include "base/numerics/safe_conversions.h"
+#include "media/base/video_frame.h"
+#include "ui/gfx/color_space.h"
+#include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -15,6 +19,101 @@
 #include "ui/gfx/transform.h"
 
 namespace content {
+
+namespace {
+
+using TriStim = gfx::ColorTransform::TriStim;
+
+// Copies YUV row data into an array of TriStims, mapping [0,255]⇒[0.0,1.0]. The
+// chroma planes are assumed to be half-width.
+void LoadStimsFromYUV(const uint8_t y_src[],
+                      const uint8_t u_src[],
+                      const uint8_t v_src[],
+                      int width,
+                      TriStim stims[]) {
+  for (int i = 0; i < width; ++i) {
+    stims[i].SetPoint(y_src[i] / 255.0f, u_src[i / 2] / 255.0f,
+                      v_src[i / 2] / 255.0f);
+  }
+}
+
+// Maps [0.0,1.0]⇒[0,255], rounding to the nearest integer.
+uint8_t QuantizeAndClamp(float value) {
+  return base::saturated_cast<uint8_t>(
+      std::fma(value, 255.0f, 0.5f /* rounding */));
+}
+
+// Copies the array of TriStims to the BGRA/RGBA output, mapping
+// [0.0,1.0]⇒[0,255].
+void StimsToN32Row(const TriStim row[], int width, uint8_t bgra_out[]) {
+  for (int i = 0; i < width; ++i) {
+    bgra_out[(i * 4) + (SK_R32_SHIFT / 8)] = QuantizeAndClamp(row[i].x());
+    bgra_out[(i * 4) + (SK_G32_SHIFT / 8)] = QuantizeAndClamp(row[i].y());
+    bgra_out[(i * 4) + (SK_B32_SHIFT / 8)] = QuantizeAndClamp(row[i].z());
+    bgra_out[(i * 4) + (SK_A32_SHIFT / 8)] = 255;
+  }
+}
+
+}  // namespace
+
+// static
+SkBitmap FrameTestUtil::ConvertToBitmap(const media::VideoFrame& frame) {
+  CHECK(frame.ColorSpace().IsValid());
+
+  SkBitmap bitmap;
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(frame.visible_rect().width(),
+                                                frame.visible_rect().height(),
+                                                SkColorSpace::MakeSRGB()));
+
+  // Note: The hand-optimized libyuv::H420ToARGB() would be more-desirable for
+  // runtime performance. However, while it claims to convert from the REC709
+  // color space to sRGB, as of this writing, it does not do so accurately. For
+  // example, a YUV triplet that should become almost exactly yellow (0xffff01)
+  // is converted as 0xfeff0c (the blue channel has a difference of 11!). Since
+  // one goal of these tests is to confirm color space correctness, the
+  // following color transformation code is provided:
+
+  // Construct the ColorTransform.
+  const auto transform = gfx::ColorTransform::NewColorTransform(
+      frame.ColorSpace(), gfx::ColorSpace::CreateSRGB(),
+      gfx::ColorTransform::Intent::INTENT_ABSOLUTE);
+  CHECK(transform);
+
+  // Convert one row at a time.
+  std::vector<gfx::ColorTransform::TriStim> stims(bitmap.width());
+  for (int row = 0; row < bitmap.height(); ++row) {
+    LoadStimsFromYUV(frame.visible_data(media::VideoFrame::kYPlane) +
+                         row * frame.stride(media::VideoFrame::kYPlane),
+                     frame.visible_data(media::VideoFrame::kUPlane) +
+                         (row / 2) * frame.stride(media::VideoFrame::kUPlane),
+                     frame.visible_data(media::VideoFrame::kVPlane) +
+                         (row / 2) * frame.stride(media::VideoFrame::kVPlane),
+                     bitmap.width(), stims.data());
+    transform->Transform(stims.data(), stims.size());
+    StimsToN32Row(stims.data(), bitmap.width(),
+                  reinterpret_cast<uint8_t*>(bitmap.getAddr32(0, row)));
+  }
+
+  return bitmap;
+}
+
+// static
+gfx::Rect FrameTestUtil::ToSafeIncludeRect(const gfx::RectF& rect_f,
+                                           int fuzzy_border) {
+  gfx::Rect result = gfx::ToEnclosedRect(rect_f);
+  CHECK_GT(result.width(), 2 * fuzzy_border);
+  CHECK_GT(result.height(), 2 * fuzzy_border);
+  result.Inset(fuzzy_border, fuzzy_border, fuzzy_border, fuzzy_border);
+  return result;
+}
+
+// static
+gfx::Rect FrameTestUtil::ToSafeExcludeRect(const gfx::RectF& rect_f,
+                                           int fuzzy_border) {
+  gfx::Rect result = gfx::ToEnclosingRect(rect_f);
+  result.Inset(-fuzzy_border, -fuzzy_border, -fuzzy_border, -fuzzy_border);
+  return result;
+}
 
 // static
 FrameTestUtil::RGB FrameTestUtil::ComputeAverageColor(
