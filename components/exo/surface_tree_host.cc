@@ -217,15 +217,14 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
       viz::BeginFrameAck::CreateManualAckWithDamage();
   root_surface_->AppendSurfaceHierarchyCallbacks(&frame_callbacks_,
                                                  &presentation_callbacks_);
+  frame.metadata.frame_token = ++next_token_;
   if (!presentation_callbacks_.empty()) {
-    // If overflow happens, we increase it again.
-    if (!++presentation_token_)
-      ++presentation_token_;
-    frame.metadata.frame_token = presentation_token_;
     frame.metadata.request_presentation_feedback = true;
-    DCHECK_EQ(active_presentation_callbacks_.count(presentation_token_), 0u);
-    active_presentation_callbacks_[presentation_token_] =
+    DCHECK_EQ(active_presentation_callbacks_.count(*next_token_), 0u);
+    active_presentation_callbacks_[*next_token_] =
         std::move(presentation_callbacks_);
+  } else {
+    active_presentation_callbacks_[*next_token_] = PresentationCallbacks();
   }
   frame.render_pass_list.push_back(viz::RenderPass::Create());
   const std::unique_ptr<viz::RenderPass>& render_pass =

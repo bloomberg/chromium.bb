@@ -3277,14 +3277,15 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
   display_->Resize(display_size);
   const gfx::Size sub_surface_size(32, 32);
 
+  uint32_t frame_token_1 = 0, frame_token_2 = 0;
   {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(sub_surface_size), gfx::Rect())
-            .SetFrameToken(1)
             .SetRequestPresentationFeedback(true)
             .Build();
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
+    frame_token_1 = frame.metadata.frame_token;
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
   }
 
@@ -3331,9 +3332,9 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     CompositorFrame frame = CompositorFrameBuilder()
                                 .AddRenderPass(gfx::Rect(sub_surface_size),
                                                gfx::Rect(sub_surface_size))
-                                .SetFrameToken(2)
                                 .SetRequestPresentationFeedback(true)
                                 .Build();
+    frame_token_2 = frame.metadata.frame_token;
 
     EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
@@ -3343,15 +3344,14 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
 
     // Both frames with frame-tokens 1 and 2 requested presentation-feedback.
     ASSERT_EQ(2u, sub_support->presentation_feedbacks().size());
-    EXPECT_TRUE(sub_support->presentation_feedbacks().count(1));
-    EXPECT_TRUE(sub_support->presentation_feedbacks().count(2));
+    EXPECT_TRUE(sub_support->presentation_feedbacks().count(frame_token_1));
+    EXPECT_TRUE(sub_support->presentation_feedbacks().count(frame_token_2));
   }
 
   {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(sub_surface_size), gfx::Rect())
-            .SetFrameToken(3)
             .SetRequestPresentationFeedback(true)
             .Build();
 
@@ -3384,7 +3384,6 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
-            .SetFrameToken(1)
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     display_->DrawAndSwap();
@@ -3403,7 +3402,6 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
-            .SetFrameToken(2)
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     display_->DrawAndSwap();
@@ -3426,7 +3424,6 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
     CompositorFrame frame =
         CompositorFrameBuilder()
             .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
-            .SetFrameToken(2)
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     display_->DrawAndSwap();

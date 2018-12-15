@@ -153,6 +153,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   frame.render_pass_list.push_back(std::move(render_pass));
   frame.metadata.device_scale_factor = device_scale_factor;
   frame.metadata.referenced_surfaces = GetChildIdsRanges();
+  frame.metadata.frame_token = ++next_frame_token_;
 
   if (!root_id_allocation_.IsValid() || viewport != surface_size_ ||
       device_scale_factor != device_scale_factor_) {
@@ -208,6 +209,7 @@ void SurfacesInstance::SetSolidColorRootFrame() {
       viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.referenced_surfaces = GetChildIdsRanges();
   frame.metadata.device_scale_factor = device_scale_factor_;
+  frame.metadata.frame_token = ++next_frame_token_;
   support_->SubmitCompositorFrame(root_id_allocation_.local_surface_id(),
                                   std::move(frame));
 }

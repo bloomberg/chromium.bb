@@ -156,6 +156,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
 
   const bool enable_surface_synchronization_;
+  viz::FrameTokenGenerator next_frame_token_;
 
   THREAD_CHECKER(media_thread_checker_);
 

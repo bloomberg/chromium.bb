@@ -273,6 +273,7 @@ bool VideoFrameSubmitter::SubmitFrame(
   resource_provider_->AppendQuads(render_pass.get(), video_frame, rotation_,
                                   is_opaque_);
   compositor_frame.metadata.begin_frame_ack = begin_frame_ack;
+  compositor_frame.metadata.frame_token = ++next_frame_token_;
   // We don't assume that the ack is marked as having damage.  However, we're
   // definitely emitting a CompositorFrame that damages the entire surface.
   compositor_frame.metadata.begin_frame_ack.has_damage = true;
@@ -315,6 +316,7 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
 
   compositor_frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
+  compositor_frame.metadata.frame_token = ++next_frame_token_;
   compositor_frame.metadata.device_scale_factor = 1;
   compositor_frame.metadata.may_contain_video = true;
   compositor_frame.metadata.local_surface_id_allocation_time =

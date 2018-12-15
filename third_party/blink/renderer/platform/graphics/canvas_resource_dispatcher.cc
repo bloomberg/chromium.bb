@@ -218,6 +218,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
   }
   frame->metadata.begin_frame_ack = current_begin_frame_ack_;
 
+  frame->metadata.frame_token = ++next_frame_token_;
+
   const gfx::Rect bounds(size_.Width(), size_.Height());
   constexpr int kRenderPassId = 1;
   constexpr bool is_clipped = false;

@@ -36,6 +36,20 @@ inline bool FrameTokenGT(uint32_t token1, uint32_t token2) {
   return (token2 - token1) > 0x80000000u;
 }
 
+class VIZ_COMMON_EXPORT FrameTokenGenerator {
+ public:
+  inline uint32_t operator++() {
+    if (++frame_token_ == 0)
+      ++frame_token_;
+    return frame_token_;
+  }
+
+  inline uint32_t operator*() const { return frame_token_; }
+
+ private:
+  uint32_t frame_token_ = 0;
+};
+
 class VIZ_COMMON_EXPORT CompositorFrameMetadata {
  public:
   CompositorFrameMetadata();
@@ -126,7 +140,7 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // Once the display compositor presents a frame with
   // |request_presentation_feedback| flag turned on, a presentation feedback
   // will be provided to CompositorFrameSinkClient.
-  bool request_presentation_feedback = false;
+  bool request_presentation_feedback = true;
 
   // These limits can be used together with the scroll/scale fields above to
   // determine if scrolling/scaling in a particular direction is possible.

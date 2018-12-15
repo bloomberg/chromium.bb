@@ -53,6 +53,7 @@ void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
   frame.metadata.begin_frame_ack.sequence_number =
       viz::BeginFrameArgs::kStartingFrameNumber;
   frame.metadata.begin_frame_ack.has_damage = true;
+  frame.metadata.frame_token = ++holder->next_frame_token_;
   frame.metadata.device_scale_factor = holder->last_frame_device_scale_factor_;
   frame.metadata.local_surface_id_allocation_time =
       holder->last_local_surface_id_allocation_time_;
