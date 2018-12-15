@@ -41,6 +41,8 @@
 #define N_LEVELS 5
 // Size of square patches in the disflow dense grid
 #define PATCH_SIZE 5
+// Center point of square patch
+#define PATCH_CENTER ((PATCH_SIZE + 1) >> 1)
 // Minimum size of border padding for disflow
 #define MIN_PAD 7
 
@@ -332,6 +334,35 @@ get_ransac_double_prec_type(TransformationType type) {
     case TRANSLATION: return ransac_translation_double_prec;
     default: assert(0); return NULL;
   }
+}
+
+// Don't use points around the frame border since they are less reliable
+static INLINE int valid_point(int x, int y, int width, int height) {
+  return (x > (PATCH_SIZE + PATCH_CENTER)) &&
+         (x < (width - PATCH_SIZE - PATCH_CENTER)) &&
+         (y > (PATCH_SIZE + PATCH_CENTER)) &&
+         (y < (height - PATCH_SIZE - PATCH_CENTER));
+}
+
+static int determine_disflow_correspondence(int *frm_corners,
+                                            int num_frm_corners, double *flow_u,
+                                            double *flow_v, int width,
+                                            int height, int stride,
+                                            double *correspondences) {
+  int num_correspondences = 0;
+  int x, y;
+  for (int i = 0; i < num_frm_corners; ++i) {
+    x = frm_corners[2 * i];
+    y = frm_corners[2 * i + 1];
+    if (valid_point(x, y, width, height)) {
+      correspondences[4 * num_correspondences] = x;
+      correspondences[4 * num_correspondences + 1] = y;
+      correspondences[4 * num_correspondences + 2] = x + flow_u[y * stride + x];
+      correspondences[4 * num_correspondences + 3] = y + flow_v[y * stride + x];
+      num_correspondences++;
+    }
+  }
+  return num_correspondences;
 }
 
 double getCubicValue(double p[4], double x) {
@@ -647,6 +678,11 @@ static int compute_global_motion_disflow_based(
   const int ref_width = ref->y_width;
   const int ref_height = ref->y_height;
   const int pad_size = AOMMAX(PATCH_SIZE, MIN_PAD);
+  int num_frm_corners;
+  int num_correspondences;
+  double *correspondences;
+  int frm_corners[2 * MAX_CORNERS];
+  RansacFuncDouble ransac = get_ransac_double_prec_type(type);
   assert(frm_width == ref_width);
   assert(frm_height == ref_height);
 
@@ -683,14 +719,46 @@ static int compute_global_motion_disflow_based(
   compute_flow_pyramids(ref_buffer, ref_width, ref_height, ref->y_stride,
                         n_levels, pad_size, compute_gradient, ref_pyr);
 
+  double *flow_u =
+      aom_malloc(frm_pyr->strides[0] * frm_pyr->heights[0] * sizeof(*flow_u));
+  double *flow_v =
+      aom_malloc(frm_pyr->strides[0] * frm_pyr->heights[0] * sizeof(*flow_v));
+
+  memset(flow_u, 0,
+         frm_pyr->strides[0] * frm_pyr->heights[0] * sizeof(*flow_u));
+  memset(flow_v, 0,
+         frm_pyr->strides[0] * frm_pyr->heights[0] * sizeof(*flow_v));
+
   // TODO(sarahparker) Implement the rest of DISFlow, currently only the image
   // pyramid is implemented.
-  (void)num_inliers_by_motion;
-  (void)params_by_motion;
-  (void)num_motions;
-  (void)type;
+
+  // compute interest points in images using FAST features
+  num_frm_corners = fast_corner_detect(frm_buffer, frm_width, frm_height,
+                                       frm->y_stride, frm_corners, MAX_CORNERS);
+  // find correspondences between the two images using the flow field
+  correspondences = aom_malloc(num_frm_corners * 4 * sizeof(*correspondences));
+  num_correspondences = determine_disflow_correspondence(
+      frm_corners, num_frm_corners, flow_u, flow_v, frm_width, frm_height,
+      frm_pyr->strides[0], correspondences);
+  ransac(correspondences, num_correspondences, num_inliers_by_motion,
+         params_by_motion, num_motions);
+
   free_pyramid(frm_pyr);
   free_pyramid(ref_pyr);
+  aom_free(correspondences);
+  aom_free(flow_u);
+  aom_free(flow_v);
+  // Set num_inliers = 0 for motions with too few inliers so they are ignored.
+  for (int i = 0; i < num_motions; ++i) {
+    if (num_inliers_by_motion[i] < MIN_INLIER_PROB * num_correspondences) {
+      num_inliers_by_motion[i] = 0;
+    }
+  }
+
+  // Return true if any one of the motions has inliers.
+  for (int i = 0; i < num_motions; ++i) {
+    if (num_inliers_by_motion[i] > 0) return 1;
+  }
   return 0;
 }
 #endif
