@@ -3,5 +3,5 @@ export const description = `
 WebGPU conformance test suite.
 `;
 export const subtrees = [
-  import('./buffers'),
+  import("./buffers"),
 ];

@@ -6,6 +6,7 @@
   "scripts": {
     "check": "tsc",
     "lint": "tslint -p .",
+    "fix": "if git diff-index --quiet HEAD ; then tslint --fix -p . ; else echo 'Uncommitted changes may be overwritten'; fi",
     "build": "node build.js",
     "clean": "rm -rf out/",
     "unittests": "ts-node run.js ./src/framework/unittests",

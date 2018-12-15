@@ -4,7 +4,10 @@
     "tslint:latest"
   ],
   "jsRules": {},
-  "rules": {},
+  "rules": {
+    "no-empty": false,
+    "no-implicit-dependencies": [true, ["framework"]]
+  },
   "rulesDirectory": [],
   "linterOptions": {
     "exclude": [

@@ -3,5 +3,5 @@ export const description = `
 Unit tests for CTS framework.
 `;
 export const subtrees = [
-  import('./params'),
+  import("./params"),
 ];

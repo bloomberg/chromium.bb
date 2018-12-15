@@ -1,9 +1,9 @@
-import { ParamIterable } from './params';
+import { ParamIterable } from "./params";
 
-interface TestTreeModule {
+interface ITestTreeModule {
   name: string;
   description: string;
-  subtrees?: Promise<TestTreeModule>[];
+  subtrees?: Array<Promise<ITestTreeModule>>;
   add?: any;
 }
 
@@ -12,10 +12,18 @@ type TestFn = () => (Promise<void> | void);
 type Test = () => Promise<void>;
 
 export class TestTree {
-  name: string;
-  description: string;
-  subtrees: TestTree[];
-  tests: Test[];
+
+  public static async trunk(modules: Array<Promise<ITestTreeModule>>): Promise<TestTree> {
+    const trunk = new TestTree("", "");
+    for (const m of modules) {
+      trunk.recurse(await m);
+    }
+    return trunk;
+  }
+  public name: string;
+  public description: string;
+  public subtrees: TestTree[];
+  public tests: Test[];
 
   private constructor(name: string, description: string) {
     this.name = name;
@@ -24,15 +32,38 @@ export class TestTree {
     this.tests = [];
   }
 
-  static async trunk(modules: Promise<TestTreeModule>[]): Promise<TestTree> {
-    const trunk = new TestTree('', '');
-    for (const m of modules) {
-      trunk.recurse(await m);
-    }
-    return trunk;
+  public ptest(name: string, params: ParamIterable, fn: PTestFn): void {
+    this.tests.push(async () => {
+      for (const p of params) {
+        // tslint:disable-next-line:no-console
+        console.log("  * " + name + "/" + JSON.stringify(p));
+        await fn(p);
+      }
+    });
   }
 
-  private async recurse(m: TestTreeModule): Promise<void> {
+  public test(name: string, fn: TestFn): void {
+    this.tests.push(async () => {
+      // tslint:disable-next-line:no-console
+      console.log("  * " + name);
+      fn();
+    });
+  }
+
+  public async * run(path: string[] = []): AsyncIterable<void> {
+    const subtrees = await Promise.all(this.subtrees);
+    for (const t of this.tests) {
+      await t();
+    }
+    for (const st of subtrees) {
+      const subpath = path.concat([st.name]);
+      // tslint:disable-next-line:no-console
+      console.log("* " + subpath.join("/"));
+      yield* st.run(subpath);
+    }
+  }
+
+  private async recurse(m: ITestTreeModule): Promise<void> {
     const tt = new TestTree(m.name, m.description);
     if (m.subtrees) {
       for (const st of m.subtrees) {
@@ -43,33 +74,5 @@ export class TestTree {
       m.add(tt);
     }
     this.subtrees.push(tt);
-  }
-
-  ptest(name: string, params: ParamIterable, fn: PTestFn): void {
-    this.tests.push(async () => {
-      for (const p of params) {
-        console.log('  * ' + name + '/' + JSON.stringify(p));
-        await fn(p);
-      }
-    });
-  }
-
-  test(name: string, fn: TestFn): void {
-    this.tests.push(async () => {
-      console.log('  * ' + name);
-      fn();
-    });
-  }
-
-  async * run(path: string[] = []): AsyncIterable<void> {
-    const subtrees = await Promise.all(this.subtrees);
-    for (const t of this.tests) {
-      await t();
-    }
-    for (const st of subtrees) {
-      const subpath = path.concat([st.name]);
-      console.log('* ' + subpath.join('/'));
-      yield* st.run(subpath);
-    }
   }
 }
