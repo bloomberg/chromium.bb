@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/byte_buffer_queue.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_read_result.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_write_parameters.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 
 namespace blink {
@@ -65,8 +66,8 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   uint32_t maxWriteBufferedAmount() const;
   RTCQuicStreamReadResult* readInto(NotShared<DOMUint8Array> data,
                                     ExceptionState& exception_state);
-  void write(NotShared<DOMUint8Array> data, ExceptionState& exception_state);
-  void finish();
+  void write(const RTCQuicStreamWriteParameters* data,
+             ExceptionState& exception_state);
   void reset();
   ScriptPromise waitForWriteBufferedAmountBelow(
       ScriptState* script_state,
