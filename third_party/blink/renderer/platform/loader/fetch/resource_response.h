@@ -138,11 +138,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     SignedCertificateTimestampList sct_list;
   };
 
-  class ExtraData : public RefCounted<ExtraData> {
-   public:
-    virtual ~ExtraData() = default;
-  };
-
   ResourceResponse();
   explicit ResourceResponse(const KURL& current_request_url);
   ResourceResponse(const ResourceResponse&);
@@ -396,12 +391,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   int64_t DecodedBodyLength() const { return decoded_body_length_; }
   void SetDecodedBodyLength(int64_t value);
 
-  // Extra data associated with this response.
-  ExtraData* GetExtraData() const { return extra_data_.get(); }
-  void SetExtraData(scoped_refptr<ExtraData> extra_data) {
-    extra_data_ = std::move(extra_data);
-  }
-
   unsigned MemoryUsage() const {
     // average size, mostly due to URL and Header Map strings
     return 1280;
@@ -574,9 +563,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   // Sizes of the response body in bytes after any content-encoding is
   // removed.
   int64_t decoded_body_length_ = 0;
-
-  // ExtraData associated with the response.
-  scoped_refptr<ExtraData> extra_data_;
 };
 
 }  // namespace blink

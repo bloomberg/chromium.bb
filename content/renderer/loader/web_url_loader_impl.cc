@@ -36,7 +36,6 @@
 #include "content/renderer/loader/shared_memory_data_consumer_handle.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "content/renderer/loader/web_url_request_util.h"
-#include "content/renderer/loader/weburlresponse_extradata_impl.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -1192,10 +1191,6 @@ void WebURLLoaderImpl::PopulateURLResponse(
       info.is_signed_exchange_inner_response);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
-
-  WebURLResponseExtraDataImpl* extra_data = new WebURLResponseExtraDataImpl();
-  response->SetExtraData(extra_data);
-  extra_data->set_effective_connection_type(info.effective_connection_type);
 
   // If there's no received headers end time, don't set load timing.  This is
   // the case for non-HTTP requests, requests that don't go over the wire, and
