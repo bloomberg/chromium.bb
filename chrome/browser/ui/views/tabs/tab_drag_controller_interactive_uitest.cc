@@ -75,6 +75,7 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
@@ -83,6 +84,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #endif
 
@@ -3096,6 +3098,42 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_EQ(2u, browser_list->size());
+}
+
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
+                       FlingDownAtEndOfDrag) {
+  // Reduce the minimum fling velocity for this specific test case to cause the
+  // fling-down gesture in the middle of tab-dragging. This should end up with
+  // minimizing the window. See https://crbug.com/902897 for the details.
+  ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(1);
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  int detach_y = GetDetachY(tab_strip);
+  base::SimpleTestTickClock clock;
+  clock.SetNowTicks(base::TimeTicks::Now());
+  ui::SetEventTickClockForTesting(&clock);
+  ASSERT_TRUE(PressInput(tab_0_center));
+  clock.Advance(base::TimeDelta::FromMilliseconds(5));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + detach_y,
+      base::BindLambdaForTesting([&]() {
+        // Drag down again; this should cause a fling-down event.
+        clock.Advance(base::TimeDelta::FromMilliseconds(5));
+        ASSERT_TRUE(DragInputToNotifyWhenDone(
+            tab_0_center.x(), tab_0_center.y() + detach_y * 2,
+            base::BindLambdaForTesting([&]() {
+              clock.Advance(base::TimeDelta::FromMilliseconds(5));
+              ASSERT_TRUE(ReleaseInput());
+            })));
+      })));
+  QuitWhenNotDragging();
+
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_TRUE(browser()->window()->IsMinimized());
+  EXPECT_FALSE(browser()->window()->IsVisible());
+  ui::SetEventTickClockForTesting(nullptr);
 }
 
 namespace {
