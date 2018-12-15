@@ -130,6 +130,9 @@ class NET_EXPORT HttpNetworkSession {
     // Enables QUIC support.
     bool enable_quic;
 
+    // If true, HTTPS URLs can be sent to QUIC proxies.
+    bool enable_quic_proxies_for_https_urls;
+
     // QUIC runtime configuration options.
 
     // Versions of QUIC which may be used.

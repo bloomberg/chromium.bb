@@ -108,6 +108,7 @@ HttpNetworkSession::Params::Params()
       enable_http2_alternative_service(false),
       enable_websocket_over_http2(false),
       enable_quic(false),
+      enable_quic_proxies_for_https_urls(false),
       quic_max_packet_length(quic::kDefaultMaxPacketSize),
       quic_max_server_configs_stored_in_properties(0u),
       quic_enable_socket_recv_optimization(false),

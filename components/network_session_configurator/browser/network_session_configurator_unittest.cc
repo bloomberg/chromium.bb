@@ -70,6 +70,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(params_.enable_websocket_over_http2);
 
   EXPECT_FALSE(params_.enable_quic);
+  EXPECT_FALSE(params_.enable_quic_proxies_for_https_urls);
   EXPECT_EQ("Chrome/52.0.2709.0 Linux x86_64", params_.quic_user_agent_id);
   EXPECT_EQ(0u, params_.origins_to_force_quic_on.size());
 }

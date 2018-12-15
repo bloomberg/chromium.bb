@@ -7460,8 +7460,9 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushWithEmptyHostname) {
 }
 
 // Performs an HTTPS/1.1 request over QUIC proxy tunnel.
-TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyConnectHttpsServer) {
+TEST_P(QuicNetworkTransactionTest, QuicProxyConnectHttpsServer) {
   session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
       "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -7538,8 +7539,9 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyConnectHttpsServer) {
 }
 
 // Performs an HTTP/2 request over QUIC proxy tunnel.
-TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyConnectSpdyServer) {
+TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
   session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
       "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -7622,9 +7624,9 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyConnectSpdyServer) {
 
 // Make two HTTP/1.1 requests to the same host over a QUIC proxy tunnel and
 // check that the proxy socket is reused for the second request.
-TEST_P(QuicNetworkTransactionTest,
-       DISABLED_QuicProxyConnectReuseTransportSocket) {
+TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseTransportSocket) {
   session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
       "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -7752,8 +7754,9 @@ TEST_P(QuicNetworkTransactionTest,
 // Make an HTTP/1.1 request to one host and an HTTP/2 request to a different
 // host over a QUIC proxy tunnel. Check that the QUIC session to the proxy
 // server is reused for the second request.
-TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyConnectReuseQuicSession) {
+TEST_P(QuicNetworkTransactionTest, QuicProxyConnectReuseQuicSession) {
   session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
       "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -7894,8 +7897,9 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyConnectReuseQuicSession) {
 }
 
 // Sends a CONNECT request to a QUIC proxy and receive a 500 response.
-TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyConnectFailure) {
+TEST_P(QuicNetworkTransactionTest, QuicProxyConnectFailure) {
   session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
       "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -7941,8 +7945,9 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyConnectFailure) {
 }
 
 // Sends a CONNECT request to a QUIC proxy and get a UDP socket read error.
-TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyQuicConnectionError) {
+TEST_P(QuicNetworkTransactionTest, QuicProxyQuicConnectionError) {
   session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
       "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -7978,8 +7983,9 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyQuicConnectionError) {
 
 // Sends an HTTP/1.1 request over QUIC proxy tunnel and gets a bad cert from the
 // host. Retries request and succeeds.
-TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyConnectBadCertificate) {
+TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
   session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
       "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -8084,8 +8090,9 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyConnectBadCertificate) {
 
 // Checks if a request's specified "user-agent" header shows up correctly in the
 // CONNECT request to a QUIC proxy.
-TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyUserAgent) {
+TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
   session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
       "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -8127,8 +8134,9 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyUserAgent) {
 
 // Makes sure the CONNECT request packet for a QUIC proxy contains the correct
 // HTTP/2 stream dependency and weights given the request priority.
-TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyRequestPriority) {
+TEST_P(QuicNetworkTransactionTest, QuicProxyRequestPriority) {
   session_params_.enable_quic = true;
+  session_params_.enable_quic_proxies_for_https_urls = true;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
       "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -8165,7 +8173,7 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyRequestPriority) {
 
 // Test the request-challenge-retry sequence for basic auth, over a QUIC
 // connection when setting up a QUIC proxy tunnel.
-TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyAuth) {
+TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
   const base::string16 kBaz(base::ASCIIToUTF16("baz"));
   const base::string16 kFoo(base::ASCIIToUTF16("foo"));
   const spdy::SpdyPriority default_priority =
@@ -8187,6 +8195,7 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_QuicProxyAuth) {
         kDefaultServerHostName, quic::Perspective::IS_SERVER, false));
 
     session_params_.enable_quic = true;
+    session_params_.enable_quic_proxies_for_https_urls = true;
     proxy_resolution_service_ =
         ProxyResolutionService::CreateFixedFromPacResult(
             "QUIC proxy.example.org:70", TRAFFIC_ANNOTATION_FOR_TESTS);
