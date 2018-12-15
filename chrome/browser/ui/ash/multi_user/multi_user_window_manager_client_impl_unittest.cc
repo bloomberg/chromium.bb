@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl_test_helper.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
@@ -154,8 +155,7 @@ class MultiUserWindowManagerClientImplTest : public AshTestBase {
     fake_user_manager_->SwitchActiveUser(id);
     ash::MultiUserWindowManager::Get()->OnActiveUserSessionChanged(id);
     FlushWindowTreeClientMessages();
-    if (!features::IsUsingWindowService())
-      multi_user_window_manager_client_->FlushForTesting();
+    MultiUserWindowManagerClientImplTestHelper::FlushBindings();
   }
 
   // Set up the test environment for this many windows.
@@ -319,6 +319,10 @@ void MultiUserWindowManagerClientImplTest::SetUp() {
   EnsureTestUser(AccountId::FromUserEmail("a"));
   EnsureTestUser(AccountId::FromUserEmail("b"));
   EnsureTestUser(AccountId::FromUserEmail("c"));
+
+  // MultiUserWindowManager uses MusClient in single-process mash mode.
+  if (features::IsUsingWindowService())
+    ash_test_helper()->CreateMusClient();
 }
 
 void MultiUserWindowManagerClientImplTest::SetUpForThisManyWindows(
@@ -1613,17 +1617,8 @@ class MultiUserWindowManagerClientImplMashTest
     // This test configures views with mus, which means it triggers some of the
     // DCHECKs ensuring Shell's Env is used.
     SetRunningOutsideAsh();
-
-    // Configure views backed by mus.
-    views::MusClient::InitParams mus_client_init_params;
-    mus_client_init_params.connector =
-        ash_test_helper()->GetWindowServiceConnector();
-    mus_client_init_params.create_wm_state = false;
-    mus_client_init_params.running_in_ws_process = true;
-    mus_client_ = std::make_unique<views::MusClient>(mus_client_init_params);
   }
   void TearDown() override {
-    mus_client_.reset();
     MultiUserWindowManagerClientImplTest::TearDown();
     aura::test::EnvTestHelper().SetMode(original_aura_env_mode_);
   }
@@ -1635,7 +1630,7 @@ class MultiUserWindowManagerClientImplMashTest
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 200, 200);
     params.native_widget =
-        mus_client_->CreateNativeWidget(params, widget.get());
+        views::MusClient::Get()->CreateNativeWidget(params, widget.get());
     widget->Init(params);
     widget->Show();
     EXPECT_EQ(aura::Env::Mode::MUS, widget->GetNativeWindow()->env()->mode());
@@ -1648,7 +1643,6 @@ class MultiUserWindowManagerClientImplMashTest
  private:
   aura::Env::Mode original_aura_env_mode_ = aura::Env::Mode::LOCAL;
   base::test::ScopedFeatureList feature_list_;
-  std::unique_ptr<views::MusClient> mus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerClientImplMashTest);
 };
