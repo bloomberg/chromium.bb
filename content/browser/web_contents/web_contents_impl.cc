@@ -1826,15 +1826,6 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
     SetFocusedFrame(frame_tree_.root(),
                     outer_contents_frame->GetSiteInstance());
   }
-
-  // At this point, we should destroy the TextInputManager which will notify all
-  // the RWHV in this WebContents. The RWHV in this WebContents should use the
-  // TextInputManager owned by the outer WebContents.
-  // TODO(ekaramad): Is it possible to have TextInputState before attaching to
-  // outer WebContents? In such a case, is this still the right way to hand off
-  // state tracking from inner WebContents's TextInputManager to that of the
-  // outer WebContent (crbug.com/609846)?
-  text_input_manager_.reset(nullptr);
 }
 
 void WebContentsImpl::ReattachToOuterWebContentsFrame() {
@@ -3173,7 +3164,7 @@ TextInputManager* WebContentsImpl::GetTextInputManager() {
   if (GetOuterWebContents())
     return GetOuterWebContents()->GetTextInputManager();
 
-  if (!text_input_manager_) {
+  if (!text_input_manager_ && !browser_plugin_guest_) {
     text_input_manager_.reset(new TextInputManager(
         GetBrowserContext() &&
         !GetBrowserContext()->IsOffTheRecord()) /* should_do_learning */);
