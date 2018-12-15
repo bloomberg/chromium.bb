@@ -371,7 +371,10 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       return;
     }
 
-    Hide();
+    // Immediately hide the widget with no animation before running the remove
+    // user callback. If an animation is triggered while the the views hierarchy
+    // for this bubble is being torn down, we can get a crash.
+    GetWidget()->Hide();
 
     if (on_remove_user_requested_)
       std::move(on_remove_user_requested_).Run();

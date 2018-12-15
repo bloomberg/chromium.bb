@@ -68,10 +68,10 @@ class LoginBubbleHandler : public ui::EventHandler,
       return;
     }
 
-    if (bubble_->GetBubbleOpener() && bubble_->GetBubbleOpener()->HasFocus())
+    if (!bubble_->GetWidget() || !bubble_->GetWidget()->IsVisible())
       return;
 
-    if (!bubble_->GetWidget() || !bubble_->GetWidget()->IsVisible())
+    if (bubble_->GetBubbleOpener() && bubble_->GetBubbleOpener()->HasFocus())
       return;
 
     if (bubble_->GetWidget()->IsActive())
@@ -98,6 +98,9 @@ class LoginBubbleHandler : public ui::EventHandler,
 
  private:
   void ProcessPressedEvent(const ui::LocatedEvent* event) {
+    if (!bubble_->GetWidget() || !bubble_->GetWidget()->IsVisible())
+      return;
+
     gfx::Point screen_location = event->location();
     ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
                                &screen_location);
@@ -112,9 +115,6 @@ class LoginBubbleHandler : public ui::EventHandler,
             screen_location)) {
       return;
     }
-
-    if (!bubble_->GetWidget() || !bubble_->GetWidget()->IsVisible())
-      return;
 
     if (!bubble_->IsPersistent())
       bubble_->Hide();
