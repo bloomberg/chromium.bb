@@ -55,7 +55,9 @@
         {initialVirtualTime, policy: 'pause'}))
         .result.virtualTimeTicksBase;
     // Renderer wants the very first frame to be fully updated.
-    await this.dp_.HeadlessExperimental.beginFrame({noDisplayUpdates: false});
+    await this.dp_.HeadlessExperimental.beginFrame({
+        noDisplayUpdates: false,
+        frameTimeTicks: this.virtualTimeBase_});
 
     this.onInstalled_ = onInstalled;
     await this.grantTime(budget, onExpired);
