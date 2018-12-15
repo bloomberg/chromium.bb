@@ -25687,6 +25687,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="16" label="host(private)_host(public)"/>
   <int value="17" label="host(public)_host(private)"/>
   <int value="18" label="host(public)_host(public)"/>
+  <int value="19" label="host(named)_host(named)"/>
+  <int value="20" label="host(named)_host(private)"/>
+  <int value="21" label="host(named)_host(public)"/>
+  <int value="22" label="host(private)_host(named)"/>
+  <int value="23" label="host(public)_host(named)"/>
 </enum>
 
 <enum name="IceConnectionStates">
