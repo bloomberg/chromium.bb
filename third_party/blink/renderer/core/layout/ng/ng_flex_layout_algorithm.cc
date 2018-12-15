@@ -177,7 +177,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       FlexItem& flex_item = line->line_items[i];
 
       WritingMode child_writing_mode =
-          flex_item.box->StyleRef().GetWritingMode();
+          flex_item.ng_input_node.Style().GetWritingMode();
       NGConstraintSpaceBuilder space_builder(ConstraintSpace(),
                                              child_writing_mode,
                                              /* is_new_fc */ true);
@@ -200,8 +200,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       space_builder.SetPercentageResolutionSize(content_box_size_);
       NGConstraintSpace child_space = space_builder.ToConstraintSpace();
       flex_item.layout_result =
-          ToNGBlockNode(flex_item.ng_input_node)
-              .Layout(child_space, nullptr /*break token*/);
+          flex_item.ng_input_node.Layout(child_space, nullptr /*break token*/);
       flex_item.cross_axis_size =
           is_horizontal_flow
               ? flex_item.layout_result->PhysicalFragment()->Size().height
@@ -244,7 +243,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         flex_item.ComputeStretchedSize();
 
         WritingMode child_writing_mode =
-            flex_item.box->StyleRef().GetWritingMode();
+            flex_item.ng_input_node.Style().GetWritingMode();
         NGConstraintSpaceBuilder space_builder(ConstraintSpace(),
                                                child_writing_mode,
                                                /* is_new_fc */ true);
@@ -261,9 +260,8 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         space_builder.SetIsFixedSizeInline(true);
         space_builder.SetIsFixedSizeBlock(true);
         NGConstraintSpace child_space = space_builder.ToConstraintSpace();
-        flex_item.layout_result =
-            ToNGBlockNode(flex_item.ng_input_node)
-                .Layout(child_space, /* break_token */ nullptr);
+        flex_item.layout_result = flex_item.ng_input_node.Layout(
+            child_space, /* break_token */ nullptr);
       }
       container_builder_.AddChild(
           *flex_item.layout_result,
