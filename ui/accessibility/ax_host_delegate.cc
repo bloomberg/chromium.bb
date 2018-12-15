@@ -8,14 +8,14 @@
 
 namespace ui {
 
-bool AXHostDelegate::RequiresPerformActionPointInPixels() const {
+bool AXActionHandler::RequiresPerformActionPointInPixels() const {
   return false;
 }
 
-AXHostDelegate::AXHostDelegate()
+AXActionHandler::AXActionHandler()
     : tree_id_(AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(this)) {}
 
-AXHostDelegate::~AXHostDelegate() {
+AXActionHandler::~AXActionHandler() {
   AXTreeIDRegistry::GetInstance()->RemoveAXTreeID(tree_id_);
 }
 

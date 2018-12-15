@@ -41,7 +41,7 @@ using AuraAXTreeSerializer = ui::
     AXTreeSerializer<views::AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>;
 
 // Manages a tree of automation nodes.
-class AutomationManagerAura : public ui::AXHostDelegate,
+class AutomationManagerAura : public ui::AXActionHandler,
                               public views::AXAuraObjCache::Delegate,
                               public views::AXEventObserver {
  public:
@@ -59,7 +59,7 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   void HandleAlert(const std::string& text);
 
-  // AXHostDelegate implementation.
+  // AXActionHandler implementation.
   void PerformAction(const ui::AXActionData& data) override;
 
   // views::AXAuraObjCache::Delegate implementation.

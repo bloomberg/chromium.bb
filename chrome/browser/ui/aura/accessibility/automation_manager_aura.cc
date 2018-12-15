@@ -278,18 +278,18 @@ void AutomationManagerAura::PerformHitTest(
     child_ax_tree_id = ui::AXTreeID::FromString(*child_ax_tree_id_ptr);
 
   // If the window has a child AX tree ID, forward the action to the
-  // associated AXHostDelegate.
+  // associated AXActionHandler.
   if (child_ax_tree_id != ui::AXTreeIDUnknown()) {
     ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
-    ui::AXHostDelegate* delegate = registry->GetHostDelegate(child_ax_tree_id);
-
-    CHECK(delegate);
+    ui::AXActionHandler* action_handler =
+        registry->GetActionHandler(child_ax_tree_id);
+    CHECK(action_handler);
 
     // Convert to pixels for the RenderFrameHost HitTest, if required.
-    if (delegate->RequiresPerformActionPointInPixels())
+    if (action_handler->RequiresPerformActionPointInPixels())
       window->GetHost()->ConvertDIPToPixels(&action.target_point);
 
-    delegate->PerformAction(action);
+    action_handler->PerformAction(action);
     return;
   }
 

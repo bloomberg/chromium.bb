@@ -20,12 +20,12 @@ struct DefaultSingletonTraits;
 
 namespace ui {
 
-class AXHostDelegate;
+class AXActionHandler;
 
 // This class generates and saves a runtime id for an accessibility tree.
 // It provides a few distinct forms of generating an id:
 //     - from a frame id (which consists of a process and routing id)
-//     - from a backing |AXHostDelegate| object
+//     - from a backing |AXActionHandler| object
 //
 // The first form allows underlying instances to change but refer to the same
 // frame.
@@ -43,8 +43,8 @@ class AX_EXPORT AXTreeIDRegistry {
   // Gets an ax tree id from a frame id.
   AXTreeID GetAXTreeID(FrameID frame_id);
 
-  // Retrieve an |AXHostDelegate| based on an ax tree id.
-  AXHostDelegate* GetHostDelegate(AXTreeID ax_tree_id);
+  // Retrieve an |AXActionHandler| based on an ax tree id.
+  AXActionHandler* GetActionHandler(AXTreeID ax_tree_id);
 
   // Removes an ax tree id, and its associated delegate and frame id (if it
   // exists).
@@ -56,10 +56,10 @@ class AX_EXPORT AXTreeIDRegistry {
 
  private:
   friend struct base::DefaultSingletonTraits<AXTreeIDRegistry>;
-  friend AXHostDelegate;
+  friend AXActionHandler;
 
-  // Get or create a ax tree id keyed on |delegate|.
-  AXTreeID GetOrCreateAXTreeID(AXHostDelegate* delegate);
+  // Get or create a ax tree id keyed on |handler|.
+  AXTreeID GetOrCreateAXTreeID(AXActionHandler* handler);
 
   AXTreeIDRegistry();
   virtual ~AXTreeIDRegistry();
@@ -70,8 +70,8 @@ class AX_EXPORT AXTreeIDRegistry {
   // Maps frames to an accessibility tree via ids.
   std::map<FrameID, AXTreeID> frame_to_ax_tree_id_map_;
 
-  // Maps an id to its host delegate.
-  std::map<AXTreeID, AXHostDelegate*> id_to_host_delegate_;
+  // Maps an id to its handler.
+  std::map<AXTreeID, AXActionHandler*> id_to_action_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeIDRegistry);
 };

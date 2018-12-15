@@ -436,14 +436,14 @@ AutomationInternalPerformActionFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   ui::AXTreeIDRegistry* registry = ui::AXTreeIDRegistry::GetInstance();
-  ui::AXHostDelegate* delegate =
-      registry->GetHostDelegate(ui::AXTreeID::FromString(params->args.tree_id));
-  if (delegate) {
+  ui::AXActionHandler* action_handler = registry->GetActionHandler(
+      ui::AXTreeID::FromString(params->args.tree_id));
+  if (action_handler) {
 #if defined(USE_AURA)
     ui::AXActionData data;
     ExtensionFunction::ResponseAction result =
         ConvertToAXActionData(params.get(), &data);
-    delegate->PerformAction(data);
+    action_handler->PerformAction(data);
     return result;
 #else
     NOTREACHED();

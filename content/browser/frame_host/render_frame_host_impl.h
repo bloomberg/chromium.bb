@@ -168,7 +168,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public SiteInstanceImpl::Observer,
       public service_manager::mojom::InterfaceProvider,
       public CSPContext,
-      public ui::AXHostDelegate {
+      public ui::AXActionHandler {
  public:
   using AXTreeSnapshotCallback =
       base::OnceCallback<void(const ui::AXTreeUpdate&)>;
@@ -296,7 +296,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       GURL* blocked_url,
       SourceLocation* source_location) const override;
 
-  // ui::AXHostDelegate:
+  // ui::AXActionHandler:
   void PerformAction(const ui::AXActionData& data) override;
   bool RequiresPerformActionPointInPixels() const override;
 
