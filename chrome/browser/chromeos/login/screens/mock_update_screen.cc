@@ -11,7 +11,7 @@ namespace chromeos {
 
 MockUpdateScreen::MockUpdateScreen(BaseScreenDelegate* base_screen_delegate,
                                    UpdateView* view)
-    : UpdateScreen(base_screen_delegate, view, NULL) {}
+    : UpdateScreen(base_screen_delegate, view) {}
 
 MockUpdateScreen::~MockUpdateScreen() {}
 

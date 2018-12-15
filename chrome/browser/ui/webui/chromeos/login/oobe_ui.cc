@@ -44,7 +44,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/controller_pairing_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
@@ -57,7 +56,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/host_pairing_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
@@ -414,12 +412,6 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<ArcKioskSplashScreenHandler>());
 
-  if (display_type_ == kOobeDisplay) {
-    AddScreenHandler(std::make_unique<ControllerPairingScreenHandler>());
-
-    AddScreenHandler(std::make_unique<HostPairingScreenHandler>());
-  }
-
   AddScreenHandler(std::make_unique<DeviceDisabledScreenHandler>());
 
   AddScreenHandler(std::make_unique<EncryptionMigrationScreenHandler>());
@@ -604,14 +596,6 @@ AutoEnrollmentCheckScreenView* OobeUI::GetAutoEnrollmentCheckScreenView() {
 
 HIDDetectionView* OobeUI::GetHIDDetectionView() {
   return GetView<HIDDetectionScreenHandler>();
-}
-
-ControllerPairingScreenView* OobeUI::GetControllerPairingScreenView() {
-  return GetView<ControllerPairingScreenHandler>();
-}
-
-HostPairingScreenView* OobeUI::GetHostPairingScreenView() {
-  return GetView<HostPairingScreenHandler>();
 }
 
 DeviceDisabledScreenView* OobeUI::GetDeviceDisabledScreenView() {

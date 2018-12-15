@@ -198,7 +198,7 @@ class DemoSetupController
   void Enroll(OnSetupSuccess on_setup_success, OnSetupError on_setup_error);
 
   // EnterpriseEnrollmentHelper::EnrollmentStatusConsumer:
-  void OnDeviceEnrolled(const std::string& additional_token) override;
+  void OnDeviceEnrolled() override;
   void OnEnrollmentError(policy::EnrollmentStatus status) override;
   void OnAuthError(const GoogleServiceAuthError& error) override;
   void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;

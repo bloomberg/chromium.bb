@@ -77,7 +77,6 @@ const char kAccelNameVersion[] = "version";
 const char kAccelNameReset[] = "reset";
 const char kAccelNameDeviceRequisition[] = "device_requisition";
 const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
-const char kAccelNameDeviceRequisitionShark[] = "device_requisition_shark";
 const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
 const char kAccelNameAppLaunchNetworkConfig[] = "app_launch_network_config";
 const char kAccelNameBootstrappingSlave[] = "bootstrapping_slave";
@@ -148,10 +147,6 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
   accel_map_[
       ui::Accelerator(ui::VKEY_H, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameDeviceRequisitionRemora;
-  accel_map_[
-      ui::Accelerator(ui::VKEY_H,
-          ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameDeviceRequisitionShark;
 
   accel_map_[ui::Accelerator(ui::VKEY_S,
                              ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =

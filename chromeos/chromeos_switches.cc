@@ -449,9 +449,6 @@ const char kHideActiveAppsFromShelf[] = "hide-active-apps-from-shelf";
 // Defines user homedir. This defaults to primary user homedir.
 const char kHomedir[] = "homedir";
 
-// With this switch, start remora OOBE with the pairing screen.
-const char kHostPairingOobe[] = "host-pairing-oobe";
-
 // If true, profile selection in UserManager will always return active user's
 // profile.
 // TODO(nkostlyev): http://crbug.com/364604 - Get rid of this switch after we
@@ -489,9 +486,6 @@ const char kNeedArcMigrationPolicyCheck[] = "need-arc-migration-policy-check";
 // An optional comma-separated list of IDs of apps that can be used to take
 // notes. If unset, a hardcoded list is used instead.
 const char kNoteTakingAppIds[] = "note-taking-app-ids";
-
-// Indicates that if we should start bootstrapping Master OOBE.
-const char kOobeBootstrappingMaster[] = "oobe-bootstrapping-master";
 
 // Forces OOBE/login to force show a comma-separated list of screens from
 // chromeos::kScreenNames in oobe_screen.cc. Supported screens are:

@@ -44,7 +44,7 @@ EnterpriseEnrollmentHelper* MockDemoModeOnlineEnrollmentHelperCreator(
       .WillRepeatedly(testing::Invoke([mock]() {
         switch (result) {
           case DemoModeSetupResult::SUCCESS:
-            mock->status_consumer()->OnDeviceEnrolled("");
+            mock->status_consumer()->OnDeviceEnrolled();
             break;
           case DemoModeSetupResult::ERROR_POWERWASH_REQUIRED:
             mock->status_consumer()->OnEnrollmentError(
@@ -80,7 +80,7 @@ EnterpriseEnrollmentHelper* MockDemoModeOfflineEnrollmentHelperCreator(
       .WillRepeatedly(testing::Invoke([mock]() {
         switch (result) {
           case DemoModeSetupResult::SUCCESS:
-            mock->status_consumer()->OnDeviceEnrolled("");
+            mock->status_consumer()->OnDeviceEnrolled();
             break;
           case DemoModeSetupResult::ERROR_POWERWASH_REQUIRED:
             mock->status_consumer()->OnEnrollmentError(

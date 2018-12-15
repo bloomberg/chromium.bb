@@ -31,7 +31,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
-using pairing_chromeos::HostPairingController;
 
 namespace chromeos {
 
@@ -96,10 +95,6 @@ const double kMaxTimeLeft = 24 * 60 * 60;
 // its login page before error message appears.
 const int kDelayErrorMessageSec = 10;
 
-// The delay in milliseconds at which we will send the host status to the Master
-// device periodically during the updating process.
-const int kHostStatusReportDelay = 5 * 60 * 1000;
-
 // Invoked from call to RequestUpdateCheck upon completion of the DBus call.
 void StartUpdateCallback(UpdateScreen* screen,
                          UpdateEngineClient::UpdateCheckResult result) {
@@ -133,12 +128,10 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
 }
 
 UpdateScreen::UpdateScreen(BaseScreenDelegate* base_screen_delegate,
-                           UpdateView* view,
-                           HostPairingController* remora_controller)
+                           UpdateView* view)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_UPDATE),
       reboot_check_delay_(kWaitForRebootTimeSec),
       view_(view),
-      remora_controller_(remora_controller),
       histogram_helper_(new ErrorScreensHistogramHelper("Update")),
       weak_factory_(this) {
   if (view_)
@@ -182,7 +175,6 @@ void UpdateScreen::SetIgnoreIdleStatus(bool ignore_idle_status) {
 void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
   network_portal_detector::GetInstance()->RemoveObserver(this);
-  SetHostPairingControllerStatus(HostPairingController::UPDATE_STATUS_UPDATED);
 
   switch (reason) {
     case REASON_UPDATE_CANCELED:
@@ -247,8 +239,6 @@ void UpdateScreen::UpdateStatusChanged(
     case UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
       // Do nothing in these cases, we don't want to notify the user of the
       // check unless there is an update.
-      SetHostPairingControllerStatus(
-          HostPairingController::UPDATE_STATUS_UPDATING);
       break;
     case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
       MakeSureScreenIsShown();
@@ -316,8 +306,6 @@ void UpdateScreen::UpdateStatusChanged(
       if (HasCriticalUpdate()) {
         GetContextEditor().SetBoolean(kContextKeyShowCurtain, false);
         VLOG(1) << "Initiate reboot after update";
-        SetHostPairingControllerStatus(
-            HostPairingController::UPDATE_STATUS_REBOOTING);
         DBusThreadManager::Get()->GetUpdateEngineClient()->RebootAfterUpdate();
         reboot_timer_.Start(FROM_HERE,
                             base::TimeDelta::FromSeconds(reboot_check_delay_),
@@ -560,35 +548,6 @@ void UpdateScreen::OnWaitForRebootTimeElapsed() {
 void UpdateScreen::MakeSureScreenIsShown() {
   if (!is_shown_)
     get_base_screen_delegate()->ShowCurrentScreen();
-}
-
-void UpdateScreen::SetHostPairingControllerStatus(
-    HostPairingController::UpdateStatus update_status) {
-  if (!remora_controller_)
-    return;
-
-  static bool is_update_in_progress = true;
-
-  if (update_status > HostPairingController::UPDATE_STATUS_UPDATING) {
-    // Set |is_update_in_progress| to false to prevent sending the scheduled
-    // UPDATE_STATUS_UPDATING message after UPDATE_STATUS_UPDATED or
-    // UPDATE_STATUS_REBOOTING is received.
-    is_update_in_progress = false;
-    remora_controller_->OnUpdateStatusChanged(update_status);
-    return;
-  }
-
-  if (is_update_in_progress) {
-    DCHECK_EQ(update_status, HostPairingController::UPDATE_STATUS_UPDATING);
-    remora_controller_->OnUpdateStatusChanged(update_status);
-
-    // Send UPDATE_STATUS_UPDATING message every |kHostStatusReportDelay|ms.
-    base::SequencedTaskRunnerHandle::Get()->PostNonNestableDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&UpdateScreen::SetHostPairingControllerStatus,
-                       weak_factory_.GetWeakPtr(), update_status),
-        base::TimeDelta::FromMilliseconds(kHostStatusReportDelay));
-  }
 }
 
 ErrorScreen* UpdateScreen::GetErrorScreen() {

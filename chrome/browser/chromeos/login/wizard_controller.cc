@@ -117,9 +117,6 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/crash/content/app/breakpad_linux.h"
-#include "components/pairing/bluetooth_controller_pairing_controller.h"
-#include "components/pairing/bluetooth_host_pairing_controller.h"
-#include "components/pairing/shark_connection_listener.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -227,51 +224,6 @@ bool IsRemoraRequisition() {
   return policy_manager && policy_manager->IsRemoraRequisition();
 }
 
-bool IsSharkRequisition() {
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetDeviceCloudPolicyManager();
-  return policy_manager && policy_manager->IsSharkRequisition();
-}
-
-// Checks if a controller device ("Master") is detected during the bootstrapping
-// or shark/remora setup process.
-bool IsControllerDetected() {
-  return g_browser_process->local_state()->GetBoolean(
-      prefs::kOobeControllerDetected);
-}
-
-void SetControllerDetectedPref(bool value) {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kOobeControllerDetected, value);
-  prefs->CommitPendingWrite();
-}
-
-// Checks if the device is a "slave" device in the bootstrapping process.
-bool IsBootstrappingSlave() {
-  return g_browser_process->local_state()->GetBoolean(
-      prefs::kIsBootstrappingSlave);
-}
-
-// Checks if the device is a "Master" device in the bootstrapping process.
-bool IsBootstrappingMaster() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kOobeBootstrappingMaster);
-}
-
-bool NetworkAllowUpdate(const chromeos::NetworkState* network) {
-  if (!network || !network->IsConnectedState())
-    return false;
-  if (network->type() == shill::kTypeBluetooth ||
-      (network->type() == shill::kTypeCellular &&
-       !help_utils_chromeos::IsUpdateOverCellularAllowed(
-           false /* interactive */))) {
-    return false;
-  }
-  return true;
-}
-
 // Return false if the logged in user is a managed or child account. Otherwise,
 // return true if the feature flag for recommend app screen is on.
 bool ShouldShowRecommendAppsScreen() {
@@ -344,12 +296,6 @@ WizardController::WizardController()
 
 WizardController::~WizardController() {
   screen_manager_.reset();
-  // |remora_controller| has to be reset after |screen_manager_| is reset.
-  remora_controller_.reset();
-  if (shark_connection_listener_.get()) {
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-        FROM_HERE, shark_connection_listener_.release());
-  }
 }
 
 void WizardController::Init(OobeScreen first_screen) {
@@ -387,24 +333,14 @@ void WizardController::Init(OobeScreen first_screen) {
     }
   }
 
-  // If the device is a Master device in bootstrapping process (mostly for demo
-  // and test purpose), start the enrollment OOBE flow.
-  if (IsBootstrappingMaster())
-    connector->GetDeviceCloudPolicyManager()->SetDeviceEnrollmentAutoStart();
-
   // Use the saved screen preference from Local State.
   const std::string screen_pref =
       GetLocalState()->GetString(prefs::kOobeScreenPending);
-  if (is_out_of_box_ && !screen_pref.empty() && !IsRemoraPairingOobe() &&
-      !IsControllerDetected() &&
+  if (is_out_of_box_ && !screen_pref.empty() &&
       (first_screen == OobeScreen::SCREEN_UNKNOWN ||
        first_screen == OobeScreen::SCREEN_TEST_NO_WINDOW)) {
     first_screen_ = GetOobeScreenFromName(screen_pref);
   }
-  // We need to reset the kOobeControllerDetected pref to allow the user to have
-  // the choice to setup the device manually. The pref will be set properly if
-  // an eligible controller is detected later.
-  SetControllerDetectedPref(false);
 
   AdvanceToScreen(first_screen_);
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
@@ -437,8 +373,7 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
     return std::make_unique<NetworkScreen>(this,
                                            oobe_ui->GetNetworkScreenView());
   } else if (screen == OobeScreen::SCREEN_OOBE_UPDATE) {
-    return std::make_unique<UpdateScreen>(this, oobe_ui->GetUpdateView(),
-                                          remora_controller_.get());
+    return std::make_unique<UpdateScreen>(this, oobe_ui->GetUpdateView());
   } else if (screen == OobeScreen::SCREEN_USER_IMAGE_PICKER) {
     return std::make_unique<UserImageScreen>(this, oobe_ui->GetUserImageView());
   } else if (screen == OobeScreen::SCREEN_OOBE_EULA) {
@@ -488,28 +423,6 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK) {
     return std::make_unique<AutoEnrollmentCheckScreen>(
         this, oobe_ui->GetAutoEnrollmentCheckScreenView());
-  } else if (screen == OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING) {
-    if (!shark_controller_) {
-      shark_controller_ = std::make_unique<
-          pairing_chromeos::BluetoothControllerPairingController>();
-    }
-    return std::make_unique<ControllerPairingScreen>(
-        this, this, oobe_ui->GetControllerPairingScreenView(),
-        shark_controller_.get());
-  } else if (screen == OobeScreen::SCREEN_OOBE_HOST_PAIRING) {
-    if (!remora_controller_) {
-      DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-      DCHECK(content::ServiceManagerConnection::GetForProcess());
-      service_manager::Connector* connector =
-          content::ServiceManagerConnection::GetForProcess()->GetConnector();
-      remora_controller_ =
-          std::make_unique<pairing_chromeos::BluetoothHostPairingController>(
-              connector);
-      remora_controller_->StartPairing();
-    }
-    return std::make_unique<HostPairingScreen>(
-        this, this, oobe_ui->GetHostPairingScreenView(),
-        remora_controller_.get());
   } else if (screen == OobeScreen::SCREEN_DEVICE_DISABLED) {
     return std::make_unique<DeviceDisabledScreen>(
         this, oobe_ui->GetDeviceDisabledScreenView());
@@ -561,17 +474,6 @@ void WizardController::ShowWelcomeScreen() {
   VLOG(1) << "Showing welcome screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_WELCOME));
-
-  // There are two possible screens where we listen to the incoming Bluetooth
-  // connection request: the first one is the HID detection screen, which will
-  // show up when there is no sufficient input devices. In this case, we just
-  // keep the logic as it is today: always put the Bluetooth is discoverable
-  // mode. The other place is the Network screen (here), which will show up when
-  // there are input devices detected. In this case, we disable the Bluetooth by
-  // default until the user explicitly enable it by pressing a key combo (Ctrl+
-  // Alt+Shift+S).
-  if (IsBootstrappingSlave())
-    MaybeStartListeningForSharkConnection();
 }
 
 void WizardController::ShowNetworkScreen() {
@@ -756,23 +658,6 @@ void WizardController::ShowHIDDetectionScreen() {
   VLOG(1) << "Showing HID discovery screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION));
-  // In HID detection screen, puts the Bluetooth in discoverable mode and waits
-  // for the incoming Bluetooth connection request. See the comments in
-  // WizardController::ShowWelcomeScreen() for more details.
-  MaybeStartListeningForSharkConnection();
-}
-
-void WizardController::ShowControllerPairingScreen() {
-  VLOG(1) << "Showing controller pairing screen.";
-  UpdateStatusAreaVisibilityForScreen(
-      OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING);
-  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING));
-}
-
-void WizardController::ShowHostPairingScreen() {
-  VLOG(1) << "Showing host pairing screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_HOST_PAIRING);
-  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_HOST_PAIRING));
 }
 
 void WizardController::ShowDeviceDisabledScreen() {
@@ -857,11 +742,6 @@ void WizardController::SkipToUpdateForTesting() {
   InitiateOOBEUpdate();
 }
 
-pairing_chromeos::SharkConnectionListener*
-WizardController::GetSharkConnectionListenerForTesting() {
-  return shark_connection_listener_.get();
-}
-
 void WizardController::SkipUpdateEnrollAfterEula() {
   skip_update_enroll_after_eula_ = true;
 }
@@ -936,13 +816,7 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
-  if (IsSharkRequisition() || IsBootstrappingMaster()) {
-    ShowControllerPairingScreen();
-  } else if (IsControllerDetected()) {
-    ShowHostPairingScreen();
-  } else {
-    ShowAutoEnrollmentCheckScreen();
-  }
+  ShowAutoEnrollmentCheckScreen();
 }
 
 void WizardController::OnUpdateOverCellularRejected() {
@@ -1174,10 +1048,6 @@ void WizardController::OnMultiDeviceSetupFinished() {
   OnOobeFlowFinished();
 }
 
-void WizardController::OnControllerPairingFinished() {
-  ShowAutoEnrollmentCheckScreen();
-}
-
 void WizardController::OnAutoEnrollmentCheckCompleted() {
   // Check whether the device is disabled. OnDeviceDisabledChecked() will be
   // invoked when the result of this check is known. Until then, the current
@@ -1350,9 +1220,6 @@ void WizardController::PerformOOBECompletedActions() {
   GetLocalState()->ClearPref(prefs::kTimesHIDDialogShown);
   StartupUtils::MarkOobeCompleted();
   oobe_marked_completed_ = true;
-
-  if (shark_connection_listener_.get())
-    shark_connection_listener_->ResetController();
 }
 
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {
@@ -1423,9 +1290,7 @@ void WizardController::UpdateStatusAreaVisibilityForScreen(OobeScreen screen) {
              screen == OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING ||
              screen == OobeScreen::SCREEN_WRONG_HWID ||
              screen == OobeScreen::SCREEN_SUPERVISION_TRANSITION ||
-             screen == OobeScreen::SCREEN_ARC_KIOSK_SPLASH ||
-             screen == OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING ||
-             screen == OobeScreen::SCREEN_OOBE_HOST_PAIRING) {
+             screen == OobeScreen::SCREEN_ARC_KIOSK_SPLASH) {
     GetLoginDisplayHost()->SetStatusAreaVisible(false);
   } else {
     GetLoginDisplayHost()->SetStatusAreaVisible(true);
@@ -1510,10 +1375,6 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowArcKioskSplashScreen();
   } else if (screen == OobeScreen::SCREEN_OOBE_HID_DETECTION) {
     ShowHIDDetectionScreen();
-  } else if (screen == OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING) {
-    ShowControllerPairingScreen();
-  } else if (screen == OobeScreen::SCREEN_OOBE_HOST_PAIRING) {
-    ShowHostPairingScreen();
   } else if (screen == OobeScreen::SCREEN_DEVICE_DISABLED) {
     ShowDeviceDisabledScreen();
   } else if (screen == OobeScreen::SCREEN_ENCRYPTION_MIGRATION) {
@@ -1539,10 +1400,7 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
-
-      if (IsRemoraPairingOobe() || IsControllerDetected()) {
-        ShowHostPairingScreen();
-      } else if (CanShowHIDDetectionScreen()) {
+      if (CanShowHIDDetectionScreen()) {
         hid_screen_ = GetScreen(OobeScreen::SCREEN_OOBE_HID_DETECTION);
         base::Callback<void(bool)> on_check =
             base::Bind(&WizardController::OnHIDScreenNecessityCheck,
@@ -1670,9 +1528,6 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
     case ScreenExitCode::WRONG_HWID_WARNING_SKIPPED:
       OnWrongHWIDWarningSkipped();
       break;
-    case ScreenExitCode::CONTROLLER_PAIRING_FINISHED:
-      OnControllerPairingFinished();
-      break;
     case ScreenExitCode::VOICE_INTERACTION_VALUE_PROP_SKIPPED:
       OnVoiceInteractionValuePropSkipped();
       break;
@@ -1749,75 +1604,6 @@ void WizardController::SetUsageStatisticsReporting(bool val) {
 
 bool WizardController::GetUsageStatisticsReporting() const {
   return usage_statistics_reporting_;
-}
-
-void WizardController::SetHostNetwork() {
-  if (!shark_controller_)
-    return;
-  std::string onc_spec;
-  network_state_helper_->GetConnectedWifiNetwork(&onc_spec);
-  if (!onc_spec.empty())
-    shark_controller_->SetHostNetwork(onc_spec);
-}
-
-void WizardController::SetHostConfiguration() {
-  if (!shark_controller_)
-    return;
-  WelcomeScreen* welcome_screen = WelcomeScreen::Get(screen_manager());
-  shark_controller_->SetHostConfiguration(
-      true,  // Eula must be accepted before we get this far.
-      welcome_screen->GetApplicationLocale(), welcome_screen->GetTimezone(),
-      GetUsageStatisticsReporting(), welcome_screen->GetInputMethod());
-}
-
-void WizardController::ConfigureHostRequested(
-    bool accepted_eula,
-    const std::string& lang,
-    const std::string& timezone,
-    bool send_reports,
-    const std::string& keyboard_layout) {
-  VLOG(1) << "ConfigureHost locale=" << lang << ", timezone=" << timezone
-          << ", keyboard_layout=" << keyboard_layout;
-  if (accepted_eula)  // Always true.
-    StartupUtils::MarkEulaAccepted();
-  SetUsageStatisticsReporting(send_reports);
-
-  WelcomeScreen* welcome_screen = WelcomeScreen::Get(screen_manager());
-  welcome_screen->SetApplicationLocaleAndInputMethod(lang, keyboard_layout);
-  welcome_screen->SetTimezone(timezone);
-
-  // Don't block the OOBE update and the following enrollment process if there
-  // is available and valid network already.
-  const chromeos::NetworkState* network_state = chromeos::NetworkHandler::Get()
-                                                    ->network_state_handler()
-                                                    ->DefaultNetwork();
-  if (NetworkAllowUpdate(network_state))
-    InitiateOOBEUpdate();
-}
-
-void WizardController::AddNetworkRequested(const std::string& onc_spec) {
-  remora_controller_->OnNetworkConnectivityChanged(
-      pairing_chromeos::HostPairingController::CONNECTIVITY_CONNECTING);
-
-  const chromeos::NetworkState* network_state = chromeos::NetworkHandler::Get()
-                                                    ->network_state_handler()
-                                                    ->DefaultNetwork();
-  if (NetworkAllowUpdate(network_state)) {
-    network_state_helper_->CreateAndConnectNetworkFromOnc(
-        onc_spec, base::DoNothing(), network_handler::ErrorCallback());
-  } else {
-    network_state_helper_->CreateAndConnectNetworkFromOnc(
-        onc_spec,
-        base::Bind(&WizardController::OnSetHostNetworkSuccessful,
-                   weak_factory_.GetWeakPtr()),
-        base::Bind(&WizardController::OnSetHostNetworkFailed,
-                   weak_factory_.GetWeakPtr()));
-  }
-}
-
-void WizardController::RebootHostRequested() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
-      power_manager::REQUEST_RESTART_OTHER, "login wizard reboot host");
 }
 
 void WizardController::OnEnableDebuggingScreenRequested() {
@@ -2037,11 +1823,6 @@ bool WizardController::SetOnTimeZoneResolvedForTesting(
   return true;
 }
 
-bool WizardController::IsRemoraPairingOobe() const {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHostPairingOobe);
-}
-
 bool WizardController::ShouldShowVoiceInteractionValueProp() const {
   // If the OOBE flow was initiated from voice interaction shortcut, we will
   // show Arc terms later.
@@ -2065,57 +1846,6 @@ void WizardController::StartVoiceInteractionSetupWizard() {
           ProfileManager::GetActiveUserProfile());
   if (service)
     service->StartVoiceInteractionSetupWizard();
-}
-
-void WizardController::MaybeStartListeningForSharkConnection() {
-  // We shouldn't be here if we are running pairing OOBE already.
-  if (IsControllerDetected())
-    return;
-
-  if (!shark_connection_listener_) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(content::ServiceManagerConnection::GetForProcess());
-    service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    shark_connection_listener_ =
-        std::make_unique<pairing_chromeos::SharkConnectionListener>(
-            connector, base::Bind(&WizardController::OnSharkConnected,
-                                  weak_factory_.GetWeakPtr()));
-  }
-}
-
-void WizardController::OnSharkConnected(
-    std::unique_ptr<pairing_chromeos::HostPairingController>
-        remora_controller) {
-  VLOG(1) << "OnSharkConnected";
-  remora_controller_ = std::move(remora_controller);
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-      FROM_HERE, shark_connection_listener_.release());
-  SetControllerDetectedPref(true);
-  ShowHostPairingScreen();
-}
-
-void WizardController::OnSetHostNetworkSuccessful() {
-  remora_controller_->OnNetworkConnectivityChanged(
-      pairing_chromeos::HostPairingController::CONNECTIVITY_CONNECTED);
-  InitiateOOBEUpdate();
-}
-
-void WizardController::OnSetHostNetworkFailed(
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  std::string error_message;
-  JSONStringValueSerializer serializer(&error_message);
-  serializer.Serialize(*error_data);
-  error_message = error_name + ": " + error_message;
-
-  remora_controller_->SetErrorCodeAndMessage(
-      static_cast<int>(
-          pairing_chromeos::HostPairingController::ErrorCode::NETWORK_ERROR),
-      error_message);
-
-  remora_controller_->OnNetworkConnectivityChanged(
-      pairing_chromeos::HostPairingController::CONNECTIVITY_NONE);
 }
 
 void WizardController::StartEnrollmentScreen(bool force_interactive) {
@@ -2155,7 +1885,7 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
   }
 
   EnrollmentScreen* screen = EnrollmentScreen::Get(screen_manager());
-  screen->SetParameters(effective_config, shark_controller_.get());
+  screen->SetEnrollmentConfig(effective_config);
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
   SetCurrentScreen(screen);
 }

@@ -52,8 +52,8 @@ class EnrollmentScreenView {
   virtual ~EnrollmentScreenView() {}
 
   // Initializes the view with parameters.
-  virtual void SetParameters(Controller* controller,
-                             const policy::EnrollmentConfig& config) = 0;
+  virtual void SetEnrollmentConfig(Controller* controller,
+                                   const policy::EnrollmentConfig& config) = 0;
 
   // Shows the contents of the screen.
   virtual void Show() = 0;

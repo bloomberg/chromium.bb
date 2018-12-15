@@ -97,7 +97,7 @@ class HandsOffEnrollmentTest : public InProcessBrowserTest {
       EXPECT_CALL(*mock, EnrollUsingAttestation())
           .Times(testing::AnyNumber())
           .WillRepeatedly(testing::Invoke(
-              [mock]() { mock->status_consumer()->OnDeviceEnrolled(""); }));
+              [mock]() { mock->status_consumer()->OnDeviceEnrolled(); }));
       EXPECT_CALL(*mock, GetDeviceAttributeUpdatePermission())
           .Times(testing::AnyNumber())
           .WillRepeatedly(testing::Invoke([mock]() {

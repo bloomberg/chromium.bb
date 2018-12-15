@@ -417,15 +417,6 @@ Polymer({
   },
 
   /**
-   * Handle click on "Enable remote enrollment" option.
-   *
-   * @private
-   */
-  onEEBootstrappingClicked_: function() {
-    cr.ui.Oobe.handleAccelerator(ACCELERATOR_BOOTSTRAPPING_SLAVE);
-  },
-
-  /**
    * Handle click on "Set up as CFM device" option.
    *
    * @private

@@ -1844,11 +1844,6 @@ const char kOobeComplete[] = "OobeComplete";
 // The name of the screen that has to be shown if OOBE has been interrupted.
 const char kOobeScreenPending[] = "OobeScreenPending";
 
-// A boolean pref to indicate if an eligible controller (either a Chrome OS
-// device, or an Android device) is detected during bootstrapping or
-// shark/remora setup process. A controller can help the device go through OOBE
-// and get enrolled into a domain automatically.
-const char kOobeControllerDetected[] = "OobeControllerDetected";
 
 // A boolean pref to indicate if the marketing opt-in screen in OOBE is finished
 // for the user.
@@ -1885,10 +1880,6 @@ const char kCustomizationDefaultWallpaperURL[] =
 // This is saved to file and cleared after chrome process starts.
 const char kLogoutStartedLast[] = "chromeos.logout-started";
 
-// The role of the device in the OOBE bootstrapping process. If it's a "slave"
-// device, then it's eligible to be enrolled by a "master" device (which could
-// be an Android app).
-const char kIsBootstrappingSlave[] = "is_oobe_bootstrapping_slave";
 
 // A boolean preference controlling Android status reporting.
 const char kReportArcStatusEnabled[] = "arc.status_reporting_enabled";

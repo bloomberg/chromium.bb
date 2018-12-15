@@ -640,8 +640,7 @@ void DemoSetupController::OnOtherError(
   SetupFailed(DemoSetupError::CreateFromOtherEnrollmentError(error));
 }
 
-void DemoSetupController::OnDeviceEnrolled(
-    const std::string& additional_token) {
+void DemoSetupController::OnDeviceEnrolled() {
   DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone);
 
   // Try to load the policy for the device local account.

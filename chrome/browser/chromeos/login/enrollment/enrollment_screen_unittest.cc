@@ -20,7 +20,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/pairing/fake_controller_pairing_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -31,13 +30,13 @@ namespace chromeos {
 
 class EnrollmentScreenUnitTest : public testing::Test {
  public:
-  EnrollmentScreenUnitTest() : fake_controller_("") {}
+  EnrollmentScreenUnitTest() = default;
 
   // Creates the EnrollmentScreen and sets required parameters.
   virtual void SetUpEnrollmentScreen() {
     enrollment_screen_.reset(
         new EnrollmentScreen(&mock_delegate_, &mock_view_));
-    enrollment_screen_->SetParameters(enrollment_config_, &fake_controller_);
+    enrollment_screen_->SetEnrollmentConfig(enrollment_config_);
   }
 
   // Fast forwards time by the specified amount.
@@ -72,7 +71,6 @@ class EnrollmentScreenUnitTest : public testing::Test {
   ScopedStubInstallAttributes test_install_attributes_;
 
   // Objects required by the EnrollmentScreen that can be re-used.
-  pairing_chromeos::FakeControllerPairingController fake_controller_;
   MockBaseScreenDelegate mock_delegate_;
   MockEnrollmentScreenView mock_view_;
 
@@ -357,7 +355,7 @@ TEST_F(MultiLicenseEnrollmentScreenUnitTest, TestLicenseSelection) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MultiLicenseEnrollmentScreenUnitTest::MockEnrollmentHelperCreator);
 
-  EXPECT_CALL(*GetMockScreenView(), SetParameters(_, _)).Times(1);
+  EXPECT_CALL(*GetMockScreenView(), SetEnrollmentConfig(_, _)).Times(1);
 
   SetUpEnrollmentScreen();
 

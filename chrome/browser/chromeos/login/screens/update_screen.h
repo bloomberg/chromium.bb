@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "components/pairing/host_pairing_controller.h"
 
 namespace chromeos {
 
@@ -39,9 +38,7 @@ class UpdateScreen : public BaseScreen,
   // Returns true if this instance is still active (i.e. has not been deleted).
   static bool HasInstance(UpdateScreen* inst);
 
-  UpdateScreen(BaseScreenDelegate* base_screen_delegate,
-               UpdateView* view,
-               pairing_chromeos::HostPairingController* remora_controller);
+  UpdateScreen(BaseScreenDelegate* base_screen_delegate, UpdateView* view);
   ~UpdateScreen() override;
 
   // Called when the being destroyed. This should call Unbind() on the
@@ -115,10 +112,6 @@ class UpdateScreen : public BaseScreen,
   // Checks that screen is shown, shows if not.
   void MakeSureScreenIsShown();
 
-  // Send update status to host pairing controller.
-  void SetHostPairingControllerStatus(
-      pairing_chromeos::HostPairingController::UpdateStatus update_status);
-
   // Returns an instance of the error screen.
   ErrorScreen* GetErrorScreen();
 
@@ -165,9 +158,6 @@ class UpdateScreen : public BaseScreen,
   bool ignore_idle_status_ = true;
 
   UpdateView* view_ = nullptr;
-
-  // Used to track updates over Bluetooth.
-  pairing_chromeos::HostPairingController* remora_controller_;
 
   // Time of the first notification from the downloading stage.
   base::Time download_start_time_;

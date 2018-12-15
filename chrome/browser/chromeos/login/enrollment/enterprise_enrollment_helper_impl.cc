@@ -368,7 +368,7 @@ void EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished(
   if (status.status() == policy::EnrollmentStatus::SUCCESS) {
     success_ = true;
     StartupUtils::MarkOobeCompleted();
-    status_consumer()->OnDeviceEnrolled(additional_token_);
+    status_consumer()->OnDeviceEnrolled();
   } else {
     status_consumer()->OnEnrollmentError(status);
   }

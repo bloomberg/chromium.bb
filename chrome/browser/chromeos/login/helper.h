@@ -75,9 +75,11 @@ class NetworkStateHelper {
   // mode. Note currently only unsecured Wifi network configuration can be
   // gotten since there is no way to get password for a secured Wifi newwork
   // in Cros for security reasons.
+  // TODO (alemate): Unused, remove.
   virtual void GetConnectedWifiNetwork(std::string* out_onc_spec);
 
   // Add and apply a network configuration. Used in shark/remora mode.
+  // TODO (alemate): Unused, remove.
   virtual void CreateAndConnectNetworkFromOnc(
       const std::string& onc_spec,
       const base::Closure& success_callback,

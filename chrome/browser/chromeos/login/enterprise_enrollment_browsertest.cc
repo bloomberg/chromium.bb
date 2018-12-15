@@ -229,7 +229,7 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
 
   // Completes the enrollment process.
   void CompleteEnrollment() {
-    enrollment_screen()->OnDeviceEnrolled(std::string());
+    enrollment_screen()->OnDeviceEnrolled();
 
     // Make sure all other pending JS calls have complete.
     ExecutePendingJavaScript();
@@ -687,7 +687,7 @@ class EnterpriseEnrollmentConfigurationTest
                       EnrollUsingEnrollmentToken(
                           "00000000-1111-2222-3333-444444444444"))
               .WillOnce(InvokeWithoutArgs([enrollment_helper]() {
-                enrollment_helper->status_consumer()->OnDeviceEnrolled("");
+                enrollment_helper->status_consumer()->OnDeviceEnrolled();
               }));
         });
   }

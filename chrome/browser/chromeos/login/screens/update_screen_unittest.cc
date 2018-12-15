@@ -20,7 +20,6 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/mock_network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "components/pairing/fake_host_pairing_controller.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,9 +31,7 @@ namespace chromeos {
 
 class UpdateScreenUnitTest : public testing::Test {
  public:
-  UpdateScreenUnitTest()
-      : fake_controller_(""),
-        local_state_(TestingBrowserProcess::GetGlobal()) {}
+  UpdateScreenUnitTest() : local_state_(TestingBrowserProcess::GetGlobal()) {}
 
   // Simulates an update being available (or not).
   // The parameter "update_screen" points to the currently active UpdateScreen.
@@ -104,7 +101,6 @@ class UpdateScreenUnitTest : public testing::Test {
   MockUpdateView mock_view_;
   MockNetworkErrorView mock_error_view_;
   UpdateEngineClient::Status update_engine_status_;
-  pairing_chromeos::FakeHostPairingController fake_controller_;
   std::unique_ptr<MockErrorScreen> mock_error_screen_;
   MockNetworkPortalDetector* mock_network_portal_detector_;
   FakeUpdateEngineClient* fake_update_engine_client_;
@@ -125,8 +121,8 @@ TEST_F(UpdateScreenUnitTest, HandlesNoUpdate) {
       .Times(1);
 
   // DUT reaches UpdateScreen.
-  update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                        &mock_view_, &fake_controller_));
+  update_screen_.reset(
+      new UpdateScreen(&mock_base_screen_delegate_, &mock_view_));
   update_screen_->StartNetworkCheck();
 
   // Verify that the DUT checks for an update.
@@ -147,8 +143,8 @@ TEST_F(UpdateScreenUnitTest, HandlesNonCriticalUpdate) {
       .Times(1);
 
   // DUT reaches UpdateScreen.
-  update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                        &mock_view_, &fake_controller_));
+  update_screen_.reset(
+      new UpdateScreen(&mock_base_screen_delegate_, &mock_view_));
   update_screen_->StartNetworkCheck();
 
   // Verify that the DUT checks for an update.
@@ -165,8 +161,8 @@ TEST_F(UpdateScreenUnitTest, HandlesCriticalUpdate) {
   EXPECT_CALL(mock_base_screen_delegate_, OnExit(_)).Times(0);
 
   // DUT reaches UpdateScreen.
-  update_screen_.reset(new UpdateScreen(&mock_base_screen_delegate_,
-                                        &mock_view_, &fake_controller_));
+  update_screen_.reset(
+      new UpdateScreen(&mock_base_screen_delegate_, &mock_view_));
   update_screen_->StartNetworkCheck();
 
   // Verify that the DUT checks for an update.
