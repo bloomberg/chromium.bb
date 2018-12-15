@@ -271,7 +271,9 @@ TEST_F(ImagePaintTimingDetectorTest,
   EXPECT_FALSE(record);
 }
 
-TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_IgnoreReAttached) {
+TEST_F(ImagePaintTimingDetectorTest,
+       LargestImagePaint_ReattachedNodeUseFirstPaint) {
+  WTF::ScopedMockClock clock;
   SetBodyInnerHTML(R"HTML(
     <div id="parent">
     </div>
@@ -280,21 +282,28 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_IgnoreReAttached) {
   image->setAttribute("id", "target");
   GetDocument().getElementById("parent")->AppendChild(image);
   SetImageAndPaint("target", 5, 5);
+  clock.Advance(TimeDelta::FromSecondsD(1));
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   ImageRecord* record;
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
+  EXPECT_EQ(record->first_paint_time_after_loaded,
+            base::TimeTicks() + TimeDelta::FromSecondsD(1));
 
   GetDocument().getElementById("parent")->RemoveChild(image);
+  clock.Advance(TimeDelta::FromSecondsD(1));
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   record = FindLargestPaintCandidate();
   EXPECT_FALSE(record);
 
   GetDocument().getElementById("parent")->AppendChild(image);
   SetImageAndPaint("target", 5, 5);
+  clock.Advance(TimeDelta::FromSecondsD(1));
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   record = FindLargestPaintCandidate();
   EXPECT_TRUE(record);
+  EXPECT_EQ(record->first_paint_time_after_loaded,
+            base::TimeTicks() + TimeDelta::FromSecondsD(1));
 }
 
 // This test dipicts a situation when a smaller image has loaded, but a larger
