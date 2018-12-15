@@ -331,7 +331,7 @@ if get_option('shell-desktop')
 		weston_screenshooter_protocol_c,
 		include_directories: include_directories('..'),
 		dependencies: dep_toytoolkit,
-		install_dir: get_option('libexecdir'),
+		install_dir: get_option('bindir'),
 		install: true
 	)
 	env_modmap += 'weston-screenshooter=@0@;'.format(exe_shooter.full_path())

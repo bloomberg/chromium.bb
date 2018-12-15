@@ -548,11 +548,10 @@ spring_tool_SOURCES =				\
 
 if BUILD_CLIENTS
 
-bin_PROGRAMS += weston-terminal weston-info weston-debug
+bin_PROGRAMS += weston-terminal weston-info weston-debug weston-screenshooter
 
 libexec_PROGRAMS +=				\
 	weston-desktop-shell			\
-	weston-screenshooter			\
 	weston-keyboard				\
 	weston-simple-im
 
