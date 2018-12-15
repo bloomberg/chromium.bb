@@ -7,7 +7,6 @@
 // <include src="voice_match_entry.js">
 // <include src="assistant_get_more.js">
 // <include src="assistant_loading.js">
-// <include src="assistant_ready.js">
 // <include src="assistant_third_party.js">
 // <include src="assistant_value_prop.js">
 // <include src="assistant_voice_match.js">

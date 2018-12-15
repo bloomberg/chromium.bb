@@ -30,6 +30,7 @@ constexpr char kNextPressed[] = "next-pressed";
 constexpr char kRecordPressed[] = "record-pressed";
 constexpr char kFlowFinished[] = "flow-finished";
 constexpr char kReloadRequested[] = "reload-requested";
+constexpr char kVoiceMatchDone[] = "voice-match-done";
 
 }  // namespace
 
@@ -110,9 +111,6 @@ void AssistantOptInFlowScreenHandler::RegisterMessages() {
       "GetMoreScreen.userActed",
       &AssistantOptInFlowScreenHandler::HandleGetMoreScreenUserAction);
   AddPrefixedCallback(
-      "ReadyScreen.userActed",
-      &AssistantOptInFlowScreenHandler::HandleReadyScreenUserAction);
-  AddPrefixedCallback(
       "ValuePropScreen.screenShown",
       &AssistantOptInFlowScreenHandler::HandleValuePropScreenShown);
   AddPrefixedCallback(
@@ -121,8 +119,6 @@ void AssistantOptInFlowScreenHandler::RegisterMessages() {
   AddPrefixedCallback(
       "GetMoreScreen.screenShown",
       &AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown);
-  AddPrefixedCallback("ReadyScreen.screenShown",
-                      &AssistantOptInFlowScreenHandler::HandleReadyScreenShown);
   AddPrefixedCallback("LoadingScreen.timeout",
                       &AssistantOptInFlowScreenHandler::HandleLoadingTimeout);
   AddPrefixedCallback("hotwordResult",
@@ -223,7 +219,7 @@ void AssistantOptInFlowScreenHandler::OnActivityControlOptInResult(
 void AssistantOptInFlowScreenHandler::OnEmailOptInResult(bool opted_in) {
   if (!email_optin_needed_) {
     DCHECK(!opted_in);
-    ShowNextScreen();
+    HandleFlowFinished();
     return;
   }
 
@@ -394,6 +390,8 @@ void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
     PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
     prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled,
                       enable_hotword_);
+    HandleFlowFinished();
+    return;
   }
 
   ShowNextScreen();
@@ -430,7 +428,7 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
   }
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
 
-  if (action == kNextPressed) {
+  if (action == kVoiceMatchDone) {
     ShowNextScreen();
   } else if (action == kSkipPressed) {
     prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
@@ -459,14 +457,6 @@ void AssistantOptInFlowScreenHandler::HandleGetMoreScreenUserAction(
   OnEmailOptInResult(email_opted_in);
 }
 
-void AssistantOptInFlowScreenHandler::HandleReadyScreenUserAction(
-    const std::string& action) {
-  if (action == kNextPressed) {
-    RecordAssistantOptInStatus(READY_SCREEN_CONTINUED);
-    HandleFlowFinished();
-  }
-}
-
 void AssistantOptInFlowScreenHandler::HandleValuePropScreenShown() {
   RecordAssistantOptInStatus(ACTIVITY_CONTROL_SHOWN);
 }
@@ -477,10 +467,6 @@ void AssistantOptInFlowScreenHandler::HandleThirdPartyScreenShown() {
 
 void AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown() {
   RecordAssistantOptInStatus(GET_MORE_SHOWN);
-}
-
-void AssistantOptInFlowScreenHandler::HandleReadyScreenShown() {
-  RecordAssistantOptInStatus(READY_SCREEN_SHOWN);
 }
 
 void AssistantOptInFlowScreenHandler::HandleLoadingTimeout() {
