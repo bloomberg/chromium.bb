@@ -1779,6 +1779,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gonzo', # contact:icoolidge@
       'guado', # contact:egemih@
       'guado-accelerator', # contact:perley@ (crbug.com/748635)
+      'kevin64', # contact:manojgupta@@
       'lakitu-gpu', # contact:gmeinke@ (crbug.com/907222)
       'lasilla-ground', # contact:jemele@
       'octavius', # contact:dpjacques@
@@ -2706,6 +2707,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
+      'kevin64',
   ])
 
   _chrome_pfq_skylab_boards = frozenset([

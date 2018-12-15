@@ -28,6 +28,7 @@
     grunt-chrome-pfq
     hana-chrome-pfq
     kevin-arcnext-chrome-pfq
+    kevin64-chrome-pfq
     nocturne-chrome-pfq
     nyan_big-chrome-pfq
     peach_pit-chrome-pfq
@@ -91,6 +92,7 @@
     kalista-paladin
     kevin-arcnext-paladin
     kevin-paladin
+    kevin64-paladin
     kip-paladin
     kukui-paladin
     lakitu-gpu-paladin
@@ -2070,6 +2072,7 @@
   kevin-tot-chrome-pfq-informational-tryjob
   kevin-tot-chromium-pfq-informational-tryjob
   kevin-unittest-stress
+  kevin64-chrome-pfq-tryjob
   kevin64-chromium-pfq-tryjob
   kevin64-compile-only-pre-cq
   kevin64-full-tryjob
@@ -2304,6 +2307,7 @@
     grunt-chrome-pfq
     hana-chrome-pfq
     kevin-arcnext-chrome-pfq
+    kevin64-chrome-pfq
     nocturne-chrome-pfq
     nyan_big-chrome-pfq
     peach_pit-chrome-pfq
@@ -2399,6 +2403,7 @@
     kalista-paladin
     kevin-arcnext-paladin
     kevin-paladin
+    kevin64-paladin
     kip-paladin
     kukui-paladin
     lakitu-gpu-paladin
