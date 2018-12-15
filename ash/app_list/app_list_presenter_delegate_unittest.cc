@@ -1108,10 +1108,9 @@ TEST_F(AppListPresenterDelegateTest, ShowInInvalidDisplay) {
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
 }
 
-// Tests that tap the status area of auto-hide shelf with app list opened should
-// open the corresponding tray bubble but dismiss the app list.
-TEST_F(AppListPresenterDelegateTest,
-       TapStatusAreaOfAutoHideShelfWithAppListOpened) {
+// Tests that tap the auto-hide shelf with app list opened should dismiss the
+// app list but keep shelf visible.
+TEST_F(AppListPresenterDelegateTest, TapAutoHideShelfWithAppListOpened) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
@@ -1132,6 +1131,22 @@ TEST_F(AppListPresenterDelegateTest,
       GetPrimaryUnifiedSystemTray()->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
   GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Tap to dismiss the app list and the auto-hide shelf.
+  generator->GestureTapAt(gfx::Point(0, 0));
+  EXPECT_FALSE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+  GetAppListTestHelper()->WaitUntilIdle();
+
+  // Tap the auto-hide shelf area with app list opened should keep both app list
+  // and shelf visible.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  generator->GestureTapAt(
+      shelf->GetShelfViewForTesting()->GetBoundsInScreen().CenterPoint());
+  GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }
 
