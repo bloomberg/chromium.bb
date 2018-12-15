@@ -410,8 +410,7 @@ void SurfaceAggregator::EmitSurfaceContent(
         gfx::ScaleToEnclosingRect(source_sqs->visible_quad_layer_rect,
                                   layer_to_content_scale_x,
                                   layer_to_content_scale_y),
-        clip_rect, dest_pass, layer_to_content_scale_x,
-        layer_to_content_scale_y);
+        clip_rect, dest_pass);
 
     gfx::Rect scaled_rect(gfx::ScaleToEnclosingRect(
         source_rect, layer_to_content_scale_x, layer_to_content_scale_y));
@@ -474,7 +473,7 @@ void SurfaceAggregator::EmitGutterQuadsIfNecessary(
     SharedQuadState* shared_quad_state = CopyAndScaleSharedQuadState(
         primary_shared_quad_state,
         primary_shared_quad_state->quad_to_target_transform, target_transform,
-        right_gutter_rect, right_gutter_rect, clip_rect, dest_pass, 1.0f, 1.0f);
+        right_gutter_rect, right_gutter_rect, clip_rect, dest_pass);
 
     auto* right_gutter =
         dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -490,8 +489,7 @@ void SurfaceAggregator::EmitGutterQuadsIfNecessary(
     SharedQuadState* shared_quad_state = CopyAndScaleSharedQuadState(
         primary_shared_quad_state,
         primary_shared_quad_state->quad_to_target_transform, target_transform,
-        bottom_gutter_rect, bottom_gutter_rect, clip_rect, dest_pass, 1.0f,
-        1.0f);
+        bottom_gutter_rect, bottom_gutter_rect, clip_rect, dest_pass);
 
     auto* bottom_gutter =
         dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
@@ -548,7 +546,7 @@ SharedQuadState* SurfaceAggregator::CopySharedQuadState(
   return CopyAndScaleSharedQuadState(
       source_sqs, source_sqs->quad_to_target_transform, target_transform,
       source_sqs->quad_layer_rect, source_sqs->visible_quad_layer_rect,
-      clip_rect, dest_render_pass, 1.0f, 1.0f);
+      clip_rect, dest_render_pass);
 }
 
 SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
@@ -558,9 +556,7 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
     const gfx::Rect& quad_layer_rect,
     const gfx::Rect& visible_quad_layer_rect,
     const ClipData& clip_rect,
-    RenderPass* dest_render_pass,
-    float x_scale,
-    float y_scale) {
+    RenderPass* dest_render_pass) {
   auto* shared_quad_state = dest_render_pass->CreateAndAppendSharedQuadState();
   ClipData new_clip_rect = CalculateClipRect(
       clip_rect, ClipData(source_sqs->is_clipped, source_sqs->clip_rect),

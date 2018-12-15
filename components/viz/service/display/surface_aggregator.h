@@ -145,9 +145,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Rect& quad_layer_rect,
       const gfx::Rect& visible_quad_layer_rect,
       const ClipData& clip_rect,
-      RenderPass* dest_render_pass,
-      float x_scale,
-      float y_scale);
+      RenderPass* dest_render_pass);
 
   void CopyQuadsToPass(
       const QuadList& source_quad_list,
