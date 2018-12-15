@@ -105,7 +105,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchTapDisableOverride,
     &kContextualSearchUnityIntegration,
     &kCustomContextMenu,
-    &kCustomFeedbackUi,
     &kDontPrefetchLibraries,
     &kDownloadProgressInfoBar,
     &kDownloadHomeV2,
@@ -282,9 +281,6 @@ const base::Feature kContextualSearchUnityIntegration{
 
 const base::Feature kCustomContextMenu{"CustomContextMenu",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCustomFeedbackUi{"CustomFeedbackUi",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDontPrefetchLibraries{"DontPrefetchLibraries",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
