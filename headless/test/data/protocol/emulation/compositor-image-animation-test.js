@@ -68,7 +68,8 @@
   virtualTimeBase = virtualTimeTicksBase;
 
   // Renderer wants the very first frame to be fully updated.
-  await dp.HeadlessExperimental.beginFrame({noDisplayUpdates: false});
+  await dp.HeadlessExperimental.beginFrame({noDisplayUpdates: false,
+      frameTimeTicks: virtualTimeBase});
 
   // Grant initial time.
   lastGrantedChunk = 500;
