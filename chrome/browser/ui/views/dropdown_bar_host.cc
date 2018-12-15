@@ -50,6 +50,7 @@ void DropdownBarHost::Init(views::View* host_view,
   // Initialize the host.
   host_.reset(new ThemeCopyingWidget(browser_view_->GetWidget()));
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+  params.delegate = this;
   params.name = "DropdownBarHost";
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = browser_view_->GetWidget()->GetNativeView();
@@ -225,6 +226,14 @@ void DropdownBarHost::OnVisibilityChanged() {
 void DropdownBarHost::GetWidgetBounds(gfx::Rect* bounds) {
   DCHECK(bounds);
   *bounds = browser_view_->bounds();
+}
+
+views::Widget* DropdownBarHost::GetWidget() {
+  return host_.get();
+}
+
+const views::Widget* DropdownBarHost::GetWidget() const {
+  return host_.get();
 }
 
 void DropdownBarHost::RegisterAccelerators() {

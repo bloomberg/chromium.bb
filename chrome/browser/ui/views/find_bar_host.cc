@@ -12,15 +12,18 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/border.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 using content::NativeWebKeyboardEvent;
 
@@ -354,6 +357,22 @@ void FindBarHost::OnVisibilityChanged() {
       visible_bounds);
 
   find_bar_controller_->FindBarVisibilityChanged();
+}
+
+ax::mojom::Role FindBarHost::GetAccessibleWindowRole() const {
+  return ax::mojom::Role::kDialog;
+}
+
+base::string16 FindBarHost::GetAccessibleWindowTitle() const {
+  // This can be called in tests by AccessibilityChecker before the controller
+  // is registered with this object. So to handle that case, we need to bail out
+  // if there is no controller.
+  const FindBarController* const controller = GetFindBarController();
+  if (!controller)
+    return base::string16();
+  return l10n_util::GetStringFUTF16(
+      IDS_FIND_IN_PAGE_ACCESSIBLE_TITLE,
+      controller->browser()->GetWindowTitleForCurrentTab(false));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
