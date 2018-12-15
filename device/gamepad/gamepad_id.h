@@ -7,8 +7,9 @@
 
 namespace device {
 
-// To preserve the consistency of metrics logging, do not remove or reorder
-// items in this enumeration. Add new values at the end.
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with "GamepadId"
+// in src/tools/metrics/histograms/enums.xml.
 enum class GamepadId {
   kUnknownGamepad = 0,
   kVendor0010Product0082,

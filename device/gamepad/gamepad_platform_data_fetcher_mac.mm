@@ -10,6 +10,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
+#include "device/gamepad/gamepad_id_list.h"
+#include "device/gamepad/gamepad_uma.h"
 
 #import <Foundation/Foundation.h>
 #include <IOKit/hid/IOHIDKeys.h>
@@ -180,10 +182,6 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   // Find an index for this device.
   size_t slot = GetSlotForDevice(device);
 
-  // We can't handle this many connected devices.
-  if (slot == Gamepads::kItemsLengthCap)
-    return;
-
   NSNumber* vendor_id = CFToNSCast(CFCastStrict<CFNumberRef>(
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey))));
   NSNumber* product_id = CFToNSCast(CFCastStrict<CFNumberRef>(
@@ -195,6 +193,17 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   uint16_t vendor_int = [vendor_id intValue];
   uint16_t product_int = [product_id intValue];
   uint16_t version_int = [version_number intValue];
+
+  // Record the device before excluding Made for iOS gamepads. This allows us to
+  // recognize these devices even though the GameController API masks the vendor
+  // and product IDs. XInput devices are recorded elsewhere.
+  DCHECK_EQ(kXInputTypeNone,
+            GamepadIdList::Get().GetXInputType(vendor_int, product_int));
+  RecordConnectedGamepad(vendor_int, product_int);
+
+  // We can't handle this many connected devices.
+  if (slot == Gamepads::kItemsLengthCap)
+    return;
 
   // The SteelSeries Nimbus and other Made for iOS gamepads should be handled
   // through the GameController interface. Blacklist it here so it doesn't

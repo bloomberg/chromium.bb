@@ -65,6 +65,8 @@ component("gamepad") {
     "gamepad_standard_mappings_linux.cc",
     "gamepad_standard_mappings_mac.mm",
     "gamepad_standard_mappings_win.cc",
+    "gamepad_uma.cc",
+    "gamepad_uma.h",
     "gamepad_user_gesture.cc",
     "gamepad_user_gesture.h",
     "hid_dll_functions_win.cc",
