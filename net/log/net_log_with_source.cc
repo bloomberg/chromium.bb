@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
@@ -23,8 +22,7 @@ namespace {
 
 // Returns parameters for logging data transferred events. At a minimum includes
 // the number of bytes transferred. If the capture mode allows logging byte
-// contents and |byte_count| > 0, then will include the actual bytes. The
-// bytes are hex-encoded, since base::Value only supports UTF-8.
+// contents and |byte_count| > 0, then will include the actual bytes.
 std::unique_ptr<base::Value> BytesTransferredCallback(
     int byte_count,
     const char* bytes,
@@ -32,7 +30,7 @@ std::unique_ptr<base::Value> BytesTransferredCallback(
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("byte_count", byte_count);
   if (capture_mode.include_socket_bytes() && byte_count > 0)
-    dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, byte_count));
+    dict->SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
   return std::move(dict);
 }
 

@@ -525,7 +525,7 @@ EVENT_TYPE(SSL_VERIFICATION_MERGED)
 // An SSL connection sent or received an alert.
 // The following parameters are attached:
 //   {
-//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string>
+//     "bytes": <The exact bytes sent, Base64 encoded>
 //   }
 EVENT_TYPE(SSL_ALERT_RECEIVED)
 EVENT_TYPE(SSL_ALERT_SENT)
@@ -537,8 +537,8 @@ EVENT_TYPE(SSL_CONFIRM_HANDSHAKE)
 // The following parameters are attached:
 //   {
 //     "type": <The type of the handshake message, as an integer>
-//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string. May
-//                           be elided in some cases>
+//     "bytes": <The exact bytes sent, Base64 encoded.
+//               May be elided in some cases>
 //   }
 EVENT_TYPE(SSL_HANDSHAKE_MESSAGE_RECEIVED)
 EVENT_TYPE(SSL_HANDSHAKE_MESSAGE_SENT)
@@ -549,8 +549,8 @@ EVENT_TYPE(SSL_HANDSHAKE_MESSAGE_SENT)
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just sent>,
-//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string.
-//                           Only present when byte logging is enabled>,
+//     "bytes": <The exact bytes sent, Base64 encoded.
+//               Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(SOCKET_BYTES_SENT)
 EVENT_TYPE(SSL_SOCKET_BYTES_SENT)
@@ -559,8 +559,8 @@ EVENT_TYPE(SSL_SOCKET_BYTES_SENT)
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just received>,
-//     "hex_encoded_bytes": <The exact bytes received, as a hexadecimal string.
-//                           Only present when byte logging is enabled>,
+//     "bytes": <The exact bytes received, Base64 encoded.
+//               Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(SOCKET_BYTES_RECEIVED)
 EVENT_TYPE(SSL_SOCKET_BYTES_RECEIVED)
@@ -694,8 +694,8 @@ EVENT_TYPE(UDP_LOCAL_ADDRESS)
 //     "address": <Remote address of data transfer.  Not present when not
 //                 specified for UDP_BYTES_SENT events>,
 //     "byte_count": <Number of bytes that were just received>,
-//     "hex_encoded_bytes": <The exact bytes received, as a hexadecimal string.
-//                           Only present when byte logging is enabled>,
+//     "bytes": <The exact bytes received, Base64 encoded.
+//               Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(UDP_BYTES_RECEIVED)
 EVENT_TYPE(UDP_BYTES_SENT)
@@ -855,7 +855,7 @@ EVENT_TYPE(DELEGATE_INFO)
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just sent>,
-//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string>,
+//     "bytes": <The exact bytes sent, Base64 encoded>,
 //   }
 EVENT_TYPE(URL_REQUEST_JOB_BYTES_READ)
 EVENT_TYPE(URL_REQUEST_JOB_FILTERED_BYTES_READ)
@@ -1266,8 +1266,8 @@ EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_SENT_COALESCED)
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just sent>,
-//     "hex_encoded_bytes": <The exact bytes sent, as a hexadecimal string.
-//                           Only present when byte logging is enabled>,
+//     "bytes": <The exact bytes sent, Base64 encoded.
+//               Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_SENT)
 
@@ -1275,8 +1275,8 @@ EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_SENT)
 // The following parameters are attached:
 //   {
 //     "byte_count": <Number of bytes that were just received>,
-//     "hex_encoded_bytes": <The exact bytes received, as a hexadecimal string.
-//                           Only present when byte logging is enabled>,
+//     "bytes": <The exact bytes received, Base64 encoded.
+//               Only present when byte logging is enabled>,
 //   }
 EVENT_TYPE(BIDIRECTIONAL_STREAM_BYTES_RECEIVED)
 
