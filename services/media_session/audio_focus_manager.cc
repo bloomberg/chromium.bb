@@ -243,7 +243,7 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
   if (audio_focus_stack_.empty()) {
     // Notify observers that we lost audio focus.
     observers_.ForAllPtrs([&row](mojom::AudioFocusObserver* observer) {
-      observer->OnFocusLost(row->info().Clone());
+      observer->OnFocusLost(row->ToAudioFocusRequestState());
     });
 
     MaybeUpdateActiveSession();
@@ -257,14 +257,13 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
 
   // Notify observers that we lost audio focus.
   observers_.ForAllPtrs([&row](mojom::AudioFocusObserver* observer) {
-    observer->OnFocusLost(row->info().Clone());
+    observer->OnFocusLost(row->ToAudioFocusRequestState());
   });
 
   // Notify observers that the session on top gained focus.
   StackRow* new_session = audio_focus_stack_.back().get();
   observers_.ForAllPtrs([&new_session](mojom::AudioFocusObserver* observer) {
-    observer->OnFocusGained(new_session->info().Clone(),
-                            new_session->audio_focus_type());
+    observer->OnFocusGained(new_session->ToAudioFocusRequestState());
   });
 }
 
@@ -314,12 +313,11 @@ void AudioFocusManager::RequestAudioFocusInternal(
   MaybeUpdateActiveSession();
 
   // Notify observers that we were gained audio focus.
-  mojom::MediaSessionInfoPtr session_info =
-      audio_focus_stack_.back()->info().Clone();
-  observers_.ForAllPtrs(
-      [&session_info, type](mojom::AudioFocusObserver* observer) {
-        observer->OnFocusGained(session_info.Clone(), type);
-      });
+  mojom::AudioFocusRequestStatePtr session_state =
+      audio_focus_stack_.back()->ToAudioFocusRequestState();
+  observers_.ForAllPtrs([&session_state](mojom::AudioFocusObserver* observer) {
+    observer->OnFocusGained(session_state.Clone());
+  });
 
   // We always grant the audio focus request but this may not always be the case
   // in the future.

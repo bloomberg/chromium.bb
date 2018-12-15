@@ -23,9 +23,7 @@ TestAudioFocusObserver::TestAudioFocusObserver() : binding_(this) {}
 TestAudioFocusObserver::~TestAudioFocusObserver() = default;
 
 void TestAudioFocusObserver::OnFocusGained(
-    media_session::mojom::MediaSessionInfoPtr session,
-    media_session::mojom::AudioFocusType type) {
-  focus_gained_type_ = type;
+    media_session::mojom::AudioFocusRequestStatePtr session) {
   focus_gained_session_ = std::move(session);
   notifications_.push_back(NotificationType::kFocusGained);
 
@@ -34,7 +32,7 @@ void TestAudioFocusObserver::OnFocusGained(
 }
 
 void TestAudioFocusObserver::OnFocusLost(
-    media_session::mojom::MediaSessionInfoPtr session) {
+    media_session::mojom::AudioFocusRequestStatePtr session) {
   focus_lost_session_ = std::move(session);
   notifications_.push_back(NotificationType::kFocusLost);
 
