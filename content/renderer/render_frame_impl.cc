@@ -501,7 +501,7 @@ NavigationDownloadPolicy GetDownloadPolicy(
   if (!is_opener_navigation)
     return NavigationDownloadPolicy::kAllow;
   bool gesture = request.HasUserGesture();
-  bool cross_origin = request.RequestorOrigin().CanAccess(current_origin);
+  bool cross_origin = !request.RequestorOrigin().CanAccess(current_origin);
   if (!gesture && cross_origin)
     return NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture;
   if (!gesture)

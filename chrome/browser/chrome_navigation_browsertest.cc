@@ -1005,6 +1005,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_NE(popup, opener);
+  WaitForLoadStop(popup);
   content::DownloadTestObserverInProgress observer(
       content::BrowserContext::GetDownloadManager(browser()->profile()),
       1 /* wait_count */);
@@ -1012,10 +1013,12 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
   observer.WaitForFinished();
-  histograms.ExpectBucketCount(
-      "Blink.UseCounter.Features",
-      blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOriginNoGesture,
-      1);
+  histograms.ExpectUniqueSample(
+      "Navigation.DownloadPolicy",
+      // TODO(csharrison): Update this to avoid using hardcoded number, since
+      // right now NavigationDownloadPolicy is not exposed publicly through
+      // //content.
+      4 /* NavigationDownloadPolicy::kAllowOpenerNoGesture */, 1);
 
   // Delete any pending download.
   std::vector<download::DownloadItem*> download_items;

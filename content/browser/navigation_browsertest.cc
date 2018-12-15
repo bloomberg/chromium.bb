@@ -1520,6 +1520,56 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OpenerNavigation_DownloadPolicy) {
                                 1);
 }
 
+// A variation of the OpenerNavigation_DownloadPolicy test above, but uses a
+// cross-origin URL for the popup window.
+// TODO(csharrison): currently opener checks for DownloadPolicy has a bug when
+// the opener is cross-process. For now the test uses a.com and bar.a.com to get
+// cross-origin behavior but still same process.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       CrossOriginOpenerNavigation_DownloadPolicy) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir download_dir;
+  ASSERT_TRUE(download_dir.CreateUniqueTempDir());
+  ShellDownloadManagerDelegate* delegate =
+      static_cast<ShellDownloadManagerDelegate*>(
+          shell()
+              ->web_contents()
+              ->GetBrowserContext()
+              ->GetDownloadManagerDelegate());
+  delegate->SetDownloadBehaviorForTesting(download_dir.GetPath());
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("a.com", "/title1.html"));
+  WebContents* opener = shell()->web_contents();
+
+  // Open a popup.
+  ShellAddedObserver shell_observer;
+  EXPECT_TRUE(EvalJs(opener, JsReplace("!!window.open($1);",
+                                       embedded_test_server()->GetURL(
+                                           "bar.a.com", "/title1.html")))
+                  .ExtractBool());
+  Shell* new_shell = shell_observer.GetShell();
+  EXPECT_EQ(2u, Shell::windows().size());
+
+  // Wait for the navigation in the popup to complete, so the origin of the
+  // document will be correct.
+  WebContents* popup = new_shell->web_contents();
+  EXPECT_NE(popup, opener);
+  EXPECT_TRUE(WaitForLoadStop(popup));
+
+  // Using the popup, navigate its opener to a download.
+  base::HistogramTester histograms;
+  DownloadTestObserverInProgress observer(
+      BrowserContext::GetDownloadManager(opener->GetBrowserContext()),
+      1 /* wait_count */);
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      popup,
+      "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
+  observer.WaitForFinished();
+  histograms.ExpectUniqueSample(
+      "Navigation.DownloadPolicy",
+      NavigationDownloadPolicy::kAllowOpenerCrossOriginNoGesture, 1);
+}
+
 // Regression test for https://crbug.com/872284.
 // A NavigationThrottle cancels a download in WillProcessResponse.
 // The navigation request must be canceled and it must also cancel the network
