@@ -127,7 +127,7 @@ screenshooter_binding(struct weston_keyboard *keyboard,
 	char *screenshooter_exe;
 
 
-	screenshooter_exe = wet_get_binary_path("weston-screenshooter");
+	screenshooter_exe = wet_get_libexec_path("weston-screenshooter");
 	if (!screenshooter_exe) {
 		weston_log("Could not construct screenshooter path.\n");
 		return;

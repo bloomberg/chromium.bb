@@ -1049,7 +1049,7 @@ text_backend_configuration(struct text_backend *text_backend)
 
 	section = weston_config_get_section(config,
 					    "input-method", NULL, NULL);
-	client = wet_get_binary_path("weston-keyboard");
+	client = wet_get_libexec_path("weston-keyboard");
 	weston_config_section_get_string(section, "path",
 					 &text_backend->input_method.path,
 					 client);

@@ -709,7 +709,7 @@ hmi_server_setting_create(struct weston_compositor *ec)
 					 "ivi-shell-user-interface",
 					 &ivi_ui_config, NULL);
 	if (ivi_ui_config && ivi_ui_config[0] != '/') {
-		setting->ivi_homescreen = wet_get_binary_path(ivi_ui_config);
+		setting->ivi_homescreen = wet_get_libexec_path(ivi_ui_config);
 		if (setting->ivi_homescreen)
 			free(ivi_ui_config);
 		else

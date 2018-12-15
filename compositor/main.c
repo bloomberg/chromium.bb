@@ -903,8 +903,8 @@ wet_load_shell(struct weston_compositor *compositor,
 	return 0;
 }
 
-WL_EXPORT char *
-wet_get_binary_path(const char *name)
+static char *
+wet_get_binary_path(const char *name, const char *dir)
 {
 	char path[PATH_MAX];
 	size_t len;
@@ -913,11 +913,23 @@ wet_get_binary_path(const char *name)
 	if (len > 0)
 		return strdup(path);
 
-	len = snprintf(path, sizeof path, "%s/%s", LIBEXECDIR, name);
+	len = snprintf(path, sizeof path, "%s/%s", dir, name);
 	if (len >= sizeof path)
 		return NULL;
 
 	return strdup(path);
+}
+
+WL_EXPORT char *
+wet_get_libexec_path(const char *name)
+{
+	return wet_get_binary_path(name, LIBEXECDIR);
+}
+
+WL_EXPORT char *
+wet_get_bindir_path(const char *name)
+{
+	return wet_get_binary_path(name, BINDIR);
 }
 
 static int
