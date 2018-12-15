@@ -3078,13 +3078,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kDocumentProvider)},
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_ANDROID)
-    {"enable-custom-feedback-ui",
-     flag_descriptions::kEnableCustomFeedbackUiName,
-     flag_descriptions::kEnableCustomFeedbackUiDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCustomFeedbackUi)},
-#endif  // OS_ANDROID
-
     {"enable-speculative-service-worker-start-on-query-input",
      flag_descriptions::kSpeculativeServiceWorkerStartOnQueryInputName,
      flag_descriptions::kSpeculativeServiceWorkerStartOnQueryInputDescription,

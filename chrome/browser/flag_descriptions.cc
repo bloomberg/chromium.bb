@@ -2373,11 +2373,6 @@ const char kEnableCustomContextMenuDescription[] =
     "Enables a new context menu when a link, image, or video is pressed within "
     "Chrome.";
 
-const char kEnableCustomFeedbackUiName[] = "Enable Custom Feedback UI";
-const char kEnableCustomFeedbackUiDescription[] =
-    "Enables a custom feedback UI when submitting feedback through Google "
-    "Feedback. Works with Google Play Services v10.2+";
-
 const char kEnableMediaControlsExpandGestureName[] =
     "Enable Media Controls Expand Gesture";
 const char kEnableMediaControlsExpandGestureDescription[] =

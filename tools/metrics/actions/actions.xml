@@ -11188,6 +11188,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileCustomFeedback">
+  <obsolete>
+    Deprecated 12/2018. CustomFeedback never shipped to 100% and is no longer
+    planned for launch.
+  </obsolete>
   <owner>wychen@chromium.org</owner>
   <description>Custom Feedback dialog is shown.</description>
 </action>

@@ -1419,9 +1419,6 @@ extern const char kEnableContentSuggestionsThumbnailDominantColorDescription[];
 extern const char kEnableCustomContextMenuName[];
 extern const char kEnableCustomContextMenuDescription[];
 
-extern const char kEnableCustomFeedbackUiName[];
-extern const char kEnableCustomFeedbackUiDescription[];
-
 extern const char kEnableMediaControlsExpandGestureName[];
 extern const char kEnableMediaControlsExpandGestureDescription[];
 

@@ -839,6 +839,10 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AndroidFeedbackCategory">
+  <obsolete>
+    Deprecated 12/2018. CustomFeedback never shipped to 100% and is no longer
+    planned for launch.
+  </obsolete>
   <summary>
     This list corresponds to the categories the user can press when selecting a
     category their feedback falls under.
@@ -850,6 +854,10 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="AndroidFeedbackCategoryDetails">
+  <obsolete>
+    Deprecated 12/2018. CustomFeedback never shipped to 100% and is no longer
+    planned for launch.
+  </obsolete>
   <summary>
     This list corresponds to all the possible options a user can press when
     selecting an option their feedback falls under. Each option is prefixed with
