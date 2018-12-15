@@ -51,8 +51,7 @@ FrameLoadRequest::FrameLoadRequest(
 
   if (origin_document) {
     DCHECK(!resource_request_.RequestorOrigin());
-    resource_request_.SetRequestorOrigin(
-        SecurityOrigin::Create(origin_document->Url()));
+    resource_request_.SetRequestorOrigin(origin_document->GetSecurityOrigin());
 
     if (resource_request.Url().ProtocolIs("blob") &&
         BlobUtils::MojoBlobURLsEnabled()) {
