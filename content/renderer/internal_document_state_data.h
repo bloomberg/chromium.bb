@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "net/nqe/effective_connection_type.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
@@ -72,6 +73,14 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
     return cache_policy_override_set_;
   }
 
+  net::EffectiveConnectionType effective_connection_type() const {
+    return effective_connection_type_;
+  }
+  void set_effective_connection_type(
+      net::EffectiveConnectionType effective_connection_type) {
+    effective_connection_type_ = effective_connection_type;
+  }
+
   NavigationState* navigation_state() { return navigation_state_.get(); }
   void set_navigation_state(std::unique_ptr<NavigationState> navigation_state);
 
@@ -81,6 +90,8 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
   bool must_reset_scroll_and_scale_state_;
   bool cache_policy_override_set_;
   blink::mojom::FetchCacheMode cache_policy_override_;
+  net::EffectiveConnectionType effective_connection_type_ =
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   std::unique_ptr<NavigationState> navigation_state_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalDocumentStateData);

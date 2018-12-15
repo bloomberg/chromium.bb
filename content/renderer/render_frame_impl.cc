@@ -116,7 +116,6 @@
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
-#include "content/renderer/loader/weburlresponse_extradata_impl.h"
 #include "content/renderer/low_memory_mode_controller.h"
 #include "content/renderer/manifest/manifest_change_notifier.h"
 #include "content/renderer/manifest/manifest_manager.h"
@@ -366,11 +365,6 @@ ui::PageTransition GetTransitionType(blink::WebDocumentLoader* document_loader,
     }
   }
   return default_transition;
-}
-
-WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
-    const WebURLResponse& response) {
-  return static_cast<WebURLResponseExtraDataImpl*>(response.GetExtraData());
 }
 
 void GetRedirectChain(WebDocumentLoader* document_loader,
@@ -889,6 +883,8 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     document_state->set_was_alternate_protocol_available(
         head->was_alternate_protocol_available);
     document_state->set_connection_info(head->connection_info);
+    internal_data->set_effective_connection_type(
+        head->effective_connection_type);
   }
 
   bool load_data = !common_params.base_url_for_data_url.is_empty() &&
@@ -4262,13 +4258,11 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     committed_first_load_ = true;
   }
 
-  NavigationState* navigation_state =
-      NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentLoader(
+          frame_->GetDocumentLoader());
+  NavigationState* navigation_state = internal_data->navigation_state();
   DCHECK(!navigation_state->WasWithinSameDocument());
-  const WebURLResponse& web_url_response =
-      frame_->GetDocumentLoader()->GetResponse();
-  WebURLResponseExtraDataImpl* extra_data =
-      GetExtraDataFromResponse(web_url_response);
 
   // Only update the PreviewsState and effective connection type states for new
   // main frame documents. Subframes inherit from the main frame and should not
@@ -4276,14 +4270,9 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   if (is_main_frame_) {
     previews_state_ =
         frame_->GetDocumentLoader()->GetRequest().GetPreviewsState();
-    if (extra_data) {
-      effective_connection_type_ =
-          EffectiveConnectionTypeToWebEffectiveConnectionType(
-              extra_data->effective_connection_type());
-    } else {
-      effective_connection_type_ =
-          blink::WebEffectiveConnectionType::kTypeUnknown;
-    }
+    effective_connection_type_ =
+        EffectiveConnectionTypeToWebEffectiveConnectionType(
+            internal_data->effective_connection_type());
   }
 
   if (proxy_routing_id_ != MSG_ROUTING_NONE) {

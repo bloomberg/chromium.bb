@@ -48,28 +48,6 @@
 
 namespace blink {
 
-namespace {
-
-class URLResponseExtraDataContainer : public ResourceResponse::ExtraData {
- public:
-  static scoped_refptr<URLResponseExtraDataContainer> Create(
-      WebURLResponse::ExtraData* extra_data) {
-    return base::AdoptRef(new URLResponseExtraDataContainer(extra_data));
-  }
-
-  ~URLResponseExtraDataContainer() override = default;
-
-  WebURLResponse::ExtraData* GetExtraData() const { return extra_data_.get(); }
-
- private:
-  explicit URLResponseExtraDataContainer(WebURLResponse::ExtraData* extra_data)
-      : extra_data_(base::WrapUnique(extra_data)) {}
-
-  std::unique_ptr<WebURLResponse::ExtraData> extra_data_;
-};
-
-}  // namespace
-
 WebURLResponse::~WebURLResponse() = default;
 
 WebURLResponse::WebURLResponse()
@@ -414,22 +392,6 @@ void WebURLResponse::SetIsSignedExchangeInnerResponse(
     bool is_signed_exchange_inner_response) {
   resource_response_->SetIsSignedExchangeInnerResponse(
       is_signed_exchange_inner_response);
-}
-
-WebURLResponse::ExtraData* WebURLResponse::GetExtraData() const {
-  scoped_refptr<ResourceResponse::ExtraData> data =
-      resource_response_->GetExtraData();
-  if (!data)
-    return nullptr;
-  return static_cast<URLResponseExtraDataContainer*>(data.get())
-      ->GetExtraData();
-}
-
-void WebURLResponse::SetExtraData(WebURLResponse::ExtraData* extra_data) {
-  if (extra_data != GetExtraData()) {
-    resource_response_->SetExtraData(
-        URLResponseExtraDataContainer::Create(extra_data));
-  }
 }
 
 WebString WebURLResponse::AlpnNegotiatedProtocol() const {

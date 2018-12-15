@@ -138,11 +138,6 @@ class WebURLResponse {
     SignedCertificateTimestampList sct_list;
   };
 
-  class ExtraData {
-   public:
-    virtual ~ExtraData() = default;
-  };
-
   BLINK_PLATFORM_EXPORT ~WebURLResponse();
 
   BLINK_PLATFORM_EXPORT WebURLResponse();
@@ -300,15 +295,6 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetEncodedDataLength(long long);
 
   BLINK_PLATFORM_EXPORT void SetIsSignedExchangeInnerResponse(bool);
-
-  // Extra data associated with the underlying resource response. Resource
-  // responses can be copied. If non-null, each copy of a resource response
-  // holds a pointer to the extra data, and the extra data pointer will be
-  // deleted when the last resource response is destroyed. Setting the extra
-  // data pointer will cause the underlying resource response to be
-  // dissociated from any existing non-null extra data pointer.
-  BLINK_PLATFORM_EXPORT ExtraData* GetExtraData() const;
-  BLINK_PLATFORM_EXPORT void SetExtraData(ExtraData*);
 
 #if INSIDE_BLINK
  protected:
