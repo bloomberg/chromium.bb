@@ -202,6 +202,9 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
     const std::vector<uint8_t>& data,
     const url::Origin& cache_storage_origin,
     const std::string& cache_storage_cache_name) {
+  if (!cache_storage_context_->cache_manager())
+    return;
+
   scoped_refptr<net::IOBuffer> buf =
       base::MakeRefCounted<net::IOBuffer>(data.size());
   if (!data.empty())
