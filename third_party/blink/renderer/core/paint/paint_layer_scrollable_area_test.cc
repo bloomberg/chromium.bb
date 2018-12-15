@@ -1088,4 +1088,33 @@ TEST_P(PaintLayerScrollableAreaTest, ScrollbarMaximum) {
   EXPECT_EQ(scrollbar->CurrentPos(), scrollbar->Maximum());
 }
 
+TEST_P(PaintLayerScrollableAreaTest, ScrollingBackgroundDisplayItemClient) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      #scroller {
+        width: 100.7px;
+        height: 100.4px;
+        overflow: scroll;
+        border-top: 2.6px solid blue;
+        border-left: 2.4px solid blue;
+        will-change: transform;
+      }
+      #content {
+        width: 50.7px;
+        height: 200.4px;
+      }
+    </style>
+    <div id="scroller">
+      <div id="content"></div>
+    </div>
+  )HTML");
+
+  EXPECT_EQ(LayoutRect(2, 3, 101, 200),
+            ToLayoutBox(GetLayoutObjectByElementId("scroller"))
+                ->GetScrollableArea()
+                ->GetScrollingBackgroundDisplayItemClient()
+                .VisualRect());
+}
+
 }  // namespace blink

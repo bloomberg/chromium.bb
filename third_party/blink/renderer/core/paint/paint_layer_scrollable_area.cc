@@ -2847,13 +2847,13 @@ LayoutRect
 PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
     const {
   const auto* box = scrollable_area_->GetLayoutBox();
-  auto overflow_clip_rect = box->OverflowClipRect(LayoutPoint());
-  auto scroll_size = scrollable_area_->overflow_rect_.Size();
+  const auto& paint_offset = box->FirstFragment().PaintOffset();
+  auto overflow_clip_rect =
+      PixelSnappedIntRect(box->OverflowClipRect(paint_offset));
+  auto scroll_size = scrollable_area_->PixelSnappedContentsSize(paint_offset);
   // Ensure scrolling contents are at least as large as the scroll clip
   scroll_size = scroll_size.ExpandedTo(overflow_clip_rect.Size());
   LayoutRect result(overflow_clip_rect.Location(), scroll_size);
-  result.MoveBy(box->FirstFragment().PaintOffset());
-  result = LayoutRect(PixelSnappedIntRect(result));
 #if DCHECK_IS_ON()
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     DCHECK_EQ(result,
