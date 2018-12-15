@@ -3223,17 +3223,11 @@
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC" desc="Description for assistant screen context optin.">
     Let the Assistant show you info related to what's on your screen
   </message>
-  <message name="IDS_ASSISTANT_GET_MORE_SCREEN_TITLE" desc="Title for assistant get more screen.">
-    Get the most out of your Assistant
-  </message>
-  <message name="IDS_ASSISTANT_GET_MORE_SCREEN_INTRO" desc="Introduction message for assistant get more screen.">
-    Your Assistant can offer more relevant suggestions and specific actions related to what's on your screen. You can change this in Assistant settings
-  </message>
   <message name="IDS_ASSISTANT_READY_SCREEN_TITLE" desc="Title for assistant ready screen.">
     Your Assistant is ready
   </message>
   <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for Assistant ready screen.">
-    When your Chromebook is set up, press the Assistant button or say "Ok Google", if turned on, to get help from your Assistant anytime.
+    When your Chromebook is set up, press the Assistant button or say "Ok Google" to get help anytime. Go to Assistant settings to make changes.
   </message>
   <message name="IDS_ASSISTANT_CONTINUE_BUTTON" desc="Continue button for asssitant optin flow.">
     Continue
@@ -3260,7 +3254,7 @@
     Ok Google is all set
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_FOOTER" desc="Footer message for Assistant voice match screen.">
-    Recording "Ok Google" 3 times creates your voice model, which is stored on your device. Delete or retrain the model in Assistant settings. View or delete voice commands in your Google activity controls.
+    Your Assistant uses these recordings and your spoken requests to create and update your voice model, which is only stored on devices where you've turned on Voice Match. View or delete voice activity in your Google activity controls.
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION0" desc="Instruction message for assistant voice match recording.">
     Say "Ok Google"

@@ -200,15 +200,6 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
                     base::Value(third_party_disclosure_ui.button_continue()));
   dictionary.SetKey("thirdPartyFooter", base::Value(consent_ui.tos_pp_links()));
 
-  // Add get more screen string constants.
-  dictionary.SetKey("getMoreTitle", base::Value(l10n_util::GetStringUTF16(
-                                        IDS_ASSISTANT_GET_MORE_SCREEN_TITLE)));
-  dictionary.SetKey("getMoreIntro", base::Value(l10n_util::GetStringUTF16(
-                                        IDS_ASSISTANT_GET_MORE_SCREEN_INTRO)));
-  dictionary.SetKey(
-      "getMoreContinueButton",
-      base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON)));
-
   return dictionary;
 }
 

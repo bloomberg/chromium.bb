@@ -44,17 +44,6 @@ Polymer({
   },
 
   /**
-   * On-tap event handler for done button.
-   *
-   * @private
-   */
-  onDoneTap_: function() {
-    chrome.send(
-        'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
-        ['next-pressed']);
-  },
-
-  /**
    * Add class to the list of classes of root elements.
    * @param {string} className class to add
    *
@@ -101,6 +90,12 @@ Polymer({
 
     this.removeClass_('recording');
     this.addClass_('completed');
+
+    window.setTimeout(function() {
+      chrome.send(
+          'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
+          ['voice-match-done']);
+    }, 2000);
   },
 
   /**

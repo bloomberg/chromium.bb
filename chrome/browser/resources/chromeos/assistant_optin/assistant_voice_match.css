@@ -20,10 +20,6 @@
   padding: 48px 0 0 48px;
 }
 
-#done-button-text {
-  padding: 0 8px 0 8px;
-}
-
 #intro-container,
 #recording-container,
 #already-setup-container {
@@ -44,9 +40,7 @@
 
 .intro #skip-button,
 .intro #agree-button,
-.recording #later-button,
-.completed #done-button,
-.already-setup #next-button {
+.recording #later-button {
   display: block;
 }
 
