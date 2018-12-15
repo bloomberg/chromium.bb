@@ -12373,6 +12373,24 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileToolbarCloseAllIncognitoTabsButtonTap">
+  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <description>
+    User tapped the close all incognito tabs button in the tab switcher bottom
+    toolbar.
+  </description>
+</action>
+
+<action name="MobileToolbarCloseAllRegularTabsButtonTap">
+  <owner>amaralp@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <description>
+    User tapped the close all regular tabs button in the tab switcher bottom
+    toolbar.
+  </description>
+</action>
+
 <action name="MobileToolbarDownloadPage">
   <owner>dfalcantara@chromium.org</owner>
   <owner>twellington@chromium.org</owner>

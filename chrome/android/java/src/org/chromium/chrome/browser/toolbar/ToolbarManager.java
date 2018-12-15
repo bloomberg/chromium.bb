@@ -31,7 +31,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.UrlConstants;
@@ -48,7 +47,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -66,7 +64,6 @@ import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -964,19 +961,26 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
 
             if (mBottomToolbarCoordinator != null) {
-                final boolean showIncognitoToggleButton =
-                        !DeviceClassManager.enableAccessibilityLayout()
-                        && ChromeFeatureList.isEnabled(
-                                   ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                        && PrefServiceBridge.getInstance().isIncognitoModeEnabled();
+                final OnClickListener closeTabsClickListener = v -> {
+                    recordBottomToolbarUseForIPH();
+                    final boolean isIncognito = mTabModelSelector.isIncognitoSelected();
+                    if (isIncognito) {
+                        RecordUserAction.record("MobileToolbarCloseAllIncognitoTabsButtonTap");
+                    } else {
+                        RecordUserAction.record("MobileToolbarCloseAllRegularTabsButtonTap");
+                    }
+
+                    mTabModelSelector.getModel(isIncognito).closeAllTabs();
+                };
                 mAppMenuButtonHelper.setOnClickRunnable(() -> recordBottomToolbarUseForIPH());
                 mBottomToolbarCoordinator.initializeWithNative(
                         mActivity.getCompositorViewHolder().getResourceManager(),
                         mActivity.getCompositorViewHolder().getLayoutManager(),
                         wrapBottomToolbarClickListenerForIPH(tabSwitcherClickHandler),
                         wrapBottomToolbarClickListenerForIPH(newTabClickHandler),
-                        mAppMenuButtonHelper, mTabModelSelector, mOverviewModeBehavior,
-                        mActivity.getWindowAndroid(), mTabCountProvider, mIncognitoStateProvider);
+                        closeTabsClickListener, mAppMenuButtonHelper, mTabModelSelector,
+                        mOverviewModeBehavior, mActivity.getWindowAndroid(), mTabCountProvider,
+                        mIncognitoStateProvider);
 
                 // Allow the bottom toolbar to be focused in accessibility after the top toolbar.
                 ApiCompatibilityUtils.setAccessibilityTraversalBefore(
@@ -1199,6 +1203,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     public void onAccessibilityStatusChanged(boolean enabled) {
         mToolbar.onAccessibilityStatusChanged(enabled);
+        if (mBottomToolbarCoordinator != null) {
+            mBottomToolbarCoordinator.onAccessibilityStatusChanged(enabled);
+        }
     }
 
     private void registerTemplateUrlObserver() {

@@ -80,15 +80,16 @@ public class BottomToolbarCoordinator {
      */
     public void initializeWithNative(ResourceManager resourceManager, LayoutManager layoutManager,
             OnClickListener tabSwitcherListener, OnClickListener newTabClickListener,
-            AppMenuButtonHelper menuButtonHelper, TabModelSelector tabModelSelector,
-            OverviewModeBehavior overviewModeBehavior, WindowAndroid windowAndroid,
-            TabCountProvider tabCountProvider, IncognitoStateProvider incognitoStateProvider) {
+            OnClickListener closeTabsClickListener, AppMenuButtonHelper menuButtonHelper,
+            TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior,
+            WindowAndroid windowAndroid, TabCountProvider tabCountProvider,
+            IncognitoStateProvider incognitoStateProvider) {
         mBrowsingModeCoordinator.initializeWithNative(resourceManager, layoutManager,
                 tabSwitcherListener, menuButtonHelper, overviewModeBehavior, windowAndroid,
                 tabCountProvider, incognitoStateProvider, tabModelSelector);
         mTabSwitcherModeCoordinator = new TabSwitcherBottomToolbarCoordinator(mTabSwitcherModeStub,
-                incognitoStateProvider, newTabClickListener, menuButtonHelper, tabModelSelector,
-                overviewModeBehavior, tabCountProvider);
+                incognitoStateProvider, newTabClickListener, closeTabsClickListener,
+                menuButtonHelper, tabModelSelector, overviewModeBehavior, tabCountProvider);
     }
 
     /**
@@ -138,6 +139,16 @@ public class BottomToolbarCoordinator {
             return mTabSwitcherModeCoordinator.getMenuButton();
         }
         return null;
+    }
+
+    /**
+     * Called when the accessibility enabled state changes.
+     * @param enabled Whether accessibility is enabled.
+     */
+    public void onAccessibilityStatusChanged(boolean enabled) {
+        if (mTabSwitcherModeCoordinator != null) {
+            mTabSwitcherModeCoordinator.onAccessibilityStatusChanged(enabled);
+        }
     }
 
     /**
