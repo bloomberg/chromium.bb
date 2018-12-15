@@ -1,6 +1,14 @@
-import { test, Test } from 'framework/mytape';
-import './foo';
+export const name = "buffers";
+export const description = `
+Buffer tests.
+`;
+export const subtrees = [
+  import('./foo'),
+];
 
-test('true', (t: Test) => {
-  t.true(true);
-});
+import { TestTree } from 'framework';
+
+export function add(tree: TestTree) {
+  tree.test("baz", async () => {
+  });
+}

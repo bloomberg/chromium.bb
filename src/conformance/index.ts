@@ -1,6 +1,7 @@
-import { test, Test } from 'framework/mytape';
-import './buffers';
-
-test('true', (t: Test) => {
-  t.true(true);
-});
+export const name = "conformance";
+export const description = `
+WebGPU conformance test suite.
+`;
+export const subtrees = [
+  import('./buffers'),
+];

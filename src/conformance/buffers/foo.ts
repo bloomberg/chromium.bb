@@ -1,5 +1,11 @@
-import { test, Test } from 'framework/mytape';
+export const name = "foo";
+export const description = `
+Foo.
+`;
 
-test('true', (t: Test) => {
-  t.true(true);
-});
+import { TestTree } from 'framework';
+
+export function add(tree: TestTree) {
+  tree.test("bar", async () => {
+  });
+}

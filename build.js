@@ -1,6 +1,7 @@
+const fs = require('fs');
+
 const browserify = require('browserify');
 const tsify = require('tsify');
-const fs = require('fs');
 
 if (!fs.existsSync('out/')) {
   fs.mkdirSync('out/');
@@ -11,7 +12,7 @@ browserify({
   paths: ['src'],
 })
 	.add('src/index.ts')
-	.plugin(tsify)
+  .plugin(tsify)
 	.bundle()
 	.on('error', error => { console.error(error.toString()) })
 	.pipe(fs.createWriteStream('out/main.js'));

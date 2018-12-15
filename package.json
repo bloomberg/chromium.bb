@@ -6,10 +6,10 @@
   "scripts": {
     "check": "tsc",
     "lint": "tslint -p .",
-    "build": "node build",
+    "build": "node build.js",
     "clean": "rm -rf out/",
-    "test": "ts-node run.js ./src/framework/unittests",
-    "cts": "ts-node run.js ./src | faucet"
+    "unittests": "ts-node run.js ./src/framework/unittests",
+    "cts": "ts-node run.js ./src"
   },
   "repository": {
     "type": "git",
@@ -23,12 +23,10 @@
   "homepage": "https://github.com/kainino0x/cts-experiment#readme",
   "dependencies": {},
   "devDependencies": {
-    "@types/tape": "^4.2.32",
     "aliasify": "^2.1.0",
     "browserify": "^16.2.3",
     "faucet": "0.0.1",
     "module-alias": "^2.1.0",
-    "tape": "^4.9.1",
     "ts-node": "^7.0.1",
     "tsify": "^4.0.1",
     "tslint": "^5.11.0",

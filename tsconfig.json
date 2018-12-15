@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "esnext",
+    "lib": ["dom", "esnext"],
 
     /* Using Babel for code generation instead */
     "noEmit": true,
