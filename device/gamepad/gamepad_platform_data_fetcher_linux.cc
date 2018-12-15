@@ -16,6 +16,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "device/gamepad/gamepad_id_list.h"
+#include "device/gamepad/gamepad_uma.h"
 #include "device/udev_linux/scoped_udev.h"
 #include "device/udev_linux/udev_linux.h"
 
@@ -178,6 +180,18 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
       RemoveDevice(device);
     return;
   }
+
+  // Joydev uses its own internal list of device IDs to identify known gamepads.
+  // If the device is on our list, record it by ID. If the device is unknown,
+  // record that an unknown gamepad was enumerated.
+  uint16_t vendor_id = device->GetVendorId();
+  uint16_t product_id = device->GetProductId();
+  GamepadId gamepad_id =
+      GamepadIdList::Get().GetGamepadId(vendor_id, product_id);
+  if (gamepad_id == GamepadId::kUnknownGamepad)
+    RecordUnknownGamepad(source());
+  else
+    RecordConnectedGamepad(vendor_id, product_id);
 
   state->mapper = device->GetMappingFunction();
 

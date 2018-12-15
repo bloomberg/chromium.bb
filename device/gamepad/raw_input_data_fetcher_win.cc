@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
+#include "device/gamepad/gamepad_uma.h"
 
 namespace device {
 
@@ -165,6 +166,16 @@ void RawInputDataFetcher::EnumerateDevices() {
           continue;
         }
 
+        const int vendor_int = new_device->GetVendorId();
+        const int product_int = new_device->GetProductId();
+        const int version_number = new_device->GetVersionNumber();
+        const std::wstring product_string = new_device->GetProductString();
+
+        // Record gamepad metrics before excluding XInput devices. This allows
+        // us to recognize XInput devices even though the XInput API masks
+        // the vendor and product IDs.
+        RecordConnectedGamepad(vendor_int, product_int);
+
         // The presence of "IG_" in the device name indicates that this is an
         // XInput Gamepad. Skip enumerating these devices and let the XInput
         // path handle it.
@@ -190,11 +201,6 @@ void RawInputDataFetcher::EnumerateDevices() {
 
         pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
         pad.vibration_actuator.not_null = device->SupportsVibration();
-
-        const int vendor_int = device->GetVendorId();
-        const int product_int = device->GetProductId();
-        const int version_number = device->GetVersionNumber();
-        const std::wstring product_string = device->GetProductString();
 
         state->mapper = GetGamepadStandardMappingFunction(
             vendor_int, product_int, version_number, GAMEPAD_BUS_UNKNOWN);

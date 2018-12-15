@@ -24,6 +24,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "device/gamepad/gamepad_id_list.h"
+#include "device/gamepad/gamepad_uma.h"
 
 namespace device {
 
@@ -361,12 +363,22 @@ XboxControllerMac::OpenDeviceResult XboxControllerMac::OpenDevice(
 
   uint16_t vendor_id;
   kr = (*device_)->GetDeviceVendor(device_, &vendor_id);
-  if (kr != KERN_SUCCESS || vendor_id != kVendorMicrosoft)
+  if (kr != KERN_SUCCESS)
     return OPEN_FAILED;
 
   uint16_t product_id;
   kr = (*device_)->GetDeviceProduct(device_, &product_id);
   if (kr != KERN_SUCCESS)
+    return OPEN_FAILED;
+
+  // Record a connected XInput gamepad. Non-XInput devices are recorded
+  // elsewhere.
+  DCHECK_NE(kXInputTypeNone,
+            GamepadIdList::Get().GetXInputType(vendor_id, product_id));
+  RecordConnectedGamepad(vendor_id, product_id);
+
+  // Only genuine Microsoft Xbox, Xbox 360, and Xbox One devices are supported.
+  if (vendor_id != kVendorMicrosoft)
     return OPEN_FAILED;
 
   controller_type_ = ControllerTypeFromIds(vendor_id, product_id);
