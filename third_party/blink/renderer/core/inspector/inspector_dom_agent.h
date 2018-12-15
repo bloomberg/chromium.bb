@@ -216,6 +216,9 @@ class CORE_EXPORT InspectorDOMAgent final
                                    int* backend_node_id,
                                    protocol::Maybe<int>* node_id) override;
 
+  protocol::Response getFileInfo(const String& object_id,
+                                 String* path) override;
+
   bool Enabled() const;
   void ReleaseDanglingNodes();
 
