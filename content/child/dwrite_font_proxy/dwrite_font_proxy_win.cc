@@ -102,8 +102,7 @@ HRESULT DWriteFontCollectionProxy::FindFamilyName(const WCHAR* family_name,
     return S_OK;
   }
 
-  if (!GetFontProxyScopeWrapper().GetFontProxy().FindFamily(name,
-                                                            &family_index)) {
+  if (!GetFontProxy().FindFamily(name, &family_index)) {
     LogFontProxyError(FIND_FAMILY_SEND_FAILED);
     return E_FAIL;
   }
@@ -147,8 +146,7 @@ UINT32 DWriteFontCollectionProxy::GetFontFamilyCount() {
   TRACE_EVENT0("dwrite", "FontProxy::GetFontFamilyCount");
 
   uint32_t family_count = 0;
-  if (!GetFontProxyScopeWrapper().GetFontProxy().GetFamilyCount(
-          &family_count)) {
+  if (!GetFontProxy().GetFamilyCount(&family_count)) {
     LogFontProxyError(GET_FAMILY_COUNT_SEND_FAILED);
     return 0;
   }
@@ -200,8 +198,7 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
 
   std::vector<base::FilePath> file_names;
   std::vector<base::File> file_handles;
-  if (!GetFontProxyScopeWrapper().GetFontProxy().GetFontFiles(
-          *family_index, &file_names, &file_handles)) {
+  if (!GetFontProxy().GetFontFiles(*family_index, &file_names, &file_handles)) {
     LogFontProxyError(GET_FONT_FILES_SEND_FAILED);
     return E_FAIL;
   }
@@ -322,8 +319,7 @@ bool DWriteFontCollectionProxy::LoadFamilyNames(
   TRACE_EVENT0("dwrite", "FontProxy::LoadFamilyNames");
 
   std::vector<mojom::DWriteStringPairPtr> pairs;
-  if (!GetFontProxyScopeWrapper().GetFontProxy().GetFamilyNames(family_index,
-                                                                &pairs)) {
+  if (!GetFontProxy().GetFamilyNames(family_index, &pairs)) {
     return false;
   }
   std::vector<std::pair<base::string16, base::string16>> strings;
@@ -365,7 +361,7 @@ void DWriteFontCollectionProxy::SetProxy(mojom::DWriteFontProxyPtrInfo proxy) {
                             {base::WithBaseSyncPrimitives()}));
 }
 
-FontProxyScopeWrapper DWriteFontCollectionProxy::GetFontProxyScopeWrapper() {
+mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {
   if (!font_proxy_) {
     mojom::DWriteFontProxyPtrInfo dwrite_font_proxy;
     if (main_task_runner_->RunsTasksInCurrentSequence()) {
@@ -382,10 +378,7 @@ FontProxyScopeWrapper DWriteFontCollectionProxy::GetFontProxyScopeWrapper() {
     }
     SetProxy(std::move(dwrite_font_proxy));
   }
-  static base::NoDestructor<base::ThreadLocalBoolean>
-      font_proxy_method_in_flight;
-  return FontProxyScopeWrapper(font_proxy_.get(),
-                               font_proxy_method_in_flight.get());
+  return **font_proxy_;
 }
 
 DWriteFontFamilyProxy::DWriteFontFamilyProxy() = default;
