@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
+#include "net/log/net_log.h"
 
 namespace net {
 
@@ -23,7 +23,7 @@ std::unique_ptr<base::Value> NetLogUDPDataTranferCallback(
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("byte_count", byte_count);
   if (capture_mode.include_socket_bytes())
-    dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, byte_count));
+    dict->SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
   if (address)
     dict->SetString("address", address->ToString());
   return std::move(dict);

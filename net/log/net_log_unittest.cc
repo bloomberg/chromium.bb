@@ -436,6 +436,21 @@ TEST(NetLogTest, NetLogASCIIStringValue) {
   }
 }
 
+TEST(NetLogTest, NetLogBinaryValue) {
+  // Test the encoding for empty bytes.
+  auto value1 = NetLogBinaryValue(nullptr, 0);
+  std::string string1;
+  ASSERT_TRUE(value1.GetAsString(&string1));
+  EXPECT_EQ("", string1);
+
+  // Test the encoding for a non-empty sequence (which needs padding).
+  const uint8_t kBytes[] = {0x00, 0xF3, 0xF8, 0xFF};
+  auto value2 = NetLogBinaryValue(kBytes, base::size(kBytes));
+  std::string string2;
+  ASSERT_TRUE(value2.GetAsString(&string2));
+  EXPECT_EQ("APP4/w==", string2);
+}
+
 }  // namespace
 
 }  // namespace net

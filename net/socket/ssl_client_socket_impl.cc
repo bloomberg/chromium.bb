@@ -21,7 +21,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -116,7 +115,7 @@ std::unique_ptr<base::Value> NetLogSSLAlertCallback(
     size_t len,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, len));
+  dict->SetKey("bytes", NetLogBinaryValue(bytes, len));
   return std::move(dict);
 }
 
@@ -142,7 +141,7 @@ std::unique_ptr<base::Value> NetLogSSLMessageCallback(
   // information on the user's identity.
   if (!is_write || type != SSL3_MT_CERTIFICATE ||
       capture_mode.include_socket_bytes()) {
-    dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, len));
+    dict->SetKey("bytes", NetLogBinaryValue(bytes, len));
   }
 
   return std::move(dict);

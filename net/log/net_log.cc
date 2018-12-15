@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -312,6 +313,13 @@ base::Value NetLogStringValue(base::StringPiece raw) {
   // would be ambiguity for consumers as to when the value needs to be
   // unescaped).
   return base::Value("%ESCAPED:\xE2\x80\x8B " + EscapeNonASCIIAndPercent(raw));
+}
+
+base::Value NetLogBinaryValue(const void* bytes, size_t length) {
+  std::string b64;
+  Base64Encode(base::StringPiece(reinterpret_cast<const char*>(bytes), length),
+               &b64);
+  return base::Value(std::move(b64));
 }
 
 }  // namespace net
