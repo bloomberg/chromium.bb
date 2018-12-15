@@ -211,8 +211,8 @@ class CompositorFrameSinkSupportTest : public testing::Test {
   FrameSinkManagerImpl manager_;
   MockFrameSinkManagerClient frame_sink_manager_client_;
   FakeCompositorFrameSinkClient fake_support_client_;
-  std::unique_ptr<CompositorFrameSinkSupport> support_;
   FakeExternalBeginFrameSource begin_frame_source_;
+  std::unique_ptr<CompositorFrameSinkSupport> support_;
   LocalSurfaceId local_surface_id_;
   FakeSurfaceObserver surface_observer_;
 

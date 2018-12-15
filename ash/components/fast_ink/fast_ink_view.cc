@@ -156,6 +156,7 @@ class FastInkView::LayerTreeFrameSinkHolder
         holder->last_frame_device_scale_factor_;
     frame.metadata.local_surface_id_allocation_time =
         holder->last_local_surface_id_allocation_time_;
+    frame.metadata.frame_token = ++holder->next_frame_token_;
     std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
     pass->SetNew(1, gfx::Rect(holder->last_frame_size_in_pixels_),
                  gfx::Rect(holder->last_frame_size_in_pixels_),
@@ -194,6 +195,7 @@ class FastInkView::LayerTreeFrameSinkHolder
     last_frame_device_scale_factor_ = frame.metadata.device_scale_factor;
     last_local_surface_id_allocation_time_ =
         frame.metadata.local_surface_id_allocation_time;
+    frame.metadata.frame_token = ++next_frame_token_;
     frame_sink_->SubmitCompositorFrame(std::move(frame),
                                        /*hit_test_data_changed=*/true,
                                        /*show_hit_test_borders=*/false);
@@ -272,6 +274,7 @@ class FastInkView::LayerTreeFrameSinkHolder
   std::unique_ptr<cc::LayerTreeFrameSink> frame_sink_;
   base::flat_map<viz::ResourceId, std::unique_ptr<Resource>>
       exported_resources_;
+  viz::FrameTokenGenerator next_frame_token_;
   gfx::Size last_frame_size_in_pixels_;
   float last_frame_device_scale_factor_ = 1.0f;
   base::TimeTicks last_local_surface_id_allocation_time_;
@@ -497,13 +500,7 @@ void FastInkView::SubmitCompositorFrame() {
   frame.metadata.local_surface_id_allocation_time =
       widget_->GetNativeView()->GetLocalSurfaceIdAllocation().allocation_time();
 
-  if (!presentation_callback_.is_null()) {
-    // If overflow happens, we increase it again.
-    if (!++presentation_token_)
-      ++presentation_token_;
-    frame.metadata.frame_token = presentation_token_;
-    frame.metadata.request_presentation_feedback = true;
-  }
+  frame.metadata.frame_token = ++next_frame_token_;
 
   viz::TextureDrawQuad* texture_quad =
       render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
@@ -545,8 +542,8 @@ void FastInkView::DidReceiveCompositorFrameAck() {
 
 void FastInkView::DidPresentCompositorFrame(
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(!presentation_callback_.is_null());
-  presentation_callback_.Run(feedback);
+  if (!presentation_callback_.is_null())
+    presentation_callback_.Run(feedback);
 }
 
 void FastInkView::ReclaimResource(std::unique_ptr<Resource> resource) {

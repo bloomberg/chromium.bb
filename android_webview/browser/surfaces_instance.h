@@ -98,6 +98,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   viz::LocalSurfaceIdAllocation root_id_allocation_;
   float device_scale_factor_ = 1.0f;
   std::vector<viz::SurfaceId> child_ids_;
+  viz::FrameTokenGenerator next_frame_token_;
 
   // This is owned by |display_|.
   ParentOutputSurface* output_surface_;

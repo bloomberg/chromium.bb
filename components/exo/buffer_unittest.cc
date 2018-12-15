@@ -190,6 +190,7 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
     frame.metadata.begin_frame_ack.sequence_number =
         viz::BeginFrameArgs::kStartingFrameNumber;
     frame.metadata.begin_frame_ack.has_damage = true;
+    frame.metadata.frame_token = 1;
     frame.metadata.device_scale_factor = 1;
     frame.metadata.local_surface_id_allocation_time = base::TimeTicks::Now();
     std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
@@ -242,6 +243,7 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
     frame.metadata.begin_frame_ack.sequence_number =
         viz::BeginFrameArgs::kStartingFrameNumber;
     frame.metadata.begin_frame_ack.has_damage = true;
+    frame.metadata.frame_token = 1;
     frame.metadata.device_scale_factor = 1;
     frame.metadata.local_surface_id_allocation_time = base::TimeTicks::Now();
     std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
@@ -277,6 +279,7 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
     frame.metadata.begin_frame_ack.sequence_number =
         viz::BeginFrameArgs::kStartingFrameNumber;
     frame.metadata.begin_frame_ack.has_damage = true;
+    frame.metadata.frame_token = 1;
     frame.metadata.device_scale_factor = 1;
     frame.metadata.local_surface_id_allocation_time = base::TimeTicks::Now();
     std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();

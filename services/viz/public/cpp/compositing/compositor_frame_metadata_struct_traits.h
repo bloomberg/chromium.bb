@@ -83,6 +83,7 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   }
 
   static uint32_t frame_token(const viz::CompositorFrameMetadata& metadata) {
+    DCHECK_GT(metadata.frame_token, 0u);
     return metadata.frame_token;
   }
 

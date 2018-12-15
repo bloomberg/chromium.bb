@@ -120,6 +120,8 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   unsigned next_resource_id_ = 0;
   ResourceMap resources_;
 
+  viz::FrameTokenGenerator next_frame_token_;
+
   // The latest_unposted_resource_id_ always refers to the Id of the frame
   // resource used by the latest_unposted_image_.
   scoped_refptr<CanvasResource> latest_unposted_image_;

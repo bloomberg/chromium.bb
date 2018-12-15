@@ -497,7 +497,7 @@ class CC_EXPORT LayerTreeHostImpl
     return &image_animation_controller_;
   }
 
-  uint32_t next_frame_token() const { return next_frame_token_; }
+  uint32_t next_frame_token() const { return *next_frame_token_; }
 
   virtual bool WillBeginImplFrame(const viz::BeginFrameArgs& args);
   virtual void DidFinishImplFrame();
@@ -1072,7 +1072,7 @@ class CC_EXPORT LayerTreeHostImpl
   // each CompositorFrame.
   std::unique_ptr<RenderFrameMetadataObserver> render_frame_metadata_observer_;
 
-  uint32_t next_frame_token_ = 1u;
+  viz::FrameTokenGenerator next_frame_token_;
 
   viz::LocalSurfaceIdAllocation last_draw_local_surface_id_allocation_;
   base::flat_set<viz::SurfaceRange> last_draw_referenced_surfaces_;

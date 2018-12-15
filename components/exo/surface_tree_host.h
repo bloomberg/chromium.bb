@@ -11,6 +11,7 @@
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_delegate.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -108,7 +109,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
   base::flat_map<uint32_t, PresentationCallbacks>
       active_presentation_callbacks_;
 
-  uint32_t presentation_token_ = 0;
+  viz::FrameTokenGenerator next_token_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceTreeHost);
 };

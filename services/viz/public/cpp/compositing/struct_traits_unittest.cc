@@ -506,6 +506,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   input.resource_list.push_back(resource);
   input.metadata.content_source_id = content_source_id;
   input.metadata.begin_frame_ack = begin_frame_ack;
+  input.metadata.frame_token = 1;
   input.metadata.local_surface_id_allocation_time =
       local_surface_id_allocation_time;
 
