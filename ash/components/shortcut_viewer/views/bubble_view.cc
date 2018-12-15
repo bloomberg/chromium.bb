@@ -105,7 +105,7 @@ gfx::Size BubbleView::CalculatePreferredSize() const {
 void BubbleView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
-  constexpr SkColor kBackgroundColor = SkColorSetARGB(0xFF, 0xF1, 0xF3, 0xF4);
+  constexpr SkColor kBackgroundColor = gfx::kGoogleGrey100;
   constexpr int kCornerRadius = 22;
   // Draw a round rect with background color and shadow.
   cc::PaintFlags flags;

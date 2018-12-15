@@ -47,7 +47,7 @@ AppListConfig::AppListConfig()
       folder_unclipped_icon_dimension_(88),
       folder_icon_radius_(36),
       folder_background_radius_(12),
-      folder_bubble_color_(SkColorSetARGB(0x7A, 0xF1, 0xF3, 0xF4)),
+      folder_bubble_color_(SkColorSetA(gfx::kGoogleGrey100, 0x7A)),
       item_icon_in_folder_icon_dimension_(32),
       folder_dropping_circle_radius_(44),
       folder_dropping_delay_(0),
