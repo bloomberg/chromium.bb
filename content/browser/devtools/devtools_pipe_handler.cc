@@ -203,6 +203,9 @@ DevToolsPipeHandler::DevToolsPipeHandler()
 }
 
 void DevToolsPipeHandler::Shutdown() {
+  if (shutting_down_)
+    return;
+  shutting_down_ = true;
   // Is there is no read thread, there is nothing, it is safe to proceed.
   if (!read_thread_)
     return;
@@ -223,7 +226,10 @@ void DevToolsPipeHandler::Shutdown() {
 
 // Concurrently discard the pipe handles to successfully join threads.
 #if defined(OS_WIN)
-  CloseHandle(reinterpret_cast<HANDLE>(_get_osfhandle(read_fd_)));
+  HANDLE read_handle = reinterpret_cast<HANDLE>(_get_osfhandle(read_fd_));
+  // Cancel pending synchronous read.
+  CancelIoEx(read_handle, NULL);
+  CloseHandle(read_handle);
   CloseHandle(reinterpret_cast<HANDLE>(_get_osfhandle(write_fd_)));
 #else
   shutdown(read_fd_, SHUT_RDWR);

@@ -39,6 +39,7 @@ class DevToolsPipeHandler : public DevToolsAgentHostClient {
   scoped_refptr<DevToolsAgentHost> browser_target_;
   int read_fd_;
   int write_fd_;
+  bool shutting_down_ = false;
   base::WeakPtrFactory<DevToolsPipeHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsPipeHandler);
