@@ -6,7 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
-#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_action_handler.h"
 
 namespace ui {
 

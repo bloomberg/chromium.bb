@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
 
