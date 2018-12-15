@@ -42,10 +42,22 @@ class IncludeNode(base.Node):
     return ['name', 'type', 'file']
 
   def DefaultAttributes(self):
+    """Attributes:
+       translateable:         False if the node has contents that should not be
+                              translated.
+       preprocess:            Takes the same code path as flattenhtml, but it
+                              disables any  processing/inlining outside of <if>
+                              and <include>.
+       compress:              The format to compress the data with, e.g. 'gzip'
+                              or 'false' if data should not be compressed.
+       skip_minify:           If true, skips minifying the node's contents.
+       skip_in_resource_map:  If true, do not add to the resource map.
+    """
     return {'translateable' : 'true',
             'generateid': 'true',
             'filenameonly': 'false',
             'mkoutput': 'false',
+            'preprocess': 'false',
             'flattenhtml': 'false',
             'compress': 'false',
             'allowexternalscript': 'false',
