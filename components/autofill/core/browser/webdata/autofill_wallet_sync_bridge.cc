@@ -303,10 +303,10 @@ bool AutofillWalletSyncBridge::SetWalletCards(
       ComputeAutofillWalletDiff(existing_cards, wallet_cards);
 
   if (log_diff) {
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards.Added", diff.items_added);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards.Removed",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards2.Added", diff.items_added);
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards2.Removed",
                              diff.items_removed);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards.AddedOrRemoved",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards2.AddedOrRemoved",
                              diff.items_added + diff.items_removed);
   }
 
@@ -338,11 +338,11 @@ bool AutofillWalletSyncBridge::SetWalletAddresses(
       ComputeAutofillWalletDiff(existing_addresses, wallet_addresses);
 
   if (log_diff) {
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses.Added",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses2.Added",
                              diff.items_added);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses.Removed",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses2.Removed",
                              diff.items_removed);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses.AddedOrRemoved",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses2.AddedOrRemoved",
                              diff.items_added + diff.items_removed);
   }
 

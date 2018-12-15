@@ -280,41 +280,41 @@ class AutofillWalletSyncBridgeTest : public UssSwitchToggler,
   }
 
   void ExpectAddressesDiffInHistograms(int added, int removed) {
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddresses.Added",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddresses2.Added",
                                          /*bucket=*/added,
                                          /*count=*/1);
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddresses.Removed",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddresses2.Removed",
                                          /*bucket=*/removed,
                                          /*count=*/1);
     histogram_tester_.ExpectUniqueSample(
-        "Autofill.WalletAddresses.AddedOrRemoved",
+        "Autofill.WalletAddresses2.AddedOrRemoved",
         /*bucket=*/added + removed,
         /*count=*/1);
   }
 
   void ExpectNoHistogramsForAddressesDiff() {
-    histogram_tester_.ExpectTotalCount("Autofill.WalletAddresses.Added", 0);
-    histogram_tester_.ExpectTotalCount("Autofill.WalletAddresses.Removed", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletAddresses2.Added", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletAddresses2.Removed", 0);
     histogram_tester_.ExpectTotalCount(
-        "Autofill.WalletAddresses.AddedOrRemoved", 0);
+        "Autofill.WalletAddresses2.AddedOrRemoved", 0);
   }
 
   void ExpectCardsDiffInHistograms(int added, int removed) {
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards.Added",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards2.Added",
                                          /*bucket=*/added,
                                          /*count=*/1);
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards.Removed",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards2.Removed",
                                          /*bucket=*/removed,
                                          /*count=*/1);
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards.AddedOrRemoved",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards2.AddedOrRemoved",
                                          /*bucket=*/added + removed,
                                          /*count=*/1);
   }
 
   void ExpectNoHistogramsForCardsDiff() {
-    histogram_tester_.ExpectTotalCount("Autofill.WalletCards.Added", 0);
-    histogram_tester_.ExpectTotalCount("Autofill.WalletCards.Removed", 0);
-    histogram_tester_.ExpectTotalCount("Autofill.WalletCards.AddedOrRemoved",
+    histogram_tester_.ExpectTotalCount("Autofill.WalletCards2.Added", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletCards2.Removed", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletCards2.AddedOrRemoved",
                                        0);
   }
 

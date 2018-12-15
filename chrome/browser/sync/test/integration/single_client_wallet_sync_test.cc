@@ -217,41 +217,41 @@ class SingleClientWalletSyncTest : public UssWalletSwitchToggler,
   }
 
   void ExpectAddressesDiffInHistograms(int added, int removed) {
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddresses.Added",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddresses2.Added",
                                          /*bucket=*/added,
                                          /*count=*/1);
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddresses.Removed",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletAddresses2.Removed",
                                          /*bucket=*/removed,
                                          /*count=*/1);
     histogram_tester_.ExpectUniqueSample(
-        "Autofill.WalletAddresses.AddedOrRemoved",
+        "Autofill.WalletAddresses2.AddedOrRemoved",
         /*bucket=*/added + removed,
         /*count=*/1);
   }
 
   void ExpectNoHistogramsForAddressesDiff() {
-    histogram_tester_.ExpectTotalCount("Autofill.WalletAddresses.Added", 0);
-    histogram_tester_.ExpectTotalCount("Autofill.WalletAddresses.Removed", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletAddresses2.Added", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletAddresses2.Removed", 0);
     histogram_tester_.ExpectTotalCount(
-        "Autofill.WalletAddresses.AddedOrRemoved", 0);
+        "Autofill.WalletAddresses2.AddedOrRemoved", 0);
   }
 
   void ExpectCardsDiffInHistograms(int added, int removed) {
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards.Added",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards2.Added",
                                          /*bucket=*/added,
                                          /*count=*/1);
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards.Removed",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards2.Removed",
                                          /*bucket=*/removed,
                                          /*count=*/1);
-    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards.AddedOrRemoved",
+    histogram_tester_.ExpectUniqueSample("Autofill.WalletCards2.AddedOrRemoved",
                                          /*bucket=*/added + removed,
                                          /*count=*/1);
   }
 
   void ExpectNoHistogramsForCardsDiff() {
-    histogram_tester_.ExpectTotalCount("Autofill.WalletCards.Added", 0);
-    histogram_tester_.ExpectTotalCount("Autofill.WalletCards.Removed", 0);
-    histogram_tester_.ExpectTotalCount("Autofill.WalletCards.AddedOrRemoved",
+    histogram_tester_.ExpectTotalCount("Autofill.WalletCards2.Added", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletCards2.Removed", 0);
+    histogram_tester_.ExpectTotalCount("Autofill.WalletCards2.AddedOrRemoved",
                                        0);
   }
 
@@ -699,6 +699,101 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
 
   // Expect correct histograms for the (no) update.
   ExpectCardsDiffInHistograms(/*added=*/0, /*removed=*/0);
+}
+
+// Tests that we do not report any diff metric on startup without getting a new
+// full update from the server. The test makes the initial sync in the first run
+// and then performs only an empty update after restart (see the test below).
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
+                       PRE_NoMetricReportedOnStartup) {
+  InitWithDefaultFeatures();
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Make sure the data is present on the client.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+
+  // No histograms for initial sync.
+  ExpectNoHistogramsForCardsDiff();
+  ExpectNoHistogramsForAddressesDiff();
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, NoMetricReportedOnStartup) {
+  InitWithDefaultFeatures();
+  // Set the same data on the server so that we get an empty update (this is
+  // based on a hash of the data).
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Make sure the data is still present on the client.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+
+  // No histograms for the startup, neither for the empty update.
+  ExpectNoHistogramsForCardsDiff();
+  ExpectNoHistogramsForAddressesDiff();
+}
+
+// Tests that we _do_ report one diff metric on startup when we get an update
+// from the server. The test makes the initial sync in the first run and then
+// performs one full update after restart (see the test below). This in
+// particular tests that the Directory implementation handles well the case that
+// the update is received before MergeDataAndStartSyncing.
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
+                       PRE_OneMetricReportedOnStartup) {
+  InitWithDefaultFeatures();
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Make sure the data is present on the client.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_EQ(1uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+
+  // No histograms for initial sync.
+  ExpectNoHistogramsForCardsDiff();
+  ExpectNoHistogramsForAddressesDiff();
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, OneMetricReportedOnStartup) {
+  InitWithDefaultFeatures();
+  // Set different data so that we get a full update.
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletCard(/*name=*/"card-2", /*last_four=*/"0002",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Make sure the data is still present on the client.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_EQ(2uL, pdm->GetCreditCards().size());
+  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
+  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
+
+  // One histogram for startup / full update.
+  ExpectCardsDiffInHistograms(/*added=*/1, /*removed=*/0);
+  ExpectAddressesDiffInHistograms(/*added=*/0, /*removed=*/0);
 }
 
 // Wallet data should get cleared from the database when the wallet sync type
