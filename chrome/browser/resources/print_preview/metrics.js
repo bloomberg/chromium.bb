@@ -74,72 +74,59 @@ cr.define('print_preview', function() {
     PRINT_SETTINGS_UI_MAX_BUCKET: 6
   };
 
-  /**
-   * A context for recording a value in a specific UMA histogram.
-   * @param {string} histogram The name of the histogram to be recorded in.
-   * @param {number} maxBucket The max value for the last histogram bucket.
-   * @constructor
-   */
-  function MetricsContext(histogram, maxBucket) {
-    /** @private {string} */
-    this.histogram_ = histogram;
+  /* A context for recording a value in a specific UMA histogram. */
+  class MetricsContext {
+    /**
+     * @param {string} histogram The name of the histogram to be recorded in.
+     * @param {number} maxBucket The max value for the last histogram bucket.
+     */
+    constructor(histogram, maxBucket) {
+      /** @private {string} */
+      this.histogram_ = histogram;
 
-    /** @private {number} */
-    this.maxBucket_ = maxBucket;
+      /** @private {number} */
+      this.maxBucket_ = maxBucket;
 
-    /** @private {!print_preview.NativeLayer} */
-    this.nativeLayer_ = print_preview.NativeLayer.getInstance();
-  }
+      /** @private {!print_preview.NativeLayer} */
+      this.nativeLayer_ = print_preview.NativeLayer.getInstance();
+    }
 
-  MetricsContext.prototype = {
     /**
      * Record a histogram value in UMA. If specified value is larger than the
      * max bucket value, record the value in the largest bucket
      * @param {number} bucket Value to record.
      */
-    record: function(bucket) {
+    record(bucket) {
       this.nativeLayer_.recordInHistogram(
           this.histogram_,
           (bucket > this.maxBucket_) ? this.maxBucket_ : bucket,
           this.maxBucket_);
     }
-  };
 
-  /**
-   * Destination Search specific usage statistics context.
-   * @constructor
-   * @extends {print_preview.MetricsContext}
-   */
-  function DestinationSearchMetricsContext() {
-    MetricsContext.call(
-        this, 'PrintPreview.DestinationAction',
-        Metrics.DestinationSearchBucket.DESTINATION_SEARCH_MAX_BUCKET);
+    /**
+     * Destination Search specific usage statistics context.
+     * @return {!print_preview.MetricsContext}
+     */
+    static destinationSearch() {
+      return new MetricsContext(
+          'PrintPreview.DestinationAction',
+          Metrics.DestinationSearchBucket.DESTINATION_SEARCH_MAX_BUCKET);
+    }
+
+    /**
+     * Print settings UI specific usage statistics context
+     * @return {!print_preview.MetricsContext}
+     */
+    static printSettingsUi() {
+      return new MetricsContext(
+          'PrintPreview.PrintSettingsUi',
+          Metrics.PrintSettingsUiBucket.PRINT_SETTINGS_UI_MAX_BUCKET);
+    }
   }
-
-  DestinationSearchMetricsContext.prototype = {
-    __proto__: MetricsContext.prototype
-  };
-
-  /**
-   * Print settings UI specific usage statistics context.
-   * @constructor
-   * @extends {print_preview.MetricsContext}
-   */
-  function PrintSettingsUiMetricsContext() {
-    MetricsContext.call(
-        this, 'PrintPreview.PrintSettingsUi',
-        Metrics.PrintSettingsUiBucket.PRINT_SETTINGS_UI_MAX_BUCKET);
-  }
-
-  PrintSettingsUiMetricsContext.prototype = {
-    __proto__: MetricsContext.prototype
-  };
 
   // Export
   return {
     Metrics: Metrics,
     MetricsContext: MetricsContext,
-    DestinationSearchMetricsContext: DestinationSearchMetricsContext,
-    PrintSettingsUiMetricsContext: PrintSettingsUiMetricsContext
   };
 });

@@ -450,7 +450,7 @@ Polymer({
       }
     } else if (this.state == print_preview_new.State.PRINTING) {
       if (this.shouldShowMoreSettings_) {
-        new print_preview.PrintSettingsUiMetricsContext().record(
+        print_preview.MetricsContext.printSettingsUi().record(
             this.settingsExpandedByUser_ ?
                 print_preview.Metrics.PrintSettingsUiBucket
                     .PRINT_WITH_SETTINGS_EXPANDED :

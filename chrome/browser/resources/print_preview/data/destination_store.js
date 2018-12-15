@@ -146,9 +146,9 @@ cr.define('print_preview', function() {
 
       /**
        * Used to track metrics.
-       * @private {!print_preview.DestinationSearchMetricsContext}
+       * @private {!print_preview.MetricsContext}
        */
-      this.metrics_ = new print_preview.DestinationSearchMetricsContext();
+      this.metrics_ = print_preview.MetricsContext.destinationSearch();
 
       /**
        * Internal backing store for the data store.
@@ -328,7 +328,7 @@ cr.define('print_preview', function() {
      * @return {boolean} Whether a search for print destinations is in progress.
      */
     get isPrintDestinationSearchInProgress() {
-      let isLocalDestinationSearchInProgress =
+      const isLocalDestinationSearchInProgress =
           Array.from(this.destinationSearchStatus_.values())
               .some(
                   el => el ===
@@ -337,7 +337,7 @@ cr.define('print_preview', function() {
       if (isLocalDestinationSearchInProgress)
         return true;
 
-      let isCloudDestinationSearchInProgress = !!this.cloudPrintInterface_ &&
+      const isCloudDestinationSearchInProgress = !!this.cloudPrintInterface_ &&
           this.cloudPrintInterface_.isCloudDestinationSearchInProgress();
       return isCloudDestinationSearchInProgress;
     }
@@ -416,7 +416,7 @@ cr.define('print_preview', function() {
       // them recent. Otherwise, there is a race condition between selecting
       // destinations/updating the print ticket and this selecting a new
       // destination that causes random print preview errors.
-      for (let destination of recentDestinations) {
+      for (const destination of recentDestinations) {
         origin = destination.origin;
         id = destination.id;
         account = destination.account || '';
@@ -902,7 +902,7 @@ cr.define('print_preview', function() {
     /** Initiates loading of all known destination types. */
     startLoadAllDestinations() {
       // Printer types that need to be retrieved from the handler.
-      let types = [
+      const types = [
         print_preview.PrinterType.PRIVET_PRINTER,
         print_preview.PrinterType.EXTENSION_PRINTER,
         print_preview.PrinterType.LOCAL_PRINTER,
