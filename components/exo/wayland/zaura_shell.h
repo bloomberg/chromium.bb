@@ -12,7 +12,7 @@ struct wl_client;
 namespace exo {
 namespace wayland {
 
-constexpr uint32_t kZAuraShellVersion = 7;
+constexpr uint32_t kZAuraShellVersion = 8;
 
 void bind_aura_shell(wl_client* client,
                      void* data,

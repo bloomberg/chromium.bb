@@ -30,6 +30,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor.h"
@@ -141,6 +142,10 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   void OnWindowDestroying(aura::Window* window) override {}
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
   void OnWindowTargetVisibilityChanged(bool visible) override {}
+  void OnWindowOcclusionChanged(aura::Window::OcclusionState occlusion_state,
+                                const SkRegion& occluded_region) override {
+    surface_->OnWindowOcclusionChanged();
+  }
   bool HasHitTestMask() const override { return true; }
   void GetHitTestMask(gfx::Path* mask) const override {
     surface_->GetHitTestMask(mask);
@@ -731,6 +736,15 @@ bool Surface::FillsBoundsOpaquely() const {
          state_.opaque_region.Contains(gfx::Rect(content_size_));
 }
 
+void Surface::SetOcclusionTracking(bool tracking) {
+  is_tracking_occlusion_ = tracking;
+  // TODO(edcourtney): Currently, it doesn't seem to be possible to stop
+  // tracking the occlusion state once started, but it would be nice to stop if
+  // the tracked occlusion region becomes empty.
+  if (is_tracking_occlusion_)
+    window()->TrackOcclusionState();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Buffer, private:
 
@@ -951,6 +965,14 @@ void Surface::UpdateContentSize() {
     content_size_ = content_size;
     window_->SetBounds(gfx::Rect(window_->bounds().origin(), content_size_));
   }
+}
+
+void Surface::OnWindowOcclusionChanged() {
+  if (!is_tracking_occlusion_)
+    return;
+
+  for (SurfaceObserver& observer : observers_)
+    observer.OnWindowOcclusionChanged(this);
 }
 
 }  // namespace exo

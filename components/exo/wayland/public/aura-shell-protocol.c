@@ -50,7 +50,7 @@ static const struct wl_message zaura_shell_requests[] = {
 };
 
 WL_EXPORT const struct wl_interface zaura_shell_interface = {
-	"zaura_shell", 7,
+	"zaura_shell", 8,
 	2, zaura_shell_requests,
 	0, NULL,
 };
@@ -62,12 +62,18 @@ static const struct wl_message zaura_surface_requests[] = {
 	{ "set_startup_id", "4?s", types + 0 },
 	{ "set_application_id", "5?s", types + 0 },
 	{ "set_client_surface_id", "7i", types + 0 },
+	{ "set_occlusion_tracking", "8", types + 0 },
+	{ "unset_occlusion_tracking", "8", types + 0 },
+};
+
+static const struct wl_message zaura_surface_events[] = {
+	{ "occlusion_changed", "8fu", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zaura_surface_interface = {
-	"zaura_surface", 7,
-	6, zaura_surface_requests,
-	0, NULL,
+	"zaura_surface", 8,
+	8, zaura_surface_requests,
+	1, zaura_surface_events,
 };
 
 static const struct wl_message zaura_output_events[] = {
