@@ -532,37 +532,10 @@ size_t SyncedBookmarkTracker::TrackedUncommittedTombstonesCountForDebugging()
 
 void SyncedBookmarkTracker::CheckAllNodesTracked(
     const bookmarks::BookmarkModel* bookmark_model) const {
-  // TODO(crbug.com/516866): The method is added to debug some crashes.
-  // Since it's relatively expensive, it should run on debug enabled
-  // builds only after the root cause is found.
+  // TODO(crbug.com/516866): Introduce logic to validate the invariant of the
+  // tracker.
   CHECK(GetEntityForBookmarkNode(bookmark_model->bookmark_bar_node()));
   CHECK(GetEntityForBookmarkNode(bookmark_model->other_node()));
-
-  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      bookmark_model->root_node());
-  while (iterator.has_next()) {
-    const bookmarks::BookmarkNode* node = iterator.Next();
-    if (!bookmark_model->client()->CanSyncNode(node)) {
-      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
-      // Should be converted to a DCHECK after the root cause if found.
-      CHECK(!GetEntityForBookmarkNode(node));
-      continue;
-    }
-    // Root node is usually tracked, except the sync data has been provided by
-    // the USS migrator.
-    if (node == bookmark_model->root_node()) {
-      continue;
-    }
-    // Mobile bookmarks folder is created on the server only after signing-in
-    // with a mobile client. Therefore, it should not be considered for
-    // validation.
-    if (node == bookmark_model->mobile_node()) {
-      continue;
-    }
-    // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
-    // Should be converted to a DCHECK after the root cause if found.
-    CHECK(GetEntityForBookmarkNode(node));
-  }
 }
 
 }  // namespace sync_bookmarks
