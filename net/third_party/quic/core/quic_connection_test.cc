@@ -297,6 +297,7 @@ class TestPacketWriter : public QuicPacketWriter {
         next_packet_too_large_(false),
         always_get_packet_too_large_(false),
         is_write_blocked_data_buffered_(false),
+        is_batch_mode_(false),
         final_bytes_of_last_packet_(0),
         final_bytes_of_previous_packet_(0),
         use_tagging_decrypter_(false),
@@ -378,7 +379,7 @@ class TestPacketWriter : public QuicPacketWriter {
 
   bool SupportsReleaseTime() const { return supports_release_time_; }
 
-  bool IsBatchMode() const override { return false; }
+  bool IsBatchMode() const override { return is_batch_mode_; }
 
   char* GetNextWriteLocation(const QuicIpAddress& self_address,
                              const QuicSocketAddress& peer_address) override {
@@ -397,6 +398,8 @@ class TestPacketWriter : public QuicPacketWriter {
   void SetWritePauseTimeDelta(QuicTime::Delta delta) {
     write_pause_time_delta_ = delta;
   }
+
+  void SetBatchMode(bool new_value) { is_batch_mode_ = new_value; }
 
   const QuicPacketHeader& header() { return framer_.header(); }
 
@@ -507,6 +510,7 @@ class TestPacketWriter : public QuicPacketWriter {
   bool next_packet_too_large_;
   bool always_get_packet_too_large_;
   bool is_write_blocked_data_buffered_;
+  bool is_batch_mode_;
   uint32_t final_bytes_of_last_packet_;
   uint32_t final_bytes_of_previous_packet_;
   bool use_tagging_decrypter_;
@@ -3245,6 +3249,29 @@ TEST_P(QuicConnectionTest, AddToWriteBlockedListIfWriterBlockedWhenProcessing) {
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(_, _, _, _, _));
   EXPECT_CALL(visitor_, OnWriteBlocked()).Times(1);
   ProcessAckPacket(1, &ack1);
+}
+
+TEST_P(QuicConnectionTest, DoNotAddToWriteBlockedListAfterDisconnect) {
+  writer_->SetBatchMode(true);
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, _,
+                                           ConnectionCloseSource::FROM_SELF));
+
+  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
+    EXPECT_CALL(visitor_, OnWriteBlocked()).Times(0);
+  } else {
+    EXPECT_CALL(visitor_, OnWriteBlocked()).Times(1);
+  }
+
+  {
+    QuicConnection::ScopedPacketFlusher flusher(&connection_,
+                                                QuicConnection::NO_ACK);
+    connection_.CloseConnection(QUIC_PEER_GOING_AWAY, "no reason",
+                                ConnectionCloseBehavior::SILENT_CLOSE);
+
+    EXPECT_FALSE(connection_.connected());
+    writer_->SetWriteBlocked();
+  }
 }
 
 TEST_P(QuicConnectionTest, NoLimitPacketsPerNack) {

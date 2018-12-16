@@ -189,16 +189,23 @@ bool QuicSession::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
     return false;
   }
 
-  // If stream is non-existent or closed, close the connection
-  DynamicStreamMap::iterator it = dynamic_stream_map_.find(stream_id);
-  if (it == dynamic_stream_map_.end() || IsClosedStream(stream_id)) {
+  // If stream is closed, ignore the frame
+  if (IsClosedStream(stream_id)) {
     QUIC_DVLOG(1)
         << ENDPOINT
         << "Received STOP_SENDING for closed or non-existent stream, id: "
-        << stream_id << " Closing connection";
+        << stream_id << " Ignoring.";
+    return true;  // Continue processing the packet.
+  }
+  // If stream is non-existent, close the connection
+  DynamicStreamMap::iterator it = dynamic_stream_map_.find(stream_id);
+  if (it == dynamic_stream_map_.end()) {
+    QUIC_DVLOG(1) << ENDPOINT
+                  << "Received STOP_SENDING for non-existent stream, id: "
+                  << stream_id << " Closing connection";
     connection()->CloseConnection(
         IETF_QUIC_PROTOCOL_VIOLATION,
-        "Received STOP_SENDING for a closed or non-existent stream",
+        "Received STOP_SENDING for a non-existent stream",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }
@@ -290,11 +297,18 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error,
 
   if (visitor_) {
     visitor_->OnConnectionClosed(connection_->connection_id(), error,
-                                 error_details);
+                                 error_details, source);
   }
 }
 
 void QuicSession::OnWriteBlocked() {
+  if (GetQuicReloadableFlag(
+          quic_connection_do_not_add_to_write_blocked_list_if_disconnected) &&
+      !connection_->connected()) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(
+        quic_connection_do_not_add_to_write_blocked_list_if_disconnected, 1, 2);
+    return;
+  }
   if (visitor_) {
     visitor_->OnWriteBlocked(connection_);
   }
@@ -1000,8 +1014,7 @@ void QuicSession::StreamDraining(QuicStreamId stream_id) {
 bool QuicSession::MaybeIncreaseLargestPeerStreamId(
     const QuicStreamId stream_id) {
   if (connection_->transport_version() == QUIC_VERSION_99) {
-    v99_streamid_manager_.MaybeIncreaseLargestPeerStreamId(stream_id);
-    return true;
+    return v99_streamid_manager_.MaybeIncreaseLargestPeerStreamId(stream_id);
   }
   return stream_id_manager_.MaybeIncreaseLargestPeerStreamId(stream_id);
 }
@@ -1036,11 +1049,7 @@ QuicStream* QuicSession::GetOrCreateDynamicStream(
     return nullptr;
   }
 
-  if (connection_->transport_version() == QUIC_VERSION_99) {
-    if (!v99_streamid_manager_.OnIncomingStreamOpened(stream_id)) {
-      return nullptr;
-    }
-  } else {
+  if (connection_->transport_version() != QUIC_VERSION_99) {
     // TODO(fayang): Let LegacyQuicStreamIdManager count open streams and make
     // CanOpenIncomingStream interface cosistent with that of v99.
     if (!stream_id_manager_.CanOpenIncomingStream(

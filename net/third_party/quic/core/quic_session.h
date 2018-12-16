@@ -54,7 +54,8 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
     // Called when the connection is closed after the streams have been closed.
     virtual void OnConnectionClosed(QuicConnectionId connection_id,
                                     QuicErrorCode error,
-                                    const QuicString& error_details) = 0;
+                                    const QuicString& error_details,
+                                    ConnectionCloseSource source) = 0;
 
     // Called when the session has become write blocked.
     virtual void OnWriteBlocked(QuicBlockedWriterInterface* blocked_writer) = 0;

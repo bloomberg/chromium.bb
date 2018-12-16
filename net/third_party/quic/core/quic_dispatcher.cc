@@ -535,7 +535,8 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
 
 void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
                                     QuicConnection* connection,
-                                    bool should_close_statelessly) {
+                                    bool should_close_statelessly,
+                                    ConnectionCloseSource source) {
   write_blocked_list_.erase(connection);
   if (should_close_statelessly) {
     DCHECK(connection->termination_packets() != nullptr &&
@@ -547,7 +548,28 @@ void QuicDispatcher::CleanUpSession(SessionMap::iterator it,
       !connection->termination_packets()->empty()) {
     action = QuicTimeWaitListManager::SEND_TERMINATION_PACKETS;
   } else if (connection->transport_version() > QUIC_VERSION_43) {
-    action = QuicTimeWaitListManager::DO_NOTHING;
+    if (!GetQuicReloadableFlag(
+            quic_send_reset_for_post_handshake_connections_without_termination_packets) ||  // NOLINT
+        (source == ConnectionCloseSource::FROM_PEER)) {
+      action = QuicTimeWaitListManager::DO_NOTHING;
+    } else if (!connection->IsHandshakeConfirmed()) {
+      QUIC_CODE_COUNT(quic_v44_add_to_time_wait_list_with_handshake_failed);
+      action = QuicTimeWaitListManager::SEND_TERMINATION_PACKETS;
+      // This serializes a connection close termination packet with error code
+      // QUIC_HANDSHAKE_FAILED and adds the connection to the time wait list.
+      StatelesslyTerminateConnection(
+          connection->connection_id(), IETF_QUIC_LONG_HEADER_PACKET,
+          connection->version(), QUIC_HANDSHAKE_FAILED,
+          "Connection is closed by server before handshake confirmed",
+          // Although it is our intention to send termination packets, the
+          // |action| argument is not used by this call to
+          // StatelesslyTerminateConnection().
+          action);
+      session_map_.erase(it);
+      return;
+    } else {
+      QUIC_CODE_COUNT(quic_v44_add_to_time_wait_list_with_stateless_reset);
+    }
   }
   time_wait_list_manager_->AddConnectionIdToTimeWait(
       it->first, connection->transport_version() > QUIC_VERSION_43, action,
@@ -569,6 +591,17 @@ std::unique_ptr<QuicPerPacketContext> QuicDispatcher::GetPerPacketContext()
 }
 
 void QuicDispatcher::DeleteSessions() {
+  if (GetQuicReloadableFlag(
+          quic_connection_do_not_add_to_write_blocked_list_if_disconnected) &&
+      !write_blocked_list_.empty()) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(
+        quic_connection_do_not_add_to_write_blocked_list_if_disconnected, 2, 2);
+    for (const std::unique_ptr<QuicSession>& session : closed_session_list_) {
+      if (write_blocked_list_.erase(session->connection()) != 0) {
+        QUIC_BUG << "QuicConnection was in WriteBlockedList before destruction";
+      }
+    }
+  }
   closed_session_list_.clear();
 }
 
@@ -577,7 +610,7 @@ void QuicDispatcher::OnCanWrite() {
   writer_->SetWritable();
 
   if (check_blocked_writer_for_blockage_) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 2, 4);
+    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 2, 6);
     // Move every blocked writer in |write_blocked_list_| to a temporary list.
     const size_t num_blocked_writers_before = write_blocked_list_.size();
     WriteBlockedList temp_list;
@@ -632,7 +665,8 @@ void QuicDispatcher::Shutdown() {
 
 void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
                                         QuicErrorCode error,
-                                        const QuicString& error_details) {
+                                        const QuicString& error_details,
+                                        ConnectionCloseSource source) {
   auto it = session_map_.find(connection_id);
   if (it == session_map_.end()) {
     QUIC_BUG << "ConnectionId " << connection_id
@@ -659,13 +693,13 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
   }
   const bool should_close_statelessly =
       (error == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT);
-  CleanUpSession(it, connection, should_close_statelessly);
+  CleanUpSession(it, connection, should_close_statelessly, source);
 }
 
 void QuicDispatcher::OnWriteBlocked(
     QuicBlockedWriterInterface* blocked_writer) {
   if (check_blocked_writer_for_blockage_) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 1, 4);
+    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 1, 6);
     if (!blocked_writer->IsWriterBlocked()) {
       // It is a programming error if this ever happens. When we are sure it is
       // not happening, replace it with a DCHECK.

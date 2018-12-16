@@ -831,6 +831,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     NOT_PADDED_PING,  // Set if the packet is not {PING, PADDING}.
   };
 
+  // Whether the handshake is confirmed from this connection's perspective.
+  bool IsHandshakeConfirmed() const {
+    return sent_packet_manager_.handshake_confirmed();
+  }
+
  protected:
   // Calls cancel() on all the alarms owned by this connection.
   void CancelAllAlarms();

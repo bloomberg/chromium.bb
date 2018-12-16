@@ -12,6 +12,7 @@
 #include "net/third_party/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quic/core/quic_data_writer.h"
+#include "net/third_party/quic/core/quic_error_codes.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_stream.h"
 #include "net/third_party/quic/core/quic_utils.h"
@@ -26,6 +27,7 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_test_mem_slice_vector.h"
+#include "net/third_party/quic/test_tools/mock_quic_session_visitor.h"
 #include "net/third_party/quic/test_tools/quic_config_peer.h"
 #include "net/third_party/quic/test_tools/quic_connection_peer.h"
 #include "net/third_party/quic/test_tools/quic_flow_controller_peer.h"
@@ -33,6 +35,7 @@
 #include "net/third_party/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_stream_send_buffer_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using spdy::kV3HighestPriority;
 using spdy::SpdyPriority;
@@ -40,6 +43,7 @@ using testing::_;
 using testing::AtLeast;
 using testing::InSequence;
 using testing::Invoke;
+using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
 
@@ -129,9 +133,10 @@ class TestStream : public QuicStream {
 
 class TestSession : public QuicSession {
  public:
-  explicit TestSession(QuicConnection* connection)
+  explicit TestSession(QuicConnection* connection,
+                       MockQuicSessionVisitor* session_visitor)
       : QuicSession(connection,
-                    nullptr,
+                    session_visitor,
                     DefaultQuicConfig(),
                     CurrentSupportedVersions()),
         crypto_stream_(this),
@@ -310,7 +315,7 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
                                                &alarm_factory_,
                                                perspective,
                                                SupportedVersions(GetParam()))),
-        session_(connection_) {
+        session_(connection_, &session_visitor_) {
     session_.config()->SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
     session_.config()->SetInitialSessionFlowControlWindowToSend(
@@ -379,6 +384,7 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
 
   MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
+  NiceMock<MockQuicSessionVisitor> session_visitor_;
   StrictMock<MockQuicConnection>* connection_;
   TestSession session_;
   std::set<QuicStreamId> closed_streams_;
@@ -400,6 +406,23 @@ TEST_P(QuicSessionTestServer, PeerAddress) {
 
 TEST_P(QuicSessionTestServer, SelfAddress) {
   EXPECT_EQ(QuicSocketAddress(), session_.self_address());
+}
+
+TEST_P(QuicSessionTestServer, DontCallOnWriteBlockedForDisconnectedConnection) {
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _))
+      .WillOnce(
+          Invoke(connection_, &MockQuicConnection::ReallyCloseConnection));
+  connection_->CloseConnection(QUIC_NO_ERROR, "Everything is fine.",
+                               ConnectionCloseBehavior::SILENT_CLOSE);
+  ASSERT_FALSE(connection_->connected());
+
+  if (GetQuicReloadableFlag(
+          quic_connection_do_not_add_to_write_blocked_list_if_disconnected)) {
+    EXPECT_CALL(session_visitor_, OnWriteBlocked(_)).Times(0);
+  } else {
+    EXPECT_CALL(session_visitor_, OnWriteBlocked(_)).Times(1);
+  }
+  session_.OnWriteBlocked();
 }
 
 TEST_P(QuicSessionTestServer, IsCryptoHandshakeConfirmed) {
@@ -1408,8 +1431,8 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseServerRejectStream) {
   }
 
   if (transport_version() == QUIC_VERSION_99) {
-    EXPECT_CALL(*connection_,
-                CloseConnection(QUIC_INVALID_STREAM_ID, "24 above 20", _));
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID,
+                                              "Stream id 24 above 20", _));
   } else {
     EXPECT_CALL(*connection_, SendControlFrame(_)).Times(1);
     EXPECT_CALL(*connection_,
@@ -1953,7 +1976,7 @@ TEST_P(QuicSessionTestServer, WriteMemSlicesOnReadUnidirectionalStream) {
 // Test code that tests that an incoming stream frame with a new (not previously
 // seen) stream id is acceptable. The ID must not be larger than has been
 // advertised. It may be equal to what has been advertised.  These tests
-// invoke QuicStreamIdManager::OnIncomingStreamOpened by calling
+// invoke QuicStreamIdManager::MaybeIncreaseLargestPeerStreamId by calling
 // QuicSession::OnStreamFrame in order to check that all the steps are connected
 // properly and that nothing in the call path interferes with the check.
 // First test make sure that streams with ids below the limit are accepted.
@@ -2016,8 +2039,8 @@ TEST_P(QuicSessionTestServer, NewStreamIdAboveLimit) {
       kV99StreamIdIncrement;
   QuicStreamFrame bidirectional_stream_frame(bidirectional_stream_id, false, 0,
                                              "Random String");
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_INVALID_STREAM_ID, "404 above 400", _));
+  EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID,
+                                            "Stream id 404 above 400", _));
   session_.OnStreamFrame(bidirectional_stream_frame);
 
   QuicStreamId unidirectional_stream_id =
@@ -2026,8 +2049,8 @@ TEST_P(QuicSessionTestServer, NewStreamIdAboveLimit) {
       kV99StreamIdIncrement;
   QuicStreamFrame unidirectional_stream_frame(unidirectional_stream_id, false,
                                               0, "Random String");
-  EXPECT_CALL(*connection_,
-              CloseConnection(QUIC_INVALID_STREAM_ID, "402 above 398", _));
+  EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID,
+                                            "Stream id 402 above 398", _));
   session_.OnStreamFrame(unidirectional_stream_frame);
 }
 
@@ -2064,7 +2087,8 @@ TEST_P(QuicSessionTestServer, OnStopSendingInputStaticStreams) {
   EXPECT_FALSE(session_.OnStopSendingFrame(frame));
 }
 
-// Third test, if stream id specifies a closed stream, close the connection
+// Third test, if stream id specifies a closed stream:
+// return true and do not close the connection.
 TEST_P(QuicSessionTestServer, OnStopSendingInputClosedStream) {
   if (transport_version() != QUIC_VERSION_99) {
     // Applicable only to V99
@@ -2079,16 +2103,12 @@ TEST_P(QuicSessionTestServer, OnStopSendingInputClosedStream) {
   stream->CloseWriteSide();
   stream->CloseReadSide();
   QuicStopSendingFrame frame(1, stream_id, 123);
-  EXPECT_CALL(
-      *connection_,
-      CloseConnection(
-          IETF_QUIC_PROTOCOL_VIOLATION,
-          "Received STOP_SENDING for a closed or non-existent stream", _));
-  EXPECT_FALSE(session_.OnStopSendingFrame(frame));
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
+  EXPECT_TRUE(session_.OnStopSendingFrame(frame));
 }
 
-// Fourth test, if stream id specifies a nonexistent stream, close the
-// connection
+// Fourth test, if stream id specifies a nonexistent stream, return false and
+// close the connection
 TEST_P(QuicSessionTestServer, OnStopSendingInputNonExistentStream) {
   if (transport_version() != QUIC_VERSION_99) {
     // Applicable only to V99
@@ -2099,9 +2119,9 @@ TEST_P(QuicSessionTestServer, OnStopSendingInputNonExistentStream) {
                              123);
   EXPECT_CALL(
       *connection_,
-      CloseConnection(
-          IETF_QUIC_PROTOCOL_VIOLATION,
-          "Received STOP_SENDING for a closed or non-existent stream", _));
+      CloseConnection(IETF_QUIC_PROTOCOL_VIOLATION,
+                      "Received STOP_SENDING for a non-existent stream", _))
+      .Times(1);
   EXPECT_FALSE(session_.OnStopSendingFrame(frame));
 }
 

@@ -117,7 +117,9 @@ std::unique_ptr<base::Value> NetLogQuicConnectionMigrationFailureCallback(
     std::string reason,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("connection_id", base::NumberToString(connection_id));
+  dict->SetString(
+      "connection_id",
+      base::NumberToString(quic::QuicConnectionIdToUInt64(connection_id)));
   dict->SetString("reason", reason);
   return std::move(dict);
 }
@@ -126,7 +128,9 @@ std::unique_ptr<base::Value> NetLogQuicConnectionMigrationSuccessCallback(
     quic::QuicConnectionId connection_id,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("connection_id", base::NumberToString(connection_id));
+  dict->SetString(
+      "connection_id",
+      base::NumberToString(quic::QuicConnectionIdToUInt64(connection_id)));
   return std::move(dict);
 }
 
@@ -2688,7 +2692,9 @@ std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
 
   dict->SetInteger("total_streams", num_total_streams_);
   dict->SetString("peer_address", peer_address().ToString());
-  dict->SetString("connection_id", base::NumberToString(connection_id()));
+  dict->SetString(
+      "connection_id",
+      base::NumberToString(quic::QuicConnectionIdToUInt64(connection_id())));
   dict->SetBoolean("connected", connection()->connected());
   const quic::QuicConnectionStats& stats = connection()->GetStats();
   dict->SetInteger("packets_sent", stats.packets_sent);

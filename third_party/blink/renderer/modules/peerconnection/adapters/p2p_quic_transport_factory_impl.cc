@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory_impl.h"
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_packet_writer.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_packet_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_impl.h"
@@ -148,7 +149,8 @@ std::unique_ptr<quic::QuicConnection> CreateQuicConnection(
   ip.FromString("0.0.0.0");
   quic::QuicSocketAddress dummy_address(ip, 0 /* Port */);
   return std::make_unique<quic::QuicConnection>(
-      0 /* dummy ID */, dummy_address, helper, alarm_factory, packet_writer,
+      quic::EmptyQuicConnectionId() /* dummy ID */, dummy_address, helper,
+      alarm_factory, packet_writer,
       /* owns_writer */ true, perspective, quic::CurrentSupportedVersions());
 }
 }  // namespace

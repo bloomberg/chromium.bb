@@ -49,6 +49,18 @@ TEST_F(QuicConnectionIdTest, DoubleConvert) {
   EXPECT_NE(connection_id64_2, connection_id64_3);
 }
 
+TEST_F(QuicConnectionIdTest, Hash) {
+  QuicConnectionId connection_id64_1 = QuicConnectionIdFromUInt64(1);
+  QuicConnectionId connection_id64_1b = QuicConnectionIdFromUInt64(1);
+  QuicConnectionId connection_id64_2 = QuicConnectionIdFromUInt64(42);
+  QuicConnectionId connection_id64_3 =
+      QuicConnectionIdFromUInt64(UINT64_C(0xfedcba9876543210));
+  EXPECT_EQ(connection_id64_1.Hash(), connection_id64_1b.Hash());
+  EXPECT_NE(connection_id64_1.Hash(), connection_id64_2.Hash());
+  EXPECT_NE(connection_id64_1.Hash(), connection_id64_3.Hash());
+  EXPECT_NE(connection_id64_2.Hash(), connection_id64_3.Hash());
+}
+
 }  // namespace
 
 }  // namespace quic

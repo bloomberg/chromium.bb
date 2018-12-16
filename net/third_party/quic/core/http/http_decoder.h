@@ -116,6 +116,10 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
   // Buffers any remaining frame payload from |reader| into |buffer_|.
   void BufferFramePayload(QuicDataReader* reader);
 
+  // Buffers any remaining frame length field from |reader| into
+  // |length_buffer_|
+  void BufferFrameLength(QuicDataReader* reader);
+
   // Sets |error_| and |error_detail_| accordingly.
   void RaiseError(QuicErrorCode error, QuicString error_detail);
 
@@ -131,6 +135,10 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
   HttpDecoderState state_;
   // Type of the frame currently being parsed.
   uint8_t current_frame_type_;
+  // Size of the frame's length field.
+  uint64_t current_length_field_size_;
+  // Remaining length that's needed for the frame's length field.
+  uint64_t remaining_length_field_length_;
   // Length of the payload of the frame currently being parsed.
   uint64_t current_frame_length_;
   // Remaining payload bytes to be parsed.
@@ -141,6 +149,8 @@ class QUIC_EXPORT_PRIVATE HttpDecoder {
   QuicString error_detail_;
   // Remaining unparsed data.
   QuicString buffer_;
+  // Remaining unparsed length field data.
+  QuicString length_buffer_;
 };
 
 }  // namespace quic

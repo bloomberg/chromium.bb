@@ -127,6 +127,9 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
       const QuicSocketAddress& peer_address,
       std::unique_ptr<QuicPerPacketContext> packet_context);
 
+  // Return a non-owning pointer to the packet writer.
+  QuicPacketWriter* writer() { return writer_; }
+
  protected:
   virtual std::unique_ptr<QuicEncryptedPacket> BuildPublicReset(
       const QuicPublicResetPacket& packet);
@@ -146,21 +149,52 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   virtual QuicUint128 GetStatelessResetToken(
       QuicConnectionId connection_id) const;
 
+  // Internal structure to store pending termination packets.
+  class QueuedPacket {
+   public:
+    QueuedPacket(const QuicSocketAddress& self_address,
+                 const QuicSocketAddress& peer_address,
+                 std::unique_ptr<QuicEncryptedPacket> packet)
+        : self_address_(self_address),
+          peer_address_(peer_address),
+          packet_(std::move(packet)) {}
+    QueuedPacket(const QueuedPacket&) = delete;
+    QueuedPacket& operator=(const QueuedPacket&) = delete;
+
+    const QuicSocketAddress& self_address() const { return self_address_; }
+    const QuicSocketAddress& peer_address() const { return peer_address_; }
+    QuicEncryptedPacket* packet() { return packet_.get(); }
+
+   private:
+    // Server address on which a packet was received for a connection_id in
+    // time wait state.
+    const QuicSocketAddress self_address_;
+    // Address of the peer to send this packet to.
+    const QuicSocketAddress peer_address_;
+    // The pending termination packet that is to be sent to the peer.
+    std::unique_ptr<QuicEncryptedPacket> packet_;
+  };
+
+  // Called right after |packet| is serialized. Either sends the packet and
+  // deletes it or makes pending_packets_queue_ the owner of the packet.
+  // Subclasses overriding this method should call this class's base
+  // implementation at the end of the override.
+  // Return true if |packet| is sent, false if it is queued.
+  virtual bool SendOrQueuePacket(std::unique_ptr<QueuedPacket> packet,
+                                 const QuicPerPacketContext* packet_context);
+
+  const QuicDeque<std::unique_ptr<QueuedPacket>>& pending_packets_queue()
+      const {
+    return pending_packets_queue_;
+  }
+
  private:
   friend class test::QuicDispatcherPeer;
   friend class test::QuicTimeWaitListManagerPeer;
 
-  // Internal structure to store pending public reset packets.
-  class QueuedPacket;
-
   // Decides if a packet should be sent for this connection_id based on the
   // number of received packets.
   bool ShouldSendResponse(int received_packet_count);
-
-  // Either sends the packet and deletes it or makes pending_packets_queue_ the
-  // owner of the packet.
-  void SendOrQueuePacket(std::unique_ptr<QueuedPacket> packet,
-                         std::unique_ptr<QuicPerPacketContext> packet_context);
 
   // Sends the packet out. Returns true if the packet was successfully consumed.
   // If the writer got blocked and did not buffer the packet, we'll need to keep
@@ -206,7 +240,10 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   };
 
   // QuicLinkedHashMap allows lookup by ConnectionId and traversal in add order.
-  typedef QuicLinkedHashMap<QuicConnectionId, ConnectionIdData> ConnectionIdMap;
+  typedef QuicLinkedHashMap<QuicConnectionId,
+                            ConnectionIdData,
+                            QuicConnectionIdHash>
+      ConnectionIdMap;
   ConnectionIdMap connection_id_map_;
 
   // Pending termination packets that need to be sent out to the peer when we

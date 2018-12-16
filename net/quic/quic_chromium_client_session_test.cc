@@ -42,6 +42,7 @@
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/http/quic_client_promised_info.h"
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_packet_writer.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -146,7 +147,8 @@ class QuicChromiumClientSessionTest
     QuicChromiumPacketWriter* writer = new net::QuicChromiumPacketWriter(
         socket.get(), base::ThreadTaskRunnerHandle::Get().get());
     quic::QuicConnection* connection = new quic::QuicConnection(
-        0, quic::QuicSocketAddress(quic::QuicSocketAddressImpl(kIpEndPoint)),
+        quic::EmptyQuicConnectionId(),
+        quic::QuicSocketAddress(quic::QuicSocketAddressImpl(kIpEndPoint)),
         &helper_, &alarm_factory_, writer, true, quic::Perspective::IS_CLIENT,
         quic::test::SupportedVersions(
             quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, version_)));

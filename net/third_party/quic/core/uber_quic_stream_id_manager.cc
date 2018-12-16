@@ -83,20 +83,13 @@ QuicStreamId UberQuicStreamIdManager::GetNextOutgoingUnidirectionalStreamId() {
   return unidirectional_stream_id_manager_.GetNextOutgoingStreamId();
 }
 
-void UberQuicStreamIdManager::MaybeIncreaseLargestPeerStreamId(
+bool UberQuicStreamIdManager::MaybeIncreaseLargestPeerStreamId(
     QuicStreamId id) {
   if (QuicUtils::IsBidirectionalStreamId(id)) {
-    bidirectional_stream_id_manager_.MaybeIncreaseLargestPeerStreamId(id);
-    return;
+    return bidirectional_stream_id_manager_.MaybeIncreaseLargestPeerStreamId(
+        id);
   }
-  unidirectional_stream_id_manager_.MaybeIncreaseLargestPeerStreamId(id);
-}
-
-bool UberQuicStreamIdManager::OnIncomingStreamOpened(QuicStreamId id) {
-  if (QuicUtils::IsBidirectionalStreamId(id)) {
-    return bidirectional_stream_id_manager_.OnIncomingStreamOpened(id);
-  }
-  return unidirectional_stream_id_manager_.OnIncomingStreamOpened(id);
+  return unidirectional_stream_id_manager_.MaybeIncreaseLargestPeerStreamId(id);
 }
 
 void UberQuicStreamIdManager::OnStreamClosed(QuicStreamId id) {

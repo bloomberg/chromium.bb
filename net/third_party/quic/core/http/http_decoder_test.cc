@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/third_party/quic/core/http/http_decoder.h"
+#include "net/third_party/quic/core/http/http_encoder.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 
@@ -290,6 +291,36 @@ TEST_F(HttpDecoderTest, DataFrame) {
   for (char c : input) {
     EXPECT_EQ(1u, decoder_.ProcessInput(&c, 1));
   }
+  EXPECT_EQ(QUIC_NO_ERROR, decoder_.error());
+  EXPECT_EQ("", decoder_.error_detail());
+}
+
+TEST_F(HttpDecoderTest, FrameHeaderPartialDelivery) {
+  // A large input that will occupy more than 1 byte in the length field.
+  QuicString input(2048, 'x');
+  HttpEncoder encoder;
+  std::unique_ptr<char[]> buffer;
+  QuicByteCount header_length =
+      encoder.SerializeDataFrameHeader(input.length(), &buffer);
+  QuicString header = QuicString(buffer.get(), header_length);
+  // Partially send only 1 byte of the header to process.
+  EXPECT_EQ(1u, decoder_.ProcessInput(header.data(), 1));
+  EXPECT_EQ(QUIC_NO_ERROR, decoder_.error());
+  EXPECT_EQ("", decoder_.error_detail());
+
+  // Send the rest of the header.
+  EXPECT_EQ(header_length - 1,
+            decoder_.ProcessInput(header.data() + 1, header_length - 1));
+  EXPECT_EQ(QUIC_NO_ERROR, decoder_.error());
+  EXPECT_EQ("", decoder_.error_detail());
+
+  // Send data.
+  EXPECT_CALL(visitor_, OnDataFrameStart());
+  EXPECT_CALL(visitor_, OnDataFramePayload(QuicStringPiece(input)));
+  // EXPECT_CALL(visitor_,
+  //            OnDataFramePayload(QuicStringPiece(QuicString(2048, 'x'))));
+  EXPECT_CALL(visitor_, OnDataFrameEnd());
+  EXPECT_EQ(2048u, decoder_.ProcessInput(input.data(), 2048));
   EXPECT_EQ(QUIC_NO_ERROR, decoder_.error());
   EXPECT_EQ("", decoder_.error_detail());
 }

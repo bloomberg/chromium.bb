@@ -643,9 +643,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const QuicData& client_hello_serialized = out->GetSerialized();
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
-    // TODO(dschinazi) b/120240679 - use connection_id.data() and .length()
-    hkdf_input.append(reinterpret_cast<char*>(&connection_id),
-                      sizeof(connection_id));
+    hkdf_input.append(connection_id.data(), connection_id.length());
     hkdf_input.append(client_hello_serialized.data(),
                       client_hello_serialized.length());
     hkdf_input.append(cached->server_config());
@@ -696,9 +694,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   //   out_params->hkdf_input_suffix
   //   out_params->initial_crypters
   out_params->hkdf_input_suffix.clear();
-  // TODO(dschinazi) b/120240679 - use connection_id.data() and .length()
-  out_params->hkdf_input_suffix.append(reinterpret_cast<char*>(&connection_id),
-                                       sizeof(connection_id));
+  out_params->hkdf_input_suffix.append(connection_id.data(),
+                                       connection_id.length());
   const QuicData& client_hello_serialized = out->GetSerialized();
   out_params->hkdf_input_suffix.append(client_hello_serialized.data(),
                                        client_hello_serialized.length());

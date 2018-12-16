@@ -87,7 +87,8 @@ bool TlsClientHandshaker::CryptoConnect() {
 
   // Set the Transport Parameters to send in the ClientHello
   if (!SetTransportParameters()) {
-    CloseConnection("Failed to set Transport Parameters");
+    CloseConnection(QUIC_HANDSHAKE_FAILED,
+                    "Failed to set Transport Parameters");
     return false;
   }
 
@@ -199,7 +200,7 @@ void TlsClientHandshaker::AdvanceHandshake() {
     return;
   }
   if (state_ == STATE_IDLE) {
-    CloseConnection("TLS handshake failed");
+    CloseConnection(QUIC_HANDSHAKE_FAILED, "TLS handshake failed");
     return;
   }
   if (state_ == STATE_HANDSHAKE_COMPLETE) {
@@ -225,56 +226,31 @@ void TlsClientHandshaker::AdvanceHandshake() {
     default:
       should_close = true;
   }
-  if (should_close) {
+  if (should_close && state_ != STATE_CONNECTION_CLOSED) {
     // TODO(nharper): Surface error details from the error queue when ssl_error
     // is SSL_ERROR_SSL.
     QUIC_LOG(WARNING) << "SSL_do_handshake failed; closing connection";
-    CloseConnection("TLS handshake failed");
+    CloseConnection(QUIC_HANDSHAKE_FAILED, "TLS handshake failed");
   }
 }
 
-void TlsClientHandshaker::CloseConnection(const QuicString& reason_phrase) {
-  // TODO(nharper): Instead of QUIC_HANDSHAKE_FAILED, this should be
-  // TLS_HANDSHAKE_FAILED (0xC000001C), but according to quic_error_codes.h,
-  // we only send 1-byte error codes right now.
+void TlsClientHandshaker::CloseConnection(QuicErrorCode error,
+                                          const QuicString& reason_phrase) {
   state_ = STATE_CONNECTION_CLOSED;
-  stream()->CloseConnectionWithDetails(QUIC_HANDSHAKE_FAILED, reason_phrase);
+  stream()->CloseConnectionWithDetails(error, reason_phrase);
 }
 
 void TlsClientHandshaker::FinishHandshake() {
   QUIC_LOG(INFO) << "Client: handshake finished";
   state_ = STATE_HANDSHAKE_COMPLETE;
-  std::vector<uint8_t> client_secret, server_secret;
-  if (!DeriveSecrets(&client_secret, &server_secret)) {
-    CloseConnection("Failed to derive handshake secrets");
-    return;
-  }
 
   QuicString error_details;
   if (!ProcessTransportParameters(&error_details)) {
-    CloseConnection(error_details);
+    CloseConnection(QUIC_HANDSHAKE_FAILED, error_details);
     return;
   }
 
-  QUIC_LOG(INFO) << "Client: setting crypters";
-  std::unique_ptr<QuicEncrypter> initial_encrypter =
-      CreateEncrypter(client_secret);
-  session()->connection()->SetEncrypter(ENCRYPTION_INITIAL,
-                                        std::move(initial_encrypter));
-  std::unique_ptr<QuicEncrypter> encrypter = CreateEncrypter(client_secret);
-  session()->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE,
-                                        std::move(encrypter));
-
-  std::unique_ptr<QuicDecrypter> initial_decrypter =
-      CreateDecrypter(server_secret);
-  session()->connection()->SetDecrypter(ENCRYPTION_INITIAL,
-                                        std::move(initial_decrypter));
-  std::unique_ptr<QuicDecrypter> decrypter = CreateDecrypter(server_secret);
-  session()->connection()->SetAlternativeDecrypter(ENCRYPTION_FORWARD_SECURE,
-                                                   std::move(decrypter), true);
-
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
-
   session()->NeuterUnencryptedData();
   encryption_established_ = true;
   handshake_confirmed_ = true;

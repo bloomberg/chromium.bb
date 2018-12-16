@@ -75,7 +75,9 @@ class QUIC_EXPORT_PRIVATE QuicBufferedPacketStore {
     ParsedQuicVersion version;
   };
 
-  typedef QuicLinkedHashMap<QuicConnectionId, BufferedPacketList>
+  typedef QuicLinkedHashMap<QuicConnectionId,
+                            BufferedPacketList,
+                            QuicConnectionIdHash>
       BufferedPacketMap;
 
   class QUIC_EXPORT_PRIVATE VisitorInterface {
@@ -167,7 +169,8 @@ class QUIC_EXPORT_PRIVATE QuicBufferedPacketStore {
 
   // Keeps track of connection with CHLO buffered up already and the order they
   // arrive.
-  QuicLinkedHashMap<QuicConnectionId, bool> connections_with_chlo_;
+  QuicLinkedHashMap<QuicConnectionId, bool, QuicConnectionIdHash>
+      connections_with_chlo_;
 };
 
 }  // namespace quic

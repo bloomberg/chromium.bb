@@ -253,11 +253,6 @@ enum QuicIetfFrameType : uint8_t {
 #define IETF_STREAM_FRAME_LEN_BIT 0x02
 #define IETF_STREAM_FRAME_OFF_BIT 0x04
 
-enum QuicConnectionIdKnownLength {
-  PACKET_0BYTE_CONNECTION_ID = 0,
-  PACKET_8BYTE_CONNECTION_ID = 8,
-};
-
 enum QuicPacketNumberLength : uint8_t {
   PACKET_1BYTE_PACKET_NUMBER = 1,
   PACKET_2BYTE_PACKET_NUMBER = 2,

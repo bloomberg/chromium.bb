@@ -1414,8 +1414,8 @@ TEST_P(QuicSpdySessionTestServer,
         .Times(1);
   } else {
     // On version 99 opening such a stream results in a connection close.
-    EXPECT_CALL(*connection_,
-                CloseConnection(QUIC_INVALID_STREAM_ID, "28 above 24", _));
+    EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID,
+                                              "Stream id 28 above 24", _));
   }
   // Create one more data streams to exceed limit of open stream.
   QuicStreamFrame data1(kFinalStreamId, false, 0, QuicStringPiece("HT"));
