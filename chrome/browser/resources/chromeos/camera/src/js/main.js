@@ -35,6 +35,12 @@ cca.App = function(aspectRatio) {
   this.settingsView_ = new cca.views.Settings();
 
   /**
+   * @type {cca.views.GridSettings}
+   * @private
+   */
+  this.gridsettingsView_ = new cca.views.GridSettings();
+
+  /**
    * @type {cca.views.Browser}
    * @private
    */
@@ -104,6 +110,7 @@ cca.App.prototype.setupToggles_ = function() {
         cca.util.getShortcutIdentifier(event) == 'Enter' && element.click());
 
     var css = element.getAttribute('data-css');
+    var attr = element.getAttribute('data-attr');
     var key = element.getAttribute('data-key');
     var payload = () => {
       var keys = {};
@@ -113,6 +120,9 @@ cca.App.prototype.setupToggles_ = function() {
     element.addEventListener('change', (event) => {
       if (css) {
         document.body.classList.toggle(css, element.checked);
+      }
+      if (attr) {
+        document.body.toggleAttribute(attr, element.checked);
       }
       if (event.isTrusted) {
         element.save();
@@ -146,6 +156,7 @@ cca.App.prototype.start = function() {
   cca.nav.setup([
     this.cameraView_,
     this.settingsView_,
+    this.gridsettingsView_,
     this.browserView_,
     this.warningView_,
     this.dialogView_,
