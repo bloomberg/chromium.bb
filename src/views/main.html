@@ -87,11 +87,20 @@
       <div class="centered-overlay" id="camera-mode"></div>
     </div>
     <div id="settings">
-      <div class="menu" role="menu" i18n-aria-label="settingsButton">
+      <div class="menu">
         <div class="menu-header buttons circle">
           <button class="icon" tabindex="0"
                   i18n-aria-label="backButton"></button>
-          <div i18n-content="settingsButton" aria-hidden="true"></div>
+          <div role="menu" i18n-content="settingsButton"></div>
+        </div>
+        <div class="menu-item buttons circle" id="settings-gridtype">
+          <div class="icon"></div>
+          <div aria-hidden="true">
+            <div i18n-content="gridTypeButton"></div>
+            <div class="description" id="gridtype-desc">3 x 3</div>
+          </div>
+          <button tabindex="0" i18n-aria-label="gridTypeButton"
+                  aria-describedby="gridtype-desc"></button>
         </div>
         <div class="menu-item buttons circle" id="settings-feedback">
           <div class="icon"></div>
@@ -106,22 +115,22 @@
       </div>
     </div>
     <div id="gridsettings">
-      <div class="menu" role="menu" i18n-aria-label="gridTypeButton">
+      <div class="menu">
         <div class="menu-header buttons circle">
-          <button class="icon" tabindex="0"
-                  i18n-aria-label="backButton"></button>
-          <div i18n-content="gridTypeButton" aria-hidden="true"></div>
+          <button class="icon" tabindex="0" i18n-aria-label="backButton">
+          </button>
+          <div role="menu" i18n-content="gridTypeButton"></div>
         </div>
-        <div class="menu-item buttons circle">
-          <input type="radio" tabindex="0" i18n-aria-label="labelGrid3x3"
-                 name="grid-type" checked>
-          <span aria-hidden="true">3 x 3</span>
-        </div>
-        <div class="menu-item buttons circle">
-          <input type="radio" tabindex="0" i18n-aria-label="labelGridGolden"
-                 name="grid-type" data-css="golden" data-key="toggleGolden">
-          <span i18n-content="labelGridGolden" aria-hidden="true"></span>
-        </div>
+        <label class="menu-item buttons circle" for="grid-3x3">
+          <input id="grid-3x3" type="radio" tabindex="0" name="gridtype"
+                 checked>
+          <span i18n-aria-label="labelGrid3x3">3 x 3</span>
+        </label>
+        <label class="menu-item buttons circle" for="grid-golden">
+          <input id="grid-golden" type="radio" tabindex="0" name="gridtype"
+                 data-attr="golden" data-key="toggleGolden">
+          <span i18n-content="labelGridGolden"></span>
+        </label>
       </div>
     </div>
     <div class="centered-overlay" id="spinner"></div>

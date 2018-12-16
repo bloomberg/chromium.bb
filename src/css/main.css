@@ -564,7 +564,7 @@ body.capturing.grid #preview-grid-horizontal {
   -webkit-transform: translateY(-50%) scaleY(0.33333);
 }
 
-body.capturing.grid.golden #preview-grid-horizontal {
+body.capturing.grid[golden] #preview-grid-horizontal {
   border-bottom-width: 4px;
   border-top-width: 4px;
   -webkit-transform: translateY(-50%) scaleY(0.23607);
@@ -587,7 +587,7 @@ body.capturing.grid #preview-grid-vertical {
   -webkit-transform: translateX(-50%) scaleX(0.33333);
 }
 
-body.capturing.grid.golden #preview-grid-vertical {
+body.capturing.grid[golden] #preview-grid-vertical {
   border-left-width: 4px;
   border-right-width: 4px;
   -webkit-transform: translateX(-50%) scaleX(0.23607);
@@ -789,7 +789,8 @@ body.capturing.grid.golden #preview-grid-vertical {
 }
 
 #settings .menu,
-#gridsettings .menu {
+#gridsettings .menu,
+body.settings.gridsettings #settings .menu {
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
@@ -798,7 +799,7 @@ body.capturing.grid.golden #preview-grid-vertical {
   left: 0px;
   height: 100%;
   min-width: 360px;
-  opacity: 0.85;
+  opacity: 0.9;
   -webkit-transform: translateX(-100%);
   transition: -webkit-transform 150ms ease-in;
 }
@@ -846,6 +847,11 @@ body.gridsettings #gridsettings .menu {
   margin-right: 6px;
 }
 
+.buttons.menu-item .description {
+  margin-top: 5px;
+  color: #9aa0a6;
+}
+
 .buttons.menu-item button {
   margin-left: auto;
 }
@@ -877,12 +883,20 @@ body.gridsettings #gridsettings .menu {
   background-image: url(../images/settings_button_back.svg);
 }
 
+#settings-gridtype .icon {
+  background-image: url(../images/settings_grid_type.svg);
+}
+
 #settings-feedback .icon {
   background-image: url(../images/settings_feedback.svg);
 }
 
 #settings-help .icon {
   background-image: url(../images/settings_help.svg);
+}
+
+#settings-gridtype button {
+  background-image: url(../images/settings_button_expand.svg);
 }
 
 #settings-feedback button,

@@ -29,8 +29,24 @@ cca.views.Settings = function() {
       !cca.util.isChromeVersionAbove(72); // Feedback available since M72.
 
   cca.views.settings.util.setupMenu(this, {
-    'settings-feedback': this.onFeedbackClicked_.bind(this),
-    'settings-help': this.onHelpClicked_.bind(this),
+    'settings-gridtype': () => cca.nav.open('gridsettings'),
+    'settings-feedback': () => this.openFeedback(),
+    'settings-help': () => this.openHelp_(),
+  });
+
+  // Observe the attributes toggled by radios and update the descriptions.
+  var observer = new MutationObserver(() => {
+    var updateTextByRadio = (selector, name) => {
+      var radio = document.querySelector(
+          `input[type=radio][name=${name}]:checked`);
+      document.querySelector(selector).textContent =
+          radio && radio.labels.length && radio.labels[0].textContent.trim();
+    };
+    updateTextByRadio('#gridtype-desc', 'gridtype');
+  });
+  observer.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['golden'],
   });
 };
 
@@ -39,10 +55,10 @@ cca.views.Settings.prototype = {
 };
 
 /**
- * Handles clicking on the feedback button.
+ * Opens feedback.
  * @private
  */
-cca.views.Settings.prototype.onFeedbackClicked_ = function() {
+cca.views.Settings.prototype.openFeedback = function() {
   var data = {
     'categoryTag': 'chromeos-camera-app',
     'requestFeedback': true,
@@ -59,9 +75,9 @@ cca.views.Settings.prototype.onFeedbackClicked_ = function() {
 };
 
 /**
- * Handles clicking on the help button.
+ * Opens help.
  * @private
  */
-cca.views.Settings.prototype.onHelpClicked_ = function() {
+cca.views.Settings.prototype.openHelp_ = function() {
   window.open('https://support.google.com/chromebook/answer/4487486');
 };

@@ -33,16 +33,24 @@ cca.views.settings.util = cca.views.settings.util || {};
 cca.views.settings.util.setupMenu = function(view, itemHandlers) {
   view.root.querySelector('.menu-header button').addEventListener(
       'click', () => view.leave());
-
+  // TODO(yuli): Simplify by changing '.menu-item button' to 'button.menu-item'.
   view.root.querySelectorAll('.menu-item').forEach((wrapper) => {
-    var wrapped = wrapper.querySelector('button, input');
-    wrapped.addEventListener('click', (event) => {
-      var handler = itemHandlers[wrapper.id];
-      if (handler) {
-        handler(event);
-      }
-      event.stopPropagation(); // Don't trigger another click in the wrapper.
-    });
-    wrapper.addEventListener('click', (event) => wrapped.click());
+    var wrapped = wrapper.querySelector('button');
+    if (wrapped) {
+      wrapped.addEventListener('click', (event) => {
+        var handler = itemHandlers[wrapper.id];
+        if (handler) {
+          handler(event);
+        }
+        event.stopPropagation(); // Don't trigger clicking the wrapper.
+      });
+      wrapper.addEventListener('click', (event) => wrapped.click());
+    }
+  });
+  view.root.querySelectorAll('.menu-item input').forEach((element) => {
+    var handler = itemHandlers[element.id];
+    if (handler) {
+      element.addEventListener('click', handler);
+    }
   });
 };
