@@ -46,24 +46,29 @@ AlternativeBrowserLauncherImpl::AlternativeBrowserLauncherImpl(
 AlternativeBrowserLauncherImpl::~AlternativeBrowserLauncherImpl() {}
 
 void AlternativeBrowserLauncherImpl::OnAltBrowserPathChanged() {
+  std::string path = prefs_->GetString(prefs::kAlternativeBrowserPath);
+
   // This pref is sensitive. Only set through policies.
   if (!prefs_->IsManagedPreference(prefs::kAlternativeBrowserPath))
-    return;
+    path = "";
 
   // This string could be a variable, e.g. "${ie}". Let the driver decide what
   // to do with it.
-  driver_->SetBrowserPath(prefs_->GetString(prefs::kAlternativeBrowserPath));
+  driver_->SetBrowserPath(path);
 }
 
 void AlternativeBrowserLauncherImpl::OnAltBrowserParametersChanged() {
+  const base::ListValue* params =
+      prefs_->GetList(prefs::kAlternativeBrowserParameters);
+  const base::ListValue empty_list;
+
   // This pref is sensitive. Only set through policies.
   if (!prefs_->IsManagedPreference(prefs::kAlternativeBrowserParameters))
-    return;
+    params = &empty_list;
 
   // This string could contain a placeholder, e.g. "${url}". Let the driver
   // decide what to do with it.
-  driver_->SetBrowserParameters(
-      prefs_->GetList(prefs::kAlternativeBrowserParameters));
+  driver_->SetBrowserParameters(params);
 }
 
 bool AlternativeBrowserLauncherImpl::Launch(const GURL& url) const {

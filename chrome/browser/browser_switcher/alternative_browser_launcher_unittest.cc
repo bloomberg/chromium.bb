@@ -41,6 +41,12 @@ class AlternativeBrowserLauncherTest : public testing::Test {
     prefs_.registry()->RegisterStringPref(prefs::kAlternativeBrowserPath, "");
     prefs_.registry()->RegisterListPref(prefs::kAlternativeBrowserParameters);
     driver_ = new MockAlternativeBrowserDriver();
+    EXPECT_CALL(*driver_, SetBrowserPath(_))
+        .WillOnce(Invoke([](base::StringPiece path) { EXPECT_EQ("", path); }));
+    EXPECT_CALL(*driver_, SetBrowserParameters(_))
+        .WillOnce(Invoke([](const base::ListValue* parameters) {
+          EXPECT_TRUE(parameters->GetList().empty());
+        }));
     launcher_ = std::make_unique<AlternativeBrowserLauncherImpl>(
         &prefs_, std::unique_ptr<AlternativeBrowserDriver>(driver_));
   }
@@ -87,9 +93,13 @@ TEST_F(AlternativeBrowserLauncherTest, LaunchPicksUpPrefChanges) {
 }
 
 TEST_F(AlternativeBrowserLauncherTest, LaunchIgnoresNonManagedPrefs) {
-  EXPECT_CALL(driver(), SetBrowserPath(_)).Times(0);
+  EXPECT_CALL(driver(), SetBrowserPath(_))
+      .WillOnce(Invoke([](base::StringPiece path) { EXPECT_EQ("", path); }));
+  EXPECT_CALL(driver(), SetBrowserParameters(_))
+      .WillOnce(Invoke([](const base::ListValue* parameters) {
+        EXPECT_TRUE(parameters->GetList().empty());
+      }));
   prefs()->Set(prefs::kAlternativeBrowserPath, base::Value("evil.exe"));
-  EXPECT_CALL(driver(), SetBrowserParameters(_)).Times(0);
   std::vector<base::Value> params;
   params.emplace_back("--launch-missiles");
   prefs()->Set(prefs::kAlternativeBrowserParameters,

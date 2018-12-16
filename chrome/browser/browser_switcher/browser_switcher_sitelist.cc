@@ -188,9 +188,12 @@ void BrowserSwitcherSitelistImpl::SetExternalSitelist(ParsedXml&& parsed_xml) {
 }
 
 void BrowserSwitcherSitelistImpl::OnUrlListChanged() {
+  const base::ListValue* url_list = prefs_->GetList(prefs::kUrlList);
+  const base::ListValue empty_list;
+
   // This pref is sensitive. Only set through policies.
   if (!prefs_->IsManagedPreference(prefs::kUrlList))
-    return;
+    url_list = &empty_list;
 
   UMA_HISTOGRAM_COUNTS_100000(
       "BrowserSwitcher.UrlListSize",
@@ -198,7 +201,7 @@ void BrowserSwitcherSitelistImpl::OnUrlListChanged() {
 
   chrome_policies_.sitelist.clear();
   bool has_wildcard = false;
-  for (const auto& url : *prefs_->GetList(prefs::kUrlList)) {
+  for (const auto& url : *url_list) {
     chrome_policies_.sitelist.push_back(url.GetString());
     if (url.GetString() == "*")
       has_wildcard = true;
@@ -208,9 +211,12 @@ void BrowserSwitcherSitelistImpl::OnUrlListChanged() {
 }
 
 void BrowserSwitcherSitelistImpl::OnGreylistChanged() {
+  const base::ListValue* greylist = prefs_->GetList(prefs::kUrlGreylist);
+  const base::ListValue empty_list;
+
   // This pref is sensitive. Only set through policies.
   if (!prefs_->IsManagedPreference(prefs::kUrlGreylist))
-    return;
+    greylist = &empty_list;
 
   UMA_HISTOGRAM_COUNTS_100000(
       "BrowserSwitcher.GreylistSize",
@@ -218,7 +224,7 @@ void BrowserSwitcherSitelistImpl::OnGreylistChanged() {
 
   chrome_policies_.greylist.clear();
   bool has_wildcard = false;
-  for (const auto& url : *prefs_->GetList(prefs::kUrlGreylist)) {
+  for (const auto& url : *greylist) {
     chrome_policies_.greylist.push_back(url.GetString());
     if (url.GetString() == "*")
       has_wildcard = true;
