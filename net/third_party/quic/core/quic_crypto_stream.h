@@ -66,8 +66,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // value.
   bool ExportTokenBindingKeyingMaterial(QuicString* result) const;
 
-  // Writes |data| to the QuicStream.
-  virtual void WriteCryptoData(const QuicStringPiece& data);
+  // Writes |data| to the QuicStream at level |level|.
+  virtual void WriteCryptoData(EncryptionLevel level, QuicStringPiece data);
 
   // Returns appropriate long header type when sending data starts at |offset|.
   virtual QuicLongHeaderType GetLongHeaderType(

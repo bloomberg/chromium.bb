@@ -87,18 +87,6 @@ class QUIC_EXPORT_PRIVATE QuicStreamIdManager {
   // max_allowed_outgoing_stream_id limit) then it returns an invalid stream id.
   QuicStreamId GetNextOutgoingStreamId();
 
-  // Check that an incoming stream id is valid -- is below the maximum allowed
-  // stream ID. Note that this method uses the actual maximum, not the most
-  // recently advertised maximum this helps preserve the Google-QUIC semantic
-  // that we actually care about the number of open streams, not the maximum
-  // stream ID.  Returns true if the stream ID is valid. If the stream ID fails
-  // the test, will close the connection (per the protocol specification) and
-  // return false. This method also maintains state with regard to the number of
-  // streams that the peer can open (used for generating MAX_STREAM_ID frames).
-  // This method should be called exactly once for each incoming stream
-  // creation.
-  bool OnIncomingStreamOpened(QuicStreamId stream_id);
-
   // Initialize the maximum allowed incoming stream id and number of streams.
   void SetMaxOpenIncomingStreams(size_t max_streams);
 
@@ -112,7 +100,17 @@ class QUIC_EXPORT_PRIVATE QuicStreamIdManager {
   // this node or the peer will initiate.
   void RegisterStaticStream(QuicStreamId stream_id);
 
-  void MaybeIncreaseLargestPeerStreamId(const QuicStreamId stream_id);
+  // Check that an incoming stream id is valid -- is below the maximum allowed
+  // stream ID. Note that this method uses the actual maximum, not the most
+  // recently advertised maximum this helps preserve the Google-QUIC semantic
+  // that we actually care about the number of open streams, not the maximum
+  // stream ID.  Returns true if the stream ID is valid. If the stream ID fails
+  // the test, will close the connection (per the protocol specification) and
+  // return false. This method also maintains state with regard to the number of
+  // streams that the peer can open (used for generating MAX_STREAM_ID frames).
+  // This method should be called exactly once for each incoming stream
+  // creation.
+  bool MaybeIncreaseLargestPeerStreamId(const QuicStreamId stream_id);
 
   // Returns true if |id| is still available.
   bool IsAvailableStream(QuicStreamId id) const;

@@ -302,17 +302,17 @@ TEST_P(QuicStreamIdManagerTestClient, ProcessStreamIdBlockedTooBig) {
 }
 
 // Same basic tests as above, but calls
-// QuicStreamIdManager::OnIncomingStreamOpened directly, avoiding the call
-// chain. The intent is that if there is a problem, the following tests will
-// point to either the stream ID manager or the call chain. They also provide
-// specific, small scale, tests of a public QuicStreamIdManager method.
+// QuicStreamIdManager::MaybeIncreaseLargestPeerStreamId directly, avoiding the
+// call chain. The intent is that if there is a problem, the following tests
+// will point to either the stream ID manager or the call chain. They also
+// provide specific, small scale, tests of a public QuicStreamIdManager method.
 // First test make sure that streams with ids below the limit are accepted.
 TEST_P(QuicStreamIdManagerTestClient, IsIncomingStreamIdValidBelowLimit) {
   QuicStreamId stream_id =
       stream_id_manager_->actual_max_allowed_incoming_stream_id() -
       kV99StreamIdIncrement;
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
-  EXPECT_TRUE(stream_id_manager_->OnIncomingStreamOpened(stream_id));
+  EXPECT_TRUE(stream_id_manager_->MaybeIncreaseLargestPeerStreamId(stream_id));
 }
 
 // Accept a stream with an ID that equals the limit.
@@ -320,7 +320,7 @@ TEST_P(QuicStreamIdManagerTestClient, IsIncomingStreamIdValidAtLimit) {
   QuicStreamId stream_id =
       stream_id_manager_->actual_max_allowed_incoming_stream_id();
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
-  EXPECT_TRUE(stream_id_manager_->OnIncomingStreamOpened(stream_id));
+  EXPECT_TRUE(stream_id_manager_->MaybeIncreaseLargestPeerStreamId(stream_id));
 }
 
 // Close the connection if the id exceeds the limit.
@@ -328,10 +328,11 @@ TEST_P(QuicStreamIdManagerTestClient, IsIncomingStreamIdInValidAboveLimit) {
   QuicStreamId stream_id =
       stream_id_manager_->actual_max_allowed_incoming_stream_id() +
       kV99StreamIdIncrement;
-  QuicString error_details = GetParam() ? "401 above 397" : "403 above 399";
+  QuicString error_details =
+      GetParam() ? "Stream id 401 above 397" : "Stream id 403 above 399";
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_STREAM_ID, error_details, _));
-  EXPECT_FALSE(stream_id_manager_->OnIncomingStreamOpened(stream_id));
+  EXPECT_FALSE(stream_id_manager_->MaybeIncreaseLargestPeerStreamId(stream_id));
 }
 
 // Test that a client will reject a MAX_STREAM_ID that specifies a
@@ -486,20 +487,20 @@ TEST_P(QuicStreamIdManagerTestClient, StreamIdManagerGetNextOutgoingFrame) {
       "Attempt allocate a new outgoing stream ID would exceed the limit");
 }
 
-// Ensure that OnIncomingStreamOpened works properly. This is server/client
-// agnostic.
+// Ensure that MaybeIncreaseLargestPeerStreamId works properly. This is
+// server/client agnostic.
 TEST_P(QuicStreamIdManagerTestClient,
-       StreamIdManagerServerOnIncomingStreamOpened) {
-  EXPECT_TRUE(stream_id_manager_->OnIncomingStreamOpened(
+       StreamIdManagerServerMaybeIncreaseLargestPeerStreamId) {
+  EXPECT_TRUE(stream_id_manager_->MaybeIncreaseLargestPeerStreamId(
       stream_id_manager_->actual_max_allowed_incoming_stream_id()));
   QuicStreamId server_initiated_stream_id =
       GetParam() ? GetNthServerInitiatedBidirectionalId(0)
                  : GetNthServerInitiatedUnidirectionalId(0);
-  EXPECT_TRUE(
-      stream_id_manager_->OnIncomingStreamOpened(server_initiated_stream_id));
+  EXPECT_TRUE(stream_id_manager_->MaybeIncreaseLargestPeerStreamId(
+      server_initiated_stream_id));
   // A bad stream ID results in a closed connection.
   EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID, _, _));
-  EXPECT_FALSE(stream_id_manager_->OnIncomingStreamOpened(
+  EXPECT_FALSE(stream_id_manager_->MaybeIncreaseLargestPeerStreamId(
       stream_id_manager_->actual_max_allowed_incoming_stream_id() +
       kV99StreamIdIncrement));
 }
@@ -535,7 +536,8 @@ TEST_P(QuicStreamIdManagerTestClient, StreamIdManagerServerMaxStreamId) {
       stream_id_manager_->available_incoming_streams();
 
   while (stream_count) {
-    EXPECT_TRUE(stream_id_manager_->OnIncomingStreamOpened(stream_id));
+    EXPECT_TRUE(
+        stream_id_manager_->MaybeIncreaseLargestPeerStreamId(stream_id));
 
     old_available_incoming_streams--;
     EXPECT_EQ(old_available_incoming_streams,
@@ -570,7 +572,7 @@ TEST_P(QuicStreamIdManagerTestClient, StreamIdManagerServerMaxStreamId) {
   EXPECT_CALL(*connection_, SendControlFrame(_))
       .Times(1)
       .WillRepeatedly(Invoke(session_.get(), &TestQuicSession::SaveFrame));
-  EXPECT_TRUE(stream_id_manager_->OnIncomingStreamOpened(stream_id));
+  EXPECT_TRUE(stream_id_manager_->MaybeIncreaseLargestPeerStreamId(stream_id));
   stream_id_manager_->OnStreamClosed(stream_id);
   stream_id += kV99StreamIdIncrement;
 
@@ -817,6 +819,23 @@ TEST_P(QuicStreamIdManagerTestServer, AvailableStreams) {
   EXPECT_TRUE(stream_id_manager_->IsAvailableStream(
       GetParam() ? GetNthClientInitiatedBidirectionalId(2)
                  : GetNthClientInitiatedUnidirectionalId(2)));
+}
+
+// Tests that if MaybeIncreaseLargestPeerStreamId is given an extremely
+// large stream ID (larger than the limit) it is rejected.
+// This is a regression for Chromium bugs 909987 and 910040
+TEST_P(QuicStreamIdManagerTestServer, ExtremeMaybeIncreaseLargestPeerStreamId) {
+  QuicStreamId too_big_stream_id =
+      stream_id_manager_->actual_max_allowed_incoming_stream_id() +
+      kV99StreamIdIncrement * 20;
+
+  QuicString error_details =
+      GetParam() ? "Stream id 480 above 400" : "Stream id 478 above 398";
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_STREAM_ID, error_details, _));
+
+  EXPECT_FALSE(
+      stream_id_manager_->MaybeIncreaseLargestPeerStreamId(too_big_stream_id));
 }
 
 }  // namespace

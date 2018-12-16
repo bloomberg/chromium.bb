@@ -182,29 +182,29 @@ TEST_P(UberQuicStreamIdManagerTest, GetNextOutgoingStreamId) {
 
 TEST_P(UberQuicStreamIdManagerTest, AvailableStreams) {
   if (GetParam() == Perspective::IS_SERVER) {
-    manager_->MaybeIncreaseLargestPeerStreamId(
-        GetNthClientInitiatedBidirectionalId(3));
+    EXPECT_TRUE(manager_->MaybeIncreaseLargestPeerStreamId(
+        GetNthClientInitiatedBidirectionalId(3)));
     EXPECT_TRUE(
         manager_->IsAvailableStream(GetNthClientInitiatedBidirectionalId(1)));
     EXPECT_TRUE(
         manager_->IsAvailableStream(GetNthClientInitiatedBidirectionalId(2)));
 
-    manager_->MaybeIncreaseLargestPeerStreamId(
-        GetNthClientInitiatedUnidirectionalId(3));
+    EXPECT_TRUE(manager_->MaybeIncreaseLargestPeerStreamId(
+        GetNthClientInitiatedUnidirectionalId(3)));
     EXPECT_TRUE(
         manager_->IsAvailableStream(GetNthClientInitiatedUnidirectionalId(1)));
     EXPECT_TRUE(
         manager_->IsAvailableStream(GetNthClientInitiatedUnidirectionalId(2)));
   } else {
-    manager_->MaybeIncreaseLargestPeerStreamId(
-        GetNthServerInitiatedBidirectionalId(3));
+    EXPECT_TRUE(manager_->MaybeIncreaseLargestPeerStreamId(
+        GetNthServerInitiatedBidirectionalId(3)));
     EXPECT_TRUE(
         manager_->IsAvailableStream(GetNthServerInitiatedBidirectionalId(1)));
     EXPECT_TRUE(
         manager_->IsAvailableStream(GetNthServerInitiatedBidirectionalId(2)));
 
-    manager_->MaybeIncreaseLargestPeerStreamId(
-        GetNthServerInitiatedUnidirectionalId(3));
+    EXPECT_TRUE(manager_->MaybeIncreaseLargestPeerStreamId(
+        GetNthServerInitiatedUnidirectionalId(3)));
     EXPECT_TRUE(
         manager_->IsAvailableStream(GetNthServerInitiatedUnidirectionalId(1)));
     EXPECT_TRUE(
@@ -212,25 +212,27 @@ TEST_P(UberQuicStreamIdManagerTest, AvailableStreams) {
   }
 }
 
-TEST_P(UberQuicStreamIdManagerTest, OnIncomingStreamOpened) {
+TEST_P(UberQuicStreamIdManagerTest, MaybeIncreaseLargestPeerStreamId) {
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
-  EXPECT_TRUE(manager_->OnIncomingStreamOpened(
+  EXPECT_TRUE(manager_->MaybeIncreaseLargestPeerStreamId(
       manager_->actual_max_allowed_incoming_bidirectional_stream_id()));
-  EXPECT_TRUE(manager_->OnIncomingStreamOpened(
+  EXPECT_TRUE(manager_->MaybeIncreaseLargestPeerStreamId(
       manager_->actual_max_allowed_incoming_unidirectional_stream_id()));
 
-  QuicString error_details =
-      GetParam() == Perspective::IS_SERVER ? "404 above 400" : "401 above 397";
+  QuicString error_details = GetParam() == Perspective::IS_SERVER
+                                 ? "Stream id 404 above 400"
+                                 : "Stream id 401 above 397";
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_STREAM_ID, error_details, _));
-  EXPECT_FALSE(manager_->OnIncomingStreamOpened(
+  EXPECT_FALSE(manager_->MaybeIncreaseLargestPeerStreamId(
       manager_->actual_max_allowed_incoming_bidirectional_stream_id() +
       kV99StreamIdIncrement));
-  error_details =
-      GetParam() == Perspective::IS_SERVER ? "402 above 398" : "403 above 399";
+  error_details = GetParam() == Perspective::IS_SERVER
+                      ? "Stream id 402 above 398"
+                      : "Stream id 403 above 399";
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_STREAM_ID, error_details, _));
-  EXPECT_FALSE(manager_->OnIncomingStreamOpened(
+  EXPECT_FALSE(manager_->MaybeIncreaseLargestPeerStreamId(
       manager_->actual_max_allowed_incoming_unidirectional_stream_id() +
       kV99StreamIdIncrement));
 }

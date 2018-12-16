@@ -233,27 +233,6 @@ bool QuicStreamIdManager::CanOpenNextOutgoingStream() {
   return true;
 }
 
-bool QuicStreamIdManager::OnIncomingStreamOpened(QuicStreamId stream_id) {
-  DCHECK_EQ(QuicUtils::IsBidirectionalStreamId(stream_id),
-            QuicUtils::IsBidirectionalStreamId(next_outgoing_stream_id_));
-  // NOTE WELL: the protocol specifies that the peer must not send stream IDs
-  // larger than what has been advertised in a MAX_STREAM_ID. The following test
-  // will accept streams with IDs larger than the advertised maximum.  The limit
-  // is the actual maximum, which increases as streams are closed. This
-  // preserves the Google QUIC semantic that it is the number of streams (and
-  // stream ids) that is important.
-  if (stream_id <= actual_max_allowed_incoming_stream_id_) {
-    available_incoming_streams_--;
-    return true;
-  }
-  QUIC_CODE_COUNT(incoming_streamid_exceeds_limit);
-  session_->connection()->CloseConnection(
-      QUIC_INVALID_STREAM_ID,
-      QuicStrCat(stream_id, " above ", actual_max_allowed_incoming_stream_id_),
-      ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-  return false;
-}
-
 void QuicStreamIdManager::RegisterStaticStream(QuicStreamId stream_id) {
   DCHECK_EQ(QuicUtils::IsBidirectionalStreamId(stream_id),
             QuicUtils::IsBidirectionalStreamId(next_outgoing_stream_id_));
@@ -292,7 +271,7 @@ void QuicStreamIdManager::RegisterStaticStream(QuicStreamId stream_id) {
   }
 }
 
-void QuicStreamIdManager::MaybeIncreaseLargestPeerStreamId(
+bool QuicStreamIdManager::MaybeIncreaseLargestPeerStreamId(
     const QuicStreamId stream_id) {
   DCHECK_EQ(QuicUtils::IsBidirectionalStreamId(stream_id),
             QuicUtils::IsBidirectionalStreamId(next_outgoing_stream_id_));
@@ -302,8 +281,25 @@ void QuicStreamIdManager::MaybeIncreaseLargestPeerStreamId(
           QuicUtils::GetInvalidStreamId(
               session_->connection()->transport_version()) &&
       stream_id <= largest_peer_created_stream_id_) {
-    return;
+    return true;
   }
+
+  if (stream_id > actual_max_allowed_incoming_stream_id_) {
+    // Desired stream ID is larger than the limit, do not increase.
+    QUIC_DLOG(INFO) << ENDPOINT
+                    << "Failed to create a new incoming stream with id:"
+                    << stream_id << ".  Maximum allowed stream id is "
+                    << actual_max_allowed_incoming_stream_id_ << ".";
+    session_->connection()->CloseConnection(
+        QUIC_INVALID_STREAM_ID,
+        QuicStrCat("Stream id ", stream_id, " above ",
+                   actual_max_allowed_incoming_stream_id_),
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return false;
+  }
+
+  available_incoming_streams_--;
+
   QuicStreamId id = largest_peer_created_stream_id_ + kV99StreamIdIncrement;
   if (largest_peer_created_stream_id_ ==
       QuicUtils::GetInvalidStreamId(
@@ -324,6 +320,7 @@ void QuicStreamIdManager::MaybeIncreaseLargestPeerStreamId(
     available_streams_.insert(id);
   }
   largest_peer_created_stream_id_ = stream_id;
+  return true;
 }
 
 bool QuicStreamIdManager::IsAvailableStream(QuicStreamId id) const {

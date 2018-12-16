@@ -19,10 +19,11 @@ class MockQuicSessionVisitor : public QuicTimeWaitListManager::Visitor {
   MockQuicSessionVisitor(const MockQuicSessionVisitor&) = delete;
   MockQuicSessionVisitor& operator=(const MockQuicSessionVisitor&) = delete;
   ~MockQuicSessionVisitor() override;
-  MOCK_METHOD3(OnConnectionClosed,
+  MOCK_METHOD4(OnConnectionClosed,
                void(QuicConnectionId connection_id,
                     QuicErrorCode error,
-                    const QuicString& error_details));
+                    const QuicString& error_details,
+                    ConnectionCloseSource source));
   MOCK_METHOD1(OnWriteBlocked,
                void(QuicBlockedWriterInterface* blocked_writer));
   MOCK_METHOD1(OnRstStreamReceived, void(const QuicRstStreamFrame& frame));

@@ -514,6 +514,13 @@ class MockQuicConnection : public QuicConnection {
     QuicConnection::OnError(framer);
   }
 
+  void ReallyCloseConnection(
+      QuicErrorCode error,
+      const QuicString& details,
+      ConnectionCloseBehavior connection_close_behavior) {
+    QuicConnection::CloseConnection(error, details, connection_close_behavior);
+  }
+
   void ReallyProcessUdpPacket(const QuicSocketAddress& self_address,
                               const QuicSocketAddress& peer_address,
                               const QuicReceivedPacket& packet) {

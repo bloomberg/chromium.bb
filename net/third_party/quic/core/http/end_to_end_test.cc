@@ -13,6 +13,7 @@
 #include "net/third_party/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/quic_epoll_connection_helper.h"
+#include "net/third_party/quic/core/quic_error_codes.h"
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_packet_creator.h"
 #include "net/third_party/quic/core/quic_packet_writer_wrapper.h"
@@ -270,6 +271,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
  protected:
   EndToEndTest()
       : initialized_(false),
+        connect_to_server_on_initialize_(true),
         server_address_(QuicSocketAddress(TestLoopback(), 0)),
         server_hostname_("test.example.com"),
         client_writer_(nullptr),
@@ -409,6 +411,11 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     // Start the server first, because CreateQuicClient() attempts
     // to connect to the server.
     StartServer();
+
+    if (!connect_to_server_on_initialize_) {
+      initialized_ = true;
+      return true;
+    }
 
     CreateClientWithWriter();
     static EpollEvent event(EPOLLOUT);
@@ -612,6 +619,10 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
 
   ScopedEnvironmentForThreads environment_;
   bool initialized_;
+  // If true, the Initialize() function will create |client_| and starts to
+  // connect to the server.
+  // Default is true.
+  bool connect_to_server_on_initialize_;
   QuicSocketAddress server_address_;
   QuicString server_hostname_;
   QuicMemoryCacheBackend memory_cache_backend_;
@@ -3207,6 +3218,72 @@ TEST_P(EndToEndTest, SendStatelessResetTokenInShlo) {
                 client_->client()->session()->connection()->connection_id()),
             config->ReceivedStatelessResetToken());
   client_->Disconnect();
+}
+
+// Regression test for b/116200989.
+TEST_P(EndToEndTest,
+       SendStatelessResetIfServerConnectionClosedLocallyDuringHandshake) {
+  connect_to_server_on_initialize_ = false;
+  ASSERT_TRUE(Initialize());
+
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  ASSERT_EQ(0u, dispatcher->session_map().size());
+  // Note: this writer will only used by the server connection, not the time
+  // wait list.
+  QuicDispatcherPeer::UseWriter(
+      dispatcher,
+      // This cause the first server-sent packet, a.k.a REJ, to fail.
+      new BadPacketWriter(/*packet_causing_write_error=*/0, EPERM));
+  server_thread_->Resume();
+
+  client_.reset(CreateQuicClient(client_writer_));
+  EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+
+  if (client_->client()->client_session()->connection()->transport_version() >
+      QUIC_VERSION_43) {
+    EXPECT_EQ(QUIC_HANDSHAKE_FAILED, client_->connection_error());
+  } else {
+    EXPECT_EQ(QUIC_PUBLIC_RESET, client_->connection_error());
+  }
+}
+
+// Regression test for b/116200989.
+TEST_P(EndToEndTest,
+       SendStatelessResetIfServerConnectionClosedLocallyAfterHandshake) {
+  // Prevent the connection from expiring in the time wait list.
+  FLAGS_quic_time_wait_list_seconds = 10000;
+  connect_to_server_on_initialize_ = false;
+  ASSERT_TRUE(Initialize());
+
+  // big_response_body is 64K, which is about 48 full-sized packets.
+  const size_t kBigResponseBodySize = 65536;
+  QuicData big_response_body(new char[kBigResponseBodySize](),
+                             kBigResponseBodySize, /*owns_buffer=*/true);
+  AddToCache("/big_response", 200, big_response_body.AsStringPiece());
+
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  ASSERT_EQ(0u, dispatcher->session_map().size());
+  QuicDispatcherPeer::UseWriter(
+      dispatcher,
+      // This will cause an server write error with EPERM, while sending the
+      // response for /big_response.
+      new BadPacketWriter(/*packet_causing_write_error=*/20, EPERM));
+  server_thread_->Resume();
+
+  client_.reset(CreateQuicClient(client_writer_));
+
+  // First, a /foo request with small response should succeed.
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
+
+  // Second, a /big_response request with big response should fail.
+  EXPECT_LT(client_->SendSynchronousRequest("/big_response").length(),
+            kBigResponseBodySize);
+  EXPECT_EQ(QUIC_PUBLIC_RESET, client_->connection_error());
 }
 
 // Regression test of b/70782529.

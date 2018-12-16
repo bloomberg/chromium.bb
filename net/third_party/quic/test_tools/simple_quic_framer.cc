@@ -46,7 +46,9 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override {
     return true;
   }
-  void OnDecryptedPacket(EncryptionLevel level) override {}
+  void OnDecryptedPacket(EncryptionLevel level) override {
+    last_decrypted_level_ = level;
+  }
   bool OnPacketHeader(const QuicPacketHeader& header) override {
     has_header_ = true;
     header_ = header;
@@ -242,6 +244,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   const QuicVersionNegotiationPacket* version_negotiation_packet() const {
     return version_negotiation_packet_.get();
   }
+  EncryptionLevel last_decrypted_level() const { return last_decrypted_level_; }
 
  private:
   QuicErrorCode error_;
@@ -271,6 +274,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   std::vector<QuicNewTokenFrame> new_token_frames_;
   std::vector<QuicMessageFrame> message_frames_;
   std::vector<std::unique_ptr<QuicString>> stream_data_;
+  EncryptionLevel last_decrypted_level_;
 };
 
 SimpleQuicFramer::SimpleQuicFramer()
@@ -306,6 +310,10 @@ const QuicPacketHeader& SimpleQuicFramer::header() const {
 const QuicVersionNegotiationPacket*
 SimpleQuicFramer::version_negotiation_packet() const {
   return visitor_->version_negotiation_packet();
+}
+
+EncryptionLevel SimpleQuicFramer::last_decrypted_level() const {
+  return visitor_->last_decrypted_level();
 }
 
 QuicFramer* SimpleQuicFramer::framer() {

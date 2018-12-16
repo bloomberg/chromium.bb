@@ -180,7 +180,8 @@ class MockServerConnection : public MockQuicConnection {
   void UnregisterOnConnectionClosed() {
     QUIC_LOG(ERROR) << "Unregistering " << connection_id();
     dispatcher_->OnConnectionClosed(connection_id(), QUIC_NO_ERROR,
-                                    "Unregistering.");
+                                    "Unregistering.",
+                                    ConnectionCloseSource::FROM_SELF);
   }
 
  private:
@@ -224,10 +225,16 @@ class QuicDispatcherTest : public QuicTest {
   }
 
   MockQuicConnection* connection1() {
+    if (session1_ == nullptr) {
+      return nullptr;
+    }
     return reinterpret_cast<MockQuicConnection*>(session1_->connection());
   }
 
   MockQuicConnection* connection2() {
+    if (session2_ == nullptr) {
+      return nullptr;
+    }
     return reinterpret_cast<MockQuicConnection*>(session2_->connection());
   }
 
@@ -345,6 +352,8 @@ class QuicDispatcherTest : public QuicTest {
   }
 
   QuicString SerializeTlsClientHello() { return ""; }
+
+  void MarkSession1Deleted() { session1_ = nullptr; }
 
   MockQuicConnectionHelper mock_helper_;
   MockAlarmFactory mock_alarm_factory_;
@@ -1280,8 +1289,13 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
   }
 
   void TearDown() override {
-    EXPECT_CALL(*connection1(), CloseConnection(QUIC_PEER_GOING_AWAY, _, _));
-    EXPECT_CALL(*connection2(), CloseConnection(QUIC_PEER_GOING_AWAY, _, _));
+    if (connection1() != nullptr) {
+      EXPECT_CALL(*connection1(), CloseConnection(QUIC_PEER_GOING_AWAY, _, _));
+    }
+
+    if (connection2() != nullptr) {
+      EXPECT_CALL(*connection2(), CloseConnection(QUIC_PEER_GOING_AWAY, _, _));
+    }
     dispatcher_->Shutdown();
   }
 
@@ -1515,6 +1529,29 @@ TEST_F(QuicDispatcherWriteBlockedListTest, PerConnectionWriterBlocked) {
   EXPECT_CALL(*connection2(), OnCanWrite());
   dispatcher_->OnCanWrite();
   EXPECT_FALSE(dispatcher_->HasPendingWrites());
+}
+
+TEST_F(QuicDispatcherWriteBlockedListTest,
+       RemoveConnectionFromWriteBlockedListWhenDeletingSessions) {
+  if (!GetQuicReloadableFlag(
+          quic_connection_do_not_add_to_write_blocked_list_if_disconnected)) {
+    return;
+  }
+
+  dispatcher_->OnConnectionClosed(connection1()->connection_id(),
+                                  QUIC_PACKET_WRITE_ERROR, "Closed by test.",
+                                  ConnectionCloseSource::FROM_SELF);
+
+  SetBlocked();
+
+  ASSERT_FALSE(dispatcher_->HasPendingWrites());
+  SetBlocked();
+  dispatcher_->OnWriteBlocked(connection1());
+  ASSERT_TRUE(dispatcher_->HasPendingWrites());
+
+  EXPECT_QUIC_BUG(dispatcher_->DeleteSessions(),
+                  "QuicConnection was in WriteBlockedList before destruction");
+  MarkSession1Deleted();
 }
 
 // Tests that bufferring packets works in stateful reject, expensive stateless

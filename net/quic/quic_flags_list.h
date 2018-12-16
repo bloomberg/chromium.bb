@@ -307,9 +307,7 @@ QUIC_FLAG(bool,
 
 // If true, only send version negotiation packets when they are at least
 // 1200 bytes.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_limit_version_negotiation,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_limit_version_negotiation, true)
 
 // If true, disables key share caching for QUIC key exchange
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_no_ephemeral_key_source, true)
@@ -319,3 +317,18 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_no_ephemeral_key_source, true)
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_check_blocked_writer_for_blockage,
           false)
+
+// If true, for QUIC V44, if a server connection is post handshake and has no
+// termination packets, add it to time wait list with
+// action=SEND_STATELESS_RESET.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_send_reset_for_post_handshake_connections_without_termination_packets,
+    true)
+
+// If true, disconnected quic connection will not be added to dispatcher's write
+// blocked list.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_connection_do_not_add_to_write_blocked_list_if_disconnected,
+    false)

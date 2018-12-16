@@ -128,12 +128,14 @@ bool QuicDataReader::ReadStringPiece(QuicStringPiece* result, size_t size) {
   return true;
 }
 
-bool QuicDataReader::ReadConnectionId(uint64_t* connection_id) {
+bool QuicDataReader::ReadConnectionId(QuicConnectionId* connection_id) {
   // TODO(dschinazi) b/120240679 - read bytes directly into connection_id.data()
-  if (!ReadBytes(connection_id, sizeof(*connection_id))) {
+  uint64_t connection_id64 = 0;
+  if (!ReadBytes(&connection_id64, sizeof(connection_id64))) {
     return false;
   }
-  *connection_id = QuicEndian::NetToHost64(*connection_id);
+  *connection_id =
+      QuicConnectionIdFromUInt64(QuicEndian::NetToHost64(connection_id64));
 
   return true;
 }
@@ -170,6 +172,16 @@ bool QuicDataReader::ReadBytes(void* result, size_t size) {
 
 bool QuicDataReader::IsDoneReading() const {
   return len_ == pos_;
+}
+
+int QuicDataReader::PeekVarInt62Length() {
+  DCHECK_EQ(endianness_, NETWORK_BYTE_ORDER);
+  const unsigned char* next =
+      reinterpret_cast<const unsigned char*>(data_ + pos_);
+  if (BytesRemaining() == 0) {
+    return 0;
+  }
+  return 1 << ((*next & 0b11000000) >> 6);
 }
 
 size_t QuicDataReader::BytesRemaining() const {

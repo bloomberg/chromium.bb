@@ -1018,12 +1018,10 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
 
   QuicString hkdf_suffix;
   const QuicData& client_hello_serialized = client_hello.GetSerialized();
-  // TODO(dschinazi) b/120240679 - use connection_id.length()
-  hkdf_suffix.reserve(sizeof(connection_id) + client_hello_serialized.length() +
+  hkdf_suffix.reserve(connection_id.length() +
+                      client_hello_serialized.length() +
                       requested_config->serialized.size());
-  // TODO(dschinazi) b/120240679 - use connection_id.length() and .data()
-  hkdf_suffix.append(reinterpret_cast<char*>(&connection_id),
-                     sizeof(connection_id));
+  hkdf_suffix.append(connection_id.data(), connection_id.length());
   hkdf_suffix.append(client_hello_serialized.data(),
                      client_hello_serialized.length());
   hkdf_suffix.append(requested_config->serialized);
@@ -1046,9 +1044,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     QuicString hkdf_input;
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
-    // TODO(dschinazi) b/120240679 - use connection_id.length() and .data()
-    hkdf_input.append(reinterpret_cast<char*>(&connection_id),
-                      sizeof(connection_id));
+    hkdf_input.append(connection_id.data(), connection_id.length());
     hkdf_input.append(client_hello_copy_serialized.data(),
                       client_hello_copy_serialized.length());
     hkdf_input.append(requested_config->serialized);

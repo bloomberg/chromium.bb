@@ -45,33 +45,6 @@ class ConnectionIdCleanUpAlarm : public QuicAlarm::Delegate {
   QuicTimeWaitListManager* time_wait_list_manager_;
 };
 
-// This class stores pending termination packets to be sent to peers.
-// self_address   - server address on which a packet what was received for
-//                  a connection_id in time wait state.
-// peer_address   - Address of the peer to send this packet to.
-// packet - the pending termination packet that is to be sent to the peer.
-//          created instance takes the ownership of this packet.
-class QuicTimeWaitListManager::QueuedPacket {
- public:
-  QueuedPacket(const QuicSocketAddress& self_address,
-               const QuicSocketAddress& peer_address,
-               std::unique_ptr<QuicEncryptedPacket> packet)
-      : self_address_(self_address),
-        peer_address_(peer_address),
-        packet_(std::move(packet)) {}
-  QueuedPacket(const QueuedPacket&) = delete;
-  QueuedPacket& operator=(const QueuedPacket&) = delete;
-
-  const QuicSocketAddress& self_address() const { return self_address_; }
-  const QuicSocketAddress& peer_address() const { return peer_address_; }
-  QuicEncryptedPacket* packet() { return packet_.get(); }
-
- private:
-  const QuicSocketAddress self_address_;
-  const QuicSocketAddress peer_address_;
-  std::unique_ptr<QuicEncryptedPacket> packet_;
-};
-
 QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicPacketWriter* writer,
     Visitor* visitor,
@@ -126,7 +99,7 @@ bool QuicTimeWaitListManager::IsConnectionIdInTimeWait(
 
 void QuicTimeWaitListManager::OnBlockedWriterCanWrite() {
   if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 4, 4);
+    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 4, 6);
     writer_->SetWritable();
   }
   while (!pending_packets_queue_.empty()) {
@@ -144,7 +117,6 @@ void QuicTimeWaitListManager::ProcessPacket(
     QuicConnectionId connection_id,
     std::unique_ptr<QuicPerPacketContext> packet_context) {
   DCHECK(IsConnectionIdInTimeWait(connection_id));
-  QUIC_DLOG(INFO) << "Processing " << connection_id << " in time wait state.";
   // TODO(satyamshekhar): Think about handling packets from different peer
   // addresses.
   auto it = connection_id_map_.find(connection_id);
@@ -154,9 +126,16 @@ void QuicTimeWaitListManager::ProcessPacket(
   ++(connection_data->num_packets);
 
   if (!ShouldSendResponse(connection_data->num_packets)) {
+    QUIC_DLOG(INFO) << "Processing " << connection_id << " in time wait state: "
+                    << "throttled";
     return;
   }
 
+  QUIC_DLOG(INFO) << "Processing " << connection_id << " in time wait state: "
+                  << "ietf=" << connection_data->ietf_quic
+                  << ", action=" << connection_data->action
+                  << ", number termination packets="
+                  << connection_data->termination_packets.size();
   switch (connection_data->action) {
     case SEND_TERMINATION_PACKETS:
       if (connection_data->termination_packets.empty()) {
@@ -166,7 +145,7 @@ void QuicTimeWaitListManager::ProcessPacket(
       for (const auto& packet : connection_data->termination_packets) {
         SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
                               self_address, peer_address, packet->Clone()),
-                          std::move(packet_context));
+                          packet_context.get());
       }
       return;
     case SEND_STATELESS_RESET:
@@ -174,6 +153,7 @@ void QuicTimeWaitListManager::ProcessPacket(
                       connection_data->ietf_quic, std::move(packet_context));
       return;
     case DO_NOTHING:
+      QUIC_CODE_COUNT(quic_time_wait_list_do_nothing);
       DCHECK(connection_data->ietf_quic);
   }
 }
@@ -189,7 +169,7 @@ void QuicTimeWaitListManager::SendVersionNegotiationPacket(
                         self_address, peer_address,
                         QuicFramer::BuildVersionNegotiationPacket(
                             connection_id, ietf_quic, supported_versions)),
-                    std::move(packet_context));
+                    packet_context.get());
 }
 
 // Returns true if the number of packets received for this connection_id is a
@@ -208,7 +188,7 @@ void QuicTimeWaitListManager::SendPublicReset(
     SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
                           self_address, peer_address,
                           BuildIetfStatelessResetPacket(connection_id)),
-                      std::move(packet_context));
+                      packet_context.get());
     return;
   }
   QuicPublicResetPacket packet;
@@ -221,7 +201,7 @@ void QuicTimeWaitListManager::SendPublicReset(
   // Takes ownership of the packet.
   SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(self_address, peer_address,
                                                  BuildPublicReset(packet)),
-                    std::move(packet_context));
+                    packet_context.get());
 }
 
 std::unique_ptr<QuicEncryptedPacket> QuicTimeWaitListManager::BuildPublicReset(
@@ -238,14 +218,15 @@ QuicTimeWaitListManager::BuildIetfStatelessResetPacket(
 
 // Either sends the packet and deletes it or makes pending queue the
 // owner of the packet.
-void QuicTimeWaitListManager::SendOrQueuePacket(
+bool QuicTimeWaitListManager::SendOrQueuePacket(
     std::unique_ptr<QueuedPacket> packet,
-    std::unique_ptr<QuicPerPacketContext> /*packet_context*/) {
+    const QuicPerPacketContext* /*packet_context*/) {
   if (WriteToWire(packet.get())) {
     // Allow the packet to be deleted upon leaving this function.
-    return;
+    return true;
   }
   pending_packets_queue_.push_back(std::move(packet));
+  return false;
 }
 
 bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
@@ -311,6 +292,8 @@ bool QuicTimeWaitListManager::MaybeExpireOldestConnection(
     return false;
   }
   // This connection_id has lived its age, retire it now.
+  QUIC_DLOG(INFO) << "Connection " << it->first
+                  << " expired from time wait list";
   connection_id_map_.erase(it);
   return true;
 }

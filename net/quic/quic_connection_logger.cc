@@ -25,6 +25,7 @@
 #include "net/quic/quic_address_mismatch.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_socket_address_coder.h"
 #include "net/third_party/quic/core/quic_time.h"
@@ -100,7 +101,8 @@ std::unique_ptr<base::Value> NetLogQuicPacketHeaderCallback(
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("connection_id",
-                  base::NumberToString(header->destination_connection_id));
+                  base::NumberToString(quic::QuicConnectionIdToUInt64(
+                      header->destination_connection_id)));
   dict->SetInteger("reset_flag", header->reset_flag);
   dict->SetInteger("version_flag", header->version_flag);
   dict->SetString("packet_number", base::NumberToString(header->packet_number));

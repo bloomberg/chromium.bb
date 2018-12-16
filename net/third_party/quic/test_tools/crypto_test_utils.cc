@@ -953,6 +953,13 @@ void MovePackets(PacketSavingConnection* source_conn,
           << "No TLS packets should be encrypted with the NullEncrypter";
     }
 
+    // Since we're using QuicFramers separate from the connections to move
+    // packets, the QuicConnection never gets notified about what level the last
+    // packet was decrypted at. This is needed by TLS to know what encryption
+    // level was used for the data it's receiving, so we plumb this information
+    // from the SimpleQuicFramer back into the connection.
+    dest_conn->OnDecryptedPacket(framer.last_decrypted_level());
+
     QuicConnectionPeer::SetCurrentPacket(
         dest_conn, source_conn->encrypted_packets_[index]->AsStringPiece());
     for (const auto& stream_frame : framer.stream_frames()) {

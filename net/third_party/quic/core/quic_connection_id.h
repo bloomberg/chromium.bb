@@ -11,9 +11,61 @@
 
 namespace quic {
 
-typedef uint8_t QuicConnectionIdLength;
+enum QuicConnectionIdLength {
+  PACKET_0BYTE_CONNECTION_ID = 0,
+  PACKET_8BYTE_CONNECTION_ID = 8,
+};
 
-typedef uint64_t QuicConnectionId;
+// Connection IDs can be 0-18 bytes per IETF specifications.
+const uint8_t kQuicMaxConnectionIdLength = 18;
+
+class QUIC_EXPORT_PRIVATE QuicConnectionId {
+ public:
+  QuicConnectionId();  // Creates an all-zero connection ID.
+
+  // Creator from host byte order uint64_t.
+  explicit QuicConnectionId(uint64_t connection_id64);
+
+  ~QuicConnectionId();
+
+  // Immutable pointer to the connection ID bytes.
+  const char* data() const;
+
+  // Mutable pointer to the connection ID bytes.
+  char* mutable_data();
+
+  // Always returns 8.
+  QuicConnectionIdLength length() const;
+
+  // Returns whether the connection ID is zero.
+  bool IsEmpty() const;
+
+  // Converts to host byte order uint64_t.
+  uint64_t ToUInt64() const;
+
+  // Hash() is required to use connection IDs as keys in hash tables.
+  size_t Hash() const;
+
+  // operator<< allows easily logging connection IDs.
+  friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
+      std::ostream& os,
+      const QuicConnectionId& v);
+
+  bool operator==(const QuicConnectionId& v) const;
+  bool operator!=(const QuicConnectionId& v) const;
+  // operator< is required to use connection IDs as keys in hash tables.
+  bool operator<(const QuicConnectionId& v) const;
+
+ private:
+  // The connection ID is currently represented in host byte order in |id64_|.
+  // In the future, it will be saved in the first |length_| bytes of |data_|.
+  //
+  // Fields currently commented out since they trigger -Wunused-private-field
+  // in Chromium build:
+  //   uint8_t data_[kQuicMaxConnectionIdLength];
+  //   QuicConnectionIdLength length_;
+  uint64_t id64_;  // host byte order
+};
 
 // Creates an all-zero connection ID.
 QUIC_EXPORT_PRIVATE QuicConnectionId EmptyQuicConnectionId();
@@ -32,7 +84,13 @@ QuicConnectionIdToUInt64(QuicConnectionId connection_id);
 QUIC_EXPORT_PRIVATE bool QuicConnectionIdIsEmpty(
     QuicConnectionId connection_id);
 
-static_assert(sizeof(QuicConnectionId) == sizeof(uint64_t), "size changed");
+// QuicConnectionIdHash can be passed as hash argument to hash tables.
+class QuicConnectionIdHash {
+ public:
+  size_t operator()(QuicConnectionId const& connection_id) const noexcept {
+    return connection_id.Hash();
+  }
+};
 
 }  // namespace quic
 

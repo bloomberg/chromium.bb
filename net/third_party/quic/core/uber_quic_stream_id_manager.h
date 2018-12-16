@@ -45,10 +45,8 @@ class QUIC_EXPORT_PRIVATE UberQuicStreamIdManager {
   // Returns the next outgoing unidirectional stream id.
   QuicStreamId GetNextOutgoingUnidirectionalStreamId();
 
-  void MaybeIncreaseLargestPeerStreamId(QuicStreamId id);
-
   // Returns true if allow to open the incoming |id|.
-  bool OnIncomingStreamOpened(QuicStreamId id);
+  bool MaybeIncreaseLargestPeerStreamId(QuicStreamId id);
 
   // Called when |id| is released.
   void OnStreamClosed(QuicStreamId id);

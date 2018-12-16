@@ -79,9 +79,8 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
   // TODO(fayang): Remove this method and use ReadUInt64() once deprecating
   // quic_rw_cid_in_big_endian flag and QuicDataReader has a mode indicating
   // reading in little/big endian.
-  // TODO(dschinazi) b/120240679 - make connection_id a QuicConnectionId*
-  // and add a length parameter
-  bool ReadConnectionId(uint64_t* connection_id);
+  // TODO(dschinazi) b/120240679 - add a length parameter
+  bool ReadConnectionId(QuicConnectionId* connection_id);
 
   // Reads tag represented as 32-bit unsigned integer into given output
   // parameter. Tags are in big endian on the wire (e.g., CHLO is
@@ -114,6 +113,10 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
   // Returns true if the entirety of the underlying buffer has been read via
   // Read*() calls.
   bool IsDoneReading() const;
+
+  // Returns the length in bytes of a variable length integer based on the next
+  // two bits available. Returns 1, 2, 4, or 8 on success, and 0 on failure.
+  int PeekVarInt62Length();
 
   // Returns the number of bytes remaining to be read.
   size_t BytesRemaining() const;

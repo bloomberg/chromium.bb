@@ -49,6 +49,7 @@ class SimpleQuicFramer {
   const std::vector<std::unique_ptr<QuicStreamFrame>>& stream_frames() const;
   const std::vector<QuicPaddingFrame>& padding_frames() const;
   const QuicVersionNegotiationPacket* version_negotiation_packet() const;
+  EncryptionLevel last_decrypted_level() const;
 
   QuicFramer* framer();
 

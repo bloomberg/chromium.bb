@@ -356,6 +356,11 @@ QuicConnection::QuicConnection(
                   << "Created connection with connection_id: " << connection_id
                   << " and version: "
                   << QuicVersionToString(transport_version());
+  QUIC_BUG_IF(connection_id.length() != sizeof(uint64_t) &&
+              transport_version() < QUIC_VERSION_99)
+      << "Cannot use connection ID of length " << connection_id.length()
+      << " with version " << QuicVersionToString(transport_version());
+
   framer_.set_visitor(this);
   stats_.connection_creation_time = clock_->ApproximateNow();
   // TODO(ianswett): Supply the NetworkChangeVisitor as a constructor argument
@@ -563,6 +568,7 @@ void QuicConnection::OnPublicResetPacket(const QuicPublicResetPacket& packet) {
     QuicStrAppend(&error_details, " From ", packet.endpoint_id, ".");
   }
   QUIC_DLOG(INFO) << ENDPOINT << error_details;
+  QUIC_CODE_COUNT(quic_tear_down_local_connection_on_public_reset);
   TearDownLocalConnectionState(QUIC_PUBLIC_RESET, error_details,
                                ConnectionCloseSource::FROM_PEER);
 }
@@ -647,6 +653,7 @@ void QuicConnection::OnVersionNegotiationPacket(
     const QuicString error_details =
         "Server receieved version negotiation packet.";
     QUIC_BUG << error_details;
+    QUIC_CODE_COUNT(quic_tear_down_local_connection_on_version_negotiation);
     TearDownLocalConnectionState(QUIC_INTERNAL_ERROR, error_details,
                                  ConnectionCloseSource::FROM_SELF);
     return;
@@ -1406,7 +1413,8 @@ void QuicConnection::OnAuthenticatedIetfStatelessResetPacket(
     const QuicIetfStatelessResetPacket& packet) {
   // TODO(fayang): Add OnAuthenticatedIetfStatelessResetPacket to
   // debug_visitor_.
-  const std::string error_details = "Received stateless reset.";
+  const QuicString error_details = "Received stateless reset.";
+  QUIC_CODE_COUNT(quic_tear_down_local_connection_on_stateless_reset);
   TearDownLocalConnectionState(QUIC_PUBLIC_RESET, error_details,
                                ConnectionCloseSource::FROM_PEER);
 }
@@ -1789,7 +1797,7 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
 
 void QuicConnection::OnBlockedWriterCanWrite() {
   if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 3, 4);
+    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 3, 6);
     writer_->SetWritable();
   }
   OnCanWrite();
@@ -2292,6 +2300,12 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
 }
 
 void QuicConnection::FlushPackets() {
+  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage) &&
+      !connected_) {
+    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 5, 6);
+    return;
+  }
+
   if (!writer_->IsBatchMode()) {
     return;
   }
@@ -2352,6 +2366,12 @@ void QuicConnection::OnWriteError(int error_code) {
       break;
     default:
       // We can't send an error as the socket is presumably borked.
+      if (transport_version() > QUIC_VERSION_43) {
+        QUIC_CODE_COUNT(quic_tear_down_local_connection_on_write_error_ietf);
+      } else {
+        QUIC_CODE_COUNT(
+            quic_tear_down_local_connection_on_write_error_non_ietf);
+      }
       TearDownLocalConnectionState(QUIC_PACKET_WRITE_ERROR, error_details,
                                    ConnectionCloseSource::FROM_SELF);
   }
@@ -2368,6 +2388,13 @@ void QuicConnection::OnSerializedPacket(SerializedPacket* serialized_packet) {
     // loop here.
     // TODO(ianswett): This is actually an internal error, not an
     // encryption failure.
+    if (transport_version() > QUIC_VERSION_43) {
+      QUIC_CODE_COUNT(
+          quic_tear_down_local_connection_on_serialized_packet_ietf);
+    } else {
+      QUIC_CODE_COUNT(
+          quic_tear_down_local_connection_on_serialized_packet_non_ietf);
+    }
     TearDownLocalConnectionState(
         QUIC_ENCRYPTION_FAILURE,
         "Serialized packet does not have an encrypted buffer.",
@@ -2393,6 +2420,13 @@ void QuicConnection::OnUnrecoverableError(QuicErrorCode error,
                                           ConnectionCloseSource source) {
   // The packet creator or generator encountered an unrecoverable error: tear
   // down local connection state immediately.
+  if (transport_version() > QUIC_VERSION_43) {
+    QUIC_CODE_COUNT(
+        quic_tear_down_local_connection_on_unrecoverable_error_ietf);
+  } else {
+    QUIC_CODE_COUNT(
+        quic_tear_down_local_connection_on_unrecoverable_error_non_ietf);
+  }
   TearDownLocalConnectionState(error, error_details, source);
 }
 
@@ -2675,6 +2709,12 @@ void QuicConnection::TearDownLocalConnectionState(
   if (!connected_) {
     QUIC_DLOG(INFO) << "Connection is already closed.";
     return;
+  }
+
+  // If we are using a batch writer, flush packets queued in it, if any.
+  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
+    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 6, 6);
+    FlushPackets();
   }
   connected_ = false;
   DCHECK(visitor_ != nullptr);

@@ -78,7 +78,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // Ensure that the closed connection is cleaned up asynchronously.
   void OnConnectionClosed(QuicConnectionId connection_id,
                           QuicErrorCode error,
-                          const QuicString& error_details) override;
+                          const QuicString& error_details,
+                          ConnectionCloseSource source) override;
 
   // QuicSession::Visitor interface implementation (via inheritance of
   // QuicTimeWaitListManager::Visitor):
@@ -95,8 +96,9 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // time-wait list.
   void OnConnectionAddedToTimeWaitList(QuicConnectionId connection_id) override;
 
-  using SessionMap =
-      QuicUnorderedMap<QuicConnectionId, std::unique_ptr<QuicSession>>;
+  using SessionMap = QuicUnorderedMap<QuicConnectionId,
+                                      std::unique_ptr<QuicSession>,
+                                      QuicConnectionIdHash>;
 
   const SessionMap& session_map() const { return session_map_; }
 
@@ -315,7 +317,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // true, any future packets for the ConnectionId will be black-holed.
   virtual void CleanUpSession(SessionMap::iterator it,
                               QuicConnection* connection,
-                              bool session_closed_statelessly);
+                              bool session_closed_statelessly,
+                              ConnectionCloseSource source);
 
   void StopAcceptingNewConnections();
 
@@ -352,7 +355,8 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   friend class test::QuicDispatcherPeer;
   friend class StatelessRejectorProcessDoneCallback;
 
-  typedef QuicUnorderedSet<QuicConnectionId> QuicConnectionIdSet;
+  typedef QuicUnorderedSet<QuicConnectionId, QuicConnectionIdHash>
+      QuicConnectionIdSet;
 
   // Attempts to reject the connection statelessly, if stateless rejects are
   // possible and if the current packet contains a CHLO message.  Determines a

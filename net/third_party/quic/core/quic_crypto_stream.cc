@@ -124,8 +124,21 @@ bool QuicCryptoStream::ExportTokenBindingKeyingMaterial(
       /* context= */ "", 32, result);
 }
 
-void QuicCryptoStream::WriteCryptoData(const QuicStringPiece& data) {
+void QuicCryptoStream::WriteCryptoData(EncryptionLevel level,
+                                       QuicStringPiece data) {
+  // TODO(nharper): This approach to writing data, by setting the encryption
+  // level, calling WriteOrBufferData, and then restoring the encryption level,
+  // is fragile and assumes that the data gets received by the peer when
+  // WriteOrBufferData is called. There is no guarantee that data will get
+  // retransmitted at the correct level. This needs to be redone with the
+  // cleanup for OnDataAvailable by managing the streams/crypto frames for
+  // encryption levels separately.
+  EncryptionLevel current_level = session()->connection()->encryption_level();
+  session()->connection()->SetDefaultEncryptionLevel(level);
   WriteOrBufferData(data, /* fin */ false, /* ack_listener */ nullptr);
+  if (current_level == ENCRYPTION_FORWARD_SECURE && level != current_level) {
+    session()->connection()->SetDefaultEncryptionLevel(current_level);
+  }
 }
 
 void QuicCryptoStream::OnSuccessfulVersionNegotiation(
