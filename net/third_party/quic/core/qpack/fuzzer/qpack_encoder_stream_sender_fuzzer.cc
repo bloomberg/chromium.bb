@@ -35,40 +35,37 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   QuicFuzzedDataProvider provider(data, size);
   // Limit string literal length to 2 kB for efficiency.
-  const uint32_t kMaxStringLength = 2048;
+  const uint16_t kMaxStringLength = 2048;
 
   while (provider.remaining_bytes() != 0) {
-    switch (provider.ConsumeUint8() % 4) {
+    switch (provider.ConsumeIntegral<uint8_t>() % 4) {
       case 0: {
         bool is_static = provider.ConsumeBool();
-        uint64_t name_index = provider.ConsumeUint32InRange(
-            0, std::numeric_limits<uint32_t>::max());
-        uint32_t value_length =
-            provider.ConsumeUint32InRange(0, kMaxStringLength);
+        uint64_t name_index = provider.ConsumeIntegral<uint64_t>();
+        uint16_t value_length =
+            provider.ConsumeIntegralInRange<uint16_t>(0, kMaxStringLength);
         QuicString value = provider.ConsumeRandomLengthString(value_length);
 
         sender.SendInsertWithNameReference(is_static, name_index, value);
         break;
       }
       case 1: {
-        uint32_t name_length =
-            provider.ConsumeUint32InRange(0, kMaxStringLength);
+        uint16_t name_length =
+            provider.ConsumeIntegralInRange<uint16_t>(0, kMaxStringLength);
         QuicString name = provider.ConsumeRandomLengthString(name_length);
-        uint32_t value_length =
-            provider.ConsumeUint32InRange(0, kMaxStringLength);
+        uint16_t value_length =
+            provider.ConsumeIntegralInRange<uint16_t>(0, kMaxStringLength);
         QuicString value = provider.ConsumeRandomLengthString(value_length);
         sender.SendInsertWithoutNameReference(name, value);
         break;
       }
       case 2: {
-        uint64_t index = provider.ConsumeUint32InRange(
-            0, std::numeric_limits<uint32_t>::max());
+        uint64_t index = provider.ConsumeIntegral<uint64_t>();
         sender.SendDuplicate(index);
         break;
       }
       case 3: {
-        uint64_t max_size = provider.ConsumeUint32InRange(
-            0, std::numeric_limits<uint32_t>::max());
+        uint64_t max_size = provider.ConsumeIntegral<uint64_t>();
         sender.SendDynamicTableSizeUpdate(max_size);
         break;
       }

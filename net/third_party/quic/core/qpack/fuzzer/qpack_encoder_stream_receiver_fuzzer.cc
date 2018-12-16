@@ -55,7 +55,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   while (!delegate.error_detected() && provider.remaining_bytes() != 0) {
     // Process up to 64 kB fragments at a time.  Too small upper bound might not
     // provide enough coverage, too large might make fuzzing too inefficient.
-    size_t fragment_size = provider.ConsumeUint32InRange(1, 64 * 1024);
+    size_t fragment_size = provider.ConsumeIntegralInRange<uint16_t>(
+        1, std::numeric_limits<uint16_t>::max());
     receiver.Decode(provider.ConsumeRandomLengthString(fragment_size));
   }
 
