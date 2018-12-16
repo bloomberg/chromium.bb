@@ -134,6 +134,7 @@ void AppendCommandLineArguments(base::CommandLine* cmd_line,
 AlternativeBrowserDriver::~AlternativeBrowserDriver() {}
 
 AlternativeBrowserDriverImpl::AlternativeBrowserDriverImpl() {}
+
 AlternativeBrowserDriverImpl::~AlternativeBrowserDriverImpl() {}
 
 void AlternativeBrowserDriverImpl::SetBrowserPath(base::StringPiece path) {
