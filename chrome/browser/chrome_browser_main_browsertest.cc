@@ -15,14 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_switches.h"
-#include "content/public/browser/network_service_instance.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
-#include "content/public/test/browser_test_utils.h"
-#include "net/base/network_change_notifier.h"
-#include "services/network/public/cpp/features.h"
-#include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "content/public/test/network_connection_change_simulator.h"
 
 // Friend of ChromeBrowserMainPartsTestApi to poke at internal state.
 class ChromeBrowserMainPartsTestApi {
@@ -43,72 +36,12 @@ class ChromeBrowserMainPartsTestApi {
 
 namespace {
 
-class NetworkConnectionChangeSimulator
-    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
- public:
-  NetworkConnectionChangeSimulator() = default;
-
-  void SetConnectionType(network::mojom::ConnectionType type) {
-    network::NetworkConnectionTracker* network_connection_tracker =
-        content::GetNetworkConnectionTracker();
-    network::mojom::ConnectionType connection_type =
-        network::mojom::ConnectionType::CONNECTION_UNKNOWN;
-    run_loop_ = std::make_unique<base::RunLoop>();
-    network_connection_tracker->AddNetworkConnectionObserver(this);
-    SimulateNetworkChange(type);
-    // Make sure the underlying network connection type becomes |type|.
-    // The while loop is necessary because in some machine such as "Builder
-    // linux64 trunk", the |connection_type| can be CONNECTION_ETHERNET before
-    // it changes to |type|. So here it needs to wait until the
-    // |connection_type| becomes |type|.
-    while (!network_connection_tracker->GetConnectionType(
-               &connection_type,
-               base::BindOnce(
-                   &NetworkConnectionChangeSimulator::OnConnectionChanged,
-                   base::Unretained(this))) ||
-           connection_type != type) {
-      SimulateNetworkChange(type);
-      run_loop_->Run();
-      run_loop_ = std::make_unique<base::RunLoop>();
-    }
-    network_connection_tracker->RemoveNetworkConnectionObserver(this);
-  }
-
- private:
-  // Simulates a network connection change.
-  static void SimulateNetworkChange(network::mojom::ConnectionType type) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        !content::IsNetworkServiceRunningInProcess()) {
-      network::mojom::NetworkServiceTestPtr network_service_test;
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->BindInterface(content::mojom::kNetworkServiceName,
-                          &network_service_test);
-      base::RunLoop run_loop;
-      network_service_test->SimulateNetworkChange(type, run_loop.QuitClosure());
-      run_loop.Run();
-      return;
-    }
-    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-        net::NetworkChangeNotifier::ConnectionType(type));
-  }
-
-  // network::NetworkConnectionTracker::NetworkConnectionObserver:
-  void OnConnectionChanged(network::mojom::ConnectionType type) override {
-    run_loop_->Quit();
-  }
-
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkConnectionChangeSimulator);
-};
-
 // ChromeBrowserMainExtraParts is used to initialize the network state.
 class ChromeBrowserMainExtraPartsNetFactoryInstaller
     : public ChromeBrowserMainExtraParts {
  public:
   explicit ChromeBrowserMainExtraPartsNetFactoryInstaller(
-      NetworkConnectionChangeSimulator* network_change_simulator)
+      content::NetworkConnectionChangeSimulator* network_change_simulator)
       : network_change_simulator_(network_change_simulator) {
     EXPECT_TRUE(network_change_simulator_);
   }
@@ -122,7 +55,8 @@ class ChromeBrowserMainExtraPartsNetFactoryInstaller
   }
 
  private:
-  NetworkConnectionChangeSimulator* network_change_simulator_ = nullptr;
+  content::NetworkConnectionChangeSimulator* network_change_simulator_ =
+      nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsNetFactoryInstaller);
 };
@@ -154,13 +88,14 @@ class ChromeBrowserMainBrowserTest : public InProcessBrowserTest {
     ChromeBrowserMainPartsTestApi(chrome_browser_main_parts)
         .EnableVariationsServiceInit();
     network_change_simulator_ =
-        std::make_unique<NetworkConnectionChangeSimulator>();
+        std::make_unique<content::NetworkConnectionChangeSimulator>();
     extra_parts_ = new ChromeBrowserMainExtraPartsNetFactoryInstaller(
         network_change_simulator_.get());
     chrome_browser_main_parts->AddParts(extra_parts_);
   }
 
-  std::unique_ptr<NetworkConnectionChangeSimulator> network_change_simulator_;
+  std::unique_ptr<content::NetworkConnectionChangeSimulator>
+      network_change_simulator_;
   ChromeBrowserMainExtraPartsNetFactoryInstaller* extra_parts_ = nullptr;
 
  private:
