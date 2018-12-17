@@ -68,7 +68,6 @@
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/google_update_util.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/html_dialog.h"
 #include "chrome/installer/util/install_util.h"
@@ -85,6 +84,10 @@
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/installer/util/google_update_util.h"
+#endif
 
 using installer::InstallerState;
 using installer::InstallationState;
@@ -641,6 +644,7 @@ installer::InstallStatus UninstallProducts(
   if (!system_level_cmd.GetProgram().empty())
     base::LaunchProcess(system_level_cmd, base::LaunchOptions());
 
+#if defined(GOOGLE_CHROME_BUILD)
   // Tell Google Update that an uninstall has taken place if this install did
   // not originate from the MSI. Google Update has its own logic relating to
   // MSI-driven uninstalls that conflicts with this. Ignore the return value:
@@ -648,6 +652,7 @@ installer::InstallStatus UninstallProducts(
   // failure of Chrome's uninstallation.
   if (!installer_state.is_msi())
     google_update::UninstallGoogleUpdate(installer_state.system_install());
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
   return install_status;
 }
