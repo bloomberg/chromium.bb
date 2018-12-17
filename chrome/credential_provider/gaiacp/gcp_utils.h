@@ -6,6 +6,7 @@
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_GCP_UTILS_H_
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
@@ -100,6 +101,17 @@ class ScopedStartupInfo {
   STARTUPINFOW info_;
   base::string16 desktop_;
 };
+
+// Gets the brand specific path in which to install GCPW.
+base::FilePath::StringType GetInstallParentDirectoryName();
+
+// Gets the directory where the GCP is installed
+base::FilePath GetInstallDirectory();
+
+// Deletes versions of GCP found under |gcp_path| except for version
+// |product_version|.
+void DeleteVersionsExcept(const base::FilePath& gcp_path,
+                          const base::string16& product_version);
 
 // Waits for the process specified by |procinfo| to terminate.  The handles
 // in |read_handles| can be used to read stdout/err from the process.  Upon

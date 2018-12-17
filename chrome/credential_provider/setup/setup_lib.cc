@@ -50,15 +50,11 @@ constexpr const base::FilePath::CharType* kRegsiterDlls[] = {
 
 // Creates the directory where GCP is to be installed.
 base::FilePath CreateInstallDirectory() {
-  base::FilePath dest_path;
-  if (!base::PathService::Get(base::DIR_PROGRAM_FILES, &dest_path)) {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "PathService::Get(DIR_PROGRAM_FILES) hr=" << putHR(hr);
-    return base::FilePath();
-  }
+  base::FilePath dest_path = GetInstallDirectory();
 
-  dest_path = dest_path.Append(GetInstallParentDirectoryName())
-                  .Append(FILE_PATH_LITERAL("Credential Provider"));
+  if (dest_path.empty()) {
+    return dest_path;
+  }
 
   if (!base::CreateDirectory(dest_path)) {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
@@ -166,82 +162,6 @@ HRESULT UnregisterDlls(const base::FilePath& dest_path,
   }
 
   return has_failures ? E_UNEXPECTED : S_OK;
-}
-
-// Opens |path| with options that prevent the file from being read or written
-// via another handle. As long as the returned object is alive, it is guaranteed
-// that |path| isn't in use. It can however be deleted.
-base::File GetFileLock(const base::FilePath& path) {
-  return base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
-                              base::File::FLAG_EXCLUSIVE_READ |
-                              base::File::FLAG_EXCLUSIVE_WRITE |
-                              base::File::FLAG_SHARE_DELETE);
-}
-
-// Deletes a specific GCP version from the disk.
-void DeleteVersionDirectory(const base::FilePath& version_path) {
-  // Lock all exes and dlls for exclusive access while allowing deletes.  Mark
-  // the files for deletion and release them, causing them to actually be
-  // deleted.  This allows the deletion of the version path itself.
-  std::vector<base::File> locks;
-  const int types = base::FileEnumerator::FILES;
-  base::FileEnumerator enumerator_version(version_path, false, types,
-                                          FILE_PATH_LITERAL("*"));
-  bool all_deletes_succeeded = true;
-  for (base::FilePath path = enumerator_version.Next(); !path.empty();
-        path = enumerator_version.Next()) {
-    if (!path.MatchesExtension(FILE_PATH_LITERAL(".exe")) &&
-        !path.MatchesExtension(FILE_PATH_LITERAL(".dll"))) {
-      continue;
-    }
-
-    // Open the file for exclusive access while allowing deletes.
-    locks.push_back(GetFileLock(path));
-    if (!locks.back().IsValid()) {
-      HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-      LOGFN(ERROR) << "Could not lock " << path << " hr=" << putHR(hr);
-      all_deletes_succeeded = false;
-      continue;
-    }
-
-    // Mark the file for deletion.
-    HRESULT hr = base::DeleteFile(path, false);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "Could not delete " << path;
-      all_deletes_succeeded = false;
-    }
-  }
-
-  // Release the locks, actually deleting the files.  It is now possible to
-  // delete the version path.
-  locks.clear();
-  if (all_deletes_succeeded && !base::DeleteFile(version_path, true))
-    LOGFN(ERROR) << "Could not delete version " << version_path.BaseName();
-}
-
-// Deletes versions of GCP found under |gcp_path| except for version
-// |product_version|.
-//
-// TODO(crbug.com/883935): figure out how to call this from credential provider
-// code too. That way if older versions cannot be deleted at install time, they
-// can eventually be cleaned up at next run.
-void DeleteVersionsExcept(const base::FilePath& gcp_path,
-                          const base::string16& product_version) {
-  base::FilePath version = base::FilePath(product_version);
-  const int types = base::FileEnumerator::DIRECTORIES;
-  base::FileEnumerator enumerator(gcp_path, false, types,
-                                  FILE_PATH_LITERAL("*"));
-  for (base::FilePath name = enumerator.Next(); !name.empty();
-       name = enumerator.Next()) {
-    base::FilePath basename = name.BaseName();
-    if (version == basename)
-      continue;
-
-    // Found an older version on the machine that can be deleted.  This is
-    // best effort only.  If any errors occurred they are logged by
-    // DeleteVersionDirectory().
-    DeleteVersionDirectory(gcp_path.Append(basename));
-  }
 }
 
 }  // namespace
@@ -377,14 +297,6 @@ void GetInstalledFileBasenames(const base::FilePath::CharType* const** names,
                                size_t* count) {
   *names = kFilenames;
   *count = base::size(kFilenames);
-}
-
-base::FilePath::StringType GetInstallParentDirectoryName() {
-#if defined(GOOGLE_CHROME_BUILD)
-  return FILE_PATH_LITERAL("Google");
-#else
-  return FILE_PATH_LITERAL("Chromium");
-#endif
 }
 
 }  // namespace credential_provider

@@ -29,7 +29,9 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
+#include "base/files/file.h"
+#include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
@@ -92,7 +94,91 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
       email.c_str(), mdm_url.c_str(), base::UTF8ToWide(data_encoded).c_str());
 }
 
+// Opens |path| with options that prevent the file from being read or written
+// via another handle. As long as the returned object is alive, it is guaranteed
+// that |path| isn't in use. It can however be deleted.
+base::File GetFileLock(const base::FilePath& path) {
+  return base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                              base::File::FLAG_EXCLUSIVE_READ |
+                              base::File::FLAG_EXCLUSIVE_WRITE |
+                              base::File::FLAG_SHARE_DELETE);
+}
+
+// Deletes a specific GCP version from the disk.
+void DeleteVersionDirectory(const base::FilePath& version_path) {
+  // Lock all exes and dlls for exclusive access while allowing deletes.  Mark
+  // the files for deletion and release them, causing them to actually be
+  // deleted.  This allows the deletion of the version path itself.
+  std::vector<base::File> locks;
+  const int types = base::FileEnumerator::FILES;
+  base::FileEnumerator enumerator_version(version_path, false, types,
+                                          FILE_PATH_LITERAL("*"));
+  bool all_deletes_succeeded = true;
+  for (base::FilePath path = enumerator_version.Next(); !path.empty();
+       path = enumerator_version.Next()) {
+    if (!path.MatchesExtension(FILE_PATH_LITERAL(".exe")) &&
+        !path.MatchesExtension(FILE_PATH_LITERAL(".dll"))) {
+      continue;
+    }
+
+    // Open the file for exclusive access while allowing deletes.
+    locks.push_back(GetFileLock(path));
+    if (!locks.back().IsValid()) {
+      HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+      LOGFN(ERROR) << "Could not lock " << path << " hr=" << putHR(hr);
+      all_deletes_succeeded = false;
+      continue;
+    }
+
+    // Mark the file for deletion.
+    HRESULT hr = base::DeleteFile(path, false);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "Could not delete " << path;
+      all_deletes_succeeded = false;
+    }
+  }
+
+  // Release the locks, actually deleting the files.  It is now possible to
+  // delete the version path.
+  locks.clear();
+  if (all_deletes_succeeded && !base::DeleteFile(version_path, true))
+    LOGFN(ERROR) << "Could not delete version " << version_path.BaseName();
+}
+
 }  // namespace
+
+base::FilePath GetInstallDirectory() {
+  base::FilePath dest_path;
+  if (!base::PathService::Get(base::DIR_PROGRAM_FILES, &dest_path)) {
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "PathService::Get(DIR_PROGRAM_FILES) hr=" << putHR(hr);
+    return base::FilePath();
+  }
+
+  dest_path = dest_path.Append(GetInstallParentDirectoryName())
+                  .Append(FILE_PATH_LITERAL("Credential Provider"));
+
+  return dest_path;
+}
+
+void DeleteVersionsExcept(const base::FilePath& gcp_path,
+                          const base::string16& product_version) {
+  base::FilePath version = base::FilePath(product_version);
+  const int types = base::FileEnumerator::DIRECTORIES;
+  base::FileEnumerator enumerator(gcp_path, false, types,
+                                  FILE_PATH_LITERAL("*"));
+  for (base::FilePath name = enumerator.Next(); !name.empty();
+       name = enumerator.Next()) {
+    base::FilePath basename = name.BaseName();
+    if (version == basename)
+      continue;
+
+    // Found an older version on the machine that can be deleted.  This is
+    // best effort only.  If any errors occurred they are logged by
+    // DeleteVersionDirectory().
+    DeleteVersionDirectory(gcp_path.Append(basename));
+  }
+}
 
 // StdParentHandles ///////////////////////////////////////////////////////////
 
@@ -695,6 +781,14 @@ std::string GetDictStringUTF8(
     const std::unique_ptr<base::DictionaryValue>& dict,
     const char* name) {
   return GetDictStringUTF8(dict.get(), name);
+}
+
+base::FilePath::StringType GetInstallParentDirectoryName() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return FILE_PATH_LITERAL("Google");
+#else
+  return FILE_PATH_LITERAL("Chromium");
+#endif
 }
 
 FakesForTesting::FakesForTesting() {}
