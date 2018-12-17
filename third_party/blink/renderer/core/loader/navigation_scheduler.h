@@ -70,7 +70,6 @@ class CORE_EXPORT NavigationScheduler final
   void ScheduleFrameNavigation(Document*, const KURL&, WebFrameLoadType);
   void SchedulePageBlock(Document*, int reason);
   void ScheduleFormSubmission(Document*, FormSubmission*);
-  void ScheduleReload();
 
   void StartTimer();
   void Cancel();
@@ -78,7 +77,6 @@ class CORE_EXPORT NavigationScheduler final
   void Trace(blink::Visitor*);
 
  private:
-  bool ShouldScheduleReload() const;
   bool ShouldScheduleNavigation(const KURL&) const;
 
   void NavigateTask();

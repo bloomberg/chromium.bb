@@ -12,7 +12,7 @@
     frame.src = '${testRunner.url('resources/navigation-chain1.html')}';
   `);
 
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < 5; i++) {
     var msg = await dp.Page.onceFrameScheduledNavigation();
     testRunner.log('Scheduled navigation with delay ' + msg.params.delay +
                    ' and reason ' + msg.params.reason + ' to url ' +
