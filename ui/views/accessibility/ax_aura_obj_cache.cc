@@ -4,7 +4,7 @@
 
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
@@ -31,7 +31,8 @@ aura::client::FocusClient* GetFocusClient(aura::Window* root_window) {
 
 // static
 AXAuraObjCache* AXAuraObjCache::GetInstance() {
-  return base::Singleton<AXAuraObjCache>::get();
+  static base::NoDestructor<AXAuraObjCache> instance;
+  return instance.get();
 }
 
 AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(View* view) {
@@ -121,10 +122,8 @@ void AXAuraObjCache::FireEvent(AXAuraObjWrapper* aura_obj,
 
 AXAuraObjCache::AXAuraObjCache() = default;
 
-AXAuraObjCache::~AXAuraObjCache() {
-  is_destroying_ = true;
-  cache_.clear();
-}
+// Never runs because object is leaked.
+AXAuraObjCache::~AXAuraObjCache() = default;
 
 View* AXAuraObjCache::GetFocusedView() {
   Widget* focused_widget = focused_widget_for_testing_;

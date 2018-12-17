@@ -21,11 +21,8 @@ AXWidgetObjWrapper::AXWidgetObjWrapper(AXAuraObjCache* aura_obj_cache,
 }
 
 AXWidgetObjWrapper::~AXWidgetObjWrapper() {
-  if (!aura_obj_cache_->is_destroying()) {
-    widget_->RemoveObserver(this);
-    widget_->RemoveRemovalsObserver(this);
-  }
-  widget_ = NULL;
+  widget_->RemoveObserver(this);
+  widget_->RemoveRemovalsObserver(this);
 }
 
 bool AXWidgetObjWrapper::IsIgnored() {

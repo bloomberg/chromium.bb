@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
@@ -24,7 +23,7 @@ class AXRootObjWrapper;
 
 namespace base {
 template <typename T>
-struct DefaultSingletonTraits;
+class NoDestructor;
 }  // namespace base
 
 namespace ui {
@@ -74,14 +73,13 @@ class AutomationManagerAura : public ui::AXActionHandler,
     event_bundle_sink_ = sink;
   }
 
- protected:
-  AutomationManagerAura();
-  ~AutomationManagerAura() override;
-
  private:
-  friend struct base::DefaultSingletonTraits<AutomationManagerAura>;
+  friend class base::NoDestructor<AutomationManagerAura>;
 
   FRIEND_TEST_ALL_PREFIXES(AutomationManagerAuraBrowserTest, WebAppearsOnce);
+
+  AutomationManagerAura();
+  ~AutomationManagerAura() override;
 
   void SendEventOnObjectById(int32_t id, ax::mojom::Event event_type);
 
@@ -119,8 +117,6 @@ class AutomationManagerAura : public ui::AXActionHandler,
   ui::AXEventBundleSink* event_bundle_sink_ = nullptr;
 
   std::unique_ptr<views::AccessibilityAlertWindow> alert_window_;
-
-  base::WeakPtrFactory<AutomationManagerAura> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationManagerAura);
 };
