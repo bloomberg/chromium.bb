@@ -361,18 +361,9 @@ void TetherService::UpdateEnabledState() {
   }
 
   if (is_enabled != was_pref_enabled) {
-    if (base::FeatureList::IsEnabled(
-            chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-      multidevice_setup_client_->SetFeatureEnabledState(
-          chromeos::multidevice_setup::mojom::Feature::kInstantTethering,
-          is_enabled, base::nullopt /* auth_token */, base::DoNothing());
-    } else {
-      profile_->GetPrefs()->SetBoolean(
-          chromeos::multidevice_setup::kInstantTetheringEnabledPrefName,
-          is_enabled);
-      LogUserPreferenceChanged(is_enabled);
-      UpdateTetherTechnologyState();
-    }
+    multidevice_setup_client_->SetFeatureEnabledState(
+        chromeos::multidevice_setup::mojom::Feature::kInstantTethering,
+        is_enabled, base::nullopt /* auth_token */, base::DoNothing());
   } else {
     UpdateTetherTechnologyState();
   }
@@ -396,12 +387,7 @@ void TetherService::OnReady() {
   if (shut_down_)
     return;
 
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
-    OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
-  } else {
-    GetBluetoothAdapter();
-  }
+  OnFeatureStatesChanged(multidevice_setup_client_->GetFeatureStates());
 }
 
 void TetherService::OnFeatureStatesChanged(
