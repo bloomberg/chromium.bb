@@ -192,17 +192,11 @@ void InspectorTraceEvents::Did(const probe::ParseHTML& probe) {
 }
 
 void InspectorTraceEvents::Will(const probe::CallFunction& probe) {
-  if (probe.depth)
-    return;
-  TRACE_EVENT_BEGIN1(
-      "devtools.timeline", "FunctionCall", "data",
-      inspector_function_call_event::Data(probe.context, probe.function));
 }
 
 void InspectorTraceEvents::Did(const probe::CallFunction& probe) {
   if (probe.depth)
     return;
-  TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_update_counters_event::Data());
