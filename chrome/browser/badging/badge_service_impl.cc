@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
@@ -36,7 +37,7 @@ void BadgeServiceImpl::SetBadge() {
 
   badge_manager_->UpdateBadge(extension->id(), base::nullopt);
 #else
-  if (!is_hosted_app_)
+  if (!IsInApp())
     return;
 
   delegate_->SetBadge(web_contents_);
@@ -52,7 +53,7 @@ void BadgeServiceImpl::ClearBadge() {
 
   badge_manager_->ClearBadge(extension->id());
 #else
-  if (!is_hosted_app_)
+  if (!IsInApp())
     return;
 
   delegate_->ClearBadge(web_contents_);
@@ -66,13 +67,13 @@ BadgeServiceImpl::BadgeServiceImpl(content::RenderFrameHost* render_frame_host,
       render_frame_host_(render_frame_host) {
   web_contents_ = content::WebContents::FromRenderFrameHost(render_frame_host_);
   browser_context_ = web_contents_->GetBrowserContext();
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  hosted_app_controller_ = browser->hosted_app_controller();
 
 #if defined(OS_CHROMEOS)
   badge_manager_ = badging::BadgeManagerFactory::GetInstance()->GetForProfile(
       Profile::FromBrowserContext(browser_context_));
 #else
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  is_hosted_app_ = browser->hosted_app_controller();
   delegate_ = browser->window()->GetBadgeServiceDelegate();
 #endif
 }
@@ -84,4 +85,11 @@ const extensions::Extension* BadgeServiceImpl::ExtensionFromLastUrl() {
 
   return extensions::util::GetInstalledPwaForUrl(
       browser_context_, render_frame_host_->GetLastCommittedURL());
+}
+
+bool BadgeServiceImpl::IsInApp() {
+  return hosted_app_controller_ &&
+         extensions::IsSameScope(hosted_app_controller_->GetAppLaunchURL(),
+                                 web_contents_->GetLastCommittedURL(),
+                                 web_contents_->GetBrowserContext());
 }
