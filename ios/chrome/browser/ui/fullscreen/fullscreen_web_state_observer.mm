@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_observer.h"
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_content_adjustment_util.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_mediator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
@@ -16,6 +18,7 @@
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/url_util.h"
 #import "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/web_state/page_display_state.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -91,6 +94,7 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   bool url_changed = web::GURLByRemovingRefFromGURL(navigation_url) !=
                      web::GURLByRemovingRefFromGURL(last_navigation_url_);
   last_navigation_url_ = navigation_url;
+
   // Due to limitations in WKWebView's rendering, different MIME types must be
   // inset using different techniques:
   // - PDFs need to be inset using the scroll view's |contentInset| property or
@@ -101,9 +105,23 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   bool force_content_inset =
       fullscreen::features::GetActiveViewportExperiment() ==
       ViewportAdjustmentExperiment::CONTENT_INSET;
-  web_state->GetWebViewProxy().shouldUseViewContentInset =
-      force_content_inset ||
-      web_state->GetContentsMimeType() == "application/pdf";
+  bool is_pdf = web_state->GetContentsMimeType() == "application/pdf";
+  bool use_content_inset = force_content_inset || is_pdf;
+  id<CRWWebViewProxy> web_view_proxy = web_state->GetWebViewProxy();
+  web_view_proxy.shouldUseViewContentInset = use_content_inset;
+
+  // On iOS 12, resetting WKScrollView.contentInset at this point in the load
+  // will push the content down by the top inset.  On iOS 11, however, this does
+  // not occur.  Manually push the content below the toolbars the first time a
+  // page is loaded with the content inset setting enabled.  The scroll offset
+  // of subsequent loads of this navigation will be set by the PageDisplayState.
+  web::NavigationItem* committed_item =
+      web_state->GetNavigationManager()->GetLastCommittedItem();
+  if (use_content_inset && !base::ios::IsRunningOnIOS12OrLater() &&
+      !committed_item->GetPageDisplayState().IsValid()) {
+    MoveContentBelowHeader(web_view_proxy, model_);
+  }
+
   // Only reset the model for document-changing navigations or same-document
   // navigations that update the visible URL.
   if (!navigation_context->IsSameDocument() || url_changed)
