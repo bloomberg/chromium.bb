@@ -1030,24 +1030,14 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  enableAutoConnect_: function(networkProperties, globalPolicy) {
-    if (networkProperties !== undefined &&
-        networkProperties.Type == CrOnc.Type.WI_FI && !!globalPolicy &&
-        !!globalPolicy.AllowOnlyPolicyNetworksToAutoconnect &&
-        !this.isPolicySource(networkProperties.Source)) {
+  isAutoConnectEnforcedByPolicy: function(networkProperties, globalPolicy) {
+    if (networkProperties === undefined ||
+        networkProperties.Type != CrOnc.Type.WI_FI) {
       return false;
     }
-    return !this.isNetworkPolicyEnforced(
-        this.getManagedAutoConnect_(networkProperties));
-  },
-
-  /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @return {!CrOnc.ManagedProperty|undefined} Managed AutoConnect property.
-   * @private
-   */
-  getManagedAutoConnect_: function(networkProperties) {
-    return CrOnc.getManagedAutoConnect(networkProperties);
+    if (this.isPolicySource(networkProperties.Source))
+      return !this.isEditable(CrOnc.getManagedAutoConnect(networkProperties));
+    return globalPolicy && !!globalPolicy.AllowOnlyPolicyNetworksToAutoconnect;
   },
 
   /**

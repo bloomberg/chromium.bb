@@ -178,11 +178,14 @@
           <div id="autoConnectToggleLabel" class="start settings-box-text">
             $i18n{networkAutoConnect}
           </div>
-          <cr-policy-network-indicator
-              property="[[getManagedAutoConnect_(networkProperties)]]">
-          </cr-policy-network-indicator>
+          <template is="dom-if" if="[[isAutoConnectEnforcedByPolicy(
+              networkProperties, globalPolicy)]]">
+            <cr-policy-indicator indicator-type="devicePolicy">
+            </cr-policy-indicator>
+          </template>
           <cr-toggle checked="{{autoConnect_}}"
-              disabled="[[!enableAutoConnect_(networkProperties)]]"
+              disabled="[[isAutoConnectEnforcedByPolicy(networkProperties,
+                  globalPolicy)]]"
               aria-labelledby="autoConnectToggleLabel">
           </cr-toggle>
         </div>
