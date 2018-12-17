@@ -73,7 +73,6 @@ catalog("catalog") {
   catalog_deps = [
     "//services/service_manager/background/tests:catalog",
     "//services/service_manager/tests/connect:catalog",
-    "//services/service_manager/tests/lifecycle:catalog",
     "//services/service_manager/tests/service_manager:catalog",
     "//services/service_manager/tests/shutdown:catalog",
   ]
