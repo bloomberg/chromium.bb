@@ -756,7 +756,7 @@ def SetCIPD(gclient_dict, dep_name, package_name, new_version):
   if not isinstance(node, ast.Call) and not isinstance(node, ast.Str):
     raise ValueError(
         "Unsupported dependency revision format. Please file a bug to the "
-        "Infra>SDK component in monorail.")
+        "Infra>SDK component in crbug.com")
 
   var_name = _GetVarName(node)
   if var_name is not None:
@@ -780,7 +780,7 @@ def SetRevision(gclient_dict, dep_name, new_revision):
     if not isinstance(node, ast.Call) and not isinstance(node, ast.Str):
       raise ValueError(
           "Unsupported dependency revision format. Please file a bug to the "
-          "Infra>SDK component in monorail.")
+          "Infra>SDK component in crbug.com")
 
     var_name = _GetVarName(node)
     if var_name is not None:
