@@ -3582,9 +3582,6 @@
   <message name="IDS_SETTINGS_SYNC" desc="Name of the sync service.">
     Sync
   </message>
-  <message name="IDS_SETTINGS_SYNC_UNIFIED_CONSENT" desc="Name of the sync service when unified consent is enabled.">
-    Sync and personalization
-  </message>
   <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL" desc="Title for a section that shows options for various Google services">
     Other Google services
   </message>
@@ -3593,6 +3590,9 @@
   </message>
   <message name="IDS_SETTINGS_SYNC_PAGE_TITLE" desc="Name of the settings page which manages syncing data between multiple browser instances with the same Google profile.">
     Advanced sync settings
+  </message>
+  <message name="IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE" desc="Name of the settings page which manages data used by sync.">
+    Manage sync
   </message>
   <message name="IDS_SETTINGS_SYNC_LOADING" desc="The message shown when waiting for the sync backend to start up.">
     Please wait...
@@ -3659,6 +3659,9 @@
   </message>
   <message name="IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE" desc="Title for the link to manage Chrome Sync data via Google Dashboard.">
     Manage synced data on Google Dashboard
+  </message>
+   <message name="IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT" desc="Title for the link to manage Chrome Sync data via Google Dashboard when unified consent is enabled.">
+    Data from Chrome sync
   </message>
   <message name="IDS_SETTINGS_EXISTING_PASSPHRASE_TITLE" desc="Title for the section where the user enters the passphrase.">
     Encryption options
