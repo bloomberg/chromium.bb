@@ -112,7 +112,10 @@ class CORE_EXPORT NGOffsetMapping {
   const RangeMap& GetRanges() const { return ranges_; }
   const String& GetText() const { return text_; }
 
-  // ------ Mapping APIs from DOM to text content ------
+  // ------ Static getters for offset mapping objects  ------
+
+  // TODO(xiaochengh): Unify the following getters and make them work on both
+  // legacy and LayoutNG.
 
   // NGOffsetMapping APIs only accept the following positions:
   // 1. Offset-in-anchor in a text node;
@@ -133,6 +136,14 @@ class CORE_EXPORT NGOffsetMapping {
   // Returns the mapping object of the inline formatting context the given
   // LayoutBlockFlow has.
   static const NGOffsetMapping* GetForContainingBlockFlow(LayoutBlockFlow*);
+
+  // Returns the inline formatting context (which is a block flow) where the
+  // given object is laid out -- this is the block flow whose offset mapping
+  // contains the given object. Note that the object can be in either legacy or
+  // NG layout, while NGOffsetMapping is supported on both of them.
+  static LayoutBlockFlow* GetInlineFormattingContextOf(const LayoutObject&);
+
+  // ------ Mapping APIs from DOM to text content ------
 
   // Returns the NGOffsetMappingUnit whose DOM range contains the position.
   // If there are multiple qualifying units, returns the last one.
