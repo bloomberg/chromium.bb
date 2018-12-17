@@ -730,15 +730,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("srcObjectReassignSameObject()");
 }
 
-// Flaky on Win-ASAN only, when running with VizDisplayCompositor.
-// https://crbug.com/915135
-#if defined(ADDRESS_SANITIZER) && defined(OS_WIN)
-#define MAYBE_ApplyConstraintsVideo DISABLED_ApplyConstraintsVideo
-#else
-#define MAYBE_ApplyConstraintsVideo ApplyConstraintsVideo
-#endif
-IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       MAYBE_ApplyConstraintsVideo) {
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest, ApplyConstraintsVideo) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
