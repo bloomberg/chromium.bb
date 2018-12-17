@@ -13,10 +13,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-const CGFloat kAccessoryWidth = 40;
-}  // namespace
-
 @implementation ImportDataMultilineDetailItem
 
 @synthesize accessoryType = _accessoryType;
@@ -103,10 +99,10 @@ const CGFloat kAccessoryWidth = 40;
   // is set.
   self.detailTextLabel.preferredMaxLayoutWidth =
       self.bounds.size.width -
-      (kAccessoryWidth + 2 * kTableViewHorizontalSpacing);
+      (kTableViewAccessoryWidth + 2 * kTableViewHorizontalSpacing);
   self.textLabel.preferredMaxLayoutWidth =
       self.bounds.size.width -
-      (kAccessoryWidth + 2 * kTableViewHorizontalSpacing);
+      (kTableViewAccessoryWidth + 2 * kTableViewHorizontalSpacing);
   [super layoutSubviews];
 }
 
