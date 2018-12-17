@@ -31,6 +31,7 @@ class MediaController : public mojom::MediaController,
   // mojom::MediaController overrides.
   void Suspend() override;
   void Resume() override;
+  void Stop() override;
   void ToggleSuspendResume() override;
   void AddObserver(mojom::MediaSessionObserverPtr observer) override;
   void PreviousTrack() override;
