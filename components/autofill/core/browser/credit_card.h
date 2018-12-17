@@ -111,6 +111,9 @@ class CreditCard : public AutofillDataModel {
   // AutofillDataModel:
   AutofillMetadata GetMetadata() const override;
   bool SetMetadata(const AutofillMetadata metadata) override;
+  // Returns whether the card is deletable: if it is expired and has not been
+  // used for longer than |kDisusedCreditCardDeletionTimeDelta|.
+  bool IsDeletable() const override;
 
   // FormGroup:
   void GetMatchingTypes(const base::string16& text,

@@ -332,6 +332,11 @@ bool CreditCard::SetMetadata(const AutofillMetadata metadata) {
   return true;
 }
 
+bool CreditCard::IsDeletable() const {
+  return AutofillDataModel::IsDeletable() &&
+         IsExpired(AutofillClock::Now() - kDisusedDataModelDeletionTimeDelta);
+}
+
 base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
   DCHECK_EQ(CREDIT_CARD, AutofillType(type).group());
   switch (type) {

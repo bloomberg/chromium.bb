@@ -69,15 +69,6 @@ using ::i18n::addressinput::STREET_ADDRESS;
 // The length of a local profile GUID.
 const int LOCAL_GUID_LENGTH = 36;
 
-constexpr base::TimeDelta kDisusedProfileTimeDelta =
-    base::TimeDelta::FromDays(180);
-constexpr base::TimeDelta kDisusedCreditCardTimeDelta =
-    base::TimeDelta::FromDays(180);
-constexpr base::TimeDelta kDisusedCreditCardDeletionTimeDelta =
-    base::TimeDelta::FromDays(395);
-constexpr base::TimeDelta kDisusedAddressDeletionTimeDelta =
-    base::TimeDelta::FromDays(395);
-
 template <typename T>
 class FormGroupMatchesByGUIDFunctor {
  public:
@@ -267,7 +258,7 @@ class PersonalDatabaseHelper
 
 PersonalDataManager::PersonalDataManager(const std::string& app_locale)
     : app_locale_(app_locale),
-      test_data_creator_(kDisusedCreditCardDeletionTimeDelta, app_locale_) {
+      test_data_creator_(kDisusedDataModelDeletionTimeDelta, app_locale_) {
   database_helper_ = std::make_unique<PersonalDatabaseHelper>(this);
 }
 
@@ -1176,7 +1167,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
     if (base::FeatureList::IsEnabled(
             features::kAutofillSuppressDisusedAddresses)) {
       const base::Time min_last_used =
-          AutofillClock::Now() - kDisusedProfileTimeDelta;
+          AutofillClock::Now() - kDisusedDataModelTimeDelta;
       suggestion_selection::RemoveProfilesNotUsedSinceTimestamp(
           min_last_used, &sorted_profiles);
     }
@@ -1285,7 +1276,7 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
       base::FeatureList::IsEnabled(
           features::kAutofillSuppressDisusedCreditCards)) {
     const base::Time min_last_used =
-        AutofillClock::Now() - kDisusedCreditCardTimeDelta;
+        AutofillClock::Now() - kDisusedDataModelTimeDelta;
     RemoveExpiredCreditCardsNotUsedSinceTimestamp(AutofillClock::Now(),
                                                   min_last_used, &cards);
   }
@@ -1849,7 +1840,7 @@ void PersonalDataManager::LogStoredProfileMetrics() const {
         const base::TimeDelta time_since_last_use = now - profile->use_date();
         AutofillMetrics::LogStoredProfileDaysSinceLastUse(
             time_since_last_use.InDays());
-        if (time_since_last_use > kDisusedProfileTimeDelta)
+        if (time_since_last_use > kDisusedDataModelTimeDelta)
           ++num_disused_profiles;
       }
       AutofillMetrics::LogStoredProfileDisusedCount(num_disused_profiles);
@@ -1863,7 +1854,7 @@ void PersonalDataManager::LogStoredProfileMetrics() const {
 void PersonalDataManager::LogStoredCreditCardMetrics() const {
   if (!has_logged_stored_credit_card_metrics_) {
     AutofillMetrics::LogStoredCreditCardMetrics(
-        local_credit_cards_, server_credit_cards_, kDisusedProfileTimeDelta);
+        local_credit_cards_, server_credit_cards_, kDisusedDataModelTimeDelta);
 
     // Only log this info once per chrome user profile load.
     has_logged_stored_credit_card_metrics_ = true;
@@ -2463,15 +2454,6 @@ std::string PersonalDataManager::MergeServerAddressesIntoProfiles(
   return server_address.guid();
 }
 
-// static
-bool PersonalDataManager::IsCreditCardDeletable(const CreditCard* card) {
-  const base::Time deletion_threshold =
-      AutofillClock::Now() - kDisusedCreditCardDeletionTimeDelta;
-
-  return card->use_date() < deletion_threshold &&
-         card->IsExpired(deletion_threshold);
-}
-
 bool PersonalDataManager::DeleteDisusedCreditCards() {
   if (!base::FeatureList::IsEnabled(
           features::kAutofillDeleteDisusedCreditCards)) {
@@ -2488,7 +2470,7 @@ bool PersonalDataManager::DeleteDisusedCreditCards() {
 
   std::vector<std::string> guid_to_delete;
   for (CreditCard* card : cards) {
-    if (IsCreditCardDeletable(card)) {
+    if (card->IsDeletable()) {
       guid_to_delete.push_back(card->guid());
     }
   }
@@ -2508,17 +2490,6 @@ bool PersonalDataManager::DeleteDisusedCreditCards() {
   return true;
 }
 
-bool PersonalDataManager::IsAddressDeletable(
-    AutofillProfile* profile,
-    std::unordered_set<std::string> const& used_billing_address_guids) {
-  const base::Time deletion_threshold =
-      AutofillClock::Now() - kDisusedAddressDeletionTimeDelta;
-
-  return profile->use_date() < deletion_threshold && !profile->IsVerified() &&
-         used_billing_address_guids.find(profile->guid()) ==
-             used_billing_address_guids.end();
-}
-
 bool PersonalDataManager::DeleteDisusedAddresses() {
   if (!base::FeatureList::IsEnabled(
           features::kAutofillDeleteDisusedAddresses)) {
@@ -2536,14 +2507,15 @@ bool PersonalDataManager::DeleteDisusedAddresses() {
 
   std::unordered_set<std::string> used_billing_address_guids;
   for (CreditCard* card : GetCreditCards()) {
-    if (!IsCreditCardDeletable(card)) {
+    if (!card->IsDeletable()) {
       used_billing_address_guids.insert(card->billing_address_id());
     }
   }
 
   std::vector<std::string> guids_to_delete;
   for (AutofillProfile* profile : profiles) {
-    if (IsAddressDeletable(profile, used_billing_address_guids)) {
+    if (profile->IsDeletable() &&
+        !used_billing_address_guids.count(profile->guid())) {
       guids_to_delete.push_back(profile->guid());
     }
   }
