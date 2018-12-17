@@ -9132,6 +9132,23 @@ static int64_t motion_mode_rd(
             mbmi->wm_params = wm_params0;
             mbmi->num_proj_ref = num_proj_ref0;
           }
+        } else {
+          if (cpi->sf.prune_warp_using_wmtype) {
+            TransformationType wmtype = get_wmtype(&mbmi->wm_params);
+            // If number of valid neighbours is 1,
+            // 1) ROTZOOM parameters can be obtained reliably (2 parameters from
+            // one neighbouring MV)
+            // 2) For IDENTITY/TRANSLATION cases, warp can perform better due to
+            // a different interpolation filter being used. However the quality
+            // gains (due to the same) may not be much
+            // For above 2 cases warp evaluation is skipped
+            // TODO(any) : Extend this logic for NEWMV case
+            if (mbmi->num_proj_ref == 1) {
+              if (wmtype != ROTZOOM) continue;
+            } else {
+              if (wmtype < ROTZOOM) continue;
+            }
+          }
         }
 
         av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);

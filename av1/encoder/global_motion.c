@@ -106,7 +106,7 @@ static void convert_to_params(const double *params, int32_t *model) {
 void av1_convert_model_to_params(const double *params,
                                  WarpedMotionParams *model) {
   convert_to_params(params, model->wmmat);
-  model->wmtype = get_gmtype(model);
+  model->wmtype = get_wmtype(model);
   model->invalid = 0;
 }
 
@@ -239,7 +239,7 @@ int64_t av1_refine_integerized_param(WarpedMotionParams *wm,
     }
   }
   force_wmtype(wm, wmtype);
-  wm->wmtype = get_gmtype(wm);
+  wm->wmtype = get_wmtype(wm);
   return best_error;
 }
 

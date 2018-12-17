@@ -263,7 +263,7 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
   return res;
 }
 
-static INLINE TransformationType get_gmtype(const WarpedMotionParams *gm) {
+static INLINE TransformationType get_wmtype(const WarpedMotionParams *gm) {
   if (gm->wmmat[5] == (1 << WARPEDMODEL_PREC_BITS) && !gm->wmmat[4] &&
       gm->wmmat[2] == (1 << WARPEDMODEL_PREC_BITS) && !gm->wmmat[3]) {
     return ((!gm->wmmat[1] && !gm->wmmat[0]) ? IDENTITY : TRANSLATION);
