@@ -46,7 +46,7 @@ rm -rf components/web-animations-js/
 sed -i 's/^\s*\/\/#\s*sourceMappingURL.*//' \
   ../../web-animations-js/sources/*.min.js
 
-rsync -c --delete -r -v --exclude-from="rsync_exclude.txt" \
+rsync -c --delete --delete-excluded -r -v --exclude-from="rsync_exclude.txt" \
     --prune-empty-dirs "components/" "components-chromium/"
 
 find "components-chromium/" -name "*.html" \
