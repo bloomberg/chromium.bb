@@ -84,6 +84,10 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   void PostDestroyThreads() override;
 
  private:
+  // content::BrowserMainParts implementation:
+  void ServiceManagerConnectionStarted(
+      content::ServiceManagerConnection* connection) override;
+
   std::unique_ptr<CastBrowserProcess> cast_browser_process_;
   const content::MainFunctionParams parameters_;  // For running browser tests.
   // Caches a pointer of the CastContentBrowserClient.

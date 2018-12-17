@@ -200,6 +200,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   std::vector<std::unique_ptr<content::NavigationThrottle>>
   CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
   std::string GetUserAgent() const override;
+  void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   CastFeatureListCreator* GetCastFeatureListCreator() {
     return cast_feature_list_creator_;
   }

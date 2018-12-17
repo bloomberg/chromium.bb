@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -52,6 +53,8 @@
 #include "chromecast/net/connectivity_checker.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/service/cast_service.h"
+#include "components/heap_profiling/client_connection_manager.h"
+#include "components/heap_profiling/supervisor.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/common/switches.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -217,6 +220,14 @@ void DeregisterKillOnAlarm() {
 }
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+
+std::unique_ptr<heap_profiling::ClientConnectionManager>
+CreateClientConnectionManager(
+    base::WeakPtr<heap_profiling::Controller> controller_weak_ptr,
+    heap_profiling::Mode mode) {
+  return std::make_unique<heap_profiling::ClientConnectionManager>(
+      std::move(controller_weak_ptr), mode);
+}
 
 }  // namespace
 
@@ -675,6 +686,15 @@ void CastBrowserMainParts::PostDestroyThreads() {
 #if !defined(OS_ANDROID)
   cast_content_browser_client_->ResetMediaResourceTracker();
 #endif  // !defined(OS_ANDROID)
+}
+
+void CastBrowserMainParts::ServiceManagerConnectionStarted(
+    content::ServiceManagerConnection* connection) {
+  heap_profiling::Supervisor* supervisor =
+      heap_profiling::Supervisor::GetInstance();
+  supervisor->SetClientConnectionManagerConstructor(
+      &CreateClientConnectionManager);
+  supervisor->Start(connection, base::NullCallback());
 }
 
 }  // namespace shell
