@@ -364,9 +364,19 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallAsConstructor(
   v8::MicrotasksScope microtasks_scope(isolate,
                                        v8::MicrotasksScope::kRunMicrotasks);
   probe::CallFunction probe(context, function, depth);
+
+  if (!depth) {
+    TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data",
+                       inspector_function_call_event::Data(context, function));
+  }
+
   v8::MaybeLocal<v8::Value> result =
       constructor->CallAsConstructor(isolate->GetCurrentContext(), argc, argv);
   CHECK(!isolate->IsDead());
+
+  if (!depth)
+    TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
+
   return result;
 }
 
@@ -402,10 +412,18 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
   v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(isolate,
                                        v8::MicrotasksScope::kRunMicrotasks);
+  if (!depth) {
+    TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data",
+                       inspector_function_call_event::Data(context, function));
+  }
+
   probe::CallFunction probe(context, function, depth);
   v8::MaybeLocal<v8::Value> result =
       function->Call(isolate->GetCurrentContext(), receiver, argc, args);
   CHECK(!isolate->IsDead());
+
+  if (!depth)
+    TRACE_EVENT_END0("devtools.timeline", "FunctionCall");
 
   return result;
 }
