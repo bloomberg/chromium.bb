@@ -155,28 +155,28 @@ TEST(GetOptionalValue, SafeIntNone) {
 }
 
 TEST(GetOptionalValue, BoolNull) {
-  TestGetOptionalValue<bool>(GetOptionalBool, DictInitNull, true, true, true,
+  TestGetOptionalValue<bool>(GetOptionalBool, DictInitNull, true, true, false,
                              false);
 }
 
 TEST(GetOptionalValue, IntNull) {
-  TestGetOptionalValue<int>(GetOptionalInt, DictInitNull, 12345, 12345, true,
+  TestGetOptionalValue<int>(GetOptionalInt, DictInitNull, 12345, 12345, false,
                             false);
 }
 
 TEST(GetOptionalValue, DoubleNull) {
   TestGetOptionalValue<double>(GetOptionalDouble, DictInitNull, 123.45, 123.45,
-                               true, false);
+                               false, false);
 }
 
 TEST(GetOptionalValue, StringNull) {
   TestGetOptionalValue<std::string>(GetOptionalString, DictInitNull, "abcde",
-                                    "abcde", true, false);
+                                    "abcde", false, false);
 }
 
 TEST(GetOptionalValue, SafeIntNull) {
   TestGetOptionalValue<int64_t>(GetOptionalSafeInt, DictInitNull, 12345, 12345,
-                                true, false);
+                                false, false);
 }
 
 TEST(GetOptionalValue, BoolWrongType) {
