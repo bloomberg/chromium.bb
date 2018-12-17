@@ -240,7 +240,15 @@ base::Version OSInfo::Kernel32BaseVersion() const {
         static_cast<FileVersionInfoWin*>(
             FileVersionInfoWin::CreateFileVersionInfo(
                 base::FilePath(FILE_PATH_LITERAL("kernel32.dll")))));
-    DCHECK(file_version_info);
+    if (!file_version_info) {
+      // crbug.com/912061: on some systems it seems kernel32.dll might be
+      // corrupted or not in a state to get version info. In this case try
+      // kernelbase.dll as a fallback.
+      file_version_info.reset(static_cast<FileVersionInfoWin*>(
+          FileVersionInfoWin::CreateFileVersionInfo(
+              base::FilePath(FILE_PATH_LITERAL("kernelbase.dll")))));
+    }
+    CHECK(file_version_info);
     const int major =
         HIWORD(file_version_info->fixed_file_info()->dwFileVersionMS);
     const int minor =
