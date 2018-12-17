@@ -399,10 +399,10 @@ that the current server is not the true server.
 ## How does key pinning interact with local proxies and filters?
 
 To enable certificate chain validation, Chrome has access to two stores of trust
-anchors: certificates that are empowered as issuers. One trust anchor store is
-the system or public trust anchor store, and the other other is the local or
-private trust anchor store. The public store is provided as part of the
-operating system, and intended to authenticate public internet servers. The
+anchors (i.e. certificates that are empowered as issuers). One trust anchor
+store is the system or public trust anchor store, and the other other is the
+local or private trust anchor store. The public store is provided as part of
+the operating system, and intended to authenticate public internet servers. The
 private store contains certificates installed by the user or the administrator
 of the client machine. Private intranet servers should authenticate themselves
 with certificates issued by a private trust anchor.
@@ -430,6 +430,31 @@ certificate — that is, the client is already under the control of the person w
 controls the proxy (e.g. the enterprise’s IT administrator). If the client does
 not trust the private trust anchor, the proxy’s attempt to mediate the
 connection will fail as it should.
+
+<a name="TOC-When-is-key-pinning-enabled-"></a>
+## When is key pinning enabled?
+
+Key pinning is enabled for Chrome-branded, non-mobile builds when the local
+clock is within ten weeks of the embedded build timestamp. Key pinning is a
+useful security measure but it tightly couples client and server configurations
+and completely breaks when those configurations are out of sync. In order to
+manage that risk we need to ensure that we can promptly update pinning clients
+an in emergency and ensure that non-emergency changes can be deployed in a
+reasonable timeframe.
+
+Each of the conditions listed above helps ensure those properties:
+Chrome-branded builds are those that Google provides and they all have an
+auto-update mechanism that can be used in an emergency. However, auto-update on
+mobile devices is significantly less effective thus they are excluded. Even in
+cases where auto-update is generally effective, there are still non-trivial
+populations of stragglers for various reasons. The ten-week timeout prevents
+those stragglers from causing problems for regular, non-emergency changes and
+allows stuck users to still, for example, conduct searches and access Chrome's
+homepage to hopefully get unstuck.
+
+In order to determine whether key pinning is active, try loading
+[https://pinningtest.appspot.com](https://pinningtest.appspot.com). If key
+pinning is active the load will _fail_ with a pinning error.
 
 <a name="TOC-How-does-certificate-transparency-interact-with-local-proxies-and-filters-"></a>
 ## How does Certificate Transparency interact with local proxies and filters?
