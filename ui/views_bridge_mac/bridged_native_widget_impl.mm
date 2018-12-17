@@ -19,6 +19,7 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
@@ -519,6 +520,11 @@ void BridgedNativeWidgetImpl::CreateContentView(uint64_t ns_view_id,
   // Objective C initializers can return nil. However, if |view| is non-NULL
   // this should be treated as an error and caught early.
   CHECK(bridged_view_);
+
+  // Send the accessibility tokens for the NSView now that it exists.
+  host_->SetRemoteAccessibilityTokens(
+      ui::RemoteAccessibility::GetTokenForLocalElement(window_),
+      ui::RemoteAccessibility::GetTokenForLocalElement(bridged_view_));
 
   // Beware: This view was briefly removed (in favor of a bare CALayer) in
   // crrev/c/1236675. The ordering of unassociated layers relative to NSView

@@ -274,6 +274,11 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   bool GetWindowFrameTitlebarHeight(bool* override_titlebar_height,
                                     float* titlebar_height) override;
   void OnFocusWindowToolbar() override;
+  void SetRemoteAccessibilityTokens(
+      const std::vector<uint8_t>& window_token,
+      const std::vector<uint8_t>& view_token) override;
+  bool GetRootViewAccessibilityToken(int64_t* pid,
+                                     std::vector<uint8_t>* token) override;
   bool ValidateUserInterfaceItem(
       int32_t command,
       views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr* out_result)
@@ -313,9 +318,8 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void GetCanWindowClose(GetCanWindowCloseCallback callback) override;
   void GetWindowFrameTitlebarHeight(
       GetWindowFrameTitlebarHeightCallback callback) override;
-  void GetAccessibilityTokens(const std::vector<uint8_t>& window_token,
-                              const std::vector<uint8_t>& view_token,
-                              GetAccessibilityTokensCallback callback) override;
+  void GetRootViewAccessibilityToken(
+      GetRootViewAccessibilityTokenCallback callback) override;
   void ValidateUserInterfaceItem(
       int32_t command,
       ValidateUserInterfaceItemCallback callback) override;
