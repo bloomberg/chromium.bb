@@ -118,7 +118,6 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
       upload_(upload),
 #endif
       fd_watch_controller_(FROM_HERE),
-      shutting_down_(false),
       blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {
   int fds[2];
@@ -492,12 +491,12 @@ void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
 
   // If we are quitting and there are crash dumps in the queue, turn them into
   // no-ops.
-  shutting_down_ = true;
+  shutting_down_.Set();
   uploader_thread_->Stop();
 }
 
 bool CrashHandlerHostLinux::IsShuttingDown() const {
-  return shutting_down_;
+  return shutting_down_.IsSet();
 }
 
 }  // namespace breakpad
