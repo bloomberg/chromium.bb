@@ -886,6 +886,14 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
                                                    style.PaddingBefore());
   padding.block_end = ResolveMarginPaddingLength(percentage_resolution_size,
                                                  style.PaddingAfter());
+
+  if (style.Display() == EDisplay::kTableCell) {
+    // Compatibility hack to mach legacy layout. Legacy layout floors padding on
+    // the block sides, but not on the inline sides. o.O
+    padding.block_start = LayoutUnit(padding.block_start.Floor());
+    padding.block_end = LayoutUnit(padding.block_end.Floor());
+  }
+
   return padding;
 }
 
