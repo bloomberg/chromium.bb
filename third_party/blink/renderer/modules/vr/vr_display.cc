@@ -856,8 +856,7 @@ Document* VRDisplay::GetDocument() {
 device::mojom::blink::VRDisplayClientPtr VRDisplay::GetDisplayClient() {
   display_client_binding_.Close();
   device::mojom::blink::VRDisplayClientPtr client;
-  // A specific task source should be defined but not.
-  // See https://immersive-web.github.io/webvr/spec/1.1/.
+  // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   display_client_binding_.Bind(mojo::MakeRequest(&client, task_runner),

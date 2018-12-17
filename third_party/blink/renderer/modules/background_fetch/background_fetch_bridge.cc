@@ -131,7 +131,10 @@ void BackgroundFetchBridge::AddRegistrationObserver(
 
 mojom::blink::BackgroundFetchService* BackgroundFetchBridge::GetService() {
   if (!background_fetch_service_) {
-    auto request = mojo::MakeRequest(&background_fetch_service_);
+    auto request = mojo::MakeRequest(
+        &background_fetch_service_,
+        GetSupplementable()->GetExecutionContext()->GetTaskRunner(
+            TaskType::kBackgroundFetch));
     if (auto* interface_provider = GetSupplementable()
                                        ->GetExecutionContext()
                                        ->GetInterfaceProvider()) {

@@ -199,16 +199,16 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
   if (!frame)
     return nullptr;
 
-  frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
+  // See https://bit.ly/2S0zRAS for task types.
+  auto task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  frame->GetInterfaceProvider().GetInterface(
+      mojo::MakeRequest(&service_, task_runner));
   if (service_.get()) {
     // Record the eTLD+1 of the frame using the API.
     Platform::Current()->RecordRapporURL("Media.Session.APIUsage.Origin",
                                          document->Url());
     blink::mojom::blink::MediaSessionClientPtr client;
-    // A specific task source should be defined but not.
-    // See https://wicg.github.io/mediasession/.
-    auto task_runner =
-        GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
     client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
     service_->SetClient(std::move(client));
   }

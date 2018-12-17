@@ -22,12 +22,14 @@ BarcodeDetector* BarcodeDetector::Create(ExecutionContext* context) {
 
 BarcodeDetector::BarcodeDetector(ExecutionContext* context) : ShapeDetector() {
   shape_detection::mojom::blink::BarcodeDetectionProviderPtr provider;
-  auto request = mojo::MakeRequest(&provider);
+  // See https://bit.ly/2S0zRAS for task types.
+  auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  auto request = mojo::MakeRequest(&provider, task_runner);
   if (auto* interface_provider = context->GetInterfaceProvider()) {
     interface_provider->GetInterface(std::move(request));
   }
   provider->CreateBarcodeDetection(
-      mojo::MakeRequest(&barcode_service_),
+      mojo::MakeRequest(&barcode_service_, task_runner),
       shape_detection::mojom::blink::BarcodeDetectorOptions::New());
 
   barcode_service_.set_connection_error_handler(

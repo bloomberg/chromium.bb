@@ -103,8 +103,10 @@ void InstalledAppController::FilterByInstalledApps(
   }
 
   if (!provider_) {
+    // See https://bit.ly/2S0zRAS for task types.
     GetSupplementable()->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&provider_));
+        mojo::MakeRequest(&provider_, GetExecutionContext()->GetTaskRunner(
+                                          blink::TaskType::kMiscPlatformAPI)));
     // TODO(mgiuca): Set a connection error handler. This requires a refactor to
     // work like NavigatorShare.cpp (retain a persistent list of clients to
     // reject all of their promises).

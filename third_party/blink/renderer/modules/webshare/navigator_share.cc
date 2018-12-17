@@ -137,7 +137,9 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
       return ScriptPromise::RejectWithDOMException(script_state, error);
     }
 
-    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
+    // See https://bit.ly/2S0zRAS for task types.
+    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
+        &service_, frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     service_.set_connection_error_handler(WTF::Bind(
         &NavigatorShare::OnConnectionError, WrapWeakPersistent(this)));
     DCHECK(service_);
