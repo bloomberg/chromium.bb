@@ -25,12 +25,10 @@ void TestPoseDataUnfocusedTabImpl(WebXrVrBrowserTestBase* t,
   t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
-                       REQUIRES_GPU(TestPoseDataUnfocusedTab)) {
+IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard, TestPoseDataUnfocusedTab) {
   TestPoseDataUnfocusedTabImpl(this, "test_pose_data_unfocused_tab");
 }
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       REQUIRES_GPU(TestPoseDataUnfocusedTab)) {
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestPoseDataUnfocusedTab) {
   TestPoseDataUnfocusedTabImpl(this, "webxr_test_pose_data_unfocused_tab");
 }
 

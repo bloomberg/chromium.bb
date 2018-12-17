@@ -26,12 +26,10 @@ void TestPresentationLocksFocusImpl(WebXrVrBrowserTestBase* t,
   t->EndTest();
 }
 
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
-                       REQUIRES_GPU(TestPresentationLocksFocus)) {
+IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard, TestPresentationLocksFocus) {
   TestPresentationLocksFocusImpl(this, "test_presentation_locks_focus");
 }
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       REQUIRES_GPU(TestPresentationLocksFocus)) {
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestPresentationLocksFocus) {
   TestPresentationLocksFocusImpl(this, "webxr_test_presentation_locks_focus");
 }
 
@@ -89,7 +87,7 @@ void WebXrControllerInputOpenVRMock::OnFrameSubmitted(
 // Equivalent to
 // WebXrVrInputTest#testControllerClicksRegisteredOnDaydream_WebXr.
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       REQUIRES_GPU(TestControllerInputRegistered)) {
+                       TestControllerInputRegistered) {
   WebXrControllerInputOpenVRMock my_mock;
 
   // Connect a controller.
@@ -121,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
 // Equivalent to
 // WebXrVrInputTest#testControllerClicksRegisteredOnDaydream
 IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
-                       REQUIRES_GPU(TestControllerInputRegistered)) {
+                       TestControllerInputRegistered) {
   WebXrControllerInputOpenVRMock my_mock;
 
   // Connect a controller.

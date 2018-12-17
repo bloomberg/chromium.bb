@@ -2781,6 +2781,16 @@
     "label": "//services/data_decoder:xml_parser_fuzzer",
     "type": "fuzzer",
   },
+  "xr_browser_tests": {
+    "label": "//chrome/browser/vr:xr_browser_tests",
+    "type": "windowed_test_launcher",
+    "args": [
+      '--enable-gpu',
+      '--test-launcher-bot-mode',
+      '--test-launcher-jobs=1',
+      '--enable-pixel-output-in-tests',
+    ],
+  },
   "zlib_deflate_fuzzer": {
     "label": "//third_party/zlib/contrib/tests/fuzzers:zlib_deflate_fuzzer",
     "type": "fuzzer",

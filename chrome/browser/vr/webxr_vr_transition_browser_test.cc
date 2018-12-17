@@ -24,12 +24,10 @@ void TestPresentationEntryImpl(WebXrVrBrowserTestBase* t,
   t->AssertNoJavaScriptErrors();
 }
 
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
-                       REQUIRES_GPU(TestRequestPresentEntersVr)) {
+IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard, TestRequestPresentEntersVr) {
   TestPresentationEntryImpl(this, "generic_webvr_page");
 }
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       REQUIRES_GPU(TestRequestSessionEntersVr)) {
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestRequestSessionEntersVr) {
   TestPresentationEntryImpl(this, "generic_webxr_page");
 }
 
@@ -47,12 +45,12 @@ void TestWindowRafFiresWhilePresentingImpl(WebXrVrBrowserTestBase* t,
 }
 
 IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
-                       REQUIRES_GPU(TestWindowRafFiresWhilePresenting)) {
+                       TestWindowRafFiresWhilePresenting) {
   TestWindowRafFiresWhilePresentingImpl(
       this, "test_window_raf_fires_while_presenting");
 }
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       REQUIRES_GPU(TestWindowRafFiresWhilePresenting)) {
+                       TestWindowRafFiresWhilePresenting) {
   TestWindowRafFiresWhilePresentingImpl(
       this, "webxr_test_window_raf_fires_while_presenting");
 }
@@ -100,9 +98,8 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestOpenVrDisabled,
 
 // Tests that window.requestAnimationFrame continues to fire when we have a
 // non-immersive WebXR session.
-IN_PROC_BROWSER_TEST_F(
-    WebXrVrBrowserTestStandard,
-    REQUIRES_GPU(TestWindowRafFiresDuringNonImmersiveSession)) {
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
+                       TestWindowRafFiresDuringNonImmersiveSession) {
   LoadUrlAndAwaitInitialization(
       GetHtmlTestFile("test_window_raf_fires_during_non_immersive_session"));
   WaitOnJavaScriptStep();
@@ -112,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests that non-immersive sessions stop receiving rAFs during an immersive
 // session, but resume once the immersive session ends.
 IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       REQUIRES_GPU(TestNonImmersiveStopsDuringImmersive)) {
+                       TestNonImmersiveStopsDuringImmersive) {
   LoadUrlAndAwaitInitialization(
       GetHtmlTestFile("test_non_immersive_stops_during_immersive"));
   ExecuteStepAndWait("stepBeforeImmersive()");
