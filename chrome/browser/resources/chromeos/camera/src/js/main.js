@@ -94,8 +94,8 @@ cca.App.prototype.setupI18nElements_ = function() {
 
   getElements('i18n-content').forEach(
       (element) => element.textContent = getMessage(element, 'i18n-content'));
-  getElements('i18n-aria-label').forEach(
-      (element) => setAriaLabel(element, 'i18n-aria-label'));
+  getElements('i18n-aria').forEach(
+      (element) => setAriaLabel(element, 'i18n-aria'));
   cca.tooltip.setup(getElements('i18n-label')).forEach(
       (element) => setAriaLabel(element, 'i18n-label'));
 };
@@ -110,7 +110,6 @@ cca.App.prototype.setupToggles_ = function() {
         cca.util.getShortcutIdentifier(event) == 'Enter' && element.click());
 
     var css = element.getAttribute('data-css');
-    var attr = element.getAttribute('data-attr');
     var key = element.getAttribute('data-key');
     var payload = () => {
       var keys = {};
@@ -120,9 +119,6 @@ cca.App.prototype.setupToggles_ = function() {
     element.addEventListener('change', (event) => {
       if (css) {
         document.body.classList.toggle(css, element.checked);
-      }
-      if (attr) {
-        document.body.toggleAttribute(attr, element.checked);
       }
       if (event.isTrusted) {
         element.save();
