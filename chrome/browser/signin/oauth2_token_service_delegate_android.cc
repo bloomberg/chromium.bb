@@ -14,9 +14,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service_android.h"
 #include "components/signin/core/browser/account_info.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "jni/OAuth2TokenService_jni.h"
@@ -27,7 +25,6 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
-using content::BrowserThread;
 
 namespace {
 
