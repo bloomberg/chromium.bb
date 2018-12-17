@@ -118,9 +118,8 @@ void HostControllersManager::Map(const std::string& adb_path,
   if (!SendMessage(msg, client_socket))
     return;
   host_controller->Start();
-  controllers_->insert(
-      std::make_pair(MakeHostControllerMapKey(adb_port, device_port),
-                     linked_ptr<HostController>(host_controller.release())));
+  controllers_->emplace(MakeHostControllerMapKey(adb_port, device_port),
+                        std::move(host_controller));
 }
 
 void HostControllersManager::Unmap(const std::string& adb_path,
@@ -148,9 +147,8 @@ void HostControllersManager::UnmapAll(const std::string& adb_path,
                                       int adb_port,
                                       Socket* client_socket) {
   const std::string adb_port_str = base::StringPrintf("%d", adb_port);
-  for (HostControllerMap::const_iterator controller_key =
-           controllers_->cbegin();
-       controller_key != controllers_->cend(); ++controller_key) {
+  for (auto controller_key = controllers_->begin();
+       controller_key != controllers_->end(); ++controller_key) {
     std::vector<std::string> pieces =
         base::SplitString(controller_key->first, ":", base::KEEP_WHITESPACE,
                           base::SPLIT_WANT_ALL);
@@ -241,8 +239,8 @@ void HostControllersManager::RemoveAdbPortForDeviceIfNeeded(
 
   int port = it->second;
   const std::string prefix = base::StringPrintf("%d:", port);
-  for (HostControllerMap::const_iterator others = controllers_->begin();
-       others != controllers_->end(); ++others) {
+  for (auto others = controllers_->begin(); others != controllers_->end();
+       ++others) {
     if (base::StartsWith(others->first, prefix, base::CompareCase::SENSITIVE))
       return;
   }

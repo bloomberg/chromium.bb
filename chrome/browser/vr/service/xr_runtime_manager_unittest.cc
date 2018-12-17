@@ -8,7 +8,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"

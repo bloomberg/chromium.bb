@@ -11,7 +11,6 @@
 #include "base/at_exit.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "tools/android/forwarder2/host_controller.h"
 #include "tools/android/forwarder2/socket.h"
@@ -44,8 +43,8 @@ class HostControllersManager {
   FRIEND_TEST_ALL_PREFIXES(HostControllersManagerTest, AdbNoExtraFds);
   FRIEND_TEST_ALL_PREFIXES(HostControllersManagerTest, AdbArgumentSequence);
 
-  typedef base::hash_map<std::string, linked_ptr<HostController>>
-      HostControllerMap;
+  using HostControllerMap =
+      base::hash_map<std::string, std::unique_ptr<HostController>>;
 
   static std::string MakeHostControllerMapKey(int adb_port, int device_port);
 
