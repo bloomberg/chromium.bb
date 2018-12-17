@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/test/mock_callback.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -21,6 +22,13 @@
 #include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// Templates for calling base::OnceCallback from gmock actions.
+ACTION_TEMPLATE(RunOnceCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_0_VALUE_PARAMS()) {
+  return std::move(std::get<k>(args)).Run();
+}
 
 namespace apps {
 
@@ -51,9 +59,14 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
 
   MOCK_METHOD2(MaybeGetAppExtension,
                const Extension*(content::BrowserContext*, const std::string&));
-  MOCK_METHOD3(EnableExtension, void(Profile*,
-                                     const std::string&,
-                                     const base::Callback<void()>&));
+  // Note that DoEnableExtension takes |callback| as a reference.
+  void EnableExtension(Profile* profile,
+                       const std::string& app_id,
+                       base::OnceCallback<void()> callback) {
+    DoEnableExtension(profile, app_id, callback);
+  }
+  MOCK_METHOD3(DoEnableExtension,
+               void(Profile*, const std::string&, base::OnceCallback<void()>&));
   MOCK_METHOD3(LaunchApp,
                void(Profile*,
                     const Extension*,
@@ -87,10 +100,6 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
       Profile* profile) {
     std::move(callbacks_[path]).Run(profile);
     return callbacks_.erase(path);
-  }
-
-  void RunCallback(const base::Callback<void()>& callback) {
-    callback.Run();
   }
 
  private:
@@ -400,8 +409,8 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotFound) {
   // App not found.
   EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
       .WillRepeatedly(Return(static_cast<const Extension*>(NULL)));
-  EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
-      .WillOnce(WithArgs<2>(Invoke(delegate_, &MockDelegate::RunCallback)));
+  EXPECT_CALL(*delegate_, DoEnableExtension(&profile_a_, kTestAppIdA, _))
+      .WillOnce(RunOnceCallback<2>());
   NormalLaunch(bootstrap_aa_, host_aa_);
   EXPECT_EQ(APP_SHIM_LAUNCH_APP_NOT_FOUND, *bootstrap_aa_result_);
 }
@@ -411,8 +420,8 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAppNotEnabled) {
   EXPECT_CALL(*delegate_, MaybeGetAppExtension(&profile_a_, kTestAppIdA))
       .WillOnce(Return(static_cast<const Extension*>(NULL)))
       .WillRepeatedly(Return(extension_a_.get()));
-  EXPECT_CALL(*delegate_, EnableExtension(&profile_a_, kTestAppIdA, _))
-      .WillOnce(WithArgs<2>(Invoke(delegate_, &MockDelegate::RunCallback)));
+  EXPECT_CALL(*delegate_, DoEnableExtension(&profile_a_, kTestAppIdA, _))
+      .WillOnce(RunOnceCallback<2>());
   NormalLaunch(bootstrap_aa_, host_aa_);
 }
 

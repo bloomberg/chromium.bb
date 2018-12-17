@@ -69,7 +69,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
                                     const base::FilePath& profile_path);
     virtual void EnableExtension(Profile* profile,
                                  const std::string& extension_id,
-                                 const base::Callback<void()>& callback);
+                                 base::OnceCallback<void()> callback);
     virtual void LaunchApp(Profile* profile,
                            const extensions::Extension* extension,
                            const std::vector<base::FilePath>& files);
