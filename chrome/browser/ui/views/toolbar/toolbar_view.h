@@ -54,6 +54,10 @@ namespace media_router {
 class CastToolbarButton;
 }
 
+namespace views {
+class FlexLayout;
+}
+
 // The Browser Window's toolbar.
 class ToolbarView : public views::AccessiblePaneView,
                     public views::MenuButtonListener,
@@ -177,8 +181,6 @@ class ToolbarView : public views::AccessiblePaneView,
                                   ui::Accelerator* accelerator) const override;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  gfx::Size GetMinimumSize() const override;
   void Layout() override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
@@ -203,6 +205,12 @@ class ToolbarView : public views::AccessiblePaneView,
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
 
+  // Declarative layout for child controls.
+  void InitLayout();
+
+  // Logic that must be done on initialization and then on layout.
+  void LayoutCommon();
+
   // AppMenuIconController::Delegate:
   void UpdateTypeAndSeverity(
       AppMenuIconController::TypeAndSeverity type_and_severity) override;
@@ -220,15 +228,6 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserRootView::DropIndex GetDropIndex(
       const ui::DropTargetEvent& event) override;
   views::View* GetViewForDrop() override;
-
-  // Used to avoid duplicating the near-identical logic of
-  // ToolbarView::CalculatePreferredSize() and ToolbarView::GetMinimumSize().
-  // These two functions call through to GetSizeInternal(), passing themselves
-  // as the function pointer |View::*get_size|.
-  gfx::Size GetSizeInternal(gfx::Size (View::*get_size)() const) const;
-
-  // Given toolbar contents of size |size|, returns the total toolbar size.
-  gfx::Size SizeForContentSize(gfx::Size size) const;
 
   // Loads the images for all the child views.
   void LoadImages();
@@ -260,6 +259,8 @@ class ToolbarView : public views::AccessiblePaneView,
 
   Browser* const browser_;
   BrowserView* const browser_view_;
+
+  views::FlexLayout* layout_manager_;
 
   AppMenuIconController app_menu_icon_controller_;
 

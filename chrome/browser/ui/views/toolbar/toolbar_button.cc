@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -27,6 +29,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 
 ToolbarButton::ToolbarButton(views::ButtonListener* listener)
@@ -55,6 +58,11 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
   SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+
+  // Because we're using the internal padding to keep track of the changes we
+  // make to the leading margin to handle Fitts' Law, it's easier to just
+  // allocate the property once and modify the value.
+  SetProperty(views::kInternalPaddingKey, new gfx::Insets());
 }
 
 ToolbarButton::~ToolbarButton() {}
@@ -90,7 +98,7 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
   }
 
   gfx::Insets insets = GetLayoutInsets(TOOLBAR_BUTTON) + layout_inset_delta_ +
-                       gfx::Insets(0, leading_margin_, 0, 0);
+                       *GetProperty(views::kInternalPaddingKey);
   if (highlight_color_)
     insets += gfx::Insets(0, highlight_radius / 2, 0, 0);
 
@@ -105,9 +113,10 @@ void ToolbarButton::SetLayoutInsetDelta(const gfx::Insets& inset_delta) {
 }
 
 void ToolbarButton::SetLeadingMargin(int margin) {
-  if (leading_margin_ == margin)
+  gfx::Insets* const internal_padding = GetProperty(views::kInternalPaddingKey);
+  if (internal_padding->left() == margin)
     return;
-  leading_margin_ = margin;
+  internal_padding->set_left(margin);
   UpdateHighlightBackgroundAndInsets();
 }
 
@@ -120,7 +129,7 @@ bool ToolbarButton::IsMenuShowing() const {
 }
 
 void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  SetToolbarButtonHighlightPath(this, gfx::Insets(0, leading_margin_, 0, 0));
+  SetToolbarButtonHighlightPath(this, *GetProperty(views::kInternalPaddingKey));
 
   UpdateHighlightBackgroundAndInsets();
   LabelButton::OnBoundsChanged(previous_bounds);
@@ -129,7 +138,7 @@ void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 gfx::Rect ToolbarButton::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
   gfx::Insets insets =
-      GetToolbarInkDropInsets(this, gfx::Insets(0, leading_margin_, 0, 0));
+      GetToolbarInkDropInsets(this, *GetProperty(views::kInternalPaddingKey));
   // If the button is extended, don't inset the leading edge. The anchored menu
   // should extend to the screen edge as well so the menu is easier to hit
   // (Fitts's law).

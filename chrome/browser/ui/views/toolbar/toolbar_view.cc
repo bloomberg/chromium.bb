@@ -70,6 +70,9 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -96,13 +99,6 @@ using base::UserMetricsAction;
 using content::WebContents;
 
 namespace {
-
-int GetToolbarHorizontalPadding() {
-  // In the touch-optimized UI, we don't use any horizontal paddings; the back
-  // button starts from the beginning of the view, and the app menu button ends
-  // at the end of the view.
-  return ui::MaterialDesignController::touch_ui() ? 0 : 8;
-}
 
 // Gets the display mode for a given browser.
 ToolbarView::DisplayMode GetDisplayMode(Browser* browser) {
@@ -171,6 +167,7 @@ void ToolbarView::Init() {
       AddChildView(custom_tab_bar_);
     }
 
+    SetLayoutManager(std::make_unique<views::FillLayout>());
     initialized_ = true;
     return;
   }
@@ -285,6 +282,8 @@ void ToolbarView::Init() {
       prefs::kShowHomeButton, browser_->profile()->GetPrefs(),
       base::BindRepeating(&ToolbarView::OnShowHomeButtonChanged,
                           base::Unretained(this)));
+
+  InitLayout();
 
   initialized_ = true;
 }
@@ -437,8 +436,9 @@ base::Optional<int> ToolbarView::GetMaxBrowserActionsWidth() const {
   // The browser actions container is allowed to grow, but only up until the
   // omnibox reaches its minimum size. So its maximum allowed width is its
   // current size, plus any that the omnibox could give up.
-  return browser_actions_->width() +
-         (location_bar_->width() - location_bar_->GetMinimumSize().width());
+  return std::max(
+      0, browser_actions_->width() + (location_bar_->width() -
+                                      location_bar_->GetMinimumSize().width()));
 }
 
 std::unique_ptr<ToolbarActionsBar> ToolbarView::CreateToolbarActionsBar(
@@ -509,14 +509,6 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::View overrides:
 
-gfx::Size ToolbarView::CalculatePreferredSize() const {
-  return GetSizeInternal(&View::GetPreferredSize);
-}
-
-gfx::Size ToolbarView::GetMinimumSize() const {
-  return GetSizeInternal(&View::GetMinimumSize);
-}
-
 void ToolbarView::Layout() {
   // If we have not been initialized yet just do nothing.
   if (!initialized_)
@@ -535,125 +527,11 @@ void ToolbarView::Layout() {
     return;
   }
 
-  // We assume all toolbar buttons except for the browser actions are the same
-  // height. Set toolbar_button_y such that buttons appear vertically centered.
-  const int toolbar_button_height =
-      std::min(back_->GetPreferredSize().height(), height());
-  const int toolbar_button_y = (height() - toolbar_button_height) / 2;
+  LayoutCommon();
 
-  // If the window is maximized, we extend the back button to the left so that
-  // clicking on the left-most pixel will activate the back button.
-  // TODO(abarth):  If the window becomes maximized but is not resized,
-  //                then Layout() might not be called and the back button
-  //                will be slightly the wrong size.  We should force a
-  //                Layout() in this case.
-  //                http://crbug.com/5540
-  const bool maximized =
-      browser_->window() && browser_->window()->IsMaximized();
-
-  // When maximized, insert padding into the first and last control instead of
-  // padding outside of them.
-  const int end_padding = maximized ? 0 : GetToolbarHorizontalPadding();
-  const int end_control_internal_margin =
-      maximized ? GetToolbarHorizontalPadding() : 0;
-  back_->SetLeadingMargin(end_control_internal_margin);
-  app_menu_button_->SetTrailingMargin(end_control_internal_margin);
-
-  back_->SetBounds(end_padding, toolbar_button_y,
-                   back_->GetPreferredSize().width(), toolbar_button_height);
-  const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
-  int next_element_x = back_->bounds().right() + element_padding;
-
-  forward_->SetBounds(next_element_x, toolbar_button_y,
-                      forward_->GetPreferredSize().width(),
-                      toolbar_button_height);
-  next_element_x = forward_->bounds().right() + element_padding;
-
-  reload_->SetBounds(next_element_x, toolbar_button_y,
-                     reload_->GetPreferredSize().width(),
-                     toolbar_button_height);
-  next_element_x = reload_->bounds().right();
-
-  home_->SetSize(
-      gfx::Size(home_->GetPreferredSize().width(), toolbar_button_height));
-  if (show_home_button_.GetValue() ||
-      (browser_->is_app() && extensions::util::IsNewBookmarkAppsEnabled())) {
-    home_->SetVisible(true);
-    next_element_x += element_padding;
-    home_->SetPosition(gfx::Point(next_element_x, toolbar_button_y));
-    next_element_x += home_->width();
-  } else {
-    home_->SetVisible(false);
-  }
-
-  next_element_x += GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
-
-  const int app_menu_width = app_menu_button_->GetPreferredSize().width();
-  const int right_padding = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
-
-  // Note that the browser actions container has its own internal left and right
-  // padding to visually separate it from the location bar and app menu button.
-  // However if the container is empty we must account for the |right_padding|
-  // value used to visually separate the location bar and app menu button.
-  int available_width = std::max(
-      0,
-      width() - end_padding - app_menu_width -
-          (browser_actions_->GetPreferredSize().IsEmpty() ? right_padding : 0) -
-          next_element_x);
-  if (cast_ && cast_->visible()) {
-    available_width -= cast_->GetPreferredSize().width();
-    available_width -= element_padding;
-  }
-  if (avatar_) {
-    available_width -= avatar_->GetPreferredSize().width();
-    available_width -= element_padding;
-  }
-  // Don't allow the omnibox to shrink to the point of non-existence, so
-  // subtract its minimum width from the available width to reserve it.
-  const int browser_actions_width = browser_actions_->GetWidthForMaxWidth(
-      available_width - location_bar_->GetMinimumSize().width());
-  available_width -= browser_actions_width;
-  const int location_bar_width = available_width;
-
-  const int location_height = location_bar_->GetPreferredSize().height();
-  const int location_y = (height() - location_height) / 2;
-  location_bar_->SetBounds(next_element_x, location_y,
-                           location_bar_width, location_height);
-  next_element_x = location_bar_->bounds().right();
-
-  // Note height() may be zero in fullscreen.
-  const int browser_actions_height =
-      std::min(browser_actions_->GetPreferredSize().height(), height());
-  const int browser_actions_y = (height() - browser_actions_height) / 2;
-  browser_actions_->SetBounds(next_element_x, browser_actions_y,
-                              browser_actions_width, browser_actions_height);
-  next_element_x = browser_actions_->bounds().right();
-  if (!browser_actions_width)
-    next_element_x += right_padding;
-
-  // The browser actions need to do a layout explicitly, because when an
-  // extension is loaded/unloaded/changed, BrowserActionContainer removes and
-  // re-adds everything, regardless of whether it has a page action. For a
-  // page action, browser action bounds do not change, as a result of which
-  // SetBounds does not do a layout at all.
-  // TODO(sidchat): Rework the above behavior so that explicit layout is not
-  //                required.
-  browser_actions_->Layout();
-
-  if (cast_ && cast_->visible()) {
-    cast_->SetBounds(next_element_x, toolbar_button_y,
-                     cast_->GetPreferredSize().width(), toolbar_button_height);
-    next_element_x = cast_->bounds().right() + element_padding;
-  }
-  if (avatar_) {
-    avatar_->SetBounds(next_element_x, toolbar_button_y,
-                       avatar_->GetPreferredSize().width(),
-                       toolbar_button_height);
-    next_element_x = avatar_->bounds().right() + element_padding;
-  }
-
-  app_menu_button_->SetBounds(next_element_x, toolbar_button_y, app_menu_width,
-                              toolbar_button_height);
+  // Call super implementation to ensure layout manager and child layouts
+  // happen.
+  AccessiblePaneView::Layout();
 }
 
 void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
@@ -702,7 +580,9 @@ bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 void ToolbarView::ChildPreferredSizeChanged(views::View* child) {
-  Layout();
+  InvalidateLayout();
+  if (size() != GetPreferredSize())
+    PreferredSizeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -727,6 +607,17 @@ bool ToolbarView::SetPaneFocusAndFocusDefault() {
 // ui::MaterialDesignControllerObserver:
 void ToolbarView::OnTouchUiChanged() {
   if (display_mode_ == DisplayMode::NORMAL) {
+    // Update the internal margins for touch layout.
+    // TODO(dfried): I think we can do better than this by making the touch UI
+    // code cleaner.
+    const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+    const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
+    layout_manager_->SetDefaultChildMargins(gfx::Insets(0, default_margin));
+    *location_bar_->GetProperty(views::kMarginsKey) =
+        gfx::Insets(0, location_bar_margin);
+    *browser_actions_->GetProperty(views::kInternalPaddingKey) =
+        gfx::Insets(0, location_bar_margin);
+
     LoadImages();
     PreferredSizeChanged();
   }
@@ -734,6 +625,61 @@ void ToolbarView::OnTouchUiChanged() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, private:
+
+void ToolbarView::InitLayout() {
+  const int default_margin = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+  // TODO(dfried): rename this constant.
+  const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
+  const views::FlexSpecification browser_actions_flex_rule =
+      views::FlexSpecification::ForCustomRule(
+          BrowserActionsContainer::GetFlexRule())
+          .WithOrder(1);
+  const views::FlexSpecification location_bar_flex_rule =
+      views::FlexSpecification::ForSizeRule(
+          views::MinimumFlexSizeRule::kScaleToMinimum,
+          views::MaximumFlexSizeRule::kUnbounded)
+          .WithOrder(2);
+
+  layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
+
+  layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetCollapseMargins(true)
+      .SetDefaultChildMargins(gfx::Insets(0, default_margin));
+
+  layout_manager_->SetFlexForView(location_bar_, location_bar_flex_rule);
+  location_bar_->SetProperty(views::kMarginsKey,
+                             new gfx::Insets(0, location_bar_margin));
+
+  layout_manager_->SetFlexForView(browser_actions_, browser_actions_flex_rule);
+  browser_actions_->SetProperty(views::kMarginsKey, new gfx::Insets(0, 0));
+  browser_actions_->SetProperty(views::kInternalPaddingKey,
+                                new gfx::Insets(0, location_bar_margin));
+
+  LayoutCommon();
+}
+
+void ToolbarView::LayoutCommon() {
+  DCHECK(display_mode_ == DisplayMode::NORMAL);
+
+  constexpr gfx::Insets kToolbarInteriorMargin(4, 8, 5, 8);
+  const gfx::Insets interior_margin = ui::MaterialDesignController::touch_ui()
+                                          ? gfx::Insets()
+                                          : kToolbarInteriorMargin;
+  layout_manager_->SetInteriorMargin(interior_margin);
+
+  const bool maximized =
+      browser_->window() && browser_->window()->IsMaximized();
+  back_->SetLeadingMargin(maximized ? interior_margin.left() : 0);
+  app_menu_button_->SetTrailingMargin(maximized ? interior_margin.right() : 0);
+
+  const bool show_home_button =
+      show_home_button_.GetValue() ||
+      (browser_->is_app() && extensions::util::IsNewBookmarkAppsEnabled());
+  home_->SetVisible(show_home_button);
+
+  // Cast button visibility is controlled externally.
+}
 
 // AppMenuIconController::Delegate:
 void ToolbarView::UpdateTypeAndSeverity(
@@ -797,51 +743,6 @@ BrowserRootView::DropIndex ToolbarView::GetDropIndex(
 
 views::View* ToolbarView::GetViewForDrop() {
   return this;
-}
-
-gfx::Size ToolbarView::GetSizeInternal(
-    gfx::Size (View::*get_size)() const) const {
-  View* view = display_mode_ == DisplayMode::CUSTOM_TAB
-                   ? static_cast<View*>(custom_tab_bar_)
-                   : static_cast<View*>(location_bar_);
-
-  gfx::Size size = (view->*get_size)();
-  if (display_mode_ == DisplayMode::NORMAL) {
-    const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
-    const int browser_actions_width =
-        (browser_actions_->*get_size)().width();
-    const int content_width =
-        2 * GetToolbarHorizontalPadding() + (back_->*get_size)().width() +
-        element_padding + (forward_->*get_size)().width() + element_padding +
-        (reload_->*get_size)().width() +
-        (show_home_button_.GetValue()
-             ? element_padding + (home_->*get_size)().width()
-             : 0) +
-        GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
-        (browser_actions_width > 0
-             ? browser_actions_width
-             : GetLayoutConstant(TOOLBAR_STANDARD_SPACING)) +
-        (app_menu_button_->*get_size)().width();
-    size.Enlarge(content_width, 0);
-  }
-  return SizeForContentSize(size);
-}
-
-gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
-  if (display_mode_ == DisplayMode::NORMAL) {
-    // The size of the toolbar is computed using the size of the location bar
-    // and constant padding values.
-    int content_height = std::max(back_->GetPreferredSize().height(),
-                                  location_bar_->GetPreferredSize().height());
-    // In the touch-optimized UI, the toolbar buttons are big and occupy the
-    // entire view's height, we don't need to add any extra vertical space.
-    const int extra_vertical_space =
-        ui::MaterialDesignController::touch_ui() ? 0 : 9;
-    size.SetToMax(gfx::Size(0, content_height + extra_vertical_space));
-  }
-
-  size.set_height(size.height() * size_animation_.GetCurrentValue());
-  return size;
 }
 
 void ToolbarView::LoadImages() {
