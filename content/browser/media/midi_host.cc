@@ -79,8 +79,6 @@ void MidiHost::CompleteStartSession(Result result) {
         ChildProcessSecurityPolicyImpl::GetInstance()->CanSendMidiSysExMessage(
             renderer_process_id_);
     midi_session_.Bind(std::move(pending_session_request_));
-    midi_session_.set_connection_error_handler(
-        base::BindOnce(&MidiHost::EndSession, base::Unretained(this)));
   }
   midi_client_->SessionStarted(result);
 }
@@ -176,6 +174,8 @@ void MidiHost::StartSession(midi::mojom::MidiSessionRequest request,
 
   DCHECK(!midi_client_);
   midi_client_ = std::move(client);
+  midi_client_.set_connection_error_handler(
+      base::BindOnce(&MidiHost::EndSession, base::Unretained(this)));
 
   if (midi_service_)
     midi_service_->StartSession(this);

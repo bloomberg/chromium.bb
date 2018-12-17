@@ -16,6 +16,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_service.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -105,6 +106,22 @@ class MidiHostForTesting : public MidiHost {
   DISALLOW_COPY_AND_ASSIGN(MidiHostForTesting);
 };
 
+class MidiSessionClientForTesting : public midi::mojom::MidiSessionClient {
+ public:
+  MidiSessionClientForTesting() = default;
+  ~MidiSessionClientForTesting() override = default;
+
+  void AddInputPort(midi::mojom::PortInfoPtr info) override {}
+  void AddOutputPort(midi::mojom::PortInfoPtr info) override {}
+  void SetInputPortState(uint32_t port, PortState state) override {}
+  void SetOutputPortState(uint32_t port, PortState state) override {}
+  void SessionStarted(midi::mojom::Result result) override {}
+  void AcknowledgeSentData(uint32_t bytes) override {}
+  void DataReceived(uint32_t port,
+                    const std::vector<uint8_t>& data,
+                    base::TimeTicks timestamp) override {}
+};
+
 class MidiHostTest : public testing::Test {
  public:
   MidiHostTest() : data_(kNoteOn, kNoteOn + base::size(kNoteOn)), port_id_(0) {
@@ -117,6 +134,8 @@ class MidiHostTest : public testing::Test {
     host_ = std::make_unique<MidiHostForTesting>(rph_->GetID(), service_.get());
     midi::mojom::MidiSessionClientPtr ptr;
     midi::mojom::MidiSessionClientRequest request = mojo::MakeRequest(&ptr);
+    mojo::MakeStrongBinding(std::make_unique<MidiSessionClientForTesting>(),
+                            std::move(request));
     midi::mojom::MidiSessionRequest session_request =
         mojo::MakeRequest(&session_);
     host_->StartSession(std::move(session_request), std::move(ptr));
