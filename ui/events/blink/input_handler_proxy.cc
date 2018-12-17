@@ -198,8 +198,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
 
   // Note: Other input can race ahead of gesture input as they don't have to go
   // through the queue, but we believe it's OK to do so.
-  if (!compositor_event_queue_ ||
-      !IsGestureScrollOrPinch(event_with_callback->event().GetType())) {
+  if (!IsGestureScrollOrPinch(event_with_callback->event().GetType())) {
     DispatchSingleInputEvent(std::move(event_with_callback),
                              tick_clock_->NowTicks());
     return;
@@ -254,8 +253,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
 void InputHandlerProxy::DispatchSingleInputEvent(
     std::unique_ptr<EventWithCallback> event_with_callback,
     const base::TimeTicks now) {
-  if (compositor_event_queue_ &&
-      IsGestureScrollOrPinch(event_with_callback->event().GetType())) {
+  if (IsGestureScrollOrPinch(event_with_callback->event().GetType())) {
     // Report the coalesced count only for continuous events to avoid the noise
     // from non-continuous events.
     if (IsContinuousGestureEvent(event_with_callback->event().GetType())) {
@@ -315,9 +313,6 @@ void InputHandlerProxy::DispatchSingleInputEvent(
 }
 
 void InputHandlerProxy::DispatchQueuedInputEvents() {
-  if (!compositor_event_queue_)
-    return;
-
   // Calling |NowTicks()| is expensive so we only want to do it once.
   base::TimeTicks now = tick_clock_->NowTicks();
   while (!compositor_event_queue_->empty()) {
@@ -582,7 +577,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollBegin");
 
-  if (compositor_event_queue_ && scroll_predictor_)
+  if (scroll_predictor_)
     scroll_predictor_->ResetOnGestureScrollBegin(gesture_event);
 
 #if DCHECK_IS_ON()
