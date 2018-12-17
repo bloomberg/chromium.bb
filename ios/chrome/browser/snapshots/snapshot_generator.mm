@@ -48,17 +48,6 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 // Class that contains information used when caching snapshots of a web page.
 @interface CoalescingSnapshotContext : NSObject
-
-// Returns the cached snapshot if there is one matching the given parameters.
-// Returns nil otherwise.
-- (UIImage*)cachedSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                      visibleFrameOnly:(BOOL)visibleFrameOnly;
-
-// Caches |snapshot| for the given |overlays| and |visibleFrameOnly|.
-- (void)setCachedSnapshot:(UIImage*)snapshot
-             withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-         visibleFrameOnly:(BOOL)visibleFrameOnly;
-
 @end
 
 @implementation CoalescingSnapshotContext {
@@ -66,27 +55,25 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 }
 
 // Returns whether a snapshot should be cached in a page loaded context.
-// Note: Returns YES if |overlays| is nil or empty and if |visibleFrameOnly| is
-// YES as this is the only case when the snapshot taken for the page is reused.
-- (BOOL)shouldCacheSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                       visibleFrameOnly:(BOOL)visibleFrameOnly {
-  return visibleFrameOnly && ![overlays count];
+// Note: Returns YES if |overlays| is nil or empty as this is the only case when
+// the snapshot taken for the page is reused.
+- (BOOL)shouldCacheSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays {
+  return ![overlays count];
 }
 
-- (UIImage*)cachedSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                      visibleFrameOnly:(BOOL)visibleFrameOnly {
-  if ([self shouldCacheSnapshotWithOverlays:overlays
-                           visibleFrameOnly:visibleFrameOnly]) {
+// Returns the cached snapshot if there is one matching the given parameters.
+// Returns nil otherwise.
+- (UIImage*)cachedSnapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays {
+  if ([self shouldCacheSnapshotWithOverlays:overlays]) {
     return _cachedSnapshot;
   }
   return nil;
 }
 
+// Caches |snapshot| for the given |overlays|.
 - (void)setCachedSnapshot:(UIImage*)snapshot
-             withOverlays:(NSArray<SnapshotOverlay*>*)overlays
-         visibleFrameOnly:(BOOL)visibleFrameOnly {
-  if ([self shouldCacheSnapshotWithOverlays:overlays
-                           visibleFrameOnly:visibleFrameOnly]) {
+             withOverlays:(NSArray<SnapshotOverlay*>*)overlays {
+  if ([self shouldCacheSnapshotWithOverlays:overlays]) {
     DCHECK(!_cachedSnapshot);
     _cachedSnapshot = snapshot;
   }
@@ -95,24 +82,6 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 @end
 
 @interface SnapshotGenerator ()<CRWWebStateObserver>
-
-// Returns the frame of the snapshot. Will return an empty rectangle if the
-// WebState is not ready to capture a snapshot.
-- (CGRect)snapshotFrameVisibleFrameOnly:(BOOL)visibleFrameOnly;
-
-// Takes a snapshot for the supplied view (which should correspond to the given
-// type of web view). Returns an autoreleased image cropped and scaled
-// appropriately. The image can also contain overlays (if |overlays| is not
-// nil and not empty).
-- (UIImage*)generateSnapshotForView:(UIView*)view
-                           withRect:(CGRect)rect
-                           overlays:(NSArray<SnapshotOverlay*>*)overlays;
-
-// Returns an image of the |snapshot| overlaid with |overlays| with the given
-// |frame|.
-- (UIImage*)snapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
-                        snapshot:(UIImage*)snapshot
-                           frame:(CGRect)frame;
 
 // Property providing access to the snapshot's cache. May be nil.
 @property(nonatomic, readonly) SnapshotCache* snapshotCache;
@@ -125,8 +94,6 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   NSString* _snapshotSessionId;
   web::WebState* _webState;
 }
-
-@synthesize delegate = _delegate;
 
 - (instancetype)initWithWebState:(web::WebState*)webState
                snapshotSessionId:(NSString*)snapshotSessionId {
@@ -151,7 +118,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 }
 
 - (CGSize)snapshotSize {
-  return [self snapshotFrameVisibleFrameOnly:YES].size;
+  return [self snapshotFrame].size;
 }
 
 - (void)setSnapshotCoalescingEnabled:(BOOL)snapshotCoalescingEnabled {
@@ -189,7 +156,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   __weak SnapshotGenerator* weakSelf = self;
   void (^wrappedCallback)(UIImage*) = ^(UIImage* image) {
     if (!image) {
-      image = [weakSelf updateSnapshotWithOverlays:YES visibleFrameOnly:YES];
+      image = [weakSelf updateSnapshot];
       if (image)
         image = GreyImage(image);
     }
@@ -205,10 +172,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   }
 }
 
-- (UIImage*)updateSnapshotWithOverlays:(BOOL)shouldAddOverlay
-                      visibleFrameOnly:(BOOL)visibleFrameOnly {
-  UIImage* snapshot = [self generateSnapshotWithOverlays:shouldAddOverlay
-                                        visibleFrameOnly:visibleFrameOnly];
+- (UIImage*)updateSnapshot {
+  UIImage* snapshot = [self generateSnapshotWithOverlays:YES];
   // Return default snapshot without caching it if the generation failed.
   if (!snapshot) {
     return [[self class] defaultSnapshotImage];
@@ -222,9 +187,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   DCHECK(_webState);
   UIView* snapshotView = [self.delegate snapshotGenerator:self
                                       baseViewForWebState:_webState];
-  CGRect snapshotFrame = [self snapshotFrameVisibleFrameOnly:YES];
-  snapshotFrame =
-      [_webState->GetView() convertRect:snapshotFrame fromView:snapshotView];
+  CGRect snapshotFrame = [_webState->GetView() convertRect:[self snapshotFrame]
+                                                  fromView:snapshotView];
   if (CGRectIsEmpty(snapshotFrame)) {
     if (completion) {
       base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
@@ -242,8 +206,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   NSArray<SnapshotOverlay*>* overlays = [_delegate snapshotGenerator:self
                                          snapshotOverlaysForWebState:_webState];
   UIImage* snapshot =
-      [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays
-                                            visibleFrameOnly:YES];
+      [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays];
   if (snapshot) {
     if (completion) {
       base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
@@ -273,8 +236,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
         [strongSelf.snapshotCache setImage:snapshot
                              withSessionID:_snapshotSessionId];
         [_coalescingSnapshotContext setCachedSnapshot:snapshot
-                                         withOverlays:overlays
-                                     visibleFrameOnly:YES];
+                                         withOverlays:overlays];
         [_delegate snapshotGenerator:self
             didUpdateSnapshotForWebState:_webState
                                withImage:snapshot];
@@ -283,9 +245,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
       }));
 }
 
-- (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay
-                        visibleFrameOnly:(BOOL)visibleFrameOnly {
-  CGRect frame = [self snapshotFrameVisibleFrameOnly:visibleFrameOnly];
+- (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay {
+  CGRect frame = [self snapshotFrame];
   if (CGRectIsEmpty(frame))
     return nil;
 
@@ -294,8 +255,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
                              snapshotOverlaysForWebState:_webState]
                        : nil;
   UIImage* snapshot =
-      [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays
-                                            visibleFrameOnly:visibleFrameOnly];
+      [_coalescingSnapshotContext cachedSnapshotWithOverlays:overlays];
 
   if (snapshot)
     return snapshot;
@@ -305,9 +265,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
                           baseViewForWebState:_webState];
   snapshot =
       [self generateSnapshotForView:view withRect:frame overlays:overlays];
-  [_coalescingSnapshotContext setCachedSnapshot:snapshot
-                                   withOverlays:overlays
-                               visibleFrameOnly:visibleFrameOnly];
+  [_coalescingSnapshotContext setCachedSnapshot:snapshot withOverlays:overlays];
   [_delegate snapshotGenerator:self
       didUpdateSnapshotForWebState:_webState
                          withImage:snapshot];
@@ -337,7 +295,9 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 #pragma mark - Private methods
 
-- (CGRect)snapshotFrameVisibleFrameOnly:(BOOL)visibleFrameOnly {
+// Returns the frame of the snapshot. Will return an empty rectangle if the
+// WebState is not ready to capture a snapshot.
+- (CGRect)snapshotFrame {
   // Do not generate a snapshot if web usage is disabled (as the WebState's
   // view is blank in that case).
   if (!_webState->IsWebUsageEnabled())
@@ -351,20 +311,15 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
   UIView* view = [_delegate snapshotGenerator:self
                           baseViewForWebState:_webState];
-  CGRect frame = [view bounds];
-  UIEdgeInsets headerInsets = UIEdgeInsetsZero;
-  if (visibleFrameOnly) {
-    headerInsets = [_delegate snapshotGenerator:self
-                  snapshotEdgeInsetsForWebState:_webState];
-  } else if (base::FeatureList::IsEnabled(
-                 web::features::kBrowserContainerFullscreen)) {
-    headerInsets = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
-  }
-  frame = UIEdgeInsetsInsetRect(frame, headerInsets);
-
-  return frame;
+  UIEdgeInsets headerInsets = [_delegate snapshotGenerator:self
+                             snapshotEdgeInsetsForWebState:_webState];
+  return UIEdgeInsetsInsetRect(view.bounds, headerInsets);
 }
 
+// Takes a snapshot for the supplied view (which should correspond to the given
+// type of web view). Returns an autoreleased image cropped and scaled
+// appropriately. The image can also contain overlays (if |overlays| is not
+// nil and not empty).
 - (UIImage*)generateSnapshotForView:(UIView*)view
                            withRect:(CGRect)rect
                            overlays:(NSArray<SnapshotOverlay*>*)overlays {
@@ -421,6 +376,8 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   return image;
 }
 
+// Returns an image of the |snapshot| overlaid with |overlays| with the given
+// |frame|.
 - (UIImage*)snapshotWithOverlays:(NSArray<SnapshotOverlay*>*)overlays
                         snapshot:(UIImage*)snapshot
                            frame:(CGRect)frame {
@@ -452,7 +409,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
   return snapshotWithOverlays;
 }
 
-#pragma mark - Properties.
+#pragma mark - Properties
 
 - (SnapshotCache*)snapshotCache {
   return SnapshotCacheFactory::GetForBrowserState(

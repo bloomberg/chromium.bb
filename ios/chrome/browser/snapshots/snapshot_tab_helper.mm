@@ -78,8 +78,7 @@ void SnapshotInfobarObserver::OnInfoBarReplaced(
 
 void SnapshotInfobarObserver::OnInfoBarChanges() {
   // Update the page snapshot on any infobar change.
-  owner_->UpdateSnapshot(/*with_overlays=*/true,
-                         /*visible_frame_only=*/true);
+  owner_->UpdateSnapshot();
 }
 
 void SnapshotInfobarObserver::OnManagerShuttingDown(
@@ -131,24 +130,19 @@ void SnapshotTabHelper::UpdateSnapshotWithCallback(void (^callback)(UIImage*)) {
     return;
   }
   // Native content cannot utilize the WKWebView snapshotting API.
-  UIImage* image =
-      UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
+  UIImage* image = UpdateSnapshot();
   dispatch_async(dispatch_get_main_queue(), ^{
     if (callback)
       callback(image);
   });
 }
 
-UIImage* SnapshotTabHelper::UpdateSnapshot(bool with_overlays,
-                                           bool visible_frame_only) {
-  return [snapshot_generator_ updateSnapshotWithOverlays:with_overlays
-                                        visibleFrameOnly:visible_frame_only];
+UIImage* SnapshotTabHelper::UpdateSnapshot() {
+  return [snapshot_generator_ updateSnapshot];
 }
 
-UIImage* SnapshotTabHelper::GenerateSnapshot(bool with_overlays,
-                                             bool visible_frame_only) {
-  return [snapshot_generator_ generateSnapshotWithOverlays:with_overlays
-                                          visibleFrameOnly:visible_frame_only];
+UIImage* SnapshotTabHelper::GenerateSnapshotWithoutOverlays() {
+  return [snapshot_generator_ generateSnapshotWithOverlays:NO];
 }
 
 void SnapshotTabHelper::SetSnapshotCoalescingEnabled(bool enabled) {
@@ -203,7 +197,7 @@ void SnapshotTabHelper::PageLoaded(
       return;
     }
     // Native content cannot utilize the WKWebView snapshotting API.
-    UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
+    UpdateSnapshot();
   }
   ignore_next_load_ = false;
 }

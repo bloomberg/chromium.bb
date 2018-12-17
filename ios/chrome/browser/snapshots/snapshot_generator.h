@@ -46,23 +46,21 @@ class WebState;
 // |callback| will be called with nil.
 - (void)retrieveGreySnapshot:(void (^)(UIImage*))callback;
 
-// Invalidates the cached snapshot for the current page, generates and caches
-// a new snapshot. Returns the snapshot with or without the overlaid views
-// (e.g. infobar), and either of the visible frame or of the full screen.
-- (UIImage*)updateSnapshotWithOverlays:(BOOL)shouldAddOverlay
-                      visibleFrameOnly:(BOOL)visibleFrameOnly;
+// Generates a new snapshot, updates the snapshot cache, and returns the new
+// snapshot image.
+- (UIImage*)updateSnapshot;
 
-// Invalidates the cached snapshot for the current page, generates and caches
-// a new snapshot. Calls |completion| with a snapshot with overlaid views (e.g.
-// infobar) of the visible frame. This method should only be called if the web
-// state has a valid web view.
+// Asynchronously generates a new snapshot, updates the snapshot cache, and runs
+// |callback| with the new snapshot image. It is an error to call this method if
+// the web state is showing anything other (e.g., native content) than a web
+// view.
 - (void)updateWebViewSnapshotWithCompletion:(void (^)(UIImage*))completion;
 
-// Generates a new snapshot for the current page including optional infobars.
-// Returns the snapshot with or without the overlaid views (e.g. infobar), and
-// either of the visible frame or of the full screen.
-- (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay
-                        visibleFrameOnly:(BOOL)visibleFrameOnly;
+// Generates a new snapshot and returns the new snapshot image. This does not
+// update the snapshot cache. If |shouldAddOverlay| is YES, overlays (e.g.,
+// infobars, the download manager, and sad tab view) are also captured in the
+// snapshot image.
+- (UIImage*)generateSnapshotWithOverlays:(BOOL)shouldAddOverlay;
 
 // Requests deletion of the current page snapshot from disk and memory.
 - (void)removeSnapshot;
