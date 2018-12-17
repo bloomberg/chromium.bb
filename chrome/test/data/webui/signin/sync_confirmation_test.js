@@ -59,7 +59,7 @@ cr.define('signin_sync_confirmation', function() {
       'Fix spelling errors with enhanced spell check',
       'The text you type in text fields will be sent to Google.',
       'Help improve Chrome and its security',
-      'Anonymous system and usage data will be sent to Google.'
+      'Sends some system information and page content to Google anonymously.'
     ];
 
 
