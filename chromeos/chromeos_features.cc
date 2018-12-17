@@ -41,6 +41,10 @@ const base::Feature kCrostiniFiles{"CrostiniFiles",
 const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the CryptAuth v2 Enrollment flow.
+const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Discover Application on Chrome OS.
 // If enabled, Discover App will be shown in launcher.
 const base::Feature kDiscoverApp{"DiscoverApp",

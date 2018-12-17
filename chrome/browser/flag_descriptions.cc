@@ -3172,6 +3172,10 @@ const char kCrostiniUsbSupportName[] = "Crostini Usb Support";
 const char kCrostiniUsbSupportDescription[] =
     "Enable mounting Usb devices in Crostini.";
 
+const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
+const char kCryptAuthV2EnrollmentDescription[] =
+    "Use the CryptAuth v2 Enrollment protocol.";
+
 const char kDisableExplicitDmaFencesName[] = "Disable explicit dma-fences";
 const char kDisableExplicitDmaFencesDescription[] =
     "Always rely on implicit syncrhonization between GPU and display "

@@ -472,6 +472,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "cryptauth-v2-enrollment",
+    "owners": [ "jlklein", "khorimoto", "nohle" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "data-saver-server-previews",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
