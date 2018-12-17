@@ -59,8 +59,8 @@ class WebFramesManagerTest
       public ::testing::WithParamInterface<NavigationManagerChoice> {
  protected:
   void SetUp() override {
-    WebIntTest::SetUp();
-
+    // Set feature flag before calling SetUp (which relies on those feature
+    // flags).
     if (GetParam() == NavigationManagerChoice::LEGACY) {
       scoped_feature_list_.InitAndDisableFeature(
           web::features::kSlimNavigationManager);
@@ -68,6 +68,8 @@ class WebFramesManagerTest
       scoped_feature_list_.InitAndEnableFeature(
           web::features::kSlimNavigationManager);
     }
+
+    WebIntTest::SetUp();
 
     test_server_ = std::make_unique<net::test_server::EmbeddedTestServer>();
     net::test_server::RegisterDefaultHandlers(test_server_.get());
