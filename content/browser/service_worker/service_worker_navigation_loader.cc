@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/common/fetch/fetch_request_type_converters.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -205,19 +206,13 @@ void ServiceWorkerNavigationLoader::StartRequest(
     return;
   }
 
-  // ServiceWorkerFetchDispatcher requires a std::unique_ptr<ResourceRequest>
-  // so make one here.
-  // TODO(crbug.com/803125): Try to eliminate unnecessary copying?
-  auto resource_request_to_pass =
-      std::make_unique<network::ResourceRequest>(resource_request_);
-
   // Passing the request body over Mojo moves out the DataPipeGetter elements,
   // which would mean we should clone the body like
   // ServiceWorkerSubresourceLoader does. But we don't expect DataPipeGetters
   // here yet: they are only created by the renderer when converting from a
   // Blob, which doesn't happen for navigations. In interest of speed, just
   // don't clone until proven necessary.
-  DCHECK(BodyHasNoDataPipeGetters(resource_request_to_pass->request_body.get()))
+  DCHECK(BodyHasNoDataPipeGetters(resource_request_.request_body.get()))
       << "We assumed there would be no data pipe getter elements here, but "
          "there are. Add code here to clone the body before proceeding.";
 
@@ -230,9 +225,8 @@ void ServiceWorkerNavigationLoader::StartRequest(
 
   // Dispatch the fetch event.
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-      std::move(resource_request_to_pass),
-      std::string() /* request_body_blob_uuid */,
-      0 /* request_body_blob_size */, nullptr /* request_body_blob */,
+      blink::mojom::FetchAPIRequest::From(resource_request_),
+      static_cast<ResourceType>(resource_request_.resource_type),
       provider_host_->client_uuid(), active_worker,
       net::NetLogWithSource() /* TODO(scottmg): net log? */,
       base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,

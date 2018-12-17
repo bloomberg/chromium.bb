@@ -240,21 +240,33 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
 
     responses_ = Vector<RequestResponse>(requestSize);
     num_responses_left_ = requestSize;
-    for (const auto& request : requests) {
-      cache_ptr_->Match(
-          request.Clone(), mojom::blink::QueryParams::New(),
-          WTF::Bind(
-              [](scoped_refptr<ResponsesAccumulator> accumulator,
-                 mojom::blink::FetchAPIRequestPtr request,
-                 mojom::blink::MatchResultPtr result) {
-                if (result->is_status()) {
-                  accumulator->SendFailure(result->get_status());
-                } else {
-                  accumulator->AddRequestResponsePair(request,
-                                                      result->get_response());
-                }
-              },
-              scoped_refptr<ResponsesAccumulator>(this), request.Clone()));
+    for (auto& request : requests) {
+      // All FetchAPIRequests in cache_storage code are supposed to not contain
+      // a body.
+      DCHECK(!request->blob && !request->body);
+      auto request_clone_without_body = mojom::blink::FetchAPIRequest::New(
+          request->mode, request->is_main_resource_load,
+          request->request_context_type, request->frame_type, request->url,
+          request->method, request->headers, nullptr /* blob */,
+          nullptr /* body */, request->referrer.Clone(),
+          request->credentials_mode, request->cache_mode,
+          request->redirect_mode, request->integrity, request->priority,
+          request->fetch_window_id, request->keepalive, request->client_id,
+          request->is_reload, request->is_history_navigation);
+      cache_ptr_->Match(std::move(request), mojom::blink::QueryParams::New(),
+                        WTF::Bind(
+                            [](scoped_refptr<ResponsesAccumulator> accumulator,
+                               mojom::blink::FetchAPIRequestPtr request,
+                               mojom::blink::MatchResultPtr result) {
+                              if (result->is_status()) {
+                                accumulator->SendFailure(result->get_status());
+                              } else {
+                                accumulator->AddRequestResponsePair(
+                                    request, result->get_response());
+                              }
+                            },
+                            scoped_refptr<ResponsesAccumulator>(this),
+                            std::move(request_clone_without_body)));
     }
   }
 

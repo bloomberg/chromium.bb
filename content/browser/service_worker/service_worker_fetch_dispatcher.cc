@@ -409,32 +409,25 @@ class ServiceWorkerFetchDispatcher::URLLoaderAssets
 };
 
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
-    std::unique_ptr<network::ResourceRequest> request,
-    const std::string& request_body_blob_uuid,
-    uint64_t request_body_blob_size,
-    blink::mojom::BlobPtr request_body_blob,
+    blink::mojom::FetchAPIRequestPtr request,
+    ResourceType resource_type,
     const std::string& client_id,
     scoped_refptr<ServiceWorkerVersion> version,
     const net::NetLogWithSource& net_log,
     base::OnceClosure prepare_callback,
     FetchCallback fetch_callback)
     : request_(std::move(request)),
-      request_body_blob_uuid_(request_body_blob_uuid),
-      request_body_blob_size_(request_body_blob_size),
-      request_body_blob_(std::move(request_body_blob)),
       client_id_(client_id),
       version_(std::move(version)),
-      resource_type_(static_cast<ResourceType>(request_->resource_type)),
+      resource_type_(resource_type),
       net_log_(net_log),
       prepare_callback_(std::move(prepare_callback)),
       fetch_callback_(std::move(fetch_callback)),
       did_complete_(false),
       weak_factory_(this) {
 #if DCHECK_IS_ON()
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    DCHECK((request_body_blob_uuid_.empty() && request_body_blob_size_ == 0 &&
-            !request_body_blob_));
-  }
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
+    DCHECK(!request_->blob);
 #endif  // DCHECK_IS_ON()
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
                       net::NetLog::StringCallback(
@@ -538,10 +531,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
 
   // Dispatch the fetch event.
   auto params = blink::mojom::DispatchFetchEventParams::New();
-  params->request = *request_;
-  params->request_body_blob_uuid = request_body_blob_uuid_;
-  params->request_body_blob_size = request_body_blob_size_;
-  params->request_body_blob = request_body_blob_.PassInterface();
+  params->request = std::move(request_);
   params->client_id = client_id_;
   params->preload_handle = std::move(preload_handle_);
   // |endpoint()| is owned by |version_|. So it is safe to pass the
@@ -611,7 +601,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   if (!version_->navigation_preload_state().enabled)
     return false;
   // TODO(horo): Currently NavigationPreload doesn't support request body.
-  if (request_body_blob_)
+  if (request_->blob)
     return false;
 
   ResourceRequestInfoImpl* original_info =
@@ -698,7 +688,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   if (!version_->navigation_preload_state().enabled)
     return false;
   // TODO(horo): Currently NavigationPreload doesn't support request body.
-  if (request_->request_body)
+  if (request_->body)
     return false;
 
   network::ResourceRequest resource_request(original_request);

@@ -262,9 +262,10 @@ class EmbeddedWorkerTestHelper::MockServiceWorker
       DispatchFetchEventCallback callback) override {
     if (!helper_)
       return;
-    helper_->OnFetchEventStub(
-        embedded_worker_id_, params->request, std::move(params->preload_handle),
-        std::move(response_callback), std::move(callback));
+    helper_->OnFetchEventStub(embedded_worker_id_, std::move(params->request),
+                              std::move(params->preload_handle),
+                              std::move(response_callback),
+                              std::move(callback));
   }
 
   void DispatchNotificationClickEvent(
@@ -633,7 +634,7 @@ void EmbeddedWorkerTestHelper::OnInstallEvent(
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
     int /* embedded_worker_id */,
-    const network::ResourceRequest& /* request */,
+    blink::mojom::FetchAPIRequestPtr /* request */,
     blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorker::DispatchFetchEventCallback finish_callback) {
@@ -923,15 +924,16 @@ void EmbeddedWorkerTestHelper::OnInstallEventStub(
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
     int embedded_worker_id,
-    const network::ResourceRequest& request,
+    blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::FetchEventPreloadHandlePtr preload_handle,
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorker::DispatchFetchEventCallback finish_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&EmbeddedWorkerTestHelper::OnFetchEvent, AsWeakPtr(),
-                     embedded_worker_id, request, std::move(preload_handle),
-                     std::move(response_callback), std::move(finish_callback)));
+                     embedded_worker_id, std::move(request),
+                     std::move(preload_handle), std::move(response_callback),
+                     std::move(finish_callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnNotificationClickEventStub(

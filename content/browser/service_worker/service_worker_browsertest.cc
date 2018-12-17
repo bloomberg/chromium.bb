@@ -935,15 +935,13 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     base::OnceClosure prepare_callback = CreatePrepareReceiver(prepare_result);
     ServiceWorkerFetchDispatcher::FetchCallback fetch_callback =
         CreateResponseReceiver(std::move(done), blob_context_.get(), result);
-    auto request = std::make_unique<network::ResourceRequest>();
+    auto request = blink::mojom::FetchAPIRequest::New();
     request->url = url;
     request->method = "GET";
-    request->resource_type = resource_type;
     fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-        std::move(request), std::string() /* request_body_blob_uuid */,
-        0 /* request_body_blob_size */, nullptr /* request_body_blob */,
-        std::string() /* client_id */, version_, net::NetLogWithSource(),
-        std::move(prepare_callback), std::move(fetch_callback));
+        std::move(request), resource_type, std::string() /* client_id */,
+        version_, net::NetLogWithSource(), std::move(prepare_callback),
+        std::move(fetch_callback));
     fetch_dispatcher_->Run();
   }
 

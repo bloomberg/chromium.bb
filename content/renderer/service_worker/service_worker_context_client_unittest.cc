@@ -338,13 +338,13 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent) {
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
   const GURL expected_url("https://example.com/expected");
-  auto request = std::make_unique<network::ResourceRequest>();
+  auto request = blink::mojom::FetchAPIRequest::New();
   request->url = expected_url;
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
   blink::mojom::ServiceWorkerFetchResponseCallbackRequest
       fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
   auto params = blink::mojom::DispatchFetchEventParams::New();
-  params->request = *request;
+  params->request = std::move(request);
   pipes.service_worker->DispatchFetchEvent(
       std::move(params), std::move(fetch_callback_ptr),
       base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
@@ -375,15 +375,15 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent_Headers) {
   EXPECT_TRUE(mock_proxy.fetch_events().empty());
 
   const GURL expected_url("https://example.com/expected");
-  auto request = std::make_unique<network::ResourceRequest>();
+  auto request = blink::mojom::FetchAPIRequest::New();
   request->url = expected_url;
-  request->headers.SetHeader("x-bye-bye", "excluded");
-  request->headers.SetHeader("x-hi-hi", "present");
+  request->headers.emplace("x-bye-bye", "excluded");
+  request->headers.emplace("x-hi-hi", "present");
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
   blink::mojom::ServiceWorkerFetchResponseCallbackRequest
       fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
   auto params = blink::mojom::DispatchFetchEventParams::New();
-  params->request = *request;
+  params->request = std::move(request);
   pipes.service_worker->DispatchFetchEvent(
       std::move(params), std::move(fetch_callback_ptr),
       base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
@@ -426,10 +426,10 @@ TEST_F(ServiceWorkerContextClientTest,
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
   blink::mojom::ServiceWorkerFetchResponseCallbackRequest
       fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
-  auto request = std::make_unique<network::ResourceRequest>();
+  auto request = blink::mojom::FetchAPIRequest::New();
   request->url = expected_url;
   auto params = blink::mojom::DispatchFetchEventParams::New();
-  params->request = *request;
+  params->request = std::move(request);
   context_client->DispatchOrQueueFetchEvent(
       std::move(params), std::move(fetch_callback_ptr),
       base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
@@ -473,10 +473,10 @@ TEST_F(ServiceWorkerContextClientTest,
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
     blink::mojom::ServiceWorkerFetchResponseCallbackRequest
         fetch_callback_request = mojo::MakeRequest(&fetch_callback_ptr);
-    auto request = std::make_unique<network::ResourceRequest>();
+    auto request = blink::mojom::FetchAPIRequest::New();
     request->url = expected_url;
     auto params = blink::mojom::DispatchFetchEventParams::New();
-    params->request = *request;
+    params->request = std::move(request);
     pipes.controller->DispatchFetchEvent(
         std::move(params), std::move(fetch_callback_ptr),
         base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
@@ -523,10 +523,10 @@ TEST_F(ServiceWorkerContextClientTest,
   {
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
     fetch_callback_request_1 = mojo::MakeRequest(&fetch_callback_ptr);
-    auto request = std::make_unique<network::ResourceRequest>();
+    auto request = blink::mojom::FetchAPIRequest::New();
     request->url = expected_url_1;
     auto params = blink::mojom::DispatchFetchEventParams::New();
-    params->request = *request;
+    params->request = std::move(request);
     pipes.controller->DispatchFetchEvent(
         std::move(params), std::move(fetch_callback_ptr),
         base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));
@@ -539,10 +539,10 @@ TEST_F(ServiceWorkerContextClientTest,
   {
     blink::mojom::ServiceWorkerFetchResponseCallbackPtr fetch_callback_ptr;
     fetch_callback_request_2 = mojo::MakeRequest(&fetch_callback_ptr);
-    auto request = std::make_unique<network::ResourceRequest>();
+    auto request = blink::mojom::FetchAPIRequest::New();
     request->url = expected_url_2;
     auto params = blink::mojom::DispatchFetchEventParams::New();
-    params->request = *request;
+    params->request = std::move(request);
     pipes.service_worker->DispatchFetchEvent(
         std::move(params), std::move(fetch_callback_ptr),
         base::BindOnce([](blink::mojom::ServiceWorkerEventStatus) {}));

@@ -12,6 +12,9 @@ import "url/mojom/url.mojom";
 struct URLRequest;
 
 [Native]
+struct URLRequestBody;
+
+[Native]
 struct URLResponseHead;
 
 [Native]

@@ -521,7 +521,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
 
   void OnFetchEvent(
       int embedded_worker_id,
-      const network::ResourceRequest& /* request */,
+      blink::mojom::FetchAPIRequestPtr /* request */,
       blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
@@ -699,7 +699,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(
       int /* embedded_worker_id */,
-      const network::ResourceRequest& /* request */,
+      blink::mojom::FetchAPIRequestPtr /* request */,
       blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
@@ -778,7 +778,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(
       int /* embedded_worker_id */,
-      const network::ResourceRequest& /* request */,
+      blink::mojom::FetchAPIRequestPtr /* request */,
       blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
@@ -879,7 +879,7 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(
       int /* embedded_worker_id */,
-      const network::ResourceRequest& /* request */,
+      blink::mojom::FetchAPIRequestPtr /* request */,
       blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)
@@ -1262,7 +1262,7 @@ class FailFetchHelper : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(
       int embedded_worker_id,
-      const network::ResourceRequest& /* request */,
+      blink::mojom::FetchAPIRequestPtr /* request */,
       blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
       blink::mojom::
           ServiceWorkerFetchResponseCallbackPtr /* response_callback */,
@@ -1354,7 +1354,7 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(
       int /* embedded_worker_id */,
-      const network::ResourceRequest& /* request */,
+      blink::mojom::FetchAPIRequestPtr /* request */,
       blink::mojom::FetchEventPreloadHandlePtr /* preload_handle */,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorker::DispatchFetchEventCallback finish_callback)

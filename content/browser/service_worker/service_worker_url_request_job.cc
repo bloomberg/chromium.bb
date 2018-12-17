@@ -29,6 +29,7 @@
 #include "content/browser/service_worker/service_worker_data_pipe_reader.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
+#include "content/common/fetch/fetch_request_type_converters.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/blob_handle.h"
@@ -542,12 +543,15 @@ void ServiceWorkerURLRequestJob::StartRequest() {
   NOTREACHED();
 }
 
+// The network::ResourceRequest will be converted to
+// blink::mojom::FetchAPIRequestPtr to be passed to the renderer and be
+// converted to blink::WebServiceWorkerRequest in
+// ServiceWorkerContextClient::ToWebServiceWorkerRequestForFetchEvent. So make
+// sure the fields set here are consistent with the fields read there.
+// TODO(crbug.com/911930): Create blink::mojom::FetchAPIRequestPtr directly here
+// instead of network::ResourceRequest.
 std::unique_ptr<network::ResourceRequest>
 ServiceWorkerURLRequestJob::CreateResourceRequest() {
-  // The network::ResourceRequest will be passed to the renderer and be
-  // converted to blink::WebServiceWorkerRequest in
-  // ServiceWorkerContextClient::ToWebServiceWorkerRequest. So make sure the
-  // fields set here are consistent with the fields read there.
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = request_->url();
   request->method = request_->method();
@@ -995,9 +999,20 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
     blob = CreateRequestBodyBlob(&blob_uuid, &blob_size);
   }
 
+  auto fetch_api_request =
+      blink::mojom::FetchAPIRequest::From(*resource_request);
+  // Use |fetch_api_request->blob| to represent body for non-S13nServiceWorker
+  // case, please see dispatch_fetch_event_params.mojom for details.
+  // TODO(crbug.com/911930): Use |fetch_api_request->body| instead.
+  fetch_api_request->body.reset();
+  DCHECK(!fetch_api_request->blob);
+  if (blob) {
+    fetch_api_request->blob = blink::mojom::SerializedBlob::New(
+        blob_uuid, std::string(), blob_size, blob.PassInterface());
+  }
   DCHECK(!fetch_dispatcher_);
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-      std::move(resource_request), blob_uuid, blob_size, std::move(blob),
+      std::move(fetch_api_request), resource_type_,
       provider_host_->client_uuid(), base::WrapRefCounted(active_worker),
       request()->net_log(),
       base::BindOnce(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,

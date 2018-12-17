@@ -179,11 +179,6 @@ class StreamHandleListener
   std::unique_ptr<ServiceWorkerTimeoutTimer::StayAwakeToken> token_;
 };
 
-blink::mojom::RequestContextType GetBlinkRequestContext(
-    blink::mojom::RequestContextType request_context_type) {
-  return static_cast<blink::mojom::RequestContextType>(request_context_type);
-}
-
 blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
     blink::mojom::ServiceWorkerClientInfoPtr client_info) {
   DCHECK(!client_info->client_uuid.empty());
@@ -237,73 +232,64 @@ WebURLRequest::Priority ConvertNetPriorityToWebKitPriority(
 }
 
 void ToWebServiceWorkerRequestForFetchEvent(
-    const network::ResourceRequest& request,
-    const std::string request_body_blob_uuid,
-    uint64_t request_body_blob_size,
-    blink::mojom::BlobPtrInfo request_body_blob,
-    const std::string& client_id,
+    blink::mojom::FetchAPIRequestPtr request,
     std::vector<blink::mojom::BlobPtrInfo> blob_ptrs,
+    const std::string& client_id,
     blink::WebServiceWorkerRequest* web_request) {
   DCHECK(web_request);
-  web_request->SetURL(blink::WebURL(request.url));
-  web_request->SetMethod(blink::WebString::FromUTF8(request.method));
-  if (!request.headers.IsEmpty()) {
-    for (net::HttpRequestHeaders::Iterator it(request.headers); it.GetNext();) {
-      if (!GetContentClient()
-               ->renderer()
-               ->IsExcludedHeaderForServiceWorkerFetchEvent(it.name())) {
-        web_request->SetHeader(blink::WebString::FromUTF8(it.name()),
-                               blink::WebString::FromUTF8(it.value()));
-      }
+  web_request->SetURL(blink::WebURL(request->url));
+  web_request->SetMethod(blink::WebString::FromUTF8(request->method));
+  for (const auto& pair : request->headers) {
+    if (!GetContentClient()
+             ->renderer()
+             ->IsExcludedHeaderForServiceWorkerFetchEvent(pair.first)) {
+      web_request->SetHeader(blink::WebString::FromUTF8(pair.first),
+                             blink::WebString::FromUTF8(pair.second));
     }
   }
 
   // Non-S13nServiceWorker: The body is provided as a blob.
-  if (request_body_blob) {
+  if (request->blob) {
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    mojo::ScopedMessagePipeHandle blob_pipe = request_body_blob.PassHandle();
-    web_request->SetBlob(blink::WebString::FromASCII(request_body_blob_uuid),
-                         request_body_blob_size, std::move(blob_pipe));
+    web_request->SetBlob(blink::WebString::FromASCII(request->blob->uuid),
+                         request->blob->size, request->blob->blob.PassHandle());
   }
-  // S13nServiceWorker: The body is provided in |request|.
-  else if (request.request_body) {
+  // S13nServiceWorker: The body is provided in |request->body|.
+  else if (request->body.has_value()) {
+    DCHECK(request->body.value());
     DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
     // |blob_ptrs| should be empty when Network Service is enabled.
     DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
            blob_ptrs.empty());
     blink::WebHTTPBody body = GetWebHTTPBodyForRequestBodyWithBlobPtrs(
-        *request.request_body, std::move(blob_ptrs));
+        *(request->body.value()), std::move(blob_ptrs));
     body.SetUniqueBoundary();
     web_request->SetBody(body);
   }
 
-  web_request->SetReferrer(blink::WebString::FromUTF8(request.referrer.spec()),
-                           Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-                               request.referrer_policy));
-  web_request->SetMode(request.fetch_request_mode);
-  web_request->SetIsMainResourceLoad(ServiceWorkerUtils::IsMainResourceType(
-      static_cast<ResourceType>(request.resource_type)));
-  web_request->SetCredentialsMode(request.fetch_credentials_mode);
-  web_request->SetCacheMode(
-      ServiceWorkerUtils::GetCacheModeFromLoadFlags(request.load_flags));
-  web_request->SetRedirectMode(request.fetch_redirect_mode);
-  web_request->SetRequestContext(
-      GetBlinkRequestContext(static_cast<blink::mojom::RequestContextType>(
-          request.fetch_request_context_type)));
-  web_request->SetFrameType(request.fetch_frame_type);
+  if (request->referrer) {
+    web_request->SetReferrer(
+        blink::WebString::FromUTF8(request->referrer->url.spec()),
+        request->referrer->policy);
+  }
+  web_request->SetMode(request->mode);
+  web_request->SetIsMainResourceLoad(request->is_main_resource_load);
+  web_request->SetCredentialsMode(request->credentials_mode);
+  web_request->SetCacheMode(request->cache_mode);
+  web_request->SetRedirectMode(request->redirect_mode);
+  web_request->SetRequestContext(request->request_context_type);
+  web_request->SetFrameType(request->frame_type);
   web_request->SetClientId(blink::WebString::FromUTF8(client_id));
-  web_request->SetIsReload(ui::PageTransitionCoreTypeIs(
-      static_cast<ui::PageTransition>(request.transition_type),
-      ui::PAGE_TRANSITION_RELOAD));
-  web_request->SetIntegrity(
-      blink::WebString::FromUTF8(request.fetch_integrity));
+  web_request->SetIsReload(request->is_reload);
+  if (request->integrity) {
+    web_request->SetIntegrity(blink::WebString::FromUTF8(*request->integrity));
+  }
   web_request->SetPriority(
-      ConvertNetPriorityToWebKitPriority(request.priority));
-  web_request->SetKeepalive(request.keepalive);
-  web_request->SetIsHistoryNavigation(request.transition_type &
-                                      ui::PAGE_TRANSITION_FORWARD_BACK);
-  if (request.fetch_window_id)
-    web_request->SetWindowId(*request.fetch_window_id);
+      ConvertNetPriorityToWebKitPriority(request->priority));
+  web_request->SetKeepalive(request->keepalive);
+  web_request->SetIsHistoryNavigation(request->is_history_navigation);
+  if (request->fetch_window_id)
+    web_request->SetWindowId(*request->fetch_window_id);
 }
 
 // Finds an event callback keyed by |event_id| from |map|, and runs the callback
@@ -1283,7 +1269,7 @@ void ServiceWorkerContextClient::DispatchOrQueueFetchEvent(
     DispatchFetchEventCallback callback) {
   TRACE_EVENT2("ServiceWorker",
                "ServiceWorkerContextClient::DispatchOrQueueFetchEvent", "url",
-               params->request.url.spec(), "queued",
+               params->request->url.spec(), "queued",
                RequestedTermination() ? "true" : "false");
   if (RequestedTermination()) {
     context_->timeout_timer->PushPendingTask(base::BindOnce(
@@ -1606,22 +1592,20 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
       "ServiceWorker", "ServiceWorkerContextClient::DispatchFetchEvent",
       TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
                           TRACE_ID_LOCAL(event_id)),
-      TRACE_EVENT_FLAG_FLOW_OUT, "url", params->request.url.spec());
+      TRACE_EVENT_FLAG_FLOW_OUT, "url", params->request->url.spec());
 
   // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
   const bool navigation_preload_sent = !!params->preload_handle;
   if (navigation_preload_sent) {
-    SetupNavigationPreload(event_id, params->request.url,
+    SetupNavigationPreload(event_id, params->request->url,
                            std::move(params->preload_handle));
   }
 
   // Dispatch the event to the service worker execution context.
   blink::WebServiceWorkerRequest web_request;
   ToWebServiceWorkerRequestForFetchEvent(
-      std::move(params->request), params->request_body_blob_uuid,
-      params->request_body_blob_size, std::move(params->request_body_blob),
-      params->client_id, std::move(params->request_body_blob_ptrs),
-      &web_request);
+      std::move(params->request), std::move(params->request_body_blob_ptrs),
+      params->client_id, &web_request);
   proxy_->DispatchFetchEvent(event_id, web_request, navigation_preload_sent);
 }
 
