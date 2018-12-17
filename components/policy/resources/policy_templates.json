@@ -14259,6 +14259,18 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'desc': '''Caption text of the field 'maximum' in the summary chart of a policy in the generated documentation. Present only if policy has a maximum range restriction.''',
       'text': '''Maximum:'''
     },
+    'deprecated_policy_group_caption': {
+      'desc': '''Localized name for the deprecated policies folder, for Microsoft's Group Policy Editor.''',
+      'text': '''Deprecated policies''',
+    },
+    'deprecated_policy_group_desc': {
+      'desc': '''Localized description for the deprecated policies folder, for Microsoft's Group Policy Editor.''',
+      'text': '''These policies are included here to make them easy to remove.''',
+    },
+    'deprecated_policy_desc': {
+      'desc': '''Description shared by all deprecated policies, in Microsoft Windows' Group Policy Editor.''',
+      'text': '''This policy is deprecated. Its usage is discouraged. Read more at https://support.google.com/chrome/a/answer/7643500'''
+    },
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
