@@ -860,6 +860,7 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
         return false;
     }
   }
+  DVLOGF(4) << "Calling VIDIOC_QBUF: " << V4L2Device::V4L2BufferToString(qbuf);
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   input_record.at_device = true;
 
@@ -900,6 +901,8 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(const JobRecord* job_record) {
   }
   qbuf.m.planes = qbuf_planes;
   qbuf.length = output_layout_.num_buffers();
+
+  DVLOGF(4) << "Calling VIDIOC_QBUF: " << V4L2Device::V4L2BufferToString(qbuf);
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   output_record.at_device = true;
   output_buffer_queued_count_++;

@@ -1216,6 +1216,43 @@ std::string V4L2Device::V4L2FormatToString(const struct v4l2_format& format) {
 }
 
 // static
+std::string V4L2Device::V4L2BufferToString(const struct v4l2_buffer& buffer) {
+  std::ostringstream s;
+  s << "v4l2_buffer type: " << buffer.type << ", memory: " << buffer.memory
+    << ", index: " << buffer.index << " bytesused: " << buffer.bytesused
+    << ", length: " << buffer.length;
+  if (buffer.type == V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+      buffer.type == V4L2_BUF_TYPE_VIDEO_OUTPUT) {
+    //  single-planar
+    if (buffer.memory == V4L2_MEMORY_MMAP) {
+      s << ", m.offset: " << buffer.m.offset;
+    } else if (buffer.memory == V4L2_MEMORY_USERPTR) {
+      s << ", m.userptr: " << buffer.m.userptr;
+    } else if (buffer.memory == V4L2_MEMORY_DMABUF) {
+      s << ", m.fd: " << buffer.m.fd;
+    }
+  } else if (V4L2_TYPE_IS_MULTIPLANAR(buffer.type)) {
+    for (size_t i = 0; i < buffer.length; ++i) {
+      const struct v4l2_plane& plane = buffer.m.planes[i];
+      s << ", m.planes[" << i << "](bytesused: " << plane.bytesused
+        << ", length: " << plane.length
+        << ", data_offset: " << plane.data_offset;
+      if (buffer.memory == V4L2_MEMORY_MMAP) {
+        s << ", m.mem_offset: " << plane.m.mem_offset;
+      } else if (buffer.memory == V4L2_MEMORY_USERPTR) {
+        s << ", m.userptr: " << plane.m.userptr;
+      } else if (buffer.memory == V4L2_MEMORY_DMABUF) {
+        s << ", m.fd: " << plane.m.fd;
+      }
+      s << ")";
+    }
+  } else {
+    s << " unsupported yet.";
+  }
+  return s.str();
+}
+
+// static
 base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
     const struct v4l2_format& format) {
   if (!V4L2_TYPE_IS_MULTIPLANAR(format.type)) {
