@@ -40,7 +40,7 @@
 <translation id="15373452373711364">Cursor del ratolí gran</translation>
 <translation id="1550523713251050646">Feu clic per veure més opcions</translation>
 <translation id="1570871743947603115">Activa o desactiva el Bluetooth. <ph name="STATE_TEXT" /></translation>
-<translation id="1589090746204042747">Accedir a tota la teva activitat d'aquesta sessió</translation>
+<translation id="1589090746204042747">Accedir a tota la teva activitat d'aquesta sessió.</translation>
 <translation id="1608626060424371292">Suprimeix aquest usuari</translation>
 <translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Inicia una consulta per veu</translation>
@@ -127,7 +127,7 @@
 <translation id="2946119680249604491">Afegeix una connexió</translation>
 <translation id="2961963223658824723">S'ha produït un error. Torna-ho a provar d'aquí a uns quants segons.</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2970920913501714344">Instal·lar aplicacions, extensions i temes</translation>
+<translation id="2970920913501714344">Instal·lar aplicacions, extensions i temes.</translation>
 <translation id="2995447421581609334">Mostra els dispositius d'emissió</translation>
 <translation id="2996462380875591307">La lupa acoblada està activada. Torna a prémer Ctrl+Cerca+D per desactivar-la.</translation>
 <translation id="3000461861112256445">Àudio mono</translation>
@@ -330,7 +330,7 @@
 <translation id="6627638273713273709">Cerca+Maj+K</translation>
 <translation id="6650933572246256093">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Contrasenya</translation>
-<translation id="6665545700722362599">Concedeix permís als llocs web, a les aplicacions i a les extensions per utilitzar els serveis d'ubicació o el micròfon, la càmera o altres funcions del dispositiu</translation>
+<translation id="6665545700722362599">Concedir permís als llocs web, a les aplicacions i a les extensions per utilitzar els serveis d'ubicació o el micròfon, la càmera o altres funcions del dispositiu.</translation>
 <translation id="6691659475504239918">Cerca+Maj+H</translation>
 <translation id="6696025732084565524">El teclat extraïble necessita una actualització molt important</translation>
 <translation id="6700713906295497288">Botó del menú d'IME</translation>

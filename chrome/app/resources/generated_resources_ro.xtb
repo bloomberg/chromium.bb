@@ -1421,6 +1421,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3141318088920353606">Se ascultă...</translation>
 <translation id="3141917231319778873">Solicitarea specificată nu este acceptată pe: „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="3143515551205905069">Anulează sincronizarea</translation>
+<translation id="3143754809889689516">Redă de la început</translation>
 <translation id="3144126448740580210">TERMINAT</translation>
 <translation id="3144647712221361880">Deschide linkul ca</translation>
 <translation id="3146006635381699911">Resursele pentru modul demo offline nu sunt disponibile.</translation>
@@ -3838,6 +3839,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6841186874966388268">Erori</translation>
 <translation id="6843423766595476978">Ok Google este configurat</translation>
 <translation id="6845038076637626672">Deschideți aplicația maximizată</translation>
+<translation id="6848388270925200958">În acest moment ai câteva carduri care pot fi folosite doar pe acest dispozitiv.</translation>
 <translation id="6851497530878285708">Aplicația a fost activată</translation>
 <translation id="6853388645642883916">Utilitarul de actualizare este inactiv</translation>
 <translation id="68541483639528434">Închide celelalte file</translation>
@@ -4100,6 +4102,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7253521419891527137">&amp;Aflați mai multe</translation>
 <translation id="7254554697254365959">Pagina nu a putut fi tradusă.</translation>
 <translation id="7254951428499890870">Sigur doriți să lansați „<ph name="APP_NAME" />” în modul de diagnosticare?</translation>
+<translation id="7255002516883565667">În acest moment ai un card care poate fi folosit doar pe acest dispozitiv</translation>
 <translation id="7255220508626648026">Se proiectează: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Aplicați</translation>
 <translation id="7256069762010468647">Site-ul folosește camera foto</translation>
@@ -4938,6 +4941,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8521475323816527629">Accesează rapid aplicațiile</translation>
 <translation id="8523493869875972733">Păstrează modificările</translation>
 <translation id="8523849605371521713">Adăugată de politică</translation>
+<translation id="8524783101666974011">Salvează carduri în Contul tău Google</translation>
 <translation id="8525306231823319788">Ecran complet</translation>
 <translation id="8528074251912154910">Adaugă limbi</translation>
 <translation id="8528962588711550376">Se conectează.</translation>

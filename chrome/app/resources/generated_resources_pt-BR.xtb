@@ -1421,6 +1421,7 @@
 <translation id="3141318088920353606">Ouvindo...</translation>
 <translation id="3141917231319778873">Essa solicitação não é compatível com "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3143515551205905069">Cancelar sincronização</translation>
+<translation id="3143754809889689516">Reproduzir do início</translation>
 <translation id="3144126448740580210">CONCLUÍDO</translation>
 <translation id="3144647712221361880">Abrir link como</translation>
 <translation id="3146006635381699911">Recursos indisponíveis para o modo de demonstração off-line.</translation>
@@ -3840,6 +3841,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6841186874966388268">Erros</translation>
 <translation id="6843423766595476978">Ok Google configurado</translation>
 <translation id="6845038076637626672">Abrir maximizado</translation>
+<translation id="6848388270925200958">No momento, você tem alguns cartões que só podem ser usados neste dispositivo</translation>
 <translation id="6851497530878285708">App ativado</translation>
 <translation id="6853388645642883916">Atualizador em modo de espera</translation>
 <translation id="68541483639528434">Fechar outras guias</translation>
@@ -4102,6 +4104,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7253521419891527137">&amp;Saiba mais</translation>
 <translation id="7254554697254365959">Não foi possível traduzir esta página.</translation>
 <translation id="7254951428499890870">Tem certeza que quer iniciar o aplicativo "<ph name="APP_NAME" />" no modo de diagnóstico?</translation>
+<translation id="7255002516883565667">No momento, você tem um cartão que só pode ser usado neste dispositivo</translation>
 <translation id="7255220508626648026">Transmitindo: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Aplicar</translation>
 <translation id="7256069762010468647">O site está usando sua câmera</translation>
@@ -4941,6 +4944,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8521475323816527629">Acessar seus apps rapidamente</translation>
 <translation id="8523493869875972733">Manter alterações</translation>
 <translation id="8523849605371521713">Adicionada por uma política</translation>
+<translation id="8524783101666974011">Salvar cartões na Conta do Google</translation>
 <translation id="8525306231823319788">Tela cheia</translation>
 <translation id="8528074251912154910">Adicionar idiomas</translation>
 <translation id="8528962588711550376">Fazendo login.</translation>

@@ -63,6 +63,7 @@
 <translation id="1820259098641718022">Lisati lugemisloendisse</translation>
 <translation id="1821253160463689938">Kasutage küpsisefaile oma eelistuste meelespidamiseks isegi siis, kui te neid lehti ei külasta</translation>
 <translation id="1876721852596493031">Kasutusandm. saatm.</translation>
+<translation id="1880677175115548835">Valige tekst</translation>
 <translation id="1886928167269928266">Alates algusest</translation>
 <translation id="1911619930368729126">Laadi üles Google Drive'i</translation>
 <translation id="191179954310195971">Muud Google'i teenused</translation>
@@ -351,6 +352,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> üksust on kustutatud</translation>
 <translation id="6541915733953096570">Viimane tund</translation>
 <translation id="6548479190262846511">Selle saidi jaoks ei leitud paroole</translation>
+<translation id="6642362222295953972">Lülita olemasolevale vahelehele</translation>
 <translation id="6643016212128521049">Tühjenda</translation>
 <translation id="6656103420185847513">Kausta muutmine</translation>
 <translation id="6657585470893396449">Parool</translation>

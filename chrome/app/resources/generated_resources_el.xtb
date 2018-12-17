@@ -1421,6 +1421,7 @@
 <translation id="3141318088920353606">Ακρόαση…</translation>
 <translation id="3141917231319778873">Το συγκεκριμένο αίτημα δεν υποστηρίζεται στη συσκευή: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3143515551205905069">Ακύρωση συγχρονισμού</translation>
+<translation id="3143754809889689516">Αναπαραγωγή από την αρχή</translation>
 <translation id="3144126448740580210">ΤΕΛΟΣ</translation>
 <translation id="3144647712221361880">Άνοιγμα συνδέσμου ως</translation>
 <translation id="3146006635381699911">Οι πόροι λειτουργίας επίδειξης εκτός σύνδεσης δεν είναι διαθέσιμοι.</translation>
@@ -3839,6 +3840,7 @@
 <translation id="6841186874966388268">Σφάλματα</translation>
 <translation id="6843423766595476978">Η εντολή "Ok Google" είναι έτοιμη</translation>
 <translation id="6845038076637626672">Άνοιγμα μεγιστοποιημένης εφαρμογής</translation>
+<translation id="6848388270925200958">Αυτήν τη στιγμή, έχετε ορισμένες κάρτες που μπορούν να χρησιμοποιηθούν μόνο σε αυτήν τη συσκευή</translation>
 <translation id="6851497530878285708">Η εφαρμογή ενεργοποιήθηκε</translation>
 <translation id="6853388645642883916">Το πρόγραμμα ενημέρωσης είναι σε αδράνεια</translation>
 <translation id="68541483639528434">Κλείσιμο των άλλων καρτελών</translation>
@@ -4101,6 +4103,7 @@
 <translation id="7253521419891527137">&amp;Μάθετε περισσότερα</translation>
 <translation id="7254554697254365959">Δεν ήταν δυνατή η μετάφραση αυτής της σελίδας.</translation>
 <translation id="7254951428499890870">Είστε βέβαιοι ότι θέλετε να ξεκινήσετε την εφαρμογή "<ph name="APP_NAME" />" στη λειτουργία διάγνωσης;</translation>
+<translation id="7255002516883565667">Αυτήν τη στιγμή, έχετε μία κάρτα που μπορεί να χρησιμοποιηθεί μόνο σε αυτήν τη συσκευή</translation>
 <translation id="7255220508626648026">Μετάδοση: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Εφαρμογή</translation>
 <translation id="7256069762010468647">Ο ιστότοπος χρησιμοποιεί την κάμερά σας</translation>
@@ -4939,6 +4942,7 @@
 <translation id="8521475323816527629">Γρήγορη μετάβαση στις εφαρμογές</translation>
 <translation id="8523493869875972733">Διατήρηση αλλαγών</translation>
 <translation id="8523849605371521713">Προστέθηκε από την πολιτική</translation>
+<translation id="8524783101666974011">Αποθήκευση καρτών στον Βοηθό Google</translation>
 <translation id="8525306231823319788">Πλήρης οθόνη</translation>
 <translation id="8528074251912154910">Προσθήκη γλωσσών</translation>
 <translation id="8528962588711550376">Γίνεται σύνδεση.</translation>

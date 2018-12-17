@@ -63,6 +63,7 @@
 <translation id="1820259098641718022">Dodano do listy Do przeczytania</translation>
 <translation id="1821253160463689938">Twoje ustawienia będą zapisywane w plikach cookie, nawet jeśli nie odwiedzisz tych stron</translation>
 <translation id="1876721852596493031">Wysyłaj dane na temat użytkowania</translation>
+<translation id="1880677175115548835">Zaznacz tekst</translation>
 <translation id="1886928167269928266">Od początku</translation>
 <translation id="1911619930368729126">Prześlij na Dysk Google</translation>
 <translation id="191179954310195971">Inne usługi Google</translation>
@@ -351,6 +352,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6482629121755362506">Usunięte elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Ostatnia godzina</translation>
 <translation id="6548479190262846511">Nie znaleziono haseł do tej strony</translation>
+<translation id="6642362222295953972">Przełącz na istniejącą kartę</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6656103420185847513">Folder edytora</translation>
 <translation id="6657585470893396449">Hasło</translation>

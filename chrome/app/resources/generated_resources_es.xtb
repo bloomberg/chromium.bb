@@ -1421,6 +1421,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3141318088920353606">Escuchando...</translation>
 <translation id="3141917231319778873">"<ph name="DEVICE_NAME" />" no admite la solicitud proporcionada.</translation>
 <translation id="3143515551205905069">Cancelar sincronización</translation>
+<translation id="3143754809889689516">Reproducir desde el principio</translation>
 <translation id="3144126448740580210">LISTO</translation>
 <translation id="3144647712221361880">Abrir enlace como</translation>
 <translation id="3146006635381699911">Los recursos de la demostración sin conexión no están disponibles.</translation>
@@ -3835,6 +3836,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6841186874966388268">Errores</translation>
 <translation id="6843423766595476978">Ok Google ya se ha configurado</translation>
 <translation id="6845038076637626672">Abrir de forma maximizada</translation>
+<translation id="6848388270925200958">Tienes algunas tarjetas que solo se pueden utilizar en este dispositivo</translation>
 <translation id="6851497530878285708">Aplicación habilitada</translation>
 <translation id="6853388645642883916">Herramienta de actualización no disponible</translation>
 <translation id="68541483639528434">Cerrar las demás pestañas</translation>
@@ -4097,6 +4099,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7253521419891527137">&amp;Más información</translation>
 <translation id="7254554697254365959">No se ha podido traducir la página.</translation>
 <translation id="7254951428499890870">¿Seguro que quieres iniciar <ph name="APP_NAME" /> en modo de diagnóstico?</translation>
+<translation id="7255002516883565667">Tienes una tarjeta que solo se puede usar en este dispositivo</translation>
 <translation id="7255220508626648026">Enviando: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Aplicar</translation>
 <translation id="7256069762010468647">El sitio web está usando tu cámara</translation>
@@ -4935,6 +4938,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8521475323816527629">Accede rápidamente a tus aplicaciones</translation>
 <translation id="8523493869875972733">Mantener cambios</translation>
 <translation id="8523849605371521713">Añadida por política</translation>
+<translation id="8524783101666974011">Guardar las tarjetas en tu cuenta de Google</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="8528074251912154910">Añadir idiomas</translation>
 <translation id="8528962588711550376">Accediendo</translation>

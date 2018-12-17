@@ -1421,6 +1421,7 @@
 <translation id="3141318088920353606">Говорите</translation>
 <translation id="3141917231319778873">Запрос не поддерживается на устройстве <ph name="DEVICE_NAME" />.</translation>
 <translation id="3143515551205905069">Отмена</translation>
+<translation id="3143754809889689516">Воспроизвести с начала</translation>
 <translation id="3144126448740580210">ГОТОВО</translation>
 <translation id="3144647712221361880">Открыть ссылку как</translation>
 <translation id="3146006635381699911">Ресурсы демонстрационного офлайн-режима недоступны.</translation>
@@ -3838,6 +3839,7 @@
 <translation id="6841186874966388268">Ошибки</translation>
 <translation id="6843423766595476978">Команда "Окей, Google" настроена</translation>
 <translation id="6845038076637626672">Развернуть</translation>
+<translation id="6848388270925200958">Сейчас некоторые из ваших карт можно использовать только на этом устройстве</translation>
 <translation id="6851497530878285708">Приложение включено</translation>
 <translation id="6853388645642883916">Программа обновлений перешла в спящий режим</translation>
 <translation id="68541483639528434">Закрыть другие вкладки</translation>
@@ -4100,6 +4102,7 @@
 <translation id="7253521419891527137">&amp;Подробнее</translation>
 <translation id="7254554697254365959">Не удалось перевести страницу</translation>
 <translation id="7254951428499890870">Запустить приложение "<ph name="APP_NAME" />" в режиме диагностики?</translation>
+<translation id="7255002516883565667">Сейчас вашу карту можно использовать только на этом устройстве</translation>
 <translation id="7255220508626648026">Трансляция: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Применить</translation>
 <translation id="7256069762010468647">Сайт использует камеру</translation>
@@ -4937,6 +4940,7 @@
 <translation id="8521475323816527629">Быстрый переход к приложениям</translation>
 <translation id="8523493869875972733">Закрыть</translation>
 <translation id="8523849605371521713">Добавлено по правилу</translation>
+<translation id="8524783101666974011">Сохраните карты в аккаунте Google</translation>
 <translation id="8525306231823319788">Полноэкранный режим</translation>
 <translation id="8528074251912154910">Добавить языки</translation>
 <translation id="8528962588711550376">Выполняется вход.</translation>

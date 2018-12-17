@@ -1416,6 +1416,7 @@
 <translation id="3141318088920353606">正在听取…</translation>
 <translation id="3141917231319778873">“<ph name="DEVICE_NAME" />”不支持指定的请求。</translation>
 <translation id="3143515551205905069">取消同步</translation>
+<translation id="3143754809889689516">从头播放</translation>
 <translation id="3144126448740580210">完成</translation>
 <translation id="3144647712221361880">以其他身份打开链接</translation>
 <translation id="3146006635381699911">无法使用离线演示模式资源。</translation>
@@ -3825,6 +3826,7 @@
 <translation id="6841186874966388268">错误</translation>
 <translation id="6843423766595476978">Ok Google 已设置完毕</translation>
 <translation id="6845038076637626672">以最大化模式打开</translation>
+<translation id="6848388270925200958">此刻，您有一些卡只能在这部设备上使用</translation>
 <translation id="6851497530878285708">已启用此应用</translation>
 <translation id="6853388645642883916">更新程序处于休眠模式</translation>
 <translation id="68541483639528434">关闭其他标签页</translation>
@@ -4087,6 +4089,7 @@
 <translation id="7253521419891527137">了解详情(&amp;L)</translation>
 <translation id="7254554697254365959">无法翻译此网页。</translation>
 <translation id="7254951428499890870">确定要以诊断模式启动“<ph name="APP_NAME" />”吗？</translation>
+<translation id="7255002516883565667">此刻，您有 1 张卡只能在这部设备上使用</translation>
 <translation id="7255220508626648026">正在投射：<ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">应用</translation>
 <translation id="7256069762010468647">该网站正在使用您的摄像头</translation>
@@ -4922,6 +4925,7 @@
 <translation id="8521475323816527629">快速访问您的应用</translation>
 <translation id="8523493869875972733">保留更改</translation>
 <translation id="8523849605371521713">按政策添加</translation>
+<translation id="8524783101666974011">将这些卡保存在您的 Google 帐号中</translation>
 <translation id="8525306231823319788">全屏</translation>
 <translation id="8528074251912154910">添加语言</translation>
 <translation id="8528962588711550376">正在登录。</translation>

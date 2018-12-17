@@ -63,6 +63,7 @@
 <translation id="1820259098641718022">Lagt til i leselisten</translation>
 <translation id="1821253160463689938">Bruker informasjonskapsler til å huske preferansene dine, selv om du ikke går til de sidene</translation>
 <translation id="1876721852596493031">Send bruksdata</translation>
+<translation id="1880677175115548835">Markér tekst</translation>
 <translation id="1886928167269928266">Tidenes morgen</translation>
 <translation id="1911619930368729126">Last opp til Google Disk</translation>
 <translation id="191179954310195971">Andre Google-tjenester</translation>
@@ -351,6 +352,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer slettet</translation>
 <translation id="6541915733953096570">Den siste timen</translation>
 <translation id="6548479190262846511">Fant ingen passord for dette nettstedet</translation>
+<translation id="6642362222295953972">Bytt til den eksisterende fanen</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6656103420185847513">Mapperedigering</translation>
 <translation id="6657585470893396449">Passord</translation>
