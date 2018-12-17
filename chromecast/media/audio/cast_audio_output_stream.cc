@@ -60,11 +60,40 @@ constexpr base::TimeDelta kMixerBufferSizeInTime =
 
 namespace chromecast {
 namespace media {
+namespace {
+
+AudioContentType GetContentType(const std::string& device_id) {
+  if (::media::AudioDeviceDescription::IsCommunicationsDevice(device_id)) {
+    return AudioContentType::kCommunication;
+  }
+  return AudioContentType::kMedia;
+}
+
+mixer_service::MixerStreamParams::ContentType ConvertContentType(
+    AudioContentType content_type) {
+  switch (content_type) {
+    case AudioContentType::kMedia:
+      return mixer_service::MixerStreamParams::CONTENT_TYPE_MEDIA;
+    case AudioContentType::kCommunication:
+      return mixer_service::MixerStreamParams::CONTENT_TYPE_COMMUNICATION;
+    default:
+      NOTREACHED();
+      return mixer_service::MixerStreamParams::CONTENT_TYPE_MEDIA;
+  }
+}
+
+bool IsValidDeviceId(const std::string& device_id) {
+  return ::media::AudioDeviceDescription::IsCommunicationsDevice(device_id) ||
+         device_id == ::media::AudioDeviceDescription::kDefaultDeviceId;
+}
+
+}  // namespace
 
 class CastAudioOutputStream::CmaWrapper : public CmaBackend::Decoder::Delegate {
  public:
   CmaWrapper(scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
              const ::media::AudioParameters& audio_params,
+             const std::string& device_id,
              CmaBackendFactory* cma_backend_factory);
 
   void Initialize(const std::string& application_session_id,
@@ -88,6 +117,7 @@ class CastAudioOutputStream::CmaWrapper : public CmaBackend::Decoder::Delegate {
 
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   const ::media::AudioParameters audio_params_;
+  const std::string device_id_;
   CmaBackendFactory* const cma_backend_factory_;
 
   AudioOutputState media_thread_state_;
@@ -112,9 +142,11 @@ class CastAudioOutputStream::CmaWrapper : public CmaBackend::Decoder::Delegate {
 CastAudioOutputStream::CmaWrapper::CmaWrapper(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     const ::media::AudioParameters& audio_params,
+    const std::string& device_id,
     CmaBackendFactory* cma_backend_factory)
     : audio_task_runner_(audio_task_runner),
       audio_params_(audio_params),
+      device_id_(device_id),
       cma_backend_factory_(cma_backend_factory),
       media_thread_state_(kClosed),
       timestamp_helper_(audio_params_.sample_rate()),
@@ -122,6 +154,7 @@ CastAudioOutputStream::CmaWrapper::CmaWrapper(
   DETACH_FROM_THREAD(media_thread_checker_);
   DCHECK(audio_task_runner_);
   DCHECK(cma_backend_factory_);
+  DCHECK(IsValidDeviceId(device_id));
 
   // Set the default state.
   push_in_progress_ = false;
@@ -149,8 +182,7 @@ void CastAudioOutputStream::CmaWrapper::Initialize(
   cma_backend_task_runner_ = std::make_unique<TaskRunnerImpl>();
   MediaPipelineDeviceParams device_params(
       MediaPipelineDeviceParams::kModeIgnorePts, stream_type,
-      cma_backend_task_runner_.get(), AudioContentType::kMedia,
-      ::media::AudioDeviceDescription::kDefaultDeviceId);
+      cma_backend_task_runner_.get(), GetContentType(device_id_), device_id_);
   device_params.session_id = application_session_id;
   device_params.multiroom = multiroom_info->multiroom;
   device_params.audio_channel = multiroom_info->audio_channel;
@@ -342,6 +374,7 @@ class CastAudioOutputStream::MixerServiceWrapper
  public:
   MixerServiceWrapper(
       const ::media::AudioParameters& audio_params,
+      const std::string& device_id,
       MixerServiceConnectionFactory* mixer_service_connection_factory);
   ~MixerServiceWrapper() override = default;
 
@@ -364,6 +397,7 @@ class CastAudioOutputStream::MixerServiceWrapper
   void OnEosPlayed() override { NOTREACHED(); }
 
   const ::media::AudioParameters audio_params_;
+  const std::string device_id_;
   MixerServiceConnectionFactory* mixer_service_connection_factory_;
   std::unique_ptr<::media::AudioBus> audio_bus_;
   AudioSourceCallback* source_callback_;
@@ -381,14 +415,17 @@ class CastAudioOutputStream::MixerServiceWrapper
 
 CastAudioOutputStream::MixerServiceWrapper::MixerServiceWrapper(
     const ::media::AudioParameters& audio_params,
+    const std::string& device_id,
     MixerServiceConnectionFactory* mixer_service_connection_factory)
     : audio_params_(audio_params),
+      device_id_(device_id),
       mixer_service_connection_factory_(mixer_service_connection_factory),
       source_callback_(nullptr),
       volume_(1.0f),
       io_thread_("CastAudioOutputStream IO") {
   DCHECK(mixer_service_connection_factory_);
   DETACH_FROM_THREAD(io_thread_checker_);
+  DCHECK(IsValidDeviceId(device_id));
 
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -403,13 +440,12 @@ void CastAudioOutputStream::MixerServiceWrapper::Start(
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   media::mixer_service::MixerStreamParams params;
+  params.set_content_type(ConvertContentType(GetContentType(device_id_)));
+  params.set_device_id(device_id_);
   params.set_stream_type(
       media::mixer_service::MixerStreamParams::STREAM_TYPE_SFX);
-  params.set_content_type(
-      media::mixer_service::MixerStreamParams::CONTENT_TYPE_MEDIA);
   params.set_sample_format(
       media::mixer_service::MixerStreamParams::SAMPLE_FORMAT_FLOAT_P);
-  params.set_device_id(::media::AudioDeviceDescription::kDefaultDeviceId);
   params.set_sample_rate(audio_params_.sample_rate());
   params.set_num_channels(audio_params_.channels());
   int64_t start_threshold_frames = ::media::AudioTimestampHelper::TimeToFrames(
@@ -496,20 +532,25 @@ CastAudioOutputStream::CastAudioOutputStream(
     CastAudioManager* audio_manager,
     service_manager::Connector* connector,
     const ::media::AudioParameters& audio_params,
-    const std::string& group_id,
+    const std::string& device_id_or_group_id,
     MixerServiceConnectionFactory* mixer_service_connection_factory)
     : volume_(1.0),
       audio_thread_state_(kClosed),
       audio_manager_(audio_manager),
       connector_(connector),
       audio_params_(audio_params),
-      group_id_(group_id),
+      device_id_(::media::AudioDeviceDescription::IsCommunicationsDevice(
+                     device_id_or_group_id)
+                     ? ::media::AudioDeviceDescription::kCommunicationsDeviceId
+                     : ::media::AudioDeviceDescription::kDefaultDeviceId),
+      group_id_(IsValidDeviceId(device_id_or_group_id) ? ""
+                                                       : device_id_or_group_id),
       mixer_service_connection_factory_(mixer_service_connection_factory),
       audio_weak_factory_(this) {
   DCHECK(audio_manager_);
   DCHECK(connector_);
   DETACH_FROM_THREAD(audio_thread_checker_);
-  VLOG(1) << __func__ << " " << this << " created from group_id=" << group_id
+  VLOG(1) << __func__ << " " << this << " created from group_id=" << group_id_
           << " with audio_params=" << audio_params_.AsHumanReadableString();
 }
 
@@ -682,7 +723,7 @@ void CastAudioOutputStream::OnGetMultiroomInfo(
 
   if (!mixer_service_connection_factory_) {
     cma_wrapper_ = std::make_unique<CmaWrapper>(
-        audio_manager_->GetTaskRunner(), audio_params_,
+        audio_manager_->GetTaskRunner(), audio_params_, device_id_,
         audio_manager_->cma_backend_factory());
     POST_TO_CMA_WRAPPER(Initialize, application_session_id,
                         std::move(multiroom_info));
@@ -695,7 +736,7 @@ void CastAudioOutputStream::OnGetMultiroomInfo(
            CastMediaShlib::AddDirectAudioSource);
 
     mixer_service_wrapper_ = std::make_unique<MixerServiceWrapper>(
-        audio_params_, mixer_service_connection_factory_);
+        audio_params_, device_id_, mixer_service_connection_factory_);
   }
 
   if (pending_start_)

@@ -16,18 +16,21 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 // NOTE: CastAudioManager receives a |device_id| from the audio service, and
-// passes it to CastAudioOutputStream as a |group_id|.
+// passes it to CastAudioOutputStream as a |device_id_or_group_id|.
 //
-// The output stream requires the |group_id| so that it can determine the Cast
-// |session_id| from CastSessionIdMap and pass it to CMA for multizone audio.
-// The output stream does not require a real |device_id|, so we have repurposed
-// the field for Cast devices only, in order to pass the |group_id| through all
-// the layers of the audio stack into the CastAudioOutputStream.
+// The output stream interprets the |device_id_or_group_id| as a device_id if it
+// the value matches a valid device_id, either kCommunicationsDeviceId or
+// kDefaultDeviceId (or an empty string as kDefaultDeviceId). If
+// |device_id_or_group_id| does not match a valid device_id, then it is
+// interpreted as a group_id. group_id is used to determine the |session_id|
+// from CastSessionIdMap. Multizone audio is only enabled for kDefaultDeviceId
+// so the correct device_id can be inferred without conflict. |group_id| are
+// uuid.
 //
 // At the top end of the audio stack, StreamFactory replaces the |device_id|
-// with the |group_id|. This implementation in StreamFactory must stay as-is, or
-// else multizone audio will be broken for Cast devices using CAOS for their
-// primary audio playback.
+// with the |group_id| if the |group_id| is not empty. This implementation in
+// StreamFactory is required for multizone audio for Cast devices using CAOS for
+// their primary audio playback.
 
 namespace chromecast {
 
@@ -56,6 +59,8 @@ class CastAudioManager : public ::media::AudioManagerBase {
 
   // AudioManagerBase implementation.
   bool HasAudioOutputDevices() override;
+  void GetAudioOutputDeviceNames(
+      ::media::AudioDeviceNames* device_names) override;
   bool HasAudioInputDevices() override;
   void GetAudioInputDeviceNames(
       ::media::AudioDeviceNames* device_names) override;
@@ -81,7 +86,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
       const ::media::AudioManager::LogCallback& log_callback) override;
   ::media::AudioOutputStream* MakeLowLatencyOutputStream(
       const ::media::AudioParameters& params,
-      const std::string& device_id,
+      const std::string& device_id_or_group_id,
       const ::media::AudioManager::LogCallback& log_callback) override;
   ::media::AudioOutputStream* MakeBitstreamOutputStream(
       const ::media::AudioParameters& params,
@@ -101,8 +106,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
 
   // Generates a CastAudioOutputStream for |mixer_|.
   virtual ::media::AudioOutputStream* MakeMixerOutputStream(
-      const ::media::AudioParameters& params,
-      const std::string& device_id);
+      const ::media::AudioParameters& params);
 
  private:
   friend class CastAudioMixer;
