@@ -151,46 +151,47 @@ class SkiaOutputSurfaceImpl::YUVAPromiseTextureHelper {
     // The ownership of the contexts will be passed into
     // makeYUVAPromisTexture(). The HelperType::Done will always be called. It
     // will delete contexts.
-    const auto process_planar = [&](size_t i, auto format) {
+    const auto process_planar = [&](size_t i, ResourceFormat resource_format,
+                                    GLenum gl_format) {
       auto& metadata = metadatas[i];
-      metadata.driver_backend_format = GrBackendFormat::MakeGL(
-          format, *metadata.backend_format.getGLTarget());
-      formats[i] = metadata.driver_backend_format;
+      metadata.resource_format = resource_format;
+      formats[i] = GrBackendFormat::MakeGL(
+          gl_format, metadata.mailbox_holder.texture_target);
       yuva_sizes[i].set(metadata.size.width(), metadata.size.height());
       contexts[i] =
           new PlaneHelper(impl->impl_on_gpu_->weak_ptr(), std::move(metadata));
     };
 
     if (is_i420) {
-      process_planar(0, GL_R8);
+      process_planar(0, RED_8, GL_R8);
       indices[SkYUVAIndex::kY_Index].fIndex = 0;
       indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
 
-      process_planar(1, GL_R8);
+      process_planar(1, RED_8, GL_R8);
       indices[SkYUVAIndex::kU_Index].fIndex = 1;
       indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
 
-      process_planar(2, GL_R8);
+      process_planar(2, RED_8, GL_R8);
       indices[SkYUVAIndex::kV_Index].fIndex = 2;
       indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kR;
       if (has_alpha) {
-        process_planar(3, GL_R8);
+        process_planar(3, RED_8, GL_R8);
         indices[SkYUVAIndex::kA_Index].fIndex = 3;
         indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
       }
     } else {
-      process_planar(0, GL_R8);
+      process_planar(0, RED_8, GL_R8);
       indices[SkYUVAIndex::kY_Index].fIndex = 0;
       indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
 
-      process_planar(1, GL_RG8);
+      process_planar(1, RG_88, GL_RG8);
       indices[SkYUVAIndex::kU_Index].fIndex = 1;
       indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
 
       indices[SkYUVAIndex::kV_Index].fIndex = 1;
       indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kG;
       if (has_alpha) {
-        process_planar(2, GL_R8);
+        process_planar(2, RED_8, GL_R8);
         indices[SkYUVAIndex::kA_Index].fIndex = 2;
         indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
       }
@@ -396,29 +397,30 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
 
+  GrBackendFormat backend_format;
   if (!gpu_service_->is_using_vulkan()) {
     // Convert internal format from GLES2 to platform GL.
     const auto* version_info = impl_on_gpu_->gl_version_info();
-    metadata.driver_backend_format = GrBackendFormat::MakeGL(
+    backend_format = GrBackendFormat::MakeGL(
         gl::GetInternalFormat(version_info,
-                              *metadata.backend_format.getGLFormat()),
-        *metadata.backend_format.getGLTarget());
+                              TextureStorageFormat(metadata.resource_format)),
+        metadata.mailbox_holder.texture_target);
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    metadata.driver_backend_format =
+    backend_format =
         GrBackendFormat::MakeVk(ToVkFormat(metadata.resource_format));
 #else
     NOTREACHED();
 #endif
   }
 
-  DCHECK(!metadata.mailbox.IsZero());
-  resource_sync_tokens_.push_back(metadata.sync_token);
+  DCHECK(!metadata.mailbox_holder.mailbox.IsZero());
+  resource_sync_tokens_.push_back(metadata.mailbox_holder.sync_token);
   SkColorType sk_color_type = ResourceFormatToClosestSkColorType(
       /*gpu_compositing=*/true, metadata.resource_format);
 
   return PromiseTextureHelper<ResourceMetadata>::MakePromiseSkImage(
-      this, &recorder_.value(), metadata.driver_backend_format, metadata.size,
+      this, &recorder_.value(), backend_format, metadata.size,
       metadata.mip_mapped, metadata.origin, sk_color_type, metadata.alpha_type,
       metadata.color_space, std::move(metadata));
 }

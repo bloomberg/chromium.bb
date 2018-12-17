@@ -520,17 +520,14 @@ ResourceMetadata DisplayResourceProvider::LockForExternalUse(ResourceId id) {
   // TODO(penghuang): support software resource.
   DCHECK(resource->is_gpu_resource_type());
 
-  metadata.mailbox = resource->transferable.mailbox_holder.mailbox;
-  metadata.backend_format = GrBackendFormat::MakeGL(
-      TextureStorageFormat(resource->transferable.format),
-      resource->transferable.mailbox_holder.texture_target);
+  metadata.mailbox_holder = resource->transferable.mailbox_holder;
   metadata.size = resource->transferable.size;
   metadata.mip_mapped = GrMipMapped::kNo;
   metadata.origin = kTopLeft_GrSurfaceOrigin;
   metadata.resource_format = resource->transferable.format;
   metadata.alpha_type = kPremul_SkAlphaType;
   metadata.color_space = nullptr;
-  metadata.sync_token = resource->sync_token();
+  metadata.mailbox_holder.sync_token = resource->sync_token();
 
   resource->locked_for_external_use = true;
   return metadata;

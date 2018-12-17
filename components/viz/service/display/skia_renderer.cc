@@ -110,7 +110,7 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     if (!image) {
       auto metadata =
           skia_renderer->lock_set_for_external_use_.LockResource(resource_id);
-      DCHECK(!metadata.mailbox.IsZero());
+      DCHECK(!metadata.mailbox_holder.mailbox.IsZero());
       image = skia_renderer->skia_output_surface_->MakePromiseSkImage(
           std::move(metadata));
       LOG_IF(ERROR, !image) << "Failed to create the promise sk image.";

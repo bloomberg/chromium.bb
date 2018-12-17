@@ -7,10 +7,10 @@
 
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/service/viz_service_export.h"
-#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
-#include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -24,15 +24,8 @@ struct VIZ_SERVICE_EXPORT ResourceMetadata {
   ~ResourceMetadata();
   ResourceMetadata& operator=(ResourceMetadata&& other);
 
-  // A mailbox for the resource texture.
-  gpu::Mailbox mailbox;
-
-  // The backend format for the resource texture. It includes sized texture
-  // format and texture target. Sometimes backend_format differs from
-  // driver_backend_format when we emulate support (e.g. BGRA8 actually
-  // implemented as RGBA8).
-  GrBackendFormat backend_format;
-  GrBackendFormat driver_backend_format;
+  // A mailbox holder for the resource texture.
+  gpu::MailboxHolder mailbox_holder;
 
   // The resource size.
   gfx::Size size;
@@ -51,9 +44,6 @@ struct VIZ_SERVICE_EXPORT ResourceMetadata {
 
   // The color space for the resource texture. It could be null.
   sk_sp<SkColorSpace> color_space;
-
-  // The sync token for the resource texture.
-  gpu::SyncToken sync_token;
 };
 
 }  // namespace viz

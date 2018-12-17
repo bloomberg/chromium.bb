@@ -19,13 +19,16 @@ namespace gfx {
 class Size;
 }  // namespace gfx
 
+namespace gl {
+struct GLVersionInfo;
+}  // namespace gl
+
 namespace gpu {
 // Creates a GrBackendTexture from a service ID. Skia does not take ownership.
 // Returns true on success.
-GPU_GLES2_EXPORT bool GetGrBackendTexture(GLenum target,
+GPU_GLES2_EXPORT bool GetGrBackendTexture(const gl::GLVersionInfo* version_info,
+                                          GLenum target,
                                           const gfx::Size& size,
-                                          GLenum internal_format,
-                                          GLenum driver_internal_format,
                                           GLuint service_id,
                                           viz::ResourceFormat resource_format,
                                           GrBackendTexture* gr_texture);

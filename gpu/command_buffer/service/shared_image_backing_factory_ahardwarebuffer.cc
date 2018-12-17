@@ -58,13 +58,9 @@ class SharedImageRepresentationSkiaGLAHB
                                      SharedImageBacking* backing,
                                      MemoryTypeTracker* tracker,
                                      GLenum target,
-                                     GLenum internal_format,
-                                     GLenum driver_internal_format,
                                      GLuint service_id)
       : SharedImageRepresentationSkia(manager, backing, tracker),
         target_(target),
-        internal_format_(internal_format),
-        driver_internal_format_(driver_internal_format),
         service_id_(service_id) {}
 
   ~SharedImageRepresentationSkiaGLAHB() override { DCHECK(!write_surface_); }
@@ -77,8 +73,8 @@ class SharedImageRepresentationSkiaGLAHB
       return nullptr;
 
     GrBackendTexture backend_texture;
-    if (!GetGrBackendTexture(target_, size(), internal_format_,
-                             driver_internal_format_, service_id_, format(),
+    if (!GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
+                             target_, size(), service_id_, format(),
                              &backend_texture)) {
       return nullptr;
     }
@@ -100,8 +96,8 @@ class SharedImageRepresentationSkiaGLAHB
   }
 
   bool BeginReadAccess(GrBackendTexture* backend_texture) override {
-    if (!GetGrBackendTexture(target_, size(), internal_format_,
-                             driver_internal_format_, service_id_, format(),
+    if (!GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
+                             target_, size(), service_id_, format(),
                              backend_texture)) {
       return false;
     }
@@ -114,8 +110,6 @@ class SharedImageRepresentationSkiaGLAHB
 
  private:
   GLenum target_;
-  GLenum internal_format_ = 0;
-  GLenum driver_internal_format_ = 0;
   GLuint service_id_;
 
   SkSurface* write_surface_ = nullptr;
@@ -207,8 +201,7 @@ class SharedImageBackingAHB : public SharedImageBacking {
 
     DCHECK(texture_);
     return std::make_unique<SharedImageRepresentationSkiaGLAHB>(
-        manager, this, tracker, texture_->target(), internal_format_,
-        driver_internal_format_, texture_->service_id());
+        manager, this, tracker, texture_->target(), texture_->service_id());
   }
 
  private:
@@ -275,9 +268,7 @@ class SharedImageBackingAHB : public SharedImageBacking {
     texture_->SetLevelImage(target, 0, egl_image.get(), gles2::Texture::BOUND);
     texture_->SetImmutable(true);
     api->glBindTextureFn(target, old_texture_binding);
-    internal_format_ = egl_image->GetInternalFormat();
-    driver_internal_format_ = gl::GetInternalFormat(
-        gl::GLContext::GetCurrent()->GetVersionInfo(), internal_format_);
+    DCHECK_EQ(egl_image->GetInternalFormat(), gl_format);
     return true;
   }
 
@@ -286,8 +277,6 @@ class SharedImageBackingAHB : public SharedImageBacking {
   // This texture will be lazily initialised/created when ProduceGLTexture is
   // called.
   gles2::Texture* texture_ = nullptr;
-  GLenum internal_format_ = 0;
-  GLenum driver_internal_format_ = 0;
 
   // TODO(vikassoni): In future when we add begin/end write support, we will
   // need to properly use this flag to pass the is_cleared_ information to
