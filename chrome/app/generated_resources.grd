@@ -5535,7 +5535,7 @@ the Bookmarks menu.">
         <message name="IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL" desc="A button in the Chrome Cleanup reboot prompt dialog. Clicking this button causes the user's computer to turn off (shut down) and turn back on again. Imperative.">
           Restart computer
         </message>
-        <message name="IDS_CHROME_CLEANUP_LOGS_PERMISSION" desc="A checkbox label, appearing on both the Chrome Cleanup modal dialog and webui page, asking the user for permission to send details about the cleanup operation to Google.">
+        <message name="IDS_CHROME_CLEANUP_LOGS_PERMISSION" desc="A checkbox label, appearing on the Chrome Cleanup modal dialog, asking the user for permission to send details about the cleanup operation to Google.">
           Report details to Google
         </message>
       </if>

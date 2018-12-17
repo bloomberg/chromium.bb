@@ -105,14 +105,7 @@ std::string IdleReasonToString(
 }  // namespace
 
 ChromeCleanupHandler::ChromeCleanupHandler(Profile* profile)
-    : controller_(ChromeCleanerController::GetInstance()), profile_(profile) {
-  DCHECK(g_browser_process->local_state());
-  logs_enabled_pref_.Init(g_browser_process->local_state());
-  logs_enabled_pref_.Add(
-      prefs::kSwReporterReportingEnabled,
-      base::BindRepeating(&ChromeCleanupHandler::OnLogsEnabledPrefChanged,
-                          base::Unretained(this)));
-}
+    : controller_(ChromeCleanerController::GetInstance()), profile_(profile) {}
 
 ChromeCleanupHandler::~ChromeCleanupHandler() {
   controller_->RemoveObserver(this);
@@ -131,10 +124,6 @@ void ChromeCleanupHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "restartComputer",
       base::BindRepeating(&ChromeCleanupHandler::HandleRestartComputer,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "setLogsUploadPermission",
-      base::BindRepeating(&ChromeCleanupHandler::HandleSetLogsUploadPermission,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "startCleanup",
@@ -202,18 +191,6 @@ void ChromeCleanupHandler::OnRebootRequired() {
   FireWebUIListener("chrome-cleanup-on-reboot-required");
 }
 
-void ChromeCleanupHandler::OnLogsEnabledChanged(bool logs_enabled) {
-  FireWebUIListener("chrome-cleanup-upload-permission-change",
-                    base::Value(controller_->IsReportingManagedByPolicy()),
-                    base::Value(logs_enabled));
-}
-
-void ChromeCleanupHandler::OnLogsEnabledPrefChanged() {
-  bool is_enabled = controller_->IsReportingAllowedByPolicy();
-  controller_->SetLogsEnabled(is_enabled);
-  OnLogsEnabledChanged(is_enabled);
-}
-
 void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
     const base::ListValue* args) {
   DCHECK_EQ(0U, args->GetSize());
@@ -222,9 +199,6 @@ void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
   base::RecordAction(
       base::UserMetricsAction("SoftwareReporter.CleanupWebui_Shown"));
   AllowJavascript();
-
-  // Send the current logs upload state.
-  OnLogsEnabledChanged(controller_->logs_enabled());
 
   FireWebUIListener("chrome-cleanup-enabled-change",
                     base::Value(controller_->IsAllowedByPolicy()));
@@ -254,23 +228,6 @@ void ChromeCleanupHandler::HandleRestartComputer(const base::ListValue* args) {
       base::UserMetricsAction("SoftwareReporter.CleanupWebui_RestartComputer"));
 
   controller_->Reboot();
-}
-
-void ChromeCleanupHandler::HandleSetLogsUploadPermission(
-    const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetSize());
-  bool allow_logs_upload = false;
-  args->GetBoolean(0, &allow_logs_upload);
-
-  if (allow_logs_upload) {
-    base::RecordAction(base::UserMetricsAction(
-        "SoftwareReporter.CleanupWebui_LogsUploadEnabled"));
-  } else {
-    base::RecordAction(base::UserMetricsAction(
-        "SoftwareReporter.CleanupWebui_LogsUploadDisabled"));
-  }
-
-  controller_->SetLogsEnabled(allow_logs_upload);
 }
 
 void ChromeCleanupHandler::HandleStartCleanup(const base::ListValue* args) {

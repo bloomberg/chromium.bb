@@ -67,8 +67,8 @@ constexpr net::NetworkTrafficAnnotationTag kCleanerReportTrafficAnnotation =
             trigger:
               "The user either accepted a prompt to remove unwanted software, "
               "or went to \"Clean up computer\" in the settings page and chose "
-              "to \"Find and remove harmful software\", and enabled \"Report "
-              "details to Google\"."
+              "to \"Find harmful software\", and enabled \"Report details to "
+              "Google\"."
             data:
               "The user's Chrome version, Windows version, and locale, file "
               "metadata related to the unwanted software that was detected, "

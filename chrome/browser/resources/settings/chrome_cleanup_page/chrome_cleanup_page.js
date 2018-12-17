@@ -113,8 +113,13 @@ Polymer({
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
-    /** Preferences state. */
-    prefs: Object,
+    /**
+     * Preferences state.
+     */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
 
     /** @private */
     title_: {
@@ -240,8 +245,10 @@ Polymer({
   /** @private {?function()} */
   doAction_: null,
 
-  /** @private {?Map<settings.ChromeCleanerCardState,
-   *                 !settings.ChromeCleanupCardComponents>} */
+  /**
+   * @private {?Map<settings.ChromeCleanerCardState,
+   *                 !settings.ChromeCleanupCardComponents>}
+   */
   cardStateToComponentsMap_: null,
 
   /** @private {settings.ChromeCleanupOngoingAction} */
@@ -276,9 +283,6 @@ Polymer({
     this.addWebUIListener(
         'chrome-cleanup-on-reboot-required', this.onRebootRequired_.bind(this));
     this.addWebUIListener(
-        'chrome-cleanup-upload-permission-change',
-        this.onUploadPermissionChange_.bind(this));
-    this.addWebUIListener(
         'chrome-cleanup-enabled-change',
         this.onCleanupEnabledChange_.bind(this));
     this.browserProxy_.registerChromeCleanerObserver();
@@ -291,10 +295,6 @@ Polymer({
    */
   proceed_: function() {
     this.doAction_();
-  },
-
-  getTopSettingsBoxClass_: function(showDetails) {
-    return showDetails ? 'top-aligned-settings-box' : 'two-line';
   },
 
   /**
@@ -554,35 +554,11 @@ Polymer({
   },
 
   /**
-   * @param {boolean} managed Whether uploads are controlled by policy or not.
-   * @param {boolean} enabled Whether logs upload is enabled.
-   * @private
-   */
-  onUploadPermissionChange_: function(managed, enabled) {
-    const pref = {
-      key: '',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: enabled,
-    };
-    if (managed) {
-      pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
-      pref.controlledBy = chrome.settingsPrivate.ControlledBy.USER_POLICY;
-    }
-    this.logsUploadPref_ = pref;
-  },
-
-  /**
    * @param {boolean} enabled Whether cleanup is enabled.
    * @private
    */
   onCleanupEnabledChange_: function(enabled) {
     this.cleanupEnabled_ = enabled;
-  },
-
-  /** @private */
-  changeLogsPermission_: function() {
-    const enabled = this.$.chromeCleanupLogsUploadControl.checked;
-    this.browserProxy_.setLogsUploadPermission(enabled);
   },
 
   /**

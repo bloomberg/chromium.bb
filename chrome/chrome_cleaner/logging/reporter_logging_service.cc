@@ -74,7 +74,7 @@ constexpr net::NetworkTrafficAnnotationTag kReporterTrafficAnnotation =
               "Chrome Cleanup can also be explicitly requested by the user in "
               "\"Reset and clean up\" in settings under Advanced. To disable "
               "this report, turn off \"Report details to Google\" before "
-              "choosing \"Find and remove harmful software\"."
+              "choosing \"Find harmful software\"."
             chrome_policy {
               SafeBrowsingExtendedReportingEnabled {
                 SafeBrowsingExtendedReportingEnabled: false

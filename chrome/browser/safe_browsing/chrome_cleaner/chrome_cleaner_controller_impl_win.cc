@@ -228,7 +228,6 @@ ChromeCleanerControllerImpl* ChromeCleanerControllerImpl::GetInstance() {
 
   if (!g_controller) {
     g_controller = new ChromeCleanerControllerImpl();
-    g_controller->Init();
   }
 
   return g_controller;
@@ -254,16 +253,13 @@ ChromeCleanerController::IdleReason ChromeCleanerControllerImpl::idle_reason()
 }
 
 void ChromeCleanerControllerImpl::SetLogsEnabled(bool logs_enabled) {
-  if (logs_enabled_ == logs_enabled)
-    return;
-
-  logs_enabled_ = logs_enabled;
-  for (auto& observer : observer_list_)
-    observer.OnLogsEnabledChanged(logs_enabled_);
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(prefs::kSwReporterReportingEnabled, logs_enabled);
 }
 
 bool ChromeCleanerControllerImpl::logs_enabled() const {
-  return logs_enabled_;
+  PrefService* local_state = g_browser_process->local_state();
+  return local_state->GetBoolean(prefs::kSwReporterReportingEnabled);
 }
 
 void ChromeCleanerControllerImpl::ResetIdleState() {
@@ -403,12 +399,12 @@ void ChromeCleanerControllerImpl::RequestUserInitiatedScan() {
          pending_invocation_type_ !=
              SwReporterInvocationType::kUserInitiatedWithLogsDisallowed);
 
-  RecordScannerLogsAcceptanceHistogram(logs_enabled_);
+  const bool logs_enabled = this->logs_enabled();
+  RecordScannerLogsAcceptanceHistogram(logs_enabled);
 
   SwReporterInvocationType invocation_type =
-      logs_enabled_
-          ? SwReporterInvocationType::kUserInitiatedWithLogsAllowed
-          : SwReporterInvocationType::kUserInitiatedWithLogsDisallowed;
+      logs_enabled ? SwReporterInvocationType::kUserInitiatedWithLogsAllowed
+                   : SwReporterInvocationType::kUserInitiatedWithLogsDisallowed;
 
   if (cached_reporter_invocations_) {
     SwReporterInvocationSequence copied_sequence(*cached_reporter_invocations_);
@@ -556,10 +552,6 @@ ChromeCleanerControllerImpl::ChromeCleanerControllerImpl()
 }
 
 ChromeCleanerControllerImpl::~ChromeCleanerControllerImpl() = default;
-
-void ChromeCleanerControllerImpl::Init() {
-  logs_enabled_ = IsReportingAllowedByPolicy();
-}
 
 void ChromeCleanerControllerImpl::NotifyObserver(Observer* observer) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
