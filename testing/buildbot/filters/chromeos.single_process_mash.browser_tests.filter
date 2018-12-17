@@ -24,8 +24,5 @@
 # https://crbug.com/912191
 -ImmersiveModeBrowserViewTest.LockedFullscreenDisablesImmersive/*
 
-# Flaky https://crbug.com/912213
--WebBluetoothTest.NavigateWithChooserCrossOrigin
-
 # Flaky https://crbug.com/914232
 -ExtensionWebRequestApiTest.WebRequestTypes
