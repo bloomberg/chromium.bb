@@ -392,35 +392,39 @@ body.mode-switching:not(.capturing) #camera-mode {
   margin: 18px 0;
 }
 
-#toggle-timer {
-  background-image: url(../images/camera_button_timer_on.svg);
+body._3sec #toggle-timer:checked {
+  background-image: url(../images/camera_button_timer_on_3s.svg);
 }
 
-#toggle-timer:not(:checked) {
+body._10sec #toggle-timer:checked {
+  background-image: url(../images/camera_button_timer_on_10s.svg);
+}
+
+#toggle-timer {
   background-image: url(../images/camera_button_timer_off.svg);
 }
 
-#toggle-grid {
+#toggle-grid:checked {
   background-image: url(../images/camera_button_grid_on.svg);
 }
 
-#toggle-grid:not(:checked) {
+#toggle-grid {
   background-image: url(../images/camera_button_grid_off.svg);
 }
 
-#toggle-mirror {
+#toggle-mirror:checked {
   background-image: url(../images/camera_button_mirror_on.svg);
 }
 
-#toggle-mirror:not(:checked) {
+#toggle-mirror {
   background-image: url(../images/camera_button_mirror_off.svg);
 }
 
-#toggle-mic {
+#toggle-mic:checked {
   background-image: url(../images/camera_button_mic_on.svg);
 }
 
-#toggle-mic:not(:checked) {
+#toggle-mic {
   background-image: url(../images/camera_button_mic_off.svg);
 }
 
@@ -431,6 +435,7 @@ body.mode-switching:not(.capturing) #camera-mode {
 #camera,
 #settings,
 #gridsettings,
+#timersettings,
 #browser,
 #dialog,
 #warning {
@@ -445,7 +450,8 @@ body.mode-switching:not(.capturing) #camera-mode {
 }
 
 #settings,
-#gridsettings {
+#gridsettings,
+#timersettings {
   /* Delay invisibility for menu sliding-out. */
   transition: opacity 100ms, visibility 100ms;
 }
@@ -453,6 +459,7 @@ body.mode-switching:not(.capturing) #camera-mode {
 body.camera #camera,
 body.settings #settings,
 body.gridsettings #gridsettings,
+body.timersettings #timersettings,
 body.browser #browser,
 body.dialog #dialog,
 body.warning #warning {
@@ -463,7 +470,9 @@ body.warning #warning {
 
 body.settings .left-stripe,
 body.gridsettings .left-stripe,
-body.gridsettings #settings {
+body.gridsettings #settings,
+body.timersettings .left-stripe,
+body.timersettings #settings {
   opacity: 0;
 }
 
@@ -817,7 +826,9 @@ body.grid._4x4 #preview-grid-vertical:before {
 
 #settings .menu,
 #gridsettings .menu,
-body.settings.gridsettings #settings .menu {
+#timersettings .menu,
+body.settings.gridsettings #settings .menu,
+body.settings.timersettings #settings .menu {
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
@@ -832,7 +843,8 @@ body.settings.gridsettings #settings .menu {
 }
 
 body.settings #settings .menu,
-body.gridsettings #gridsettings .menu {
+body.gridsettings #gridsettings .menu,
+body.timersettings #timersettings .menu {
   -webkit-transform: translateX(0);
 }
 
@@ -885,7 +897,9 @@ body.gridsettings #gridsettings .menu {
 
 body._3x3 .description span[i18n-content=labelGrid3x3],
 body._4x4 .description span[i18n-content=labelGrid4x4],
-body.golden .description span[i18n-content=labelGridGolden] {
+body.golden .description span[i18n-content=labelGridGolden],
+body._3sec .description span[i18n-content=labelTimer3s],
+body._10sec .description span[i18n-content=labelTimer10s] {
   display: inline;
 }
 
@@ -924,6 +938,10 @@ body.golden .description span[i18n-content=labelGridGolden] {
   background-image: url(../images/settings_grid_type.svg);
 }
 
+#settings-timerdur .icon {
+  background-image: url(../images/settings_timer_duration.svg);
+}
+
 #settings-feedback .icon {
   background-image: url(../images/settings_feedback.svg);
 }
@@ -932,7 +950,8 @@ body.golden .description span[i18n-content=labelGridGolden] {
   background-image: url(../images/settings_help.svg);
 }
 
-#settings-gridtype button {
+#settings-gridtype button,
+#settings-timerdur button {
   background-image: url(../images/settings_button_expand.svg);
 }
 

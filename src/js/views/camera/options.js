@@ -269,8 +269,7 @@ cca.views.camera.Options.prototype.timerTicks = function() {
   var tickTimeout = null;
   var tickMsg = document.querySelector('#timer-tick-msg');
   var ticks = new Promise((resolve, reject) => {
-    // TODO(yuli): Set tick-counter by timer settings.
-    var tickCounter = 3;
+    var tickCounter = document.body.classList.contains('_10sec') ? 10 : 3;
     var onTimerTick = () => {
       if (tickCounter == 0) {
         resolve();

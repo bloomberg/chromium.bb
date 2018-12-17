@@ -87,6 +87,10 @@
     "message": "Grid type",
     "description": "Label for the button of grid-type options."
   },
+  "timerDurationButton": {
+    "message": "Timer duration",
+    "description": "Label for the button of timer-duration options."
+  },
   "feedbackButton": {
     "message": "Send feedbacks",
     "description": "Label for the feedback button."
@@ -114,6 +118,14 @@
   "labelGridGolden": {
     "message": "Golden ratio",
     "description": "Label for grid-type: golden ratio."
+  },
+  "labelTimer3s": {
+    "message": "3 seconds",
+    "description": "Label for timer-duration: 3 seconds."
+  },
+  "labelTimer10s": {
+    "message": "10 seconds",
+    "description": "Label for timer-duration: 10 seconds."
   },
   "takePhotoButton": {
     "message": "Take photo",

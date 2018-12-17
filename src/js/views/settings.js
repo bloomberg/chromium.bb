@@ -15,35 +15,109 @@ var cca = cca || {};
 cca.views = cca.views || {};
 
 /**
- * Creates the settings-view controller.
+ * Creates the base controller of settings view.
+ * @param {string} selector Selector text of the view's root element.
+ * @param {Object.<string|function(Event=)>} itemHandlers Click-handlers
+ *     mapped by element ids.
  * @extends {cca.views.View}
  * @constructor
  */
-cca.views.Settings = function() {
-  cca.views.View.call(this, '#settings', true, true);
+cca.views.BaseSettings = function(selector, itemHandlers) {
+  cca.views.View.call(this, selector, true, true);
+
+  // End of properties, seal the object.
+  Object.seal(this);
+
+  this.root.querySelector('.menu-header button').addEventListener(
+      'click', () => this.leave());
+  // TODO(yuli): Simplify by changing '.menu-item button' to 'button.menu-item'.
+  this.root.querySelectorAll('.menu-item').forEach((wrapper) => {
+    var wrapped = wrapper.querySelector('button');
+    if (wrapped) {
+      wrapped.addEventListener('click', (event) => {
+        var handler = itemHandlers[wrapper.id];
+        if (handler) {
+          handler(event);
+        }
+        event.stopPropagation(); // Don't trigger clicking the wrapper.
+      });
+      wrapper.addEventListener('click', (event) => wrapped.click());
+    }
+  });
+  this.root.querySelectorAll('.menu-item input').forEach((element) => {
+    var handler = itemHandlers[element.id];
+    if (handler) {
+      element.addEventListener('click', handler);
+    }
+  });
+};
+
+cca.views.BaseSettings.prototype = {
+  __proto__: cca.views.View.prototype,
+};
+
+/**
+ * Creates the controller of grid settings view.
+ * @extends {cca.views.BaseSettings}
+ * @constructor
+ */
+cca.views.GridSettings = function() {
+  cca.views.BaseSettings.call(this, '#gridsettings', {});
+
+  // End of properties, seal the object.
+  Object.seal(this);
+};
+
+cca.views.GridSettings.prototype = {
+  __proto__: cca.views.BaseSettings.prototype,
+};
+
+
+/**
+ * Creates the controller of timer settings view.
+ * @extends {cca.views.BaseSettings}
+ * @constructor
+ */
+cca.views.TimerSettings = function() {
+  cca.views.BaseSettings.call(this, '#timersettings', {});
+
+  // End of properties, seal the object.
+  Object.seal(this);
+};
+
+cca.views.TimerSettings.prototype = {
+  __proto__: cca.views.BaseSettings.prototype,
+};
+
+/**
+ * Creates the controller of master settings view.
+ * @extends {cca.views.BaseSettings}
+ * @constructor
+ */
+cca.views.MasterSettings = function() {
+  cca.views.BaseSettings.call(this, '#settings', {
+    'settings-gridtype': () => cca.nav.open('gridsettings'),
+    'settings-timerdur': () => cca.nav.open('timersettings'),
+    'settings-feedback': () => this.openFeedback(),
+    'settings-help': () => this.openHelp_(),
+  });
 
   // End of properties, seal the object.
   Object.seal(this);
 
   document.querySelector('#settings-feedback').hidden =
       !cca.util.isChromeVersionAbove(72); // Feedback available since M72.
-
-  cca.views.settings.util.setupMenu(this, {
-    'settings-gridtype': () => cca.nav.open('gridsettings'),
-    'settings-feedback': () => this.openFeedback(),
-    'settings-help': () => this.openHelp_(),
-  });
 };
 
-cca.views.Settings.prototype = {
-  __proto__: cca.views.View.prototype,
+cca.views.MasterSettings.prototype = {
+  __proto__: cca.views.BaseSettings.prototype,
 };
 
 /**
  * Opens feedback.
  * @private
  */
-cca.views.Settings.prototype.openFeedback = function() {
+cca.views.MasterSettings.prototype.openFeedback = function() {
   var data = {
     'categoryTag': 'chromeos-camera-app',
     'requestFeedback': true,
@@ -63,6 +137,6 @@ cca.views.Settings.prototype.openFeedback = function() {
  * Opens help.
  * @private
  */
-cca.views.Settings.prototype.openHelp_ = function() {
+cca.views.MasterSettings.prototype.openHelp_ = function() {
   window.open('https://support.google.com/chromebook/answer/4487486');
 };

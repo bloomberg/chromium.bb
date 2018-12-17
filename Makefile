@@ -88,7 +88,8 @@ RESOURCES = \
 	src/images/camera_button_switch_photo.svg \
 	src/images/camera_button_switch_video.svg \
 	src/images/camera_button_timer_off.svg \
-	src/images/camera_button_timer_on.svg \
+	src/images/camera_button_timer_on_10s.svg \
+	src/images/camera_button_timer_on_3s.svg \
 	src/images/camera_focus_aim.svg \
 	src/images/camera_mode_photo.svg \
 	src/images/camera_mode_recording.svg \
@@ -107,6 +108,7 @@ RESOURCES = \
 	src/images/settings_feedback.svg \
 	src/images/settings_grid_type.svg \
 	src/images/settings_help.svg \
+	src/images/settings_timer_duration.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
 	src/js/main.js \
@@ -126,9 +128,7 @@ RESOURCES = \
 	src/js/views/camera/recordtime.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \
-	src/js/views/gridsettings.js \
 	src/js/views/settings.js \
-	src/js/views/settings/util.js \
 	src/js/views/view.js \
 	src/js/views/warning.js \
 	src/sounds/record_end.ogg \

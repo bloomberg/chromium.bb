@@ -29,16 +29,22 @@ cca.App = function(aspectRatio) {
       this.model_, this.onWindowResize_.bind(this));
 
   /**
-   * @type {cca.views.Settings}
+   * @type {cca.views.MasterSettings}
    * @private
    */
-  this.settingsView_ = new cca.views.Settings();
+  this.settingsView_ = new cca.views.MasterSettings();
 
   /**
    * @type {cca.views.GridSettings}
    * @private
    */
   this.gridsettingsView_ = new cca.views.GridSettings();
+
+  /**
+   * @type {cca.views.TimerSettings}
+   * @private
+   */
+  this.timersettingsView_ = new cca.views.TimerSettings();
 
   /**
    * @type {cca.views.Browser}
@@ -153,6 +159,7 @@ cca.App.prototype.start = function() {
     this.cameraView_,
     this.settingsView_,
     this.gridsettingsView_,
+    this.timersettingsView_,
     this.browserView_,
     this.warningView_,
     this.dialogView_,

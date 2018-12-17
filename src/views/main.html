@@ -22,9 +22,7 @@
     <script src="../js/views/camera/recordtime.js"></script>
     <script src="../js/views/dialog.js"></script>
     <script src="../js/views/browser.js"></script>
-    <script src="../js/views/settings/util.js"></script>
     <script src="../js/views/settings.js"></script>
-    <script src="../js/views/gridsettings.js"></script>
     <script src="../js/views/warning.js"></script>
     <script src="../js/nav.js"></script>
     <script src="../js/main.js"></script>
@@ -105,6 +103,18 @@
           <button tabindex="0" i18n-aria="gridTypeButton"
                   aria-describedby="gridtype-desc"></button>
         </div>
+        <div class="menu-item buttons circle" id="settings-timerdur">
+          <div class="icon"></div>
+          <div aria-hidden="true">
+            <div i18n-content="timerDurationButton"></div>
+            <div class="description" id="timerdur-desc">
+              <span i18n-content="labelTimer3s"></span>
+              <span i18n-content="labelTimer10s"></span>
+            </div>
+          </div>
+          <button tabindex="0" i18n-aria="timerDurationButton"
+                  aria-describedby="timerdur-desc"></button>
+        </div>
         <div class="menu-item buttons circle" id="settings-feedback">
           <div class="icon"></div>
           <div i18n-content="feedbackButton" aria-hidden="true"></div>
@@ -138,6 +148,25 @@
           <input id="grid-golden" type="radio" tabindex="0" name="gridtype"
                  data-css="golden" data-key="toggleGolden">
           <span i18n-content="labelGridGolden"></span>
+        </label>
+      </div>
+    </div>
+    <div id="timersettings">
+      <div class="menu">
+        <div class="menu-header buttons circle">
+          <button class="icon" tabindex="0" i18n-aria="backButton">
+          </button>
+          <div role="menu" i18n-content="timerDurationButton"></div>
+        </div>
+        <label class="menu-item buttons circle" for="timer-3s">
+          <input id="timer-3s" type="radio" tabindex="0" name="timerdur"
+                 data-css="_3sec" data-key="toggle3sec" checked>
+          <span i18n-content="labelTimer3s"></span>
+        </label>
+        <label class="menu-item buttons circle" for="timer-10s">
+          <input id="timer-10s" type="radio" tabindex="0" name="timerdur"
+                 data-css="_10sec" data-key="toggle10sec">
+          <span i18n-content="labelTimer10s"></span>
         </label>
       </div>
     </div>
