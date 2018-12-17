@@ -440,7 +440,8 @@ class CrashReporterTest : public HeadlessBrowserTest,
 
 // TODO(skyostil): Minidump generation currently is only supported on Linux and
 // Mac.
-#if defined(HEADLESS_USE_BREAKPAD) || defined(OS_MACOSX)
+#if (defined(HEADLESS_USE_BREAKPAD) || defined(OS_MACOSX)) && \
+    !defined(ADDRESS_SANITIZER)
 #define MAYBE_GenerateMinidump GenerateMinidump
 #else
 #define MAYBE_GenerateMinidump DISABLED_GenerateMinidump
