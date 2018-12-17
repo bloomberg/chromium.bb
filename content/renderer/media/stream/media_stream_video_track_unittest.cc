@@ -48,18 +48,25 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     blink::WebHeap::CollectAllGarbageForTesting();
   }
 
-  void DeliverVideoFrameAndWaitForRenderer(MockMediaStreamVideoSink* sink) {
+  void DeliverVideoFrameAndWaitForRenderer(
+      const scoped_refptr<media::VideoFrame>& frame,
+      MockMediaStreamVideoSink* sink) {
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*sink, OnVideoFrame())
         .WillOnce(RunClosure(std::move(quit_closure)));
+    mock_source()->DeliverVideoFrame(frame);
+    run_loop.Run();
+  }
+
+  void DeliverDefaultSizeVideoFrameAndWaitForRenderer(
+      MockMediaStreamVideoSink* sink) {
     const scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::CreateColorFrame(
             gfx::Size(MediaStreamVideoSource::kDefaultWidth,
                       MediaStreamVideoSource::kDefaultHeight),
             kColorValue, kColorValue, kColorValue, base::TimeDelta());
-    mock_source()->DeliverVideoFrame(frame);
-    run_loop.Run();
+    DeliverVideoFrameAndWaitForRenderer(frame, sink);
   }
 
  protected:
@@ -140,10 +147,10 @@ TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
   blink::WebMediaStreamTrack track = CreateTrack();
   sink.ConnectToTrack(track);
 
-  DeliverVideoFrameAndWaitForRenderer(&sink);
+  DeliverDefaultSizeVideoFrameAndWaitForRenderer(&sink);
   EXPECT_EQ(1, sink.number_of_frames());
 
-  DeliverVideoFrameAndWaitForRenderer(&sink);
+  DeliverDefaultSizeVideoFrameAndWaitForRenderer(&sink);
 
   sink.DisconnectFromTrack();
 
@@ -209,20 +216,20 @@ TEST_F(MediaStreamVideoTrackTest, SetEnabled) {
   MediaStreamVideoTrack* video_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
 
-  DeliverVideoFrameAndWaitForRenderer(&sink);
+  DeliverDefaultSizeVideoFrameAndWaitForRenderer(&sink);
   EXPECT_EQ(1, sink.number_of_frames());
   EXPECT_EQ(kColorValue, *sink.last_frame()->data(media::VideoFrame::kYPlane));
 
   video_track->SetEnabled(false);
   EXPECT_FALSE(sink.enabled());
 
-  DeliverVideoFrameAndWaitForRenderer(&sink);
+  DeliverDefaultSizeVideoFrameAndWaitForRenderer(&sink);
   EXPECT_EQ(2, sink.number_of_frames());
   EXPECT_EQ(kBlackValue, *sink.last_frame()->data(media::VideoFrame::kYPlane));
 
   video_track->SetEnabled(true);
   EXPECT_TRUE(sink.enabled());
-  DeliverVideoFrameAndWaitForRenderer(&sink);
+  DeliverDefaultSizeVideoFrameAndWaitForRenderer(&sink);
   EXPECT_EQ(3, sink.number_of_frames());
   EXPECT_EQ(kColorValue, *sink.last_frame()->data(media::VideoFrame::kYPlane));
   sink.DisconnectFromTrack();
@@ -339,6 +346,32 @@ TEST_F(MediaStreamVideoTrackTest, GetSettingsStopped) {
   EXPECT_EQ(blink::WebMediaStreamTrack::FacingMode::kNone,
             settings.facing_mode);
   EXPECT_TRUE(settings.device_id.IsNull());
+}
+
+TEST_F(MediaStreamVideoTrackTest, DeliverFramesAndGetSettings) {
+  InitializeSource();
+  MockMediaStreamVideoSink sink;
+  blink::WebMediaStreamTrack track = CreateTrack();
+  sink.ConnectToTrack(track);
+  MediaStreamVideoTrack* const native_track =
+      MediaStreamVideoTrack::GetVideoTrack(track);
+  blink::WebMediaStreamTrack::Settings settings;
+
+  const scoped_refptr<media::VideoFrame>& frame1 =
+      media::VideoFrame::CreateBlackFrame(gfx::Size(600, 400));
+  DeliverVideoFrameAndWaitForRenderer(frame1, &sink);
+  native_track->GetSettings(settings);
+  EXPECT_EQ(600, settings.width);
+  EXPECT_EQ(400, settings.height);
+
+  const scoped_refptr<media::VideoFrame>& frame2 =
+      media::VideoFrame::CreateBlackFrame(gfx::Size(200, 300));
+  DeliverVideoFrameAndWaitForRenderer(frame2, &sink);
+  native_track->GetSettings(settings);
+  EXPECT_EQ(200, settings.width);
+  EXPECT_EQ(300, settings.height);
+
+  sink.DisconnectFromTrack();
 }
 
 }  // namespace content

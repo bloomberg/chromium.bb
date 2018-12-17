@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/capture/video_capture_types.h"
 
 namespace content {
@@ -260,11 +261,14 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       adapter_settings_(std::make_unique<VideoTrackAdapterSettings>(
           VideoTrackAdapterSettings())),
       is_screencast_(false),
-      source_(source->GetWeakPtr()) {
+      source_(source->GetWeakPtr()),
+      weak_factory_(this) {
   source->AddTrack(
       this, VideoTrackAdapterSettings(),
       base::Bind(&MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
                  frame_deliverer_),
+      media::BindToCurrentLoop(base::BindRepeating(
+          &MediaStreamVideoTrack::SetSize, weak_factory_.GetWeakPtr())),
       callback);
 }
 
@@ -285,11 +289,14 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       noise_reduction_(noise_reduction),
       is_screencast_(is_screen_cast),
       min_frame_rate_(min_frame_rate),
-      source_(source->GetWeakPtr()) {
+      source_(source->GetWeakPtr()),
+      weak_factory_(this) {
   source->AddTrack(
       this, adapter_settings,
       base::Bind(&MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
                  frame_deliverer_),
+      media::BindToCurrentLoop(base::BindRepeating(
+          &MediaStreamVideoTrack::SetSize, weak_factory_.GetWeakPtr())),
       callback);
 }
 
