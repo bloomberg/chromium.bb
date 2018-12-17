@@ -68,7 +68,7 @@ class LoginBubbleHandler : public ui::EventHandler,
       return;
     }
 
-    if (!bubble_->GetWidget() || !bubble_->GetWidget()->IsVisible())
+    if (!bubble_->IsVisible())
       return;
 
     if (bubble_->GetBubbleOpener() && bubble_->GetBubbleOpener()->HasFocus())
@@ -84,7 +84,7 @@ class LoginBubbleHandler : public ui::EventHandler,
   // aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override {
-    if (!bubble_->GetWidget() || !bubble_->GetWidget()->IsVisible())
+    if (!bubble_->IsVisible())
       return;
 
     if (gained_focus &&
@@ -98,7 +98,7 @@ class LoginBubbleHandler : public ui::EventHandler,
 
  private:
   void ProcessPressedEvent(const ui::LocatedEvent* event) {
-    if (!bubble_->GetWidget() || !bubble_->GetWidget()->IsVisible())
+    if (!bubble_->IsVisible())
       return;
 
     gfx::Point screen_location = event->location();
@@ -156,6 +156,11 @@ void LoginBaseBubbleView::Show() {
   if (!widget)
     widget = views::BubbleDialogDelegateView::CreateBubble(this);
 
+  layer()->GetAnimator()->RemoveObserver(this);
+
+  Layout();
+  SizeToContents();
+
   widget->ShowInactive();
   widget->StackAtTop();
 
@@ -171,6 +176,10 @@ void LoginBaseBubbleView::Hide() {
     ScheduleAnimation(false /*visible*/);
 }
 
+bool LoginBaseBubbleView::IsVisible() {
+  return GetWidget() && GetWidget()->IsVisible();
+}
+
 LoginButton* LoginBaseBubbleView::GetBubbleOpener() const {
   return nullptr;
 }
@@ -178,6 +187,8 @@ LoginButton* LoginBaseBubbleView::GetBubbleOpener() const {
 bool LoginBaseBubbleView::IsPersistent() const {
   return false;
 }
+
+void LoginBaseBubbleView::SetPersistent(bool persistent) {}
 
 void LoginBaseBubbleView::OnBeforeBubbleWidgetInit(
     views::Widget::InitParams* params,
@@ -194,6 +205,10 @@ void LoginBaseBubbleView::OnBeforeBubbleWidgetInit(
 
 int LoginBaseBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
+}
+
+void LoginBaseBubbleView::SetAnchorView(views::View* anchor_view) {
+  views::BubbleDialogDelegateView::SetAnchorView(anchor_view);
 }
 
 void LoginBaseBubbleView::OnLayerAnimationEnded(

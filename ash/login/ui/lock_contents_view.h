@@ -16,6 +16,8 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
+#include "ash/login/ui/login_error_bubble.h"
+#include "ash/login/ui/login_tooltip_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/session/session_observer.h"
@@ -44,7 +46,6 @@ namespace ash {
 
 class LoginAuthUserView;
 class LoginBigUserView;
-class LoginBubble;
 class LoginDetachableBaseModel;
 class LoginExpandedPublicAccountView;
 class LoginUserView;
@@ -80,11 +81,11 @@ class ASH_EXPORT LockContentsView
     LoginBigUserView* opt_secondary_big_view() const;
     ScrollableUsersListView* users_list() const;
     views::View* note_action() const;
-    LoginBubble* tooltip_bubble() const;
-    LoginBubble* auth_error_bubble() const;
-    LoginBubble* detachable_base_error_bubble() const;
-    LoginBubble* warning_banner_bubble() const;
-    LoginBubble* supervised_user_deprecation_bubble() const;
+    LoginTooltipView* tooltip_bubble() const;
+    LoginErrorBubble* auth_error_bubble() const;
+    LoginErrorBubble* detachable_base_error_bubble() const;
+    LoginErrorBubble* warning_banner_bubble() const;
+    LoginErrorBubble* supervised_user_deprecation_bubble() const;
     views::View* system_info() const;
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
@@ -338,6 +339,10 @@ class ASH_EXPORT LockContentsView
   // Performs the specified accelerator action.
   void PerformAction(AcceleratorAction action);
 
+  // Deletes the various bubbles, either by Close()-ing the hosting widget or
+  // deleting any orphaned views.
+  void CleanupBubbles();
+
   const LockScreen::ScreenType screen_type_;
 
   std::vector<UserState> users_;
@@ -372,19 +377,17 @@ class ASH_EXPORT LockContentsView
       this};
   ScopedSessionObserver session_observer_{this};
 
-  // Bubbles for displaying authentication error.
-  std::unique_ptr<LoginBubble> auth_error_bubble_;
-
-  // Bubble for displaying error when the user's detachable base changes.
-  std::unique_ptr<LoginBubble> detachable_base_error_bubble_;
-
-  std::unique_ptr<LoginBubble> tooltip_bubble_;
-
+  // Error bubbles are owned by LockContentsView, or by the Ash menu container
+  // if they have been shown. Bubble for displaying authentication error.
+  LoginErrorBubble* auth_error_bubble_;
+  // Bubble for displaying detachable base errors.
+  LoginErrorBubble* detachable_base_error_bubble_;
+  // Bubble for displaying easy-unlock tooltips.
+  LoginTooltipView* tooltip_bubble_;
   // Bubble for displaying warning banner message.
-  std::unique_ptr<LoginBubble> warning_banner_bubble_;
-
+  LoginErrorBubble* warning_banner_bubble_;
   // Bubble for displaying supervised user deprecation message.
-  std::unique_ptr<LoginBubble> supervised_user_deprecation_bubble_;
+  LoginErrorBubble* supervised_user_deprecation_bubble_;
 
   int unlock_attempt_ = 0;
 

@@ -6,6 +6,7 @@
 #define ASH_LOGIN_UI_VIEWS_UTILS_H_
 
 #include "ash/ash_export.h"
+#include "ui/views/controls/label.h"
 
 namespace views {
 class View;
@@ -25,6 +26,9 @@ ASH_EXPORT bool ShouldShowLandscape(const views::Widget* widget);
 
 // Returns true if |view| or any of its descendant views HasFocus.
 ASH_EXPORT bool HasFocusInAnyChildView(views::View* view);
+
+// Creates a standard text label for use in the login bubbles.
+views::Label* CreateBubbleLabel(const base::string16& message, SkColor color);
 
 }  // namespace login_views_utils
 

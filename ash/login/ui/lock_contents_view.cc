@@ -16,7 +16,6 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_big_user_view.h"
-#include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_detachable_base_model.h"
 #include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/login/ui/login_public_account_user_view.h"
@@ -27,7 +26,6 @@
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -102,7 +100,7 @@ void SetPreferredWidthForView(views::View* view, int width) {
 class AuthErrorLearnMoreButton : public views::Button,
                                  public views::ButtonListener {
  public:
-  explicit AuthErrorLearnMoreButton(LoginBubble* parent_bubble)
+  explicit AuthErrorLearnMoreButton(LoginErrorBubble* parent_bubble)
       : views::Button(this), parent_bubble_(parent_bubble) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     auto* label =
@@ -121,11 +119,11 @@ class AuthErrorLearnMoreButton : public views::Button,
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     Shell::Get()->login_screen_controller()->ShowAccountAccessHelpApp();
-    parent_bubble_->Close();
+    parent_bubble_->Hide();
   }
 
  private:
-  LoginBubble* parent_bubble_ = nullptr;
+  LoginErrorBubble* parent_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthErrorLearnMoreButton);
 };
@@ -295,25 +293,26 @@ views::View* LockContentsView::TestApi::note_action() const {
   return view_->note_action_;
 }
 
-LoginBubble* LockContentsView::TestApi::tooltip_bubble() const {
-  return view_->tooltip_bubble_.get();
+LoginTooltipView* LockContentsView::TestApi::tooltip_bubble() const {
+  return view_->tooltip_bubble_;
 }
 
-LoginBubble* LockContentsView::TestApi::auth_error_bubble() const {
-  return view_->auth_error_bubble_.get();
+LoginErrorBubble* LockContentsView::TestApi::auth_error_bubble() const {
+  return view_->auth_error_bubble_;
 }
 
-LoginBubble* LockContentsView::TestApi::detachable_base_error_bubble() const {
-  return view_->detachable_base_error_bubble_.get();
-}
-
-LoginBubble* LockContentsView::TestApi::warning_banner_bubble() const {
-  return view_->warning_banner_bubble_.get();
-}
-
-LoginBubble* LockContentsView::TestApi::supervised_user_deprecation_bubble()
+LoginErrorBubble* LockContentsView::TestApi::detachable_base_error_bubble()
     const {
-  return view_->supervised_user_deprecation_bubble_.get();
+  return view_->detachable_base_error_bubble_;
+}
+
+LoginErrorBubble* LockContentsView::TestApi::warning_banner_bubble() const {
+  return view_->warning_banner_bubble_;
+}
+
+LoginErrorBubble*
+LockContentsView::TestApi::supervised_user_deprecation_bubble() const {
+  return view_->supervised_user_deprecation_bubble_;
 }
 
 views::View* LockContentsView::TestApi::system_info() const {
@@ -357,11 +356,15 @@ LockContentsView::LockContentsView(
   Shell::Get()->login_screen_controller()->AddObserver(this);
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
-  auth_error_bubble_ = std::make_unique<LoginBubble>();
-  supervised_user_deprecation_bubble_ = std::make_unique<LoginBubble>();
-  detachable_base_error_bubble_ = std::make_unique<LoginBubble>();
-  tooltip_bubble_ = std::make_unique<LoginBubble>();
-  warning_banner_bubble_ = std::make_unique<LoginBubble>();
+  auth_error_bubble_ = LoginErrorBubble::CreateDefault();
+  supervised_user_deprecation_bubble_ = LoginErrorBubble::CreateDefault();
+  supervised_user_deprecation_bubble_->SetPersistent(true);
+  detachable_base_error_bubble_ = LoginErrorBubble::CreateDefault();
+  detachable_base_error_bubble_->SetPersistent(true);
+  tooltip_bubble_ = new LoginTooltipView(base::UTF8ToUTF16("") /*message*/,
+                                         nullptr /*anchor_view*/);
+  warning_banner_bubble_ = LoginErrorBubble::CreateDefault();
+  warning_banner_bubble_->SetPersistent(true);
 
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the system tray. LockContentsView should otherwise not be
@@ -423,6 +426,8 @@ LockContentsView::~LockContentsView() {
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
+
+  CleanupBubbles();
 }
 
 void LockContentsView::FocusNextUser() {
@@ -695,9 +700,10 @@ void LockContentsView::OnFingerprintStateChanged(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     container->AddChildView(label);
 
-    auth_error_bubble_->ShowErrorBubble(
-        container, big_view->auth_user()->password_view() /*anchor_view*/,
-        true /*show_persistently*/);
+    auth_error_bubble_->SetAnchorView(big_view->auth_user()->password_view());
+    auth_error_bubble_->SetContent(container);
+    auth_error_bubble_->SetPersistent(true);
+    auth_error_bubble_->Show();
   }
 }
 
@@ -793,10 +799,13 @@ void LockContentsView::OnShowEasyUnlockIcon(
   if (!big_user || !big_user->auth_user())
     return;
 
-  tooltip_bubble_->Close();
+  if (tooltip_bubble_->IsVisible())
+    tooltip_bubble_->Hide();
+
   if (icon->autoshow_tooltip) {
-    tooltip_bubble_->ShowTooltip(
-        icon->tooltip, big_user->auth_user()->password_view() /*anchor_view*/);
+    tooltip_bubble_->SetAnchorView(big_user->auth_user()->password_view());
+    tooltip_bubble_->SetText(icon->tooltip);
+    tooltip_bubble_->Show();
   }
 }
 
@@ -807,7 +816,8 @@ void LockContentsView::OnShowWarningBanner(const base::string16& message) {
                   "warning banner.";
     return;
   }
-  warning_banner_bubble_->Close();
+  if (warning_banner_bubble_->IsVisible())
+    warning_banner_bubble_->Hide();
   // Shows warning banner as a persistent error bubble.
   views::Label* label =
       new views::Label(message, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
@@ -816,13 +826,16 @@ void LockContentsView::OnShowWarningBanner(const base::string16& message) {
   label->SetAutoColorReadabilityEnabled(false);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(SK_ColorWHITE);
-  warning_banner_bubble_->ShowErrorBubble(
-      label, CurrentBigUserView()->auth_user()->password_view() /*anchor_view*/,
-      true /*show_persistently*/);
+
+  warning_banner_bubble_->SetContent(label);
+  warning_banner_bubble_->SetAnchorView(
+      CurrentBigUserView()->auth_user()->password_view());
+  warning_banner_bubble_->Show();
 }
 
 void LockContentsView::OnHideWarningBanner() {
-  warning_banner_bubble_->Close();
+  if (warning_banner_bubble_->IsVisible())
+    warning_banner_bubble_->Hide();
 }
 
 void LockContentsView::OnLockScreenNoteStateChanged(
@@ -964,11 +977,13 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
       (pairing_status == DetachableBasePairingStatus::kAuthenticated &&
        detachable_base_model_->PairedBaseMatchesLastUsedByUser(
            *CurrentBigUserView()->GetCurrentUser()->basic_user_info))) {
-    detachable_base_error_bubble_->Close();
+    if (detachable_base_error_bubble_->IsVisible())
+      detachable_base_error_bubble_->Hide();
     return;
   }
 
-  auth_error_bubble_->Close();
+  if (auth_error_bubble_->IsVisible())
+    auth_error_bubble_->Hide();
 
   base::string16 error_text =
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_ERROR_DETACHABLE_BASE_CHANGED);
@@ -981,9 +996,10 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetEnabledColor(SK_ColorWHITE);
 
-  detachable_base_error_bubble_->ShowErrorBubble(
-      label, CurrentBigUserView()->auth_user()->password_view() /*anchor_view*/,
-      true /*show_persistently*/);
+  detachable_base_error_bubble_->SetContent(label);
+  detachable_base_error_bubble_->SetAnchorView(
+      CurrentBigUserView()->auth_user()->password_view());
+  detachable_base_error_bubble_->Show();
 
   // Remove the focus from the password field, to make user less likely to enter
   // the password without seeing the warning about detachable base change.
@@ -1301,8 +1317,11 @@ void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
 
 void LockContentsView::OnAuthenticate(bool auth_success) {
   if (auth_success) {
-    auth_error_bubble_->Close();
-    detachable_base_error_bubble_->Close();
+    if (auth_error_bubble_->IsVisible())
+      auth_error_bubble_->Hide();
+
+    if (detachable_base_error_bubble_->IsVisible())
+      detachable_base_error_bubble_->Hide();
 
     // Now that the user has been authenticated, update the user's last used
     // detachable base (if one is attached). This will prevent further
@@ -1495,10 +1514,11 @@ void LockContentsView::OnBigUserChanged() {
     label->SetAutoColorReadabilityEnabled(false);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label->SetEnabledColor(SK_ColorWHITE);
-    supervised_user_deprecation_bubble_->ShowErrorBubble(
-        label,
-        CurrentBigUserView()->auth_user()->password_view() /*anchor_view*/,
-        true /*show_persistently*/);
+
+    supervised_user_deprecation_bubble_->SetContent(label);
+    supervised_user_deprecation_bubble_->SetAnchorView(
+        CurrentBigUserView()->auth_user()->password_view());
+    supervised_user_deprecation_bubble_->Show();
   }
 
   // The new auth user might have different last used detachable base - make
@@ -1592,8 +1612,7 @@ void LockContentsView::ShowAuthErrorMessage() {
   MakeSectionBold(label, error_text, bold_start, bold_length);
   label->set_auto_color_readability_enabled(false);
 
-  auto* learn_more_button =
-      new AuthErrorLearnMoreButton(auth_error_bubble_.get());
+  auto* learn_more_button = new AuthErrorLearnMoreButton(auth_error_bubble_);
 
   auto* container = new NonAccessibleView(kAuthErrorContainerName);
   container->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -1602,9 +1621,13 @@ void LockContentsView::ShowAuthErrorMessage() {
   container->AddChildView(label);
   container->AddChildView(learn_more_button);
 
-  auth_error_bubble_->ShowErrorBubble(
-      container, big_view->auth_user()->password_view() /*anchor_view*/,
-      false /*show_persistently*/);
+  if (auth_error_bubble_->IsVisible())
+    auth_error_bubble_->Hide();
+
+  auth_error_bubble_->SetAnchorView(big_view->auth_user()->password_view());
+  auth_error_bubble_->SetContent(container);
+  auth_error_bubble_->SetPersistent(false);
+  auth_error_bubble_->Show();
 }
 
 void LockContentsView::OnEasyUnlockIconHovered() {
@@ -1619,9 +1642,9 @@ void LockContentsView::OnEasyUnlockIconHovered() {
   DCHECK(easy_unlock_state);
 
   if (!easy_unlock_state->tooltip.empty()) {
-    tooltip_bubble_->ShowTooltip(
-        easy_unlock_state->tooltip,
-        big_view->auth_user()->password_view() /*anchor_view*/);
+    tooltip_bubble_->SetAnchorView(big_view->auth_user()->password_view());
+    tooltip_bubble_->SetText(easy_unlock_state->tooltip);
+    tooltip_bubble_->Show();
   }
 }
 
@@ -1816,6 +1839,31 @@ void LockContentsView::PerformAction(AcceleratorAction action) {
     default:
       NOTREACHED();
   }
+}
+
+void LockContentsView::CleanupBubbles() {
+  // If any of the error bubbles have been shown once, it is hosted by a
+  // widget under the Ash menu container, so we should Close the widget when we
+  // destroy LockContentsView (otherwise it will live for the entire lifetime of
+  // the Menu container). If a bubble has never been shown, then we can just
+  // delete it, since it is owned directly by LockContentsView.
+  auto cleanup = [](LoginBaseBubbleView* bubble) {
+    if (bubble->GetWidget())
+      bubble->GetWidget()->Close();
+    else
+      delete bubble;
+  };
+
+  cleanup(auth_error_bubble_);
+  auth_error_bubble_ = nullptr;
+  cleanup(detachable_base_error_bubble_);
+  detachable_base_error_bubble_ = nullptr;
+  cleanup(tooltip_bubble_);
+  tooltip_bubble_ = nullptr;
+  cleanup(warning_banner_bubble_);
+  warning_banner_bubble_ = nullptr;
+  cleanup(supervised_user_deprecation_bubble_);
+  supervised_user_deprecation_bubble_ = nullptr;
 }
 
 }  // namespace ash

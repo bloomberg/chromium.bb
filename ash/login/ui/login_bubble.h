@@ -37,11 +37,6 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver {
   LoginBubble();
   ~LoginBubble() override;
 
-  // Shows an error bubble for authentication failure.
-  // |anchor_view| is the anchor for placing the bubble view.
-  void ShowErrorBubble(views::View* content,
-                       views::View* anchor_view,
-                       bool show_persistently);
 
   // Shows a user menu bubble.
   // |anchor_view| is the anchor for placing the bubble view.
@@ -57,9 +52,6 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver {
                     bool show_remove_user,
                     base::OnceClosure on_remove_user_warning_shown,
                     base::OnceClosure on_remove_user_requested);
-
-  // Shows a tooltip.
-  void ShowTooltip(const base::string16& message, views::View* anchor_view);
 
   // Shows a selection menu.
   void ShowSelectionMenu(LoginMenuView* menu);
