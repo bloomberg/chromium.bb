@@ -11,6 +11,7 @@ import os
 import pipes
 import re
 import signal
+import socket
 import sys
 import tempfile
 
@@ -34,11 +35,15 @@ DEFAULT_CROS_CACHE = os.path.abspath(os.path.join(
     CHROMIUM_SRC_PATH, 'build', 'cros_cache'))
 CHROMITE_PATH = os.path.abspath(os.path.join(
     CHROMIUM_SRC_PATH, 'third_party', 'chromite'))
-CROS_RUN_VM_TEST_PATH = os.path.abspath(os.path.join(
-    CHROMITE_PATH, 'bin', 'cros_run_vm_test'))
+CROS_RUN_TEST_PATH = os.path.abspath(os.path.join(
+    CHROMITE_PATH, 'bin', 'cros_run_test'))
 
 # GN target that corresponds to the cros browser sanity test.
 SANITY_TEST_TARGET = 'cros_vm_sanity_test'
+
+# This is a special hostname that resolves to a different DUT in the lab
+# depending on which lab machine you're on.
+LAB_DUT_HOSTNAME = 'variable_chromeos_device_hostname'
 
 
 class TestFormatError(Exception):
@@ -57,13 +62,21 @@ class RemoteTest(object):
     self._timeout = None
 
     self._vm_test_cmd = [
-        CROS_RUN_VM_TEST_PATH,
-        '--start',
+        CROS_RUN_TEST_PATH,
         '--board', args.board,
         '--cache-dir', args.cros_cache,
-        # Don't persist any filesystem changes after the VM shutsdown.
-        '--copy-on-write',
     ]
+    if args.use_vm:
+      self._vm_test_cmd += [
+          '--start',
+          # Don't persist any filesystem changes after the VM shutsdown.
+          '--copy-on-write',
+          '--device', 'localhost'
+      ]
+    else:
+      self._vm_test_cmd += [
+          '--device', args.device if args.device else LAB_DUT_HOSTNAME
+      ]
     if args.vm_logs_dir:
       self._vm_test_cmd += [
           '--results-src', '/var/log/',
@@ -408,13 +421,21 @@ def host_cmd(args, unknown_args):
         '--path-to-outdir must be specified if --deploy-chrome is passed.')
 
   cros_run_vm_test_cmd = [
-      CROS_RUN_VM_TEST_PATH,
-      '--start',
+      CROS_RUN_TEST_PATH,
       '--board', args.board,
       '--cache-dir', args.cros_cache,
-      # Don't persist any filesystem changes after the VM shutsdown.
-      '--copy-on-write',
   ]
+  if args.use_vm:
+    cros_run_vm_test_cmd += [
+        '--start',
+        # Don't persist any filesystem changes after the VM shutsdown.
+        '--copy-on-write',
+        '--device', 'localhost',
+    ]
+  else:
+    cros_run_vm_test_cmd += [
+        '--device', args.device if args.device else LAB_DUT_HOSTNAME
+    ]
   if args.verbose:
     cros_run_vm_test_cmd.append('--debug')
 
@@ -456,27 +477,27 @@ def setup_env():
 
 
 def add_common_args(parser):
-   parser.add_argument(
-       '--cros-cache', type=str, default=DEFAULT_CROS_CACHE,
-       help='Path to cros cache.')
-   parser.add_argument(
-       '--path-to-outdir', type=str, required=True,
-       help='Path to output directory, all of whose contents will be '
-            'deployed to the device.')
-   parser.add_argument(
-       '--runtime-deps-path', type=str,
-       help='Runtime data dependency file from GN.')
-   parser.add_argument(
-       '--vpython-dir', type=str,
-       help='Location on host of a directory containing a vpython binary to '
-            'deploy to the VM before the test starts. The location of this '
-            'dir will be added onto PATH in the VM. WARNING: The arch of the '
-            'VM might not match the arch of the host, so avoid using '
-            '"${platform}" when downloading vpython via CIPD.')
-   parser.add_argument(
-       '--vm-logs-dir', type=str,
-       help='Will copy everything under /var/log/ from the VM after the test '
-            'into the specified dir.')
+  parser.add_argument(
+      '--cros-cache', type=str, default=DEFAULT_CROS_CACHE,
+      help='Path to cros cache.')
+  parser.add_argument(
+      '--path-to-outdir', type=str, required=True,
+      help='Path to output directory, all of whose contents will be '
+           'deployed to the device.')
+  parser.add_argument(
+      '--runtime-deps-path', type=str,
+      help='Runtime data dependency file from GN.')
+  parser.add_argument(
+      '--vpython-dir', type=str,
+      help='Location on host of a directory containing a vpython binary to '
+           'deploy to the VM before the test starts. The location of this '
+           'dir will be added onto PATH in the VM. WARNING: The arch of the '
+           'VM might not match the arch of the host, so avoid using '
+           '"${platform}" when downloading vpython via CIPD.')
+  parser.add_argument(
+      '--vm-logs-dir', type=str,
+      help='Will copy everything under /var/log/ from the VM after the test '
+           'into the specified dir.')
 
 
 def main():
@@ -485,6 +506,14 @@ def main():
   # Required args.
   parser.add_argument(
       '--board', type=str, required=True, help='Type of CrOS device.')
+  vm_or_device_group = parser.add_mutually_exclusive_group()
+  vm_or_device_group.add_argument(
+      '--use-vm', action='store_true',
+      help='Will run the test in the VM instead of a device.')
+  vm_or_device_group.add_argument(
+      '--device', type=str,
+      help='Hostname (or IP) of device to run the test on. This arg is not '
+           'required if --use-vm is set.')
   subparsers = parser.add_subparsers(dest='test_type')
   # Host-side test args.
   host_cmd_parser = subparsers.add_parser(
@@ -562,13 +591,26 @@ def main():
 
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
 
-  if not os.path.exists('/dev/kvm'):
-    logging.error('/dev/kvm is missing. Is KVM installed on this machine?')
-    return 1
-  elif not os.access('/dev/kvm', os.W_OK):
-    logging.error(
-        '/dev/kvm is not writable as current user. Perhaps you should be root?')
-    return 1
+  if not args.use_vm and not args.device:
+    # If we're not running on a VM, but haven't specified a hostname, assume
+    # we're on a lab bot and are trying to run a test on a lab DUT. See if the
+    # magic lab DUT hostname resolves to anything. (It will in the lab and will
+    # not on dev machines.)
+    try:
+      socket.getaddrinfo(LAB_DUT_HOSTNAME, None)
+    except socket.gaierror:
+      logging.error(
+          'The default DUT hostname of %s is unreachable.', LAB_DUT_HOSTNAME)
+      return 1
+  if args.use_vm:
+    if not os.path.exists('/dev/kvm'):
+      logging.error('/dev/kvm is missing. Is KVM installed on this machine?')
+      return 1
+    elif not os.access('/dev/kvm', os.W_OK):
+      logging.error(
+          '/dev/kvm is not writable as current user. Perhaps you should be '
+          'root?')
+      return 1
 
   args.cros_cache = os.path.abspath(args.cros_cache)
   return args.func(args, unknown_args)

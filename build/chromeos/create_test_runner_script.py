@@ -50,6 +50,7 @@ def main(args):
   parser.add_argument('--runtime-deps-path')
   parser.add_argument('--cros-cache')
   parser.add_argument('--board')
+  parser.add_argument('--use-vm', action='store_true')
   parser.add_argument('--deploy-chrome', action='store_true')
   parser.add_argument('--suite-name')
   parser.add_argument('--tast-conditional')
@@ -66,6 +67,8 @@ def main(args):
       '--board', args.board,
       '-v',
   ]
+  if args.use_vm:
+    vm_test_args += ['--use-vm']
 
   if args.test_exe:
     vm_test_args.extend([
