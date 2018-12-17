@@ -895,6 +895,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   qbuf.memory = input_memory_type_;
   qbuf.length = input_planes_count_;
 
+  DVLOGF(4) << "Calling VIDIOC_QBUF: " << V4L2Device::V4L2BufferToString(qbuf);
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   input_record.at_device = true;
   input_record.frame = frame;

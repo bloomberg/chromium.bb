@@ -310,6 +310,9 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Composes human readable string of v4l2_format.
   static std::string V4L2FormatToString(const struct v4l2_format& format);
 
+  // Composes human readable string of v4l2_buffer.
+  static std::string V4L2BufferToString(const struct v4l2_buffer& buffer);
+
   // Composes VideoFrameLayout based on v4l2_format.
   // If error occurs, it returns base::nullopt.
   static base::Optional<VideoFrameLayout> V4L2FormatToVideoFrameLayout(
