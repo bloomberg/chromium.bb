@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/quit_instruction_bubble.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -20,12 +19,16 @@ constexpr int kAcceleratorModifiers = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN;
 constexpr base::TimeDelta kShowDuration =
     base::TimeDelta::FromMilliseconds(3000);
 
+QuitInstructionBubbleController* g_instance = nullptr;
+
 }  // namespace
 
 // static
-QuitInstructionBubbleController*
+scoped_refptr<QuitInstructionBubbleController>
 QuitInstructionBubbleController::GetInstance() {
-  return base::Singleton<QuitInstructionBubbleController>::get();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return base::WrapRefCounted<QuitInstructionBubbleController>(
+      g_instance ? g_instance : new QuitInstructionBubbleController());
 }
 
 QuitInstructionBubbleController::QuitInstructionBubbleController()
@@ -35,9 +38,15 @@ QuitInstructionBubbleController::QuitInstructionBubbleController()
 QuitInstructionBubbleController::QuitInstructionBubbleController(
     std::unique_ptr<QuitInstructionBubbleBase> bubble,
     std::unique_ptr<base::OneShotTimer> hide_timer)
-    : view_(std::move(bubble)), hide_timer_(std::move(hide_timer)) {}
+    : view_(std::move(bubble)), hide_timer_(std::move(hide_timer)) {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-QuitInstructionBubbleController::~QuitInstructionBubbleController() {}
+QuitInstructionBubbleController::~QuitInstructionBubbleController() {
+  DCHECK_EQ(g_instance, this);
+  g_instance = nullptr;
+}
 
 void QuitInstructionBubbleController::OnKeyEvent(ui::KeyEvent* event) {
   const ui::Accelerator accelerator(*event);

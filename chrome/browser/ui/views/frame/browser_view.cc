@@ -93,7 +93,6 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
-#include "chrome/browser/ui/views/quit_instruction_bubble_controller.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -1257,9 +1256,9 @@ void BrowserView::RotatePaneFocus(bool forwards) {
 
 void BrowserView::DestroyBrowser() {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (added_quit_instructions_) {
+  if (quit_instruction_bubble_controller_) {
     GetWidget()->GetNativeView()->RemovePreTargetHandler(
-        QuitInstructionBubbleController::GetInstance());
+        quit_instruction_bubble_controller_.get());
   }
 #endif
 
@@ -2091,9 +2090,9 @@ views::View* BrowserView::CreateOverlayView() {
 
 void BrowserView::OnWidgetDestroying(views::Widget* widget) {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (added_quit_instructions_) {
+  if (quit_instruction_bubble_controller_) {
     GetWidget()->GetNativeView()->RemovePreTargetHandler(
-        QuitInstructionBubbleController::GetInstance());
+        quit_instruction_bubble_controller_.get());
   }
 #endif
 
@@ -2438,9 +2437,10 @@ void BrowserView::InitViews() {
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR)) {
-    added_quit_instructions_ = true;
+    quit_instruction_bubble_controller_ =
+        QuitInstructionBubbleController::GetInstance();
     GetWidget()->GetNativeView()->AddPreTargetHandler(
-        QuitInstructionBubbleController::GetInstance());
+        quit_instruction_bubble_controller_.get());
   }
 #endif
 

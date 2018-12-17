@@ -8,24 +8,24 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "ui/events/event_handler.h"
 
 class QuitInstructionBubbleBase;
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
-
 // Manages showing and hiding the quit instruction bubble.  The singleton
 // instance of this class is added as a PreTargetHandler for each browser
 // window.
-class QuitInstructionBubbleController : public ui::EventHandler {
+class QuitInstructionBubbleController
+    : public ui::EventHandler,
+      public base::RefCounted<QuitInstructionBubbleController> {
  public:
-  static QuitInstructionBubbleController* GetInstance();
-
-  ~QuitInstructionBubbleController() override;
+  // There may only be one QuitInstructionBubbleController instance at a time,
+  // but a singleton would destroy the instance too late (this class owns a
+  // widget, but it may get destroyed after aura::Env).  So this class is
+  // ref-counted instead, with the references owned by instances of BrowserView.
+  static scoped_refptr<QuitInstructionBubbleController> GetInstance();
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -34,9 +34,10 @@ class QuitInstructionBubbleController : public ui::EventHandler {
   QuitInstructionBubbleController(
       std::unique_ptr<QuitInstructionBubbleBase> bubble,
       std::unique_ptr<base::OneShotTimer> hide_timer);
+  ~QuitInstructionBubbleController() override;
 
  private:
-  friend struct base::DefaultSingletonTraits<QuitInstructionBubbleController>;
+  friend class base::RefCounted<QuitInstructionBubbleController>;
 
   QuitInstructionBubbleController();
 
