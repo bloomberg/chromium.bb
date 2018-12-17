@@ -16,7 +16,7 @@
 namespace {
 
 TestingProfile::TestingFactories GetIdentityTestEnvironmentFactories(
-    bool create_fake_url_loader_factory_for_cookie_requests = true) {
+    bool create_fake_url_loader_factory_for_cookie_requests = false) {
   return {
       {GaiaCookieManagerServiceFactory::GetInstance(),
        base::BindRepeating(&BuildFakeGaiaCookieManagerServiceWithOptions,
@@ -78,8 +78,7 @@ void IdentityTestEnvironmentProfileAdaptor::
 // static
 void IdentityTestEnvironmentProfileAdaptor::
     AppendIdentityTestEnvironmentFactories(
-        TestingProfile::TestingFactories* factories_to_append_to,
-        bool create_fake_url_loader_factory_for_cookie_requests) {
+        TestingProfile::TestingFactories* factories_to_append_to) {
   TestingProfile::TestingFactories identity_factories =
       GetIdentityTestEnvironmentFactories();
   factories_to_append_to->insert(factories_to_append_to->end(),
