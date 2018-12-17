@@ -56,6 +56,8 @@ std::string AudioDeviceDescription::GetDefaultDeviceName() {
 std::string AudioDeviceDescription::GetCommunicationsDeviceName() {
 #if defined(OS_WIN)
   return GetLocalizedStringUTF8(COMMUNICATIONS_AUDIO_DEVICE_NAME);
+#elif defined(IS_CHROMECAST)
+  return "";
 #else
   NOTREACHED();
   return "";

@@ -127,7 +127,7 @@ void StreamFactory::CreateOutputStream(
   // See //chromecast/media/cast_audio_manager.h for more information.
   const std::string device_id_or_group_id =
 #if defined(IS_CHROMECAST)
-      group_id.ToString();
+      (group_id.ToString().empty()) ? output_device_id : group_id.ToString();
 #else
       output_device_id;
 #endif
