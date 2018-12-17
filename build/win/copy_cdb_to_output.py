@@ -82,7 +82,7 @@ def _CopyCDBToOutput(output_dir, target_arch):
   # Starting with the 10.0.17763 SDK the ucrt files are in a version-named
   # directory - this handles both cases.
   redist_dir = os.path.join(win_sdk_dir, 'Redist')
-  version_dirs = glob.glob(redist_dir + r'\10.*')
+  version_dirs = glob.glob(os.path.join(redist_dir, '10.*'))
   if len(version_dirs) > 0:
     version_dirs.sort(reverse=True)
     redist_dir = version_dirs[0]
