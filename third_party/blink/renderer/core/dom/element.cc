@@ -2454,7 +2454,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     // layout tree siblings.
     WhitespaceAttacher local_attacher;
     WhitespaceAttacher* child_attacher;
-    if (GetLayoutObject() || !HasDisplayContentsStyle()) {
+    if (GetLayoutObject() ||
+        (!HasDisplayContentsStyle() && CanParticipateInFlatTree())) {
       whitespace_attacher.DidVisitElement(this);
       if (GetDocument().GetStyleEngine().NeedsWhitespaceReattachment(this))
         local_attacher.SetReattachAllWhitespaceNodes();
