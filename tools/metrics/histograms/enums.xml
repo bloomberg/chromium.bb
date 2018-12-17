@@ -33361,6 +33361,7 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Fail to retrieve video thumbnail"/>
   <int value="7" label="Failed to parse media file"/>
   <int value="8" label="Successfully parsed media file"/>
+  <int value="9" label="Timeout and failed"/>
 </enum>
 
 <enum name="MediaPlayerExitStatus">

@@ -29,6 +29,9 @@
 
 namespace {
 
+// The maximum duration to parse media file.
+const base::TimeDelta kTimeOut = base::TimeDelta::FromSeconds(8);
+
 // Returns if the mime type is video or audio.
 bool IsSupportedMediaMimeType(const std::string& mime_type) {
   return base::StartsWith(mime_type, "audio/",
@@ -67,6 +70,11 @@ DownloadMediaParser::~DownloadMediaParser() = default;
 void DownloadMediaParser::Start(ParseCompleteCB parse_complete_cb) {
   RecordMediaParserEvent(MediaParserEvent::kInitialize);
   parse_complete_cb_ = std::move(parse_complete_cb);
+  timer_.Start(
+      FROM_HERE, kTimeOut,
+      base::BindOnce(&DownloadMediaParser::OnError, weak_factory_.GetWeakPtr(),
+                     MediaParserEvent::kTimeout));
+  start_time_ = base::Time::Now();
 
   // Only process media mime types.
   if (!IsSupportedMediaMimeType(mime_type_)) {
@@ -297,6 +305,7 @@ void DownloadMediaParser::NotifyComplete(SkBitmap bitmap) {
   DCHECK(metadata_);
   DCHECK(parse_complete_cb_);
   RecordMediaParserEvent(MediaParserEvent::kSuccess);
+  RecordMediaParserCompletionTime(base::Time::Now() - start_time_);
   std::move(parse_complete_cb_)
       .Run(true, std::move(metadata_), std::move(bitmap));
 }
