@@ -63,6 +63,10 @@ void DataReductionProxyDelegate::OnResolveProxy(
     const std::string& method,
     const net::ProxyRetryInfoMap& proxy_retry_info,
     net::ProxyInfo* result) {
+  // If initialization hasn't happened yet, ignore the request.
+  if (!io_data_)
+    return;
+
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(result);
   DCHECK(result->is_empty() || result->is_direct() ||
