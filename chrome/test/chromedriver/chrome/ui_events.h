@@ -15,7 +15,8 @@
 enum MouseEventType {
   kPressedMouseEventType = 0,
   kReleasedMouseEventType,
-  kMovedMouseEventType
+  kMovedMouseEventType,
+  kPauseMouseEventType
 };
 
 // Specifies the mouse buttons.
@@ -36,6 +37,7 @@ struct MouseEvent {
              int modifiers,
              int buttons,
              int click_count);
+  MouseEvent(const MouseEvent& other);
   ~MouseEvent();
 
   MouseEventType type;
@@ -46,24 +48,23 @@ struct MouseEvent {
   int buttons;
   // |click_count| should not be negative.
   int click_count;
+  std::string element_id;
 };
 
 // Specifies the type of the touch event.
-enum TouchEventType {
-  kTouchStart = 0,
-  kTouchEnd,
-  kTouchMove,
-};
+enum TouchEventType { kTouchStart = 0, kTouchEnd, kTouchMove, kPause };
 
 struct TouchEvent {
   TouchEvent(TouchEventType type,
              int x,
              int y);
+  TouchEvent(const TouchEvent& other);
   ~TouchEvent();
 
   TouchEventType type;
   int x;
   int y;
+  std::string element_id;
 };
 
 // Specifies the type of the keyboard event.
@@ -72,6 +73,7 @@ enum KeyEventType {
   kKeyUpEventType,
   kRawKeyDownEventType,
   kCharEventType,
+  kPauseEventType,
   kInvalidEventType  // used by KeyEventBuilder
 };
 
