@@ -116,7 +116,8 @@ FOR_ALL_PPAPI_RESOURCE_APIS(DECLARE_RESOURCE_CLASS)
 // cases.
 enum ResourceObjectType { OBJECT_IS_IMPL, OBJECT_IS_PROXY };
 
-class PPAPI_SHARED_EXPORT Resource : public base::RefCounted<Resource> {
+class PPAPI_SHARED_EXPORT Resource
+    : public base::RefCountedThreadSafe<Resource> {
  public:
   // Constructor for impl and non-proxied, instance-only objects.
   //
