@@ -29,7 +29,10 @@ namespace {
 
 void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
   GaiaCookieManagerServiceFactory::GetInstance()->SetTestingFactory(
-      context, base::BindRepeating(&BuildFakeGaiaCookieManagerService));
+      context,
+      base::BindRepeating(
+          &BuildFakeGaiaCookieManagerServiceWithOptions,
+          /*create_fake_url_loader_factory_for_cookie_requests=*/true));
 }
 
 }  // namespace
@@ -66,8 +69,8 @@ void InitNetwork() {
 void SignInSecondaryAccount(Profile* profile, const std::string& email) {
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  AccountInfo account_info = identity::MakeAccountAvailable(
-      identity_manager, email);
+  AccountInfo account_info =
+      identity::MakeAccountAvailable(identity_manager, email);
   FakeGaiaCookieManagerService* fake_cookie_service =
       static_cast<FakeGaiaCookieManagerService*>(
           GaiaCookieManagerServiceFactory::GetForProfile(profile));

@@ -68,8 +68,7 @@ TestWithBrowserView::TestWithBrowserView(Browser::Type browser_type,
                                          bool hosted_app)
     : BrowserWithTestWindowTest(browser_type, hosted_app) {}
 
-TestWithBrowserView::~TestWithBrowserView() {
-}
+TestWithBrowserView::~TestWithBrowserView() {}
 
 void TestWithBrowserView::SetUp() {
 #if defined(OS_CHROMEOS)
@@ -125,5 +124,7 @@ BrowserWindow* TestWithBrowserView::CreateBrowserWindow() {
 
 TestingProfile::TestingFactories TestWithBrowserView::GetTestingFactories() {
   return {{GaiaCookieManagerServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeGaiaCookieManagerService)}};
+           base::BindRepeating(
+               &BuildFakeGaiaCookieManagerServiceWithOptions,
+               /*create_fake_url_loader_factory_for_cookie_requests=*/true)}};
 }

@@ -14,7 +14,7 @@
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerService(
     content::BrowserContext* context) {
   return BuildFakeGaiaCookieManagerServiceWithOptions(
-      /*create_fake_url_loader_factory_for_cookie_requests=*/true, context);
+      /*create_fake_url_loader_factory_for_cookie_requests=*/false, context);
 }
 
 std::unique_ptr<KeyedService> BuildFakeGaiaCookieManagerServiceWithOptions(
