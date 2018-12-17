@@ -68,8 +68,8 @@ class AutofillProfileValidator : public autofill::LoadRulesListener {
     AutofillProfileValidatorCallback on_validated_;
 
     bool has_responded_ = false;
-    base::CancelableCallback<void()> on_timeout_;
-
+    base::CancelableOnceCallback<void()> on_timeout_;
+    base::WeakPtrFactory<ValidationRequest> weak_factory_;
     DISALLOW_COPY_AND_ASSIGN(ValidationRequest);
   };
 
