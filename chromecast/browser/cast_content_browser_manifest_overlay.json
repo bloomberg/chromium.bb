@@ -3,6 +3,12 @@
   "display_name": "Cast Shell (Browser)",
   "interface_provider_specs": {
     "service_manager:connector": {
+      "requires": {
+        "heap_profiling" : [
+          "profiling",
+          "heap_profiler"
+        ]
+      },
       "provides": {
         "renderer": [
           "chromecast.media.mojom.MediaCaps",
