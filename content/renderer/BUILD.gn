@@ -291,6 +291,7 @@ target(link_target_type, "renderer") {
     "media/stream/media_stream_source.h",
     "media/stream/media_stream_track.cc",
     "media/stream/media_stream_track.h",
+    "media/stream/media_stream_types.h",
     "media/stream/media_stream_video_capturer_source.cc",
     "media/stream/media_stream_video_capturer_source.h",
     "media/stream/media_stream_video_renderer_sink.cc",

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_video_sink.h"
@@ -106,6 +107,14 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
     frame_rate_ = frame_rate;
   }
 
+  // Setting information about the track size.
+  // Passed as callback on MediaStreamVideoTrack::AddTrack, and called from
+  // VideoFrameResolutionAdapter on frame delivery to update track settings.
+  void SetSize(int width, int height) {
+    width_ = width;
+    height_ = height;
+  }
+
   void SetTrackAdapterSettings(const VideoTrackAdapterSettings& settings);
 
   MediaStreamVideoSource* source() const { return source_.get(); }
@@ -155,6 +164,8 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   int width_ = 0;
   int height_ = 0;
   double frame_rate_ = 0.0;
+
+  base::WeakPtrFactory<MediaStreamVideoTrack> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoTrack);
 };

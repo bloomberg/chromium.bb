@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/stream/media_stream_types.h"
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/geometry/size.h"
@@ -84,13 +85,14 @@ class VideoTrackAdapter
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // Register |track| to receive video frames in |frame_callback| with
-  // a resolution within the boundaries of the arguments.
-  // Must be called on the main render thread. |frame_callback| is guaranteed to
-  // be released on the main render thread.
+  // a resolution within the boundaries of the arguments, and settings
+  // updates in |settings_callback|.
+  // Must be called on the main render thread.
   // |source_frame_rate| is used to calculate a prudent interval to check for
   // passing frames and inform of the result via |on_muted_state_callback|.
   void AddTrack(const MediaStreamVideoTrack* track,
                 VideoCaptureDeliverFrameCB frame_callback,
+                VideoTrackSettingsCallback settings_callback,
                 const VideoTrackAdapterSettings& settings);
   void RemoveTrack(const MediaStreamVideoTrack* track);
   void ReconfigureTrack(const MediaStreamVideoTrack* track,
@@ -131,6 +133,7 @@ class VideoTrackAdapter
 
   void AddTrackOnIO(const MediaStreamVideoTrack* track,
                     VideoCaptureDeliverFrameCB frame_callback,
+                    VideoTrackSettingsCallback settings_callback,
                     const VideoTrackAdapterSettings& settings);
   void RemoveTrackOnIO(const MediaStreamVideoTrack* track);
   void ReconfigureTrackOnIO(const MediaStreamVideoTrack* track,
@@ -156,9 +159,9 @@ class VideoTrackAdapter
   // VideoCaptureDeliverFrameCB is released on the main render thread.
   const scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
 
-  // VideoFrameResolutionAdapter is an inner class that is created on the main
-  // render thread but operates on the IO-thread. It does the resolution
-  // adaptation and delivers frames to all registered tracks on the IO-thread.
+  // VideoFrameResolutionAdapter is an inner class that lives on the IO-thread.
+  // It does the resolution adaptation and delivers frames to all registered
+  // tracks.
   class VideoFrameResolutionAdapter;
   using FrameAdapters = std::vector<scoped_refptr<VideoFrameResolutionAdapter>>;
   FrameAdapters adapters_;
