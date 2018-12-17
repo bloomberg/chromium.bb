@@ -4357,7 +4357,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "BlinkMainThreadUsesSequenceManager"
+                        "BlinkMainThreadUsesSequenceManager",
+                        "MessageLoopUsesSequenceManager"
                     ]
                 }
             ]
