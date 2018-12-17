@@ -1807,6 +1807,9 @@ LayoutUnit LayoutBlock::MinLineHeightForReplacedObject(
 
 LayoutUnit LayoutBlock::FirstLineBoxBaseline() const {
   DCHECK(!ChildrenInline());
+  if (ShouldApplyLayoutContainment())
+    return LayoutUnit(-1);
+
   if (IsWritingModeRoot() && !IsRubyRun())
     return LayoutUnit(-1);
 

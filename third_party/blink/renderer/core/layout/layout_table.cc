@@ -1523,7 +1523,7 @@ LayoutUnit LayoutTable::FirstLineBoxBaseline() const {
   // 'inline-table'). This is also needed to properly determine the baseline of
   // a cell if it has a table child.
 
-  if (IsWritingModeRoot())
+  if (IsWritingModeRoot() || ShouldApplyLayoutContainment())
     return LayoutUnit(-1);
 
   RecalcSectionsIfNeeded();

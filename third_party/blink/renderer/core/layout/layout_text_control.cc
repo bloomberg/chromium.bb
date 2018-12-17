@@ -319,6 +319,9 @@ LayoutObject* LayoutTextControl::LayoutSpecialExcludedChild(
 }
 
 LayoutUnit LayoutTextControl::FirstLineBoxBaseline() const {
+  if (ShouldApplyLayoutContainment())
+    return LayoutUnit(-1);
+
   LayoutUnit result = LayoutBlock::FirstLineBoxBaseline();
   if (result != -1)
     return result;
