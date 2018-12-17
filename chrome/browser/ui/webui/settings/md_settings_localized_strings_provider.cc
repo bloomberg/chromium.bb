@@ -1787,12 +1787,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   }
 
   html_source->AddString("syncLearnMoreUrl", chrome::kSyncLearnMoreURL);
-  html_source->AddString("autofillHelpURL",
-#if defined(OS_CHROMEOS)
-                         GetHelpUrlWithBoard(autofill::kHelpURL));
-#else
-                         autofill::kHelpURL);
-#endif
   html_source->AddString("supervisedUsersUrl",
                          chrome::kLegacySupervisedUserManagementURL);
 

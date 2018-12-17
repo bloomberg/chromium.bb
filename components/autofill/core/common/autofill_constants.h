@@ -11,9 +11,6 @@
 
 namespace autofill {
 
-// Help URL for the Autofill dialog.
-extern const char kHelpURL[];
-
 // The origin of an AutofillDataModel created or modified in the settings page.
 extern const char kSettingsOrigin[];
 
