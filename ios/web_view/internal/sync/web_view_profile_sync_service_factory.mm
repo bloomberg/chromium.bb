@@ -14,8 +14,10 @@
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
+#include "components/version_info/version_info.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
@@ -30,6 +32,7 @@
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -97,6 +100,10 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
       WebViewProfileInvalidationProviderFactory::GetForBrowserState(
           browser_state)
           ->GetIdentityProvider());
+  init_params.local_device_info_provider =
+      std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
+          version_info::Channel::UNKNOWN, version_info::GetVersionNumber(),
+          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
 
   auto profile_sync_service =
       std::make_unique<ProfileSyncService>(std::move(init_params));

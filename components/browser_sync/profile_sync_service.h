@@ -60,6 +60,7 @@ namespace syncer {
 class BackendMigrator;
 class DeviceInfoSyncBridge;
 class DeviceInfoTracker;
+class LocalDeviceInfoProvider;
 class NetworkResources;
 class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
@@ -182,6 +183,7 @@ class ProfileSyncService : public syncer::SyncService,
 
     std::unique_ptr<syncer::SyncClient> sync_client;
     identity::IdentityManager* identity_manager = nullptr;
+    // TODO(mastiz): Move this to LocalDeviceInfoProviderImpl.
     SigninScopedDeviceIdCallback signin_scoped_device_id_callback;
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     std::vector<invalidation::IdentityProvider*>
@@ -191,7 +193,7 @@ class ProfileSyncService : public syncer::SyncService,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
     network::NetworkConnectionTracker* network_connection_tracker = nullptr;
     std::string debug_identifier;
-    version_info::Channel channel = version_info::Channel::UNKNOWN;
+    std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_info_provider;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);
@@ -203,6 +205,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Initializes the object. This must be called at most once, and
   // immediately after an object of this class is constructed.
+  // TODO(mastiz): Rename this to Start().
   void Initialize();
 
   // syncer::SyncService implementation
@@ -538,6 +541,8 @@ class ProfileSyncService : public syncer::SyncService,
   // the Sync API component factory.
   const std::unique_ptr<syncer::SyncClient> sync_client_;
 
+  const std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_;
+
   // The class that handles getting, setting, and persisting sync preferences.
   syncer::SyncPrefs sync_prefs_;
 
@@ -550,9 +555,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Handles tracking of the authenticated account and acquiring access tokens.
   // Only null after Shutdown().
   std::unique_ptr<SyncAuthManager> auth_manager_;
-
-  // The product channel of the embedder.
-  const version_info::Channel channel_;
 
   // An identifier representing this instance for debugging purposes.
   const std::string debug_identifier_;
@@ -657,8 +659,6 @@ class ProfileSyncService : public syncer::SyncService,
   // syncing account, so we'll need to update this whenever the account changes.
   std::vector<invalidation::IdentityProvider*> const
       invalidations_identity_providers_;
-
-  std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_;
 
   std::unique_ptr<syncer::DeviceInfoSyncBridge> device_info_sync_bridge_;
 

@@ -25,6 +25,7 @@ class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
   ~LocalDeviceInfoProviderImpl() override;
 
   // LocalDeviceInfoProvider implementation.
+  version_info::Channel GetChannel() const override;
   const DeviceInfo* GetLocalDeviceInfo() const override;
   std::string GetSyncUserAgent() const override;
   std::string GetLocalSyncCacheGUID() const override;

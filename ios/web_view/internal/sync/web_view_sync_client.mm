@@ -40,7 +40,6 @@
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
-#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -80,8 +79,7 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
   component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
-      this, version_info::Channel::UNKNOWN, version_info::GetVersionNumber(),
-      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
+      this, version_info::Channel::UNKNOWN,
       prefs::kSavingBrowserHistoryDisabled,
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
       db_thread_, profile_web_data_service_, account_web_data_service_,

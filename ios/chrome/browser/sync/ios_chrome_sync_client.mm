@@ -70,7 +70,6 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
-#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -114,9 +113,7 @@ IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
   // Component factory may already be set in tests.
   if (!GetSyncApiComponentFactory()) {
     component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
-        this, ::GetChannel(), ::GetVersionString(),
-        ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-        prefs::kSavingBrowserHistoryDisabled,
+        this, ::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
         base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
         db_thread_, profile_web_data_service_, account_web_data_service_,
         password_store_,

@@ -31,7 +31,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 #include "components/sync/driver/data_type_manager_impl.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
@@ -108,8 +107,6 @@ AutofillWalletMetadataDelegateFromDataService(
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     syncer::SyncClient* sync_client,
     version_info::Channel channel,
-    const std::string& version,
-    bool is_tablet,
     const char* history_disabled_pref,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
@@ -121,8 +118,6 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     sync_bookmarks::BookmarkSyncService* bookmark_sync_service)
     : sync_client_(sync_client),
       channel_(channel),
-      version_(version),
-      is_tablet_(is_tablet),
       history_disabled_pref_(history_disabled_pref),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
@@ -434,12 +429,6 @@ ProfileSyncComponentsFactoryImpl::CreateSyncEngine(
     const base::FilePath& sync_data_folder) {
   return std::make_unique<syncer::SyncBackendHostImpl>(
       name, sync_client_, invalidator, sync_prefs, sync_data_folder);
-}
-
-std::unique_ptr<syncer::LocalDeviceInfoProvider>
-ProfileSyncComponentsFactoryImpl::CreateLocalDeviceInfoProvider() {
-  return std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
-      channel_, version_, is_tablet_);
 }
 
 syncer::SyncApiComponentFactory::SyncComponents

@@ -15,6 +15,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/signin/core/browser/device_id_helper.h"
+#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
 #include "ios/chrome/browser/application_context.h"
@@ -43,6 +44,7 @@
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 using browser_sync::ProfileSyncService;
@@ -151,7 +153,10 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.network_connection_tracker =
       GetApplicationContext()->GetNetworkConnectionTracker();
   init_params.debug_identifier = browser_state->GetDebugName();
-  init_params.channel = ::GetChannel();
+  init_params.local_device_info_provider =
+      std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
+          ::GetChannel(), ::GetVersionString(),
+          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
 
   bool use_fcm_invalidations =
       base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);

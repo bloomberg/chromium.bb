@@ -17,6 +17,7 @@
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"

@@ -10,6 +10,7 @@
 
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/local_device_info_provider.h"
+#include "components/version_info/version_info.h"
 
 namespace syncer {
 
@@ -26,6 +27,7 @@ class LocalDeviceInfoProviderMock : public LocalDeviceInfoProvider {
                               const std::string& signin_scoped_device_id);
   ~LocalDeviceInfoProviderMock() override;
 
+  version_info::Channel GetChannel() const override;
   const DeviceInfo* GetLocalDeviceInfo() const override;
   std::string GetSyncUserAgent() const override;
   std::string GetLocalSyncCacheGUID() const override;

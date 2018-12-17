@@ -25,6 +25,10 @@ LocalDeviceInfoProviderMock::LocalDeviceInfoProviderMock(
 
 LocalDeviceInfoProviderMock::~LocalDeviceInfoProviderMock() {}
 
+version_info::Channel LocalDeviceInfoProviderMock::GetChannel() const {
+  return version_info::Channel::UNKNOWN;
+}
+
 const DeviceInfo* LocalDeviceInfoProviderMock::GetLocalDeviceInfo() const {
   return is_initialized_ ? local_device_info_.get() : nullptr;
 }

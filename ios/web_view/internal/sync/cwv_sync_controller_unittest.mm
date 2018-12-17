@@ -20,6 +20,7 @@
 #include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
+#include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -74,6 +75,8 @@ class CWVSyncControllerTest : public PlatformTest {
     init_params.network_time_update_callback = base::DoNothing();
     init_params.signin_scoped_device_id_callback = base::BindRepeating(
         &signin::GetSigninScopedDeviceId, browser_state_.GetPrefs());
+    init_params.local_device_info_provider =
+        std::make_unique<syncer::LocalDeviceInfoProviderMock>();
     profile_sync_service_ =
         std::make_unique<browser_sync::ProfileSyncServiceMock>(
             std::move(init_params));

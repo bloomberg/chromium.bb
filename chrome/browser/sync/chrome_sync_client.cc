@@ -86,7 +86,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/backend_task_runner.h"
 #include "extensions/buildflags/buildflags.h"
-#include "ui/base/device_form_factor.h"
 
 #if BUILDFLAG(ENABLE_APP_LIST)
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -193,9 +192,7 @@ void ChromeSyncClient::Initialize() {
   // Component factory may already be set in tests.
   if (!GetSyncApiComponentFactory()) {
     component_factory_ = std::make_unique<ProfileSyncComponentsFactoryImpl>(
-        this, chrome::GetChannel(), chrome::GetVersionString(),
-        ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-        prefs::kSavingBrowserHistoryDisabled,
+        this, chrome::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
         base::CreateSingleThreadTaskRunnerWithTraits(
             {content::BrowserThread::UI}),
         web_data_service_thread_, profile_web_data_service_,
