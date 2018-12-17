@@ -9,13 +9,12 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "net/base/net_export.h"
 #include "net/ssl/ssl_key_logger.h"
 
 namespace base {
 class FilePath;
-class SequencedTaskRunner;
 }  // namespace base
 
 namespace net {
@@ -33,10 +32,7 @@ class NET_EXPORT SSLKeyLoggerImpl : public SSLKeyLogger {
 
  private:
   class Core;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  // Destroyed on |task_runner_|.
-  std::unique_ptr<Core> core_;
+  scoped_refptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLKeyLoggerImpl);
 };
