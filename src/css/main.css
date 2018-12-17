@@ -558,16 +558,27 @@ body:not(.capturing) .options-group {
   -webkit-transform: translateY(-50%);
 }
 
-body.capturing.grid #preview-grid-horizontal {
-  border-bottom-width: 3px;
-  border-top-width: 3px;
-  -webkit-transform: translateY(-50%) scaleY(0.33333);
+body._4x4 #preview-grid-horizontal:before {
+  border-bottom: 1px solid white;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 0;
+  content: '';
 }
 
-body.capturing.grid.golden #preview-grid-horizontal {
-  border-bottom-width: 4px;
-  border-top-width: 4px;
-  -webkit-transform: translateY(-50%) scaleY(0.23607);
+body.grid._3x3 #preview-grid-horizontal {
+  height: 33.333%;
+}
+
+body.grid.golden #preview-grid-horizontal {
+  height: 23.607%;
+}
+
+body.grid._4x4 #preview-grid-horizontal,
+body.grid._4x4 #preview-grid-horizontal:before {
+  height: 50%;
 }
 
 #preview-grid-vertical {
@@ -581,21 +592,37 @@ body.capturing.grid.golden #preview-grid-horizontal {
   -webkit-transform: translateX(-50%);
 }
 
-body.capturing.grid #preview-grid-vertical {
-  border-left-width: 3px;
-  border-right-width: 3px;
-  -webkit-transform: translateX(-50%) scaleX(0.33333);
+body._4x4 #preview-grid-vertical:before {
+  border-right: 1px solid white;
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  left: 0;
+  width: 0;
+  content: '';
 }
 
-body.capturing.grid.golden #preview-grid-vertical {
-  border-left-width: 4px;
-  border-right-width: 4px;
-  -webkit-transform: translateX(-50%) scaleX(0.23607);
+body.grid._3x3 #preview-grid-vertical {
+  width: 33.333%;
+}
+
+body.grid.golden #preview-grid-vertical {
+  width: 23.607%;
+}
+
+body.grid._4x4 #preview-grid-vertical,
+body.grid._4x4 #preview-grid-vertical:before {
+  width: 50%;
 }
 
 #preview-grid-horizontal.animate,
-#preview-grid-vertical.animate {
-  transition: transform 500ms;
+#preview-grid-horizontal.animate:before {
+  transition: height 500ms;
+}
+
+#preview-grid-vertical.animate,
+#preview-grid-vertical.animate:before {
+  transition: width 500ms;
 }
 
 #record-time {
@@ -857,6 +884,7 @@ body.gridsettings #gridsettings .menu {
 }
 
 body._3x3 .description span[i18n-content=labelGrid3x3],
+body._4x4 .description span[i18n-content=labelGrid4x4],
 body.golden .description span[i18n-content=labelGridGolden] {
   display: inline;
 }
