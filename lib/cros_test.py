@@ -43,6 +43,7 @@ class CrOSTest(object):
     self.guest = opts.guest
 
     self.autotest = opts.autotest
+    self.tast = opts.tast
     self.results_dir = opts.results_dir
     self.test_that_args = opts.test_that_args
 
@@ -182,11 +183,33 @@ class CrOSTest(object):
     return self._device.RunCommand(
         cmd, enter_chroot=not cros_build_lib.IsInsideChroot())
 
+  def _RunTastTests(self):
+    """Run Tast tests.
+
+    Returns:
+      cros_build_lib.CommandResult object.
+    """
+    cmd = ['tast']
+    if self._device.log_level == 'debug':
+      cmd += ['-verbose']
+    cmd += ['run', '-build=false', '-waituntilready',]
+    if self._device.is_vm:
+      cmd += ['-extrauseflags=tast_vm']
+    if self.results_dir:
+      cmd += ['-resultsdir', path_util.ToChrootPath(self.results_dir)]
+    if self._device.ssh_port:
+      cmd += ['%s:%d' % (self._device.device, self._device.ssh_port)]
+    else:
+      cmd += [self._device.device]
+    cmd += self.tast
+    return self._device.RunCommand(
+        cmd, enter_chroot=not cros_build_lib.IsInsideChroot())
+
   def _RunTests(self):
     """Run tests.
 
-    Run user-specified tests, catapult tests, autotest, or the default,
-    vm_sanity.
+    Run user-specified tests, catapult tests, tast tests, autotest, or the
+    default, vm_sanity.
 
     Returns:
       Command execution return code.
@@ -200,6 +223,8 @@ class CrOSTest(object):
       result = self._RunCatapultTests()
     elif self.autotest:
       result = self._RunAutotest()
+    elif self.tast:
+      result = self._RunTastTests()
     else:
       result = self._device.RemoteCommand(
           ['/usr/local/autotest/bin/vm_sanity.py'], stream_output=True)
@@ -311,6 +336,9 @@ def ParseCommandLine(argv):
                       help='Catapult test pattern to run, passed to run_tests.')
   parser.add_argument('--autotest', nargs='+',
                       help='Autotest test pattern to run, passed to test_that.')
+  parser.add_argument('--tast', nargs='+',
+                      help='Tast test pattern to run, passed to tast. '
+                      'See go/tast-running for patterns.')
   parser.add_argument('--output', type='path', help='Save output to file.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
