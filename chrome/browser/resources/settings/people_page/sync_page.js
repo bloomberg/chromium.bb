@@ -22,6 +22,7 @@ Polymer({
   is: 'settings-sync-page',
 
   behaviors: [
+    I18nBehavior,
     WebUIListenerBehavior,
     settings.RouteObserverBehavior,
   ],
@@ -513,6 +514,16 @@ Polymer({
   /** @private */
   onSyncAdvancedTap_: function() {
     settings.navigateTo(settings.routes.SYNC_ADVANCED);
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getSyncAdvancedRowSublabel_: function() {
+    return this.i18n(
+        this.syncPrefs.syncAllDataTypes ? 'syncEverythingCheckboxLabel' :
+                                          'syncAdvancedRowCustomSettings');
   },
 });
 
