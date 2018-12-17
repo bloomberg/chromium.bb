@@ -230,8 +230,7 @@ typedef struct MOVStreamContext {
 
     uint32_t format;
 
-    int has_sidx;  // If there is a sidx entry for this stream.
-    int has_tkhd;  // If there is a tkhd entry for this stream.
+    int has_sidx;  // If there is an sidx entry for this stream.
     struct {
         struct AVAESCTR* aes_ctr;
         unsigned int per_sample_iv_size;  // Either 0, 8, or 16.
