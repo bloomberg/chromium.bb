@@ -23,6 +23,7 @@ CHROMEOS_EXPORT extern const base::Feature
 CHROMEOS_EXPORT extern const base::Feature kChromeVoxArcSupport;
 CHROMEOS_EXPORT extern const base::Feature kCrostiniFiles;
 CHROMEOS_EXPORT extern const base::Feature kCrostiniUsbSupport;
+CHROMEOS_EXPORT extern const base::Feature kCryptAuthV2Enrollment;
 CHROMEOS_EXPORT extern const base::Feature kDiscoverApp;
 CHROMEOS_EXPORT extern const base::Feature kDriveFs;
 CHROMEOS_EXPORT extern const base::Feature kMyFilesVolume;

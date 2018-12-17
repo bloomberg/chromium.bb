@@ -1568,6 +1568,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
+    {"cryptauth-v2-enrollment", flag_descriptions::kCryptAuthV2EnrollmentName,
+     flag_descriptions::kCryptAuthV2EnrollmentDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCryptAuthV2Enrollment)},
     {
         "disable-office-editing-component-app",
         flag_descriptions::kOfficeEditingComponentAppName,

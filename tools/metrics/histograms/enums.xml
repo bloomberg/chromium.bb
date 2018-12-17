@@ -30889,6 +30889,7 @@ from previous Chrome versions.
   <int value="-519960638" label="enable-site-engagement-service"/>
   <int value="-518104091" label="NewAudioRenderingMixingStrategy:enabled"/>
   <int value="-516845951" label="enable-embedded-extension-options"/>
+  <int value="-513967943" label="CryptAuthV2Enrollment:disabled"/>
   <int value="-513305102" label="LanguagesPreference:enabled"/>
   <int value="-512971943" label="disable-one-copy"/>
   <int value="-510488450" label="disable-pnacl"/>
@@ -31280,6 +31281,7 @@ from previous Chrome versions.
   <int value="222184258"
       label="AutofillEnforceMinRequiredFieldsForHeuristics:disabled"/>
   <int value="223662457" label="BackgroundLoadingForDownloads:enabled"/>
+  <int value="229476202" label="CryptAuthV2Enrollment:enabled"/>
   <int value="237570976" label="CommandLineOnNonRooted:disabled"/>
   <int value="237964589"
       label="enable-manual-fallback-for-password-saving:disabled"/>
