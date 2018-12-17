@@ -28,21 +28,6 @@ namespace extensions {
 
 namespace {
 
-// Adapts a LazyBackgroundTaskQueue pending task callback to
-// LazyContextTaskQueue's callback.
-void PendingTaskAdapter(LazyContextTaskQueue::PendingTask original_task,
-                        ExtensionHost* host) {
-  if (!host) {
-    std::move(original_task).Run(nullptr);
-  } else {
-    std::move(original_task)
-        .Run(std::make_unique<LazyContextTaskQueue::ContextInfo>(
-            host->extension()->id(), host->render_process_host(),
-            blink::mojom::kInvalidServiceWorkerVersionId, kMainThreadId,
-            host->GetURL()));
-  }
-}
-
 // Attempts to create a background host for a lazy background page. Returns true
 // if the background host is created.
 bool CreateLazyBackgroundHost(ProcessManager* pm, const Extension* extension) {
@@ -101,7 +86,7 @@ void LazyBackgroundTaskQueue::AddPendingTaskToDispatchEvent(
     const LazyContextId& context_id,
     LazyContextTaskQueue::PendingTask task) {
   AddPendingTask(context_id.browser_context(), context_id.extension_id(),
-                 base::BindOnce(&PendingTaskAdapter, std::move(task)));
+                 std::move(task));
 }
 
 void LazyBackgroundTaskQueue::AddPendingTask(
@@ -161,7 +146,7 @@ void LazyBackgroundTaskQueue::ProcessPendingTasks(
   PendingTasksList tasks;
   tasks.swap(*map_it->second);
   for (auto& task : tasks)
-    std::move(task).Run(host);
+    std::move(task).Run(host ? std::make_unique<ContextInfo>(host) : nullptr);
 
   pending_tasks_.erase(key);
 

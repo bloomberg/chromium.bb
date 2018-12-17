@@ -12,10 +12,12 @@
 namespace content {
 class BrowserContext;
 class RenderProcessHost;
+class WebContents;
 }  // namespace content
 
 namespace extensions {
 class Extension;
+class ExtensionHost;
 class LazyContextId;
 
 // Interface for performing tasks after loading lazy contexts of an extension.
@@ -33,16 +35,20 @@ class LazyContextTaskQueue {
     const int64_t service_worker_version_id;
     const int worker_thread_id;
     const GURL url;
+    // TODO(dbertoni): This needs to be initialized for the Service Worker
+    // version of the constructor.
+    content::BrowserContext* const browser_context = nullptr;
+    // This data member will have a nullptr value for Service Worker-related
+    // tasks.
+    content::WebContents* const web_contents = nullptr;
+
+    explicit ContextInfo(ExtensionHost* host);
+
     ContextInfo(const ExtensionId& extension_id,
                 content::RenderProcessHost* render_process_host,
                 int64_t service_worker_version_id,
                 int worker_thread_id,
-                const GURL& url)
-        : extension_id(extension_id),
-          render_process_host(render_process_host),
-          service_worker_version_id(service_worker_version_id),
-          worker_thread_id(worker_thread_id),
-          url(url) {}
+                const GURL& url);
   };
   using PendingTask =
       base::OnceCallback<void(std::unique_ptr<ContextInfo> params)>;

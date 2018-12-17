@@ -304,25 +304,28 @@ class PlatformAppPathLauncher
     ExtensionHost* const host =
         process_manager->GetBackgroundHostForExtension(extension_id);
     DCHECK(host);
-    GrantAccessToFilesAndLaunch(host);
+    GrantAccessToFilesAndLaunch(
+        std::make_unique<extensions::LazyContextTaskQueue::ContextInfo>(host));
   }
 
-  void GrantAccessToFilesAndLaunch(ExtensionHost* host) {
+  void GrantAccessToFilesAndLaunch(
+      std::unique_ptr<extensions::LazyContextTaskQueue::ContextInfo>
+          context_info) {
     const Extension* app = GetExtension();
     if (!app)
       return;
 
-    // If there was an error loading the app page, |host| will be NULL.
-    if (!host) {
+    // If there was an error loading the app page, |context_info| will be NULL.
+    if (!context_info) {
       LOG(ERROR) << "Could not load app page for " << extension_id;
       return;
     }
 
     std::vector<GrantedFileEntry> granted_entries;
     for (size_t i = 0; i < entry_paths_.size(); ++i) {
-      granted_entries.push_back(
-          CreateFileEntry(context_, app, host->render_process_host()->GetID(),
-                          entries_[i].path, entries_[i].is_directory));
+      granted_entries.push_back(CreateFileEntry(
+          context_, app, context_info->render_process_host->GetID(),
+          entries_[i].path, entries_[i].is_directory));
     }
 
     AppRuntimeEventRouter::DispatchOnLaunchedEventWithFileEntries(

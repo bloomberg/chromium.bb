@@ -73,7 +73,7 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
   TestProcessManager* process_manager() { return process_manager_; }
 
   // A simple callback for AddPendingTask.
-  void RunPendingTask(ExtensionHost* host) {
+  void RunPendingTask(std::unique_ptr<LazyContextTaskQueue::ContextInfo>) {
     task_run_count_++;
   }
 

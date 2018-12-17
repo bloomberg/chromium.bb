@@ -208,7 +208,9 @@ void AppViewGuest::CreateWebContents(const base::DictionaryValue& create_params,
   ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(guest_extension->id());
   DCHECK(host);
-  LaunchAppAndFireEvent(data->CreateDeepCopy(), std::move(callback), host);
+  LaunchAppAndFireEvent(
+      data->CreateDeepCopy(), std::move(callback),
+      std::make_unique<LazyContextTaskQueue::ContextInfo>(host));
 }
 
 void AppViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
@@ -253,10 +255,10 @@ void AppViewGuest::CompleteCreateWebContents(
 void AppViewGuest::LaunchAppAndFireEvent(
     std::unique_ptr<base::DictionaryValue> data,
     WebContentsCreatedCallback callback,
-    ExtensionHost* extension_host) {
+    std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
   bool has_event_listener = EventRouter::Get(browser_context())
                                 ->ExtensionHasEventListener(
-                                    extension_host->extension()->id(),
+                                    context_info->extension_id,
                                     app_runtime::OnEmbedRequested::kEventName);
   if (!has_event_listener) {
     std::move(callback).Run(nullptr);
@@ -268,8 +270,12 @@ void AppViewGuest::LaunchAppAndFireEvent(
   embed_request->SetInteger(appview::kGuestInstanceID, guest_instance_id());
   embed_request->SetString(appview::kEmbedderID, owner_host());
   embed_request->Set(appview::kData, std::move(data));
+  const Extension* const extension =
+      extensions::ExtensionRegistry::Get(context_info->browser_context)
+          ->enabled_extensions()
+          .GetByID(context_info->extension_id);
   AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
-      browser_context(), std::move(embed_request), extension_host->extension());
+      browser_context(), std::move(embed_request), extension);
 }
 
 void AppViewGuest::SetAppDelegateForTest(AppDelegate* delegate) {

@@ -32,7 +32,6 @@
 #include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
-#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
@@ -943,17 +942,20 @@ void MessageService::GotChannelID(std::unique_ptr<OpenChannelParams> params,
 void MessageService::PendingLazyBackgroundPageOpenChannel(
     std::unique_ptr<OpenChannelParams> params,
     int source_process_id,
-    ExtensionHost* host) {
+    std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!host)
+  if (context_info == nullptr)
     return;  // TODO(mpcomplete): notify source of disconnect?
 
-  params->receiver.reset(
-      new ExtensionMessagePort(
-          weak_factory_.GetWeakPtr(), params->receiver_port_id,
-          params->target_extension_id, host->render_process_host()));
-  OpenChannelImpl(host->browser_context(), std::move(params), host->extension(),
+  params->receiver.reset(new ExtensionMessagePort(
+      weak_factory_.GetWeakPtr(), params->receiver_port_id,
+      params->target_extension_id, context_info->render_process_host));
+  const Extension* const extension =
+      extensions::ExtensionRegistry::Get(context_info->browser_context)
+          ->enabled_extensions()
+          .GetByID(context_info->extension_id);
+  OpenChannelImpl(context_info->browser_context, std::move(params), extension,
                   true /* did_enqueue */);
 }
 

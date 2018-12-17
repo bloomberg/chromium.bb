@@ -42,8 +42,6 @@ class LazyBackgroundTaskQueue : public KeyedService,
                                 public content::NotificationObserver,
                                 public ExtensionRegistryObserver {
  public:
-  using PendingTask = base::OnceCallback<void(ExtensionHost*)>;
-
   explicit LazyBackgroundTaskQueue(content::BrowserContext* browser_context);
   ~LazyBackgroundTaskQueue() override;
 
@@ -57,18 +55,17 @@ class LazyBackgroundTaskQueue : public KeyedService,
   // cancels that suspension.
   bool ShouldEnqueueTask(content::BrowserContext* context,
                          const Extension* extension) override;
+
   // TODO(lazyboy): Find a better way to use AddPendingTask instead of this.
-  // Currently AddPendingTask has lots of consumers that depend on
-  // ExtensionHost.
-  void AddPendingTaskToDispatchEvent(
-      const LazyContextId& context_id,
-      LazyContextTaskQueue::PendingTask task) override;
+  void AddPendingTaskToDispatchEvent(const LazyContextId& context_id,
+                                     PendingTask task) override;
 
   // Adds a task to the queue for a given extension. If this is the first
   // task added for the extension, its lazy background page will be loaded.
   // The task will be called either when the page is loaded, or when the
   // page fails to load for some reason (e.g. a crash or browser
-  // shutdown). In the latter case, the ExtensionHost parameter is NULL.
+  // shutdown). In the latter case, |task| will be called with an empty
+  // std::unique_ptr<ContextItem> parameter.
   void AddPendingTask(content::BrowserContext* context,
                       const std::string& extension_id,
                       PendingTask task);

@@ -98,13 +98,14 @@ constexpr int kMinDurationBetweenSuccessiveRestartsHours = 3;
 // API without a kiosk app.
 bool allow_non_kiosk_apps_restart_api_for_test = false;
 
-void DispatchOnStartupEventImpl(BrowserContext* browser_context,
-                                const std::string& extension_id,
-                                bool first_call,
-                                ExtensionHost* host) {
-  // A NULL host from the LazyBackgroundTaskQueue means the page failed to
-  // load. Give up.
-  if (!host && !first_call)
+void DispatchOnStartupEventImpl(
+    BrowserContext* browser_context,
+    const std::string& extension_id,
+    bool first_call,
+    std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
+  // A NULL ContextInfo from the LazyBackgroundTaskQueue means the page failed
+  // to load. Give up.
+  if (!context_info && !first_call)
     return;
 
   // Don't send onStartup events to incognito browser contexts.
@@ -427,7 +428,7 @@ void RuntimeAPI::AllowNonKioskAppsInRestartAfterDelayForTesting() {
 void RuntimeEventRouter::DispatchOnStartupEvent(
     content::BrowserContext* context,
     const std::string& extension_id) {
-  DispatchOnStartupEventImpl(context, extension_id, true, NULL);
+  DispatchOnStartupEventImpl(context, extension_id, true, nullptr);
 }
 
 // static
@@ -602,7 +603,7 @@ ExtensionFunction::ResponseAction RuntimeGetBackgroundPageFunction::Run() {
             base::BindOnce(&RuntimeGetBackgroundPageFunction::OnPageLoaded,
                            this));
   } else if (host) {
-    OnPageLoaded(host);
+    OnPageLoaded(std::make_unique<LazyContextTaskQueue::ContextInfo>(host));
   } else {
     return RespondNow(Error(kNoBackgroundPageError));
   }
@@ -610,8 +611,9 @@ ExtensionFunction::ResponseAction RuntimeGetBackgroundPageFunction::Run() {
   return RespondLater();
 }
 
-void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost* host) {
-  if (host) {
+void RuntimeGetBackgroundPageFunction::OnPageLoaded(
+    std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
+  if (context_info) {
     Respond(NoArguments());
   } else {
     Respond(Error(kPageLoadError));

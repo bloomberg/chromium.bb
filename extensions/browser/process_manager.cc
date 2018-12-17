@@ -114,9 +114,10 @@ static void CreateBackgroundHostForExtensionLoad(
                                   BackgroundInfo::GetBackgroundURL(extension));
 }
 
-void PropagateExtensionWakeResult(base::OnceCallback<void(bool)> callback,
-                                  extensions::ExtensionHost* host) {
-  std::move(callback).Run(host != nullptr);
+void PropagateExtensionWakeResult(
+    base::OnceCallback<void(bool)> callback,
+    std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
+  std::move(callback).Run(context_info != nullptr);
 }
 
 }  // namespace

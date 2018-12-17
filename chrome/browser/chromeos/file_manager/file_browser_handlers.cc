@@ -199,7 +199,8 @@ class FileBrowserHandlerExecutor {
       std::unique_ptr<FileDefinitionList> file_definition_list,
       std::unique_ptr<EntryDefinitionList> entry_definition_list,
       int handler_pid_in,
-      extensions::ExtensionHost* host);
+      std::unique_ptr<extensions::LazyContextTaskQueue::ContextInfo>
+          context_info);
 
   // Registers file permissions from |handler_host_permissions_| with
   // ChildProcessSecurityPolicy for process with id |handler_pid|.
@@ -368,9 +369,11 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
     std::unique_ptr<FileDefinitionList> file_definition_list,
     std::unique_ptr<EntryDefinitionList> entry_definition_list,
     int handler_pid_in,
-    extensions::ExtensionHost* host) {
-  int handler_pid = host ? host->render_process_host()->GetID() :
-      handler_pid_in;
+    std::unique_ptr<extensions::LazyContextTaskQueue::ContextInfo>
+        context_info) {
+  int handler_pid = context_info != nullptr
+                        ? context_info->render_process_host->GetID()
+                        : handler_pid_in;
 
   if (handler_pid <= 0) {
     ExecuteDoneOnUIThread(false);

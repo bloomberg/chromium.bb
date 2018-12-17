@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_H_
 #define EXTENSIONS_BROWSER_API_RUNTIME_RUNTIME_API_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -16,6 +17,7 @@
 #include "extensions/browser/events/lazy_event_dispatch_util.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/update_observer.h"
@@ -40,7 +42,6 @@ struct PlatformInfo;
 }
 
 class Extension;
-class ExtensionHost;
 class ExtensionRegistry;
 
 // Runtime API dispatches onStartup, onInstalled, and similar events to
@@ -226,7 +227,8 @@ class RuntimeGetBackgroundPageFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void OnPageLoaded(ExtensionHost*);
+  void OnPageLoaded(
+      std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info);
 };
 
 class RuntimeOpenOptionsPageFunction : public UIThreadExtensionFunction {

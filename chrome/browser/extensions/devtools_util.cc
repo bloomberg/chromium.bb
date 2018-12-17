@@ -17,9 +17,10 @@ namespace devtools_util {
 namespace {
 
 // Helper to inspect an ExtensionHost after it has been loaded.
-void InspectExtensionHost(ExtensionHost* host) {
-  if (host)
-    DevToolsWindow::OpenDevToolsWindow(host->host_contents());
+void InspectExtensionHost(
+    std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
+  if (context_info != nullptr)
+    DevToolsWindow::OpenDevToolsWindow(context_info->web_contents);
 }
 
 }  // namespace
@@ -29,7 +30,8 @@ void InspectBackgroundPage(const Extension* extension, Profile* profile) {
   ExtensionHost* host = ProcessManager::Get(profile)
                             ->GetBackgroundHostForExtension(extension->id());
   if (host) {
-    InspectExtensionHost(host);
+    InspectExtensionHost(
+        std::make_unique<LazyContextTaskQueue::ContextInfo>(host));
   } else {
     LazyBackgroundTaskQueue::Get(profile)->AddPendingTask(
         profile, extension->id(), base::BindOnce(&InspectExtensionHost));
