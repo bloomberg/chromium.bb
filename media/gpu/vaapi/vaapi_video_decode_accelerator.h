@@ -26,6 +26,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
@@ -54,7 +55,8 @@ class VaapiPicture;
 // can assume |*this| is still alive.  See |weak_this_| below for more details.
 class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
     : public VideoDecodeAccelerator,
-      public DecodeSurfaceHandler<VASurface> {
+      public DecodeSurfaceHandler<VASurface>,
+      public base::trace_event::MemoryDumpProvider {
  public:
   VaapiVideoDecodeAccelerator(
       const MakeGLContextCurrentCallback& make_context_current_cb,
@@ -91,6 +93,10 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
                     int32_t bitstream_id,
                     const gfx::Rect& visible_rect,
                     const VideoColorSpace& color_space) override;
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   friend class VaapiVideoDecodeAcceleratorTest;
