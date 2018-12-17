@@ -47,8 +47,6 @@ bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
       !LegacyIsPrimaryAccountAuthInProgress())
     return false;
 
-  // TODO: report failure if SignOut is not allowed.
-
   switch (action) {
     case PrimaryAccountMutator::ClearAccountsAction::kDefault:
       signin_manager_->SignOut(source_metric, delete_metric);
@@ -71,15 +69,6 @@ bool PrimaryAccountMutatorImpl::IsSettingPrimaryAccountAllowed() const {
 
 void PrimaryAccountMutatorImpl::SetSettingPrimaryAccountAllowed(bool allowed) {
   signin_manager_->SetSigninAllowed(allowed);
-}
-
-bool PrimaryAccountMutatorImpl::IsClearingPrimaryAccountAllowed() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void PrimaryAccountMutatorImpl::SetClearingPrimaryAccountAllowed(bool allowed) {
-  NOTIMPLEMENTED();
 }
 
 void PrimaryAccountMutatorImpl::SetAllowedPrimaryAccountPattern(
