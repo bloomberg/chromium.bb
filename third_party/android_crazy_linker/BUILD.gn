@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
-import("//testing/test.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//testing/test.gni")
 
 # NOTE: This file is included in Linux builds to build the
 # crazy_linker_zip_fuzzer target (see below). However, the rest of the
@@ -102,8 +102,8 @@ if (is_android) {
         "src/src/crazy_linker_system.h",
         "src/src/crazy_linker_system_linker.cpp",
         "src/src/crazy_linker_system_linker.h",
-        "src/src/crazy_linker_thread.cpp",
-        "src/src/crazy_linker_thread.h",
+        "src/src/crazy_linker_thread_data.cpp",
+        "src/src/crazy_linker_thread_data.h",
         "src/src/crazy_linker_util.cpp",
         "src/src/crazy_linker_util.h",
         "src/src/crazy_linker_wrappers.cpp",
@@ -165,7 +165,8 @@ if (is_android) {
       "src/src/crazy_linker_relr_relocations_unittest.cpp",
       "src/src/crazy_linker_search_path_list_unittest.cpp",
       "src/src/crazy_linker_system_unittest.cpp",
-      "src/src/crazy_linker_thread_unittest.cpp",
+      "src/src/crazy_linker_thread_data_unittest.cpp",
+      "src/src/crazy_linker_util_threads_unittest.cpp",
       "src/src/crazy_linker_util_unittest.cpp",
       "src/src/crazy_linker_zip_test_data.cpp",
       "src/src/crazy_linker_zip_test_data.h",
@@ -386,6 +387,7 @@ if (is_android) {
     sources = [
       "src/tests/test_load_library_callbacks.cpp",
     ]
+    include_dirs = [ "src/src" ]  # Needed for crazy_linker_util_threads.h
     data_deps = [
       ":crazy_linker_tests_libbar",
     ]

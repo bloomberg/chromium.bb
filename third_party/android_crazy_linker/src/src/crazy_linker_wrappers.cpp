@@ -12,7 +12,7 @@
 #include "crazy_linker_library_view.h"
 #include "crazy_linker_shared_library.h"
 #include "crazy_linker_system_linker.h"
-#include "crazy_linker_thread.h"
+#include "crazy_linker_thread_data.h"
 #include "crazy_linker_util.h"
 
 #ifdef __arm__

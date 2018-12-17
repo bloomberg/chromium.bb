@@ -17,7 +17,7 @@
 #include "crazy_linker_library_view.h"
 #include "crazy_linker_memory_mapping.h"
 #include "crazy_linker_system_linker.h"
-#include "crazy_linker_thread.h"
+#include "crazy_linker_thread_data.h"
 #include "crazy_linker_util.h"
 #include "crazy_linker_wrappers.h"
 #include "linker_phdr.h"

@@ -2,41 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "crazy_linker_thread.h"
+#include "crazy_linker_thread_data.h"
 
 #include <gtest/gtest.h>
 
 namespace crazy {
 
-TEST(Thread, GetThreadData) {
+TEST(ThreadData, GetThreadData) {
   ThreadData* data = GetThreadData();
   EXPECT_TRUE(data) << "Checking first GetThreadData() call";
   EXPECT_EQ(data, GetThreadData());
   EXPECT_EQ(data, GetThreadDataFast());
 }
 
-TEST(Thread, GetErrorEmpty) {
+TEST(ThreadData, GetErrorEmpty) {
   ThreadData* data = GetThreadData();
   const char* error = data->GetError();
   EXPECT_TRUE(error);
   EXPECT_STREQ("", error);
 }
 
-TEST(Thread, SetError) {
+TEST(ThreadData, SetError) {
   ThreadData* data = GetThreadData();
   data->SetError("Hello");
   data->SetError("World");
   EXPECT_STREQ("World", data->GetError());
 }
 
-TEST(Thread, SetErrorNull) {
+TEST(ThreadData, SetErrorNull) {
   ThreadData* data = GetThreadData();
   data->SetError("Hello");
   data->SetError(NULL);
   EXPECT_STREQ("", data->GetError());
 }
 
-TEST(Thread, GetError) {
+TEST(ThreadData, GetError) {
   ThreadData* data = GetThreadData();
   data->SetError("Hello");
 
@@ -47,7 +47,7 @@ TEST(Thread, GetError) {
   EXPECT_STREQ("Hello", error);
 }
 
-TEST(Thread, SwapErrorBuffers) {
+TEST(ThreadData, SwapErrorBuffers) {
   ThreadData* data = GetThreadData();
   data->SetError("Hello");
   EXPECT_STREQ("Hello", data->GetError());
@@ -62,7 +62,7 @@ TEST(Thread, SwapErrorBuffers) {
   EXPECT_STREQ("", data->GetError());
 }
 
-TEST(Thread, AppendErrorTwice) {
+TEST(ThreadData, AppendErrorTwice) {
   ThreadData* data = GetThreadData();
   data->SetError(NULL);
   data->AppendError("Hello");
@@ -72,7 +72,7 @@ TEST(Thread, AppendErrorTwice) {
   EXPECT_STREQ("Hello World", data->GetError());
 }
 
-TEST(Thread, AppendErrorFull) {
+TEST(ThreadData, AppendErrorFull) {
   const size_t kMaxCount = 1000;
   ThreadData* data = GetThreadData();
   data->SetError(NULL);
@@ -91,7 +91,7 @@ TEST(Thread, AppendErrorFull) {
   }
 }
 
-TEST(Thread, AppendErrorNull) {
+TEST(ThreadData, AppendErrorNull) {
   ThreadData* data = GetThreadData();
   data->SetError("Hello");
   data->AppendError(NULL);
@@ -99,7 +99,7 @@ TEST(Thread, AppendErrorNull) {
   EXPECT_STREQ("Hello World", data->GetError());
 }
 
-TEST(Thread, SetLinkerErrorString) {
+TEST(ThreadData, SetLinkerErrorString) {
   ThreadData* data = GetThreadData();
 
   SetLinkerErrorString("Hello World");
@@ -109,7 +109,7 @@ TEST(Thread, SetLinkerErrorString) {
   EXPECT_STREQ("", data->GetError());
 }
 
-TEST(Thread, SetLinkerError) {
+TEST(ThreadData, SetLinkerError) {
   ThreadData* data = GetThreadData();
 
   SetLinkerError("%s %s!", "Hi", "Captain");

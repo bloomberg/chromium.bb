@@ -8,16 +8,16 @@
 
 #include <string.h>
 
-#include "crazy_linker_error.h"
 #include "crazy_linker_ashmem.h"
+#include "crazy_linker_error.h"
 #include "crazy_linker_globals.h"
+#include "crazy_linker_library_view.h"
 #include "crazy_linker_proc_maps.h"
 #include "crazy_linker_search_path_list.h"
 #include "crazy_linker_shared_library.h"
-#include "crazy_linker_thread.h"
-#include "crazy_linker_util.h"
-#include "crazy_linker_library_view.h"
 #include "crazy_linker_system.h"
+#include "crazy_linker_thread_data.h"
+#include "crazy_linker_util.h"
 
 using crazy::Globals;
 using crazy::Error;
