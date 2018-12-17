@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -446,6 +447,30 @@ class AutofillMetricsIFrameTest : public AutofillMetricsTest,
 
 INSTANTIATE_TEST_CASE_P(AutofillMetricsTest,
                         AutofillMetricsIFrameTest,
+                        testing::Bool());
+
+// Test parameter indicates if the metrics are being logged for a form in an
+// iframe or the main frame. True means the form is in the main frame.
+class AutofillMetricsCompanyTest : public AutofillMetricsTest,
+                                   public testing::WithParamInterface<bool> {
+ public:
+  AutofillMetricsCompanyTest() : company_name_enabled_(GetParam()) {}
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kAutofillEnableCompanyName, company_name_enabled_);
+    AutofillMetricsTest::SetUp();
+  }
+
+ protected:
+  const bool company_name_enabled_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_CASE_P(AutofillMetricsTest,
+                        AutofillMetricsCompanyTest,
                         testing::Bool());
 
 // Test that we log quality metrics appropriately.
@@ -2937,6 +2962,48 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
     autofill_manager_->OnQueryFormFieldAutofill(
         0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
     histogram_tester.ExpectTotalCount("Autofill.AddressSuggestionsCount", 1);
+  }
+}
+
+// Test that we log the correct number of Company Name Autofill suggestions when
+// filling a form.
+TEST_P(AutofillMetricsCompanyTest, CompanyNameSuggestions) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(NAME_FULL);
+  test::CreateTestFormField("Email", "email", "", "email", &field);
+  form.fields.push_back(field);
+  field_types.push_back(EMAIL_ADDRESS);
+  test::CreateTestFormField("Company", "company", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(COMPANY_NAME);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulate activating the autofill popup for the phone field.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(
+        0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+
+    if (company_name_enabled_) {
+      histogram_tester.ExpectUniqueSample("Autofill.AddressSuggestionsCount", 2,
+                                          1);
+    } else {
+      EXPECT_EQ(nullptr, base::StatisticsRecorder::FindHistogram(
+                             "Autofill.AddressSuggestionsCount"));
+    }
   }
 }
 
