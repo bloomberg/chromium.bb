@@ -1289,6 +1289,10 @@ Polymer({
     if (eap)
       this.setEapProperties_(eap);
     if (this.configProperties_.Type == CrOnc.Type.VPN) {
+      // VPN.Host can be an IP address but will not be recognized as such if
+      // there is initial whitespace, so trim it.
+      if (typeof propertiesToSet.VPN.Host == 'string')
+        propertiesToSet.VPN.Host = propertiesToSet.VPN.Host.trim();
       if (this.get('VPN.Type', propertiesToSet) == CrOnc.VPNType.OPEN_VPN)
         this.setOpenVPNProperties_(propertiesToSet);
       else
