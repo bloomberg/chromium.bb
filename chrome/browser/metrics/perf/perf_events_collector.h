@@ -5,14 +5,16 @@
 #ifndef CHROME_BROWSER_METRICS_PERF_PERF_EVENTS_COLLECTOR_H_
 #define CHROME_BROWSER_METRICS_PERF_PERF_EVENTS_COLLECTOR_H_
 
-#include "chrome/browser/metrics/perf/collection_params.h"
-#include "chrome/browser/metrics/perf/cpu_identity.h"
+#include <map>
+
 #include "chrome/browser/metrics/perf/metric_collector.h"
-#include "chrome/browser/metrics/perf/perf_output.h"
 #include "chrome/browser/metrics/perf/random_selector.h"
-#include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 
 namespace metrics {
+
+struct CPUIdentity;
+class PerfOutputCall;
+class WindowedIncognitoObserver;
 
 // Enables collection of perf events profile data. perf aka "perf events" is a
 // performance profiling infrastructure built into the linux kernel. For more

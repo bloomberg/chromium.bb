@@ -9,7 +9,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/metrics/perf/cpu_identity.h"
+#include "chrome/browser/metrics/perf/perf_output.h"
+#include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "components/variations/variations_associated_data.h"
+#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
 

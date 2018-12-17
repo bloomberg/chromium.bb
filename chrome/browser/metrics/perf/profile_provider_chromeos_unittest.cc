@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/metrics/perf/metric_collector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "testing/gtest/include/gtest/gtest.h"

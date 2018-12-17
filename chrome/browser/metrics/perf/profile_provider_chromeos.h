@@ -8,11 +8,14 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "chrome/browser/metrics/perf/metric_collector.h"
+#include "chrome/browser/sessions/session_restore.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
 
 namespace metrics {
+
+class MetricCollector;
+class SampledProfile;
 
 // Provides access to ChromeOS profile data using different metric collectors.
 // It detects certain system triggers, such as device resuming from suspend

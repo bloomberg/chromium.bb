@@ -15,10 +15,10 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/metrics/perf/collection_params.h"
-#include "chrome/browser/sessions/session_restore.h"
-#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
+
+class SampledProfile;
 
 // Provides a common interface for metric collectors with custom trigger
 // definitions. Extends base::SupportWeakPtr to pass around the "this"

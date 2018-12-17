@@ -16,6 +16,8 @@
 #include "base/time/time.h"
 #include "chromeos/dbus/pipe_reader.h"
 
+namespace metrics {
+
 // Class for handling getting output from perf over DBus. Manages the
 // asynchronous DBus call and retrieving data from quipper over a pipe.
 class PerfOutputCall {
@@ -53,5 +55,7 @@ class PerfOutputCall {
 
   DISALLOW_COPY_AND_ASSIGN(PerfOutputCall);
 };
+
+}  // namespace metrics
 
 #endif  // CHROME_BROWSER_METRICS_PERF_PERF_OUTPUT_H_
