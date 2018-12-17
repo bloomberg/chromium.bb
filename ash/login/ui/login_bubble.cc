@@ -47,9 +47,6 @@ constexpr char kLegacySupervisedUserManagementDisplayURL[] =
 // Spacing between the child view inside the bubble view.
 constexpr int kBubbleBetweenChildSpacingDp = 6;
 
-// The size of the alert icon in the error bubble.
-constexpr int kAlertIconSizeDp = 20;
-
 // An alpha value for the sub message in the user menu.
 constexpr SkAlpha kSubMessageColorAlpha = 0x89;
 
@@ -66,9 +63,6 @@ constexpr int kUserMenuMarginAroundSeparatorDp = 18;
 constexpr int kUserMenuVerticalDistanceBetweenLabelsDp = 18;
 // Margin around remove user button.
 constexpr int kUserMenuMarginAroundRemoveUserButtonDp = 4;
-
-// Vertical spacing between the anchor view and error bubble.
-constexpr int kAnchorViewErrorBubbleVerticalSpacingDp = 48;
 
 // Horizontal spacing with the anchor view.
 constexpr int kAnchorViewUserMenuHorizontalSpacingDp = 98;
@@ -88,56 +82,6 @@ views::Label* CreateLabel(const base::string16& message, SkColor color) {
                                            gfx::Font::Weight::NORMAL));
   return label;
 }
-
-class LoginErrorBubbleView : public LoginBaseBubbleView {
- public:
-  LoginErrorBubbleView(views::View* content,
-                       views::View* anchor_view,
-                       aura::Window* container,
-                       bool show_persistently)
-      : LoginBaseBubbleView(anchor_view, container),
-        show_persistently_(show_persistently) {
-    set_anchor_view_insets(
-        gfx::Insets(kAnchorViewErrorBubbleVerticalSpacingDp, 0));
-
-    gfx::Insets margins(kUserMenuMarginHeight, kUserMenuMarginWidth);
-
-    set_margins(gfx::Insets(0, margins.left(), 0, margins.right()));
-
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
-        gfx::Insets(margins.top(), 0, margins.bottom(), 0),
-        kBubbleBetweenChildSpacingDp));
-
-    auto* alert_view = new NonAccessibleView("AlertIconContainer");
-    alert_view->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
-    views::ImageView* alert_icon = new views::ImageView();
-    alert_icon->SetPreferredSize(gfx::Size(kAlertIconSizeDp, kAlertIconSizeDp));
-    alert_icon->SetImage(
-        gfx::CreateVectorIcon(kLockScreenAlertIcon, SK_ColorWHITE));
-    alert_view->AddChildView(alert_icon);
-    AddChildView(alert_view);
-
-    AddChildView(content);
-  }
-
-  ~LoginErrorBubbleView() override = default;
-
-  // LoginBaseBubbleView:
-  bool IsPersistent() const override { return show_persistently_; }
-
-  // views::View:
-  const char* GetClassName() const override { return "LoginErrorBubbleView"; }
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ax::mojom::Role::kTooltip;
-  }
-
- private:
-  bool show_persistently_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginErrorBubbleView);
-};
 
 // A button that holds a child view.
 class ButtonWithContent : public views::Button {
@@ -398,26 +342,6 @@ class LoginUserMenuView : public LoginBaseBubbleView,
   DISALLOW_COPY_AND_ASSIGN(LoginUserMenuView);
 };
 
-class LoginTooltipView : public LoginBaseBubbleView {
- public:
-  LoginTooltipView(const base::string16& message, views::View* anchor_view)
-      : LoginBaseBubbleView(anchor_view) {
-    SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-    views::Label* text = CreateLabel(message, SK_ColorWHITE);
-    text->SetMultiLine(true);
-    AddChildView(text);
-  }
-
-  // LoginBaseBubbleView:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ax::mojom::Role::kTooltip;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginTooltipView);
-};
-
 }  // namespace
 
 // static
@@ -443,20 +367,6 @@ LoginBubble::LoginBubble() = default;
 
 LoginBubble::~LoginBubble() = default;
 
-void LoginBubble::ShowErrorBubble(views::View* content,
-                                  views::View* anchor_view,
-                                  bool show_persistently) {
-  if (bubble_view_)
-    CloseImmediately();
-
-  aura::Window* menu_container = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(), kShellWindowId_MenuContainer);
-  bubble_view_ = new LoginErrorBubbleView(content, anchor_view, menu_container,
-                                          show_persistently);
-
-  bubble_view_->Show();
-}
-
 void LoginBubble::ShowUserMenu(const base::string16& username,
                                const base::string16& email,
                                user_manager::UserType type,
@@ -481,15 +391,6 @@ void LoginBubble::ShowUserMenu(const base::string16& username,
     // Try to focus the bubble view only if the bubble opener was focused.
     bubble_view_->RequestFocus();
   }
-}
-
-void LoginBubble::ShowTooltip(const base::string16& message,
-                              views::View* anchor_view) {
-  if (bubble_view_)
-    CloseImmediately();
-
-  bubble_view_ = new LoginTooltipView(message, anchor_view);
-  bubble_view_->Show();
 }
 
 void LoginBubble::ShowSelectionMenu(LoginMenuView* menu) {
