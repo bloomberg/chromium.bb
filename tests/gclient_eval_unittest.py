@@ -454,6 +454,71 @@ class CipdTest(unittest.TestCase):
         '}',
     ]))
 
+  def test_gets_and_sets_cipd_vars(self):
+    local_scope = gclient_eval.Exec('\n'.join([
+        'vars = {',
+        '    "cipd-rev": "git_revision:deadbeef",',
+        '    "another-cipd-rev": "version:1.0.3",',
+        '}',
+        'deps = {',
+        '    "src/cipd/package": {',
+        '        "packages": [',
+        '            {',
+        '                "package": "some/cipd/package",',
+        '                "version": Var("cipd-rev"),',
+        '            },',
+        '            {',
+        '                "package": "another/cipd/package",',
+        '                "version": "{another-cipd-rev}",',
+        '            },',
+        '        ],',
+        '        "condition": "checkout_android",',
+        '        "dep_type": "cipd",',
+        '    },',
+        '}',
+    ]))
+
+    self.assertEqual(
+        gclient_eval.GetCIPD(
+            local_scope, 'src/cipd/package', 'some/cipd/package'),
+        'git_revision:deadbeef')
+
+    self.assertEqual(
+        gclient_eval.GetCIPD(
+            local_scope, 'src/cipd/package', 'another/cipd/package'),
+        'version:1.0.3')
+
+    gclient_eval.SetCIPD(
+        local_scope, 'src/cipd/package', 'another/cipd/package',
+        'version:1.1.0')
+    gclient_eval.SetCIPD(
+        local_scope, 'src/cipd/package', 'some/cipd/package',
+        'git_revision:foobar')
+    result = gclient_eval.RenderDEPSFile(local_scope)
+
+    self.assertEqual(result, '\n'.join([
+        'vars = {',
+        '    "cipd-rev": "git_revision:foobar",',
+        '    "another-cipd-rev": "version:1.1.0",',
+        '}',
+        'deps = {',
+        '    "src/cipd/package": {',
+        '        "packages": [',
+        '            {',
+        '                "package": "some/cipd/package",',
+        '                "version": Var("cipd-rev"),',
+        '            },',
+        '            {',
+        '                "package": "another/cipd/package",',
+        '                "version": "{another-cipd-rev}",',
+        '            },',
+        '        ],',
+        '        "condition": "checkout_android",',
+        '        "dep_type": "cipd",',
+        '    },',
+        '}',
+    ]))
+
   def test_preserves_escaped_vars(self):
     local_scope = gclient_eval.Exec('\n'.join([
         'deps = {',

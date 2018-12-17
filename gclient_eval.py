@@ -22,6 +22,9 @@ class _NodeDict(collections.MutableMapping):
   def __str__(self):
     return str({k: v[0] for k, v in self.data.iteritems()})
 
+  def __repr__(self):
+    return self.__str__()
+
   def __getitem__(self, key):
     return self.data[key][0]
 
@@ -712,6 +715,15 @@ def SetVar(gclient_dict, var_name, value):
   gclient_dict['vars'].SetNode(var_name, value, node)
 
 
+def _GetVarName(node):
+  if isinstance(node, ast.Call):
+    return node.args[0].s
+  elif node.s.endswith('}'):
+    last_brace = node.s.rfind('{')
+    return node.s[last_brace+1:-1]
+  return None
+
+
 def SetCIPD(gclient_dict, dep_name, package_name, new_version):
   if not isinstance(gclient_dict, _NodeDict) or gclient_dict.tokens is None:
     raise ValueError(
@@ -741,19 +753,20 @@ def SetCIPD(gclient_dict, dep_name, package_name, new_version):
         "The deps entry for %s:%s has no formatting information." %
         (dep_name, package_name))
 
-  _UpdateAstString(tokens, node, new_version)
-  packages[0].SetNode('version', new_version, node)
+  if not isinstance(node, ast.Call) and not isinstance(node, ast.Str):
+    raise ValueError(
+        "Unsupported dependency revision format. Please file a bug to the "
+        "Infra>SDK component in monorail.")
+
+  var_name = _GetVarName(node)
+  if var_name is not None:
+    SetVar(gclient_dict, var_name, new_version)
+  else:
+    _UpdateAstString(tokens, node, new_version)
+    packages[0].SetNode('version', new_version, node)
 
 
 def SetRevision(gclient_dict, dep_name, new_revision):
-  def _GetVarName(node):
-    if isinstance(node, ast.Call):
-      return node.args[0].s
-    elif node.s.endswith('}'):
-      last_brace = node.s.rfind('{')
-      return node.s[last_brace+1:-1]
-    return None
-
   def _UpdateRevision(dep_dict, dep_key, new_revision):
     dep_node = dep_dict.GetNode(dep_key)
     if dep_node is None:
@@ -766,7 +779,8 @@ def SetRevision(gclient_dict, dep_name, new_revision):
 
     if not isinstance(node, ast.Call) and not isinstance(node, ast.Str):
       raise ValueError(
-          "Unsupported dependency revision format. Please file a bug.")
+          "Unsupported dependency revision format. Please file a bug to the "
+          "Infra>SDK component in monorail.")
 
     var_name = _GetVarName(node)
     if var_name is not None:
