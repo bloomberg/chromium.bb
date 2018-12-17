@@ -84,12 +84,10 @@ void TestPresentationPixelsImpl(WebXrVrBrowserTestBase* t,
       << "Alpha channel of submitted color does not match expectation";
 }
 
-IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard,
-                       REQUIRES_GPU(TestPresentationPixels)) {
+IN_PROC_BROWSER_TEST_F(WebVrBrowserTestStandard, TestPresentationPixels) {
   TestPresentationPixelsImpl(this, "test_webvr_pixels");
 }
-IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard,
-                       REQUIRES_GPU(TestPresentationPixels)) {
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestPresentationPixels) {
   TestPresentationPixelsImpl(this, "test_webxr_pixels");
 }
 

@@ -453,12 +453,7 @@ test("browser_tests") {
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   if (is_win) {
-    data += [
-      "$root_out_dir/chrome_200_percent.pak",
-
-      # Needed for VR browser tests
-      "//third_party/blink/web_tests/resources/testharness.js",
-    ]
+    data += [ "$root_out_dir/chrome_200_percent.pak" ]
     deps += [ "//chrome/app:chrome_dll_resources" ]
   }
   if (is_chromeos) {
@@ -2018,31 +2013,14 @@ test("browser_tests") {
         "../browser/ui/views/accessibility/invert_bubble_view_browsertest.cc",
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
-        "../browser/vr/test/mock_openvr_device_hook_base.cc",
-        "../browser/vr/test/mock_openvr_device_hook_base.h",
-        "../browser/vr/test/webvr_browser_test.cc",
-        "../browser/vr/test/webvr_browser_test.h",
-        "../browser/vr/test/webxr_browser_test.cc",
-        "../browser/vr/test/webxr_browser_test.h",
-        "../browser/vr/test/webxr_vr_browser_test.cc",
-        "../browser/vr/test/webxr_vr_browser_test.h",
-        "../browser/vr/test/xr_browser_test.cc",
-        "../browser/vr/test/xr_browser_test.h",
-        "../browser/vr/webxr_vr_frame_pose_browser_test.cc",
-        "../browser/vr/webxr_vr_input_browser_test.cc",
-        "../browser/vr/webxr_vr_pixel_browser_test.cc",
-        "../browser/vr/webxr_vr_tab_browser_test.cc",
-        "../browser/vr/webxr_vr_transition_browser_test.cc",
       ]
       deps += [
         "//chrome:other_version",
         "//chrome/app:command_ids",
         "//chrome/test:credential_provider_test_utils",
-        "//device/vr",
         "//third_party/wtl",
         "//ui/resources",
       ]
-      data_deps += [ "../../device/vr:openvr_mock" ]
 
       if (is_chrome_branded) {
         sources += [

@@ -25,11 +25,11 @@ and later (or Windows 7 with a non-standard patch applied) with a GPU that
 supports DirectX 11.1.
 
 Instrumentation tests handle restrictions with the `@Restriction` annotation,
-but browser tests don't have any equivalent functionality. Instead, test names
-should be wrapped in the `REQUIRES_GPU` macro defined in `xr_browser_test.h`,
-which simply disables the test by default. We then explicitly run tests that
-inherit from `XrBrowserTestBase` and enable the running of disabled tests on
-bots that meet the requirements.
+but browser tests don't have any equivalent functionality. However, since
+the browser tests don't require any setup outside of the tests like
+instrumentation tests do (which require the paired viewer, etc. to be changed),
+having the tests in their own target is sufficient to prevent us from running
+into hardware incompatibility issues.
 
 ## Command Line Switches
 
@@ -43,17 +43,12 @@ flags that are set in its `SetUp` function.
 
 ## Compiling And Running
 
-The tests are compiled as part of the standard `browser_tests` target, although
-the files are currently only included on Windows.
+The tests are compiled in the `xr_browser_tests` target, which is currently
+only defined on Windows.
 
-Once compiled, the tests can be run using the following command line, which
-ensures that only the XR browser tests are run:
+Once compiled, the tests can be run using the following command line:
 
-`browser_tests.exe --enable-gpu --test-launcher-jobs=1
---gtest_filter=WebVrBrowserTest*:WebXrVrBrowserTest*
---enable-pixel-output-in-tests --gtest_also_run_disabled_tests`
-
-Note that this must be run from your output directory, e.g. `out/Debug`, as
-otherwise the setup code to use the mock OpenVR client will fail.
+`xr_browser_tests.exe --enable-gpu --test-launcher-jobs=1
+--enable-pixel-output-in-tests`
 
 [1]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr

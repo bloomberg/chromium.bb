@@ -17,8 +17,6 @@
 #include "content/public/common/content_switches.h"
 #include "url/gurl.h"
 
-#define REQUIRES_GPU(x) DISABLED_##x
-
 namespace vr {
 
 // Base browser test class for running XR-related tests.

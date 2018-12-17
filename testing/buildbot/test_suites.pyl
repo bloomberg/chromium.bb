@@ -3104,15 +3104,7 @@
 
     'gpu_default_and_optional_win_specific_gtests': {
       'xr_browser_tests': {
-        'args': [
-        '--enable-gpu',
-          '--test-launcher-bot-mode',
-          '--test-launcher-jobs=1',
-          '--gtest_filter=WebVrBrowserTest*:WebXrVrBrowserTest*',
-          '--enable-pixel-output-in-tests',
-          '--gtest_also_run_disabled_tests',
-        ],
-        'test': 'browser_tests',
+        'test': 'xr_browser_tests',
       },
     },
 
