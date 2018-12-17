@@ -7,7 +7,6 @@
 #include <elf.h>
 #include <inttypes.h>
 #include <limits.h>
-#include <pthread.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
@@ -16,6 +15,7 @@
 #include "crazy_linker_proc_maps.h"
 #include "crazy_linker_system.h"
 #include "crazy_linker_util.h"
+#include "crazy_linker_util_threads.h"
 #include "elf_traits.h"
 
 namespace crazy {
@@ -241,20 +241,6 @@ void RDebug::CallRBrk(int state) {
 
 namespace {
 
-// Helper class providing a simple scoped pthreads mutex.
-class ScopedMutexLock {
- public:
-  explicit ScopedMutexLock(pthread_mutex_t* mutex) : mutex_(mutex) {
-    pthread_mutex_lock(mutex_);
-  }
-  ~ScopedMutexLock() {
-    pthread_mutex_unlock(mutex_);
-  }
-
- private:
-  pthread_mutex_t* mutex_;
-};
-
 // Helper runnable class. Handler is one of the two static functions
 // AddEntryInternal() or DelEntryInternal(). Calling these invokes
 // AddEntryImpl() or DelEntryImpl() respectively on rdebug.
@@ -264,11 +250,10 @@ class RDebugRunnable {
                  RDebug* rdebug,
                  link_map_t* entry,
                  bool is_blocking)
-      : handler_(handler), rdebug_(rdebug),
-        entry_(entry), is_blocking_(is_blocking), has_run_(false) {
-    pthread_mutex_init(&mutex_, NULL);
-    pthread_cond_init(&cond_, NULL);
-  }
+      : handler_(handler),
+        rdebug_(rdebug),
+        entry_(entry),
+        is_blocking_(is_blocking) {}
 
   static void Run(void* opaque);
   static void WaitForCallback(void* opaque);
@@ -278,14 +263,12 @@ class RDebugRunnable {
   RDebug* rdebug_;
   link_map_t* entry_;
   bool is_blocking_;
-  bool has_run_;
-  pthread_mutex_t mutex_;
-  pthread_cond_t cond_;
+  WaitableEvent has_run_;
 };
 
 // Callback entry point.
 void RDebugRunnable::Run(void* opaque) {
-  RDebugRunnable* runnable = static_cast<RDebugRunnable*>(opaque);
+  auto* runnable = static_cast<RDebugRunnable*>(opaque);
 
   LOG("Callback received, runnable=%p", runnable);
   (*runnable->handler_)(runnable->rdebug_, runnable->entry_);
@@ -296,16 +279,12 @@ void RDebugRunnable::Run(void* opaque) {
   }
 
   LOG("Signalling callback, runnable=%p", runnable);
-  {
-    ScopedMutexLock m(&runnable->mutex_);
-    runnable->has_run_ = true;
-    pthread_cond_signal(&runnable->cond_);
-  }
+  runnable->has_run_.Signal();
 }
 
 // For blocking callbacks, wait for the call to Run().
 void RDebugRunnable::WaitForCallback(void* opaque) {
-  RDebugRunnable* runnable = static_cast<RDebugRunnable*>(opaque);
+  auto* runnable = static_cast<RDebugRunnable*>(opaque);
 
   if (!runnable->is_blocking_) {
     LOG("Non-blocking, not waiting, runnable=%p", runnable);
@@ -313,11 +292,7 @@ void RDebugRunnable::WaitForCallback(void* opaque) {
   }
 
   LOG("Waiting for signal, runnable=%p", runnable);
-  {
-    ScopedMutexLock m(&runnable->mutex_);
-    while (!runnable->has_run_)
-      pthread_cond_wait(&runnable->cond_, &runnable->mutex_);
-  }
+  runnable->has_run_.Wait();
 
   delete runnable;
 }

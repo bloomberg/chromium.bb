@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CRAZY_LINKER_THREAD_H
-#define CRAZY_LINKER_THREAD_H
+#ifndef CRAZY_LINKER_THREAD_DATA_H
+#define CRAZY_LINKER_THREAD_DATA_H
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -12,7 +12,6 @@ namespace crazy {
 
 // Per-thread context used during crazy linker operations.
 class ThreadData {
-
  public:
   ThreadData() {}
 
@@ -76,6 +75,6 @@ void SetLinkerErrorString(const char* str);
 // Set the formatted linker error for the current thread.
 void SetLinkerError(const char* fmt, ...);
 
-}  // namespace crazy;
+}  // namespace crazy
 
-#endif  // CRAZY_LINKER_THREAD_H
+#endif  // CRAZY_LINKER_THREAD_DATA_H

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "crazy_linker_thread.h"
+#include "crazy_linker_thread_data.h"
 
 #include <pthread.h>
 #include <stdio.h>
@@ -14,7 +14,9 @@ namespace {
 static pthread_key_t s_thread_key;
 static pthread_once_t s_once = PTHREAD_ONCE_INIT;
 
-static void ThreadDataDestroy(void* data) { free(data); }
+static void ThreadDataDestroy(void* data) {
+  free(data);
+}
 
 static void InitThreadKey() {
   pthread_key_create(&s_thread_key, ThreadDataDestroy);
@@ -68,7 +70,9 @@ ThreadData* GetThreadData() {
 }
 
 // Set the linker error string for the current thread.
-void SetLinkerErrorString(const char* str) { GetThreadData()->SetError(str); }
+void SetLinkerErrorString(const char* str) {
+  GetThreadData()->SetError(str);
+}
 
 // Set the formatted linker error for the current thread.
 void SetLinkerError(const char* fmt, ...) {

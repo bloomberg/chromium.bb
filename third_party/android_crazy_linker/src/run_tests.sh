@@ -65,6 +65,7 @@ adb_shell () {
 VERBOSE=0
 DO_HELP=
 DO_TEST=
+DO_UNIT_TESTS=
 for OPT; do
   case $OPT in
     --output-dir=*)
@@ -72,6 +73,9 @@ for OPT; do
       ;;
     --help|-?)
       DO_HELP=true
+      ;;
+    --unit-tests)
+      DO_UNIT_TESTS=true
       ;;
     --verbose)
       VERBOSE=$(( $VERBOSE + 1 ))
@@ -109,6 +113,7 @@ Possible options:
 
    --help|-?           Print this message.
    --output-dir=<dir>  Manually set the Chromium output directory.
+   --unit-tests        Also run the unit-tests suite (for convenience).
    --verbose           Increment verbosity.
 
 EOF
@@ -152,8 +157,6 @@ libcrazy_linker_tests_libzoo_dlopen_in_initializer_inner.so \
 libcrazy_linker_tests_libzoo_with_dlopen_handle.so \
 "
 
-# TODO(digit): Fix crazy_linker_test_load_library_callbacks and add it
-# to the list.
 TEST_FILES="\
 crazy_linker_bench_load_library \
 crazy_linker_test_constructors_destructors \
@@ -162,6 +165,7 @@ crazy_linker_test_dl_wrappers_recursive \
 crazy_linker_test_dl_wrappers_with_system_handle \
 crazy_linker_test_dl_wrappers_valid_handles \
 crazy_linker_test_load_library \
+crazy_linker_test_load_library_callbacks \
 crazy_linker_test_load_library_depends \
 crazy_linker_test_load_library_with_gnu_hash_table \
 crazy_linker_test_load_library_with_relr_relocations \
@@ -194,6 +198,14 @@ run_test () {
   shift
   run adb_shell LD_LIBRARY_PATH=$RUN_DIR $RUN_DIR/$TEST_NAME "$@"
 }
+
+if [ -n "$DO_UNIT_TESTS" ]; then
+  UT_FLAGS=
+  if [ "$VERBOSE" -ge 1 ]; then
+    UT_FLAGS="--verbose"
+  fi
+  $PROGDIR/run_android_crazy_linker_unittests $UT_FLAGS
+fi
 
 if [ -n "$DO_TEST" ]; then
   run_test "$DO_TEST"
