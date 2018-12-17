@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/process/process_handle.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
@@ -108,7 +109,7 @@ class CrashHandlerHostLinux
 
   base::MessagePumpForIO::FdWatchController fd_watch_controller_;
   std::unique_ptr<base::Thread> uploader_thread_;
-  bool shutting_down_;
+  base::AtomicFlag shutting_down_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
