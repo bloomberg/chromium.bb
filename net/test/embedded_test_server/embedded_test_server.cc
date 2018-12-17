@@ -316,6 +316,8 @@ std::string EmbeddedTestServer::GetCertificateName() const {
       return "common_name_only.pem";
     case CERT_SHA1_LEAF:
       return "sha1_leaf.pem";
+    case CERT_OK_BY_INTERMEDIATE:
+      return "ok_cert_by_intermediate.pem";
   }
 
   return "ok_cert.pem";
@@ -326,7 +328,8 @@ scoped_refptr<X509Certificate> EmbeddedTestServer::GetCertificate() const {
   base::FilePath certs_dir(GetTestCertsDirectory());
 
   base::ScopedAllowBlockingForTesting allow_blocking;
-  return ImportCertFromFile(certs_dir, GetCertificateName());
+  return CreateCertificateChainFromFile(certs_dir, GetCertificateName(),
+                                        X509Certificate::FORMAT_AUTO);
 }
 
 void EmbeddedTestServer::ServeFilesFromDirectory(
