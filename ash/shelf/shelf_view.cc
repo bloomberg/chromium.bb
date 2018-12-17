@@ -1266,8 +1266,9 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
     last_drag_index = last_visible_index_;
   int x = 0, y = 0;
   if (shelf_->IsHorizontalAlignment()) {
-    x = std::max(view_model_->ideal_bounds(indices.first).x(),
-                 drag_point.x() - drag_origin_.x());
+    int new_x = GetMirroredXWithWidthInView(drag_point.x() - drag_origin_.x(),
+                                            drag_view_->width());
+    x = std::max(view_model_->ideal_bounds(indices.first).x(), new_x);
     x = std::min(view_model_->ideal_bounds(last_drag_index).right() -
                      view_model_->ideal_bounds(current_index).width(),
                  x);
