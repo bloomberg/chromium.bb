@@ -171,7 +171,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DoNotNavigateOnDrop) {
       browser()->tab_strip_model()->GetActiveWebContents()->IsLoading());
 }
 
-// If this flakes, disable and log details in http://crbug.com/523255.
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnClick) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
