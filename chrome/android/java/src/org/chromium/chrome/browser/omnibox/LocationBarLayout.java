@@ -975,7 +975,7 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void setUnfocusedWidth(float unfocusedWidth) {
+    public void setUnfocusedWidth(int unfocusedWidth) {
         mStatusViewCoordinator.setUnfocusedLocationBarWidth(unfocusedWidth);
     }
 

@@ -12,24 +12,35 @@ import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKe
  * Model for the Status view.
  */
 class StatusProperties {
+    /** Specifies status icon tint color. */
+    public static final WritableIntPropertyKey ICON_TINT_COLOR_RES = new WritableIntPropertyKey();
+
     /** Specifies navigation button type (eg: PAGE, MAGNIFIER) */
     public static final WritableIntPropertyKey NAVIGATION_BUTTON_TYPE =
             new WritableIntPropertyKey();
 
-    /** Specifies whether presented page is an offline page. */
-    public static final WritableBooleanPropertyKey PAGE_IS_OFFLINE =
+    /** Specifies status separator color. */
+    public static final WritableIntPropertyKey SEPARATOR_COLOR_RES = new WritableIntPropertyKey();
+
+    /** Specifies verbose status text color. */
+    public static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_COLOR_RES =
+            new WritableIntPropertyKey();
+
+    /** Specifies content of the verbose status text field. */
+    public static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_STRING_RES =
+            new WritableIntPropertyKey();
+
+    /** Specifies whether verbose status text view is visible. */
+    public static final WritableBooleanPropertyKey VERBOSE_STATUS_TEXT_VISIBLE =
             new WritableBooleanPropertyKey();
 
-    /** Specifies whether page is shown as a preview. */
-    public static final WritableBooleanPropertyKey PAGE_IS_PREVIEW =
-            new WritableBooleanPropertyKey();
+    /** Specifies width of the verbose status text view. */
+    public static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_WIDTH =
+            new WritableIntPropertyKey();
 
-    /** Specifies whether dark colors should be used in the view. */
-    public static final WritableBooleanPropertyKey USE_DARK_COLORS =
-            new WritableBooleanPropertyKey();
-
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
-            NAVIGATION_BUTTON_TYPE, PAGE_IS_OFFLINE, PAGE_IS_PREVIEW, USE_DARK_COLORS};
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ICON_TINT_COLOR_RES,
+            NAVIGATION_BUTTON_TYPE, SEPARATOR_COLOR_RES, VERBOSE_STATUS_TEXT_COLOR_RES,
+            VERBOSE_STATUS_TEXT_STRING_RES, VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
 
     private StatusProperties() {}
 }
