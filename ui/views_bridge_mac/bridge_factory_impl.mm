@@ -41,12 +41,7 @@ class Bridge : public BridgedNativeWidgetHostHelper {
     if (!remote_accessibility_element_) {
       int64_t browser_pid = 0;
       std::vector<uint8_t> element_token;
-      host_ptr_->GetAccessibilityTokens(
-          ui::RemoteAccessibility::GetTokenForLocalElement(
-              bridge_impl_->ns_window()),
-          ui::RemoteAccessibility::GetTokenForLocalElement(
-              bridge_impl_->ns_view()),
-          &browser_pid, &element_token);
+      host_ptr_->GetRootViewAccessibilityToken(&browser_pid, &element_token);
       [NSAccessibilityRemoteUIElement
           registerRemoteUIProcessIdentifier:browser_pid];
       remote_accessibility_element_ =

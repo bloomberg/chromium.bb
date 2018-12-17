@@ -893,6 +893,27 @@ void BridgedNativeWidgetHostImpl::OnFocusWindowToolbar() {
   native_widget_mac_->OnFocusWindowToolbar();
 }
 
+void BridgedNativeWidgetHostImpl::SetRemoteAccessibilityTokens(
+    const std::vector<uint8_t>& window_token,
+    const std::vector<uint8_t>& view_token) {
+  remote_window_accessible_ =
+      ui::RemoteAccessibility::GetRemoteElementFromToken(window_token);
+  remote_view_accessible_ =
+      ui::RemoteAccessibility::GetRemoteElementFromToken(view_token);
+  [remote_view_accessible_ setWindowUIElement:remote_window_accessible_.get()];
+  [remote_view_accessible_
+      setTopLevelUIElement:remote_window_accessible_.get()];
+}
+
+bool BridgedNativeWidgetHostImpl::GetRootViewAccessibilityToken(
+    int64_t* pid,
+    std::vector<uint8_t>* token) {
+  *pid = getpid();
+  id element_id = GetNativeViewAccessible();
+  *token = ui::RemoteAccessibility::GetTokenForLocalElement(element_id);
+  return true;
+}
+
 bool BridgedNativeWidgetHostImpl::ValidateUserInterfaceItem(
     int32_t command,
     views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr* out_result) {
@@ -1037,21 +1058,12 @@ void BridgedNativeWidgetHostImpl::GetWindowFrameTitlebarHeight(
   std::move(callback).Run(override_titlebar_height, titlebar_height);
 }
 
-void BridgedNativeWidgetHostImpl::GetAccessibilityTokens(
-    const std::vector<uint8_t>& window_token,
-    const std::vector<uint8_t>& view_token,
-    GetAccessibilityTokensCallback callback) {
-  remote_window_accessible_ =
-      ui::RemoteAccessibility::GetRemoteElementFromToken(window_token);
-  remote_view_accessible_ =
-      ui::RemoteAccessibility::GetRemoteElementFromToken(view_token);
-  [remote_view_accessible_ setWindowUIElement:remote_window_accessible_.get()];
-  [remote_view_accessible_
-      setTopLevelUIElement:remote_window_accessible_.get()];
-
-  id element_id = GetNativeViewAccessible();
-  std::move(callback).Run(
-      getpid(), ui::RemoteAccessibility::GetTokenForLocalElement(element_id));
+void BridgedNativeWidgetHostImpl::GetRootViewAccessibilityToken(
+    GetRootViewAccessibilityTokenCallback callback) {
+  std::vector<uint8_t> token;
+  int64_t pid;
+  GetRootViewAccessibilityToken(&pid, &token);
+  std::move(callback).Run(pid, token);
 }
 
 void BridgedNativeWidgetHostImpl::ValidateUserInterfaceItem(
