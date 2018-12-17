@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/legal_message_line.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/signin/core/browser/account_info.h"
 #include "url/gurl.h"
 
@@ -88,6 +89,8 @@ class SaveCardBubbleController {
   virtual bool IsUploadSave() const = 0;
   // Returns the current state of the bubble.
   virtual BubbleType GetBubbleType() const = 0;
+  // Returns the current sync state.
+  virtual AutofillSyncSigninState GetSyncState() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleController);
