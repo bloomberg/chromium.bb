@@ -58,6 +58,8 @@ SyncSessionDurationsMetricsRecorder::SyncSessionDurationsMetricsRecorder(
 }
 
 SyncSessionDurationsMetricsRecorder::~SyncSessionDurationsMetricsRecorder() {
+  DCHECK(!total_session_timer_) << "Missing a call to OnSessionEnded().";
+
   gaia_cookie_observer_.RemoveAll();
   sync_observer_.RemoveAll();
   identity_manager_observer_.RemoveAll();
