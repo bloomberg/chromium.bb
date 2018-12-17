@@ -17,7 +17,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
@@ -118,19 +117,14 @@ class FaviconCache : public syncer::SyncableService,
 
   // Functor for ordering SyncedFaviconInfo objects by recency;
   struct FaviconRecencyFunctor {
-    bool operator()(const linked_ptr<SyncedFaviconInfo>& lhs,
-                    const linked_ptr<SyncedFaviconInfo>& rhs) const;
+    bool operator()(const SyncedFaviconInfo* lhs,
+                    const SyncedFaviconInfo* rhs) const;
   };
 
 
   // Map of favicon url to favicon image.
-  using FaviconMap = std::map<GURL, linked_ptr<SyncedFaviconInfo>>;
-  using RecencySet =
-      std::set<linked_ptr<SyncedFaviconInfo>, FaviconRecencyFunctor>;
-  // Map of page url to task id (for favicon loading).
-  using PageTaskMap = std::map<GURL, base::CancelableTaskTracker::TaskId>;
-  // Map of page url to favicon url.
-  using PageFaviconMap = std::map<GURL, GURL>;
+  using FaviconMap = std::map<GURL, std::unique_ptr<SyncedFaviconInfo>>;
+  using RecencySet = std::set<SyncedFaviconInfo*, FaviconRecencyFunctor>;
 
   // Callback method to store a tab's favicon into its sync node once it becomes
   // available. Does nothing if no favicon data was available.
@@ -153,8 +147,8 @@ class FaviconCache : public syncer::SyncableService,
   // |synced_favicons_| and |recent_favicons_| and returns it.
   SyncedFaviconInfo* GetFaviconInfo(const GURL& icon_url);
 
-  // Updates the last visit time for the favicon at |icon_url| to |time| (and
-  // correspondly updates position in |recent_favicons_|.
+  // Updates the last visit time for the favicon at |icon_url| to |time| and
+  // correspondingly updates position in |recent_favicons_|.
   void UpdateFaviconVisitTime(const GURL& icon_url, base::Time time);
 
   // Expiration method. Looks through |recent_favicons_| to find any favicons
@@ -205,21 +199,21 @@ class FaviconCache : public syncer::SyncableService,
 
   favicon::FaviconService* favicon_service_;
 
-  // Trask tracker for loading favicons.
+  // Task tracker for loading favicons.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  // Our actual cached favicon data.
+  // Our actual cached favicon data. Owns the favicons.
   FaviconMap synced_favicons_;
 
   // An LRU ordering of the favicons comprising |synced_favicons_| (oldest to
   // newest).
   RecencySet recent_favicons_;
 
-  // Our set of pending favicon loads, indexed by page url.
-  PageTaskMap page_task_map_;
+  // Pending favicon loads, map of page url to task id.
+  std::map<GURL, base::CancelableTaskTracker::TaskId> page_task_map_;
 
-  // Map of page and associated favicon urls.
-  PageFaviconMap page_favicon_map_;
+  // Map of page url to favicon url.
+  std::map<GURL, GURL> page_favicon_map_;
 
   // TODO(zea): consider creating a favicon handler here for fetching unsynced
   // favicons from the web.
