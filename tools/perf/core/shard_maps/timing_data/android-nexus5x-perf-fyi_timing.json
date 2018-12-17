@@ -1,26 +1,22 @@
 [
     {
-        "duration": "68.0",
+        "duration": "66.0",
         "name": "heap_profiling.mobile.disabled/load:news:cnn"
     },
     {
-        "duration": "49.0",
+        "duration": "44.0",
         "name": "heap_profiling.mobile.disabled/load:search:google"
     },
     {
-        "duration": "34.0",
+        "duration": "30.0",
         "name": "heap_profiling.mobile.disabled/load:social:twitter"
     },
     {
-        "duration": "72.0",
-        "name": "heap_profiling.mobile.native/load:news:cnn"
-    },
-    {
-        "duration": "47.0",
+        "duration": "43.0",
         "name": "heap_profiling.mobile.native/load:search:google"
     },
     {
-        "duration": "33.0",
+        "duration": "31.0",
         "name": "heap_profiling.mobile.native/load:social:twitter"
     }
 ]
