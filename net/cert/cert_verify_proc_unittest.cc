@@ -2304,22 +2304,11 @@ TEST_P(CertVerifyProcInternalTest, CRLSetLeafSerial) {
   ASSERT_EQ(1U, ca_cert_list.size());
   ScopedTestRoot test_root(ca_cert_list[0].get());
 
-  CertificateList intermediate_cert_list = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "intermediate_ca_cert.pem",
-      X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(1U, intermediate_cert_list.size());
-  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(
-      bssl::UpRef(intermediate_cert_list[0]->cert_buffer()));
-
-  CertificateList cert_list = CreateCertificateListFromFile(
+  scoped_refptr<X509Certificate> leaf = CreateCertificateChainFromFile(
       GetTestCertsDirectory(), "ok_cert_by_intermediate.pem",
       X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(1U, cert_list.size());
-
-  scoped_refptr<X509Certificate> leaf = X509Certificate::CreateFromBuffer(
-      bssl::UpRef(cert_list[0]->cert_buffer()), std::move(intermediates));
   ASSERT_TRUE(leaf);
+  ASSERT_EQ(1U, leaf->intermediate_buffers().size());
 
   int flags = 0;
   CertVerifyResult verify_result;

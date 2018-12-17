@@ -110,6 +110,9 @@ class EmbeddedTestServer {
 
     // A certificate that is a leaf certificate signed with SHA-1.
     CERT_SHA1_LEAF,
+
+    // A certificate that is signed by an intermediate certificate.
+    CERT_OK_BY_INTERMEDIATE,
   };
 
   typedef base::RepeatingCallback<std::unique_ptr<HttpResponse>(
