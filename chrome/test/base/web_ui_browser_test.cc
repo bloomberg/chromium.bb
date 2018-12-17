@@ -219,12 +219,7 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
   bool should_wait_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::content::kWaitForDebuggerWebUI);
 
-  const std::string debugger_port =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          ::switches::kRemoteDebuggingPort);
-
-  // Only wait if there is a debugger port, so user can issue go() command.
-  if (should_wait_flag && !debugger_port.empty())
+  if (should_wait_flag)
     RunJavascriptUsingHandler("setWaitUser", {}, false, false, preload_host);
 }
 
