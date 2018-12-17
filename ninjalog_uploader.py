@@ -39,16 +39,7 @@ def IsGoogler(server):
         return False
 
 def ParseGNArgs(gn_args):
-    """Parse gn_args as json and return config dictionary.
-
-    >>> ParseGNArgs("[]")
-    {}
-    >>> ParseGNArgs('[{\
-    "current": {"value": "true"}, \
-    "default": {"value": "false"}, \
-    "name": "is_component_build"}]')
-    {u'is_component_build': u'true'}
-    """
+    """Parse gn_args as json and return config dictionary."""
     configs = json.loads(gn_args)
     build_configs = {}
     for config in configs:
@@ -92,19 +83,7 @@ def GetMetadata(cmdline, ninjalog):
     return metadata
 
 def GetNinjalog(cmdline):
-    """GetNinjalog returns the path to ninjalog from cmdline.
-
-    >>> GetNinjalog(['ninja'])
-    './.ninja_log'
-    >>> GetNinjalog(['ninja', '-C', 'out/Release'])
-    'out/Release/.ninja_log'
-    >>> GetNinjalog(['ninja', '-Cout/Release'])
-    'out/Release/.ninja_log'
-    >>> GetNinjalog(['ninja', '-C'])
-    './.ninja_log'
-    >>> GetNinjalog(['ninja', '-C', 'out/Release', '-C', 'out/Debug'])
-    'out/Debug/.ninja_log'
-    """
+    """GetNinjalog returns the path to ninjalog from cmdline."""
     # ninjalog is in current working directory by default.
     ninjalog_dir = '.'
 
