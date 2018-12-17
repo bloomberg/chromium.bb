@@ -400,9 +400,11 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     GrBackendTexture* backend_texture) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!*shared_image_out);
-  if (shared_image_representation_factory_->IsSharedImage(metadata.mailbox)) {
+  if (shared_image_representation_factory_->IsSharedImage(
+          metadata.mailbox_holder.mailbox)) {
     std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image =
-        shared_image_representation_factory_->ProduceSkia(metadata.mailbox);
+        shared_image_representation_factory_->ProduceSkia(
+            metadata.mailbox_holder.mailbox);
     DCHECK(shared_image);
     if (!shared_image->BeginReadAccess(backend_texture)) {
       DLOG(ERROR)
@@ -421,17 +423,16 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
   }
 
   auto* mailbox_manager = gpu_service_->mailbox_manager();
-  auto* texture_base = mailbox_manager->ConsumeTexture(metadata.mailbox);
+  auto* texture_base =
+      mailbox_manager->ConsumeTexture(metadata.mailbox_holder.mailbox);
   if (!texture_base) {
     DLOG(ERROR) << "Failed to fulfill the promise texture.";
     return;
   }
   BindOrCopyTextureIfNecessary(texture_base);
-  gpu::GetGrBackendTexture(texture_base->target(), metadata.size,
-                           *metadata.backend_format.getGLFormat(),
-                           *metadata.driver_backend_format.getGLFormat(),
-                           texture_base->service_id(), metadata.resource_format,
-                           backend_texture);
+  gpu::GetGrBackendTexture(gl_version_info_, texture_base->target(),
+                           metadata.size, texture_base->service_id(),
+                           metadata.resource_format, backend_texture);
 }
 
 void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
