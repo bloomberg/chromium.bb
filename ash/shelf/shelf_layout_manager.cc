@@ -821,8 +821,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       // If user session is blocked (login to new user session or add user to
       // the existing session - multi-profile) then give 100% of work area only
       // if keyboard is not shown.
-      if (!state_.IsAddingSecondaryUser() ||
-          !keyboard_displaced_bounds_.IsEmpty())
+      if (!state_.IsAddingSecondaryUser() || IsKeyboardShown())
         insets = target_bounds.work_area_insets;
       Shell::Get()->SetDisplayWorkAreaInsets(shelf_widget_->GetNativeWindow(),
                                              insets);
@@ -842,6 +841,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     status_widget->Show();
 }
 
+bool ShelfLayoutManager::IsKeyboardShown() const {
+  return !keyboard_displaced_bounds_.IsEmpty();
+}
+
 void ShelfLayoutManager::StopAnimating() {
   GetLayer(shelf_widget_)->GetAnimator()->StopAnimating();
   GetLayer(shelf_widget_->status_area_widget())->GetAnimator()->StopAnimating();
@@ -856,8 +859,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   if (state.visibility_state == SHELF_AUTO_HIDE &&
       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) {
     shelf_in_screen_portion = kHiddenShelfInScreenPortion;
-  } else if (state.visibility_state == SHELF_HIDDEN ||
-             !keyboard_displaced_bounds_.IsEmpty()) {
+  } else if (state.visibility_state == SHELF_HIDDEN || IsKeyboardShown()) {
     shelf_in_screen_portion = 0;
   }
 
@@ -1170,6 +1172,11 @@ bool ShelfLayoutManager::IsStatusAreaWindow(aura::Window* window) {
 }
 
 int ShelfLayoutManager::GetWorkAreaInsets(const State& state, int size) const {
+  // The virtual keyboard always hides the shelf (in any orientation).
+  // Therefore, if the keyboard is shown, there is no need to reduce the work
+  // area by the size of the shelf.
+  if (IsKeyboardShown())
+    return 0;
   if (state.visibility_state == SHELF_VISIBLE)
     return size;
   return 0;
