@@ -4,40 +4,24 @@
 
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 
-#include <cmath>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "url/gurl.h"
 
 namespace apps {
 
 namespace {
-
-float GetDeviceScaleFactor() {
-  display::Screen* screen = display::Screen::GetScreen();
-  if (!screen) {
-    return 1.0f;
-  }
-  return screen->GetPrimaryDisplay().device_scale_factor();
-}
-
-int ConvertPxToDip(int px) {
-  return base::saturated_cast<int>(
-      std::floor(static_cast<float>(px) / GetDeviceScaleFactor()));
-}
 
 void LoadDefaultImage(const content::URLDataSource::GotDataCallback& callback) {
   base::StringPiece contents =

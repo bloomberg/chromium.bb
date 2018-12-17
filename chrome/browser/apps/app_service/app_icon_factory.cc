@@ -4,16 +4,15 @@
 
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 
-#include <cmath>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -23,8 +22,6 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -35,19 +32,6 @@
 #endif
 
 namespace {
-
-float GetDeviceScaleFactor() {
-  display::Screen* screen = display::Screen::GetScreen();
-  if (!screen) {
-    return 1.0f;
-  }
-  return screen->GetPrimaryDisplay().device_scale_factor();
-}
-
-int ConvertDipToPx(int dip) {
-  return base::saturated_cast<int>(
-      std::floor(static_cast<float>(dip) * GetDeviceScaleFactor()));
-}
 
 std::vector<uint8_t> ReadExtensionResource(
     extensions::ExtensionResource ext_resource) {
