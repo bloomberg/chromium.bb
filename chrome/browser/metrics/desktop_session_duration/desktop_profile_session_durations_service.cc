@@ -14,13 +14,11 @@ namespace metrics {
 DesktopProfileSessionDurationsService::DesktopProfileSessionDurationsService(
     syncer::SyncService* sync_service,
     identity::IdentityManager* identity_manager,
-    GaiaCookieManagerService* cookie_manager,
     DesktopSessionDurationTracker* tracker)
     : metrics_recorder_(
           std::make_unique<syncer::SyncSessionDurationsMetricsRecorder>(
               sync_service,
-              identity_manager,
-              cookie_manager)),
+              identity_manager)),
       session_duration_observer_(this) {
   session_duration_observer_.Add(tracker);
   if (tracker->in_session()) {

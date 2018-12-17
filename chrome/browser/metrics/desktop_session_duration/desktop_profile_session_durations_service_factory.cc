@@ -7,9 +7,7 @@
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -35,9 +33,8 @@ DesktopProfileSessionDurationsServiceFactory::
     : BrowserContextKeyedServiceFactory(
           "DesktopProfileSessionDurationsService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 DesktopProfileSessionDurationsServiceFactory::
@@ -49,13 +46,11 @@ DesktopProfileSessionDurationsServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
-  GaiaCookieManagerService* cookie_manager =
-      GaiaCookieManagerServiceFactory::GetForProfile(profile);
   DesktopSessionDurationTracker* tracker = DesktopSessionDurationTracker::Get();
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  return new DesktopProfileSessionDurationsService(
-      sync_service, identity_manager, cookie_manager, tracker);
+  return new DesktopProfileSessionDurationsService(sync_service,
+                                                   identity_manager, tracker);
 }
 
 content::BrowserContext*

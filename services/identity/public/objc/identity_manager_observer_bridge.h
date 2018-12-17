@@ -30,7 +30,9 @@
 - (void)onRefreshTokenUpdatedForAccount:(const AccountInfo&)accountInfo;
 - (void)onRefreshTokenRemovedForAccount:(const std::string&)accountId;
 - (void)onRefreshTokensLoaded;
-- (void)onAccountsInCookieUpdated:(const std::vector<AccountInfo>&)accounts;
+- (void)onAccountsInCookieUpdated:
+            (const identity::AccountsInCookieJarInfo&)accountsInCookieJarInfo
+                            error:(const GoogleServiceAuthError&)error;
 - (void)onStartBatchOfRefreshTokenStateChanges;
 - (void)onEndBatchOfRefreshTokenStateChanges;
 
@@ -60,7 +62,8 @@ class IdentityManagerObserverBridge : public IdentityManager::Observer {
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;
   void OnAccountsInCookieUpdated(
-      const std::vector<AccountInfo>& accounts) override;
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
   void OnStartBatchOfRefreshTokenStateChanges() override;
   void OnEndBatchOfRefreshTokenStateChanges() override;
 

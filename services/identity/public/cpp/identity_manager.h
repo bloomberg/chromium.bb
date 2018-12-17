@@ -14,6 +14,7 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/scope_set.h"
 
@@ -117,9 +118,19 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnRefreshTokensLoaded() {}
 
     // Called whenever the list of Gaia accounts in the cookie jar has changed.
-    // |accounts| is ordered by the order of the accounts in the cookie.
+    // |accounts_in_cookie_jar_info.accounts| is ordered by the order of the
+    // accounts in the cookie.
+    //
+    // This observer method is also called when fetching the list of accounts
+    // in Gaia cookies fails after a number of internal retries. In this case:
+    // * |error| hold the last error to fetch the list of accounts;
+    // * |accounts_in_cookie_jar_info.accounts_are_fresh| is set to false as
+    //   the accounts information is considered stale;
+    // * |accounts_in_cookie_jar_info.accounts| holds the last list of known
+    //   accounts in the cookie jar.
     virtual void OnAccountsInCookieUpdated(
-        const std::vector<AccountInfo>& accounts) {}
+        const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+        const GoogleServiceAuthError& error) {}
 
     // Called whenever an attempt to add |account_id| to the list of Gaia
     // accounts in the cookie jar has finished. If |error| is equal to
@@ -187,16 +198,11 @@ class IdentityManager : public SigninManagerBase::Observer,
 
   // Provides access to the latest cached information of all accounts that are
   // present in the Gaia cookie in the cookie jar, ordered by their order in
-  // the cookie. If the cached state is known to be stale by the underlying
-  // implementation, a call to this method will trigger an internal update and
-  // subsequent invocation of
+  // the cookie.
+  // If the returned accounts are not fresh, an internal update will be
+  // triggered and there will be a subsequent invocation of
   // IdentityManager::Observer::OnAccountsInCookieJarChanged().
-  // NOTE: The information of whether the cached state is known to be stale by
-  // the underlying implementation is not currently exposed. The design for
-  // exposing it if necessary is tracked by https://crbug.com/859882. If the
-  // lack of this exposure is a blocker for you in using this API, contact
-  // blundell@chromium.org.
-  std::vector<AccountInfo> GetAccountsInCookieJar() const;
+  AccountsInCookieJarInfo GetAccountsInCookieJar() const;
 
   // Returns true if a refresh token exists for |account_id|.
   bool HasAccountWithRefreshToken(const std::string& account_id) const;

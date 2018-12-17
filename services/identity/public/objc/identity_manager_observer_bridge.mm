@@ -74,9 +74,12 @@ void IdentityManagerObserverBridge::OnRefreshTokensLoaded() {
 }
 
 void IdentityManagerObserverBridge::OnAccountsInCookieUpdated(
-    const std::vector<AccountInfo>& accounts) {
-  if ([delegate_ respondsToSelector:@selector(onAccountsInCookieUpdated:)]) {
-    [delegate_ onAccountsInCookieUpdated:accounts];
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const GoogleServiceAuthError& error) {
+  if ([delegate_ respondsToSelector:@selector(onAccountsInCookieUpdated:
+                                                                  error:)]) {
+    [delegate_ onAccountsInCookieUpdated:accounts_in_cookie_jar_info
+                                   error:error];
   }
 }
 

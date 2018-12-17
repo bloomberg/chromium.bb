@@ -28,19 +28,12 @@ class SyncSessionDurationsMetricsRecorder
   // Callers must ensure that the parameters outlive this object.
   SyncSessionDurationsMetricsRecorder(
       SyncService* sync_service,
-      identity::IdentityManager* identity_manager,
-      GaiaCookieManagerService* cookie_manager);
+      identity::IdentityManager* identity_manager);
   ~SyncSessionDurationsMetricsRecorder() override;
 
   // Informs this service that a session started at |session_start| time.
   void OnSessionStarted(base::TimeTicks session_start);
   void OnSessionEnded(base::TimeDelta session_length);
-
-  // GaiaCookieManagerService::Observer:
-  void OnGaiaAccountsInCookieUpdated(
-      const std::vector<gaia::ListedAccount>& accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
-      const GoogleServiceAuthError& error) override;
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
@@ -50,6 +43,9 @@ class SyncSessionDurationsMetricsRecorder
       const AccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
 
  private:
   // The state the feature is in. The state starts as UNKNOWN. After it moves
@@ -75,8 +71,6 @@ class SyncSessionDurationsMetricsRecorder
       sync_observer_;
   ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
       identity_manager_observer_;
-  ScopedObserver<GaiaCookieManagerService, GaiaCookieManagerService::Observer>
-      gaia_cookie_observer_;
 
   // Tracks the elapsed active session time while the browser is open. The timer
   // is absent if there's no active session.

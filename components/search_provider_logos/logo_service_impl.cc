@@ -199,7 +199,8 @@ class LogoServiceImpl::SigninObserver
 
  private:
   // identity::IdentityManager::Observer implementation.
-  void OnAccountsInCookieUpdated(const std::vector<AccountInfo>&) override {
+  void OnAccountsInCookieUpdated(const identity::AccountsInCookieJarInfo&,
+                                 const GoogleServiceAuthError&) override {
     callback_.Run();
   }
 

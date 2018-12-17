@@ -9,7 +9,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_session_durations_metrics_recorder.h"
 
-class GaiaCookieManagerService;
 namespace identity {
 class IdentityManager;
 }
@@ -24,8 +23,7 @@ class AndroidProfileSessionDurationsService : public KeyedService {
   // Callers must ensure that the parameters outlive this object.
   AndroidProfileSessionDurationsService(
       syncer::SyncService* sync_service,
-      identity::IdentityManager* identity_manager,
-      GaiaCookieManagerService* cookie_manager);
+      identity::IdentityManager* identity_manager);
   ~AndroidProfileSessionDurationsService() override;
 
   // KeyedService:

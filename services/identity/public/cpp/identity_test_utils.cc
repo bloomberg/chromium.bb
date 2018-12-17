@@ -43,7 +43,8 @@ class OneShotIdentityManagerObserver : public IdentityManager::Observer {
       const AccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
   void OnAccountsInCookieUpdated(
-      const std::vector<AccountInfo>& accounts) override;
+      const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
 
   IdentityManager* identity_manager_;
   base::OnceClosure done_closure_;
@@ -103,7 +104,8 @@ void OneShotIdentityManagerObserver::OnRefreshTokenRemovedForAccount(
 }
 
 void OneShotIdentityManagerObserver::OnAccountsInCookieUpdated(
-    const std::vector<AccountInfo>& accounts) {
+    const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const GoogleServiceAuthError& error) {
   if (event_to_wait_on_ != IdentityManagerEvent::ACCOUNTS_IN_COOKIE_UPDATED)
     return;
 
