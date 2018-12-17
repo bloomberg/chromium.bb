@@ -67,6 +67,15 @@ std::vector<std::string> CastSysInfo::GetFactoryLocaleList() {
       env, Java_CastSysInfoAndroidThings_getFactoryLocaleList(env),
       &locale_list);
 #endif
+  if (locale_list.empty()) {
+    CastSysInfoAndroidThings sys_info;
+    std::string factory_locale2;
+    std::string factory_locale1 = sys_info.GetFactoryLocale(&factory_locale2);
+    locale_list = {std::move(factory_locale1)};
+    if (!factory_locale2.empty()) {
+      locale_list.push_back(factory_locale2);
+    }
+  }
   return locale_list;
 }
 
