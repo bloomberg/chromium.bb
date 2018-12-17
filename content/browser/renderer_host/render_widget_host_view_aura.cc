@@ -1427,9 +1427,13 @@ bool RenderWidgetHostViewAura::GetEditableSelectionRange(
 
 bool RenderWidgetHostViewAura::SetEditableSelectionRange(
     const gfx::Range& range) {
-  // TODO(suzhe): implement this method when fixing http://crbug.com/55130.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  // TODO(crbug.com/915630): Write an unit test for this method.
+  RenderFrameHostImpl* rfh = GetFocusedFrame();
+  if (!rfh)
+    return false;
+  rfh->GetFrameInputHandler()->SetEditableSelectionOffsets(range.start(),
+                                                           range.end());
+  return true;
 }
 
 bool RenderWidgetHostViewAura::DeleteRange(const gfx::Range& range) {
