@@ -161,7 +161,7 @@ class RecentTabsSubMenuModelTest
     return std::make_unique<sessions::TabRestoreServiceImpl>(
         base::WrapUnique(new ChromeTabRestoreServiceClient(
             Profile::FromBrowserContext(browser_context))),
-        nullptr);
+        nullptr, nullptr);
   }
 
   void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {

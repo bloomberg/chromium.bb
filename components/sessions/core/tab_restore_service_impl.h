@@ -10,11 +10,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sessions/core/sessions_export.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_client.h"
 #include "components/sessions/core/tab_restore_service_helper.h"
 
+class PrefService;
 class TabRestoreServiceImplTest;
 
 namespace sessions {
@@ -24,6 +26,7 @@ class SESSIONS_EXPORT TabRestoreServiceImpl : public TabRestoreService {
  public:
   // Does not take ownership of |time_factory|.
   TabRestoreServiceImpl(std::unique_ptr<TabRestoreServiceClient> client,
+                        PrefService* pref_service,
                         TimeFactory* time_factory);
 
   ~TabRestoreServiceImpl() override;
@@ -54,6 +57,7 @@ class SESSIONS_EXPORT TabRestoreServiceImpl : public TabRestoreService {
   friend class ::TabRestoreServiceImplTest;
 
   class PersistenceDelegate;
+  void UpdatePersistenceDelegate();
 
   // Exposed for testing.
   Entries* mutable_entries();
@@ -62,6 +66,7 @@ class SESSIONS_EXPORT TabRestoreServiceImpl : public TabRestoreService {
   std::unique_ptr<TabRestoreServiceClient> client_;
   std::unique_ptr<PersistenceDelegate> persistence_delegate_;
   TabRestoreServiceHelper helper_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TabRestoreServiceImpl);
 };

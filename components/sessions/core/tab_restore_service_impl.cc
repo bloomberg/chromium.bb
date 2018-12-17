@@ -13,12 +13,14 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "components/history/core/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/sessions/core/base_session_service.h"
 #include "components/sessions/core/base_session_service_commands.h"
 #include "components/sessions/core/base_session_service_delegate.h"
@@ -338,8 +340,9 @@ CreateWindowEntryFromCommand(const SessionCommand* command,
 // TabRestoreServiceImpl::PersistenceDelegate
 // ---------------------------------------
 
-// This restore service will create and own a BaseSessionService and implement
-// the required BaseSessionServiceDelegate.
+// This restore service persistence delegate will create and own a
+// BaseSessionService and implement the required BaseSessionServiceDelegate to
+// handle all the persistence of the tab restore service implementation.
 class TabRestoreServiceImpl::PersistenceDelegate
     : public BaseSessionServiceDelegate,
       public TabRestoreServiceHelper::Observer {
@@ -1100,11 +1103,17 @@ void TabRestoreServiceImpl::PersistenceDelegate::LoadStateChanged() {
 
 TabRestoreServiceImpl::TabRestoreServiceImpl(
     std::unique_ptr<TabRestoreServiceClient> client,
+    PrefService* pref_service,
     TimeFactory* time_factory)
-    : client_(std::move(client)),
-      persistence_delegate_(new PersistenceDelegate(client_.get())),
-      helper_(this, persistence_delegate_.get(), client_.get(), time_factory) {
-  persistence_delegate_->set_tab_restore_service_helper(&helper_);
+    : client_(std::move(client)), helper_(this, client_.get(), time_factory) {
+  if (pref_service) {
+    pref_change_registrar_.Init(pref_service);
+    pref_change_registrar_.Add(
+        prefs::kSavingBrowserHistoryDisabled,
+        base::BindRepeating(&TabRestoreServiceImpl::UpdatePersistenceDelegate,
+                            base::Unretained(this)));
+  }
+  UpdatePersistenceDelegate();
 }
 
 TabRestoreServiceImpl::~TabRestoreServiceImpl() {}
@@ -1162,11 +1171,14 @@ std::vector<LiveTab*> TabRestoreServiceImpl::RestoreEntryById(
 }
 
 bool TabRestoreServiceImpl::IsLoaded() const {
-  return persistence_delegate_->IsLoaded();
+  if (persistence_delegate_)
+    return persistence_delegate_->IsLoaded();
+  return true;
 }
 
 void TabRestoreServiceImpl::DeleteLastSession() {
-  return persistence_delegate_->DeleteLastSession();
+  if (persistence_delegate_)
+    persistence_delegate_->DeleteLastSession();
 }
 
 bool TabRestoreServiceImpl::IsRestoring() const {
@@ -1174,11 +1186,43 @@ bool TabRestoreServiceImpl::IsRestoring() const {
 }
 
 void TabRestoreServiceImpl::Shutdown() {
-  return persistence_delegate_->Shutdown();
+  if (persistence_delegate_)
+    persistence_delegate_->Shutdown();
 }
 
 void TabRestoreServiceImpl::LoadTabsFromLastSession() {
-  persistence_delegate_->LoadTabsFromLastSession();
+  if (persistence_delegate_)
+    persistence_delegate_->LoadTabsFromLastSession();
+}
+
+void TabRestoreServiceImpl::UpdatePersistenceDelegate() {
+  // When a persistence delegate has been created, it must be shut down and
+  // deleted if a pref service is available and saving history is disabled.
+  if (pref_change_registrar_.prefs() &&
+      pref_change_registrar_.prefs()->GetBoolean(
+          prefs::kSavingBrowserHistoryDisabled)) {
+    if (persistence_delegate_) {
+      helper_.SetHelperObserver(nullptr);
+      // Make sure we don't leave stale data for the next time the pref is
+      // changed back to enable.
+      persistence_delegate_->DeleteLastSession();
+      persistence_delegate_->Shutdown();
+      persistence_delegate_.reset(nullptr);
+    } else {
+      // In case this is the first time Chrome is launched with saving history
+      // disabled, we must make sure to clear the previously saved session.
+      PersistenceDelegate persistence_delegate(client_.get());
+      persistence_delegate.DeleteLastSession();
+    }
+  } else if (!persistence_delegate_) {
+    // When saving is NOT disabled (or there is no pref service available), and
+    // there are no persistence delegate yet, one must be created and
+    // initialized.
+    persistence_delegate_ =
+        std::make_unique<PersistenceDelegate>(client_.get());
+    persistence_delegate_->set_tab_restore_service_helper(&helper_);
+    helper_.SetHelperObserver(persistence_delegate_.get());
+  }
 }
 
 TabRestoreService::Entries* TabRestoreServiceImpl::mutable_entries() {

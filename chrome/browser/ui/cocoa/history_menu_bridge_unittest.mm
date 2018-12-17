@@ -35,6 +35,7 @@ class MockTRS : public sessions::TabRestoreServiceImpl {
   MockTRS(Profile* profile)
       : sessions::TabRestoreServiceImpl(
             base::WrapUnique(new ChromeTabRestoreServiceClient(profile)),
+            profile->GetPrefs(),
             nullptr) {}
   MOCK_CONST_METHOD0(entries, const sessions::TabRestoreService::Entries&());
 };
