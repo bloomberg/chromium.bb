@@ -967,9 +967,6 @@ void ChromeClientImpl::SetHasScrollEventHandlers(LocalFrame* frame,
 
   WebFrameWidgetBase* widget =
       WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
-  // While a frame is shutting down, we may get called after the layerTreeView
-  // is gone: in this case we always expect |hasEventHandlers| to be false.
-  DCHECK(!widget || widget->GetLayerTreeView() || !has_event_handlers);
   if (widget && widget->GetLayerTreeView())
     widget->GetLayerTreeView()->SetHaveScrollEventHandlers(has_event_handlers);
 }
