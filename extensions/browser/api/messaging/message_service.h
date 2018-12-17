@@ -18,6 +18,7 @@
 #include "extensions/browser/api/messaging/message_property_provider.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_id.h"
@@ -201,21 +202,23 @@ class MessageService : public BrowserContextKeyedAPI,
   void PendingLazyBackgroundPageOpenChannel(
       std::unique_ptr<OpenChannelParams> params,
       int source_process_id,
-      extensions::ExtensionHost* host);
-  void PendingLazyBackgroundPageClosePort(const PortId& port_id,
-                                          int process_id,
-                                          int routing_id,
-                                          bool force_close,
-                                          const std::string& error_message,
-                                          extensions::ExtensionHost* host) {
-    if (host)
+      std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info);
+  void PendingLazyBackgroundPageClosePort(
+      const PortId& port_id,
+      int process_id,
+      int routing_id,
+      bool force_close,
+      const std::string& error_message,
+      std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
+    if (context_info)
       ClosePortImpl(port_id, process_id, routing_id, force_close,
                     error_message);
   }
-  void PendingLazyBackgroundPagePostMessage(const PortId& port_id,
-                                            const Message& message,
-                                            extensions::ExtensionHost* host) {
-    if (host)
+  void PendingLazyBackgroundPagePostMessage(
+      const PortId& port_id,
+      const Message& message,
+      std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
+    if (context_info)
       PostMessage(port_id, message);
   }
 

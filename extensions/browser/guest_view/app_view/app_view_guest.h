@@ -5,14 +5,16 @@
 #ifndef EXTENSIONS_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_
 #define EXTENSIONS_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_
 
+#include <memory>
+
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest_delegate.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 
 namespace extensions {
 class Extension;
-class ExtensionHost;
 
 // An AppViewGuest provides the browser-side implementation of <appview> API.
 // AppViewGuest is created on attachment. That is, when a guest WebContents is
@@ -71,9 +73,10 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest> {
                                  const Extension* guest_extension,
                                  WebContentsCreatedCallback callback);
 
-  void LaunchAppAndFireEvent(std::unique_ptr<base::DictionaryValue> data,
-                             WebContentsCreatedCallback callback,
-                             ExtensionHost* extension_host);
+  void LaunchAppAndFireEvent(
+      std::unique_ptr<base::DictionaryValue> data,
+      WebContentsCreatedCallback callback,
+      std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info);
 
   GURL url_;
   std::string guest_extension_id_;
