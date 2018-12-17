@@ -79,6 +79,12 @@ class NGInlineItemsBuilderTemplate {
   void AppendAtomicInline(const ComputedStyle* = nullptr,
                           LayoutObject* = nullptr);
 
+  // Append floats and positioned objects in the same way as atomic inlines.
+  // Because these objects need positions, they will be handled in
+  // NGInlineLayoutAlgorithm.
+  void AppendFloating(LayoutObject* layout_object);
+  void AppendOutOfFlowPositioned(LayoutObject* layout_object);
+
   // Append a character.
   // The character is opaque to space collapsing; i.e., spaces before this
   // character and after this character can collapse as if this character does
@@ -109,6 +115,8 @@ class NGInlineItemsBuilderTemplate {
   OffsetMappingBuilder& GetOffsetMappingBuilder() { return mapping_builder_; }
 
   void SetIsSymbolMarker(bool b);
+
+  bool ShouldAbort() const { return false; }
 
  private:
   static bool NeedsBoxInfo();
