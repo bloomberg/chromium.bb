@@ -26,16 +26,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/common/page_zoom.h"
 
-#if defined(OS_LINUX)
-#include <dlfcn.h>
-#endif
-
 namespace {
-
-std::string GetHash(const base::FilePath& relative_path) {
-  size_t int_key = BASE_HASH_NAMESPACE::hash<base::FilePath>()(relative_path);
-  return base::NumberToString(int_key);
-}
 
 std::string GetPartitionKey(const base::FilePath& relative_path) {
   // Create a partition_key string with no '.'s in it.
@@ -47,40 +38,6 @@ std::string GetPartitionKey(const base::FilePath& relative_path) {
              path.c_str(),
              path.size() * sizeof(base::FilePath::StringType::value_type));
 }
-
-#if defined(OS_LINUX)
-typedef size_t (*LibstdcppHashBytesType)(const void* ptr,
-                                         size_t len,
-                                         size_t seed);
-
-LibstdcppHashBytesType GetLibstdcppHashBytesFunction() {
-  static bool have_libstdcpp_hash_bytes_function = false;
-  static LibstdcppHashBytesType libstdcpp_hash_bytes_function = nullptr;
-  if (have_libstdcpp_hash_bytes_function)
-    return libstdcpp_hash_bytes_function;
-
-  void* libstdcpp = dlopen("libstdc++.so.6", RTLD_LAZY);
-  if (libstdcpp) {
-    libstdcpp_hash_bytes_function = reinterpret_cast<LibstdcppHashBytesType>(
-        dlsym(libstdcpp, "_ZSt11_Hash_bytesPKvmm"));
-  }
-  have_libstdcpp_hash_bytes_function = true;
-  return libstdcpp_hash_bytes_function;
-}
-
-// This function should only be called if
-// GetLibstdcppHashBytesFunction() returns non-nullptr.
-size_t LibstdcppHashString(const std::string& str) {
-  // This constant was copied out of the libstdc++4.8 headers from the
-  // Jessie sysroot, which was used before the switch to libc++.
-  static constexpr size_t kHashStringSeed = 0xc70f6907UL;
-  LibstdcppHashBytesType libstdcpp_hash_bytes_function =
-      GetLibstdcppHashBytesFunction();
-  DCHECK(libstdcpp_hash_bytes_function);
-  return libstdcpp_hash_bytes_function(str.c_str(), str.length(),
-                                       kHashStringSeed);
-}
-#endif
 
 const char kZoomLevelPath[] = "zoom_level";
 const char kLastModifiedPath[] = "last_modified";
@@ -113,7 +70,6 @@ ChromeZoomLevelPrefs::ChromeZoomLevelPrefs(
          profile_path.IsParent(partition_path));
   base::FilePath partition_relative_path;
   profile_path.AppendRelativePath(partition_path, &partition_relative_path);
-  MigrateOldZoomPreferences(partition_relative_path);
   partition_key_ = GetPartitionKey(partition_relative_path);
 }
 
@@ -191,85 +147,6 @@ void ChromeZoomLevelPrefs::OnZoomLevelChanged(
     dict.SetString(kLastModifiedPath,
                    base::Int64ToString(change.last_modified.ToInternalValue()));
     host_zoom_dictionary_weak->SetKey(change.host, std::move(dict));
-  }
-}
-
-void ChromeZoomLevelPrefs::MigrateOldZoomPreferences(
-    const base::FilePath& partition_relative_path) {
-  MigrateOldZoomPreferencesForKeys(GetHash(partition_relative_path),
-                                   GetPartitionKey(partition_relative_path));
-#if defined(OS_LINUX)
-  // On Linux, there was a bug for a brief period of time
-  // (https://crbug.com/727149) where the libc++ hash was used as the
-  // partition key.  This bug was in dev and beta for a few weeks, so
-  // there may be users who have preferences for both the libstdc++
-  // and the libc++ hashes.  Since the libc++ settings are newer, make
-  // sure we migrate the libstdc++ settings (below) after the libc++
-  // ones (above), so that the precedence is: new settings, libc++
-  // settings, libstdc++ settings.
-  if (GetLibstdcppHashBytesFunction()) {
-    MigrateOldZoomPreferencesForKeys(base::NumberToString(LibstdcppHashString(
-                                         partition_relative_path.value())),
-                                     GetPartitionKey(partition_relative_path));
-  }
-#endif
-}
-
-void ChromeZoomLevelPrefs::MigrateOldZoomPreferencesForKeys(
-    const std::string& old_key,
-    const std::string& new_key) {
-  const base::DictionaryValue* default_zoom_level_dictionary =
-      pref_service_->GetDictionary(prefs::kPartitionDefaultZoomLevel);
-  if (default_zoom_level_dictionary) {
-    double old_default_zoom_level = 0;
-    if (default_zoom_level_dictionary->GetDouble(old_key,
-                                                 &old_default_zoom_level)) {
-      // If there was an old zoom, but no new zoom, copy the old zoom
-      // over.
-      if (!default_zoom_level_dictionary->GetDouble(new_key, nullptr)) {
-        DictionaryPrefUpdate update(pref_service_,
-                                    prefs::kPartitionDefaultZoomLevel);
-        update->SetDouble(new_key, old_default_zoom_level);
-      }
-      // Always clean up the old zoom setting.
-      DictionaryPrefUpdate update(pref_service_,
-                                  prefs::kPartitionDefaultZoomLevel);
-      update->RemoveWithoutPathExpansion(old_key, nullptr);
-    }
-  }
-
-  DictionaryPrefUpdate update(pref_service_,
-                              prefs::kPartitionPerHostZoomLevels);
-  base::DictionaryValue* host_zoom_dictionaries = update.Get();
-  DCHECK(host_zoom_dictionaries);
-  pref_service_->GetDictionary(prefs::kPartitionPerHostZoomLevels);
-  const base::DictionaryValue* old_host_zoom_dictionary = nullptr;
-  if (host_zoom_dictionaries->GetDictionary(old_key,
-                                            &old_host_zoom_dictionary)) {
-    base::DictionaryValue* new_host_zoom_dictionary = nullptr;
-    if (!host_zoom_dictionaries->GetDictionary(new_key,
-                                               &new_host_zoom_dictionary)) {
-      auto host_zoom_dictionary = std::make_unique<base::DictionaryValue>();
-      new_host_zoom_dictionary = host_zoom_dictionary.get();
-      host_zoom_dictionaries->Set(new_key, std::move(host_zoom_dictionary));
-    }
-    DCHECK(new_host_zoom_dictionary);
-
-    // For each host, if there was an old zoom, but no new zoom, copy
-    // the old zoom setting over.
-    for (base::DictionaryValue::Iterator it(*old_host_zoom_dictionary);
-         !it.IsAtEnd(); it.Advance()) {
-      const std::string& host = it.key();
-      double zoom_level = 0.0f;
-      if (it.value().GetAsDouble(&zoom_level) &&
-          !new_host_zoom_dictionary->GetDouble(host, nullptr)) {
-        new_host_zoom_dictionary->SetKey(host, base::Value(zoom_level));
-      }
-    }
-    // Always clean up the old dictionary.
-    DictionaryPrefUpdate update(pref_service_,
-                                prefs::kPartitionPerHostZoomLevels);
-    update->RemoveWithoutPathExpansion(old_key, nullptr);
   }
 }
 
