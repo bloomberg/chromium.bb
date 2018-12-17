@@ -323,6 +323,7 @@ TEST_P(BookmarkAppHelperExtensionServiceInstallableSiteTest,
   manifest.scope = GURL(kAppScope);
   blink::Manifest::ImageResource icon;
   icon.src = GURL(kAppIconURL1);
+  icon.purpose = {blink::Manifest::ImageResource::Purpose::ANY};
   manifest.icons.push_back(icon);
   icon.src = GURL(kAppIconURL2);
   manifest.icons.push_back(icon);
