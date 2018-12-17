@@ -195,6 +195,10 @@ const SyncedBookmarkTracker* BookmarkModelTypeProcessor::GetTrackerForTest()
   return bookmark_tracker_.get();
 }
 
+bool BookmarkModelTypeProcessor::IsConnectedForTest() const {
+  return worker_ != nullptr;
+}
+
 std::string BookmarkModelTypeProcessor::EncodeSyncMetadata() const {
   std::string metadata_str;
   if (bookmark_tracker_) {
@@ -382,7 +386,10 @@ void BookmarkModelTypeProcessor::OnBookmarkModelBeingDeleted() {
   bookmark_model_->RemoveObserver(bookmark_model_observer_.get());
   bookmark_model_ = nullptr;
   bookmark_model_observer_.reset();
-  DisconnectSync();
+
+  if (worker_) {
+    DisconnectSync();
+  }
 }
 
 void BookmarkModelTypeProcessor::StartTrackingMetadata(

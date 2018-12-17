@@ -83,6 +83,7 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   size_t EstimateMemoryUsage() const;
 
   const SyncedBookmarkTracker* GetTrackerForTest() const;
+  bool IsConnectedForTest() const;
 
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetWeakPtr();
 

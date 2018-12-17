@@ -135,8 +135,8 @@ void InitWithSyncedBookmarks(const std::vector<BookmarkInfo>& bookmarks,
 class BookmarkModelTypeProcessorTest : public testing::Test {
  public:
   BookmarkModelTypeProcessorTest()
-      : bookmark_model_(bookmarks::TestBookmarkClient::CreateModel()),
-        processor_(&bookmark_undo_service_) {
+      : processor_(&bookmark_undo_service_),
+        bookmark_model_(bookmarks::TestBookmarkClient::CreateModel()) {
     // TODO(crbug.com/516866): This class assumes model is loaded and sync has
     // started before running tests. We should test other variations (i.e. model
     // isn't loaded yet and/or sync didn't start yet).
@@ -155,6 +155,8 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
     processor_.OnSyncStarting(request, base::DoNothing());
   }
 
+  void DestroyBookmarkModel() { bookmark_model_.reset(); }
+
   bookmarks::BookmarkModel* bookmark_model() { return bookmark_model_.get(); }
   BookmarkUndoService* bookmark_undo_service() {
     return &bookmark_undo_service_;
@@ -168,10 +170,10 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   NiceMock<base::MockCallback<base::RepeatingClosure>> schedule_save_closure_;
-  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
   BookmarkUndoService bookmark_undo_service_;
   NiceMock<favicon::MockFaviconService> favicon_service_;
   BookmarkModelTypeProcessor processor_;
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
 };
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
@@ -367,6 +369,13 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeEncodedSyncMetadata) {
                                  bookmark_model());
 
   AssertState(&new_processor, bookmarks);
+
+  // Make sure shutdown doesn't crash.
+  DestroyBookmarkModel();
+  EXPECT_FALSE(processor()->IsConnectedForTest());
+  EXPECT_FALSE(new_processor.IsConnectedForTest());
+  EXPECT_THAT(processor()->GetTrackerForTest(), NotNull());
+  EXPECT_THAT(new_processor.GetTrackerForTest(), NotNull());
 }
 
 TEST_F(BookmarkModelTypeProcessorTest,
