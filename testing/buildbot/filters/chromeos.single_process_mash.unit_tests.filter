@@ -1,6 +1,5 @@
 # Multi profile: https://crbug.com/910241
 -BrowserFinderChromeOSTest.FindBrowserOwnedByAnotherProfile
--ChromeLauncherControllerMultiProfileWithArcTest.ArcMultiUser
 
 # Immersive mode: https://crbug.com/910249
 -ImmersiveModeControllerAshTest.LockedFullscreenDisablesImmersive

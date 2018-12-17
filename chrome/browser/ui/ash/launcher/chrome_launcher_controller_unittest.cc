@@ -2089,7 +2089,8 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
       launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
 }
 
-TEST_F(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
+// TODO(crbug.com/915840): this test is flakey and/or often crashes.
+TEST_F(ChromeLauncherControllerMultiProfileWithArcTest, DISABLED_ArcMultiUser) {
   SendListOfArcApps();
 
   InitLauncherController();
