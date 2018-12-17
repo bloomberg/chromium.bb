@@ -14,7 +14,6 @@ import time
 from chromite.cbuildbot import build_status
 from chromite.cbuildbot import relevant_changes
 from chromite.cbuildbot import validation_pool_unittest
-from chromite.lib.const import waterfall
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import build_requests
@@ -198,8 +197,7 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self.time_now = datetime.datetime.now()
     self.master_build_id = 0
     self.master_test_config = config_lib.BuildConfig(
-        name='master-test', master=True,
-        active_waterfall=waterfall.WATERFALL_INTERNAL)
+        name='master-test', master=True)
     self.master_cq_config = site_config['master-paladin']
     self.master_canary_config = site_config['master-release']
     self.metadata = metadata_lib.CBuildbotMetadata()

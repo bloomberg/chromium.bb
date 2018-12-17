@@ -25,7 +25,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
-from chromite.lib.const import waterfall
 
 # pylint: disable=protected-access
 
@@ -1094,24 +1093,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
           '%s timeout %s is greater than 24h'
           % (build_name, config.build_timeout))
 
-  def testNoDuplicateCanaryBuildersOnWaterfall(self):
-    seen = {}
-    for config in self.site_config.itervalues():
-      wfall = config['active_waterfall']
-      btype = config['build_type']
-      if not (wfall and config_lib.IsCanaryType(btype)):
-        continue
-
-      waterfall_seen = seen.setdefault(wfall, set())
-      stack = [config]
-      while stack:
-        current_config = stack.pop()
-        self.assertNotIn(current_config['name'], waterfall_seen,
-                         "Multiple builders for '%s' on '%s' waterfall" % (
-                             current_config['name'], wfall))
-        waterfall_seen.add(current_config['name'])
-        stack += current_config['child_configs']
-
   def testBinhostTest(self):
     """Builders with the binhost_test setting shouldn't have boards."""
     for config in self.site_config.values():
@@ -1122,9 +1103,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
     """LUCI Scheduler entries only work for swarming builds."""
     for config in self.site_config.itervalues():
       if config.schedule is not None:
-        self.assertEqual(config.active_waterfall, waterfall.WATERFALL_SWARMING,
-                         'schedule set for non-swarming config %s' %
-                         config.name)
         # TODO: validate the scheduler syntax.
         self.assertIsInstance(config.schedule, str)
 
@@ -1143,34 +1121,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
           self.fail(('%s has a triggered_gitiles that is malformed: %r\n'
                      "Simple example: [['url', ['refs/heads/master']]]") %
                     (config.name, config.triggered_gitiles))
-
-  def testTryjobsOnLegoland(self):
-    """LUCI Scheduler entries only work for swarming builds."""
-    not_legoland = []
-    for config in self.site_config.itervalues():
-      if (config.active_waterfall != waterfall.WATERFALL_SWARMING and
-          config_lib.isTryjobConfig(config)):
-        not_legoland.append(config.name)
-
-    self.assertFalse(not_legoland,
-                     "Tryjob not on legoland: %s" %
-                     ', '.join(not_legoland))
-
-  def testUncheduledLegoland(self):
-    """LUCI Scheduler entries only work for swarming builds."""
-    all_slaves = self.findAllSlaveBuilds()
-
-    not_scheduled_legoland = []
-    for config in self.site_config.itervalues():
-      if (config.active_waterfall == waterfall.WATERFALL_SWARMING and
-          not (config_lib.isTryjobConfig(config) or
-               config.schedule or
-               config.name in all_slaves)):
-        not_scheduled_legoland.append(config.name)
-
-    self.assertFalse(not_scheduled_legoland,
-                     "Unscheduled config on waterfall: %s" %
-                     ', '.join(not_scheduled_legoland))
 
 
 class TemplateTest(ChromeosConfigTestBase):

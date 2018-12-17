@@ -1059,13 +1059,6 @@ def DefaultSettings():
       # Which goma client to use.
       goma_client_type=None,
 
-      # ==================================================================
-      # Hints to Buildbot master UI
-
-      # If not None, the name (in waterfall.CIDB_KNOWN_WATERFALLS) of the
-      # waterfall that this target should be active on.
-      active_waterfall=None,
-
       # This is a LUCI Scheduler schedule string. Setting this will create
       # a LUCI Scheduler for this build on swarming (not buildbot).
       # See: https://goo.gl/VxSzFf

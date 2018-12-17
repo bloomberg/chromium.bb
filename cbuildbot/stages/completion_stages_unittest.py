@@ -19,7 +19,6 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
-from chromite.lib.const import waterfall
 from chromite.lib import alerts
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
@@ -122,7 +121,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         master=True,
         slave_configs=['test3', 'test5'],
         manifest_version=True,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test1',
@@ -136,7 +134,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=False,
         master=False,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test2',
@@ -150,7 +147,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=False,
         master=False,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test3',
@@ -164,7 +160,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=True,
         master=False,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test4',
@@ -178,7 +173,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=True,
         internal=True,
         master=False,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test5',
@@ -192,7 +186,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=False,
         master=False,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     return test_config
 

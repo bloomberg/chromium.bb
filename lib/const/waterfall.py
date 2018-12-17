@@ -5,7 +5,6 @@
 
 """Constants related to waterfall names and behaviors."""
 
-WATERFALL_INTERNAL = 'chromeos'
 # Used for all swarming builds.
 WATERFALL_SWARMING = 'go/legoland'
 

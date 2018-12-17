@@ -11,7 +11,6 @@ import copy
 import os
 import re
 
-from chromite.lib.const import waterfall
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import factory
@@ -609,7 +608,6 @@ def GeneralTemplates(site_config, ge_build_config):
       description='Run Unittests repeatedly to look for flake.',
 
       builder_class_name='test_builders.UnittestStressBuilder',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
 
       # Make this available, so we can stress a previous build.
       manifest_version=True,
@@ -998,7 +996,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       health_alert_recipients=['c-compiler-chrome@google.com'],
       health_threshold=1,
       afdo_use=False,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       slave_configs=[],
       # 3 PM UTC is 7 AM PST (no daylight savings)
       schedule="0 15 * * *",
@@ -1011,7 +1008,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
             site_config.templates.llvm_next_toolchain,
             *args,
             boards=[board],
-            active_waterfall=waterfall.WATERFALL_SWARMING,
             hw_tests=hw_test_list.ToolchainTestMedium(
                 constants.HWTEST_MACH_POOL),
             hw_tests_override=hw_test_list.ToolchainTestMedium(
@@ -1056,7 +1052,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='clang_tidy_builders.ClangTidyBuilder',
       useflags=config_lib.append_useflags(['clang_tidy']),
       boards=['grunt'],
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       # Weekly on Sunday 3 AM UTC
       schedule='0 0 3 * * 0 *',
   )
@@ -1087,7 +1082,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.paladin,
       display_label=config_lib.DISPLAY_LABEL_PRECQ,
       luci_builder=config_lib.LUCI_BUILDER_PRECQ,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       build_type=constants.PRE_CQ_TYPE,
       pre_cq=True,
       archive=False,
@@ -1142,7 +1136,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       boards=[],
       display_label=config_lib.DISPLAY_LABEL_PRECQ,
       build_type=constants.PRE_CQ_LAUNCHER_TYPE,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       description='Launcher for Pre-CQ builders',
       manifest_version=False,
       doc='https://dev.chromium.org/chromium-os/build/builder-overview#'
@@ -1340,7 +1333,6 @@ def AndroidTemplates(site_config):
       manifest_version=True,
       android_rev=constants.ANDROID_REV_LATEST,
       description='Preflight Android Uprev & Build (internal)',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   # Template for Android NYC.
@@ -1403,7 +1395,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       constants.MST_ANDROID_PFQ_MASTER,
       site_config.templates.mst_android_pfq,
       site_config.templates.master_android_pfq_mixin,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 150m interval',
   )
 
@@ -1418,7 +1409,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       constants.PI_ANDROID_PFQ_MASTER,
       site_config.templates.pi_android_pfq,
       site_config.templates.master_android_pfq_mixin,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 60m interval',
   )
 
@@ -1441,7 +1431,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       constants.NYC_ANDROID_PFQ_MASTER,
       site_config.templates.nyc_android_pfq,
       site_config.templates.master_android_pfq_mixin,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 150m interval',
   )
 
@@ -1622,7 +1611,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       manifest_version=True,
       overlays=constants.PUBLIC_OVERLAYS,
       slave_configs=[],
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='0 */3 * * *',
   )
 
@@ -1630,7 +1618,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       site_config.ApplyForBoards(
           config_lib.CONFIG_TYPE_FULL,
           active_builders,
-          active_waterfall=waterfall.WATERFALL_SWARMING,
           manifest_version=True,
       )
   )
@@ -1647,7 +1634,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   """
   site_config.AddTemplate(
       'cq_luci_slave',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       build_affinity=True,
       luci_builder=config_lib.LUCI_BUILDER_CQ,
   )
@@ -1859,7 +1845,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       binhost_test=True,
       push_overlays=constants.BOTH_OVERLAYS,
       description='Commit Queue master (all others are slaves)',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 2m interval',
   )
 
@@ -2176,7 +2161,6 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       master=True,
       manifest_version=True,
       slave_configs=[],
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 2m interval',
   )
 
@@ -2186,7 +2170,6 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
           postsubmit_boards,
           board_configs,
           site_config.templates.postsubmit,
-          active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
 
@@ -2205,7 +2188,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddTemplate(
       'incremental_affinity',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       build_affinity=True,
       luci_builder=config_lib.LUCI_BUILDER_INCREMENTAL,
   )
@@ -2218,7 +2200,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       master=True,
       manifest_version=True,
       slave_configs=[],
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 10m interval',
   )
 
@@ -2423,8 +2404,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
 
   _tot_chrome_pfq_informational_board_configs = UpdateBoardConfigs(
       _tot_chrome_pfq_informational_board_configs,
-      _chrome_informational_swarming_boards,
-      active_waterfall=waterfall.WATERFALL_SWARMING)
+      _chrome_informational_swarming_boards)
 
   site_config.AddForBoards(
       'tot-chrome-pfq-informational',
@@ -2442,7 +2422,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       # Every 3 hours.
       schedule='0 */3 * * *',
   )
@@ -2452,7 +2431,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.tot_asan_informational,
       site_config.templates.no_hwtest_builder,
       boards=['amd64-generic'],
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
   )
 
@@ -2465,7 +2443,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       boards=['betty'],
       description='Build with Address Sanitizer (Clang)',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       # Once every day. 3 PM UTC is 7 AM PST (no daylight savings).
       schedule='0 15 * * *'
   )
@@ -2484,7 +2461,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for fuzzing testing',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       # Every 3 hours.
       schedule='0 */3 * * *'
   )
@@ -2499,7 +2475,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build with Undefined Behavior Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='16gb-rootfs',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       # Every 3 hours.
       schedule='0 */3 * * *',
   )
@@ -2512,7 +2487,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for fuzzing testing',
       gs_path='gs://chromeos-fuzzing-artifacts/libfuzzer-ubsan',
       disk_layout='4gb-rootfs',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       # Every 3 hours.
       schedule='0 */3 * * *'
   )
@@ -2526,7 +2500,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       boards=[
           'amd64-generic',
       ],
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
       goma_client_type='candidate',
   )
@@ -2559,8 +2532,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
 
   _tot_chromium_pfq_informational_board_configs = UpdateBoardConfigs(
       external_board_configs,
-      _tot_chromium_pfq_informational_swarming_boards,
-      active_waterfall=waterfall.WATERFALL_SWARMING)
+      _tot_chromium_pfq_informational_swarming_boards)
 
   site_config.AddForBoards(
       'tot-chromium-pfq-informational',
@@ -2576,14 +2548,12 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   site_config.ApplyForBoards(
       'tot-chromium-pfq-informational',
       ['amd64-generic', 'daisy'],
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
   )
 
   site_config.ApplyForBoards(
       'tot-chrome-pfq-informational',
       ['caroline', 'eve', 'peach_pit', 'tricky', 'veyron_minnie',],
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
   )
 
@@ -2602,7 +2572,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config['amd64-generic-telemetry'].apply(
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
   )
 
@@ -2644,7 +2613,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
                                'chrome'],
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='triggered',
       triggered_gitiles=[[
           'https://chromium.googlesource.com/chromium/src',
@@ -2660,7 +2628,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           external_board_configs,
           site_config.templates.chromium_pfq,
           site_config.templates.build_external_chrome,
-          active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
   site_config.AddForBoards(
@@ -2718,7 +2685,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           _chrome_pfq_important_boards - _chrome_pfq_skylab_boards,
           internal_board_configs,
           site_config.templates.chrome_pfq,
-          active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
   master_config.AddSlaves(
@@ -2728,7 +2694,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           internal_board_configs,
           site_config.templates.chrome_pfq,
           important=False,
-          active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
   master_config.AddSlaves(
@@ -2738,7 +2703,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           internal_board_configs,
           site_config.templates.chrome_pfq,
           enable_skylab_hw_tests=True,
-          active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
 
@@ -2904,7 +2868,6 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
         site_config.templates.firmwarebranch,
         boards=boards,
         workspace_branch=branch,
-        active_waterfall=waterfall.WATERFALL_SWARMING,
         schedule=interval,
     )
 
@@ -3000,7 +2963,6 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
     schedule = {}
     if active:
       schedule = {
-          'active_waterfall': waterfall.WATERFALL_SWARMING,
           'schedule': active,
       }
 
@@ -3068,7 +3030,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         chrome_sdk=False,
         afdo_use=False,
         branch_util_test=True,
-        active_waterfall=waterfall.WATERFALL_SWARMING,
         # Because PST is 8 hours from UTC, these times are the same in both. But
         # daylight savings time is NOT adjusted for
         schedule='  0 2,10,18 * * *',
@@ -3197,7 +3158,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         models=models,
         important=important,
         enable_skylab_hw_tests=enable_skylab_hw_tests,
-        active_waterfall=waterfall.WATERFALL_SWARMING,
         hw_tests=(hw_test_list.SharedPoolCanary(pool=pool) +
                   hw_test_list.CtsGtsQualTests()),
     )
@@ -3227,7 +3187,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
     # Move non-unibuild to skylab.
     config_values = {
         'important': important,
-        'active_waterfall': waterfall.WATERFALL_SWARMING,
         'enable_skylab_hw_tests': enable_skylab_hw_tests,
     }
 
@@ -3484,7 +3443,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       luci_builder=config_lib.LUCI_BUILDER_TRY,
       builder_class_name='test_builders.SucessBuilder',
       description='Builder always passes as quickly as possible.',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   # Used by cbuildbot/stages/sync_stages_unittest
@@ -3509,7 +3467,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       luci_builder=config_lib.LUCI_BUILDER_TRY,
       builder_class_name='test_builders.FailBuilder',
       description='Builder always fails as quickly as possible.',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   site_config.AddWithoutTemplate(
@@ -3523,7 +3480,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       ],
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.CHROOT_BUILDER_TYPE,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       builder_class_name='sdk_builders.ChrootSdkBuilder',
       use_sdk=False,
       prebuilts=constants.PUBLIC,
@@ -3545,7 +3501,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.GENERIC_TYPE,
       boards=[],
       builder_class_name='config_builders.UpdateConfigBuilder',
-      active_waterfall=constants.WATERFALL_SWARMING,
       binhost_test=True,
       schedule='@hourly',
   )
@@ -3560,7 +3515,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.GENERIC_TYPE,
       boards=[],
       builder_class_name='config_builders.LuciSchedulerBuilder',
-      active_waterfall=constants.WATERFALL_SWARMING,
       binhost_test=True,
       schedule='triggered',
       triggered_gitiles=[[
@@ -3605,7 +3559,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       vm_tests=getInfoVMTest(),
       vm_tests_override=getInfoVMTest(),
       vm_test_report_to_dashboards=True,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       # 3 PM UTC is 7 AM PST (no daylight savings).
       schedule='0 15 * * *',
   )
@@ -3690,7 +3643,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_timeout=60 * 60,
       description='Build Chromium OS infra Go binaries',
       doc='https://goto.google.com/cros-infra-go-packaging',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='triggered',
       triggered_gitiles=[[
           'https://chromium.googlesource.com/chromiumos/infra/lucifer',
@@ -3740,7 +3692,6 @@ def TryjobMirrors(site_config):
         push_image=False,
         # Force uprev. This is so patched in changes are always built.
         uprev=True,
-        active_waterfall=waterfall.WATERFALL_SWARMING,
         gs_path=config_lib.GS_PATH_DEFAULT,
         schedule=None,
         suite_scheduling=False,

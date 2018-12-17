@@ -21,7 +21,6 @@ import time
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import validation_pool
-from chromite.lib.const import waterfall
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import config_lib
@@ -102,13 +101,10 @@ class FakeBuilderRun(object):
   """
   def __init__(self, fake_db=None):
     self.fake_db = fake_db
-    metadata_dict = {'buildbot-master-name': waterfall.WATERFALL_INTERNAL}
     FakeAttrs = collections.namedtuple('FakeAttrs', ['metadata'])
-    self.attrs = FakeAttrs(metadata=metadata_lib.CBuildbotMetadata(
-        metadata_dict=metadata_dict))
+    self.attrs = FakeAttrs(metadata=metadata_lib.CBuildbotMetadata())
     FakeConfig = collections.namedtuple('FakeConfig', ['name'])
     self.config = FakeConfig(name='master-paladin')
-    self.GetBuildbotUrl = lambda: waterfall.WATERFALL_INTERNAL
 
   def GetCIDBHandle(self):
     """Get the build_id and cidb handle, if available.
