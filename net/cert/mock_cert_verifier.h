@@ -40,6 +40,9 @@ class MockCertVerifier : public CertVerifier {
     default_result_ = default_result;
   }
 
+  // Sets whether Verify() returns a result asynchronously.
+  void set_async(bool async) { async_ = async; }
+
   // Adds a rule that will cause any call to Verify() for |cert| to return rv,
   // copying |verify_result| into the verified result.
   // Note: Only the primary certificate of |cert| is checked. Any intermediate
@@ -57,10 +60,14 @@ class MockCertVerifier : public CertVerifier {
 
  private:
   struct Rule;
-  typedef std::list<Rule> RuleList;
+  using RuleList = std::list<Rule>;
+  class MockRequest;
+
+  int VerifyImpl(const RequestParams& params, CertVerifyResult* verify_result);
 
   int default_result_;
   RuleList rules_;
+  bool async_;
 };
 
 }  // namespace net

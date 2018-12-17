@@ -813,6 +813,10 @@ class SSLClientSocketTest : public PlatformTest,
     return spawned_test_server_.get();
   }
 
+  void SetCertVerifier(CertVerifier* cert_verifier) {
+    context_.cert_verifier = cert_verifier;
+  }
+
   void SetCTVerifier(CTVerifier* ct_verifier) {
     context_.cert_transparency_verifier = ct_verifier;
   }
@@ -1297,6 +1301,47 @@ std::string FormatTLS12Alert(uint8_t alert) {
   return ret;
 }
 
+// A CertVerifier that never returns on any requests.
+class HangingCertVerifier : public CertVerifier {
+ public:
+  int num_active_requests() const { return num_active_requests_; }
+
+  void WaitForRequest() {
+    if (!num_active_requests_) {
+      run_loop_.Run();
+    }
+  }
+
+  int Verify(const RequestParams& params,
+             CertVerifyResult* verify_result,
+             CompletionOnceCallback callback,
+             std::unique_ptr<Request>* out_req,
+             const NetLogWithSource& net_log) override {
+    *out_req = std::make_unique<HangingRequest>(this);
+    return ERR_IO_PENDING;
+  }
+
+  void SetConfig(const Config& config) override {}
+
+ private:
+  class HangingRequest : public Request {
+   public:
+    explicit HangingRequest(HangingCertVerifier* verifier)
+        : verifier_(verifier) {
+      verifier_->num_active_requests_++;
+      verifier_->run_loop_.Quit();
+    }
+
+    ~HangingRequest() override { verifier_->num_active_requests_--; }
+
+   private:
+    HangingCertVerifier* verifier_;
+  };
+
+  base::RunLoop run_loop_;
+  int num_active_requests_ = 0;
+};
+
 }  // namespace
 
 TEST_F(SSLClientSocketTest, Connect) {
@@ -1331,6 +1376,15 @@ TEST_F(SSLClientSocketTest, Connect) {
   EXPECT_FALSE(sock->IsConnected());
 }
 
+TEST_F(SSLClientSocketTest, ConnectAsyncVerify) {
+  ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
+
+  cert_verifier_->set_async(true);
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsError(OK));
+}
+
 TEST_F(SSLClientSocketTest, ConnectExpired) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_EXPIRED);
@@ -1349,6 +1403,48 @@ TEST_F(SSLClientSocketTest, ConnectExpired) {
   TestNetLogEntry::List entries;
   log_.GetEntries(&entries);
   EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
+}
+
+TEST_F(SSLClientSocketTest, ConnectExpiredAsyncVerify) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_EXPIRED);
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  cert_verifier_->set_default_result(ERR_CERT_DATE_INVALID);
+  cert_verifier_->set_async(true);
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsError(ERR_CERT_DATE_INVALID));
+}
+
+// Test that SSLClientSockets may be destroyed while waiting on a certificate
+// verification.
+TEST_F(SSLClientSocketTest, SocketDestroyedDuringVerify) {
+  ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
+
+  HangingCertVerifier verifier;
+  SetCertVerifier(&verifier);
+
+  TestCompletionCallback callback;
+  auto transport =
+      std::make_unique<TCPClientSocket>(addr(), nullptr, &log_, NetLogSource());
+  int rv = callback.GetResult(transport->Connect(callback.callback()));
+  ASSERT_THAT(rv, IsOk());
+
+  std::unique_ptr<SSLClientSocket> sock = CreateSSLClientSocket(
+      std::move(transport), spawned_test_server()->host_port_pair(),
+      SSLConfig());
+  rv = sock->Connect(callback.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // The socket should attempt a certificate verification.
+  verifier.WaitForRequest();
+  EXPECT_EQ(1, verifier.num_active_requests());
+
+  // Destroying the socket should cancel it.
+  sock = nullptr;
+  EXPECT_EQ(0, verifier.num_active_requests());
 }
 
 TEST_F(SSLClientSocketTest, ConnectMismatched) {
