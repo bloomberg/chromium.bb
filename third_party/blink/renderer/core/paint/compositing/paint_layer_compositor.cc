@@ -136,7 +136,6 @@ bool PaintLayerCompositor::RootShouldAlwaysComposite() const {
 }
 
 void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
-  compositing_reason_finder_.UpdateTriggers();
   has_accelerated_compositing_ = layout_view_.GetDocument()
                                      .GetSettings()
                                      ->GetAcceleratedCompositingEnabled();

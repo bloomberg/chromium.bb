@@ -20,22 +20,7 @@
 namespace blink {
 
 CompositingReasonFinder::CompositingReasonFinder(LayoutView& layout_view)
-    : layout_view_(layout_view),
-      compositing_triggers_(
-          static_cast<CompositingTriggerFlags>(kAllCompositingTriggers)) {
-  UpdateTriggers();
-}
-
-void CompositingReasonFinder::UpdateTriggers() {
-  compositing_triggers_ = 0;
-
-  Settings& settings = layout_view_.GetDocument().GetPage()->GetSettings();
-  if (settings.GetPreferCompositingToLCDTextEnabled()) {
-    compositing_triggers_ |= kScrollableInnerFrameTrigger;
-    compositing_triggers_ |= kOverflowScrollTrigger;
-    compositing_triggers_ |= kViewportConstrainedPositionedTrigger;
-  }
-}
+    : layout_view_(layout_view) {}
 
 bool CompositingReasonFinder::IsMainFrame() const {
   return layout_view_.GetDocument().IsInMainFrame();
@@ -63,7 +48,8 @@ bool CompositingReasonFinder::RequiresCompositingForScrollableFrame() const {
   if (IsMainFrame())
     return false;
 
-  if (!(compositing_triggers_ & kScrollableInnerFrameTrigger))
+  const auto& settings = *layout_view_.GetDocument().GetSettings();
+  if (!settings.GetPreferCompositingToLCDTextEnabled())
     return false;
 
   if (layout_view_.GetFrameView()->Size().IsEmpty())
@@ -172,7 +158,7 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
       direct_reasons |= CompositingReason::kOverflowScrollingParent;
   }
 
-  if (RequiresCompositingForScrollDependentPosition(layer, ignore_lcd_text))
+  if (RequiresCompositingForScrollDependentPosition(*layer, ignore_lcd_text))
     direct_reasons |= CompositingReason::kScrollDependentPosition;
 
   // TODO(crbug.com/839341): Remove once we support main-thread AnimationWorklet
@@ -259,34 +245,42 @@ bool CompositingReasonFinder::RequiresCompositingForRootScroller(
 }
 
 bool CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
-    const PaintLayer* layer,
-    bool ignore_lcd_text) const {
-  if (!layer->GetLayoutObject().StyleRef().HasViewportConstrainedPosition() &&
-      !layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition())
+    const PaintLayer& layer,
+    bool ignore_lcd_text) {
+  const auto& layout_object = layer.GetLayoutObject();
+  if (!layout_object.StyleRef().HasViewportConstrainedPosition() &&
+      !layout_object.StyleRef().HasStickyConstrainedPosition())
     return false;
 
-  if (!(ignore_lcd_text ||
-        (compositing_triggers_ & kViewportConstrainedPositionedTrigger)) &&
-      (!RuntimeEnabledFeatures::CompositeOpaqueFixedPositionEnabled() ||
-       !layer->BackgroundIsKnownToBeOpaqueInRect(
-           LayoutRect(layer->BoundingBoxForCompositing()), true) ||
-       layer->CompositesWithTransform() || layer->CompositesWithOpacity())) {
-    return false;
+  const auto& settings = *layout_object.GetDocument().GetSettings();
+  if (settings.GetPreferCompositingToLCDTextEnabled())
+    ignore_lcd_text = true;
+
+  if (!ignore_lcd_text) {
+    if (!RuntimeEnabledFeatures::CompositeOpaqueFixedPositionEnabled())
+      return false;
+    if (!layer.BackgroundIsKnownToBeOpaqueInRect(
+            LayoutRect(layer.BoundingBoxForCompositing()), true)) {
+      return false;
+    }
+    if (layer.CompositesWithTransform() || layer.CompositesWithOpacity())
+      return false;
   }
+
   // Don't promote fixed position elements that are descendants of a non-view
   // container, e.g. transformed elements.  They will stay fixed wrt the
   // container rather than the enclosing frame.
-  EPosition position = layer->GetLayoutObject().StyleRef().GetPosition();
+  EPosition position = layout_object.StyleRef().GetPosition();
   if (position == EPosition::kFixed) {
-    return layer->FixedToViewport() &&
-           layout_view_.GetFrameView()->LayoutViewport()->ScrollsOverflow();
+    return layer.FixedToViewport() &&
+           layout_object.GetFrameView()->LayoutViewport()->ScrollsOverflow();
   }
   DCHECK_EQ(position, EPosition::kSticky);
 
   // Don't promote sticky position elements that cannot move with scrolls.
-  if (!layer->SticksToScroller())
+  if (!layer.SticksToScroller())
     return false;
-  return layer->AncestorOverflowLayer()->ScrollsOverflow();
+  return layer.AncestorOverflowLayer()->ScrollsOverflow();
 }
 
 }  // namespace blink

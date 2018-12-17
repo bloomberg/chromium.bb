@@ -167,7 +167,6 @@ static bool RequiresCompositingOrSquashing(CompositingReasons reasons) {
 }
 
 static CompositingReasons SubtreeReasonsForCompositing(
-    const CompositingReasonFinder& compositing_reason_finder,
     PaintLayer* layer,
     bool has_composited_descendants,
     bool has3d_transformed_descendants) {
@@ -193,8 +192,8 @@ static CompositingReasons SubtreeReasonsForCompositing(
   // TODO(smcgruer): Only composite fixed if needed (http://crbug.com/742213)
   const bool ignore_lcd_text = true;
   if (layer->GetLayoutObject().StyleRef().GetPosition() == EPosition::kFixed ||
-      compositing_reason_finder.RequiresCompositingForScrollDependentPosition(
-          layer, ignore_lcd_text)) {
+      CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
+          *layer, ignore_lcd_text)) {
     subtree_reasons |=
         CompositingReason::kPositionFixedOrStickyWithCompositedDescendants;
   }
@@ -213,8 +212,13 @@ static CompositingReasons SubtreeReasonsForCompositing(
 CompositingRequirementsUpdater::CompositingRequirementsUpdater(
     LayoutView& layout_view,
     CompositingReasonFinder& compositing_reason_finder)
-    : layout_view_(layout_view),
-      compositing_reason_finder_(compositing_reason_finder) {}
+    : layout_view_(layout_view)
+#if DCHECK_IS_ON()
+      ,
+      compositing_reason_finder_(compositing_reason_finder)
+#endif
+{
+}
 
 CompositingRequirementsUpdater::~CompositingRequirementsUpdater() = default;
 
@@ -304,8 +308,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   if (layer_can_be_composited)
     direct_from_paint_layer = layer->DirectCompositingReasons();
 
-  if (compositing_reason_finder_.RequiresCompositingForScrollDependentPosition(
-          layer,
+  if (CompositingReasonFinder::RequiresCompositingForScrollDependentPosition(
+          *layer,
           ignore_lcd_text || moves_with_respect_to_compositing_ancestor)) {
     direct_from_paint_layer |= CompositingReason::kScrollDependentPosition;
   }
@@ -591,8 +595,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     // descendant layers.
     CompositingReasons subtree_compositing_reasons =
         SubtreeReasonsForCompositing(
-            compositing_reason_finder_, layer,
-            child_recursion_data.subtree_is_compositing_,
+            layer, child_recursion_data.subtree_is_compositing_,
             any_descendant_has3d_transform);
     if (layer_can_be_composited)
       reasons_to_composite |= subtree_compositing_reasons;
