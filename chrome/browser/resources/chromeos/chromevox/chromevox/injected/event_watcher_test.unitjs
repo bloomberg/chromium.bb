@@ -343,7 +343,8 @@ TEST_F('ChromeVoxEventWatcherUnitTest', 'ListBoxOptionFeedbackWithFocus',
  * The low-level details are tested in editable_text_test.js, this is
  * a higher-level test of how that code interacts with the event watcher.
  */
-TEST_F('ChromeVoxEventWatcherUnitTest', 'EditableText', function() {
+// Flaky on Chromium OS: https://crbug.com/912390.
+TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_EditableText', function() {
   cvox.ChromeVoxEditableTextBase.eventTypingEcho = false;
   this.loadHtml('<div>' +
       '<button id="before">Before</button>' +
