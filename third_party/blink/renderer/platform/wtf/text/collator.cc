@@ -32,6 +32,7 @@
 #include <string.h>
 #include <unicode/ucol.h>
 #include <memory>
+#include "base/thread_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -39,12 +40,15 @@
 
 namespace WTF {
 
-static UCollator* g_cached_collator;
-static char g_cached_equivalent_locale[Collator::kUlocFullnameCapacity];
 static Mutex& CachedCollatorMutex() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
+
+static UCollator* g_cached_collator GUARDED_BY(CachedCollatorMutex());
+static char
+    g_cached_equivalent_locale[Collator::kUlocFullnameCapacity] GUARDED_BY(
+        CachedCollatorMutex());
 
 Collator::Collator(const char* locale)
     : collator_(nullptr),
@@ -82,7 +86,7 @@ void Collator::CreateCollator() const {
   UErrorCode status = U_ZERO_ERROR;
 
   {
-    Locker<Mutex> lock(CachedCollatorMutex());
+    MutexLocker lock(CachedCollatorMutex());
     if (g_cached_collator) {
       UColAttributeValue cached_collator_lower_first =
           ucol_getAttribute(g_cached_collator, UCOL_CASE_FIRST, &status);
@@ -119,7 +123,7 @@ void Collator::CreateCollator() const {
 
 void Collator::ReleaseCollator() {
   {
-    Locker<Mutex> lock(CachedCollatorMutex());
+    MutexLocker lock(CachedCollatorMutex());
     if (g_cached_collator)
       ucol_close(g_cached_collator);
     g_cached_collator = collator_;
