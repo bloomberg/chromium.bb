@@ -85,13 +85,11 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     signin_metrics::AccessPoint signin_access_point,
     signin_metrics::Reason signin_reason,
     ProfileMode profile_mode,
-    StartSyncMode start_mode,
     ConfirmationRequired confirmation_required,
     Callback sync_setup_completed_callback)
     : profile_(nullptr),
       signin_access_point_(signin_access_point),
       signin_reason_(signin_reason),
-      start_mode_(start_mode),
       confirmation_required_(confirmation_required),
       sync_setup_completed_callback_(sync_setup_completed_callback),
       first_account_added_to_cookie_(false),
@@ -416,19 +414,6 @@ void OneClickSigninSyncStarter::UntrustedSigninConfirmed(
     base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
     CancelSigninAndDelete();  // This statement frees this object.
   } else {
-    // If the user clicked the "Advanced" link in the confirmation dialog, then
-    // override the current start_mode_ to bring up the advanced sync settings.
-
-    // If the user signs in from the new avatar bubble, the untrusted dialog
-    // would dismiss the avatar bubble, thus it won't show any confirmation upon
-    // sign in completes. This dialog already has a settings link, thus we just
-    // start sync immediately .
-
-    if (response == CONFIGURE_SYNC_FIRST)
-      start_mode_ = response;
-    else if (start_mode_ == CONFIRM_SYNC_SETTINGS_FIRST)
-      start_mode_ = SYNC_WITH_DEFAULT_SETTINGS;
-
     SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
     signin->CompletePendingSignin();
   }
@@ -511,9 +496,7 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
   // Regardless of whether the account was successfully added or not,
   // continue with sync starting.
 
-  // The sync confirmation dialog should always be shown regardless of
-  // |start_mode_|. |sync_setup_completed_callback_| will be run after the
-  // modal is closed.
+  // |sync_setup_completed_callback_| will be run after the modal is closed.
   DisplayModalSyncConfirmationWindow();
 }
 

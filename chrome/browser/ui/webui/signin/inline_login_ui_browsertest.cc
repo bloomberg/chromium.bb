@@ -164,17 +164,15 @@ class MockInlineSigninHelper : public InlineSigninHelper {
       const std::string& password,
       const std::string& auth_code,
       const std::string& signin_scoped_device_id,
-      bool choose_what_to_sync,
       bool confirm_untrusted_signin);
 
   MOCK_METHOD1(OnClientOAuthSuccess, void(const ClientOAuthResult& result));
   MOCK_METHOD1(OnClientOAuthFailure, void(const GoogleServiceAuthError& error));
-  MOCK_METHOD6(CreateSyncStarter,
+  MOCK_METHOD5(CreateSyncStarter,
                void(Browser*,
                     const GURL&,
                     const std::string&,
                     OneClickSigninSyncStarter::ProfileMode,
-                    OneClickSigninSyncStarter::StartSyncMode,
                     OneClickSigninSyncStarter::ConfirmationRequired));
 
   GaiaAuthFetcher* GetGaiaAuthFetcher() { return GetGaiaAuthFetcherForTest(); }
@@ -193,7 +191,6 @@ MockInlineSigninHelper::MockInlineSigninHelper(
     const std::string& password,
     const std::string& auth_code,
     const std::string& signin_scoped_device_id,
-    bool choose_what_to_sync,
     bool confirm_untrusted_signin)
     : InlineSigninHelper(handler,
                          url_loader_factory,
@@ -205,7 +202,6 @@ MockInlineSigninHelper::MockInlineSigninHelper(
                          password,
                          auth_code,
                          signin_scoped_device_id,
-                         choose_what_to_sync,
                          confirm_untrusted_signin,
                          false) {}
 
@@ -223,16 +219,14 @@ class MockSyncStarterInlineSigninHelper : public InlineSigninHelper {
       const std::string& password,
       const std::string& auth_code,
       const std::string& signin_scoped_device_id,
-      bool choose_what_to_sync,
       bool confirm_untrusted_signin,
       bool is_force_sign_in_with_usermanager);
 
-  MOCK_METHOD6(CreateSyncStarter,
+  MOCK_METHOD5(CreateSyncStarter,
                void(Browser*,
                     const GURL&,
                     const std::string&,
                     OneClickSigninSyncStarter::ProfileMode,
-                    OneClickSigninSyncStarter::StartSyncMode,
                     OneClickSigninSyncStarter::ConfirmationRequired));
 
  private:
@@ -249,7 +243,6 @@ MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
     const std::string& password,
     const std::string& auth_code,
     const std::string& signin_scoped_device_id,
-    bool choose_what_to_sync,
     bool confirm_untrusted_signin,
     bool is_force_sign_in_with_usermanager)
     : InlineSigninHelper(handler,
@@ -262,7 +255,6 @@ MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
                          password,
                          auth_code,
                          signin_scoped_device_id,
-                         choose_what_to_sync,
                          confirm_untrusted_signin,
                          is_force_sign_in_with_usermanager) {}
 
@@ -551,7 +543,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest, WithAuthCode) {
                                 "gaiaid-12345", "password",
                                 "auth_code",  // auth code
                                 std::string(),
-                                false,   // choose what to sync
                                 false);  // confirm untrusted signin
   base::RunLoop run_loop;
   EXPECT_CALL(helper, OnClientOAuthSuccess(_))
@@ -587,14 +578,12 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
           "password",
           "auth_code",  // auth code
           std::string(),
-          false,  // choose what to sync
           false,  // confirm untrusted signin
           false);
   EXPECT_CALL(
       *helper,
       CreateSyncStarter(_, _, "refresh_token",
                         OneClickSigninSyncStarter::CURRENT_PROFILE,
-                        OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
                         OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN));
 
   ProfileAttributesEntry* entry;
@@ -630,13 +619,11 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
           "foo@gmail.com", "gaiaid-12345", "password",
           "auth_code",  // auth code
           std::string(),
-          true,   // choose what to sync
           false,  // confirm untrusted signin
           false);
   EXPECT_CALL(*helper, CreateSyncStarter(
                            _, _, "refresh_token",
                            OneClickSigninSyncStarter::CURRENT_PROFILE,
-                           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST,
                            OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN));
 
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
@@ -660,14 +647,12 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
           "foo@gmail.com", "gaiaid-12345", "password",
           "auth_code",  // auth code
           std::string(),
-          false,  // choose what to sync
           true,   // confirm untrusted signin
           false);
   EXPECT_CALL(
       *helper,
       CreateSyncStarter(_, _, "refresh_token",
                         OneClickSigninSyncStarter::CURRENT_PROFILE,
-                        OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
                         OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN));
 
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
@@ -691,7 +676,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
           "foo@gmail.com", "gaiaid-12345", "password",
           "auth_code",  // auth code
           std::string(),
-          false,  // choose what to sync
           false,  // confirm untrusted signin
           false);
 
@@ -700,7 +684,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   EXPECT_CALL(*helper, CreateSyncStarter(
                            _, _, "refresh_token",
                            OneClickSigninSyncStarter::CURRENT_PROFILE,
-                           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST,
                            OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN));
 
   SimulateOnClientOAuthSuccess(helper, "refresh_token");
@@ -722,7 +705,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                             url, "foo@gmail.com", "gaiaid-12345", "password",
                             "auth_code",  // auth code
                             std::string(),
-                            false,  // choose what to sync
                             false,  // confirm untrusted signin
                             false);
   SimulateOnClientOAuthSuccess(&helper, "refresh_token");
@@ -746,7 +728,6 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                             url, "foo@gmail.com", "gaiaid-12345", "password",
                             "auth_code",  // auth code
                             std::string(),
-                            false,  // choose what to sync
                             false,  // confirm untrusted signin
                             false);
   SimulateOnClientOAuthSuccess(&helper, "refresh_token");
@@ -765,12 +746,11 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
       new MockSyncStarterInlineSigninHelper(
           handler, test_shared_loader_factory(), browser()->profile(), url,
           "foo@gmail.com", "gaiaid-12345", "password", "auth_code",
-          std::string(), false, false, true);
+          std::string(), false, true);
   EXPECT_CALL(
       *helper,
       CreateSyncStarter(_, _, "refresh_token",
                         OneClickSigninSyncStarter::CURRENT_PROFILE,
-                        OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST,
                         OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN));
 
   ProfileAttributesEntry* entry;

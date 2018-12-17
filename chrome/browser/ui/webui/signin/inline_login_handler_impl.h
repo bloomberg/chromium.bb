@@ -148,7 +148,6 @@ class InlineSigninHelper : public GaiaAuthConsumer {
       const std::string& password,
       const std::string& auth_code,
       const std::string& signin_scoped_device_id,
-      bool choose_what_to_sync,
       bool confirm_untrusted_signin,
       bool is_force_sign_in_with_usermanager);
   ~InlineSigninHelper() override;
@@ -163,15 +162,13 @@ class InlineSigninHelper : public GaiaAuthConsumer {
   // cross account error, and false otherwise.
   bool HandleCrossAccountError(
       const std::string& refresh_token,
-      OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
-      OneClickSigninSyncStarter::StartSyncMode start_mode);
+      OneClickSigninSyncStarter::ConfirmationRequired confirmation_required);
 
   // Callback used with ConfirmEmailDialogDelegate.
   void ConfirmEmailAction(
       content::WebContents* web_contents,
       const std::string& refresh_token,
       OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
-      OneClickSigninSyncStarter::StartSyncMode start_mode,
       SigninEmailConfirmationDialog::Action action);
 
   // Overridden from GaiaAuthConsumer.
@@ -190,7 +187,6 @@ class InlineSigninHelper : public GaiaAuthConsumer {
       const GURL& current_url,
       const std::string& refresh_token,
       OneClickSigninSyncStarter::ProfileMode profile_mode,
-      OneClickSigninSyncStarter::StartSyncMode start_mode,
       OneClickSigninSyncStarter::ConfirmationRequired confirmation_required);
 
   GaiaAuthFetcher gaia_auth_fetcher_;
@@ -202,7 +198,6 @@ class InlineSigninHelper : public GaiaAuthConsumer {
   std::string gaia_id_;
   std::string password_;
   std::string auth_code_;
-  bool choose_what_to_sync_;
   bool confirm_untrusted_signin_;
   bool is_force_sign_in_with_usermanager_;
 

@@ -100,7 +100,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             signin_metrics::AccessPoint signin_access_point,
                             signin_metrics::Reason signin_reason,
                             ProfileMode profile_mode,
-                            StartSyncMode start_mode,
                             ConfirmationRequired display_confirmation,
                             Callback callback);
 
@@ -212,7 +211,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   signin_metrics::AccessPoint signin_access_point_;
   signin_metrics::Reason signin_reason_;
   std::unique_ptr<SigninTracker> signin_tracker_;
-  StartSyncMode start_mode_;
   ConfirmationRequired confirmation_required_;
 
   // Callback executed when sync setup succeeds or fails.
