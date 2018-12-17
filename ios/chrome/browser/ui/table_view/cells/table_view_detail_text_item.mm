@@ -167,4 +167,19 @@ const CGFloat kMinimalHeight = 48;
   }
 }
 
+- (void)layoutSubviews {
+  if (UIContentSizeCategoryIsAccessibilityCategory(
+          self.traitCollection.preferredContentSizeCategory)) {
+    // Make sure that the multiline labels width isn't changed when the
+    // accessory is set.
+    self.detailTextLabel.preferredMaxLayoutWidth =
+        self.bounds.size.width -
+        (kTableViewAccessoryWidth + 2 * kTableViewHorizontalSpacing);
+    self.textLabel.preferredMaxLayoutWidth =
+        self.bounds.size.width -
+        (kTableViewAccessoryWidth + 2 * kTableViewHorizontalSpacing);
+  }
+  [super layoutSubviews];
+}
+
 @end
