@@ -136,7 +136,6 @@ void PartitionContextMutationsByType(
 // other of the message-building functions to make the rest of the code easier
 // to test.
 void InitDownloadUpdatesContext(SyncCycle* cycle,
-                                bool create_mobile_bookmarks_folder,
                                 sync_pb::ClientToServerMessage* message) {
   message->set_share(cycle->context()->account_name());
   message->set_message_contents(sync_pb::ClientToServerMessage::GET_UPDATES);
@@ -148,8 +147,10 @@ void InitDownloadUpdatesContext(SyncCycle* cycle,
   // (e.g. Bookmark URLs but not their containing folders).
   get_updates->set_fetch_folders(true);
 
-  get_updates->set_create_mobile_bookmarks_folder(
-      create_mobile_bookmarks_folder);
+  // This is a deprecated field that should be cleaned up after server's
+  // behavior is updated.
+  get_updates->set_create_mobile_bookmarks_folder(true);
+
   bool need_encryption_key = ShouldRequestEncryptionKey(cycle->context());
   get_updates->set_need_encryption_key(need_encryption_key);
 
@@ -165,14 +166,12 @@ GetUpdatesProcessor::GetUpdatesProcessor(UpdateHandlerMap* update_handler_map,
 
 GetUpdatesProcessor::~GetUpdatesProcessor() {}
 
-SyncerError GetUpdatesProcessor::DownloadUpdates(
-    ModelTypeSet* request_types,
-    SyncCycle* cycle,
-    bool create_mobile_bookmarks_folder) {
+SyncerError GetUpdatesProcessor::DownloadUpdates(ModelTypeSet* request_types,
+                                                 SyncCycle* cycle) {
   TRACE_EVENT0("sync", "DownloadUpdates");
 
   sync_pb::ClientToServerMessage message;
-  InitDownloadUpdatesContext(cycle, create_mobile_bookmarks_folder, &message);
+  InitDownloadUpdatesContext(cycle, &message);
   PrepareGetUpdates(*request_types, &message);
 
   SyncerError result = ExecuteDownloadUpdates(request_types, cycle, &message);

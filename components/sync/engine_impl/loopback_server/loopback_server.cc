@@ -204,11 +204,19 @@ bool LoopbackServer::CreateDefaultPermanentItems() {
 
     if (model_type == syncer::BOOKMARKS) {
       if (!CreatePermanentBookmarkFolder(kBookmarkBarFolderServerTag,
-                                         kBookmarkBarFolderName))
+                                         kBookmarkBarFolderName)) {
         return false;
+      }
       if (!CreatePermanentBookmarkFolder(kOtherBookmarksFolderServerTag,
-                                         kOtherBookmarksFolderName))
+                                         kOtherBookmarksFolderName)) {
         return false;
+      }
+      // This folder is called "Synced Bookmarks" by sync and is renamed
+      // "Mobile Bookmarks" by the mobile client UIs.
+      if (!CreatePermanentBookmarkFolder(kSyncedBookmarksFolderServerTag,
+                                         kSyncedBookmarksFolderName)) {
+        return false;
+      }
     }
   }
 
@@ -296,14 +304,6 @@ bool LoopbackServer::HandleGetUpdatesRequest(
   response->set_changes_remaining(0);
 
   auto sieve = std::make_unique<UpdateSieve>(get_updates);
-
-  // This folder is called "Synced Bookmarks" by sync and is renamed
-  // "Mobile Bookmarks" by the mobile client UIs.
-  if (get_updates.create_mobile_bookmarks_folder() &&
-      !CreatePermanentBookmarkFolder(kSyncedBookmarksFolderServerTag,
-                                     kSyncedBookmarksFolderName)) {
-    return false;
-  }
 
   std::vector<const LoopbackServerEntity*> wanted_entities;
   for (const auto& id_and_entity : entities_) {
