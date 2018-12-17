@@ -74,7 +74,7 @@ std::unique_ptr<views::Label> CreateTitle(
       /*right=*/kMigrationDialogInsets.right()));
   title->SetFontList(gfx::FontList().Derive(kMigrationDialogTitleFontSize,
                                             gfx::Font::NORMAL,
-                                            gfx::Font::Weight::MEDIUM));
+                                            gfx::Font::Weight::NORMAL));
   title->SetEnabledColor(gfx::kGoogleGrey900);
   constexpr int kMigrationDialogTitleLineHeight = 20;
   title->SetMultiLine(true);
