@@ -158,6 +158,27 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     }
   }
 
+  // Calculate the focused ID.
+  if (focused_id_ < 0) {
+    if (root_id_ >= 0) {
+      ArcAccessibilityInfoData* root = GetRoot();
+      if (root->IsNode()) {
+        focused_id_ = root_id_;
+      } else {
+        std::vector<ArcAccessibilityInfoData*> children;
+        root->GetChildren(&children);
+        if (!children.empty()) {
+          for (size_t i = 0; i < children.size(); ++i) {
+            if (children[i]->IsNode()) {
+              focused_id_ = children[i]->GetId();
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
   event_bundle.tree_id = tree_id();
 
@@ -196,22 +217,6 @@ bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
   data->tree_id = tree_id();
   if (focused_id_ >= 0) {
     data->focus_id = focused_id_;
-  } else if (root_id_ >= 0) {
-    ArcAccessibilityInfoData* root = GetRoot();
-    if (root->IsNode()) {
-      data->focus_id = root_id_;
-    } else {
-      std::vector<ArcAccessibilityInfoData*> children;
-      root->GetChildren(&children);
-      if (!children.empty()) {
-        for (size_t i = 0; i < children.size(); ++i) {
-          if (children[i]->IsNode()) {
-            data->focus_id = children[i]->GetId();
-            break;
-          }
-        }
-      }
-    }
   }
   return true;
 }

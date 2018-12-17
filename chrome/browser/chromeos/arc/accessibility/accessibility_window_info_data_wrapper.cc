@@ -14,8 +14,6 @@ AccessibilityWindowInfoDataWrapper::AccessibilityWindowInfoDataWrapper(
     mojom::AccessibilityWindowInfoData* window)
     : tree_source_(tree_source), window_ptr_(window) {}
 
-AccessibilityWindowInfoDataWrapper::~AccessibilityWindowInfoDataWrapper() {}
-
 bool AccessibilityWindowInfoDataWrapper::IsNode() const {
   return false;
 }
