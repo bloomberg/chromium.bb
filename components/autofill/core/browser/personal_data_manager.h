@@ -807,6 +807,8 @@ class PersonalDataManager : public KeyedService,
   // Whether sync should be considered on in a test.
   bool is_syncing_for_test_ = false;
 
+  base::WeakPtrFactory<PersonalDataManager> weak_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };
 

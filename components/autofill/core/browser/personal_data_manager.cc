@@ -1042,7 +1042,7 @@ void PersonalDataManager::UpdateClientValidityStates(
     if (!profile->is_client_validity_states_updated() || update_validation) {
       client_profile_validator_->StartProfileValidation(
           profile, base::BindOnce(&PersonalDataManager::OnValidated,
-                                  base::Unretained(this)));
+                                  weak_factory_.GetWeakPtr()));
     }
   }
   // Set the pref to the current major version if already not set.
