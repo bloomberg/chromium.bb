@@ -208,6 +208,37 @@ static const char kTestEventFormString[] =
     " <input type=\"text\" id=\"phone\"><br>"
     "</form>";
 
+static const char kTestShippingFormWithCompanyString[] =
+    "<form action=\"http://www.example.com/\" method=\"POST\">"
+    "<label for=\"firstname\">First name:</label>"
+    " <input type=\"text\" id=\"firstname\"><br>"
+    "<label for=\"lastname\">Last name:</label>"
+    " <input type=\"text\" id=\"lastname\"><br>"
+    "<label for=\"address1\">Address line 1:</label>"
+    " <input type=\"text\" id=\"address1\"><br>"
+    "<label for=\"address2\">Address line 2:</label>"
+    " <input type=\"text\" id=\"address2\"><br>"
+    "<label for=\"city\">City:</label>"
+    " <input type=\"text\" id=\"city\"><br>"
+    "<label for=\"state\">State:</label>"
+    " <select id=\"state\">"
+    " <option value=\"\" selected=\"yes\">--</option>"
+    " <option value=\"CA\">California</option>"
+    " <option value=\"TX\">Texas</option>"
+    " </select><br>"
+    "<label for=\"zip\">ZIP code:</label>"
+    " <input type=\"text\" id=\"zip\"><br>"
+    "<label for=\"country\">Country:</label>"
+    " <select id=\"country\">"
+    " <option value=\"\" selected=\"yes\">--</option>"
+    " <option value=\"CA\">Canada</option>"
+    " <option value=\"US\">United States</option>"
+    " </select><br>"
+    "<label for=\"phone\">Phone number:</label>"
+    " <input type=\"text\" id=\"phone\"><br>"
+    "<label for=\"company\">First company:</label>"
+    " <input type=\"text\" id=\"company\"><br>"
+    "</form>";
 // Searches all frames of |web_contents| and returns one called |name|. If
 // there are none, returns null, if there are more, returns an arbitrary one.
 content::RenderFrameHost* RenderFrameHostForName(
@@ -1964,6 +1995,44 @@ IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
 
   ExpectFieldValue("address", addr_line1);
   ExpectFieldValue("company", company_name_enabled_ ? company_name : "");
+}
+
+// Test that Autofill does not fill in Company Name if disabled
+IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
+                       NoAutofillSugggestionForCompanyName) {
+  CreateTestProfile();
+
+  std::string company_name("Initech");
+
+  // Load the test page.
+  SetTestUrlResponse(kTestShippingFormWithCompanyString);
+  ASSERT_NO_FATAL_FAILURE(
+      ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
+
+  // Focus the company field.
+  FocusFieldByName("company");
+
+  // Now click it.
+  test_delegate()->Reset();
+  ASSERT_NO_FATAL_FAILURE(ClickElementWithId("company"));
+
+  bool found = test_delegate()->Wait({ObservedUiEvents::kSuggestionShown},
+                                     base::TimeDelta::FromSeconds(3));
+
+  if (!company_name_enabled_) {
+    EXPECT_FALSE(found);
+    return;
+  }
+  // Press the down arrow to select the suggestion and preview the autofilled
+  // form.
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN,
+                        {ObservedUiEvents::kPreviewFormData});
+
+  // Press Enter to accept the autofill suggestions.
+  SendKeyToPopupAndWait(ui::DomKey::ENTER, {ObservedUiEvents::kFormDataFilled});
+
+  // The form should be filled.
+  ExpectFieldValue("company", company_name);
 }
 
 // Test that Autofill does not fill in read-only fields.
