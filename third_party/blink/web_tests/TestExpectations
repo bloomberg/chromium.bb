@@ -539,6 +539,7 @@ crbug.com/174167 external/wpt/css/css-tables/visibility-collapse-rowcol-002.html
 # [css-contain]
 
 crbug.com/880802 external/wpt/css/css-contain/contain-layout-017.html [ Failure ]
+crbug.com/671132 external/wpt/css/css-contain/contain-layout-baseline-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
 crbug.com/847274 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
@@ -3038,7 +3039,6 @@ crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/content-type/respons
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/fetch/content-type/response.window.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/mimesniff/mime-types/parsing.any.worker.html [ Failure Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-layout-suppress-baseline-002.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Failure Timeout ]
