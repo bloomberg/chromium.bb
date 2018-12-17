@@ -459,6 +459,7 @@ const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
 
   // If this is not LayoutNG, compute the offset mapping and store in |storage|.
   // The caller is responsible to keep |storage| for the life cycle.
+  DCHECK(storage);
   NGInlineNodeData data;
   ComputeOffsetMapping(layout_block_flow, &data);
   *storage = std::move(data.offset_mapping);

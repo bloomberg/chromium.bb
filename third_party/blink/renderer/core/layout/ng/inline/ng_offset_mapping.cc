@@ -172,7 +172,10 @@ const NGOffsetMapping* NGOffsetMapping::GetFor(const Position& position) {
     return nullptr;
   if (!NGOffsetMapping::AcceptsPosition(position))
     return nullptr;
-  return GetForContainingBlockFlow(NGInlineFormattingContextOf(position));
+  LayoutBlockFlow* context = NGInlineFormattingContextOf(position);
+  if (!context)
+    return nullptr;
+  return NGInlineNode::GetOffsetMapping(context, nullptr);
 }
 
 // static
@@ -182,21 +185,10 @@ const NGOffsetMapping* NGOffsetMapping::GetFor(
     return nullptr;
   if (!layout_object)
     return nullptr;
-  return GetForContainingBlockFlow(layout_object->ContainingNGBlockFlow());
-}
-
-// static
-const NGOffsetMapping* NGOffsetMapping::GetForContainingBlockFlow(
-    LayoutBlockFlow* block_flow) {
-  if (!block_flow || !block_flow->ChildrenInline())
+  LayoutBlockFlow* context = layout_object->ContainingNGBlockFlow();
+  if (!context)
     return nullptr;
-  NGBlockNode block_node = NGBlockNode(block_flow);
-  if (!block_node.CanUseNewLayout())
-    return nullptr;
-  NGLayoutInputNode node = block_node.FirstChild();
-  if (node && node.IsInline())
-    return ToNGInlineNode(node).ComputeOffsetMappingIfNeeded();
-  return nullptr;
+  return NGInlineNode::GetOffsetMapping(context, nullptr);
 }
 
 // static

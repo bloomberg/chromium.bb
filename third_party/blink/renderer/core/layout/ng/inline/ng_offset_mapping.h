@@ -133,10 +133,6 @@ class CORE_EXPORT NGOffsetMapping {
   // a LayoutObject at hand.
   static const NGOffsetMapping* GetFor(const LayoutObject*);
 
-  // Returns the mapping object of the inline formatting context the given
-  // LayoutBlockFlow has.
-  static const NGOffsetMapping* GetForContainingBlockFlow(LayoutBlockFlow*);
-
   // Returns the inline formatting context (which is a block flow) where the
   // given object is laid out -- this is the block flow whose offset mapping
   // contains the given object. Note that the object can be in either legacy or

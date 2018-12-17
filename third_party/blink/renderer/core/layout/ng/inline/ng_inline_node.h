@@ -71,7 +71,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   // Get |NGOffsetMapping| for the |layout_block_flow|. If |layout_block_flow|
   // is LayoutNG and it is already laid out, this function is the same as
-  // |ComputeOffsetMappingIfNeeded|. |storage| is not used in this case.
+  // |ComputeOffsetMappingIfNeeded|. |storage| is not used in this case, and can
+  // be null.
   //
   // Otherwise, this function computes |NGOffsetMapping| and store in |storage|
   // as well as returning the pointer. The caller is responsible for keeping
