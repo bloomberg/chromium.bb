@@ -56,6 +56,7 @@ class TestingAppShim : public chrome::mojom::AppShim {
   void Hide() override {}
   void UnhideWithoutActivation() override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
+  void SetBadgeLabel(const std::string& badge_label) override {}
 
   bool received_launch_done_result_ = false;
   apps::AppShimLaunchResult launch_done_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
