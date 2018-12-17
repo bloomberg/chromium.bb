@@ -103,6 +103,14 @@
     "message": "3 by 3",
     "description": "Label for spoken feedback to read out grid-type: 3x3."
   },
+  "labelGrid4x4": {
+    "message": "4 x 4",
+    "description": "Label for for grid-type: 4x4."
+  },
+  "ariaGrid4x4": {
+    "message": "4 by 4",
+    "description": "Label for spoken feedback to read out grid-type: 4x4."
+  },
   "labelGridGolden": {
     "message": "Golden ratio",
     "description": "Label for grid-type: golden ratio."
