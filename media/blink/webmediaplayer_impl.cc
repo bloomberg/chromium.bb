@@ -459,6 +459,16 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   if (bridge_)
     bridge_->ClearObserver();
 
+  // Disconnect from the MediaObserver implementation since it's lifetime is
+  // tied to the RendererFactorySelector which can't be destroyed until after
+  // the Pipeline stops.
+  //
+  // Note: We can't use a WeakPtr with the RendererFactory because its methods
+  // are called on the media thread and this destruction takes place on the
+  // renderer thread.
+  if (observer_)
+    observer_->SetClient(nullptr);
+
   // Handle destruction of things that need to be destructed after the pipeline
   // completes stopping on the media thread.
   media_task_runner_->PostTask(
