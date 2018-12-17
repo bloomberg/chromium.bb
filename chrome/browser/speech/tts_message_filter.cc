@@ -118,18 +118,17 @@ void TtsMessageFilter::OnSpeak(const TtsUtteranceRequest& request) {
   if (!browser_context_)
     return;
 
-  std::unique_ptr<content::Utterance> utterance(
-      new content::Utterance(browser_context_));
-  utterance->set_src_id(request.id);
-  utterance->set_text(request.text);
-  utterance->set_lang(request.lang);
-  utterance->set_voice_name(request.voice);
-  utterance->set_can_enqueue(true);
-  utterance->set_continuous_parameters(request.rate,
-                                       request.pitch,
-                                       request.volume);
+  std::unique_ptr<content::TtsUtterance> utterance(
+      content::TtsUtterance::Create((browser_context_)));
+  utterance->SetSrcId(request.id);
+  utterance->SetText(request.text);
+  utterance->SetLang(request.lang);
+  utterance->SetVoiceName(request.voice);
+  utterance->SetCanEnqueue(true);
+  utterance->SetContinuousParameters(request.rate, request.pitch,
+                                     request.volume);
 
-  utterance->set_event_delegate(this);
+  utterance->SetEventDelegate(this);
 
   content::TtsController::GetInstance()->SpeakOrEnqueue(utterance.release());
 }
@@ -149,7 +148,7 @@ void TtsMessageFilter::OnCancel() {
   content::TtsController::GetInstance()->Stop();
 }
 
-void TtsMessageFilter::OnTtsEvent(content::Utterance* utterance,
+void TtsMessageFilter::OnTtsEvent(content::TtsUtterance* utterance,
                                   content::TtsEventType event_type,
                                   int char_index,
                                   const std::string& error_message) {
@@ -159,35 +158,35 @@ void TtsMessageFilter::OnTtsEvent(content::Utterance* utterance,
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (event_type) {
     case content::TTS_EVENT_START:
-      Send(new TtsMsg_DidStartSpeaking(utterance->src_id()));
+      Send(new TtsMsg_DidStartSpeaking(utterance->GetSrcId()));
       break;
     case content::TTS_EVENT_END:
-      Send(new TtsMsg_DidFinishSpeaking(utterance->src_id()));
+      Send(new TtsMsg_DidFinishSpeaking(utterance->GetSrcId()));
       break;
     case content::TTS_EVENT_WORD:
-      Send(new TtsMsg_WordBoundary(utterance->src_id(), char_index));
+      Send(new TtsMsg_WordBoundary(utterance->GetSrcId(), char_index));
       break;
     case content::TTS_EVENT_SENTENCE:
-      Send(new TtsMsg_SentenceBoundary(utterance->src_id(), char_index));
+      Send(new TtsMsg_SentenceBoundary(utterance->GetSrcId(), char_index));
       break;
     case content::TTS_EVENT_MARKER:
-      Send(new TtsMsg_MarkerEvent(utterance->src_id(), char_index));
+      Send(new TtsMsg_MarkerEvent(utterance->GetSrcId(), char_index));
       break;
     case content::TTS_EVENT_INTERRUPTED:
-      Send(new TtsMsg_WasInterrupted(utterance->src_id()));
+      Send(new TtsMsg_WasInterrupted(utterance->GetSrcId()));
       break;
     case content::TTS_EVENT_CANCELLED:
-      Send(new TtsMsg_WasCancelled(utterance->src_id()));
+      Send(new TtsMsg_WasCancelled(utterance->GetSrcId()));
       break;
     case content::TTS_EVENT_ERROR:
-      Send(new TtsMsg_SpeakingErrorOccurred(
-          utterance->src_id(), error_message));
+      Send(new TtsMsg_SpeakingErrorOccurred(utterance->GetSrcId(),
+                                            error_message));
       break;
     case content::TTS_EVENT_PAUSE:
-      Send(new TtsMsg_DidPauseSpeaking(utterance->src_id()));
+      Send(new TtsMsg_DidPauseSpeaking(utterance->GetSrcId()));
       break;
     case content::TTS_EVENT_RESUME:
-      Send(new TtsMsg_DidResumeSpeaking(utterance->src_id()));
+      Send(new TtsMsg_DidResumeSpeaking(utterance->GetSrcId()));
       break;
   }
 }

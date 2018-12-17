@@ -3509,7 +3509,7 @@ class TtsPlatformMock : public content::TtsPlatform {
   }
 
   void WillSpeakUtteranceWithVoice(
-      const content::Utterance* utterance,
+      const content::TtsUtterance* utterance,
       const content::VoiceData& voice_data) override {}
 
   void SetError(const std::string& error) override {}

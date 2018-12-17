@@ -223,7 +223,7 @@ void TtsExtensionEngine::GetVoices(
   }
 }
 
-void TtsExtensionEngine::Speak(content::Utterance* utterance,
+void TtsExtensionEngine::Speak(content::TtsUtterance* utterance,
                                const content::VoiceData& voice) {
   // See if the engine supports the "end" event; if so, we can keep the
   // utterance around and track it. If not, we're finished with this
@@ -232,12 +232,12 @@ void TtsExtensionEngine::Speak(content::Utterance* utterance,
       voice.events.find(content::TTS_EVENT_END) != voice.events.end();
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->AppendString(utterance->text());
+  args->AppendString(utterance->GetText());
 
   // Pass through most options to the speech engine, but remove some
   // that are handled internally.
   std::unique_ptr<base::DictionaryValue> options(
-      static_cast<base::DictionaryValue*>(utterance->options()->DeepCopy()));
+      static_cast<base::DictionaryValue*>(utterance->GetOptions()->DeepCopy()));
   if (options->HasKey(constants::kRequiredEventTypesKey))
     options->Remove(constants::kRequiredEventTypesKey, NULL);
   if (options->HasKey(constants::kDesiredEventTypesKey))
@@ -256,15 +256,15 @@ void TtsExtensionEngine::Speak(content::Utterance* utterance,
   // http://crbug.com/463264
   if (!options->HasKey(constants::kRateKey)) {
     options->SetDouble(constants::kRateKey,
-                       utterance->continuous_parameters().rate);
+                       utterance->GetContinuousParameters().rate);
   }
   if (!options->HasKey(constants::kPitchKey)) {
     options->SetDouble(constants::kPitchKey,
-                       utterance->continuous_parameters().pitch);
+                       utterance->GetContinuousParameters().pitch);
   }
   if (!options->HasKey(constants::kVolumeKey)) {
     options->SetDouble(constants::kVolumeKey,
-                       utterance->continuous_parameters().volume);
+                       utterance->GetContinuousParameters().volume);
   }
 
   // Add the voice name and language to the options if they're not
@@ -276,49 +276,53 @@ void TtsExtensionEngine::Speak(content::Utterance* utterance,
     options->SetString(constants::kLangKey, voice.lang);
 
   args->Append(std::move(options));
-  args->AppendInteger(utterance->id());
+  args->AppendInteger(utterance->GetId());
 
   std::string json;
   base::JSONWriter::Write(*args, &json);
 
-  Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
+  Profile* profile =
+      Profile::FromBrowserContext(utterance->GetBrowserContext());
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_SPEAK, tts_engine_events::kOnSpeak,
       std::move(args), profile);
-  EventRouter::Get(profile)->DispatchEventToExtension(utterance->engine_id(),
+  EventRouter::Get(profile)->DispatchEventToExtension(utterance->GetEngineId(),
                                                       std::move(event));
 }
 
-void TtsExtensionEngine::Stop(content::Utterance* utterance) {
+void TtsExtensionEngine::Stop(content::TtsUtterance* utterance) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
+  Profile* profile =
+      Profile::FromBrowserContext(utterance->GetBrowserContext());
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_STOP, tts_engine_events::kOnStop,
       std::move(args), profile);
-  EventRouter::Get(profile)->DispatchEventToExtension(utterance->engine_id(),
+  EventRouter::Get(profile)->DispatchEventToExtension(utterance->GetEngineId(),
                                                       std::move(event));
 }
 
-void TtsExtensionEngine::Pause(content::Utterance* utterance) {
+void TtsExtensionEngine::Pause(content::TtsUtterance* utterance) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
+  Profile* profile =
+      Profile::FromBrowserContext(utterance->GetBrowserContext());
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_PAUSE, tts_engine_events::kOnPause,
       std::move(args), profile);
   EventRouter* event_router = EventRouter::Get(profile);
-  std::string id = utterance->engine_id();
+  std::string id = utterance->GetEngineId();
   event_router->DispatchEventToExtension(id, std::move(event));
   WarnIfMissingPauseOrResumeListener(profile, event_router, id);
 }
 
-void TtsExtensionEngine::Resume(content::Utterance* utterance) {
+void TtsExtensionEngine::Resume(content::TtsUtterance* utterance) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  Profile* profile = Profile::FromBrowserContext(utterance->browser_context());
+  Profile* profile =
+      Profile::FromBrowserContext(utterance->GetBrowserContext());
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_RESUME, tts_engine_events::kOnResume,
       std::move(args), profile);
   EventRouter* event_router = EventRouter::Get(profile);
-  std::string id = utterance->engine_id();
+  std::string id = utterance->GetEngineId();
   event_router->DispatchEventToExtension(id, std::move(event));
   WarnIfMissingPauseOrResumeListener(profile, event_router, id);
 }

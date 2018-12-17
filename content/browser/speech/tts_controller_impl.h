@@ -40,7 +40,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
 
   // TtsController methods
   bool IsSpeaking() override;
-  void SpeakOrEnqueue(Utterance* utterance) override;
+  void SpeakOrEnqueue(TtsUtterance* utterance) override;
   void Stop() override;
   void Pause() override;
   void Resume() override;
@@ -78,7 +78,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
 
   // Start speaking the given utterance. Will either take ownership of
   // |utterance| or delete it if there's an error. Returns true on success.
-  void SpeakNow(Utterance* utterance);
+  void SpeakNow(TtsUtterance* utterance);
 
   // Clear the utterance queue. If send_events is true, will send
   // TTS_EVENT_CANCELLED events on each one.
@@ -93,7 +93,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   // Updates the utterance to have default values for rate, pitch, and
   // volume if they have not yet been set. On Chrome OS, defaults are
   // pulled from user prefs, and may not be the same as other platforms.
-  void UpdateUtteranceDefaults(Utterance* utterance);
+  void UpdateUtteranceDefaults(TtsUtterance* utterance);
 
   TtsControllerDelegate* GetTtsControllerDelegate();
 
@@ -103,7 +103,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   base::ObserverList<VoicesChangedDelegate> voices_changed_delegates_;
 
   // The current utterance being spoken.
-  Utterance* current_utterance_;
+  TtsUtterance* current_utterance_;
 
   // Whether the queue is paused or not.
   bool paused_;
@@ -113,7 +113,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   TtsPlatform* tts_platform_;
 
   // A queue of utterances to speak after the current one finishes.
-  base::queue<Utterance*> utterance_queue_;
+  base::queue<TtsUtterance*> utterance_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerImpl);
 };

@@ -34,7 +34,7 @@ class TtsHandler : public SettingsPageUIHandler,
   void OnVoicesChanged() override;
 
   // UtteranceEventDelegate implementation.
-  void OnTtsEvent(content::Utterance* utterance,
+  void OnTtsEvent(content::TtsUtterance* utterance,
                   content::TtsEventType event_type,
                   int char_index,
                   const std::string& error_message) override;
