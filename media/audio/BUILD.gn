@@ -20,12 +20,8 @@ if (use_pulseaudio && !link_pulseaudio) {
 }
 
 config("platform_config") {
-  defines = []
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
-  }
   if (use_alsa) {
-    defines += [ "USE_ALSA" ]
+    defines = [ "USE_ALSA" ]
   }
 }
 

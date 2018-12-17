@@ -94,15 +94,6 @@ bool CastAudioManager::HasAudioOutputDevices() {
   return true;
 }
 
-void CastAudioManager::GetAudioOutputDeviceNames(
-    ::media::AudioDeviceNames* device_names) {
-  DCHECK(device_names->empty());
-  if (HasAudioOutputDevices()) {
-    device_names->push_front(::media::AudioDeviceName::CreateCommunications());
-    device_names->push_front(::media::AudioDeviceName::CreateDefault());
-  }
-}
-
 bool CastAudioManager::HasAudioInputDevices() {
   return false;
 }
@@ -159,32 +150,28 @@ std::string CastAudioManager::GetSessionId(std::string audio_group_id) {
 
   // If |mixer_| exists, return a mixing stream.
   if (mixer_) {
-    return mixer_->MakeStream(params);
+    return mixer_->MakeStream(params, "");
   } else {
     return new CastAudioOutputStream(
-        this, GetConnector(), params,
-        ::media::AudioDeviceDescription::kDefaultDeviceId,
+        this, GetConnector(), params, "",
         GetMixerServiceConnectionFactoryForOutputStream(params));
   }
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeLowLatencyOutputStream(
     const ::media::AudioParameters& params,
-    const std::string& device_id_or_group_id,
+    const std::string& device_id,
     const ::media::AudioManager::LogCallback& log_callback) {
   DCHECK_EQ(::media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
 
-  // If |mixer_| exists, return a mixing stream. If used, the mixing stream
-  // will use the default device_id, not |device_id_or_group_id|
+  // If |mixer_| exists, return a mixing stream.
   if (mixer_) {
-    DCHECK(device_id_or_group_id.empty());
-    return mixer_->MakeStream(params);
+    return mixer_->MakeStream(params, device_id);
   } else {
+    // We use device_id as the group_id, because for Chromecast builds they are
+    // one and the same. See the header for more information.
     return new CastAudioOutputStream(
-        this, GetConnector(), params,
-        device_id_or_group_id.empty()
-            ? ::media::AudioDeviceDescription::kDefaultDeviceId
-            : device_id_or_group_id,
+        this, GetConnector(), params, device_id,
         GetMixerServiceConnectionFactoryForOutputStream(params));
   }
 }
@@ -243,15 +230,18 @@ std::string CastAudioManager::GetSessionId(std::string audio_group_id) {
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeMixerOutputStream(
-    const ::media::AudioParameters& params) {
+    const ::media::AudioParameters& params,
+    const std::string& device_id) {
   DCHECK(mixer_);
   DCHECK(!mixer_output_stream_);  // Only allow 1 |mixer_output_stream_|.
 
   // Keep a reference to this stream for proper behavior on
   // CastAudioManager::ReleaseOutputStream.
+  //
+  // We use device_id as the group_id, because for Chromecast builds they are
+  // one and the same. See the header for more information.
   mixer_output_stream_.reset(new CastAudioOutputStream(
-      this, GetConnector(), params,
-      ::media::AudioDeviceDescription::kDefaultDeviceId,
+      this, GetConnector(), params, device_id,
       GetMixerServiceConnectionFactoryForOutputStream(params)));
   return mixer_output_stream_.get();
 }

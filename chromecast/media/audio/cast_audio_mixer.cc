@@ -26,10 +26,12 @@ class CastAudioMixer::MixerProxyStream
  public:
   MixerProxyStream(const ::media::AudioParameters& input_params,
                    const ::media::AudioParameters& output_params,
+                   const std::string& device_id,
                    CastAudioMixer* audio_mixer)
       : audio_mixer_(audio_mixer),
         input_params_(input_params),
         output_params_(output_params),
+        device_id_(device_id),
         opened_(false),
         volume_(1.0),
         source_callback_(nullptr) {
@@ -96,7 +98,7 @@ class CastAudioMixer::MixerProxyStream
     DCHECK_GE(input_params_.channels(), 1);
     DCHECK_LE(input_params_.channels(), 2);
 
-    return opened_ = audio_mixer_->Register(this);
+    return opened_ = audio_mixer_->Register(this, device_id_);
   }
 
   void Close() override {
@@ -168,6 +170,7 @@ class CastAudioMixer::MixerProxyStream
   CastAudioMixer* const audio_mixer_;
   const ::media::AudioParameters input_params_;
   const ::media::AudioParameters output_params_;
+  const std::string device_id_;
 
   bool opened_;
   double volume_;
@@ -192,12 +195,14 @@ CastAudioMixer::CastAudioMixer(CastAudioManager* audio_manager)
 CastAudioMixer::~CastAudioMixer() {}
 
 ::media::AudioOutputStream* CastAudioMixer::MakeStream(
-    const ::media::AudioParameters& params) {
+    const ::media::AudioParameters& params,
+    const std::string& device_id) {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
-  return new MixerProxyStream(params, output_params_, this);
+  return new MixerProxyStream(params, output_params_, device_id, this);
 }
 
-bool CastAudioMixer::Register(MixerProxyStream* proxy_stream) {
+bool CastAudioMixer::Register(MixerProxyStream* proxy_stream,
+                              const std::string& device_id) {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
   DCHECK(!base::ContainsKey(proxy_streams_, proxy_stream));
 
@@ -210,7 +215,8 @@ bool CastAudioMixer::Register(MixerProxyStream* proxy_stream) {
   // is not opened properly.
   if (proxy_streams_.empty()) {
     DCHECK(!output_stream_);
-    output_stream_ = audio_manager_->MakeMixerOutputStream(output_params_);
+    output_stream_ =
+        audio_manager_->MakeMixerOutputStream(output_params_, device_id);
     if (!output_stream_->Open()) {
       output_stream_->Close();
       output_stream_ = nullptr;
