@@ -8,6 +8,7 @@
 
 #include "apps/app_lifetime_monitor_factory.h"
 #include "apps/launcher.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -114,13 +115,10 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
  public:
   EnableViaPrompt(Profile* profile,
                   const std::string& extension_id,
-                  const base::Callback<void()>& callback)
+                  base::OnceCallback<void()> callback)
       : profile_(profile),
         extension_id_(extension_id),
-        callback_(callback) {
-  }
-
-  ~EnableViaPrompt() override {}
+        callback_(std::move(callback)) {}
 
   void Run() {
     flow_.reset(new ExtensionEnableFlow(profile_, extension_id_, this));
@@ -128,20 +126,19 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
   }
 
  private:
+  ~EnableViaPrompt() override { std::move(callback_).Run(); }
+
   // ExtensionEnableFlowDelegate overrides.
   void ExtensionEnableFlowFinished() override {
-    callback_.Run();
     delete this;
   }
-
   void ExtensionEnableFlowAborted(bool user_initiated) override {
-    callback_.Run();
     delete this;
   }
 
   Profile* profile_;
   std::string extension_id_;
-  base::Callback<void()> callback_;
+  base::OnceCallback<void()> callback_;
   std::unique_ptr<ExtensionEnableFlow> flow_;
 
   DISALLOW_COPY_AND_ASSIGN(EnableViaPrompt);
@@ -209,8 +206,8 @@ AppShimHost* ExtensionAppShimHandler::Delegate::CreateHost(
 void ExtensionAppShimHandler::Delegate::EnableExtension(
     Profile* profile,
     const std::string& extension_id,
-    const base::Callback<void()>& callback) {
-  (new EnableViaPrompt(profile, extension_id, callback))->Run();
+    base::OnceCallback<void()> callback) {
+  (new EnableViaPrompt(profile, extension_id, std::move(callback)))->Run();
 }
 
 void ExtensionAppShimHandler::Delegate::LaunchApp(
@@ -560,8 +557,8 @@ void ExtensionAppShimHandler::OnProfileLoaded(
 
   delegate_->EnableExtension(
       profile, app_id,
-      base::Bind(&ExtensionAppShimHandler::OnExtensionEnabled,
-                 weak_factory_.GetWeakPtr(), host->GetWeakPtr(), files));
+      base::BindOnce(&ExtensionAppShimHandler::OnExtensionEnabled,
+                     weak_factory_.GetWeakPtr(), host->GetWeakPtr(), files));
 }
 
 void ExtensionAppShimHandler::OnExtensionEnabled(
