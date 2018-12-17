@@ -9,7 +9,6 @@
 #include <string>
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/model_associator.h"
@@ -45,8 +44,6 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
                    invalidation::InvalidationService* invalidator,
                    const base::WeakPtr<SyncPrefs>& sync_prefs,
                    const base::FilePath& sync_folder));
-  MOCK_METHOD0(CreateLocalDeviceInfoProvider,
-               std::unique_ptr<LocalDeviceInfoProvider>());
   MOCK_METHOD2(
       CreateBookmarkSyncComponents,
       SyncComponents(std::unique_ptr<DataTypeErrorHandler> error_handler,

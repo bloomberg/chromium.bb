@@ -161,6 +161,7 @@ ProfileSyncService::InitParams::~InitParams() = default;
 
 ProfileSyncService::ProfileSyncService(InitParams init_params)
     : sync_client_(std::move(init_params.sync_client)),
+      local_device_(std::move(init_params.local_device_info_provider)),
       sync_prefs_(sync_client_->GetPrefService()),
       identity_manager_(init_params.identity_manager),
       user_settings_(this, &sync_prefs_),
@@ -171,11 +172,10 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
                               base::Unretained(this)),
           base::BindRepeating(&ProfileSyncService::CredentialsChanged,
                               base::Unretained(this)))),
-      channel_(init_params.channel),
       debug_identifier_(init_params.debug_identifier),
       sync_service_url_(
           syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
-                                    init_params.channel)),
+                                    local_device_->GetChannel())),
       crypto_(
           base::BindRepeating(&ProfileSyncService::NotifyObservers,
                               base::Unretained(this)),
@@ -205,6 +205,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(signin_scoped_device_id_callback_);
   DCHECK(sync_client_);
+  DCHECK(local_device_);
 
   // If Sync is disabled via command line flag, then ProfileSyncService
   // shouldn't be instantiated.
@@ -247,9 +248,7 @@ void ProfileSyncService::Initialize() {
                           base::Unretained(this)),
       base::BindRepeating(&ProfileSyncService::StartUpSlowEngineComponents,
                           base::Unretained(this)));
-  local_device_ = sync_client_->GetSyncApiComponentFactory()
-                      ->CreateLocalDeviceInfoProvider();
-  DCHECK(local_device_);
+
   sync_stopped_reporter_ = std::make_unique<syncer::SyncStoppedReporter>(
       sync_service_url_, local_device_->GetSyncUserAgent(), url_loader_factory_,
       syncer::SyncStoppedReporter::ResultCallback());
@@ -265,7 +264,7 @@ void ProfileSyncService::Initialize() {
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::DEVICE_INFO,
           /*dump_stack=*/base::BindRepeating(&syncer::ReportUnrecoverableError,
-                                             channel_)));
+                                             local_device_->GetChannel())));
   data_type_controllers_[syncer::DEVICE_INFO] =
       std::make_unique<syncer::ModelTypeController>(
           syncer::DEVICE_INFO,
@@ -594,8 +593,8 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       std::make_unique<EngineComponentsFactoryImpl>(
           EngineSwitchesFromCommandLine());
   params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
-  params.report_unrecoverable_error_function =
-      base::BindRepeating(syncer::ReportUnrecoverableError, channel_);
+  params.report_unrecoverable_error_function = base::BindRepeating(
+      syncer::ReportUnrecoverableError, local_device_->GetChannel());
   params.saved_nigori_state = crypto_.TakeSavedNigoriState();
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
   params.short_poll_interval = sync_prefs_.GetShortPollInterval();

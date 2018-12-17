@@ -30,7 +30,6 @@ class DataTypeDebugInfoListener;
 class DataTypeEncryptionHandler;
 class DataTypeManager;
 class DataTypeManagerObserver;
-class LocalDeviceInfoProvider;
 class SyncEngine;
 class SyncPrefs;
 class SyncService;
@@ -83,10 +82,6 @@ class SyncApiComponentFactory {
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder) = 0;
-
-  // Creating this in the factory helps us mock it out in testing.
-  virtual std::unique_ptr<LocalDeviceInfoProvider>
-  CreateLocalDeviceInfoProvider() = 0;
 
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(

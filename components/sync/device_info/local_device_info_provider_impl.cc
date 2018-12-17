@@ -46,6 +46,11 @@ LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+version_info::Channel LocalDeviceInfoProviderImpl::GetChannel() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return channel_;
+}
+
 const DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return local_device_info_.get();

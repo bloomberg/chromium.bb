@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_list.h"
+#include "components/version_info/version_info.h"
 
 namespace syncer {
 
@@ -21,6 +22,8 @@ class LocalDeviceInfoProvider {
   using Subscription = base::CallbackList<void(void)>::Subscription;
 
   virtual ~LocalDeviceInfoProvider() {}
+
+  virtual version_info::Channel GetChannel() const = 0;
 
   // Returns sync's representation of the local device info, or nullptr if the
   // device info is unavailable (e.g. Initialize() hasn't been called). The

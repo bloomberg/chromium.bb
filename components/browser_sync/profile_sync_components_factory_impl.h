@@ -43,8 +43,6 @@ class ProfileSyncComponentsFactoryImpl
   ProfileSyncComponentsFactoryImpl(
       syncer::SyncClient* sync_client,
       version_info::Channel channel,
-      const std::string& version,
-      bool is_tablet,
       const char* history_disabled_pref,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
@@ -73,8 +71,6 @@ class ProfileSyncComponentsFactoryImpl
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
       const base::FilePath& sync_data_folder) override;
-  std::unique_ptr<syncer::LocalDeviceInfoProvider>
-  CreateLocalDeviceInfoProvider() override;
   syncer::SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
       std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
       syncer::UserShare* user_share) override;
@@ -111,8 +107,6 @@ class ProfileSyncComponentsFactoryImpl
   // Client/platform specific members.
   syncer::SyncClient* const sync_client_;
   const version_info::Channel channel_;
-  const std::string version_;
-  const bool is_tablet_;
   const char* history_disabled_pref_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;

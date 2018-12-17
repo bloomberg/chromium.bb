@@ -17,6 +17,7 @@
 #include "components/history/core/browser/sync/history_model_worker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
@@ -238,7 +239,8 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.network_connection_tracker =
       network::TestNetworkConnectionTracker::GetInstance();
   init_params.debug_identifier = "dummyDebugName";
-  init_params.channel = version_info::Channel::UNKNOWN;
+  init_params.local_device_info_provider =
+      std::make_unique<syncer::LocalDeviceInfoProviderMock>();
 
   return init_params;
 }

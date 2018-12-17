@@ -48,6 +48,7 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/unified_consent/feature.h"
@@ -58,6 +59,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -193,7 +195,10 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.network_connection_tracker =
       content::GetNetworkConnectionTracker();
   init_params.debug_identifier = profile->GetDebugName();
-  init_params.channel = chrome::GetChannel();
+  init_params.local_device_info_provider =
+      std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
+          chrome::GetChannel(), chrome::GetVersionString(),
+          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
 
   bool local_sync_backend_enabled = false;
 // Since the local sync backend is currently only supported on Windows don't
