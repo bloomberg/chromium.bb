@@ -208,10 +208,11 @@ DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
 D3D11_VIDEO_PROCESSOR_COLOR_SPACE ColorSpaceWin::GetD3D11ColorSpace(
     const ColorSpace& color_space) {
   D3D11_VIDEO_PROCESSOR_COLOR_SPACE ret = {0};
-  if (color_space.range_ != gfx::ColorSpace::RangeID::FULL) {
-    ret.RGB_Range = 1;
+  if (color_space.range_ == gfx::ColorSpace::RangeID::FULL) {
+    ret.RGB_Range = 0;  // FULL
     ret.Nominal_Range = D3D11_VIDEO_PROCESSOR_NOMINAL_RANGE_0_255;
   } else {
+    ret.RGB_Range = 1;  // LIMITED
     ret.Nominal_Range = D3D11_VIDEO_PROCESSOR_NOMINAL_RANGE_16_235;
   }
 
