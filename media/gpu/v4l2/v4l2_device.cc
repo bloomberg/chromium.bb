@@ -1166,13 +1166,6 @@ gfx::Size V4L2Device::CodedSizeFromV4L2Format(struct v4l2_format format) {
   int coded_height = sizeimage * 8 / coded_width / total_bpp;
 
   coded_size.SetSize(coded_width, coded_height);
-  // It's possible the driver gave us a slightly larger sizeimage than what
-  // would be calculated from coded size. This is technically not allowed, but
-  // some drivers (Exynos) like to have some additional alignment that is not a
-  // multiple of bytesperline. The best thing we can do is to compensate by
-  // aligning to next full row.
-  if (sizeimage > VideoFrame::AllocationSize(frame_format, coded_size))
-    coded_size.SetSize(coded_width, coded_height + 1);
   DVLOGF(3) << "coded_size=" << coded_size.ToString();
 
   // Sanity checks. Calculated coded size has to contain given visible size

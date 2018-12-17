@@ -124,8 +124,6 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
     const scoped_refptr<V4L2Device>& device)
     : child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       output_buffer_byte_size_(0),
-      device_input_format_(PIXEL_FORMAT_UNKNOWN),
-      input_planes_count_(0),
       output_format_fourcc_(0),
       encoder_state_(kUninitialized),
       device_(device),
@@ -198,9 +196,10 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (config.input_format != device_input_format_) {
-    VLOGF(2) << "Input format not supported by the HW, will try to convert to "
-             << VideoPixelFormatToString(device_input_format_);
+  if (config.input_format != device_input_layout_->format()) {
+    VLOGF(2) << "Input format: " << config.input_format << " is not supported "
+             << "by the HW. Will try to convert to "
+             << device_input_layout_->format();
 
     if (!V4L2ImageProcessor::IsSupported()) {
       VLOGF(1) << "Image processor not available";
@@ -220,29 +219,21 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       VLOGF(1) << "Invalid image processor input layout";
       return false;
     }
-    auto output_layout = VideoFrameLayout::CreateWithStrides(
-        device_input_format_, input_allocated_size_,
-        std::vector<int32_t>(
-            VideoFrameLayout::NumPlanes(device_input_format_)) /* strides */,
-        std::vector<size_t>(
-            VideoFrameLayout::NumPlanes(device_input_format_)) /* buffers */);
-    if (!output_layout) {
-      VLOGF(1) << "Invalid image processor output layout";
-      return false;
-    }
 
-    // Convert from |config.input_format| to |device_input_format_|, keeping the
-    // size at |visible_size_| and requiring the output buffers to be of at
-    // least |input_allocated_size_|. Unretained is safe because |this| owns
-    // image processor and there will be no callbacks after processor destroys.
-    // |input_storage_type| can be STORAGE_SHMEM and STORAGE_MOJO_SHARED_BUFFER.
-    // However, it doesn't matter VideoFrame::STORAGE_OWNED_MEMORY is specified
-    // for |input_storage_type| here, as long as VideoFrame on Process()'s data
-    // can be accessed by VideoFrame::data().
+    // Convert from |config.input_format| to |device_input_layout_->format()|,
+    // keeping the size at |visible_size_| and requiring the output buffers to
+    // be of at least |device_input_layout_->coded_size()|.
+    // Unretained is safe because |this| owns image processor and there will be
+    // no callbacks after processor destroys.
+    // |input_storage_type| can be STORAGE_SHMEM and
+    // STORAGE_MOJO_SHARED_BUFFER. However, it doesn't matter
+    // VideoFrame::STORAGE_OWNED_MEMORY is specified for |input_storage_type|
+    // here, as long as VideoFrame on Process()'s data can be accessed by
+    // VideoFrame::data().
     image_processor_ = V4L2ImageProcessor::Create(
         V4L2Device::Create(), VideoFrame::STORAGE_OWNED_MEMORY,
         VideoFrame::STORAGE_DMABUFS, ImageProcessor::OutputMode::ALLOCATE,
-        *input_layout, *output_layout, visible_size_, visible_size_,
+        *input_layout, *device_input_layout_, visible_size_, visible_size_,
         kImageProcBufferCount,
         base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
                    base::Unretained(this)));
@@ -256,13 +247,13 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
     // input coded height of encoder. For example, suppose input size of encoder
     // is 320x193. It is OK if the output of processor is 320x208.
     if (image_processor_->output_allocated_size().width() !=
-            input_allocated_size_.width() ||
+            device_input_layout_->coded_size().width() ||
         image_processor_->output_allocated_size().height() <
-            input_allocated_size_.height()) {
+            device_input_layout_->coded_size().height()) {
       VLOGF(1) << "Invalid image processor output coded size "
                << image_processor_->output_allocated_size().ToString()
                << ", encode input coded size is "
-               << input_allocated_size_.ToString();
+               << device_input_layout_->coded_size().ToString();
       return false;
     }
 
@@ -305,7 +296,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       base::Bind(&Client::RequireBitstreamBuffers, client_, kInputBufferCount,
                  image_processor_.get()
                      ? image_processor_->input_allocated_size()
-                     : input_allocated_size_,
+                     : device_input_layout_->coded_size(),
                  output_buffer_byte_size_));
   return true;
 }
@@ -734,7 +725,7 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
     dqbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     dqbuf.memory = input_memory_type_;
     dqbuf.m.planes = planes;
-    dqbuf.length = input_planes_count_;
+    dqbuf.length = device_input_layout_->num_buffers();
     if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
@@ -853,16 +844,27 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   qbuf.timestamp.tv_usec =
       frame->timestamp().InMicroseconds() -
       frame->timestamp().InSeconds() * base::Time::kMicrosecondsPerSecond;
-  DCHECK_EQ(device_input_format_, frame->format());
+  DCHECK_EQ(device_input_layout_->format(), frame->format());
 
-  for (size_t i = 0; i < input_planes_count_; ++i) {
-    qbuf.m.planes[i].bytesused = base::checked_cast<__u32>(
-        VideoFrame::PlaneSize(frame->format(), i, input_allocated_size_)
-            .GetArea());
+  for (size_t i = 0; i < device_input_layout_->num_buffers(); ++i) {
+    // Single-buffer input format may have multiple color  planes, so bytesused
+    // of the single buffer should be sum of each color planes' size.
+    if (device_input_layout_->num_buffers() == 1) {
+      qbuf.m.planes[i].bytesused = VideoFrame::AllocationSize(
+          frame->format(), device_input_layout_->coded_size());
+    } else {
+      DCHECK_EQ(device_input_layout_->num_buffers(),
+                VideoFrame::NumPlanes(device_input_layout_->format()));
+      qbuf.m.planes[i].bytesused = base::checked_cast<__u32>(
+          VideoFrame::PlaneSize(frame->format(), i,
+                                device_input_layout_->coded_size())
+              .GetArea());
+    }
 
     switch (input_memory_type_) {
       case V4L2_MEMORY_USERPTR:
-        qbuf.m.planes[i].length = qbuf.m.planes[i].bytesused;
+        // Use buffer_size VEA HW requested by S_FMT.
+        qbuf.m.planes[i].length = device_input_layout_->buffer_sizes()[i];
         qbuf.m.planes[i].m.userptr =
             reinterpret_cast<unsigned long>(frame->data(i));
         DCHECK(qbuf.m.planes[i].m.userptr);
@@ -871,7 +873,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
       case V4L2_MEMORY_DMABUF: {
         const auto& fds = frame->DmabufFds();
         const auto& planes = frame->layout().planes();
-        DCHECK_EQ(input_planes_count_, planes.size());
+        DCHECK_EQ(device_input_layout_->num_buffers(), planes.size());
         qbuf.m.planes[i].m.fd =
             (i < fds.size()) ? fds[i].get() : fds.back().get();
         // TODO(crbug.com/901264): The way to pass an offset within a DMA-buf is
@@ -882,7 +884,8 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
         qbuf.m.planes[i].bytesused += qbuf.m.planes[i].data_offset;
         // Workaround: filling length should not be needed. This is a bug of
         // videobuf2 library.
-        qbuf.m.planes[i].length = qbuf.m.planes[i].bytesused;
+        qbuf.m.planes[i].length = device_input_layout_->buffer_sizes()[i] +
+                                  qbuf.m.planes[i].data_offset;
         DCHECK_NE(qbuf.m.planes[i].m.fd, -1);
         break;
       }
@@ -893,7 +896,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   }
 
   qbuf.memory = input_memory_type_;
-  qbuf.length = input_planes_count_;
+  qbuf.length = device_input_layout_->num_buffers();
 
   DVLOGF(4) << "Calling VIDIOC_QBUF: " << V4L2Device::V4L2BufferToString(qbuf);
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
@@ -1122,11 +1125,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   DCHECK(!input_streamon_);
   DCHECK(!output_streamon_);
 
-  device_input_format_ = PIXEL_FORMAT_UNKNOWN;
-  input_planes_count_ = 0;
-
   // First see if the device can use the provided format directly.
-  // V4L2 VEA only supports multi plane input pixel format.
   std::vector<uint32_t> pix_fmt_candidates = {
       V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format, false)};
   // Second try preferred input formats for both single-planar and
@@ -1143,7 +1142,6 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     DCHECK_LE(planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
     VLOGF(2) << "Trying S_FMT with " << FourccToString(pix_fmt) << " ("
              << trying_format << ").";
-
     struct v4l2_format format;
     memset(&format, 0, sizeof(format));
     format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
@@ -1153,24 +1151,23 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     format.fmt.pix_mp.num_planes = planes_count;
     if (device_->Ioctl(VIDIOC_S_FMT, &format) == 0 &&
         format.fmt.pix_mp.pixelformat == pix_fmt) {
-      VLOGF(2) << "Success: S_FMT with" << FourccToString(pix_fmt);
-      // Take device-adjusted sizes for allocated size. If the size is adjusted
-      // down, it means the input is too big and the hardware does not support
-      // it.
-      auto adjusted_size = V4L2Device::CodedSizeFromV4L2Format(format);
-      if (!gfx::Rect(adjusted_size).Contains(gfx::Rect(visible_size_))) {
-        VLOGF(1) << "Input size too big " << visible_size_.ToString()
-                 << ", adjusted to " << adjusted_size.ToString();
+      VLOGF(2) << "Success: S_FMT with " << FourccToString(pix_fmt);
+      device_input_layout_ = V4L2Device::V4L2FormatToVideoFrameLayout(format);
+      if (!device_input_layout_) {
+        VLOGF(1) << "Invalid device_input_layout_";
         return false;
       }
-
-      device_input_format_ = trying_format;
-      input_planes_count_ = planes_count;
-      input_allocated_size_ = adjusted_size;
+      VLOG(2) << "Negotiated device_input_layout_: " << *device_input_layout_;
+      if (!gfx::Rect(device_input_layout_->coded_size())
+               .Contains(gfx::Rect(visible_size_))) {
+        VLOGF(1) << "Input size " << visible_size_.ToString()
+                 << " exceeds encoder capability. Size encoder can handle: "
+                 << device_input_layout_->coded_size().ToString();
+        return false;
+      }
       return true;
     }
   }
-
   return false;
 }
 

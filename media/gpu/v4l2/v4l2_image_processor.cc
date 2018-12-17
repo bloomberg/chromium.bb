@@ -238,6 +238,11 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   format.fmt.pix_mp.width = output_layout.coded_size().width();
   format.fmt.pix_mp.height = output_layout.coded_size().height();
   format.fmt.pix_mp.pixelformat = output_format_fourcc;
+  for (size_t i = 0; i < output_layout.num_buffers(); ++i) {
+    format.fmt.pix_mp.plane_fmt[i].sizeimage = output_layout.buffer_sizes()[i];
+    format.fmt.pix_mp.plane_fmt[i].bytesperline =
+        output_layout.planes()[i].stride;
+  }
   if (device->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
       format.fmt.pix_mp.pixelformat != output_format_fourcc) {
     VLOGF(1) << "Failed to negotiate output format";

@@ -15,7 +15,9 @@
 #include "base/containers/queue.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/gpu/image_processor.h"
@@ -226,13 +228,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
 
   gfx::Size visible_size_;
-  // Input allocated size required by the device.
-  gfx::Size input_allocated_size_;
+  // Layout of device accepted input VideoFrame.
+  base::Optional<VideoFrameLayout> device_input_layout_;
   size_t output_buffer_byte_size_;
-
-  // Formats for input frames and the output stream.
-  VideoPixelFormat device_input_format_;
-  size_t input_planes_count_;
   uint32_t output_format_fourcc_;
 
   //
