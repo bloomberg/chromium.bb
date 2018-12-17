@@ -3436,6 +3436,11 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
   args.this_rd = this_rd;
   av1_init_rd_stats(&args.rd_stats);
 
+  if (!cpi->oxcf.enable_tx64 && txsize_sqr_up_map[tx_size] == TX_64X64) {
+    av1_invalid_rd_stats(rd_stats);
+    return;
+  }
+
   if (plane == 0) xd->mi[0]->tx_size = tx_size;
 
   av1_get_entropy_contexts(bsize, pd, args.t_above, args.t_left);
@@ -3658,6 +3663,8 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
       if (tx_size_wide[n] < 8 || tx_size_high[n] < 8) continue;
     }
 #endif
+    if (!cpi->oxcf.enable_tx64 && txsize_sqr_up_map[n] == TX_64X64) continue;
+
     RD_STATS this_rd_stats;
     const int64_t rd =
         txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, n, FTXS_NONE);
@@ -4933,7 +4940,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                                          mbmi->sb_type, tx_size);
   struct macroblock_plane *const p = &x->plane[0];
 
-  const int try_no_split = 1;
+  const int try_no_split =
+      cpi->oxcf.enable_tx64 || txsize_sqr_up_map[tx_size] != TX_64X64;
   int try_split = tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH;
 #if CONFIG_DIST_8X8
   if (x->using_dist_8x8)

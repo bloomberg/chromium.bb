@@ -453,6 +453,9 @@ static const arg_def_t enable_order_hint =
     ARG_DEF(NULL, "enable-order-hint", 1,
             "Enable order hint "
             "(0: false, 1: true (default))");
+static const arg_def_t enable_tx64 =
+    ARG_DEF(NULL, "enable-tx64", 1,
+            "Enable 64-pt transform (0: false, 1: true (default))");
 static const arg_def_t enable_dist_wtd_comp =
     ARG_DEF(NULL, "enable-dist-wtd-comp", 1,
             "Enable distance-weighted compound "
@@ -708,6 +711,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_dual_filter,
                                        &enable_intra_edge_filter,
                                        &enable_order_hint,
+                                       &enable_tx64,
                                        &enable_dist_wtd_comp,
                                        &enable_masked_comp,
                                        &enable_interintra_comp,
@@ -784,6 +788,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_DUAL_FILTER,
                                         AV1E_SET_ENABLE_INTRA_EDGE_FILTER,
                                         AV1E_SET_ENABLE_ORDER_HINT,
+                                        AV1E_SET_ENABLE_TX64,
                                         AV1E_SET_ENABLE_DIST_WTD_COMP,
                                         AV1E_SET_ENABLE_MASKED_COMP,
                                         AV1E_SET_ENABLE_INTERINTRA_COMP,

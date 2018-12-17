@@ -325,6 +325,7 @@ typedef struct AV1EncoderConfig {
   const cfg_options_t *cfg;
   int enable_rect_partitions;
   int enable_intra_edge_filter;
+  int enable_tx64;
   int enable_order_hint;
   int enable_dist_wtd_comp;
   int enable_ref_frame_mvs;

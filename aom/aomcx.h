@@ -739,6 +739,14 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_ORDER_HINT,
 
+  /*!\brief Codec control function to turn on / off 64-length transforms.
+   *
+   * This will enable or disable usage of length 64 transforms in any
+   * direction. The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_TX64,
+
   /*!\brief Codec control function to turn on / off dist-wtd compound mode
    * at sequence level.
    *
@@ -1150,6 +1158,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_INTRA_EDGE_FILTER, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_ORDER_HINT, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_ORDER_HINT
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_TX64, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_TX64
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DIST_WTD_COMP, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_DIST_WTD_COMP

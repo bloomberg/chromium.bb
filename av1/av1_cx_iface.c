@@ -98,6 +98,7 @@ struct av1_extracfg {
   int enable_rect_partitions;    // enable rectangular partitions for sequence
   int enable_intra_edge_filter;  // enable intra-edge filter for sequence
   int enable_order_hint;         // enable order hint for sequence
+  int enable_tx64;               // enable 64-pt transform usage for sequence
   int enable_dist_wtd_comp;      // enable dist wtd compound for sequence
   int enable_ref_frame_mvs;      // sequence level
   int allow_ref_frame_mvs;       // frame level
@@ -186,6 +187,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // enable rectangular partitions
   1,                            // enable intra edge filter
   1,                            // frame order hint
+  1,                            // enable 64-pt transform usage
   1,                            // dist-wtd compound
   1,                            // enable_ref_frame_mvs sequence level
   1,                            // allow ref_frame_mvs frame level
@@ -695,6 +697,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_dual_filter = extra_cfg->enable_dual_filter;
   oxcf->enable_rect_partitions = extra_cfg->enable_rect_partitions;
   oxcf->enable_intra_edge_filter = extra_cfg->enable_intra_edge_filter;
+  oxcf->enable_tx64 = extra_cfg->enable_tx64;
   oxcf->enable_order_hint = extra_cfg->enable_order_hint;
   oxcf->enable_dist_wtd_comp =
       extra_cfg->enable_dist_wtd_comp & extra_cfg->enable_order_hint;
@@ -1088,6 +1091,13 @@ static aom_codec_err_t ctrl_set_enable_order_hint(aom_codec_alg_priv_t *ctx,
                                                   va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_order_hint = CAST(AV1E_SET_ENABLE_ORDER_HINT, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_tx64(aom_codec_alg_priv_t *ctx,
+                                            va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_tx64 = CAST(AV1E_SET_ENABLE_TX64, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1939,6 +1949,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ENABLE_DUAL_FILTER, ctrl_set_enable_dual_filter },
   { AV1E_SET_ENABLE_INTRA_EDGE_FILTER, ctrl_set_enable_intra_edge_filter },
   { AV1E_SET_ENABLE_ORDER_HINT, ctrl_set_enable_order_hint },
+  { AV1E_SET_ENABLE_TX64, ctrl_set_enable_tx64 },
   { AV1E_SET_ENABLE_DIST_WTD_COMP, ctrl_set_enable_dist_wtd_comp },
   { AV1E_SET_ENABLE_REF_FRAME_MVS, ctrl_set_enable_ref_frame_mvs },
   { AV1E_SET_ALLOW_REF_FRAME_MVS, ctrl_set_allow_ref_frame_mvs },
