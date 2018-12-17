@@ -49,11 +49,16 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
-    self.Fail('Pixel_CSSFilterEffects', ['mac', ('nvidia', 0xfe9)], bug=690277)
+    # TODO(michaelludwig): restore after Skia roll (see below)
+    #self.Fail('Pixel_CSSFilterEffects', ['mac', ('nvidia', 0xfe9)], bug=690277)
 
     # Became flaky on 10.13.6. When it flakes, it flakes 3 times, so
     # mark failing, unfortunately.
-    self.Fail('Pixel_CSSFilterEffects', ['highsierra', 'amd'], bug=872423)
+    # TODO(michaelludwig): restore after Skia roll (see below)
+    #self.Fail('Pixel_CSSFilterEffects', ['highsierra', 'amd'], bug=872423)
+
+    # TODO(michaelludwig): remove after Skia roll
+    self.Fail('Pixel_CSSFilterEffects', bug=915735)
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
