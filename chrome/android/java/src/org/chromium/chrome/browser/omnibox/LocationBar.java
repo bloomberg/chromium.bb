@@ -178,5 +178,5 @@ public interface LocationBar extends UrlBarDelegate {
      *
      * @param unfocusedWidth The unfocused location bar width.
      */
-    void setUnfocusedWidth(float unfocusedWidth);
+    void setUnfocusedWidth(int unfocusedWidth);
 }

@@ -828,5 +828,5 @@ public class CustomTabToolbar
     }
 
     @Override
-    public void setUnfocusedWidth(float unfocusedWidth) {}
+    public void setUnfocusedWidth(int unfocusedWidth) {}
 }

@@ -64,10 +64,6 @@ public class StatusViewCoordinator implements View.OnClickListener {
     private final StatusView mStatusView;
     private final StatusMediator mMediator;
 
-    private final float mUrlMinWidth;
-    private final float mVerboseStatusMinWidth;
-    private final float mStatusSeparatorWidth;
-
     private ToolbarDataProvider mToolbarDataProvider;
     private WindowAndroid mWindowAndroid;
 
@@ -83,9 +79,6 @@ public class StatusViewCoordinator implements View.OnClickListener {
     private AnimatorSet mNavigationIconShowAnimator;
 
     private boolean mUrlHasFocus;
-    private float mUnfocusedLocationBarWidth;
-    private int mVerboseStatusTextMaxWidth;
-    private boolean mHasSpaceForVerboseStatus;
 
     /**
      * Creates a new StatusViewCoordinator.
@@ -99,9 +92,25 @@ public class StatusViewCoordinator implements View.OnClickListener {
         mStatusView = statusView;
         mDelegate = delegate;
 
-        PropertyModel model = new PropertyModel(StatusProperties.ALL_KEYS);
+        PropertyModel model = new PropertyModel.Builder(StatusProperties.ALL_KEYS)
+                                      .with(StatusProperties.ICON_TINT_COLOR_RES,
+                                              R.color.locationbar_status_separator_color)
+                                      .build();
+
         PropertyModelChangeProcessor.create(model, mStatusView, new StatusViewBinder());
         mMediator = new StatusMediator(model);
+
+        Resources res = mStatusView.getResources();
+        mMediator.setUrlMinWidth(res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
+                + res.getDimensionPixelSize(R.dimen.location_bar_start_icon_width)
+                + (res.getDimensionPixelSize(R.dimen.location_bar_lateral_padding) * 2));
+
+        mMediator.setSeparatorFieldMinWidth(
+                res.getDimensionPixelSize(R.dimen.location_bar_status_separator_width)
+                + res.getDimensionPixelSize(R.dimen.location_bar_status_separator_spacer));
+
+        mMediator.setVerboseStatusTextMinWidth(
+                res.getDimensionPixelSize(R.dimen.location_bar_min_verbose_status_text_width));
 
         if (mIsTablet) {
             mMediator.setNavigationButtonType(NavigationButtonType.PAGE);
@@ -146,16 +155,6 @@ public class StatusViewCoordinator implements View.OnClickListener {
                 ObjectAnimator.ofFloat(mStatusView.getSecurityButton(), View.ALPHA, 0));
         mNavigationIconShowAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
         mNavigationIconShowAnimator.addListener(iconChangeAnimatorListener);
-
-        Resources res = mStatusView.getResources();
-        mUrlMinWidth = res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
-                + res.getDimensionPixelSize(R.dimen.location_bar_start_icon_width)
-                + (res.getDimensionPixelSize(R.dimen.location_bar_lateral_padding) * 2);
-        mStatusSeparatorWidth =
-                res.getDimensionPixelSize(R.dimen.location_bar_status_separator_width)
-                + res.getDimensionPixelSize(R.dimen.location_bar_status_separator_spacer);
-        mVerboseStatusMinWidth = mStatusSeparatorWidth
-                + res.getDimensionPixelSize(R.dimen.location_bar_min_verbose_status_text_width);
     }
 
     /**
@@ -188,6 +187,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * @param urlHasFocus Whether the url currently has focus.
      */
     public void onUrlFocusChange(boolean urlHasFocus) {
+        mMediator.setUrlHasFocus(urlHasFocus);
         mUrlHasFocus = urlHasFocus;
         changeLocationBarIcon();
         updateVerboseStatusVisibility();
@@ -344,30 +344,9 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * omnibox.
      */
     private void updateVerboseStatusVisibility() {
-        boolean verboseStatusVisible = !mUrlHasFocus
-                && mToolbarDataProvider.shouldShowVerboseStatus() && mHasSpaceForVerboseStatus;
-
-        int verboseStatusVisibility = verboseStatusVisible ? View.VISIBLE : View.GONE;
-
-        mStatusView.getVerboseStatusTextView().setVisibility(verboseStatusVisibility);
-
-        View separator = mStatusView.findViewById(R.id.location_bar_verbose_status_separator);
-        separator.setVisibility(verboseStatusVisibility);
-
-        mStatusView.findViewById(R.id.location_bar_verbose_status_extra_space)
-                .setVisibility(verboseStatusVisibility);
-
-        if (!verboseStatusVisible) {
-            // Return early since everything past here requires the verbose status to be visible
-            // and able to be populated with content.
-            return;
-        }
-
-        mStatusView.getVerboseStatusTextView().setText(
-                mToolbarDataProvider.getVerboseStatusString());
-
         // TODO(ender): turn around logic for ToolbarDataProvider to offer
         // notifications rather than polling for these attributes.
+        mMediator.setVerboseStatusTextAllowed(mToolbarDataProvider.shouldShowVerboseStatus());
         mMediator.setPageIsOffline(mToolbarDataProvider.isOfflinePage());
         mMediator.setPageIsPreview(mToolbarDataProvider.isPreview());
     }
@@ -412,33 +391,9 @@ public class StatusViewCoordinator implements View.OnClickListener {
     /**
      * Called to set the width of the location bar when the url bar is not focused.
      * This value is used to determine whether the verbose status text should be visible.
-     * @param unfocusedWidth The unfocused location bar width.
+     * @param width The unfocused location bar width.
      */
-    public void setUnfocusedLocationBarWidth(float unfocusedWidth) {
-        if (mUnfocusedLocationBarWidth == unfocusedWidth) return;
-
-        // This unfocused with is used rather than observing #onMeasure() to avoid showing the
-        // verbose status when the animation to unfocus the URL bar has finished. There is a call to
-        // LocationBarLayout#onMeasure() after the URL focus animation has finished and before the
-        // location bar has received its updated width layout param.
-        mUnfocusedLocationBarWidth = unfocusedWidth;
-
-        boolean previousHasSpace = mHasSpaceForVerboseStatus;
-        mHasSpaceForVerboseStatus =
-                mUnfocusedLocationBarWidth >= mUrlMinWidth + mVerboseStatusMinWidth;
-
-        if (mHasSpaceForVerboseStatus) {
-            int previousMaxWidth = mVerboseStatusTextMaxWidth;
-            mVerboseStatusTextMaxWidth =
-                    (int) (mUnfocusedLocationBarWidth - mUrlMinWidth - mStatusSeparatorWidth);
-
-            // Skip setting the max width if it hasn't changed since TextView#setMaxWidth
-            // invalidates the view and requests a layout.
-            if (previousMaxWidth != mVerboseStatusTextMaxWidth) {
-                mStatusView.getVerboseStatusTextView().setMaxWidth(mVerboseStatusTextMaxWidth);
-            }
-        }
-
-        if (previousHasSpace != mHasSpaceForVerboseStatus) updateVerboseStatusVisibility();
+    public void setUnfocusedLocationBarWidth(int width) {
+        mMediator.setUnfocusedLocationBarWidth(width);
     }
 }
