@@ -60,13 +60,13 @@ class TestSyncService : public browser_sync::TestProfileSyncService {
   explicit TestSyncService(Profile* profile)
       : browser_sync::TestProfileSyncService(
             CreateProfileSyncServiceParamsForTest(profile)),
-        state_(TransportState::ACTIVE) {}
+        state_(TransportState::ACTIVE) {
+    GetUserSettings()->SetFirstSetupComplete();
+  }
 
   TransportState GetTransportState() const override { return state_; }
 
   int GetDisableReasons() const override { return DISABLE_REASON_NONE; }
-
-  bool IsFirstSetupComplete() const override { return true; }
 
   syncer::ModelTypeSet GetActiveDataTypes() const override {
     return syncer::ModelTypeSet::All();
@@ -112,6 +112,7 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
         ProfileSyncServiceFactory::GetForProfile(profile()));
     web_history_service_ = static_cast<history::FakeWebHistoryService*>(
         WebHistoryServiceFactory::GetForProfile(profile()));
+    ASSERT_TRUE(web_history_service_);
 
     web_ui_.reset(new content::TestWebUI);
     web_ui_->set_web_contents(web_contents());

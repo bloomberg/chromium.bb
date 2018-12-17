@@ -726,11 +726,13 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
       ShutdownImpl(syncer::STOP_SYNC);
       break;
     case CLEAR_DATA:
-      // Clear prefs (including SyncSetupHasCompleted) before shutting down so
-      // PSS clients don't think we're set up while we're shutting down.
-      sync_prefs_.ClearPreferences();
       ClearUnrecoverableError();
       ShutdownImpl(syncer::DISABLE_SYNC);
+      // Clear prefs (including SyncSetupHasCompleted) before shutting down so
+      // PSS clients don't think we're set up while we're shutting down.
+      // Note: We do this after shutting down, so that notifications about the
+      // changed pref values don't mess up our state.
+      sync_prefs_.ClearPreferences();
       break;
   }
 }
@@ -833,15 +835,7 @@ syncer::SyncService::TransportState ProfileSyncService::GetTransportState()
 
 bool ProfileSyncService::IsFirstSetupComplete() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return sync_prefs_.IsFirstSetupComplete();
-}
-
-void ProfileSyncService::SetFirstSetupComplete() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_prefs_.SetFirstSetupComplete();
-  if (engine_initialized_) {
-    ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
-  }
+  return user_settings_.IsFirstSetupComplete();
 }
 
 void ProfileSyncService::UpdateLastSyncedTime() {
@@ -1000,7 +994,7 @@ void ProfileSyncService::OnEngineInitialized(
   // Auto-start means IsFirstSetupComplete gets set automatically.
   if (start_behavior_ == AUTO_START && !IsFirstSetupComplete()) {
     // This will trigger a configure if it completes setup.
-    SetFirstSetupComplete();
+    user_settings_.SetFirstSetupComplete();
   } else if (CanConfigureDataTypes(/*bypass_setup_in_progress_check=*/false)) {
     // Datatype downloads on restart are generally due to newly supported
     // datatypes (although it's also possible we're picking up where a failed
@@ -1746,6 +1740,13 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
     // Sync is no longer disabled by policy. Try starting it up if appropriate.
     DCHECK(!engine_);
     startup_controller_->TryStart(IsSetupInProgress());
+  }
+}
+
+void ProfileSyncService::OnFirstSetupCompletePrefChange(
+    bool is_first_setup_complete) {
+  if (engine_initialized_) {
+    ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
   }
 }
 

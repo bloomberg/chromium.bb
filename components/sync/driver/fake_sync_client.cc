@@ -15,9 +15,6 @@ namespace syncer {
 FakeSyncClient::FakeSyncClient() : bridge_(nullptr), factory_(nullptr) {
   // Register sync preferences and set them to "Sync everything" state.
   SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
-  SyncPrefs sync_prefs(GetPrefService());
-  sync_prefs.SetFirstSetupComplete();
-  sync_prefs.SetKeepEverythingSynced(true);
 }
 
 FakeSyncClient::FakeSyncClient(SyncApiComponentFactory* factory)

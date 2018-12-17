@@ -71,7 +71,12 @@ SyncPrefs::SyncPrefs(PrefService* pref_service) : pref_service_(pref_service) {
   // appropriate action.
   pref_sync_managed_.Init(
       prefs::kSyncManaged, pref_service_,
-      base::Bind(&SyncPrefs::OnSyncManagedPrefChanged, base::Unretained(this)));
+      base::BindRepeating(&SyncPrefs::OnSyncManagedPrefChanged,
+                          base::Unretained(this)));
+  pref_first_setup_complete_.Init(
+      prefs::kSyncFirstSetupComplete, pref_service_,
+      base::BindRepeating(&SyncPrefs::OnFirstSetupCompletePrefChange,
+                          base::Unretained(this)));
   // Cache the value of the kEnableLocalSyncBackend pref to avoid it flipping
   // during the lifetime of the service.
   local_sync_enabled_ =
@@ -419,6 +424,12 @@ void SyncPrefs::OnSyncManagedPrefChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : sync_pref_observers_)
     observer.OnSyncManagedPrefChange(*pref_sync_managed_);
+}
+
+void SyncPrefs::OnFirstSetupCompletePrefChange() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : sync_pref_observers_)
+    observer.OnFirstSetupCompletePrefChange(*pref_first_setup_complete_);
 }
 
 void SyncPrefs::SetManagedForTest(bool is_managed) {

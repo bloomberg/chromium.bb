@@ -74,6 +74,7 @@ TEST_F(SyncPrefsTest, LongPollInterval) {
 class MockSyncPrefObserver : public SyncPrefObserver {
  public:
   MOCK_METHOD1(OnSyncManagedPrefChange, void(bool));
+  MOCK_METHOD1(OnFirstSetupCompletePrefChange, void(bool));
 };
 
 TEST_F(SyncPrefsTest, ObservedPrefs) {
@@ -81,8 +82,11 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   InSequence dummy;
   EXPECT_CALL(mock_sync_pref_observer, OnSyncManagedPrefChange(true));
   EXPECT_CALL(mock_sync_pref_observer, OnSyncManagedPrefChange(false));
+  EXPECT_CALL(mock_sync_pref_observer, OnFirstSetupCompletePrefChange(true));
+  EXPECT_CALL(mock_sync_pref_observer, OnFirstSetupCompletePrefChange(false));
 
   EXPECT_FALSE(sync_prefs_->IsManaged());
+  EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
 
   sync_prefs_->AddSyncPrefObserver(&mock_sync_pref_observer);
 
@@ -90,6 +94,13 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   EXPECT_TRUE(sync_prefs_->IsManaged());
   sync_prefs_->SetManagedForTest(false);
   EXPECT_FALSE(sync_prefs_->IsManaged());
+
+  sync_prefs_->SetFirstSetupComplete();
+  EXPECT_TRUE(sync_prefs_->IsFirstSetupComplete());
+  // There's no direct way to clear the first-setup-complete bit, so just reset
+  // all prefs instead.
+  sync_prefs_->ClearPreferences();
+  EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
 
   sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
 }

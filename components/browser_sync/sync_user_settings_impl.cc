@@ -46,13 +46,11 @@ void SyncUserSettingsImpl::SetSyncAllowedByPlatform(bool allowed) {
 }
 
 bool SyncUserSettingsImpl::IsFirstSetupComplete() const {
-  // TODO(crbug.com/884159): Query prefs directly.
-  return service_->IsFirstSetupComplete();
+  return prefs_->IsFirstSetupComplete();
 }
 
 void SyncUserSettingsImpl::SetFirstSetupComplete() {
-  // TODO(crbug.com/884159): Write to prefs directly.
-  service_->SetFirstSetupComplete();
+  prefs_->SetFirstSetupComplete();
 }
 
 bool SyncUserSettingsImpl::IsSyncEverythingEnabled() const {
