@@ -142,11 +142,9 @@ cast_source_set("browser") {
     "//chromecast/net",
     "//chromecast/service",
     "//components/download/public/common:public",
-    "//components/heap_profiling",
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
-    "//components/services/heap_profiling/public/mojom",
 
     # TODO(gfhuang): Eliminate this dependency if ScreenInfoMetricsProvider
     # isn't needed. crbug.com/541577

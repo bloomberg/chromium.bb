@@ -20,7 +20,6 @@ cast_source_set("common") {
     "//chromecast/base",
     "//chromecast/base:cast_version",
     "//chromecast/common/media",
-    "//components/services/heap_profiling/public/cpp",
     "//content/public/common",
     "//ui/base",
     "//ui/gfx",

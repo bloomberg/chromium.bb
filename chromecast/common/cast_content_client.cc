@@ -6,18 +6,13 @@
 
 #include <stdint.h>
 
-#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
 #include "chromecast/base/version.h"
 #include "chromecast/chromecast_buildflags.h"
-#include "components/services/heap_profiling/public/cpp/client.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/simple_connection_filter.h"
 #include "content/public/common/user_agent.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/url_util.h"
@@ -134,19 +129,6 @@ gfx::Image& CastContentClient::GetNativeImageNamed(int resource_id) const {
   return new media::CastMediaDrmBridgeClient();
 }
 #endif  // OS_ANDROID
-
-void CastContentClient::OnServiceManagerConnected(
-    content::ServiceManagerConnection* connection) {
-  static base::NoDestructor<heap_profiling::Client> profiling_client;
-
-  std::unique_ptr<service_manager::BinderRegistry> registry(
-      std::make_unique<service_manager::BinderRegistry>());
-  registry->AddInterface(
-      base::BindRepeating(&heap_profiling::Client::BindToInterface,
-                          base::Unretained(profiling_client.get())));
-  connection->AddConnectionFilter(
-      std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
-}
 
 }  // namespace shell
 }  // namespace chromecast
