@@ -1121,8 +1121,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   ClearDeciderState();
 }
 
+// This was previously marked DISABLE_ON_WIN_MAC(), but the test is also failing
+// flakily on Linux, so now it is completely disabled. https://crbug.com/915775
 IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsReportSavings)) {
+                       DISABLED_LitePagePreviewsReportSavings) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
                     true);
