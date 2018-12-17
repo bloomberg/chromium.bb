@@ -99,8 +99,6 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
                                    const gfx::Size& client_size,
                                    bool adjust_if_offscreen);
 
-  bool close_button_clicked() const { return close_button_clicked_; }
-
   Button* GetCloseButtonForTest() { return close_; }
 
   // Resets the time when view has been shown. Tests may need to call this
@@ -186,9 +184,6 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   // A view to contain the footnote view, if it exists.
   FootnoteContainerView* footnote_container_;
-
-  // Whether the close button was clicked.
-  bool close_button_clicked_;
 
   // Time when view has been shown.
   base::TimeTicks view_shown_time_stamp_;

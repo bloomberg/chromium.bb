@@ -102,7 +102,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
 
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
-    GetWidget()->Close();
+    GetWidget()->CloseWithReason(views::Widget::ClosedReason::kEscKeyPressed);
     return true;
   }
 
@@ -163,7 +163,8 @@ class AppListDialogContainer : public BaseDialogContainer,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == close_button_) {
-      GetWidget()->Close();
+      GetWidget()->CloseWithReason(
+          views::Widget::ClosedReason::kCloseButtonClicked);
     } else {
       NOTREACHED();
     }

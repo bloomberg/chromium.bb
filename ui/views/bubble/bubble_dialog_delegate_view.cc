@@ -433,7 +433,7 @@ void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
 
 void BubbleDialogDelegateView::OnDeactivate() {
   if (close_on_deactivate() && GetWidget())
-    GetWidget()->Close();
+    GetWidget()->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
 }
 
 void BubbleDialogDelegateView::UpdateAnchorWidgetRenderState(bool visible) {

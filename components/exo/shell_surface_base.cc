@@ -68,11 +68,9 @@ const struct {
 
 class ShellSurfaceWidget : public views::Widget {
  public:
-  explicit ShellSurfaceWidget(ShellSurfaceBase* shell_surface)
-      : shell_surface_(shell_surface) {}
+  ShellSurfaceWidget() = default;
 
   // Overridden from views::Widget:
-  void Close() override { shell_surface_->Close(); }
   void OnKeyEvent(ui::KeyEvent* event) override {
     // Handle only accelerators. Do not call Widget::OnKeyEvent that eats focus
     // management keys (like the tab key) as well.
@@ -81,8 +79,6 @@ class ShellSurfaceWidget : public views::Widget {
   }
 
  private:
-  ShellSurfaceBase* const shell_surface_;
-
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
 };
 
@@ -708,6 +704,16 @@ gfx::ImageSkia ShellSurfaceBase::GetWindowIcon() {
   return icon_;
 }
 
+bool ShellSurfaceBase::OnCloseRequested(
+    views::Widget::ClosedReason close_reason) {
+  // Closing the shell surface is a potentially asynchronous operation, so we
+  // will defer actually closing the Widget right now, and come back and call
+  // CloseNow() when the callback completes and the shell surface is destroyed
+  // (see ~ShellSurfaceBase()).
+  Close();
+  return false;
+}
+
 void ShellSurfaceBase::WindowClosing() {
   SetEnabled(false);
   widget_ = nullptr;
@@ -887,7 +893,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   params.activatable = activatable ? views::Widget::InitParams::ACTIVATABLE_YES
                                    : views::Widget::InitParams::ACTIVATABLE_NO;
   // Note: NativeWidget owns this widget.
-  widget_ = new ShellSurfaceWidget(this);
+  widget_ = new ShellSurfaceWidget;
   widget_->Init(params);
 
   aura::Window* window = widget_->GetNativeWindow();

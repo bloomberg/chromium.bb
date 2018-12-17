@@ -135,9 +135,15 @@ class TestDesktopWidgetDelegate : public WidgetDelegate {
   void set_contents_view(View* contents_view) {
     contents_view_ = contents_view;
   }
+  // Sets the return value for CloseRequested().
+  void set_can_close(bool can_close) { can_close_ = can_close; }
 
   int window_closing_count() const { return window_closing_count_; }
   const gfx::Rect& initial_bounds() { return initial_bounds_; }
+  Widget::ClosedReason last_closed_reason() const {
+    return last_closed_reason_;
+  }
+  bool can_close() const { return can_close_; }
 
   // WidgetDelegate overrides:
   void WindowClosing() override;
@@ -145,12 +151,15 @@ class TestDesktopWidgetDelegate : public WidgetDelegate {
   const Widget* GetWidget() const override;
   View* GetContentsView() override;
   bool ShouldAdvanceFocusToTopLevelWidget() const override;
+  bool OnCloseRequested(Widget::ClosedReason close_reason) override;
 
  private:
   Widget* widget_;
   View* contents_view_ = nullptr;
   int window_closing_count_ = 0;
   gfx::Rect initial_bounds_ = gfx::Rect(100, 100, 200, 200);
+  bool can_close_ = true;
+  Widget::ClosedReason last_closed_reason_ = Widget::ClosedReason::kUnspecified;
 
   DISALLOW_COPY_AND_ASSIGN(TestDesktopWidgetDelegate);
 };

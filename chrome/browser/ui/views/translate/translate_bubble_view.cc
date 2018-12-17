@@ -423,7 +423,8 @@ void TranslateBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
 }
 
 void TranslateBubbleView::OnWidgetClosing(views::Widget* widget) {
-  if (GetBubbleFrameView()->close_button_clicked()) {
+  if (GetBubbleFrameView()->GetWidget()->closed_reason() ==
+      views::Widget::ClosedReason::kCloseButtonClicked) {
     model_->DeclineTranslation();
     translate::ReportUiAction(translate::CLOSE_BUTTON_CLICKED);
   }

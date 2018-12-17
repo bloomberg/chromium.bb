@@ -1397,11 +1397,7 @@ class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
     quit_closure_ = base::Closure();
   }
 
-  // Widget:
-  void Close() override {
-    expect_paint_ = false;
-    views::Widget::Close();
-  }
+  void OnWidgetClosing(Widget* widget) override { expect_paint_ = false; }
 
   void OnNativeWidgetPaint(const ui::PaintContext& context) override {
     received_paint_ = true;
@@ -1998,6 +1994,57 @@ TEST_F(WidgetTest, SingleWindowClosing) {
   EXPECT_EQ(0, delegate.window_closing_count());
   delegate.GetWidget()->CloseNow();
   EXPECT_EQ(1, delegate.window_closing_count());
+}
+
+TEST_F(WidgetTest, CloseRequested_AllowsClose) {
+  constexpr Widget::ClosedReason kReason = Widget::ClosedReason::kLostFocus;
+  TestDesktopWidgetDelegate delegate;
+  delegate.set_can_close(true);
+  delegate.InitWidget(CreateParams(Widget::InitParams::TYPE_WINDOW));
+  WidgetDestroyedWaiter waiter(delegate.GetWidget());
+
+  delegate.GetWidget()->CloseWithReason(kReason);
+  EXPECT_TRUE(delegate.GetWidget()->IsClosed());
+  EXPECT_EQ(kReason, delegate.GetWidget()->closed_reason());
+  EXPECT_EQ(kReason, delegate.last_closed_reason());
+
+  waiter.Wait();
+}
+
+TEST_F(WidgetTest, CloseRequested_DisallowClose) {
+  constexpr Widget::ClosedReason kReason = Widget::ClosedReason::kLostFocus;
+  TestDesktopWidgetDelegate delegate;
+  delegate.set_can_close(false);
+  delegate.InitWidget(CreateParams(Widget::InitParams::TYPE_WINDOW));
+
+  delegate.GetWidget()->CloseWithReason(kReason);
+  EXPECT_FALSE(delegate.GetWidget()->IsClosed());
+  EXPECT_EQ(Widget::ClosedReason::kUnspecified,
+            delegate.GetWidget()->closed_reason());
+  EXPECT_EQ(kReason, delegate.last_closed_reason());
+
+  delegate.GetWidget()->CloseNow();
+}
+
+TEST_F(WidgetTest, CloseRequested_SecondCloseIgnored) {
+  constexpr Widget::ClosedReason kReason1 = Widget::ClosedReason::kLostFocus;
+  constexpr Widget::ClosedReason kReason2 = Widget::ClosedReason::kUnspecified;
+  TestDesktopWidgetDelegate delegate;
+  delegate.set_can_close(true);
+  delegate.InitWidget(CreateParams(Widget::InitParams::TYPE_WINDOW));
+  WidgetDestroyedWaiter waiter(delegate.GetWidget());
+
+  // Close for the first time.
+  delegate.GetWidget()->CloseWithReason(kReason1);
+  EXPECT_TRUE(delegate.GetWidget()->IsClosed());
+  EXPECT_EQ(kReason1, delegate.last_closed_reason());
+
+  // Calling close again should have no effect.
+  delegate.GetWidget()->CloseWithReason(kReason2);
+  EXPECT_TRUE(delegate.GetWidget()->IsClosed());
+  EXPECT_EQ(kReason1, delegate.last_closed_reason());
+
+  waiter.Wait();
 }
 
 class WidgetWindowTitleTest : public WidgetTest {

@@ -82,8 +82,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
       default_title_(CreateDefaultTitleLabel(base::string16()).release()),
       custom_title_(nullptr),
       close_(nullptr),
-      footnote_container_(nullptr),
-      close_button_clicked_(false) {
+      footnote_container_(nullptr) {
   AddChildView(title_icon_);
 
   default_title_->SetVisible(false);
@@ -427,8 +426,7 @@ void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
     return;
 
   if (sender == close_) {
-    close_button_clicked_ = true;
-    GetWidget()->Close();
+    GetWidget()->CloseWithReason(Widget::ClosedReason::kCloseButtonClicked);
   }
 }
 

@@ -152,6 +152,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   base::string16 GetWindowTitle() const override;
   bool ShouldShowWindowTitle() const override;
   gfx::ImageSkia GetWindowIcon() override;
+  bool OnCloseRequested(views::Widget::ClosedReason close_reason) override;
   void WindowClosing() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;

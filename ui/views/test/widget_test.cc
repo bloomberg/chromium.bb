@@ -141,6 +141,12 @@ bool TestDesktopWidgetDelegate::ShouldAdvanceFocusToTopLevelWidget() const {
   return true;  // Same default as DefaultWidgetDelegate in widget.cc.
 }
 
+bool TestDesktopWidgetDelegate::OnCloseRequested(
+    Widget::ClosedReason close_reason) {
+  last_closed_reason_ = close_reason;
+  return can_close_;
+}
+
 TestInitialFocusWidgetDelegate::TestInitialFocusWidgetDelegate(
     gfx::NativeWindow context)
     : view_(new View) {

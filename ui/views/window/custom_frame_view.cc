@@ -274,7 +274,7 @@ gfx::Size CustomFrameView::GetMaximumSize() const {
 
 void CustomFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == close_button_)
-    frame_->Close();
+    frame_->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
   else if (sender == minimize_button_)
     frame_->Minimize();
   else if (sender == maximize_button_)
