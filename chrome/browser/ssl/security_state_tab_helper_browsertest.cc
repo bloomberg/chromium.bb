@@ -419,7 +419,8 @@ void CheckSecurityInfoForSecure(
   EXPECT_TRUE(!!security_info.certificate);
 }
 
-void CheckSecurityInfoForNonSecure(content::WebContents* contents) {
+// Check that the current SecurityInfo reflects a non-committed navigation.
+void CheckSecurityInfoForNonCommitted(content::WebContents* contents) {
   ASSERT_TRUE(contents);
 
   SecurityStateTabHelper* helper =
@@ -638,9 +639,9 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, HttpPage) {
             security_info.mixed_content_status);
   EXPECT_FALSE(security_info.scheme_is_cryptographic);
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  // TODO(dmcardle): Should determine the expected value for
-  // |security_info.connection_info_initialized|. Follow up with estark.
-  // See crbug.com/780972
+  // We expect that the SecurityInfo fields for this committed navigation will
+  // be initialized to reflect the unencrypted connection.
+  EXPECT_TRUE(security_info.connection_info_initialized);
   EXPECT_FALSE(!!security_info.certificate);
   EXPECT_EQ(0, security_info.connection_status);
 }
@@ -1388,7 +1389,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateLoadingTest, NavigationStateChanges) {
   browser()->OpenURL(content::OpenURLParams(
       embedded_test_server()->GetURL("/title1.html"), content::Referrer(),
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
-  CheckSecurityInfoForNonSecure(
+  CheckSecurityInfoForNonCommitted(
       browser()->tab_strip_model()->GetActiveWebContents());
 }
 
@@ -2005,7 +2006,7 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest, AddedTab) {
           content::WebContents::CreateParams(tab->GetBrowserContext()));
   content::NavigationController& controller = new_contents->GetController();
   SecurityStateTabHelper::CreateForWebContents(new_contents.get());
-  CheckSecurityInfoForNonSecure(new_contents.get());
+  CheckSecurityInfoForNonCommitted(new_contents.get());
   controller.LoadURL(https_server_.GetURL("/title1.html"), content::Referrer(),
                      ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(content::WaitForLoadStop(new_contents.get()));
