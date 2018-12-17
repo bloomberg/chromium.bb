@@ -312,6 +312,10 @@ bool AutofillProfile::SetMetadata(const AutofillMetadata metadata) {
   return true;
 }
 
+bool AutofillProfile::IsDeletable() const {
+  return AutofillDataModel::IsDeletable() && !IsVerified();
+}
+
 // TODO(crbug.com/589535): Disambiguate similar field types before uploading.
 void AutofillProfile::GetMatchingTypes(
     const base::string16& text,
