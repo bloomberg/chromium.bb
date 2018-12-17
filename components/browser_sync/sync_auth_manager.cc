@@ -346,7 +346,8 @@ void SyncAuthManager::OnRefreshTokenRemovedForAccount(
 }
 
 void SyncAuthManager::OnAccountsInCookieUpdated(
-    const std::vector<AccountInfo>& accounts) {
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const GoogleServiceAuthError& error) {
   UpdateSyncAccountIfNecessary();
 }
 

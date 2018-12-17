@@ -10,7 +10,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_session_durations_metrics_recorder.h"
 
-class GaiaCookieManagerService;
 namespace identity {
 class IdentityManager;
 }
@@ -30,7 +29,6 @@ class DesktopProfileSessionDurationsService
   DesktopProfileSessionDurationsService(
       syncer::SyncService* sync_service,
       identity::IdentityManager* identity_manager,
-      GaiaCookieManagerService* cookie_manager,
       DesktopSessionDurationTracker* tracker);
   ~DesktopProfileSessionDurationsService() override;
 

@@ -95,14 +95,16 @@ std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() const {
   return accounts;
 }
 
-std::vector<AccountInfo> IdentityManager::GetAccountsInCookieJar() const {
+AccountsInCookieJarInfo IdentityManager::GetAccountsInCookieJar() const {
   // TODO(859882): Change this implementation to interact asynchronously with
   // GaiaCookieManagerService as detailed in
   // https://docs.google.com/document/d/1hcrJ44facCSHtMGBmPusvcoP-fAR300Hi-UFez8ffYQ/edit?pli=1#heading=h.w97eil1cygs2.
   std::vector<gaia::ListedAccount> listed_accounts;
-  gaia_cookie_manager_service_->ListAccounts(&listed_accounts, nullptr);
+  bool accounts_are_fresh =
+      gaia_cookie_manager_service_->ListAccounts(&listed_accounts, nullptr);
 
-  return ListedAccountsToAccountInfos(listed_accounts);
+  return AccountsInCookieJarInfo(accounts_are_fresh,
+                                 ListedAccountsToAccountInfos(listed_accounts));
 }
 
 bool IdentityManager::HasAccountWithRefreshToken(
@@ -352,11 +354,12 @@ void IdentityManager::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
-  std::vector<AccountInfo> account_infos =
-      ListedAccountsToAccountInfos(accounts);
+  AccountsInCookieJarInfo accounts_in_cookie_jar_info(
+      error == GoogleServiceAuthError::AuthErrorNone(),
+      ListedAccountsToAccountInfos(accounts));
 
   for (auto& observer : observer_list_) {
-    observer.OnAccountsInCookieUpdated(account_infos);
+    observer.OnAccountsInCookieUpdated(accounts_in_cookie_jar_info, error);
   }
 }
 

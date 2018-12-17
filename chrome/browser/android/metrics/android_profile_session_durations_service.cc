@@ -6,13 +6,11 @@
 
 AndroidProfileSessionDurationsService::AndroidProfileSessionDurationsService(
     syncer::SyncService* sync_service,
-    identity::IdentityManager* identity_manager,
-    GaiaCookieManagerService* cookie_manager)
+    identity::IdentityManager* identity_manager)
     : metrics_recorder_(
           std::make_unique<syncer::SyncSessionDurationsMetricsRecorder>(
               sync_service,
-              identity_manager,
-              cookie_manager)) {
+              identity_manager)) {
   // The AndroidProfileSessionDurationsService object is created as soon as
   // the profile is initialized. On Android, the profile is initialized as part
   // of the native code initialization, which is done soon after the application

@@ -7,9 +7,7 @@
 #include "chrome/browser/android/metrics/android_profile_session_durations_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -39,9 +37,8 @@ AndroidProfileSessionDurationsServiceFactory::
     : BrowserContextKeyedServiceFactory(
           "AndroidProfileSessionDurationsService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 AndroidProfileSessionDurationsServiceFactory::
@@ -53,12 +50,10 @@ AndroidProfileSessionDurationsServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
-  GaiaCookieManagerService* cookie_manager =
-      GaiaCookieManagerServiceFactory::GetForProfile(profile);
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  return new AndroidProfileSessionDurationsService(
-      sync_service, identity_manager, cookie_manager);
+  return new AndroidProfileSessionDurationsService(sync_service,
+                                                   identity_manager);
 }
 
 bool AndroidProfileSessionDurationsServiceFactory::ServiceIsNULLWhileTesting()

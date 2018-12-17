@@ -27,7 +27,8 @@ class OneGoogleBarService::SigninObserver
  private:
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
-      const std::vector<AccountInfo>& accounts) override {
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override {
     callback_.Run();
   }
 

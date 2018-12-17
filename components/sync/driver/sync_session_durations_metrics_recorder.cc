@@ -26,15 +26,11 @@ base::TimeDelta SubtractInactiveTime(base::TimeDelta total_length,
 
 SyncSessionDurationsMetricsRecorder::SyncSessionDurationsMetricsRecorder(
     SyncService* sync_service,
-    identity::IdentityManager* identity_manager,
-    GaiaCookieManagerService* cookie_manager)
+    identity::IdentityManager* identity_manager)
     : sync_service_(sync_service),
       identity_manager_(identity_manager),
       sync_observer_(this),
-      identity_manager_observer_(this),
-      gaia_cookie_observer_(this) {
-  gaia_cookie_observer_.Add(cookie_manager);
-
+      identity_manager_observer_(this) {
   // |sync_service| can be null if sync is disabled by a command line flag.
   if (sync_service_) {
     sync_observer_.Add(sync_service_);
@@ -47,11 +43,11 @@ SyncSessionDurationsMetricsRecorder::SyncSessionDurationsMetricsRecorder(
 
   // Check if we already know the signed in cookies. This will trigger a fetch
   // if we don't have them yet.
-  std::vector<gaia::ListedAccount> signed_in;
-  std::vector<gaia::ListedAccount> signed_out;
-  if (cookie_manager->ListAccounts(&signed_in, &signed_out)) {
-    OnGaiaAccountsInCookieUpdated(signed_in, signed_out,
-                                  GoogleServiceAuthError());
+  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+      identity_manager_->GetAccountsInCookieJar();
+  if (accounts_in_cookie_jar_info.accounts_are_fresh) {
+    OnAccountsInCookieUpdated(accounts_in_cookie_jar_info,
+                              GoogleServiceAuthError::AuthErrorNone());
   }
 
   DVLOG(1) << "Ready to track Session.TotalDuration metrics";
@@ -59,8 +55,6 @@ SyncSessionDurationsMetricsRecorder::SyncSessionDurationsMetricsRecorder(
 
 SyncSessionDurationsMetricsRecorder::~SyncSessionDurationsMetricsRecorder() {
   DCHECK(!total_session_timer_) << "Missing a call to OnSessionEnded().";
-
-  gaia_cookie_observer_.RemoveAll();
   sync_observer_.RemoveAll();
   identity_manager_observer_.RemoveAll();
 }
@@ -93,12 +87,12 @@ void SyncSessionDurationsMetricsRecorder::OnSessionEnded(
   sync_account_session_timer_.reset();
 }
 
-void SyncSessionDurationsMetricsRecorder::OnGaiaAccountsInCookieUpdated(
-    const std::vector<gaia::ListedAccount>& accounts,
-    const std::vector<gaia::ListedAccount>& signed_out_accounts,
+void SyncSessionDurationsMetricsRecorder::OnAccountsInCookieUpdated(
+    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
-  DVLOG(1) << "Cookie state change. in: " << accounts.size()
-           << " out: " << signed_out_accounts.size()
+  DVLOG(1) << "Cookie state change. accounts: "
+           << accounts_in_cookie_jar_info.accounts.size()
+           << " fresh: " << accounts_in_cookie_jar_info.accounts_are_fresh
            << " err: " << error.ToString();
 
   if (error.state() != GoogleServiceAuthError::NONE) {
@@ -108,7 +102,8 @@ void SyncSessionDurationsMetricsRecorder::OnGaiaAccountsInCookieUpdated(
     return;
   }
 
-  if (accounts.empty()) {
+  DCHECK(accounts_in_cookie_jar_info.accounts_are_fresh);
+  if (accounts_in_cookie_jar_info.accounts.empty()) {
     // No signed in account.
     if (signin_status_ == FeatureState::ON && signin_session_timer_) {
       LogSigninDuration(signin_session_timer_->Elapsed());

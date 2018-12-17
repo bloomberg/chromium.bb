@@ -96,7 +96,8 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
       const AccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override;
   void OnAccountsInCookieUpdated(
-      const std::vector<AccountInfo>& accounts) override;
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
 
   // Test-only methods for inspecting/modifying internal state.
   bool IsRetryingAccessTokenFetchForTest() const;
