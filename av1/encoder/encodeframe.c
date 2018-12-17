@@ -3558,7 +3558,7 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   const int *partition_cost =
       pl >= 0 ? x->partition_cost[pl] : x->partition_cost[0];
 
-  int do_rectangular_split = 1;
+  int do_rectangular_split = cpi->oxcf.enable_rect_partitions;
   int64_t cur_none_rd = 0;
   int64_t split_rd[4] = { 0, 0, 0, 0 };
   int64_t horz_rd[2] = { 0, 0 };
@@ -3604,8 +3604,10 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
 #endif
 
   int partition_none_allowed = has_rows && has_cols;
-  int partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8;
-  int partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8;
+  int partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8 &&
+                               cpi->oxcf.enable_rect_partitions;
+  int partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8 &&
+                               cpi->oxcf.enable_rect_partitions;
 
   (void)*tp_orig;
 
@@ -3728,8 +3730,10 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
         partition_horz_allowed == 0 && partition_vert_allowed == 0) {
       do_square_split = bsize_at_least_8x8;
       partition_none_allowed = has_rows && has_cols;
-      partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8;
-      partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8;
+      partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8 &&
+                               cpi->oxcf.enable_rect_partitions;
+      partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8 &&
+                               cpi->oxcf.enable_rect_partitions;
     }
   }
 
@@ -3852,8 +3856,10 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
 BEGIN_PARTITION_SEARCH:
   if (x->must_find_valid_partition) {
     partition_none_allowed = has_rows && has_cols;
-    partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8;
-    partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8;
+    partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8 &&
+                             cpi->oxcf.enable_rect_partitions;
+    partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8 &&
+                             cpi->oxcf.enable_rect_partitions;
   }
 
   // Partition block source pixel variance.
@@ -4185,6 +4191,7 @@ BEGIN_PARTITION_SEARCH:
   }
 
   // PARTITION_HORZ
+  assert(IMPLIES(!cpi->oxcf.enable_rect_partitions, !partition_horz_allowed));
   if (partition_horz_allowed && !prune_horz &&
       (do_rectangular_split || active_h_edge(cpi, mi_row, mi_step)) &&
       !is_gt_max_sq_part) {
@@ -4259,6 +4266,7 @@ BEGIN_PARTITION_SEARCH:
   }
 
   // PARTITION_VERT
+  assert(IMPLIES(!cpi->oxcf.enable_rect_partitions, !partition_vert_allowed));
   if (partition_vert_allowed && !prune_vert &&
       (do_rectangular_split || active_v_edge(cpi, mi_col, mi_step)) &&
       !is_gt_max_sq_part) {
@@ -4343,6 +4351,8 @@ BEGIN_PARTITION_SEARCH:
           av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
     }
   }
+
+  assert(IMPLIES(!cpi->oxcf.enable_rect_partitions, !do_rectangular_split));
 
   const int ext_partition_allowed =
       do_rectangular_split && bsize > BLOCK_8X8 && partition_none_allowed;
@@ -4712,6 +4722,7 @@ BEGIN_PARTITION_SEARCH:
 #endif
 
   // PARTITION_HORZ_4
+  assert(IMPLIES(!cpi->oxcf.enable_rect_partitions, !partition_horz4_allowed));
   if (partition_horz4_allowed && has_rows &&
       (do_rectangular_split || active_h_edge(cpi, mi_row, mi_step)) &&
       !is_gt_max_sq_part) {
@@ -4757,6 +4768,7 @@ BEGIN_PARTITION_SEARCH:
   }
 
   // PARTITION_VERT_4
+  assert(IMPLIES(!cpi->oxcf.enable_rect_partitions, !partition_vert4_allowed));
   if (partition_vert4_allowed && has_cols &&
       (do_rectangular_split || active_v_edge(cpi, mi_row, mi_step)) &&
       !is_gt_max_sq_part) {

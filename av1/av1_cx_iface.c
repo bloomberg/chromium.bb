@@ -95,6 +95,7 @@ struct av1_extracfg {
   const char *film_grain_table_filename;
   unsigned int motion_vector_unit_test;
   unsigned int cdf_update_mode;
+  int enable_rect_partitions;    // enable rectangular partitions for sequence
   int enable_intra_edge_filter;  // enable intra-edge filter for sequence
   int enable_order_hint;         // enable order hint for sequence
   int enable_dist_wtd_comp;      // enable dist wtd compound for sequence
@@ -181,6 +182,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                            // film_grain_table_filename
   0,                            // motion_vector_unit_test
   1,                            // CDF update mode
+  1,                            // enable rectangular partitions
   1,                            // enable intra edge filter
   1,                            // frame order hint
   1,                            // dist-wtd compound
@@ -688,6 +690,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->monochrome = cfg->monochrome;
   oxcf->full_still_picture_hdr = cfg->full_still_picture_hdr;
   oxcf->enable_dual_filter = extra_cfg->enable_dual_filter;
+  oxcf->enable_rect_partitions = extra_cfg->enable_rect_partitions;
   oxcf->enable_intra_edge_filter = extra_cfg->enable_intra_edge_filter;
   oxcf->enable_order_hint = extra_cfg->enable_order_hint;
   oxcf->enable_dist_wtd_comp =
@@ -1059,6 +1062,14 @@ static aom_codec_err_t ctrl_set_enable_dual_filter(aom_codec_alg_priv_t *ctx,
                                                    va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_dual_filter = CAST(AV1E_SET_ENABLE_DUAL_FILTER, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_rect_partitions(
+    aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_rect_partitions =
+      CAST(AV1E_SET_ENABLE_RECT_PARTITIONS, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1914,6 +1925,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
   { AV1E_SET_ERROR_RESILIENT_MODE, ctrl_set_error_resilient_mode },
   { AV1E_SET_S_FRAME_MODE, ctrl_set_s_frame_mode },
+  { AV1E_SET_ENABLE_RECT_PARTITIONS, ctrl_set_enable_rect_partitions },
   { AV1E_SET_ENABLE_DUAL_FILTER, ctrl_set_enable_dual_filter },
   { AV1E_SET_ENABLE_INTRA_EDGE_FILTER, ctrl_set_enable_intra_edge_filter },
   { AV1E_SET_ENABLE_ORDER_HINT, ctrl_set_enable_order_hint },

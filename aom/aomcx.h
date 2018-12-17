@@ -710,6 +710,14 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ANS_WINDOW_SIZE_LOG2,
 
+  /*!\brief Codec control function to enable/disable rectangular partitions.
+   *
+   * This will enable or disable usage of rectangular partitions. The default
+   * value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_RECT_PARTITIONS,
+
   /*!\brief Codec control function to turn on / off intra edge filter
    * at sequence level.
    *
@@ -1130,6 +1138,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_MTU, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_TIMING_INFO_TYPE, int) /* aom_timing_info_type_t */
 #define AOM_CTRL_AV1E_SET_TIMING_INFO_TYPE
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_RECT_PARTITIONS, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_RECT_PARTITIONS
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_INTRA_EDGE_FILTER, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_INTRA_EDGE_FILTER

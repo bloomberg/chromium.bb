@@ -437,6 +437,10 @@ static const arg_def_t enable_restoration =
     ARG_DEF(NULL, "enable-restoration", 1,
             "Enable the loop restoration filter (0: false, "
             "1: true (default))");
+static const arg_def_t enable_rect_partitions =
+    ARG_DEF(NULL, "enable-rect-partitions", 1,
+            "Enable rectangular partitions "
+            "(0: false, 1: true (default))");
 static const arg_def_t enable_dual_filter =
     ARG_DEF(NULL, "enable-dual-filter", 1,
             "Enable dual filter "
@@ -697,6 +701,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &lossless,
                                        &enable_cdef,
                                        &enable_restoration,
+                                       &enable_rect_partitions,
                                        &enable_dual_filter,
                                        &enable_intra_edge_filter,
                                        &enable_order_hint,
@@ -771,6 +776,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_LOSSLESS,
                                         AV1E_SET_ENABLE_CDEF,
                                         AV1E_SET_ENABLE_RESTORATION,
+                                        AV1E_SET_ENABLE_RECT_PARTITIONS,
                                         AV1E_SET_ENABLE_DUAL_FILTER,
                                         AV1E_SET_ENABLE_INTRA_EDGE_FILTER,
                                         AV1E_SET_ENABLE_ORDER_HINT,
