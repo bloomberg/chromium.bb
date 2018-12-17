@@ -187,10 +187,9 @@ ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
 void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
                                      ScrollType scroll_type,
                                      ScrollBehavior behavior) {
-  if (scroll_type != kSequencedScroll && scroll_type != kClampingScroll &&
-      scroll_type != kAnchoringScroll) {
-    if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer())
-      sequencer->AbortAnimations();
+  if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer()) {
+    if (sequencer->FilterNewScrollOrAbortCurrent(scroll_type))
+      return;
   }
 
   ScrollOffset clamped_offset = ClampScrollOffset(offset);

@@ -725,6 +725,8 @@ LayoutRect LayoutObject::ScrollRectToVisible(
     return rect;
 
   GetDocument().GetFrame()->GetSmoothScrollSequencer().AbortAnimations();
+  GetDocument().GetFrame()->GetSmoothScrollSequencer().SetScrollType(
+      params.GetScrollType());
   WebScrollIntoViewParams new_params(params);
   new_params.is_for_scroll_sequence |=
       params.GetScrollType() == kProgrammaticScroll;

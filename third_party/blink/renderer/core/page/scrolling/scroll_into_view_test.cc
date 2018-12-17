@@ -4,6 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
+#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/bindings/core/v8/scroll_into_view_options_or_boolean.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -13,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/scroll_to_options.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -583,6 +585,40 @@ TEST_F(ScrollIntoViewTest, RemoveSequencedScrollableArea) {
 
   // Make sure that we don't try to animate the removed scroller.
   Compositor().BeginFrame(1);
+}
+
+TEST_F(ScrollIntoViewTest, SmoothUserScrollNotAbortedByProgrammaticScrolls) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<div id='space' style='height: 1000px'></div>"
+      "<div id='content' style='height: 1000px'></div>");
+
+  Compositor().BeginFrame();
+  ASSERT_EQ(Window().scrollY(), 0);
+
+  // A smooth UserScroll.
+  Element* content = GetDocument().getElementById("content");
+  content->GetLayoutObject()->ScrollRectToVisible(
+      content->BoundingBoxForScrollIntoView(),
+      {ScrollAlignment::kAlignToEdgeIfNeeded, ScrollAlignment::kAlignTopAlways,
+       kUserScroll, false, kScrollBehaviorSmooth, true});
+
+  // Animating the container
+  Compositor().BeginFrame();  // update run_state_.
+  Compositor().BeginFrame();  // Set start_time = now.
+  Compositor().BeginFrame(0.2);
+  ASSERT_EQ(Window().scrollY(), 299);
+
+  // ProgrammaticScroll that could interrupt the current smooth scroll.
+  Window().scrollTo(0, 0);
+
+  // Finish scrolling the container
+  Compositor().BeginFrame(1);
+  // The programmatic scroll of Window shouldn't abort the user scroll.
+  ASSERT_EQ(Window().scrollY(), content->OffsetTop());
 }
 
 }  // namespace
