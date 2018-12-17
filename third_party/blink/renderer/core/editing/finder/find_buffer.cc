@@ -149,21 +149,6 @@ const Node& GetLowestDisplayBlockInclusiveAncestor(const Node& start_node) {
   return *start_node.GetDocument().documentElement();
 }
 
-// Note: LayoutFlowThread, used for multicol, can't provide offset mapping.
-bool CanUseNGOffsetMapping(const LayoutObject& object) {
-  return object.IsLayoutBlockFlow() && !object.IsLayoutFlowThread();
-}
-
-LayoutBlockFlow* ContainingLayoutBlockFlowFor(const LayoutText& object) {
-  for (LayoutObject* runner = object.Parent(); runner;
-       runner = runner->Parent()) {
-    if (!CanUseNGOffsetMapping(*runner))
-      continue;
-    return ToLayoutBlockFlow(runner);
-  }
-  return nullptr;
-}
-
 std::unique_ptr<FindBuffer::Results> FindBuffer::FindMatches(
     const WebString& search_text,
     const mojom::blink::FindOptions& options) const {
@@ -235,7 +220,8 @@ void FindBuffer::CollectTextUntilBlockBoundary(Node& start_node) {
         node->GetLayoutObject()) {
       const Text& text_node = ToText(*node);
       LayoutBlockFlow& block_flow =
-          *ContainingLayoutBlockFlowFor(*text_node.GetLayoutObject());
+          *NGOffsetMapping::GetInlineFormattingContextOf(
+              *text_node.GetLayoutObject());
       if (last_block_flow && last_block_flow != block_flow) {
         // We enter another block flow.
         break;

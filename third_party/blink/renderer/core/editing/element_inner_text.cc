@@ -212,27 +212,13 @@ bool ElementInnerTextCollector::ShouldEmitNewlineForTableRow(
   return false;
 }
 
-// Note: LayoutFlowThread, used for multicol, can't provide offset mapping.
-bool CanUseOffsetMapping(const LayoutObject& object) {
-  return object.IsLayoutBlockFlow() && !object.IsLayoutFlowThread();
-}
-
-LayoutBlockFlow* ContainingBlockFlowFor(const LayoutText& object) {
-  for (LayoutObject* runner = object.Parent(); runner;
-       runner = runner->Parent()) {
-    if (!CanUseOffsetMapping(*runner))
-      continue;
-    return ToLayoutBlockFlow(runner);
-  }
-  return nullptr;
-}
-
 const NGOffsetMapping* ElementInnerTextCollector::GetOffsetMapping(
     const LayoutText& layout_text) {
   // TODO(editing-dev): We should handle "text-transform" in "::first-line".
   // In legacy layout, |InlineTextBox| holds original text and text box
   // paint does text transform.
-  LayoutBlockFlow* const block_flow = ContainingBlockFlowFor(layout_text);
+  LayoutBlockFlow* const block_flow =
+      NGOffsetMapping::GetInlineFormattingContextOf(layout_text);
   DCHECK(block_flow) << layout_text;
   if (block_flow == last_offset_mapping_block_flow_)
     return last_offset_mapping_;
@@ -402,8 +388,8 @@ void ElementInnerTextCollector::ProcessTextNode(const Text& node) {
   const LayoutText& layout_text = *node.GetLayoutObject();
   if (LayoutText* first_letter_part = layout_text.GetFirstLetterPart()) {
     if (layout_text.TextLength() == 0 ||
-        ContainingBlockFlowFor(layout_text) !=
-            ContainingBlockFlowFor(*first_letter_part)) {
+        NGOffsetMapping::GetInlineFormattingContextOf(layout_text) !=
+            NGOffsetMapping::GetInlineFormattingContextOf(*first_letter_part)) {
       // "::first-letter" with "float" reach here.
       ProcessLayoutText(*first_letter_part, node);
     }

@@ -17,6 +17,11 @@ namespace blink {
 
 namespace {
 
+// Note: LayoutFlowThread, used for multicol, can't provide offset mapping.
+bool CanUseNGOffsetMapping(const LayoutObject& object) {
+  return object.IsLayoutBlockFlow() && !object.IsLayoutFlowThread();
+}
+
 // Returns true if |node| has style 'display:inline' and can have descendants
 // in the inline layout.
 bool IsNonAtomicInline(const Node& node) {
@@ -191,6 +196,18 @@ const NGOffsetMapping* NGOffsetMapping::GetForContainingBlockFlow(
   NGLayoutInputNode node = block_node.FirstChild();
   if (node && node.IsInline())
     return ToNGInlineNode(node).ComputeOffsetMappingIfNeeded();
+  return nullptr;
+}
+
+// static
+LayoutBlockFlow* NGOffsetMapping::GetInlineFormattingContextOf(
+    const LayoutObject& object) {
+  for (LayoutObject* runner = object.Parent(); runner;
+       runner = runner->Parent()) {
+    if (!CanUseNGOffsetMapping(*runner))
+      continue;
+    return ToLayoutBlockFlow(runner);
+  }
   return nullptr;
 }
 
