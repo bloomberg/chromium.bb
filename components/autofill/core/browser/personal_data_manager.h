@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/sync_utils.h"
+#include "components/autofill/core/browser/test_data_creator.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -729,16 +730,6 @@ class PersonalDataManager : public KeyedService,
       AutofillProfile* profile,
       const std::unordered_set<std::string>& used_billing_address_guids);
 
-  // If the AutofillCreateDataForTest feature is enabled, this helper creates
-  // autofill address data that would otherwise be difficult to create
-  // manually using the UI.
-  void MaybeCreateTestAddresses();
-
-  // If the AutofillCreateDataForTest feature is enabled, this helper creates
-  // autofill credit card data that would otherwise be difficult to create
-  // manually using the UI.
-  void MaybeCreateTestCreditCards();
-
   // Applies various fixes and cleanups on autofill addresses.
   void ApplyAddressFixesAndCleanups();
 
@@ -808,9 +799,10 @@ class PersonalDataManager : public KeyedService,
   // Whether new information was received from the sync server.
   bool has_synced_new_data_ = false;
 
-  // True if test data has been created this session.
-  bool has_created_test_addresses_ = false;
-  bool has_created_test_credit_cards_ = false;
+  // Used to create test data. If the AutofillCreateDataForTest feature is
+  // enabled, this helper creates autofill profiles and credit card data that
+  // would otherwise be difficult to create manually using the UI.
+  TestDataCreator test_data_creator_;
 
   // Whether sync should be considered on in a test.
   bool is_syncing_for_test_ = false;
