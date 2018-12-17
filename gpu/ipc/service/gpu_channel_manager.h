@@ -173,8 +173,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
  private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
-  void InternalDestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
-                                          int client_id);
+
 #if defined(OS_ANDROID)
   void ScheduleWakeUpGpu();
   void DoWakeUpGpu();
