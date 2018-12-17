@@ -172,6 +172,7 @@
   firmware-grunt-11031.B-firmwarebranch
   firmware-guado-6301.108.B-firmwarebranch
   firmware-heli-5216.392.B-firmwarebranch
+  firmware-kalista-11343.B-firmwarebranch
   firmware-kip-5216.227.B-firmwarebranch
   firmware-kitty-5771.61.B-firmwarebranch
   firmware-leon-4389.61.B-firmwarebranch
@@ -1564,6 +1565,7 @@
   firmware-grunt-11031.B-firmwarebranch-tryjob
   firmware-guado-6301.108.B-firmwarebranch-tryjob
   firmware-heli-5216.392.B-firmwarebranch-tryjob
+  firmware-kalista-11343.B-firmwarebranch-tryjob
   firmware-kip-5216.227.B-firmwarebranch-tryjob
   firmware-kitty-5771.61.B-firmwarebranch-tryjob
   firmware-leon-4389.61.B-firmwarebranch-tryjob
