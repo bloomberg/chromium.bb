@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
@@ -385,9 +387,9 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
   if (already_showing)
     return false;
 
-  std::unique_ptr<extensions::ExtensionViewHost> host(
+  std::unique_ptr<extensions::ExtensionViewHost> host =
       extensions::ExtensionViewHostFactory::CreatePopupHost(popup_url,
-                                                            browser_));
+                                                            browser_);
   if (!host)
     return false;
 

@@ -26,8 +26,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest, CreateExtensionHosts) {
   content::BrowserContext* browser_context = browser()->profile();
   {
     // Popup hosts are created with the correct type and profile.
-    std::unique_ptr<ExtensionViewHost> host(
-        ExtensionViewHostFactory::CreatePopupHost(extension->url(), browser()));
+    std::unique_ptr<ExtensionViewHost> host =
+        ExtensionViewHostFactory::CreatePopupHost(extension->url(), browser());
     EXPECT_EQ(extension.get(), host->extension());
     EXPECT_EQ(browser_context, host->browser_context());
     EXPECT_EQ(VIEW_TYPE_EXTENSION_POPUP, host->extension_host_type());
@@ -36,9 +36,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest, CreateExtensionHosts) {
 
   {
     // Dialog hosts are created with the correct type and profile.
-    std::unique_ptr<ExtensionViewHost> host(
+    std::unique_ptr<ExtensionViewHost> host =
         ExtensionViewHostFactory::CreateDialogHost(extension->url(),
-                                                   browser()->profile()));
+                                                   browser()->profile());
     EXPECT_EQ(extension.get(), host->extension());
     EXPECT_EQ(browser_context, host->browser_context());
     EXPECT_EQ(VIEW_TYPE_EXTENSION_DIALOG, host->extension_host_type());

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_view_host_factory.h"
 
+#include <string>
+
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,29 +23,31 @@ namespace {
 // Creates a new ExtensionHost with its associated view, grouping it in the
 // appropriate SiteInstance (and therefore process) based on the URL and
 // profile.
-ExtensionViewHost* CreateViewHostForExtension(const Extension* extension,
-                                              const GURL& url,
-                                              Profile* profile,
-                                              Browser* browser,
-                                              ViewType view_type) {
+std::unique_ptr<ExtensionViewHost> CreateViewHostForExtension(
+    const Extension* extension,
+    const GURL& url,
+    Profile* profile,
+    Browser* browser,
+    ViewType view_type) {
   DCHECK(profile);
   // A NULL browser may only be given for dialogs.
   DCHECK(browser || view_type == VIEW_TYPE_EXTENSION_DIALOG);
   scoped_refptr<content::SiteInstance> site_instance =
       ProcessManager::Get(profile)->GetSiteInstanceForURL(url);
-  ExtensionViewHost* host =
-      new ExtensionViewHost(extension, site_instance.get(), url, view_type);
+  auto host = std::make_unique<ExtensionViewHost>(
+      extension, site_instance.get(), url, view_type);
   host->CreateView(browser);
   return host;
 }
 
 // Creates a view host for an extension in an incognito window. Returns NULL
 // if the extension is not allowed to run in incognito.
-ExtensionViewHost* CreateViewHostForIncognito(const Extension* extension,
-                                              const GURL& url,
-                                              Profile* profile,
-                                              Browser* browser,
-                                              ViewType view_type) {
+std::unique_ptr<ExtensionViewHost> CreateViewHostForIncognito(
+    const Extension* extension,
+    const GURL& url,
+    Profile* profile,
+    Browser* browser,
+    ViewType view_type) {
   DCHECK(extension);
   DCHECK(profile->IsOffTheRecord());
 
@@ -76,10 +80,11 @@ const Extension* GetExtensionForUrl(Profile* profile, const GURL& url) {
 }
 
 // Creates and initializes an ExtensionViewHost for the extension with |url|.
-ExtensionViewHost* CreateViewHost(const GURL& url,
-                                  Profile* profile,
-                                  Browser* browser,
-                                  extensions::ViewType view_type) {
+std::unique_ptr<ExtensionViewHost> CreateViewHost(
+    const GURL& url,
+    Profile* profile,
+    Browser* browser,
+    extensions::ViewType view_type) {
   DCHECK(profile);
   // A NULL browser may only be given for dialogs.
   DCHECK(browser || view_type == VIEW_TYPE_EXTENSION_DIALOG);
@@ -98,15 +103,16 @@ ExtensionViewHost* CreateViewHost(const GURL& url,
 }  // namespace
 
 // static
-ExtensionViewHost* ExtensionViewHostFactory::CreatePopupHost(const GURL& url,
-                                                             Browser* browser) {
+std::unique_ptr<ExtensionViewHost> ExtensionViewHostFactory::CreatePopupHost(
+    const GURL& url,
+    Browser* browser) {
   DCHECK(browser);
   return CreateViewHost(
       url, browser->profile(), browser, VIEW_TYPE_EXTENSION_POPUP);
 }
 
 // static
-ExtensionViewHost* ExtensionViewHostFactory::CreateDialogHost(
+std::unique_ptr<ExtensionViewHost> ExtensionViewHostFactory::CreateDialogHost(
     const GURL& url,
     Profile* profile) {
   DCHECK(profile);
