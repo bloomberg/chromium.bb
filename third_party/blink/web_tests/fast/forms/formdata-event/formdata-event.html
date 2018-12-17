@@ -91,12 +91,15 @@ test(() => {
 
 test(() => {
   let form = populateForm('<input name=n1 value=v1>');
+  let formDataInEvent = null;
   form.addEventListener('formdata', (e) => {
     e.formData.append('h1', 'vh1');
+    formDataInEvent = e.formData;
   });
   let formData = new FormData(form);
   assert_equals(formData.get('h1'), 'vh1');
   assert_equals(formData.get('n1'), 'v1');
+  assert_not_equals(formData, formDataInEvent, '"formData" attribute should be different from the FromData object created by "new"');
 }, 'Newly created FormData contains entries added to "formData" IDL attribute of FormDataEvent.');
 
 test(() => {
