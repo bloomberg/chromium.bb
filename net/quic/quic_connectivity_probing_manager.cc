@@ -125,6 +125,8 @@ void QuicConnectivityProbingManager::StartProbing(
     std::unique_ptr<QuicChromiumPacketReader> reader,
     base::TimeDelta initial_timeout,
     const NetLogWithSource& net_log) {
+  DCHECK(peer_address != quic::QuicSocketAddress());
+
   if (IsUnderProbing(network, peer_address))
     return;
 
