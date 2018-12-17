@@ -77,8 +77,7 @@ class Syncer {
  private:
   bool DownloadAndApplyUpdates(ModelTypeSet* request_types,
                                SyncCycle* cycle,
-                               const GetUpdatesDelegate& delegate,
-                               bool create_mobile_bookmarks_folder);
+                               const GetUpdatesDelegate& delegate);
 
   // This function will commit batches of unsynced items to the server until the
   // number of unsynced and ready to commit items reaches zero or an error is
