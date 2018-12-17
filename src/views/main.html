@@ -29,7 +29,7 @@
     <script src="../js/nav.js"></script>
     <script src="../js/main.js"></script>
   </head>
-  <body class="mirror">
+  <body class="mirror _3x3">
     <div id="camera">
       <div id="preview-wrapper">
         <video id="preview-video" aria-hidden="true"></video>
@@ -89,52 +89,54 @@
     <div id="settings">
       <div class="menu">
         <div class="menu-header buttons circle">
-          <button class="icon" tabindex="0"
-                  i18n-aria-label="backButton"></button>
+          <button class="icon" tabindex="0" i18n-aria="backButton"></button>
           <div role="menu" i18n-content="settingsButton"></div>
         </div>
         <div class="menu-item buttons circle" id="settings-gridtype">
           <div class="icon"></div>
           <div aria-hidden="true">
             <div i18n-content="gridTypeButton"></div>
-            <div class="description" id="gridtype-desc">3 x 3</div>
+            <div class="description" id="gridtype-desc">
+              <span i18n-content="labelGrid3x3" i18n-aria="ariaGrid3x3"></span>
+              <span i18n-content="labelGridGolden"></span>
+            </div>
           </div>
-          <button tabindex="0" i18n-aria-label="gridTypeButton"
+          <button tabindex="0" i18n-aria="gridTypeButton"
                   aria-describedby="gridtype-desc"></button>
         </div>
         <div class="menu-item buttons circle" id="settings-feedback">
           <div class="icon"></div>
           <div i18n-content="feedbackButton" aria-hidden="true"></div>
-          <button tabindex="0" i18n-aria-label="feedbackButton"></button>
+          <button tabindex="0" i18n-aria="feedbackButton"></button>
         </div>
         <div class="menu-item buttons circle" id="settings-help">
           <div class="icon"></div>
           <div i18n-content="helpButton" aria-hidden="true"></div>
-          <button tabindex="0" i18n-aria-label="helpButton"></button>
+          <button tabindex="0" i18n-aria="helpButton"></button>
         </div>
       </div>
     </div>
     <div id="gridsettings">
       <div class="menu">
         <div class="menu-header buttons circle">
-          <button class="icon" tabindex="0" i18n-aria-label="backButton">
+          <button class="icon" tabindex="0" i18n-aria="backButton">
           </button>
           <div role="menu" i18n-content="gridTypeButton"></div>
         </div>
         <label class="menu-item buttons circle" for="grid-3x3">
           <input id="grid-3x3" type="radio" tabindex="0" name="gridtype"
-                 checked>
-          <span i18n-aria-label="labelGrid3x3">3 x 3</span>
+                 data-css="_3x3" data-key="toggle3x3" checked>
+          <span i18n-content="labelGrid3x3" i18n-aria="ariaGrid3x3"></span>
         </label>
         <label class="menu-item buttons circle" for="grid-golden">
           <input id="grid-golden" type="radio" tabindex="0" name="gridtype"
-                 data-attr="golden" data-key="toggleGolden">
+                 data-css="golden" data-key="toggleGolden">
           <span i18n-content="labelGridGolden"></span>
         </label>
       </div>
     </div>
     <div class="centered-overlay" id="spinner"></div>
-    <div id="browser" role="listbox" i18n-aria-label="galleryImages">
+    <div id="browser" role="listbox" i18n-aria="galleryImages">
       <div class="padder">
         <div class="bounds-padder"></div>
         <div class="bounds-padder"></div>

@@ -564,7 +564,7 @@ body.capturing.grid #preview-grid-horizontal {
   -webkit-transform: translateY(-50%) scaleY(0.33333);
 }
 
-body.capturing.grid[golden] #preview-grid-horizontal {
+body.capturing.grid.golden #preview-grid-horizontal {
   border-bottom-width: 4px;
   border-top-width: 4px;
   -webkit-transform: translateY(-50%) scaleY(0.23607);
@@ -587,7 +587,7 @@ body.capturing.grid #preview-grid-vertical {
   -webkit-transform: translateX(-50%) scaleX(0.33333);
 }
 
-body.capturing.grid[golden] #preview-grid-vertical {
+body.capturing.grid.golden #preview-grid-vertical {
   border-left-width: 4px;
   border-right-width: 4px;
   -webkit-transform: translateX(-50%) scaleX(0.23607);
@@ -850,6 +850,15 @@ body.gridsettings #gridsettings .menu {
 .buttons.menu-item .description {
   margin-top: 5px;
   color: #9aa0a6;
+}
+
+.description span {
+  display: none;
+}
+
+body._3x3 .description span[i18n-content=labelGrid3x3],
+body.golden .description span[i18n-content=labelGridGolden] {
+  display: inline;
 }
 
 .buttons.menu-item button {

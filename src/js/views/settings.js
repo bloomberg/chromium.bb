@@ -33,21 +33,6 @@ cca.views.Settings = function() {
     'settings-feedback': () => this.openFeedback(),
     'settings-help': () => this.openHelp_(),
   });
-
-  // Observe the attributes toggled by radios and update the descriptions.
-  var observer = new MutationObserver(() => {
-    var updateTextByRadio = (selector, name) => {
-      var radio = document.querySelector(
-          `input[type=radio][name=${name}]:checked`);
-      document.querySelector(selector).textContent =
-          radio && radio.labels.length && radio.labels[0].textContent.trim();
-    };
-    updateTextByRadio('#gridtype-desc', 'gridtype');
-  });
-  observer.observe(document.body, {
-    attributes: true,
-    attributeFilter: ['golden'],
-  });
 };
 
 cca.views.Settings.prototype = {
