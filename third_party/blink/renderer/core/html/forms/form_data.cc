@@ -107,7 +107,10 @@ FormData* FormData::Create(HTMLFormElement* form,
                                       "The form is constructing entry list.");
     return nullptr;
   }
-  return form_data;
+  // Return a shallow copy of |form_data| because |form_data| is visible in
+  // "formdata" event, and the specification says it should be different from
+  // the FormData object to be returned.
+  return MakeGarbageCollected<FormData>(*form_data);
 }
 
 void FormData::Trace(blink::Visitor* visitor) {
