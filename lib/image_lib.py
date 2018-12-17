@@ -160,9 +160,49 @@ class LoopbackPartitions(object):
       else:
         raise KeyError(repr(part_id))
 
+  def _IsExt2(self, part_id, offset=0):
+    """Is the given partition an ext2 file system?"""
+    dev = self.GetPartitionDevName(part_id)
+    magic_ofs = offset + 0x438
+    ret = cros_build_lib.SudoRunCommand(
+        ['dd', 'if=%s' % dev, 'skip=%d' % magic_ofs,
+         'conv=notrunc', 'count=2', 'bs=1'],
+        capture_output=True, error_code_ok=True)
+    if ret.returncode:
+      return False
+    return ret.output == b'\x53\xef'
+
+  def EnableRwMount(self, part_id, offset=0):
+    """Enable RW mounts of the specified partition."""
+    dev = self.GetPartitionDevName(part_id)
+    if not self._IsExt2(part_id, offset):
+      logging.error('EnableRwMount called on non-ext2 fs: %s %s',
+                    part_id, offset)
+      return
+    ro_compat_ofs = offset + 0x464 + 3
+    logging.info('Enabling RW mount writing 0x00 to %d', ro_compat_ofs)
+    cros_build_lib.SudoRunCommand(
+        ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
+         'conv=notrunc', 'count=1', 'bs=1'],
+        input=b'\0', redirect_stderr=True)
+
+  def DisableRwMount(self, part_id, offset=0):
+    """Disable RW mounts of the specified partition."""
+    dev = self.GetPartitionDevName(part_id)
+    if not self._IsExt2(part_id, offset):
+      logging.error('DisableRwMount called on non-ext2 fs: %s %s',
+                    part_id, offset)
+      return
+    ro_compat_ofs = offset + 0x464 + 3
+    logging.info('Disabling RW mount writing 0xff to %d', ro_compat_ofs)
+    cros_build_lib.SudoRunCommand(
+        ['dd', 'of=%s' % dev, 'seek=%d' % ro_compat_ofs,
+         'conv=notrunc', 'count=1', 'bs=1'],
+        input=b'\xff', redirect_stderr=True)
+
   def _Mount(self, part, mount_opts):
     dest_number, dest_label = self._GetMountPointAndSymlink(part)
-    if part in self._mounted:
+    if part in self._mounted and 'remount' not in mount_opts:
       return dest_number
 
     if not self.destination:
@@ -174,9 +214,8 @@ class LoopbackPartitions(object):
                      mount_opts=mount_opts)
     self._mounted.add(part)
 
-    if not os.path.exists(dest_label):
-      os.symlink(os.path.basename(dest_number), dest_label)
-      self._symlinks.add(dest_label)
+    osutils.SafeSymlink(os.path.basename(dest_number), dest_label)
+    self._symlinks.add(dest_label)
 
     return dest_number
 

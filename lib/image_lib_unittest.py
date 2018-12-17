@@ -12,6 +12,8 @@ import glob
 import os
 import stat
 
+import mock
+
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
@@ -28,10 +30,32 @@ class FakeException(Exception):
 
 FAKE_PATH = '/imaginary/file'
 LOOP_DEV = '/dev/loop9999'
-LOOP_PART_COUNT = 13
+LOOP_PART_COUNT = 12
 LOOP_PARTITION_INFO = [
-    cros_build_lib.PartitionInfo(x, 0, 0, 0, '', 'my-%d' % x, '')
-    for x in range(1, LOOP_PART_COUNT)
+    cros_build_lib.PartitionInfo(
+        1, 2928640, 2957311, 28672, 14680064, 'STATE', ''),
+    cros_build_lib.PartitionInfo(
+        2, 20480, 53247, 32768, 16777216, 'KERN-A', ''),
+    cros_build_lib.PartitionInfo(
+        3, 286720, 2928639, 2641920, 1352663040, 'ROOT-A', ''),
+    cros_build_lib.PartitionInfo(
+        4, 53248, 86015, 32768, 16777216, 'KERN-B', ''),
+    cros_build_lib.PartitionInfo(
+        5, 282624, 286719, 4096, 2097152, 'ROOT-B', ''),
+    cros_build_lib.PartitionInfo(
+        6, 16448, 16448, 1, 512, 'KERN-C', ''),
+    cros_build_lib.PartitionInfo(
+        7, 16449, 16449, 1, 512, 'ROOT-C', ''),
+    cros_build_lib.PartitionInfo(
+        8, 86016, 118783, 32768, 16777216, 'OEM', ''),
+    cros_build_lib.PartitionInfo(
+        9, 16450, 16450, 1, 512, 'reserved', ''),
+    cros_build_lib.PartitionInfo(
+        10, 16451, 16451, 1, 512, 'reserved', ''),
+    cros_build_lib.PartitionInfo(
+        11, 64, 16447, 16384, 8388608, 'RWFW', ''),
+    cros_build_lib.PartitionInfo(
+        12, 249856, 282623, 32768, 16777216, 'EFI-SYSTEM', ''),
 ]
 LOOP_PARTS_DICT = {
     p.number: '%sp%d' % (LOOP_DEV, p.number) for p in LOOP_PARTITION_INFO}
@@ -65,34 +89,15 @@ class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
           cros_build_lib.PartitionInfo(num, 0, 0, 0, '', 'my-%d' % num, '')
           for num in range(1, part_count + 1)]
     else:
-      self._gpt_table = [
-          cros_build_lib.PartitionInfo(
-              1, 2928640, 2957311, 28672, 14680064, 'STATE', ''),
-          cros_build_lib.PartitionInfo(
-              2, 20480, 53247, 32768, 16777216, 'KERN-A', ''),
-          cros_build_lib.PartitionInfo(
-              3, 286720, 2928639, 2641920, 1352663040, 'ROOT-A', ''),
-          cros_build_lib.PartitionInfo(
-              4, 53248, 86015, 32768, 16777216, 'KERN-B', ''),
-          cros_build_lib.PartitionInfo(
-              5, 282624, 286719, 4096, 2097152, 'ROOT-B', ''),
-          cros_build_lib.PartitionInfo(
-              6, 16448, 16448, 1, 512, 'KERN-C', ''),
-          cros_build_lib.PartitionInfo(
-              7, 16449, 16449, 1, 512, 'ROOT-C', ''),
-          cros_build_lib.PartitionInfo(
-              8, 86016, 118783, 32768, 16777216, 'OEM', ''),
-          cros_build_lib.PartitionInfo(
-              9, 16450, 16450, 1, 512, 'reserved', ''),
-          cros_build_lib.PartitionInfo(
-              10, 16451, 16451, 1, 512, 'reserved', ''),
-          cros_build_lib.PartitionInfo(
-              11, 64, 16447, 16384, 8388608, 'RWFW', ''),
-          cros_build_lib.PartitionInfo(
-              12, 249856, 282623, 32768, 16777216, 'EFI-SYSTEM', ''),
-      ]
+      self._gpt_table = LOOP_PARTITION_INFO
     self.parts = {p.number: '%sp%s' % (dev, p.number)
                   for p in self._gpt_table}
+
+  def EnableRwMount(self, part_id, offset=0):
+    """Stub out enable rw mount."""
+
+  def DisableRwMount(self, part_id, offset=0):
+    """Stub out disable rw mount."""
 
   def _Mount(self, part, mount_opts):
     """Stub out mount operations."""
@@ -114,6 +119,7 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
     self.rc_mock = cros_test_lib.RunCommandMock()
     self.StartPatcher(self.rc_mock)
     self.rc_mock.SetDefaultCmdResult()
+    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
 
     self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
                      return_value=LOOP_PARTITION_INFO)
@@ -127,7 +133,6 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
 
   def testContextManager(self):
     """Test using the loopback class as a context manager."""
-    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
     with image_lib.LoopbackPartitions(FAKE_PATH) as lb:
       self.rc_mock.assertCommandContains(['losetup', '--show', '-f', FAKE_PATH])
       self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
@@ -141,7 +146,6 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
 
   def testManual(self):
     """Test using the loopback class closed manually."""
-    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
     lb = image_lib.LoopbackPartitions(FAKE_PATH)
     self.rc_mock.assertCommandContains(['losetup', '--show', '-f', FAKE_PATH])
     self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
@@ -156,7 +160,6 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
 
   def gcFunc(self):
     """This function isolates a local variable so it'll be garbage collected."""
-    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
     lb = image_lib.LoopbackPartitions(FAKE_PATH)
     self.rc_mock.assertCommandContains(['losetup', '--show', '-f', FAKE_PATH])
     self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
@@ -177,21 +180,20 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
 
   def testMountUnmount(self):
     """Test Mount() and Unmount() entry points."""
-    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
     lb = image_lib.LoopbackPartitions(FAKE_PATH, destination=self.tempdir)
     # Mount four partitions.
-    lb.Mount((1, 3, 'my-5', 'my-7'))
+    lb.Mount((1, 3, 'ROOT-B', 'ROOT-C'))
     for p in (1, 3, 5, 7):
       self.mount_mock.assert_any_call(
           '%sp%d' % (LOOP_DEV, p), '%s/dir-%d' % (self.tempdir, p),
           makedirs=True, skip_mtab=False, sudo=True, mount_opts=('ro',))
-      linkname = '%s/dir-my-%d' % (self.tempdir, p)
+      linkname = '%s/dir-%s' % (self.tempdir, LOOP_PARTITION_INFO[p - 1].name)
       self.assertTrue(stat.S_ISLNK(os.lstat(linkname).st_mode))
     self.assertEqual(4, self.mount_mock.call_count)
     self.umount_mock.assert_not_called()
 
     # Unmount half of them, confirm that they were unmounted.
-    lb.Unmount((1, 'my-5'))
+    lb.Unmount((1, 'ROOT-B'))
     for p in (1, 5):
       self.umount_mock.assert_any_call('%s/dir-%d' % (self.tempdir, p),
                                        cleanup=False)
@@ -213,7 +215,6 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
 
   def testMountingMountedPartReturnsName(self):
     """Test that Mount returns the directory name even when already mounted."""
-    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
     lb = image_lib.LoopbackPartitions(FAKE_PATH, destination=self.tempdir)
     dirname = '%s/dir-%d' % (self.tempdir, lb._gpt_table[0].number)
     # First make sure we get the directory name when we actually mount.
@@ -221,24 +222,60 @@ class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
     # Then make sure we get it when we call it again.
     self.assertEqual(dirname, lb._Mount(lb._gpt_table[0], ('ro',)))
 
+  def testRemountCallsMount(self):
+    """Test that Mount returns the directory name even when already mounted."""
+    lb = image_lib.LoopbackPartitions(FAKE_PATH, destination=self.tempdir)
+    devname = '%sp%d' % (LOOP_DEV, lb._gpt_table[0].number)
+    dirname = '%s/dir-%d' % (self.tempdir, lb._gpt_table[0].number)
+    # First make sure we get the directory name when we actually mount.
+    self.assertEqual(dirname, lb._Mount(lb._gpt_table[0], ('ro',)))
+    self.mount_mock.assert_called_once_with(
+        devname, dirname,
+        makedirs=True, skip_mtab=False, sudo=True, mount_opts=('ro',))
+    # Then make sure we get it when we call it again.
+    self.assertEqual(dirname, lb._Mount(lb._gpt_table[0], ('remount', 'rw')))
+    self.assertEqual(
+        mock.call(devname, dirname, makedirs=True, skip_mtab=False,
+                  sudo=True, mount_opts=('remount', 'rw')),
+        self.mount_mock.call_args)
+
   def testGetPartitionDevName(self):
     """Test GetPartitionDevName()."""
-    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
     lb = image_lib.LoopbackPartitions(FAKE_PATH)
     for part in LOOP_PARTITION_INFO:
       self.assertEqual('%sp%d' % (LOOP_DEV, part.number),
                        lb.GetPartitionDevName(part.number))
-      self.assertEqual('%sp%d' % (LOOP_DEV, part.number),
-                       lb.GetPartitionDevName(part.name))
+      if part.name != 'reserved':
+        self.assertEqual('%sp%d' % (LOOP_DEV, part.number),
+                         lb.GetPartitionDevName(part.name))
 
   def test_GetMountPointAndSymlink(self):
     """Test _GetMountPointAndSymlink()."""
-    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
     lb = image_lib.LoopbackPartitions(FAKE_PATH, destination=self.tempdir)
     for part in LOOP_PARTITION_INFO:
       expected = [os.path.join(lb.destination, 'dir-%s' % n)
                   for n in (part.number, part.name)]
       self.assertEqual(expected, list(lb._GetMountPointAndSymlink(part)))
+
+  def testIsExt2OnVarious(self):
+    """Test _IsExt2 works with the various partition types."""
+    FS_PARTITIONS = (1, 3, 8)
+    # STATE, ROOT-A, and OEM generally have ext2 filesystems.
+    for x in FS_PARTITIONS:
+      self.rc_mock.AddCmdResult(
+          partial_mock.In('if=%sp%d' % (LOOP_DEV, x)),
+          output=b'\x53\xef')
+    # Throw errors on all of the partitions that are < 1000 bytes.
+    for part in LOOP_PARTITION_INFO:
+      if part.size < 1000:
+        self.rc_mock.AddCmdResult(
+            partial_mock.In('if=%sp%d' % (LOOP_DEV, part.number)),
+            returncode=1, error='Seek failed\n')
+    lb = image_lib.LoopbackPartitions(FAKE_PATH, destination=self.tempdir)
+    # We expect that only the partitions in FS_PARTITIONS are ext2.
+    self.assertEqual(
+        [part.number in FS_PARTITIONS for part in LOOP_PARTITION_INFO],
+        [lb._IsExt2(part.name) for part in LOOP_PARTITION_INFO])
 
 
 class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
