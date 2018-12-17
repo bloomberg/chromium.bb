@@ -108,7 +108,7 @@ void TtsHandler::OnVoicesChanged() {
   HandleGetTtsExtensions(nullptr);
 }
 
-void TtsHandler::OnTtsEvent(content::Utterance* utterance,
+void TtsHandler::OnTtsEvent(content::TtsUtterance* utterance,
                             content::TtsEventType event_type,
                             int char_index,
                             const std::string& error_message) {
@@ -137,13 +137,13 @@ void TtsHandler::HandlePreviewTtsVoice(const base::ListValue* args) {
   json->GetString("name", &name);
   json->GetString("extension", &extension_id);
 
-  content::Utterance* utterance =
-      new content::Utterance(Profile::FromWebUI(web_ui()));
-  utterance->set_text(text);
-  utterance->set_voice_name(name);
-  utterance->set_engine_id(extension_id);
-  utterance->set_src_url(GURL("chrome://settings/manageAccessibility/tts"));
-  utterance->set_event_delegate(this);
+  content::TtsUtterance* utterance =
+      content::TtsUtterance::Create((Profile::FromWebUI(web_ui())));
+  utterance->SetText(text);
+  utterance->SetVoiceName(name);
+  utterance->SetEngineId(extension_id);
+  utterance->SetSrcUrl(GURL("chrome://settings/manageAccessibility/tts"));
+  utterance->SetEventDelegate(this);
   content::TtsController::GetInstance()->Stop();
 
   base::Value result(true /* preview started */);

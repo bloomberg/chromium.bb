@@ -100,18 +100,19 @@ void SpeechMonitor::GetVoices(std::vector<content::VoiceData>* out_voices) {
 }
 
 void SpeechMonitor::WillSpeakUtteranceWithVoice(
-    const content::Utterance* utterance,
+    const content::TtsUtterance* utterance,
     const content::VoiceData& voice_data) {
   // Blacklist some phrases.
   // Filter out empty utterances which can be used to trigger a start event from
   // tts as an earcon sync.
-  if (utterance->text() == "" || utterance->text() == kChromeVoxAlertMessage ||
-      utterance->text() == kChromeVoxUpdate1 ||
-      utterance->text() == kChromeVoxUpdate2)
+  if (utterance->GetText() == "" ||
+      utterance->GetText() == kChromeVoxAlertMessage ||
+      utterance->GetText() == kChromeVoxUpdate1 ||
+      utterance->GetText() == kChromeVoxUpdate2)
     return;
 
-  VLOG(0) << "Speaking " << utterance->text();
-  utterance_queue_.push_back(utterance->text());
+  VLOG(0) << "Speaking " << utterance->GetText();
+  utterance_queue_.push_back(utterance->GetText());
   if (loop_runner_.get())
     loop_runner_->Quit();
 }

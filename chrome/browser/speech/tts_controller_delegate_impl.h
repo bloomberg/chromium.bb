@@ -27,9 +27,9 @@ class TtsControllerDelegateImpl : public content::TtsControllerDelegate {
   static TtsControllerDelegateImpl* GetInstance();
 
   // TtsControllerDelegate overrides.
-  int GetMatchingVoice(const content::Utterance* utterance,
+  int GetMatchingVoice(const content::TtsUtterance* utterance,
                        std::vector<content::VoiceData>& voices) override;
-  void UpdateUtteranceDefaultsFromPrefs(content::Utterance* utterance,
+  void UpdateUtteranceDefaultsFromPrefs(content::TtsUtterance* utterance,
                                         double* rate,
                                         double* pitch,
                                         double* volume) override;
@@ -47,7 +47,7 @@ class TtsControllerDelegateImpl : public content::TtsControllerDelegate {
                            TestTtsControllerUtteranceDefaults);
 
   virtual const PrefService* GetPrefService(
-      const content::Utterance* utterance);
+      const content::TtsUtterance* utterance);
 
   friend struct base::DefaultSingletonTraits<TtsControllerDelegateImpl>;
 

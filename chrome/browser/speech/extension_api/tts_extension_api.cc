@@ -92,7 +92,7 @@ class TtsExtensionEventHandler : public content::UtteranceEventDelegate {
  public:
   explicit TtsExtensionEventHandler(const std::string& src_extension_id);
 
-  void OnTtsEvent(content::Utterance* utterance,
+  void OnTtsEvent(content::TtsUtterance* utterance,
                   content::TtsEventType event_type,
                   int char_index,
                   const std::string& error_message) override;
@@ -108,21 +108,21 @@ TtsExtensionEventHandler::TtsExtensionEventHandler(
     : src_extension_id_(src_extension_id) {
 }
 
-void TtsExtensionEventHandler::OnTtsEvent(content::Utterance* utterance,
+void TtsExtensionEventHandler::OnTtsEvent(content::TtsUtterance* utterance,
                                           content::TtsEventType event_type,
                                           int char_index,
                                           const std::string& error_message) {
-  if (utterance->src_id() < 0) {
-    if (utterance->finished())
+  if (utterance->GetSrcId() < 0) {
+    if (utterance->IsFinished())
       delete this;
     return;
   }
 
   const std::set<content::TtsEventType>& desired_event_types =
-      utterance->desired_event_types();
+      utterance->GetDesiredEventTypes();
   if (desired_event_types.size() > 0 &&
       desired_event_types.find(event_type) == desired_event_types.end()) {
-    if (utterance->finished())
+    if (utterance->IsFinished())
       delete this;
     return;
   }
@@ -135,20 +135,20 @@ void TtsExtensionEventHandler::OnTtsEvent(content::Utterance* utterance,
   if (event_type == content::TTS_EVENT_ERROR) {
     details->SetString(constants::kErrorMessageKey, error_message);
   }
-  details->SetInteger(constants::kSrcIdKey, utterance->src_id());
-  details->SetBoolean(constants::kIsFinalEventKey, utterance->finished());
+  details->SetInteger(constants::kSrcIdKey, utterance->GetSrcId());
+  details->SetBoolean(constants::kIsFinalEventKey, utterance->IsFinished());
 
   std::unique_ptr<base::ListValue> arguments(new base::ListValue());
   arguments->Append(std::move(details));
 
   auto event = std::make_unique<extensions::Event>(
       ::extensions::events::TTS_ON_EVENT, ::events::kOnEvent,
-      std::move(arguments), utterance->browser_context());
-  event->event_url = utterance->src_url();
-  extensions::EventRouter::Get(utterance->browser_context())
+      std::move(arguments), utterance->GetBrowserContext());
+  event->event_url = utterance->GetSrcUrl();
+  extensions::EventRouter::Get(utterance->GetBrowserContext())
       ->DispatchEventToExtension(src_extension_id_, std::move(event));
 
-  if (utterance->finished())
+  if (utterance->IsFinished())
     delete this;
 }
 
@@ -268,19 +268,20 @@ bool TtsSpeakFunction::RunAsync() {
   // the behavior more predictable and easier to write unit tests for too.
   SendResponse(true);
 
-  content::Utterance* utterance = new content::Utterance(GetProfile());
-  utterance->set_text(text);
-  utterance->set_voice_name(voice_name);
-  utterance->set_src_id(src_id);
-  utterance->set_src_url(source_url());
-  utterance->set_lang(lang);
-  utterance->set_continuous_parameters(rate, pitch, volume);
-  utterance->set_can_enqueue(can_enqueue);
-  utterance->set_required_event_types(required_event_types);
-  utterance->set_desired_event_types(desired_event_types);
-  utterance->set_engine_id(voice_extension_id);
-  utterance->set_options(options.get());
-  utterance->set_event_delegate(new TtsExtensionEventHandler(extension_id()));
+  content::TtsUtterance* utterance =
+      content::TtsUtterance::Create(GetProfile());
+  utterance->SetText(text);
+  utterance->SetVoiceName(voice_name);
+  utterance->SetSrcId(src_id);
+  utterance->SetSrcUrl(source_url());
+  utterance->SetLang(lang);
+  utterance->SetContinuousParameters(rate, pitch, volume);
+  utterance->SetCanEnqueue(can_enqueue);
+  utterance->SetRequiredEventTypes(required_event_types);
+  utterance->SetDesiredEventTypes(desired_event_types);
+  utterance->SetEngineId(voice_extension_id);
+  utterance->SetOptions(options.get());
+  utterance->SetEventDelegate(new TtsExtensionEventHandler(extension_id()));
 
   content::TtsController* controller = content::TtsController::GetInstance();
   controller->SpeakOrEnqueue(utterance);

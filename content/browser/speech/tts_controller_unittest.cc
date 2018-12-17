@@ -4,6 +4,7 @@
 
 // Unit tests for the TTS Controller.
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/browser/speech/tts_controller_impl.h"
 #include "content/public/browser/tts_controller_delegate.h"
@@ -36,7 +37,7 @@ class MockTtsPlatformImpl : public TtsPlatform {
   bool LoadBuiltInTtsEngine(BrowserContext* browser_context) override {
     return false;
   }
-  void WillSpeakUtteranceWithVoice(const Utterance* utterance,
+  void WillSpeakUtteranceWithVoice(const TtsUtterance* utterance,
                                    const VoiceData& voice_data) override {}
   void SetError(const std::string& error) override {}
   std::string GetError() override { return std::string(); }
@@ -48,13 +49,13 @@ class MockTtsControllerDelegate : public TtsControllerDelegate {
   MockTtsControllerDelegate() {}
   ~MockTtsControllerDelegate() override {}
 
-  int GetMatchingVoice(const content::Utterance* utterance,
+  int GetMatchingVoice(const content::TtsUtterance* utterance,
                        std::vector<content::VoiceData>& voices) override {
     // Below 0 implies a "native" voice.
     return -1;
   }
 
-  void UpdateUtteranceDefaultsFromPrefs(content::Utterance* utterance,
+  void UpdateUtteranceDefaultsFromPrefs(content::TtsUtterance* utterance,
                                         double* rate,
                                         double* pitch,
                                         double* volume) override{};
@@ -81,14 +82,14 @@ TEST_F(TtsControllerTest, TestTtsControllerShutdown) {
 
   controller->SetTtsPlatform(&platform_impl);
 
-  Utterance* utterance1 = new Utterance(nullptr);
-  utterance1->set_can_enqueue(true);
-  utterance1->set_src_id(1);
+  TtsUtterance* utterance1 = TtsUtterance::Create(nullptr);
+  utterance1->SetCanEnqueue(true);
+  utterance1->SetSrcId(1);
   controller->SpeakOrEnqueue(utterance1);
 
-  Utterance* utterance2 = new Utterance(nullptr);
-  utterance2->set_can_enqueue(true);
-  utterance2->set_src_id(2);
+  TtsUtterance* utterance2 = TtsUtterance::Create(nullptr);
+  utterance2->SetCanEnqueue(true);
+  utterance2->SetSrcId(2);
   controller->SpeakOrEnqueue(utterance2);
 
   // Make sure that deleting the controller when there are pending
@@ -104,23 +105,24 @@ TEST_F(TtsControllerTest, TestTtsControllerUtteranceDefaults) {
   std::unique_ptr<TtsControllerForTesting> controller =
       std::make_unique<TtsControllerForTesting>();
 
-  std::unique_ptr<Utterance> utterance1 = std::make_unique<Utterance>(nullptr);
+  std::unique_ptr<TtsUtterance> utterance1 =
+      base::WrapUnique(content::TtsUtterance::Create(nullptr));
   // Initialized to default (unset constant) values.
   EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
-            utterance1->continuous_parameters().rate);
+            utterance1->GetContinuousParameters().rate);
   EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
-            utterance1->continuous_parameters().pitch);
+            utterance1->GetContinuousParameters().pitch);
   EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
-            utterance1->continuous_parameters().volume);
+            utterance1->GetContinuousParameters().volume);
 
   controller->UpdateUtteranceDefaults(utterance1.get());
   // Updated to global defaults.
   EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechRate,
-            utterance1->continuous_parameters().rate);
+            utterance1->GetContinuousParameters().rate);
   EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechPitch,
-            utterance1->continuous_parameters().pitch);
+            utterance1->GetContinuousParameters().pitch);
   EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechVolume,
-            utterance1->continuous_parameters().volume);
+            utterance1->GetContinuousParameters().volume);
 }
 #endif  // !defined(OS_CHROMEOS)
 

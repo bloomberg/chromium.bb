@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_TTS_CONTROLLER_DELEGATE_H_
 
 #include "content/public/browser/tts_controller.h"
+#include "content/public/browser/tts_utterance.h"
 
 namespace content {
 
@@ -14,12 +15,12 @@ class TtsControllerDelegate {
  public:
   // Given an utterance and a vector of voices, return the
   // index of the voice that best matches the utterance.
-  virtual int GetMatchingVoice(const Utterance* utterance,
+  virtual int GetMatchingVoice(const TtsUtterance* utterance,
                                std::vector<VoiceData>& voices) = 0;
 
   // Uses the user preferences to update the |rate|, |pitch| and |volume| for
   // a given |utterance|.
-  virtual void UpdateUtteranceDefaultsFromPrefs(Utterance* utterance,
+  virtual void UpdateUtteranceDefaultsFromPrefs(TtsUtterance* utterance,
                                                 double* rate,
                                                 double* pitch,
                                                 double* volume) = 0;

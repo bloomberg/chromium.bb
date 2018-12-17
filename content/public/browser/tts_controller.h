@@ -15,39 +15,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/tts_utterance.h"
 #include "url/gurl.h"
 
-namespace base {
-class Value;
-}
-
 namespace content {
-class Utterance;
 class BrowserContext;
 class TtsPlatform;
-
-// Events sent back from the TTS engine indicating the progress.
-enum TtsEventType {
-  TTS_EVENT_START,
-  TTS_EVENT_END,
-  TTS_EVENT_WORD,
-  TTS_EVENT_SENTENCE,
-  TTS_EVENT_MARKER,
-  TTS_EVENT_INTERRUPTED,
-  TTS_EVENT_CANCELLED,
-  TTS_EVENT_ERROR,
-  TTS_EVENT_PAUSE,
-  TTS_EVENT_RESUME
-};
-
-// The continuous parameters that apply to a given utterance.
-struct CONTENT_EXPORT UtteranceContinuousParameters {
-  UtteranceContinuousParameters();
-
-  double rate;
-  double pitch;
-  double volume;
-};
 
 // Information about one voice.
 struct CONTENT_EXPORT VoiceData {
@@ -80,30 +53,20 @@ class CONTENT_EXPORT TtsEngineDelegate {
                          std::vector<VoiceData>* out_voices) = 0;
 
   // Speak the given utterance by sending an event to the given TTS engine.
-  virtual void Speak(Utterance* utterance, const VoiceData& voice) = 0;
+  virtual void Speak(TtsUtterance* utterance, const VoiceData& voice) = 0;
 
   // Stop speaking the given utterance by sending an event to the target
   // associated with this utterance.
-  virtual void Stop(Utterance* utterance) = 0;
+  virtual void Stop(TtsUtterance* utterance) = 0;
 
   // Pause in the middle of speaking this utterance.
-  virtual void Pause(Utterance* utterance) = 0;
+  virtual void Pause(TtsUtterance* utterance) = 0;
 
   // Resume speaking this utterance.
-  virtual void Resume(Utterance* utterance) = 0;
+  virtual void Resume(TtsUtterance* utterance) = 0;
 
   // Load the built-in TTS engine.
   virtual bool LoadBuiltInTtsEngine(BrowserContext* browser_context) = 0;
-};
-
-// Class that wants to receive events on utterances.
-class CONTENT_EXPORT UtteranceEventDelegate {
- public:
-  virtual ~UtteranceEventDelegate() {}
-  virtual void OnTtsEvent(Utterance* utterance,
-                          TtsEventType event_type,
-                          int char_index,
-                          const std::string& error_message) = 0;
 };
 
 // Class that wants to be notified when the set of
@@ -111,138 +74,6 @@ class CONTENT_EXPORT UtteranceEventDelegate {
 class CONTENT_EXPORT VoicesChangedDelegate : public base::CheckedObserver {
  public:
   virtual void OnVoicesChanged() = 0;
-};
-
-// One speech utterance.
-// TODO(katie): Can Utterance be changed into a struct with business logic
-// fully in the callers? If not, consider splitting it out into its own file,
-// and updating it to meet requirements for content/public interfaces.
-class CONTENT_EXPORT Utterance {
- public:
-  // Construct an utterance given a profile and a completion task to call
-  // when the utterance is done speaking. Before speaking this utterance,
-  // its other parameters like text, rate, pitch, etc. should all be set.
-  explicit Utterance(BrowserContext* browser_context);
-  ~Utterance();
-
-  // Sends an event to the delegate. If the event type is TTS_EVENT_END
-  // or TTS_EVENT_ERROR, deletes the utterance. If |char_index| is -1,
-  // uses the last good value.
-  void OnTtsEvent(TtsEventType event_type,
-                  int char_index,
-                  const std::string& error_message);
-
-  // Finish an utterance without sending an event to the delegate.
-  void Finish();
-
-  // Getters and setters for the text to speak and other speech options.
-  void set_text(const std::string& text) { text_ = text; }
-  const std::string& text() const { return text_; }
-
-  void set_options(const base::Value* options);
-  const base::Value* options() const { return options_.get(); }
-
-  void set_src_id(int src_id) { src_id_ = src_id; }
-  int src_id() { return src_id_; }
-
-  void set_src_url(const GURL& src_url) { src_url_ = src_url; }
-  const GURL& src_url() { return src_url_; }
-
-  void set_voice_name(const std::string& voice_name) {
-    voice_name_ = voice_name;
-  }
-  const std::string& voice_name() const { return voice_name_; }
-
-  void set_lang(const std::string& lang) { lang_ = lang; }
-  const std::string& lang() const { return lang_; }
-
-  void set_continuous_parameters(const double rate,
-                                 const double pitch,
-                                 const double volume) {
-    continuous_parameters_.rate = rate;
-    continuous_parameters_.pitch = pitch;
-    continuous_parameters_.volume = volume;
-  }
-  const UtteranceContinuousParameters& continuous_parameters() {
-    return continuous_parameters_;
-  }
-
-  void set_can_enqueue(bool can_enqueue) { can_enqueue_ = can_enqueue; }
-  bool can_enqueue() const { return can_enqueue_; }
-
-  void set_required_event_types(const std::set<TtsEventType>& types) {
-    required_event_types_ = types;
-  }
-  const std::set<TtsEventType>& required_event_types() const {
-    return required_event_types_;
-  }
-
-  void set_desired_event_types(const std::set<TtsEventType>& types) {
-    desired_event_types_ = types;
-  }
-  const std::set<TtsEventType>& desired_event_types() const {
-    return desired_event_types_;
-  }
-
-  const std::string& engine_id() const { return engine_id_; }
-  void set_engine_id(const std::string& engine_id) { engine_id_ = engine_id; }
-
-  UtteranceEventDelegate* event_delegate() const { return event_delegate_; }
-  void set_event_delegate(UtteranceEventDelegate* event_delegate) {
-    event_delegate_ = event_delegate;
-  }
-
-  // Getters and setters for internal state.
-  BrowserContext* browser_context() const { return browser_context_; }
-  int id() const { return id_; }
-  bool finished() const { return finished_; }
-
- private:
-  // The BrowserContext that initiated this utterance.
-  BrowserContext* browser_context_;
-
-  // The content embedder engine ID of the engine providing TTS for this
-  // utterance, or empty if native TTS is being used.
-  std::string engine_id_;
-
-  // The unique ID of this utterance, used to associate callback functions
-  // with utterances.
-  int id_;
-
-  // The id of the next utterance, so we can associate requests with
-  // responses.
-  static int next_utterance_id_;
-
-  // The text to speak.
-  std::string text_;
-
-  // The full options arg passed to tts.speak, which may include fields
-  // other than the ones we explicitly parse, below.
-  std::unique_ptr<base::Value> options_;
-
-  // The source engine's ID of this utterance, so that it can associate
-  // events with the appropriate callback.
-  int src_id_;
-
-  // The URL of the page where called speak was called.
-  GURL src_url_;
-
-  // The delegate to be called when an utterance event is fired.
-  UtteranceEventDelegate* event_delegate_;
-
-  // The parsed options.
-  std::string voice_name_;
-  std::string lang_;
-  UtteranceContinuousParameters continuous_parameters_;
-  bool can_enqueue_;
-  std::set<TtsEventType> required_event_types_;
-  std::set<TtsEventType> desired_event_types_;
-
-  // The index of the current char being spoken.
-  int char_index_;
-
-  // True if this utterance received an event indicating it's done.
-  bool finished_;
 };
 
 // Singleton class that manages text-to-speech for all TTS engines and
@@ -260,7 +91,7 @@ class CONTENT_EXPORT TtsController {
   // and another utterance is in progress, adds it to the end of the queue.
   // Otherwise, interrupts any current utterance and speaks this one
   // immediately.
-  virtual void SpeakOrEnqueue(Utterance* utterance) = 0;
+  virtual void SpeakOrEnqueue(TtsUtterance* utterance) = 0;
 
   // Stop all utterances and flush the queue. Implies leaving pause mode
   // as well.

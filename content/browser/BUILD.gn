@@ -1719,6 +1719,8 @@ jumbo_source_set("browser") {
     "speech/tts_mac.mm",
     "speech/tts_platform_impl.cc",
     "speech/tts_platform_impl.h",
+    "speech/tts_utterance_impl.cc",
+    "speech/tts_utterance_impl.h",
     "speech/tts_win.cc",
     "ssl/ssl_client_auth_handler.cc",
     "ssl/ssl_client_auth_handler.h",

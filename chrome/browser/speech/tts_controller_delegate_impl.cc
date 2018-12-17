@@ -61,7 +61,7 @@ TtsControllerDelegateImpl::~TtsControllerDelegateImpl() {
 }
 
 int TtsControllerDelegateImpl::GetMatchingVoice(
-    const content::Utterance* utterance,
+    const content::TtsUtterance* utterance,
     std::vector<content::VoiceData>& voices) {
   // Return the index of the voice that best match the utterance parameters.
   //
@@ -102,31 +102,31 @@ int TtsControllerDelegateImpl::GetMatchingVoice(
     int score = 0;
 
     // If the extension ID is specified, check for an exact match.
-    if (!utterance->engine_id().empty() &&
-        utterance->engine_id() != voice.engine_id)
+    if (!utterance->GetEngineId().empty() &&
+        utterance->GetEngineId() != voice.engine_id)
       continue;
 
     // If the voice name is specified, check for an exact match.
-    if (!utterance->voice_name().empty() &&
-        voice.name != utterance->voice_name())
+    if (!utterance->GetVoiceName().empty() &&
+        voice.name != utterance->GetVoiceName())
       continue;
 
     // Prefer the utterance language.
-    if (!voice.lang.empty() && !utterance->lang().empty()) {
+    if (!voice.lang.empty() && !utterance->GetLang().empty()) {
       // An exact language match is worth more than a partial match.
-      if (voice.lang == utterance->lang()) {
+      if (voice.lang == utterance->GetLang()) {
         score += 128;
       } else if (l10n_util::GetLanguage(voice.lang) ==
-                 l10n_util::GetLanguage(utterance->lang())) {
+                 l10n_util::GetLanguage(utterance->GetLang())) {
         score += 64;
       }
     }
 
     // Next, prefer required event types.
-    if (utterance->required_event_types().size() > 0) {
+    if (utterance->GetRequiredEventTypes().size() > 0) {
       bool has_all_required_event_types = true;
-      for (auto iter = utterance->required_event_types().begin();
-           iter != utterance->required_event_types().end(); ++iter) {
+      for (auto iter = utterance->GetRequiredEventTypes().begin();
+           iter != utterance->GetRequiredEventTypes().end(); ++iter) {
         if (voice.events.find(*iter) == voice.events.end()) {
           has_all_required_event_types = false;
           break;
@@ -142,9 +142,9 @@ int TtsControllerDelegateImpl::GetMatchingVoice(
       // First prefer the user's preference voice for the utterance language,
       // if the utterance language is specified.
       std::string voice_id;
-      if (!utterance->lang().empty()) {
-        lang_to_voice_pref->GetString(l10n_util::GetLanguage(utterance->lang()),
-                                      &voice_id);
+      if (!utterance->GetLang().empty()) {
+        lang_to_voice_pref->GetString(
+            l10n_util::GetLanguage(utterance->GetLang()), &voice_id);
         if (VoiceIdMatches(voice_id, voice))
           score += 16;
       }
@@ -187,7 +187,7 @@ int TtsControllerDelegateImpl::GetMatchingVoice(
 }
 
 void TtsControllerDelegateImpl::UpdateUtteranceDefaultsFromPrefs(
-    content::Utterance* utterance,
+    content::TtsUtterance* utterance,
     double* rate,
     double* pitch,
     double* volume) {
@@ -211,12 +211,12 @@ void TtsControllerDelegateImpl::UpdateUtteranceDefaultsFromPrefs(
 }
 
 const PrefService* TtsControllerDelegateImpl::GetPrefService(
-    const content::Utterance* utterance) {
+    const content::TtsUtterance* utterance) {
   const PrefService* prefs = nullptr;
-  // The utterance->browser_context() is null in tests.
-  if (utterance->browser_context()) {
+  // The utterance->GetBrowserContext() is null in tests.
+  if (utterance->GetBrowserContext()) {
     const Profile* profile =
-        Profile::FromBrowserContext(utterance->browser_context());
+        Profile::FromBrowserContext(utterance->GetBrowserContext());
     if (profile)
       prefs = profile->GetPrefs();
   }

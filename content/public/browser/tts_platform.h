@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tts_controller.h"
+#include "content/public/browser/tts_utterance.h"
 
 namespace content {
 
@@ -61,7 +62,7 @@ class CONTENT_EXPORT TtsPlatform {
 
   // Allows the platform to monitor speech commands and the voices used
   // for each one.
-  virtual void WillSpeakUtteranceWithVoice(const Utterance* utterance,
+  virtual void WillSpeakUtteranceWithVoice(const TtsUtterance* utterance,
                                            const VoiceData& voice_data) = 0;
 
   virtual std::string GetError() = 0;
