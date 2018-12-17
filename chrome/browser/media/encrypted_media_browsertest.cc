@@ -854,6 +854,13 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadUnknownSession) {
                    kEmeSessionNotFound);
 }
 
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadSessionAfterClose) {
+  base::StringPairs query_params{{"keySystem", kExternalClearKeyKeySystem}};
+  RunEncryptedMediaTestPage("eme_load_session_after_close_test.html",
+                            kExternalClearKeyKeySystem, query_params,
+                            media::kEnded);
+}
+
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
 

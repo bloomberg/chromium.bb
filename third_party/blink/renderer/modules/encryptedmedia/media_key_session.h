@@ -142,6 +142,7 @@ class MediaKeySession final
   WeakMember<MediaKeys> media_keys_;
 
   // Session properties.
+  String session_id_;
   WebEncryptedMediaSessionType session_type_;
   double expiration_;
   Member<MediaKeyStatusMap> key_statuses_map_;
