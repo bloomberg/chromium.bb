@@ -141,6 +141,7 @@ const char kUmaSelectDefaultSearchEngine[] =
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
   TableViewModel* model = self.tableViewModel;
 
   // Only handle taps on search engine items.
@@ -209,7 +210,6 @@ const char kUmaSelectDefaultSearchEngine[] =
               [model indexInItemTypeForIndexPath:indexPath]];
 
   [self reconfigureCellsForItems:modifiedItems];
-  [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 #pragma mark Internal methods
