@@ -1331,7 +1331,9 @@ void ShapeResult::CopyRange(unsigned start_offset,
       // No need to process runs after the end of the range.
       if ((!Rtl() && end_offset <= run_end) ||
           (Rtl() && start_offset > run_start)) {
-        if (start_run_index)
+        // RTL cannot use |start_run_index| because runs are in the descending
+        // order.
+        if (!Rtl() && start_run_index)
           *start_run_index = run_index;
         break;
       }

@@ -741,6 +741,10 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     // If the text is from one item, use the ShapeResult as is.
     if (end_offset == start_item.EndOffset()) {
       start_item.shape_result_ = std::move(shape_result);
+      DCHECK_EQ(start_item.TextShapeResult()->StartIndex(),
+                start_item.StartOffset());
+      DCHECK_EQ(start_item.TextShapeResult()->EndIndex(),
+                start_item.EndOffset());
       index++;
       continue;
     }
@@ -761,8 +765,21 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
       // item that has its first code unit keeps the glyph.
       item.shape_result_ = shape_result->SubRange(
           item.StartOffset(), item.EndOffset(), &opaque_context);
+      DCHECK(item.TextShapeResult());
+      DCHECK_EQ(item.TextShapeResult()->StartIndex(), item.StartOffset());
+      DCHECK_EQ(item.TextShapeResult()->EndIndex(), item.EndOffset());
     }
   }
+
+#if DCHECK_IS_ON()
+  for (const NGInlineItem& item : *items) {
+    if (item.Type() == NGInlineItem::kText) {
+      DCHECK(item.TextShapeResult());
+      DCHECK_EQ(item.TextShapeResult()->StartIndex(), item.StartOffset());
+      DCHECK_EQ(item.TextShapeResult()->EndIndex(), item.EndOffset());
+    }
+  }
+#endif
 }
 
 // Create Vector<NGInlineItem> with :first-line rules applied if needed.
