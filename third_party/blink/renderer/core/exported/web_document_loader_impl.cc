@@ -48,6 +48,11 @@
 
 namespace blink {
 
+// static
+bool WebDocumentLoader::WillLoadUrlAsEmpty(const WebURL& url) {
+  return DocumentLoader::WillLoadUrlAsEmpty(url);
+}
+
 const WebURLRequest& WebDocumentLoaderImpl::OriginalRequest() const {
   return original_request_wrapper_;
 }

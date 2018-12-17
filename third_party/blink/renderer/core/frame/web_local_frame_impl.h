@@ -314,6 +314,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebURLError&) const override;
   void RenderFallbackContent() const override;
   void SetCommittedFirstRealLoad() override;
+  bool HasCommittedFirstRealLoad() override;
   void ClientDroppedNavigation() override;
   void MarkAsLoading() override;
   bool CreatePlaceholderDocumentLoader(

@@ -1153,6 +1153,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // Sends a FrameHostMsg_BeginNavigation to the browser
   void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info);
 
+  // Commit a navigation that isn't handled by the browser (e.g., an empty
+  // document or an MHTML archive).
+  void CommitSyncNavigation(std::unique_ptr<blink::WebNavigationInfo> info);
+
   // Decodes a data url for navigation commit.
   void DecodeDataURL(const CommonNavigationParams& common_params,
                      const RequestNavigationParams& request_params,
@@ -1604,6 +1608,8 @@ class CONTENT_EXPORT RenderFrameImpl
   bool committing_main_request_ = false;
 
   RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
+
+  base::CancelableOnceCallback<void()> sync_navigation_callback_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

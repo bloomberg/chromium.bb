@@ -3326,6 +3326,7 @@ void RenderFrameImpl::CommitFailedNavigation(
       !FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type));
   RenderFrameImpl::PrepareRenderViewForNavigation(common_params.url,
                                                   request_params);
+  sync_navigation_callback_.Cancel();
 
   // Log a console message for subframe loads that failed due to a legacy
   // Symantec certificate that has been distrusted or is slated for distrust
@@ -4673,6 +4674,7 @@ void RenderFrameImpl::RenderFallbackContentInParentProcess() {
 
 void RenderFrameImpl::AbortClientNavigation() {
   browser_side_navigation_pending_ = false;
+  sync_navigation_callback_.Cancel();
   if (!IsPerNavigationMojoInterfaceEnabled())
     Send(new FrameHostMsg_AbortNavigation(routing_id_));
 }
@@ -5774,6 +5776,7 @@ void RenderFrameImpl::PrepareFrameForCommit(
     const RequestNavigationParams& request_params) {
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
+  sync_navigation_callback_.Cancel();
 
   GetContentClient()->SetActiveURL(
       url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
@@ -6103,21 +6106,22 @@ void RenderFrameImpl::BeginNavigation(
       for (auto& observer : observers_)
         observer.WillSubmitForm(info->form);
     }
+
+    sync_navigation_callback_.Cancel();
+
     // If the navigation is not synchronous, send it to the browser.  This
     // includes navigations with no request being sent to the network stack.
     if (!use_archive && IsURLHandledByNetworkStack(url)) {
       BeginNavigationInternal(std::move(info));
+    } else if (WebDocumentLoader::WillLoadUrlAsEmpty(url) &&
+               frame_->HasCommittedFirstRealLoad()) {
+      sync_navigation_callback_.Reset(
+          base::BindOnce(&RenderFrameImpl::CommitSyncNavigation,
+                         weak_factory_.GetWeakPtr(), base::Passed(&info)));
+      frame_->GetTaskRunner(blink::TaskType::kInternalLoading)
+          ->PostTask(FROM_HERE, sync_navigation_callback_.callback());
     } else {
-      // TODO(dgozman): should we follow the RFI::CommitNavigation path instead?
-      auto navigation_params = WebNavigationParams::CreateFromInfo(*info);
-      // We need the provider to be non-null, otherwise Blink crashes, even
-      // though the provider should not be used for any actual networking.
-      navigation_params->service_worker_network_provider =
-          BuildServiceWorkerNetworkProviderForNavigation(
-              nullptr /* request_params */,
-              nullptr /* controller_service_worker_info */);
-      frame_->CommitNavigation(std::move(navigation_params),
-                               BuildDocumentState());
+      CommitSyncNavigation(std::move(info));
     }
     return;
   }
@@ -6131,6 +6135,19 @@ void RenderFrameImpl::BeginNavigation(
   } else {
     OpenURL(std::move(info), /*is_history_navigation_in_new_child=*/false);
   }
+}
+
+void RenderFrameImpl::CommitSyncNavigation(
+    std::unique_ptr<blink::WebNavigationInfo> info) {
+  // TODO(dgozman): should we follow the RFI::CommitNavigation path instead?
+  auto navigation_params = WebNavigationParams::CreateFromInfo(*info);
+  // We need the provider to be non-null, otherwise Blink crashes, even
+  // though the provider should not be used for any actual networking.
+  navigation_params->service_worker_network_provider =
+      BuildServiceWorkerNetworkProviderForNavigation(
+          nullptr /* request_params */,
+          nullptr /* controller_service_worker_info */);
+  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState());
 }
 
 void RenderFrameImpl::OnGetSavableResourceLinks() {

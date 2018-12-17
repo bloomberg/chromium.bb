@@ -972,12 +972,16 @@ const KURL& DocumentLoader::UnreachableURL() const {
   return substitute_data_.FailingURL();
 }
 
+bool DocumentLoader::WillLoadUrlAsEmpty(const KURL& url) {
+  if (url.IsEmpty())
+    return true;
+  return SchemeRegistry::ShouldLoadURLSchemeAsEmptyDocument(url.Protocol());
+}
+
 bool DocumentLoader::MaybeLoadEmpty() {
-  bool should_load_empty = !substitute_data_.IsValid() &&
-                           (request_.Url().IsEmpty() ||
-                            SchemeRegistry::ShouldLoadURLSchemeAsEmptyDocument(
-                                request_.Url().Protocol()));
-  if (!should_load_empty)
+  if (substitute_data_.IsValid())
+    return false;
+  if (!WillLoadUrlAsEmpty(request_.Url()))
     return false;
 
   if (request_.Url().IsEmpty() &&
