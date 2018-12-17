@@ -389,8 +389,12 @@ Response InspectorEmulationAgent::setNavigatorOverrides(
 
 void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
   TRACE_EVENT_ASYNC_END0("renderer.scheduler", "VirtualTimeBudget", this);
-  DCHECK(web_local_frame_);
-  web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
+  WebView* view = web_local_frame_->View();
+  if (!view) {
+    DCHECK_EQ(false, virtual_time_setup_);
+    return;
+  }
+  view->Scheduler()->SetVirtualTimePolicy(
       PageScheduler::VirtualTimePolicy::kPause);
   virtual_time_policy_.Set(protocol::Emulation::VirtualTimePolicyEnum::Pause);
   GetFrontend()->virtualTimeBudgetExpired();
