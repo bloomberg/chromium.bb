@@ -3143,6 +3143,12 @@ source_set("quic_test_tools") {
     "quic/mock_encrypter.h",
     "quic/test_task_runner.cc",
     "quic/test_task_runner.h",
+    "third_party/quic/core/qpack/qpack_decoder_test_utils.cc",
+    "third_party/quic/core/qpack/qpack_decoder_test_utils.h",
+    "third_party/quic/core/qpack/qpack_encoder_test_utils.cc",
+    "third_party/quic/core/qpack/qpack_encoder_test_utils.h",
+    "third_party/quic/core/qpack/qpack_test_utils.cc",
+    "third_party/quic/core/qpack/qpack_test_utils.h",
     "third_party/quic/core/quic_trace_visitor.cc",
     "third_party/quic/core/quic_trace_visitor.h",
     "third_party/quic/platform/api/quic_expect_bug.h",
@@ -5084,20 +5090,14 @@ test("net_unittests") {
     "third_party/quic/core/legacy_quic_stream_id_manager_test.cc",
     "third_party/quic/core/packet_number_indexed_queue_test.cc",
     "third_party/quic/core/qpack/qpack_decoder_test.cc",
-    "third_party/quic/core/qpack/qpack_decoder_test_utils.cc",
-    "third_party/quic/core/qpack/qpack_decoder_test_utils.h",
     "third_party/quic/core/qpack/qpack_encoder_stream_receiver_test.cc",
     "third_party/quic/core/qpack/qpack_encoder_stream_sender_test.cc",
     "third_party/quic/core/qpack/qpack_encoder_test.cc",
-    "third_party/quic/core/qpack/qpack_encoder_test_utils.cc",
-    "third_party/quic/core/qpack/qpack_encoder_test_utils.h",
     "third_party/quic/core/qpack/qpack_header_table_test.cc",
     "third_party/quic/core/qpack/qpack_instruction_decoder_test.cc",
     "third_party/quic/core/qpack/qpack_instruction_encoder_test.cc",
     "third_party/quic/core/qpack/qpack_round_trip_test.cc",
     "third_party/quic/core/qpack/qpack_static_table_test.cc",
-    "third_party/quic/core/qpack/qpack_test_utils.cc",
-    "third_party/quic/core/qpack/qpack_test_utils.h",
     "third_party/quic/core/quic_alarm_test.cc",
     "third_party/quic/core/quic_arena_scoped_ptr_test.cc",
     "third_party/quic/core/quic_bandwidth_test.cc",
@@ -6321,4 +6321,56 @@ fuzzer_test("net_uri_template_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_uri_template_fuzzer.dict"
+}
+
+fuzzer_test("net_qpack_decoder_fuzzer") {
+  sources = [
+    "third_party/quic/core/qpack/fuzzer/qpack_decoder_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":quic_test_tools",
+    "//base",
+    "//net",
+  ]
+  seed_corpus =
+      "third_party/quic/core/qpack/fuzzer/qpack_decoder_fuzzer_corpus/"
+}
+
+fuzzer_test("net_qpack_encoder_stream_receiver_fuzzer") {
+  sources = [
+    "third_party/quic/core/qpack/fuzzer/qpack_encoder_stream_receiver_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "third_party/quic/core/qpack/fuzzer/qpack_encoder_stream_receiver_fuzzer_corpus/"
+}
+
+fuzzer_test("net_qpack_encoder_stream_sender_fuzzer") {
+  sources = [
+    "third_party/quic/core/qpack/fuzzer/qpack_encoder_stream_sender_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "third_party/quic/core/qpack/fuzzer/qpack_encoder_stream_sender_fuzzer_corpus/"
+}
+
+fuzzer_test("net_qpack_round_trip_fuzzer") {
+  sources = [
+    "third_party/quic/core/qpack/fuzzer/qpack_round_trip_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":quic_test_tools",
+    "//base",
+    "//net",
+  ]
+  seed_corpus =
+      "third_party/quic/core/qpack/fuzzer/qpack_round_trip_fuzzer_corpus/"
 }
