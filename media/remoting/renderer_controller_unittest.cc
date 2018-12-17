@@ -396,5 +396,15 @@ TEST_F(RendererControllerTest, StartFailed) {
   ExpectInLocalRendering();
 }
 
+TEST_F(RendererControllerTest, SetClientNullptr) {
+  controller_ = FakeRemoterFactory::CreateController(true);
+  InitializeControllerAndBecomeDominant(DefaultMetadata(VideoCodec::kCodecVP8),
+                                        GetDefaultSinkMetadata(true));
+  RunUntilIdle();
+  controller_->SetClient(nullptr);
+  RunUntilIdle();
+  ExpectInLocalRendering();
+}
+
 }  // namespace remoting
 }  // namespace media
