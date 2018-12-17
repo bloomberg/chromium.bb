@@ -20,7 +20,6 @@
 #include "components/search_provider_logos/logo_common.h"
 #include "components/search_provider_logos/logo_service.h"
 
-class GaiaCookieManagerService;
 class TemplateURLService;
 
 namespace base {
@@ -30,6 +29,10 @@ class Clock;
 namespace image_fetcher {
 class ImageDecoder;
 }  // namespace image_fetcher
+
+namespace identity {
+class IdentityManager;
+}  // namespace identity
 
 namespace network {
 class SimpleURLLoader;
@@ -45,7 +48,7 @@ class LogoServiceImpl : public LogoService {
  public:
   LogoServiceImpl(
       const base::FilePath& cache_directory,
-      GaiaCookieManagerService* cookie_service,
+      identity::IdentityManager* identity_manager,
       TemplateURLService* template_url_service,
       std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,

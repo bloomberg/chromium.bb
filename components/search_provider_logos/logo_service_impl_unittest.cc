@@ -39,6 +39,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/base/url_util.h"
@@ -46,6 +47,7 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -75,6 +77,12 @@ namespace {
 
 using MockLogoCallback = base::MockCallback<LogoCallback>;
 using MockEncodedLogoCallback = base::MockCallback<EncodedLogoCallback>;
+
+#if defined(OS_CHROMEOS)
+using SigninManagerForTest = FakeSigninManagerBase;
+#else
+using SigninManagerForTest = FakeSigninManager;
+#endif  // OS_CHROMEOS
 
 scoped_refptr<base::RefCountedString> EncodeBitmapAsPNG(
     const SkBitmap& bitmap) {
@@ -287,13 +295,27 @@ class SigninHelper {
         token_service_(&pref_service_),
         cookie_service_(&token_service_,
                         &signin_client_,
-                        &test_url_loader_factory_) {
+                        &test_url_loader_factory_),
+#if defined(OS_CHROMEOS)
+        signin_manager_(&signin_client_, &account_tracker_service_),
+#else
+        signin_manager_(&signin_client_,
+                        &token_service_,
+                        &account_tracker_service_,
+                        &cookie_service_),
+#endif
+        identity_test_env_(&account_tracker_service_,
+                           &token_service_,
+                           &signin_manager_,
+                           &cookie_service_) {
     // GaiaCookieManagerService calls static methods of AccountTrackerService
     // which access prefs.
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
   }
 
-  GaiaCookieManagerService* cookie_service() { return &cookie_service_; }
+  identity::IdentityManager* identity_manager() {
+    return identity_test_env_.identity_manager();
+  }
 
   void SignIn() {
     cookie_service_.SetListAccountsResponseOneAccount("user@gmail.com",
@@ -314,8 +336,11 @@ class SigninHelper {
   TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
+  AccountTrackerService account_tracker_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   FakeGaiaCookieManagerService cookie_service_;
+  SigninManagerForTest signin_manager_;
+  identity::IdentityTestEnvironment identity_test_env_;
 };
 
 class LogoServiceImplTest : public ::testing::Test {
@@ -339,7 +364,7 @@ class LogoServiceImplTest : public ::testing::Test {
 
     test_clock_.SetNow(base::Time::FromJsTime(INT64_C(1388686828000)));
     logo_service_ = std::make_unique<LogoServiceImpl>(
-        base::FilePath(), signin_helper_.cookie_service(),
+        base::FilePath(), signin_helper_.identity_manager(),
         &template_url_service_, std::make_unique<FakeImageDecoder>(),
         shared_factory_,
         base::BindRepeating(&LogoServiceImplTest::use_gray_background,
