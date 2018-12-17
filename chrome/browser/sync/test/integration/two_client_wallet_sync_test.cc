@@ -57,13 +57,18 @@ class TwoClientWalletSyncTest : public UssWalletSwitchToggler, public SyncTest {
 
   bool SetupSync() override {
     test_clock_.SetNow(kArbitraryDefaultTime);
+    // Plug in SyncService into PDM so that it can check we use full sync. We
+    // need to do it before starting the sync in SetupSync(). We need to setup
+    // the clients before that so we can access their sync service.
+    if (!SetupClients()) {
+      return false;
+    }
+    GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
+    GetPersonalDataManager(1)->OnSyncServiceInitialized(GetSyncService(1));
+
     if (!SyncTest::SetupSync()) {
       return false;
     }
-
-    // Plug in SyncService into PDM so that it can check we use full sync.
-    GetPersonalDataManager(0)->OnSyncServiceInitialized(GetSyncService(0));
-    GetPersonalDataManager(1)->OnSyncServiceInitialized(GetSyncService(1));
 
     // As this test does not use self notifications, wait for the metadata to
     // converge with the specialized wallet checker.
