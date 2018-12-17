@@ -23,10 +23,6 @@ class WebUI;
 class WindowedNotificationObserver;
 }  // namespace content
 
-namespace extensions {
-class ScopedCurrentChannel;
-}
-
 namespace chromeos {
 
 class NetworkPortalDetectorTestImpl;
@@ -107,18 +103,17 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
                              const std::string& refresh_token);
 
   std::unique_ptr<FakeGaia> fake_gaia_;
-  NetworkPortalDetectorTestImpl* network_portal_detector_;
+  NetworkPortalDetectorTestImpl* network_portal_detector_ = nullptr;
 
   // Whether to use background networking. Note this is only effective when it
   // is set before SetUpCommandLine is invoked.
-  bool needs_background_networking_;
+  bool needs_background_networking_ = false;
 
   std::unique_ptr<content::WindowedNotificationObserver>
       login_screen_load_observer_;
-  std::unique_ptr<extensions::ScopedCurrentChannel> scoped_channel_;
   HTTPSForwarder gaia_https_forwarder_;
-  std::string gaia_frame_parent_;
-  bool initialize_fake_merge_session_;
+  std::string gaia_frame_parent_ = "signin-frame";
+  bool initialize_fake_merge_session_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(OobeBaseTest);
 };

@@ -598,11 +598,6 @@ class EnterpriseEnrollmentConfigurationTest
 
     // Let screens to settle.
     base::RunLoop().RunUntilIdle();
-
-    // WebUI exists now, finish the setup.
-    InitializeWebContents();
-
-    base::RunLoop().RunUntilIdle();
   }
 
   void SimulateOfflineEnvironment() {

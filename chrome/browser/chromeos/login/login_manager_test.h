@@ -35,7 +35,7 @@ class LoginManagerTest : public MixinBasedBrowserTest {
                    bool should_initialize_webui);
   ~LoginManagerTest() override;
 
-  // Overridden from InProcessBrowserTest.
+  // InProcessBrowserTest:
   void TearDownOnMainThread() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
@@ -65,7 +65,7 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   // Add user with |user_id| to session.
   void AddUser(const AccountId& user_id);
 
-  content::WebContents* web_contents() { return web_contents_; }
+  content::WebContents* web_contents();
 
   static std::string GetGaiaIDForUserID(const std::string& user_id);
 
@@ -83,20 +83,12 @@ class LoginManagerTest : public MixinBasedBrowserTest {
   static const char kEnterpriseUser2GaiaId[];
 
  protected:
-  void InitializeWebContents();
-
   FakeGaia fake_gaia_;
   HTTPSForwarder gaia_https_forwarder_;
 
  private:
-
-  void set_web_contents(content::WebContents* web_contents) {
-    web_contents_ = web_contents;
-  }
-
   const bool should_launch_browser_;
   const bool should_initialize_webui_;
-  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerTest);
 };

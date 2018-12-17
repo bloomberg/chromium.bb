@@ -55,12 +55,7 @@ const char OobeBaseTest::kEmptyUserServices[] = "[]";
 const char OobeBaseTest::kFakeSIDCookie[] = "fake-SID-cookie";
 const char OobeBaseTest::kFakeLSIDCookie[] = "fake-LSID-cookie";
 
-OobeBaseTest::OobeBaseTest()
-    : fake_gaia_(new FakeGaia()),
-      network_portal_detector_(NULL),
-      needs_background_networking_(false),
-      gaia_frame_parent_("signin-frame"),
-      initialize_fake_merge_session_(true) {
+OobeBaseTest::OobeBaseTest() : fake_gaia_(new FakeGaia()) {
   set_exit_when_last_browser_closes(false);
   set_chromeos_user_ = false;
 }
