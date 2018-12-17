@@ -394,7 +394,7 @@ test("chromeos_unittests") {
 # https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
 # https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md
 if (is_cros_chrome_sdk) {
-  generate_vm_runner_script("cros_vm_launcher") {
+  generate_runner_script("cros_vm_launcher") {
     generated_script = "$root_build_dir/bin/launch_cros_vm"
 
     # Assume every time we build cros_vm_launcher, we also build chrome and
@@ -402,10 +402,10 @@ if (is_cros_chrome_sdk) {
     deploy_chrome = true
   }
 
-  # The sanity test's actual binary is baked into the vm image. All we need to
+  # The sanity test's actual binary is baked into the OS image. All we need to
   # do is build the test wrapper and build our own browser to push to the VM
   # before testing it.
-  generate_vm_runner_script("cros_vm_sanity_test") {
+  generate_runner_script("cros_vm_sanity_test") {
     testonly = true
     test_exe = "cros_vm_sanity_test"
     generated_script = "$root_build_dir/bin/run_cros_vm_sanity_test"
