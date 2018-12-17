@@ -225,6 +225,23 @@ const int kLoadingAnimationFrameTimeMs = 30;
 // See SetDisableRevealerDelayForTesting().
 bool g_disable_revealer_delay_for_testing = false;
 
+// Inserts |to_insert| into the focus order after the view |insert_after|, which
+// must be a sibling. All other sibling views will be re-ordered in a sensible
+// way around the change, ensuring there are no cycles.
+void InsertIntoFocusOrderAfter(views::View* insert_after,
+                               views::View* to_insert) {
+  DCHECK_NE(to_insert, insert_after);
+  DCHECK_EQ(to_insert->parent(), insert_after->parent());
+  views::View* const old_prev = to_insert->GetPreviousFocusableView();
+  views::View* const old_next = to_insert->GetNextFocusableView();
+  if (old_prev == insert_after)
+    return;
+  to_insert->SetNextFocusableView(insert_after->GetNextFocusableView());
+  insert_after->SetNextFocusableView(to_insert);
+  if (old_prev)
+    old_prev->SetNextFocusableView(old_next);
+}
+
 // Paints the horizontal border separating the Bookmarks Bar from the Toolbar
 // or page content according to |at_top| with |color|.
 void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
@@ -1942,7 +1959,24 @@ int BrowserView::GetBottomInsetOfLocationBarWithinToolbar() const {
 void BrowserView::ReparentTopContainerForEndOfImmersive() {
   overlay_view_->SetVisible(false);
   top_container()->DestroyLayer();
-  AddChildViewAt(top_container(), GetIndexOf(contents_container_));
+  AddChildViewAt(top_container(), 0);
+  EnsureFocusOrder();
+}
+
+void BrowserView::EnsureFocusOrder() {
+  // We want the infobar to come before the content pane, but after the bookmark
+  // bar (if present) or top container (i.e. toolbar, again if present).
+  if (bookmark_bar_view_ && bookmark_bar_view_->parent() == this)
+    InsertIntoFocusOrderAfter(bookmark_bar_view_.get(), infobar_container_);
+  else if (top_container_->parent() == this)
+    InsertIntoFocusOrderAfter(top_container_, infobar_container_);
+
+  // We want the download shelf to come after the contents container (which also
+  // contains the debug console, etc.) This prevents it from intruding into the
+  // focus order, but makes it easily accessible by using SHIFT-TAB (reverse
+  // focus traversal) from the toolbar/omnibox.
+  if (download_shelf_ && contents_container_)
+    InsertIntoFocusOrderAfter(contents_container_, download_shelf_.get());
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {
@@ -2511,6 +2545,8 @@ void BrowserView::InitViews() {
   AddChildView(contents_container_);
   set_contents_view(contents_container_);
 
+  // InfoBarContainer needs to be added as a child here for drop-shadow, but
+  // needs to come after toolbar in focus order (see EnsureFocusOrder()).
   infobar_container_ = new InfoBarContainerView(this);
   AddChildView(infobar_container_);
 
@@ -2536,6 +2572,8 @@ void BrowserView::InitViews() {
                             GetContentsLayoutManager(),
                             immersive_mode_controller_.get());
   SetLayoutManager(std::move(browser_view_layout));
+
+  EnsureFocusOrder();
 
 #if defined(OS_WIN)
   // Create a custom JumpList and add it to an observer of TabRestoreService

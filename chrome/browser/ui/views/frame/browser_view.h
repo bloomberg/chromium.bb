@@ -675,6 +675,10 @@ class BrowserView : public BrowserWindow,
   // |overlay_view_|.
   void ReparentTopContainerForEndOfImmersive();
 
+  // Ensures that the correct focus order is set for child views, regardless of
+  // the actual child order.
+  void EnsureFocusOrder();
+
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_ = nullptr;
 
