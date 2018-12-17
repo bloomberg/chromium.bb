@@ -67,6 +67,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
@@ -535,6 +536,23 @@ void PageInfoBubbleView::OnChosenObjectDeleted(
 void PageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
   PageInfoBubbleViewBase::OnWidgetDestroying(widget);
   presenter_->OnUIClosing();
+
+  // If we're closing the bubble because the user pressed ESC or because the
+  // user clicked Close (rather than the user clicking directly on something
+  // else), we should refocus the Omnibox. This lets the user tab into the
+  // "You should reload this page" infobar rather than dumping them back out
+  // into a stale webpage.
+  const views::Widget::ClosedReason closed_reason =
+      GetWidget()->closed_reason();
+  if (closed_reason == views::Widget::ClosedReason::kEscKeyPressed ||
+      closed_reason == views::Widget::ClosedReason::kCloseButtonClicked) {
+    // Because of how this bubble shows, the anchor is always in the toolbar,
+    // which means the infobar with the reload prompt is just after in the focus
+    // order.
+    View* const anchor = GetAnchorView();
+    if (anchor)
+      anchor->GetFocusManager()->SetFocusedView(anchor);
+  }
 }
 
 void PageInfoBubbleView::ButtonPressed(views::Button* button,
