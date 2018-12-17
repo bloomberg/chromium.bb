@@ -28,8 +28,6 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
       signin_metrics::SignoutDelete delete_metric) override;
   bool IsSettingPrimaryAccountAllowed() const override;
   void SetSettingPrimaryAccountAllowed(bool allowed) override;
-  bool IsClearingPrimaryAccountAllowed() const override;
-  void SetClearingPrimaryAccountAllowed(bool allowed) override;
   void SetAllowedPrimaryAccountPattern(const std::string& pattern) override;
   void LegacyStartSigninWithRefreshTokenForPrimaryAccount(
       const std::string& refresh_token,

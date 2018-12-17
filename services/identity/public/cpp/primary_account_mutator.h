@@ -64,11 +64,6 @@ class PrimaryAccountMutator {
   virtual bool IsSettingPrimaryAccountAllowed() const = 0;
   virtual void SetSettingPrimaryAccountAllowed(bool allowed) = 0;
 
-  // Getter and setter that allow enabling or disabling the ability to clear
-  // the primary account.
-  virtual bool IsClearingPrimaryAccountAllowed() const = 0;
-  virtual void SetClearingPrimaryAccountAllowed(bool allowed) = 0;
-
   // Sets the pattern controlling which user names are allowed when setting
   // the primary account.
   virtual void SetAllowedPrimaryAccountPattern(const std::string& pattern) = 0;
