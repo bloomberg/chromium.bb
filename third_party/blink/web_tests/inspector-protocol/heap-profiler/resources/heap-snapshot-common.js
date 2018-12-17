@@ -23,6 +23,7 @@
     session.protocol.HeapProfiler.offAddHeapSnapshotChunk(onChunk);
     testRunner.log('Took heap snapshot');
     loader.close();
+    await new Promise(r => setTimeout(r));
     var snapshot = loader.buildSnapshot(false);
     testRunner.log('Parsed snapshot');
     return snapshot;
