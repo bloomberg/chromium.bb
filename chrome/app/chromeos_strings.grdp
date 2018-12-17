@@ -3231,7 +3231,7 @@
     Unknown error.
   </message>
   <message name="IDS_REQUEST_PIN_DIALOG_ATTEMPTS_LEFT" desc="The text displayed in the certificate provider PIN request dialog about the number of attempts left">
-    Attempts left: $1
+    Attempts left: <ph name="ATTEMPTS_LEFT">$1<ex>3</ex></ph>
   </message>
   <message name="IDS_REQUEST_PIN_DIALOG_PIN" desc="The Provider Identification Number abbreviation">
     PIN
