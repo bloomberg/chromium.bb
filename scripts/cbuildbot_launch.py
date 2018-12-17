@@ -245,6 +245,7 @@ def CleanBuildRoot(root, repo, build_state):
         be updated if the distfiles cache is cleaned.
   """
   previous_state = GetLastBuildState(root)
+  SetLastBuildState(root, build_state)
   build_state.distfiles_ts = _MaybeCleanDistfiles(
       repo, previous_state.distfiles_ts)
 
@@ -278,7 +279,13 @@ def CleanBuildRoot(root, repo, build_state):
     # The previous run might have been killed in the middle leaving stale git
     # locks. Clean those up, first.
     repo.PreLoad()
-    repo.CleanStaleLocks()
+
+    # If the previous build didn't exit normally, run an expensive step to
+    # cleanup abandoned git locks.
+    if previous_state.status not in (constants.BUILDER_STATUS_FAILED,
+                                     constants.BUILDER_STATUS_PASSED):
+      repo.CleanStaleLocks()
+
     repo.BuildRootGitCleanup(prune_all=True)
   except Exception:
     logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
