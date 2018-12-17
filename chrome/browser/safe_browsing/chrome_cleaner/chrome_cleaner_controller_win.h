@@ -108,7 +108,6 @@ class ChromeCleanerController {
         const ChromeCleanerScannerResults& scanner_results) {}
     virtual void OnRebootRequired() {}
     virtual void OnRebootFailed() {}
-    virtual void OnLogsEnabledChanged(bool logs_enabled) {}
 
    protected:
     virtual ~Observer() = default;

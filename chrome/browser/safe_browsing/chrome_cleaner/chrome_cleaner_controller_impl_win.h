@@ -85,8 +85,6 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   ChromeCleanerControllerImpl();
   ~ChromeCleanerControllerImpl() override;
 
-  void Init();
-
   void NotifyObserver(Observer* observer) const;
   void SetStateAndNotifyObservers(State state);
   // Used to invalidate weak pointers and reset accumulated data that is no
@@ -126,9 +124,6 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   extensions::ExtensionService* extension_service_;
 
   State state_ = State::kIdle;
-  // The logs permission checkboxes in the Chrome Cleaner dialog and webui page
-  // are opt out.
-  bool logs_enabled_ = true;
   // Whether Cleanup is powered by an external partner.
   bool powered_by_partner_ = false;
   IdleReason idle_reason_ = IdleReason::kInitial;

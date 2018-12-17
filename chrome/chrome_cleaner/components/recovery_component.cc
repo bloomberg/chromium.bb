@@ -71,7 +71,7 @@ constexpr net::NetworkTrafficAnnotationTag kComponentDownloadTrafficAnnotation =
             trigger:
               "The user either accepted a prompt to remove unwanted software, "
               "or went to \"Clean up computer\" in the settings page and chose "
-              "to \"Find and remove harmful software\"."
+              "to \"Find harmful software\"."
             data: "None"
             destination: GOOGLE_OWNED_SERVICE
           }

@@ -87,7 +87,6 @@ class MockChromeCleanerControllerObserver
   MOCK_METHOD2(OnCleaning, void(bool, const ChromeCleanerScannerResults&));
   MOCK_METHOD0(OnRebootRequired, void());
   MOCK_METHOD0(OnRebootFailed, void());
-  MOCK_METHOD1(OnLogsEnabledChanged, void(bool));
 };
 
 enum class MetricsStatus {
@@ -543,10 +542,6 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
                           controller_->ReplyWithUserResponse(
                               profile1, service(), user_response_);
                         })));
-    // Since logs upload is enabled by default, OnLogsEnabledChanged() will be
-    // called only if the user response is kAcceptedWithoutLogs.
-    if (user_response_ == UserResponse::kAcceptedWithoutLogs)
-      EXPECT_CALL(mock_observer_, OnLogsEnabledChanged(false));
   } else {
     EXPECT_CALL(mock_observer_, OnInfected(_, _)).Times(0);
   }
