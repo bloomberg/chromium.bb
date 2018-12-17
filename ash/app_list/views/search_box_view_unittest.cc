@@ -277,6 +277,45 @@ TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineNotGoogle) {
                                          *actual_icon.bitmap()));
 }
 
+class SearchBoxViewAssistantButtonTest : public SearchBoxViewTest {
+ public:
+  SearchBoxViewAssistantButtonTest() = default;
+  ~SearchBoxViewAssistantButtonTest() override = default;
+
+  // Overridden from testing::Test
+  void SetUp() override {
+    SearchBoxViewTest::SetUp();
+    view_delegate()->GetSearchModel()->search_box()->SetShowAssistantButton(
+        true);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxViewAssistantButtonTest);
+};
+
+// Tests that the assistant button is visible by default.
+TEST_F(SearchBoxViewAssistantButtonTest, AssistantButtonVisibleByDefault) {
+  EXPECT_TRUE(view()->assistant_button()->visible());
+}
+
+// Tests that the assistant button is visible after the search box is activated.
+TEST_F(SearchBoxViewAssistantButtonTest,
+       AssistantButtonVisibleAfterSearchBoxActived) {
+  SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
+  EXPECT_TRUE(view()->assistant_button()->visible());
+}
+
+// Tests that the assistant button is invisible after typing in the search box,
+// and comes back when search box is empty.
+TEST_F(SearchBoxViewAssistantButtonTest,
+       AssistantButtonChangeVisibilityWithTyping) {
+  KeyPress(ui::VKEY_A);
+  EXPECT_FALSE(view()->assistant_button()->visible());
+
+  KeyPress(ui::VKEY_BACK);
+  EXPECT_TRUE(view()->assistant_button()->visible());
+}
+
 class SearchBoxViewAutocompleteTest
     : public SearchBoxViewTest,
       public ::testing::WithParamInterface<ui::KeyboardCode> {
