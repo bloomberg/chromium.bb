@@ -4698,6 +4698,11 @@ crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 # Antialiasing error
 crbug.com/845973 virtual/display-compositor-pixel-dump/fast/canvas/display-compositor-pixel-dump/OffscreenCanvas-opaque-background-compositing.html  [ Pass Failure ]
 
+# Some Windows 7 vm images have a timezone-related registry not populated
+# leading this test to fail.
+# https://chromium-review.googlesource.com/c/chromium/src/+/1379250/6
+crbug.com/856119 [ Win7 ] fast/js/regress/resolved-timezone-defined.html  [ Pass Failure ]
+
 # Tests occasionaly timing out (flaky) on WebKit Win7 dbg builder
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Timeout ]
