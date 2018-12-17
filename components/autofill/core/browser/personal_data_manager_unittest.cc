@@ -7153,6 +7153,7 @@ TEST_F(PersonalDataManagerTest, OnGaiaCookieDeletedByUserAction) {
       prefs_->GetDictionary(prefs::kAutofillSyncTransportOptIn)->DictEmpty());
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   // The method should return false if one of these is not respected:
   //   * The sync_service is not null
@@ -7194,6 +7195,18 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
     base::HistogramTester histogram_tester;
     EXPECT_TRUE(personal_data_->ShouldShowCardsFromAccountOption());
     histogram_tester.ExpectUniqueSample(kHistogramName, false, 1);
+  }
+
+  // Enable feature to always show server cards. The function should now return
+  // false.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/
+        {features::kAutofillEnableAccountWalletStorage,
+         features::kAutofillAlwaysShowServerCardsInSyncTransport},
+        /*disabled_features=*/{});
+    EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
   }
 
   // Set that the user already opted-in. Check that the function now returns
@@ -7265,6 +7278,93 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
     histogram_tester.ExpectTotalCount(kHistogramName, 0);
   }
 }
+#else  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
+  // The method should return false if one of these is not respected:
+  //   * The sync_service is not null
+  //   * The sync feature is not enabled
+  //   * The user has server cards
+  //   * The user has not opted-in to seeing their account cards
+  // Start by setting everything up, then making each of these conditions false
+  // independently, one by one.
+
+  // Set everything up so that the proposition should be shown on Desktop.
+  // Set an an active secondary account.
+  AccountInfo active_info;
+  active_info.email = "signed_in_account@email.com";
+  active_info.account_id = "account_id";
+  sync_service_.SetAuthenticatedAccountInfo(active_info);
+  sync_service_.SetIsAuthenticatedAccountPrimary(false);
+
+  // Set a server credit card.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
+  test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
+                          "378282246310005" /* American Express */, "04",
+                          "2999", "1");
+  SetServerCards(server_cards);
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+
+  // Set the feature to enabled.
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
+      /*disabled_features=*/{});
+
+  // Make sure the function returns false.
+  EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
+
+  // Enable feature to always show server cards. The function should still
+  // return false.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/
+        {features::kAutofillEnableAccountWalletStorage,
+         features::kAutofillAlwaysShowServerCardsInSyncTransport},
+        /*disabled_features=*/{});
+    EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
+  }
+
+  // Set that the user already opted-in. Check that the function still returns
+  // false.
+  ::autofill::prefs::SetUserOptedInWalletSyncTransport(
+      prefs_.get(), active_info.account_id, true);
+  EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
+
+  // Re-opt the user out. Check that the function now returns true.
+  ::autofill::prefs::SetUserOptedInWalletSyncTransport(
+      prefs_.get(), active_info.account_id, false);
+  EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
+
+  // Set that the user has no server cards. Check that the function still
+  // returns false.
+  SetServerCards({});
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
+
+  // Re-set some server cards. Check that the function still returns false.
+  SetServerCards(server_cards);
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
+
+  // Set that the user enabled the sync feature. Check that the function still
+  // returns false.
+  sync_service_.SetIsAuthenticatedAccountPrimary(true);
+  EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
+
+  // Re-disable the sync feature. Check that the function still returns false.
+  sync_service_.SetIsAuthenticatedAccountPrimary(false);
+  EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
+
+  // Set a null sync service. Check that the function still returns false.
+  personal_data_->SetSyncServiceForTest(nullptr);
+  EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
+}
+#endif
 
 TEST_F(PersonalDataManagerTest, GetSyncSigninState) {
   // Make a non-primary account available with both a refresh token and cookie
