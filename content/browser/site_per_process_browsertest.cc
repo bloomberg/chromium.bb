@@ -13878,7 +13878,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   TestWCBeforeUnloadDelegate test_delegate(web_contents);
   EXPECT_TRUE(
       ExecJs(web_contents, "window.onbeforeunload=function(e){ return 'x' }"));
-  EXPECT_TRUE(ExecJs(web_contents, "window.location.reload()"));
+  EXPECT_TRUE(ExecJs(web_contents,
+                     "setTimeout(function() { window.location.reload() }, 0)"));
   test_delegate.Wait();
 
   // Attempt to navigate the second tab to a.com.  This will attempt to reuse
