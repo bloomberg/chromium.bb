@@ -91,19 +91,18 @@ public class HomeButton extends ChromeImageButton implements ThemeColorObserver,
             @Override
             public void onObservingDifferentTab(Tab tab) {
                 if (tab == null) return;
-                setEnabled(shouldEnableHome(tab));
+                setEnabled(shouldEnableHome(tab.getUrl()));
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab, String url) {
-                if (tab == null) return;
-                setEnabled(shouldEnableHome(tab));
+            public void onUpdateUrl(Tab tab, String url) {
+                setEnabled(shouldEnableHome(url));
             }
         };
     }
 
-    private static boolean shouldEnableHome(Tab tab) {
+    private static boolean shouldEnableHome(String url) {
         if (!FeatureUtilities.isBottomToolbarEnabled()) return true;
-        return !NewTabPage.isNTPUrl(tab.getUrl());
+        return !NewTabPage.isNTPUrl(url);
     }
 }

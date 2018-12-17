@@ -45,7 +45,7 @@ class ShareButton extends ChromeImageButton implements ThemeColorObserver {
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab, String url) {
+            public void onUpdateUrl(Tab tab, String url) {
                 if (tab == null) return;
                 setEnabled(shouldEnableShare(tab));
             }
