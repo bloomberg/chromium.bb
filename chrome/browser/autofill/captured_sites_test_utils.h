@@ -154,7 +154,8 @@ class TestRecipeReplayChromeFeatureActionExecutor {
   // document.
   virtual bool AutofillForm(content::RenderFrameHost* frame,
                             const std::string& focus_element_css_selector,
-                            const int attempts = 1);
+                            const int attempts = 1,
+                            const gfx::Point& offset = gfx::Point(0, 0));
   virtual bool AddAutofillProfileInfo(const std::string& field_type,
                                       const std::string& field_value);
   virtual bool SetupAutofillProfile();
@@ -212,7 +213,8 @@ class TestRecipeReplayer {
 
   static void SetUpCommandLine(base::CommandLine* command_line);
   static bool PlaceFocusOnElement(content::RenderFrameHost* frame,
-                                  const std::string& element_xpath);
+                                  const std::string& element_xpath,
+                                  const gfx::Point& offset);
   static bool GetCenterCoordinateOfTargetElement(
       content::RenderFrameHost* frame,
       const std::string& target_element_xpath,
@@ -262,6 +264,8 @@ class TestRecipeReplayer {
                                            std::string* xpath);
   bool GetTargetFrameFromAction(const base::DictionaryValue& action,
                                 content::RenderFrameHost** frame);
+  bool GetTargetFrameCoordOffsetFromAction(const base::DictionaryValue& action,
+                                           gfx::Point* point);
   bool GetTargetHTMLElementVisibilityEnumFromAction(
       const base::DictionaryValue& action,
       int* visibility_enum_val);

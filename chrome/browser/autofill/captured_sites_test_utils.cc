@@ -640,6 +640,10 @@ bool TestRecipeReplayer::ExecuteAutofillAction(
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
 
+  gfx::Point offset;
+  if (!GetTargetFrameCoordOffsetFromAction(action, &offset))
+    return false;
+
   if (!WaitForElementToBeReady(frame, xpath, visibility_enum_val))
     return false;
 
@@ -658,8 +662,8 @@ bool TestRecipeReplayer::ExecuteAutofillAction(
     return false;
   }
 
-  if (!feature_action_executor()->AutofillForm(frame, xpath,
-                                               kAutofillActionNumRetries))
+  if (!feature_action_executor()->AutofillForm(
+          frame, xpath, kAutofillActionNumRetries, offset))
     return false;
   page_activity_observer.WaitTillPageIsIdle(
       kAutofillActionWaitForVisualUpdateTimeout);
@@ -746,12 +750,16 @@ bool TestRecipeReplayer::ExecutePressEnterAction(
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
 
+  gfx::Point offset;
+  if (!GetTargetFrameCoordOffsetFromAction(action, &offset))
+    return false;
+
   if (!WaitForElementToBeReady(frame, xpath, visibility_enum_val))
     return false;
 
   VLOG(1) << "Press 'Enter' on `" << xpath << "`.";
   PageActivityObserver page_activity_observer(frame);
-  if (!PlaceFocusOnElement(frame, xpath))
+  if (!PlaceFocusOnElement(frame, xpath, offset))
     return false;
 
   ui::DomKey key = ui::DomKey::ENTER;
@@ -943,6 +951,10 @@ bool TestRecipeReplayer::ExecuteTypePasswordAction(
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
 
+  gfx::Point offset;
+  if (!GetTargetFrameCoordOffsetFromAction(action, &offset))
+    return false;
+
   if (!WaitForElementToBeReady(frame, xpath, visibility_enum_val))
     return false;
 
@@ -968,7 +980,7 @@ bool TestRecipeReplayer::ExecuteTypePasswordAction(
     return false;
   }
 
-  if (!PlaceFocusOnElement(frame, xpath))
+  if (!PlaceFocusOnElement(frame, xpath, offset))
     return false;
 
   VLOG(1) << "Typing '" << value << "' inside `" << xpath << "`.";
@@ -1230,6 +1242,56 @@ bool TestRecipeReplayer::GetTargetFrameFromAction(
   return true;
 }
 
+bool TestRecipeReplayer::GetTargetFrameCoordOffsetFromAction(
+    const base::DictionaryValue& action,
+    gfx::Point* point) {
+  const base::Value* iframe_container = action.FindKey("context");
+  if (!iframe_container) {
+    ADD_FAILURE() << "Failed to extract the iframe context from action!";
+    return false;
+  }
+
+  const base::DictionaryValue* iframe;
+  if (!iframe_container->GetAsDictionary(&iframe)) {
+    ADD_FAILURE() << "Failed to extract the iframe context object!";
+    return false;
+  }
+
+  const base::Value* offset_container = iframe->FindKey("offset");
+  if (!offset_container) {
+    // By default, the frame offset is (0, 0).
+    *point = gfx::Point(0, 0);
+    return true;
+  }
+
+  const base::DictionaryValue* offset;
+  if (!offset_container->GetAsDictionary(&offset)) {
+    ADD_FAILURE() << "Failed to extract the iframe offset object!";
+    return false;
+  }
+
+  int x, y;
+
+  const base::Value* x_container = offset->FindKey("x");
+  if (base::Value::Type::INTEGER != x_container->type()) {
+    ADD_FAILURE() << "Offset x property is not an integer!";
+    return false;
+  }
+
+  x = x_container->GetInt();
+
+  const base::Value* y_container = offset->FindKey("y");
+  if (base::Value::Type::INTEGER != y_container->type()) {
+    ADD_FAILURE() << "Offset y property is not an integer!";
+    return false;
+  }
+
+  y = y_container->GetInt();
+
+  *point = gfx::Point(x, y);
+  return true;
+}
+
 bool TestRecipeReplayer::WaitForElementToBeReady(
     content::RenderFrameHost* frame,
     const std::string& xpath,
@@ -1335,7 +1397,8 @@ bool TestRecipeReplayer::ExpectElementPropertyEquals(
 }
 
 bool TestRecipeReplayer::PlaceFocusOnElement(content::RenderFrameHost* frame,
-                                             const std::string& element_xpath) {
+                                             const std::string& element_xpath,
+                                             const gfx::Point& offset) {
   const std::string focus_on_target_field_js(base::StringPrintf(
       "try {"
       "  function onFocusHandler(event) {"
@@ -1634,7 +1697,8 @@ TestRecipeReplayChromeFeatureActionExecutor::
 bool TestRecipeReplayChromeFeatureActionExecutor::AutofillForm(
     content::RenderFrameHost* frame,
     const std::string& focus_element_css_selector,
-    const int attempts) {
+    const int attempts,
+    const gfx::Point& offset) {
   ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor::AutofillForm "
                    "is not implemented!";
   return false;
