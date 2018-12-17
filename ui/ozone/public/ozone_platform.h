@@ -40,6 +40,7 @@ class PlatformWindow;
 class PlatformWindowDelegate;
 class SurfaceFactoryOzone;
 class SystemInputInjector;
+class PlatformClipboard;
 
 struct PlatformWindowInitProperties;
 
@@ -148,6 +149,7 @@ class OZONE_EXPORT OzonePlatform {
   virtual std::unique_ptr<display::NativeDisplayDelegate>
   CreateNativeDisplayDelegate() = 0;
   virtual std::unique_ptr<PlatformScreen> CreateScreen();
+  virtual PlatformClipboard* GetPlatformClipboard();
 
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,

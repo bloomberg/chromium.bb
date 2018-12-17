@@ -10,23 +10,23 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
-#include "ui/ozone/public/clipboard_delegate.h"
+#include "ui/ozone/public/platform_clipboard.h"
 
 namespace ui {
 
 // This class mocks how a real clipboard/ozone client would
-// hook to ClipboardDelegate, with one difference: real clients
+// hook to PlatformClipboard, with one difference: real clients
 // have no access to the WaylandConnection instance like this
 // MockClipboardClient impl does. Instead, clients and ozone gets
 // plumbbed up by calling the appropriated Ozone API,
-// OzonePlatform::GetClipboardDelegate.
+// OzonePlatform::GetPlatformClipboard.
 class MockClipboardClient {
  public:
   MockClipboardClient(WaylandConnection* connection) {
     DCHECK(connection);
     // See comment above for reasoning to access the WaylandConnection
     // directly from here.
-    delegate_ = connection->GetClipboardDelegate();
+    delegate_ = connection->GetPlatformClipboard();
 
     DCHECK(delegate_);
   }
@@ -35,7 +35,7 @@ class MockClipboardClient {
   // Fill the clipboard backing store with sample data.
   void SetData(const std::string& utf8_text,
                const std::string& mime_type,
-               ClipboardDelegate::OfferDataClosure callback) {
+               PlatformClipboard::OfferDataClosure callback) {
     // This mimics how Mus' ClipboardImpl writes data to the DataMap.
     std::vector<char> object_map(utf8_text.begin(), utf8_text.end());
     char* object_data = &object_map.front();
@@ -46,7 +46,7 @@ class MockClipboardClient {
   }
 
   void ReadData(const std::string& mime_type,
-                ClipboardDelegate::RequestDataClosure callback) {
+                PlatformClipboard::RequestDataClosure callback) {
     delegate_->RequestClipboardData(mime_type, &data_types_,
                                     std::move(callback));
   }
@@ -54,8 +54,8 @@ class MockClipboardClient {
   bool IsSelectionOwner() { return delegate_->IsSelectionOwner(); }
 
  private:
-  ClipboardDelegate* delegate_ = nullptr;
-  ClipboardDelegate::DataMap data_types_;
+  PlatformClipboard* delegate_ = nullptr;
+  PlatformClipboard::DataMap data_types_;
 
   DISALLOW_COPY_AND_ASSIGN(MockClipboardClient);
 };
