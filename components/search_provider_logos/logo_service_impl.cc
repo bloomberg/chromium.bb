@@ -27,9 +27,9 @@
 #include "components/search_provider_logos/logo_cache.h"
 #include "components/search_provider_logos/logo_observer.h"
 #include "components/search_provider_logos/switches.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/gfx/image/image.h"
@@ -179,39 +179,37 @@ void NotifyAndClear(std::vector<EncodedLogoCallback>* encoded_callbacks,
 }  // namespace
 
 class LogoServiceImpl::SigninObserver
-    : public GaiaCookieManagerService::Observer {
+    : public identity::IdentityManager::Observer {
  public:
   using SigninStatusChangedCallback = base::RepeatingClosure;
 
-  SigninObserver(GaiaCookieManagerService* cookie_service,
+  SigninObserver(identity::IdentityManager* identity_manager,
                  const SigninStatusChangedCallback& callback)
-      : cookie_service_(cookie_service), callback_(callback) {
-    if (cookie_service_) {
-      cookie_service_->AddObserver(this);
+      : identity_manager_(identity_manager), callback_(callback) {
+    if (identity_manager_) {
+      identity_manager_->AddObserver(this);
     }
   }
 
   ~SigninObserver() override {
-    if (cookie_service_) {
-      cookie_service_->RemoveObserver(this);
+    if (identity_manager_) {
+      identity_manager_->RemoveObserver(this);
     }
   }
 
  private:
-  // GaiaCookieManagerService::Observer implementation.
-  void OnGaiaAccountsInCookieUpdated(const std::vector<gaia::ListedAccount>&,
-                                     const std::vector<gaia::ListedAccount>&,
-                                     const GoogleServiceAuthError&) override {
+  // identity::IdentityManager::Observer implementation.
+  void OnAccountsInCookieUpdated(const std::vector<AccountInfo>&) override {
     callback_.Run();
   }
 
-  GaiaCookieManagerService* const cookie_service_;
+  identity::IdentityManager* const identity_manager_;
   SigninStatusChangedCallback callback_;
 };
 
 LogoServiceImpl::LogoServiceImpl(
     const base::FilePath& cache_directory,
-    GaiaCookieManagerService* cookie_service,
+    identity::IdentityManager* identity_manager,
     TemplateURLService* template_url_service,
     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -222,7 +220,7 @@ LogoServiceImpl::LogoServiceImpl(
       want_gray_logo_getter_(std::move(want_gray_logo_getter)),
       image_decoder_(std::move(image_decoder)),
       signin_observer_(std::make_unique<SigninObserver>(
-          cookie_service,
+          identity_manager,
           base::BindRepeating(&LogoServiceImpl::SigninStatusChanged,
                               base::Unretained(this)))),
       is_idle_(true),
@@ -237,7 +235,7 @@ LogoServiceImpl::LogoServiceImpl(
 LogoServiceImpl::~LogoServiceImpl() = default;
 
 void LogoServiceImpl::Shutdown() {
-  // The GaiaCookieManagerService may be destroyed at any point after Shutdown,
+  // The IdentityManager may be destroyed at any point after Shutdown,
   // so make sure we drop any references to it.
   signin_observer_.reset();
   ReturnToIdle(kDownloadOutcomeNotTracked);
