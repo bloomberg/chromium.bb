@@ -123,6 +123,32 @@ public class CookieManagerTest {
         }
     }
 
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testEmbedderCanSeeRestrictedCookies() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            // Set a cookie with the httponly flag, one with samesite=Strict, and one with
+            // samesite=Lax, to ensure that they are all visible to CookieManager in the app.
+            String cookies[] = {"httponly=foo1; HttpOnly", "strictsamesite=foo2; SameSite=Strict",
+                    "laxsamesite=foo3; SameSite=Lax"};
+            List<Pair<String, String>> responseHeaders = new ArrayList<Pair<String, String>>();
+            for (String cookie : cookies) {
+                responseHeaders.add(Pair.create("Set-Cookie", cookie));
+            }
+            String url = webServer.setResponse("/", "test", responseHeaders);
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            waitForCookie(url);
+            String cookie = mCookieManager.getCookie(url);
+            Assert.assertNotNull(cookie);
+            validateCookies(cookie, "httponly", "strictsamesite", "laxsamesite");
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
     private void setCookieWithJavaScript(final String name, final String value)
             throws Throwable {
         JSUtils.executeJavaScriptAndWaitForResult(InstrumentationRegistry.getInstrumentation(),
@@ -807,7 +833,7 @@ public class CookieManagerTest {
             foundCookieNames.add(cookie.substring(0, cookie.indexOf("=")).trim());
         }
         List<String> expectedCookieNamesList = Arrays.asList(expectedCookieNames);
-        Assert.assertEquals(foundCookieNames.size(), expectedCookieNamesList.size());
+        Assert.assertEquals(expectedCookieNamesList.size(), foundCookieNames.size());
         Assert.assertTrue(foundCookieNames.containsAll(expectedCookieNamesList));
     }
 
