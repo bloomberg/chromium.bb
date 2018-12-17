@@ -36,10 +36,8 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -60,7 +58,6 @@
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_investigator.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -176,7 +173,6 @@ InlineSigninHelper::InlineSigninHelper(
     const std::string& password,
     const std::string& auth_code,
     const std::string& signin_scoped_device_id,
-    bool choose_what_to_sync,
     bool confirm_untrusted_signin,
     bool is_force_sign_in_with_usermanager)
     : gaia_auth_fetcher_(this, gaia::GaiaSource::kChrome, url_loader_factory),
@@ -188,7 +184,6 @@ InlineSigninHelper::InlineSigninHelper(
       gaia_id_(gaia_id),
       password_(password),
       auth_code_(auth_code),
-      choose_what_to_sync_(choose_what_to_sync),
       confirm_untrusted_signin_(confirm_untrusted_signin),
       is_force_sign_in_with_usermanager_(is_force_sign_in_with_usermanager) {
   DCHECK(profile_);
@@ -224,8 +219,6 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     browser = handler_->GetDesktopBrowser();
   }
 
-  signin_metrics::AccessPoint access_point =
-      signin::GetAccessPointForPromoURL(current_url_);
   signin_metrics::Reason reason =
       signin::GetSigninReasonForPromoURL(current_url_);
   if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
@@ -313,32 +306,16 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     }
     LogSigninReason(reason);
   } else {
-    browser_sync::ProfileSyncService* sync_service =
-        ProfileSyncServiceFactory::GetForProfile(profile_);
-    SigninErrorController* error_controller =
-        SigninErrorControllerFactory::GetForProfile(profile_);
-
-    OneClickSigninSyncStarter::StartSyncMode start_mode =
-        OneClickSigninSyncStarter::CONFIRM_SYNC_SETTINGS_FIRST;
-    if (access_point == signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS ||
-        choose_what_to_sync_) {
-      bool show_settings_without_configure =
-          error_controller->HasError() && sync_service &&
-          sync_service->IsFirstSetupComplete();
-      if (!show_settings_without_configure)
-        start_mode = OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST;
-    }
-
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
         confirm_untrusted_signin_
             ? OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN
             : OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
 
-    bool start_signin = !HandleCrossAccountError(
-        result.refresh_token, confirmation_required, start_mode);
+    bool start_signin =
+        !HandleCrossAccountError(result.refresh_token, confirmation_required);
     if (start_signin) {
       CreateSyncStarter(browser, current_url_, result.refresh_token,
-                        OneClickSigninSyncStarter::CURRENT_PROFILE, start_mode,
+                        OneClickSigninSyncStarter::CURRENT_PROFILE,
                         confirmation_required);
       base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     }
@@ -350,21 +327,19 @@ void InlineSigninHelper::CreateSyncStarter(
     const GURL& current_url,
     const std::string& refresh_token,
     OneClickSigninSyncStarter::ProfileMode profile_mode,
-    OneClickSigninSyncStarter::StartSyncMode start_mode,
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required) {
   // OneClickSigninSyncStarter will delete itself once the job is done.
   new OneClickSigninSyncStarter(
       profile_, browser, gaia_id_, email_, password_, refresh_token,
       signin::GetAccessPointForPromoURL(current_url),
-      signin::GetSigninReasonForPromoURL(current_url), profile_mode, start_mode,
+      signin::GetSigninReasonForPromoURL(current_url), profile_mode,
       confirmation_required,
       base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback, handler_));
 }
 
 bool InlineSigninHelper::HandleCrossAccountError(
     const std::string& refresh_token,
-    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
-    OneClickSigninSyncStarter::StartSyncMode start_mode) {
+    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required) {
   // With force sign in enabled, cross account
   // sign in will be rejected in the early stage so there is no need to show the
   // warning page here.
@@ -386,7 +361,7 @@ bool InlineSigninHelper::HandleCrossAccountError(
       web_contents, profile_, last_email, email_,
       base::Bind(&InlineSigninHelper::ConfirmEmailAction,
                  base::Unretained(this), web_contents, refresh_token,
-                 confirmation_required, start_mode));
+                 confirmation_required));
   return true;
 }
 
@@ -394,7 +369,6 @@ void InlineSigninHelper::ConfirmEmailAction(
     content::WebContents* web_contents,
     const std::string& refresh_token,
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
-    OneClickSigninSyncStarter::StartSyncMode start_mode,
     SigninEmailConfirmationDialog::Action action) {
   Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   switch (action) {
@@ -402,14 +376,14 @@ void InlineSigninHelper::ConfirmEmailAction(
       base::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_DontImport"));
       CreateSyncStarter(browser, current_url_, refresh_token,
-                        OneClickSigninSyncStarter::NEW_PROFILE, start_mode,
+                        OneClickSigninSyncStarter::NEW_PROFILE,
                         confirmation_required);
       break;
     case SigninEmailConfirmationDialog::START_SYNC:
       base::RecordAction(
           base::UserMetricsAction("Signin_ImportDataPrompt_ImportData"));
       CreateSyncStarter(browser, current_url_, refresh_token,
-                        OneClickSigninSyncStarter::CURRENT_PROFILE, start_mode,
+                        OneClickSigninSyncStarter::CURRENT_PROFILE,
                         confirmation_required);
       break;
     case SigninEmailConfirmationDialog::CLOSE:
@@ -731,7 +705,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
       handler_weak_ptr,
       params.partition->GetURLLoaderFactoryForBrowserProcess(), profile, status,
       params.url, params.email, params.gaia_id, params.password,
-      params.auth_code, signin_scoped_device_id, params.choose_what_to_sync,
+      params.auth_code, signin_scoped_device_id,
       params.confirm_untrusted_signin,
       params.is_force_sign_in_with_usermanager);
 

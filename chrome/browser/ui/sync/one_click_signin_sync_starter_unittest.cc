@@ -78,7 +78,6 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
         kTestingRefreshToken, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
         signin_metrics::Reason::REASON_UNKNOWN_REASON,
         OneClickSigninSyncStarter::CURRENT_PROFILE,
-        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
         OneClickSigninSyncStarter::NO_CONFIRMATION, callback);
   }
 
