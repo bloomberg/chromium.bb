@@ -13,8 +13,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -592,7 +592,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
       IndexedDBKeyRange(keys[1], keys[3], false, true),
       IndexedDBKeyRange(keys[0], keys[3], true, true)};
 
-  for (size_t i = 0; i < arraysize(ranges); ++i) {
+  for (size_t i = 0; i < base::size(ranges); ++i) {
     const int64_t database_id = 1;
     const int64_t object_store_id = i + 1;
     const IndexedDBKeyRange& range = ranges[i];
@@ -711,7 +711,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
       IndexedDBKeyRange(keys[2], keys[1], false, false),
       IndexedDBKeyRange(keys[2], keys[1], true, true)};
 
-  for (size_t i = 0; i < arraysize(ranges); ++i) {
+  for (size_t i = 0; i < base::size(ranges); ++i) {
     const int64_t database_id = 1;
     const int64_t object_store_id = i + 1;
     const IndexedDBKeyRange& range = ranges[i];
