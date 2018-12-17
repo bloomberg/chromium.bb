@@ -131,6 +131,27 @@ bool MatchesExistingNetworkState(const base::DictionaryValue& properties,
   return true;
 }
 
+// Checks if |onc| is an unmanaged wifi network that has AutoConnect=true.
+bool EnablesUnmanagedWifiAutoconnect(const base::DictionaryValue* onc) {
+  const base::Value* type = onc->FindKeyOfType(::onc::network_config::kType,
+                                               base::Value::Type::STRING);
+  if (!type || type->GetString() != ::onc::network_type::kWiFi)
+    return false;
+
+  const base::Value* source = onc->FindKeyOfType(::onc::network_config::kSource,
+                                                 base::Value::Type::STRING);
+  if (!source ||
+      source->GetString() == ::onc::network_config::kSourceDevicePolicy ||
+      source->GetString() == ::onc::network_config::kSourceUserPolicy) {
+    return false;
+  }
+
+  const base::Value* autoconnect = onc->FindPathOfType(
+      {::onc::network_config::kWiFi, ::onc::wifi::kAutoConnect},
+      base::Value::Type::BOOLEAN);
+  return autoconnect && autoconnect->GetBool();
+}
+
 }  // namespace
 
 struct ManagedNetworkConfigurationHandlerImpl::Policies {
@@ -346,6 +367,14 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
   }
   if (validation_result == onc::Validator::VALID_WITH_WARNINGS)
     NET_LOG(ERROR) << "Validation of ONC user settings produced warnings.";
+
+  // Don't allow AutoConnect=true for unmanaged wifi networks if
+  // 'AllowOnlyPolicyNetworksToAutoconnect' policy is active.
+  if (EnablesUnmanagedWifiAutoconnect(validated_user_settings.get()) &&
+      AllowOnlyPolicyNetworksToAutoconnect()) {
+    InvokeErrorCallback(service_path, error_callback, kInvalidUserSettings);
+    return;
+  }
 
   // Fill in HexSSID field from contents of SSID field if not set already.
   onc::FillInHexSSIDFieldsInOncObject(onc::kNetworkConfigurationSignature,
