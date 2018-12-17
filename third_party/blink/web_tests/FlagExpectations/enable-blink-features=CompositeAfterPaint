@@ -40,10 +40,7 @@ crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-cra
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
 
-Bug(none) virtual/scalefactor150/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure ]
-Bug(none) virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure ]
 Bug(none) virtual/scalefactor200withzoom/fast/hidpi/static/mousewheel-scroll-amount.html [ Failure ]
-Bug(none) virtual/scalefactor200withzoom/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure ]
 
 Bug(none) accessibility/reach-and-scroll-overflow-div-without-mouse.html [ Timeout ]
 Bug(none) compositing/animation/hidden-composited.html [ Failure ]
@@ -361,9 +358,12 @@ Bug(none) css3/blending/mix-blend-mode-isolation-remove.html [ Failure ]
 Bug(none) fast/borders/overflow-hidden-border-radius-force-backing-store.html [ Failure ]
 
 # Subpixel adjustments due to differences in compositing
+# They are benign but we can't rebaseline reftests
 crbug.com/589265 fast/forms/text/input-appearance-autocomplete-very-long-value.html [ Failure ]
 crbug.com/589265 animations/svg/animated-filter-svg-element.html [ Failure ]
 crbug.com/589265 virtual/threaded/animations/svg/animated-filter-svg-element.html [ Failure ]
+crbug.com/589265 fast/pagination/repeating-thead-tfoot-paged-x.html [ Failure ]
+crbug.com/589265 fast/pagination/repeating-thead-tfoot-paged-y.html [ Failure ]
 
 # virtual/threaded variants of sub-directories and tests already skipped or marked as failing above.
 Bug(none) virtual/threaded/http/tests/devtools/ [ Skip ]
@@ -448,8 +448,6 @@ crbug.com/738613 paint/invalidation/compositing/pointer-events-composited-scroll
 Bug(none) paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
 
 Bug(none) fast/pagination/multicol.html [ Crash ]
-Bug(none) fast/pagination/repeating-thead-tfoot-paged-x.html [ Failure ]
-Bug(none) fast/pagination/repeating-thead-tfoot-paged-y.html [ Failure ]
 Bug(none) paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
 Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 
