@@ -20,6 +20,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
@@ -50,13 +51,13 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
 using autofill::FieldPropertiesFlags;
 using autofill::FieldPropertiesMask;
 using autofill::PasswordForm;
 using autofill::ValueElementPair;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
+using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
 using base::ASCIIToUTF16;
 using ::testing::_;
 using ::testing::AllOf;
@@ -73,6 +74,7 @@ using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SaveArgPointee;
+using ::testing::StrictMock;
 using ::testing::UnorderedElementsAre;
 using ::testing::WithArg;
 
@@ -227,10 +229,15 @@ class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
 
 class MockAutofillManager : public autofill::AutofillManager {
  public:
-  MockAutofillManager(autofill::AutofillDriver* driver,
-                      autofill::AutofillClient* client,
-                      autofill::PersonalDataManager* data_manager)
-      : AutofillManager(driver, client, data_manager) {}
+  MockAutofillManager(
+      autofill::AutofillDriver* driver,
+      autofill::AutofillClient* client,
+      autofill::PersonalDataManager* data_manager,
+      autofill::MockAutocompleteHistoryManager* autocomplete_manager)
+      : AutofillManager(driver, client, data_manager, autocomplete_manager) {
+    // This function will be called in the destructor of AutofillManager.
+    EXPECT_CALL(*autocomplete_manager, CancelPendingQueries(this));
+  }
 
   void SetDownloadManager(autofill::AutofillDownloadManager* manager) {
     set_download_manager(manager);
@@ -258,7 +265,8 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   MockPasswordManagerDriver()
       : mock_autofill_manager_(&test_autofill_driver_,
                                &test_autofill_client_,
-                               &test_personal_data_manager_) {
+                               &test_personal_data_manager_,
+                               &mock_autocomplete_history_manager_) {
     std::unique_ptr<TestingPrefServiceSimple> prefs(
         new TestingPrefServiceSimple());
     prefs->registry()->RegisterBooleanPref(
@@ -292,6 +300,8 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   }
 
  private:
+  StrictMock<autofill::MockAutocompleteHistoryManager>
+      mock_autocomplete_history_manager_;
   autofill::TestAutofillDriver test_autofill_driver_;
   autofill::TestAutofillClient test_autofill_client_;
   autofill::TestPersonalDataManager test_personal_data_manager_;

@@ -11,11 +11,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -29,17 +29,17 @@ class WebViewAutofillClientIOS : public AutofillClient {
   WebViewAutofillClientIOS(
       PrefService* pref_service,
       PersonalDataManager* personal_data_manager,
+      AutocompleteHistoryManager* autocomplete_history_manager,
       web::WebState* web_state,
       id<CWVAutofillClientIOSBridge> bridge,
       identity::IdentityManager* identity_manager,
       LegacyStrikeDatabase* strike_database,
-      scoped_refptr<AutofillWebDataService> autofill_web_data_service,
       syncer::SyncService* sync_service);
   ~WebViewAutofillClientIOS() override;
 
   // AutofillClient:
   PersonalDataManager* GetPersonalDataManager() override;
-  scoped_refptr<AutofillWebDataService> GetDatabase() override;
+  AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
@@ -112,13 +112,13 @@ class WebViewAutofillClientIOS : public AutofillClient {
  private:
   PrefService* pref_service_;
   PersonalDataManager* personal_data_manager_;
+  AutocompleteHistoryManager* autocomplete_history_manager_;
   web::WebState* web_state_;
   __weak id<CWVAutofillClientIOSBridge> bridge_;
   identity::IdentityManager* identity_manager_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   LegacyStrikeDatabase* legacy_strike_database_;
-  scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   syncer::SyncService* sync_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewAutofillClientIOS);

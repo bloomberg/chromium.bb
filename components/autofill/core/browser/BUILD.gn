@@ -334,6 +334,8 @@ jumbo_static_library("test_support") {
     "autofill_test_utils.h",
     "data_driven_test.cc",
     "data_driven_test.h",
+    "mock_autocomplete_history_manager.cc",
+    "mock_autocomplete_history_manager.h",
     "payments/test_payments_client.cc",
     "payments/test_payments_client.h",
     "suggestion_test_helpers.h",

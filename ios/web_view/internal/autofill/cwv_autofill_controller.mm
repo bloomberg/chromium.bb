@@ -36,6 +36,7 @@
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_verifier_internal.h"
+#include "ios/web_view/internal/autofill/web_view_autocomplete_history_manager_factory.h"
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_legacy_strike_database_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
@@ -131,14 +132,13 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
         browserState->GetPrefs(),
         ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
             browserState->GetRecordingBrowserState()),
+        ios_web_view::WebViewAutocompleteHistoryManagerFactory::
+            GetForBrowserState(browserState),
         _webState, self,
         ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
             browserState->GetRecordingBrowserState()),
         ios_web_view::WebViewLegacyStrikeDatabaseFactory::GetForBrowserState(
             browserState->GetRecordingBrowserState()),
-        ios_web_view::WebViewWebDataServiceWrapperFactory::
-            GetAutofillWebDataForBrowserState(
-                browserState, ServiceAccessType::EXPLICIT_ACCESS),
         ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
             browserState)));
     autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(

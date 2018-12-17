@@ -50,9 +50,9 @@ enum class Channel;
 namespace autofill {
 
 class AddressNormalizer;
+class AutocompleteHistoryManager;
 class AutofillPopupDelegate;
 class AutofillProfile;
-class AutofillWebDataService;
 class CardUnmaskDelegate;
 class CreditCard;
 class FormDataImporter;
@@ -161,8 +161,8 @@ class AutofillClient : public RiskDataLoader {
   // Gets the PersonalDataManager instance associated with the client.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
 
-  // Gets the AutofillWebDataService instance associated with the client.
-  virtual scoped_refptr<AutofillWebDataService> GetDatabase() = 0;
+  // Gets the AutocompleteHistoryManager instance associate with the client.
+  virtual AutocompleteHistoryManager* GetAutocompleteHistoryManager() = 0;
 
   // Gets the preferences associated with the client.
   virtual PrefService* GetPrefs() = 0;

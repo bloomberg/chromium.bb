@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
+#include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
@@ -107,11 +108,11 @@ PersonalDataManager* ChromeAutofillClient::GetPersonalDataManager() {
       profile->GetOriginalProfile());
 }
 
-scoped_refptr<AutofillWebDataService> ChromeAutofillClient::GetDatabase() {
+AutocompleteHistoryManager*
+ChromeAutofillClient::GetAutocompleteHistoryManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return WebDataServiceFactory::GetAutofillWebDataForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  return AutocompleteHistoryManagerFactory::GetForProfile(profile);
 }
 
 PrefService* ChromeAutofillClient::GetPrefs() {

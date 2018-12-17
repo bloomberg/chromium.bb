@@ -15,7 +15,6 @@
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
@@ -25,6 +24,7 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
+#include "ios/chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #include "ios/chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/infobars/infobar.h"
@@ -72,6 +72,8 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           ProfileSyncServiceFactory::GetForBrowserState(browser_state)),
       personal_data_manager_(PersonalDataManagerFactory::GetForBrowserState(
           browser_state->GetOriginalChromeBrowserState())),
+      autocomplete_history_manager_(
+          AutocompleteHistoryManagerFactory::GetForBrowserState(browser_state)),
       web_state_(web_state),
       bridge_(bridge),
       identity_manager_(IdentityManagerFactory::GetForBrowserState(
@@ -90,10 +92,6 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           GetApplicationContext()->GetApplicationLocale())),
       legacy_strike_database_(LegacyStrikeDatabaseFactory::GetForBrowserState(
           browser_state->GetOriginalChromeBrowserState())),
-      autofill_web_data_service_(
-          ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
-              browser_state,
-              ServiceAccessType::EXPLICIT_ACCESS)),
       infobar_manager_(infobar_manager),
       password_generation_manager_(password_generation_manager),
       unmask_controller_(browser_state->GetPrefs(),
@@ -116,8 +114,9 @@ PersonalDataManager* ChromeAutofillClientIOS::GetPersonalDataManager() {
   return personal_data_manager_;
 }
 
-scoped_refptr<AutofillWebDataService> ChromeAutofillClientIOS::GetDatabase() {
-  return autofill_web_data_service_;
+AutocompleteHistoryManager*
+ChromeAutofillClientIOS::GetAutocompleteHistoryManager() {
+  return autocomplete_history_manager_;
 }
 
 PrefService* ChromeAutofillClientIOS::GetPrefs() {

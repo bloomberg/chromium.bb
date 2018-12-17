@@ -33,6 +33,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -262,22 +263,6 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
                    month, year, has_address_fields, true, true);
 }
 
-class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
- public:
-  MockAutocompleteHistoryManager(AutofillDriver* driver, AutofillClient* client)
-      : AutocompleteHistoryManager(driver, client) {}
-
-  MOCK_METHOD4(OnGetAutocompleteSuggestions,
-               void(int query_id,
-                    const base::string16& name,
-                    const base::string16& prefix,
-                    const std::string& form_control_type));
-  MOCK_METHOD1(OnWillSubmitForm, void(const FormData& form));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAutocompleteHistoryManager);
-};
-
 class MockAutofillDriver : public TestAutofillDriver {
  public:
   MockAutofillDriver() {}
@@ -303,7 +288,7 @@ class AutofillManagerTest : public testing::Test {
 
   void SetUp() override {
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
-    personal_data_.Init(/*profile_database=*/autofill_client_.GetDatabase(),
+    personal_data_.Init(/*profile_database=*/database_,
                         /*account_database=*/nullptr,
                         /*pref_service=*/autofill_client_.GetPrefs(),
                         /*identity_manager=*/nullptr,
@@ -312,6 +297,13 @@ class AutofillManagerTest : public testing::Test {
                         /*cookie_manager_sevice=*/nullptr,
                         /*is_off_the_record=*/false);
     personal_data_.SetPrefService(autofill_client_.GetPrefs());
+
+    autocomplete_history_manager_ =
+        std::make_unique<MockAutocompleteHistoryManager>();
+    autocomplete_history_manager_->Init(
+        /*profile_database=*/database_,
+        /*is_off_the_record=*/false);
+
     autofill_driver_ =
         std::make_unique<testing::NiceMock<MockAutofillDriver>>();
     request_context_ = new net::TestURLRequestContextGetter(
@@ -336,7 +328,8 @@ class AutofillManagerTest : public testing::Test {
         std::unique_ptr<autofill::TestFormDataImporter>(
             test_form_data_importer));
     autofill_manager_ = std::make_unique<TestAutofillManager>(
-        autofill_driver_.get(), &autofill_client_, &personal_data_);
+        autofill_driver_.get(), &autofill_client_, &personal_data_,
+        autocomplete_history_manager_.get());
     download_manager_ = new MockAutofillDownloadManager(
         autofill_driver_.get(), autofill_manager_.get());
     // AutofillManager takes ownership of |download_manager_|.
@@ -427,8 +420,14 @@ class AutofillManagerTest : public testing::Test {
   }
 
   void AutocompleteSuggestionsReturned(
-      const std::vector<base::string16>& result) {
-    autofill_manager_->autocomplete_history_manager_->SendSuggestions(&result);
+      const std::vector<base::string16>& results,
+      int query_id = kDefaultPageID) {
+    std::vector<Suggestion> suggestions;
+    std::transform(results.begin(), results.end(),
+                   std::back_inserter(suggestions),
+                   [](auto result) { return Suggestion(result); });
+
+    autofill_manager_->OnSuggestionsReturned(query_id, suggestions);
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
@@ -530,16 +529,6 @@ class AutofillManagerTest : public testing::Test {
         form->fields[0], *card);
   }
 
-  // Convenience method for using and retrieving a mock autocomplete history
-  // manager.
-  MockAutocompleteHistoryManager* RecreateMockAutocompleteHistoryManager() {
-    MockAutocompleteHistoryManager* manager =
-        new MockAutocompleteHistoryManager(autofill_driver_.get(),
-                                           autofill_manager_->client());
-    autofill_manager_->autocomplete_history_manager_.reset(manager);
-    return manager;
-  }
-
   // Convenience method to cast the FullCardRequest into a CardUnmaskDelegate.
   CardUnmaskDelegate* full_card_unmask_delegate() {
     DCHECK(autofill_manager_->full_card_request_);
@@ -589,8 +578,10 @@ class AutofillManagerTest : public testing::Test {
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   std::unique_ptr<TestAutofillExternalDelegate> external_delegate_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  scoped_refptr<AutofillWebDataService> database_;
   MockAutofillDownloadManager* download_manager_;
   TestPersonalDataManager personal_data_;
+  std::unique_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
   variations::testing::VariationParamsManager variation_params_;
 
@@ -761,8 +752,9 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_UnrecognizedAttribute) {
   FormsSeen(forms);
 
   // Ensure that autocomplete manager is not called for suggestions either.
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions)
+      .Times(0);
 
   // Suggestions should be returned for the first two fields.
   GetAutofillSuggestions(form, form.fields[0]);
@@ -799,8 +791,9 @@ TEST_F(AutofillManagerTest,
   FormsSeen(forms);
 
   // Ensure that autocomplete manager is called for both fields.
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(2);
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions)
+      .Times(2);
 
   GetAutofillSuggestions(form, form.fields[0]);
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
@@ -867,8 +860,9 @@ TEST_F(AutofillManagerTest,
   FormsSeen(forms);
 
   // Ensure that autocomplete manager is called for both fields.
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions)
+      .Times(0);
 
   GetAutofillSuggestions(form, form.fields[0]);
   CheckSuggestions(kDefaultPageID,
@@ -1126,6 +1120,15 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_AutofillDisabledByUser) {
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
+TEST_F(AutofillManagerTest, OnSuggestionsReturned_CallsExternalDelegate) {
+  std::vector<Suggestion> suggestions = {
+      Suggestion("Charles", "123 Apple St.", "", 1),
+      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2)};
+  autofill_manager_->OnSuggestionsReturned(kDefaultPageID, suggestions);
+
+  CheckSuggestions(kDefaultPageID, suggestions[0], suggestions[1]);
+}
+
 // Test that we return all credit card profile suggestions when all form fields
 // are empty.
 TEST_F(AutofillManagerTest, GetCreditCardSuggestions_EmptyValue) {
@@ -1327,8 +1330,9 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_OnlySigninPromo) {
   EXPECT_TRUE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
 
   // Autocomplete suggestions are not queried.
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions)
+      .Times(0);
 
   GetAutofillSuggestions(form, field);
 
@@ -3972,16 +3976,17 @@ TEST_F(AutofillManagerTest, FormSubmittedSaveData) {
 // submissions are still received by AutocompleteHistoryManager.
 TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   TestAutofillClient client;
-  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
-                                                  &client, &personal_data_));
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
+                              autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillEnabled(false);
 
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
 
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnWillSubmitForm(_));
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnWillSubmitForm(_, true));
   FormSubmitted(form);
 }
 
@@ -3989,8 +3994,9 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
 // queried.
 TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
   TestAutofillClient client;
-  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
-                                                  &client, &personal_data_));
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
+                              autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4002,8 +4008,8 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
   const FormFieldData& field = form.fields[0];
 
   // Expect Autocomplete manager to be called for suggestions.
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _));
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions);
 
   GetAutofillSuggestions(form, field);
 }
@@ -4013,8 +4019,9 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
 TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_AutofillDisabledAndFieldShouldNotAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
-                                                  &client, &personal_data_));
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
+                              autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4028,8 +4035,9 @@ TEST_F(AutofillManagerTest,
 
   // Autocomplete manager is not called for suggestions.
 
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions)
+      .Times(0);
 
   GetAutofillSuggestions(form, field);
 }
@@ -4046,8 +4054,9 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_NoneWhenAutofillPresent) {
   const FormFieldData& field = form.fields[0];
 
   // Autocomplete manager is not called for suggestions.
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions)
+      .Times(0);
 
   GetAutofillSuggestions(form, field);
 
@@ -4073,8 +4082,8 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillEmpty) {
   test::CreateTestFormField("Email", "email", "donkey", "email", &field);
 
   // Autocomplete manager is called for suggestions because Autofill is empty.
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _));
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions);
 
   GetAutofillSuggestions(form, field);
 }
@@ -4085,8 +4094,9 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillEmpty) {
 TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_CreditCardNameFieldShouldAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
-                                                  &client, &personal_data_));
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
+                              autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4100,8 +4110,8 @@ TEST_F(AutofillManagerTest,
   field.should_autocomplete = true;
 
   // Autocomplete manager is not called for suggestions.
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _));
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions);
 
   GetAutofillSuggestions(form, field);
 }
@@ -4111,8 +4121,9 @@ TEST_F(AutofillManagerTest,
 TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_CreditCardNumberShouldNotAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
-                                                  &client, &personal_data_));
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
+                              autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4126,8 +4137,9 @@ TEST_F(AutofillManagerTest,
   field.should_autocomplete = true;
 
   // Autocomplete manager is not called for suggestions.
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions)
+      .Times(0);
 
   GetAutofillSuggestions(form, field);
 }
@@ -4149,21 +4161,24 @@ TEST_F(
   test::CreateTestFormField("Email", "email", "donkey", "email", &field);
 
   // Autocomplete manager is not called for suggestions.
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions)
+      .Times(0);
 
   GetAutofillSuggestions(form, field);
 }
 
 TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
-                                                  &client, &personal_data_));
+  autofill_manager_.reset(
+      new TestAutofillManager(autofill_driver_.get(), &client, &personal_data_,
+                              autocomplete_history_manager_.get()));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnGetAutocompleteSuggestions(_, _, _, _)).Times(0);
+  EXPECT_CALL(*(autocomplete_history_manager_.get()),
+              OnGetAutocompleteSuggestions)
+      .Times(0);
 
   // Set up our form data.
   FormData form;
@@ -4173,6 +4188,20 @@ TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   FormFieldData* field = &form.fields[0];
   field->should_autocomplete = false;
   GetAutofillSuggestions(form, *field);
+}
+
+TEST_F(AutofillManagerTest, DestructorCancelsAutocompleteQueries) {
+  EXPECT_CALL(*(autocomplete_history_manager_.get()), CancelPendingQueries)
+      .Times(1);
+  autofill_manager_.reset();
+}
+
+// Make sure that we don't error out when AutocompleteHistoryManager was
+// destroyed before AutofillManager.
+TEST_F(AutofillManagerTest, Destructor_DeletedAutocomplete_Works) {
+  // The assertion here is that no exceptions will be thrown.
+  autocomplete_history_manager_.reset();
+  autofill_manager_.reset();
 }
 
 // Test that OnLoadedServerPredictions can obtain the FormStructure with the
@@ -5452,8 +5481,8 @@ TEST_F(AutofillManagerTest,
 // !should_autocomplete for AutocompleteHistoryManager::OnWillSubmitForm.
 TEST_F(AutofillManagerTest, DontSaveCvcInAutocompleteHistory) {
   FormData form_seen_by_ahm;
-  MockAutocompleteHistoryManager* m = RecreateMockAutocompleteHistoryManager();
-  EXPECT_CALL(*m, OnWillSubmitForm(_)).WillOnce(SaveArg<0>(&form_seen_by_ahm));
+  EXPECT_CALL(*(autocomplete_history_manager_.get()), OnWillSubmitForm(_, true))
+      .WillOnce(SaveArg<0>(&form_seen_by_ahm));
 
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
@@ -6401,7 +6430,8 @@ TEST_F(AutofillManagerTest, IsRichQueryEnabled_FeatureEnabled) {
                  << "Channel " << static_cast<int>(channel));
     EXPECT_CALL(autofill_client_, GetChannel()).WillOnce(Return(channel));
     TestAutofillManager test_instance(autofill_driver_.get(), &autofill_client_,
-                                      &personal_data_);
+                                      &personal_data_,
+                                      autocomplete_history_manager_.get());
     switch (channel) {
       case version_info::Channel::STABLE:
       case version_info::Channel::BETA:
@@ -6434,7 +6464,8 @@ TEST_F(AutofillManagerTest, IsRichQueryEnabled_FeatureDisabled) {
     EXPECT_FALSE(AutofillManager::IsRichQueryEnabled(channel));
     EXPECT_CALL(autofill_client_, GetChannel()).WillOnce(Return(channel));
     TestAutofillManager test_instance(autofill_driver_.get(), &autofill_client_,
-                                      &personal_data_);
+                                      &personal_data_,
+                                      autocomplete_history_manager_.get());
     EXPECT_FALSE(test_instance.is_rich_query_enabled());
   }
 }

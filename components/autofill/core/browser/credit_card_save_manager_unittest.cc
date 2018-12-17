@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -104,7 +105,7 @@ class CreditCardSaveManagerTest : public testing::Test {
     legacy_strike_database_ = test_strike_database.get();
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     autofill_client_.set_test_strike_database(std::move(test_strike_database));
-    personal_data_.Init(/*profile_database=*/autofill_client_.GetDatabase(),
+    personal_data_.Init(/*profile_database=*/database_,
                         /*account_database=*/nullptr,
                         /*pref_service=*/autofill_client_.GetPrefs(),
                         /*identity_manager=*/nullptr,
@@ -113,6 +114,9 @@ class CreditCardSaveManagerTest : public testing::Test {
                         /*cookie_manager_sevice=*/nullptr,
                         /*is_off_the_record=*/false);
     personal_data_.SetSyncServiceForTest(&sync_service_);
+    autocomplete_history_manager_.Init(
+        /*profile_database=*/database_,
+        /*is_off_the_record=*/false);
     autofill_driver_.reset(new TestAutofillDriver());
     request_context_ = new net::TestURLRequestContextGetter(
         base::ThreadTaskRunnerHandle::Get());
@@ -134,7 +138,8 @@ class CreditCardSaveManagerTest : public testing::Test {
     autofill_client_.set_test_form_data_importer(
         std::unique_ptr<TestFormDataImporter>(test_form_data_importer));
     autofill_manager_.reset(new TestAutofillManager(
-        autofill_driver_.get(), &autofill_client_, &personal_data_));
+        autofill_driver_.get(), &autofill_client_, &personal_data_,
+        &autocomplete_history_manager_));
     autofill_manager_->SetExpectedObservedSubmission(true);
   }
 
@@ -322,7 +327,9 @@ class CreditCardSaveManagerTest : public testing::Test {
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  scoped_refptr<AutofillWebDataService> database_;
   MockPersonalDataManager personal_data_;
+  MockAutocompleteHistoryManager autocomplete_history_manager_;
   syncer::TestSyncService sync_service_;
   base::test::ScopedFeatureList scoped_feature_list_;
   // Ends up getting owned (and destroyed) by TestFormDataImporter:

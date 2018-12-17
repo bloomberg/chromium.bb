@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -265,6 +266,7 @@ class AutofillMetricsTest : public testing::Test {
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   std::unique_ptr<TestPersonalDataManager> personal_data_;
+  std::unique_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager_;
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -289,6 +291,9 @@ void AutofillMetricsTest::SetUp() {
   personal_data_->SetPrefService(autofill_client_.GetPrefs());
   personal_data_->SetSyncServiceForTest(&sync_service_);
 
+  autocomplete_history_manager_ =
+      std::make_unique<MockAutocompleteHistoryManager>();
+
   payments::TestPaymentsClient* payments_client =
       new payments::TestPaymentsClient(
           autofill_driver_->GetURLLoaderFactory(), autofill_client_.GetPrefs(),
@@ -307,7 +312,8 @@ void AutofillMetricsTest::SetUp() {
       std::unique_ptr<TestFormDataImporter>(test_form_data_importer));
 
   autofill_manager_ = std::make_unique<TestAutofillManager>(
-      autofill_driver_.get(), &autofill_client_, personal_data_.get());
+      autofill_driver_.get(), &autofill_client_, personal_data_.get(),
+      autocomplete_history_manager_.get());
   external_delegate_ = std::make_unique<AutofillExternalDelegate>(
       autofill_manager_.get(), autofill_driver_.get());
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
@@ -2868,7 +2874,7 @@ TEST_F(AutofillMetricsTest, LogStoredCreditCardMetrics) {
 TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->SetAutofillEnabled(true);
-  personal_data_->Init(autofill_client_.GetDatabase(),
+  personal_data_->Init(scoped_refptr<AutofillWebDataService>(nullptr),
                        /*account_database=*/nullptr,
                        autofill_client_.GetPrefs(),
                        /*identity_manager=*/nullptr,
@@ -2883,7 +2889,7 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
 TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->SetAutofillEnabled(false);
-  personal_data_->Init(autofill_client_.GetDatabase(),
+  personal_data_->Init(scoped_refptr<AutofillWebDataService>(nullptr),
                        /*account_database=*/nullptr,
                        autofill_client_.GetPrefs(),
                        /*identity_manager=*/nullptr,

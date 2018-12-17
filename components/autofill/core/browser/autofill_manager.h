@@ -68,7 +68,8 @@ extern const int kCreditCardSigninPromoImpressionLimit;
 class AutofillManager : public AutofillHandler,
                         public AutofillDownloadManager::Observer,
                         public payments::FullCardRequest::ResultDelegate,
-                        public payments::FullCardRequest::UIDelegate {
+                        public payments::FullCardRequest::UIDelegate,
+                        public AutocompleteHistoryManager::SuggestionsHandler {
  public:
   AutofillManager(AutofillDriver* driver,
                   AutofillClient* client,
@@ -199,6 +200,11 @@ class AutofillManager : public AutofillHandler,
   void SelectFieldOptionsDidChange(const FormData& form) override;
   void Reset() override;
 
+  // AutocompleteHistoryManager::SuggestionsHandler:
+  void OnSuggestionsReturned(
+      int query_id,
+      const std::vector<Suggestion>& suggestions) override;
+
   // Returns the value of AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
 
@@ -224,6 +230,7 @@ class AutofillManager : public AutofillHandler,
   AutofillManager(AutofillDriver* driver,
                   AutofillClient* client,
                   PersonalDataManager* personal_data,
+                  AutocompleteHistoryManager* autocomplete_history_manager,
                   const std::string app_locale = "en-US",
                   AutofillDownloadManagerState enable_download_manager =
                       DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
@@ -533,7 +540,8 @@ class AutofillManager : public AutofillHandler,
   std::unique_ptr<AutofillDownloadManager> download_manager_;
 
   // Handles single-field autocomplete form data.
-  std::unique_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
+  // May be NULL.  NULL indicates OTR.
+  base::WeakPtr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
   // Utility for logging URL keyed metrics.
   std::unique_ptr<AutofillMetrics::FormInteractionsUkmLogger>

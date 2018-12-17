@@ -27,14 +27,15 @@ namespace autofill {
 WebViewAutofillClientIOS::WebViewAutofillClientIOS(
     PrefService* pref_service,
     PersonalDataManager* personal_data_manager,
+    AutocompleteHistoryManager* autocomplete_history_manager,
     web::WebState* web_state,
     id<CWVAutofillClientIOSBridge> bridge,
     identity::IdentityManager* identity_manager,
     LegacyStrikeDatabase* strike_database,
-    scoped_refptr<AutofillWebDataService> autofill_web_data_service,
     syncer::SyncService* sync_service)
     : pref_service_(pref_service),
       personal_data_manager_(personal_data_manager),
+      autocomplete_history_manager_(autocomplete_history_manager),
       web_state_(web_state),
       bridge_(bridge),
       identity_manager_(identity_manager),
@@ -52,7 +53,6 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
           ios_web_view::ApplicationContext::GetInstance()
               ->GetApplicationLocale())),
       legacy_strike_database_(strike_database),
-      autofill_web_data_service_(autofill_web_data_service),
       sync_service_(sync_service) {}
 
 WebViewAutofillClientIOS::~WebViewAutofillClientIOS() {
@@ -63,8 +63,9 @@ PersonalDataManager* WebViewAutofillClientIOS::GetPersonalDataManager() {
   return personal_data_manager_;
 }
 
-scoped_refptr<AutofillWebDataService> WebViewAutofillClientIOS::GetDatabase() {
-  return autofill_web_data_service_;
+AutocompleteHistoryManager*
+WebViewAutofillClientIOS::GetAutocompleteHistoryManager() {
+  return autocomplete_history_manager_;
 }
 
 PrefService* WebViewAutofillClientIOS::GetPrefs() {
