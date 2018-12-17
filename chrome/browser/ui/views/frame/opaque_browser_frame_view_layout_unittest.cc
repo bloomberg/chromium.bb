@@ -14,7 +14,9 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/text_constants.h"
@@ -85,7 +87,9 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
 
 }  // namespace
 
-class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
+class OpaqueBrowserFrameViewLayoutTest
+    : public ChromeViewsTestBase,
+      public testing::WithParamInterface<bool> {
  public:
   OpaqueBrowserFrameViewLayoutTest() {}
   ~OpaqueBrowserFrameViewLayoutTest() override {}
@@ -122,6 +126,8 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
     close_button_ = InitWindowCaptionButton(
         VIEW_ID_CLOSE_BUTTON,
         gfx::Size(kCloseButtonWidth, kCaptionButtonHeight));
+
+    delegate_->set_maximized(GetParam());
   }
 
   void TearDown() override {
@@ -263,14 +269,28 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
         kWindowWidth - tabstrip_x - caption_width - spacing;
     EXPECT_EQ(tabstrip_width, tabstrip_bounds.width());
     EXPECT_EQ(tabstrip_min_size.height(), tabstrip_bounds.height());
-    maximized_spacing = 0;
-    restored_spacing = 2 * OpaqueBrowserFrameViewLayout::kFrameBorderThickness;
-    spacing = maximized ? maximized_spacing : restored_spacing;
     gfx::Size browser_view_min_size(delegate_->GetBrowserViewMinimumSize());
+
+    // The tabs and window control buttons (if present) sit above the toolstrip
+    // in the browser window. The only one of these that can really change size
+    // is the tabstrip, so we should be able to find the minimum width of this
+    // region by subtracting out the difference between the current tab strip
+    // width and the minimum tab strip width.
+    const int top_bar_minimum_width =
+        kWindowWidth - tabstrip_bounds.width() + tabstrip_min_size.width();
+    // The minimum window width is then the minimum overall browser contents
+    // or the minimum tab strip/control buttons size, whichever is larger, plus
+    // the frame width.
+    const int frame_width =
+        delegate_->IsFrameCondensed()
+            ? 0
+            : 2 * OpaqueBrowserFrameViewLayout::kFrameBorderThickness;
     const int min_width =
-        browser_view_min_size.width() + tabstrip_min_size.width() + spacing;
+        std::max(browser_view_min_size.width(), top_bar_minimum_width) +
+        frame_width;
     gfx::Size min_size(layout_manager_->GetMinimumSize(root_view_));
     EXPECT_EQ(min_width, min_size.width());
+
     int restored_border_height =
         2 * OpaqueBrowserFrameViewLayout::kFrameBorderThickness +
         OpaqueBrowserFrameViewLayout::kNonClientExtraTopThickness;
@@ -332,21 +352,16 @@ class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLayoutTest);
 };
 
-TEST_F(OpaqueBrowserFrameViewLayoutTest, BasicWindow) {
+TEST_P(OpaqueBrowserFrameViewLayoutTest, BasicWindow) {
   // Tests the layout of a default chrome window with a tabstrip and no window
   // title.
-
-  for (int i = 0; i < 2; ++i) {
-    root_view_->Layout();
-    SCOPED_TRACE(i == 0 ? "Window is restored" : "Window is maximized");
-    ExpectCaptionButtons(false, 0);
-    ExpectTabStripAndMinimumSize(false);
-    ExpectWindowIcon(false);
-    delegate_->set_maximized(true);
-  }
+  root_view_->Layout();
+  ExpectCaptionButtons(false, 0);
+  ExpectTabStripAndMinimumSize(false);
+  ExpectWindowIcon(false);
 }
 
-TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowButtonsOnLeft) {
+TEST_P(OpaqueBrowserFrameViewLayoutTest, WindowButtonsOnLeft) {
   // Tests the layout of a chrome window with caption buttons on the left.
   std::vector<views::FrameButton> leading_buttons;
   std::vector<views::FrameButton> trailing_buttons;
@@ -355,42 +370,38 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowButtonsOnLeft) {
   leading_buttons.push_back(views::FRAME_BUTTON_MAXIMIZE);
   layout_manager_->SetButtonOrdering(leading_buttons, trailing_buttons);
 
-  for (int i = 0; i < 2; ++i) {
-    root_view_->Layout();
-    SCOPED_TRACE(i == 0 ? "Window is restored" : "Window is maximized");
-    ExpectCaptionButtons(true, 0);
-    ExpectTabStripAndMinimumSize(true);
-    ExpectWindowIcon(true);
-    delegate_->set_maximized(true);
-  }
+  root_view_->Layout();
+  ExpectCaptionButtons(true, 0);
+  ExpectTabStripAndMinimumSize(true);
+  ExpectWindowIcon(true);
 }
 
-TEST_F(OpaqueBrowserFrameViewLayoutTest, WithoutCaptionButtons) {
+TEST_P(OpaqueBrowserFrameViewLayoutTest, WithoutCaptionButtons) {
   // Tests the layout of a default chrome window with no caption buttons (which
   // should force the tab strip to be condensed).
   delegate_->set_show_caption_buttons(false);
 
-  for (int i = 0; i < 2; ++i) {
-    root_view_->Layout();
-    SCOPED_TRACE(i == 0 ? "Window is restored" : "Window is maximized");
-    ExpectCaptionButtons(false, 0);
-    ExpectTabStripAndMinimumSize(false);
-    ExpectWindowIcon(false);
-    delegate_->set_maximized(true);
-  }
+  root_view_->Layout();
+  ExpectCaptionButtons(false, 0);
+  ExpectTabStripAndMinimumSize(false);
+  ExpectWindowIcon(false);
 }
 
-TEST_F(OpaqueBrowserFrameViewLayoutTest, WindowWithTitleAndIcon) {
+TEST_P(OpaqueBrowserFrameViewLayoutTest, WindowWithTitleAndIcon) {
   // Tests the layout of pop up windows.
   delegate_->set_window_title(base::ASCIIToUTF16("Window Title"));
   AddWindowTitleIcons();
 
-  for (int i = 0; i < 2; ++i) {
-    root_view_->Layout();
-    SCOPED_TRACE(i == 0 ? "Window is restored" : "Window is maximized");
-    ExpectCaptionButtons(false, 0);
-    ExpectWindowIcon(false);
-    ExpectWindowTitle();
-    delegate_->set_maximized(true);
-  }
+  root_view_->Layout();
+  ExpectCaptionButtons(false, 0);
+  ExpectWindowIcon(false);
+  ExpectWindowTitle();
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        OpaqueBrowserFrameViewLayoutTest,
+                        ::testing::Values(false, true),
+                        [](const testing::TestParamInfo<bool>& param_info) {
+                          return std::string(param_info.param ? "Maximized"
+                                                              : "Restored");
+                        });

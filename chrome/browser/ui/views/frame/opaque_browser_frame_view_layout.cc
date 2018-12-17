@@ -96,18 +96,19 @@ gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
 
 gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
     const views::View* host) const {
+  // Ensure that we can fit the main browser view.
   gfx::Size min_size = delegate_->GetBrowserViewMinimumSize();
-  int border_thickness = FrameBorderThickness(false);
+
+  // Ensure that we can, at minimum, hold our window controls and a tab strip.
+  int top_width = minimum_size_for_buttons_;
+  if (delegate_->IsTabStripVisible())
+    top_width += delegate_->GetTabstripPreferredSize().width();
+  min_size.set_width(std::max(min_size.width(), top_width));
+
+  // Account for the frame.
+  const int border_thickness = FrameBorderThickness(false);
   min_size.Enlarge(2 * border_thickness,
                    NonClientTopHeight(false) + border_thickness);
-
-  // Ensure that we can, at minimum, hold our window controls.
-  min_size.set_width(std::max(min_size.width(), minimum_size_for_buttons_));
-
-  // Ensure that the minimum width is enough to hold a minimum width tab strip
-  // at its usual insets.
-  if (delegate_->IsTabStripVisible())
-    min_size.Enlarge(delegate_->GetTabstripPreferredSize().width(), 0);
 
   return min_size;
 }
