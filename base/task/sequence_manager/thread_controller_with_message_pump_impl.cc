@@ -238,6 +238,9 @@ bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     main_thread_only().task_execution_allowed = false;
 
     TRACE_TASK_EXECUTION("ThreadController::Task", *task);
+    // Trace-parsing tools (Lighthouse, etc) consume this event to determine
+    // long tasks. See https://crbug.com/874982
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("lighthouse"), "RunTask");
     task_annotator_.RunTask("ThreadController::Task", &*task);
     task_ran = true;
 
