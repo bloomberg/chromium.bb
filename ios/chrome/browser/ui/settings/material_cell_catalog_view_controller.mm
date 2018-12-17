@@ -243,19 +243,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       @"incididunt ut labore et dolore magna aliqua.";
   [model addItem:multilineItem
       toSectionWithIdentifier:SectionIdentifierMultilineCell];
-  ImportDataMultilineDetailItem* multilineDetailItem =
-      [[ImportDataMultilineDetailItem alloc]
-          initWithType:ItemTypeImportDataMultiline];
-  multilineDetailItem.text =
-      @"Lorem ipsum dolor sit amet, consectetur "
-      @"adipiscing elit, sed do eiusmod tempor "
-      @"incididunt ut labore et dolore magna aliqua.";
-  multilineDetailItem.detailText =
-      @"Lorem ipsum dolor sit amet, consectetur "
-      @"adipiscing elit, sed do eiusmod tempor "
-      @"incididunt ut labore et dolore magna aliqua.";
-  [model addItem:multilineDetailItem
-      toSectionWithIdentifier:SectionIdentifierMultilineCell];
   [model addItem:[self settingsImageDetailTextItem]
       toSectionWithIdentifier:SectionIdentifierMultilineCell];
   SettingsImageDetailTextItem* settingsImageDetailTextItem =
@@ -383,11 +370,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       toSectionWithIdentifier:SectionIdentifierPasswordDetails];
   [model addItem:[self passwordDetailsLongItem]
       toSectionWithIdentifier:SectionIdentifierPasswordDetails];
-
-  // Search cells.
-  [model addSectionWithIdentifier:SectionIdentifierSettingsSearchCell];
-  [model addItem:[self settingsSearchItem]
-      toSectionWithIdentifier:SectionIdentifierSettingsSearchCell];
 
   // Account cells.
   [model addSectionWithIdentifier:SectionIdentifierAccountCell];
@@ -866,13 +848,6 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       @"Lorem ipsum dolor sit amet, consectetur "
       @"adipiscing elit, sed do eiusmod tempor "
       @"incididunt ut labore et dolore magna aliqua.";
-  return item;
-}
-
-- (SettingsSearchItem*)settingsSearchItem {
-  SettingsSearchItem* item =
-      [[SettingsSearchItem alloc] initWithType:ItemTypeSettingsSearch];
-  item.placeholder = @"Search Here";
   return item;
 }
 
