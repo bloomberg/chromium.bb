@@ -195,12 +195,14 @@ void Service::UpdateAssistantManagerState() {
       }
       break;
     case AssistantManagerService::State::RUNNING:
-    case AssistantManagerService::State::STARTED:
-      if (assistant_state_.settings_enabled().value()) {
+      if (assistant_state_.settings_enabled().value())
         assistant_manager_service_->SetAccessToken(access_token_.value());
-      } else {
+      else
         StopAssistantManagerService();
-      }
+      break;
+    case AssistantManagerService::State::STARTED:
+      if (!assistant_state_.settings_enabled().value())
+        StopAssistantManagerService();
       break;
   }
 }
