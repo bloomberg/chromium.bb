@@ -348,26 +348,6 @@ bool PaintLayer::SticksToScroller() const {
 bool PaintLayer::FixedToViewport() const {
   if (GetLayoutObject().StyleRef().GetPosition() != EPosition::kFixed)
     return false;
-
-  // TODO(pdr): This approach of calculating the nearest scroll node is O(n).
-  // An option for improving this is to cache the nearest scroll node in
-  // the local border box properties.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    const auto view_border_box_properties =
-        GetLayoutObject().View()->FirstFragment().LocalBorderBoxProperties();
-    const auto* view_scroll = view_border_box_properties.Transform()
-                                  ->NearestScrollTranslationNode()
-                                  .ScrollNode();
-
-    const auto* scroll = GetLayoutObject()
-                             .FirstFragment()
-                             .LocalBorderBoxProperties()
-                             .Transform()
-                             ->NearestScrollTranslationNode()
-                             .ScrollNode();
-    return scroll == view_scroll;
-  }
-
   return GetLayoutObject().Container() == GetLayoutObject().View();
 }
 

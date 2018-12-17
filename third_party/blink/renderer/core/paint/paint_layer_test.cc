@@ -160,23 +160,6 @@ TEST_P(PaintLayerTest, ScrollsWithViewportFixedPositionInsideTransform) {
   EXPECT_FALSE(layer->FixedToViewport());
 }
 
-TEST_P(PaintLayerTest,
-       ScrollsWithViewportFixedPositionInsideTransformNoScroll) {
-  SetBodyInnerHTML(R"HTML(
-    <div style='transform: translateZ(0)'>
-      <div id='target' style='position: fixed'></div>
-    </div>
-  )HTML");
-  PaintLayer* layer = GetPaintLayerByElementId("target");
-
-  // In CAP mode, we correctly determine that the frame doesn't scroll at all,
-  // and so return true.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    EXPECT_TRUE(layer->FixedToViewport());
-  else
-    EXPECT_FALSE(layer->FixedToViewport());
-}
-
 TEST_P(PaintLayerTest, SticksToScrollerStickyPosition) {
   SetBodyInnerHTML(R"HTML(
     <div style='transform: translateZ(0)'>
