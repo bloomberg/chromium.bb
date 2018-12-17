@@ -143,7 +143,7 @@ bool EventHandlerRegistry::UpdateEventHandlerInternal(
 
   if (op != kRemoveAll) {
     if (handlers_changed)
-      NotifyHasHandlersChanged(target, handler_class, new_num_handlers > 0);
+      NotifyHandlersChanged(target, handler_class, new_num_handlers > 0);
 
     if (target_set_changed) {
       NotifyDidAddOrRemoveEventHandlerTarget(GetLocalFrameForTarget(target),
@@ -232,7 +232,7 @@ void EventHandlerRegistry::DidRemoveAllEventHandlers(EventTarget& target) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
     if (handlers_changed[i]) {
       bool has_handlers = targets_[handler_class].Contains(&target);
-      NotifyHasHandlersChanged(&target, handler_class, has_handlers);
+      NotifyHandlersChanged(&target, handler_class, has_handlers);
     }
     if (target_set_changed[i]) {
       NotifyDidAddOrRemoveEventHandlerTarget(GetLocalFrameForTarget(&target),
@@ -241,7 +241,7 @@ void EventHandlerRegistry::DidRemoveAllEventHandlers(EventTarget& target) {
   }
 }
 
-void EventHandlerRegistry::NotifyHasHandlersChanged(
+void EventHandlerRegistry::NotifyHandlersChanged(
     EventTarget* target,
     EventHandlerClass handler_class,
     bool has_active_handlers) {
