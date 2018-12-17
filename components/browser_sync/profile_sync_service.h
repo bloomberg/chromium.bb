@@ -226,7 +226,6 @@ class ProfileSyncService : public syncer::SyncService,
   syncer::ModelTypeSet GetActiveDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types);
-  virtual void SetFirstSetupComplete();  // Virtual for testing.
   std::unique_ptr<syncer::SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;
@@ -370,6 +369,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // SyncPrefObserver implementation.
   void OnSyncManagedPrefChange(bool is_sync_managed) override;
+  void OnFirstSetupCompletePrefChange(bool is_first_setup_complete) override;
 
   // See the SyncServiceCrypto header.
   // Virtual for testing.

@@ -76,10 +76,6 @@ bool ProfileSyncServiceMock::IsFirstSetupComplete() const {
   return user_settings_.IsFirstSetupComplete();
 }
 
-void ProfileSyncServiceMock::SetFirstSetupComplete() {
-  user_settings_.SetFirstSetupComplete();
-}
-
 syncer::PassphraseType ProfileSyncServiceMock::GetPassphraseType() const {
   return user_settings_.GetPassphraseType();
 }

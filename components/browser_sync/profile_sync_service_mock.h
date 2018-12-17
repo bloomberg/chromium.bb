@@ -93,7 +93,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   // ProfileSyncService overrides.
   bool IsFirstSetupComplete() const override;
-  void SetFirstSetupComplete() override;
 
   MOCK_CONST_METHOD1(IsDataTypeControllerRunning, bool(syncer::ModelType));
 
