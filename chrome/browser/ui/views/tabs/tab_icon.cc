@@ -28,9 +28,9 @@
 
 namespace {
 
-constexpr int kFinishedLoadingAnimationTimeMs = 250;
+constexpr int kFinishedLoadingAnimationTimeMs = 375;
 constexpr int kFinishedLoadingFadeOutTimeMs = 150;
-constexpr int kFaviconFadeInMs = 250;
+constexpr int kFaviconFadeInMs = 350;
 constexpr int kFaviconPlaceholderFadeInMs = 400;
 constexpr int kFaviconPlaceholderFadeOutMs = 150;
 
