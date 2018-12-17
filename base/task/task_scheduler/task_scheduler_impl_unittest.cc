@@ -748,15 +748,19 @@ TEST_P(TaskSchedulerImplTest, FlushAsyncNoTasks) {
 
 namespace {
 
-// Verifies that |query| is found on the current stack. Ignores failures if this
-// configuration doesn't have symbols.
-void VerifyHasStringOnStack(const std::string& query) {
+// Verifies that all strings passed as argument are found on the current stack.
+// Ignores failures if this configuration doesn't have symbols.
+void VerifyHasStringsOnStack(const std::string& pool_str,
+                             const std::string& shutdown_behavior_str) {
   const std::string stack = debug::StackTrace().ToString();
   SCOPED_TRACE(stack);
-  const bool found_on_stack = stack.find(query) != std::string::npos;
   const bool stack_has_symbols =
       stack.find("SchedulerWorker") != std::string::npos;
-  EXPECT_TRUE(found_on_stack || !stack_has_symbols) << query;
+  if (!stack_has_symbols)
+    return;
+
+  EXPECT_THAT(stack, ::testing::HasSubstr(pool_str));
+  EXPECT_THAT(stack, ::testing::HasSubstr(shutdown_behavior_str));
 }
 
 }  // namespace
@@ -775,64 +779,84 @@ void VerifyHasStringOnStack(const std::string& query) {
 #endif
 
 // Integration test that verifies that workers have a frame on their stacks
-// which easily identifies the type of worker (useful to diagnose issues from
-// logs without memory dumps).
+// which easily identifies the type of worker and shutdown behavior (useful to
+// diagnose issues from logs without memory dumps).
 TEST_P(TaskSchedulerImplTest, MAYBE_IdentifiableStacks) {
   StartTaskScheduler();
 
-  scheduler_.CreateSequencedTaskRunnerWithTraits({})->PostTask(
-      FROM_HERE, BindOnce(&VerifyHasStringOnStack, "RunPooledWorker"));
-  scheduler_.CreateSequencedTaskRunnerWithTraits({TaskPriority::BEST_EFFORT})
-      ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
-                                     "RunBackgroundPooledWorker"));
+  // Shutdown behaviors and expected stack frames.
+  constexpr std::pair<TaskShutdownBehavior, const char*> shutdown_behaviors[] =
+      {{TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, "RunContinueOnShutdown"},
+       {TaskShutdownBehavior::SKIP_ON_SHUTDOWN, "RunSkipOnShutdown"},
+       {TaskShutdownBehavior::BLOCK_SHUTDOWN, "RunBlockShutdown"}};
 
-  scheduler_
-      .CreateSingleThreadTaskRunnerWithTraits(
-          {}, SingleThreadTaskRunnerThreadMode::SHARED)
-      ->PostTask(FROM_HERE,
-                 BindOnce(&VerifyHasStringOnStack, "RunSharedWorker"));
-  scheduler_
-      .CreateSingleThreadTaskRunnerWithTraits(
-          {TaskPriority::BEST_EFFORT}, SingleThreadTaskRunnerThreadMode::SHARED)
-      ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
-                                     "RunBackgroundSharedWorker"));
+  for (const auto& shutdown_behavior : shutdown_behaviors) {
+    const TaskTraits traits = {shutdown_behavior.first};
+    const TaskTraits best_effort_traits = {shutdown_behavior.first,
+                                           TaskPriority::BEST_EFFORT};
 
-  scheduler_
-      .CreateSingleThreadTaskRunnerWithTraits(
-          {}, SingleThreadTaskRunnerThreadMode::DEDICATED)
-      ->PostTask(FROM_HERE,
-                 BindOnce(&VerifyHasStringOnStack, "RunDedicatedWorker"));
-  scheduler_
-      .CreateSingleThreadTaskRunnerWithTraits(
-          {TaskPriority::BEST_EFFORT},
-          SingleThreadTaskRunnerThreadMode::DEDICATED)
-      ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
-                                     "RunBackgroundDedicatedWorker"));
+    scheduler_.CreateSequencedTaskRunnerWithTraits(traits)->PostTask(
+        FROM_HERE, BindOnce(&VerifyHasStringsOnStack, "RunPooledWorker",
+                            shutdown_behavior.second));
+    scheduler_.CreateSequencedTaskRunnerWithTraits(best_effort_traits)
+        ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringsOnStack,
+                                       "RunBackgroundPooledWorker",
+                                       shutdown_behavior.second));
+
+    scheduler_
+        .CreateSingleThreadTaskRunnerWithTraits(
+            traits, SingleThreadTaskRunnerThreadMode::SHARED)
+        ->PostTask(FROM_HERE,
+                   BindOnce(&VerifyHasStringsOnStack, "RunSharedWorker",
+                            shutdown_behavior.second));
+    scheduler_
+        .CreateSingleThreadTaskRunnerWithTraits(
+            best_effort_traits, SingleThreadTaskRunnerThreadMode::SHARED)
+        ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringsOnStack,
+                                       "RunBackgroundSharedWorker",
+                                       shutdown_behavior.second));
+
+    scheduler_
+        .CreateSingleThreadTaskRunnerWithTraits(
+            traits, SingleThreadTaskRunnerThreadMode::DEDICATED)
+        ->PostTask(FROM_HERE,
+                   BindOnce(&VerifyHasStringsOnStack, "RunDedicatedWorker",
+                            shutdown_behavior.second));
+    scheduler_
+        .CreateSingleThreadTaskRunnerWithTraits(
+            best_effort_traits, SingleThreadTaskRunnerThreadMode::DEDICATED)
+        ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringsOnStack,
+                                       "RunBackgroundDedicatedWorker",
+                                       shutdown_behavior.second));
 
 #if defined(OS_WIN)
-  scheduler_
-      .CreateCOMSTATaskRunnerWithTraits(
-          {}, SingleThreadTaskRunnerThreadMode::SHARED)
-      ->PostTask(FROM_HERE,
-                 BindOnce(&VerifyHasStringOnStack, "RunSharedCOMWorker"));
-  scheduler_
-      .CreateCOMSTATaskRunnerWithTraits(
-          {TaskPriority::BEST_EFFORT}, SingleThreadTaskRunnerThreadMode::SHARED)
-      ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
-                                     "RunBackgroundSharedCOMWorker"));
+    scheduler_
+        .CreateCOMSTATaskRunnerWithTraits(
+            traits, SingleThreadTaskRunnerThreadMode::SHARED)
+        ->PostTask(FROM_HERE,
+                   BindOnce(&VerifyHasStringsOnStack, "RunSharedCOMWorker",
+                            shutdown_behavior.second));
+    scheduler_
+        .CreateCOMSTATaskRunnerWithTraits(
+            best_effort_traits, SingleThreadTaskRunnerThreadMode::SHARED)
+        ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringsOnStack,
+                                       "RunBackgroundSharedCOMWorker",
+                                       shutdown_behavior.second));
 
-  scheduler_
-      .CreateCOMSTATaskRunnerWithTraits(
-          {}, SingleThreadTaskRunnerThreadMode::DEDICATED)
-      ->PostTask(FROM_HERE,
-                 BindOnce(&VerifyHasStringOnStack, "RunDedicatedCOMWorker"));
-  scheduler_
-      .CreateCOMSTATaskRunnerWithTraits(
-          {TaskPriority::BEST_EFFORT},
-          SingleThreadTaskRunnerThreadMode::DEDICATED)
-      ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringOnStack,
-                                     "RunBackgroundDedicatedCOMWorker"));
+    scheduler_
+        .CreateCOMSTATaskRunnerWithTraits(
+            traits, SingleThreadTaskRunnerThreadMode::DEDICATED)
+        ->PostTask(FROM_HERE,
+                   BindOnce(&VerifyHasStringsOnStack, "RunDedicatedCOMWorker",
+                            shutdown_behavior.second));
+    scheduler_
+        .CreateCOMSTATaskRunnerWithTraits(
+            best_effort_traits, SingleThreadTaskRunnerThreadMode::DEDICATED)
+        ->PostTask(FROM_HERE, BindOnce(&VerifyHasStringsOnStack,
+                                       "RunBackgroundDedicatedCOMWorker",
+                                       shutdown_behavior.second));
 #endif  // defined(OS_WIN)
+  }
 
   scheduler_.FlushForTesting();
 }

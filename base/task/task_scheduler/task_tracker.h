@@ -340,6 +340,13 @@ class BASE_EXPORT TaskTracker {
 
   void IncrementNumTasksRun();
 
+  // Dummy frames to allow identification of shutdown behavior in a stack trace.
+  void RunContinueOnShutdown(Task* task);
+  void RunSkipOnShutdown(Task* task);
+  void RunBlockShutdown(Task* task);
+  void RunTaskWithShutdownBehavior(TaskShutdownBehavior shutdown_behavior,
+                                   Task* task);
+
   debug::TaskAnnotator task_annotator_;
 
   // Number of tasks blocking shutdown and boolean indicating whether shutdown

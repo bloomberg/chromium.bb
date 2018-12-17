@@ -11,6 +11,8 @@
 #include "base/base_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -644,7 +646,7 @@ void TaskTracker::RunOrSkipTask(Task task,
             TRACE_EVENT_FLAG_FLOW_IN);
       }
 
-      task_annotator_.RunTask(nullptr, &task);
+      RunTaskWithShutdownBehavior(traits.shutdown_behavior(), &task);
     }
 
     // Make sure the arguments bound to the callback are deleted within the
@@ -929,6 +931,40 @@ void TaskTracker::CallFlushCallbackForTesting() {
   }
   if (flush_callback)
     std::move(flush_callback).Run();
+}
+
+NOINLINE void TaskTracker::RunContinueOnShutdown(Task* task) {
+  const int line_number = __LINE__;
+  task_annotator_.RunTask(nullptr, task);
+  base::debug::Alias(&line_number);
+}
+
+NOINLINE void TaskTracker::RunSkipOnShutdown(Task* task) {
+  const int line_number = __LINE__;
+  task_annotator_.RunTask(nullptr, task);
+  base::debug::Alias(&line_number);
+}
+
+NOINLINE void TaskTracker::RunBlockShutdown(Task* task) {
+  const int line_number = __LINE__;
+  task_annotator_.RunTask(nullptr, task);
+  base::debug::Alias(&line_number);
+}
+
+void TaskTracker::RunTaskWithShutdownBehavior(
+    TaskShutdownBehavior shutdown_behavior,
+    Task* task) {
+  switch (shutdown_behavior) {
+    case TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN:
+      RunContinueOnShutdown(task);
+      return;
+    case TaskShutdownBehavior::SKIP_ON_SHUTDOWN:
+      RunSkipOnShutdown(task);
+      return;
+    case TaskShutdownBehavior::BLOCK_SHUTDOWN:
+      RunBlockShutdown(task);
+      return;
+  }
 }
 
 }  // namespace internal
