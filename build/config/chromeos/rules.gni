@@ -36,7 +36,7 @@ is_cros_chrome_sdk = cros_board != ""
 #       build dir to the VM after launching it.
 #   runtime_deps_file: Path to file listing runtime deps for the test. If set,
 #       all files listed will be copied to the VM before testing.
-template("generate_vm_runner_script") {
+template("generate_runner_script") {
   _cache_path_prefix =
       "//build/cros_cache/chrome-sdk/tarballs/${cros_board}+${cros_sdk_version}"
   _vm_image_path = "${_cache_path_prefix}+chromiumos_qemu_image.tar.xz/"
@@ -69,7 +69,7 @@ template("generate_vm_runner_script") {
     if (defined(runtime_deps_file)) {
       write_runtime_deps = runtime_deps_file
     }
-    script = "//build/chromeos/create_vm_test_script.py"
+    script = "//build/chromeos/create_test_runner_script.py"
 
     outputs = [
       generated_script,
@@ -132,8 +132,8 @@ template("generate_vm_runner_script") {
       data += [ "${_cache_path_prefix}+target_toolchain/" ]
     }
 
-    # When --test-exe is specified, run_vm_test will push the exe to the VM and
-    # execute it. Otherwise it wraps a host-side command and just takes care
+    # When --test-exe is specified, test_runner.py will push the exe to the VM
+    # and execute it. Otherwise it wraps a host-side command and just takes care
     # launching & tearing-down the VM.
     if (defined(test_exe)) {
       args += [
@@ -147,8 +147,8 @@ template("generate_vm_runner_script") {
         ]
       }
     } else if (is_tast) {
-      # When --tast-tests is specified, run_vm_test will call local_test_runner
-      # on the VM to run the set of tests.
+      # When --tast-tests is specified, test_runner.py will call
+      # local_test_runner on the VM to run the set of tests.
       args += [
         "--suite-name",
         target_name,
@@ -174,7 +174,7 @@ template("tast_test") {
   assert(defined(invoker.tast_conditional) != defined(invoker.tast_tests),
          "Specify one of tast_tests or tast_conditional.")
 
-  generate_vm_runner_script(target_name) {
+  generate_runner_script(target_name) {
     testonly = true
     if (defined(invoker.tast_conditional)) {
       tast_conditional = invoker.tast_conditional
