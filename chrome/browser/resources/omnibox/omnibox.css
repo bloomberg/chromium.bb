@@ -48,16 +48,9 @@ table {
   font-family: monospace;
   font-size: 12px;
   min-width: 900px;
-  overflow-wrap: break-word;
   table-layout: fixed;
   text-align: left;
   width: 100%;
-}
-
-table * {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 thead tr {
@@ -67,17 +60,37 @@ thead tr {
   font-weight: bold;
   letter-spacing: 0;
   vertical-align: bottom;
-  white-space: nowrap;
 }
 
 tbody tr {
-  height: 42px;
-  transition-duration: 300ms;
+  height: 66px;
+}
+
+tbody td > * {
+  display: block;
+  max-height: 56px;
+}
+
+tbody td * {
+  overflow: hidden;
+  word-break: break-all;
+}
+
+tbody td:not(:hover) * {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+tbody td:hover * {
+  overflow-y: auto;
+}
+
+tbody pre.json * {
+  white-space: pre-line;
 }
 
 tbody tr:hover * {
   background-color: #f8f8f8;
-  white-space: normal;
 }
 
 th,
@@ -86,8 +99,11 @@ td {
 }
 
 th {
+  overflow: hidden;
   padding-bottom: 6px;
   padding-top: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .filtered-highlighted {
@@ -117,19 +133,6 @@ th {
 
 .toggle span:hover {
   background-color: #f0f0f0;
-}
-
-tbody tr:hover pre {
-  white-space: pre-wrap;
-  overflow-y: auto;
-}
-
-tbody pre.json * {
-  white-space: inherit;
-}
-
-pre.json {
-  padding: 0 5px;
 }
 
 pre.json .key {
