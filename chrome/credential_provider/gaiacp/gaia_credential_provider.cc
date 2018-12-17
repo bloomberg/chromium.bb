@@ -9,11 +9,13 @@
 #include <iomanip>
 #include <map>
 
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
@@ -47,6 +49,7 @@ CGaiaCredentialProvider::~CGaiaCredentialProvider() {}
 HRESULT CGaiaCredentialProvider::FinalConstruct() {
   LOGFN(INFO);
   CleanupStaleTokenHandles();
+  CleanupOlderVersions();
   return S_OK;
 }
 
@@ -116,6 +119,12 @@ void CGaiaCredentialProvider::CleanupStaleTokenHandles() {
       LOGFN(ERROR) << "manager->FindUserBySID hr=" << putHR(hr);
     }
   }
+}
+
+void CGaiaCredentialProvider::CleanupOlderVersions() {
+  base::FilePath versions_directory = GetInstallDirectory();
+  if (!versions_directory.empty())
+    DeleteVersionsExcept(versions_directory, TEXT(CHROME_VERSION_STRING));
 }
 
 // IGaiaCredentialProvider ////////////////////////////////////////////////////

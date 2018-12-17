@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <atlbase.h>
+#include <atlcom.h>
+#include <atlcomcli.h>
 #include <lmerr.h>
 #include <objbase.h>
 #include <unknwn.h>
@@ -26,6 +28,7 @@
 #include "base/win/registry.h"
 #include "build/build_config.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/setup/setup_lib.h"
@@ -305,6 +308,53 @@ TEST_F(GcpSetupTest, DoInstallOverOldLockedInstall) {
         installed_path_for_version(old_version).Append(filenames[i]);
     EXPECT_EQ(path == dll_path, base::PathExists(path));
   }
+}
+
+TEST_F(GcpSetupTest, LaunchGcpAfterInstall) {
+  logging::ResetEventSourceForTesting();
+
+  // Install using some old version.
+  const base::string16 old_version(L"1.0.0.0");
+  ASSERT_EQ(S_OK, DoInstall(module_path(), old_version, fakes_for_testing()));
+  ExpectAllFilesToExist(true, old_version);
+
+  // Lock the CP DLL.
+  base::FilePath dll_path = installed_path_for_version(old_version)
+                                .Append(FILE_PATH_LITERAL("Gaia1_0.dll"));
+  base::File locked_file(dll_path, base::File::FLAG_OPEN |
+                                       base::File::FLAG_READ |
+                                       base::File::FLAG_EXCLUSIVE_READ |
+                                       base::File::FLAG_EXCLUSIVE_WRITE);
+
+  logging::ResetEventSourceForTesting();
+
+  // Now install a newer version.
+  ASSERT_EQ(S_OK,
+            DoInstall(module_path(), product_version(), fakes_for_testing()));
+
+  // Make sure newer version exists.
+  ExpectAllFilesToExist(true, product_version());
+
+  // The locked file will still exist, the others are gone.
+  const base::FilePath::CharType* const* filenames;
+  size_t count;
+  GetInstalledFileBasenames(&filenames, &count);
+  for (size_t i = 0; i < count; ++i) {
+    const base::FilePath path =
+        installed_path_for_version(old_version).Append(filenames[i]);
+    EXPECT_EQ(path == dll_path, base::PathExists(path));
+  }
+
+  locked_file.Close();
+
+  CComPtr<IGaiaCredentialProvider> provider;
+  ASSERT_EQ(S_OK,
+            CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
+                nullptr, IID_IGaiaCredentialProvider, (void**)&provider));
+
+  // Make sure newer version exists and old version is gone.
+  ExpectAllFilesToExist(true, product_version());
+  ExpectAllFilesToExist(false, old_version);
 }
 
 TEST_F(GcpSetupTest, DoUninstall) {

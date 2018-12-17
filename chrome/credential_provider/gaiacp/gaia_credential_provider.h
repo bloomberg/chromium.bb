@@ -49,6 +49,7 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   HRESULT DestroyCredentials();
   void ClearTransient();
   void CleanupStaleTokenHandles();
+  void CleanupOlderVersions();
 
   // Checks of any of the Google account users need to re-auth.
   static unsigned __stdcall CheckReauthStatus(void* param);

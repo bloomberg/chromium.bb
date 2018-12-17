@@ -51,9 +51,6 @@ HRESULT RelaunchUninstaller(const base::FilePath& installer_path);
 void GetInstalledFileBasenames(const base::FilePath::CharType* const** names,
                                size_t* count);
 
-// Gets the brand specific path in which to install GCPW.
-base::FilePath::StringType GetInstallParentDirectoryName();
-
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_SETUP_SETUP_LIB_H_
