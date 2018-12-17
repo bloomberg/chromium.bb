@@ -232,8 +232,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   void CloseIdleConnections();
 
   // Called whenever an external cache in the system reuses the resource
-  // referred to by |url| and |http_method|.
-  void OnExternalCacheHit(const GURL& url, const std::string& http_method);
+  // referred to by |url| and |http_method|, inside a page with a top-level
+  // URL at |top_frame_origin|.
+  void OnExternalCacheHit(const GURL& url,
+                          const std::string& http_method,
+                          base::Optional<url::Origin> top_frame_origin);
 
   // Causes all transactions created after this point to simulate lock timeout
   // and effectively bypass the cache lock whenever there is lock contention.
@@ -409,8 +412,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // be currently in use.
   int AsyncDoomEntry(const std::string& key, Transaction* trans);
 
-  // Dooms the entry associated with a GET for a given |url|.
-  void DoomMainEntryForUrl(const GURL& url);
+  // Dooms the entry associated with a GET for a given |url|, loaded from
+  // a page with top-level frame at |top_frame_origin|.
+  void DoomMainEntryForUrl(const GURL& url,
+                           base::Optional<url::Origin> top_frame_origin);
 
   // Closes a previously doomed entry.
   void FinalizeDoomedEntry(ActiveEntry* entry);

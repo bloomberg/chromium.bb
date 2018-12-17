@@ -43,6 +43,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/cache_type.h"
+#include "net/base/features.h"
 #include "net/base/hash_value.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
@@ -1306,13 +1307,52 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit) {
   for (size_t i = 0; i < entry_urls.size(); i++) {
     GURL test_url(entry_urls[i]);
 
-    network_context->NotifyExternalCacheHit(test_url, test_url.scheme());
+    network_context->NotifyExternalCacheHit(test_url, test_url.scheme(),
+                                            base::nullopt);
     EXPECT_EQ(i + 1, mock_cache.disk_cache()->GetExternalCacheHits().size());
 
     // Potentially a brittle check as the value sent to disk_cache is a "key."
     // This key just happens to be the same as the GURL from the test input.
     // So if this breaks check HttpCache::GenerateCacheKey() for changes.
     EXPECT_EQ(test_url, mock_cache.disk_cache()->GetExternalCacheHits().back());
+  }
+}
+
+TEST_F(NetworkContextTest, NotifyExternalCacheHit_Split) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(net::features::kSplitCacheByTopFrameOrigin);
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.com"));
+
+  net::MockHttpCache mock_cache;
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->http_cache_enabled = true;
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+  network_context->url_request_context()->set_http_transaction_factory(
+      mock_cache.http_cache());
+
+  std::vector<std::string> entry_urls = {
+      "http://www.google.com",    "https://www.google.com",
+      "http://www.wikipedia.com", "https://www.wikipedia.com",
+      "http://localhost:1234",    "https://localhost:1234",
+  };
+
+  // The disk cache is lazily instanitated, force it and ensure it's valid.
+  ASSERT_TRUE(mock_cache.disk_cache());
+  EXPECT_EQ(0U, mock_cache.disk_cache()->GetExternalCacheHits().size());
+
+  for (size_t i = 0; i < entry_urls.size(); i++) {
+    GURL test_url(entry_urls[i]);
+
+    network_context->NotifyExternalCacheHit(test_url, test_url.scheme(),
+                                            origin_a);
+    EXPECT_EQ(i + 1, mock_cache.disk_cache()->GetExternalCacheHits().size());
+
+    // Since this is splitting the cache, the key also includes the top-level
+    // frame origin.
+    EXPECT_EQ(base::StrCat({"_dk_http://a.com \n", test_url.spec()}),
+              mock_cache.disk_cache()->GetExternalCacheHits().back());
   }
 }
 
