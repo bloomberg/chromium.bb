@@ -42,7 +42,9 @@ struct SequencedScroll final : public GarbageCollected<SequencedScroll> {
 class CORE_EXPORT SmoothScrollSequencer final
     : public GarbageCollected<SmoothScrollSequencer> {
  public:
-  SmoothScrollSequencer() = default;
+  SmoothScrollSequencer() : scroll_type_(kProgrammaticScroll) {}
+  void SetScrollType(ScrollType type) { scroll_type_ = type; }
+
   // Add a scroll offset animation to the back of a queue.
   void QueueAnimation(ScrollableArea*, ScrollOffset, ScrollBehavior);
 
@@ -52,6 +54,10 @@ class CORE_EXPORT SmoothScrollSequencer final
   // Abort the currently running animation and all the animations in the queue.
   void AbortAnimations();
 
+  // Given the incoming scroll's scroll type, returns whether to filter the
+  // incoming scroll. It may also abort the current sequenced scroll.
+  bool FilterNewScrollOrAbortCurrent(ScrollType incoming_type);
+
   void DidDisposeScrollableArea(const ScrollableArea&);
 
   void Trace(blink::Visitor*);
@@ -59,6 +65,7 @@ class CORE_EXPORT SmoothScrollSequencer final
  private:
   HeapVector<Member<SequencedScroll>> queue_;
   Member<ScrollableArea> current_scrollable_;
+  ScrollType scroll_type_;
 };
 
 }  // namespace blink
