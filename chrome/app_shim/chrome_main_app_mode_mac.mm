@@ -30,6 +30,7 @@
 #include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/app_shim/app_shim_controller.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/crash/content/app/crashpad.h"
@@ -206,9 +207,12 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   std::string locale = l10n_util::NormalizeLocale(
       l10n_util::GetApplicationLocale(preferred_localization));
 
-  // Load localized strings.
+  // Load localized strings and mouse cursor images.
   ui::ResourceBundle::InitSharedInstanceWithLocale(
-      locale, NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+      locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+
+  ChromeContentClient chrome_content_client;
+  content::SetContentClient(&chrome_content_client);
 
   // Launch the IO thread.
   base::Thread::Options io_thread_options;
