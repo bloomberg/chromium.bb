@@ -50,22 +50,17 @@ class SnapshotTabHelper : public web::WebStateObserver,
   // asynchronously after retrieved from disk or re-generated.
   void RetrieveGreySnapshot(void (^callback)(UIImage*));
 
-  // Invalidates the cached snapshot for the current page and forces the
-  // generation of a more recent snapshot. Runs |callback| with a snapshot with
-  // overlaid views (e.g. infobar) of the visible frame. In iOS 11+, snapshots
-  // of a valid web view are taken using WKWebView's snapshotting API.
+  // Asynchronously generates a new snapshot, updates the snapshot cache, and
+  // runs |callback| with the new snapshot image.
   void UpdateSnapshotWithCallback(void (^callback)(UIImage*));
 
-  // Invalidates the cached snapshot for the current page and forces the
-  // generation of a more recent snapshot. Returns the snapshot with or
-  // without the overlaid views (e.g. infobar) and either of the visible frame
-  // or of the full screen.
-  UIImage* UpdateSnapshot(bool with_overlays, bool visible_frame_only);
+  // Generates a new snapshot, updates the snapshot cache, and returns the new
+  // snapshot image.
+  UIImage* UpdateSnapshot();
 
-  // Generates a snapshot for the current page. Returns the snapshot with
-  // or without the overlaid views (e.g. infobar) and either of the visible
-  // frame of of the full screen.
-  UIImage* GenerateSnapshot(bool with_overlays, bool visible_frame_only);
+  // Generates a new snapshot without any overlays, and returns the new snapshot
+  // image. This does not update the snapshot cache.
+  UIImage* GenerateSnapshotWithoutOverlays();
 
   // When snapshot coalescing is enabled, multiple calls to generate a
   // snapshot with the same parameters may be coalesced.

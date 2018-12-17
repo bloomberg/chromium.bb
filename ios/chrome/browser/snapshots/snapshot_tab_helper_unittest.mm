@@ -309,9 +309,8 @@ TEST_F(SnapshotTabHelperTest, UpdateSnapshot) {
   SetCachedSnapshot(
       UIImageWithSizeAndSolidColor(kDefaultSnapshotSize, [UIColor greenColor]));
 
-  UIImage* snapshot = SnapshotTabHelper::FromWebState(&web_state_)
-                          ->UpdateSnapshot(/*with_overlays=*/true,
-                                           /*visibible_frame_only=*/true);
+  UIImage* snapshot =
+      SnapshotTabHelper::FromWebState(&web_state_)->UpdateSnapshot();
 
   ASSERT_TRUE(snapshot);
   EXPECT_TRUE(CGSizeEqualToSize(snapshot.size, kWebStateViewSize));
@@ -326,9 +325,8 @@ TEST_F(SnapshotTabHelperTest, UpdateSnapshot) {
 // will cause a new snapshot to be generated.
 TEST_F(SnapshotTabHelperTest, UpdateSnapshotNoCoalescing) {
   for (NSUInteger ii = 0; ii < kCountSnapshotToTake; ++ii) {
-    UIImage* snapshot = SnapshotTabHelper::FromWebState(&web_state_)
-                            ->UpdateSnapshot(/*with_overlays=*/true,
-                                             /*visibible_frame_only=*/true);
+    UIImage* snapshot =
+        SnapshotTabHelper::FromWebState(&web_state_)->UpdateSnapshot();
 
     ASSERT_TRUE(snapshot);
     EXPECT_TRUE(CGSizeEqualToSize(snapshot.size, kWebStateViewSize));
@@ -344,9 +342,8 @@ TEST_F(SnapshotTabHelperTest, UpdateSnapshotWithCoalescing) {
   SnapshotTabHelper::FromWebState(&web_state_)
       ->SetSnapshotCoalescingEnabled(true);
   for (NSUInteger ii = 0; ii < kCountSnapshotToTake; ++ii) {
-    UIImage* snapshot = SnapshotTabHelper::FromWebState(&web_state_)
-                            ->UpdateSnapshot(/*with_overlays=*/true,
-                                             /*visibible_frame_only=*/true);
+    UIImage* snapshot =
+        SnapshotTabHelper::FromWebState(&web_state_)->UpdateSnapshot();
 
     ASSERT_TRUE(snapshot);
     EXPECT_TRUE(CGSizeEqualToSize(snapshot.size, kWebStateViewSize));
@@ -365,8 +362,7 @@ TEST_F(SnapshotTabHelperTest, GenerateSnapshot) {
       UIImageWithSizeAndSolidColor(kDefaultSnapshotSize, [UIColor greenColor]));
 
   UIImage* snapshot = SnapshotTabHelper::FromWebState(&web_state_)
-                          ->GenerateSnapshot(/*with_overlays=*/true,
-                                             /*visibible_frame_only=*/true);
+                          ->GenerateSnapshotWithoutOverlays();
 
   ASSERT_TRUE(snapshot);
   EXPECT_TRUE(CGSizeEqualToSize(snapshot.size, kWebStateViewSize));
@@ -381,8 +377,7 @@ TEST_F(SnapshotTabHelperTest, GenerateSnapshot) {
 TEST_F(SnapshotTabHelperTest, GenerateSnapshotNoCoalescing) {
   for (NSUInteger ii = 0; ii < kCountSnapshotToTake; ++ii) {
     UIImage* snapshot = SnapshotTabHelper::FromWebState(&web_state_)
-                            ->GenerateSnapshot(/*with_overlays=*/true,
-                                               /*visibible_frame_only=*/true);
+                            ->GenerateSnapshotWithoutOverlays();
 
     ASSERT_TRUE(snapshot);
     EXPECT_TRUE(CGSizeEqualToSize(snapshot.size, kWebStateViewSize));
@@ -399,8 +394,7 @@ TEST_F(SnapshotTabHelperTest, GenerateSnapshotWithCoalescing) {
       ->SetSnapshotCoalescingEnabled(true);
   for (NSUInteger ii = 0; ii < kCountSnapshotToTake; ++ii) {
     UIImage* snapshot = SnapshotTabHelper::FromWebState(&web_state_)
-                            ->GenerateSnapshot(/*with_overlays=*/true,
-                                               /*visibible_frame_only=*/true);
+                            ->GenerateSnapshotWithoutOverlays();
 
     ASSERT_TRUE(snapshot);
     EXPECT_TRUE(CGSizeEqualToSize(snapshot.size, kWebStateViewSize));

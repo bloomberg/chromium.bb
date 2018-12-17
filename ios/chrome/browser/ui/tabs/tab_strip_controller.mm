@@ -1671,8 +1671,7 @@ UIColor* BackgroundColor() {
   Tab* tappedTab = [_tabModel tabAtIndex:index];
   Tab* currentTab = [_tabModel currentTab];
   if (IsIPadIdiom() && (currentTab != tappedTab)) {
-    SnapshotTabHelper::FromWebState(currentTab.webState)
-        ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
+    SnapshotTabHelper::FromWebState(currentTab.webState)->UpdateSnapshot();
   }
   [_tabModel setCurrentTab:tappedTab];
   [self updateContentOffsetForTabIndex:index isNewTab:NO];

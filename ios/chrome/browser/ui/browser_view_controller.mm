@@ -1230,8 +1230,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // have enough time to finish appearing before a snapshot is requested.
   Tab* currentTab = self.tabModel.currentTab;
   if (currentTab && self.viewVisible) {
-    SnapshotTabHelper::FromWebState(currentTab.webState)
-        ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
+    SnapshotTabHelper::FromWebState(currentTab.webState)->UpdateSnapshot();
   }
 
   [self.tabModel insertTabWithLoadParams:CreateWebLoadParams(
@@ -3230,8 +3229,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Requested web state should not be blocked from opening.
   Tab* currentTab = LegacyTabHelper::GetTabForWebState(webState);
-  SnapshotTabHelper::FromWebState(currentTab.webState)
-      ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
+  SnapshotTabHelper::FromWebState(currentTab.webState)->UpdateSnapshot();
 
   Tab* childTab = [[self tabModel] insertOpenByDOMTabWithOpener:currentTab];
 
@@ -4191,9 +4189,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         // If the page has finished loading, take a snapshot.  If the page is
         // still loading, do nothing, as the tab helper will automatically take
         // a snapshot once the load completes.
-        SnapshotTabHelper::FromWebState(newTab.webState)
-            ->UpdateSnapshot(
-                /*with_overlays=*/true, /*visible_frame_only=*/true);
+        SnapshotTabHelper::FromWebState(newTab.webState)->UpdateSnapshot();
       }
 
       if (typed_or_generated_transition) {
@@ -4594,8 +4590,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // iPad.
   UIImageView* exitingPage = [self pageOpenCloseAnimationView];
   exitingPage.image =
-      SnapshotTabHelper::FromWebState(currentTab.webState)
-          ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
+      SnapshotTabHelper::FromWebState(currentTab.webState)->UpdateSnapshot();
 
   // Close the actual tab, and add its image as a subview.
   [self.tabModel closeTabAtIndex:tabIndex];
@@ -4853,9 +4848,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       newPage.userInteractionEnabled = NO;
     } else {
       UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
-      pageScreenshot.image = SnapshotTabHelper::FromWebState(tab.webState)
-                                 ->UpdateSnapshot(/*with_overlays=*/true,
-                                                  /*visible_frame_only=*/true);
+      pageScreenshot.image =
+          SnapshotTabHelper::FromWebState(tab.webState)->UpdateSnapshot();
       newPage = pageScreenshot;
     }
   }
