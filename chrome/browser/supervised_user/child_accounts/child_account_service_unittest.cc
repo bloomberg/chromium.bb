@@ -34,7 +34,9 @@ class ChildAccountServiceTest : public ::testing::Test {
                               base::BindRepeating(&BuildTestSigninClient));
     builder.AddTestingFactory(
         GaiaCookieManagerServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeGaiaCookieManagerService));
+        base::BindRepeating(
+            &BuildFakeGaiaCookieManagerServiceWithOptions,
+            /*create_fake_url_loader_factory_for_cookie_requests=*/true));
     profile_ = builder.Build();
     gaia_cookie_manager_service_ = static_cast<FakeGaiaCookieManagerService*>(
         GaiaCookieManagerServiceFactory::GetForProfile(profile_.get()));
