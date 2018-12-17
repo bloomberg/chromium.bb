@@ -20,6 +20,8 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
@@ -180,10 +182,15 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
   weak_this_ = weak_this_factory_.GetWeakPtr();
   va_surface_release_cb_ = BindToCurrentLoop(
       base::Bind(&VaapiVideoDecodeAccelerator::RecycleVASurfaceID, weak_this_));
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "media::VaapiVideoDecodeAccelerator",
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
@@ -998,6 +1005,40 @@ void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
   surfaces_available_.Signal();
 
   TryOutputPicture();
+}
+bool VaapiVideoDecodeAccelerator::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  using base::trace_event::MemoryAllocatorDump;
+  base::AutoLock auto_lock(lock_);
+  if (decode_using_client_picture_buffers_ || pictures_.empty())
+    return false;
+
+  auto dump_name = base::StringPrintf("gpu/vaapi/decoder/0x%" PRIxPTR,
+                                      reinterpret_cast<uintptr_t>(this));
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+
+  constexpr float kNumBytesPerPixelYUV420 = 12.0 / 8;
+  constexpr float kNumBytesPerPixelYUV420_10bpp = 2 * kNumBytesPerPixelYUV420;
+  unsigned int va_surface_format = GetVaFormatForVideoCodecProfile(profile_);
+  DCHECK(va_surface_format == VA_RT_FORMAT_YUV420 ||
+         va_surface_format == VA_RT_FORMAT_YUV420_10BPP);
+  const float va_surface_bytes_per_pixel =
+      va_surface_format == VA_RT_FORMAT_YUV420 ? kNumBytesPerPixelYUV420
+                                               : kNumBytesPerPixelYUV420_10bpp;
+  // Report |pictures_.size()| and the associated memory size.
+  // The calculated size is an estimation since we don't know the internal VA
+  // strides, texture compression, headers, etc, but is a good lower boundary.
+  dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                  MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(pictures_.size() *
+                                        requested_pic_size_.GetArea() *
+                                        va_surface_bytes_per_pixel));
+  dump->AddScalar(MemoryAllocatorDump::kNameObjectCount,
+                  MemoryAllocatorDump::kUnitsObjects,
+                  static_cast<uint64_t>(pictures_.size()));
+
+  return true;
 }
 
 // static
