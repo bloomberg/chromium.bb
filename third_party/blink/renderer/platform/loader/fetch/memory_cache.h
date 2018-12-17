@@ -53,13 +53,10 @@ class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
     return MakeGarbageCollected<MemoryCacheEntry>(resource);
   }
 
-  explicit MemoryCacheEntry(Resource* resource)
-      : last_decoded_access_time_(0.0), resource_(resource) {}
+  explicit MemoryCacheEntry(Resource* resource) : resource_(resource) {}
 
   void Trace(blink::Visitor*);
   Resource* GetResource() const { return resource_; }
-
-  double last_decoded_access_time_;  // Used as a thrash guard
 
  private:
   void ClearResourceWeak(Visitor*);

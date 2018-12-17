@@ -260,10 +260,8 @@ void MemoryCache::PruneResources(PruneStrategy strategy) {
       DCHECK(resource);
       if (resource->IsLoaded() && resource->DecodedSize()) {
         // Check to see if the remaining resources are too new to prune.
-        double elapsed_time = prune_frame_time_stamp_ -
-                              resource_iter.value->last_decoded_access_time_;
         if (strategy == kAutomaticPrune &&
-            elapsed_time < delay_before_live_decoded_prune_)
+            prune_frame_time_stamp_ < delay_before_live_decoded_prune_)
           continue;
         resource->Prune();
         if (size_ <= target_size)
