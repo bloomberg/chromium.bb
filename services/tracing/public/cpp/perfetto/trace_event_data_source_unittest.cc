@@ -290,9 +290,9 @@ TEST_F(TraceEventDataSourceTest, MetadataSourceBasicTypes) {
   auto data_source_config = mojom::DataSourceConfig::New();
   metadata_source->StartTracing(producer_client(), *data_source_config);
 
-  base::RunLoop wait_for_flush;
-  metadata_source->Flush(wait_for_flush.QuitClosure());
-  wait_for_flush.Run();
+  base::RunLoop wait_for_stop;
+  metadata_source->StopTracing(wait_for_stop.QuitClosure());
+  wait_for_stop.Run();
 
   auto metadata = producer_client()->GetChromeMetadata();
   EXPECT_EQ(4, metadata.size());
