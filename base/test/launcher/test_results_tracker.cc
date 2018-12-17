@@ -68,6 +68,7 @@ struct TestSuiteResultsAggregator {
       case TestResult::TEST_TIMEOUT:
       case TestResult::TEST_CRASH:
       case TestResult::TEST_UNKNOWN:
+      case TestResult::TEST_NOT_RUN:
         errors++;
         break;
       case TestResult::TEST_SKIPPED:
@@ -90,6 +91,7 @@ TestResultsTracker::TestResultsTracker() : iteration_(-1), out_(nullptr) {}
 
 TestResultsTracker::~TestResultsTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_GE(iteration_, 0);
 
   if (!out_)
     return;
@@ -233,12 +235,51 @@ void TestResultsTracker::AddTestLocation(const std::string& test_name,
 
 void TestResultsTracker::AddTestResult(const TestResult& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_GE(iteration_, 0);
 
   // Record disabled test names without DISABLED_ prefix so that they are easy
   // to compare with regular test names, e.g. before or after disabling.
-  per_iteration_data_[iteration_].results[
-      TestNameWithoutDisabledPrefix(result.full_name)].test_results.push_back(
-          result);
+  AggregateTestResult& aggregate_test_result =
+      per_iteration_data_[iteration_]
+          .results[TestNameWithoutDisabledPrefix(result.full_name)];
+
+  // If the last test result is a placeholder, then get rid of it now that we
+  // have real results. It's possible for no placeholder to exist if the test is
+  // setup for another test, e.g. PRE_ComponentAppBackgroundPage is a test whose
+  // sole purpose is to prime the test ComponentAppBackgroundPage.
+  if (!aggregate_test_result.test_results.empty() &&
+      aggregate_test_result.test_results.back().status ==
+          TestResult::TEST_NOT_RUN) {
+    aggregate_test_result.test_results.pop_back();
+  }
+
+  aggregate_test_result.test_results.push_back(result);
+}
+
+void TestResultsTracker::GeneratePlaceholderIteration() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // We use test_locations_ since that only includes tests that will be run in
+  // this shard.
+  for (auto& it : test_locations_) {
+    std::string test_name = TestNameWithoutDisabledPrefix(it.first);
+
+    // Ignore disabled tests.
+    if (disabled_tests_.find(test_name) != disabled_tests_.end())
+      continue;
+
+    TestResult test_result;
+    test_result.full_name = test_name;
+    test_result.status = TestResult::TEST_NOT_RUN;
+
+    // There shouldn't be any existing results when we generate placeholder
+    // results.
+    DCHECK(per_iteration_data_[iteration_]
+               .results[test_name]
+               .test_results.empty());
+    per_iteration_data_[iteration_].results[test_name].test_results.push_back(
+        test_result);
+  }
 }
 
 void TestResultsTracker::PrintSummaryOfCurrentIteration() const {
@@ -265,6 +306,8 @@ void TestResultsTracker::PrintSummaryOfCurrentIteration() const {
   PrintTests(tests_by_status[TestResult::TEST_UNKNOWN].begin(),
              tests_by_status[TestResult::TEST_UNKNOWN].end(),
              "had unknown result");
+  PrintTests(tests_by_status[TestResult::TEST_NOT_RUN].begin(),
+             tests_by_status[TestResult::TEST_NOT_RUN].end(), "not run");
 }
 
 void TestResultsTracker::PrintSummaryOfAllIterations() const {
@@ -296,6 +339,8 @@ void TestResultsTracker::PrintSummaryOfAllIterations() const {
   PrintTests(tests_by_status[TestResult::TEST_UNKNOWN].begin(),
              tests_by_status[TestResult::TEST_UNKNOWN].end(),
              "had unknown result");
+  PrintTests(tests_by_status[TestResult::TEST_NOT_RUN].begin(),
+             tests_by_status[TestResult::TEST_NOT_RUN].end(), "not run");
 
   fprintf(stdout, "End of the summary.\n");
   fflush(stdout);
@@ -333,7 +378,10 @@ bool TestResultsTracker::SaveSummaryAsJSON(
 
   std::unique_ptr<ListValue> per_iteration_data(new ListValue);
 
-  for (int i = 0; i <= iteration_; i++) {
+  // Even if we haven't run any tests, we still have the dummy iteration.
+  int max_iteration = iteration_ < 0 ? 0 : iteration_;
+
+  for (int i = 0; i <= max_iteration; i++) {
     std::unique_ptr<DictionaryValue> current_iteration_data(
         new DictionaryValue);
 
