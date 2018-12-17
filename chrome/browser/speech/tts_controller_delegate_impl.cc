@@ -545,7 +545,7 @@ const PrefService* TtsControllerDelegateImpl::GetPrefService(
 void TtsControllerDelegateImpl::VoicesChanged() {
   // Existence of platform tts indicates explicit requests to tts. Since
   // |VoicesChanged| can occur implicitly, only send if needed.
-  if (!GetTtsPlatform())
+  if (!tts_platform_)
     return;
 
   for (auto& delegate : voices_changed_delegates_)
