@@ -24,6 +24,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -198,17 +199,21 @@ AutofillManager::AutofillManager(
     : AutofillManager(driver,
                       client,
                       client->GetPersonalDataManager(),
+                      client->GetAutocompleteHistoryManager(),
                       app_locale,
                       enable_download_manager) {}
 
-AutofillManager::~AutofillManager() {}
+AutofillManager::~AutofillManager() {
+  if (autocomplete_history_manager_) {
+    autocomplete_history_manager_->CancelPendingQueries(this);
+  }
+}
 
 void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
   // TODO(jrg): consider passing delegate into the ctor.  That won't
   // work if the delegate has a pointer to the AutofillManager, but
   // future directions may not need such a pointer.
   external_delegate_ = delegate;
-  autocomplete_history_manager_->SetExternalDelegate(delegate);
 }
 
 void AutofillManager::ShowAutofillSettings(bool show_credit_card_settings) {
@@ -373,7 +378,8 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   // We will always give Autocomplete a chance to save the data.
   std::unique_ptr<FormStructure> submitted_form = ValidateSubmittedForm(form);
   if (!submitted_form) {
-    autocomplete_history_manager_->OnWillSubmitForm(form);
+    autocomplete_history_manager_->OnWillSubmitForm(
+        form, client_->IsAutocompleteEnabled());
     return;
   }
 
@@ -386,7 +392,8 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
       form_for_autocomplete.fields[i].should_autocomplete = false;
     }
   }
-  autocomplete_history_manager_->OnWillSubmitForm(form_for_autocomplete);
+  autocomplete_history_manager_->OnWillSubmitForm(
+      form_for_autocomplete, client_->IsAutocompleteEnabled());
 
   if (IsProfileAutofillEnabled()) {
     address_form_event_logger_->OnWillSubmitForm(sync_state_);
@@ -602,7 +609,7 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
 
       case SuppressReason::kCreditCardsAblation:
         enable_ablation_logging_ = true;
-        autocomplete_history_manager_->CancelPendingQuery();
+        autocomplete_history_manager_->CancelPendingQueries(this);
         external_delegate_->OnSuggestionsReturned(query_id, suggestions,
                                                   autoselect_first_suggestion);
         return;
@@ -646,12 +653,13 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
     // Suggestions come back asynchronously, so the Autocomplete manager will
     // handle sending the results back to the renderer.
     autocomplete_history_manager_->OnGetAutocompleteSuggestions(
-        query_id, field.name, field.value, field.form_control_type);
+        query_id, client_->IsAutocompleteEnabled(), field.name, field.value,
+        field.form_control_type, weak_ptr_factory_.GetWeakPtr());
     return;
   }
 
   // Send Autofill suggestions (could be an empty list).
-  autocomplete_history_manager_->CancelPendingQuery();
+  autocomplete_history_manager_->CancelPendingQueries(this);
   external_delegate_->OnSuggestionsReturned(query_id, suggestions,
                                             autoselect_first_suggestion,
                                             context.is_all_server_suggestions);
@@ -903,7 +911,7 @@ void AutofillManager::OnHidePopup() {
   if (!IsAutofillEnabled())
     return;
 
-  autocomplete_history_manager_->CancelPendingQuery();
+  autocomplete_history_manager_->CancelPendingQueries(this);
   client_->HideAutofillPopup();
 }
 
@@ -1154,6 +1162,12 @@ bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
          form.ShouldBeUploaded();
 }
 
+void AutofillManager::OnSuggestionsReturned(
+    int query_id,
+    const std::vector<Suggestion>& suggestions) {
+  external_delegate_->OnSuggestionsReturned(query_id, suggestions, false);
+}
+
 // Note that |submitted_form| is passed as a pointer rather than as a reference
 // so that we can get memory management right across threads.  Note also that we
 // explicitly pass in all the time stamps of interest, as the cached ones might
@@ -1236,6 +1250,7 @@ AutofillManager::AutofillManager(
     AutofillDriver* driver,
     AutofillClient* client,
     PersonalDataManager* personal_data,
+    AutocompleteHistoryManager* autocomplete_history_manager,
     const std::string app_locale,
     AutofillDownloadManagerState enable_download_manager)
     : AutofillHandler(driver),
@@ -1243,8 +1258,7 @@ AutofillManager::AutofillManager(
       app_locale_(app_locale),
       personal_data_(personal_data),
       field_filler_(app_locale, client->GetAddressNormalizer()),
-      autocomplete_history_manager_(
-          std::make_unique<AutocompleteHistoryManager>(driver, client)),
+      autocomplete_history_manager_(autocomplete_history_manager->GetWeakPtr()),
       form_interactions_ukm_logger_(
           std::make_unique<AutofillMetrics::FormInteractionsUkmLogger>(
               client->GetUkmRecorder(),

@@ -22,12 +22,15 @@ class AutofillClient;
 class AutofillDriver;
 class FormStructure;
 class TestPersonalDataManager;
+class MockAutocompleteHistoryManager;
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(AutofillDriver* driver,
-                      AutofillClient* client,
-                      TestPersonalDataManager* personal_data);
+  TestAutofillManager(
+      AutofillDriver* driver,
+      AutofillClient* client,
+      TestPersonalDataManager* personal_data,
+      MockAutocompleteHistoryManager* autocomplete_history_manager);
   ~TestAutofillManager() override;
 
   // AutofillManager overrides.

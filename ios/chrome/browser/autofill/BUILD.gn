@@ -7,6 +7,8 @@ source_set("autofill") {
   sources = [
     "address_normalizer_factory.cc",
     "address_normalizer_factory.h",
+    "autocomplete_history_manager_factory.cc",
+    "autocomplete_history_manager_factory.h",
     "autofill_profile_validator_factory.cc",
     "autofill_profile_validator_factory.h",
     "form_input_accessory_consumer.h",

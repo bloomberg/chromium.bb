@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
 #include "components/autofill/core/browser/test_form_data_importer.h"
@@ -34,7 +35,7 @@ class TestAutofillClient : public AutofillClient {
 
   // AutofillClient:
   PersonalDataManager* GetPersonalDataManager() override;
-  scoped_refptr<AutofillWebDataService> GetDatabase() override;
+  AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
@@ -169,6 +170,7 @@ class TestAutofillClient : public AutofillClient {
   syncer::SyncService* test_sync_service_ = nullptr;
   TestAddressNormalizer test_address_normalizer_;
   TestPersonalDataManager test_personal_data_manager_;
+  MockAutocompleteHistoryManager mock_autocomplete_history_manager_;
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;

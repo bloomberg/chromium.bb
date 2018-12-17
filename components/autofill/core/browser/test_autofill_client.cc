@@ -21,8 +21,9 @@ PersonalDataManager* TestAutofillClient::GetPersonalDataManager() {
   return &test_personal_data_manager_;
 }
 
-scoped_refptr<AutofillWebDataService> TestAutofillClient::GetDatabase() {
-  return scoped_refptr<AutofillWebDataService>(nullptr);
+AutocompleteHistoryManager*
+TestAutofillClient::GetAutocompleteHistoryManager() {
+  return &mock_autocomplete_history_manager_;
 }
 
 PrefService* TestAutofillClient::GetPrefs() {

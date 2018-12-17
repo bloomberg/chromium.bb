@@ -102,6 +102,8 @@ ios_web_view_sources = [
   "internal/app/web_view_io_thread.mm",
   "internal/autofill/web_view_autofill_client_ios.h",
   "internal/autofill/web_view_autofill_client_ios.mm",
+  "internal/autofill/web_view_autocomplete_history_manager_factory.cc",
+  "internal/autofill/web_view_autocomplete_history_manager_factory.h",
   "internal/autofill/web_view_personal_data_manager_factory.cc",
   "internal/autofill/web_view_personal_data_manager_factory.h",
   "internal/autofill/web_view_legacy_strike_database_factory.cc",

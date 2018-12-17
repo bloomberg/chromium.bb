@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/legacy_strike_database.h"
@@ -46,7 +47,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   // AutofillClient:
   version_info::Channel GetChannel() const override;
   PersonalDataManager* GetPersonalDataManager() override;
-  scoped_refptr<AutofillWebDataService> GetDatabase() override;
+  AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
@@ -122,13 +123,13 @@ class ChromeAutofillClientIOS : public AutofillClient {
   PrefService* pref_service_;
   syncer::SyncService* sync_service_;
   PersonalDataManager* personal_data_manager_;
+  AutocompleteHistoryManager* autocomplete_history_manager_;
   web::WebState* web_state_;
   __weak id<AutofillClientIOSBridge> bridge_;
   identity::IdentityManager* identity_manager_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   LegacyStrikeDatabase* legacy_strike_database_;
-  scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   infobars::InfoBarManager* infobar_manager_;
   password_manager::PasswordGenerationManager* password_generation_manager_;
   CardUnmaskPromptControllerImpl unmask_controller_;

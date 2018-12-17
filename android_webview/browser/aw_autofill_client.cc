@@ -51,13 +51,10 @@ autofill::PersonalDataManager* AwAutofillClient::GetPersonalDataManager() {
   return nullptr;
 }
 
-scoped_refptr<autofill::AutofillWebDataService>
-AwAutofillClient::GetDatabase() {
-  android_webview::AwFormDatabaseService* service =
-      static_cast<android_webview::AwBrowserContext*>(
-          web_contents_->GetBrowserContext())
-          ->GetFormDatabaseService();
-  return service->get_autofill_webdata_service();
+autofill::AutocompleteHistoryManager*
+AwAutofillClient::GetAutocompleteHistoryManager() {
+  return AwContentBrowserClient::GetAwBrowserContext()
+      ->GetAutocompleteHistoryManager();
 }
 
 PrefService* AwAutofillClient::GetPrefs() {

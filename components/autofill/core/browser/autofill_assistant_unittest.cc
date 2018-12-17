@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/mock_autocomplete_history_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_credit_card_save_manager.h"
@@ -37,9 +38,10 @@ class MockAutofillManager : public AutofillManager {
  public:
   MockAutofillManager(TestAutofillDriver* driver,
                       TestAutofillClient* client,
-                      PersonalDataManager* pdm)
+                      PersonalDataManager* pdm,
+                      AutocompleteHistoryManager* ahm)
       // Force to use the constructor designated for unit test.
-      : AutofillManager(driver, client, pdm) {}
+      : AutofillManager(driver, client, pdm, ahm) {}
   virtual ~MockAutofillManager() {}
 
   MOCK_METHOD5(FillCreditCardForm,
@@ -60,7 +62,11 @@ class MockAutofillManager : public AutofillManager {
 class AutofillAssistantTest : public testing::Test {
  protected:
   AutofillAssistantTest()
-      : task_environment_(), autofill_client_(), autofill_driver_(), pdm_() {}
+      : task_environment_(),
+        autofill_client_(),
+        autofill_driver_(),
+        pdm_(),
+        ahm_() {}
 
   void SetUp() {
     payments::TestPaymentsClient* payments_client =
@@ -81,7 +87,7 @@ class AutofillAssistantTest : public testing::Test {
         std::unique_ptr<TestFormDataImporter>(test_form_data_importer));
 
     autofill_manager_ = std::make_unique<MockAutofillManager>(
-        &autofill_driver_, &autofill_client_, &pdm_);
+        &autofill_driver_, &autofill_client_, &pdm_, &ahm_);
 
     autofill_assistant_ =
         std::make_unique<AutofillAssistant>(autofill_manager_.get());
@@ -137,6 +143,7 @@ class AutofillAssistantTest : public testing::Test {
   TestAutofillClient autofill_client_;
   testing::NiceMock<TestAutofillDriver> autofill_driver_;
   TestPersonalDataManager pdm_;
+  MockAutocompleteHistoryManager ahm_;
   std::unique_ptr<MockAutofillManager> autofill_manager_;
   std::unique_ptr<AutofillAssistant> autofill_assistant_;
   base::test::ScopedFeatureList scoped_feature_list_;

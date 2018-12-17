@@ -52,7 +52,7 @@ class ChromeAutofillClient
   // AutofillClient:
   version_info::Channel GetChannel() const override;
   PersonalDataManager* GetPersonalDataManager() override;
-  scoped_refptr<AutofillWebDataService> GetDatabase() override;
+  AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;

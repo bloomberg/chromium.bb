@@ -17,6 +17,7 @@
 #include "ui/android/view_android.h"
 
 namespace autofill {
+class AutocompleteHistoryManager;
 class AutofillPopupDelegate;
 class CardUnmaskDelegate;
 class CreditCard;
@@ -60,7 +61,8 @@ class AwAutofillClient : public autofill::AutofillClient,
 
   // AutofillClient:
   autofill::PersonalDataManager* GetPersonalDataManager() override;
-  scoped_refptr<autofill::AutofillWebDataService> GetDatabase() override;
+  autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager()
+      override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
   identity::IdentityManager* GetIdentityManager() override;
