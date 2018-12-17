@@ -738,6 +738,20 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendAtomicInline(
 }
 
 template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendFloating(
+    LayoutObject* layout_object) {
+  AppendOpaque(NGInlineItem::kFloating, kObjectReplacementCharacter, nullptr,
+               layout_object);
+}
+
+template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
+    AppendOutOfFlowPositioned(LayoutObject* layout_object) {
+  AppendOpaque(NGInlineItem::kOutOfFlowPositioned, kObjectReplacementCharacter,
+               nullptr, layout_object);
+}
+
+template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
     NGInlineItem::NGInlineItemType type,
     UChar character,

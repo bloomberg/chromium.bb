@@ -873,6 +873,30 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnChildOfWrappedBox) {
   EXPECT_TRUE(lines[0]->IsDirty());
 }
 
+// Test marking line boxes when a span has NeedsLayout. The span has a box
+// fragment.
+TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyInInlineBlock) {
+  SetupHtml("container", R"HTML(
+    <div id=container style="display: inline-block; font-size: 10px">
+      12345678<br>
+      12345678<br>
+    </div>
+  )HTML");
+
+  Element* container = GetElementById("container");
+  container->appendChild(GetDocument().createTextNode("append"));
+
+  // Inline block with auto-size calls |ComputeMinMaxSize|, which may call
+  // |CollectInlines|. Emulate it to ensure it does not let tests to fail.
+  GetDocument().UpdateStyleAndLayoutTree();
+  NGInlineNode(layout_block_flow_)
+      .ComputeMinMaxSize(layout_block_flow_->StyleRef().GetWritingMode(), {});
+
+  auto lines = MarkLineBoxesDirty();
+  EXPECT_FALSE(lines[0]->IsDirty());
+  EXPECT_TRUE(lines[1]->IsDirty());
+}
+
 TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockBecomesEmpty1) {
   SetupHtml("container", "<div id=container><b id=remove><i>foo</i></b></div>");
   ASSERT_TRUE(layout_block_flow_->HasNGInlineNodeData());

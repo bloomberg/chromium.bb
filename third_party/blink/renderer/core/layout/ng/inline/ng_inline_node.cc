@@ -81,6 +81,112 @@ void ClearNeedsLayout(LayoutObject* object) {
     ToLayoutText(object)->ClearInlineItems();
 }
 
+// This class marks appropriate line box fragments as dirty.
+//
+// |CollectInlinesInternal| calls this class when traversing the LayoutObject
+// tree in pre-order DFS
+class NGLineBoxMarker {
+  STACK_ALLOCATED();
+
+ public:
+  NGLineBoxMarker(NGPaintFragment* block_fragment)
+      : block_fragment_(block_fragment) {
+    DCHECK(block_fragment_);
+  }
+
+  bool HandleText(LayoutText* layout_text) {
+    if (layout_text->SelfNeedsLayout())
+      return Mark();
+    return UpdateLastFragment(layout_text->FirstInlineFragment());
+  }
+
+  bool HandleInlineBox(LayoutInline* layout_inline) {
+    if (layout_inline->SelfNeedsLayout())
+      return Mark();
+
+    // Do not keep fragments of LayoutInline unless it's a leaf, because
+    // the last fragment of LayoutInline is not the previous fragment of its
+    // descendants.
+    if (layout_inline->FirstChild())
+      return false;
+    return UpdateLastFragment(layout_inline->FirstInlineFragment());
+  }
+
+  bool HandleAtomicInline(LayoutBox* layout_box) {
+    if (layout_box->NeedsLayout())
+      return Mark();
+    return UpdateLastFragment(layout_box->FirstInlineFragment());
+  }
+
+ private:
+  bool Mark() {
+    if (last_fragment_) {
+      // Changes in this LayoutObject may affect the line that contains its
+      // previous object. Mark the line box that contains the last fragment
+      // of the previous object.
+      last_fragment_->LastForSameLayoutObject()->MarkContainingLineBoxDirty();
+    } else {
+      // If there were no fragments so far in this pre-order traversal, mark
+      // the first line box dirty.
+      DCHECK(block_fragment_);
+      if (NGPaintFragment* first_line = block_fragment_->FirstLineBox())
+        first_line->MarkLineBoxDirty();
+    }
+    return true;
+  }
+
+  bool UpdateLastFragment(NGPaintFragment* fragment) {
+    if (fragment)
+      last_fragment_ = fragment;
+    return false;
+  }
+
+  NGPaintFragment* block_fragment_;
+  NGPaintFragment* last_fragment_ = nullptr;
+};
+
+// This class has the same interface as NGInlineItemsBuilder but does nothing
+// except tracking if floating or out-of-flow objects are added.
+//
+// |MarkLineBoxesDirty| uses this class to traverse tree without buildling
+// |NGInlineItem|.
+class ItemsBuilderForMarkLineBoxesDirty {
+ public:
+  void Append(const String&, const ComputedStyle*, LayoutText*) {}
+  bool Append(const String&, LayoutText*) { return false; }
+  void AppendOpaque(NGInlineItem::NGInlineItemType,
+                    const ComputedStyle*,
+                    LayoutObject*) {}
+  void AppendBreakOpportunity(const ComputedStyle*, LayoutObject*) {}
+  void AppendAtomicInline(const ComputedStyle*, LayoutObject*) {}
+  void AppendFloating(LayoutObject*) {
+    has_floating_or_out_of_flow_positioned_ = true;
+  }
+  void AppendOutOfFlowPositioned(LayoutObject*) {
+    has_floating_or_out_of_flow_positioned_ = true;
+  }
+  void SetIsSymbolMarker(bool) {}
+  void EnterBlock(const ComputedStyle*) {}
+  void ExitBlock() {}
+  void EnterInline(LayoutObject*) {}
+  void ExitInline(LayoutObject*) {}
+
+  bool ShouldAbort() const {
+    // Aborting in the middle of the traversal is safe because this function
+    // ClearNeedsLayout() on text and LayoutInline, but since an inline
+    // formatting context is laid out as a whole, these flags don't matter.
+    // For that reason, the traversal should not ClearNeedsLayout() atomic
+    // inlines, floats, or OOF -- objects that need to be laid out separately
+    // from the inline formatting context.
+    // TODO(kojii): This looks a bit tricky, better to come up with clearner
+    // solution if any.
+    return has_floating_or_out_of_flow_positioned_;
+  }
+
+ private:
+  bool has_floating_or_out_of_flow_positioned_ = false;
+};
+
 // The function is templated to indicate the purpose of collected inlines:
 // - With EmptyOffsetMappingBuilder: updating layout;
 // - With NGOffsetMappingBuilder: building offset mapping on clean layout.
@@ -91,21 +197,19 @@ void ClearNeedsLayout(LayoutObject* object) {
 //
 // There are also performance considerations, since template saves the overhead
 // for condition checking and branching.
-template <typename OffsetMappingBuilder>
-void CollectInlinesInternal(
-    LayoutBlockFlow* block,
-    NGInlineItemsBuilderTemplate<OffsetMappingBuilder>* builder,
-    String* previous_text,
-    bool update_layout) {
+template <typename ItemsBuilder>
+void CollectInlinesInternal(LayoutBlockFlow* block,
+                            ItemsBuilder* builder,
+                            String* previous_text,
+                            NGLineBoxMarker* marker,
+                            bool update_layout) {
   builder->EnterBlock(block->Style());
   LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
 
   const LayoutObject* symbol =
       LayoutNGListItem::FindSymbolMarkerLayoutText(block);
   while (node) {
-    if (node->IsText()) {
-      LayoutText* layout_text = ToLayoutText(node);
-
+    if (LayoutText* layout_text = ToLayoutTextOrNull(node)) {
       // If the LayoutText element hasn't changed, reuse the existing items.
 
       // if the last ended with space and this starts with space, do not allow
@@ -125,19 +229,21 @@ void CollectInlinesInternal(
       if (symbol == layout_text)
         builder->SetIsSymbolMarker(true);
 
+      if (marker && marker->HandleText(layout_text))
+        marker = nullptr;
+
       if (update_layout)
         ClearNeedsLayout(layout_text);
 
     } else if (node->IsFloating()) {
-      // Add floats and positioned objects in the same way as atomic inlines.
-      // Because these objects need positions, they will be handled in
-      // NGInlineLayoutAlgorithm.
-      builder->AppendOpaque(NGInlineItem::kFloating,
-                            kObjectReplacementCharacter, nullptr, node);
+      builder->AppendFloating(node);
+      if (builder->ShouldAbort())
+        return;
 
     } else if (node->IsOutOfFlowPositioned()) {
-      builder->AppendOpaque(NGInlineItem::kOutOfFlowPositioned,
-                            kObjectReplacementCharacter, nullptr, node);
+      builder->AppendOutOfFlowPositioned(node);
+      if (builder->ShouldAbort())
+        return;
 
     } else if (node->IsAtomicInlineLevel()) {
       if (node->IsLayoutNGListMarker() || node->IsListMarker()) {
@@ -150,6 +256,9 @@ void CollectInlinesInternal(
         // signal the presence of a non-text object to the unicode bidi
         // algorithm.
         builder->AppendAtomicInline(node->Style(), node);
+
+        if (marker && marker->HandleAtomicInline(ToLayoutBox(node)))
+          marker = nullptr;
 
         if (update_layout)
           ClearInlineFragment(node);
@@ -165,6 +274,9 @@ void CollectInlinesInternal(
         layout_inline->UpdateShouldCreateBoxFragment();
 
       builder->EnterInline(layout_inline);
+
+      if (marker && marker->HandleInlineBox(layout_inline))
+        marker = nullptr;
 
       // Traverse to children if they exist.
       if (LayoutObject* child = layout_inline->FirstChild()) {
@@ -310,7 +422,8 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   builder.GetOffsetMappingBuilder().ReserveCapacity(
       EstimateOffsetMappingItemsCount(*layout_block_flow));
   const bool update_layout = false;
-  CollectInlinesInternal(layout_block_flow, &builder, nullptr, update_layout);
+  CollectInlinesInternal(layout_block_flow, &builder, nullptr, nullptr,
+                         update_layout);
 
   // We need the text for non-NG object. Otherwise |data| already has the text
   // from the pre-layout phase, check they match.
@@ -364,12 +477,19 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   LayoutBlockFlow* block = GetLayoutBlockFlow();
   block->WillCollectInlines();
 
+  // If we have PaintFragment, mark line boxes dirty from |NeedsLayout| flag.
+  base::Optional<NGLineBoxMarker> marker;
+  if (NGPaintFragment* block_fragment = block->PaintFragment())
+    marker.emplace(block_fragment);
+
   String* previous_text =
       previous_data ? &previous_data->text_content : nullptr;
   data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
   NGInlineItemsBuilder builder(&data->items);
   const bool update_layout = true;
-  CollectInlinesInternal(block, &builder, previous_text, update_layout);
+  CollectInlinesInternal(block, &builder, previous_text,
+                         marker.has_value() ? &marker.value() : nullptr,
+                         update_layout);
   data->text_content = builder.ToString();
 
   // Set |is_bidi_enabled_| for all UTF-16 strings for now, because at this
@@ -800,86 +920,11 @@ bool NGInlineNode::PrepareReuseFragments(
 // |DirtyLinesFromChangedChild()|, but insertions and style changes are not
 // marked yet.
 bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow) {
-  DCHECK(block_flow);
-  DCHECK(block_flow->PaintFragment());
-  bool has_dirtied_lines = false;
-  NGPaintFragment* last_fragment = nullptr;
-  for (LayoutObject* layout_object = block_flow->NextInPreOrder(block_flow);
-       layout_object;) {
-    bool should_dirty_lines = false;
-    NGPaintFragment* fragment = nullptr;
-    LayoutObject* next = nullptr;
-    if (LayoutText* layout_text = ToLayoutTextOrNull(layout_object)) {
-      if (!has_dirtied_lines) {
-        should_dirty_lines = layout_object->SelfNeedsLayout();
-        if (!should_dirty_lines)
-          fragment = layout_text->FirstInlineFragment();
-      }
-      next = layout_object->NextInPreOrderAfterChildren(block_flow);
-      layout_object->ClearNeedsLayout();
-    } else if (LayoutInline* layout_inline =
-                   ToLayoutInlineOrNull(layout_object)) {
-      if (!has_dirtied_lines) {
-        should_dirty_lines = layout_object->SelfNeedsLayout();
-        // Do not keep fragments of LayoutInline unless it's a leaf, because
-        // the last fragment of LayoutInline is not the previous fragment of its
-        // descendants.
-        if (!should_dirty_lines && !layout_inline->FirstChild())
-          fragment = layout_inline->FirstInlineFragment();
-      }
-      next = layout_object->NextInPreOrder(block_flow);
-      layout_object->ClearNeedsLayout();
-    } else if (UNLIKELY(layout_object->IsFloatingOrOutOfFlowPositioned())) {
-      // Aborting in the middle of the traversal is safe because this function
-      // ClearNeedsLayout() on text and LayoutInline, but since an inline
-      // formatting context is laid out as a whole, these flags don't matter.
-      // For that reason, this traversal should not ClearNeedsLayout() atomic
-      // inlines, floats, or OOF -- objects that need to be laid out separately
-      // from the inline formatting context.
-      // TODO(kojii): This looks a bit tricky, better to come up with clearner
-      // solution if any.
-      return false;
-    } else if (layout_object->IsAtomicInlineLevel()) {
-      if (!has_dirtied_lines) {
-        should_dirty_lines = layout_object->NeedsLayout();
-        if (!should_dirty_lines)
-          fragment = layout_object->FirstInlineFragment();
-      }
-      next = layout_object->NextInPreOrderAfterChildren(block_flow);
-    } else {
-      NOTREACHED();
-      // With LayoutNGBlockFragmentation, LayoutFlowThread/LayoutMultiColumnSet
-      // appear in fast/multicol/paged-becomes-multicol-auto-height.html.
-      // crbug.com/897141
-      next = layout_object->NextInPreOrder(block_flow);
-    }
-
-    if (!has_dirtied_lines) {
-      if (should_dirty_lines) {
-        if (last_fragment) {
-          // Changes in this LayoutObject may affect the line that contains its
-          // previous object. Mark the line box that contains the last fragment
-          // of the previous object.
-          last_fragment->LastForSameLayoutObject()
-              ->MarkContainingLineBoxDirty();
-        } else {
-          // If there were no fragments so far in this pre-order traversal, mark
-          // the first line box dirty.
-          NGPaintFragment* block_fragment = block_flow->PaintFragment();
-          DCHECK(block_fragment);
-          if (NGPaintFragment* first_line = block_fragment->FirstLineBox())
-            first_line->MarkLineBoxDirty();
-        }
-        has_dirtied_lines = true;
-      } else if (fragment) {
-        last_fragment = fragment;
-      }
-    }
-
-    ClearInlineFragment(layout_object);
-    layout_object = next;
-  }
-  return true;
+  NGLineBoxMarker marker(block_flow->PaintFragment());
+  ItemsBuilderForMarkLineBoxesDirty builder;
+  const bool update_layout = true;
+  CollectInlinesInternal(block_flow, &builder, nullptr, &marker, update_layout);
+  return !builder.ShouldAbort();
 }
 
 static LayoutUnit ComputeContentSize(
