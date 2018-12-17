@@ -35,8 +35,16 @@ class SRTDownloadURLTest : public ::testing::Test {
 
 TEST_F(SRTDownloadURLTest, Stable) {
   CreatePromptTrial("On");
-  EXPECT_EQ("/dl/softwareremovaltool/win/chrome_cleanup_tool.exe",
-            GetSRTDownloadURL().path());
+  std::string expected_path;
+  if (base::win::OSInfo::GetInstance()->architecture() ==
+      base::win::OSInfo::X86_ARCHITECTURE) {
+    expected_path =
+        "/dl/softwareremovaltool/win/x86/stable/chrome_cleanup_tool.exe";
+  } else {
+    expected_path =
+        "/dl/softwareremovaltool/win/x64/stable/chrome_cleanup_tool.exe";
+  }
+  EXPECT_EQ(expected_path, GetSRTDownloadURL().path());
 }
 
 TEST_F(SRTDownloadURLTest, Experiment) {
@@ -54,8 +62,16 @@ TEST_F(SRTDownloadURLTest, Experiment) {
 }
 
 TEST_F(SRTDownloadURLTest, DefaultsToStable) {
-  EXPECT_EQ("/dl/softwareremovaltool/win/chrome_cleanup_tool.exe",
-            GetSRTDownloadURL().path());
+  std::string expected_path;
+  if (base::win::OSInfo::GetInstance()->architecture() ==
+      base::win::OSInfo::X86_ARCHITECTURE) {
+    expected_path =
+        "/dl/softwareremovaltool/win/x86/stable/chrome_cleanup_tool.exe";
+  } else {
+    expected_path =
+        "/dl/softwareremovaltool/win/x64/stable/chrome_cleanup_tool.exe";
+  }
+  EXPECT_EQ(expected_path, GetSRTDownloadURL().path());
 }
 
 }  // namespace safe_browsing
