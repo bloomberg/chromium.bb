@@ -83,7 +83,8 @@ ServiceTypePrinter::~ServiceTypePrinter() {
 void ServiceTypePrinter::OnServiceUpdated(ServiceWatcher::UpdateType update,
                                           const std::string& service_name) {
   if (update == ServiceWatcher::UPDATE_ADDED) {
-    services_[service_name].reset(new ServicePrinter(client_, service_name));
+    services_[service_name] =
+        std::make_unique<ServicePrinter>(client_, service_name);
     services_[service_name]->Added();
   } else if (update == ServiceWatcher::UPDATE_CHANGED) {
     services_[service_name]->Changed();

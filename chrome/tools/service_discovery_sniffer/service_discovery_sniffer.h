@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 
 namespace local_discovery {
@@ -50,9 +49,7 @@ class ServiceTypePrinter {
                         const std::string& service_name);
 
  private:
-  typedef std::map<std::string, linked_ptr<ServicePrinter> > ServiceMap;
-
-  ServiceMap services_;
+  std::map<std::string, std::unique_ptr<ServicePrinter>> services_;
   std::unique_ptr<ServiceWatcher> watcher_;
   ServiceDiscoveryClient* client_;
 

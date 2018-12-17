@@ -83,9 +83,7 @@ net::URLRequestContextGetter* ChromeBrowserState::GetRequestContext() {
   if (!request_context_getter_) {
     ProtocolHandlerMap protocol_handlers;
     protocol_handlers[kChromeUIScheme] =
-        linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-            web::URLDataManagerIOSBackend::CreateProtocolHandler(this)
-                .release());
+        web::URLDataManagerIOSBackend::CreateProtocolHandler(this);
     request_context_getter_ =
         base::WrapRefCounted(CreateRequestContext(&protocol_handlers));
   }
