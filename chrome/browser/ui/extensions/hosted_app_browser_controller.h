@@ -23,6 +23,13 @@ class ImageSkia;
 
 namespace extensions {
 
+// Returns true if |page_url| is in the scope of the app for |app_url|. If the
+// app has no scope defined (as in a bookmark app), we fall back to checking
+// |page_url| has the same origin as |app_url|.
+bool IsSameScope(const GURL& app_url,
+                 const GURL& page_url,
+                 content::BrowserContext* profile);
+
 extern const char kPwaWindowEngagementTypeHistogram[];
 
 class Extension;
@@ -87,6 +94,9 @@ class HostedAppBrowserController : public SiteEngagementObserver,
   // Gets the origin of the app start url suitable for display (e.g
   // example.com.au).
   base::string16 GetFormattedUrlOrigin() const;
+
+  // Gets the launch url for the app.
+  GURL GetAppLaunchURL() const;
 
   // Gets the extension for this controller.
   const Extension* GetExtensionForTesting() const;

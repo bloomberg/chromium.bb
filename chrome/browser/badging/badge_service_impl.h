@@ -16,6 +16,7 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+class HostedAppBrowserController;
 }
 
 #if defined(OS_CHROMEOS)
@@ -44,15 +45,16 @@ class BadgeServiceImpl
   ~BadgeServiceImpl() override;
 
   const extensions::Extension* ExtensionFromLastUrl();
+  bool IsInApp();
 
   content::RenderFrameHost* render_frame_host_;
   content::BrowserContext* browser_context_;
   content::WebContents* web_contents_;
+  extensions::HostedAppBrowserController* hosted_app_controller_;
 #if defined(OS_CHROMEOS)
   badging::BadgeManager* badge_manager_;
 #else
   BadgeServiceDelegate* delegate_;
-  bool is_hosted_app_;
 #endif
 };
 
