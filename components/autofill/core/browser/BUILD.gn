@@ -177,6 +177,8 @@ jumbo_static_library("browser") {
     "suggestion_selection.cc",
     "suggestion_selection.h",
     "sync_utils.h",
+    "test_data_creator.cc",
+    "test_data_creator.h",
     "ui/card_unmask_prompt_controller.h",
     "ui/card_unmask_prompt_controller_impl.cc",
     "ui/card_unmask_prompt_controller_impl.h",

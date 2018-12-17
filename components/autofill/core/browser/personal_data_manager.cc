@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
@@ -76,18 +77,6 @@ constexpr base::TimeDelta kDisusedCreditCardDeletionTimeDelta =
     base::TimeDelta::FromDays(395);
 constexpr base::TimeDelta kDisusedAddressDeletionTimeDelta =
     base::TimeDelta::FromDays(395);
-
-// Time delta to create test data.
-base::TimeDelta DeletableUseDateDelta() {
-  static base::TimeDelta delta =
-      kDisusedCreditCardDeletionTimeDelta + base::TimeDelta::FromDays(5);
-  return delta;
-}
-base::TimeDelta DeletableExpiryDateDelta() {
-  static base::TimeDelta delta =
-      kDisusedCreditCardDeletionTimeDelta + base::TimeDelta::FromDays(45);
-  return delta;
-}
 
 template <typename T>
 class FormGroupMatchesByGUIDFunctor {
@@ -160,129 +149,6 @@ void ReceiveLoadedDbValues(WebDataServiceBase::Handle h,
 static bool CompareVotes(const std::pair<std::string, int>& a,
                          const std::pair<std::string, int>& b) {
   return a.second < b.second;
-}
-
-AutofillProfile CreateBasicTestAddress(const std::string& locale) {
-  const base::Time use_date =
-      AutofillClock::Now() - base::TimeDelta::FromDays(20);
-  AutofillProfile profile;
-  profile.SetInfo(NAME_FULL, base::UTF8ToUTF16("John McTester"), locale);
-  profile.SetInfo(COMPANY_NAME, base::UTF8ToUTF16("Test Inc."), locale);
-  profile.SetInfo(EMAIL_ADDRESS,
-                  base::UTF8ToUTF16("jmctester@fake.chromium.org"), locale);
-  profile.SetInfo(ADDRESS_HOME_LINE1, base::UTF8ToUTF16("123 Invented Street"),
-                  locale);
-  profile.SetInfo(ADDRESS_HOME_LINE2, base::UTF8ToUTF16("Suite A"), locale);
-  profile.SetInfo(ADDRESS_HOME_CITY, base::UTF8ToUTF16("Mountain View"),
-                  locale);
-  profile.SetInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("California"), locale);
-  profile.SetInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("94043"), locale);
-  profile.SetInfo(ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16("US"), locale);
-  profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16("844-555-0173"),
-                  locale);
-  profile.set_use_date(use_date);
-  return profile;
-}
-
-AutofillProfile CreateDisusedTestAddress(const std::string& locale) {
-  const base::Time use_date =
-      AutofillClock::Now() - base::TimeDelta::FromDays(185);
-  AutofillProfile profile;
-  profile.SetInfo(NAME_FULL, base::UTF8ToUTF16("Polly Disused"), locale);
-  profile.SetInfo(COMPANY_NAME,
-                  base::UTF8ToUTF16(base::StringPrintf(
-                      "%lld Inc.", static_cast<long long>(use_date.ToTimeT()))),
-                  locale);
-  profile.SetInfo(EMAIL_ADDRESS,
-                  base::UTF8ToUTF16("polly.disused@fake.chromium.org"), locale);
-  profile.SetInfo(ADDRESS_HOME_LINE1, base::UTF8ToUTF16("456 Disused Lane"),
-                  locale);
-  profile.SetInfo(ADDRESS_HOME_LINE2, base::UTF8ToUTF16("Apt. B"), locale);
-  profile.SetInfo(ADDRESS_HOME_CITY, base::UTF8ToUTF16("Austin"), locale);
-  profile.SetInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("Texas"), locale);
-  profile.SetInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("73301"), locale);
-  profile.SetInfo(ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16("US"), locale);
-  profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16("844-555-0174"),
-                  locale);
-  profile.set_use_date(use_date);
-  return profile;
-}
-
-AutofillProfile CreateDisusedDeletableTestAddress(const std::string& locale) {
-  const base::Time use_date =
-      AutofillClock::Now() - base::TimeDelta::FromDays(400);
-  AutofillProfile profile;
-  profile.SetInfo(NAME_FULL, base::UTF8ToUTF16("Polly Deletable"), locale);
-  profile.SetInfo(COMPANY_NAME,
-                  base::UTF8ToUTF16(base::StringPrintf(
-                      "%lld Inc.", static_cast<long long>(use_date.ToTimeT()))),
-                  locale);
-  profile.SetInfo(EMAIL_ADDRESS,
-                  base::UTF8ToUTF16("polly.deletable@fake.chromium.org"),
-                  locale);
-  profile.SetInfo(ADDRESS_HOME_LINE1, base::UTF8ToUTF16("459 Deletable Lane"),
-                  locale);
-  profile.SetInfo(ADDRESS_HOME_LINE2, base::UTF8ToUTF16("Apt. B"), locale);
-  profile.SetInfo(ADDRESS_HOME_CITY, base::UTF8ToUTF16("Austin"), locale);
-  profile.SetInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("Texas"), locale);
-  profile.SetInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("73301"), locale);
-  profile.SetInfo(ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16("US"), locale);
-  profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16("844-555-0274"),
-                  locale);
-  profile.set_use_date(use_date);
-  return profile;
-}
-
-// Create a card expiring 500 days from now which was last used 10 days ago.
-CreditCard CreateBasicTestCreditCard(const std::string& locale) {
-  const base::Time now = AutofillClock::Now();
-  const base::Time use_date = now - base::TimeDelta::FromDays(10);
-  base::Time::Exploded expiry_date;
-  (now + base::TimeDelta::FromDays(500)).LocalExplode(&expiry_date);
-
-  CreditCard credit_card;
-  credit_card.SetInfo(CREDIT_CARD_NAME_FULL,
-                      base::UTF8ToUTF16("Alice Testerson"), locale);
-  credit_card.SetInfo(CREDIT_CARD_NUMBER, base::UTF8ToUTF16("4545454545454545"),
-                      locale);
-  credit_card.SetExpirationMonth(expiry_date.month);
-  credit_card.SetExpirationYear(expiry_date.year);
-  credit_card.set_use_date(use_date);
-  return credit_card;
-}
-
-CreditCard CreateDisusedTestCreditCard(const std::string& locale) {
-  const base::Time now = AutofillClock::Now();
-  const base::Time use_date = now - base::TimeDelta::FromDays(185);
-  base::Time::Exploded expiry_date;
-  (now - base::TimeDelta::FromDays(200)).LocalExplode(&expiry_date);
-
-  CreditCard credit_card;
-  credit_card.SetInfo(CREDIT_CARD_NAME_FULL, base::UTF8ToUTF16("Bob Disused"),
-                      locale);
-  credit_card.SetInfo(CREDIT_CARD_NUMBER, base::UTF8ToUTF16("4111111111111111"),
-                      locale);
-  credit_card.SetExpirationMonth(expiry_date.month);
-  credit_card.SetExpirationYear(expiry_date.year);
-  credit_card.set_use_date(use_date);
-  return credit_card;
-}
-
-CreditCard CreateDisusedDeletableTestCreditCard(const std::string& locale) {
-  const base::Time now = AutofillClock::Now();
-  const base::Time use_date = now - DeletableUseDateDelta();
-  base::Time::Exploded expiry_date;
-  (now - DeletableExpiryDateDelta()).LocalExplode(&expiry_date);
-
-  CreditCard credit_card;
-  credit_card.SetInfo(CREDIT_CARD_NAME_FULL,
-                      base::UTF8ToUTF16("Charlie Deletable"), locale);
-  credit_card.SetInfo(CREDIT_CARD_NUMBER, base::UTF8ToUTF16("378282246310005"),
-                      locale);
-  credit_card.SetExpirationMonth(expiry_date.month);
-  credit_card.SetExpirationYear(expiry_date.year);
-  credit_card.set_use_date(use_date);
-  return credit_card;
 }
 
 }  // namespace
@@ -400,7 +266,8 @@ class PersonalDatabaseHelper
 };
 
 PersonalDataManager::PersonalDataManager(const std::string& app_locale)
-    : app_locale_(app_locale) {
+    : app_locale_(app_locale),
+      test_data_creator_(kDisusedCreditCardDeletionTimeDelta, app_locale_) {
   database_helper_ = std::make_unique<PersonalDatabaseHelper>(this);
 }
 
@@ -2596,32 +2463,6 @@ std::string PersonalDataManager::MergeServerAddressesIntoProfiles(
   return server_address.guid();
 }
 
-void PersonalDataManager::MaybeCreateTestAddresses() {
-  if (has_created_test_addresses_)
-    return;
-
-  has_created_test_addresses_ = true;
-  if (!base::FeatureList::IsEnabled(features::kAutofillCreateDataForTest))
-    return;
-
-  AddProfile(CreateBasicTestAddress(app_locale_));
-  AddProfile(CreateDisusedTestAddress(app_locale_));
-  AddProfile(CreateDisusedDeletableTestAddress(app_locale_));
-}
-
-void PersonalDataManager::MaybeCreateTestCreditCards() {
-  if (has_created_test_credit_cards_)
-    return;
-
-  has_created_test_credit_cards_ = true;
-  if (!base::FeatureList::IsEnabled(features::kAutofillCreateDataForTest))
-    return;
-
-  AddCreditCard(CreateBasicTestCreditCard(app_locale_));
-  AddCreditCard(CreateDisusedTestCreditCard(app_locale_));
-  AddCreditCard(CreateDisusedDeletableTestCreditCard(app_locale_));
-}
-
 // static
 bool PersonalDataManager::IsCreditCardDeletable(const CreditCard* card) {
   const base::Time deletion_threshold =
@@ -2723,18 +2564,38 @@ bool PersonalDataManager::DeleteDisusedAddresses() {
 }
 
 void PersonalDataManager::ApplyAddressFixesAndCleanups() {
-  RemoveOrphanAutofillTableRows();   // One-time fix, otherwise NOP.
-  ApplyDedupingRoutine();            // Once per major version, otherwise NOP.
+  // One-time fix, otherwise NOP.
+  RemoveOrphanAutofillTableRows();
+
+  // Once per major version, otherwise NOP.
+  ApplyDedupingRoutine();
+
   DeleteDisusedAddresses();
-  MaybeCreateTestAddresses();        // Once per user profile startup.
-  ClearProfileNonSettingsOrigins();  // Ran everytime it is called.
-  MoveJapanCityToStreetAddress();    // One-time fix, otherwise NOP.
+
+  // If feature AutofillCreateDataForTest is enabled, and once per user profile
+  // startup.
+  test_data_creator_.MaybeAddTestProfiles(base::BindRepeating(
+      &PersonalDataManager::AddProfile, base::Unretained(this)));
+
+  // Ran everytime it is called.
+  ClearProfileNonSettingsOrigins();
+
+  // One-time fix, otherwise NOP.
+  MoveJapanCityToStreetAddress();
 }
 
 void PersonalDataManager::ApplyCardFixesAndCleanups() {
+  DLOG(ERROR) << "CREDIT CARD SYNC !!";
+
   DeleteDisusedCreditCards();
-  MaybeCreateTestCreditCards();  // Once per user profile startup.
-  ClearCreditCardNonSettingsOrigins();  // Ran everytime it is called.
+
+  // If feature AutofillCreateDataForTest is enabled, and once per user profile
+  // startup.
+  test_data_creator_.MaybeAddTestCreditCards(base::BindRepeating(
+      &PersonalDataManager::AddCreditCard, base::Unretained(this)));
+
+  // Ran everytime it is called.
+  ClearCreditCardNonSettingsOrigins();
 }
 
 void PersonalDataManager::ResetProfileValidity() {
