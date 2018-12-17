@@ -213,7 +213,7 @@ testcase.zipFileOpenUsb = async function() {
 function getZipSelectionFileListRowEntries() {
   return [
     ['photos', '--', 'Folder', 'Jan 1, 1980, 11:59 PM'],
-    ['photos.zip', '206 bytes', 'Zip archive', 'Oct 21, 1983, 11:55 AM']
+    ['photos.zip', '214 bytes', 'Zip archive', 'Oct 21, 1983, 11:55 AM']
   ];
 }
 
