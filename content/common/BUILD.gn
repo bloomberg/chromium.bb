@@ -103,6 +103,8 @@ source_set("common") {
     "drag_messages.h",
     "drag_traits.h",
     "edit_command.h",
+    "fetch/fetch_request_type_converters.cc",
+    "fetch/fetch_request_type_converters.h",
     "fileapi/webblob_messages.h",
     "font_cache_dispatcher_win.cc",
     "font_list.cc",

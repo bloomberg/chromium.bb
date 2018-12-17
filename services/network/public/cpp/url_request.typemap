@@ -13,5 +13,6 @@ public_deps = [
 ]
 type_mappings = [
   "network.mojom.URLRequest=network::ResourceRequest",
+  "network.mojom.URLRequestBody=scoped_refptr<network::ResourceRequestBody>",
   "network.mojom.RequestPriority=net::RequestPriority",
 ]

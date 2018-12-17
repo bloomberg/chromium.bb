@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
+#include "content/common/fetch/fetch_request_type_converters.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -278,7 +279,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   }
 
   auto params = blink::mojom::DispatchFetchEventParams::New();
-  params->request = resource_request_;
+  params->request = blink::mojom::FetchAPIRequest::From(resource_request_);
   params->client_id = controller_connector_->client_id();
 
   // S13nServiceWorker without NetworkService:

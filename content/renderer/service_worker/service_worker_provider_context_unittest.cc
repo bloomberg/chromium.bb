@@ -185,7 +185,7 @@ class FakeControllerServiceWorker
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
     fetch_event_count_++;
-    fetch_event_request_ = params->request;
+    fetch_event_request_ = std::move(params->request);
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
     if (fetch_event_callback_)
       std::move(fetch_event_callback_).Run();
@@ -198,15 +198,15 @@ class FakeControllerServiceWorker
     fetch_event_callback_ = std::move(closure);
   }
   int fetch_event_count() const { return fetch_event_count_; }
-  const network::ResourceRequest& fetch_event_request() const {
-    return fetch_event_request_;
+  const blink::mojom::FetchAPIRequest& fetch_event_request() const {
+    return *fetch_event_request_;
   }
 
   void Disconnect() { bindings_.CloseAllBindings(); }
 
  private:
   int fetch_event_count_ = 0;
-  network::ResourceRequest fetch_event_request_;
+  blink::mojom::FetchAPIRequestPtr fetch_event_request_;
   base::OnceClosure fetch_event_callback_;
   mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
 

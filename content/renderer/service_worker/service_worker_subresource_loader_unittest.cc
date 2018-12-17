@@ -251,12 +251,12 @@ class FakeControllerServiceWorker
       blink::mojom::DispatchFetchEventParamsPtr params,
       blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
-    EXPECT_FALSE(ServiceWorkerUtils::IsMainResourceType(
-        static_cast<ResourceType>(params->request.resource_type)));
-    request_body_ = params->request.request_body;
+    EXPECT_FALSE(params->request->is_main_resource_load);
+    if (params->request->body)
+      request_body_ = params->request->body.value();
 
     fetch_event_count_++;
-    fetch_event_request_ = params->request;
+    fetch_event_request_ = std::move(params->request);
 
     auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
     timing->dispatch_event_time = base::TimeTicks::Now();
@@ -292,9 +292,11 @@ class FakeControllerServiceWorker
         // Parse the Range header.
         std::string range_header;
         std::vector<net::HttpByteRange> ranges;
-        ASSERT_TRUE(params->request.headers.GetHeader(
-            net::HttpRequestHeaders::kRange, &range_header));
-        ASSERT_TRUE(net::HttpUtil::ParseRangeHeader(range_header, &ranges));
+        ASSERT_TRUE(fetch_event_request_->headers.contains(
+            std::string(net::HttpRequestHeaders::kRange)));
+        ASSERT_TRUE(net::HttpUtil::ParseRangeHeader(
+            fetch_event_request_->headers[net::HttpRequestHeaders::kRange],
+            &ranges));
         ASSERT_EQ(1u, ranges.size());
         ASSERT_TRUE(ranges[0].ComputeBounds(blob_range_body_.size()));
         const net::HttpByteRange& range = ranges[0];
@@ -355,8 +357,8 @@ class FakeControllerServiceWorker
   }
 
   int fetch_event_count() const { return fetch_event_count_; }
-  const network::ResourceRequest& fetch_event_request() const {
-    return fetch_event_request_;
+  const blink::mojom::FetchAPIRequest& fetch_event_request() const {
+    return *fetch_event_request_;
   }
 
  private:
@@ -375,7 +377,7 @@ class FakeControllerServiceWorker
   scoped_refptr<network::ResourceRequestBody> request_body_;
 
   int fetch_event_count_ = 0;
-  network::ResourceRequest fetch_event_request_;
+  blink::mojom::FetchAPIRequestPtr fetch_event_request_;
   base::OnceClosure fetch_event_callback_;
   mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
 
