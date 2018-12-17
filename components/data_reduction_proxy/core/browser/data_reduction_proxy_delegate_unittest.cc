@@ -460,6 +460,7 @@ TEST_F(DataReductionProxyDelegateTest, AlternativeProxy) {
     TestDataReductionProxyDelegate delegate(config(), io_data()->configurator(),
                                             io_data()->bypass_stats(),
                                             test.proxy_supports_quic);
+    delegate.InitializeOnIOThread(io_data());
 
     base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(

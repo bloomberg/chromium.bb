@@ -227,10 +227,12 @@ DataReductionProxyIOData::CreateNetworkDelegate(
 }
 
 std::unique_ptr<DataReductionProxyDelegate>
-DataReductionProxyIOData::CreateProxyDelegate() const {
+DataReductionProxyIOData::CreateProxyDelegate() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  return std::make_unique<DataReductionProxyDelegate>(
+  auto proxy_delegate = std::make_unique<DataReductionProxyDelegate>(
       config_.get(), configurator_.get(), bypass_stats_.get());
+  proxy_delegate->InitializeOnIOThread(this);
+  return proxy_delegate;
 }
 
 // TODO(kundaji): Rename this method to something more descriptive.
