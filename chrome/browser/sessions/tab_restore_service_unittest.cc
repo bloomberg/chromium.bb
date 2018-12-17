@@ -26,6 +26,8 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/history/core/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_types.h"
@@ -94,7 +96,7 @@ class TabRestoreServiceImplTest : public ChromeRenderViewHostTestHarness {
     time_factory_ = new TabRestoreTimeFactory();
     service_.reset(new sessions::TabRestoreServiceImpl(
         std::make_unique<ChromeTabRestoreServiceClient>(profile()),
-        time_factory_));
+        profile()->GetPrefs(), time_factory_));
   }
 
   void TearDown() override {
@@ -132,7 +134,7 @@ class TabRestoreServiceImplTest : public ChromeRenderViewHostTestHarness {
     service_.reset();
     service_.reset(new sessions::TabRestoreServiceImpl(
         std::make_unique<ChromeTabRestoreServiceClient>(profile()),
-        time_factory_));
+        profile()->GetPrefs(), time_factory_));
     SynchronousLoadTabsFromLastSession();
   }
 
@@ -544,8 +546,7 @@ TEST_F(TabRestoreServiceImplTest, DontLoadAfterRestore) {
 
   SynchronousLoadTabsFromLastSession();
 
-  // Because we restored a session TabRestoreServiceImpl shouldn't load
-  // the tabs.
+  // Because we restored a session TabRestoreService shouldn't load the tabs.
   ASSERT_EQ(0U, service_->entries().size());
 }
 
@@ -557,6 +558,35 @@ TEST_F(TabRestoreServiceImplTest, DontLoadAfterCleanExit) {
       ->MoveCurrentSessionToLastSession();
 
   profile()->set_last_session_exited_cleanly(true);
+
+  SynchronousLoadTabsFromLastSession();
+
+  ASSERT_EQ(0U, service_->entries().size());
+}
+
+// Makes sure we don't save sessions when saving history is disabled.
+TEST_F(TabRestoreServiceImplTest, DontSaveWhenSavingIsDisabled) {
+  profile()->GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled, true);
+
+  CreateSessionServiceWithOneWindow(false);
+
+  SessionServiceFactory::GetForProfile(profile())
+      ->MoveCurrentSessionToLastSession();
+
+  SynchronousLoadTabsFromLastSession();
+
+  ASSERT_EQ(0U, service_->entries().size());
+}
+
+// Makes sure we don't attempt to load previous sessions when saving history is
+// disabled.
+TEST_F(TabRestoreServiceImplTest, DontLoadWhenSavingIsDisabled) {
+  CreateSessionServiceWithOneWindow(false);
+
+  SessionServiceFactory::GetForProfile(profile())
+      ->MoveCurrentSessionToLastSession();
+
+  profile()->GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled, true);
 
   SynchronousLoadTabsFromLastSession();
 

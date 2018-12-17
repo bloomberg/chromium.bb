@@ -55,5 +55,6 @@ KeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<sessions::TabRestoreServiceClient> client(
       new ChromeTabRestoreServiceClient(profile));
 
-  return new sessions::TabRestoreServiceImpl(std::move(client), nullptr);
+  return new sessions::TabRestoreServiceImpl(std::move(client),
+                                             profile->GetPrefs(), nullptr);
 }

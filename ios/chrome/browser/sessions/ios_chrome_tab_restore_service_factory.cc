@@ -21,7 +21,7 @@ std::unique_ptr<KeyedService> BuildTabRestoreService(
       ios::ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<sessions::TabRestoreServiceImpl>(
       base::WrapUnique(new IOSChromeTabRestoreServiceClient(browser_state)),
-      nullptr);
+      browser_state->GetPrefs(), nullptr);
 }
 
 }  // namespace

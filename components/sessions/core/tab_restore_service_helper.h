@@ -74,11 +74,12 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   // the current time. The TabRestoreServiceHelper does not take ownership of
   // |time_factory| and |observer|. Note that |observer| can also be NULL.
   TabRestoreServiceHelper(TabRestoreService* tab_restore_service,
-                          Observer* observer,
                           TabRestoreServiceClient* client,
                           TimeFactory* time_factory);
 
   ~TabRestoreServiceHelper() override;
+
+  void SetHelperObserver(Observer* observer);
 
   // Helper methods used to implement TabRestoreService.
   void AddObserver(TabRestoreServiceObserver* observer);
@@ -182,7 +183,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
 
   TabRestoreService* const tab_restore_service_;
 
-  Observer* const observer_;
+  Observer* observer_;
 
   TabRestoreServiceClient* client_;
 
