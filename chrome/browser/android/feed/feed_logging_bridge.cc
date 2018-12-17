@@ -119,7 +119,9 @@ void FeedLoggingBridge::OnOpenedWithNoImmediateContent(
 
 void FeedLoggingBridge::OnOpenedWithNoContent(
     JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this) {}
+    const base::android::JavaRef<jobject>& j_this) {
+  feed_logging_metrics_->OnPageShown(/*suggestions_count=*/0);
+}
 
 void FeedLoggingBridge::OnSpinnerShown(
     JNIEnv* j_env,
