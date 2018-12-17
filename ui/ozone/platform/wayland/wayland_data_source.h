@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
-#include "ui/ozone/public/clipboard_delegate.h"
+#include "ui/ozone/public/platform_clipboard.h"
 
 namespace ui {
 
@@ -42,8 +42,8 @@ class WaylandDataSource {
     connection_ = connection;
   }
 
-  void WriteToClipboard(const ClipboardDelegate::DataMap& data_map);
-  void UpdataDataMap(const ClipboardDelegate::DataMap& data_map);
+  void WriteToClipboard(const PlatformClipboard::DataMap& data_map);
+  void UpdataDataMap(const PlatformClipboard::DataMap& data_map);
   void Offer(const ui::OSExchangeData& data);
   void SetAction(int operation);
   void SetDragData(const DragDataMap& data_map);
@@ -71,7 +71,7 @@ class WaylandDataSource {
   WaylandConnection* connection_ = nullptr;
   WaylandWindow* source_window_ = nullptr;
 
-  ClipboardDelegate::DataMap data_map_;
+  PlatformClipboard::DataMap data_map_;
   DragDataMap drag_data_map_;
   // Action selected by the compositor
   uint32_t dnd_action_;

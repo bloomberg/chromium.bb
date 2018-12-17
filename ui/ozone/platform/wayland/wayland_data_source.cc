@@ -27,7 +27,7 @@ WaylandDataSource::WaylandDataSource(wl_data_source* data_source,
 WaylandDataSource::~WaylandDataSource() = default;
 
 void WaylandDataSource::WriteToClipboard(
-    const ClipboardDelegate::DataMap& data_map) {
+    const PlatformClipboard::DataMap& data_map) {
   for (const auto& data : data_map) {
     wl_data_source_offer(data_source_.get(), data.first.c_str());
     if (strcmp(data.first.c_str(), kTextMimeType) == 0)
@@ -40,7 +40,7 @@ void WaylandDataSource::WriteToClipboard(
 }
 
 void WaylandDataSource::UpdataDataMap(
-    const ClipboardDelegate::DataMap& data_map) {
+    const PlatformClipboard::DataMap& data_map) {
   data_map_ = data_map;
 }
 
