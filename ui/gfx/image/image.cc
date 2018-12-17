@@ -368,11 +368,11 @@ Image::Image(NSImage* image) {
 
 Image::Image(const Image& other) = default;
 
-Image::Image(Image&& other) = default;
+Image::Image(Image&& other) noexcept = default;
 
 Image& Image::operator=(const Image& other) = default;
 
-Image& Image::operator=(Image&& other) = default;
+Image& Image::operator=(Image&& other) noexcept = default;
 
 Image::~Image() {}
 
