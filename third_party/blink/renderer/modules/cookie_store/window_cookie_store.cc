@@ -20,8 +20,10 @@ CookieStore* GlobalCookieStoreImpl<LocalDOMWindow>::BuildCookieStore(
     ExecutionContext* execution_context,
     service_manager::InterfaceProvider* interface_provider) {
   network::mojom::blink::RestrictedCookieManagerPtr cookie_manager_ptr;
-  interface_provider->GetInterface(mojo::MakeRequest(&cookie_manager_ptr));
-
+  // See https://bit.ly/2S0zRAS for task types.
+  interface_provider->GetInterface(mojo::MakeRequest(
+      &cookie_manager_ptr,
+      execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   return CookieStore::Create(execution_context, std::move(cookie_manager_ptr),
                              blink::mojom::blink::CookieStorePtr());
 }

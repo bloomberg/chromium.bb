@@ -68,8 +68,7 @@ class LockManager::LockRequestImpl final
         resolver_(resolver),
         name_(name),
         mode_(mode),
-        // A specific task source should be defined but not.
-        // See https://wicg.github.io/web-locks/.
+        // See https://bit.ly/2S0zRAS for task types.
         binding_(this,
                  std::move(request),
                  manager->GetExecutionContext()->GetTaskRunner(

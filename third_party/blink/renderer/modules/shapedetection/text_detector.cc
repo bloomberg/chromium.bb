@@ -20,7 +20,9 @@ TextDetector* TextDetector::Create(ExecutionContext* context) {
 }
 
 TextDetector::TextDetector(ExecutionContext* context) : ShapeDetector() {
-  auto request = mojo::MakeRequest(&text_service_);
+  // See https://bit.ly/2S0zRAS for task types.
+  auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  auto request = mojo::MakeRequest(&text_service_, task_runner);
   if (auto* interface_provider = context->GetInterfaceProvider()) {
     interface_provider->GetInterface(std::move(request));
   }

@@ -36,7 +36,9 @@ XR::XR(LocalFrame& frame, int64_t ukm_source_id)
       FocusChangedObserver(frame.GetPage()),
       ukm_source_id_(ukm_source_id),
       binding_(this) {
-  frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
+  // See https://bit.ly/2S0zRAS for task types.
+  frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(
+      &service_, frame.GetTaskRunner(TaskType::kMiscPlatformAPI)));
   service_.set_connection_error_handler(
       WTF::Bind(&XR::Dispose, WrapWeakPersistent(this)));
 }
@@ -192,9 +194,13 @@ void XR::AddedEventListener(const AtomicString& event_type,
 
   if (event_type == event_type_names::kDevicechange) {
     // Register for notifications if we haven't already.
+    //
+    // See https://bit.ly/2S0zRAS for task types.
+    auto task_runner =
+        GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
     if (!binding_.is_bound()) {
       device::mojom::blink::VRServiceClientPtr client;
-      binding_.Bind(mojo::MakeRequest(&client));
+      binding_.Bind(mojo::MakeRequest(&client, task_runner));
       service_->SetClient(std::move(client));
     }
 

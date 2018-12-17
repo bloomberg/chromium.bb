@@ -7,6 +7,7 @@
 #include "services/device/public/mojom/constants.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -45,8 +46,9 @@ void BatteryDispatcher::UpdateBatteryStatus(
 
 void BatteryDispatcher::StartListening(LocalFrame* frame) {
   DCHECK(!monitor_.is_bound());
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&monitor_));
+  // See https://bit.ly/2S0zRAS for task types.
+  Platform::Current()->GetInterfaceProvider()->GetInterface(mojo::MakeRequest(
+      &monitor_, frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   QueryNextStatus();
 }
 

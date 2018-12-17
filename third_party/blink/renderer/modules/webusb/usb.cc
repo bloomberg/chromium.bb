@@ -292,10 +292,9 @@ void USB::EnsureServiceConnection() {
 
   DCHECK(IsContextSupported());
   DCHECK(GetFeatureEnabledState() != FeatureEnabledState::kDisabled);
-  // A specific task source should be defined but not.
-  // See https://wicg.github.io/webusb/.
+  // See https://bit.ly/2S0zRAS for task types.
   auto task_runner =
-      GetExecutionContext()->GetTaskRunner(TaskType::kInternalDefault);
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   GetExecutionContext()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&service_, task_runner));
   service_.set_connection_error_handler(

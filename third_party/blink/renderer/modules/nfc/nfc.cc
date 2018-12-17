@@ -645,8 +645,7 @@ NFC::NFC(LocalFrame* frame)
   if (!IsSupportedInContext(GetExecutionContext(), error_message))
     return;
 
-  // A specific task source should be defined but not.
-  // See https://w3c.github.io/web-nfc/.
+  // See https://bit.ly/2S0zRAS for task types.
   auto task_runner = frame->GetTaskRunner(TaskType::kMiscPlatformAPI);
   frame->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&nfc_, task_runner));

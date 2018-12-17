@@ -225,8 +225,11 @@ void XRDevice::OnRequestSessionReturned(
   } else {
     magic_window_provider_.Bind(std::move(session_ptr->data_provider));
     if (environment_integration) {
+      // See https://bit.ly/2S0zRAS for task types.
       magic_window_provider_->GetEnvironmentIntegrationProvider(
-          mojo::MakeRequest(&environment_provider_));
+          mojo::MakeRequest(&environment_provider_,
+                            xr_->GetExecutionContext()->GetTaskRunner(
+                                TaskType::kMiscPlatformAPI)));
     }
   }
 

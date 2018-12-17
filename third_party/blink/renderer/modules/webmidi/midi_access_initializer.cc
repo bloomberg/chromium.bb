@@ -40,8 +40,12 @@ ScriptPromise MIDIAccessInitializer::Start() {
   ScriptPromise promise = this->Promise();
   accessor_ = MIDIAccessor::Create(this);
 
-  ConnectToPermissionService(GetExecutionContext(),
-                             mojo::MakeRequest(&permission_service_));
+  // See https://bit.ly/2S0zRAS for task types.
+  ConnectToPermissionService(
+      GetExecutionContext(),
+      mojo::MakeRequest(
+          &permission_service_,
+          GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 
   Document& doc = To<Document>(*GetExecutionContext());
   permission_service_->RequestPermission(
