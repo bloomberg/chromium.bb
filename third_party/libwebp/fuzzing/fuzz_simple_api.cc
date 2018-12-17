@@ -32,13 +32,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
   if (value < 0x16) {
     buf = WebPDecodeRGBA(data, size, &w, &h);
   } else if (value < 0x2b) {
-    buf = WebPDecodeARGB(data, size, &w, &h);
-  } else if (value < 0x40) {
     buf = WebPDecodeBGRA(data, size, &w, &h);
+#if !defined(WEBP_REDUCE_CSP)
+  } else if (value < 0x40) {
+    buf = WebPDecodeARGB(data, size, &w, &h);
   } else if (value < 0x55) {
     buf = WebPDecodeRGB(data, size, &w, &h);
   } else if (value < 0x6a) {
     buf = WebPDecodeBGR(data, size, &w, &h);
+#endif  // !defined(WEBP_REDUCE_CSP)
   } else if (value < 0x7f) {
     uint8_t *u, *v;
     int stride, uv_stride;
@@ -51,14 +53,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
     uint8_t* const ext_buf = (uint8_t*)malloc(buf_size);
     if (value < 0x94) {
       WebPDecodeRGBAInto(data, size, ext_buf, buf_size, stride);
+#if !defined(WEBP_REDUCE_CSP)
     } else if (value < 0xa9) {
       WebPDecodeARGBInto(data, size, ext_buf, buf_size, stride);
     } else if (value < 0xbe) {
-      WebPDecodeBGRAInto(data, size, ext_buf, buf_size, stride);
+      WebPDecodeBGRInto(data, size, ext_buf, buf_size, stride);
     } else if (value < 0xd3) {
       WebPDecodeRGBInto(data, size, ext_buf, buf_size, stride);
+#endif  // !defined(WEBP_REDUCE_CSP)
     } else {
-      WebPDecodeBGRInto(data, size, ext_buf, buf_size, stride);
+      WebPDecodeBGRAInto(data, size, ext_buf, buf_size, stride);
     }
     free(ext_buf);
   } else {
