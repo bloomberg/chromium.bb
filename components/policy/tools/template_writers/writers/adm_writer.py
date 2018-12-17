@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from writers import template_writer
+from writers import gpo_editor_writer
 import re
 
 NEWLINE = '\r\n'
@@ -60,7 +60,7 @@ class IndentedStringBuilder:
     return NEWLINE.join(self.lines)
 
 
-class AdmWriter(template_writer.TemplateWriter):
+class AdmWriter(gpo_editor_writer.GpoEditorWriter):
   '''Class for generating policy templates in Windows ADM format.
   It is used by PolicyTemplateGenerator to write ADM files.
   '''
@@ -184,7 +184,10 @@ class AdmWriter(template_writer.TemplateWriter):
     reference_link_text = reference_link_text.replace('$6', reference_url)
 
     if policy_desc is not None:
-      return policy_desc + '\n\n' + reference_link_text
+      policy_desc += '\n\n'
+      if not policy.get('deprecated', False):
+        policy_desc += reference_link_text
+      return policy_desc
     else:
       return reference_link_text
 

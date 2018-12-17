@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 from xml.dom import minidom
-from writers import xml_formatted_writer
+from writers import gpo_editor_writer, xml_formatted_writer
 
 
 class AdmxElementType:
@@ -85,7 +85,8 @@ def GetWriter(config):
   return ADMXWriter(['win'], config)
 
 
-class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
+class ADMXWriter(xml_formatted_writer.XMLFormattedWriter,
+                 gpo_editor_writer.GpoEditorWriter):
   '''Class for generating an ADMX policy template. It is used by the
   PolicyTemplateGenerator to write the admx file.
   '''
