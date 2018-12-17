@@ -30,7 +30,7 @@ bool IsLoadingPredictorEnabled(Profile* profile);
 bool IsPreconnectAllowed(Profile* profile);
 
 // Indicates what caused the page load hint.
-enum class HintOrigin { NAVIGATION, EXTERNAL, OMNIBOX, NAVIGATION_PREDICTOR };
+enum class HintOrigin { NAVIGATION, EXTERNAL, OMNIBOX };
 
 // Represents the config for the Loading predictor.
 struct LoadingPredictorConfig {

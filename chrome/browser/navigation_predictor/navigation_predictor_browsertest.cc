@@ -20,7 +20,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
@@ -45,44 +44,6 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
   }
 }
 
-// Gets notified by the EmbeddedTestServer on incoming connections being
-// accepted or read from.
-class ConnectionListener
-    : public net::test_server::EmbeddedTestServerConnectionListener {
- public:
-  ConnectionListener() = default;
-
-  ~ConnectionListener() override = default;
-
-  void ResetAcceptedSocketCount() { accepted_socket_count_ = 0; }
-
-  size_t accepted_socket_count() const { return accepted_socket_count_; }
-
-  void SetOnAcceptedSocketCallback(
-      base::OnceCallback<void()> on_accepted_socket_callback) {
-    on_accepted_socket_callback_ = std::move(on_accepted_socket_callback);
-  }
-
- private:
-  // Gets called from the EmbeddedTestServer thread to be notified that
-  // a connection was accepted.
-  void AcceptedSocket(const net::StreamSocket& connection) override {
-    ++accepted_socket_count_;
-    if (on_accepted_socket_callback_)
-      std::move(on_accepted_socket_callback_).Run();
-  }
-
-  // Gets called from the EmbeddedTestServer thread to be notified that
-  // a connection was read from.
-  void ReadFromSocket(const net::StreamSocket& connection, int rv) override {}
-
-  size_t accepted_socket_count_ = 0;
-
-  base::OnceCallback<void()> on_accepted_socket_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectionListener);
-};
-
 }  // namespace
 
 class NavigationPredictorBrowserTest
@@ -100,7 +61,6 @@ class NavigationPredictorBrowserTest
   void SetUp() override {
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    https_server_->SetConnectionListener(&https_connection_listener_);
     https_server_->ServeFilesFromSourceDirectory(
         "chrome/test/data/navigation_predictor");
     ASSERT_TRUE(https_server_->Start());
@@ -119,11 +79,6 @@ class NavigationPredictorBrowserTest
     host_resolver()->ClearRules();
   }
 
-  void FlushAllSocketsAndConnections() {
-    http_server_->FlushAllSocketsAndConnectionsOnUIThread();
-    https_server_->FlushAllSocketsAndConnectionsOnUIThread();
-  }
-
   const GURL GetTestURL(const char* file) const {
     return https_server_->GetURL(file);
   }
@@ -132,34 +87,10 @@ class NavigationPredictorBrowserTest
     return http_server_->GetURL(file);
   }
 
-  void ResetAcceptedHttpsSocketCount() {
-    https_connection_listener_.ResetAcceptedSocketCount();
-  }
-
-  void WaitUntilHttpsSocketAccepted() {
-    if (accepted_socket_count() > 0)
-      return;
-
-    base::RunLoop open_loop;
-    auto open_callback = base::BindOnce(
-        [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
-        open_loop.QuitClosure());
-
-    https_connection_listener_.SetOnAcceptedSocketCallback(
-        std::move(open_callback));
-    open_loop.Run();
-  }
-
-  size_t accepted_socket_count() const {
-    return https_connection_listener_.accepted_socket_count();
-  }
-
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   base::test::ScopedFeatureList feature_list_;
-
-  ConnectionListener https_connection_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPredictorBrowserTest);
 };
@@ -379,9 +310,6 @@ IN_PROC_BROWSER_TEST_F(
           kPrefetchActionClickToDifferentOrigin,
       1);
 
-  FlushAllSocketsAndConnections();
-  ResetAcceptedHttpsSocketCount();
-
   // Change to visibile.
   browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
@@ -397,69 +325,6 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectBucketCount(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
-
-  // Hiding and showing the tab again should not cause change in histograms
-  // since Pre* on tab foreground is done at most once per page.
-  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
-
-  EXPECT_EQ(0u, accepted_socket_count());
-}
-
-// Test that the action accuracy is properly recorded and when same origin
-// preconnections are enabled, then navigation predictor initiates the
-// preconnection.
-IN_PROC_BROWSER_TEST_F(
-    NavigationPredictorBrowserTest,
-    DISABLE_ON_CHROMEOS(
-        ActionAccuracy_DifferentOrigin_VisibilityChangedPreconnectEnabled)) {
-  std::map<std::string, std::string> parameters;
-  base::test::ScopedFeatureList feature_list;
-  parameters["same_origin_preconnecting_allowed"] = "true";
-  feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kRecordAnchorMetricsVisible, parameters);
-
-  base::HistogramTester histogram_tester;
-
-  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
-  // Same document anchor element should be removed after merge.
-  histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPrefetch, 1);
-
-  // Change to visible.
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    1);
-
-  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    1);
-
-  FlushAllSocketsAndConnections();
-  ResetAcceptedHttpsSocketCount();
-
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
-  histogram_tester.ExpectBucketCount(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
-
-  WaitUntilHttpsSocketAccepted();
-
-  ResetAcceptedHttpsSocketCount();
 
   // Hiding and showing the tab again should not cause change in histograms
   // since Pre* on tab foreground is done at most once per page.

@@ -69,6 +69,14 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
   NavigationPredictorTest() = default;
   ~NavigationPredictorTest() override = default;
 
+  void SetUp() override {
+    SetupFieldTrial(base::nullopt /* preconnect_origin_score_threshold */,
+                    base::nullopt /* prefetch_url_score_threshold */);
+    ChromeRenderViewHostTestHarness::SetUp();
+    predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
+        mojo::MakeRequest(&predictor_service_), main_rfh());
+  }
+
   // Helper function to generate mojom metrics.
   blink::mojom::AnchorElementMetricsPtr CreateMetricsPtr(
       const std::string& source_url,
@@ -98,18 +106,8 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-    predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
-        mojo::MakeRequest(&predictor_service_), main_rfh());
-  }
-
   void SetupFieldTrial(base::Optional<int> preconnect_origin_score_threshold,
                        base::Optional<int> prefetch_url_score_threshold) {
-    if (field_trial_initiated_)
-      return;
-
-    field_trial_initiated_ = true;
     const std::string kTrialName = "TrialFoo2";
     const std::string kGroupName = "GroupFoo2";  // Value not used
 
@@ -131,8 +129,6 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list;
-
-  bool field_trial_initiated_ = false;
 };
 
 }  // namespace
@@ -391,12 +387,10 @@ TEST_F(NavigationPredictorTest,
 // disabled by setting |prefetch_url_score_threshold| to too high.
 class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
  public:
-  NavigationPredictorPrefetchDisabledTest() {
+  void SetUp() override {
     SetupFieldTrial(0 /* preconnect_origin_score_threshold */,
                     101 /* prefetch_url_score_threshold */);
-  }
 
-  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
         mojo::MakeRequest(&predictor_service_), main_rfh());
@@ -487,12 +481,10 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
 class NavigationPredictorPreconnectPrefetchDisabledTest
     : public NavigationPredictorTest {
  public:
-  NavigationPredictorPreconnectPrefetchDisabledTest() {
+  void SetUp() override {
     SetupFieldTrial(101 /* preconnect_origin_score_threshold */,
                     101 /* prefetch_url_score_threshold */);
-  }
 
-  void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
         mojo::MakeRequest(&predictor_service_), main_rfh());

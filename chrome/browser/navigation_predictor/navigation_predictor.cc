@@ -13,8 +13,6 @@
 #include "base/optional.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/predictors/loading_predictor.h"
-#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/template_url_service.h"
@@ -115,12 +113,7 @@ NavigationPredictor::NavigationPredictor(
       preconnect_origin_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kRecordAnchorMetricsVisible,
           "preconnect_origin_score_threshold",
-          0)),
-      same_origin_preconnecting_allowed_(
-          base::GetFieldTrialParamByFeatureAsBool(
-              blink::features::kRecordAnchorMetricsVisible,
-              "same_origin_preconnecting_allowed",
-              false))
+          0))
 #ifdef OS_ANDROID
       ,
       application_status_listener_(
@@ -281,40 +274,20 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
 
 void NavigationPredictor::TakeActionNowOnTabOrAppVisibilityChange(
     Action log_action) {
-  MaybePreconnectNow(log_action);
-}
-
-void NavigationPredictor::MaybePreconnectNow(Action log_action) {
-  base::Optional<url::Origin> preconnect_origin = preconnect_origin_;
-
-  if (prefetch_url_ && !preconnect_origin) {
+  base::Optional<url::Origin> preconnect_origin;
+  if (prefetch_url_) {
     // Preconnect to the origin of the prefetch URL.
     preconnect_origin = url::Origin::Create(prefetch_url_.value());
   }
 
   if (!preconnect_origin)
     return;
-  if (preconnect_origin->scheme() != url::kHttpScheme &&
-      preconnect_origin->scheme() != url::kHttpsScheme) {
-    return;
-  }
 
   std::string action_histogram_name =
       source_is_default_search_engine_page_
           ? "NavigationPredictor.OnDSE.ActionTaken"
           : "NavigationPredictor.OnNonDSE.ActionTaken";
   base::UmaHistogramEnumeration(action_histogram_name, log_action);
-
-  if (!same_origin_preconnecting_allowed_)
-    return;
-
-  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
-      Profile::FromBrowserContext(browser_context_));
-  GURL preconnect_url_serialized(preconnect_origin->Serialize());
-  DCHECK(preconnect_url_serialized.is_valid());
-  loading_predictor->PrepareForPageLoad(
-      preconnect_url_serialized, predictors::HintOrigin::NAVIGATION_PREDICTOR,
-      true);
 }
 
 SiteEngagementService* NavigationPredictor::GetEngagementService() const {
@@ -762,7 +735,7 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
       GetOriginToPreconnect(document_origin, sorted_navigation_scores);
   if (preconnect_origin_.has_value()) {
     DCHECK_EQ(document_origin.host(), preconnect_origin_->host());
-    MaybePreconnectNow(Action::kPreconnect);
+    base::UmaHistogramEnumeration(action_histogram_name, Action::kPreconnect);
     return;
   }
 
@@ -927,9 +900,6 @@ void NavigationPredictor::OnApplicationStateChange(
     base::android::ApplicationState application_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!application_status_listener_)
-    return;
-
   if (application_state_ !=
           base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES ||
       application_state !=
@@ -944,9 +914,7 @@ void NavigationPredictor::OnApplicationStateChange(
   TakeActionNowOnTabOrAppVisibilityChange(Action::kPreconnectOnAppForeground);
 
   // To keep the overhead as low, Pre* action on app foreground is taken at most
-  // once per page. Stop listening to application change events only if
-  // OnLoad() has been fired implying that prediction computation has finished.
-  if (document_loaded_timing_ != base::TimeTicks())
-    application_status_listener_.reset();
+  // once per page.
+  application_status_listener_.reset();
 }
 #endif  // OS_ANDROID
