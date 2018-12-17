@@ -12,13 +12,43 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/frame/taskbar_decorator_win.cc"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
+#include "chrome/common/mac/app_shim.mojom.h"
 #endif
+
+namespace {
+
+#if defined(OS_MACOSX)
+void SetAppShimBadgeLabel(content::WebContents* contents,
+                          const std::string& badge_label) {
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  auto* shim_handler = apps::ExtensionAppShimHandler::Get();
+  if (!shim_handler)
+    return;
+
+  AppShimHost* shim_host = shim_handler->GetHostForBrowser(browser);
+  if (!shim_host)
+    return;
+
+  chrome::mojom::AppShim* shim = shim_host->GetAppShim();
+  if (!shim)
+    return;
+
+  shim->SetBadgeLabel(badge_label);
+}
+#endif
+
+}  // namespace
 
 void BadgeServiceDelegate::SetBadge(content::WebContents* contents) {
 #if defined(OS_WIN)
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   auto* window = browser->window()->GetNativeWindow();
   chrome::DrawNumericTaskbarDecoration(window);
+#elif defined(OS_MACOSX)
+  SetAppShimBadgeLabel(contents, "•");
 #endif
 }
 
@@ -30,5 +60,7 @@ void BadgeServiceDelegate::ClearBadge(content::WebContents* contents) {
   // Restore the decoration to whatever it is naturally (either nothing or a
   // profile picture badge).
   browser_view->frame()->GetFrameView()->UpdateTaskbarDecoration();
+#elif defined(OS_MACOSX)
+  SetAppShimBadgeLabel(contents, "");
 #endif
 }

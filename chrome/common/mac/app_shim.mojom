@@ -47,6 +47,9 @@ interface AppShim {
 
   // Instructs the shim to request or cancel user attention.
   SetUserAttention(AppShimAttentionType attention_type);
+
+  // Instructs the shim to set its badge label.
+  SetBadgeLabel(string badge_label);
 };
 
 // Interface through which the a process communicates to the browser process.
