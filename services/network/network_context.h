@@ -183,8 +183,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ComputeHttpCacheSize(base::Time start_time,
                             base::Time end_time,
                             ComputeHttpCacheSizeCallback callback) override;
-  void NotifyExternalCacheHit(const GURL& url,
-                              const std::string& http_method) override;
+  void NotifyExternalCacheHit(
+      const GURL& url,
+      const std::string& http_method,
+      const base::Optional<url::Origin>& top_frame_origin) override;
   void WriteCacheMetadata(const GURL& url,
                           net::RequestPriority priority,
                           base::Time expected_response_time,

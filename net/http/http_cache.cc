@@ -457,14 +457,17 @@ void HttpCache::CloseIdleConnections() {
     session->CloseIdleConnections();
 }
 
-void HttpCache::OnExternalCacheHit(const GURL& url,
-                                   const std::string& http_method) {
+void HttpCache::OnExternalCacheHit(
+    const GURL& url,
+    const std::string& http_method,
+    base::Optional<url::Origin> top_frame_origin) {
   if (!disk_cache_.get() || mode_ == DISABLE)
     return;
 
   HttpRequestInfo request_info;
   request_info.url = url;
   request_info.method = http_method;
+  request_info.top_frame_origin = std::move(top_frame_origin);
   std::string key = GenerateCacheKey(&request_info);
   disk_cache_->OnExternalCacheHit(key);
 }
@@ -677,13 +680,16 @@ int HttpCache::AsyncDoomEntry(const std::string& key, Transaction* trans) {
   return rv;
 }
 
-void HttpCache::DoomMainEntryForUrl(const GURL& url) {
+void HttpCache::DoomMainEntryForUrl(
+    const GURL& url,
+    base::Optional<url::Origin> top_frame_origin) {
   if (!disk_cache_)
     return;
 
   HttpRequestInfo temp_info;
   temp_info.url = url;
   temp_info.method = "GET";
+  temp_info.top_frame_origin = std::move(top_frame_origin);
   std::string key = GenerateCacheKey(&temp_info);
 
   // Defer to DoomEntry if there is an active entry, otherwise call

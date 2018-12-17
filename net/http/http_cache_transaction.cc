@@ -1794,7 +1794,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
   // Invalidate any cached GET with a successful POST.
   if (!(effective_load_flags_ & LOAD_DISABLE_CACHE) && method_ == "POST" &&
       NonErrorResponse(new_response->headers->response_code())) {
-    cache_->DoomMainEntryForUrl(request_->url);
+    cache_->DoomMainEntryForUrl(request_->url, request_->top_frame_origin);
   }
 
   RecordNoStoreHeaderHistogram(request_->load_flags, new_response);

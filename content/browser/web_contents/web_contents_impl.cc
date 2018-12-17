@@ -198,11 +198,12 @@ base::LazyInstance<std::vector<
 void NotifyCacheOnIO(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     const GURL& url,
-    const std::string& http_method) {
+    const std::string& http_method,
+    const base::Optional<url::Origin>& top_frame_origin) {
   net::HttpCache* cache = request_context->GetURLRequestContext()->
       http_transaction_factory()->GetCache();
   if (cache)
-    cache->OnExternalCacheHit(url, http_method);
+    cache->OnExternalCacheHit(url, http_method, top_frame_origin);
 }
 
 bool HasMatchingProcess(FrameTree* tree, int render_process_id) {
@@ -4357,6 +4358,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& http_method,
     const std::string& mime_type,
+    const base::Optional<url::Origin>& top_frame_origin,
     ResourceType resource_type) {
   for (auto& observer : observers_)
     observer.DidLoadResourceFromMemoryCache(url, mime_type, resource_type);
@@ -4367,7 +4369,8 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     // We require different paths here because there is no NetworkContext
     // for media cache.
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      partition->GetNetworkContext()->NotifyExternalCacheHit(url, http_method);
+      partition->GetNetworkContext()->NotifyExternalCacheHit(url, http_method,
+                                                             top_frame_origin);
     } else {
       scoped_refptr<net::URLRequestContextGetter> request_context(
           resource_type == RESOURCE_TYPE_MEDIA
@@ -4375,7 +4378,8 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
               : partition->GetURLRequestContext());
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&NotifyCacheOnIO, request_context, url, http_method));
+          base::BindOnce(&NotifyCacheOnIO, request_context, url, http_method,
+                         top_frame_origin));
     }
   }
 }
