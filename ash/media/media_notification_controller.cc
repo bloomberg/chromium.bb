@@ -169,6 +169,9 @@ void MediaNotificationController::OnNotificationClicked(
     case MediaSessionAction::kNextTrack:
       media_controller_ptr_->NextTrack();
       break;
+    case MediaSessionAction::kStop:
+      media_controller_ptr_->Stop();
+      break;
   }
 }
 

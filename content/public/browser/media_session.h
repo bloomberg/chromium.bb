@@ -29,10 +29,6 @@ class MediaSession : public media_session::mojom::MediaSession {
 
   ~MediaSession() override = default;
 
-  // Stop the media session.
-  // |type| represents the origin of the request.
-  virtual void Stop(SuspendType suspend_type) = 0;
-
   // Return if the session can be controlled by Resume() and Suspend() calls
   // above.
   virtual bool IsControllable() const = 0;
@@ -93,6 +89,10 @@ class MediaSession : public media_session::mojom::MediaSession {
   // The |seek_time| is the time delta that the media will seek by and supports
   // both positive and negative values.
   void Seek(base::TimeDelta seek_time) override = 0;
+
+  // Stop the media session.
+  // |type| represents the origin of the request.
+  void Stop(SuspendType suspend_type) override = 0;
 
  protected:
   MediaSession() = default;

@@ -17,6 +17,9 @@ interface MediaController {
   // Resume the media session.
   Resume();
 
+  // Stop the media session.
+  Stop();
+
   // This will either suspend or resume the media session based on the
   // playback state.
   ToggleSuspendResume();

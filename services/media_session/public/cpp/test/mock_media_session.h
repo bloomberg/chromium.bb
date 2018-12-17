@@ -85,8 +85,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void PreviousTrack() override;
   void NextTrack() override;
   void Seek(base::TimeDelta seek_time) override;
+  void Stop(SuspendType type) override;
 
-  void Stop();
   void SetIsControllable(bool value);
 
   void AbandonAudioFocusFromClient();

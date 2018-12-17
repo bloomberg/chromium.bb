@@ -26,6 +26,13 @@ void MediaController::Resume() {
     session_->Resume(mojom::MediaSession::SuspendType::kUI);
 }
 
+void MediaController::Stop() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session_)
+    session_->Stop(mojom::MediaSession::SuspendType::kUI);
+}
+
 void MediaController::ToggleSuspendResume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

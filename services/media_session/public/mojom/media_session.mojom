@@ -17,7 +17,6 @@ enum MediaPlaybackState {
   kPlaying,
 };
 
-// Spec: https://wicg.github.io/mediasession/
 [Extensible]
 enum MediaSessionAction {
   kPlay,
@@ -26,6 +25,7 @@ enum MediaSessionAction {
   kNextTrack,
   kSeekBackward,
   kSeekForward,
+  kStop,
 };
 
 // Album art in MediaMetadata
@@ -106,7 +106,7 @@ interface MediaSessionObserver {
 // WebContents or ARC app.
 // TODO(https://crbug.com/875004): migrate media session from content/public
 // to mojo.
-// Next Method ID: 10
+// Next Method ID: 11
 interface MediaSession {
   [Extensible]
   enum SuspendType {
@@ -156,4 +156,8 @@ interface MediaSession {
   // The |kDefaultSeekTimeSeconds| provides a default value for seeking by a
   // few seconds.
   Seek@9(mojo_base.mojom.TimeDelta seek_time);
+
+  // Stop the media session.
+  // |type| represents the origin of the request.
+  Stop@10(SuspendType suspend_type);
 };

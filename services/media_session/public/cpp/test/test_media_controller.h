@@ -24,6 +24,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   // mojom::MediaController:
   void Suspend() override;
   void Resume() override;
+  void Stop() override {}
   void ToggleSuspendResume() override;
   void AddObserver(mojom::MediaSessionObserverPtr) override;
   void PreviousTrack() override;

@@ -136,7 +136,7 @@ void MockMediaSession::Seek(base::TimeDelta seek_time) {
   seek_count_++;
 }
 
-void MockMediaSession::Stop() {
+void MockMediaSession::Stop(SuspendType type) {
   SetState(mojom::MediaSessionInfo::SessionState::kInactive);
 }
 
