@@ -37,6 +37,12 @@ Polymer({
      * @type {settings.SyncPrefs|undefined}
      */
     syncPrefs: Object,
+
+    /**
+     * The current sync status, supplied by the parent.
+     * @type {settings.SyncStatus}
+     */
+    syncStatus: Object,
   },
 
   /** @private {?settings.SyncBrowserProxy} */
@@ -58,6 +64,9 @@ Polymer({
   attached: function() {
     this.addWebUIListener(
         'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
+
+    if (settings.getCurrentRoute() == settings.routes.SYNC_ADVANCED)
+      this.browserProxy_.didNavigateToSyncPage();
   },
 
   /**
@@ -144,6 +153,20 @@ Polymer({
   shouldPaymentsCheckboxBeDisabled_: function(
       syncAllDataTypes, autofillSynced) {
     return syncAllDataTypes || !autofillSynced;
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  shouldShowSyncSetupToast_: function() {
+    return settings.getCurrentRoute() == settings.routes.SYNC_ADVANCED &&
+        this.syncStatus.setupInProgress;
+  },
+
+  /** @private */
+  onCancelSyncClick_: function() {
+    this.fire('sync-setup-cancel');
   },
 });
 })();

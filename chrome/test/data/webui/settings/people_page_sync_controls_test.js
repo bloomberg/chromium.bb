@@ -105,5 +105,49 @@ cr.define('settings_people_page_sync_controls', function() {
       }
       return browserProxy.whenCalled('setSyncDatatypes').then(verifyPrefs);
     });
+
+    if (!cr.isChromeOS) {
+      test('ToastNotShownWhenEmbedded', function() {
+        syncControls.syncStatus = {setupInProgress: false};
+        assertFalse(syncControls.$.toast.open);
+
+        syncControls.syncStatus = {setupInProgress: true};
+        assertFalse(syncControls.$.toast.open);
+      });
+    }
+  });
+
+  suite('SyncControlsSubpageTest', function() {
+    let syncControls = null;
+    let browserProxy = null;
+
+    setup(function() {
+      browserProxy = new TestSyncBrowserProxy();
+      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+
+      PolymerTest.clearBody();
+
+      syncControls = document.createElement('settings-sync-controls');
+      settings.navigateTo(settings.routes.SYNC_ADVANCED);
+      document.body.appendChild(syncControls);
+
+      Polymer.dom.flush();
+    });
+
+    teardown(function() {
+      syncControls.remove();
+    });
+
+    if (!cr.isChromeOS) {
+      test('ToastShownForSyncSetup', function() {
+        syncControls.syncStatus = {setupInProgress: false};
+        assertFalse(syncControls.$.toast.open);
+
+        syncControls.syncStatus = {setupInProgress: true};
+        assertTrue(syncControls.$.toast.open);
+
+        syncControls.$.toast.querySelector('paper-button').click();
+      });
+    }
   });
 });
