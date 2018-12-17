@@ -46,7 +46,6 @@
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/crash/core/common/crash_keys.h"
-#include "components/gwp_asan/client/gwp_asan.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/services/heap_profiling/public/cpp/allocator_shim.h"
 #include "components/services/heap_profiling/public/cpp/stream.h"
@@ -78,6 +77,7 @@
 #include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome_elf/chrome_elf_main.h"
+#include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
 #include "sandbox/win/src/sandbox.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #endif
