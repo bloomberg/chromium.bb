@@ -6,16 +6,14 @@
 #define SERVICES_SERVICE_MANAGER_STANDALONE_CONTEXT_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/runner/host/service_process_launcher_delegate.h"
-
-namespace base {
-class Value;
-}
 
 namespace service_manager {
 
@@ -25,7 +23,12 @@ class ServiceManager;
 class Context {
  public:
   Context(ServiceProcessLauncherDelegate* launcher_delegate,
-          std::unique_ptr<base::Value> catalog_content);
+          const std::vector<Manifest>& manifests);
+  Context(ServiceProcessLauncherDelegate* launcher_delegate,
+          std::unique_ptr<base::Value> catalog_contents);
+  Context(ServiceProcessLauncherDelegate* launcher_delegate,
+          std::unique_ptr<base::Value> catalog_contents,
+          const std::vector<Manifest>& manifests);
   ~Context();
 
   // Run the application specified on the command line, and run |on_quit| when

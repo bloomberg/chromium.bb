@@ -20,6 +20,7 @@
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
+#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -42,6 +43,18 @@ const Identity& GetServiceManagerInstanceIdentity();
 
 class ServiceManager : public Service {
  public:
+  // Constructs a new ServiceManager instance which exclusively uses |manifests|
+  // as its source of truth regarding what services exist and how they should
+  // be configured.
+  //
+  // |service_process_launcher_factory| is an instance of an object capable of
+  // vending implementations of ServiceProcessLauncher, e.g. for out-of-process
+  // execution.
+  explicit ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
+                              service_process_launcher_factory,
+                          const std::vector<Manifest>& manifests,
+                          catalog::ManifestProvider* manifest_provider);
+
   // |service_process_launcher_factory| is an instance of an object capable of
   // vending implementations of ServiceProcessLauncher, e.g. for out-of-process
   // execution.
@@ -114,7 +127,7 @@ class ServiceManager : public Service {
     kSingleton,
   };
 
-  void InitCatalog(mojom::ServicePtr catalog);
+  void InitBuiltinServices();
 
   // Called when |instance| encounters an error. Deletes |instance|.
   void OnInstanceError(Instance* instance);

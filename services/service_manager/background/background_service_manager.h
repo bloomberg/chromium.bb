@@ -6,11 +6,13 @@
 #define SERVICES_SERVICE_MANAGER_BACKGROUND_BACKGROUND_SERVICE_MANAGER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/runner/host/service_process_launcher_delegate.h"
@@ -29,9 +31,10 @@ class ServiceManager;
 // thread.
 class BackgroundServiceManager {
  public:
-  BackgroundServiceManager(
-      service_manager::ServiceProcessLauncherDelegate* launcher_delegate,
-      std::unique_ptr<base::Value> catalog_contents);
+  BackgroundServiceManager(ServiceProcessLauncherDelegate* launcher_delegate,
+                           std::unique_ptr<base::Value> catalog_contents);
+  BackgroundServiceManager(ServiceProcessLauncherDelegate* launcher_delegate,
+                           const std::vector<Manifest>& manifests);
   ~BackgroundServiceManager();
 
   // Creates a service instance for |identity|. This is intended for use by the
@@ -46,8 +49,9 @@ class BackgroundServiceManager {
 
  private:
   void InitializeOnBackgroundThread(
-      service_manager::ServiceProcessLauncherDelegate* launcher_delegate,
-      std::unique_ptr<base::Value> catalog_contents);
+      ServiceProcessLauncherDelegate* launcher_delegate,
+      std::unique_ptr<base::Value> catalog_contents,
+      const std::vector<Manifest>& manifests);
   void ShutDownOnBackgroundThread(base::WaitableEvent* done_event);
   void RegisterServiceOnBackgroundThread(
       const Identity& identity,

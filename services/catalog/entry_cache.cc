@@ -4,9 +4,110 @@
 
 #include "services/catalog/entry_cache.h"
 
+#include <map>
+#include <set>
+#include <string>
+
+#include "base/base_paths.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
+#include "build/build_config.h"
 #include "services/catalog/entry.h"
+#include "services/service_manager/public/cpp/interface_provider_spec.h"
+#include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 
 namespace catalog {
+
+namespace {
+
+#if defined(OS_WIN)
+const char kServiceExecutableExtension[] = ".service.exe";
+#else
+const char kServiceExecutableExtension[] = ".service";
+#endif
+
+// Temporary helper to create a cache Entry from a Manifest object. This can
+// disappear once the Service Manager just uses Manifest objects directly.
+std::unique_ptr<Entry> MakeEntryFromManifest(
+    const service_manager::Manifest& manifest) {
+  auto entry = std::make_unique<Entry>();
+  entry->set_name(manifest.service_name);
+  if (manifest.display_name.raw_string)
+    entry->set_display_name(manifest.display_name.raw_string);
+
+  base::FilePath service_exe_root;
+  CHECK(base::PathService::Get(base::DIR_ASSETS, &service_exe_root));
+  entry->set_path(service_exe_root.AppendASCII(entry->name() +
+                                               kServiceExecutableExtension));
+
+  entry->set_sandbox_type(manifest.options.sandbox_type);
+
+  ServiceOptions options;
+  switch (manifest.options.instance_sharing_policy) {
+    case service_manager::Manifest::InstanceSharingPolicy::kNoSharing:
+      options.instance_sharing = ServiceOptions::InstanceSharingType::NONE;
+      break;
+    case service_manager::Manifest::InstanceSharingPolicy::kSingleton:
+      options.instance_sharing = ServiceOptions::InstanceSharingType::SINGLETON;
+      break;
+    case service_manager::Manifest::InstanceSharingPolicy::kSharedAcrossGroups:
+      options.instance_sharing =
+          ServiceOptions::InstanceSharingType::SHARED_ACROSS_INSTANCE_GROUPS;
+      break;
+  }
+  options.can_connect_to_instances_in_any_group =
+      manifest.options.can_connect_to_instances_in_any_group;
+  options.can_connect_to_other_services_with_any_instance_name =
+      manifest.options.can_connect_to_instances_with_any_id;
+  options.can_create_other_service_instances =
+      manifest.options.can_register_other_service_instances;
+  entry->AddOptions(options);
+
+  service_manager::InterfaceProviderSpec main_spec;
+  for (const auto& entry : manifest.exposed_capabilities) {
+    std::set<std::string> interfaces;
+    for (const char* name : entry.interface_names)
+      interfaces.emplace(name);
+    main_spec.provides.emplace(entry.capability_name, std::move(interfaces));
+  }
+  for (const auto& entry : manifest.required_capabilities) {
+    main_spec.requires[entry.service_name].emplace(entry.capability_name);
+  }
+
+  entry->AddInterfaceProviderSpec(
+      service_manager::mojom::kServiceManager_ConnectorSpec,
+      std::move(main_spec));
+
+  std::map<std::string, service_manager::InterfaceProviderSpec> other_specs;
+  for (const auto& entry : manifest.exposed_interface_filter_capabilities) {
+    std::set<std::string> interfaces;
+    for (const char* name : entry.interface_names)
+      interfaces.emplace(name);
+    other_specs[entry.filter_name].provides.emplace(entry.capability_name,
+                                                    std::move(interfaces));
+  }
+
+  for (const auto& entry : manifest.required_interface_filter_capabilities) {
+    other_specs[entry.filter_name].requires[entry.service_name].emplace(
+        entry.capability_name);
+  }
+
+  for (auto& spec : other_specs)
+    entry->AddInterfaceProviderSpec(spec.first, std::move(spec.second));
+
+  for (const auto& file : manifest.preloaded_files)
+    entry->AddRequiredFilePath(file.key, file.path);
+
+  for (const auto& packaged_service_manifest : manifest.packaged_services) {
+    auto child = MakeEntryFromManifest(packaged_service_manifest);
+    child->set_parent(entry.get());
+    entry->children().emplace_back(std::move(child));
+  }
+
+  return entry;
+}
+
+}  // namespace
 
 EntryCache::EntryCache() {}
 
@@ -19,6 +120,11 @@ bool EntryCache::AddRootEntry(std::unique_ptr<Entry> entry) {
     return false;
   root_entries_.insert(std::make_pair(name, std::move(entry)));
   return true;
+}
+
+bool EntryCache::AddRootEntryFromManifest(
+    const service_manager::Manifest& manifest) {
+  return AddRootEntry(MakeEntryFromManifest(manifest));
 }
 
 const Entry* EntryCache::GetEntry(const std::string& name) {
