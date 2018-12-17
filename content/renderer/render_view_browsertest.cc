@@ -833,10 +833,8 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
   navigation_info->url_request = blink::WebURLRequest(empty_url);
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
   frame()->BeginNavigation(std::move(navigation_info));
-  // Check that we committed synchronously.
-  EXPECT_EQ(
-      blank_url,
-      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
+  EXPECT_FALSE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 }
 
 TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
@@ -853,10 +851,8 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
   navigation_info->url_request = blink::WebURLRequest(blank_url);
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
   frame()->BeginNavigation(std::move(navigation_info));
-  // Check that we committed synchronously.
-  EXPECT_EQ(
-      blank_url,
-      GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetRequest().Url()));
+  EXPECT_FALSE(render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_OpenURL::ID));
 }
 
 // This test verifies that when device emulation is enabled, RenderFrameProxy

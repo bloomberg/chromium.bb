@@ -90,6 +90,8 @@ class CORE_EXPORT DocumentLoader
                  std::unique_ptr<WebNavigationParams> navigation_params);
   ~DocumentLoader() override;
 
+  static bool WillLoadUrlAsEmpty(const KURL&);
+
   LocalFrame* GetFrame() const { return frame_; }
 
   ResourceTimingInfo* GetNavigationTimingInfo() const;

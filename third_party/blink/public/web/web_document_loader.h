@@ -60,6 +60,8 @@ class BLINK_EXPORT WebDocumentLoader {
     virtual ~ExtraData() = default;
   };
 
+  static bool WillLoadUrlAsEmpty(const WebURL&);
+
   // Returns the original request that resulted in this datasource.
   virtual const WebURLRequest& OriginalRequest() const = 0;
 

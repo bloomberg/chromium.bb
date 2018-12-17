@@ -106,7 +106,6 @@
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
-#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -1009,7 +1008,9 @@ void FrameLoader::CommitNavigation(
   RecordLatestRequiredCSP();
 
   if (!CancelProvisionalLoaderForNewNavigation(
-          false /* cancel_scheduled_navigations */)) {
+          false /* cancel_scheduled_navigations */,
+          DocumentLoader::WillLoadUrlAsEmpty(
+              navigation_params->request.Url()))) {
     return;
   }
 
@@ -1104,7 +1105,8 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
     WebNavigationType navigation_type,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   if (!CancelProvisionalLoaderForNewNavigation(
-          true /* cancel_scheduled_navigations */)) {
+          true /* cancel_scheduled_navigations */,
+          false /* is_starting_blank_navigation */)) {
     return false;
   }
 
@@ -1250,7 +1252,17 @@ void FrameLoader::CommitProvisionalLoad() {
 
   Client()->TransitionToCommittedForNewPage();
 
-  frame_->GetNavigationScheduler().Cancel();
+  // If this is an about:blank navigation committing asynchronously, don't
+  // cancel scheduled navigations, so that the scheduled navigation still goes
+  // through. This handles the case where a navigation is scheduled between the
+  // about:blank navigation starting and finishing, where previously it would
+  // have happened after about:blank completed.
+  // TODO(japhet): This is an atrocious hack. Get rid of NavigationScheduler
+  // so it isn't needed.
+  if (!state_machine_.CommittedFirstRealDocumentLoad() ||
+      !DocumentLoader::WillLoadUrlAsEmpty(document_loader_->Url())) {
+    frame_->GetNavigationScheduler().Cancel();
+  }
 }
 
 bool FrameLoader::IsLoadingMainFrame() const {
@@ -1530,7 +1542,8 @@ void FrameLoader::MarkAsLoading() {
 }
 
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
-    bool cancel_scheduled_navigations) {
+    bool cancel_scheduled_navigations,
+    bool is_starting_blank_navigation) {
   bool had_placeholder_client_document_loader =
       provisional_document_loader_ && !provisional_document_loader_->DidStart();
 
@@ -1558,9 +1571,22 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
 
   progress_tracker_->ProgressStarted();
 
+  // If this is an about:blank navigation committing asynchronously, don't
+  // cancel scheduled navigations, so that the scheduled navigation still goes
+  // through. This handles the case where a navigation is scheduled between the
+  // about:blank navigation starting and finishing, where previously it would
+  // have happened after about:blank completed.
+  // TODO(japhet): This is an atrocious hack. Get rid of NavigationScheduler
+  // so it isn't needed.
+  bool skip_cancel_for_about_blank =
+      state_machine_.CommittedFirstRealDocumentLoad() &&
+      is_starting_blank_navigation;
   // We need to ensure that script initiated navigations are honored.
-  if (!had_placeholder_client_document_loader || cancel_scheduled_navigations)
+  if (!skip_cancel_for_about_blank &&
+      (!had_placeholder_client_document_loader ||
+       cancel_scheduled_navigations)) {
     frame_->GetNavigationScheduler().Cancel();
+  }
 
   return true;
 }

@@ -2160,6 +2160,11 @@ void WebLocalFrameImpl::SetCommittedFirstRealLoad() {
   GetFrame()->SetShouldSendResourceTimingInfoToParent(false);
 }
 
+bool WebLocalFrameImpl::HasCommittedFirstRealLoad() {
+  DCHECK(GetFrame());
+  return GetFrame()->Loader().StateMachine()->CommittedFirstRealDocumentLoad();
+}
+
 void WebLocalFrameImpl::NotifyUserActivation() {
   LocalFrame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
 }

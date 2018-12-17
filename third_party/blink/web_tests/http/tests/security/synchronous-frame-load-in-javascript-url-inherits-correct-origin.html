@@ -26,7 +26,7 @@ window.onload = function()
 					opener.location = "javascript:alert(location)";
 
 					if (window.testRunner)
-						setTimeout("testRunner.notifyDone()", 0);
+						testRunner.notifyDone();
 				} + ")()<\/script>";
 			} + ")()";
 		} + ")()");

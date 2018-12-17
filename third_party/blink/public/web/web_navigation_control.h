@@ -76,6 +76,7 @@ class WebNavigationControl : public WebLocalFrame {
   // in this frame. Used to propagate state when this frame has navigated
   // cross process.
   virtual void SetCommittedFirstRealLoad() = 0;
+  virtual bool HasCommittedFirstRealLoad() = 0;
 
   // Informs the frame that the navigation it asked the client to do was
   // dropped.
