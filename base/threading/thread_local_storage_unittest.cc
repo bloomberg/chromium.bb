@@ -210,9 +210,6 @@ TEST(ThreadLocalStorageTest, Basics) {
 // in after the last destructor invocation, therefore the destructor remains
 // unsynchronized with the following users of the same TSD slot. This results
 // in race reports between the destructor and functions in other tests.
-//
-// It is disabled on Win x64 with incremental linking (i.e. "Debug") pending
-// resolution of http://crbug.com/251251.
 #define MAYBE_TLSDestructors DISABLED_TLSDestructors
 #else
 #define MAYBE_TLSDestructors TLSDestructors
