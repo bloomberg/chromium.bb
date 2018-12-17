@@ -91,7 +91,8 @@ void DialogClientView::AcceptWindow() {
   // Only notify the delegate once. See |delegate_allowed_close_|'s comment.
   if (!delegate_allowed_close_ && GetDialogDelegate()->Accept()) {
     delegate_allowed_close_ = true;
-    GetWidget()->Close();
+    GetWidget()->CloseWithReason(
+        views::Widget::ClosedReason::kAcceptButtonClicked);
   }
 }
 
@@ -99,7 +100,8 @@ void DialogClientView::CancelWindow() {
   // Only notify the delegate once. See |delegate_allowed_close_|'s comment.
   if (!delegate_allowed_close_ && GetDialogDelegate()->Cancel()) {
     delegate_allowed_close_ = true;
-    GetWidget()->Close();
+    GetWidget()->CloseWithReason(
+        views::Widget::ClosedReason::kCancelButtonClicked);
   }
 }
 
@@ -184,7 +186,7 @@ void DialogClientView::Layout() {
 bool DialogClientView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
 
-  GetWidget()->Close();
+  GetWidget()->CloseWithReason(Widget::ClosedReason::kEscKeyPressed);
   return true;
 }
 

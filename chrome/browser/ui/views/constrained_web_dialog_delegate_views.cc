@@ -325,7 +325,7 @@ bool ConstrainedDialogWebView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   // Pressing ESC closes the dialog.
   DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
-  GetWidget()->Close();
+  GetWidget()->CloseWithReason(views::Widget::ClosedReason::kEscKeyPressed);
   return true;
 }
 

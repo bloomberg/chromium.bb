@@ -398,7 +398,7 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
   else if (sender == restore_button_)
     frame()->Restore();
   else if (sender == close_button_)
-    frame()->Close();
+    frame()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
 }
 
 bool GlassBrowserFrameView::ShouldTabIconViewAnimate() const {
