@@ -15,6 +15,9 @@ class ToughWebglPage(rendering_story.RenderingStory):
                shared_page_state_class,
                name_suffix='',
                extra_browser_args=None):
+    if extra_browser_args is None:
+      extra_browser_args = []
+    extra_browser_args.append("--enable-webgl-draft-extensions")
     super(ToughWebglPage, self).__init__(
         page_set=page_set,
         shared_page_state_class=shared_page_state_class,
@@ -92,6 +95,10 @@ class KenRussellPage(ToughWebglPage):
   # pylint: disable=line-too-long
   URL = 'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html'
 
+class AnimometerWebGLMultiDrawPage(ToughWebglPage):
+  BASE_NAME = 'animometer_webgl_multi_draw'
+  # pylint: disable=line-too-long
+  URL = 'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html?webgl_version=2&use_ubos=1&use_multi_draw=1'
 
 class CameraToWebGLPage(ToughWebglPage):
   TAGS = ToughWebglPage.TAGS + [story_tags.USE_FAKE_CAMERA_DEVICE]

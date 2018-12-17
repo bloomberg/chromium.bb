@@ -18,6 +18,9 @@
         "animometer_webgl": {
             "DEFAULT": "rendering_desktop_011.wprgo"
         },
+        "animometer_webgl_multi_draw": {
+            "DEFAULT": "rendering_desktop_a8987d91b9.wprgo"
+        },
         "aquarium": {
             "DEFAULT": "rendering_desktop_011.wprgo"
         },
