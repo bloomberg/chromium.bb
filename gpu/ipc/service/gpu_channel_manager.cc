@@ -170,15 +170,6 @@ GpuChannel* GpuChannelManager::EstablishChannel(int client_id,
 void GpuChannelManager::InternalDestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
-  io_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuChannelManager::InternalDestroyGpuMemoryBufferOnIO,
-                 base::Unretained(this), id, client_id));
-}
-
-void GpuChannelManager::InternalDestroyGpuMemoryBufferOnIO(
-    gfx::GpuMemoryBufferId id,
-    int client_id) {
   gpu_memory_buffer_factory_->DestroyGpuMemoryBuffer(id, client_id);
 }
 
@@ -187,8 +178,8 @@ void GpuChannelManager::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                                const SyncToken& sync_token) {
   if (!sync_point_manager_->WaitOutOfOrder(
           sync_token,
-          base::Bind(&GpuChannelManager::InternalDestroyGpuMemoryBuffer,
-                     base::Unretained(this), id, client_id))) {
+          base::BindOnce(&GpuChannelManager::InternalDestroyGpuMemoryBuffer,
+                         base::Unretained(this), id, client_id))) {
     // No sync token or invalid sync token, destroy immediately.
     InternalDestroyGpuMemoryBuffer(id, client_id);
   }
