@@ -101,6 +101,9 @@ class AutofillManager : public AutofillHandler,
   virtual bool ShouldShowCardsFromAccountOption(const FormData& form,
                                                 const FormFieldData& field);
   virtual void OnUserAcceptedCardsFromAccountOption();
+  virtual void RefetchCardsAndUpdatePopup(int query_id,
+                                          const FormData& form,
+                                          const FormFieldData& field_data);
 
   // Called from our external delegate so they cannot be private.
   virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,

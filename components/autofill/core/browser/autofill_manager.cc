@@ -319,6 +319,27 @@ void AutofillManager::OnUserAcceptedCardsFromAccountOption() {
   personal_data_->OnUserAcceptedCardsFromAccountOption();
 }
 
+void AutofillManager::RefetchCardsAndUpdatePopup(
+    int query_id,
+    const FormData& form,
+    const FormFieldData& field_data) {
+  AutofillField* autofill_field = GetAutofillField(form, field_data);
+  AutofillType type = autofill_field ? autofill_field->Type()
+                                     : AutofillType(CREDIT_CARD_NUMBER);
+
+  DCHECK_EQ(CREDIT_CARD, type.group());
+
+  bool is_all_server_suggestions;
+  auto cards =
+      GetCreditCardSuggestions(field_data, type, &is_all_server_suggestions);
+
+  DCHECK(!cards.empty());
+
+  external_delegate_->OnSuggestionsReturned(
+      query_id, cards,
+      /*autoselect_first_suggestion=*/false, is_all_server_suggestions);
+}
+
 bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms,
                                        const base::TimeTicks timestamp) {
   bool enabled = IsAutofillEnabled();
