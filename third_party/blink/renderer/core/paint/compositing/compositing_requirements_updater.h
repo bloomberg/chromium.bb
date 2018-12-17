@@ -72,7 +72,9 @@ class CompositingRequirementsUpdater {
                        CompositingReasonsStats&);
 
   LayoutView& layout_view_;
+#if DCHECK_IS_ON()
   CompositingReasonFinder& compositing_reason_finder_;
+#endif
 };
 
 }  // namespace blink

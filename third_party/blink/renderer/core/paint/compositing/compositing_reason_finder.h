@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/paint/compositing/compositing_triggers.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -30,7 +29,6 @@ class CORE_EXPORT CompositingReasonFinder {
       const PaintLayer*,
       bool ignore_lcd_text) const;
   LayoutView& layout_view_;
-  CompositingTriggerFlags compositing_triggers_;
   DISALLOW_COPY_AND_ASSIGN(CompositingReasonFinder);
 
   // Returns the direct reasons for compositing the given layer. If
@@ -38,8 +36,6 @@ class CORE_EXPORT CompositingReasonFinder {
   // rendering (i.e. partially transparent layers will be promoted).
   CompositingReasons DirectReasons(const PaintLayer*,
                                    bool ignore_lcd_text) const;
-
-  void UpdateTriggers();
 
   bool RequiresCompositingForScrollableFrame() const;
   static CompositingReasons CompositingReasonsForAnimation(
@@ -52,9 +48,9 @@ class CORE_EXPORT CompositingReasonFinder {
   static bool RequiresCompositingForTransform(const LayoutObject&);
   static bool RequiresCompositingForRootScroller(const PaintLayer&);
 
-  bool RequiresCompositingForScrollDependentPosition(
-      const PaintLayer*,
-      bool ignore_lcd_text) const;
+  static bool RequiresCompositingForScrollDependentPosition(
+      const PaintLayer&,
+      bool ignore_lcd_text);
 
  private:
   bool IsMainFrame() const;
