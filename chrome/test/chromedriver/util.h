@@ -51,7 +51,7 @@ Status NotifyCommandListenersBeforeCommand(Session* session,
 // Each function has three different outcomes:
 // * Value exists and is of right type:
 //   returns true, *has_value = true, *out_value gets the actual value.
-// * Value does not exist, or exists with value of undefined:
+// * Value does not exist:
 //   returns true, *has_value = false, *out_value is unchanged.
 // * Value exists but is of wrong type (error condition):
 //   returns false, *has_value undefined, *out_value is unchanged.
@@ -62,7 +62,7 @@ Status NotifyCommandListenersBeforeCommand(Session* session,
 //   Also, integers are limited to 32-bit.
 // * WebDriver spec (https://www.w3.org/TR/webdriver/#dfn-integer) defines
 //   integer to be a number that is unchanged under the ToInteger operation,
-//   thus 2.0 is an integer. Also, the spec sometimes use "safe integer"
+//   thus 2.0 is an integer. Also, the spec sometimes uses "safe integer"
 //   (https://www.w3.org/TR/webdriver/#dfn-maximum-safe-integer), whose
 //   absolute value can occupy up to 53 bits.
 bool GetOptionalBool(const base::DictionaryValue* dict,

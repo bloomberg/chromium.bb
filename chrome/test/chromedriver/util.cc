@@ -442,7 +442,7 @@ bool GetOptionalValue(const base::DictionaryValue* dict,
   if (has_value != nullptr)
     *has_value = false;
   const base::Value* value;
-  if (!dict->Get(path, &value) || value->is_none())
+  if (!dict->Get(path, &value))
     return true;
   if ((value->*getter)(out_value)) {
     if (has_value != nullptr)
