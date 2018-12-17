@@ -705,12 +705,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
       Platform::Current()->IsTakingV8ContextSnapshot()
           ? V8PerIsolateData::V8ContextSnapshotMode::kTakeSnapshot
           : V8PerIsolateData::V8ContextSnapshotMode::kUseSnapshot;
-  if (v8_context_snapshot_mode ==
-          V8PerIsolateData::V8ContextSnapshotMode::kUseSnapshot &&
-      !RuntimeEnabledFeatures::V8ContextSnapshotEnabled()) {
-    v8_context_snapshot_mode =
-        V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot;
-  }
 #else
   V8PerIsolateData::V8ContextSnapshotMode v8_context_snapshot_mode =
       V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot;
