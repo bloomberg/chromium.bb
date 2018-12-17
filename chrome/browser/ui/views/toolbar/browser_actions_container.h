@@ -8,6 +8,9 @@
 #include <stddef.h>
 
 #include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -20,6 +23,7 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/controls/resize_area_delegate.h"
 #include "ui/views/drag_controller.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -179,11 +183,6 @@ class BrowserActionsContainer : public views::View,
   // animating to a new size, or (if not animating) the currently visible icons.
   size_t VisibleBrowserActionsAfterAnimation() const;
 
-  // Returns the preferred width given the limit of |max_width|. (Unlike most
-  // views, since we don't want to show part of an icon or a large space after
-  // the omnibox, this is probably *not* |max_width|).
-  int GetWidthForMaxWidth(int max_width) const;
-
   // Sets the color for the separator if present, called after construction and
   // on theme changes.
   void SetSeparatorColor(SkColor color);
@@ -248,6 +247,8 @@ class BrowserActionsContainer : public views::View,
 
   views::BubbleDialogDelegateView* active_bubble() { return active_bubble_; }
 
+  static views::FlexRule GetFlexRule();
+
  protected:
   // Overridden from views::View:
   void ViewHierarchyChanged(
@@ -265,6 +266,11 @@ class BrowserActionsContainer : public views::View,
   size_t WidthToIconCount(int width) const;
   int GetWidthForIconCount(size_t num_icons) const;
   int GetWidthWithAllActionsVisible() const;
+
+  // Returns the preferred width given the limit of |max_width|. (Unlike most
+  // views, since we don't want to show part of an icon or a large space after
+  // the omnibox, this is probably *not* |max_width|).
+  int GetWidthForMaxWidth(int max_width) const;
 
   // Width allocated for the resize handle, |resize_area_|. 0 when it should not
   // be shown.

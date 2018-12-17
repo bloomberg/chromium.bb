@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 
+#include <set>
+
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -65,6 +67,11 @@ BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
   set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
 
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
+
+  // Because we're using the internal padding to keep track of the changes we
+  // make to the leading margin to handle Fitts' Law, it's easier to just
+  // allocate the property once and modify the value.
+  SetProperty(views::kInternalPaddingKey, new gfx::Insets());
   UpdateBorder();
 }
 
@@ -178,9 +185,10 @@ void BrowserAppMenuButton::UpdateIcon() {
 }
 
 void BrowserAppMenuButton::SetTrailingMargin(int margin) {
-  if (margin == margin_trailing_)
+  gfx::Insets* const internal_padding = GetProperty(views::kInternalPaddingKey);
+  if (internal_padding->right() == margin)
     return;
-  margin_trailing_ = margin;
+  internal_padding->set_right(margin);
   UpdateBorder();
   InvalidateLayout();
 }
@@ -197,12 +205,12 @@ const char* BrowserAppMenuButton::GetClassName() const {
 
 void BrowserAppMenuButton::UpdateBorder() {
   SetBorder(views::CreateEmptyBorder(GetLayoutInsets(TOOLBAR_BUTTON) +
-                                     gfx::Insets(0, 0, 0, margin_trailing_)));
+                                     *GetProperty(views::kInternalPaddingKey)));
 }
 
 void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
-  SetToolbarButtonHighlightPath(this, gfx::Insets(0, 0, 0, margin_trailing_));
+  SetToolbarButtonHighlightPath(this, *GetProperty(views::kInternalPaddingKey));
 
   AppMenuButton::OnBoundsChanged(previous_bounds);
 }
@@ -210,7 +218,7 @@ void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 gfx::Rect BrowserAppMenuButton::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
   gfx::Insets insets =
-      GetToolbarInkDropInsets(this, gfx::Insets(0, 0, 0, margin_trailing_));
+      GetToolbarInkDropInsets(this, *GetProperty(views::kInternalPaddingKey));
   // If the button is extended, don't inset the trailing edge. The anchored menu
   // should extend to the screen edge as well so the menu is easier to hit
   // (Fitts's law).

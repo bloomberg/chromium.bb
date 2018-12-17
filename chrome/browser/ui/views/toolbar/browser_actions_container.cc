@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 
+#include <algorithm>
+#include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
@@ -155,8 +159,8 @@ gfx::Size BrowserActionsContainer::GetToolbarActionSize() {
 }
 
 void BrowserActionsContainer::AddViewForAction(
-   ToolbarActionViewController* view_controller,
-   size_t index) {
+    ToolbarActionViewController* view_controller,
+    size_t index) {
   ToolbarActionView* view = new ToolbarActionView(view_controller, this);
   toolbar_action_views_.insert(toolbar_action_views_.begin() + index,
                                base::WrapUnique(view));
@@ -331,18 +335,36 @@ void BrowserActionsContainer::OnWidgetDestroying(views::Widget* widget) {
 }
 
 int BrowserActionsContainer::GetWidthForMaxWidth(int max_width) const {
+  DCHECK_GE(max_width, 0);
   int preferred_width = GetPreferredSize().width();
   if (preferred_width > max_width) {
-    // If we can't even show the resize area width, just throw in the towel (and
-    // show nothing).
-    // TODO(pbos): Consider making this the size of one item + resize area +
-    // separator, since it doesn't make that much sense to have a drag handle if
-    // there's not enough room to drag anything out.
-    if (max_width < GetResizeAreaWidth())
-      return 0;
-    preferred_width = GetWidthForIconCount(WidthToIconCount(max_width));
+    // If we're trying to be nonzero width, we should make sure we at least ask
+    // for enough space to show the resize handle (if there are no icons, we
+    // will ask for a width of zero so it won't matter).
+    preferred_width =
+        std::max(GetResizeAreaWidth(),
+                 GetWidthForIconCount(WidthToIconCount(max_width)));
   }
   return preferred_width;
+}
+
+// static
+views::FlexRule BrowserActionsContainer::GetFlexRule() {
+  // We only want to flex to widths which are integer multiples of the icon
+  // size, plus the size of the drag handle. The one exception is if there are
+  // no extensions at all.
+  return base::BindRepeating(
+      [](const views::View* view, const views::SizeBounds& maximum_size) {
+        const BrowserActionsContainer* browser_actions =
+            static_cast<const BrowserActionsContainer*>(view);
+        gfx::Size size = browser_actions->GetPreferredSize();
+        if (maximum_size.width()) {
+          size.set_width(
+              browser_actions->GetWidthForMaxWidth(*maximum_size.width()));
+        }
+        size.set_height(browser_actions->GetHeightForWidth(size.width()));
+        return size;
+      });
 }
 
 void BrowserActionsContainer::SetSeparatorColor(SkColor color) {
