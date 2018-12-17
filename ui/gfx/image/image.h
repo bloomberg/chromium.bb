@@ -80,14 +80,14 @@ class GFX_EXPORT Image {
 
   // Moves a reference from |other| to the new image without changing the
   // reference count.
-  Image(Image&& other);
+  Image(Image&& other) noexcept;
 
   // Copies a reference to |other|'s storage.
   Image& operator=(const Image& other);
 
   // Moves a reference from |other|'s storage without changing the reference
   // count.
-  Image& operator=(Image&& other);
+  Image& operator=(Image&& other) noexcept;
 
   // Deletes the image and, if the only owner of the storage, all of its cached
   // representations.
