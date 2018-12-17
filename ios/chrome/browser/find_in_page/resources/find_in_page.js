@@ -712,7 +712,7 @@ function scaleCoordinates_(coordinates) {
 };
 
 /**
- * Finds the position of the result and scrolls to it.
+ * Finds the position of the result.
  * @return {string} JSON encoded array of the scroll coordinates "[x, y]".
  */
 function findScrollDimensions_() {
@@ -723,9 +723,6 @@ function findScrollDimensions_() {
   let normalized = getNormalizedCoordinates_(match.nodes[0]);
   let xPos = normalized[0];
   let yPos = normalized[1];
-
-  // Perform the scroll.
-  // window.scrollTo(xPos, yPos);
 
   match.addSelectHighlight();
   let scaled = scaleCoordinates_(normalized);
