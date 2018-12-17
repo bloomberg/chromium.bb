@@ -30,6 +30,10 @@
 #include "net/ssl/client_cert_store.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/content_uri_utils.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -336,7 +340,15 @@ void HandleFileUploadRequest(
                                     std::vector<base::File>()));
       return;
     }
+#if defined(OS_ANDROID)
+    if (file_path.IsContentUri()) {
+      files.push_back(base::OpenContentUriForRead(file_path));
+    } else {
+      files.emplace_back(file_path, file_flags);
+    }
+#else
     files.emplace_back(file_path, file_flags);
+#endif
     if (!files.back().IsValid()) {
       task_runner->PostTask(
           FROM_HERE,
