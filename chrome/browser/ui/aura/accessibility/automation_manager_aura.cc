@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -35,7 +35,8 @@
 
 // static
 AutomationManagerAura* AutomationManagerAura::GetInstance() {
-  return base::Singleton<AutomationManagerAura>::get();
+  static base::NoDestructor<AutomationManagerAura> instance;
+  return instance.get();
 }
 
 void AutomationManagerAura::Enable() {
@@ -108,9 +109,8 @@ void AutomationManagerAura::OnViewEvent(views::View* view,
   // be deleted, pass the ID of the object rather than the object pointer.
   int32_t id = obj->GetUniqueId();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&AutomationManagerAura::SendEventOnObjectById,
-                     weak_ptr_factory_.GetWeakPtr(), id, event_type));
+      FROM_HERE, base::BindOnce(&AutomationManagerAura::SendEventOnObjectById,
+                                base::Unretained(this), id, event_type));
 }
 
 void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
@@ -163,13 +163,12 @@ void AutomationManagerAura::OnEvent(views::AXAuraObjWrapper* aura_obj,
 }
 
 AutomationManagerAura::AutomationManagerAura()
-    : enabled_(false), processing_events_(false), weak_ptr_factory_(this) {
+    : enabled_(false), processing_events_(false) {
   views::AXEventManager::Get()->AddObserver(this);
 }
 
-AutomationManagerAura::~AutomationManagerAura() {
-  views::AXEventManager::Get()->RemoveObserver(this);
-}
+// Never runs because object is leaked.
+AutomationManagerAura::~AutomationManagerAura() = default;
 
 void AutomationManagerAura::Reset(bool reset_serializer) {
   if (!current_tree_) {
