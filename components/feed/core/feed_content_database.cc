@@ -33,8 +33,8 @@ const char kContentDatabaseUMAClientName[] = "FeedContentDatabase";
 
 const char kContentDatabaseFolder[] = "content";
 
-const size_t kDatabaseWriteBufferSizeBytes = 512 * 1024;
-const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 128 * 1024;
+const size_t kDatabaseWriteBufferSizeBytes = 64 * 1024;                 // 64KB
+const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 32 * 1024;  // 32KB
 
 bool DatabaseKeyFilter(const std::unordered_set<std::string>& key_set,
                        const std::string& key) {

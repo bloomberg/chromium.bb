@@ -30,8 +30,8 @@ const char kJournalDatabaseUMAClientName[] = "FeedJournalDatabase";
 
 const char kJournalDatabaseFolder[] = "journal";
 
-const size_t kDatabaseWriteBufferSizeBytes = 512 * 1024;
-const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 128 * 1024;
+const size_t kDatabaseWriteBufferSizeBytes = 64 * 1024;                 // 64KB
+const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 32 * 1024;  // 32KB
 
 void ReportLoadEntriesHistograms(bool success, base::TimeTicks start_time) {
   UMA_HISTOGRAM_BOOLEAN("ContentSuggestions.Feed.JournalStorage.LoadSuccess",
