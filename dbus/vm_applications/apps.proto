@@ -43,6 +43,7 @@ message App {
   string startup_wm_class = 6;
   bool startup_notify = 7;
   LocaleStrings keywords = 9;
+  string executable_file_name = 10;
 
   // If set, the package_id of the installed package that owns this .desktop
   // file. If not set, the .desktop file is not owned by an installed package.
