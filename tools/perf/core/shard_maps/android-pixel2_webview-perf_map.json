@@ -20,21 +20,30 @@
             "jetstream": {},
             "kraken": {},
             "loading.desktop": {},
-            "loading.mobile": {},
+            "loading.mobile": {
+                "end": 40
+            }
+        }
+    },
+    "1": {
+        "benchmarks": {
+            "loading.mobile": {
+                "begin": 40
+            },
             "media.desktop": {},
             "media.mobile": {},
             "memory.desktop": {},
             "memory.long_running_idle_gmail_background_tbmv2": {},
             "memory.long_running_idle_gmail_tbmv2": {},
             "memory.top_10_mobile": {
-                "end": 3
+                "end": 14
             }
         }
     },
-    "1": {
+    "2": {
         "benchmarks": {
             "memory.top_10_mobile": {
-                "begin": 3
+                "begin": 14
             },
             "octane": {},
             "oortonline_tbmv2": {},
@@ -44,25 +53,26 @@
             "rasterize_and_record_micro.top_25": {},
             "rendering.desktop": {},
             "rendering.mobile": {
-                "end": 71
-            }
-        }
-    },
-    "2": {
-        "benchmarks": {
-            "rendering.mobile": {
-                "begin": 71,
-                "end": 268
+                "end": 165
             }
         }
     },
     "3": {
         "benchmarks": {
             "rendering.mobile": {
-                "begin": 268
+                "begin": 165
             },
             "smoothness.gpu_rasterization.tough_pinch_zoom_cases": {},
-            "smoothness.tough_pinch_zoom_cases": {},
+            "smoothness.tough_pinch_zoom_cases": {
+                "end": 4
+            }
+        }
+    },
+    "4": {
+        "benchmarks": {
+            "smoothness.tough_pinch_zoom_cases": {
+                "begin": 4
+            },
             "speedometer": {},
             "speedometer-future": {},
             "speedometer2": {},
@@ -70,25 +80,16 @@
             "startup.mobile": {},
             "system_health.common_desktop": {},
             "system_health.common_mobile": {},
-            "system_health.memory_desktop": {
-                "end": 99
-            }
-        }
-    },
-    "4": {
-        "benchmarks": {
-            "system_health.memory_desktop": {
-                "begin": 99
-            },
+            "system_health.memory_desktop": {},
             "system_health.memory_mobile": {
-                "end": 61
+                "end": 22
             }
         }
     },
     "5": {
         "benchmarks": {
             "system_health.memory_mobile": {
-                "begin": 61
+                "begin": 22
             },
             "system_health.webview_startup": {},
             "tab_switching.typical_25": {},
@@ -96,14 +97,14 @@
             "v8.browsing_desktop": {},
             "v8.browsing_desktop-future": {},
             "v8.browsing_mobile": {
-                "end": 21
+                "end": 10
             }
         }
     },
     "6": {
         "benchmarks": {
             "v8.browsing_mobile": {
-                "begin": 21
+                "begin": 10
             },
             "v8.browsing_mobile-future": {},
             "v8.runtime_stats.top_25": {},
@@ -112,17 +113,17 @@
         }
     },
     "extra_infos": {
-        "num_stories": 2037,
-        "predicted_min_shard_time": 10442.0,
-        "predicted_min_shard_index": 0,
-        "predicted_max_shard_time": 10632.0,
+        "num_stories": 2061,
+        "predicted_min_shard_time": 14198.0,
+        "predicted_min_shard_index": 5,
+        "predicted_max_shard_time": 14340.0,
         "predicted_max_shard_index": 1,
-        "shard #0": 10442.0,
-        "shard #1": 10632.0,
-        "shard #2": 10554.0,
-        "shard #3": 10538.0,
-        "shard #4": 10620.0,
-        "shard #5": 10450.0,
-        "shard #6": 10556.0
+        "shard #0": 14252.0,
+        "shard #1": 14340.0,
+        "shard #2": 14242.0,
+        "shard #3": 14268.0,
+        "shard #4": 14322.0,
+        "shard #5": 14198.0,
+        "shard #6": 14298.0
     }
 }
