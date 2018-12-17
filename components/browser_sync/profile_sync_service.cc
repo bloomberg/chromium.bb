@@ -221,6 +221,33 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       current_version.substr(0, current_version.find('.'))) {
     passphrase_prompt_triggered_by_version_ = true;
   }
+
+  startup_controller_ = std::make_unique<syncer::StartupController>(
+      base::BindRepeating(&ProfileSyncService::GetPreferredDataTypes,
+                          base::Unretained(this)),
+      base::BindRepeating(&ProfileSyncService::ShouldStartEngine,
+                          base::Unretained(this)),
+      base::BindRepeating(&ProfileSyncService::StartUpSlowEngineComponents,
+                          base::Unretained(this)));
+
+  sync_stopped_reporter_ = std::make_unique<syncer::SyncStoppedReporter>(
+      sync_service_url_, local_device_->GetSyncUserAgent(), url_loader_factory_,
+      syncer::SyncStoppedReporter::ResultCallback());
+
+  if (gaia_cookie_manager_service_)
+    gaia_cookie_manager_service_->AddObserver(this);
+
+#if defined(OS_CHROMEOS)
+  std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
+  if (bootstrap_token.empty()) {
+    sync_prefs_.SetEncryptionBootstrapToken(
+        sync_prefs_.GetSpareBootstrapToken());
+  }
+#endif
+
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      base::BindRepeating(&ProfileSyncService::OnMemoryPressure,
+                          sync_enabled_weak_factory_.GetWeakPtr()));
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -235,29 +262,15 @@ ProfileSyncService::~ProfileSyncService() {
 void ProfileSyncService::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // TODO(mastiz): The controllers map should be provided as argument.
+  data_type_controllers_ =
+      BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers(this));
+
   syncer::ModelTypeStoreService* model_type_store_service =
       sync_client_->GetModelTypeStoreService();
   DCHECK(model_type_store_service);
   syncer::RepeatingModelTypeStoreFactory model_type_store_factory =
       model_type_store_service->GetStoreFactory();
-
-  startup_controller_ = std::make_unique<syncer::StartupController>(
-      base::BindRepeating(&ProfileSyncService::GetPreferredDataTypes,
-                          base::Unretained(this)),
-      base::BindRepeating(&ProfileSyncService::ShouldStartEngine,
-                          base::Unretained(this)),
-      base::BindRepeating(&ProfileSyncService::StartUpSlowEngineComponents,
-                          base::Unretained(this)));
-
-  sync_stopped_reporter_ = std::make_unique<syncer::SyncStoppedReporter>(
-      sync_service_url_, local_device_->GetSyncUserAgent(), url_loader_factory_,
-      syncer::SyncStoppedReporter::ResultCallback());
-
-  // TODO(mastiz): This function should probably be deferred to the very end of
-  // Initialize(), or even better initiated directly by the sync client (e.g.
-  // inject the map as part of Init()'s parameters).
-  data_type_controllers_ =
-      BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers(this));
 
   device_info_sync_bridge_ = std::make_unique<syncer::DeviceInfoSyncBridge>(
       local_device_.get(), model_type_store_factory,
@@ -272,9 +285,6 @@ void ProfileSyncService::Initialize() {
               device_info_sync_bridge_->change_processor()
                   ->GetControllerDelegate()
                   .get()));
-
-  if (gaia_cookie_manager_service_)
-    gaia_cookie_manager_service_->AddObserver(this);
 
   sync_prefs_.AddSyncPrefObserver(this);
 
@@ -303,18 +313,6 @@ void ProfileSyncService::Initialize() {
   // RegisterForAuthNotifications(), because before that the authenticated
   // account isn't initialized.
   RecordSyncInitialState(GetDisableReasons(), IsFirstSetupComplete());
-
-#if defined(OS_CHROMEOS)
-  std::string bootstrap_token = sync_prefs_.GetEncryptionBootstrapToken();
-  if (bootstrap_token.empty()) {
-    sync_prefs_.SetEncryptionBootstrapToken(
-        sync_prefs_.GetSpareBootstrapToken());
-  }
-#endif
-
-  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
-      base::BindRepeating(&ProfileSyncService::OnMemoryPressure,
-                          sync_enabled_weak_factory_.GetWeakPtr()));
 
   // Auto-start means the first time the profile starts up, sync should start up
   // immediately.
