@@ -7,49 +7,115 @@
 
 #include "{{path}}.h"
 
-#include "base/values.h"
+#include <set>
 
-namespace {
+#include "base/files/file_path.h"
+#include "base/no_destructor.h"
+#include "build/build_config.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 
-template <typename T>
-std::unique_ptr<base::Value> GenerateValue(T generator) { return generator(); }
-
-}  // namespace
-
-{%- macro generate_value(source) -%}
-{%-   if source|is_dict -%}
-GenerateValue([]() {
-  auto dict = std::make_unique<base::DictionaryValue>();
-{%-     for key, value in source.iteritems() %}
-  dict->Set("{{key}}", {{generate_value(value)|indent(2)}});
-{%-     endfor %}
-  return dict;
-})
-{%-   elif source|is_list -%}
-GenerateValue([]() {
-  auto list = std::make_unique<base::ListValue>();
-{%-     for value in source %}
-  list->Append({{generate_value(value)|indent(2)}});
-{%-     endfor %}
-  return list;
-})
-{%-   elif source|is_number -%}
-std::make_unique<base::Value>({{source}})
-{%-   elif source|is_bool -%}
-std::make_unique<base::Value>({{source|lower}})
-{%-   elif source|is_string or source|is_unicode -%}
-std::make_unique<base::Value>("{{source|make_ascii}}")
-{%-   else %}
-{{raise("Unknown value type: %s" % source, source)}}
+{%- macro generate_manifest_builder(manifest) -%}
+service_manager::ManifestBuilder()
+    .WithServiceName("{{manifest['name']}}")
+{%-   if 'display_name' in manifest %}
+    .WithDisplayName("{{manifest['display_name']}}")
 {%-   endif %}
-{%- endmacro -%}
+    .WithOptions(service_manager::ManifestOptionsBuilder()
+{%-   if 'sandbox_type' in manifest %}
+                     .WithSandboxType("{{manifest['sandbox_type']}}")
+{%-   endif %}
+
+{%-   set options = manifest.get('options', {}) %}
+{%-   set instance_sharing = options.get('instance_sharing', None) %}
+{%-   if instance_sharing == 'singleton' %}
+                     .WithInstanceSharingPolicy(
+                          service_manager::Manifest::InstanceSharingPolicy::
+                              kSingleton)
+{%-   elif instance_sharing == 'shared_instance_across_users' %}
+                     .WithInstanceSharingPolicy(
+                          service_manager::Manifest::InstanceSharingPolicy::
+                              kSharedAcrossGroups)
+{%-   endif %}
+{%-   if options.get('can_connect_to_other_services_as_any_user', False) %}
+                     .CanConnectToInstancesInAnyGroup(true)
+{%-   endif %}
+{%-   if options.get('can_connect_to_other_services_with_any_instance_name',
+                     False) %}
+                     .CanConnectToInstancesWithAnyId(true)
+{%-   endif %}
+{%-   if options.get('can_create_other_service_instances', False) %}
+                     .CanRegisterOtherServiceInstances(true)
+{%-   endif %}
+                     .Build())
+
+{%-   set specs = manifest.get('interface_provider_specs', {}) %}
+{%-   set main_spec = specs.pop('service_manager:connector', None) %}
+{%-   if main_spec %}
+{%-     for name, interfaces in main_spec.get('provides', {}).iteritems() %}
+    .ExposeCapability(
+        "{{name}}", std::set<const char*>{
+{%-       for interface_name in interfaces %}
+            "{{interface_name}}",
+{%-       endfor -%}})
+{%-     endfor %}
+{%-     for service, caps in main_spec.get('requires', {}).iteritems() %}
+{%-       if caps == [] %}
+    .RequireCapability("{{service}}", "")
+{%-       else %}
+{%-         for capability in caps %}
+    .RequireCapability("{{service}}", "{{capability}}")
+{%-         endfor %}
+{%-       endif %}
+{%-     endfor %}
+{%-   endif %}
+{%-   for filter_name, filter_spec in specs.iteritems() %}
+{%-     for name, interfaces in filter_spec.get('provides', {}).iteritems() %}
+    .ExposeInterfaceFilterCapability_Deprecated(
+        "{{filter_name}}", "{{name}}", std::set<const char*>{
+{%-       for interface_name in interfaces %}
+            "{{interface_name}}" {%- if not loop.last %},{% endif %}
+{%-       endfor -%}})
+{%-     endfor %}
+{%-     for service, caps in filter_spec.get('requires', {}).iteritems() %}
+{%-       for capability in caps %}
+    .RequireInterfaceFilterCapability_Deprecated(
+        "{{service}}", "{{filter_name}}", "{{capability}}")
+{%-       endfor %}
+{%-     endfor %}
+{%-   endfor %}
+
+{%-  for key, entries in manifest.get('required_files', {}).iteritems() %}
+{%-    for entry in entries %}
+{%-      if entry['platform'] == 'linux' %}
+#if defined(OS_LINUX)
+{%-      elif entry['platform'] == 'android' %}
+#if defined(OS_ANDROID)
+{%-      endif %}
+    .PreloadFile(
+        "{{key}}",
+        base::FilePath(FILE_PATH_LITERAL("{{entry['path']}}")))
+#endif
+{%-    endfor %}
+{%-  endfor %}
+
+{%-  for packaged_service_manifest in manifest.get('services', []) %}
+    .PackageService(
+        {{generate_manifest_builder(packaged_service_manifest)|indent(8)}})
+{%-  endfor %}
+    .Build()
+{%- endmacro %}
 
 {% for namespace in namespaces %}
 namespace {{namespace}} {
 {%- endfor %}
 
-std::unique_ptr<base::Value> {{function_name}}() {
-  return {{generate_value(catalog)|indent(2)}};
+const std::vector<service_manager::Manifest>& {{function_name}}() {
+  static base::NoDestructor<std::vector<service_manager::Manifest>> catalog{ {
+{%- for entry in catalog['services'].itervalues() %}
+      {{generate_manifest_builder(entry['manifest'])|indent(6)}}
+{%- if not loop.last %},{% endif %}
+{%- endfor %} } };
+  return *catalog;
 }
 
 {%- for namespace in namespaces|reverse %}

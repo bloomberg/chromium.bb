@@ -10,17 +10,15 @@
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
-#include <memory>
+#include <vector>
 
-namespace base {
-class Value;
-}
+#include "services/service_manager/public/cpp/manifest.h"
 
 {% for namespace in namespaces %}
 namespace {{namespace}} {
 {%- endfor %}
 
-std::unique_ptr<base::Value> {{function_name}}();
+const std::vector<service_manager::Manifest>& {{function_name}}();
 
 {% for namespace in namespaces|reverse %}
 }  // namespace {{namespace}}

@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -36,8 +37,10 @@ const char kCatalogServiceEmbeddedKey[] = "embedded";
 const char kCatalogServiceExecutableKey[] = "executable";
 const char kCatalogServiceManifestKey[] = "manifest";
 
-base::LazyInstance<std::unique_ptr<base::Value>>::DestructorAtExit
-    g_default_static_manifest = LAZY_INSTANCE_INITIALIZER;
+std::vector<service_manager::Manifest>& GetDefaultManifests() {
+  static base::NoDestructor<std::vector<service_manager::Manifest>> manifests;
+  return *manifests;
+}
 
 void LoadCatalogManifestIntoCache(const base::Value* root, EntryCache* cache) {
   DCHECK(root);
@@ -140,14 +143,18 @@ class Catalog::DirectoryThreadState
   DISALLOW_COPY_AND_ASSIGN(DirectoryThreadState);
 };
 
-Catalog::Catalog(std::unique_ptr<base::Value> static_manifest,
+Catalog::Catalog(std::unique_ptr<base::Value> catalog_contents,
+                 const std::vector<service_manager::Manifest>& manifests,
                  ManifestProvider* service_manifest_provider)
     : service_manifest_provider_(service_manifest_provider) {
-  if (static_manifest) {
-    LoadCatalogManifestIntoCache(static_manifest.get(), &system_cache_);
-  } else if (g_default_static_manifest.Get()) {
-    LoadCatalogManifestIntoCache(
-        g_default_static_manifest.Get().get(), &system_cache_);
+  if (catalog_contents) {
+    LoadCatalogManifestIntoCache(catalog_contents.get(), &system_cache_);
+  } else if (!manifests.empty()) {
+    for (const auto& manifest : manifests)
+      system_cache_.AddRootEntryFromManifest(manifest);
+  } else {
+    for (const auto& manifest : GetDefaultManifests())
+      system_cache_.AddRootEntryFromManifest(manifest);
   }
 
   registry_.AddInterface<mojom::Catalog>(base::BindRepeating(
@@ -165,8 +172,8 @@ void Catalog::BindServiceRequest(
 
 // static
 void Catalog::SetDefaultCatalogManifest(
-    std::unique_ptr<base::Value> static_manifest) {
-  g_default_static_manifest.Get() = std::move(static_manifest);
+    const std::vector<service_manager::Manifest>& manifests) {
+  GetDefaultManifests() = manifests;
 }
 
 Instance* Catalog::GetInstanceForGroup(const base::Token& instance_group) {

@@ -199,6 +199,7 @@ template("catalog_cpp_source") {
     deps = [
       ":$generator_target_name",
       "//base",
+      "//services/service_manager/public/cpp",
     ]
   }
 }

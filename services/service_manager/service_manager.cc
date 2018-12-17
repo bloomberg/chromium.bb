@@ -946,30 +946,24 @@ class ServiceManager::IdentityToInstanceMap {
 
 ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
                                    service_process_launcher_factory,
-                               std::unique_ptr<base::Value> catalog_contents,
+                               const std::vector<Manifest>& manifests,
                                catalog::ManifestProvider* manifest_provider)
-    : catalog_(std::move(catalog_contents), manifest_provider),
+    : catalog_(nullptr, manifests, manifest_provider),
       identity_to_instance_(std::make_unique<IdentityToInstanceMap>()),
       service_process_launcher_factory_(
           std::move(service_process_launcher_factory)) {
-  InterfaceProviderSpec spec;
-  spec.provides[kCapability_ServiceManager].insert(
-      "service_manager.mojom.ServiceManager");
-  spec.requires["*"].insert("service_manager:service_factory");
-  InterfaceProviderSpecMap specs;
-  specs[mojom::kServiceManager_ConnectorSpec] = std::move(spec);
+  InitBuiltinServices();
+}
 
-  service_manager_instance_ = CreateInstance(
-      GetServiceManagerInstanceIdentity(), InstanceType::kSingleton,
-      std::move(specs), catalog::ServiceOptions());
-
-  mojom::ServicePtr service;
-  service_binding_.Bind(mojo::MakeRequest(&service));
-  service_manager_instance_->StartWithService(std::move(service));
-
-  mojom::ServicePtr catalog_service;
-  catalog_.BindServiceRequest(mojo::MakeRequest(&catalog_service));
-  InitCatalog(std::move(catalog_service));
+ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
+                                   service_process_launcher_factory,
+                               std::unique_ptr<base::Value> catalog_contents,
+                               catalog::ManifestProvider* manifest_provider)
+    : catalog_(std::move(catalog_contents), {}, manifest_provider),
+      identity_to_instance_(std::make_unique<IdentityToInstanceMap>()),
+      service_process_launcher_factory_(
+          std::move(service_process_launcher_factory)) {
+  InitBuiltinServices();
 }
 
 ServiceManager::~ServiceManager() {
@@ -1227,22 +1221,38 @@ void ServiceManager::RegisterService(
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceManager, private:
 
-void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
-  // TODO(beng): It'd be great to build this from the manifest, however there's
-  //             a bit of a chicken-and-egg problem.
+void ServiceManager::InitBuiltinServices() {
   InterfaceProviderSpec spec;
-  spec.provides["directory"].insert("filesystem.mojom.Directory");
-  spec.provides["catalog:catalog"].insert("catalog.mojom.Catalog");
-  spec.provides["control"].insert("catalog.mojom.CatalogControl");
+  spec.provides[kCapability_ServiceManager].insert(
+      "service_manager.mojom.ServiceManager");
+  spec.requires["*"].insert("service_manager:service_factory");
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = std::move(spec);
+
+  service_manager_instance_ = CreateInstance(
+      GetServiceManagerInstanceIdentity(), InstanceType::kSingleton,
+      std::move(specs), catalog::ServiceOptions());
+
+  mojom::ServicePtr service;
+  service_binding_.Bind(mojo::MakeRequest(&service));
+  service_manager_instance_->StartWithService(std::move(service));
+
+  InterfaceProviderSpec catalog_spec;
+  catalog_spec.provides["directory"].insert("filesystem.mojom.Directory");
+  catalog_spec.provides["catalog:catalog"].insert("catalog.mojom.Catalog");
+  catalog_spec.provides["control"].insert("catalog.mojom.CatalogControl");
+  InterfaceProviderSpecMap catalog_specs;
+  catalog_specs[mojom::kServiceManager_ConnectorSpec] = std::move(catalog_spec);
 
   Identity id{catalog::mojom::kServiceName, kSystemInstanceGroup, base::Token{},
               base::Token::CreateRandom()};
   Instance* instance =
-      CreateInstance(id, InstanceType::kSingleton, std::move(specs),
+      CreateInstance(id, InstanceType::kSingleton, std::move(catalog_specs),
                      catalog::ServiceOptions());
-  instance->StartWithService(std::move(catalog));
+
+  mojom::ServicePtr catalog_service;
+  catalog_.BindServiceRequest(mojo::MakeRequest(&catalog_service));
+  instance->StartWithService(std::move(catalog_service));
 }
 
 void ServiceManager::OnInstanceError(Instance* instance) {

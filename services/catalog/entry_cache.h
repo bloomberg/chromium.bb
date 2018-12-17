@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "services/service_manager/public/cpp/manifest.h"
 
 namespace catalog {
 
@@ -41,6 +42,9 @@ class COMPONENT_EXPORT(CATALOG) EntryCache {
   // scanning, which in turn has some unpredictable behavior with respect to
   // Entry registration.
   bool AddRootEntry(std::unique_ptr<Entry> entry);
+
+  // Adds a new root entry to the cache given a Manifest.
+  bool AddRootEntryFromManifest(const service_manager::Manifest& manifest);
 
   // Queries the cache for an entry corresponding to |name|. Returns null if
   // such an entry is not found.

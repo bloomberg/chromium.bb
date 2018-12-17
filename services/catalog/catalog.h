@@ -19,6 +19,7 @@
 #include "services/catalog/entry_cache.h"
 #include "services/catalog/public/mojom/catalog.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -37,19 +38,19 @@ class ManifestProvider;
 // can be passed to the service manager, potentially in a different process.
 class COMPONENT_EXPORT(CATALOG) Catalog : public service_manager::Service {
  public:
-  // Constructs a catalog over a static manifest. This catalog never performs
-  // file I/O. Note that either |static_manifest| or |service_manifest_provider|
-  // may be null. If both are null, no service names will be resolved.
-  explicit Catalog(std::unique_ptr<base::Value> static_manifest,
+  // Constructs a catalog over a set of Manifests and optionally a
+  // ManifestProvider for dynamic manifest lookup.
+  explicit Catalog(std::unique_ptr<base::Value> catalog_contents,
+                   const std::vector<service_manager::Manifest>& manifests,
                    ManifestProvider* service_manifest_provider = nullptr);
   ~Catalog() override;
 
   void BindServiceRequest(service_manager::mojom::ServiceRequest request);
 
   // Allows an embedder to override the default static manifest contents for
-  // Catalog instances which are constructed with a null static manifest.
+  // Catalog instances which are constructed with an empty set of manifests.
   static void SetDefaultCatalogManifest(
-      std::unique_ptr<base::Value> static_manifest);
+      const std::vector<service_manager::Manifest>& default_manifests);
 
   Instance* GetInstanceForGroup(const base::Token& instance_group);
 

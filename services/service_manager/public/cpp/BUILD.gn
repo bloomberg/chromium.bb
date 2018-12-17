@@ -17,6 +17,10 @@ component("cpp") {
     "interface_provider.cc",
     "interface_provider.h",
     "local_interface_provider.h",
+    "manifest.cc",
+    "manifest.h",
+    "manifest_builder.cc",
+    "manifest_builder.h",
     "service.cc",
     "service.h",
     "service_binding.cc",
@@ -94,4 +98,19 @@ component("mojom_traits") {
   ]
 
   defines = [ "IS_SERVICE_MANAGER_MOJOM_TRAITS_IMPL" ]
+}
+
+source_set("unittests") {
+  testonly = true
+
+  sources = [
+    "manifest_unittest.cc",
+  ]
+
+  deps = [
+    ":cpp",
+    "//base",
+    "//services/service_manager/public/mojom",
+    "//testing/gtest",
+  ]
 }
