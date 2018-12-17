@@ -71,6 +71,14 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   }
 }
 
+- (UIViewController*)childViewControllerForStatusBarHidden {
+  return nil;
+}
+
+- (UIViewController*)childViewControllerForStatusBarStyle {
+  return nil;
+}
+
 - (UIBarButtonItem*)doneButtonIfNeeded {
   if (self.shouldHideDoneButton) {
     return nil;
