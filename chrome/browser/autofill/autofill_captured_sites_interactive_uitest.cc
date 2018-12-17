@@ -107,7 +107,8 @@ class AutofillCapturedSitesInteractiveTest
   // TestRecipeReplayChromeFeatureActionExecutor
   bool AutofillForm(content::RenderFrameHost* frame,
                     const std::string& focus_element_css_selector,
-                    const int attempts = 1) override {
+                    const int attempts = 1,
+                    const gfx::Point& offset = gfx::Point(0, 0)) override {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(frame);
     AutofillManager* autofill_manager =
@@ -121,7 +122,7 @@ class AutofillCapturedSitesInteractiveTest
       tries++;
       autofill_manager->client()->HideAutofillPopup();
 
-      if (!ShowAutofillSuggestion(frame, focus_element_css_selector)) {
+      if (!ShowAutofillSuggestion(frame, focus_element_css_selector, offset)) {
         LOG(WARNING) << "Failed to bring up the autofill suggestion drop down.";
         continue;
       }
@@ -244,14 +245,14 @@ class AutofillCapturedSitesInteractiveTest
   const AutofillProfile profile() { return profile_; }
 
  private:
-
   bool ShowAutofillSuggestion(content::RenderFrameHost* frame,
-                              const std::string& target_element_xpath) {
+                              const std::string& target_element_xpath,
+                              const gfx::Point& offset = gfx::Point(0, 0)) {
     // First, automation should focus on the frame containg the autofill form.
     // Doing so ensures that Chrome scrolls the element into view if the
     // element is off the page.
     if (!captured_sites_test_utils::TestRecipeReplayer::PlaceFocusOnElement(
-            frame, target_element_xpath))
+            frame, target_element_xpath, offset))
       return false;
 
     int x, y;
@@ -259,6 +260,8 @@ class AutofillCapturedSitesInteractiveTest
             GetCenterCoordinateOfTargetElement(frame, target_element_xpath, x,
                                                y))
       return false;
+    x += offset.x();
+    y += offset.y();
 
     test_delegate()->Reset();
     if (!captured_sites_test_utils::TestRecipeReplayer::
