@@ -2471,6 +2471,11 @@ bool PersonalDataManager::ConvertWalletAddressesToLocalProfiles(
   // If the full Sync feature isn't enabled, then do NOT convert any Wallet
   // addresses to local ones.
   if (!IsSyncFeatureEnabled()) {
+    // TODO(crbug.com/915229): Remove once the investigation is over.
+    DLOG(WARNING) << this
+                  << " not converting as sync feature is not enabled, probably "
+                     "due to sync_service_ being "
+                  << sync_service_;
     return false;
   }
 
