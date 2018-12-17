@@ -99,6 +99,7 @@
 # https://crbug.com/893576
 -org.chromium.android_webview.test.CookieManagerTest.testAcceptCookie
 -org.chromium.android_webview.test.CookieManagerTest.testAcceptFileSchemeCookies
+-org.chromium.android_webview.test.CookieManagerTest.testEmbedderCanSeeRestrictedCookies
 -org.chromium.android_webview.test.CookieManagerTest.testRejectFileSchemeCookies
 -org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookie
 -org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookieForWebSocketEnabledCase
