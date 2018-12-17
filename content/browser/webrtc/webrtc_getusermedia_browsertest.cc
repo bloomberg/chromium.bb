@@ -761,8 +761,14 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("applyConstraintsVideoOverconstrained()");
 }
 
+// Flaky on Win-ASAN, see https://crbug.com/915135
+#if defined(ADDRESS_SANITIZER) && defined(OS_WIN)
+#define MAYBE_ApplyConstraintsNonDevice DISABLED_ApplyConstraintsNonDevice
+#else
+#define MAYBE_ApplyConstraintsNonDevice ApplyConstraintsNonDevice
+#endif
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       ApplyConstraintsNonDevice) {
+                       MAYBE_ApplyConstraintsNonDevice) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
