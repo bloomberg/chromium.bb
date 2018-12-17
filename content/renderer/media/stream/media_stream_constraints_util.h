@@ -172,6 +172,17 @@ class CONTENT_EXPORT VideoCaptureSettings {
 // constraints that could not be satisfied.
 class CONTENT_EXPORT AudioCaptureSettings {
  public:
+  enum class ProcessingType {
+    // System echo cancellation can be enabled, but all other processing is
+    // disabled.
+    kUnprocessed,
+    // System echo cancellation and audio mirroring can be enabled, but all
+    // other processing is disabled.
+    kNoApmProcessed,
+    // Processing is performed through WebRTC.
+    kApmProcessed
+  };
+
   // Creates an object without value and with an empty failed constraint name.
   AudioCaptureSettings();
 
