@@ -229,6 +229,15 @@ BASE_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
                                         const size_t byte_size,
                                         std::string* output);
 
+#if defined(WCHAR_T_IS_UTF16)
+// In case wchar_t is UTF-16 StringPiece16 and WStringPiece can be effieciently
+// converted into each other.
+// Note: These functions will only become useful once base::char16 is char16_t
+// on all platforms: https://crbug.com/911896
+BASE_EXPORT StringPiece16 CastToStringPiece16(WStringPiece wide);
+BASE_EXPORT WStringPiece CastToWStringPiece(StringPiece16 utf16);
+#endif  // defined(WCHAR_T_IS_UTF16)
+
 // Trims any whitespace from either end of the input string.
 //
 // The StringPiece versions return a substring referencing the input buffer.

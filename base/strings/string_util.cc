@@ -20,6 +20,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
@@ -369,6 +370,16 @@ void TruncateUTF8ToByteSize(const std::string& input,
   else
     output->clear();
 }
+
+#if defined(WCHAR_T_IS_UTF16)
+StringPiece16 CastToStringPiece16(WStringPiece wide) {
+  return StringPiece16(bit_cast<const char16*>(wide.data()), wide.size());
+}
+
+WStringPiece CastToWStringPiece(StringPiece16 utf16) {
+  return WStringPiece(bit_cast<const wchar_t*>(utf16.data()), utf16.size());
+}
+#endif  // defined(WCHAR_T_IS_UTF16)
 
 TrimPositions TrimWhitespace(const string16& input,
                              TrimPositions positions,

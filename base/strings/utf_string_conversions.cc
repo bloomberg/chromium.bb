@@ -9,6 +9,7 @@
 
 #include <type_traits>
 
+#include "base/bit_cast.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -306,12 +307,11 @@ std::wstring UTF8ToWide(StringPiece utf8) {
 // Easy case since we can use the "utf" versions we already wrote above.
 
 bool WideToUTF8(const wchar_t* src, size_t src_len, std::string* output) {
-  return UTF16ToUTF8(reinterpret_cast<const char16*>(src), src_len, output);
+  return UTF16ToUTF8(bit_cast<const char16*>(src), src_len, output);
 }
 
 std::string WideToUTF8(WStringPiece wide) {
-  return UTF16ToUTF8(
-      StringPiece16(reinterpret_cast<const char16*>(wide.data()), wide.size()));
+  return UTF16ToUTF8(CastToStringPiece16(wide));
 }
 
 #elif defined(WCHAR_T_IS_UTF32)
