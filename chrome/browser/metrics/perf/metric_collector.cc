@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/perf/metric_collector.h"
 
 #include "base/rand_util.h"
+#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
 

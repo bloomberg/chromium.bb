@@ -9,6 +9,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 
+namespace metrics {
+
 PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
                                const std::vector<std::string>& perf_args,
                                DoneCallback callback)
@@ -50,3 +52,5 @@ void PerfOutputCall::OnGetPerfOutput(bool success) {
     std::move(done_callback_).Run(std::string());
   }
 }
+
+}  // namespace metrics

@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_METRICS_PERF_COLLECTION_PARAMS_H_
 #define CHROME_BROWSER_METRICS_PERF_COLLECTION_PARAMS_H_
 
-#include "base/macros.h"
+#include <stdint.h>
+
 #include "base/time/time.h"
 
 namespace metrics {

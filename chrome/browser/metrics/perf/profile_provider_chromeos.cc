@@ -4,8 +4,10 @@
 
 #include "chrome/browser/metrics/perf/profile_provider_chromeos.h"
 
+#include "chrome/browser/metrics/perf/metric_collector.h"
 #include "chrome/browser/metrics/perf/perf_events_collector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
 

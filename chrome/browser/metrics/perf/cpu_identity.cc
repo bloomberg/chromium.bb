@@ -13,6 +13,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 
+namespace metrics {
+
 namespace internal {
 
 const CpuUarchTableEntry kCpuUarchTable[] = {
@@ -112,3 +114,4 @@ std::string SimplifyCPUModelName(const std::string& model_name) {
   return base::ToLowerASCII(result);
 }
 
+}  // namespace metrics
