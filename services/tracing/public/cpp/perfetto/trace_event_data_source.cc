@@ -92,20 +92,27 @@ void TraceEventMetadataSource::GenerateMetadata(
 void TraceEventMetadataSource::StartTracing(
     ProducerClient* producer_client,
     const mojom::DataSourceConfig& data_source_config) {
-  origin_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&TraceEventMetadataSource::GenerateMetadata,
-                                base::Unretained(this),
-                                producer_client->CreateTraceWriter(
-                                    data_source_config.target_buffer)));
+  // TODO(eseckler): Once we support streaming of trace data, it would make
+  // sense to emit the metadata on startup, so the UI can display it right away.
+  producer_client_ = producer_client;
+  target_buffer_ = data_source_config.target_buffer;
 }
 
 void TraceEventMetadataSource::StopTracing(
     base::OnceClosure stop_complete_callback) {
-  // We bounce a task off the origin_task_runner_ that the generator
-  // callbacks are run from, to make sure that GenerateMetaData() has finished
-  // running.
-  origin_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
-                                        std::move(stop_complete_callback));
+  if (producer_client_) {
+    // Write metadata at the end of tracing to make it less likely that it is
+    // overridden by other trace data in perfetto's ring buffer.
+    origin_task_runner_->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce(&TraceEventMetadataSource::GenerateMetadata,
+                       base::Unretained(this),
+                       producer_client_->CreateTraceWriter(target_buffer_)),
+        std::move(stop_complete_callback));
+    producer_client_ = nullptr;
+  } else {
+    std::move(stop_complete_callback).Run();
+  }
 }
 
 void TraceEventMetadataSource::Flush(
