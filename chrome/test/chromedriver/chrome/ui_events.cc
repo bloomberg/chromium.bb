@@ -24,6 +24,8 @@ MouseEvent::MouseEvent(MouseEventType type,
       buttons(buttons),
       click_count(click_count) {}
 
+MouseEvent::MouseEvent(const MouseEvent& other) = default;
+
 MouseEvent::~MouseEvent() {}
 
 TouchEvent::TouchEvent(TouchEventType type,
@@ -32,6 +34,8 @@ TouchEvent::TouchEvent(TouchEventType type,
     : type(type),
       x(x),
       y(y) {}
+
+TouchEvent::TouchEvent(const TouchEvent& other) = default;
 
 TouchEvent::~TouchEvent() {}
 

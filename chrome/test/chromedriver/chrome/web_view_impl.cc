@@ -431,6 +431,8 @@ Status WebViewImpl::DispatchTouchEventsForMouseEvents(
           continue;
         params.SetString("type", "touchMove");
         break;
+      default:
+        break;
     }
 
     std::unique_ptr<base::ListValue> touchPoints(new base::ListValue);

@@ -37,6 +37,7 @@
 #include "chrome/test/chromedriver/net/timeout.h"
 #include "chrome/test/chromedriver/session.h"
 #include "chrome/test/chromedriver/util.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace {
 
@@ -104,6 +105,8 @@ MouseEventType StringToMouseEventType(std::string action_type) {
     return kReleasedMouseEventType;
   else if (action_type == "pointerMove")
     return kMovedMouseEventType;
+  else if (action_type == "pause")
+    return kPauseMouseEventType;
   else
     return kPressedMouseEventType;
 }
@@ -130,6 +133,8 @@ TouchEventType StringToTouchEventType(std::string action_type) {
     return kTouchEnd;
   else if (action_type == "pointerMove")
     return kTouchMove;
+  else if (action_type == "pause")
+    return kPause;
   else
     return kTouchStart;
 }
@@ -338,6 +343,39 @@ Status ProcessPauseAction(const base::DictionaryValue* action_item,
       return Status(kInvalidArgument, "'duration' must be a non-negative int");
     action->SetInteger("duration", duration);
   }
+  return Status(kOk);
+}
+
+Status ElementInViewCenter(Session* session,
+                           WebView* web_view,
+                           std::string element_id,
+                           int* center_x,
+                           int* center_y) {
+  WebRect region;
+  Status status = GetElementRegion(session, web_view, element_id, &region);
+  if (status.IsError())
+    return status;
+  WebPoint region_offset;
+  status = ScrollElementRegionIntoView(session, web_view, element_id, region,
+                                       true /* center */, std::string(),
+                                       &region_offset);
+  if (status.IsError())
+    return status;
+  int innerWidth, innerHeight;
+  status = WindowViewportSize(session, web_view, &innerWidth, &innerHeight);
+  if (status.IsError())
+    return status;
+  int left =
+      std::max(0, std::min(region_offset.x, region_offset.x + region.Width()));
+  int right = std::min(
+      innerWidth, std::max(region_offset.x, region_offset.x + region.Width()));
+  int top =
+      std::max(0, std::min(region_offset.y, region_offset.y + region.Height()));
+  int bottom =
+      std::min(innerHeight,
+               std::max(region_offset.y, region_offset.y + region.Height()));
+  *center_x = static_cast<int>(std::floor((left + right) / 2));
+  *center_y = static_cast<int>(std::floor((top + bottom) / 2));
   return Status(kOk);
 }
 
@@ -1021,7 +1059,6 @@ Status ProcessInputActionSequence(
             "type of action must be the string 'keyUp', 'keyDown' or 'pause'");
 
       action->SetString("subtype", subtype);
-
       if (subtype == "pause") {
         Status status = ProcessPauseAction(action_item, action.get());
         if (status.IsError())
@@ -1100,15 +1137,10 @@ Status ProcessInputActionSequence(
         Status status = ProcessPauseAction(action_item, action.get());
         if (status.IsError())
           return status;
-      } else {
-        int duration;
-        if (action_item->HasKey("duration")) {
-          if (!action_item->GetInteger("duration", &duration) || duration < 0) {
-            return Status(kInvalidArgument,
-                          "'duration' must be a non-negative int");
-          }
-          action->SetInteger("duration", duration);
-        }
+      } else if (subtype == "pause") {
+        Status status = ProcessPauseAction(action_item, action.get());
+        if (status.IsError())
+          return status;
       }
     }
     actions_result->Append(std::move(action));
@@ -1136,8 +1168,6 @@ Status ExecutePerformActions(Session* session,
 
   // the processed actions
   base::ListValue actions_list;
-  // the type of each action list in actions_list
-  std::list<std::string> input_source_types;
 
   for (size_t i = 0; i < actions_input->GetSize(); i++) {
     std::unique_ptr<base::DictionaryValue> input_source_actions(
@@ -1146,55 +1176,47 @@ Status ExecutePerformActions(Session* session,
     const base::DictionaryValue* action_sequence;
     if (!actions_input->GetDictionary(i, &action_sequence))
       return Status(kInvalidArgument, "each argument must be a dictionary");
-
     Status status = ProcessInputActionSequence(session, action_sequence,
                                                &input_source_actions);
     if (status.IsError())
       return Status(kInvalidArgument, status);
-    std::string type;
-    action_sequence->GetString("type", &type);
-    input_source_types.push_back(type);
     actions_list.Append(std::move(input_source_actions));
   }
 
   std::string input_pointer_type;
   std::set<std::string> pointer_id_set;
   std::string type;
+  std::vector<std::vector<MouseEvent>> mouse_events_list;
+  std::vector<std::vector<TouchEvent>> touch_events_list;
+  std::vector<std::vector<KeyEvent>> key_events_list;
+  size_t longest_mouse_list_size = 0;
+  size_t longest_touch_list_size = 0;
+  size_t longest_key_list_size = 0;
   for (size_t i = 0; i < actions_list.GetSize(); i++) {
     base::DictionaryValue* action_sequence;
     actions_list.GetDictionary(i, &action_sequence);
     const base::ListValue* actions;
     action_sequence->GetList("actions", &actions);
     DCHECK(actions);
-
-    type = input_source_types.front();
-    input_source_types.pop_front();
+    action_sequence->GetString("sourceType", &type);
 
     // key actions
     if (type == "key") {
       KeyEventBuilder builder;
-      std::list<KeyEvent> key_events;
+      std::vector<KeyEvent> key_events;
       for (size_t j = 0; j < actions->GetSize(); j++) {
         const base::DictionaryValue* action;
-        if (!actions->GetDictionary(j, &action))
-          return Status(kInvalidArgument, "each argument must be a dictionary");
+        actions->GetDictionary(j, &action);
         std::string subtype;
-        if (!action->GetString("subtype", &subtype))
-          return Status(kInvalidArgument, "'subtype' must be a string");
-
+        action->GetString("subtype", &subtype);
         std::string id;
-        if (!action->GetString("id", &id))
-          return Status(kInvalidArgument, "id");
-
+        action->GetString("id", &id);
         if (subtype == "pause") {
-          // TODO: handle this
+          key_events.push_back(builder.SetType(kPauseEventType)->Build());
         } else {
           base::DictionaryValue dispatch_params;
           base::string16 raw_key;
-
-          if (!action->GetString("value", &raw_key))
-            return Status(kInvalidArgument, "value");
-
+          action->GetString("value", &raw_key);
           base::char16 key = raw_key[0];
           // TODO: understand necessary_modifiers
           int necessary_modifiers = 0;
@@ -1221,9 +1243,9 @@ Status ExecutePerformActions(Session* session,
                                      ->Build());
         }
       }
-      Status status = web_view->DispatchKeyEvents(key_events);
-      if (status.IsError())
-        return status;
+      longest_key_list_size =
+          std::max(key_events.size(), longest_key_list_size);
+      key_events_list.push_back(key_events);
     } else if (type == "pointer") {
       std::string pointer_type;
       action_sequence->GetString("pointerType", &pointer_type);
@@ -1236,79 +1258,47 @@ Status ExecutePerformActions(Session* session,
                       "multiple input pointer types are not supported now");
       }
 
-      if (pointer_type != "touch" && i > 0) {
-        return Status(kInvalidArgument,
-                      "for pointer type of mouse and pen, multiple devices are "
-                      "not supported now");
-      }
-
       std::string pointer_id;
       action_sequence->GetString("id", &pointer_id);
       if (pointer_id_set.find(pointer_id) != pointer_id_set.end())
         return Status(kInvalidArgument, "'id' already exists");
       pointer_id_set.insert(pointer_id);
 
-      std::list<MouseEvent> mouse_events;
-      std::list<TouchEvent> touch_events;
-
+      std::vector<MouseEvent> mouse_events;
+      std::vector<TouchEvent> touch_events;
       double x = 0;
       double y = 0;
       bool has_touch_start = false;
       int buttons = 0;
       std::string button_type;
+      std::string element_id;
       for (size_t j = 0; j < actions->GetSize(); j++) {
-        const base::DictionaryValue* mouse_action;
-        actions->GetDictionary(j, &mouse_action);
+        const base::DictionaryValue* pointer_action;
+        actions->GetDictionary(j, &pointer_action);
         std::string action_type;
-        mouse_action->GetString("subtype", &action_type);
+        pointer_action->GetString("subtype", &action_type);
         if (action_type == "pointerMove") {
-          mouse_action->GetDouble("x", &x);
-          mouse_action->GetDouble("y", &y);
+          pointer_action->GetDouble("x", &x);
+          pointer_action->GetDouble("y", &y);
           const base::DictionaryValue* origin_dict;
-          if (mouse_action->HasKey("origin") &&
-              mouse_action->GetDictionary("origin", &origin_dict)) {
-            std::string element_id;
+          element_id = "";
+          if (pointer_action->HasKey("origin") &&
+              pointer_action->GetDictionary("origin", &origin_dict)) {
             origin_dict->GetString(GetElementKey(), &element_id);
-            WebRect region;
-            Status status =
-                GetElementRegion(session, web_view, element_id, &region);
-            if (status.IsError())
-              return status;
-            WebPoint region_offset;
-            status = ScrollElementRegionIntoView(session, web_view, element_id,
-                                                 region, true /* center */,
-                                                 std::string(), &region_offset);
-            if (status.IsError())
-              return status;
-            int innerWidth, innerHeight;
-            status = WindowViewportSize(session, web_view, &innerWidth,
-                                        &innerHeight);
-            if (status.IsError())
-              return status;
-            int left = std::max(
-                0, std::min(region_offset.x, region_offset.x + region.Width()));
-            int right = std::min(
-                innerWidth,
-                std::max(region_offset.x, region_offset.x + region.Width()));
-            int top = std::max(0, std::min(region_offset.y,
-                                           region_offset.y + region.Height()));
-            int bottom = std::min(
-                innerHeight,
-                std::max(region_offset.y, region_offset.y + region.Height()));
-            x += (left + right) / 2;
-            y += (top + bottom) / 2;
           }
         }
 
         if (pointer_type == "mouse") {
           int click_count = 0;
           if (action_type == "pointerDown" || action_type == "pointerUp") {
-            mouse_action->GetString("button", &button_type);
+            pointer_action->GetString("button", &button_type);
             click_count = 1;
           }
-          mouse_events.push_back(MouseEvent(StringToMouseEventType(action_type),
-                                            StringToMouseButton(button_type), x,
-                                            y, 0, buttons, click_count));
+          MouseEvent event(StringToMouseEventType(action_type),
+                           StringToMouseButton(button_type), x, y, 0, buttons,
+                           click_count);
+          event.element_id = element_id;
+          mouse_events.push_back(event);
           if (action_type == "pointerDown")
             buttons |= StringToModifierMouseButton(button_type);
           else if (action_type == "pointerUp")
@@ -1320,19 +1310,94 @@ Status ExecutePerformActions(Session* session,
             has_touch_start = false;
 
           if (action_type != "pointerMove" || has_touch_start) {
-            touch_events.push_back(
-                TouchEvent(StringToTouchEventType(action_type), x, y));
+            TouchEvent event(StringToTouchEventType(action_type), x, y);
+            event.element_id = element_id;
+            touch_events.push_back(event);
           }
         }
       }
 
-      Status status(kOk);
       if (pointer_type == "mouse") {
-        status = web_view->DispatchMouseEvents(mouse_events,
-                                               session->GetCurrentFrameId());
+        longest_mouse_list_size =
+            std::max(mouse_events.size(), longest_mouse_list_size);
+        mouse_events_list.push_back(mouse_events);
       } else if (pointer_type == "touch") {
-        status = web_view->DispatchTouchEvents(touch_events);
+        longest_touch_list_size =
+            std::max(touch_events.size(), longest_touch_list_size);
+        touch_events_list.push_back(touch_events);
       }
+    }
+  }
+
+  size_t max_list_length =
+      std::max(std::max(longest_mouse_list_size, longest_touch_list_size),
+               longest_key_list_size);
+  std::map<std::string, gfx::Point> element_center_point;
+  for (size_t i = 0; i < max_list_length; i++) {
+    std::list<MouseEvent> dispatch_mouse_events;
+    for (size_t j = 0; j < mouse_events_list.size(); j++) {
+      if (i < mouse_events_list[j].size() &&
+          mouse_events_list[j][i].type != kPauseMouseEventType) {
+        MouseEvent event = mouse_events_list[j][i];
+        if (!event.element_id.empty()) {
+          if (event.type == kMovedMouseEventType ||
+              element_center_point.find(event.element_id) ==
+                  element_center_point.end()) {
+            int center_x = 0, center_y = 0;
+            ElementInViewCenter(session, web_view, event.element_id, &center_x,
+                                &center_y);
+            element_center_point[event.element_id] =
+                gfx::Point(center_x, center_y);
+          }
+          event.x += element_center_point[event.element_id].x();
+          event.y += element_center_point[event.element_id].y();
+        }
+        dispatch_mouse_events.push_back(event);
+      }
+    }
+    if (dispatch_mouse_events.size() > 0) {
+      Status status = web_view->DispatchMouseEvents(
+          dispatch_mouse_events, session->GetCurrentFrameId());
+      if (status.IsError())
+        return status;
+    }
+
+    std::list<TouchEvent> dispatch_touch_events;
+    for (size_t j = 0; j < touch_events_list.size(); j++) {
+      if (i < touch_events_list[j].size() &&
+          touch_events_list[j][i].type != kPause) {
+        TouchEvent event = touch_events_list[j][i];
+        if (!event.element_id.empty()) {
+          if (event.type == kTouchMove ||
+              element_center_point.find(event.element_id) ==
+                  element_center_point.end()) {
+            int center_x = 0, center_y = 0;
+            ElementInViewCenter(session, web_view, event.element_id, &center_x,
+                                &center_y);
+            element_center_point[event.element_id] =
+                gfx::Point(center_x, center_y);
+          }
+          event.x += element_center_point[event.element_id].x();
+          event.y += element_center_point[event.element_id].y();
+        }
+        dispatch_touch_events.push_back(event);
+      }
+    }
+    if (dispatch_touch_events.size() > 0) {
+      Status status = web_view->DispatchTouchEvents(dispatch_touch_events);
+      if (status.IsError())
+        return status;
+    }
+
+    std::list<KeyEvent> dispatch_key_events;
+    for (size_t j = 0; j < key_events_list.size(); j++) {
+      if (i < key_events_list[j].size() &&
+          key_events_list[j][i].type != kPauseEventType) {
+        dispatch_key_events.push_back(key_events_list[j][i]);
+      }
+    }
+    if (dispatch_key_events.size() > 0) {
+      Status status = web_view->DispatchKeyEvents(dispatch_key_events);
       if (status.IsError())
         return status;
     }
