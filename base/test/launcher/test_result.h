@@ -55,6 +55,7 @@ struct TestResult {
     TEST_CRASH,             // Test crashed (includes CHECK/DCHECK failures).
     TEST_SKIPPED,           // Test skipped (not run at all).
     TEST_EXCESSIVE_OUTPUT,  // Test exceeded output limit.
+    TEST_NOT_RUN,           // Test has not yet been run.
   };
 
   TestResult();

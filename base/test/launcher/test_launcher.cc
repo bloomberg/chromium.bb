@@ -1271,6 +1271,7 @@ void TestLauncher::RunTests() {
   }
 
   // Save an early test summary in case the launcher crashes or gets killed.
+  results_tracker_.GeneratePlaceholderIteration();
   MaybeSaveSummaryAsJSON({"EARLY_SUMMARY", kUnreliableResultsTag});
 
   test_started_count_ = launcher_delegate_->RunTests(this, test_names);

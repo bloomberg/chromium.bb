@@ -74,7 +74,9 @@ std::string TestResult::StatusAsString() const {
       return "SKIPPED";
     case TEST_EXCESSIVE_OUTPUT:
       return "EXCESSIVE_OUTPUT";
-     // Rely on compiler warnings to ensure all possible values are handled.
+    case TEST_NOT_RUN:
+      return "NOTRUN";
+      // Rely on compiler warnings to ensure all possible values are handled.
   }
 
   NOTREACHED();
