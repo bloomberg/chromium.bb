@@ -306,6 +306,9 @@ extern const base::Feature kDisablePostScriptPrinting;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kPolicyTool;
 #endif
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes;
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPreferHtmlOverPlugins;
