@@ -35,7 +35,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
-#include "ash/system/flag_warning/flag_warning_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -262,19 +261,6 @@ class ShelfViewTest : public AshTestBase {
     AshTestBase::SetUp();
     model_ = Shell::Get()->shelf_model();
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
-
-    // Several tests in this file are brittle and fail when the shelf width
-    // changes due to the flag warning button. Since we won't show this button
-    // to users in production, hide it in the tests. https://crbug.com/891080
-    // TODO(jamescook): Remove this when SingleProcessMash is on by default or
-    // when we remove the warning button.
-    if (::features::IsSingleProcessMash()) {
-      FlagWarningTray* flag_warning = GetPrimaryShelf()
-                                          ->GetStatusAreaWidget()
-                                          ->flag_warning_tray_for_testing();
-      ASSERT_TRUE(flag_warning);
-      flag_warning->SetVisible(false);
-    }
 
     // The bounds should be big enough for 4 buttons + overflow button.
     ASSERT_GE(shelf_view_->width(), 500);
