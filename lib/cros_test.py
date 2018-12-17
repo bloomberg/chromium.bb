@@ -12,9 +12,11 @@ import os
 import re
 
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import osutils
 from chromite.lib import device
+from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import vm
 
 
@@ -160,9 +162,10 @@ class CrOSTest(object):
     if self._device.board:
       cmd += ['--board', self._device.board]
     if self.results_dir:
-      cmd += ['--results_dir', self.results_dir]
+      cmd += ['--results_dir', path_util.ToChrootPath(self.results_dir)]
     if self._device.private_key:
-      cmd += ['--ssh_private_key', self._device.private_key]
+      cmd += ['--ssh_private_key',
+              path_util.ToChrootPath(self._device.private_key)]
     if self._device.log_level == 'debug':
       cmd += ['--debug']
     if self.test_that_args:
@@ -176,7 +179,8 @@ class CrOSTest(object):
     else:
       cmd += [self._device.device]
     cmd += self.autotest
-    return self._device.RunCommand(cmd)
+    return self._device.RunCommand(
+        cmd, enter_chroot=not cros_build_lib.IsInsideChroot())
 
   def _RunTests(self):
     """Run tests.
