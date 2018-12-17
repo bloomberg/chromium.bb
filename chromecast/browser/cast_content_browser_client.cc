@@ -53,7 +53,6 @@
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/network_hints/browser/network_hints_message_filter.h"
-#include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -885,13 +884,6 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
 
 std::string CastContentBrowserClient::GetUserAgent() const {
   return chromecast::shell::GetUserAgent();
-}
-
-void CastContentBrowserClient::RegisterOutOfProcessServices(
-    OutOfProcessServiceMap* services) {
-  services->emplace(
-      heap_profiling::mojom::kServiceName,
-      base::BindRepeating(&base::ASCIIToUTF16, "Profiling Service"));
 }
 
 }  // namespace shell

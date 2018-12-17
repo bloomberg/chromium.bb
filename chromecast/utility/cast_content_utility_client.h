@@ -19,11 +19,6 @@ class CastContentUtilityClient : public content::ContentUtilityClient {
 
   CastContentUtilityClient() {}
 
-  // content::ContentUtilityClient implementation:
-  bool HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request) override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(CastContentUtilityClient);
 };

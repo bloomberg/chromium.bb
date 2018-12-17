@@ -2,11 +2,6 @@
   "display_name": "Cast Renderer",
   "name": "content_renderer",
   "interface_provider_specs": {
-    "service_manager:connector": {
-      "provides": {
-        "browser": [ "heap_profiling.mojom.ProfilingClient" ]
-      }
-    },
     "navigation:frame": {
       "provides": {
         "browser": ["chromecast.shell.mojom.MediaPlaybackOptions"]
