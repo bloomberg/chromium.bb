@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -281,7 +282,7 @@ NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity& position) {
     return NGCaretPosition();
 
   const NGOffsetMapping* mapping =
-      NGOffsetMapping::GetForContainingBlockFlow(context);
+      NGInlineNode::GetOffsetMapping(context, nullptr);
   DCHECK(mapping);
   const base::Optional<unsigned> maybe_offset =
       mapping->GetTextContentOffset(position.GetPosition());
