@@ -34,7 +34,7 @@ constexpr float kVisibilityThreshold = 0.75;
 
 MediaControlsRotateToFullscreenDelegate::
     MediaControlsRotateToFullscreenDelegate(HTMLVideoElement& video)
-    : EventListener(kCPPEventListenerType), video_element_(video) {}
+    : video_element_(video) {}
 
 void MediaControlsRotateToFullscreenDelegate::Attach() {
   DCHECK(video_element_->isConnected());
@@ -95,11 +95,6 @@ void MediaControlsRotateToFullscreenDelegate::Detach() {
                                   false);
   dom_window->removeEventListener(event_type_names::kDeviceorientation, this,
                                   false);
-}
-
-bool MediaControlsRotateToFullscreenDelegate::operator==(
-    const EventListener& other) const {
-  return this == &other;
 }
 
 void MediaControlsRotateToFullscreenDelegate::Invoke(
@@ -292,7 +287,7 @@ MediaControlsRotateToFullscreenDelegate::ComputeScreenOrientation() const {
 }
 
 void MediaControlsRotateToFullscreenDelegate::Trace(blink::Visitor* visitor) {
-  EventListener::Trace(visitor);
+  NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
   visitor->Trace(visibility_observer_);
 }

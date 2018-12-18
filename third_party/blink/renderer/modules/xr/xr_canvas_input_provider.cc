@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
 
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/modules/xr/xr_device.h"
@@ -17,14 +17,10 @@ namespace blink {
 
 namespace {
 
-class XRCanvasInputEventListener : public EventListener {
+class XRCanvasInputEventListener : public NativeEventListener {
  public:
   XRCanvasInputEventListener(XRCanvasInputProvider* input_provider)
-      : EventListener(kCPPEventListenerType), input_provider_(input_provider) {}
-
-  bool operator==(const EventListener& that) const override {
-    return this == &that;
-  }
+      : input_provider_(input_provider) {}
 
   void Invoke(ExecutionContext* execution_context, Event* event) override {
     if (!input_provider_->ShouldProcessEvents())

@@ -10,6 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
@@ -237,16 +238,10 @@ TEST_F(HTMLMediaElementEventListenersTest,
             observed_results[0]);
 }
 
-class MockEventListener final : public EventListener {
+class MockEventListener final : public NativeEventListener {
  public:
   static MockEventListener* Create() {
     return MakeGarbageCollected<MockEventListener>();
-  }
-
-  MockEventListener() : EventListener(kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const final {
-    return this == &other;
   }
 
   MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));

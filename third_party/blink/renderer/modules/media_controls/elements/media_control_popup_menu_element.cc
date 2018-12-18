@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -40,10 +40,10 @@ bool FocusListItemIfDisplayed(Node* node) {
 }  // anonymous namespace
 
 class MediaControlPopupMenuElement::EventListener final
-    : public blink::EventListener {
+    : public NativeEventListener {
  public:
   explicit EventListener(MediaControlPopupMenuElement* popup_menu)
-      : blink::EventListener(kCPPEventListenerType), popup_menu_(popup_menu) {}
+      : popup_menu_(popup_menu) {}
 
   ~EventListener() final = default;
 
@@ -73,12 +73,8 @@ class MediaControlPopupMenuElement::EventListener final
     }
   }
 
-  bool operator==(const blink::EventListener& other) const final {
-    return &other == this;
-  }
-
   void Trace(blink::Visitor* visitor) final {
-    blink::EventListener::Trace(visitor);
+    NativeEventListener::Trace(visitor);
     visitor->Trace(popup_menu_);
   }
 

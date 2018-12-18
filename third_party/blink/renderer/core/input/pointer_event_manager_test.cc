@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/input/pointer_event_manager.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
@@ -14,17 +14,10 @@
 namespace blink {
 
 namespace {
-class CheckPointerEventListenerCallback final : public EventListener {
+class CheckPointerEventListenerCallback final : public NativeEventListener {
  public:
   static CheckPointerEventListenerCallback* Create() {
     return MakeGarbageCollected<CheckPointerEventListenerCallback>();
-  }
-
-  CheckPointerEventListenerCallback()
-      : EventListener(EventListener::kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const override {
-    return this == &other;
   }
 
   void Invoke(ExecutionContext*, Event* event) override {
@@ -47,17 +40,11 @@ class CheckPointerEventListenerCallback final : public EventListener {
   int pen_event_received_count_ = 0;
 };
 
-class PointerEventCoordinateListenerCallback final : public EventListener {
+class PointerEventCoordinateListenerCallback final
+    : public NativeEventListener {
  public:
   static PointerEventCoordinateListenerCallback* Create() {
     return MakeGarbageCollected<PointerEventCoordinateListenerCallback>();
-  }
-
-  PointerEventCoordinateListenerCallback()
-      : EventListener(EventListener::kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const override {
-    return this == &other;
   }
 
   void Invoke(ExecutionContext*, Event* event) override {

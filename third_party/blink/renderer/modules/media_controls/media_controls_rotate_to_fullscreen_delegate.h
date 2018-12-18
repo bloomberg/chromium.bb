@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_ROTATE_TO_FULLSCREEN_DELEGATE_H_
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -19,7 +19,8 @@ class ElementVisibilityObserver;
 // fullscreen when the device is rotated whilst watching a <video>. It is meant
 // to be created by `MediaControlsImpl` when the feature applies. Once created,
 // it will listen for events.
-class MediaControlsRotateToFullscreenDelegate final : public EventListener {
+class MediaControlsRotateToFullscreenDelegate final
+    : public NativeEventListener {
  public:
   explicit MediaControlsRotateToFullscreenDelegate(HTMLVideoElement&);
 
@@ -33,7 +34,7 @@ class MediaControlsRotateToFullscreenDelegate final : public EventListener {
   void Detach();
 
   // EventListener implementation.
-  bool operator==(const EventListener&) const override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   void Trace(blink::Visitor*) override;
 
@@ -42,9 +43,6 @@ class MediaControlsRotateToFullscreenDelegate final : public EventListener {
 
   // Represents either screen orientation or video aspect ratio.
   enum class SimpleOrientation { kPortrait, kLandscape, kUnknown };
-
-  // EventListener implementation.
-  void Invoke(ExecutionContext*, Event*) override;
 
   void OnStateChange();
   void OnVisibilityChange(bool is_visible);

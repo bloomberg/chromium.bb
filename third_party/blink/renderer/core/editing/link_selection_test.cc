@@ -6,6 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -268,16 +269,10 @@ TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownloadWhenTextSelected) {
 
 class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
  protected:
-  class MockEventListener final : public EventListener {
+  class MockEventListener final : public NativeEventListener {
    public:
     static MockEventListener* Create() {
       return MakeGarbageCollected<MockEventListener>();
-    }
-
-    MockEventListener() : EventListener(kCPPEventListenerType) {}
-
-    bool operator==(const EventListener& other) const final {
-      return this == &other;
     }
 
     MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));

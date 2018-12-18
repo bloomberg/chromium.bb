@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_cursor_with_value.h"
@@ -680,7 +681,7 @@ namespace {
 // the object store. It only needs to be kept alive by virtue of being
 // a listener on an IDBRequest object, in the same way that JavaScript
 // cursor success handlers are kept alive.
-class IndexPopulator final : public EventListener {
+class IndexPopulator final : public NativeEventListener {
  public:
   static IndexPopulator* Create(
       ScriptState* script_state,
@@ -698,8 +699,7 @@ class IndexPopulator final : public EventListener {
                  int64_t transaction_id,
                  int64_t object_store_id,
                  scoped_refptr<const IDBIndexMetadata> index_metadata)
-      : EventListener(kCPPEventListenerType),
-        script_state_(script_state),
+      : script_state_(script_state),
         database_(database),
         transaction_id_(transaction_id),
         object_store_id_(object_store_id),
@@ -707,14 +707,10 @@ class IndexPopulator final : public EventListener {
     DCHECK(index_metadata_.get());
   }
 
-  bool operator==(const EventListener& other) const override {
-    return this == &other;
-  }
-
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(script_state_);
     visitor->Trace(database_);
-    EventListener::Trace(visitor);
+    NativeEventListener::Trace(visitor);
   }
 
  private:

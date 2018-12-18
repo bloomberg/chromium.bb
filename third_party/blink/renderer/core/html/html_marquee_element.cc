@@ -24,7 +24,6 @@
 
 #include <cstdlib>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_marquee_element.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
@@ -37,7 +36,7 @@
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -103,14 +102,9 @@ class HTMLMarqueeElement::RequestAnimationFrameCallback final
   DISALLOW_COPY_AND_ASSIGN(RequestAnimationFrameCallback);
 };
 
-class HTMLMarqueeElement::AnimationFinished final : public EventListener {
+class HTMLMarqueeElement::AnimationFinished final : public NativeEventListener {
  public:
-  explicit AnimationFinished(HTMLMarqueeElement* marquee)
-      : EventListener(kCPPEventListenerType), marquee_(marquee) {}
-
-  bool operator==(const EventListener& that) const override {
-    return this == &that;
-  }
+  explicit AnimationFinished(HTMLMarqueeElement* marquee) : marquee_(marquee) {}
 
   void Invoke(ExecutionContext*, Event*) override {
     ++marquee_->loop_count_;
@@ -119,13 +113,11 @@ class HTMLMarqueeElement::AnimationFinished final : public EventListener {
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(marquee_);
-    EventListener::Trace(visitor);
+    NativeEventListener::Trace(visitor);
   }
 
  private:
   Member<HTMLMarqueeElement> marquee_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimationFinished);
 };
 
 Node::InsertionNotificationRequest HTMLMarqueeElement::InsertedInto(

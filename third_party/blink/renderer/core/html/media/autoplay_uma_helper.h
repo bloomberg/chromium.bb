@@ -8,7 +8,7 @@
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -59,7 +59,7 @@ class Document;
 class ElementVisibilityObserver;
 class HTMLMediaElement;
 
-class CORE_EXPORT AutoplayUmaHelper : public EventListener,
+class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
                                       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(AutoplayUmaHelper);
 
@@ -68,8 +68,6 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
 
   explicit AutoplayUmaHelper(HTMLMediaElement*);
   ~AutoplayUmaHelper() override;
-
-  bool operator==(const EventListener&) const override;
 
   void ContextDestroyed(ExecutionContext*) override;
 
@@ -85,6 +83,8 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
 
   bool HasSource() const { return !sources_.empty(); }
 
+  void Invoke(ExecutionContext*, Event*) override;
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -93,7 +93,6 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
   // Called when source is initialized and loading starts.
   void OnLoadStarted();
 
-  void Invoke(ExecutionContext*, Event*) override;
   void HandlePlayingEvent();
   void HandlePauseEvent();
   virtual void HandleContextDestroyed();  // Make virtual for testing.

@@ -5,11 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_VIDEO_WAKE_LOCK_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_VIDEO_WAKE_LOCK_H_
 
-#include "base/macros.h"
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_state.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/html/media/remote_playback_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 
@@ -26,16 +25,13 @@ class HTMLVideoElement;
 // merge all the requests and take the appropriate system wake lock.
 // VideoWakeLock only uses "screen" related wake lock: it prevents the screen
 // from locking on mobile or the lockscreen to show up on desktop.
-class CORE_EXPORT VideoWakeLock final : public EventListener,
+class CORE_EXPORT VideoWakeLock final : public NativeEventListener,
                                         public PageVisibilityObserver,
                                         public RemotePlaybackObserver {
   USING_GARBAGE_COLLECTED_MIXIN(VideoWakeLock)
 
  public:
   explicit VideoWakeLock(HTMLVideoElement&);
-
-  // EventListenr implementation.
-  bool operator==(const EventListener&) const final;
 
   void Trace(blink::Visitor*) final;
 
@@ -80,8 +76,6 @@ class CORE_EXPORT VideoWakeLock final : public EventListener,
   bool active_ = false;
   WebRemotePlaybackState remote_playback_state_ =
       WebRemotePlaybackState::kDisconnected;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoWakeLock);
 };
 
 }  // namespace blink
