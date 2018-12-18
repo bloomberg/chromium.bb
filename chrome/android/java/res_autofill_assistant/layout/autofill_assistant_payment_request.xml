@@ -36,47 +36,6 @@
 
     </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
 
-    <!--
-    Padding on the checkbox does not affect the padding to the left of the
-    checkbox field, so we wrap it in a FrameLayout and control the margins and
-    padding there.
-    -->
-    <TextView
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_marginStart="@dimen/editor_dialog_section_large_spacing"
-        android:layout_marginTop="@dimen/editor_dialog_section_small_spacing"
-        android:textAppearance="@style/BlueLink2"
-        android:text="@string/autofill_assistant_terms_title" />
-
-    <FrameLayout
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_marginStart="@dimen/editor_dialog_section_large_spacing"
-        android:layout_marginEnd="@dimen/editor_dialog_section_large_spacing"
-        android:layout_marginTop="@dimen/editor_dialog_section_small_spacing"
-        android:layout_marginBottom="@dimen/editor_dialog_section_small_spacing"
-        android:paddingTop="9dp"
-        android:paddingBottom="9dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:background="@drawable/autofill_assistant_checkbox_bg" >
-
-        <!--
-        TODO(crbug.com/806868): Remove the tint and text color to be compliant
-        with Chrome style.
-        -->
-        <android.support.v7.widget.AppCompatCheckBox
-            android:id="@+id/terms_checkbox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="0dp"
-            android:padding="0dp"
-            android:paddingStart="12dp"
-            android:text="@string/autofill_assistant_terms" />
-
-    </FrameLayout>
-
     <include layout="@layout/autofill_assistant_payment_request_bottom_bar" />
 
 </org.chromium.chrome.browser.widget.BoundedLinearLayout>
