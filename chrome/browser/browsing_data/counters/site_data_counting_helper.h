@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_DATA_COUNTING_HELPER_H_
 
 #include <set>
+#include <vector>
+
+#include "base/callback.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
