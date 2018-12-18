@@ -20,7 +20,6 @@
 namespace content {
 
 class BackgroundFetchContext;
-class RenderFrameHost;
 class RenderProcessHost;
 
 class CONTENT_EXPORT BackgroundFetchServiceImpl
@@ -29,7 +28,8 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   BackgroundFetchServiceImpl(
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
       url::Origin origin,
-      RenderFrameHost* render_frame_host);
+      int render_frame_tree_node_id,
+      ResourceRequestInfo::WebContentsGetter wc_getter);
   ~BackgroundFetchServiceImpl() override;
 
   static void CreateForWorker(
@@ -81,7 +81,8 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   static void CreateOnIoThread(
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
       url::Origin origin,
-      RenderFrameHost* render_frame_host,
+      int render_frame_tree_node_id,
+      ResourceRequestInfo::WebContentsGetter wc_getter,
       blink::mojom::BackgroundFetchServiceRequest request);
 
   // Validates and returns whether the |developer_id|, |unique_id|, |requests|
@@ -98,7 +99,8 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
 
   const url::Origin origin_;
 
-  RenderFrameHost* render_frame_host_;
+  int render_frame_tree_node_id_;
+  ResourceRequestInfo::WebContentsGetter wc_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchServiceImpl);
 };

@@ -20,7 +20,6 @@
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -138,7 +137,8 @@ void BackgroundFetchContext::StartFetch(
     blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
-    RenderFrameHost* render_frame_host,
+    int render_frame_tree_node_id,
+    const ResourceRequestInfo::WebContentsGetter& wc_getter,
     blink::mojom::BackgroundFetchService::FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -148,33 +148,13 @@ void BackgroundFetchContext::StartFetch(
   // operator uses.
   DCHECK_EQ(0u, fetch_callbacks_.count(registration_id));
   fetch_callbacks_[registration_id] = std::move(callback);
-  int frame_tree_node_id =
-      render_frame_host ? render_frame_host->GetFrameTreeNodeId() : 0;
 
-  GetPermissionForOrigin(
-      registration_id.origin(), render_frame_host,
+  delegate_proxy_.GetPermissionForOrigin(
+      registration_id.origin(), wc_getter,
       base::BindOnce(&BackgroundFetchContext::DidGetPermission,
                      weak_factory_.GetWeakPtr(), registration_id,
                      std::move(requests), std::move(options), icon,
-                     std::move(ukm_data), frame_tree_node_id));
-}
-
-void BackgroundFetchContext::GetPermissionForOrigin(
-    const url::Origin& origin,
-    RenderFrameHost* render_frame_host,
-    GetPermissionCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ResourceRequestInfo::WebContentsGetter wc_getter = base::NullCallback();
-
-  // Permissions need to go through the DownloadRequestLimiter if the fetch
-  // is started from a top-level frame.
-  if (render_frame_host && !render_frame_host->GetParent()) {
-    wc_getter = base::BindRepeating(&WebContents::FromFrameTreeNodeId,
-                                    render_frame_host->GetFrameTreeNodeId());
-  }
-
-  delegate_proxy_.GetPermissionForOrigin(origin, std::move(wc_getter),
-                                         std::move(callback));
+                     std::move(ukm_data), render_frame_tree_node_id));
 }
 
 void BackgroundFetchContext::DidGetPermission(

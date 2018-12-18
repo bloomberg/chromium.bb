@@ -34,7 +34,6 @@ class BackgroundFetchRequestMatchParams;
 class BackgroundFetchScheduler;
 class BrowserContext;
 class CacheStorageContextImpl;
-class RenderFrameHost;
 class ServiceWorkerContextWrapper;
 
 // The BackgroundFetchContext is the central moderator of ongoing background
@@ -83,7 +82,8 @@ class CONTENT_EXPORT BackgroundFetchContext
                   blink::mojom::BackgroundFetchOptionsPtr options,
                   const SkBitmap& icon,
                   blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
-                  RenderFrameHost* render_frame_host,
+                  int render_frame_tree_node_id,
+                  const ResourceRequestInfo::WebContentsGetter& wc_getter,
                   blink::mojom::BackgroundFetchService::FetchCallback callback);
 
   // Gets display size for the icon for Background Fetch UI.
@@ -170,12 +170,6 @@ class CONTENT_EXPORT BackgroundFetchContext
   // environments. Must be called directly after the constructor.
   void SetDataManagerForTesting(
       std::unique_ptr<BackgroundFetchDataManager> data_manager);
-
-  // Check if |origin| has permission to start a fetch.
-  // virtual for testing.
-  void GetPermissionForOrigin(const url::Origin& origin,
-                              RenderFrameHost* render_frame_host,
-                              GetPermissionCallback callback);
 
   // Callback for GetPermissionForOrigin.
   void DidGetPermission(const BackgroundFetchRegistrationId& registration_id,
