@@ -21,7 +21,6 @@
 #include "base/threading/thread.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
-#include "media/gpu/h264_decoder.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
 #include "media/gpu/v4l2/v4l2_device.h"
@@ -71,7 +70,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
  private:
-  class V4L2H264Accelerator;
   class V4L2VP8Accelerator;
   class V4L2VP9Accelerator;
 
