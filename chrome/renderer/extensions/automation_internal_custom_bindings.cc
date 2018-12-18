@@ -806,7 +806,16 @@ void AutomationInternalCustomBindings::AddRoutes() {
         ax::mojom::IntAttribute attribute =
             ui::ParseIntAttribute(attribute_name.c_str());
         int attr_value;
-        if (!node->data().GetIntAttribute(attribute, &attr_value))
+
+        if (attribute == ax::mojom::IntAttribute::kPosInSet) {
+          attr_value = node->GetPosInSet();
+          if (attr_value == 0)
+            return;
+        } else if (attribute == ax::mojom::IntAttribute::kSetSize) {
+          attr_value = node->GetSetSize();
+          if (attr_value == 0)
+            return;
+        } else if (!node->data().GetIntAttribute(attribute, &attr_value))
           return;
 
         result.Set(v8::Integer::New(isolate, attr_value));
