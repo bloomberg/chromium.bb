@@ -76,10 +76,6 @@ const base::Feature kImeServiceConnectable{"ImeServiceConnectable",
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables the MultiDevice API on Chrome OS.
-const base::Feature kMultiDeviceApi{"MultiDeviceApi",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable or disable native controls in video player on Chrome OS.
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_DISABLED_BY_DEFAULT};

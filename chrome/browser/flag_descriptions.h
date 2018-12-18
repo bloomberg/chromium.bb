@@ -2067,9 +2067,6 @@ extern const char kAggressiveThresholds[];
 extern const char kMtpWriteSupportName[];
 extern const char kMtpWriteSupportDescription[];
 
-extern const char kMultiDeviceApiName[];
-extern const char kMultiDeviceApiDescription[];
-
 extern const char kNetworkPortalNotificationName[];
 extern const char kNetworkPortalNotificationDescription[];
 

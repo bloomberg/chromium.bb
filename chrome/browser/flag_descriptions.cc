@@ -3436,12 +3436,6 @@ const char kMtpWriteSupportDescription[] =
     "MTP write support in File System API (and file manager). In-place editing "
     "operations are not supported.";
 
-const char kMultiDeviceApiName[] = "Enables the MultiDevice API";
-const char kMultiDeviceApiDescription[] =
-    "Enable Mojo-based API which provides synced device metadata and the "
-    "ability to connect to other devices associated the logged-in Google "
-    "account.";
-
 const char kNetworkPortalNotificationName[] =
     "Notifications about captive portals";
 const char kNetworkPortalNotificationDescription[] =
