@@ -44,6 +44,16 @@ class SharedProtoDatabase
       bool create_if_missing,
       Callbacks::InitStatusCallback callback);
 
+  // A version of GetClient that returns the client in a callback instead of
+  // giving back a client instance immediately.
+  template <typename T>
+  void GetClientAsync(
+      const std::string& client_namespace,
+      const std::string& type_prefix,
+      bool create_if_missing,
+      base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient<T>>)>
+          callback);
+
  private:
   friend class base::RefCountedThreadSafe<SharedProtoDatabase>;
   friend class ProtoDatabaseProvider;
@@ -82,9 +92,7 @@ class SharedProtoDatabase
       Callbacks::InitStatusCallback callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
       Enums::InitStatus status);
-  void RunInitCallback(
-      Callbacks::InitStatusCallback callback,
-      scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
+  void RunInitCallback(Callbacks::InitStatusCallback callback);
 
   LevelDB* GetLevelDBForTesting() const;
 
@@ -112,6 +120,42 @@ class SharedProtoDatabase
 
   DISALLOW_COPY_AND_ASSIGN(SharedProtoDatabase);
 };
+
+template <typename T>
+void GetClientInitCallback(
+    base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient<T>>)>
+        callback,
+    std::unique_ptr<SharedProtoDatabaseClient<T>> client,
+    Enums::InitStatus status) {
+  // |current_task_runner| is valid because Init already takes the current
+  // TaskRunner as a parameter and uses that to trigger this callback when it's
+  // finished.
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
+  if (status != Enums::InitStatus::kOK && status != Enums::InitStatus::kCorrupt)
+    client.reset();
+  current_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(client)));
+}
+
+template <typename T>
+void SharedProtoDatabase::GetClientAsync(
+    const std::string& client_namespace,
+    const std::string& type_prefix,
+    bool create_if_missing,
+    base::OnceCallback<void(std::unique_ptr<SharedProtoDatabaseClient<T>>)>
+        callback) {
+  auto client = GetClientInternal<T>(client_namespace, type_prefix);
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SharedProtoDatabase::Init, weak_factory_.GetWeakPtr(),
+                     create_if_missing,
+                     base::BindOnce(&GetClientInitCallback<T>,
+                                    std::move(callback), std::move(client)),
+                     std::move(current_task_runner)));
+}
 
 template <typename T>
 std::unique_ptr<SharedProtoDatabaseClient<T>> SharedProtoDatabase::GetClient(

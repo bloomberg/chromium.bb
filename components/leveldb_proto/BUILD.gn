@@ -6,6 +6,7 @@ static_library("leveldb_proto") {
   sources = [
     "leveldb_database.cc",
     "leveldb_database.h",
+    "migration_delegate.h",
     "proto_database.cc",
     "proto_database.h",
     "proto_database_impl.h",
@@ -20,6 +21,10 @@ static_library("leveldb_proto") {
     "shared_proto_database.h",
     "shared_proto_database_client.cc",
     "shared_proto_database_client.h",
+    "shared_proto_database_client_list.cc",
+    "shared_proto_database_client_list.h",
+    "shared_proto_database_provider.cc",
+    "shared_proto_database_provider.h",
     "unique_proto_database.h",
   ]
 
@@ -47,6 +52,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "proto_database_wrapper_unittest.cc",
     "shared_proto_database_client_unittest.cc",
     "shared_proto_database_unittest.cc",
     "unique_proto_database_unittest.cc",

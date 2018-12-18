@@ -459,6 +459,7 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBSaveAndLoadKeys) {
 
   // Shutdown database.
   db.reset();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(UniqueProtoDatabaseTest, TestDBGetNotFound) {

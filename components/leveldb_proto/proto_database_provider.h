@@ -10,6 +10,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/proto_database_wrapper.h"
+#include "components/leveldb_proto/shared_proto_database_provider.h"
 
 namespace leveldb_proto {
 
@@ -41,26 +42,29 @@ class ProtoDatabaseProvider : public KeyedService {
       const base::FilePath& unique_db_dir,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
-  void GetSharedDBInstance(GetSharedDBInstanceCallback callback);
+  virtual void GetSharedDBInstance(
+      GetSharedDBInstanceCallback callback,
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
 
   ~ProtoDatabaseProvider() override;
 
  private:
+  friend class TestProtoDatabaseProvider;
+  friend class ProtoDatabaseWrapperTest;
+
   ProtoDatabaseProvider(const base::FilePath& profile_dir);
-
-  // The shared DB is lazy-initialized, and this ensures that we have a valid
-  // instance before triggering the GetSharedDBInstanceCallback on the original
-  // calling sequence.
-  void PrepareSharedDBInstanceOnTaskRunner();
-
-  void RunGetSharedDBInstanceCallback(GetSharedDBInstanceCallback callback);
 
   base::FilePath profile_dir_;
   scoped_refptr<SharedProtoDatabase> db_;
   base::Lock get_db_lock_;
   // The SequencedTaskRunner used to ensure thread-safe behaviour for
-  // GetSharedDBInstance.
+  // GetSharedDBInstance when called from multiple clients.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // We store the creation sequence because we want to use that to make requests
+  // to the main provider that rely on WeakPtrs from this, so they're all
+  // invalidated/checked on the same sequence.
+  scoped_refptr<base::SequencedTaskRunner> creation_sequence_;
 
   base::WeakPtrFactory<ProtoDatabaseProvider> weak_factory_;
 
@@ -73,8 +77,10 @@ std::unique_ptr<ProtoDatabase<T>> ProtoDatabaseProvider::GetDB(
     const std::string& type_prefix,
     const base::FilePath& unique_db_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-  return std::make_unique<ProtoDatabaseWrapper<T>>(
-      client_namespace, type_prefix, unique_db_dir, task_runner);
+  return base::WrapUnique(new ProtoDatabaseWrapper<T>(
+      client_namespace, type_prefix, unique_db_dir, task_runner,
+      base::WrapUnique(new SharedProtoDatabaseProvider(
+          creation_sequence_, weak_factory_.GetWeakPtr()))));
 }
 
 }  // namespace leveldb_proto
