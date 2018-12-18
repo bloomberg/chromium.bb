@@ -81,7 +81,7 @@ SYNC_TEST_F(
       ui.attach(document.body);
       assertEqualsDOM(this.buildUIExpectation(`
               <select aria-labelledby="bluetoothBrailleSelectLabel"></select>
-                <button id="connectOrDisconnect" disabled=""></button>
+                <button id="connectOrDisconnect" disabled="">Connect</button>
                 <button id="forget" disabled="">Forget</button>`),
           document.body.children[0]);
     });
@@ -225,7 +225,7 @@ SYNC_TEST_F(
             <div class="option" hidden="">
               <span id="bluetoothBrailleSelectLabel">${this.selectLabel}</span>
               <select aria-labelledby="bluetoothBrailleSelectLabel"></select>
-              <button id="connectOrDisconnect" disabled=""></button>
+              <button id="connectOrDisconnect" disabled="">Connect</button>
               <button id="forget" disabled="">Forget</button>
             </div>
           </div>`,
