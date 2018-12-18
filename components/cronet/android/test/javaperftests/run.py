@@ -204,11 +204,11 @@ def main():
   # allow benchmark_runner to in turn open this file up and find the
   # CronetPerfTestBenchmark class to run the benchmark.
   top_level_dir = os.path.dirname(os.path.realpath(__file__))
-  expectations_file = os.path.join(top_level_dir, 'expectations.config')
+  expectations_files = [os.path.join(top_level_dir, 'expectations.config')]
   runner_config = chromium_config.ChromiumConfig(
       top_level_dir=top_level_dir,
       benchmark_dirs=[top_level_dir],
-      expectations_file=expectations_file)
+      expectations_files=expectations_files)
   sys.argv.insert(1, 'run')
   sys.argv.insert(2, 'run.CronetPerfTestBenchmark')
   sys.argv.insert(3, '--browser=android-system-chrome')
