@@ -1430,7 +1430,7 @@ component("ash") {
     ":dbus_service_files",
   ]
 
-  # Usage of content should be in ash_content_unittests.
+  # Ash should not depend upon content at all.
   assert_no_deps = [
     "//content/public/browser",
     "//content/public/common",
@@ -1567,63 +1567,6 @@ copy("dbus_service_files") {
   ]
 }
 
-# This target is intended for tests that use content. In general very few tests
-# need or use content and should be placed in |ash_unittests| instead.
-test("ash_content_unittests") {
-  sources = [
-    "content/display/screen_orientation_controller_unittest.cc",
-    "test/ash_unittests.cc",
-  ]
-  configs += [
-    "//build/config:precompiled_headers",
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
-  deps = [
-    ":ash",
-    ":ash_unittests_catalog_source",
-    ":test_support_with_content",
-    "//ash/public/cpp",
-    "//base",
-    "//base/test:test_support",
-    "//chromeos",
-    "//chromeos:power_manager_proto",
-    "//chromeos:test_support_without_gmock",
-    "//components/account_id",
-    "//components/quirks",
-    "//components/user_manager",
-    "//content/public/browser",
-    "//content/test:test_support",
-    "//device/bluetooth",
-    "//mojo/core/embedder",
-    "//net",
-    "//services/catalog:lib",
-    "//skia",
-    "//testing/gtest",
-    "//ui/aura",
-    "//ui/aura:test_support",
-    "//ui/chromeos",
-    "//ui/compositor:test_support",
-    "//ui/display",
-    "//ui/display:test_support",
-    "//ui/gl:test_support",
-    "//ui/keyboard",
-    "//ui/keyboard:mojom",
-    "//ui/message_center",
-    "//ui/message_center:test_support",
-    "//ui/message_center/public/cpp",
-    "//ui/views",
-    "//ui/views:test_support",
-    "//ui/views/controls/webview:test_support",
-    "//ui/web_dialogs:test_support",
-    "//ui/wm/public",
-  ]
-
-  data_deps = [
-    "//ash/resources:ash_test_resources_with_content_100_percent",
-  ]
-}
-
 test("ash_unittests") {
   sources = [
     "accelerators/accelerator_commands_unittest.cc",
@@ -1682,6 +1625,7 @@ test("ash_unittests") {
     "display/resolution_notification_controller_unittest.cc",
     "display/root_window_transformers_unittest.cc",
     "display/screen_ash_unittest.cc",
+    "display/screen_orientation_controller_unittest.cc",
     "display/screen_position_controller_unittest.cc",
     "display/touch_calibrator_controller_unittest.cc",
     "display/unified_mouse_warp_controller_unittest.cc",

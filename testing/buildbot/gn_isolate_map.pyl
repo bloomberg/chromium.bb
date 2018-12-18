@@ -168,10 +168,6 @@
     "label": "//content/test/fuzzer:appcache_manifest_parser_fuzzer",
     "type": "fuzzer",
   },
-  "ash_content_unittests": {
-    "label": "//ash:ash_content_unittests",
-    "type": "windowed_test_launcher",
-  },
   "ash_unittests": {
     "label": "//ash:ash_unittests",
     "type": "windowed_test_launcher",

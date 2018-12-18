@@ -5,14 +5,11 @@ Ash uses the views UI toolkit (e.g. views::View, views::Widget, etc.) backed
 by the aura native widget and layer implementations.
 
 Ash sits below chrome in the dependency graph (i.e. it cannot depend on code
-in //chrome). It has a few dependencies on //content, but these are isolated
-in their own module in //ash/content. This allows targets like ash_unittests
-to build more quickly.
+in //chrome).
 
 Tests
 -----
-Most tests should be added to the ash_unittests target. Tests that rely on
-//content should be added to ash_content_unittests, but these should be rare.
+Tests should be added to the ash_unittests target.
 
 Tests can bring up most of the ash UI and simulate a login session by deriving
 from AshTestBase. This is often needed to test code that depends on ash::Shell
