@@ -352,6 +352,7 @@ class ShelfLayoutManagerTest : public AshTestBase {
   }
 
   void RunGestureDragTests(const gfx::Point& shown, const gfx::Point& hidden);
+  void TestHomeLauncherGestureHandler(bool autohide_shelf);
 
   gfx::Rect GetVisibleShelfWidgetBoundsInScreen() {
     gfx::Rect bounds = GetShelfWidget()->GetWindowBoundsInScreen();
@@ -816,6 +817,97 @@ void ShelfLayoutManagerTest::RunGestureDragTests(
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_EQ(shelf_shown.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+}
+
+void ShelfLayoutManagerTest::TestHomeLauncherGestureHandler(
+    bool autohide_shelf) {
+  // Home launcher is only available in tablet mode.
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  Shelf* shelf = GetPrimaryShelf();
+  if (autohide_shelf)
+    shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  // Create more than one window to prepare for the possibly window stacking
+  // change during drag.
+  std::unique_ptr<aura::Window> extra_window =
+      AshTestBase::CreateTestWindow(gfx::Rect(100, 10, 100, 100));
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  if (autohide_shelf) {
+    gfx::Rect display_bounds =
+        display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+    const gfx::Point start(display_bounds.bottom_center());
+    const gfx::Point end(start + gfx::Vector2d(0, -80));
+    const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+    const int kNumScrollSteps = 4;
+    // Swipe up to show the auto-hide shelf.
+    GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                               kNumScrollSteps);
+    EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  }
+
+  const gfx::Point shelf_center =
+      GetVisibleShelfWidgetBoundsInScreen().CenterPoint();
+
+  // Helper to create a scroll event for this test.
+  auto create_scroll_event = [&shelf_center](ui::EventType type,
+                                             float scroll_y) {
+    ui::GestureEventDetails details =
+        type == ui::ET_GESTURE_SCROLL_END
+            ? ui::GestureEventDetails(type)
+            : ui::GestureEventDetails(type, 0, scroll_y);
+    return ui::GestureEvent(shelf_center.x(), shelf_center.y(), 0,
+                            base::TimeTicks(), details);
+  };
+
+  // The home launcher gesture handler should not be handling any window
+  // initially.
+  ShelfLayoutManager* manager = GetShelfLayoutManager();
+  HomeLauncherGestureHandler* gesture_handler =
+      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+  ASSERT_TRUE(gesture_handler);
+  ASSERT_FALSE(gesture_handler->GetWindow1());
+
+  // Tests that after scrolling up on the shelf, the home launcher gesture
+  // handler will be acting on |window|.
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, -1.f));
+  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
+  if (autohide_shelf) {
+    // Auto-hide shelf should keep visible after scrolling up on it.
+    EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  }
+
+  // Tests that since the initial scroll event was scrolled up, the home
+  // launcher gesture handler will continue to act on |window| regardless of
+  // direction of scroll updates.
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
+  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, 1.f));
+  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
+  if (autohide_shelf)
+    EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // End the scroll.
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_END, 1.f));
+  ASSERT_FALSE(gesture_handler->GetWindow1());
+  if (autohide_shelf)
+    EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Tests that if the initial scroll event is directed downwards, the home
+  // launcher gesture handler will not act on |window|.
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, 1.f));
+  EXPECT_FALSE(gesture_handler->GetWindow1());
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
+  EXPECT_FALSE(gesture_handler->GetWindow1());
 }
 
 // Makes sure SetVisible updates work area and widget appropriately.
@@ -2397,68 +2489,16 @@ TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
   EXPECT_EQ(gfx::Point(500, 400), status_area_bounds.bottom_right());
 }
 
-// Tests that the shelf forwards the appropriate events to the home launcher
-// gesture handler to handle.
+// Tests that the always shown shelf forwards the appropriate events to the home
+// launcher gesture handler to handle.
 TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandler) {
-  // Home launcher is only available in tablet mode.
-  TabletModeControllerTestApi().EnterTabletMode();
+  TestHomeLauncherGestureHandler(/*autohide_shelf=*/false);
+}
 
-  // Home launcher gesture handler needs at least one window.
-  std::unique_ptr<aura::Window> window =
-      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
-  wm::ActivateWindow(window.get());
-
-  const gfx::Point shelf_center =
-      GetVisibleShelfWidgetBoundsInScreen().CenterPoint();
-
-  // Helper to create a scroll event for this test.
-  auto create_scroll_event = [&shelf_center](ui::EventType type,
-                                             float scroll_y) {
-    ui::GestureEventDetails details =
-        type == ui::ET_GESTURE_SCROLL_END
-            ? ui::GestureEventDetails(type)
-            : ui::GestureEventDetails(type, 0, scroll_y);
-    return ui::GestureEvent(shelf_center.x(), shelf_center.y(), 0,
-                            base::TimeTicks(), details);
-  };
-
-  // The home launcher gesture handler should not be handling any window
-  // initially.
-  ShelfLayoutManager* manager = GetShelfLayoutManager();
-  HomeLauncherGestureHandler* gesture_handler =
-      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-  ASSERT_TRUE(gesture_handler);
-  ASSERT_FALSE(gesture_handler->GetWindow1());
-
-  // Tests that after scrolling up on the shelf, the home launcher gesture
-  // handler will be acting on |window|.
-  manager->ProcessGestureEvent(
-      create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, -1.f));
-  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
-
-  // Tests that since the initial scroll event was scrolled up, the home
-  // launcher gesture handler will continue to act on |window| regardless of
-  // direction of scroll updates.
-  manager->ProcessGestureEvent(
-      create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
-  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
-  manager->ProcessGestureEvent(
-      create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, 1.f));
-  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
-
-  // End the scroll.
-  manager->ProcessGestureEvent(
-      create_scroll_event(ui::ET_GESTURE_SCROLL_END, 1.f));
-  ASSERT_FALSE(gesture_handler->GetWindow1());
-
-  // Tests that if the initial scroll event is directed downwards, the home
-  // launcher gesture handler will not act on |window|.
-  manager->ProcessGestureEvent(
-      create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, 1.f));
-  EXPECT_FALSE(gesture_handler->GetWindow1());
-  manager->ProcessGestureEvent(
-      create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
-  EXPECT_FALSE(gesture_handler->GetWindow1());
+// Tests that the auto-hide shelf keeps visible and forwards the appropriate
+// events to the home launcher gesture handler to handle.
+TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandlerAutoHideShelf) {
+  TestHomeLauncherGestureHandler(/*autohide_shelf=*/true);
 }
 
 // Tests that tap outside of the AUTO_HIDE_SHOWN shelf should hide it.

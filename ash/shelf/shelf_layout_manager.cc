@@ -1102,6 +1102,9 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
+  if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS)
+    return SHELF_AUTO_HIDE_SHOWN;
+
   if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS ||
       gesture_drag_status_ == GESTURE_DRAG_CANCEL_IN_PROGRESS) {
     return gesture_drag_auto_hide_state_;
@@ -1255,13 +1258,16 @@ bool ShelfLayoutManager::StartGestureDrag(
 
   if (ShouldHomeGestureHandleEvent(
           gesture_in_screen.details().scroll_y_hint())) {
+    GestureDragStatus previous_drag_status = gesture_drag_status_;
+    gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
     HomeLauncherGestureHandler* home_launcher_handler =
         Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
     if (home_launcher_handler->OnPressEvent(
             HomeLauncherGestureHandler::Mode::kSlideUpToShow,
             gesture_in_screen.location())) {
-      gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
       return true;
+    } else {
+      gesture_drag_status_ = previous_drag_status;
     }
   }
 
