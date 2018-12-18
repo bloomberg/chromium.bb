@@ -488,6 +488,12 @@
     <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS" desc="Label for managing shared folders in Crostini.">
       Manage shared files &amp; folders
     </message>
+    <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_ADD" desc="Instructions for how to add shared folders in Crostini.">
+      To share, right-click on a folder in Files app, then select "Share with Linux".
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_REMOVE" desc="Instructions for removing shared folders in Crostini.">
+      Removing folders from here will stop sharing but will not delete files.
+    </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL" desc="Label for managing shared USB devices.">
       USB Device preferences
     </message>

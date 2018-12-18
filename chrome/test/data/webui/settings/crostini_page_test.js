@@ -140,19 +140,36 @@ suite('CrostiniPageTests', function() {
 
     test('Sanity', function() {
       assertEquals(
-          2, subpage.shadowRoot.querySelectorAll('.settings-box').length);
+          3, subpage.shadowRoot.querySelectorAll('.settings-box').length);
     });
 
     test('Remove', function() {
+      assertFalse(subpage.$.crostiniInstructionsRemove.hidden);
       assertTrue(!!subpage.$$('.settings-box button'));
+      // Remove first shared path, still one left.
       subpage.$$('.settings-box button').click();
       assertEquals(1, crostiniBrowserProxy.sharedPaths.length);
       setCrostiniPrefs(true, crostiniBrowserProxy.sharedPaths);
-      return flushAsync().then(() => {
-        Polymer.dom.flush();
-        assertEquals(
-            1, subpage.shadowRoot.querySelectorAll('.settings-box').length);
-      });
+      return flushAsync()
+          .then(() => {
+            Polymer.dom.flush();
+            assertEquals(
+                2, subpage.shadowRoot.querySelectorAll('.settings-box').length);
+            assertFalse(subpage.$.crostiniInstructionsRemove.hidden);
+
+            // Remove remaining shared path, none left.
+            subpage.$$('.settings-box button').click();
+            assertEquals(0, crostiniBrowserProxy.sharedPaths.length);
+            setCrostiniPrefs(true, crostiniBrowserProxy.sharedPaths);
+            return flushAsync();
+          })
+          .then(() => {
+            Polymer.dom.flush();
+            assertEquals(
+                1, subpage.shadowRoot.querySelectorAll('.settings-box').length);
+            // Verify remove instructions are hidden.
+            assertTrue(subpage.$.crostiniInstructionsRemove.hidden);
+          });
     });
   });
 
