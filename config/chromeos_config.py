@@ -813,6 +813,19 @@ def GeneralTemplates(site_config, ge_build_config):
           config_lib.MoblabVMTestConfig(constants.MOBLAB_VM_SMOKE_TEST_TYPE)],
   )
 
+  site_config.AddTemplate(
+      'buildspec',
+      master=True,
+      boards=[],
+      build_type=constants.GENERIC_TYPE,
+      uprev=True,
+      overlays=constants.BOTH_OVERLAYS,
+      push_overlays=constants.BOTH_OVERLAYS,
+      builder_class_name='workspace_builders.BuildSpecBuilder',
+      build_timeout=4*60 * 60,
+      description='Buildspec creator.',
+  )
+
 
 def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
   """Create mixin templates for each board."""
@@ -2863,6 +2876,7 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
   ]
 
   for interval, branch, boards in firmware_branch_builders:
+    # TODO: Remove when buildspecs go into production.
     site_config.Add(
         '%s-firmwarebranch' % branch,
         site_config.templates.firmwarebranch,
@@ -2870,6 +2884,27 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
         workspace_branch=branch,
         schedule=interval,
     )
+
+    buildspec = site_config.Add(
+        '%s-buildspec' % branch,
+        site_config.templates.buildspec,
+        workspace_branch=branch,
+        display_label=config_lib.DISPLAY_LABEL_FIRMWARE,
+        # TODO: Uncomment to put buildspecs go into production.
+        # active_waterfall=waterfall.WATERFALL_SWARMING,
+        # schedule=interval,
+    )
+
+    for board in boards:
+      buildspec.AddSlave(
+          site_config.Add(
+              '%s-%s-firmwarebranch' % (board, branch),
+              site_config.templates.firmwarebranch,
+              boards=[board],
+              workspace_branch=branch,
+              # TODO: Uncomment to put buildspecs go into production.
+              # active_waterfall=waterfall.WATERFALL_SWARMING,
+          ))
 
 
 def FactoryBuilders(site_config, boards_dict, ge_build_config):
@@ -2976,17 +3011,8 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
 
   spec_master = site_config.Add(
       'prototype-buildspec',
+      site_config.templates.buildspec,
       display_label=config_lib.DISPLAY_LABEL_FACTORY,
-      master=True,
-      boards=[],
-      build_type=constants.GENERIC_TYPE,
-      uprev=True,
-      overlays=constants.BOTH_OVERLAYS,
-      push_overlays=constants.BOTH_OVERLAYS,
-      builder_class_name='workspace_builders.BuildSpecBuilder',
-      build_timeout=6*60 * 60,
-      description='Buildspec creator.',
-      doc='https://goto.google.com/tot-for-firmware-branches',
       workspace_branch='factory-nami-10715.B',
   )
 
