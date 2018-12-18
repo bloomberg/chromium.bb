@@ -89,8 +89,7 @@ const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
 
 namespace {
 
-// Global tag for test runs where the results are incomplete or unreliable
-// for any reason, e.g. early exit because of too many broken tests.
+// Global tag for test runs where the results are unreliable for any reason.
 const char kUnreliableResultsTag[] = "UNRELIABLE_RESULTS";
 
 // Maximum time of no output after which we print list of processes still
@@ -803,7 +802,7 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
     KillSpawnedTestProcesses();
 #endif  // defined(OS_POSIX)
 
-    MaybeSaveSummaryAsJSON({"BROKEN_TEST_EARLY_EXIT", kUnreliableResultsTag});
+    MaybeSaveSummaryAsJSON({"BROKEN_TEST_EARLY_EXIT"});
 
     exit(1);
   }
@@ -823,7 +822,6 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
     fflush(stdout);
 
     results_tracker_.AddGlobalTag("BROKEN_TEST_SKIPPED_RETRIES");
-    results_tracker_.AddGlobalTag(kUnreliableResultsTag);
 
     OnTestIterationFinished();
     return;
@@ -1272,7 +1270,7 @@ void TestLauncher::RunTests() {
 
   // Save an early test summary in case the launcher crashes or gets killed.
   results_tracker_.GeneratePlaceholderIteration();
-  MaybeSaveSummaryAsJSON({"EARLY_SUMMARY", kUnreliableResultsTag});
+  MaybeSaveSummaryAsJSON({"EARLY_SUMMARY"});
 
   test_started_count_ = launcher_delegate_->RunTests(this, test_names);
 
@@ -1320,7 +1318,7 @@ void TestLauncher::OnShutdownPipeReadable() {
 
   KillSpawnedTestProcesses();
 
-  MaybeSaveSummaryAsJSON({"CAUGHT_TERMINATION_SIGNAL", kUnreliableResultsTag});
+  MaybeSaveSummaryAsJSON({"CAUGHT_TERMINATION_SIGNAL"});
 
   // The signal would normally kill the process, so exit now.
   _exit(1);
