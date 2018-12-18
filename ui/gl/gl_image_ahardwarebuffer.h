@@ -45,6 +45,7 @@ class GL_EXPORT GLImageAHardwareBuffer : public GLImageEGL {
 
  private:
   base::android::ScopedHardwareBufferHandle handle_;
+  unsigned internal_format_ = GL_RGBA;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageAHardwareBuffer);
 };
