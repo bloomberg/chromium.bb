@@ -1610,18 +1610,62 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
 static MainThreadScrollingReasons GetMainThreadScrollingReasons(
     const LayoutObject& object,
     MainThreadScrollingReasons ancestor_reasons) {
-  // The current main thread scrolling reasons implementation only changes
-  // reasons at frame boundaries, so we can early-out when not at a LayoutView.
-  // TODO(pdr): Need to find a solution to the style-related main thread
-  // scrolling reasons such as opacity and transform which violate this.
-  if (!object.IsLayoutView())
-    return ancestor_reasons;
-
   auto reasons = ancestor_reasons;
-  if (!object.GetFrame()->GetSettings()->GetThreadedScrollingEnabled())
-    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
-  if (object.GetFrameView()->HasBackgroundAttachmentFixedObjects())
-    reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+  if (!object.IsBox())
+    return reasons;
+
+  if (auto* scrollable_area = ToLayoutBox(object).GetScrollableArea()) {
+    if (scrollable_area->HorizontalScrollbar() &&
+        scrollable_area->HorizontalScrollbar()->IsCustomScrollbar()) {
+      reasons |= MainThreadScrollingReason::kCustomScrollbarScrolling;
+    } else if (scrollable_area->VerticalScrollbar() &&
+               scrollable_area->VerticalScrollbar()->IsCustomScrollbar()) {
+      reasons |= MainThreadScrollingReason::kCustomScrollbarScrolling;
+    }
+  }
+
+  if (object.IsLayoutView()) {
+    if (object.GetFrameView()->HasBackgroundAttachmentFixedObjects()) {
+      reasons |=
+          MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+    }
+
+    // TODO(pdr): This should apply to all scrollable areas, not just the
+    // viewport. This is not a user-visible bug because the threaded scrolling
+    // setting is only for testing.
+    if (!object.GetFrame()->GetSettings()->GetThreadedScrollingEnabled())
+      reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+
+    // LocalFrameView::HasVisibleSlowRepaintViewportConstrainedObjects depends
+    // on compositing (LayoutBoxModelObject::IsSlowRepaintConstrainedObject
+    // calls PaintLayer::GetCompositingState, and PaintLayer::SticksToScroller
+    // depends on the ancestor overflow layer) so CompositeAfterPaint cannot
+    // use LocalFrameView::HasVisibleSlowRepaintViewportConstrainedObjects.
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      // Force main-thread scrolling if the frame has uncomposited position:
+      // fixed elements. Note: we care about this not only for input-scrollable
+      // frames but also for overflow: hidden frames, because script can run
+      // composited smooth-scroll animations. For this reason, we use
+      // HasOverflow instead of ScrollsOverflow (which is false for overflow:
+      // hidden).
+      if (ToLayoutBox(object).GetScrollableArea()->HasOverflow() &&
+          object.StyleRef().VisibleToHitTesting() &&
+          object.GetFrameView()
+              ->HasVisibleSlowRepaintViewportConstrainedObjects()) {
+        reasons |=
+            MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;
+      }
+    } else {
+      // TODO(pdr): CompositeAfterPaint should use an approach like
+      // CompositingReasonFinder::RequiresCompositingForScrollDependentPosition,
+      // adding main thread reasons if compositing was not required. This has
+      // a small behavior change because main thread reasons will be added in
+      // the case where a non-scroll compositing trigger (e.g., transform)
+      // requires compositing, even though a main thread reason is not needed.
+      // CompositingReasonFinder::RequiresCompositingForScrollDependentPosition
+      // will need to be changed to not query PaintLayer::AncestorOverflowLayer.
+    }
+  }
   return reasons;
 }
 

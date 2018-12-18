@@ -877,13 +877,13 @@ TEST_F(LayerTest, TestSettingMainThreadScrollingReason) {
   EXPECT_SET_NEEDS_COMMIT(1,
                           test_layer->AddMainThreadScrollingReasons(
                               MainThreadScrollingReason::kScrollbarScrolling));
-  EXPECT_EQ(reasons, test_layer->main_thread_scrolling_reasons());
+  EXPECT_EQ(reasons, test_layer->GetMainThreadScrollingReasons());
 
   // Check that the reasons can be selectively cleared.
   EXPECT_SET_NEEDS_COMMIT(
       1, test_layer->ClearMainThreadScrollingReasons(reasons_to_clear));
   EXPECT_EQ(reasons_after_clearing,
-            test_layer->main_thread_scrolling_reasons());
+            test_layer->GetMainThreadScrollingReasons());
 
   // Check that clearing non-set reasons doesn't set needs commit.
   reasons_to_clear = 0;
@@ -892,7 +892,7 @@ TEST_F(LayerTest, TestSettingMainThreadScrollingReason) {
   EXPECT_SET_NEEDS_COMMIT(
       0, test_layer->ClearMainThreadScrollingReasons(reasons_to_clear));
   EXPECT_EQ(reasons_after_clearing,
-            test_layer->main_thread_scrolling_reasons());
+            test_layer->GetMainThreadScrollingReasons());
 
   // Check that adding an existing condition doesn't set needs commit.
   EXPECT_SET_NEEDS_COMMIT(

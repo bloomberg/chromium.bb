@@ -967,6 +967,18 @@ void Layer::SetUserScrollable(bool horizontal, bool vertical) {
   SetNeedsCommit();
 }
 
+uint32_t Layer::GetMainThreadScrollingReasons() const {
+  // When using layer lists, main thread scrolling reasons are stored in scroll
+  // nodes.
+  if (layer_tree_host() && layer_tree_host()->IsUsingLayerLists()) {
+    auto& scroll_tree = layer_tree_host()->property_trees()->scroll_tree;
+    if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
+      return scroll_node->main_thread_scrolling_reasons;
+    return MainThreadScrollingReason::kNotScrollingOnMain;
+  }
+  return inputs_.main_thread_scrolling_reasons;
+}
+
 void Layer::AddMainThreadScrollingReasons(
     uint32_t main_thread_scrolling_reasons) {
   DCHECK(IsPropertyChangeAllowed());
@@ -1293,8 +1305,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->NoteLayerPropertyChanged();
   layer->set_may_contain_video(may_contain_video_);
   layer->SetMasksToBounds(inputs_.masks_to_bounds);
-  layer->set_main_thread_scrolling_reasons(
-      inputs_.main_thread_scrolling_reasons);
   layer->SetNonFastScrollableRegion(inputs_.non_fast_scrollable_region);
   layer->SetTouchActionRegion(inputs_.touch_action_region);
   // TODO(sunxd): Pass the correct region for wheel event handlers, see
