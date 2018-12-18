@@ -112,7 +112,6 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.tripadvisor.com/',
       'https://9gag.com/',
       'https://www.expedia.com/',
-      'https://www.hotels.com/',
       'https://www.roblox.com/',
       'https://www.gamespot.com/',
       'https://www.blizzard.com',
@@ -140,7 +139,6 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.weebly.com/',
       'https://www.deviantart.com/',
       'https://www.scribd.com/',
-      'https://www.livejournal.com/',
       'https://www.hulu.com/',
       'https://www.xfinity.com/',
       # India Alexa top websites
@@ -252,6 +250,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'http://www.railsguides.jp',
     ]
     resource_loading_urls_list = [
+      'https://www.hotels.com/',
+      'https://www.livejournal.com/',
       'https://www.yahoo.com',
       'http://www.quora.com',
       'https://www.macys.com',
