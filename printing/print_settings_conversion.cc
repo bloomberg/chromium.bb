@@ -188,7 +188,8 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
       !job_settings.GetBoolean(kSettingLandscape, &landscape) ||
       !job_settings.GetString(kSettingDeviceName, &device_name) ||
       !job_settings.GetInteger(kSettingScaleFactor, &scale_factor) ||
-      !job_settings.GetBoolean(kSettingRasterizePdf, &rasterize_pdf)) {
+      !job_settings.GetBoolean(kSettingRasterizePdf, &rasterize_pdf) ||
+      !job_settings.GetInteger(kSettingPagesPerSheet, &pages_per_sheet)) {
     return false;
   }
 #if defined(OS_WIN)
@@ -209,6 +210,7 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
   settings->set_color(static_cast<ColorModel>(color));
   settings->set_scale_factor(static_cast<double>(scale_factor) / 100.0);
   settings->set_rasterize_pdf(rasterize_pdf);
+  settings->set_pages_per_sheet(pages_per_sheet);
   bool is_modifiable = false;
   if (job_settings.GetBoolean(kSettingPreviewModifiable, &is_modifiable)) {
     settings->set_is_modifiable(is_modifiable);
@@ -216,10 +218,6 @@ bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
     settings->set_print_text_with_gdi(is_modifiable);
 #endif
   }
-
-  // TODO(crbug.com/842000): |kSettingPagesPerSheet| should be required.
-  job_settings.GetInteger(kSettingPagesPerSheet, &pages_per_sheet);
-  settings->set_pages_per_sheet(pages_per_sheet);
 
   return true;
 }
