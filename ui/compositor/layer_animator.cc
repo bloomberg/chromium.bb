@@ -227,7 +227,8 @@ void LayerAnimator::ScheduleAnimation(LayerAnimationSequence* animation) {
   scoped_refptr<LayerAnimator> retain(this);
   OnScheduled(animation);
   if (is_animating()) {
-    animation_queue_.push_back(make_linked_ptr(animation));
+    animation_queue_.push_back(
+        std::unique_ptr<LayerAnimationSequence>(animation));
     ProcessQueue();
   } else {
     StartSequenceImmediately(animation);
@@ -536,7 +537,7 @@ void LayerAnimator::UpdateAnimationState() {
 
 LayerAnimationSequence* LayerAnimator::RemoveAnimation(
     LayerAnimationSequence* sequence) {
-  linked_ptr<LayerAnimationSequence> to_return;
+  std::unique_ptr<LayerAnimationSequence> to_return;
 
   bool is_running = false;
 
@@ -553,8 +554,8 @@ LayerAnimationSequence* LayerAnimator::RemoveAnimation(
   // Then remove from the queue
   for (AnimationQueue::iterator queue_iter = animation_queue_.begin();
        queue_iter != animation_queue_.end(); ++queue_iter) {
-    if ((*queue_iter) == sequence) {
-      to_return = *queue_iter;
+    if (queue_iter->get() == sequence) {
+      to_return = std::move(*queue_iter);
       animation_queue_.erase(queue_iter);
       break;
     }
@@ -651,14 +652,16 @@ void LayerAnimator::AddToQueueIfNotPresent(LayerAnimationSequence* animation) {
   bool found_sequence = false;
   for (AnimationQueue::iterator queue_iter = animation_queue_.begin();
        queue_iter != animation_queue_.end(); ++queue_iter) {
-    if ((*queue_iter) == animation) {
+    if (queue_iter->get() == animation) {
       found_sequence = true;
       break;
     }
   }
 
-  if (!found_sequence)
-    animation_queue_.push_front(make_linked_ptr(animation));
+  if (!found_sequence) {
+    animation_queue_.push_front(
+        std::unique_ptr<LayerAnimationSequence>(animation));
+  }
 }
 
 void LayerAnimator::RemoveAllAnimationsWithACommonProperty(
@@ -749,7 +752,7 @@ void LayerAnimator::EnqueueNewAnimation(LayerAnimationSequence* sequence) {
   // It is assumed that if there was no conflicting animation, we would
   // not have been called. No need to check for a collision; just
   // add to the queue.
-  animation_queue_.push_back(make_linked_ptr(sequence));
+  animation_queue_.push_back(std::unique_ptr<LayerAnimationSequence>(sequence));
   ProcessQueue();
 }
 
@@ -782,7 +785,7 @@ void LayerAnimator::ReplaceQueuedAnimations(LayerAnimationSequence* sequence) {
     else
       ++i;
   }
-  animation_queue_.push_back(make_linked_ptr(sequence));
+  animation_queue_.push_back(std::unique_ptr<LayerAnimationSequence>(sequence));
   ProcessQueue();
 }
 
