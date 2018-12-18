@@ -153,7 +153,10 @@ class CORE_EXPORT InspectorNetworkAgent final
 
   void WillDestroyResource(Resource*);
 
-  void FrameScheduledNavigation(LocalFrame*, ScheduledNavigation*);
+  void FrameScheduledNavigation(LocalFrame*,
+                                const KURL&,
+                                double delay,
+                                ClientNavigationReason);
   void FrameClearedScheduledNavigation(LocalFrame*);
 
   void DidCreateWebSocket(ExecutionContext*,

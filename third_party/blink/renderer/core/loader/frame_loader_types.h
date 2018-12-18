@@ -72,6 +72,16 @@ enum SinglePageAppNavigationType {
   kSPANavTypeOtherFragmentNavigation = 2,
   kSPANavTypeCount
 };
+
+enum class ClientNavigationReason {
+  kFormSubmissionGet,
+  kFormSubmissionPost,
+  kHttpHeaderRefresh,
+  kFrameNavigation,
+  kMetaTagRefresh,
+  kPageBlock,
+  kReload,
+};
 }  // namespace blink
 
 #endif

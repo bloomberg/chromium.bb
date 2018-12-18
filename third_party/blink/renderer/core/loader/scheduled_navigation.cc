@@ -12,7 +12,7 @@
 
 namespace blink {
 
-ScheduledNavigation::ScheduledNavigation(Reason reason,
+ScheduledNavigation::ScheduledNavigation(ClientNavigationReason reason,
                                          double delay,
                                          Document* origin_document,
                                          bool is_location_change,

@@ -6,6 +6,7 @@ my $query = new CGI;
 if ($query->param("afterPostForm") || 0) {
   print "Content-type: text/html\r\n\r\n";
   print "<html><head><title>Hello World 2b</title></head>\n";
+  print "<script>window.location.reload();</script>\n";
   print "</body></html>\n";
 } else {
   if ($query->param("afterGetForm") || 0) {

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 
 namespace blink {
 
@@ -18,17 +19,7 @@ class UserGestureToken;
 class ScheduledNavigation
     : public GarbageCollectedFinalized<ScheduledNavigation> {
  public:
-  enum class Reason {
-    kFormSubmissionGet,
-    kFormSubmissionPost,
-    kHttpHeaderRefresh,
-    kFrameNavigation,
-    kMetaTagRefresh,
-    kPageBlock,
-    kReload,
-  };
-
-  ScheduledNavigation(Reason,
+  ScheduledNavigation(ClientNavigationReason,
                       double delay,
                       Document* origin_document,
                       bool is_location_change,
@@ -41,7 +32,7 @@ class ScheduledNavigation
 
   virtual bool ShouldStartTimer(LocalFrame*) { return true; }
 
-  Reason GetReason() const { return reason_; }
+  ClientNavigationReason GetReason() const { return reason_; }
   double Delay() const { return delay_; }
   Document* OriginDocument() const { return origin_document_.Get(); }
   bool IsLocationChange() const { return is_location_change_; }
@@ -56,7 +47,7 @@ class ScheduledNavigation
   void ClearUserGesture() { user_gesture_token_ = nullptr; }
 
  private:
-  Reason reason_;
+  ClientNavigationReason reason_;
   double delay_;
   Member<Document> origin_document_;
   bool is_location_change_;

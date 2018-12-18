@@ -1521,7 +1521,9 @@ void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
 }
 
 void InspectorNetworkAgent::FrameScheduledNavigation(LocalFrame* frame,
-                                                     ScheduledNavigation*) {
+                                                     const KURL&,
+                                                     double,
+                                                     ClientNavigationReason) {
   frame_navigation_initiator_map_.Set(
       IdentifiersFactory::FrameId(frame),
       BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo()));
