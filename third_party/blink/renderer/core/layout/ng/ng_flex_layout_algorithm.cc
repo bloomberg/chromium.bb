@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -41,6 +42,18 @@ LayoutUnit NGFlexLayoutAlgorithm::MainAxisContentExtent(
   return content_box_size_.inline_size;
 }
 
+void NGFlexLayoutAlgorithm::HandleOutOfFlowPositioned(NGBlockNode child) {
+  // TODO(dgrogan): There's stuff from
+  // https://www.w3.org/TR/css-flexbox-1/#abspos-items that isn't done here.
+  // Specifically, neither rtl nor alignment is handled here, at least.
+  // Look at LayoutFlexibleBox::PrepareChildForPositionedLayout and
+  // SetStaticPositionForPositionedLayout to see how to statically position
+  // this.
+  container_builder_.AddOutOfFlowChildCandidate(
+      child, {border_scrollbar_padding_.inline_start,
+              border_scrollbar_padding_.block_start});
+}
+
 scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   DCHECK(!NeedMinMaxSize(ConstraintSpace(), Style()))
       << "Don't support that yet";
@@ -62,8 +75,10 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
     NGBlockNode child = ToNGBlockNode(generic_child);
-    if (child.IsOutOfFlowPositioned())
+    if (child.IsOutOfFlowPositioned()) {
+      HandleOutOfFlowPositioned(child);
       continue;
+    }
 
     const ComputedStyle& child_style = child.Style();
     NGConstraintSpaceBuilder space_builder(ConstraintSpace(),
@@ -273,6 +288,13 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   container_builder_.SetInlineSize(border_box_size_.inline_size);
   container_builder_.SetBorders(ComputeBorders(ConstraintSpace(), Style()));
   container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
+
+  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
+                        Node().IsFixedContainer(),
+                        borders_ + Node().GetScrollbarSizes(),
+                        ConstraintSpace(), Style())
+      .Run();
+
   return container_builder_.ToBoxFragment();
 }
 
