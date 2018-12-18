@@ -444,8 +444,7 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
       bookmark_tracker_->GetEntityForBookmarkNode(node);
   // Include only tracked nodes. Newly added nodes are tracked even before being
   // sent to the server. Managed bookmarks (that are installed by a policy)
-  // aren't syncable and hence not tracked. In addition, Mobile Bookmarks folder
-  // is only synced after it's been created on the server.
+  // aren't syncable and hence not tracked.
   if (!entity) {
     return;
   }
