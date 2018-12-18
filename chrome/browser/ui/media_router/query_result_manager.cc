@@ -121,13 +121,11 @@ std::unique_ptr<MediaSource> QueryResultManager::GetSourceForCastModeAndSink(
     MediaCastMode cast_mode,
     MediaSink::Id sink_id) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (const auto& sink_pair : all_sinks_) {
-    if (sink_pair.first == sink_id) {
-      return GetHighestPrioritySourceForCastModeAndSink(cast_mode,
-                                                        sink_pair.second);
-    }
-  }
-  return nullptr;
+  auto sink_entry = all_sinks_.find(sink_id);
+  if (sink_entry == all_sinks_.end())
+    return nullptr;
+  return GetHighestPrioritySourceForCastModeAndSink(cast_mode,
+                                                    sink_entry->second);
 }
 
 std::vector<MediaSource> QueryResultManager::GetSourcesForCastMode(
