@@ -7,5 +7,52 @@
 
 module chrome.mojom;
 
+[Extensible]
+enum IppParserResult {
+  SUCCESS = 0,
+  FAILURE = 1
+};
+
+[Extensible]
+enum ValueType {
+  BOOLEAN,
+  DATE,
+  INTEGER,
+  STRING,
+};
+
+union Value {
+  bool bool_value;
+  int64 int_value;
+  uint8 char_value;
+  string string_value;
+};
+
+struct IppAttribute {
+  string name;
+  int64 group_tag;
+  int64 value_tag;
+  ValueType type;
+  array<Value> values;
+};
+
+struct IppMessage {
+  int64 major_version;
+  int64 minor_version;
+  int64 operation_id;
+  int64 request_id;
+  array<IppAttribute> attributes;
+};
+
+struct IppRequest {
+  string method;
+  string endpoint;
+  string http_version;
+  map<string, string> headers;
+  IppMessage ipp;
+  array<uint8> data;
+};
+
 interface IppParser {
+  ParseIpp(string to_parse) => (IppParserResult success, IppRequest? request);
 };

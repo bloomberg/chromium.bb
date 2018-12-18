@@ -21,12 +21,12 @@ class IppParser : public chrome::mojom::IppParser {
   ~IppParser() override;
 
  private:
-  // chrome::mojom::IppParser:
-  // TODO(crbug.com/831913): implement, finalize wrapppers, lhchavez@
-  // Checks that |request| is formatted as a valid IPP request, per RFC2910
-  // Calls |callback| with true on success, else false
-  // void ParseIpp(const std::string& request, ParseIppCallback callback)
-  // override;
+  // chrome::mojom::IppParser
+  // Checks that |to_parse| is formatted as a valid IPP request, per RFC2910
+  // Calls |callback| with a fully parsed IPP request on success, empty on
+  // failure.
+  void ParseIpp(const std::string& to_parse,
+                ParseIppCallback callback) override;
 
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
