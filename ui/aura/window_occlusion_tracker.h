@@ -33,6 +33,7 @@ class WindowOcclusionTrackerTestApi;
 }
 
 class Env;
+class WindowOcclusionChangeBuilder;
 
 // Notifies tracked Windows when their occlusion state change.
 //
@@ -73,7 +74,7 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // temporary until it is finished.
   // Note that this is intended to be used by window manager and not by mus
   // client process.
-  class AURA_EXPORT ScopedExclude : public aura::WindowObserver {
+  class AURA_EXPORT ScopedExclude : public WindowObserver {
    public:
     explicit ScopedExclude(Window* window);
     ~ScopedExclude() override;
@@ -98,6 +99,14 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   using WindowHasContentCallback = base::RepeatingCallback<bool(const Window*)>;
   void set_window_has_content_callback(WindowHasContentCallback callback) {
     window_has_content_callback_ = std::move(callback);
+  }
+
+  // Set the factory to create WindowOcclusionChangeBuilder.
+  using OcclusionChangeBuilderFactory =
+      base::RepeatingCallback<std::unique_ptr<WindowOcclusionChangeBuilder>()>;
+  void set_occlusion_change_builder_factory(
+      OcclusionChangeBuilderFactory factory) {
+    occlusion_change_builder_factory_ = std::move(factory);
   }
 
  private:
@@ -269,11 +278,12 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
                                       Window* new_root) override;
   void OnWindowLayerRecreated(Window* window) override;
 
-  // Windows whose occlusion data is tracked.
-  base::flat_map<Window*, OcclusionData> tracked_windows_;
   // WindowTreeHostObserver
   void OnOcclusionStateChanged(WindowTreeHost* host,
                                Window::OcclusionState new_state) override;
+
+  // Windows whose occlusion data is tracked.
+  base::flat_map<Window*, OcclusionData> tracked_windows_;
 
   // Windows whose bounds or transform are animated.
   //
@@ -307,6 +317,9 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
   // Callback to be invoked for additional window has content check.
   WindowHasContentCallback window_has_content_callback_;
+
+  // Optional factory to create occlusion change builder.
+  OcclusionChangeBuilderFactory occlusion_change_builder_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOcclusionTracker);
 };

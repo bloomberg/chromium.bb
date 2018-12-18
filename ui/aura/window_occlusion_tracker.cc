@@ -11,7 +11,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window_tracker.h"
+#include "ui/aura/window_occlusion_change_builder.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform.h"
@@ -196,31 +196,28 @@ void WindowOcclusionTracker::MaybeComputeOcclusion() {
     ++num_times_occlusion_recomputed_;
     ++num_times_occlusion_recomputed_in_current_step_;
 
-    // Call Window::SetOcclusionInfo() on tracked windows. A WindowDelegate may
-    // change the window tree in response to this.
-    WindowTracker tracked_windows_list;
-    for (const auto& tracked_window : tracked_windows_)
-      tracked_windows_list.Add(tracked_window.first);
+    std::unique_ptr<WindowOcclusionChangeBuilder> change_builder =
+        occlusion_change_builder_factory_
+            ? occlusion_change_builder_factory_.Run()
+            : WindowOcclusionChangeBuilder::Create();
+    for (auto& it : tracked_windows_) {
+      Window* window = it.first;
+      if (it.second.occlusion_state == Window::OcclusionState::UNKNOWN)
+        continue;
 
-    while (!tracked_windows_list.windows().empty()) {
-      Window* window = tracked_windows_list.Pop();
-      auto it = tracked_windows_.find(window);
-      if (it != tracked_windows_.end() &&
-          it->second.occlusion_state != Window::OcclusionState::UNKNOWN) {
-        // Fallback to VISIBLE/HIDDEN if the maximum number of times that
-        // occlusion can be recomputed was exceeded.
-        if (exceeded_max_num_times_occlusion_recomputed) {
-          if (window->IsVisible()) {
-            it->second.occlusion_state = Window::OcclusionState::VISIBLE;
-          } else {
-            it->second.occlusion_state = Window::OcclusionState::HIDDEN;
-          }
-          it->second.occluded_region = SkRegion();
+      // Fallback to VISIBLE/HIDDEN if the maximum number of times that
+      // occlusion can be recomputed was exceeded.
+      if (exceeded_max_num_times_occlusion_recomputed) {
+        if (window->IsVisible()) {
+          it.second.occlusion_state = Window::OcclusionState::VISIBLE;
+        } else {
+          it.second.occlusion_state = Window::OcclusionState::HIDDEN;
         }
-
-        window->SetOcclusionInfo(it->second.occlusion_state,
-                                 it->second.occluded_region);
+        it.second.occluded_region = SkRegion();
       }
+
+      change_builder->Add(window, it.second.occlusion_state,
+                          it.second.occluded_region);
     }
   }
 
