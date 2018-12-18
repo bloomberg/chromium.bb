@@ -296,6 +296,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       ZipCase("zipFileOpenDownloadsShiftJIS"),
                       ZipCase("zipFileOpenDownloadsMacOs"),
                       ZipCase("zipFileOpenDownloadsWithAbsolutePaths"),
+                      ZipCase("zipFileOpenDownloadsEncryptedCancelPassphrase"),
                       ZipCase("zipFileOpenDrive").DisableDriveFs(),
                       ZipCase("zipFileOpenDrive").EnableDriveFs(),
                       ZipCase("zipFileOpenUsb"),
