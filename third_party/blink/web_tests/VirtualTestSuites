@@ -822,6 +822,16 @@
   },
   {
     "prefix": "not-site-per-process",
+    "base": "http/tests/dom/EventListener-incumbent-global-1.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/dom/EventListener-incumbent-global-2.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
     "base": "external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html",
     "args": ["--disable-site-isolation-trials"]
   },

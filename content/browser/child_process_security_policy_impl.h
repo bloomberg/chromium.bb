@@ -259,10 +259,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Returns true if sending system exclusive messages is allowed.
   bool CanSendMidiSysExMessage(int child_id);
 
-  // Add |origins| to the list of origins that require process isolation.
-  // When making process model decisions for such origins, the full
-  // scheme+host+port tuple rather than scheme and eTLD+1 will be used.
-  // SiteInstances for these origins will also use the full origin as site URL.
+  // Add |origins| to the list of origins that require process isolation.  When
+  // making process model decisions for such origins, the scheme+host tuple
+  // rather than scheme and eTLD+1 will be used.  SiteInstances for these
+  // origins will also use the full host of the isolated origin as site URL.
   //
   // Subdomains of an isolated origin are considered to be part of that
   // origin's site.  For example, if https://isolated.foo.com is added as an
@@ -290,9 +290,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // origin, this will return true for https://isolated.foo.com/,
   // https://bar.isolated.foo.com/, or https://baz.bar.isolated.foo.com/; and
   // it will return false for https://foo.com/ or https://unisolated.foo.com/.
-  //
-  // Note that unlike site URLs for regular web sites, isolated origins care
-  // about port.
   bool IsIsolatedOrigin(const url::Origin& origin);
 
   // Removes a previously added isolated origin, currently only used in tests.

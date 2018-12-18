@@ -232,10 +232,9 @@ WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
   // Unconditionally (with and without --site-per-process) isolate some origins
   // that may be used by tests that only make sense in presence of an OOPIF.
   std::vector<std::string> origins_to_isolate = {
-      "http://devtools.oopif.test:8000/",
-      "http://devtools.oopif.test:8003/",
-      "http://devtools-extensions.oopif.test:8000/",
-      "https://devtools.oopif.test:8443/",
+      "http://devtools.oopif.test/",
+      "http://devtools-extensions.oopif.test/",
+      "https://devtools.oopif.test/",
   };
 
   // On platforms with strict Site Isolation, the also isolate WPT origins for
@@ -256,12 +255,11 @@ WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
         "xn--lve-6lad.web-platform.test",
     };
 
-    // The list of schemes and ports below is based on
+    // The list of schemes below is based on
     // third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json
     const char* kOriginTemplates[] = {
-        "http://%s:8001/",
-        "http://%s:8081/",
-        "https://%s:8444/",
+        "http://%s/",
+        "https://%s/",
     };
 
     origins_to_isolate.reserve(origins_to_isolate.size() +
