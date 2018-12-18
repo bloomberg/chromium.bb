@@ -36,6 +36,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   bool MainAxisIsInlineAxis(NGBlockNode child);
   LayoutUnit MainAxisContentExtent(LayoutUnit sum_hypothetical_main_size);
 
+  void HandleOutOfFlowPositioned(NGBlockNode child);
+
   NGLogicalSize border_box_size_;
   NGBoxStrut border_scrollbar_padding_;
   NGLogicalSize content_box_size_;
