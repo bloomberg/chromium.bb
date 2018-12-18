@@ -6343,6 +6343,7 @@ void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
   // SecurityContext::IsFeatureEnabled instead, which cannot report, but we
   // don't need reporting here in any case.
   is_vertical_scroll_enforced_ =
+      frame_ && !frame_->IsMainFrame() &&
       RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
       !GetFeaturePolicy()->IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kVerticalScroll);
