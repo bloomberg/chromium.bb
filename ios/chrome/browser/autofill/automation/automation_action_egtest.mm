@@ -9,16 +9,15 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/js_test_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-const char kTestPageUrl[] =
-    "https://components/test/data/autofill/"
-    "credit_card_upload_form_address_and_cc.html";
+const char kTestPageDirectory[] = "components/test/data/autofill/";
+const char kTestPageUrl[] = "/credit_card_upload_form_address_and_cc.html";
 
 // Tests each automation that can be performed, by performing them individually
 // against a self-hosted webpage and verifying the action was performed through
@@ -28,12 +27,20 @@ const char kTestPageUrl[] =
 
 @implementation AutofillAutomationActionTestCase
 
+- (void)setUp {
+  [super setUp];
+
+  self.testServer->ServeFilesFromSourceDirectory(
+      base::FilePath(FILE_PATH_LITERAL(kTestPageDirectory)));
+  XCTAssertTrue(self.testServer->Start());
+
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kTestPageUrl)];
+}
+
 // Tests the click action, by clicking a button that populates the web page,
 // then using JS to assert that the web page has been populated as a result
 // of the click.
 - (void)testAutomationActionClick {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kTestPageUrl)];
-
   base::DictionaryValue dict = base::DictionaryValue();
   dict.SetKey("type", base::Value("click"));
   dict.SetKey("selector", base::Value("//*[@id=\"fill_form\"]"));
@@ -53,8 +60,6 @@ const char kTestPageUrl[] =
 // populates the name field after a few seconds, and using waitFor to verify
 // this eventually happens.
 - (void)testAutomationActionClickAndWaitFor {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kTestPageUrl)];
-
   base::DictionaryValue clickDict = base::DictionaryValue();
   clickDict.SetKey("type", base::Value("click"));
   clickDict.SetKey("selector", base::Value("//*[@id=\"fill_form_delay\"]"));
@@ -75,8 +80,6 @@ const char kTestPageUrl[] =
 }
 
 - (void)testAutomationActionSelectDropdown {
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kTestPageUrl)];
-
   base::DictionaryValue selectDict = base::DictionaryValue();
   selectDict.SetKey("type", base::Value("select"));
   selectDict.SetKey("selector", base::Value("//*[@name=\"cc_month_exp\"]"));
