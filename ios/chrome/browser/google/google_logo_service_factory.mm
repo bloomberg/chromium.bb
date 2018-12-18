@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/google/google_logo_service.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -33,6 +34,7 @@ GoogleLogoServiceFactory::GoogleLogoServiceFactory()
           "GoogleLogoService",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::TemplateURLServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 GoogleLogoServiceFactory::~GoogleLogoServiceFactory() {}
@@ -43,6 +45,7 @@ std::unique_ptr<KeyedService> GoogleLogoServiceFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<GoogleLogoService>(
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state),
+      IdentityManagerFactory::GetForBrowserState(browser_state),
       browser_state->GetSharedURLLoaderFactory());
 }
 
