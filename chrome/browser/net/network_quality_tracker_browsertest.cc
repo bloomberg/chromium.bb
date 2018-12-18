@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"
@@ -36,14 +38,22 @@ namespace {
 
 // Simulates a network quality change. This is only called when network service
 // is running in the browser process, in which case, the network quality
-// estimator lives on the browser IO thread.
-void SimulateNetworkQualityChangeOnIO(net::EffectiveConnectionType type) {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(content::GetNetworkServiceImpl());
-  DCHECK(content::GetNetworkServiceImpl()->network_quality_estimator());
-  content::GetNetworkServiceImpl()
-      ->network_quality_estimator()
-      ->SimulateNetworkQualityChangeForTesting(type);
+// estimator lives on the network thread (which will be the IO thread if network
+// service is disabled).
+void SimulateNetworkQualityChangeOnNetworkThread(
+    net::EffectiveConnectionType type) {
+  if (content::IsInProcessNetworkService()) {
+    network::NetworkService::GetNetworkServiceForTesting()
+        ->network_quality_estimator()
+        ->SimulateNetworkQualityChangeForTesting(type);
+  } else {
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+    DCHECK(content::GetNetworkServiceImpl());
+    DCHECK(content::GetNetworkServiceImpl()->network_quality_estimator());
+    content::GetNetworkServiceImpl()
+        ->network_quality_estimator()
+        ->SimulateNetworkQualityChangeForTesting(type);
+  }
   base::RunLoop().RunUntilIdle();
 }
 
@@ -124,10 +134,15 @@ class NetworkQualityTrackerBrowserTest : public InProcessBrowserTest {
 
   // Simulates a network quality change.
   void SimulateNetworkQualityChange(net::EffectiveConnectionType type) {
-    if (!network_service_enabled_) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&SimulateNetworkQualityChangeOnIO, type));
+    if (!content::IsOutOfProcessNetworkService()) {
+      scoped_refptr<base::SequencedTaskRunner> task_runner =
+          base::CreateSequencedTaskRunnerWithTraits(
+              {content::BrowserThread::IO});
+      if (content::IsInProcessNetworkService())
+        task_runner = content::GetNetworkTaskRunner();
+      task_runner->PostTask(
+          FROM_HERE,
+          base::BindOnce(&SimulateNetworkQualityChangeOnNetworkThread, type));
       return;
     }
 

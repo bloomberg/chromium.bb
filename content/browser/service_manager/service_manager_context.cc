@@ -122,6 +122,11 @@ base::LazyInstance<std::unique_ptr<service_manager::Connector>>::Leaky
 base::LazyInstance<std::map<std::string, base::WeakPtr<UtilityProcessHost>>>::
     Leaky g_active_process_groups;
 
+// If enabled, network service will run in it's own thread when running
+// in-process, otherwise it is run on the IO thread.
+const base::Feature kNetworkServiceDedicatedThread{
+    "NetworkServiceDedicatedThread", base::FEATURE_ENABLED_BY_DEFAULT};
+
 void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 
 // Launch a process for a service once its sandbox type is known.
@@ -712,13 +717,18 @@ ServiceManagerContext::ServiceManagerContext(
       base::FeatureList::IsEnabled(network::features::kNetworkService);
   if (network_service_enabled) {
     if (IsInProcessNetworkService()) {
-      packaged_services_connection_->AddServiceRequestHandler(
-          mojom::kNetworkServiceName,
-          base::BindRepeating(
-              [](service_manager::mojom::ServiceRequest request) {
-                service_manager::Service::RunAsyncUntilTermination(
-                    CreateNetworkService(std::move(request)));
-              }));
+      scoped_refptr<base::SequencedTaskRunner> task_runner =
+          service_manager_thread_task_runner_;
+      if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
+        base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+        network_service_thread_.StartWithOptions(options);
+        task_runner = network_service_thread_.task_runner();
+      }
+
+      GetNetworkTaskRunner()->StartWithTaskRunner(task_runner);
+      RegisterInProcessService(packaged_services_connection_.get(),
+                               mojom::kNetworkServiceName, task_runner,
+                               base::BindRepeating(&CreateNetworkService));
     } else {
       out_of_process_services[mojom::kNetworkServiceName] =
           base::BindRepeating(&base::ASCIIToUTF16, "Network Service");

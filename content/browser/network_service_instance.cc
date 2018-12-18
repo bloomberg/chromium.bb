@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "net/log/net_log_util.h"
@@ -242,6 +244,13 @@ void SetNetworkConnectionTrackerForTesting(
     DCHECK(!g_network_connection_tracker || !network_connection_tracker);
     g_network_connection_tracker = network_connection_tracker;
   }
+}
+
+scoped_refptr<base::DeferredSequencedTaskRunner> GetNetworkTaskRunner() {
+  DCHECK(IsInProcessNetworkService());
+  static base::NoDestructor<scoped_refptr<base::DeferredSequencedTaskRunner>>
+      instance(new base::DeferredSequencedTaskRunner());
+  return instance->get();
 }
 
 }  // namespace content

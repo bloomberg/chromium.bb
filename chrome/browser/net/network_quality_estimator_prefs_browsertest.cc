@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"
@@ -48,6 +50,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+void SimulateNetworkQualityChangeOnNetworkThread(
+    net::EffectiveConnectionType type) {
+  network::NetworkService::GetNetworkServiceForTesting()
+      ->network_quality_estimator()
+      ->SimulateNetworkQualityChangeForTesting(type);
+}
 
 // Retries fetching |histogram_name| until it contains at least |count| samples.
 void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
@@ -142,6 +151,12 @@ class NetworkQualityEstimatorPrefsBrowserTest : public InProcessBrowserTest {
   // Simulates a network quality change.
   void SimulateNetworkQualityChange(net::EffectiveConnectionType type) {
     DCHECK(network_service_enabled_);
+    if (!content::IsOutOfProcessNetworkService()) {
+      content::GetNetworkTaskRunner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&SimulateNetworkQualityChangeOnNetworkThread, type));
+      return;
+    }
 
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     content::StoragePartition* partition =
