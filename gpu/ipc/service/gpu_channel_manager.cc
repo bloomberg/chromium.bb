@@ -366,12 +366,6 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
   // only a single context. See crbug.com/510243 for details.
   use_virtualized_gl_contexts |= mailbox_manager_->UsesSync();
 
-#if defined(OS_MACOSX)
-  // TODO(penghuang): remove below line when the framebuffer issue is fixed in
-  // skia. https://crbug.com/914495
-  use_virtualized_gl_contexts &= !features::IsUsingSkiaRenderer();
-#endif
-
   const bool use_passthrough_decoder =
       gles2::PassthroughCommandDecoderSupported() &&
       gpu_preferences_.use_passthrough_cmd_decoder;
