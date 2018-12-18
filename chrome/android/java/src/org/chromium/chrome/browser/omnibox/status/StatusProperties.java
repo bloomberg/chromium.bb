@@ -12,8 +12,16 @@ import org.chromium.chrome.browser.modelutil.PropertyModel.WritableIntPropertyKe
  * Model for the Status view.
  */
 class StatusProperties {
+    /** Enables / disables animations. */
+    public static final WritableBooleanPropertyKey ANIMATIONS_ENABLED =
+            new WritableBooleanPropertyKey();
+
     /** Specifies status icon tint color. */
     public static final WritableIntPropertyKey ICON_TINT_COLOR_RES = new WritableIntPropertyKey();
+
+    /** Specifies current selection of the location bar button type. */
+    public static final WritableIntPropertyKey LOCATION_BAR_BUTTON_TYPE =
+            new WritableIntPropertyKey();
 
     /** Specifies navigation button type (eg: PAGE, MAGNIFIER) */
     public static final WritableIntPropertyKey NAVIGATION_BUTTON_TYPE =
@@ -38,9 +46,10 @@ class StatusProperties {
     public static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_WIDTH =
             new WritableIntPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ICON_TINT_COLOR_RES,
-            NAVIGATION_BUTTON_TYPE, SEPARATOR_COLOR_RES, VERBOSE_STATUS_TEXT_COLOR_RES,
-            VERBOSE_STATUS_TEXT_STRING_RES, VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ANIMATIONS_ENABLED,
+            ICON_TINT_COLOR_RES, LOCATION_BAR_BUTTON_TYPE, NAVIGATION_BUTTON_TYPE,
+            SEPARATOR_COLOR_RES, VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
+            VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
 
     private StatusProperties() {}
 }

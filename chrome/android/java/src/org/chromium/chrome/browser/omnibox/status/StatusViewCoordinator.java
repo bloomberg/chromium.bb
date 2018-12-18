@@ -4,16 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
-import static org.chromium.chrome.browser.toolbar.top.ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS;
-
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.IntDef;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -24,42 +17,16 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.omnibox.status.StatusView.NavigationButtonType;
+import org.chromium.chrome.browser.omnibox.status.StatusView.StatusButtonType;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * A component for displaying a status icon (e.g. security icon or navigation icon) and optional
  * verbose status text.
  */
 public class StatusViewCoordinator implements View.OnClickListener {
-    /** Specifies which button should be shown in location bar, if any. */
-    @IntDef({LocationBarButtonType.NONE, LocationBarButtonType.SECURITY_ICON,
-            LocationBarButtonType.NAVIGATION_ICON})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface LocationBarButtonType {
-        /** No button should be shown. */
-        int NONE = 0;
-        /** Security button should be shown (includes offline icon). */
-        int SECURITY_ICON = 1;
-        /** Navigation button should be shown. */
-        int NAVIGATION_ICON = 2;
-    }
-
-    /**
-     * Delegate interface to provide additional information needed to display this view.
-     */
-    public interface Delegate {
-        /**
-         * @return Whether or not to animate icon changes.
-         */
-        boolean shouldAnimateIconChanges();
-    }
-
-    private final Delegate mDelegate;
     private final boolean mIsTablet;
     private final StatusView mStatusView;
     private final StatusMediator mMediator;
@@ -71,31 +38,25 @@ public class StatusViewCoordinator implements View.OnClickListener {
     @DrawableRes
     private int mSecurityIconResource;
 
-    @LocationBarButtonType
+    @StatusButtonType
     private int mLocationBarButtonType;
-
-    private AnimatorSet mLocationBarIconActiveAnimator;
-    private AnimatorSet mSecurityButtonShowAnimator;
-    private AnimatorSet mNavigationIconShowAnimator;
-
     private boolean mUrlHasFocus;
 
     /**
      * Creates a new StatusViewCoordinator.
      * @param isTablet Whether the UI is shown on a tablet.
      * @param statusView The status view, used to supply and manipulate child views.
-     * @param delegate The delegate that provides additional information needed to display this
-     *                 view.
      */
-    public StatusViewCoordinator(boolean isTablet, StatusView statusView, Delegate delegate) {
+    public StatusViewCoordinator(boolean isTablet, StatusView statusView) {
         mIsTablet = isTablet;
         mStatusView = statusView;
-        mDelegate = delegate;
 
-        PropertyModel model = new PropertyModel.Builder(StatusProperties.ALL_KEYS)
-                                      .with(StatusProperties.ICON_TINT_COLOR_RES,
-                                              R.color.locationbar_status_separator_color)
-                                      .build();
+        PropertyModel model =
+                new PropertyModel.Builder(StatusProperties.ALL_KEYS)
+                        .with(StatusProperties.ICON_TINT_COLOR_RES,
+                                R.color.locationbar_status_separator_color)
+                        .with(StatusProperties.LOCATION_BAR_BUTTON_TYPE, StatusButtonType.NONE)
+                        .build();
 
         PropertyModelChangeProcessor.create(model, mStatusView, new StatusViewBinder());
         mMediator = new StatusMediator(model);
@@ -117,44 +78,6 @@ public class StatusViewCoordinator implements View.OnClickListener {
         }
 
         mSecurityIconResource = 0;
-
-        mLocationBarButtonType = LocationBarButtonType.NONE;
-        mStatusView.getNavigationButton().setVisibility(View.INVISIBLE);
-        mStatusView.getSecurityButton().setVisibility(View.INVISIBLE);
-
-        AnimatorListenerAdapter iconChangeAnimatorListener = new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                if (animation == mSecurityButtonShowAnimator) {
-                    mStatusView.getNavigationButton().setVisibility(View.INVISIBLE);
-                } else if (animation == mNavigationIconShowAnimator) {
-                    mStatusView.getSecurityButton().setVisibility(View.INVISIBLE);
-                }
-            }
-
-            @Override
-            public void onAnimationStart(Animator animation) {
-                if (animation == mSecurityButtonShowAnimator) {
-                    mStatusView.getSecurityButton().setVisibility(View.VISIBLE);
-                } else if (animation == mNavigationIconShowAnimator) {
-                    mStatusView.getNavigationButton().setVisibility(View.VISIBLE);
-                }
-            }
-        };
-
-        mSecurityButtonShowAnimator = new AnimatorSet();
-        mSecurityButtonShowAnimator.playTogether(
-                ObjectAnimator.ofFloat(mStatusView.getNavigationButton(), View.ALPHA, 0),
-                ObjectAnimator.ofFloat(mStatusView.getSecurityButton(), View.ALPHA, 1));
-        mSecurityButtonShowAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-        mSecurityButtonShowAnimator.addListener(iconChangeAnimatorListener);
-
-        mNavigationIconShowAnimator = new AnimatorSet();
-        mNavigationIconShowAnimator.playTogether(
-                ObjectAnimator.ofFloat(mStatusView.getNavigationButton(), View.ALPHA, 1),
-                ObjectAnimator.ofFloat(mStatusView.getSecurityButton(), View.ALPHA, 0));
-        mNavigationIconShowAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-        mNavigationIconShowAnimator.addListener(iconChangeAnimatorListener);
     }
 
     /**
@@ -205,51 +128,22 @@ public class StatusViewCoordinator implements View.OnClickListener {
         updateSecurityIcon();
     }
 
-    @LocationBarButtonType
+    @StatusButtonType
     private int getLocationBarButtonToShow() {
         // The navigation icon type is only applicable on tablets.  While smaller form factors do
         // not have an icon visible to the user when the URL is focused, BUTTON_TYPE_NONE is not
         // returned as it will trigger an undesired jump during the animation as it attempts to
         // hide the icon.
-        if (mUrlHasFocus && mIsTablet) return LocationBarButtonType.NAVIGATION_ICON;
+        if (mUrlHasFocus && mIsTablet) return StatusButtonType.NAVIGATION_ICON;
 
         return mToolbarDataProvider.getSecurityIconResource(mIsTablet) != 0
-                ? LocationBarButtonType.SECURITY_ICON
-                : LocationBarButtonType.NONE;
+                ? StatusButtonType.SECURITY_ICON
+                : StatusButtonType.NONE;
     }
 
     private void changeLocationBarIcon() {
-        if (mLocationBarIconActiveAnimator != null && mLocationBarIconActiveAnimator.isRunning()) {
-            mLocationBarIconActiveAnimator.cancel();
-        }
-
         mLocationBarButtonType = getLocationBarButtonToShow();
-
-        View viewToBeShown = null;
-        switch (mLocationBarButtonType) {
-            case LocationBarButtonType.SECURITY_ICON:
-                viewToBeShown = mStatusView.getSecurityButton();
-                mLocationBarIconActiveAnimator = mSecurityButtonShowAnimator;
-                break;
-            case LocationBarButtonType.NAVIGATION_ICON:
-                viewToBeShown = mStatusView.getNavigationButton();
-                mLocationBarIconActiveAnimator = mNavigationIconShowAnimator;
-                break;
-            case LocationBarButtonType.NONE:
-            default:
-                mLocationBarIconActiveAnimator = null;
-                return;
-        }
-
-        if (viewToBeShown.getVisibility() == View.VISIBLE && viewToBeShown.getAlpha() == 1) {
-            return;
-        }
-        if (mDelegate.shouldAnimateIconChanges()) {
-            mLocationBarIconActiveAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-        } else {
-            mLocationBarIconActiveAnimator.setDuration(0);
-        }
-        mLocationBarIconActiveAnimator.start();
+        mMediator.setLocationBarButtonType(mLocationBarButtonType);
     }
 
     /**
@@ -294,7 +188,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     @VisibleForTesting
     public boolean isSecurityButtonShown() {
-        return mLocationBarButtonType == LocationBarButtonType.SECURITY_ICON;
+        return mLocationBarButtonType == StatusButtonType.SECURITY_ICON;
     }
 
     /**
@@ -356,11 +250,10 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * security and navigation icons.
      */
     protected void updateLocationBarIconContainerVisibility() {
-        @LocationBarButtonType
+        @StatusButtonType
         int buttonToShow = getLocationBarButtonToShow();
         mStatusView.findViewById(R.id.location_bar_icon)
-                .setVisibility(
-                        buttonToShow != LocationBarButtonType.NONE ? View.VISIBLE : View.GONE);
+                .setVisibility(buttonToShow != StatusButtonType.NONE ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -395,5 +288,12 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     public void setUnfocusedLocationBarWidth(int width) {
         mMediator.setUnfocusedLocationBarWidth(width);
+    }
+
+    /**
+     * Toggle animation of icon changes.
+     */
+    public void setShouldAnimateIconChanges(boolean shouldAnimate) {
+        mMediator.setAnimationsEnabled(shouldAnimate);
     }
 }
