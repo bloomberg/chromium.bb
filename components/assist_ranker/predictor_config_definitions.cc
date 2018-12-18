@@ -60,6 +60,7 @@ const base::flat_set<std::string>* GetContextualSearchFeatureWhitelist() {
                                        "OpenCount",
                                        "OutcomeRankerDidPredict",
                                        "OutcomeRankerPrediction",
+                                       "OutcomeRankerPredictionScore",
                                        "OutcomeWasCardsDataShown",
                                        "OutcomeWasPanelOpened",
                                        "OutcomeWasQuickActionClicked",

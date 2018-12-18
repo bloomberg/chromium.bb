@@ -1092,6 +1092,14 @@ be describing additional metrics about the same event.
   <metric name="OutcomeRankerPrediction">
     <summary>
       Emits a 1 or 0 to indicate what Ranker's prediction was for this record.
+      Recorded only when OutcomeRankerDidPredict is true.
+    </summary>
+  </metric>
+  <metric name="OutcomeRankerPredictionScore">
+    <summary>
+      Emits a single-precision float to indicate the score for the Ranker
+      prediction for this record. Recorded only when OutcomeRankerDidPredict is
+      true.
     </summary>
   </metric>
   <metric name="OutcomeWasCardsDataShown">
