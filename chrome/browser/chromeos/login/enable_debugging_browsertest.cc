@@ -181,10 +181,6 @@ class EnableDebuggingTest : public LoginManagerTest {
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
   }
 
-  bool JSExecuted(const std::string& script) {
-    return content::ExecuteScript(web_contents(), script);
-  }
-
   void WaitUntilJSIsReady() {
     LoginDisplayHost* host = LoginDisplayHost::default_host();
     if (!host)
@@ -199,24 +195,24 @@ class EnableDebuggingTest : public LoginManagerTest {
   }
 
   void InvokeEnableDebuggingScreen() {
-    ASSERT_TRUE(JSExecuted("cr.ui.Oobe.handleAccelerator('debugging');"));
+    test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('debugging');");
     OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING).Wait();
   }
 
   void CloseEnableDebuggingScreen() {
-    ASSERT_TRUE(JSExecuted("$('debugging-cancel-button').click();"));
+    test::ExecuteOobeJS("$('debugging-cancel-button').click();");
   }
 
   void ClickRemoveProtectionButton() {
-    ASSERT_TRUE(JSExecuted("$('debugging-remove-protection-button').click();"));
+    test::ExecuteOobeJS("$('debugging-remove-protection-button').click();");
   }
 
   void ClickEnableButton() {
-    ASSERT_TRUE(JSExecuted("$('debugging-enable-button').click();"));
+    test::ExecuteOobeJS("$('debugging-enable-button').click();");
   }
 
   void ClickOKButton() {
-    ASSERT_TRUE(JSExecuted("$('debugging-ok-button').click();"));
+    test::ExecuteOobeJS("$('debugging-ok-button').click();");
   }
 
   void ShowRemoveProtectionScreen() {

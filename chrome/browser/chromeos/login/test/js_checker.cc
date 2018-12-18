@@ -115,5 +115,15 @@ JSChecker OobeJS() {
   return JSChecker(LoginDisplayHost::default_host()->GetOobeWebContents());
 }
 
+void ExecuteOobeJS(const std::string& script) {
+  ASSERT_TRUE(content::ExecuteScript(
+      LoginDisplayHost::default_host()->GetOobeWebContents(), script));
+}
+
+void ExecuteOobeJSAsync(const std::string& script) {
+  content::ExecuteScriptAsync(
+      LoginDisplayHost::default_host()->GetOobeWebContents(), script);
+}
+
 }  // namespace test
 }  // namespace chromeos

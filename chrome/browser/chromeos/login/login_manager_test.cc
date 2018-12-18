@@ -214,10 +214,6 @@ void LoginManagerTest::AddUser(const AccountId& account_id) {
   EXPECT_TRUE(AddUserToSession(user_context));
 }
 
-content::WebContents* LoginManagerTest::web_contents() {
-  return LoginDisplayHost::default_host()->GetOobeWebContents();
-}
-
 // static
 std::string LoginManagerTest::GetGaiaIDForUserID(const std::string& user_id) {
   if (user_id == LoginManagerTest::kEnterpriseUser1)

@@ -62,6 +62,10 @@ class JSChecker {
 // web-contents.
 JSChecker OobeJS();
 
+// Helper method to execute the given script in the context of OOBE.
+void ExecuteOobeJS(const std::string& script);
+void ExecuteOobeJSAsync(const std::string& script);
+
 }  // namespace test
 }  // namespace chromeos
 
