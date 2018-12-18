@@ -1141,6 +1141,7 @@ source_set("views_unittests_sources") {
   if (use_aura) {
     sources += [
       "accessibility/ax_aura_obj_cache_unittest.cc",
+      "accessibility/ax_aura_window_utils_unittest.cc",
       "accessibility/ax_tree_source_views_unittest.cc",
       "controls/native/native_view_host_aura_unittest.cc",
       "corewm/tooltip_controller_unittest.cc",
@@ -1180,10 +1181,6 @@ test("views_unittests") {
 
   if (use_aura) {
     sources += [
-      # Doesn't work in views_mus_unittests yet.
-      # crbug.com/911776
-      "accessibility/ax_aura_window_utils_unittest.cc",
-
       # These tests are expecting a hierarchy as created by classic ash. They
       # are only useful for views_unittests, and not in views_mus_unittests.
       "touchui/touch_selection_controller_impl_unittest.cc",
