@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                            TabStripModel* tab_strip,
@@ -19,60 +20,45 @@ TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
 }
 
 void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
-  bool affects_multiple_tabs =
-      (tab_strip->IsTabSelected(index) &&
-       tab_strip->selection_model().selected_indices().size() > 1);
+  std::vector<int> affected_indices =
+      tab_strip->IsTabSelected(index)
+          ? tab_strip->selection_model().selected_indices()
+          : std::vector<int>{index};
+  int num_affected_tabs = affected_indices.size();
   AddItemWithStringId(TabStripModel::CommandNewTab, IDS_TAB_CXMENU_NEWTAB);
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,
                       IDS_TAB_CXMENU_DUPLICATE);
   bool will_pin = tab_strip->WillContextMenuPin(index);
-  if (affects_multiple_tabs) {
-    AddItemWithStringId(
-        TabStripModel::CommandTogglePinned,
-        will_pin ? IDS_TAB_CXMENU_PIN_TABS : IDS_TAB_CXMENU_UNPIN_TABS);
-  } else {
-    AddItemWithStringId(
-        TabStripModel::CommandTogglePinned,
-        will_pin ? IDS_TAB_CXMENU_PIN_TAB : IDS_TAB_CXMENU_UNPIN_TAB);
-  }
+  AddItem(TabStripModel::CommandTogglePinned,
+          will_pin ? l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_PIN_TAB,
+                                                      num_affected_tabs)
+                   : l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_UNPIN_TAB,
+                                                      num_affected_tabs));
   if (base::FeatureList::IsEnabled(features::kSoundContentSetting)) {
-    if (affects_multiple_tabs) {
-      const bool will_mute = !chrome::AreAllSitesMuted(
-          *tab_strip, tab_strip->selection_model().selected_indices());
-      AddItemWithStringId(TabStripModel::CommandToggleSiteMuted,
-                          will_mute ? IDS_TAB_CXMENU_SOUND_MUTE_SITES
-                                    : IDS_TAB_CXMENU_SOUND_UNMUTE_SITES);
-    } else {
-      const bool will_mute = !chrome::IsSiteMuted(*tab_strip, index);
-      AddItemWithStringId(TabStripModel::CommandToggleSiteMuted,
-                          will_mute ? IDS_TAB_CXMENU_SOUND_MUTE_SITE
-                                    : IDS_TAB_CXMENU_SOUND_UNMUTE_SITE);
-    }
+    const bool will_mute =
+        !chrome::AreAllSitesMuted(*tab_strip, affected_indices);
+    AddItem(TabStripModel::CommandToggleSiteMuted,
+            will_mute
+                ? l10n_util::GetPluralStringFUTF16(
+                      IDS_TAB_CXMENU_SOUND_MUTE_SITE, num_affected_tabs)
+                : l10n_util::GetPluralStringFUTF16(
+                      IDS_TAB_CXMENU_SOUND_UNMUTE_SITE, num_affected_tabs));
   } else {
-    if (affects_multiple_tabs) {
-      const bool will_mute = !chrome::AreAllTabsMuted(
-          *tab_strip, tab_strip->selection_model().selected_indices());
-      AddItemWithStringId(TabStripModel::CommandToggleTabAudioMuted,
-                          will_mute ? IDS_TAB_CXMENU_AUDIO_MUTE_TABS
-                                    : IDS_TAB_CXMENU_AUDIO_UNMUTE_TABS);
-    } else {
-      const bool will_mute =
-          !tab_strip->GetWebContentsAt(index)->IsAudioMuted();
-      AddItemWithStringId(TabStripModel::CommandToggleTabAudioMuted,
-                          will_mute ? IDS_TAB_CXMENU_AUDIO_MUTE_TAB
-                                    : IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB);
-    }
+    const bool will_mute =
+        !chrome::AreAllTabsMuted(*tab_strip, affected_indices);
+    AddItem(TabStripModel::CommandToggleTabAudioMuted,
+            will_mute
+                ? l10n_util::GetPluralStringFUTF16(
+                      IDS_TAB_CXMENU_AUDIO_MUTE_TAB, num_affected_tabs)
+                : l10n_util::GetPluralStringFUTF16(
+                      IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB, num_affected_tabs));
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
-  if (affects_multiple_tabs) {
-    AddItemWithStringId(TabStripModel::CommandCloseTab,
-                        IDS_TAB_CXMENU_CLOSETABS);
-  } else {
-    AddItemWithStringId(TabStripModel::CommandCloseTab,
-                        IDS_TAB_CXMENU_CLOSETAB);
-  }
+  AddItem(TabStripModel::CommandCloseTab,
+          l10n_util::GetPluralStringFUTF16(IDS_TAB_CXMENU_CLOSETAB,
+                                           num_affected_tabs));
   AddItemWithStringId(TabStripModel::CommandCloseOtherTabs,
                       IDS_TAB_CXMENU_CLOSEOTHERTABS);
   AddItemWithStringId(TabStripModel::CommandCloseTabsToRight,
