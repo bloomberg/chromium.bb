@@ -2054,9 +2054,11 @@ v8::Local<v8::Object> WebAXObjectProxyList::GetOrCreate(
 
   v8::Local<v8::Value> value_handle =
       gin::CreateHandle(isolate, new WebAXObjectProxy(object, this)).ToV8();
-  if (value_handle.IsEmpty())
+  v8::Local<v8::Object> handle;
+  if (value_handle.IsEmpty() ||
+      !value_handle->ToObject(isolate->GetCurrentContext()).ToLocal(&handle)) {
     return v8::Local<v8::Object>();
-  v8::Local<v8::Object> handle = value_handle->ToObject(isolate);
+  }
   elements_.Append(handle);
   return handle;
 }
