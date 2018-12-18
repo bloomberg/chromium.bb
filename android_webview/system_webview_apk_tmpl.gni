@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//base/android/proguard/proguard.gni")
+import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
@@ -63,6 +64,9 @@ template("system_webview_apk_tmpl") {
       native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
     }
 
+    if (!defined(version_name)) {
+      version_name = chrome_version_name
+    }
     aapt_locale_whitelist = locales
 
     resource_blacklist_regex = "[/-]xxxhdpi[/-]"
