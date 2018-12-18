@@ -30,6 +30,10 @@ void ArcPictureInPictureWindowControllerImpl::Close(
   arc_pip_bridge_->ClosePip();
 }
 
+void ArcPictureInPictureWindowControllerImpl::CloseAndFocusInitiator() {
+  // Should be a no-op on ARC. This is managed on the Android side.
+}
+
 void ArcPictureInPictureWindowControllerImpl::OnWindowDestroyed() {
   // Should be a no-op on ARC. This is managed on the Android side.
 }

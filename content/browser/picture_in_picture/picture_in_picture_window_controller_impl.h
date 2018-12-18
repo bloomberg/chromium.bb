@@ -37,6 +37,7 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT gfx::Size Show() override;
   CONTENT_EXPORT void Close(bool should_pause_video,
                             bool should_reset_pip_player) override;
+  CONTENT_EXPORT void CloseAndFocusInitiator() override;
   CONTENT_EXPORT void OnWindowDestroyed() override;
   CONTENT_EXPORT void SetPictureInPictureCustomControls(
       const std::vector<blink::PictureInPictureControlInfo>& controls) override;
