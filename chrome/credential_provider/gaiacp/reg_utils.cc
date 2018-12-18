@@ -198,7 +198,7 @@ HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length) {
     wchar_t user_id[256];
     ULONG user_length = base::size(user_id);
     HRESULT hr =
-        GetUserProperty(user_sid, kUserTokenHandle, user_id, &user_length);
+        GetUserProperty(user_sid, kUserId, user_id, &user_length);
     if (SUCCEEDED(hr) && id == user_id) {
       wcsncpy_s(sid, length, user_sid, wcslen(user_sid));
       return S_OK;
