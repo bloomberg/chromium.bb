@@ -5757,8 +5757,3 @@ crbug.com/v8/8381 http/tests/devtools/coverage/multiple-instances-merge.js [ Pas
 
 # TODO (michaelludwig): Todo after Skia roll and rebaseline
 crbug.com/915735 compositing/masks/mask-with-added-filters.html [ Pass Failure ]
-
-# Sheriff 2018-12-17
-crbug.com/915903  http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
-crbug.com/915903  virtual/outofblink-cors/http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
-crbug.com/915903  virtual/outofblink-cors-ns/http/tests/security/inactive-document-with-empty-security-origin.html [ Timeout ]
