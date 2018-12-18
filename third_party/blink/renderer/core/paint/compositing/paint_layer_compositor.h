@@ -200,8 +200,6 @@ class CORE_EXPORT PaintLayerCompositor {
 
   LayoutView& layout_view_;
 
-  CompositingReasonFinder compositing_reason_finder_;
-
   CompositingUpdateType pending_update_type_;
 
   bool has_accelerated_compositing_;

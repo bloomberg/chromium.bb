@@ -19,48 +19,42 @@
 
 namespace blink {
 
-CompositingReasonFinder::CompositingReasonFinder(LayoutView& layout_view)
-    : layout_view_(layout_view) {}
-
-bool CompositingReasonFinder::IsMainFrame() const {
-  return layout_view_.GetDocument().IsInMainFrame();
-}
-
 CompositingReasons CompositingReasonFinder::DirectReasons(
-    const PaintLayer* layer,
-    bool ignore_lcd_text) const {
+    const PaintLayer& layer,
+    bool ignore_lcd_text) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return CompositingReason::kNone;
 
-  DCHECK_EQ(PotentialCompositingReasonsFromStyle(layer->GetLayoutObject()),
-            layer->PotentialCompositingReasonsFromStyle());
+  DCHECK_EQ(PotentialCompositingReasonsFromStyle(layer.GetLayoutObject()),
+            layer.PotentialCompositingReasonsFromStyle());
   CompositingReasons style_determined_direct_compositing_reasons =
-      layer->PotentialCompositingReasonsFromStyle() &
+      layer.PotentialCompositingReasonsFromStyle() &
       CompositingReason::kComboAllDirectStyleDeterminedReasons;
 
   return style_determined_direct_compositing_reasons |
          NonStyleDeterminedDirectReasons(layer, ignore_lcd_text);
 }
 
-bool CompositingReasonFinder::RequiresCompositingForScrollableFrame() const {
+bool CompositingReasonFinder::RequiresCompositingForScrollableFrame(
+    const LayoutView& layout_view) {
   // Need this done first to determine overflow.
-  DCHECK(!layout_view_.NeedsLayout());
-  if (IsMainFrame())
+  DCHECK(!layout_view.NeedsLayout());
+  if (layout_view.GetDocument().IsInMainFrame())
     return false;
 
-  const auto& settings = *layout_view_.GetDocument().GetSettings();
+  const auto& settings = *layout_view.GetDocument().GetSettings();
   if (!settings.GetPreferCompositingToLCDTextEnabled())
     return false;
 
-  if (layout_view_.GetFrameView()->Size().IsEmpty())
+  if (layout_view.GetFrameView()->Size().IsEmpty())
     return false;
 
-  return layout_view_.GetFrameView()->LayoutViewport()->ScrollsOverflow();
+  return layout_view.GetFrameView()->LayoutViewport()->ScrollsOverflow();
 }
 
 CompositingReasons
 CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
-    LayoutObject& layout_object) const {
+    const LayoutObject& layout_object) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return CompositingReason::kNone;
 
@@ -137,35 +131,35 @@ bool CompositingReasonFinder::RequiresCompositingForTransform(
 }
 
 CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
-    const PaintLayer* layer,
-    bool ignore_lcd_text) const {
+    const PaintLayer& layer,
+    bool ignore_lcd_text) {
   CompositingReasons direct_reasons = CompositingReason::kNone;
-  LayoutObject& layout_object = layer->GetLayoutObject();
+  LayoutObject& layout_object = layer.GetLayoutObject();
 
   // TODO(chrishtr): remove this hammer in favor of something more targeted.
   // See crbug.com/749349.
-  if (layer->ClipParent() && layer->GetLayoutObject().IsOutOfFlowPositioned())
+  if (layer.ClipParent() && layer.GetLayoutObject().IsOutOfFlowPositioned())
     direct_reasons |= CompositingReason::kOutOfFlowClipping;
 
-  if (RequiresCompositingForRootScroller(*layer))
+  if (RequiresCompositingForRootScroller(layer))
     direct_reasons |= CompositingReason::kRootScroller;
 
   // Composite |layer| if it is inside of an ancestor scrolling layer, but that
   // scrolling layer is not on the stacking context ancestor chain of |layer|.
   // See the definition of the scrollParent property in Layer for more detail.
-  if (const PaintLayer* scrolling_ancestor = layer->AncestorScrollingLayer()) {
-    if (scrolling_ancestor->NeedsCompositedScrolling() && layer->ScrollParent())
+  if (const PaintLayer* scrolling_ancestor = layer.AncestorScrollingLayer()) {
+    if (scrolling_ancestor->NeedsCompositedScrolling() && layer.ScrollParent())
       direct_reasons |= CompositingReason::kOverflowScrollingParent;
   }
 
-  if (RequiresCompositingForScrollDependentPosition(*layer, ignore_lcd_text))
+  if (RequiresCompositingForScrollDependentPosition(layer, ignore_lcd_text))
     direct_reasons |= CompositingReason::kScrollDependentPosition;
 
   // TODO(crbug.com/839341): Remove once we support main-thread AnimationWorklet
   // and don't need to promote the scroll-source.
-  if (layer->GetScrollableArea() && layer->GetLayoutObject().GetNode() &&
+  if (layer.GetScrollableArea() && layer.GetLayoutObject().GetNode() &&
       ScrollTimeline::HasActiveScrollTimeline(
-          layer->GetLayoutObject().GetNode())) {
+          layer.GetLayoutObject().GetNode())) {
     direct_reasons |= CompositingReason::kScrollTimelineTarget;
   }
 
@@ -173,12 +167,13 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
   // PaintLayer children and whose children can't use its backing to render
   // into. These children (the controls) always need to be promoted into their
   // own layers to draw on top of the accelerated video.
-  if (layer->CompositingContainer() &&
-      layer->CompositingContainer()->GetLayoutObject().IsVideo())
+  if (layer.CompositingContainer() &&
+      layer.CompositingContainer()->GetLayoutObject().IsVideo())
     direct_reasons |= CompositingReason::kVideoOverlay;
 
-  if (layer->IsRootLayer() && (RequiresCompositingForScrollableFrame() ||
-                               layout_view_.GetFrame()->IsLocalRoot())) {
+  if (layer.IsRootLayer() &&
+      (RequiresCompositingForScrollableFrame(*layout_object.View()) ||
+       layout_object.GetFrame()->IsLocalRoot())) {
     direct_reasons |= CompositingReason::kRoot;
   }
 

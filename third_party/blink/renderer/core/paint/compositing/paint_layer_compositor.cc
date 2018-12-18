@@ -68,7 +68,6 @@ namespace blink {
 
 PaintLayerCompositor::PaintLayerCompositor(LayoutView& layout_view)
     : layout_view_(layout_view),
-      compositing_reason_finder_(layout_view),
       pending_update_type_(kCompositingUpdateNone),
       has_accelerated_compositing_(true),
       compositing_(false),
@@ -132,7 +131,8 @@ bool PaintLayerCompositor::RootShouldAlwaysComposite() const {
   if (!has_accelerated_compositing_)
     return false;
   return layout_view_.GetFrame()->IsLocalRoot() ||
-         compositing_reason_finder_.RequiresCompositingForScrollableFrame();
+         CompositingReasonFinder::RequiresCompositingForScrollableFrame(
+             layout_view_);
 }
 
 void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
@@ -366,7 +366,7 @@ void PaintLayerCompositor::UpdateWithoutAcceleratedCompositing(
   DCHECK(!HasAcceleratedCompositing());
 
   if (update_type >= kCompositingUpdateAfterCompositingInputChange)
-    CompositingInputsUpdater(RootLayer(), compositing_reason_finder_).Update();
+    CompositingInputsUpdater(RootLayer()).Update();
 
 #if DCHECK_IS_ON()
   CompositingInputsUpdater::AssertNeedsCompositingInputsUpdateBitsCleared(
@@ -452,7 +452,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
   Vector<PaintLayer*> layers_needing_paint_invalidation;
 
   if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
-    CompositingInputsUpdater(update_root, compositing_reason_finder_).Update();
+    CompositingInputsUpdater(update_root).Update();
 
 #if DCHECK_IS_ON()
     // FIXME: Move this check to the end of the compositing update.
@@ -470,7 +470,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
       return;
     }
 
-    CompositingRequirementsUpdater(layout_view_, compositing_reason_finder_)
+    CompositingRequirementsUpdater(layout_view_)
         .Update(update_root, compositing_reasons_stats);
 
     CompositingLayerAssigner layer_assigner(this);
@@ -782,9 +782,9 @@ void PaintLayerCompositor::SetIsInWindow(bool is_in_window) {
 
 void PaintLayerCompositor::UpdatePotentialCompositingReasonsFromStyle(
     PaintLayer& layer) {
-  layer.SetPotentialCompositingReasonsFromStyle(
-      compositing_reason_finder_.PotentialCompositingReasonsFromStyle(
-          layer.GetLayoutObject()));
+  auto reasons = CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
+      layer.GetLayoutObject());
+  layer.SetPotentialCompositingReasonsFromStyle(reasons);
 }
 
 bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
@@ -795,7 +795,7 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
     return false;
 
   const bool has_compositor_animation =
-      compositing_reason_finder_.CompositingReasonsForAnimation(
+      CompositingReasonFinder::CompositingReasonsForAnimation(
           *layer->GetLayoutObject().Style()) != CompositingReason::kNone;
   return has_accelerated_compositing_ &&
          (has_compositor_animation || !layer->SubtreeIsInvisible()) &&

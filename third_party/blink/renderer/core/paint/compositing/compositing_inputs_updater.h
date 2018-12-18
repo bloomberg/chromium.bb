@@ -11,15 +11,12 @@
 namespace blink {
 
 class PaintLayer;
-class CompositingReasonFinder;
 
 class CompositingInputsUpdater {
   STACK_ALLOCATED();
 
  public:
-  explicit CompositingInputsUpdater(
-      PaintLayer* root_layer,
-      CompositingReasonFinder& compositing_reason_finder);
+  explicit CompositingInputsUpdater(PaintLayer* root_layer);
   ~CompositingInputsUpdater();
 
   void Update();
@@ -71,7 +68,6 @@ class CompositingInputsUpdater {
 
   LayoutGeometryMap geometry_map_;
   PaintLayer* root_layer_;
-  CompositingReasonFinder& compositing_reason_finder_;
 };
 
 }  // namespace blink

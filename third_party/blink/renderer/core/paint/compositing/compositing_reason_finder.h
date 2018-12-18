@@ -21,23 +21,22 @@ class CORE_EXPORT CompositingReasonFinder {
   DISALLOW_NEW();
 
  public:
-  explicit CompositingReasonFinder(LayoutView&);
+  static CompositingReasons PotentialCompositingReasonsFromStyle(
+      const LayoutObject&);
 
-  CompositingReasons PotentialCompositingReasonsFromStyle(LayoutObject&) const;
+  static CompositingReasons NonStyleDeterminedDirectReasons(
+      const PaintLayer&,
+      bool ignore_lcd_text);
 
-  CompositingReasons NonStyleDeterminedDirectReasons(
-      const PaintLayer*,
-      bool ignore_lcd_text) const;
-  LayoutView& layout_view_;
   DISALLOW_COPY_AND_ASSIGN(CompositingReasonFinder);
 
   // Returns the direct reasons for compositing the given layer. If
   // |ignoreLCDText| is true promotion will not try to preserve subpixel text
   // rendering (i.e. partially transparent layers will be promoted).
-  CompositingReasons DirectReasons(const PaintLayer*,
-                                   bool ignore_lcd_text) const;
+  static CompositingReasons DirectReasons(const PaintLayer&,
+                                          bool ignore_lcd_text);
 
-  bool RequiresCompositingForScrollableFrame() const;
+  static bool RequiresCompositingForScrollableFrame(const LayoutView&);
   static CompositingReasons CompositingReasonsForAnimation(
       const ComputedStyle&);
   static bool RequiresCompositingForOpacityAnimation(const ComputedStyle&);
@@ -51,9 +50,6 @@ class CORE_EXPORT CompositingReasonFinder {
   static bool RequiresCompositingForScrollDependentPosition(
       const PaintLayer&,
       bool ignore_lcd_text);
-
- private:
-  bool IsMainFrame() const;
 };
 
 }  // namespace blink
