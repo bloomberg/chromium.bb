@@ -44,6 +44,13 @@ class Video {
   static void SetTestDataPath(const base::FilePath& test_data_path);
 
  private:
+  // Load metadata from a JSON file associated with the video file.
+  bool LoadMetadata();
+  // Return true if video metadata is already loaded.
+  bool IsMetadataLoaded() const;
+  // Return a profile that |codec| represents.
+  static VideoCodecProfile ConvertStringtoProfile(const std::string& codec);
+
   // The path where all test video files are stored.
   // TODO(dstaessens@) Avoid using a static data path here.
   static base::FilePath test_data_path_;
