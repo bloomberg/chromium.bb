@@ -11,7 +11,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
@@ -39,10 +38,11 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // Returns true if an AppShimHostBootstrap has already connected to this
   // host.
   bool HasBootstrapConnected() const;
-  // Invoked when the app is successfully launched.
-  void OnBootstrapConnected(std::unique_ptr<AppShimHostBootstrap> bootstrap);
-  // Invoked when the app is closed in the browser process. Virtual for tests.
-  virtual void OnAppLaunchComplete(apps::AppShimLaunchResult result);
+
+  // Invoked when the app shim has launched and connected to the browser.
+  virtual void OnBootstrapConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap);
+
   // Invoked when the app is closed in the browser process.
   void OnAppClosed();
 
@@ -76,7 +76,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // channel error and OnAppClosed).
   ~AppShimHost() override;
   void ChannelError(uint32_t custom_reason, const std::string& description);
-  void SendLaunchResult();
 
   // Closes the channel and destroys the AppShimHost.
   void Close();
@@ -101,11 +100,6 @@ class AppShimHost : public chrome::mojom::AppShimHost {
 
   std::string app_id_;
   base::FilePath profile_path_;
-
-  // The result passed to OnAppLaunchComplete, not set until OnAppLaunchComplete
-  // is called.
-  base::Optional<apps::AppShimLaunchResult> launch_result_;
-  bool has_sent_on_launch_complete_ = false;
 
   // This class is only ever to be used on the UI thread.
   THREAD_CHECKER(thread_checker_);

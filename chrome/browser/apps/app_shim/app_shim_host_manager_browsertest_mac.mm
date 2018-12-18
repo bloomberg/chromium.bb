@@ -181,7 +181,7 @@ void AppShimHostManagerBrowserTest::OnShimProcessConnected(
   last_launch_type_ = bootstrap->GetLaunchType();
   last_launch_files_ = bootstrap->GetLaunchFiles();
 
-  bootstrap->OnLaunchAppSucceeded(mojo::MakeRequest(&app_shim_ptr_));
+  bootstrap->OnConnectedToHost(mojo::MakeRequest(&app_shim_ptr_));
   runner_->Quit();
 }
 

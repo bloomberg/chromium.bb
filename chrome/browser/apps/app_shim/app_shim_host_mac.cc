@@ -59,10 +59,6 @@ AppShimHost::AppShimHost(const std::string& app_id,
 
 AppShimHost::~AppShimHost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // Ensure that we send a response to the bootstrap even if we failed to finish
-  // loading.
-  if (bootstrap_ && !has_sent_on_launch_complete_)
-    bootstrap_->OnLaunchAppFailed(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND);
 }
 
 void AppShimHost::ChannelError(uint32_t custom_reason,
@@ -70,17 +66,6 @@ void AppShimHost::ChannelError(uint32_t custom_reason,
   LOG(ERROR) << "Channel error custom_reason:" << custom_reason
              << " description: " << description;
   Close();
-}
-
-void AppShimHost::SendLaunchResult() {
-  DCHECK(!has_sent_on_launch_complete_);
-  DCHECK(bootstrap_);
-  DCHECK(launch_result_);
-  if (*launch_result_ == apps::APP_SHIM_LAUNCH_SUCCESS)
-    bootstrap_->OnLaunchAppSucceeded(std::move(app_shim_request_));
-  else
-    bootstrap_->OnLaunchAppFailed(*launch_result_);
-  has_sent_on_launch_complete_ = true;
 }
 
 void AppShimHost::Close() {
@@ -108,16 +93,12 @@ void AppShimHost::OnBootstrapConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   DCHECK(!bootstrap_);
   bootstrap_ = std::move(bootstrap);
+  bootstrap_->OnConnectedToHost(std::move(app_shim_request_));
 
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   host_binding_.Bind(bootstrap_->GetLaunchAppShimHostRequest());
   host_binding_.set_connection_error_with_reason_handler(
       base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
-
-  // If we already have a launch result ready (e.g, because we launched the app
-  // from Chrome), send the result immediately.
-  if (launch_result_)
-    SendLaunchResult();
 }
 
 void AppShimHost::FocusApp(apps::AppShimFocusType focus_type,
@@ -140,13 +121,6 @@ void AppShimHost::QuitApp() {
   apps::AppShimHandler* handler = GetAppShimHandler();
   if (handler)
     handler->OnShimQuit(this);
-}
-
-void AppShimHost::OnAppLaunchComplete(apps::AppShimLaunchResult result) {
-  DCHECK(!has_sent_on_launch_complete_);
-  launch_result_.emplace(result);
-  if (bootstrap_)
-    SendLaunchResult();
 }
 
 void AppShimHost::OnAppClosed() {

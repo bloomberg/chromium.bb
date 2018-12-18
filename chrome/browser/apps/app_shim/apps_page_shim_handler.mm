@@ -60,7 +60,7 @@ void AppsPageShimHandler::OnShimProcessConnected(
   OpenAppsPage([controller lastProfile]);
 
   // Always close the shim process immediately.
-  bootstrap->OnLaunchAppFailed(apps::APP_SHIM_LAUNCH_DUPLICATE_HOST);
+  bootstrap->OnFailedToConnectToHost(apps::APP_SHIM_LAUNCH_DUPLICATE_HOST);
 }
 
 void AppsPageShimHandler::OnShimClose(AppShimHost* host) {}

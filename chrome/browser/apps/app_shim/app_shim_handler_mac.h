@@ -48,8 +48,8 @@ class AppShimHandler {
 
   // Invoked by the AppShimHostBootstrap  when a shim process has connected to
   // the browser process. This will connect to (creating, if needed) an
-  // AppShimHost. |bootstrap| must have OnLaunchAppSucceeded or
-  // OnLaunchAppFailed called on it to inform the shim of the result.
+  // AppShimHost. |bootstrap| must have OnConnectedToHost or
+  // OnFailedToConnectToHost called on it to inform the shim of the result.
   virtual void OnShimProcessConnected(
       std::unique_ptr<AppShimHostBootstrap> bootstrap) = 0;
 

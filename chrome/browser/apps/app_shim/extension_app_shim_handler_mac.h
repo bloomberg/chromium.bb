@@ -65,8 +65,10 @@ class ExtensionAppShimHandler : public AppShimHandler,
     virtual const extensions::Extension* MaybeGetAppExtension(
         content::BrowserContext* context,
         const std::string& extension_id);
-    virtual AppShimHost* CreateHost(const std::string& app_id,
-                                    const base::FilePath& profile_path);
+    virtual bool AllowShimToConnect(Profile* profile,
+                                    const extensions::Extension* extension);
+    virtual AppShimHost* CreateHost(Profile* profile,
+                                    const extensions::Extension* extension);
     virtual void EnableExtension(Profile* profile,
                                  const std::string& extension_id,
                                  base::OnceCallback<void()> callback);
@@ -96,7 +98,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // Return the host corresponding to |profile| and |app_id|, if one exists.
   // If one does not exist, create one, and launch the app shim (so that the
   // app shim will connect to the returned host).
-  AppShimHost* FindOrCreateHost(Profile* profile, const std::string& app_id);
+  AppShimHost* FindOrCreateHost(Profile* profile,
+                                const extensions::Extension* extension);
 
   // Get the AppShimHost corresponding to a browser instance, returning nullptr
   // if none should exist. If no AppShimHost exists, but one should exist
@@ -189,8 +192,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   // This is passed to Delegate::EnableViaPrompt for shim-initiated launches
   // where the extension is disabled.
-  void OnExtensionEnabled(base::WeakPtr<AppShimHost> host,
-                          const std::vector<base::FilePath>& files);
+  void OnExtensionEnabled(std::unique_ptr<AppShimHostBootstrap> bootstrap);
 
   // If an LaunchShim was called to service |host|, then this call will be made
   // with the resulting process. If the process is invalid, then there was an

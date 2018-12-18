@@ -103,13 +103,14 @@ void AppShimHostBootstrap::LaunchApp(
   // this only happens at shutdown, do nothing here.
 }
 
-void AppShimHostBootstrap::OnLaunchAppSucceeded(
+void AppShimHostBootstrap::OnConnectedToHost(
     chrome::mojom::AppShimRequest app_shim_request) {
   std::move(launch_app_callback_)
       .Run(apps::APP_SHIM_LAUNCH_SUCCESS, std::move(app_shim_request));
 }
 
-void AppShimHostBootstrap::OnLaunchAppFailed(apps::AppShimLaunchResult result) {
+void AppShimHostBootstrap::OnFailedToConnectToHost(
+    apps::AppShimLaunchResult result) {
   // Because there will be users of the AppShim interface in failure, just
   // return a dummy request.
   chrome::mojom::AppShimPtr dummy_ptr;
