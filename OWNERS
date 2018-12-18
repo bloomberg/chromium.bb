@@ -19,3 +19,10 @@ per-file autoninja*=brucedawson@chromium.org
 
 per-file ninjalog_uploader.py=tikuta@chromium.org
 per-file ninjalog_uploader_wrapper.py=tikuta@chromium.org
+
+per-file cbuildbot=file://CROS_OWNERS
+per-file chrome_set_ver=file://CROS_OWNERS
+per-file cros=file://CROS_OWNERS
+per-file cros_sdk=file://CROS_OWNERS
+per-file repo=file://CROS_OWNERS
+per-file support/chromite_wrapper=file://CROS_OWNERS
