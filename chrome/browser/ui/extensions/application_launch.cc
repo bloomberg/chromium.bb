@@ -292,7 +292,8 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
       NOTREACHED();
       break;
     }
-    case extensions::LAUNCH_CONTAINER_PANEL:
+    // Panels are deprecated. Launch a normal window instead.
+    case extensions::LAUNCH_CONTAINER_PANEL_DEPRECATED:
     case extensions::LAUNCH_CONTAINER_WINDOW:
       tab = OpenApplicationWindow(params, url);
       break;

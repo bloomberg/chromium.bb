@@ -111,9 +111,6 @@ ws::mojom::WindowType MusWindowTypeFromWindowType(
     case aura::client::WINDOW_TYPE_CONTROL:
       return ws::mojom::WindowType::CONTROL;
 
-    case aura::client::WINDOW_TYPE_PANEL:
-      return ws::mojom::WindowType::PANEL;
-
     case aura::client::WINDOW_TYPE_MENU:
       return ws::mojom::WindowType::MENU;
 

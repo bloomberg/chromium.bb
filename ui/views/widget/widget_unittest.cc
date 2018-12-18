@@ -4135,7 +4135,6 @@ class CompositingWidgetTest : public views::test::WidgetTest {
  public:
   CompositingWidgetTest()
       : widget_types_{Widget::InitParams::TYPE_WINDOW,
-                      Widget::InitParams::TYPE_PANEL,
                       Widget::InitParams::TYPE_WINDOW_FRAMELESS,
                       Widget::InitParams::TYPE_CONTROL,
                       Widget::InitParams::TYPE_POPUP,

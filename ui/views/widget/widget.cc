@@ -296,7 +296,6 @@ gfx::Size Widget::GetLocalizedContentsSize(int col_resource_id,
 // static
 bool Widget::RequiresNonClientView(InitParams::Type type) {
   return type == InitParams::TYPE_WINDOW ||
-         type == InitParams::TYPE_PANEL ||
          type == InitParams::TYPE_BUBBLE;
 }
 
@@ -314,9 +313,9 @@ void Widget::Init(const InitParams& in_params) {
   is_top_level_ = !params.child;
 
   if (params.opacity == views::Widget::InitParams::INFER_OPACITY &&
-      params.type != views::Widget::InitParams::TYPE_WINDOW &&
-      params.type != views::Widget::InitParams::TYPE_PANEL)
+      params.type != views::Widget::InitParams::TYPE_WINDOW) {
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+  }
 
   if (ViewsDelegate::GetInstance())
     ViewsDelegate::GetInstance()->OnBeforeWidgetInit(&params, this);

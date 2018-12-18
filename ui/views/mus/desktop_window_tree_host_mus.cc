@@ -48,8 +48,7 @@ namespace {
 class ClientSideNonClientFrameView : public NonClientFrameView,
                                      public aura::WindowObserver {
  public:
-  explicit ClientSideNonClientFrameView(views::Widget* widget)
-      : widget_(widget) {
+  explicit ClientSideNonClientFrameView(Widget* widget) : widget_(widget) {
     // Not part of the accessibility node hierarchy because the window frame is
     // provided by the window manager.
     if (MusClient::Get()->use_remote_accessibility_host())
@@ -58,7 +57,7 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
     // Initialize kTopViewInset to a default value. Further updates will come
     // from Ash. This is necessary so that during app window creation,
     // GetWindowBoundsForClientBounds() can calculate correctly.
-    const auto& values = views::WindowManagerFrameValues::instance();
+    const auto& values = WindowManagerFrameValues::instance();
     widget->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
                                            widget->IsMaximized()
                                                ? values.maximized_insets.top()
@@ -151,7 +150,7 @@ class ClientSideNonClientFrameView : public NonClientFrameView,
     return widget_->GetNativeWindow()->GetRootWindow();
   }
 
-  views::Widget* widget_;
+  Widget* widget_;
   ScopedObserver<aura::Window, aura::WindowObserver> observed_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideNonClientFrameView);
@@ -411,9 +410,8 @@ bool DesktopWindowTreeHostMus::ShouldSendClientAreaToServer() const {
   if (!auto_update_client_area_)
     return false;
 
-  using WIP = views::Widget::InitParams;
-  const WIP::Type type = desktop_native_widget_aura_->widget_type();
-  return type == WIP::TYPE_WINDOW || type == WIP::TYPE_PANEL;
+  return desktop_native_widget_aura_->widget_type() ==
+         Widget::InitParams::TYPE_WINDOW;
 }
 
 void DesktopWindowTreeHostMus::RestoreToPreminimizedState() {
@@ -511,7 +509,7 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
   content_window()->SetProperty(
       aura::client::kClientWindowHasContent,
       params.layer_type != ui::LAYER_NOT_DRAWN &&
-          params.opacity == views::Widget::InitParams::OPAQUE_WINDOW);
+          params.opacity == Widget::InitParams::OPAQUE_WINDOW);
 }
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
@@ -1118,7 +1116,7 @@ void DesktopWindowTreeHostMus::SetBoundsInPixels(
                                        local_surface_id_allocation);
 }
 
-void DesktopWindowTreeHostMus::OnViewBoundsChanged(views::View* observed_view) {
+void DesktopWindowTreeHostMus::OnViewBoundsChanged(View* observed_view) {
   DCHECK_EQ(
       observed_view,
       native_widget_delegate_->AsWidget()->non_client_view()->client_view());

@@ -190,10 +190,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ(kShellWindowId_UnparentedControlContainer,
             unparented_control->GetNativeView()->parent()->id());
 
-  aura::Window* panel = CreateTestWindowInShellWithDelegateAndType(
-      NULL, aura::client::WINDOW_TYPE_PANEL, 0, gfx::Rect(700, 100, 100, 100));
-  EXPECT_EQ(root_windows[1], panel->GetRootWindow());
-
   // Make sure a window that will delete itself when losing focus
   // will not crash.
   aura::WindowTracker tracker;
@@ -259,9 +255,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
             unparented_control->GetNativeView()->GetRootWindow());
   EXPECT_EQ(kShellWindowId_UnparentedControlContainer,
             unparented_control->GetNativeView()->parent()->id());
-
-  // Test if the panel has moved.
-  EXPECT_EQ(root_windows[0], panel->GetRootWindow());
 }
 
 TEST_F(RootWindowControllerTest, MoveWindows_Modal) {

@@ -56,9 +56,6 @@ struct ASH_EXPORT DragDetails {
 
   // Source of the event initiating the drag.
   const ::wm::WindowMoveSource source;
-
-  // True if the window should attach to the shelf after releasing.
-  bool should_attach_to_shelf;
 };
 
 }  // namespace ash

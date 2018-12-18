@@ -308,8 +308,7 @@ int ScopedTransformOverviewWindow::GetTopInset() const {
     // If there are regular windows in the transient ancestor tree, all those
     // windows are shown in the same overview item and the header is not masked.
     if (window != window_ &&
-        (window->type() == aura::client::WINDOW_TYPE_NORMAL ||
-         window->type() == aura::client::WINDOW_TYPE_PANEL)) {
+        window->type() == aura::client::WINDOW_TYPE_NORMAL) {
       return 0;
     }
   }

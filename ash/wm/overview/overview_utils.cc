@@ -237,8 +237,7 @@ gfx::Rect GetTransformedBounds(aura::Window* transformed_window,
     // Ignore other window types when computing bounding box of window
     // selector target item.
     if (window != transformed_window &&
-        (window->type() != aura::client::WINDOW_TYPE_NORMAL &&
-         window->type() != aura::client::WINDOW_TYPE_PANEL)) {
+        window->type() != aura::client::WINDOW_TYPE_NORMAL) {
       continue;
     }
     gfx::RectF window_bounds(window->GetTargetBounds());
@@ -269,8 +268,7 @@ gfx::Rect GetTargetBoundsInScreen(aura::Window* window) {
     // Ignore other window types when computing bounding box of window
     // selector target item.
     if (window_iter != window &&
-        window_iter->type() != aura::client::WINDOW_TYPE_NORMAL &&
-        window_iter->type() != aura::client::WINDOW_TYPE_PANEL) {
+        window_iter->type() != aura::client::WINDOW_TYPE_NORMAL) {
       continue;
     }
     gfx::Rect target_bounds = window_iter->GetTargetBounds();

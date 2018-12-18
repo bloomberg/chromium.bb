@@ -43,7 +43,6 @@
       "Window type constants must match")
 
 WINDOW_TYPES_MATCH(WINDOW);
-WINDOW_TYPES_MATCH(PANEL);
 WINDOW_TYPES_MATCH(WINDOW_FRAMELESS);
 WINDOW_TYPES_MATCH(CONTROL);
 WINDOW_TYPES_MATCH(POPUP);
@@ -176,11 +175,10 @@ bool MusClient::ShouldCreateDesktopNativeWidgetAura(
 // static
 bool MusClient::ShouldMakeWidgetWindowsTranslucent(
     const Widget::InitParams& params) {
-  // |TYPE_WINDOW| and |TYPE_PANEL| are forced to translucent so that the
-  // window manager can draw the client decorations.
+  // |TYPE_WINDOW| is forced to translucent so that the window manager
+  // can draw the client decorations.
   return params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW ||
-         params.type == Widget::InitParams::TYPE_WINDOW ||
-         params.type == Widget::InitParams::TYPE_PANEL;
+         params.type == Widget::InitParams::TYPE_WINDOW;
 }
 
 // static

@@ -124,8 +124,7 @@ void BaseState::CycleSnap(WindowState* window_state, WMEventType event) {
                                         : mojom::WindowStateType::RIGHT_SNAPPED;
 
   if (window_state->CanSnap() &&
-      window_state->GetStateType() != desired_snap_state &&
-      window_state->window()->type() != aura::client::WINDOW_TYPE_PANEL) {
+      window_state->GetStateType() != desired_snap_state) {
     const wm::WMEvent event(desired_snap_state ==
                                     mojom::WindowStateType::LEFT_SNAPPED
                                 ? wm::WM_EVENT_SNAP_LEFT

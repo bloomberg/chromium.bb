@@ -113,8 +113,7 @@ TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
   aura::client::WindowType no_item_types[] = {
       aura::client::WINDOW_TYPE_UNKNOWN, aura::client::WINDOW_TYPE_NORMAL,
       aura::client::WINDOW_TYPE_POPUP,   aura::client::WINDOW_TYPE_CONTROL,
-      aura::client::WINDOW_TYPE_PANEL,   aura::client::WINDOW_TYPE_MENU,
-      aura::client::WINDOW_TYPE_TOOLTIP};
+      aura::client::WINDOW_TYPE_MENU,    aura::client::WINDOW_TYPE_TOOLTIP};
   for (aura::client::WindowType type : no_item_types) {
     std::unique_ptr<aura::Window> window =
         window_factory::NewWindow(nullptr, type);

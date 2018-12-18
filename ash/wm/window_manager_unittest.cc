@@ -401,44 +401,6 @@ TEST_F(WindowManagerTest, ActivateOnPointerWindowProperty) {
   EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
 }
 
-TEST_F(WindowManagerTest, PanelActivation) {
-  aura::test::TestWindowDelegate wd;
-  std::unique_ptr<aura::Window> w1(
-      CreateTestWindowInShellWithDelegate(&wd, -1, gfx::Rect(10, 10, 50, 50)));
-  aura::test::TestWindowDelegate pd;
-  std::unique_ptr<aura::Window> p1(CreateTestWindowInShellWithDelegateAndType(
-      &pd, aura::client::WINDOW_TYPE_PANEL, -1, gfx::Rect(10, 10, 50, 50)));
-  aura::client::FocusClient* focus_client =
-      aura::client::GetFocusClient(w1.get());
-
-  // Activate w1.
-  wm::ActivateWindow(w1.get());
-  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
-
-  // Activate p1.
-  wm::ActivateWindow(p1.get());
-  EXPECT_TRUE(wm::IsActiveWindow(p1.get()));
-  EXPECT_EQ(p1.get(), focus_client->GetFocusedWindow());
-
-  // Activate w1.
-  wm::ActivateWindow(w1.get());
-  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
-  EXPECT_EQ(w1.get(), focus_client->GetFocusedWindow());
-
-  // Clicking on a non-activatable window should not change the active window.
-  {
-    NonFocusableDelegate nfd;
-    std::unique_ptr<aura::Window> w3(CreateTestWindowInShellWithDelegate(
-        &nfd, -1, gfx::Rect(70, 70, 50, 50)));
-    ui::test::EventGenerator generator3(Shell::GetPrimaryRootWindow(),
-                                        w3.get());
-    wm::ActivateWindow(p1.get());
-    EXPECT_TRUE(wm::IsActiveWindow(p1.get()));
-    generator3.ClickLeftButton();
-    EXPECT_TRUE(wm::IsActiveWindow(p1.get()));
-  }
-}
-
 // Essentially the same as ActivateOnMouse, but for touch events.
 TEST_F(WindowManagerTest, ActivateOnTouch) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();

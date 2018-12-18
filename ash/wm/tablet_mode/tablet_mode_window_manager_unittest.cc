@@ -198,14 +198,12 @@ TEST_F(TabletModeWindowManagerTest, PreCreateWindows) {
   std::unique_ptr<aura::Window> w3(CreateFixedSizeNonMaximizableWindow(
       aura::client::WINDOW_TYPE_NORMAL, rect3));
   std::unique_ptr<aura::Window> w4(
-      CreateWindow(aura::client::WINDOW_TYPE_PANEL, rect));
-  std::unique_ptr<aura::Window> w5(
       CreateWindow(aura::client::WINDOW_TYPE_POPUP, rect));
-  std::unique_ptr<aura::Window> w6(
+  std::unique_ptr<aura::Window> w5(
       CreateWindow(aura::client::WINDOW_TYPE_CONTROL, rect));
-  std::unique_ptr<aura::Window> w7(
+  std::unique_ptr<aura::Window> w6(
       CreateWindow(aura::client::WINDOW_TYPE_MENU, rect));
-  std::unique_ptr<aura::Window> w8(
+  std::unique_ptr<aura::Window> w7(
       CreateWindow(aura::client::WINDOW_TYPE_TOOLTIP, rect));
   EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
@@ -230,12 +228,10 @@ TEST_F(TabletModeWindowManagerTest, PreCreateWindows) {
   EXPECT_FALSE(wm::GetWindowState(w5.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w6.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w7.get())->IsMaximized());
-  EXPECT_FALSE(wm::GetWindowState(w8.get())->IsMaximized());
   EXPECT_EQ(rect.ToString(), w4->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w5->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w6->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w7->bounds().ToString());
-  EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
 
   // Destroy the manager again and check that the windows return to their
   // previous state.
@@ -250,7 +246,6 @@ TEST_F(TabletModeWindowManagerTest, PreCreateWindows) {
   EXPECT_EQ(rect.ToString(), w5->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w6->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w7->bounds().ToString());
-  EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
 }
 
 // The same test as the above but while a system modal dialog is shown.
@@ -268,14 +263,12 @@ TEST_F(TabletModeWindowManagerTest, GoingToMaximizedWithModalDialogPresent) {
   std::unique_ptr<aura::Window> w3(CreateFixedSizeNonMaximizableWindow(
       aura::client::WINDOW_TYPE_NORMAL, rect3));
   std::unique_ptr<aura::Window> w4(
-      CreateWindow(aura::client::WINDOW_TYPE_PANEL, rect));
-  std::unique_ptr<aura::Window> w5(
       CreateWindow(aura::client::WINDOW_TYPE_POPUP, rect));
-  std::unique_ptr<aura::Window> w6(
+  std::unique_ptr<aura::Window> w5(
       CreateWindow(aura::client::WINDOW_TYPE_CONTROL, rect));
-  std::unique_ptr<aura::Window> w7(
+  std::unique_ptr<aura::Window> w6(
       CreateWindow(aura::client::WINDOW_TYPE_MENU, rect));
-  std::unique_ptr<aura::Window> w8(
+  std::unique_ptr<aura::Window> w7(
       CreateWindow(aura::client::WINDOW_TYPE_TOOLTIP, rect));
   EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
@@ -304,12 +297,10 @@ TEST_F(TabletModeWindowManagerTest, GoingToMaximizedWithModalDialogPresent) {
   EXPECT_FALSE(wm::GetWindowState(w5.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w6.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w7.get())->IsMaximized());
-  EXPECT_FALSE(wm::GetWindowState(w8.get())->IsMaximized());
   EXPECT_EQ(rect.ToString(), w4->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w5->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w6->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w7->bounds().ToString());
-  EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
 
   // Destroy the manager again and check that the windows return to their
   // previous state.
@@ -324,7 +315,6 @@ TEST_F(TabletModeWindowManagerTest, GoingToMaximizedWithModalDialogPresent) {
   EXPECT_EQ(rect.ToString(), w5->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w6->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w7->bounds().ToString());
-  EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
 }
 
 // Test that non-maximizable windows get properly handled when going into
@@ -405,14 +395,12 @@ TEST_F(TabletModeWindowManagerTest, CreateWindows) {
   std::unique_ptr<aura::Window> w3(CreateFixedSizeNonMaximizableWindow(
       aura::client::WINDOW_TYPE_NORMAL, rect3));
   std::unique_ptr<aura::Window> w4(
-      CreateWindow(aura::client::WINDOW_TYPE_PANEL, rect));
-  std::unique_ptr<aura::Window> w5(
       CreateWindow(aura::client::WINDOW_TYPE_POPUP, rect));
-  std::unique_ptr<aura::Window> w6(
+  std::unique_ptr<aura::Window> w5(
       CreateWindow(aura::client::WINDOW_TYPE_CONTROL, rect));
-  std::unique_ptr<aura::Window> w7(
+  std::unique_ptr<aura::Window> w6(
       CreateWindow(aura::client::WINDOW_TYPE_MENU, rect));
-  std::unique_ptr<aura::Window> w8(
+  std::unique_ptr<aura::Window> w7(
       CreateWindow(aura::client::WINDOW_TYPE_TOOLTIP, rect));
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMaximized());
   EXPECT_TRUE(wm::GetWindowState(w2.get())->IsMaximized());
@@ -434,12 +422,10 @@ TEST_F(TabletModeWindowManagerTest, CreateWindows) {
   EXPECT_FALSE(wm::GetWindowState(w5.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w6.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w7.get())->IsMaximized());
-  EXPECT_FALSE(wm::GetWindowState(w8.get())->IsMaximized());
   EXPECT_EQ(rect.ToString(), w4->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w5->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w6->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w7->bounds().ToString());
-  EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
 
   // After the tablet mode was disabled all windows fall back into the mode
   // they were created for.
@@ -454,7 +440,6 @@ TEST_F(TabletModeWindowManagerTest, CreateWindows) {
   EXPECT_EQ(rect.ToString(), w5->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w6->bounds().ToString());
   EXPECT_EQ(rect.ToString(), w7->bounds().ToString());
-  EXPECT_EQ(rect.ToString(), w8->bounds().ToString());
 }
 
 // Test that a window which got created while the tablet mode window manager

@@ -95,14 +95,6 @@ class WindowCycleControllerTest : public AshTestBase {
     shelf_view_test_->SetAnimationDuration(1);
   }
 
-  aura::Window* CreatePanelWindow() {
-    gfx::Rect rect(100, 100);
-    aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        NULL, aura::client::WINDOW_TYPE_PANEL, 0, rect);
-    shelf_view_test_->RunMessageLoopUntilAnimationsDone();
-    return window;
-  }
-
   const aura::Window::Windows GetWindows(WindowCycleController* controller) {
     return controller->window_cycle_list()->windows();
   }
@@ -530,87 +522,6 @@ TEST_F(WindowCycleControllerTest, CyclePreservesMinimization) {
   controller->CompleteCycling();
 
   EXPECT_TRUE(IsWindowMinimized(window1.get()));
-}
-
-// Tests cycles between panel and normal windows.
-TEST_F(WindowCycleControllerTest, CyclePanels) {
-  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
-
-  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
-  std::unique_ptr<aura::Window> panel0(CreatePanelWindow());
-  std::unique_ptr<aura::Window> panel1(CreatePanelWindow());
-  wm::ActivateWindow(window0.get());
-  wm::ActivateWindow(panel1.get());
-  wm::ActivateWindow(panel0.get());
-  EXPECT_TRUE(wm::IsActiveWindow(panel0.get()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  controller->CompleteCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(panel1.get()));
-
-  // Cycling again should select the most recently used panel.
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  controller->CompleteCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(panel0.get()));
-
-  // Cycling twice again should select the first window.
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  controller->CompleteCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
-}
-
-// Tests cycles between panel and normal windows.
-TEST_F(WindowCycleControllerTest, CyclePanelsDestroyed) {
-  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
-
-  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
-  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
-  std::unique_ptr<aura::Window> panel0(CreatePanelWindow());
-  std::unique_ptr<aura::Window> panel1(CreatePanelWindow());
-  wm::ActivateWindow(window2.get());
-  wm::ActivateWindow(panel1.get());
-  wm::ActivateWindow(panel0.get());
-  wm::ActivateWindow(window1.get());
-  wm::ActivateWindow(window0.get());
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
-
-  // Cycling once highlights window2.
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  // All panels are destroyed.
-  panel0.reset();
-  panel1.reset();
-  // Cycling again should now select window2.
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  controller->CompleteCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
-}
-
-// Tests cycles between panel and normal windows.
-TEST_F(WindowCycleControllerTest, CycleMruPanelDestroyed) {
-  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
-
-  std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
-  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
-  std::unique_ptr<aura::Window> panel0(CreatePanelWindow());
-  std::unique_ptr<aura::Window> panel1(CreatePanelWindow());
-  wm::ActivateWindow(panel1.get());
-  wm::ActivateWindow(panel0.get());
-  wm::ActivateWindow(window1.get());
-  wm::ActivateWindow(window0.get());
-  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
-
-  // Cycling once highlights window2.
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-
-  // Panel 1 is the next item as the MRU panel, removing it should make panel 2
-  // the next window to be selected.
-  panel0.reset();
-  // Cycling again should now select panel1.
-  controller->HandleCycleWindow(WindowCycleController::FORWARD);
-  controller->CompleteCycling();
-  EXPECT_TRUE(wm::IsActiveWindow(panel1.get()));
 }
 
 // Tests that the tab key events are not sent to the window.

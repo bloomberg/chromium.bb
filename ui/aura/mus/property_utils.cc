@@ -18,8 +18,6 @@ client::WindowType UiWindowTypeToWindowType(ws::mojom::WindowType type) {
   switch (type) {
     case ws::mojom::WindowType::WINDOW:
       return client::WINDOW_TYPE_NORMAL;
-    case ws::mojom::WindowType::PANEL:
-      return client::WINDOW_TYPE_PANEL;
     case ws::mojom::WindowType::CONTROL:
       return client::WINDOW_TYPE_CONTROL;
     case ws::mojom::WindowType::WINDOW_FRAMELESS:
