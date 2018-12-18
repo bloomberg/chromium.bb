@@ -5,9 +5,7 @@
 """Run a single fuzz target built with code coverage instrumentation."""
 
 import argparse
-import copy
 import json
-import multiprocessing
 import os
 import shutil
 import signal
@@ -178,101 +176,40 @@ def _RecreateDir(dir_path):
   os.mkdir(dir_path)
 
 
-def _CreateShardedCorpus(max_shards, corpus_dir, output_dir):
-  """Shards the corpus and returns the directories with sharded corpus."""
-  testcases = sorted(os.listdir(corpus_dir))
-  shards = min(len(testcases), max_shards)
-
-  if shards <= 1:
-    return [corpus_dir]
-
-  shard_dirs = []
-  testcase_per_shard = len(testcases) / shards + 1
-  copy_file = os.symlink or shutil.copy2
-
-  index = 0
-  while True:
-    start = index * testcase_per_shard
-    if start >= len(testcases):
-      break
-
-    end = (index + 1) * testcase_per_shard
-
-    shard_dir = os.path.join(output_dir, 'shard_%d' % (index + 1))
-    _RecreateDir(shard_dir)
-    for testcase in testcases[start : end]:
-      copy_file(os.path.join(corpus_dir, testcase),
-                os.path.join(shard_dir, testcase))
-
-    shard_dirs.append(shard_dir)
-    index += 1
-
-  return shard_dirs
-
-
 def _RunFuzzTarget(fuzzer, fuzzer_name, output_dir, corpus_dir, timeout):
   # The way we run fuzz targets in code coverage config (-merge=1) requires an
   # empty directory to be provided to fuzz target. We run fuzz targets with
   # -merge=1 because that mode is crash-resistant.
   dummy_corpus_dir = os.path.join(output_dir, _DUMMY_CORPUS_DIRECTORY)
   _RecreateDir(dummy_corpus_dir)
-  sharded_corpus_root_dir = os.path.join(output_dir, 'shards')
-  _RecreateDir(sharded_corpus_root_dir)
 
-  cpu_count = multiprocessing.cpu_count()
-  shards = max(10, cpu_count - 5)  # Use 10+ shards, but leave 5 cpu cores.
-
-  corpus_dirs = _CreateShardedCorpus(
-      shards, corpus_dir, sharded_corpus_root_dir)
-
-  cmd = [fuzzer] + _LIBFUZZER_FLAGS + [dummy_corpus_dir]
+  cmd = [fuzzer] + _LIBFUZZER_FLAGS + [dummy_corpus_dir, corpus_dir]
 
   try:
-    _RunWithTimeout(cmd, timeout, corpus_dirs)
+    _RunWithTimeout(cmd, timeout)
   except Exception as e:
     _Log('Failed to run {fuzzer}: {error}.'.format(
         fuzzer=fuzzer_name, error=str(e)))
 
   shutil.rmtree(dummy_corpus_dir)
   shutil.rmtree(corpus_dir)
-  shutil.rmtree(sharded_corpus_root_dir)
 
 
-def _RunWithTimeout(cmd, timeout, corpus_dirs):
-  _Log('Run fuzz target using the following command in %d shards: %s.' % (
-      len(corpus_dirs), str(cmd)))
+def _RunWithTimeout(cmd, timeout):
+  _Log('Run fuzz target using the following command: %s.' % str(cmd))
 
   # TODO: we may need to use |creationflags=subprocess.CREATE_NEW_PROCESS_GROUP|
   # on Windows or send |signal.CTRL_C_EVENT| signal if the process times out.
-  runners = []
-  for corpus_dir in corpus_dirs:
-    # Update LLVM_PROFILE_FILE for the fuzzer process.
-    env = copy.deepcopy(os.environ)
-    profile = env['LLVM_PROFILE_FILE']
-    profile = os.path.join(
-        os.path.dirname(profile), os.path.basename(corpus_dir),
-        os.path.basename(profile))
-    env['LLVM_PROFILE_FILE'] = profile
-    runners.append(subprocess.Popen(cmd + [corpus_dir], env=env))
-
-  def GetRunningProccess():
-    running = []
-    for runner in runners:
-      if runner.poll() is None:
-        running.append(runner)
-    return running
+  runner = subprocess.Popen(cmd)
 
   timer = 0
-  while timer < timeout:
-    if not GetRunningProccess():
-      break
+  while timer < timeout and runner.poll() is None:
     time.sleep(_SLEEP_DURATION_SECONDS)
     timer += _SLEEP_DURATION_SECONDS
 
-  timeout_runners = GetRunningProccess()
-  _Log('Fuzz target timed out, interrupting %d shards.' % len(timeout_runners))
-  for runner in timeout_runners:
+  if runner.poll() is None:
     try:
+      _Log('Fuzz target timed out, interrupting it.')
       # libFuzzer may spawn some child processes, that is why we have to call
       # os.killpg, which would send the signal to our Python process as well, so
       # we just catch and ignore it in this try block.
@@ -288,8 +225,6 @@ def _RunWithTimeout(cmd, timeout, corpus_dirs):
 
 
 def Main():
-  assert 'LLVM_PROFILE_FILE' in os.environ, 'LLVM_PROFILE_FILE not set'
-
   args = _ParseCommandArguments()
   fuzzer_name = os.path.splitext(os.path.basename(args.fuzzer))[0]
   corpus_dir = _PrepareCorpus(fuzzer_name, args.output_dir)
