@@ -2585,8 +2585,6 @@ void PersonalDataManager::ApplyAddressFixesAndCleanups() {
 }
 
 void PersonalDataManager::ApplyCardFixesAndCleanups() {
-  DLOG(ERROR) << "CREDIT CARD SYNC !!";
-
   DeleteDisusedCreditCards();
 
   // If feature AutofillCreateDataForTest is enabled, and once per user profile
