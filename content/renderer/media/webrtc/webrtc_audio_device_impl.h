@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/thread_annotations.h"
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
 #include "content/common/content_export.h"
@@ -229,12 +230,12 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   CapturerList capturers_;
 
   // Provides access to the audio renderer in the browser process.
-  scoped_refptr<WebRtcAudioRenderer> renderer_;
+  scoped_refptr<WebRtcAudioRenderer> renderer_ GUARDED_BY(lock_);
 
   // A list of raw pointer of WebRtcPlayoutDataSource::Sink objects which want
   // to get the playout data, the sink need to call RemovePlayoutSink()
   // before it goes away.
-  PlayoutDataSinkList playout_sinks_;
+  PlayoutDataSinkList playout_sinks_ GUARDED_BY(lock_);
 
   // Weak reference to the audio callback.
   // The webrtc client defines |audio_transport_callback_| by calling
@@ -242,15 +243,15 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   webrtc::AudioTransport* audio_transport_callback_;
 
   // Cached value of the current audio delay on the output/renderer side.
-  int output_delay_ms_;
+  int output_delay_ms_ GUARDED_BY(lock_);
 
-  // Protects |recording_|, |output_delay_ms_|, |input_delay_ms_|, |renderer_|
-  // |recording_|, |microphone_volume_| and |playout_sinks_|.
+  // Protects |renderer_|, |playout_sinks_|, |output_delay_ms_|, |playing_|,
+  // and |recording_|.
   mutable base::Lock lock_;
 
   bool initialized_;
-  bool playing_;
-  bool recording_;
+  bool playing_ GUARDED_BY(lock_);
+  bool recording_ GUARDED_BY(lock_);
 
   // Buffer used for temporary storage during render callback.
   // It is only accessed by the audio render thread.
