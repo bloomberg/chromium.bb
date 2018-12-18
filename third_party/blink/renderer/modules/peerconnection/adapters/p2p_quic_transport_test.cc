@@ -175,7 +175,7 @@ class FakePacketTransport : public P2PQuicPacketTransport,
     delegate_->OnPacketDataReceived(data, data_len);
   }
 
-  int last_packet_num() { return last_packet_num_; }
+  uint64_t last_packet_num() { return last_packet_num_; }
 
  private:
   // Wraps the FakePacketTransport so that we can pass in a raw pointer that can

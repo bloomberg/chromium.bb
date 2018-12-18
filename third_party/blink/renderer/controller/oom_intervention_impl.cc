@@ -109,17 +109,21 @@ void OomInterventionImpl::ReportMemoryStats(
     OomInterventionMetrics& current_memory) {
   UMA_HISTOGRAM_MEMORY_MB(
       "Memory.Experimental.OomIntervention.RendererBlinkUsage",
-      current_memory.current_blink_usage_kb / 1024);
+      base::saturated_cast<base::Histogram::Sample>(
+          current_memory.current_blink_usage_kb / 1024));
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.OomIntervention."
       "RendererPrivateMemoryFootprint",
-      current_memory.current_private_footprint_kb / 1024);
+      base::saturated_cast<base::Histogram::Sample>(
+          current_memory.current_private_footprint_kb / 1024));
   UMA_HISTOGRAM_MEMORY_MB(
       "Memory.Experimental.OomIntervention.RendererSwapFootprint",
-      current_memory.current_swap_kb / 1024);
+      base::saturated_cast<base::Histogram::Sample>(
+          current_memory.current_swap_kb / 1024));
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.OomIntervention.RendererVmSize",
-      current_memory.current_vm_size_kb / 1024);
+      base::saturated_cast<base::Histogram::Sample>(
+          current_memory.current_vm_size_kb / 1024));
 
   CrashMemoryMetricsReporterImpl::Instance().WriteIntoSharedMemory(
       current_memory);
@@ -131,32 +135,38 @@ void OomInterventionImpl::TimerFiredUMAReport(TimerBase*) {
     case 3:
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter10secs",
-          current_memory.current_blink_usage_kb / 1024 -
-              metrics_at_intervention_.current_blink_usage_kb / 1024);
+          base::saturated_cast<base::Histogram::Sample>(
+              current_memory.current_blink_usage_kb / 1024 -
+              metrics_at_intervention_.current_blink_usage_kb / 1024));
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter10secs",
-          current_memory.current_private_footprint_kb / 1024 -
-              metrics_at_intervention_.current_private_footprint_kb / 1024);
+          base::saturated_cast<base::Histogram::Sample>(
+              current_memory.current_private_footprint_kb / 1024 -
+              metrics_at_intervention_.current_private_footprint_kb / 1024));
       break;
     case 2:
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter20secs",
-          current_memory.current_blink_usage_kb / 1024 -
-              metrics_at_intervention_.current_blink_usage_kb / 1024);
+          base::saturated_cast<base::Histogram::Sample>(
+              current_memory.current_blink_usage_kb / 1024 -
+              metrics_at_intervention_.current_blink_usage_kb / 1024));
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter20secs",
-          current_memory.current_private_footprint_kb / 1024 -
-              metrics_at_intervention_.current_private_footprint_kb / 1024);
+          base::saturated_cast<base::Histogram::Sample>(
+              current_memory.current_private_footprint_kb / 1024 -
+              metrics_at_intervention_.current_private_footprint_kb / 1024));
       break;
     case 1:
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedBlinkUsageAfter30secs",
-          current_memory.current_blink_usage_kb / 1024 -
-              metrics_at_intervention_.current_blink_usage_kb / 1024);
+          base::saturated_cast<base::Histogram::Sample>(
+              current_memory.current_blink_usage_kb / 1024 -
+              metrics_at_intervention_.current_blink_usage_kb / 1024));
       base::UmaHistogramSparse(
           "Memory.Experimental.OomIntervention.ReducedRendererPMFAfter30secs",
-          current_memory.current_private_footprint_kb / 1024 -
-              metrics_at_intervention_.current_private_footprint_kb / 1024);
+          base::saturated_cast<base::Histogram::Sample>(
+              current_memory.current_private_footprint_kb / 1024 -
+              metrics_at_intervention_.current_private_footprint_kb / 1024));
       delayed_report_timer_.Stop();
       break;
   }

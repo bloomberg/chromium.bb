@@ -235,7 +235,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
       bool on_line,
       WebConnectionType,
       base::Optional<WebEffectiveConnectionType> effective_type,
-      unsigned long http_rtt_msec,
+      int64_t http_rtt_msec,
       double max_bandwidth_mbps);
   void SetSaveDataEnabledOverride(bool enabled);
   void ClearOverride();

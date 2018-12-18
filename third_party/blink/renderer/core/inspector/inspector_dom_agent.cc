@@ -1334,7 +1334,7 @@ Response InspectorDOMAgent::getNodeForLocation(
     node = node->parentNode();
   if (!node)
     return Response::Error("No node found at given location");
-  *backend_node_id = DOMNodeIds::IdForNode(node);
+  *backend_node_id = IdentifiersFactory::IntIdForNode(node);
   if (enabled_.Get()) {
     Response response = PushDocumentUponHandlelessOperation();
     if (!response.isSuccess())
@@ -2246,7 +2246,7 @@ protocol::Response InspectorDOMAgent::getFrameOwner(
   if (!frame_owner)
     return Response::Error("No iframe owner for given node");
 
-  *backend_node_id = DOMNodeIds::IdForNode(frame_owner);
+  *backend_node_id = IdentifiersFactory::IntIdForNode(frame_owner);
   if (enabled_.Get()) {
     Response response = PushDocumentUponHandlelessOperation();
     if (!response.isSuccess())

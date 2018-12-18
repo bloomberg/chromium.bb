@@ -39,7 +39,8 @@ namespace blink {
 void ShapeCache::SmallStringKey::HashString() {
 // TODO(cavalcanti): next add xxhash.
 #if defined(USE_FUNCTION_CITYHASH)
-  hash_ = CityHash64((const char*)characters_, length_ * sizeof(UChar));
+  hash_ = static_cast<unsigned>(
+      CityHash64((const char*)characters_, length_ * sizeof(UChar)));
 #endif
 }
 

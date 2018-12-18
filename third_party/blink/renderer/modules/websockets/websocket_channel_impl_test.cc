@@ -158,7 +158,7 @@ class WebSocketChannelImplTest : public PageTestBase {
 
   MockWebSocketHandle* Handle() { return handle_; }
 
-  void DidConsumeBufferedAmount(unsigned long a) {
+  void DidConsumeBufferedAmount(uint64_t a) {
     sum_of_consumed_buffered_amount_ += a;
   }
 

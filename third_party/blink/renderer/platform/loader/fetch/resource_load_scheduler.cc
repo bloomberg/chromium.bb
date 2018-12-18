@@ -221,8 +221,8 @@ void ResourceLoadScheduler::TrafficMonitor::Report(
   }
 
   // Report kilobytes instead of bytes to avoid overflows.
-  size_t encoded_kilobytes = hints.encoded_data_length() / 1024;
-  size_t decoded_kilobytes = hints.decoded_body_length() / 1024;
+  int64_t encoded_kilobytes = hints.encoded_data_length() / 1024;
+  int64_t decoded_kilobytes = hints.decoded_body_length() / 1024;
 
   if (encoded_kilobytes) {
     traffic_kilobytes_per_frame_status_.RecordTask(

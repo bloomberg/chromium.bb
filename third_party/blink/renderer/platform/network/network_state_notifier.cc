@@ -211,7 +211,7 @@ void NetworkStateNotifier::SetNetworkConnectionInfoOverride(
     bool on_line,
     WebConnectionType type,
     base::Optional<WebEffectiveConnectionType> effective_type,
-    unsigned long http_rtt_msec,
+    int64_t http_rtt_msec,
     double max_bandwidth_mbps) {
   DCHECK(IsMainThread());
   ScopedNotifier notifier(*this);

@@ -51,7 +51,7 @@ class WebPepperSocketClient {
   virtual void DidReceiveMessage(const WebString& message) {}
   virtual void DidReceiveArrayBuffer(const WebArrayBuffer& array_buffer) {}
   virtual void DidReceiveMessageError() {}
-  virtual void DidConsumeBufferedAmount(unsigned long consumed) {}
+  virtual void DidConsumeBufferedAmount(uint64_t consumed) {}
   virtual void DidStartClosingHandshake() {}
   virtual void DidClose(ClosingHandshakeCompletionStatus,
                         unsigned short code,

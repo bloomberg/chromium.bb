@@ -116,8 +116,8 @@ TEST_F(BlobBytesProviderTest, RequestAsReply) {
 namespace {
 
 struct FileTestData {
-  uint64_t offset;
-  uint64_t size;
+  uint32_t offset;
+  uint32_t size;
 };
 
 void PrintTo(const FileTestData& test, std::ostream* os) {
