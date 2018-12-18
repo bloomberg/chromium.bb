@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('settings_people_page_sync_page', function() {
-
-  suite('AdvancedSyncSettingsTests', function() {
+  suite('SyncSettingsTests', function() {
     let syncPage = null;
     let browserProxy = null;
     let encryptWithGoogle = null;
@@ -55,20 +54,6 @@ cr.define('settings_people_page_sync_page', function() {
         typedUrlsRegistered: true,
         typedUrlsSynced: true,
       };
-    }
-
-    function openDatatypeConfigurationWithUnifiedConsent(prefs) {
-      syncPage.unifiedConsentEnabled = true;
-      cr.webUIListenerCallback('sync-prefs-changed', prefs);
-
-      Polymer.dom.flush();
-
-      const syncAllDataTypesControl = syncPage.$.syncAllDataTypesControl;
-      assertFalse(syncAllDataTypesControl.disabled);
-      assertTrue(syncAllDataTypesControl.checked);
-
-      // Uncheck the Sync All control.
-      syncAllDataTypesControl.click();
     }
 
     setup(function() {
@@ -244,50 +229,6 @@ cr.define('settings_people_page_sync_page', function() {
       assertFalse(configurePage.hidden);
       assertTrue(timeoutPage.hidden);
       assertTrue(spinnerPage.hidden);
-    });
-
-    test('SettingIndividualDatatypes', function() {
-      const syncAllDataTypesControl = syncPage.$.syncAllDataTypesControl;
-      assertFalse(syncAllDataTypesControl.disabled);
-      assertTrue(syncAllDataTypesControl.checked);
-
-      // Assert that all the individual datatype controls are disabled.
-      const datatypeControls =
-          syncPage.$$('#configure').querySelectorAll('.list-item cr-toggle');
-      for (const control of datatypeControls) {
-        assertTrue(control.disabled);
-        assertTrue(control.checked);
-      }
-
-      // Uncheck the Sync All control.
-      syncAllDataTypesControl.click();
-
-      function verifyPrefs(prefs) {
-        const expected = getSyncAllPrefs();
-        expected.syncAllDataTypes = false;
-        assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
-
-        cr.webUIListenerCallback('sync-prefs-changed', expected);
-
-        // Assert that all the individual datatype controls are enabled.
-        for (const control of datatypeControls) {
-          assertFalse(control.disabled);
-          assertTrue(control.checked);
-        }
-
-        browserProxy.resetResolver('setSyncDatatypes');
-
-        // Test an arbitrarily-selected control (extensions synced control).
-        datatypeControls[2].click();
-        return browserProxy.whenCalled('setSyncDatatypes')
-            .then(function(prefs) {
-              const expected = getSyncAllPrefs();
-              expected.syncAllDataTypes = false;
-              expected.extensionsSynced = false;
-              assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
-            });
-      }
-      return browserProxy.whenCalled('setSyncDatatypes').then(verifyPrefs);
     });
 
     test('RadioBoxesEnabledWhenUnencrypted', function() {

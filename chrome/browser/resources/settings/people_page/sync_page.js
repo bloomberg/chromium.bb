@@ -15,24 +15,6 @@ const RadioButtonNames = {
 };
 
 /**
- * Names of the individual data type properties to be cached from
- * settings.SyncPrefs when the user checks 'Sync All'.
- * @type {!Array<string>}
- */
-const SyncPrefsIndividualDataTypes = [
-  'appsSynced',
-  'extensionsSynced',
-  'preferencesSynced',
-  'autofillSynced',
-  'typedUrlsSynced',
-  'themesSynced',
-  'bookmarksSynced',
-  'passwordsSynced',
-  'tabsSynced',
-  'paymentsIntegrationEnabled',
-];
-
-/**
  * @fileoverview
  * 'settings-sync-page' is the settings page containing sync settings.
  */
@@ -187,13 +169,6 @@ Polymer({
    */
   didAbort_: false,
 
-  /**
-   * Caches the individually selected synced data types. This is used to
-   * be able to restore the selections after checking and unchecking Sync All.
-   * @private {?Object}
-   */
-  cachedSyncPrefs_: null,
-
   /** @override */
   created: function() {
     this.browserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
@@ -300,10 +275,6 @@ Polymer({
     this.syncPrefs = syncPrefs;
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
 
-    // If autofill is not registered or synced, force Payments integration off.
-    if (!this.syncPrefs.autofillRegistered || !this.syncPrefs.autofillSynced)
-      this.set('syncPrefs.paymentsIntegrationEnabled', false);
-
     // Hide the new passphrase box if the sync data has been encrypted.
     if (this.syncPrefs.encryptAllData)
       this.creatingNewPassphrase_ = false;
@@ -320,65 +291,9 @@ Polymer({
     }
   },
 
-  /**
-   * Handler for when the sync all data types checkbox is changed.
-   * @param {!Event} event
-   * @private
-   */
-  onSyncAllDataTypesChanged_: function(event) {
-    if (event.target.checked) {
-      this.set('syncPrefs.syncAllDataTypes', true);
-
-      // Cache the previously selected preference before checking every box.
-      this.cachedSyncPrefs_ = {};
-      for (const dataType of SyncPrefsIndividualDataTypes) {
-        // These are all booleans, so this shallow copy is sufficient.
-        this.cachedSyncPrefs_[dataType] = this.syncPrefs[dataType];
-
-        this.set(['syncPrefs', dataType], true);
-      }
-    } else if (this.cachedSyncPrefs_) {
-      // Restore the previously selected preference.
-      for (const dataType of SyncPrefsIndividualDataTypes) {
-        this.set(['syncPrefs', dataType], this.cachedSyncPrefs_[dataType]);
-      }
-    }
-
-    this.onSingleSyncDataTypeChanged_();
-  },
-
-  /**
-   * Handler for when any sync data type checkbox is changed (except autofill).
-   * @private
-   */
-  onSingleSyncDataTypeChanged_: function() {
-    assert(this.syncPrefs);
-    this.browserProxy_.setSyncDatatypes(this.syncPrefs)
-        .then(this.handlePageStatusChanged_.bind(this));
-  },
-
   /** @private */
   onActivityControlsTap_: function() {
     this.browserProxy_.openActivityControlsUrl();
-  },
-
-  /**
-   * Handler for when the autofill data type checkbox is changed.
-   * @private
-   */
-  onAutofillDataTypeChanged_: function() {
-    this.set(
-        'syncPrefs.paymentsIntegrationEnabled', this.syncPrefs.autofillSynced);
-
-    this.onSingleSyncDataTypeChanged_();
-  },
-
-  /**
-   * Handler for when the autofill data type checkbox is changed.
-   * @private
-   */
-  onTypedUrlsDataTypeChanged_: function() {
-    this.onSingleSyncDataTypeChanged_();
   },
 
   /**
@@ -494,25 +409,6 @@ Polymer({
       return this.syncPrefs.enterPassphraseBody;
 
     return this.syncPrefs.enterGooglePassphraseBody;
-  },
-
-  /**
-   * @param {boolean} syncAllDataTypes
-   * @param {boolean} enforced
-   * @return {boolean} Whether the sync checkbox should be disabled.
-   */
-  shouldSyncCheckboxBeDisabled_: function(syncAllDataTypes, enforced) {
-    return syncAllDataTypes || enforced;
-  },
-
-  /**
-   * @param {boolean} syncAllDataTypes
-   * @param {boolean} autofillSynced
-   * @return {boolean} Whether the sync checkbox should be disabled.
-   */
-  shouldPaymentsCheckboxBeDisabled_: function(
-      syncAllDataTypes, autofillSynced) {
-    return syncAllDataTypes || !autofillSynced;
   },
 
   /**
