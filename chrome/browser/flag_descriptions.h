@@ -385,9 +385,6 @@ extern const char kEnablePreviewsAndroidOmniboxUIDescription[];
 extern const char kEnableLitePageServerPreviewsName[];
 extern const char kEnableLitePageServerPreviewsDescription[];
 
-extern const char kEnableHttpFormWarningName[];
-extern const char kEnableHttpFormWarningDescription[];
-
 extern const char kLayeredAPIName[];
 extern const char kLayeredAPIDescription[];
 
