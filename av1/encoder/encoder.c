@@ -4640,6 +4640,23 @@ static void finalize_encoded_frame(AV1_COMP *const cpi) {
           "show_existing_frame to reset state on KEY_FRAME only");
     }
   }
+
+  if (!encode_show_existing_frame(cm) &&
+      cm->seq_params.film_grain_params_present &&
+      (cm->show_frame || cm->showable_frame)) {
+    // Copy the current frame's film grain params to the its corresponding
+    // RefCntBuffer slot.
+    cm->cur_frame->film_grain_params = cm->film_grain_params;
+
+    // We must update the parameters if this is not an INTER_FRAME
+    if (current_frame->frame_type != INTER_FRAME)
+      cm->cur_frame->film_grain_params.update_parameters = 1;
+
+    // Iterate the random seed for the next frame.
+    cm->film_grain_params.random_seed += 3381;
+    if (cm->film_grain_params.random_seed == 0)
+      cm->film_grain_params.random_seed = 7391;
+  }
 }
 
 static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {

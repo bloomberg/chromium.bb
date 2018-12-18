@@ -2465,25 +2465,19 @@ static void write_tu_pts_info(AV1_COMMON *const cm,
       cm->buffer_model.frame_presentation_time_length);
 }
 
-static void write_film_grain_params(AV1_COMP *cpi,
+static void write_film_grain_params(const AV1_COMP *const cpi,
                                     struct aom_write_bit_buffer *wb) {
-  AV1_COMMON *const cm = &cpi->common;
-  aom_film_grain_t *pars = &cm->film_grain_params;
-
-  cm->cur_frame->film_grain_params = *pars;
+  const AV1_COMMON *const cm = &cpi->common;
+  const aom_film_grain_t *const pars = &cm->cur_frame->film_grain_params;
 
   aom_wb_write_bit(wb, pars->apply_grain);
   if (!pars->apply_grain) return;
 
   aom_wb_write_literal(wb, pars->random_seed, 16);
 
-  pars->random_seed += 3381;  // Changing random seed for film grain
-  if (!pars->random_seed)     // Random seed should not be zero
-    pars->random_seed += 7391;
   if (cm->current_frame.frame_type == INTER_FRAME)
     aom_wb_write_bit(wb, pars->update_parameters);
-  else
-    pars->update_parameters = 1;
+
   if (!pars->update_parameters) {
     int ref_frame, ref_idx;
     for (ref_frame = LAST_FRAME; ref_frame < REF_FRAMES; ref_frame++) {
@@ -2507,16 +2501,16 @@ static void write_film_grain_params(AV1_COMP *cpi,
     aom_wb_write_literal(wb, pars->scaling_points_y[i][1], 8);
   }
 
-  if (!cm->seq_params.monochrome)
+  if (!cm->seq_params.monochrome) {
     aom_wb_write_bit(wb, pars->chroma_scaling_from_luma);
-  else
-    pars->chroma_scaling_from_luma = 0;  // for monochrome override to 0
+  } else {
+    assert(!pars->chroma_scaling_from_luma);
+  }
 
   if (cm->seq_params.monochrome || pars->chroma_scaling_from_luma ||
       ((cm->seq_params.subsampling_x == 1) &&
        (cm->seq_params.subsampling_y == 1) && (pars->num_y_points == 0))) {
-    pars->num_cb_points = 0;
-    pars->num_cr_points = 0;
+    assert(pars->num_cb_points == 0 && pars->num_cr_points == 0);
   } else {
     aom_wb_write_literal(wb, pars->num_cb_points, 4);  // max 10
     for (int i = 0; i < pars->num_cb_points; i++) {
@@ -3124,18 +3118,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
 
   if (seq_params->film_grain_params_present &&
-      (cm->show_frame || cm->showable_frame)) {
-    int flip_back_update_parameters_flag = 0;
-    if (current_frame->frame_type != INTER_FRAME &&
-        cm->film_grain_params.update_parameters == 0) {
-      cm->film_grain_params.update_parameters = 1;
-      flip_back_update_parameters_flag = 1;
-    }
+      (cm->show_frame || cm->showable_frame))
     write_film_grain_params(cpi, wb);
-
-    if (flip_back_update_parameters_flag)
-      cm->film_grain_params.update_parameters = 0;
-  }
 
   if (cm->large_scale_tile) write_ext_tile_info(cm, saved_wb, wb);
 }
