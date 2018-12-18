@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_consumer.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -583,12 +584,29 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 // Creates the menu items for the search menu.
 - (void)createSearchMenuItems {
   NSMutableArray* items = [NSMutableArray array];
-  NSString* pasteboardString = [UIPasteboard generalPasteboard].string;
-  if (pasteboardString) {
-    PopupMenuToolsItem* pasteAndGo = CreateTableViewItem(
-        IDS_IOS_TOOLS_MENU_PASTE_AND_GO, PopupMenuActionPasteAndGo,
-        @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-    [items addObject:pasteAndGo];
+
+  if (base::FeatureList::IsEnabled(kCopiedTextBehavior)) {
+    NSNumber* titleID = nil;
+    if ([UIPasteboard generalPasteboard].hasURLs) {
+      titleID = [NSNumber numberWithInt:IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK];
+    } else if ([UIPasteboard generalPasteboard].hasStrings) {
+      titleID = [NSNumber numberWithInt:IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT];
+    }
+
+    if (titleID) {
+      PopupMenuToolsItem* pasteAndGo =
+          CreateTableViewItem(titleID.intValue, PopupMenuActionPasteAndGo,
+                              @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
+      [items addObject:pasteAndGo];
+    }
+  } else {
+    NSString* pasteboardString = [UIPasteboard generalPasteboard].string;
+    if (pasteboardString) {
+      PopupMenuToolsItem* pasteAndGo = CreateTableViewItem(
+          IDS_IOS_TOOLS_MENU_PASTE_AND_GO, PopupMenuActionPasteAndGo,
+          @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
+      [items addObject:pasteAndGo];
+    }
   }
 
   PopupMenuToolsItem* QRCodeSearch = CreateTableViewItem(
