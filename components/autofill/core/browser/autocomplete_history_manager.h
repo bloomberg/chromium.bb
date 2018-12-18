@@ -131,6 +131,7 @@ class AutocompleteHistoryManager : public KeyedService,
   // with the appropriate response.
   struct QueryHandler {
     QueryHandler(int client_query_id,
+                 base::string16 prefix,
                  base::WeakPtr<SuggestionsHandler> handler);
     QueryHandler(const QueryHandler& original);
     ~QueryHandler();
@@ -138,6 +139,9 @@ class AutocompleteHistoryManager : public KeyedService,
     // Query ID living in the handler's scope, which is NOT the same as the
     // database query ID. This ID is unique per frame, but not per profile.
     int client_query_id_;
+
+    // Prefix used to search suggestions, submitted by the handler.
+    base::string16 prefix_;
 
     // Weak pointer to the handler instance which will be called-back when
     // we get the response for the associate query.
