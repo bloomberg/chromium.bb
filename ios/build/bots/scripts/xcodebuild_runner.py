@@ -7,9 +7,12 @@
 import sys
 
 import collections
+import json
 import multiprocessing
 import os
 import plistlib
+import re
+import shutil
 import subprocess
 import tempfile
 import time
@@ -260,6 +263,40 @@ class LaunchCommand(object):
     # Regenerates xctest run and gets a command.
     return self.command(eg_app, out_dir, self.destination, shards=1)
 
+  def _copy_screenshots(self, info_plist_path, output_folder):
+    """Copy screenshots of failed tests to output folder.
+
+    Args:
+      info_plist_path: (str) A full path to Info.plist
+      output_folder: (str) A full path to folder where
+    """
+    plist = plistlib.readPlist(info_plist_path)
+    if 'TestFailureSummaries' not in plist or not plist['TestFailureSummaries']:
+      print 'No failures in %s' % info_plist_path
+      return
+
+    screenshot_regex = re.compile(r'Screenshots:\s\{(\n.*)*\n}')
+    for failure_summary in plist['TestFailureSummaries']:
+      screenshots = screenshot_regex.search(failure_summary['Message'])
+      test_case_folder = os.path.join(
+          output_folder,
+          'failures',
+          failure_summary['TestCase'].replace('[', '').replace(']', '').replace(
+              ' ', '_').replace('-', ''))
+      if not os.path.exists(test_case_folder):
+        os.makedirs(test_case_folder)
+      if screenshots:
+        print 'Screenshots for failure "%s" in "%s"' % (
+            failure_summary['TestCase'], test_case_folder)
+        d = json.loads(screenshots.group().replace('Screenshots:', '').strip())
+        for f in d.values():
+          if not os.path.exists(f):
+            print 'File %s does not exist!' % f
+            continue
+          screenshot = os.path.join(test_case_folder, os.path.basename(f))
+          print screenshot
+          shutil.copyfile(f, screenshot)
+
   def summary_log(self):
     """Calculates test summary - how many passed, failed and error tests.
 
@@ -348,6 +385,8 @@ class LaunchCommand(object):
       if self.retries == attempt or not self.test_results[
           'attempts'][-1]['failed']:
         break
+      self._copy_screenshots(os.path.join(outdir_attempt, 'Info.plist'),
+                             outdir_attempt)
 
     self.test_results['end_run'] = int(time.time())
     self.summary_log()
