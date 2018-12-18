@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
@@ -97,7 +98,8 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
   DISALLOW_COPY_AND_ASSIGN(AudioOutputProviderImpl);
 };
 
-class AudioDeviceOwner : public media::AudioRendererSink::RenderCallback {
+class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioDeviceOwner
+    : public media::AudioRendererSink::RenderCallback {
  public:
   AudioDeviceOwner(
       scoped_refptr<base::SequencedTaskRunner> task_runner,

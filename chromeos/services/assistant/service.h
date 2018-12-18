@@ -14,6 +14,7 @@
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -47,11 +48,12 @@ namespace assistant {
 
 class AssistantManagerService;
 
-class Service : public service_manager::Service,
-                public chromeos::PowerManagerClient::Observer,
-                public ash::mojom::SessionActivationObserver,
-                public mojom::AssistantPlatform,
-                public ash::DefaultVoiceInteractionObserver {
+class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
+    : public service_manager::Service,
+      public chromeos::PowerManagerClient::Observer,
+      public ash::mojom::SessionActivationObserver,
+      public mojom::AssistantPlatform,
+      public ash::DefaultVoiceInteractionObserver {
  public:
   Service(service_manager::mojom::ServiceRequest request,
           network::NetworkConnectionTracker* network_connection_tracker,
