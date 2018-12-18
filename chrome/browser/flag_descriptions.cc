@@ -3344,11 +3344,6 @@ const char kEnableStylusVirtualKeyboardDescription[] =
     "If enabled, tapping with a stylus will show the handwriting virtual "
     "keyboard.";
 
-const char kEnableUnifiedMultiDeviceSetupName[] =
-    "Enable unified MultiDevice setup";
-const char kEnableUnifiedMultiDeviceSetupDescription[] =
-    "Enable the device to setup all MultiDevice services in a single workflow.";
-
 const char kEnableVideoPlayerNativeControlsName[] =
     "Enable native controls in video player app";
 const char kEnableVideoPlayerNativeControlsDescription[] =

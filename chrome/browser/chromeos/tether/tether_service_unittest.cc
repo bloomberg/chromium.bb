@@ -708,12 +708,6 @@ TEST_F(TetherServiceTest, TestDeviceSyncClientNotReady) {
 TEST_F(TetherServiceTest,
        TestMultiDeviceSetupClientInitiallyHasNoVerifiedHost) {
   fake_tether_host_fetcher_factory_->SetNoInitialDevices();
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {chromeos::features::
-           kEnableUnifiedMultiDeviceSetup} /* enabled_features */,
-      {} /* disabled_features */);
-
   initial_feature_state_ = chromeos::multidevice_setup::mojom::FeatureState::
       kUnavailableNoVerifiedHost;
 
@@ -995,9 +989,7 @@ TEST_F(
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      {chromeos::features::kInstantTethering,
-       chromeos::features::
-           kEnableUnifiedMultiDeviceSetup} /* enabled_features */,
+      {chromeos::features::kInstantTethering} /* enabled_features */,
       {} /* disabled_features */);
 
   TetherService* tether_service = TetherService::Get(profile_.get());
