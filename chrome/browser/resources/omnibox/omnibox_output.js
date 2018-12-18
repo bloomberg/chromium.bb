@@ -326,7 +326,7 @@ cr.define('omnibox_output', function() {
         const values = column.sourceProperties.map(
             propertyName =>
                 /** @type {Object} */ (match)[propertyName]);
-        this.properties[column.propertyName] =
+        this.properties[column.matchKey] =
             OutputProperty.create(column, values);
       });
 
@@ -352,7 +352,7 @@ cr.define('omnibox_output', function() {
     /** @private */
     render_() {
       clearChildren(this);
-      COLUMNS.map(property => this.properties[property.propertyName])
+      COLUMNS.map(column => this.properties[column.matchKey])
           .forEach(cell => this.appendChild(cell));
       if (this.hasAdditionalProperties)
         this.appendChild(this.additionalProperties);
@@ -362,7 +362,7 @@ cr.define('omnibox_output', function() {
     updateVisibility(showDetails) {
       // Show certain columns only if they showDetails is true.
       COLUMNS.forEach(column => {
-        this.properties[column.propertyName].hidden =
+        this.properties[column.matchKey].hidden =
             !showDetails && !column.displayAlways;
       });
     }
@@ -406,34 +406,31 @@ cr.define('omnibox_output', function() {
     static create(column) {
       const header = new OutputHeader();
       header.classList.add(column.headerClassName);
-      header.setContents(column.header, column.url);
+      header.setContents(column.headerText, column.url);
       header.title = column.tooltip;
       return header;
     }
 
-    constructor() {
-      super();
-      /** @private {!Element} */
-      this.div_ = document.createElement('div');
-      this.appendChild(this.div_);
-      /** @private {!Element} */
-      this.link_ = document.createElement('a');
-    }
-
     /**
-     * @param {string} text
+     * @param {!Array<string>} texts
      * @param {string=} url
      */
-    setContents(text, url) {
+    setContents(texts, url) {
+      clearChildren(this);
+      let container;
       if (url) {
-        this.textContent = '';
-        this.link_.textContent = text;
-        this.link_.href = url;
-        this.appendChild(this.link_);
+        container = document.createElement('a');
+        container.href = url;
       } else {
-        this.textContent = text;
-        this.link_.remove();
+        container = document.createElement('div');
       }
+      container.classList.add('header-container');
+      texts.forEach(text => {
+        const part = document.createElement('span');
+        part.textContent = text;
+        container.appendChild(part);
+      });
+      this.appendChild(container);
     }
   }
 
@@ -446,7 +443,7 @@ cr.define('omnibox_output', function() {
     static create(column, values) {
       const outputProperty = new column.outputClass();
       outputProperty.className = column.cellClassName;
-      outputProperty.name = column.header;
+      outputProperty.name = column.headerText.join('.');
       outputProperty.values = values;
       return outputProperty;
     }
@@ -729,34 +726,34 @@ cr.define('omnibox_output', function() {
 
   class Column {
     /**
-     * @param {string} header
+     * @param {!Array<string>} headerText
      * @param {string} url
-     * @param {string} propertyName
+     * @param {string} matchKey
      * @param {boolean} displayAlways
      * @param {string} tooltip
      * @param {function(new:OutputProperty)} outputClass
      * @param {!Array<string>} sourceProperties
      */
     constructor(
-        header, url, propertyName, displayAlways, tooltip, sourceProperties,
+        headerText, url, matchKey, displayAlways, tooltip, sourceProperties,
         outputClass) {
-      /** @type {string} */
-      this.header = header;
-      /** @type {string} */
+      /** @type {!Array<string>} split per span container to support styling. */
+      this.headerText = headerText;
+      /** @type {string} header link href or blank if non-hyperlink header. */
       this.url = url;
-      /** @type {string} */
-      this.propertyName = propertyName;
-      /** @type {boolean} */
+      /** @type {string} the field name used in the Match.properties object. */
+      this.matchKey = matchKey;
+      /** @type {boolean} if shown when showDetails option is false. */
       this.displayAlways = displayAlways;
-      /** @type {string} */
+      /** @type {string} header tooltip. */
       this.tooltip = tooltip;
-      /** @type {!Array<string>} */
+      /** @type {!Array<string>} related mojo AutocompleteMatch properties. */
       this.sourceProperties = sourceProperties;
       /** @type {function(new:OutputProperty)} */
       this.outputClass = outputClass;
 
       const hyphenatedName =
-          propertyName.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
+          matchKey.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
       /** @type {string} */
       this.cellClassName = 'cell-' + hyphenatedName;
       /** @type {string} */
@@ -771,85 +768,85 @@ cr.define('omnibox_output', function() {
    */
   const COLUMNS = [
     new Column(
-        'Provider & Type', '', 'providerAndType', true,
+        ['Provider', 'Type'], '', 'providerAndType', true,
         'The AutocompleteProvider suggesting this result. / The type of the ' +
             'result.',
         ['providerName', 'type'], OutputPairProperty),
     new Column(
-        'Relevance', '', 'relevance', true,
+        ['Relevance'], '', 'relevance', true,
         'The result score. Higher is more relevant.', ['relevance'],
         OutputTextProperty),
     new Column(
-        'Contents & Description', '', 'contentsAndDescription', true,
+        ['Contents', 'Description'], '', 'contentsAndDescription', true,
         'The text that is presented identifying the result. / The page title ' +
             'of the result.',
         ['contents', 'description'], OutputPairProperty),
     new Column(
-        'Can Be Default', '', 'allowedToBeDefaultMatch', false,
+        ['Can Be Default'], '', 'allowedToBeDefaultMatch', false,
         'A green checkmark indicates that the result can be the default ' +
             'match(i.e., can be the match that pressing enter in the ' +
             'omniboxnavigates to).',
         ['allowedToBeDefaultMatch'], OutputBooleanProperty),
     new Column(
-        'Starred', '', 'starred', false,
+        ['Starred'], '', 'starred', false,
         'A green checkmark indicates that the result has been bookmarked.',
         ['starred'], OutputBooleanProperty),
     new Column(
-        'Has Tab Match', '', 'hasTabMatch', false,
+        ['Has Tab Match'], '', 'hasTabMatch', false,
         'A green checkmark indicates that the result URL matches an opentab.',
         ['hasTabMatch'], OutputBooleanProperty),
     new Column(
-        'URL', '', 'destinationUrl', true, 'The URL for the result.',
+        ['URL'], '', 'destinationUrl', true, 'The URL for the result.',
         ['destinationUrl'], OutputLinkProperty),
     new Column(
-        'Fill & Inline', '', 'fillAndInline', false,
+        ['Fill', 'Inline'], '', 'fillAndInline', false,
         'The text shown in the omnibox when the result is selected. / The ' +
             'text shown in the omnibox as a blue highlight selection ' +
             'following the cursor, if this match is shown inline.',
         ['fillIntoEdit', 'inlineAutocompletion'],
         OutputOverlappingPairProperty),
     new Column(
-        'Del', '', 'deletable', false,
+        ['Del'], '', 'deletable', false,
         'A green checkmark indicates that the result can be deleted from the ' +
             'visit history.',
         ['deletable'], OutputBooleanProperty),
     new Column(
-        'Prev', '', 'fromPrevious', false, '', ['fromPrevious'],
+        ['Prev'], '', 'fromPrevious', false, '', ['fromPrevious'],
         OutputBooleanProperty),
     new Column(
-        'Tran',
+        ['Tran'],
         'https://cs.chromium.org/chromium/src/ui/base/page_transition_types.h' +
             '?q=page_transition_types.h&sq=package:chromium&dr=CSs&l=14',
         'transition', false, 'How the user got to the result.', ['transition'],
         OutputTextProperty),
     new Column(
-        'Done', '', 'providerDone', false,
+        ['Done'], '', 'providerDone', false,
         'A green checkmark indicates that the provider is done looking for ' +
             'more results.',
         ['providerDone'], OutputBooleanProperty),
     new Column(
-        'Associated Keyword', '', 'associatedKeyword', false,
+        ['Associated Keyword'], '', 'associatedKeyword', false,
         'If non-empty, a "press tab to search" hint will be shown and will ' +
             'engage this keyword.',
         ['associatedKeyword'], OutputTextProperty),
     new Column(
-        'Keyword', '', 'keyword', false,
+        ['Keyword'], '', 'keyword', false,
         'The keyword of the search engine to be used.', ['keyword'],
         OutputTextProperty),
     new Column(
-        'Duplicates', '', 'duplicates', false,
+        ['Duplicates'], '', 'duplicates', false,
         'The number of matches that have been marked as duplicates of this ' +
             'match.',
         ['duplicates'], OutputTextProperty),
     new Column(
-        'Additional Info', '', 'additionalInfo', false,
+        ['Additional Info'], '', 'additionalInfo', false,
         'Provider-specific information about the result.', ['additionalInfo'],
         OutputKeyValueTuplesProperty)
   ];
 
   /** @type {!Column} */
   const ADDITIONAL_PROPERTIES_COLUMN = new Column(
-      'Additional Properties', '', 'additionalProperties', false,
+      ['Additional Properties'], '', 'additionalProperties', false,
       'Properties not accounted for.', [], OutputJsonProperty);
 
   const CONSUMED_SOURCE_PROPERTIES =
