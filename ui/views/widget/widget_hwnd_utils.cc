@@ -121,6 +121,12 @@ bool DidClientAreaSizeChange(const WINDOWPOS* window_pos) {
          window_pos->flags & SWP_FRAMECHANGED;
 }
 
+bool DidMinimizedChange(UINT old_size_param, UINT new_size_param) {
+  return (
+      (old_size_param == SIZE_MINIMIZED && new_size_param != SIZE_MINIMIZED) ||
+      (old_size_param != SIZE_MINIMIZED && new_size_param == SIZE_MINIMIZED));
+}
+
 void ConfigureWindowStyles(
     HWNDMessageHandler* handler,
     const Widget::InitParams& params,

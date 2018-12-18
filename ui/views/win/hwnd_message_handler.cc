@@ -2389,6 +2389,10 @@ void HWNDMessageHandler::OnSettingChange(UINT flags, const wchar_t* section) {
 }
 
 void HWNDMessageHandler::OnSize(UINT param, const gfx::Size& size) {
+  if (DidMinimizedChange(last_size_param_, param) && IsTopLevelWindow(hwnd()))
+    delegate_->HandleWindowMinimizedOrRestored(param != SIZE_MINIMIZED);
+  last_size_param_ = param;
+
   RedrawWindow(hwnd(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
   // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've
   // invoked OnSize we ensure the RootView has been laid out.
@@ -2473,13 +2477,6 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
 
     if (!ref.get())
       return;
-
-    if (IsTopLevelWindow(hwnd()) &&
-        ((notification_code & sc_mask) == SC_MINIMIZE ||
-         (notification_code & sc_mask) == SC_RESTORE)) {
-      delegate_->HandleWindowMinimizedOrRestored(
-          (notification_code & sc_mask) == SC_RESTORE);
-    }
     in_size_loop_ = false;
   }
 }
