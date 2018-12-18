@@ -71,6 +71,9 @@ class IDNSpoofChecker {
   // extra mappings to some characters to produce multiple skeletons.
   Skeletons GetSkeletons(base::StringPiece16 hostname);
 
+  // Returns a top domain from the top 10K list matching the given |skeleton|.
+  std::string LookupSkeletonInTopDomains(const std::string& skeleton);
+
  private:
   // Sets allowed characters in IDN labels and turns on USPOOF_CHAR_LIMIT.
   void SetAllowedUnicodeSet(UErrorCode* status);

@@ -50,7 +50,8 @@ compiled_action("generate_top_domains_trie") {
       rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
 }
 
-# TODO: Combine this and the previous one into a compiled_action_foreach target.
+# TODO(crbug/915921): Combine this and the previous one into a
+# compiled_action_foreach target.
 compiled_action("generate_top_domains_test_trie") {
   tool = ":top_domain_generator"
 
@@ -61,6 +62,37 @@ compiled_action("generate_top_domains_test_trie") {
   ]
   outputs = [
     "$target_gen_dir/test_domains-trie-inc.cc",
+  ]
+  args =
+      rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
+}
+
+executable("make_top_domain_list_for_edit_distance") {
+  sources = [
+    "make_top_domain_list_for_edit_distance.cc",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//net",
+    "//third_party/icu",
+  ]
+  if (is_ios) {
+    libs = [ "UIKit.framework" ]
+  }
+}
+
+# TODO(crbug/915921): Combine this and the previous one into a
+# compiled_action_foreach target.
+compiled_action("generate_top_domains_for_edit_distance") {
+  tool = ":make_top_domain_list_for_edit_distance"
+
+  # Inputs in order expected by the command line of the tool.
+  inputs = [
+    "//components/url_formatter/top_domains/alexa_domains.list",
+  ]
+  outputs = [
+    "$target_gen_dir/top500-domains-inc.cc",
   ]
   args =
       rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)

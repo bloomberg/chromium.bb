@@ -682,4 +682,8 @@ Skeletons GetSkeletons(const base::string16& host) {
   return g_idn_spoof_checker.Get().GetSkeletons(host);
 }
 
+std::string LookupSkeletonInTopDomains(const std::string& skeleton) {
+  return g_idn_spoof_checker.Get().LookupSkeletonInTopDomains(skeleton);
+}
+
 }  // namespace url_formatter
