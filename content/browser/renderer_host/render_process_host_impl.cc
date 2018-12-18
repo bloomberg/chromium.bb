@@ -2524,6 +2524,11 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     const base::Optional<url::Origin>& origin,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
     network::mojom::URLLoaderFactoryRequest request) {
+  // "chrome-guest://..." is never used as a |request_initiator|.  Therefore
+  // it doesn't make sense to associate a URLLoaderFactory with a
+  // chrome-guest-based |origin|.
+  DCHECK(!origin.has_value() || origin.value().scheme() != kGuestScheme);
+
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},

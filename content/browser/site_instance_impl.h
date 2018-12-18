@@ -9,11 +9,13 @@
 #include <stdint.h>
 
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/site_instance.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 class BrowsingInstance;
@@ -234,6 +236,18 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // DoesSiteRequireDedicatedProcess().
   static bool ShouldLockToOrigin(BrowserContext* browser_context,
                                  GURL site_url);
+
+  // Converts |site_url| into an origin that can be used as
+  // |URLLoaderFactoryParams::request_initiator_site_lock|.
+  // This means that the returned origin can be safely used in a eTLD+1
+  // comparison against |network::ResourceRequest::request_initiator|.
+  //
+  // base::nullopt is returned if |site_url| cannot be used as a
+  // |request_initiator_site_lock| (e.g. in case of site_url =
+  // chrome-guest://... OR if |site_url| doesn't require a dedicated process).
+  static base::Optional<url::Origin> GetRequestInitiatorSiteLock(
+      BrowserContext* browser_context,
+      GURL site_url);
 
  private:
   friend class BrowsingInstance;
