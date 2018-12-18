@@ -42,6 +42,12 @@ class ExploreSitesService : public KeyedService {
 
   // Add the url to the blacklist.
   virtual void BlacklistSite(const std::string& url) = 0;
+
+  // Controls for use by chrome://explore-sites-internals.
+  virtual void ClearCachedCatalogsForDebugging() = 0;
+  virtual void OverrideCountryCodeForDebugging(
+      const std::string& country_code) = 0;
+  virtual std::string GetCountryCode() = 0;
 };
 
 }  // namespace explore_sites
