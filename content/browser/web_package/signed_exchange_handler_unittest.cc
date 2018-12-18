@@ -266,7 +266,8 @@ class SignedExchangeHandlerTest
     SignedExchangeHandler::SetNetworkContextForTesting(network_context_.get());
 
     handler_ = std::make_unique<SignedExchangeHandler>(
-        ContentType(), std::move(source_stream_),
+        true /* is_secure_transport */, ContentType(),
+        std::move(source_stream_),
         base::BindOnce(&SignedExchangeHandlerTest::OnHeaderFound,
                        base::Unretained(this)),
         std::move(cert_fetcher_factory_), net::LOAD_NORMAL,

@@ -169,6 +169,7 @@ void SignedExchangeHandler::SetVerificationTimeForTesting(
 }
 
 SignedExchangeHandler::SignedExchangeHandler(
+    bool is_secure_transport,
     std::string content_type,
     std::unique_ptr<net::SourceStream> body,
     ExchangeHeadersCallback headers_callback,
@@ -176,7 +177,8 @@ SignedExchangeHandler::SignedExchangeHandler(
     int load_flags,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
-    : headers_callback_(std::move(headers_callback)),
+    : is_secure_transport_(is_secure_transport),
+      headers_callback_(std::move(headers_callback)),
       source_(std::move(body)),
       cert_fetcher_factory_(std::move(cert_fetcher_factory)),
       load_flags_(load_flags),
@@ -186,6 +188,19 @@ SignedExchangeHandler::SignedExchangeHandler(
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::SignedExchangeHandler");
+
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#privacy-considerations
+  // This can be difficult to determine when the exchange is being loaded from
+  // local disk, but when the client itself requested the exchange over a
+  // network it SHOULD require TLS ([I-D.ietf-tls-tls13]) or a successor
+  // transport layer, and MUST NOT accept exchanges transferred over plain HTTP
+  // without TLS. [spec text]
+  if (!is_secure_transport_) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy_.get(),
+        "Signed exchange response from non secure origin is not supported.");
+    // Proceed to extract and redirect to the fallback URL.
+  }
 
   version_ = signed_exchange_utils::GetSignedExchangeVersion(content_type);
   if (!IsSupportedSignedExchangeVersion(version_)) {
@@ -210,7 +225,9 @@ SignedExchangeHandler::SignedExchangeHandler(
 SignedExchangeHandler::~SignedExchangeHandler() = default;
 
 SignedExchangeHandler::SignedExchangeHandler()
-    : load_flags_(net::LOAD_NORMAL), weak_factory_(this) {}
+    : is_secure_transport_(true),
+      load_flags_(net::LOAD_NORMAL),
+      weak_factory_(this) {}
 
 const GURL& SignedExchangeHandler::GetFallbackUrl() const {
   return prologue_fallback_url_and_after_.fallback_url();
@@ -338,6 +355,9 @@ SignedExchangeHandler::ParsePrologueFallbackUrlAndAfter() {
 
   if (!GetFallbackUrl().is_valid())
     return SignedExchangeLoadResult::kFallbackURLParseError;
+
+  if (!is_secure_transport_)
+    return SignedExchangeLoadResult::kSXGServedFromNonHTTPS;
 
   // If the signed exchange version from content-type is unsupported or the
   // prologue's magic string is incorrect, abort parsing and redirect to the
