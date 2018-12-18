@@ -117,17 +117,33 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Tables. All of these should be called on a node that's a table-like
   // role.
   //
-
-  virtual int GetTableRowCount() const = 0;
-  virtual int GetTableColCount() const = 0;
+  virtual bool IsTable() const = 0;
+  virtual int32_t GetTableColCount() const = 0;
+  virtual int32_t GetTableRowCount() const = 0;
+  virtual int32_t GetTableAriaColCount() const = 0;
+  virtual int32_t GetTableAriaRowCount() const = 0;
+  virtual int32_t GetTableCellCount() const = 0;
   virtual const std::vector<int32_t> GetColHeaderNodeIds() const = 0;
   virtual const std::vector<int32_t> GetColHeaderNodeIds(
       int32_t col_index) const = 0;
   virtual const std::vector<int32_t> GetRowHeaderNodeIds() const = 0;
   virtual const std::vector<int32_t> GetRowHeaderNodeIds(
       int32_t row_index) const = 0;
-  virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
+
+  // Table row-like nodes.
+  virtual bool IsTableRow() const = 0;
+  virtual int32_t GetTableRowRowIndex() const = 0;
+
+  // Table cell-like nodes.
+  virtual bool IsTableCellOrHeader() const = 0;
   virtual int32_t GetTableCellIndex() const = 0;
+  virtual int32_t GetTableCellColIndex() const = 0;
+  virtual int32_t GetTableCellRowIndex() const = 0;
+  virtual int32_t GetTableCellColSpan() const = 0;
+  virtual int32_t GetTableCellRowSpan() const = 0;
+  virtual int32_t GetTableCellAriaColIndex() const = 0;
+  virtual int32_t GetTableCellAriaRowIndex() const = 0;
+  virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
   virtual int32_t CellIndexToId(int32_t cell_index) const = 0;
 
   // Only called on ordered-set-like elements and item-like elements.
