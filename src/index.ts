@@ -16,6 +16,6 @@ import { TestTree } from "framework";
   // Actually run tests
   for await (const {path, run} of trunk.iterate()) {
     console.log("*", path.join("/"));
-    run();
+    await run();
   }
 })();
