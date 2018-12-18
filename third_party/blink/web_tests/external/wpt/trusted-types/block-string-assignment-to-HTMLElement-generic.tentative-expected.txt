@@ -8,11 +8,11 @@ PASS img.src accepts only TrustedURL
 PASS input.src accepts only TrustedURL
 PASS link.href accepts only TrustedURL
 PASS video.src accepts only TrustedURL
-PASS object.data accepts only TrustedURL
-PASS object.codeBase accepts only TrustedURL
 PASS source.src accepts only TrustedURL
 PASS track.src accepts only TrustedURL
 PASS embed.src accepts only TrustedScriptURL
+PASS object.codeBase accepts only TrustedScriptURL
+PASS object.data accepts only TrustedScriptURL
 PASS script.src accepts only TrustedScriptURL
 PASS div.innerHTML accepts only TrustedHTML
 PASS iframe.srcdoc accepts only TrustedHTML
@@ -25,11 +25,11 @@ PASS img.src accepts string and null after default policy was created
 PASS input.src accepts string and null after default policy was created
 PASS link.href accepts string and null after default policy was created
 PASS video.src accepts string and null after default policy was created
-PASS object.data accepts string and null after default policy was created
-PASS object.codeBase accepts string and null after default policy was created
 PASS source.src accepts string and null after default policy was created
 PASS track.src accepts string and null after default policy was created
 PASS embed.src accepts string and null after default policy was created
+PASS object.codeBase accepts string and null after default policy was created
+PASS object.data accepts string and null after default policy was created
 PASS script.src accepts string and null after default policy was created
 FAIL div.innerHTML accepts string and null after default policy was created assert_equals: expected "null" but got ""
 PASS iframe.srcdoc accepts string and null after default policy was created
