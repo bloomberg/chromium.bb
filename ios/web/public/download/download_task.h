@@ -46,7 +46,8 @@ class DownloadTask {
   virtual State GetState() const = 0;
 
   // Starts the download. |writer| allows clients to perform in-memory or
-  // in-file downloads and must not be null. Start() can only be called once.
+  // in-file downloads and must not be null. Start() can only be called if
+  // DownloadTask is not in progress.
   virtual void Start(std::unique_ptr<net::URLFetcherResponseWriter> writer) = 0;
 
   // Cancels the download.
