@@ -5681,11 +5681,8 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_DUPLICATE" desc="The label of the 'Duplicate' Tab context menu item.">
           Duplicate
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the 'Close Tab' Tab context menu item. Used when closing a single tab.">
-          Close tab
-        </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABS" desc="The label of the 'Close Tab' Tab context menu item. Used when closing more than one tab.">
-          Close tabs
+        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the 'Close Tab' Tab context menu item. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Close tab} other {Close tabs}}
         </message>
         <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="The label of the 'Close Other Tabs' Tab context menu item.">
           Close other tabs
@@ -5693,41 +5690,23 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item.">
           Close tabs to the right
         </message>
-        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning a single tab.">
-          Pin tab
+        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Pin tab} other {Pin tabs}}
         </message>
-        <message name="IDS_TAB_CXMENU_PIN_TABS" desc="The label of the tab context menu item for pinning more than one tab.">
-          Pin tabs
+        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="The label of the tab context menu item for unpinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Unpin tab} other {Unpin tabs}}
         </message>
-        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="The label of the tab context menu item for unpinning a single tab.">
-          Unpin tab
+        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TAB" desc="The label of the tab context menu item for muting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Mute tab} other {Mute tabs}}
         </message>
-        <message name="IDS_TAB_CXMENU_UNPIN_TABS" desc="The label of the tab context menu item for unpinning multiple tab.">
-          Unpin tabs
+        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB" desc="The label of the tab context menu item for unmuting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Unmute tab} other {Unmute tabs}}
         </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TAB" desc="The label of the tab context menu item for muting a single tab.">
-          Mute tab
+        <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITE" desc="The label of the tab context menu item for muting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Mute site} other {Mute sites}}
         </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TABS" desc="The label of the tab context menu item for muting more than one tab.">
-          Mute tabs
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB" desc="The label of the tab context menu item for unmuting a single tab.">
-          Unmute tab
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TABS" desc="The label of the tab context menu item for unmuting more than one tab.">
-          Unmute tabs
-        </message>
-        <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITE" desc="The label of the tab context menu item for muting a single site.">
-          Mute site
-        </message>
-        <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITES" desc="The label of the tab context menu item for muting more than one site.">
-          Mute sites
-        </message>
-        <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITE" desc="The label of the tab context menu item for unmuting a single site.">
-          Unmute site
-        </message>
-        <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITES" desc="The label of the tab context menu item for unmuting more than one site.">
-          Unmute sites
+        <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITE" desc="The label of the tab context menu item for unmuting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Unmute site} other {Unmute sites}}
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark all tabs...
@@ -5743,11 +5722,8 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_DUPLICATE" desc="In Title Case: The label of the 'Duplicate' Tab context menu item.">
           Duplicate
         </message>
-        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="In Title Case: The label of the 'Close Tab' Tab context menu item.">
-          Close Tab
-        </message>
-        <message name="IDS_TAB_CXMENU_CLOSETABS" desc="In Title Case: The label of the 'Close Tab' Tab context menu item when more than one tab is selected.">
-          Close Tabs
+        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="In Title Case: The label of the 'Close Tab' Tab context menu item. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Close Tab} other {Close Tabs}}
         </message>
         <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="In Title Case: The label of the 'Close Other Tabs' Tab context menu item.">
           Close Other Tabs
@@ -5755,41 +5731,23 @@ the Bookmarks menu.">
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="In Title Case: The label of the 'Close Tabs to the Right' Tab context menu item.">
           Close Tabs to the Right
         </message>
-        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="In Title Case: The label of the tab context menu item for pinning a tab.">
-          Pin Tab
+        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="In Title Case: The label of the tab context menu item for pinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Pin Tab} other {Pin Tabs}}
         </message>
-        <message name="IDS_TAB_CXMENU_PIN_TABS" desc="In Title Case: The label of the tab context menu item for pinning multiple tabs.">
-          Pin Tabs
+        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="In Title Case: The label of the tab context menu item for unpinning one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Unpin Tab} other {Unpin Tabs}}
         </message>
-        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="In Title Case: The label of the tab context menu item for unpinning a tab.">
-          Unpin Tab
+        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TAB" desc="In Title Case: The label of the tab context menu item for muting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Mute Tab} other {Mute Tabs}}
         </message>
-        <message name="IDS_TAB_CXMENU_UNPIN_TABS" desc="In Title Case: The label of the tab context menu item for unpinning multiple tabs.">
-          Unpin Tabs
+        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB" desc="In Title Case: The label of the tab context menu item for unmuting one or more tabs. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Unmute Tab} other {Unmute Tabs}}
         </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TAB" desc="In Title Case: The label of the tab context menu item for muting a single tab.">
-          Mute Tab
+        <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITE" desc="In Title Case: The label of the tab context menu item for muting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Mute Site} other {Mute Sites}}
         </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_MUTE_TABS" desc="In Title Case: The label of the tab context menu item for muting more than one tab.">
-          Mute Tabs
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB" desc="In Title Case: The label of the tab context menu item for unmuting a single tab.">
-          Unmute Tab
-        </message>
-        <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TABS" desc="In Title Case: The label of the tab context menu item for unmuting more than one tab.">
-          Unmute Tabs
-        </message>
-        <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITE" desc="In Title Case: The label of the tab context menu item for muting a single site.">
-          Mute Site
-        </message>
-        <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITES" desc="In Title Case: The label of the tab context menu item for muting more than one site.">
-          Mute Sites
-        </message>
-        <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITE" desc="In Title Case: The label of the tab context menu item for unmuting a single site.">
-          Unmute Site
-        </message>
-        <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITES" desc="In Title Case: The label of the tab context menu item for unmuting more than one site.">
-          Unmute Sites
+        <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITE" desc="In Title Case: The label of the tab context menu item for unmuting one or more sites. NOTE: If having no explicit # makes the phrasing awkward, feel free to add a # as necessary. [ICU Syntax]">
+          {NUM_TABS, plural, =1 {Unmute Site} other {Unmute Sites}}
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark All Tabs...
