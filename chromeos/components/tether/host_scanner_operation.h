@@ -119,6 +119,15 @@ class HostScannerOperation : public MessageTransferOperation {
 
  private:
   friend class HostScannerOperationTest;
+  FRIEND_TEST_ALL_PREFIXES(HostScannerOperationTest,
+                           DevicesArePrioritizedDuringConstruction);
+  FRIEND_TEST_ALL_PREFIXES(HostScannerOperationTest, RecordsResponseDuration);
+  FRIEND_TEST_ALL_PREFIXES(HostScannerOperationTest, ErrorResponses);
+  FRIEND_TEST_ALL_PREFIXES(HostScannerOperationTest, NotificationsDisabled);
+  FRIEND_TEST_ALL_PREFIXES(HostScannerOperationTest, TetherAvailable);
+  FRIEND_TEST_ALL_PREFIXES(HostScannerOperationTest, LastProvisioningFailed);
+  FRIEND_TEST_ALL_PREFIXES(HostScannerOperationTest, SetupRequired);
+  FRIEND_TEST_ALL_PREFIXES(HostScannerOperationTest, TestMultipleDevices);
 
   using MessageTransferOperation::UnregisterDevice;
 
