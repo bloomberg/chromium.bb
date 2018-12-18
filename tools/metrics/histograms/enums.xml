@@ -1475,6 +1475,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="REORDER_IN_TOP_LEVEL"/>
 </enum>
 
+<enum name="AppListAppType">
+  <int value="0" label="Other"/>
+  <int value="1" label="Chrome"/>
+  <int value="2" label="Play"/>
+  <int value="3" label="PWA"/>
+</enum>
+
 <enum name="AppListDoodleAction">
   <obsolete>
     App list doesn't support doodles anymore.

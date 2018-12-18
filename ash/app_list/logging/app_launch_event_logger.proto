@@ -1,0 +1,33 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package app_list;
+
+message AppLaunchEvent {
+  enum LaunchedFrom {
+    GRID = 1;
+    SUGGESTED = 2;
+    SHELF = 3;
+  }
+  // The component that the user launched the app from.
+  optional LaunchedFrom launched_from = 1;
+
+  enum AppType {
+    OTHER = 0;
+    CHROME = 1;
+    PLAY = 2;
+    PWA = 3;
+  }
+  // The type of App.
+  optional AppType app_type = 2;
+  // The id of the app as a 32 character string. e.g.
+  // "pjkljhegncpnkpknbcohdijeoejaedia".
+  optional string app_id = 3;
+  // The location of the app. e.g. the 0th, 1st, 2nd, etc app in grid.
+  optional int32 index = 4;
+}

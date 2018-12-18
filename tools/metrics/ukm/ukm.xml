@@ -135,6 +135,62 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AppListAppLaunch">
+  <owner>pdyson@chromium.org</owner>
+  <summary>
+    Recorded when an app is launched from the launcher on ChromeOS. This can be
+    from the suggestion chip, or from the grid of apps. The UKM metrics are not
+    keyed by navigational urls. Instead, for Chrome apps the keys are based upon
+    the app id, for Play apps the keys are based upon a hash of the package name
+    and for PWAs the keys are the urls associated with the PWA.
+  </summary>
+  <metric name="AppType">
+    <summary>
+      The type of app. 1: CHROME, 2: PLAY, 3: PWA.
+    </summary>
+  </metric>
+  <metric name="ClickMethod">
+    <summary>
+      Click method. 1: MOUSE, 2: TOUCH, 3: SYTLUS, 4: KEYBOARD.
+    </summary>
+  </metric>
+  <metric name="DayOfWeek">
+    <summary>
+      An enum representing the day of the week that the data was logged in the
+      local time zone. Sunday = 0.
+    </summary>
+  </metric>
+  <metric name="DeviceMode">
+    <summary>
+      The mode of the device. 1: CLOSED_LID (Lid is closed), 2: LAPTOP (Lid is
+      open, tablet mode off or unsupported) , 3: TABLET (Lid is open, tablet
+      mode on or no lid at all).
+    </summary>
+  </metric>
+  <metric name="DeviceType">
+    <summary>
+      The type of the device. 1: TABLET, 2: LAPTOP.
+    </summary>
+  </metric>
+  <metric name="HourOfDay">
+    <summary>
+      The hour of the day when the data is logged. Hours since midnight in the
+      local time zone.
+    </summary>
+  </metric>
+  <metric name="LaunchedFrom">
+    <summary>
+      Where the app was launched from. 1: GRID, 2: SUGGESTED, 3: SHELF.
+    </summary>
+  </metric>
+  <metric name="PositionIndex">
+    <summary>
+      The position of the app within the grid/suggested apps/shelf. 0 is the
+      first position.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.DeveloperEngagement">
   <owner>jiahuiguo@google.com</owner>
   <summary>
