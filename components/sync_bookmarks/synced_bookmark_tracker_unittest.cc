@@ -465,16 +465,14 @@ TEST(SyncedBookmarkTrackerTest, ShouldMatchModelAndMetadata) {
 }
 
 TEST(SyncedBookmarkTrackerTest,
-     ShouldMatchModelAndMetadataEvenIfMissingMobileFolder) {
+     ShouldNotMatchModelAndMetadataIfMissingMobileFolder) {
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModel();
 
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
   // Add entries for all the permanent nodes except for the Mobile bookmarks
-  // folder. This simulates a user who has never signed it to sync on a mobile
-  // device, and hence the Mobile bookmarks folder has never be created on the
-  // server.
+  // folder.
   sync_pb::BookmarkMetadata* bookmark_metadata =
       model_metadata.add_bookmarks_metadata();
   bookmark_metadata->set_id(model->bookmark_bar_node()->id());
@@ -485,11 +483,11 @@ TEST(SyncedBookmarkTrackerTest,
   bookmark_metadata->mutable_metadata()->set_server_id("OtherBookmarksId");
 
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
+  EXPECT_FALSE(SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
       model.get(), model_metadata));
   histogram_tester.ExpectUniqueSample(
       "Sync.BookmarksModelMetadataCorruptionReason",
-      /*sample=*/ExpectedCorruptionReason::NO_CORRUPTION, /*count=*/1);
+      /*sample=*/ExpectedCorruptionReason::COUNT_MISMATCH, /*count=*/1);
 }
 
 TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndCorruptedMetadata) {
@@ -498,12 +496,16 @@ TEST(SyncedBookmarkTrackerTest, ShouldNotMatchModelAndCorruptedMetadata) {
 
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
-  // Add entries for 2 permanent nodes only. TestBookmarkClient creates all the
-  // 3 permanent nodes.
+  // Add entries for 3 permanent nodes only. TestBookmarkClient creates all the
+  // 4 permanent nodes.
   sync_pb::BookmarkMetadata* bookmark_metadata =
       model_metadata.add_bookmarks_metadata();
   bookmark_metadata->set_id(model->bookmark_bar_node()->id());
   bookmark_metadata->mutable_metadata()->set_server_id("BookmarkBarId");
+
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(model->mobile_node()->id());
+  bookmark_metadata->mutable_metadata()->set_server_id("MobileBookmarksId");
 
   base::HistogramTester histogram_tester;
   // The entry for the Other bookmarks is missing.

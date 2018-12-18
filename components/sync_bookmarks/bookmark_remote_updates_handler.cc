@@ -23,8 +23,6 @@ namespace sync_bookmarks {
 
 namespace {
 
-const char kMobileBookmarksTag[] = "synced_bookmarks";
-
 // Recursive method to traverse a forest created by ReorderUpdates() to to
 // emit updates in top-down order. |ordered_updates| must not be null because
 // traversed updates are appended to |*ordered_updates|.
@@ -199,12 +197,6 @@ void BookmarkRemoteUpdatesHandler::Process(
       continue;
     } else if (!tracked_entity) {
       ProcessCreate(*update);
-      // Because the Synced Bookmarks node can be created server side, it's
-      // possible it'll arrive at the client as a creation. No need to check
-      // encryption for permanent folders.
-      if (update_entity.server_defined_unique_tag == kMobileBookmarksTag) {
-        continue;
-      }
     } else {
       // Ignore changes to the permanent nodes (e.g. bookmarks bar). We only
       // care about their children.
@@ -342,18 +334,9 @@ void BookmarkRemoteUpdatesHandler::ProcessCreate(
     const syncer::UpdateResponseData& update) {
   const syncer::EntityData& update_entity = update.entity.value();
   DCHECK(!update_entity.is_deleted());
-  // Because the Synced Bookmarks node can be created server side, it's possible
-  // it'll arrive at the client as an update.
-  if (update_entity.server_defined_unique_tag == kMobileBookmarksTag) {
-    bookmark_tracker_->Add(update_entity.id, bookmark_model_->mobile_node(),
-                           update.response_version, update_entity.creation_time,
-                           update_entity.unique_position,
-                           update_entity.specifics);
-    return;
-  }
   if (!update_entity.server_defined_unique_tag.empty()) {
-    DLOG(ERROR) << "Permanent nodes other than the Synced Bookmarks node "
-                   "should have been merged during intial sync.";
+    DLOG(ERROR)
+        << "Permanent nodes should have been merged during intial sync.";
     return;
   }
 

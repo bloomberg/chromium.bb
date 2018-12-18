@@ -177,14 +177,6 @@ bool SyncedBookmarkTracker::BookmarkModelMatchesMetadata(
       if (!model->client()->CanSyncNode(node)) {
         continue;
       }
-      // Mobile bookmarks folder is created on the server only after signing-in
-      // with a mobile client. Therefore, it should be considered for validation
-      // only if a corresponding node exists in the metadata.
-      if (node == model->mobile_node() &&
-          std::count(metadata_node_ids.begin(), metadata_node_ids.end(),
-                     node->id()) == 0) {
-        continue;
-      }
       model_node_ids.push_back(node->id());
     }
 
@@ -536,6 +528,7 @@ void SyncedBookmarkTracker::CheckAllNodesTracked(
   // tracker.
   CHECK(GetEntityForBookmarkNode(bookmark_model->bookmark_bar_node()));
   CHECK(GetEntityForBookmarkNode(bookmark_model->other_node()));
+  CHECK(GetEntityForBookmarkNode(bookmark_model->mobile_node()));
 }
 
 }  // namespace sync_bookmarks
