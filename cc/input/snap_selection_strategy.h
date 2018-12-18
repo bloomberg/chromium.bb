@@ -48,6 +48,8 @@ class CC_EXPORT SnapSelectionStrategy {
   // valid for the current axis.
   virtual bool IsValidSnapPosition(SearchAxis axis, float position) const = 0;
 
+  virtual bool HasIntendedDirection() const;
+
   // Returns the best result according to snap selection strategy. This method
   // is called at the end of selection process to make the final decision.
   //
@@ -91,6 +93,7 @@ class EndPositionStrategy : public SnapSelectionStrategy {
   gfx::ScrollOffset base_position() const override;
 
   bool IsValidSnapPosition(SearchAxis axis, float position) const override;
+  bool HasIntendedDirection() const override;
 
   const base::Optional<SnapSearchResult>& PickBestResult(
       const base::Optional<SnapSearchResult>& closest,
