@@ -611,15 +611,9 @@ ArcAccessibilityHelperBridge::GetFilterTypeForProfile(Profile* profile) {
     return arc::mojom::AccessibilityFilterType::OFF;
 
   if (accessibility_manager->IsSelectToSpeakEnabled() ||
-      accessibility_manager->IsSwitchAccessEnabled()) {
+      accessibility_manager->IsSwitchAccessEnabled() ||
+      accessibility_manager->IsSpokenFeedbackEnabled()) {
     return arc::mojom::AccessibilityFilterType::ALL;
-  }
-
-  if (accessibility_manager->IsSpokenFeedbackEnabled()) {
-    return base::FeatureList::IsEnabled(
-               chromeos::features::kChromeVoxArcSupport)
-               ? arc::mojom::AccessibilityFilterType::ALL
-               : arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME;
   }
 
   if (accessibility_manager->IsFocusHighlightEnabled())

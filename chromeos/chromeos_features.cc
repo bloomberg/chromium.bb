@@ -29,10 +29,6 @@ const base::Feature kAutoScreenBrightnessContinuedAdjustment{
     "AutoScreenBrightnessContinuedAdjustment",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables native ChromeVox support for Arc.
-const base::Feature kChromeVoxArcSupport{"ChromeVoxArcSupport",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables Crostini Files.
 const base::Feature kCrostiniFiles{"CrostiniFiles",
                                    base::FEATURE_ENABLED_BY_DEFAULT};

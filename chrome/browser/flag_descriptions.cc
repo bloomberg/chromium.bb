@@ -3145,10 +3145,6 @@ const char kCaptivePortalBypassProxyDescription[] =
     "different captive portals. This enables opening captive portal "
     "authorization dialog in a separate window, which ignores proxy settings.";
 
-const char kChromeVoxArcSupportName[] = "ChromeVox ARC support";
-const char kChromeVoxArcSupportDescription[] =
-    "Use ChromeVox screen reader features in ARC";
-
 const char kCrOSComponentName[] = "Chrome OS Component";
 const char kCrOSComponentDescription[] =
     "Disable the use of componentized escpr CUPS filter.";
