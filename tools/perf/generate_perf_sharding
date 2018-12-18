@@ -48,9 +48,8 @@ def GetParser():
             'generation.'),
       default=False)
   parser_update.add_argument(
-      '--builders', '-b', action='append', nargs='*',
-      help=('The builder names to reshard.'),
-      default=[],
+      '--builders', '-b', action='append',
+      help=('The builder names to reshard.'), default=[],
       choices=bot_platforms.ALL_PLATFORM_NAMES)
   parser_update.add_argument(
       '--waterfall', '-w', choices=['perf', 'perf-fyi', 'all'], default=None,
