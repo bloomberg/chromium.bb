@@ -59,10 +59,6 @@ const base::Feature kMyFilesVolume{"MyFilesVolume",
 const base::Feature kEnableSupervisionTransitionScreens{
     "EnableSupervisionTransitionScreens", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable the device to setup all MultiDevice services in a single workflow.
-const base::Feature kEnableUnifiedMultiDeviceSetup{
-    "EnableUnifiedMultiDeviceSetup", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable restriction of symlink traversal on user-supplied filesystems.
 const base::Feature kFsNosymfollow{"FsNosymfollow",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
