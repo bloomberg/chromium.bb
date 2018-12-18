@@ -52,7 +52,8 @@ namespace {
 // Create the title label container for the migration dialogs. The title
 // text depends on the |view_state| of the dialog.
 std::unique_ptr<views::Label> CreateTitle(
-    LocalCardMigrationDialogState view_state) {
+    LocalCardMigrationDialogState view_state,
+    int card_list_size) {
   int message_id;
   switch (view_state) {
     case LocalCardMigrationDialogState::kOffered:
@@ -66,8 +67,8 @@ std::unique_ptr<views::Label> CreateTitle(
       break;
   }
 
-  auto title =
-      std::make_unique<views::Label>(l10n_util::GetStringUTF16(message_id));
+  auto title = std::make_unique<views::Label>(
+      l10n_util::GetPluralStringFUTF16(message_id, card_list_size));
   constexpr int kMigrationDialogTitleFontSize = 8;
   title->SetBorder(views::CreateEmptyBorder(
       /*top=*/0, /*left=*/kMigrationDialogInsets.left(), /*bottom=*/0,
@@ -168,7 +169,7 @@ std::unique_ptr<views::View> CreateTip(const base::string16& tip_message) {
   lightbulb_outline_image->SetVerticalAlignment(views::ImageView::LEADING);
   tip_text_container->AddChildView(lightbulb_outline_image);
 
-  auto* tip = new views::Label(tip_message, CONTEXT_BODY_TEXT_LARGE,
+  auto* tip = new views::Label(tip_message, CONTEXT_BODY_TEXT_SMALL,
                                ChromeTextStyle::STYLE_SECONDARY);
   tip->SetMultiLine(true);
   tip->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -441,7 +442,8 @@ void LocalCardMigrationDialogView::ConstructView() {
   AddChildView(image);
 
   LocalCardMigrationDialogState view_state = controller_->GetViewState();
-  AddChildView(CreateTitle(view_state).release());
+  AddChildView(
+      CreateTitle(view_state, controller_->GetCardList().size()).release());
 
   if (view_state == LocalCardMigrationDialogState::kOffered) {
     offer_view_ = new LocalCardMigrationOfferView(controller_, this);

@@ -266,7 +266,7 @@
       Google Pay logo
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_ANIMATION_LABEL" desc="The text displayed in the migration pending animation in the omnibox. The animation will be triggered after the user consented to the migration offer.">
-      Cards saving...
+      Saving cards...
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE" desc="The title text for a bubble that offers users to start the process of migrating local cards to cloud.">
       Use your cards on all your devices?
@@ -277,8 +277,11 @@
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BODY_TEXT" desc="The body text for a bubble that offers users to start the process of migrating local cards to cloud.">
       Right now, you have cards that can only be used on this device. Click Continue to review cards.
     </message>
-    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_OFFER" desc="The title text for a dialog that offers to migrate local cards into the cloud.">
-      Save cards in your Google Account
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_OFFER" desc="The title text for a dialog that offers to migrate local cards into the cloud.
+    [ICU Syntax]">
+      {NUM_CARDS, plural,
+      =1 {Save card in your Google Account}
+      other {Save cards in your Google Account}}
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_DONE" desc="The title text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated.">
       You're all set!
