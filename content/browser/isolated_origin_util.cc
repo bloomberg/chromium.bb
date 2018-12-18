@@ -18,10 +18,9 @@ bool IsolatedOriginUtil::DoesOriginMatchIsolatedOrigin(
   if (isolated_origin.GetURL().HostIsIPAddress())
     return origin == isolated_origin;
 
+  // Compare scheme and hostname, but don't compare ports - see
+  // https://crbug.com/914511.
   if (origin.scheme() != isolated_origin.scheme())
-    return false;
-
-  if (origin.port() != isolated_origin.port())
     return false;
 
   // Subdomains of an isolated origin are considered to be in the same isolated

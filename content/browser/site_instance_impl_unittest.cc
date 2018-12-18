@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "base/test/mock_log.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -903,9 +904,9 @@ TEST_F(SiteInstanceTest, IsolatedOrigins) {
       policy->IsIsolatedOrigin(url::Origin::Create(GURL("http://foo.com"))));
   EXPECT_FALSE(policy->IsIsolatedOrigin(
       url::Origin::Create(GURL("http://www.bar.com"))));
-  EXPECT_FALSE(policy->IsIsolatedOrigin(
+  EXPECT_FALSE(policy->IsIsolatedOrigin(  // Different scheme.
       url::Origin::Create(GURL("https://isolated.foo.com"))));
-  EXPECT_FALSE(policy->IsIsolatedOrigin(
+  EXPECT_TRUE(policy->IsIsolatedOrigin(  // Different port.
       url::Origin::Create(GURL("http://isolated.foo.com:12345"))));
 
   policy->AddIsolatedOrigins({url::Origin::Create(isolated_bar_url)});
@@ -930,6 +931,9 @@ TEST_F(SiteInstanceTest, IsolatedOrigins) {
   // eTLD+1.
   EXPECT_EQ(isolated_foo_url,
             SiteInstance::GetSiteForURL(&context, isolated_foo_url));
+  EXPECT_EQ(isolated_foo_url,
+            SiteInstance::GetSiteForURL(&context,
+                                        GURL("http://isolated.foo.com:12345")));
   EXPECT_EQ(isolated_bar_url,
             SiteInstance::GetSiteForURL(&context, isolated_bar_url));
   EXPECT_EQ(isolated_foo_url,
@@ -950,6 +954,41 @@ TEST_F(SiteInstanceTest, IsolatedOrigins) {
   // Cleanup.
   policy->RemoveIsolatedOriginForTesting(url::Origin::Create(isolated_foo_url));
   policy->RemoveIsolatedOriginForTesting(url::Origin::Create(isolated_bar_url));
+}
+
+TEST_F(SiteInstanceTest, IsolatedOriginsWithPort) {
+  GURL isolated_foo_url("http://isolated.foo.com");
+  GURL isolated_foo_with_port("http://isolated.foo.com:12345");
+
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  TestBrowserContext context;
+
+  {
+    base::test::MockLog mock_log;
+    EXPECT_CALL(
+        mock_log,
+        Log(::logging::LOG_ERROR, testing::_, testing::_, testing::_,
+            ::testing::HasSubstr("Ignoring port number in isolated origin: "
+                                 "http://isolated.foo.com:12345")))
+        .Times(1);
+    mock_log.StartCapturingLogs();
+
+    policy->AddIsolatedOrigins({url::Origin::Create(isolated_foo_with_port)});
+  }
+
+  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin::Create(isolated_foo_url)));
+  EXPECT_TRUE(
+      policy->IsIsolatedOrigin(url::Origin::Create(isolated_foo_with_port)));
+
+  EXPECT_EQ(isolated_foo_url,
+            SiteInstance::GetSiteForURL(&context, isolated_foo_url));
+  EXPECT_EQ(isolated_foo_url,
+            SiteInstance::GetSiteForURL(&context, isolated_foo_with_port));
+
+  // Cleanup.
+  policy->RemoveIsolatedOriginForTesting(url::Origin::Create(isolated_foo_url));
+  policy->RemoveIsolatedOriginForTesting(
+      url::Origin::Create(isolated_foo_with_port));
 }
 
 // Check that only valid isolated origins are allowed to be registered.
@@ -1007,6 +1046,9 @@ TEST_F(SiteInstanceTest, SubdomainOnIsolatedSite) {
   // Wrong scheme.
   EXPECT_FALSE(policy->IsIsolatedOrigin(
       url::Origin::Create(GURL("https://foo.isolated.com"))));
+  // Subdomain with a different port.
+  EXPECT_TRUE(policy->IsIsolatedOrigin(
+      url::Origin::Create(GURL("http://foo.isolated.com:12345"))));
 
   // Appending a trailing dot to a URL should not bypass process isolation.
   EXPECT_TRUE(policy->IsIsolatedOrigin(
@@ -1035,6 +1077,7 @@ TEST_F(SiteInstanceTest, SubdomainOnIsolatedSite) {
 
   // Cleanup.
   policy->RemoveIsolatedOriginForTesting(url::Origin::Create(isolated_url));
+  policy->RemoveIsolatedOriginForTesting(url::Origin::Create(isolated_ip));
 }
 
 TEST_F(SiteInstanceTest, SubdomainOnIsolatedOrigin) {

@@ -2153,6 +2153,8 @@ Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ 
 Bug(none) virtual/mojo-blob-urls/external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ WontFix ]
 Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ WontFix ]
 Bug(none) external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ WontFix ]
+Bug(none) http/tests/dom/EventListener-incumbent-global-1.html [ WontFix ]
+Bug(none) http/tests/dom/EventListener-incumbent-global-2.html [ WontFix ]
 Bug(none) external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ WontFix ]
 Bug(none) external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ WontFix ]
 Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ WontFix ]

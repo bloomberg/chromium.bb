@@ -39,6 +39,8 @@
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "url/gurl.h"
+#include "url/url_canon.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -1264,6 +1266,19 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
     LOG(ERROR) << "Invalid isolated origin: " << origin;
     return true;  // Remove.
   });
+
+  // Ports are ignored when matching isolated origins (see also
+  // https://crbug.com/914511).
+  for (url::Origin& origin : origins_to_add) {
+    const std::string& scheme = origin.scheme();
+    int default_port =
+        url::DefaultPortForScheme(scheme.data(), scheme.length());
+    if (origin.port() != default_port) {
+      LOG(ERROR) << "Ignoring port number in isolated origin: " << origin;
+      origin = url::Origin::Create(GURL(
+          origin.scheme() + url::kStandardSchemeSeparator + origin.host()));
+    }
+  }
 
   base::AutoLock lock(lock_);
   for (const url::Origin& origin : origins_to_add) {

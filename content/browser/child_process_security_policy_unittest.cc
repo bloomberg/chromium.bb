@@ -1098,6 +1098,7 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
   url::Origin bar = url::Origin::Create(GURL("https://bar.com/"));
   url::Origin baz = url::Origin::Create(GURL("https://baz.com/"));
   url::Origin quxfoo = url::Origin::Create(GURL("https://qux.foo.com/"));
+  url::Origin baz_http = url::Origin::Create(GURL("http://baz.com/"));
   url::Origin baz_http_8000 = url::Origin::Create(GURL("http://baz.com:8000/"));
   url::Origin baz_https_8000 =
       url::Origin::Create(GURL("https://baz.com:8000/"));
@@ -1131,11 +1132,11 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
   // Verify deduplication considers scheme and port differences.  Note that
   // origins that differ only in ports map to the same key.
   p->AddIsolatedOrigins({baz, baz_http_8000, baz_https_8000});
-  LOCKED_EXPECT_THAT(p->lock_, p->isolated_origins_,
-                     testing::UnorderedElementsAre(
-                         IsolatedOriginEntry(foo), IsolatedOriginEntry(bar),
-                         IsolatedOriginEntry(baz, baz_https_8000),
-                         IsolatedOriginEntry(baz_http_8000)));
+  LOCKED_EXPECT_THAT(
+      p->lock_, p->isolated_origins_,
+      testing::UnorderedElementsAre(
+          IsolatedOriginEntry(foo), IsolatedOriginEntry(bar),
+          IsolatedOriginEntry(baz), IsolatedOriginEntry(baz_http)));
 
   // Verify that adding an origin that is invalid for isolation will 1) log a
   // warning and 2) won't CHECK or crash the browser process, 3) will not add
@@ -1154,10 +1155,9 @@ TEST_F(ChildProcessSecurityPolicyTest, AddIsolatedOrigins) {
     p->AddIsolatedOrigins({quxfoo, invalid_etld});
     LOCKED_EXPECT_THAT(
         p->lock_, p->isolated_origins_,
-        testing::UnorderedElementsAre(IsolatedOriginEntry(foo, quxfoo),
-                                      IsolatedOriginEntry(bar),
-                                      IsolatedOriginEntry(baz, baz_https_8000),
-                                      IsolatedOriginEntry(baz_http_8000)));
+        testing::UnorderedElementsAre(
+            IsolatedOriginEntry(foo, quxfoo), IsolatedOriginEntry(bar),
+            IsolatedOriginEntry(baz), IsolatedOriginEntry(baz_http)));
   }
 }
 

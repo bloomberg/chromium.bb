@@ -49,9 +49,9 @@ class SessionStorageNamespaceImplMojoTest
   SessionStorageNamespaceImplMojoTest()
       : test_namespace_id1_(base::GenerateGUID()),
         test_namespace_id2_(base::GenerateGUID()),
-        test_origin1_(url::Origin::Create(GURL("https://host1.com:1/"))),
-        test_origin2_(url::Origin::Create(GURL("https://host2.com:2/"))),
-        test_origin3_(url::Origin::Create(GURL("https://host3.com:3/"))),
+        test_origin1_(url::Origin::Create(GURL("https://host1.com/"))),
+        test_origin2_(url::Origin::Create(GURL("https://host2.com/"))),
+        test_origin3_(url::Origin::Create(GURL("https://host3.com/"))),
         database_(&mock_data_) {}
   ~SessionStorageNamespaceImplMojoTest() override = default;
 
