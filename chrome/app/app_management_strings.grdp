@@ -4,16 +4,31 @@
   <message name="IDS_APP_MANAGEMENT_APP_LIST_TITLE" desc="Title of app list card on main app management page.">
     Recently opened apps
   </message>
-  <message name="IDS_APP_MANAGEMENT_LESS_APPS" desc="Show less for apps.">
+  <message name="IDS_APP_MANAGEMENT_BACK" desc="Label for button for going back to the previous page.">
+    Back
+  </message>
+  <message name="IDS_APP_MANAGEMENT_LESS_APPS" desc="Label for showing less apps.">
     Show less
   </message>
   <message name="IDS_APP_MANAGEMENT_MORE_APPS" desc="Label for more apps button at bottom of app list card.">
     Show <ph name="NUMBER_OF_MORE_APPS">$1<ex>4</ex></ph> more apps
   </message>
+  <message name="IDS_APP_MANAGEMENT_NOTIFICATIONS" desc="Label for notifications section in app settings page.">
+    Notifications
+  </message>
+  <message name="IDS_APP_MANAGEMENT_PERMISSIONS" desc="Label for permissions section in app settings page.">
+    Permissions
+  </message>
   <message name="IDS_APP_MANAGEMENT_SEARCH_PROMPT" desc="Prompt in search bar of main app management page.">
-    Search Settings
+    Search apps
+  </message>
+  <message name="IDS_APP_MANAGEMENT_SITE_SETTING" desc="Label for the open site settings for PWA app settings page.">
+    Open site settings
   </message>
   <message name="IDS_APP_MANAGEMENT_TITLE" desc="Title of the app management page.">
     Apps
+  </message>
+  <message name="IDS_APP_MANAGEMENT_UNINSTALL" desc="Label for the uninstall button in app settings page.">
+    Uninstall
   </message>
 </grit-part>

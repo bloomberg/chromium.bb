@@ -28,10 +28,16 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIAppLauncherPageHost);
 
   source->AddLocalizedString("appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE);
+  source->AddLocalizedString("back", IDS_APP_MANAGEMENT_BACK);
   source->AddLocalizedString("lessApps", IDS_APP_MANAGEMENT_LESS_APPS);
   source->AddLocalizedString("moreApps", IDS_APP_MANAGEMENT_MORE_APPS);
+  source->AddLocalizedString("notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS);
+  source->AddLocalizedString("openSiteSettings",
+                             IDS_APP_MANAGEMENT_SITE_SETTING);
+  source->AddLocalizedString("permissions", IDS_APP_MANAGEMENT_PERMISSIONS);
   source->AddLocalizedString("searchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT);
   source->AddLocalizedString("title", IDS_APP_MANAGEMENT_TITLE);
+  source->AddLocalizedString("uninstall", IDS_APP_MANAGEMENT_UNINSTALL);
 
   source->AddResourcePath("app_management.mojom-lite.js",
                           IDR_APP_MANAGEMENT_MOJO_LITE_JS);
@@ -62,6 +68,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddResourcePath("item.js", IDR_APP_MANAGEMENT_ITEM_JS);
   source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
   source->AddResourcePath("main_view.js", IDR_APP_MANAGEMENT_MAIN_VIEW_JS);
+  source->AddResourcePath("pwa_permission_view.html",
+                          IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_HTML);
+  source->AddResourcePath("pwa_permission_view.js",
+                          IDR_APP_MANAGEMENT_PWA_PERMISSION_VIEW_JS);
   source->AddResourcePath("reducers.html", IDR_APP_MANAGEMENT_REDUCERS_HTML);
   source->AddResourcePath("reducers.js", IDR_APP_MANAGEMENT_REDUCERS_JS);
   source->AddResourcePath("shared_style.html",

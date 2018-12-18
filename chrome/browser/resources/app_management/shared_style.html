@@ -5,6 +5,24 @@
 <dom-module id="app-management-shared-css">
   <template>
     <style include="cr-shared-style">
+      .card-container {
+        @apply --cr-card-elevation;
+        background-color: #fff;
+        border-radius: var(--cr-card-border-radius);
+        margin: 24px auto;
+        width: var(--card-width);
+      }
 
+      .permission-view-header-icon {
+        height: 26px;
+        margin-inline-end: 8px;
+        margin-inline-start: 24px;
+        width: 26px;
+      }
+
+      .header-text {
+        color: var(--primary-text-color);
+        font-weight: var(--secondary-font-weight);
+      }
     </style>
   </template>

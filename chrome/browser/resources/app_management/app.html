@@ -4,17 +4,26 @@
 <link rel="import" href="chrome://apps/browser_proxy.html">
 <link rel="import" href="chrome://apps/constants.html">
 <link rel="import" href="chrome://apps/main_view.html">
+<link rel="import" href="chrome://apps/pwa_permission_view.html">
 <link rel="import" href="chrome://apps/store.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 
 <dom-module id="app-management-app">
   <template>
-    <style>
+    <style include="app-management-shared-css">
     :host {
       font-size: 13px;
     }
+
+    cr-toolbar {
+      background: var(--md-toolbar-color);
+    }
     </style>
+    <cr-toolbar page-name="$i18n{title}" search-prompt="$i18n{searchPrompt}">
+    </cr-toolbar>
     <app-management-main-view></app-management-main-view>
+    <app-management-pwa-permission-view></app-management-pwa-permission-view>
   </template>
   <script src="chrome://apps/app.js"></script>
 </dom-module>

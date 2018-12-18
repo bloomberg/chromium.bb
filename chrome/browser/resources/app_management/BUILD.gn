@@ -15,6 +15,7 @@ if (!is_android) {
       ":fake_page_handler",
       ":item",
       ":main_view",
+      ":pwa_permission_view",
       ":reducers",
       ":store",
       ":store_client",
@@ -35,6 +36,7 @@ if (!is_android) {
       ":actions",
       ":browser_proxy",
       ":main_view",
+      ":pwa_permission_view",
       ":util",
     ]
   }
@@ -70,6 +72,12 @@ if (!is_android) {
       ":item",
       ":store_client",
       "//ui/webui/resources/js:load_time_data",
+    ]
+  }
+
+  js_library("pwa_permission_view") {
+    deps = [
+      ":fake_page_handler",
     ]
   }
 
