@@ -25,5 +25,6 @@ message SendTabToSelfSpecifics {
   // the windows epoch.
   // Required
   optional int64 shared_time_usec = 3;
+  // A non-unique but human readable name to describe this client, used in UI.
+  optional string device_name = 4;
 }
-
