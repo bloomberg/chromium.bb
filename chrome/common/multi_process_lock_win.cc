@@ -57,6 +57,7 @@ class MultiProcessLockWin : public MultiProcessLock {
   DISALLOW_COPY_AND_ASSIGN(MultiProcessLockWin);
 };
 
-MultiProcessLock* MultiProcessLock::Create(const std::string &name) {
-  return new MultiProcessLockWin(name);
+std::unique_ptr<MultiProcessLock> MultiProcessLock::Create(
+    const std::string& name) {
+  return std::make_unique<MultiProcessLockWin>(name);
 }

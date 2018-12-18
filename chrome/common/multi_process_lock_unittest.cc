@@ -63,7 +63,7 @@ void MultiProcessLockTest::ExpectLockIsUnlocked(
 TEST_F(MultiProcessLockTest, BasicCreationTest) {
   // Test basic creation/destruction with no lock taken
   std::string name = GenerateLockName();
-  std::unique_ptr<MultiProcessLock> scoped(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> scoped = MultiProcessLock::Create(name);
   ExpectLockIsUnlocked(name);
   scoped.reset(NULL);
 }
@@ -90,13 +90,13 @@ TEST_F(MultiProcessLockTest, LongNameTest) {
       "This limitation comes from the MAX_PATH definition which is obviously "
       "defined to be a maximum of two hundred and sixty characters ");
 #endif
-  std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> test_lock = MultiProcessLock::Create(name);
   EXPECT_FALSE(test_lock->TryLock());
 }
 
 TEST_F(MultiProcessLockTest, SimpleLock) {
   std::string name = GenerateLockName();
-  std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> test_lock = MultiProcessLock::Create(name);
   EXPECT_TRUE(test_lock->TryLock());
   ExpectLockIsLocked(name);
   test_lock->Unlock();
@@ -105,7 +105,7 @@ TEST_F(MultiProcessLockTest, SimpleLock) {
 
 TEST_F(MultiProcessLockTest, RecursiveLock) {
   std::string name = GenerateLockName();
-  std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> test_lock = MultiProcessLock::Create(name);
   EXPECT_TRUE(test_lock->TryLock());
   ExpectLockIsLocked(name);
   LOG(INFO) << "Following error log "
@@ -125,7 +125,8 @@ TEST_F(MultiProcessLockTest, LockScope) {
   // Check to see that lock is released when it goes out of scope.
   std::string name = GenerateLockName();
   {
-    std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
+    std::unique_ptr<MultiProcessLock> test_lock =
+        MultiProcessLock::Create(name);
     EXPECT_TRUE(test_lock->TryLock());
     ExpectLockIsLocked(name);
   }
@@ -145,7 +146,7 @@ MULTIPROCESS_TEST_MAIN(MultiProcessLockTryFailMain) {
             << "\"CFMessagePort: bootstrap_register(): failed 1100 (0x44c) "
             << "'Permission denied'\" is expected";
 #endif  // defined(OS_MACOSX)
-  std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> test_lock = MultiProcessLock::Create(name);
 
   // Expect locking to fail because it is claimed by another process.
   bool locked_successfully = test_lock->TryLock();
@@ -158,7 +159,7 @@ MULTIPROCESS_TEST_MAIN(MultiProcessLockTrySucceedMain) {
   std::unique_ptr<base::Environment> environment(base::Environment::Create());
   EXPECT_TRUE(environment->GetVar(MultiProcessLockTest::kLockEnvironmentVarName,
                                   &name));
-  std::unique_ptr<MultiProcessLock> test_lock(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> test_lock = MultiProcessLock::Create(name);
 
   // Expect locking to succeed because it is not claimed yet.
   bool locked_successfully = test_lock->TryLock();

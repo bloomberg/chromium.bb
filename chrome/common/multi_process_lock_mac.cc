@@ -53,6 +53,7 @@ class MultiProcessLockMac : public MultiProcessLock {
   DISALLOW_COPY_AND_ASSIGN(MultiProcessLockMac);
 };
 
-MultiProcessLock* MultiProcessLock::Create(const std::string &name) {
-  return new MultiProcessLockMac(name);
+std::unique_ptr<MultiProcessLock> MultiProcessLock::Create(
+    const std::string& name) {
+  return std::make_unique<MultiProcessLockMac>(name);
 }

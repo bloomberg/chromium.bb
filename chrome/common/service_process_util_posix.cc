@@ -4,8 +4,7 @@
 
 #include "chrome/common/service_process_util_posix.h"
 
-#include <string.h>
-
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -23,7 +22,7 @@ int g_signal_socket = -1;
 // make multiple attempts to acquire the lock.
 // Caller is responsible for ownership of the MultiProcessLock.
 MultiProcessLock* TakeNamedLock(const std::string& name, bool waiting) {
-  std::unique_ptr<MultiProcessLock> lock(MultiProcessLock::Create(name));
+  std::unique_ptr<MultiProcessLock> lock = MultiProcessLock::Create(name);
   if (lock == NULL) return NULL;
   bool got_lock = false;
   for (int i = 0; i < 10; ++i) {
