@@ -412,7 +412,7 @@ TaskTraits TaskSchedulerImpl::SetUserBlockingPriorityIfNeeded(
 
 void TaskSchedulerImpl::ReportHeartbeatMetrics() const {
   for (const auto& worker_pool : worker_pools_)
-    worker_pool->RecordNumWorkersHistogram();
+    worker_pool->ReportHeartbeatMetrics();
 }
 
 }  // namespace internal

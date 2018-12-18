@@ -146,8 +146,8 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Sets the MayBlock waiting threshold to TimeDelta::Max().
   void MaximizeMayBlockThresholdForTesting();
 
-  // Records number of worker.
-  void RecordNumWorkersHistogram() const;
+  // Records number of worker and active workers.
+  void ReportHeartbeatMetrics() const;
 
   // Updates the position of the Sequence in |sequence_and_transaction| in
   // |shared_priority_queue| based on the Sequence's current traits.
@@ -369,6 +369,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // TaskScheduler.NumWorkers.[worker pool name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_workers_histogram_;
+
+  // TaskScheduler.NumActiveWorkers.[worker pool name] histogram.
+  // Intentionally leaked.
+  HistogramBase* const num_active_workers_histogram_;
 
   scoped_refptr<TaskRunner> service_thread_task_runner_;
 
