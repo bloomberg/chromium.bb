@@ -2471,11 +2471,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "multidevice-service",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "nacl-debug-mask",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
