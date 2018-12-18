@@ -132,8 +132,7 @@ std::vector<StorageUsageInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
   std::vector<Origin> origins = GetAllOrigins();
   std::vector<StorageUsageInfo> result;
   for (const auto& origin : origins) {
-    result.push_back(StorageUsageInfo(origin.GetURL(),
-                                      GetOriginDiskUsage(origin),
+    result.push_back(StorageUsageInfo(origin, GetOriginDiskUsage(origin),
                                       GetOriginLastModified(origin)));
   }
   return result;

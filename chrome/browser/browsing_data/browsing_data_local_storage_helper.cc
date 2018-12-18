@@ -38,10 +38,10 @@ void GetUsageInfoCallback(
 
   std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo> result;
   for (const content::StorageUsageInfo& info : infos) {
-    if (!HasStorageScheme(info.origin))
+    if (!HasStorageScheme(info.origin.GetURL()))
       continue;
     result.push_back(BrowsingDataLocalStorageHelper::LocalStorageInfo(
-        info.origin, info.total_size_bytes, info.last_modified));
+        info.origin.GetURL(), info.total_size_bytes, info.last_modified));
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},

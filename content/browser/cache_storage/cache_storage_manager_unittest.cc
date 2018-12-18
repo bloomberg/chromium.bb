@@ -1447,8 +1447,8 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsage) {
   std::vector<StorageUsageInfo> usage = GetAllOriginsUsage();
   EXPECT_EQ(2ULL, usage.size());
 
-  int origin1_index = url::Origin::Create(usage[0].origin) == origin1_ ? 0 : 1;
-  int origin2_index = url::Origin::Create(usage[1].origin) == origin2_ ? 1 : 0;
+  int origin1_index = usage[0].origin == origin1_ ? 0 : 1;
+  int origin2_index = usage[1].origin == origin2_ ? 1 : 0;
   EXPECT_NE(origin1_index, origin2_index);
 
   int64_t origin1_size = usage[origin1_index].total_size_bytes;
@@ -1489,15 +1489,13 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsageDifferentOwners) {
       GetAllOriginsUsage(CacheStorageOwner::kBackgroundFetch);
   EXPECT_EQ(2ULL, usage_bgf.size());
 
-  int origin1_index =
-      url::Origin::Create(usage_bgf[0].origin) == origin1_ ? 0 : 1;
-  int origin2_index =
-      url::Origin::Create(usage_bgf[1].origin) == origin2_ ? 1 : 0;
+  int origin1_index = usage_bgf[0].origin == origin1_ ? 0 : 1;
+  int origin2_index = usage_bgf[1].origin == origin2_ ? 1 : 0;
   EXPECT_NE(origin1_index, origin2_index);
 
-  EXPECT_EQ(usage_cache[0].origin, origin1_.GetURL());
-  EXPECT_EQ(usage_bgf[origin1_index].origin, origin1_.GetURL());
-  EXPECT_EQ(usage_bgf[origin2_index].origin, origin2_.GetURL());
+  EXPECT_EQ(usage_cache[0].origin, origin1_);
+  EXPECT_EQ(usage_bgf[origin1_index].origin, origin1_);
+  EXPECT_EQ(usage_bgf[origin2_index].origin, origin2_);
 
   EXPECT_EQ(usage_cache[0].total_size_bytes,
             usage_bgf[origin1_index].total_size_bytes);

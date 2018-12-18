@@ -29,7 +29,7 @@ void GetAllOriginsInfoForCacheStorageCallback(
 
   std::list<content::StorageUsageInfo> result;
   for (const StorageUsageInfo& origin : origins) {
-    if (!BrowsingDataHelper::HasWebScheme(origin.origin))
+    if (!BrowsingDataHelper::HasWebScheme(origin.origin.GetURL()))
       continue;  // Non-websafe state is not considered browsing data.
     result.push_back(origin);
   }
@@ -137,7 +137,8 @@ void CannedBrowsingDataCacheStorageHelper::StartFetching(
   std::list<StorageUsageInfo> result;
   for (const PendingCacheStorageUsageInfo& pending_info :
        pending_cache_storage_info_) {
-    StorageUsageInfo info(pending_info.origin, pending_info.total_size_bytes,
+    StorageUsageInfo info(url::Origin::Create(pending_info.origin),
+                          pending_info.total_size_bytes,
                           pending_info.last_modified);
     result.push_back(info);
   }

@@ -49,9 +49,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataCacheStorageHelperTest,
 
   ASSERT_EQ(2U, result.size());
   auto info = result.begin();
-  EXPECT_EQ(origin1, info->origin);
+  EXPECT_EQ(origin1, info->origin.GetURL());
   info++;
-  EXPECT_EQ(origin2, info->origin);
+  EXPECT_EQ(origin2, info->origin.GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataCacheStorageHelperTest, CannedUnique) {
@@ -69,6 +69,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataCacheStorageHelperTest, CannedUnique) {
   std::list<content::StorageUsageInfo> result = callback.result();
 
   ASSERT_EQ(1U, result.size());
-  EXPECT_EQ(origin, result.begin()->origin);
+  EXPECT_EQ(origin, result.begin()->origin.GetURL());
 }
 }  // namespace

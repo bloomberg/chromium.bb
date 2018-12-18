@@ -359,10 +359,10 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
   // that used localstorage with zero size.
   std::vector<StorageUsageInfo> info = GetStorageUsageSync();
   ASSERT_EQ(2u, info.size());
-  if (url::Origin::Create(info[0].origin) == origin2)
+  if (info[0].origin == origin2)
     std::swap(info[0], info[1]);
-  EXPECT_EQ(origin1, url::Origin::Create(info[0].origin));
-  EXPECT_EQ(origin2, url::Origin::Create(info[1].origin));
+  EXPECT_EQ(origin1, info[0].origin);
+  EXPECT_EQ(origin2, info[1].origin);
   EXPECT_LE(before_write, info[0].last_modified);
   EXPECT_LE(before_write, info[1].last_modified);
   EXPECT_EQ(0u, info[0].total_size_bytes);
@@ -375,10 +375,10 @@ TEST_F(LocalStorageContextMojoTest, GetStorageUsage_Data) {
 
   info = GetStorageUsageSync();
   ASSERT_EQ(2u, info.size());
-  if (url::Origin::Create(info[0].origin) == origin2)
+  if (info[0].origin == origin2)
     std::swap(info[0], info[1]);
-  EXPECT_EQ(origin1, url::Origin::Create(info[0].origin));
-  EXPECT_EQ(origin2, url::Origin::Create(info[1].origin));
+  EXPECT_EQ(origin1, info[0].origin);
+  EXPECT_EQ(origin2, info[1].origin);
   EXPECT_LE(before_write, info[0].last_modified);
   EXPECT_LE(before_write, info[1].last_modified);
   EXPECT_GE(after_write, info[0].last_modified);

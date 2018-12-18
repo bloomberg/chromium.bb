@@ -58,7 +58,7 @@ void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread(
       indexed_db_context_->GetAllOriginsInfo();
   std::list<content::StorageUsageInfo> result;
   for (const StorageUsageInfo& origin : origins) {
-    if (!BrowsingDataHelper::HasWebScheme(origin.origin))
+    if (!BrowsingDataHelper::HasWebScheme(origin.origin.GetURL()))
       continue;  // Non-websafe state is not considered browsing data.
     result.push_back(origin);
   }
@@ -123,7 +123,8 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(
 
   std::list<StorageUsageInfo> result;
   for (const PendingIndexedDBInfo& pending_info : pending_indexed_db_info_)
-    result.emplace_back(pending_info.origin, 0, base::Time());
+    result.emplace_back(url::Origin::Create(pending_info.origin), 0,
+                        base::Time());
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(callback, result));

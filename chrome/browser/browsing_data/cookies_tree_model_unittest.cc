@@ -270,6 +270,9 @@ class CookiesTreeModelTest : public testing::Test {
     if (node->GetDetailedInfo().node_type != node_type)
       return std::string();
 
+    // TODO: GetURL().spec() is used instead of Serialize() for backwards
+    // compatibility with tests. The tests should be updated once all
+    // appropriate parts have been migrated to url::Origin.
     switch (node_type) {
       case CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGE:
         return node->GetDetailedInfo().session_storage_info->origin_url.spec() +
@@ -285,18 +288,25 @@ class CookiesTreeModelTest : public testing::Test {
         return node->GetDetailedInfo().appcache_info->manifest_url.spec() +
             ",";
       case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
-        return node->GetDetailedInfo().indexed_db_info->origin.spec() + ",";
+        return node->GetDetailedInfo().indexed_db_info->origin.GetURL().spec() +
+               ",";
       case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
         return node->GetDetailedInfo().file_system_info->origin.spec() +
             ",";
       case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
         return node->GetDetailedInfo().quota_info->host + ",";
       case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER:
-        return node->GetDetailedInfo().service_worker_info->origin.spec() + ",";
+        return node->GetDetailedInfo()
+                   .service_worker_info->origin.GetURL()
+                   .spec() +
+               ",";
       case CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKER:
         return node->GetDetailedInfo().shared_worker_info->worker.spec() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE:
-        return node->GetDetailedInfo().cache_storage_info->origin.spec() + ",";
+        return node->GetDetailedInfo()
+                   .cache_storage_info->origin.GetURL()
+                   .spec() +
+               ",";
       case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO:
         return node->GetDetailedInfo().flash_lso_domain + ",";
       case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE:

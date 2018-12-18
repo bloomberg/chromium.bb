@@ -86,8 +86,9 @@ void ImportantSitesUsageCounter::ReceiveLocalStorageUsage(
     const std::vector<content::StorageUsageInfo>& storage_infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   for (const content::StorageUsageInfo& info : storage_infos) {
-    IncrementUsage(ImportantSitesUtil::GetRegisterableDomainOrIP(info.origin),
-                   info.total_size_bytes);
+    IncrementUsage(
+        ImportantSitesUtil::GetRegisterableDomainOrIP(info.origin.GetURL()),
+        info.total_size_bytes);
   }
   Done();
 }

@@ -37,10 +37,12 @@ void MockBrowsingDataCacheStorageHelper::DeleteCacheStorage(
 void MockBrowsingDataCacheStorageHelper::AddCacheStorageSamples() {
   const GURL kOrigin1("https://cshost1:1/");
   const GURL kOrigin2("https://cshost2:2/");
-  content::StorageUsageInfo info1(kOrigin1, 1, base::Time());
+  content::StorageUsageInfo info1(url::Origin::Create(kOrigin1), 1,
+                                  base::Time());
   response_.push_back(info1);
   origins_[kOrigin1] = true;
-  content::StorageUsageInfo info2(kOrigin2, 2, base::Time());
+  content::StorageUsageInfo info2(url::Origin::Create(kOrigin2), 2,
+                                  base::Time());
   response_.push_back(info2);
   origins_[kOrigin2] = true;
 }

@@ -151,7 +151,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
             media_license_info);
 
     NodeType node_type;
-    GURL origin;
+    url::Origin origin;
     const net::CanonicalCookie* cookie = nullptr;
     const BrowsingDataDatabaseHelper::DatabaseInfo* database_info = nullptr;
     const BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info =

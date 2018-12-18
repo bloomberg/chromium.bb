@@ -96,8 +96,9 @@ void ListOriginsAndLastModifiedOnTaskRunner(
             int64_t storage_size = CacheStorage::kSizeUnknown;
             if (file_info.last_modified < index_last_modified)
               storage_size = GetCacheStorageSize(index);
-            usages->push_back(StorageUsageInfo(
-                GURL(index.origin()), storage_size, file_info.last_modified));
+            usages->push_back(
+                StorageUsageInfo(url::Origin::Create(GURL(index.origin())),
+                                 storage_size, file_info.last_modified));
           }
         }
       }
@@ -112,7 +113,7 @@ std::set<url::Origin> ListOriginsOnTaskRunner(base::FilePath root_path,
 
   std::set<url::Origin> out_origins;
   for (const StorageUsageInfo& usage : usages)
-    out_origins.insert(url::Origin::Create(usage.origin));
+    out_origins.insert(usage.origin);
 
   return out_origins;
 }
@@ -261,7 +262,7 @@ void CacheStorageManager::GetAllOriginsUsage(
     for (const auto& origin_details : cache_storage_map_) {
       if (origin_details.first.second != owner)
         continue;
-      usages->emplace_back(origin_details.first.first.GetURL(),
+      usages->emplace_back(origin_details.first.first,
                            /*total_size_bytes=*/0,
                            /*last_modified=*/base::Time());
     }
@@ -305,8 +306,8 @@ void CacheStorageManager::GetAllOriginsUsageGetSizes(
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, barrier_closure);
       continue;
     }
-    CacheStorageHandle cache_storage = OpenCacheStorage(
-        url::Origin::Create(usage.origin), CacheStorageOwner::kCacheAPI);
+    CacheStorageHandle cache_storage =
+        OpenCacheStorage(usage.origin, CacheStorageOwner::kCacheAPI);
     cache_storage.value()->Size(
         base::BindOnce(&OneOriginSizeReported, barrier_closure, &usage));
   }

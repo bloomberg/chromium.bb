@@ -188,7 +188,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitDatabase(
     const BrowsingDataDatabaseHelper::DatabaseInfo* database_info) {
   Init(TYPE_DATABASE);
   this->database_info = database_info;
-  origin = database_info->identifier.ToOrigin();
+  origin = url::Origin::Create(database_info->identifier.ToOrigin());
   return *this;
 }
 
@@ -197,7 +197,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitLocalStorage(
     local_storage_info) {
   Init(TYPE_LOCAL_STORAGE);
   this->local_storage_info = local_storage_info;
-  origin = local_storage_info->origin_url;
+  origin = url::Origin::Create(local_storage_info->origin_url);
   return *this;
 }
 
@@ -206,7 +206,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitSessionStorage(
     session_storage_info) {
   Init(TYPE_SESSION_STORAGE);
   this->session_storage_info = session_storage_info;
-  origin = session_storage_info->origin_url;
+  origin = url::Origin::Create(session_storage_info->origin_url);
   return *this;
 }
 
@@ -215,7 +215,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitAppCache(
     const content::AppCacheInfo* appcache_info) {
   Init(TYPE_APPCACHE);
   this->appcache_info = appcache_info;
-  this->origin = origin;
+  this->origin = url::Origin::Create(origin);
   return *this;
 }
 
@@ -231,7 +231,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitFileSystem(
     const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info) {
   Init(TYPE_FILE_SYSTEM);
   this->file_system_info = file_system_info;
-  this->origin = file_system_info->origin;
+  this->origin = url::Origin::Create(file_system_info->origin);
   return *this;
 }
 
@@ -255,7 +255,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitSharedWorker(
         shared_worker_info) {
   Init(TYPE_SHARED_WORKER);
   this->shared_worker_info = shared_worker_info;
-  this->origin = shared_worker_info->worker.GetOrigin();
+  this->origin = url::Origin::Create(shared_worker_info->worker.GetOrigin());
   return *this;
 }
 
@@ -279,7 +279,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitMediaLicense(
         media_license_info) {
   Init(TYPE_MEDIA_LICENSE);
   this->media_license_info = media_license_info;
-  this->origin = media_license_info->origin;
+  this->origin = url::Origin::Create(media_license_info->origin);
   return *this;
 }
 
@@ -436,7 +436,7 @@ CookieTreeSessionStorageNode::GetDetailedInfo() const {
 
 CookieTreeIndexedDBNode::CookieTreeIndexedDBNode(
     std::list<content::StorageUsageInfo>::iterator indexed_db_info)
-    : CookieTreeNode(base::UTF8ToUTF16(indexed_db_info->origin.spec())),
+    : CookieTreeNode(base::UTF8ToUTF16(indexed_db_info->origin.Serialize())),
       indexed_db_info_(indexed_db_info) {}
 
 CookieTreeIndexedDBNode::~CookieTreeIndexedDBNode() {}
@@ -445,7 +445,8 @@ void CookieTreeIndexedDBNode::DeleteStoredObjects() {
   LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
   if (container) {
-    container->indexed_db_helper_->DeleteIndexedDB(indexed_db_info_->origin);
+    container->indexed_db_helper_->DeleteIndexedDB(
+        indexed_db_info_->origin.GetURL());
     container->indexed_db_info_list_.erase(indexed_db_info_);
   }
 }
@@ -512,7 +513,8 @@ CookieTreeNode::DetailedInfo CookieTreeQuotaNode::GetDetailedInfo() const {
 
 CookieTreeServiceWorkerNode::CookieTreeServiceWorkerNode(
     std::list<content::StorageUsageInfo>::iterator service_worker_info)
-    : CookieTreeNode(base::UTF8ToUTF16(service_worker_info->origin.spec())),
+    : CookieTreeNode(
+          base::UTF8ToUTF16(service_worker_info->origin.Serialize())),
       service_worker_info_(service_worker_info) {}
 
 CookieTreeServiceWorkerNode::~CookieTreeServiceWorkerNode() {
@@ -523,7 +525,7 @@ void CookieTreeServiceWorkerNode::DeleteStoredObjects() {
 
   if (container) {
     container->service_worker_helper_->DeleteServiceWorkers(
-        service_worker_info_->origin);
+        service_worker_info_->origin.GetURL());
     container->service_worker_info_list_.erase(service_worker_info_);
   }
 }
@@ -565,7 +567,7 @@ CookieTreeNode::DetailedInfo CookieTreeSharedWorkerNode::GetDetailedInfo()
 
 CookieTreeCacheStorageNode::CookieTreeCacheStorageNode(
     std::list<content::StorageUsageInfo>::iterator cache_storage_info)
-    : CookieTreeNode(base::UTF8ToUTF16(cache_storage_info->origin.spec())),
+    : CookieTreeNode(base::UTF8ToUTF16(cache_storage_info->origin.Serialize())),
       cache_storage_info_(cache_storage_info) {}
 
 CookieTreeCacheStorageNode::~CookieTreeCacheStorageNode() {}
@@ -575,7 +577,7 @@ void CookieTreeCacheStorageNode::DeleteStoredObjects() {
 
   if (container) {
     container->cache_storage_helper_->DeleteCacheStorage(
-        cache_storage_info_->origin);
+        cache_storage_info_->origin.GetURL());
     container->cache_storage_info_list_.erase(cache_storage_info_);
   }
 }
@@ -1142,8 +1144,9 @@ const extensions::ExtensionSet* CookiesTreeModel::ExtensionsProtectingNode(
   if (!TypeIsProtected(info.node_type))
     return nullptr;
 
-  DCHECK(!info.origin.is_empty());
-  return special_storage_policy_->ExtensionsProtectingOrigin(info.origin);
+  DCHECK(!info.origin.opaque());
+  return special_storage_policy_->ExtensionsProtectingOrigin(
+      info.origin.GetURL());
 }
 #endif
 
@@ -1377,11 +1380,13 @@ void CookiesTreeModel::PopulateIndexedDBInfoWithFilter(
   for (auto indexed_db_info = container->indexed_db_info_list_.begin();
        indexed_db_info != container->indexed_db_info_list_.end();
        ++indexed_db_info) {
-    const GURL& origin = indexed_db_info->origin;
+    const url::Origin& origin = indexed_db_info->origin;
 
-    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
-                               .find(filter) != base::string16::npos)) {
-      CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
+    if (filter.empty() ||
+        (CookieTreeHostNode::TitleForUrl(origin.GetURL()).find(filter) !=
+         base::string16::npos)) {
+      CookieTreeHostNode* host_node =
+          root->GetOrCreateHostNode(origin.GetURL());
       CookieTreeIndexedDBsNode* indexed_dbs_node =
           host_node->GetOrCreateIndexedDBsNode();
       indexed_dbs_node->AddIndexedDBNode(
@@ -1403,11 +1408,13 @@ void CookiesTreeModel::PopulateServiceWorkerUsageInfoWithFilter(
   for (auto service_worker_info = container->service_worker_info_list_.begin();
        service_worker_info != container->service_worker_info_list_.end();
        ++service_worker_info) {
-    const GURL& origin = service_worker_info->origin;
+    const url::Origin& origin = service_worker_info->origin;
 
-    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
-                               .find(filter) != base::string16::npos)) {
-      CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
+    if (filter.empty() ||
+        (CookieTreeHostNode::TitleForUrl(origin.GetURL()).find(filter) !=
+         base::string16::npos)) {
+      CookieTreeHostNode* host_node =
+          root->GetOrCreateHostNode(origin.GetURL());
       CookieTreeServiceWorkersNode* service_workers_node =
           host_node->GetOrCreateServiceWorkersNode();
       service_workers_node->AddServiceWorkerNode(
@@ -1455,11 +1462,13 @@ void CookiesTreeModel::PopulateCacheStorageUsageInfoWithFilter(
   for (auto cache_storage_info = container->cache_storage_info_list_.begin();
        cache_storage_info != container->cache_storage_info_list_.end();
        ++cache_storage_info) {
-    const GURL& origin = cache_storage_info->origin;
+    const url::Origin& origin = cache_storage_info->origin;
 
-    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(origin)
-                               .find(filter) != base::string16::npos)) {
-      CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin);
+    if (filter.empty() ||
+        (CookieTreeHostNode::TitleForUrl(origin.GetURL()).find(filter) !=
+         base::string16::npos)) {
+      CookieTreeHostNode* host_node =
+          root->GetOrCreateHostNode(origin.GetURL());
       CookieTreeCacheStoragesNode* cache_storages_node =
           host_node->GetOrCreateCacheStoragesNode();
       cache_storages_node->AddCacheStorageNode(
