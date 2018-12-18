@@ -583,7 +583,7 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
   return snapshot;
 }
 
-bool HTMLVideoElement::WouldTaintOrigin() const {
+bool HTMLVideoElement::WouldTaintOrigin(const SecurityOrigin*) const {
   return !IsMediaDataCorsSameOrigin();
 }
 

@@ -37,6 +37,7 @@ namespace blink {
 
 class FloatRect;
 class Image;
+class SecurityOrigin;
 
 enum SourceImageStatus {
   kNormalSourceImageStatus,
@@ -57,7 +58,8 @@ class CORE_EXPORT CanvasImageSource {
   // already tainted because this function may be used to determine whether
   // a CanvasPattern is "origin clean", and that pattern may be used on
   // another canvas, which may not be already tainted.
-  virtual bool WouldTaintOrigin() const = 0;
+  virtual bool WouldTaintOrigin(
+      const SecurityOrigin* destination_security_origin) const = 0;
 
   virtual bool IsCSSImageValue() const { return false; }
   virtual bool IsImageElement() const { return false; }

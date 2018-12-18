@@ -59,7 +59,10 @@ class FakeImageSource : public CanvasImageSource {
                                                AccelerationHint,
                                                const FloatSize&) override;
 
-  bool WouldTaintOrigin() const override { return false; }
+  bool WouldTaintOrigin(
+      const SecurityOrigin* destination_security_origin) const override {
+    return false;
+  }
   FloatSize ElementSize(const FloatSize&) const override {
     return FloatSize(size_);
   }

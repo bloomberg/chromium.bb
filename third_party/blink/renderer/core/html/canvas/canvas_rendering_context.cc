@@ -163,8 +163,10 @@ CanvasRenderingContext::ResolveContextTypeAliases(
   return type;
 }
 
-bool CanvasRenderingContext::WouldTaintOrigin(CanvasImageSource* image_source) {
-  return image_source->WouldTaintOrigin();
+bool CanvasRenderingContext::WouldTaintOrigin(
+    CanvasImageSource* image_source,
+    const SecurityOrigin* destination_security_origin) {
+  return image_source->WouldTaintOrigin(destination_security_origin);
 }
 
 void CanvasRenderingContext::Trace(blink::Visitor* visitor) {

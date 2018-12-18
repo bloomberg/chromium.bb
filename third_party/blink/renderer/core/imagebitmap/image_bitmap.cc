@@ -570,7 +570,8 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
   if (!image_)
     return;
 
-  image_->SetOriginClean(!image->WouldTaintOrigin());
+  image_->SetOriginClean(
+      !image->WouldTaintOrigin(document->GetSecurityOrigin()));
   UpdateImageBitmapMemoryUsage();
 }
 
@@ -605,7 +606,8 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
   if (!image_)
     return;
 
-  image_->SetOriginClean(!video->WouldTaintOrigin());
+  image_->SetOriginClean(
+      !video->WouldTaintOrigin(document->GetSecurityOrigin()));
   UpdateImageBitmapMemoryUsage();
 }
 
@@ -985,7 +987,8 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
     ImageBitmap* bitmap =
         MakeGarbageCollected<ImageBitmap>(MakeBlankImage(parsed_options));
     if (bitmap->BitmapImage()) {
-      bitmap->BitmapImage()->SetOriginClean(!image->WouldTaintOrigin());
+      bitmap->BitmapImage()->SetOriginClean(
+          !image->WouldTaintOrigin(document->GetSecurityOrigin()));
       resolver->Resolve(bitmap);
     } else {
       resolver->Reject(
@@ -1008,7 +1011,7 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
       CrossThreadBind(&RasterizeImageOnBackgroundThread,
                       WrapCrossThreadPersistent(resolver),
                       std::move(paint_record), draw_dst_rect,
-                      !image->WouldTaintOrigin(),
+                      !image->WouldTaintOrigin(document->GetSecurityOrigin()),
                       WTF::Passed(std::move(passed_parsed_options))));
   return promise;
 }

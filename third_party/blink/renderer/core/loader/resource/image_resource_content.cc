@@ -49,6 +49,7 @@ class NullImageResourceInfo final
     return false;
   }
   bool IsAccessAllowed(
+      const SecurityOrigin*,
       DoesCurrentFrameHaveSingleSecurityOrigin) const override {
     return true;
   }
@@ -569,11 +570,12 @@ void ImageResourceContent::Changed(const blink::Image* image) {
   NotifyObservers(kDoNotNotifyFinish, CanDeferInvalidation::kYes);
 }
 
-bool ImageResourceContent::IsAccessAllowed() {
+bool ImageResourceContent::IsAccessAllowed(
+    const SecurityOrigin* security_origin) {
   return info_->IsAccessAllowed(
-      GetImage()->CurrentFrameHasSingleSecurityOrigin()
-          ? ImageResourceInfo::kHasSingleSecurityOrigin
-          : ImageResourceInfo::kHasMultipleSecurityOrigin);
+      security_origin, GetImage()->CurrentFrameHasSingleSecurityOrigin()
+                           ? ImageResourceInfo::kHasSingleSecurityOrigin
+                           : ImageResourceInfo::kHasMultipleSecurityOrigin);
 }
 
 void ImageResourceContent::EmulateLoadStartedForInspector(

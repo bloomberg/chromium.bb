@@ -19,6 +19,7 @@ namespace blink {
 class ResourceError;
 class ResourceFetcher;
 class ResourceResponse;
+class SecurityOrigin;
 
 // Delegate class of ImageResource that encapsulates the interface and data
 // visible to ImageResourceContent.
@@ -40,6 +41,7 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
     kHasSingleSecurityOrigin
   };
   virtual bool IsAccessAllowed(
+      const SecurityOrigin*,
       DoesCurrentFrameHaveSingleSecurityOrigin) const = 0;
   virtual bool HasCacheControlNoStoreHeader() const = 0;
   virtual base::Optional<ResourceError> GetResourceError() const = 0;

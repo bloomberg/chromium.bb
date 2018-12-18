@@ -163,7 +163,8 @@ FilterEffect* SVGFEImageElement::Build(SVGFilterBuilder*, Filter* filter) {
 }
 
 bool SVGFEImageElement::TaintsOrigin(bool inputs_taint_origin) const {
-  if (cached_image_ && cached_image_->IsAccessAllowed())
+  const SecurityOrigin* security_origin = GetDocument().GetSecurityOrigin();
+  if (cached_image_ && cached_image_->IsAccessAllowed(security_origin))
     return inputs_taint_origin;
   return true;
 }
