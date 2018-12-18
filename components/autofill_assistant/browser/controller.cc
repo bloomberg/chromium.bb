@@ -246,6 +246,11 @@ void Controller::OnScriptExecuted(const std::string& script_path,
                                   const ScriptExecutor::Result& result) {
   if (!allow_autostart_)
     GetUiController()->HideOverlay();
+
+  // We expand the bottom sheet as the end of a script either means that user
+  // interaction is needed or a success/error message is shown.
+  GetUiController()->ExpandBottomSheet();
+
   if (!result.success) {
     LOG(ERROR) << "Failed to execute script " << script_path;
     GetUiController()->ShowStatusMessage(

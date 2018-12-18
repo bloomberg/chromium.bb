@@ -420,6 +420,7 @@ class AutofillAssistantUiDelegate {
             // Make sure the Autofill Assistant is visible.
             show();
             mBottomBarAnimations.showCarousel();
+            expandBottomSheet();
         }
     }
 
@@ -864,5 +865,9 @@ class AutofillAssistantUiDelegate {
             return;
         }
         params.setBehavior(null);
+    }
+
+    public void expandBottomSheet() {
+        mBottomBarBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 }
