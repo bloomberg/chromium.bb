@@ -428,14 +428,10 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     }
 
     @Override
-    public void acceptSignIn(String accountName, boolean isDefaultAccount) {
+    public void acceptSignIn(String accountName, boolean isDefaultAccount, boolean openSettings) {
         mResultSignInAccountName = accountName;
         mResultIsDefaultAccount = isDefaultAccount;
-    }
-
-    @Override
-    public void askToOpenSignInSettings() {
-        mResultShowSignInSettings = true;
+        mResultShowSignInSettings = openSettings;
     }
 
     @Override
