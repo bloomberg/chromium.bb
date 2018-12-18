@@ -4,7 +4,7 @@
 
 #include "chromeos/components/proximity_auth/proximity_auth_system.h"
 
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle_impl.h"
 #include "chromeos/components/proximity_auth/unlock_manager_impl.h"

@@ -14,10 +14,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/proximity_auth/fake_lock_handler.h"
 #include "chromeos/components/proximity_auth/fake_remote_device_life_cycle.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/messenger.h"
 #include "chromeos/components/proximity_auth/mock_proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/proximity_monitor.h"
@@ -237,7 +237,7 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
   FakeLockHandler lock_handler_;
-  ScopedDisableLoggingForTesting disable_logging_;
+  chromeos::multidevice::ScopedDisableLoggingForTesting disable_logging_;
 };
 
 TEST_F(ProximityAuthUnlockManagerImplTest, IsUnlockAllowed_InitialState) {

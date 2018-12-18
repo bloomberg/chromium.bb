@@ -18,7 +18,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/chromeos_features.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_client_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_manager.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"

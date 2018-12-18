@@ -57,7 +57,7 @@ static_library("multidevice_setup") {
   deps = [
     "//base",
     "//chromeos/components/multidevice",
-    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/components/multidevice/logging",
     "//chromeos/services/device_sync/proto:util",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",

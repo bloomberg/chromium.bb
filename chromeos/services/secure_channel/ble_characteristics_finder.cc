@@ -4,7 +4,7 @@
 
 #include "chromeos/services/secure_channel/ble_characteristics_finder.h"
 
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"

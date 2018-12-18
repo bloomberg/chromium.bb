@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/connection_preserver.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/device_status_util.h"

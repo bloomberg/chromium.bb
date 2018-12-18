@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_pairing_state_tracker.h"

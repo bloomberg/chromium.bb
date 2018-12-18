@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/time/clock.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/connection_attempt_delegate.h"
 #include "chromeos/services/secure_channel/connection_attempt_details.h"

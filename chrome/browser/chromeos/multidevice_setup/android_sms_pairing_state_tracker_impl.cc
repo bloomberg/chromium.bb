@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/cookies/canonical_cookie.h"

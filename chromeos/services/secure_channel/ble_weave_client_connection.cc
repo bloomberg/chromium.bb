@@ -16,7 +16,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/wire_message.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 

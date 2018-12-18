@@ -10,8 +10,8 @@
 
 #include "base/no_destructor.h"
 #include "chromeos/components/multidevice/expiring_remote_device_cache.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

@@ -35,7 +35,7 @@ static_library("android_sms") {
     "//base",
     "//chrome/browser/chromeos:chromeos",
     "//chromeos:chromeos",
-    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/components/multidevice/logging",
     "//chromeos/services/multidevice_setup/public/cpp:cpp",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
     "//components/keyed_service/content:content",

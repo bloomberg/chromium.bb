@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/active_connection_manager_impl.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
 #include "chromeos/services/secure_channel/ble_connection_manager_impl.h"

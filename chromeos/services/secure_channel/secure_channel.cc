@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/wire_message.h"
 
 namespace chromeos {

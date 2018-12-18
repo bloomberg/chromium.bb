@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/proximity_auth/logging/log_buffer.h"
+#include "chromeos/components/multidevice/logging/log_buffer.h"
 
 #include "base/lazy_instance.h"
 
-namespace proximity_auth {
+namespace chromeos {
+
+namespace multidevice {
 
 namespace {
 
@@ -62,4 +64,6 @@ size_t LogBuffer::MaxBufferSize() const {
   return kMaxBufferSize;
 }
 
-}  // namespace proximity_auth
+}  // namespace multidevice
+
+}  // namespace chromeos

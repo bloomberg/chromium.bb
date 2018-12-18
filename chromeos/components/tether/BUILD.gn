@@ -117,7 +117,7 @@ static_library("tether") {
   deps = [
     "//base",
     "//chromeos",
-    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/components/multidevice/logging",
     "//chromeos/components/tether/proto",
     "//chromeos/services/device_sync",
     "//chromeos/services/device_sync/public/cpp",

@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/time/default_clock.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/connection_attempt.h"

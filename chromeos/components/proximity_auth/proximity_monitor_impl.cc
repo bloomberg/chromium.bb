@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/proximity_auth/metrics.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"

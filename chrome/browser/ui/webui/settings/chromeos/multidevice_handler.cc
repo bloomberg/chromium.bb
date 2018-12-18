@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"

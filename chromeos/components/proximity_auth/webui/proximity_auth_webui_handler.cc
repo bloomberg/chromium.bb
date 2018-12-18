@@ -17,8 +17,8 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/messenger.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle_impl.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
@@ -59,7 +59,7 @@ const char kSyncStateOperationInProgress[] = "operationInProgress";
 // Converts |log_message| to a raw dictionary value used as a JSON argument to
 // JavaScript functions.
 std::unique_ptr<base::DictionaryValue> LogMessageToDictionary(
-    const LogBuffer::LogMessage& log_message) {
+    const chromeos::multidevice::LogBuffer::LogMessage& log_message) {
   std::unique_ptr<base::DictionaryValue> dictionary(
       new base::DictionaryValue());
   dictionary->SetString(kLogMessageTextKey, log_message.text);
@@ -141,7 +141,7 @@ ProximityAuthWebUIHandler::ProximityAuthWebUIHandler(
       weak_ptr_factory_(this) {}
 
 ProximityAuthWebUIHandler::~ProximityAuthWebUIHandler() {
-  LogBuffer::GetInstance()->RemoveObserver(this);
+  chromeos::multidevice::LogBuffer::GetInstance()->RemoveObserver(this);
 
   device_sync_client_->RemoveObserver(this);
 }
@@ -194,7 +194,7 @@ void ProximityAuthWebUIHandler::RegisterMessages() {
 }
 
 void ProximityAuthWebUIHandler::OnLogMessageAdded(
-    const LogBuffer::LogMessage& log_message) {
+    const chromeos::multidevice::LogBuffer::LogMessage& log_message) {
   std::unique_ptr<base::DictionaryValue> dictionary =
       LogMessageToDictionary(log_message);
   web_ui()->CallJavascriptFunctionUnsafe("LogBufferInterface.onLogMessageAdded",
@@ -228,14 +228,15 @@ void ProximityAuthWebUIHandler::OnWebContentsInitialized(
     const base::ListValue* args) {
   if (!web_contents_initialized_) {
     device_sync_client_->AddObserver(this);
-    LogBuffer::GetInstance()->AddObserver(this);
+    chromeos::multidevice::LogBuffer::GetInstance()->AddObserver(this);
     web_contents_initialized_ = true;
   }
 }
 
 void ProximityAuthWebUIHandler::GetLogMessages(const base::ListValue* args) {
   base::ListValue json_logs;
-  for (const auto& log : *LogBuffer::GetInstance()->logs()) {
+  for (const auto& log :
+       *chromeos::multidevice::LogBuffer::GetInstance()->logs()) {
     json_logs.Append(LogMessageToDictionary(log));
   }
   web_ui()->CallJavascriptFunctionUnsafe("LogBufferInterface.onGotLogMessages",
@@ -245,7 +246,7 @@ void ProximityAuthWebUIHandler::GetLogMessages(const base::ListValue* args) {
 void ProximityAuthWebUIHandler::ClearLogBuffer(const base::ListValue* args) {
   // The OnLogBufferCleared() observer function will be called after the buffer
   // is cleared.
-  LogBuffer::GetInstance()->Clear();
+  chromeos::multidevice::LogBuffer::GetInstance()->Clear();
 }
 
 void ProximityAuthWebUIHandler::ToggleUnlockKey(const base::ListValue* args) {

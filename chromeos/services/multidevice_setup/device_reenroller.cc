@@ -6,7 +6,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/no_destructor.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
 #include "chromeos/services/device_sync/public/cpp/gcm_device_info_provider.h"
 

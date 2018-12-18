@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/switches.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/primary_account_access_token_fetcher.h"

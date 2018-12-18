@@ -9,12 +9,12 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/components/proximity_auth/fake_lock_handler.h"
 #include "chromeos/components/proximity_auth/fake_remote_device_life_cycle.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/mock_proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "chromeos/components/proximity_auth/switches.h"
@@ -212,7 +212,7 @@ class ProximityAuthSystemTest : public testing::Test {
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
 
  private:
-  ScopedDisableLoggingForTesting disable_logging_;
+  chromeos::multidevice::ScopedDisableLoggingForTesting disable_logging_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthSystemTest);

@@ -4,7 +4,7 @@
 
 #include "chromeos/services/secure_channel/secure_channel_service.h"
 
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/secure_channel_initializer.h"
 
 namespace chromeos {

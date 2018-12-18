@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/android_sms/connection_manager.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {

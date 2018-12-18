@@ -17,10 +17,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_features.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_monitor_observer.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
@@ -176,7 +176,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
   BluetoothDevice::ConnectionInfoCallback connection_info_callback_;
-  ScopedDisableLoggingForTesting disable_logging_;
+  chromeos::multidevice::ScopedDisableLoggingForTesting disable_logging_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 };

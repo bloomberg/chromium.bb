@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_PROXIMITY_AUTH_LOGGING_LOG_BUFFER_H_
-#define CHROMEOS_COMPONENTS_PROXIMITY_AUTH_LOGGING_LOG_BUFFER_H_
+#ifndef CHROMEOS_COMPONENTS_MULTIDEVICE_LOGGING_LOG_BUFFER_H_
+#define CHROMEOS_COMPONENTS_MULTIDEVICE_LOGGING_LOG_BUFFER_H_
 
 #include <stddef.h>
 
@@ -14,7 +14,9 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 
-namespace proximity_auth {
+namespace chromeos {
+
+namespace multidevice {
 
 // Contains logs specific to the Proximity Auth. This buffer has a maximum size
 // and will discard entries in FIFO order.
@@ -78,6 +80,8 @@ class LogBuffer {
   DISALLOW_COPY_AND_ASSIGN(LogBuffer);
 };
 
-}  // namespace proximity_auth
+}  // namespace multidevice
 
-#endif  // CHROMEOS_COMPONENTS_PROXIMITY_AUTH_LOGGING_LOG_BUFFER_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_COMPONENTS_MULTIDEVICE_LOGGING_LOG_BUFFER_H_

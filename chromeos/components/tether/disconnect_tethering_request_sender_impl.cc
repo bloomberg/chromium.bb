@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 
 namespace chromeos {

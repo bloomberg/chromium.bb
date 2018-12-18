@@ -4,7 +4,7 @@
 
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/device_reenroller.h"
 #include "chromeos/services/multidevice_setup/grandfathered_easy_unlock_host_disabler.h"
