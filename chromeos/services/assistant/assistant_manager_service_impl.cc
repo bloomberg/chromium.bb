@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/unguessable_token.h"
 #include "build/util/webkit_version.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
@@ -285,15 +286,10 @@ void AssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
   interaction_subscribers_.AddPtr(std::move(subscriber));
 }
 
-void AssistantManagerServiceImpl::AddAssistantNotificationSubscriber(
-    mojom::AssistantNotificationSubscriberPtr subscriber) {
-  notification_subscribers_.AddPtr(std::move(subscriber));
-}
-
 void AssistantManagerServiceImpl::RetrieveNotification(
     mojom::AssistantNotificationPtr notification,
     int action_index) {
-  const std::string& notification_id = notification->notification_id;
+  const std::string& notification_id = notification->server_id;
   const std::string& consistency_token = notification->consistency_token;
   const std::string& opaque_token = notification->opaque_token;
 
@@ -310,7 +306,7 @@ void AssistantManagerServiceImpl::RetrieveNotification(
 
 void AssistantManagerServiceImpl::DismissNotification(
     mojom::AssistantNotificationPtr notification) {
-  const std::string& notification_id = notification->notification_id;
+  const std::string& notification_id = notification->server_id;
   const std::string& consistency_token = notification->consistency_token;
   const std::string& opaque_token = notification->opaque_token;
   const std::string& grouping_key = notification->grouping_key;
@@ -436,11 +432,19 @@ void AssistantManagerServiceImpl::OnShowNotification(
   notification_ptr->title = notification.title;
   notification_ptr->message = notification.text;
   notification_ptr->action_url = GURL(notification.action_url);
-  notification_ptr->notification_id = notification.notification_id;
+  notification_ptr->client_id = notification.notification_id;
+  notification_ptr->server_id = notification.notification_id;
   notification_ptr->consistency_token = notification.consistency_token;
   notification_ptr->opaque_token = notification.opaque_token;
   notification_ptr->grouping_key = notification.grouping_key;
   notification_ptr->obfuscated_gaia_id = notification.obfuscated_gaia_id;
+
+  // The server sometimes sends an empty |notification_id|, but our client
+  // requires a non-empty |client_id| for notifications. Known instances in
+  // which the server sends an empty |notification_id| are for Reminders.
+  if (notification_ptr->client_id.empty())
+    notification_ptr->client_id = base::UnguessableToken::Create().ToString();
+
   for (const auto& button : notification.buttons) {
     notification_ptr->buttons.push_back(mojom::AssistantNotificationButton::New(
         button.label, GURL(button.action_url)));
@@ -962,15 +966,20 @@ void AssistantManagerServiceImpl::OnOpenUrlOnMainThread(
 
 void AssistantManagerServiceImpl::OnShowNotificationOnMainThread(
     const mojom::AssistantNotificationPtr& notification) {
-  notification_subscribers_.ForAllPtrs([&notification](auto* ptr) {
-    ptr->OnShowNotification(notification.Clone());
-  });
+  service_->assistant_notification_controller()->AddNotification(
+      notification.Clone());
 }
 
 void AssistantManagerServiceImpl::OnNotificationRemovedOnMainThread(
     const std::string& grouping_key) {
-  notification_subscribers_.ForAllPtrs(
-      [grouping_key](auto* ptr) { ptr->OnRemoveNotification(grouping_key); });
+  if (grouping_key.empty()) {
+    service_->assistant_notification_controller()->RemoveAllNotifications(
+        /*from_server=*/true);
+  } else {
+    service_->assistant_notification_controller()
+        ->RemoveNotificationByGroupingKey(grouping_key, /*from_server=*/
+                                          true);
+  }
 }
 
 void AssistantManagerServiceImpl::OnCommunicationErrorOnMainThread(

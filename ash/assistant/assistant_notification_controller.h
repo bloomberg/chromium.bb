@@ -5,23 +5,30 @@
 #ifndef ASH_ASSISTANT_ASSISTANT_NOTIFICATION_CONTROLLER_H_
 #define ASH_ASSISTANT_ASSISTANT_NOTIFICATION_CONTROLLER_H_
 
-#include <map>
+#include <string>
 
 #include "ash/ash_export.h"
+#include "ash/assistant/model/assistant_notification_model.h"
+#include "ash/assistant/model/assistant_notification_model_observer.h"
+#include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
 namespace ash {
 
 class AssistantController;
 
-// The class to manage assistant notifications.
+// The class to manage Assistant notifications.
 class ASH_EXPORT AssistantNotificationController
-    : public chromeos::assistant::mojom::AssistantNotificationSubscriber {
+    : public mojom::AssistantNotificationController,
+      public AssistantNotificationModelObserver,
+      public message_center::MessageCenterObserver {
  public:
+  using AssistantNotification =
+      chromeos::assistant::mojom::AssistantNotification;
   using AssistantNotificationPtr =
       chromeos::assistant::mojom::AssistantNotificationPtr;
 
@@ -29,29 +36,51 @@ class ASH_EXPORT AssistantNotificationController
       AssistantController* assistant_controller);
   ~AssistantNotificationController() override;
 
+  void BindRequest(mojom::AssistantNotificationControllerRequest request);
+
+  // Returns the underlying model.
+  const AssistantNotificationModel* model() const { return &model_; }
+
+  // Adds/removes the specified model |observer|.
+  void AddModelObserver(AssistantNotificationModelObserver* observer);
+  void RemoveModelObserver(AssistantNotificationModelObserver* observer);
+
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 
-  void RetrieveNotification(AssistantNotificationPtr notification,
-                            int action_index);
-  void DismissNotification(AssistantNotificationPtr notification);
+  // mojom::AssistantNotificationController:
+  void AddNotification(AssistantNotificationPtr notification) override;
+  void RemoveNotificationById(const std::string& id, bool from_server) override;
+  void RemoveNotificationByGroupingKey(const std::string& grouping_id,
+                                       bool from_server) override;
+  void RemoveAllNotifications(bool from_server) override;
 
-  // chromeos::assistant::mojom::AssistantNotificationSubscriber:
-  void OnShowNotification(AssistantNotificationPtr notification) override;
-  void OnRemoveNotification(const std::string& grouping_id) override;
+  // AssistantNotificationModelObserver:
+  void OnNotificationAdded(const AssistantNotification* notification) override;
+  void OnNotificationRemoved(const AssistantNotification* notification,
+                             bool from_server) override;
+  void OnAllNotificationsRemoved(bool from_server) override;
+
+  // message_center::MessageCenterObserver:
+  void OnNotificationAdded(const std::string& id) override {}
+  void OnNotificationClicked(
+      const std::string& id,
+      const base::Optional<int>& button_index,
+      const base::Optional<base::string16>& reply) override;
+  void OnNotificationRemoved(const std::string& notification_id,
+                             bool by_user) override;
 
  private:
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
-  mojo::Binding<chromeos::assistant::mojom::AssistantNotificationSubscriber>
-      assistant_notification_subscriber_binding_;
+  mojo::Binding<mojom::AssistantNotificationController> binding_;
+
+  AssistantNotificationModel model_;
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
 
   const message_center::NotifierId notifier_id_;
-
-  base::WeakPtrFactory<AssistantNotificationController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationController);
 };

@@ -73,6 +73,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
     return assistant_alarm_timer_controller_.get();
   }
 
+  ash::mojom::AssistantNotificationController*
+  assistant_notification_controller() {
+    return assistant_notification_controller_.get();
+  }
+
   ash::mojom::AssistantScreenContextController*
   assistant_screen_context_controller() {
     return assistant_screen_context_controller_.get();
@@ -180,6 +185,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   ash::mojom::AssistantControllerPtr assistant_controller_;
   ash::mojom::AssistantAlarmTimerControllerPtr
       assistant_alarm_timer_controller_;
+  ash::mojom::AssistantNotificationControllerPtr
+      assistant_notification_controller_;
   ash::mojom::AssistantScreenContextControllerPtr
       assistant_screen_context_controller_;
   ash::AssistantStateProxy assistant_state_;

@@ -108,8 +108,6 @@ class AssistantManagerServiceImpl
   void StopActiveInteraction(bool cancel_conversation) override;
   void AddAssistantInteractionSubscriber(
       mojom::AssistantInteractionSubscriberPtr subscriber) override;
-  void AddAssistantNotificationSubscriber(
-      mojom::AssistantNotificationSubscriberPtr subscriber) override;
   void RetrieveNotification(mojom::AssistantNotificationPtr notification,
                             int action_index) override;
   void DismissNotification(
@@ -250,8 +248,6 @@ class AssistantManagerServiceImpl
   std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
-  mojo::InterfacePtrSet<mojom::AssistantNotificationSubscriber>
-      notification_subscribers_;
   ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
 
   Service* service_;  // unowned.

@@ -48,11 +48,6 @@ interface Assistant {
   // implementation is responsible for selecting events of interest.
   AddAssistantInteractionSubscriber(AssistantInteractionSubscriber subscriber);
 
-  // Registers assistant notification event subscriber. Subscribers'
-  // implementation is responsible for selecting events of interest.
-  AddAssistantNotificationSubscriber(
-      AssistantNotificationSubscriber subscriber);
-
   // Retrieves a notification. A voiceless interaction will be sent to server to
   // retrieve the notification of |action_index|, which can trigger other
   // Assistant events such as OnTextResponse to show the result in the UI. The
@@ -76,7 +71,7 @@ interface Assistant {
   OnAccessibilityStatusChanged(bool spoken_feedback_enabled);
 };
 
-// Subscribes to assistant's interaction event. These events are server driven
+// Subscribes to Assistant's interaction event. These events are server driven
 // in response to the user's direct interaction with the assistant. Responses
 // from the assistant may contain untrusted third-party content. Subscriber
 // implementations must be sure to handle the response data appropriately.
@@ -119,17 +114,6 @@ interface AssistantInteractionSubscriber {
   // Assistant has started speaking. When TTS is started due to an error that
   // occurred during the interaction, |due_to_error| is true.
   OnTtsStarted(bool due_to_error);
-};
-
-// Subscribes to assistant's notification event. These events are server
-// driven and pertain to push notifications.
-interface AssistantNotificationSubscriber {
-  // Assistant got notification from server.
-  OnShowNotification(AssistantNotification notification);
-
-  // Notifies UI to remove the notification with the |grouping_key|.
-  // If |grouping_key| is empty, remove all notifications.
-  OnRemoveNotification(string grouping_key);
 };
 
 // Interface for browser to bind and start assistant.
@@ -227,8 +211,11 @@ struct AssistantNotification {
   // List of buttons in the notification.
   array<AssistantNotificationButton> buttons;
 
-  // An id that uniquely identifies a notification.
-  string notification_id;
+  // An id that uniquely identifies a notification on the client.
+  string client_id;
+
+  // An id that uniquely identifies a notification on the server.
+  string server_id;
 
   // Used to fetch notification contents.
   string consistency_token;
