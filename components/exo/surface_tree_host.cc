@@ -170,7 +170,8 @@ void SurfaceTreeHost::DidPresentCompositorFrame(
     uint32_t presentation_token,
     const gfx::PresentationFeedback& feedback) {
   auto it = active_presentation_callbacks_.find(presentation_token);
-  DCHECK(it != active_presentation_callbacks_.end());
+  if (it == active_presentation_callbacks_.end())
+    return;
   for (auto callback : it->second)
     callback.Run(feedback);
   active_presentation_callbacks_.erase(it);
