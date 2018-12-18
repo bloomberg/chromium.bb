@@ -10,11 +10,13 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
+#include "chrome/browser/component_updater/recovery_improved_component_installer.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
@@ -76,6 +78,7 @@ class ChromeConfigurator : public update_client::Configurator {
   std::string GetAppGuid() const override;
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const override;
+  update_client::RecoveryCRXElevator GetRecoveryCRXElevator() const override;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeConfigurator>;
@@ -227,6 +230,15 @@ std::string ChromeConfigurator::GetAppGuid() const {
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 ChromeConfigurator::GetProtocolHandlerFactory() const {
   return configurator_impl_.GetProtocolHandlerFactory();
+}
+
+update_client::RecoveryCRXElevator ChromeConfigurator::GetRecoveryCRXElevator()
+    const {
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+  return base::BindOnce(&RunRecoveryCRXElevated);
+#else
+  return {};
+#endif
 }
 
 }  // namespace

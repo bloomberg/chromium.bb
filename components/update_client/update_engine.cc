@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/component.h"
@@ -42,10 +43,11 @@ UpdateContext::UpdateContext(
       notify_observers_callback(notify_observers_callback),
       callback(std::move(callback)),
       crx_downloader_factory(crx_downloader_factory),
-      session_id(base::GenerateGUID()) {
-  for (const auto& id : ids)
+      session_id(base::StrCat({"{", base::GenerateGUID(), "}"})) {
+  for (const auto& id : ids) {
     components.insert(
         std::make_pair(id, std::make_unique<Component>(*this, id)));
+  }
 }
 
 UpdateContext::~UpdateContext() {}

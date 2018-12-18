@@ -7,8 +7,10 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -17,6 +19,7 @@ class GURL;
 class PrefService;
 
 namespace base {
+class FilePath;
 class Version;
 }
 
@@ -28,6 +31,12 @@ namespace update_client {
 
 class ActivityDataService;
 class ProtocolHandlerFactory;
+
+using RecoveryCRXElevator = base::OnceCallback<std::tuple<bool, int, int>(
+    const base::FilePath& crx_path,
+    const std::string& browser_appid,
+    const std::string& browser_version,
+    const std::string& session_id)>;
 
 // Controls the component updater behavior.
 // TODO(sorin): this class will be split soon in two. One class controls
@@ -155,6 +164,11 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // serializer object instances.
   virtual std::unique_ptr<ProtocolHandlerFactory> GetProtocolHandlerFactory()
       const = 0;
+
+  // Returns a callback which can elevate and run the CRX payload associated
+  // with the improved recovery component. Running this payload repairs the
+  // Chrome update functionality.
+  virtual RecoveryCRXElevator GetRecoveryCRXElevator() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<Configurator>;

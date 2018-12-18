@@ -210,4 +210,8 @@ TestConfigurator::GetProtocolHandlerFactory() const {
   return std::make_unique<ProtocolHandlerFactoryXml>();
 }
 
+RecoveryCRXElevator TestConfigurator::GetRecoveryCRXElevator() const {
+  return {};
+}
+
 }  // namespace update_client

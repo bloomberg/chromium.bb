@@ -91,9 +91,9 @@ protocol_request::Request MakeProtocolRequest(
 
   // Session id and request id.
   DCHECK(!session_id.empty());
-  DCHECK(!base::StartsWith(session_id, "{", base::CompareCase::SENSITIVE));
-  DCHECK(!base::EndsWith(session_id, "}", base::CompareCase::SENSITIVE));
-  request.session_id = base::StrCat({"{", session_id, "}"});
+  DCHECK(base::StartsWith(session_id, "{", base::CompareCase::SENSITIVE));
+  DCHECK(base::EndsWith(session_id, "}", base::CompareCase::SENSITIVE));
+  request.session_id = session_id;
   request.request_id = base::StrCat({"{", base::GenerateGUID(), "}"});
 
   request.updatername = prod_id;

@@ -221,6 +221,11 @@ ChromeUpdateClientConfig::GetProtocolHandlerFactory() const {
   return impl_.GetProtocolHandlerFactory();
 }
 
+update_client::RecoveryCRXElevator
+ChromeUpdateClientConfig::GetRecoveryCRXElevator() const {
+  return impl_.GetRecoveryCRXElevator();
+}
+
 ChromeUpdateClientConfig::~ChromeUpdateClientConfig() {}
 
 // static

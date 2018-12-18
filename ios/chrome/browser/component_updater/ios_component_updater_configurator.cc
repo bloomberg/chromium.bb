@@ -60,6 +60,7 @@ class IOSConfigurator : public update_client::Configurator {
   std::string GetAppGuid() const override;
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const override;
+  update_client::RecoveryCRXElevator GetRecoveryCRXElevator() const override;
 
  private:
   friend class base::RefCountedThreadSafe<IOSConfigurator>;
@@ -186,6 +187,11 @@ std::string IOSConfigurator::GetAppGuid() const {
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 IOSConfigurator::GetProtocolHandlerFactory() const {
   return configurator_impl_.GetProtocolHandlerFactory();
+}
+
+update_client::RecoveryCRXElevator IOSConfigurator::GetRecoveryCRXElevator()
+    const {
+  return configurator_impl_.GetRecoveryCRXElevator();
 }
 
 }  // namespace

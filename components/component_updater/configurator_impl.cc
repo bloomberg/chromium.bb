@@ -152,4 +152,9 @@ ConfiguratorImpl::GetProtocolHandlerFactory() const {
   return std::make_unique<update_client::ProtocolHandlerFactoryXml>();
 }
 
+update_client::RecoveryCRXElevator ConfiguratorImpl::GetRecoveryCRXElevator()
+    const {
+  return {};
+}
+
 }  // namespace component_updater
