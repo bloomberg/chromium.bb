@@ -1045,6 +1045,108 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     self.proxy_stop()
     self.wprgo_stop()
 
+  def run_wpr_test(self, udid, recipe_path, replay_path):
+    '''Runs a single WPR test.
+
+    Args:
+      udid: UDID for the simulator to run the test on
+      recipe_path: Path to the recipe file (i.e. ios_costco.test)
+      replay_path: Path to the replay file (i.e. ios_costco)
+
+    Returns
+      [parser, return code from test] where
+      parser: a XCTest or GTestLogParser which has processed all
+        the output from the test
+    '''
+
+    print 'Running test for recipe {}'.format(recipe_path)
+    self.wprgo_start(replay_path)
+
+    # TODO(crbug.com/881096): Consider reusing get_launch_command
+    #  and adding the autofillautomation flag to it
+
+    # TODO(crbug.com/881096): We only run AutofillAutomationTestCase
+    #  as we have other unit tests in the suite which are not related
+    #  to testing website recipe/replays. We should consider moving
+    #  one or the other to a different suite.
+
+    # For the website replay test suite, we need to pass in a single
+    # recipe at a time, with the flag "autofillautomation"
+    recipe_cmd = [
+      self.iossim_path, '-d', self.platform, '-s',
+      self.version, '-t', 'AutofillAutomationTestCase', '-c',
+      '--enable-features=AutofillShowTypePredictions {}={}'.format(
+        '-autofillautomation', recipe_path),
+      '-u', udid,
+    ]
+    for env_var in self.env_vars:
+      recipe_cmd.extend(['-e', env_var])
+
+    for test_arg in self.test_args:
+      recipe_cmd.extend(['-c', test_arg])
+
+    recipe_cmd.append(self.app_path)
+    if self.xctest_path:
+      recipe_cmd.append(self.xctest_path)
+
+    proc = subprocess.Popen(
+        recipe_cmd,
+        env=self.get_launch_env(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+
+    if self.xctest_path:
+      parser = xctest_utils.XCTestLogParser()
+    else:
+      parser = gtest_utils.GTestLogParser()
+
+    while True:
+      line = proc.stdout.readline()
+      if not line:
+        break
+      line = line.rstrip()
+      parser.ProcessLine(line)
+      print line
+      sys.stdout.flush()
+
+    proc.wait()
+    sys.stdout.flush()
+
+    self.wprgo_stop()
+
+    return parser, proc.returncode
+
+  def should_run_wpr_test(self, recipe_name, test_filter, invert):
+    '''Returns whether the WPR test should be run, given the filters.
+
+      Args:
+        recipe_name: Filename of the recipe to run (i.e. 'ios_costco')
+        test_filter: List of tests to run. If recipe_name is found as
+          a substring of any of these, then the filter is matched.
+        invert: If true, run tests that are not matched by the filter.
+
+      Returns:
+        True if the test should be run.
+    '''
+    # If the matching replay for the recipe doesn't exist, don't run it
+    replay_path = '{}/{}'.format(self.replay_path, recipe_name)
+    if not os.path.isfile(replay_path):
+      print 'No matching replay file for recipe {}'.format(
+        recipe_path)
+      return False
+
+    # if there is no filter, then run tests
+    if test_filter == []:
+      return True
+
+    test_matched_filter = False
+    for filter_name in test_filter:
+      if recipe_name in filter_name:
+        test_matched_filter = True
+
+    return test_matched_filter != invert
+
   def _run(self, cmd, shards=1):
     '''Runs the specified command, parsing GTest output.
 
@@ -1063,9 +1165,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     completed_without_failure = True
     total_returncode = 0
 
-    invert = cmd['invert']
-    test_filter = cmd['test_filter']
-
     if shards > 1:
       # TODO(crbug.com/881096): reimplement sharding in the future
       raise ShardingDisabledError()
@@ -1079,94 +1178,22 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
       cert_path = "{}/TrustStore_trust.sqlite3".format(self.wpr_tools_path)
       self.copy_trusted_certificate(cert_path)
 
-      # General algorithm explanation (will clean up later)
-      # For each recipe in the test folder, if there is a matching replay,
-      # Run the test suite on it (similar to how SimulatorTestRunner does)
-      # and record the results for that test into the parser.
-      # I still need to take the results from the parser and change the test
-      # name to be the recipe name (since the test suite name is the same)
-      # before loading those results into the result variable.
-      for recipePath in glob.glob('{}/*.test'.format(self.replay_path)):
-        baseName = os.path.basename(recipePath)
-        testName = os.path.splitext(baseName)[0]
-        replayPath = '{}/{}'.format(self.replay_path, testName)
+      for recipe_path in glob.glob('{}/*.test'.format(self.replay_path)):
+        base_name = os.path.basename(recipe_path)
+        test_name = os.path.splitext(base_name)[0]
+        replay_path = '{}/{}'.format(self.replay_path, test_name)
 
-        # the filters are in the form 'testFileName.testSuiteName/testName'
-        # i.e. 'ios_costco.test.AutofillAutomationTestCase/testActions'
-        test_matched_filter = False
-        for filter_name in test_filter:
-          if testName in filter_name:
-            test_matched_filter = True
+        if self.should_run_wpr_test(
+          test_name, cmd['test_filter'], cmd['invert']):
 
-        if test_filter == []:
-          test_matched_filter = True
-
-        # if the test matches the filter and invert is disabled, OR if the
-        # test doesn't match the filter and invert is enabled, run the test
-        if os.path.isfile(replayPath) and test_matched_filter != invert:
-          print 'Running test for recipe {}'.format(recipePath)
-          self.wprgo_start(replayPath)
-
-          # TODO(crbug.com/881096): Consider reusing get_launch_command
-          #  and adding the autofillautomation flag to it
-
-          # TODO(crbug.com/881096): We only run AutofillAutomationTestCase
-          #  as we have other unit tests in the suite which are not related
-          #  to testing website recipe/replays. We should consider moving
-          #  one or the other to a different suite.
-
-          # For the website replay test suite, we need to pass in a single
-          # recipe at a time, with the flag "autofillautomation"
-          recipe_cmd = [
-            self.iossim_path, '-d', self.platform, '-s',
-            self.version, '-t', 'AutofillAutomationTestCase', '-c',
-            '--enable-features=AutofillShowTypePredictions {}={}'.format(
-              '-autofillautomation', recipePath),
-            '-u', udid,
-          ]
-          for env_var in self.env_vars:
-            recipe_cmd.extend(['-e', env_var])
-
-          for test_arg in self.test_args:
-            recipe_cmd.extend(['-c', test_arg])
-
-          recipe_cmd.append(self.app_path)
-          if self.xctest_path:
-            recipe_cmd.append(self.xctest_path)
-
-          proc = subprocess.Popen(
-              recipe_cmd,
-              env=self.get_launch_env(),
-              stdout=subprocess.PIPE,
-              stderr=subprocess.STDOUT,
-          )
-
-          if self.xctest_path:
-            parser = xctest_utils.XCTestLogParser()
-          else:
-            parser = gtest_utils.GTestLogParser()
-
-          while True:
-            line = proc.stdout.readline()
-            if not line:
-              break
-            line = line.rstrip()
-            parser.ProcessLine(line)
-            print line
-            sys.stdout.flush()
-
-          proc.wait()
-          sys.stdout.flush()
-
-          self.wprgo_stop()
+          parser, returncode = self.run_wpr_test(
+            udid, recipe_path, replay_path)
 
           for test in parser.FailedTests(include_flaky=True):
-            # All test names will be the same since we re-run the same suite
+            # All test names will be the same since we re-run the same suite;
             # therefore, to differentiate the results, we append the recipe
             # name to the test suite.
-            # This is why we create a new parser for each recipe run, since when
-            # ingesting results from xcode, the test suite name is the same.
-            testWithRecipeName = "{}.{}".format(baseName, test)
+            testWithRecipeName = "{}.{}".format(base_name, test)
 
             # Test cases are named as <test group>.<test case>. If the test case
             # is prefixed w/"FLAKY_", it should be reported as flaked not failed
@@ -1179,22 +1206,18 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
                   testWithRecipeName] = parser.FailureDescription(test)
 
           for test in parser.PassedTests(include_flaky=True):
-            testWithRecipeName = "{}.{}".format(baseName, test)
+            testWithRecipeName = "{}.{}".format(base_name, test)
             result.passed_tests.extend([testWithRecipeName])
 
           # Check for runtime errors.
           if self.xctest_path and parser.SystemAlertPresent():
             raise SystemAlertPresentError()
-          if proc.returncode != 0:
-            total_returncode = proc.returncode
+          if returncode != 0:
+            total_returncode = returncode
           if parser.CompletedWithoutFailure() == False:
             completed_without_failure = False
-          print '%s test returned %s' % (recipePath, proc.returncode)
+          print '%s test returned %s' % (recipe_path, returncode)
           print
-
-        elif test_matched_filter != invert:
-          print 'No matching replay file for recipe {}'.format(
-              recipePath)
 
       self.deleteSimulator(udid)
 
