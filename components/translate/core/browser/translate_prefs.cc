@@ -96,6 +96,9 @@ const base::Feature kTranslateUI{"TranslateUI",
 const base::Feature kTranslateAndroidManualTrigger{
     "TranslateAndroidManualTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCompactTranslateInfobarIOS{
+    "CompactTranslateInfobarIOS", base::FEATURE_DISABLED_BY_DEFAULT};
+
 DenialTimeUpdate::DenialTimeUpdate(PrefService* prefs,
                                    const std::string& language,
                                    size_t max_denial_count)
