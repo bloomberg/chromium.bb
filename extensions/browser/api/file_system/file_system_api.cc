@@ -914,21 +914,6 @@ ExtensionFunction::ResponseAction FileSystemRestoreEntryFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-ExtensionFunction::ResponseAction FileSystemObserveDirectoryFunction::Run() {
-  NOTIMPLEMENTED();
-  return RespondNow(Error(kUnknownIdError));
-}
-
-ExtensionFunction::ResponseAction FileSystemUnobserveEntryFunction::Run() {
-  NOTIMPLEMENTED();
-  return RespondNow(Error(kUnknownIdError));
-}
-
-ExtensionFunction::ResponseAction FileSystemGetObservedEntriesFunction::Run() {
-  NOTIMPLEMENTED();
-  return RespondNow(Error(kUnknownIdError));
-}
-
 #if !defined(OS_CHROMEOS)
 ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   using file_system::RequestFileSystem::Params;

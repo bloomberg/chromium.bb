@@ -17074,9 +17074,9 @@ Called by update_net_error_codes.py.-->
   <int value="867" label="DELETED_COPRESENCEPRIVATE_SENDINITIALIZED"/>
   <int value="868" label="DELETED_COPRESENCE_EXECUTE"/>
   <int value="869" label="DELETED_COPRESENCE_SETAPIKEY"/>
-  <int value="870" label="FILESYSTEM_OBSERVEDIRECTORY"/>
-  <int value="871" label="FILESYSTEM_UNOBSERVEENTRY"/>
-  <int value="872" label="FILESYSTEM_GETOBSERVEDENTRIES"/>
+  <int value="870" label="DELETED_FILESYSTEM_OBSERVEDIRECTORY"/>
+  <int value="871" label="DELETED_FILESYSTEM_UNOBSERVEENTRY"/>
+  <int value="872" label="DELETED_FILESYSTEM_GETOBSERVEDENTRIES"/>
   <int value="873" label="BROWSINGDATA_REMOVESERVICEWORKERS"/>
   <int value="874" label="USBPRIVATE_GETDEVICES"/>
   <int value="875" label="USBPRIVATE_GETDEVICEINFO"/>
