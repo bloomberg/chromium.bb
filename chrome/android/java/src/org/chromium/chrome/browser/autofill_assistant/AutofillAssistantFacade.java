@@ -29,23 +29,22 @@ public class AutofillAssistantFacade {
 
     /** Returns true if all conditions are satisfied to start Autofill Assistant. */
     public static boolean isConfigured(@Nullable Bundle intentExtras) {
-        return getBooleanParameter(intentExtras, PARAMETER_ENABLED)
-                && AutofillAssistantPreferencesUtil.canShowAutofillAssistant();
+        return getBooleanParameter(intentExtras, PARAMETER_ENABLED);
     }
 
     /** Starts Autofill Assistant on the given {@code activity}. */
     public static void start(ChromeActivity activity) {
         Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
         parameters.remove(PARAMETER_ENABLED);
-        if (!AutofillAssistantPreferencesUtil.getSkipInitScreenPreference()) {
+
+        if (AutofillAssistantPreferencesUtil.getShowOnboarding()) {
             FirstRunScreen.show(activity, (result) -> {
                 if (result) initiateAutofillAssistant(activity, parameters);
             });
             return;
         }
 
-        if (AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()
-                && AutofillAssistantPreferencesUtil.getSkipInitScreenPreference()) {
+        if (AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) {
             initiateAutofillAssistant(activity, parameters);
         }
         // We don't have consent to start Autofill Assistant and cannot show initial screen.
