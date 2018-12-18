@@ -23,8 +23,10 @@ namespace {
 const base::Feature kGwpAsan{"GwpAsanMalloc",
                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::FeatureParam<int> kAllocationsParam{&kGwpAsan, "TotalAllocations",
-                                                AllocatorState::kGpaMaxPages};
+const base::FeatureParam<int> kMaxAllocationsParam{&kGwpAsan, "MaxAllocations",
+                                                   32};
+
+const base::FeatureParam<int> kTotalPagesParam{&kGwpAsan, "TotalPages", 128};
 
 const base::FeatureParam<int> kAllocationSamplingParam{
     &kGwpAsan, "AllocationSamplingFrequency", 128};
@@ -36,12 +38,17 @@ bool EnableForMalloc() {
   if (!base::FeatureList::IsEnabled(kGwpAsan))
     return false;
 
-  int total_allocations = kAllocationsParam.Get();
-  if (total_allocations < 1 ||
-      total_allocations >
-          base::checked_cast<int>(AllocatorState::kGpaMaxPages)) {
-    DLOG(ERROR) << "GWP-ASan TotalAllocations is out-of-range: "
-                << total_allocations;
+  int total_pages = kTotalPagesParam.Get();
+  if (total_pages < 1 ||
+      total_pages > base::checked_cast<int>(AllocatorState::kGpaMaxPages)) {
+    DLOG(ERROR) << "GWP-ASan TotalPages is out-of-range: " << total_pages;
+    return false;
+  }
+
+  int max_allocations = kMaxAllocationsParam.Get();
+  if (max_allocations < 1 || max_allocations > total_pages) {
+    DLOG(ERROR) << "GWP-ASan MaxAllocations is out-of-range: "
+                << max_allocations << " with TotalPages = " << total_pages;
     return false;
   }
 
@@ -63,7 +70,7 @@ bool EnableForMalloc() {
   if (base::RandDouble() >= process_sampling_probability)
     return false;
 
-  InstallAllocatorHooks(total_allocations, alloc_sampling_freq);
+  InstallAllocatorHooks(max_allocations, total_pages, alloc_sampling_freq);
   return true;
 }
 

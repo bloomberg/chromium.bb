@@ -70,7 +70,7 @@ MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
 // Child process that launches the crashpad handler and then crashes.
 MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   base::NoDestructor<GuardedPageAllocator> gpa;
-  gpa->Init(AllocatorState::kGpaMaxPages);
+  gpa->Init(AllocatorState::kGpaMaxPages, AllocatorState::kGpaMaxPages);
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   base::FilePath directory = cmd_line->GetSwitchValuePath("directory");

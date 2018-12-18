@@ -92,7 +92,8 @@ bool allocationCheck(std::function<void*(void)> allocate,
 }
 
 MULTIPROCESS_TEST_MAIN(BasicFunctionality) {
-  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages,
+                        AllocatorState::kGpaMaxPages, kSamplingFrequency);
 
   const size_t page_size = base::GetPageSize();
   int failures = 0;
@@ -150,7 +151,8 @@ TEST_F(SamplingAllocatorShimsTest, BasicFunctionality) {
 }
 
 MULTIPROCESS_TEST_MAIN(Realloc) {
-  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages,
+                        AllocatorState::kGpaMaxPages, kSamplingFrequency);
 
   void* alloc = GetGpaForTesting().Allocate(base::GetPageSize());
   CHECK_NE(alloc, nullptr);
@@ -176,7 +178,8 @@ TEST_F(SamplingAllocatorShimsTest, Realloc) {
 }
 
 MULTIPROCESS_TEST_MAIN(Calloc) {
-  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages,
+                        AllocatorState::kGpaMaxPages, kSamplingFrequency);
 
   for (size_t i = 0; i < kLoopIterations; i++) {
     unsigned char* alloc =
@@ -201,7 +204,8 @@ TEST_F(SamplingAllocatorShimsTest, Calloc) {
 }
 
 MULTIPROCESS_TEST_MAIN(CrashKey) {
-  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages,
+                        AllocatorState::kGpaMaxPages, kSamplingFrequency);
 
   std::string crash_key = crash_reporter::GetCrashKeyValue(kGpaCrashKey);
 
@@ -220,7 +224,8 @@ TEST_F(SamplingAllocatorShimsTest, CrashKey) {
 }
 
 MULTIPROCESS_TEST_MAIN(GetSizeEstimate) {
-  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages,
+                        AllocatorState::kGpaMaxPages, kSamplingFrequency);
 
   constexpr size_t kAllocationSize = 123;
   for (size_t i = 0; i < kLoopIterations; i++) {
@@ -244,7 +249,8 @@ TEST_F(SamplingAllocatorShimsTest, GetSizeEstimate) {
 #if defined(OS_WIN)
 MULTIPROCESS_TEST_MAIN(AlignedRealloc) {
   // Exercise the _aligned_* shims and ensure that we handle them stably.
-  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
+  InstallAllocatorHooks(AllocatorState::kGpaMaxPages,
+                        AllocatorState::kGpaMaxPages, kSamplingFrequency);
 
   constexpr size_t kAllocationSize = 123;
   constexpr size_t kAllocationAlignment = 64;

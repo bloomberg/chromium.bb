@@ -41,7 +41,7 @@ bool AllocatorState::IsValid() const {
   if (!page_size || page_size != base::GetPageSize())
     return false;
 
-  if (num_pages == 0 || num_pages > kGpaMaxPages)
+  if (total_pages == 0 || total_pages > kGpaMaxPages)
     return false;
 
   if (pages_base_addr % page_size != 0 || pages_end_addr % page_size != 0 ||
@@ -52,7 +52,7 @@ bool AllocatorState::IsValid() const {
     return false;
 
   if (first_page_addr != pages_base_addr + page_size ||
-      pages_end_addr - pages_base_addr != page_size * (num_pages * 2 + 1))
+      pages_end_addr - pages_base_addr != page_size * (total_pages * 2 + 1))
     return false;
 
   return true;

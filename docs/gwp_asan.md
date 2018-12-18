@@ -15,6 +15,11 @@ for another allocation.)
 The allocator saves stack traces on every allocation and deallocation to
 preserve debug context if that allocation results in a memory error.
 
+The allocator implements a quarantine mechanism by allocating virtual memory for
+more allocations than the total number of allocations it can return. The
+difference forms a rudimentary quarantine as not all allocations can be taken at
+a given time.
+
 Allocations are sampled to the GuardedPageAllocator using an [allocator shim.](/base/allocator/README.md)
 
 ## Crash handler

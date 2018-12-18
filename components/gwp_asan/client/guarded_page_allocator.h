@@ -6,6 +6,7 @@
 #define COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_
 
 #include <atomic>
+#include <bitset>
 
 #include "base/debug/stack_trace.h"
 #include "base/gtest_prod_util.h"
@@ -25,10 +26,10 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Default maximum alignment for all returned allocations.
   static constexpr size_t kGpaAllocAlignment = 16;
 
-  // Configures this allocator to map memory for num_pages pages (excluding
-  // guard pages). num_pages must be in the range [1, kGpaMaxPages]. Init should
-  // only be called once.
-  void Init(size_t num_pages);
+  // Configures this allocator to allocate up to max_alloced_pages pages at a
+  // time from a pool of total_pages pages, where:
+  //   1 <= max_alloced_pages <= total_pages <= kGpaMaxPages
+  void Init(size_t max_alloced_pages, size_t total_pages);
 
   // On success, returns a pointer to size bytes of page-guarded memory. On
   // failure, returns nullptr. The allocation is not guaranteed to be
@@ -62,10 +63,6 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   }
 
  private:
-  using BitMap = uint64_t;
-  static_assert(AllocatorState::kGpaMaxPages == sizeof(BitMap) * 8,
-                "Maximum number of pages is the size of free_pages_ bitmap");
-
   // Does not allocate any memory for the allocator, to finish initializing call
   // Init().
   GuardedPageAllocator();
@@ -88,10 +85,14 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // free_pages_. Returns SIZE_MAX if no slots available.
   size_t ReserveSlot() LOCKS_EXCLUDED(lock_);
 
+  // Finds a random free slot. Should only be called if free slots are known
+  // to exist.
+  size_t GetRandomFreeSlot() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
   // Marks the specified slot as unreserved.
   void FreeSlot(size_t slot) LOCKS_EXCLUDED(lock_);
 
-  // Allocate num_pages_ stack traces.
+  // Allocate total_pages stack traces.
   void AllocateStackTraces();
 
   // Deallocate stack traces. May only be called after AllocateStackTraces().
@@ -111,16 +112,21 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Allocator state shared with with the crash analyzer.
   AllocatorState state_;
 
-  // Allocator lock that protects free_pages_.
+  // Allocator lock that protects free_pages_/num_alloced_pages_.
   base::Lock lock_;
 
   // Maps each bit to one page.
-  // Bit=1: Free. Bit=0: Reserved.
-  BitMap free_pages_ GUARDED_BY(lock_) = 0;
+  // true: Free.  false: Reserved.
+  std::bitset<AllocatorState::kGpaMaxPages> free_pages_ GUARDED_BY(lock_);
+
+  // Number of currently-allocated pages.
+  size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;
+  // Max number of pages to allocate at once.
+  size_t max_alloced_pages_;
 
   // StackTrace objects for every slot in AllocatorState::data_. We avoid
   // statically allocating the StackTrace objects because they are large and
-  // the allocator may be initialized with num_pages_ < kGpaMaxPages.
+  // the allocator may be initialized with total_pages < kGpaMaxPages.
   base::debug::StackTrace* alloc_traces[AllocatorState::kGpaMaxPages];
   base::debug::StackTrace* dealloc_traces[AllocatorState::kGpaMaxPages];
 
