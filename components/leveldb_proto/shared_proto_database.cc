@@ -24,7 +24,9 @@ inline void RunCallbackOnCallingSequence(
 
 SharedProtoDatabase::SharedProtoDatabase(const std::string& client_name,
                                          const base::FilePath& db_dir)
-    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
+    : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       db_dir_(db_dir),
       db_wrapper_(std::make_unique<ProtoLevelDBWrapper>(task_runner_)),
       db_(std::make_unique<LevelDB>(client_name.c_str())),
@@ -40,17 +42,15 @@ void SharedProtoDatabase::GetDatabaseInitStatusAsync(
     Callbacks::InitStatusCallback callback) {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SharedProtoDatabase::RunInitCallback,
-                                weak_factory_.GetWeakPtr(), std::move(callback),
-                                std::move(current_task_runner)));
+  task_runner_->PostTaskAndReply(
+      FROM_HERE, base::DoNothing(),
+      base::BindOnce(&SharedProtoDatabase::RunInitCallback,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void SharedProtoDatabase::RunInitCallback(
-    Callbacks::InitStatusCallback callback,
-    scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
-  callback_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), init_status_));
+    Callbacks::InitStatusCallback callback) {
+  std::move(callback).Run(init_status_);
 }
 
 // Setting |create_if_missing| to false allows us to test whether or not the
@@ -64,8 +64,6 @@ void SharedProtoDatabase::Init(
     bool create_if_missing,
     Callbacks::InitStatusCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
-
   // If we succeeded previously, just let the callback know. Otherwise, we'll
   // continue to try initialization for every new request.
   if (init_state_ == InitState::kSuccess) {
@@ -92,7 +90,7 @@ void SharedProtoDatabase::Init(
       db_.get(), db_dir_, options, false /* destroy_on_corruption */,
       base::BindOnce(&SharedProtoDatabase::OnDatabaseInit,
                      weak_factory_.GetWeakPtr(), std::move(callback),
-                     callback_task_runner));
+                     std::move(callback_task_runner)));
 }
 
 void SharedProtoDatabase::ProcessInitRequests(Enums::InitStatus status) {

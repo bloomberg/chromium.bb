@@ -24,6 +24,7 @@ ProtoDatabaseProvider::ProtoDatabaseProvider(const base::FilePath& profile_dir)
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      creation_sequence_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {}
 
 ProtoDatabaseProvider::~ProtoDatabaseProvider() = default;
@@ -35,9 +36,8 @@ ProtoDatabaseProvider* ProtoDatabaseProvider::Create(
 }
 
 void ProtoDatabaseProvider::GetSharedDBInstance(
-    GetSharedDBInstanceCallback callback) {
-  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-  auto callback_task_runner = base::SequencedTaskRunnerHandle::Get();
+    GetSharedDBInstanceCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
   {
     base::AutoLock lock(get_db_lock_);
     if (!db_) {

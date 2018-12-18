@@ -6,9 +6,14 @@
 #define COMPONENTS_LEVELDB_PROTO_PROTO_DATABASE_WRAPPER_H_
 
 #include "base/files/file_path.h"
-
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/leveldb_proto/migration_delegate.h"
+#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/proto_leveldb_wrapper.h"
+#include "components/leveldb_proto/shared_proto_database.h"
+#include "components/leveldb_proto/shared_proto_database_client_list.h"
+#include "components/leveldb_proto/shared_proto_database_provider.h"
 #include "components/leveldb_proto/unique_proto_database.h"
 
 namespace leveldb_proto {
@@ -18,6 +23,8 @@ namespace leveldb_proto {
 // wrapper needing to know.
 // This allows clients to request a DB instance without knowing whether or not
 // it's a UniqueDatabase<T> or a SharedProtoDatabaseClient<T>.
+//
+// TODO: Discuss the init flow/migration path for unique/shared DB here.
 template <typename T>
 class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
  public:
@@ -25,9 +32,10 @@ class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
       const std::string& client_namespace,
       const std::string& type_prefix,
       const base::FilePath& db_dir,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      std::unique_ptr<SharedProtoDatabaseProvider> db_provider);
 
-  virtual ~ProtoDatabaseWrapper() {}
+  virtual ~ProtoDatabaseWrapper() = default;
 
   // This version of Init is for compatibility, since many of the current
   // proto database still use this.
@@ -100,15 +108,54 @@ class ProtoDatabaseWrapper : public UniqueProtoDatabase<T> {
   void RunCallbackOnCallingSequence(base::OnceClosure callback);
 
  private:
+  friend class ProtoDatabaseWrapperTest;
+
+  void Init(const std::string& client_name,
+            bool use_shared_db,
+            Callbacks::InitStatusCallback callback);
+
+  virtual void InitUniqueDB(const std::string& client_name,
+                            const leveldb_env::Options& options,
+                            bool use_shared_db,
+                            Callbacks::InitStatusCallback callback);
   void OnInitUniqueDB(std::unique_ptr<ProtoDatabase<T>> db,
+                      bool use_shared_db,
                       Callbacks::InitStatusCallback callback,
                       Enums::InitStatus status);
+
+  // |unique_db| should contain a nullptr if initializing the DB fails.
+  void GetSharedDBClient(std::unique_ptr<ProtoDatabase<T>> unique_db,
+                         bool use_shared_db,
+                         Callbacks::InitStatusCallback callback);
+  void OnInitSharedDB(std::unique_ptr<ProtoDatabase<T>> unique_db,
+                      bool use_shared_db,
+                      Callbacks::InitStatusCallback callback,
+                      scoped_refptr<SharedProtoDatabase> shared_db);
+  void OnGetSharedDBClient(
+      std::unique_ptr<ProtoDatabase<T>> unique_db,
+      bool use_shared_db,
+      Callbacks::InitStatusCallback callback,
+      std::unique_ptr<SharedProtoDatabaseClient<T>> client);
+  void OnMigrationTransferComplete(std::unique_ptr<ProtoDatabase<T>> unique_db,
+                                   std::unique_ptr<ProtoDatabase<T>> client,
+                                   bool use_shared_db,
+                                   Callbacks::InitStatusCallback callback,
+                                   bool success);
+  void OnMigrationCleanupComplete(std::unique_ptr<ProtoDatabase<T>> unique_db,
+                                  std::unique_ptr<ProtoDatabase<T>> client,
+                                  bool use_shared_db,
+                                  Callbacks::InitStatusCallback callback,
+                                  bool success);
 
   std::string client_namespace_;
   std::string type_prefix_;
   base::FilePath db_dir_;
+  std::unique_ptr<SharedProtoDatabaseProvider> db_provider_;
+
   std::unique_ptr<ProtoDatabase<T>> db_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  std::unique_ptr<MigrationDelegate<T>> migration_delegate_;
 
   std::unique_ptr<base::WeakPtrFactory<ProtoDatabaseWrapper<T>>>
       weak_ptr_factory_;
@@ -127,13 +174,16 @@ ProtoDatabaseWrapper<T>::ProtoDatabaseWrapper(
     const std::string& client_namespace,
     const std::string& type_prefix,
     const base::FilePath& db_dir,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    std::unique_ptr<SharedProtoDatabaseProvider> db_provider)
     : UniqueProtoDatabase<T>(task_runner) {
   client_namespace_ = client_namespace;
   type_prefix_ = type_prefix;
   db_dir_ = db_dir;
   db_ = nullptr;
+  db_provider_ = std::move(db_provider);
   task_runner_ = task_runner;
+  migration_delegate_ = std::make_unique<MigrationDelegate<T>>();
   weak_ptr_factory_ =
       std::make_unique<base::WeakPtrFactory<ProtoDatabaseWrapper<T>>>(this);
 }
@@ -149,28 +199,185 @@ void ProtoDatabaseWrapper<T>::Init(const char* client_name,
 }
 
 template <typename T>
-void ProtoDatabaseWrapper<T>::OnInitUniqueDB(
-    std::unique_ptr<ProtoDatabase<T>> db,
-    Callbacks::InitStatusCallback callback,
-    Enums::InitStatus status) {
-  // The DB is still technically usable after corruption, so treat that as
-  // success.
-  bool success =
-      status == Enums::InitStatus::kOK || status == Enums::InitStatus::kCorrupt;
-  if (success)
-    db_ = std::move(db);
-  RunCallbackOnCallingSequence(base::BindOnce(std::move(callback), status));
+void ProtoDatabaseWrapper<T>::Init(
+    const std::string& client_name,
+    typename Callbacks::InitStatusCallback callback) {
+  bool use_shared_db =
+      SharedProtoDatabaseClientList::ShouldUseSharedDB(client_name);
+  Init(client_name, use_shared_db, std::move(callback));
 }
 
 template <typename T>
 void ProtoDatabaseWrapper<T>::Init(const std::string& client_name,
+                                   bool use_shared_db,
                                    Callbacks::InitStatusCallback callback) {
-  auto unique_db = std::make_unique<UniqueProtoDatabase<T>>(
-      db_dir_, CreateSimpleOptions(), this->task_runner_);
-  unique_db->Init(client_name,
-                  base::BindOnce(&ProtoDatabaseWrapper<T>::OnInitUniqueDB,
-                                 weak_ptr_factory_->GetWeakPtr(),
-                                 std::move(unique_db), std::move(callback)));
+  auto options = CreateSimpleOptions();
+  // If we're NOT using a shared DB, we want to force creation of the unique one
+  // because that's what we expect to be using moving forward. If we ARE using
+  // the shared DB, we only want to see if there's a unique DB that already
+  // exists and can be opened so that we can perform migration if necessary.
+  options.create_if_missing = !use_shared_db;
+  InitUniqueDB(client_name, options, use_shared_db, std::move(callback));
+}
+
+template <typename T>
+void ProtoDatabaseWrapper<T>::InitUniqueDB(
+    const std::string& client_name,
+    const leveldb_env::Options& options,
+    bool use_shared_db,
+    Callbacks::InitStatusCallback callback) {
+  auto unique_db = std::make_unique<UniqueProtoDatabase<T>>(db_dir_, options,
+                                                            this->task_runner_);
+  auto* unique_db_ptr = unique_db.get();
+  unique_db_ptr->Init(
+      client_name,
+      base::BindOnce(&ProtoDatabaseWrapper<T>::OnInitUniqueDB,
+                     weak_ptr_factory_->GetWeakPtr(), std::move(unique_db),
+                     use_shared_db, std::move(callback)));
+}
+
+template <typename T>
+void ProtoDatabaseWrapper<T>::OnInitUniqueDB(
+    std::unique_ptr<ProtoDatabase<T>> unique_db,
+    bool use_shared_db,
+    Callbacks::InitStatusCallback callback,
+    Enums::InitStatus status) {
+  // If the unique DB is corrupt, just return it early with the corruption
+  // status to avoid silently migrating a corrupt database and giving no errors
+  // back.
+  if (status == Enums::InitStatus::kCorrupt) {
+    db_ = std::move(unique_db);
+    RunCallbackOnCallingSequence(
+        base::BindOnce(std::move(callback), Enums::InitStatus::kCorrupt));
+    return;
+  }
+
+  // Clear out the unique_db before sending an unusable DB into InitSharedDB,
+  // a nullptr indicates opening a unique DB failed.
+  if (status != Enums::InitStatus::kOK)
+    unique_db.reset();
+
+  GetSharedDBClient(std::move(unique_db), use_shared_db, std::move(callback));
+}
+
+template <typename T>
+void ProtoDatabaseWrapper<T>::GetSharedDBClient(
+    std::unique_ptr<ProtoDatabase<T>> unique_db,
+    bool use_shared_db,
+    Callbacks::InitStatusCallback callback) {
+  // Get the current task runner to ensure the callback is run on the same
+  // callback as the rest, and the WeakPtr checks out on the right sequence.
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
+
+  db_provider_->GetDBInstance(
+      base::BindOnce(&ProtoDatabaseWrapper<T>::OnInitSharedDB,
+                     weak_ptr_factory_->GetWeakPtr(), std::move(unique_db),
+                     use_shared_db, std::move(callback)),
+      current_task_runner);
+}
+
+template <typename T>
+void ProtoDatabaseWrapper<T>::OnInitSharedDB(
+    std::unique_ptr<ProtoDatabase<T>> unique_db,
+    bool use_shared_db,
+    Callbacks::InitStatusCallback callback,
+    scoped_refptr<SharedProtoDatabase> shared_db) {
+  if (shared_db) {
+    // If we have a reference to the shared database, try to get a client.
+    shared_db->GetClientAsync<T>(
+        client_namespace_, type_prefix_, use_shared_db,
+        base::BindOnce(&ProtoDatabaseWrapper<T>::OnGetSharedDBClient,
+                       weak_ptr_factory_->GetWeakPtr(), std::move(unique_db),
+                       use_shared_db, std::move(callback)));
+    return;
+  }
+
+  // Otherwise, we just call the OnGetSharedDBClient function with a nullptr
+  // client.
+  OnGetSharedDBClient(std::move(unique_db), use_shared_db, std::move(callback),
+                      nullptr);
+}
+
+template <typename T>
+void ProtoDatabaseWrapper<T>::OnGetSharedDBClient(
+    std::unique_ptr<ProtoDatabase<T>> unique_db,
+    bool use_shared_db,
+    Callbacks::InitStatusCallback callback,
+    std::unique_ptr<SharedProtoDatabaseClient<T>> client) {
+  if (!unique_db && !client) {
+    RunCallbackOnCallingSequence(
+        base::BindOnce(std::move(callback), Enums::InitStatus::kError));
+    return;
+  }
+
+  if (unique_db && client) {
+    // We got access to both the unique DB and a shared DB, meaning we need to
+    // attempt migration and give back the right one.
+    ProtoDatabase<T>* from = use_shared_db ? unique_db.get() : client.get();
+    ProtoDatabase<T>* to = use_shared_db ? client.get() : unique_db.get();
+    migration_delegate_->DoMigration(
+        from, to,
+        base::BindOnce(&ProtoDatabaseWrapper<T>::OnMigrationTransferComplete,
+                       weak_ptr_factory_->GetWeakPtr(), std::move(unique_db),
+                       std::move(client), use_shared_db, std::move(callback)));
+    return;
+  }
+
+  // One of two things happened:
+  // 1) We failed to get a shared DB instance, so regardless of whether we
+  // want to use the shared DB or not, we'll settle for the unique DB.
+  // 2) We failed to initialize a unique DB, but got  access to the shared DB,
+  // so we use that regardless of whether we "should be" or not.
+  db_ = client ? std::move(client) : std::move(unique_db);
+  RunCallbackOnCallingSequence(
+      base::BindOnce(std::move(callback), Enums::InitStatus::kOK));
+}
+
+template <typename T>
+void ProtoDatabaseWrapper<T>::OnMigrationTransferComplete(
+    std::unique_ptr<ProtoDatabase<T>> unique_db,
+    std::unique_ptr<ProtoDatabase<T>> client,
+    bool use_shared_db,
+    Callbacks::InitStatusCallback callback,
+    bool success) {
+  if (success) {
+    // Call Destroy on the DB we no longer want to use.
+    // TODO(thildebr): If this destroy fails, we should flag this as undestroyed
+    // so that we don't erroneously transfer data from the undestroyed database
+    // on next start. This might be possible by comparing the modified timestamp
+    // of the unique database directory with metadata in the shared database
+    // about last modified for each client.
+    auto* db_destroy_ptr = use_shared_db ? unique_db.get() : client.get();
+    db_destroy_ptr->Destroy(
+        base::BindOnce(&ProtoDatabaseWrapper<T>::OnMigrationCleanupComplete,
+                       weak_ptr_factory_->GetWeakPtr(), std::move(unique_db),
+                       std::move(client), use_shared_db, std::move(callback)));
+    return;
+  }
+
+  db_ = use_shared_db ? std::move(unique_db) : std::move(client);
+  RunCallbackOnCallingSequence(
+      base::BindOnce(std::move(callback), Enums::InitStatus::kOK));
+}
+
+template <typename T>
+void ProtoDatabaseWrapper<T>::OnMigrationCleanupComplete(
+    std::unique_ptr<ProtoDatabase<T>> unique_db,
+    std::unique_ptr<ProtoDatabase<T>> client,
+    bool use_shared_db,
+    Callbacks::InitStatusCallback callback,
+    bool success) {
+  // We still return true in our callback below because we do have a database as
+  // far as the original caller is concerned. As long as |db_| is assigned, we
+  // return true.
+  if (success) {
+    db_ = use_shared_db ? std::move(client) : std::move(unique_db);
+  } else {
+    db_ = use_shared_db ? std::move(unique_db) : std::move(client);
+  }
+  RunCallbackOnCallingSequence(
+      base::BindOnce(std::move(callback), Enums::InitStatus::kOK));
 }
 
 template <typename T>
