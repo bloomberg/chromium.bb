@@ -17,6 +17,7 @@
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/testing/metrics_reporting_pref_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
@@ -48,6 +49,7 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/test/test_network_quality_tracker.h"
@@ -56,11 +58,6 @@
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/scoped_account_consistency.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #endif
 
 namespace metrics {
@@ -251,8 +248,8 @@ class UkmBrowserTestBase : public SyncTest {
 #if defined(OS_CHROMEOS)
     // In browser tests, the profile may already by authenticated with stub
     // account |user_manager::kStubUserEmail|.
-    AccountInfo info = SigninManagerFactory::GetForProfile(profile)
-                           ->GetAuthenticatedAccountInfo();
+    AccountInfo info =
+        IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo();
     username = info.email;
 #endif
     if (username.empty()) {
