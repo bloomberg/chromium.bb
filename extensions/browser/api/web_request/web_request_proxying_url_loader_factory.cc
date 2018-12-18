@@ -62,7 +62,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::~InProgressRequest() {
   }
   if (on_headers_received_callback_) {
     std::move(on_headers_received_callback_)
-        .Run(net::ERR_ABORTED, nullptr, GURL());
+        .Run(net::ERR_ABORTED, base::nullopt, GURL());
   }
 }
 
