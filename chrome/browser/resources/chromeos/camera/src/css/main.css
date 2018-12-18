@@ -317,7 +317,8 @@ body.tablet-landscape:not(.record-mode) #switch-takephoto {
 
 body.record-mode #switch-recordvideo,
 body:not(.record-mode) #switch-takephoto,
-body:not(.record-mode) #toggle-mic {
+body:not(.record-mode) #toggle-mic,
+body:not(.multi-camera) #switch-device {
   visibility: hidden;
 }
 

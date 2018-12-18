@@ -56,24 +56,6 @@ cca.views.camera.Options = function(onNewStreamNeeded) {
   this.toggleTimer_ = document.querySelector('#toggle-timer');
 
   /**
-   * @type {HTMLButtonElement}
-   * @private
-   */
-  this.switchDevice_ = document.querySelector('#switch-device');
-
-  /**
-   * @type {HTMLButtonElement}
-   * @private
-   */
-  this.switchRecordVideo_ = document.querySelector('#switch-recordvideo');
-
-  /**
-   * @type {HTMLButtonElement}
-   * @private
-   */
-  this.switchTakePhoto_ = document.querySelector('#switch-takephoto');
-
-  /**
    * @type {Audio}
    * @private
    */
@@ -128,11 +110,12 @@ cca.views.camera.Options = function(onNewStreamNeeded) {
   // End of properties, seal the object.
   Object.seal(this);
 
-  this.switchDevice_.addEventListener('click', () => this.switchDevice_());
-  this.switchRecordVideo_.addEventListener(
-      'click', () => this.switchMode_(true));
-  this.switchTakePhoto_.addEventListener(
-      'click', () => this.switchMode_(false));
+  [
+    ['#switch-device', () => this.switchDevice_()],
+    ['#switch-recordvideo', () => this.switchMode_(true)],
+    ['#switch-takephoto', () => this.switchMode_(false)],
+  ].forEach(([selector, fn]) =>
+      document.querySelector(selector).addEventListener('click', fn));
 
   this.toggleMirror_.addEventListener('click', () => this.saveMirroring_());
   this.toggleGrid_.addEventListener('click', () => this.animatePreviewGrid_());
@@ -192,7 +175,7 @@ cca.views.camera.Options.prototype.switchMode_ = function(record) {
  */
 cca.views.camera.Options.prototype.switchDevice_ = function() {
   this.videoDevices_.then((devices) => {
-    cca.util.animateOnce(this.switchDevice_);
+    cca.util.animateOnce(document.querySelector('#switch-device'));
     var index = devices.findIndex(
         (entry) => entry.deviceId == this.videoDeviceId_);
     if (index == -1) {
@@ -305,9 +288,9 @@ cca.views.camera.Options.prototype.timerTicks = function() {
 cca.views.camera.Options.prototype.updateControls = function(
     capturing, taking) {
   var disabled = !capturing || taking;
-  this.switchDevice_.disabled = disabled;
-  this.switchRecordVideo_.disabled = disabled;
-  this.switchTakePhoto_.disabled = disabled;
+  var selector = '#switch-device, #switch-recordvideo, #switch-takephoto';
+  document.querySelectorAll(selector).forEach(
+      (element) => element.disabled = disabled);
 };
 
 /**
@@ -390,12 +373,11 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
       (devices) => devices.filter((device) => device.kind == 'videoinput'));
 
   // Show switch-device button only when more than one camera.
+  var multi = false;
   this.videoDevices_.then((devices) => {
-    this.switchDevice_.hidden = devices.length < 2;
-  }).catch((error) => {
-    console.error(error);
-    this.switchDevice_.hidden = true;
-  }).finally(() => {
+    multi = devices.length >= 2;
+  }).catch(console.error).finally(() => {
+    document.body.classList.toggle('multi-camera', multi);
     this.refreshingVideoDeviceIds_ = false;
   });
 };
