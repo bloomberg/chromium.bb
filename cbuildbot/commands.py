@@ -3042,9 +3042,6 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
 class ChromeSDK(object):
   """Wrapper for the 'cros chrome-sdk' command."""
 
-  DEFAULT_JOBS = 24
-  DEFAULT_JOBS_GOMA = 500
-
   def __init__(self, cwd, board, extra_args=None, chrome_src=None, goma=False,
                debug_log=True, cache_dir=None, target_tc=None,
                toolchain_url=None):
@@ -3074,17 +3071,6 @@ class ChromeSDK(object):
     self.target_tc = target_tc
     self.toolchain_url = toolchain_url
 
-  def _GetDefaultTargets(self):
-    """Get the default chrome targets to build."""
-    targets = ['chrome', 'chrome_sandbox']
-
-    use_flags = portage_util.GetInstalledPackageUseFlags(constants.CHROME_CP,
-                                                         self.board)
-    if 'nacl' in use_flags.get(constants.CHROME_CP, []):
-      targets += ['nacl_helper']
-
-    return targets
-
   def Run(self, cmd, extra_args=None, run_args=None):
     """Run a command inside the chrome-sdk context.
 
@@ -3111,39 +3097,29 @@ class ChromeSDK(object):
     cros_cmd += (extra_args or []) + ['--'] + cmd
     return cros_build_lib.RunCommand(cros_cmd, cwd=self.cwd, **run_args)
 
-  def Ninja(self, jobs=None, debug=False, targets=None, run_args=None):
+  def Ninja(self, debug=False, run_args=None):
     """Run 'ninja' inside a chrome-sdk context.
 
     Args:
-      jobs: The number of -j jobs to run.
       debug: Whether to do a Debug build (defaults to Release).
-      targets: The targets to compile.
       run_args: If set (dict), pass to RunCommand as kwargs.
 
     Returns:
       A CommandResult object.
     """
-    cmd = self.GetNinjaCommand(jobs=jobs, debug=debug, targets=targets)
-    return self.Run(cmd, run_args=run_args)
+    return self.Run(self.GetNinjaCommand(debug=debug), run_args=run_args)
 
-  def GetNinjaCommand(self, jobs=None, debug=False, targets=None):
+  def GetNinjaCommand(self, debug=False):
     """Returns a command line to run "ninja".
 
     Args:
-      jobs: The number of -j jobs to run.
       debug: Whether to do a Debug build (defaults to Release).
-      targets: The  targets to compile.
 
     Returns:
       Command line to run "ninja".
     """
-    if jobs is None:
-      jobs = self.DEFAULT_JOBS_GOMA if self.goma else self.DEFAULT_JOBS
-    if targets is None:
-      targets = self._GetDefaultTargets()
-    return ['ninja',
-            '-C', self._GetOutDirectory(debug=debug),
-            '-j', str(jobs)] + list(targets)
+    return ['autoninja', '-C', self._GetOutDirectory(debug=debug),
+            'chromiumos_preflight']
 
   def _GetOutDirectory(self, debug=False):
     """Returns the path to the output directory.

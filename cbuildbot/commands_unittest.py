@@ -122,8 +122,6 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
   CHROME_SRC = 'chrome_src'
   CMD = ['bar', 'baz']
   CWD = 'fooey'
-  DEFAULT_NINJA_CMD = ['ninja', '-C', 'out_%s/Release' % BOARD, '-j',
-                       str(commands.ChromeSDK.DEFAULT_JOBS)]
 
   def setUp(self):
     self.inst = commands.ChromeSDK(self.CWD, self.BOARD)
@@ -153,28 +151,6 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
     self.rc.AddCmdResult(partial_mock.In('qlist-%s' % self.BOARD),
                          output='%s%s' % (constants.CHROME_CP, nacl_str))
 
-  def testNinjaWithNaclUseFlag(self):
-    """Test that running ninja is possible.
-
-    Verify that nacl_helper is built when the 'nacl' USE flag is specified
-    for chromeos-base/chromeos-chrome.
-    """
-    self.MockGetDefaultTarget(with_nacl=True)
-    self.inst.Ninja()
-    self.assertCommandContains(self.DEFAULT_NINJA_CMD, cwd=self.CWD)
-    self.assertCommandContains(['nacl_helper'])
-
-  def testNinjaWithoutNaclUseFlag(self):
-    """Test that running ninja is possible.
-
-    Verify that nacl_helper is not built when no 'nacl' USE flag is specified
-    for chromeos-base/chromeos-chrome.
-    """
-    self.MockGetDefaultTarget()
-    self.inst.Ninja()
-    self.assertCommandContains(self.DEFAULT_NINJA_CMD, cwd=self.CWD)
-    self.assertCommandContains(['nacl_helper'], expected=False)
-
   def testNinjaWithRunArgs(self):
     """Test that running ninja with run_args.
 
@@ -182,18 +158,17 @@ class ChromeSDKTest(cros_test_lib.RunCommandTempDirTestCase):
     """
     self.MockGetDefaultTarget()
     self.inst.Ninja(run_args={'log_output': True})
-    self.assertCommandContains(self.DEFAULT_NINJA_CMD, cwd=self.CWD,
-                               log_output=True)
+    self.assertCommandContains(
+        ['autoninja', '-C', 'out_%s/Release' % self.BOARD,
+         'chromiumos_preflight'], cwd=self.CWD, log_output=True,
+    )
 
   def testNinjaOptions(self):
     """Test that running ninja with non-default options."""
     self.MockGetDefaultTarget()
-    expected_jobs = 123
-    expected_target = 'custom_target'
-    self.inst.Ninja(jobs=expected_jobs, debug=True, targets=[expected_target])
-    self.assertCommandContains(
-        ['ninja', '-C', 'out_%s/Debug' % self.BOARD, '-j', str(expected_jobs)])
-    self.assertCommandContains([expected_target])
+    self.inst.Ninja(debug=True)
+    self.assertCommandContains(['autoninja', '-C', 'out_%s/Debug' % self.BOARD,
+                                'chromiumos_preflight'])
 
 
 # pylint: disable=protected-access
