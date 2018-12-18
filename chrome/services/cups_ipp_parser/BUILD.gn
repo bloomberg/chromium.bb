@@ -6,6 +6,8 @@ import("//build/config/features.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
+enable_service = use_cups && is_chromeos
+
 source_set("lib") {
   sources = [
     "cups_ipp_parser_service.cc",
@@ -13,29 +15,28 @@ source_set("lib") {
     "ipp_parser.h",
   ]
 
-  # Hide real impl if libCUPS not present
-  if (use_cups && is_chromeos) {
-    configs += [ "//printing:cups" ]
-    sources += [
-      "ipp_parser.cc",
-      "ipp_parser_util.cc",
-      "ipp_parser_util.h",
-    ]
-  } else {
-    sources += [ "fake_ipp_parser.cc" ]
-  }
-
   deps = [
     "//base",
     "//mojo/public/cpp/bindings",
   ]
 
   public_deps = [
-    "//chrome/services/cups_ipp_parser/public/mojom",
     "//mojo/public/mojom/base",
     "//printing",
     "//services/service_manager/public/cpp",
   ]
+
+  # We stub the implementation if libCUPS is not present
+  if (enable_service) {
+    configs += [ "//printing:cups" ]
+    sources += [ "ipp_parser.cc" ]
+    deps += [
+      "//chrome/services/cups_ipp_parser/public/cpp",
+      "//chrome/services/cups_ipp_parser/public/mojom",
+    ]
+  } else {
+    sources += [ "fake_ipp_parser.cc" ]
+  }
 }
 
 service_manifest("manifest") {
