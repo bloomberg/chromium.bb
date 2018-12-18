@@ -68,6 +68,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
                       IDS_SYNC_CONFIRMATION_UNITY_IMPROVE_CHROME_INFO_TITLE);
     AddStringResource(source, "syncConfirmationImproveChromeInfoDesc",
                       IDS_SYNC_CONFIRMATION_UNITY_IMPROVE_CHROME_INFO_DESC);
+    AddStringResource(source, "syncConfirmationSettingsInfo",
+                      IDS_SYNC_CONFIRMATION_UNITY_SETTINGS_INFO);
 
     AddStringResource(source, "syncConfirmationSettingsLabel",
                       IDS_SYNC_CONFIRMATION_DICE_SETTINGS_BUTTON_LABEL);
