@@ -14,36 +14,26 @@
 #include "ash/shell.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_environment_content.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
+#include "ash/window_factory.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_context.h"
-#include "content/public/test/web_contents_tester.h"
-#include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/message_center/message_center.h"
-#include "ui/views/test/webview_test_helper.h"
-#include "ui/views/view.h"
-#include "ui/views/views_delegate.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
-
-using WebContents = content::WebContents;
-
 namespace {
 
 const float kDegreesToRadians = 3.1415926f / 180.0f;
@@ -85,75 +75,50 @@ void TriggerLidUpdate(const gfx::Vector3dF& lid) {
   Shell::Get()->screen_orientation_controller()->OnAccelerometerUpdated(update);
 }
 
-// Attaches the NativeView of |web_contents| to |parent| without changing the
-// currently active window.
-void AttachWebContents(WebContents* web_contents, aura::Window* parent) {
-  aura::Window* window = web_contents->GetNativeView();
-  window->Show();
-  parent->AddChild(window);
+// Shows |child| and adds |child| to |parent|.
+void AddWindowAndShow(aura::Window* child, aura::Window* parent) {
+  child->Show();
+  parent->AddChild(child);
 }
 
-// Attaches the NativeView of |web_contents| to |parent|, ensures that it is
-// visible, and activates the parent window.
-void AttachAndActivateWebContents(WebContents* web_contents,
-                                  aura::Window* parent) {
-  AttachWebContents(web_contents, parent);
+// Adds |child| to |parent| and activates |parent|.
+void AddWindowAndActivateParent(aura::Window* child, aura::Window* parent) {
+  AddWindowAndShow(child, parent);
   Shell::Get()->activation_client()->ActivateWindow(parent);
 }
 
-ash::OrientationLockType ToAshOrientationLockType(
-    blink::WebScreenOrientationLockType blink_orientation_lock) {
-  switch (blink_orientation_lock) {
-    case blink::kWebScreenOrientationLockDefault:
-    case blink::kWebScreenOrientationLockAny:
-      return ash::OrientationLockType::kAny;
-    case blink::kWebScreenOrientationLockPortrait:
-      return ash::OrientationLockType::kPortrait;
-    case blink::kWebScreenOrientationLockPortraitPrimary:
-      return ash::OrientationLockType::kPortraitPrimary;
-    case blink::kWebScreenOrientationLockPortraitSecondary:
-      return ash::OrientationLockType::kPortraitSecondary;
-    case blink::kWebScreenOrientationLockLandscape:
-      return ash::OrientationLockType::kLandscape;
-    case blink::kWebScreenOrientationLockLandscapePrimary:
-      return ash::OrientationLockType::kLandscapePrimary;
-    case blink::kWebScreenOrientationLockLandscapeSecondary:
-      return ash::OrientationLockType::kLandscapeSecondary;
-    case blink::kWebScreenOrientationLockNatural:
-      return ash::OrientationLockType::kNatural;
-  }
-  return ash::OrientationLockType::kAny;
-}
-
-void Lock(WebContents* web_contents,
-          blink::WebScreenOrientationLockType orientation_lock) {
+void Lock(aura::Window* window, OrientationLockType orientation_lock) {
   Shell::Get()->screen_orientation_controller()->LockOrientationForWindow(
-      web_contents->GetNativeView(),
-      ToAshOrientationLockType(orientation_lock));
+      window, orientation_lock);
 }
 
-void Unlock(WebContents* web_contents) {
+void Unlock(aura::Window* window) {
   Shell::Get()->screen_orientation_controller()->UnlockOrientationForWindow(
-      web_contents->GetNativeView());
+      window);
+}
+
+// Creates a window of type WINDOW_TYPE_CONTROL.
+std::unique_ptr<aura::Window> CreateControlWindow() {
+  std::unique_ptr<aura::Window> window = window_factory::NewWindow(
+      nullptr, aura::client::WindowType::WINDOW_TYPE_CONTROL);
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->set_owned_by_parent(false);
+  return window;
 }
 
 }  // namespace
 
 class ScreenOrientationControllerTest : public AshTestBase {
  public:
-  ScreenOrientationControllerTest();
-  ~ScreenOrientationControllerTest() override;
-
-  // Creates and initializes and empty WebContents that is backed by a
-  // content::BrowserContext and that has an aura::Window.
-  std::unique_ptr<WebContents> CreateWebContents();
-
-  // Creates a secondary WebContents, with a separate
-  // content::BrowserContext.
-  std::unique_ptr<WebContents> CreateSecondaryWebContents();
+  ScreenOrientationControllerTest() = default;
+  ~ScreenOrientationControllerTest() override = default;
 
   // AshTestBase:
-  void SetUp() override;
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kUseFirstDisplayAsInternal);
+    AshTestBase::SetUp();
+  }
 
  protected:
   aura::Window* CreateAppWindowInShellWithId(int id) {
@@ -183,148 +148,105 @@ class ScreenOrientationControllerTest : public AshTestBase {
   }
 
  private:
-  content::TestBrowserContext browser_context_;
-
-  // Optional content::BrowserContext used for two window tests.
-  std::unique_ptr<content::BrowserContext> secondary_browser_context_;
-
-  // Setups underlying content layer so that WebContents can be
-  // generated.
-  std::unique_ptr<views::WebViewTestHelper> webview_test_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationControllerTest);
 };
 
-ScreenOrientationControllerTest::ScreenOrientationControllerTest() {
-  webview_test_helper_.reset(new views::WebViewTestHelper());
-}
-
-ScreenOrientationControllerTest::~ScreenOrientationControllerTest() = default;
-
-std::unique_ptr<WebContents>
-ScreenOrientationControllerTest::CreateWebContents() {
-  return content::WebContentsTester::CreateTestWebContents(&browser_context_,
-                                                           nullptr);
-}
-
-std::unique_ptr<WebContents>
-ScreenOrientationControllerTest::CreateSecondaryWebContents() {
-  secondary_browser_context_.reset(new content::TestBrowserContext());
-  return content::WebContentsTester::CreateTestWebContents(
-      secondary_browser_context_.get(), nullptr);
-}
-
-void ScreenOrientationControllerTest::SetUp() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kUseFirstDisplayAsInternal);
-  AshTestBase::SetUp();
-  // This test creates WebContents, which ash does not do in its window
-  // hierarchy.
-  SetRunningOutsideAsh();
-}
-
-// Tests that a WebContents can lock rotation.
+// Tests that a Window can lock rotation.
 TEST_F(ScreenOrientationControllerTest, LockOrientation) {
   EnableTabletMode(true);
 
-  std::unique_ptr<WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> child_window = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
-  ASSERT_NE(nullptr, content->GetNativeView());
   ASSERT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   ASSERT_FALSE(RotationLocked());
 
-  AttachAndActivateWebContents(content.get(), focus_window.get());
-  Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
+  AddWindowAndActivateParent(child_window.get(), focus_window.get());
+  Lock(child_window.get(), OrientationLockType::kLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 }
 
-// Tests that a WebContents can unlock rotation.
+// Tests that a Window can unlock rotation.
 TEST_F(ScreenOrientationControllerTest, Unlock) {
   EnableTabletMode(true);
 
-  std::unique_ptr<WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> child_window = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
-  ASSERT_NE(nullptr, content->GetNativeView());
   ASSERT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   ASSERT_FALSE(RotationLocked());
 
-  AttachAndActivateWebContents(content.get(), focus_window.get());
-  Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
+  AddWindowAndActivateParent(child_window.get(), focus_window.get());
+  Lock(child_window.get(), OrientationLockType::kLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
-  Unlock(content.get());
+  Unlock(child_window.get());
   EXPECT_FALSE(RotationLocked());
 }
 
-// Tests that a WebContents is able to change the orientation of the
-// display after having locked rotation.
+// Tests that a Window is able to change the orientation of the display after
+// having locked rotation.
 TEST_F(ScreenOrientationControllerTest, OrientationChanges) {
   EnableTabletMode(true);
 
-  std::unique_ptr<WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> child_window = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
-  ASSERT_NE(nullptr, content->GetNativeView());
   ASSERT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   ASSERT_FALSE(RotationLocked());
 
-  AttachAndActivateWebContents(content.get(), focus_window.get());
-  Lock(content.get(), blink::kWebScreenOrientationLockPortrait);
+  AddWindowAndActivateParent(child_window.get(), focus_window.get());
+  Lock(child_window.get(), OrientationLockType::kPortrait);
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
-  Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
+  Lock(child_window.get(), OrientationLockType::kLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
-// Tests that orientation can only be set by the first WebContents that
-// has set a rotation lock.
+// Tests that orientation can only be set by the first Window that has set a
+// rotation lock.
 TEST_F(ScreenOrientationControllerTest, SecondContentCannotChangeOrientation) {
   EnableTabletMode(true);
 
-  std::unique_ptr<WebContents> content1(CreateWebContents());
-  std::unique_ptr<WebContents> content2(CreateSecondaryWebContents());
+  std::unique_ptr<aura::Window> child_window1 = CreateControlWindow();
+  std::unique_ptr<aura::Window> child_window2 = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window1(CreateAppWindowInShellWithId(0));
   std::unique_ptr<aura::Window> focus_window2(CreateAppWindowInShellWithId(1));
-  ASSERT_NE(content1->GetNativeView(), content2->GetNativeView());
 
-  AttachAndActivateWebContents(content1.get(), focus_window1.get());
-  AttachWebContents(content2.get(), focus_window2.get());
-  Lock(content1.get(), blink::kWebScreenOrientationLockLandscape);
-  Lock(content2.get(), blink::kWebScreenOrientationLockPortrait);
+  AddWindowAndActivateParent(child_window1.get(), focus_window1.get());
+  AddWindowAndShow(child_window2.get(), focus_window2.get());
+  Lock(child_window1.get(), OrientationLockType::kLandscape);
+  Lock(child_window2.get(), OrientationLockType::kPortrait);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
-// Tests that only the WebContents that set a rotation lock can perform
-// an unlock.
+// Tests that only the Window that set a rotation lock can perform an unlock.
 TEST_F(ScreenOrientationControllerTest, SecondContentCannotUnlock) {
   EnableTabletMode(true);
 
-  std::unique_ptr<WebContents> content1(CreateWebContents());
-  std::unique_ptr<WebContents> content2(CreateSecondaryWebContents());
+  std::unique_ptr<aura::Window> child_window1 = CreateControlWindow();
+  std::unique_ptr<aura::Window> child_window2 = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window1(CreateAppWindowInShellWithId(0));
   std::unique_ptr<aura::Window> focus_window2(CreateAppWindowInShellWithId(1));
-  ASSERT_NE(content1->GetNativeView(), content2->GetNativeView());
 
-  AttachAndActivateWebContents(content1.get(), focus_window1.get());
-  AttachWebContents(content2.get(), focus_window2.get());
-  Lock(content1.get(), blink::kWebScreenOrientationLockLandscape);
-  Unlock(content2.get());
+  AddWindowAndActivateParent(child_window1.get(), focus_window1.get());
+  AddWindowAndShow(child_window2.get(), focus_window2.get());
+  Lock(child_window1.get(), OrientationLockType::kLandscape);
+  Unlock(child_window2.get());
   EXPECT_TRUE(RotationLocked());
 }
 
-// Tests that a rotation lock is applied only while the WebContents are
-// a part of the active window.
+// Tests that a rotation lock is applied only while the Window are a part of the
+// active window.
 TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateLock) {
   EnableTabletMode(true);
 
-  std::unique_ptr<WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> child_window = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window1(CreateAppWindowInShellWithId(0));
   std::unique_ptr<aura::Window> focus_window2(CreateAppWindowInShellWithId(1));
 
-  AttachAndActivateWebContents(content.get(), focus_window1.get());
-  Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
+  AddWindowAndActivateParent(child_window.get(), focus_window1.get());
+  Lock(child_window.get(), OrientationLockType::kLandscape);
   ASSERT_TRUE(RotationLocked());
 
   ::wm::ActivationClient* activation_client = Shell::Get()->activation_client();
@@ -340,15 +262,15 @@ TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateLock) {
 TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateOrientation) {
   EnableTabletMode(true);
 
-  std::unique_ptr<WebContents> content1(CreateWebContents());
-  std::unique_ptr<WebContents> content2(CreateSecondaryWebContents());
+  std::unique_ptr<aura::Window> child_window1 = CreateControlWindow();
+  std::unique_ptr<aura::Window> child_window2 = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window1(CreateAppWindowInShellWithId(0));
   std::unique_ptr<aura::Window> focus_window2(CreateAppWindowInShellWithId(1));
-  AttachAndActivateWebContents(content1.get(), focus_window1.get());
-  AttachWebContents(content2.get(), focus_window2.get());
+  AddWindowAndActivateParent(child_window1.get(), focus_window1.get());
+  AddWindowAndShow(child_window2.get(), focus_window2.get());
 
-  Lock(content1.get(), blink::kWebScreenOrientationLockLandscape);
-  Lock(content2.get(), blink::kWebScreenOrientationLockPortrait);
+  Lock(child_window1.get(), OrientationLockType::kLandscape);
+  Lock(child_window2.get(), OrientationLockType::kPortrait);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   ::wm::ActivationClient* activation_client = Shell::Get()->activation_client();
@@ -366,17 +288,16 @@ TEST_F(ScreenOrientationControllerTest, ActiveWindowChangesUpdateOrientation) {
 TEST_F(ScreenOrientationControllerTest, VisibilityChangesLock) {
   EnableTabletMode(true);
 
-  std::unique_ptr<WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> child_window = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
-  AttachAndActivateWebContents(content.get(), focus_window.get());
-  Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
+  AddWindowAndActivateParent(child_window.get(), focus_window.get());
+  Lock(child_window.get(), OrientationLockType::kLandscape);
   EXPECT_TRUE(RotationLocked());
 
-  aura::Window* window = content->GetNativeView();
-  window->Hide();
+  child_window->Hide();
   EXPECT_FALSE(RotationLocked());
 
-  window->Show();
+  child_window->Show();
   EXPECT_TRUE(RotationLocked());
 }
 
@@ -385,16 +306,16 @@ TEST_F(ScreenOrientationControllerTest, VisibilityChangesLock) {
 TEST_F(ScreenOrientationControllerTest, WindowDestructionRemovesLock) {
   EnableTabletMode(true);
 
-  std::unique_ptr<WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> child_window = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window1(CreateAppWindowInShellWithId(0));
   std::unique_ptr<aura::Window> focus_window2(CreateAppWindowInShellWithId(1));
 
-  AttachAndActivateWebContents(content.get(), focus_window1.get());
-  Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
+  AddWindowAndActivateParent(child_window.get(), focus_window1.get());
+  Lock(child_window.get(), OrientationLockType::kLandscape);
   ASSERT_TRUE(RotationLocked());
 
-  focus_window1->RemoveChild(content->GetNativeView());
-  content.reset();
+  focus_window1->RemoveChild(child_window.get());
+  child_window.reset();
   EXPECT_FALSE(RotationLocked());
 
   ::wm::ActivationClient* activation_client = Shell::Get()->activation_client();
@@ -580,12 +501,12 @@ TEST_F(ScreenOrientationControllerTest, UpdateUserRotationWhileRotationLocked) {
 // Tests that when the orientation lock is set to Landscape, that rotation can
 // be done between the two angles of the orientation.
 TEST_F(ScreenOrientationControllerTest, LandscapeOrientationAllowsRotation) {
-  std::unique_ptr<WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> child_window = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
   EnableTabletMode(true);
 
-  AttachAndActivateWebContents(content.get(), focus_window.get());
-  Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
+  AddWindowAndActivateParent(child_window.get(), focus_window.get());
+  Lock(child_window.get(), OrientationLockType::kLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
@@ -603,12 +524,12 @@ TEST_F(ScreenOrientationControllerTest, LandscapeOrientationAllowsRotation) {
 // Tests that when the orientation lock is set to Portrait, that rotation can be
 // done between the two angles of the orientation.
 TEST_F(ScreenOrientationControllerTest, PortraitOrientationAllowsRotation) {
-  std::unique_ptr<WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> child_window = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
   EnableTabletMode(true);
 
-  AttachAndActivateWebContents(content.get(), focus_window.get());
-  Lock(content.get(), blink::kWebScreenOrientationLockPortrait);
+  AddWindowAndActivateParent(child_window.get(), focus_window.get());
+  Lock(child_window.get(), OrientationLockType::kPortrait);
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
@@ -626,12 +547,12 @@ TEST_F(ScreenOrientationControllerTest, PortraitOrientationAllowsRotation) {
 // Tests that for an orientation lock which does not allow rotation, that the
 // display rotation remains constant.
 TEST_F(ScreenOrientationControllerTest, OrientationLockDisallowsRotation) {
-  std::unique_ptr<WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> child_window = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
   EnableTabletMode(true);
 
-  AttachAndActivateWebContents(content.get(), focus_window.get());
-  Lock(content.get(), blink::kWebScreenOrientationLockPortraitPrimary);
+  AddWindowAndActivateParent(child_window.get(), focus_window.get());
+  Lock(child_window.get(), OrientationLockType::kPortraitPrimary);
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   EXPECT_TRUE(RotationLocked());
 
@@ -644,16 +565,16 @@ TEST_F(ScreenOrientationControllerTest, OrientationLockDisallowsRotation) {
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 }
 
-// Tests that after a WebContents has applied an orientation lock which
-// supports rotation, that a user rotation lock does not allow rotation.
+// Tests that after a Window has applied an orientation lock which supports
+// rotation, that a user rotation lock does not allow rotation.
 TEST_F(ScreenOrientationControllerTest, UserRotationLockDisallowsRotation) {
-  std::unique_ptr<WebContents> content(CreateWebContents());
+  std::unique_ptr<aura::Window> child_window = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window(CreateAppWindowInShellWithId(0));
   EnableTabletMode(true);
 
-  AttachAndActivateWebContents(content.get(), focus_window.get());
-  Lock(content.get(), blink::kWebScreenOrientationLockLandscape);
-  Unlock(content.get());
+  AddWindowAndActivateParent(child_window.get(), focus_window.get());
+  Lock(child_window.get(), OrientationLockType::kLandscape);
+  Unlock(child_window.get());
 
   SetUserRotationLocked(true);
   EXPECT_TRUE(RotationLocked());
@@ -754,14 +675,13 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLockedOrientation) {
 TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
   EnableTabletMode(true);
 
-  std::unique_ptr<WebContents> content1(CreateWebContents());
-  std::unique_ptr<WebContents> content2(CreateSecondaryWebContents());
+  std::unique_ptr<aura::Window> child_window1 = CreateControlWindow();
+  std::unique_ptr<aura::Window> child_window2 = CreateControlWindow();
   std::unique_ptr<aura::Window> focus_window1(CreateAppWindowInShellWithId(0));
   std::unique_ptr<aura::Window> focus_window2(CreateAppWindowInShellWithId(1));
-  ASSERT_NE(content1->GetNativeView(), content2->GetNativeView());
 
-  AttachAndActivateWebContents(content2.get(), focus_window2.get());
-  AttachAndActivateWebContents(content1.get(), focus_window1.get());
+  AddWindowAndActivateParent(child_window2.get(), focus_window2.get());
+  AddWindowAndActivateParent(child_window1.get(), focus_window1.get());
 
   ASSERT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
   ASSERT_FALSE(RotationLocked());
@@ -773,7 +693,7 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
   orientation_controller->ToggleUserRotationLock();
   ASSERT_TRUE(orientation_controller->user_rotation_locked());
 
-  Lock(content1.get(), blink::kWebScreenOrientationLockPortrait);
+  Lock(child_window1.get(), OrientationLockType::kPortrait);
 
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 
@@ -795,10 +715,10 @@ TEST_F(ScreenOrientationControllerTest, UserRotationLock) {
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
 
   // Application forced to be landscape.
-  Lock(content2.get(), blink::kWebScreenOrientationLockLandscape);
+  Lock(child_window2.get(), OrientationLockType::kLandscape);
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
-  Lock(content1.get(), blink::kWebScreenOrientationLockAny);
+  Lock(child_window1.get(), OrientationLockType::kAny);
   activation_client->ActivateWindow(focus_window1.get());
   // Switching back to any will rotate to user rotation.
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
