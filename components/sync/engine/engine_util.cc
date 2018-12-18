@@ -23,7 +23,7 @@ bool EndsWithSpace(const std::string& string) {
 }
 }
 
-sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
+std::unique_ptr<sync_pb::PasswordSpecificsData> DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
     Cryptographer* crypto) {
   if (!specifics.has_password())
@@ -32,13 +32,13 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
   if (!password_specifics.has_encrypted())
     return nullptr;
   const sync_pb::EncryptedData& encrypted = password_specifics.encrypted();
-  std::unique_ptr<sync_pb::PasswordSpecificsData> data(
-      new sync_pb::PasswordSpecificsData);
+  std::unique_ptr<sync_pb::PasswordSpecificsData> data =
+      std::make_unique<sync_pb::PasswordSpecificsData>();
   if (!crypto->CanDecrypt(encrypted))
     return nullptr;
   if (!crypto->Decrypt(encrypted, data.get()))
     return nullptr;
-  return data.release();
+  return data;
 }
 
 // The list of names which are reserved for use by the server.

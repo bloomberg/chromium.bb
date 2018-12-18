@@ -106,7 +106,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
     if (it->action == ChangeRecord::ACTION_DELETE) {
       std::unique_ptr<sync_pb::EntitySpecifics> specifics;
       if (it->specifics.has_password()) {
-        DCHECK(it->extra.get());
+        DCHECK(it->extra.has_value());
         specifics = std::make_unique<sync_pb::EntitySpecifics>(it->specifics);
         specifics->mutable_password()
             ->mutable_client_only_encrypted_data()

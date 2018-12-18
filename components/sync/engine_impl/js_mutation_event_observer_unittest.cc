@@ -84,7 +84,7 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
 
   // Fire OnChangesApplied() for each data type.
   for (int i = AUTOFILL_PROFILE; i < MODEL_TYPE_COUNT; ++i) {
-    ChangeRecordList local_changes(changes + i, changes + arraysize(changes));
+    ChangeRecordList local_changes(std::begin(changes) + i, std::end(changes));
     js_mutation_event_observer_.OnChangesApplied(
         ModelTypeFromInt(i), 0, ImmutableChangeRecordList(&local_changes));
   }
