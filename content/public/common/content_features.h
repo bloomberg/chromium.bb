@@ -163,6 +163,7 @@ CONTENT_EXPORT extern const base::Feature kWebUIPolymer2;
 #if defined(OS_MACOSX)
 CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
 CONTENT_EXPORT extern const base::Feature kIOSurfaceCapturer;
+CONTENT_EXPORT extern const base::Feature kMacV2GPUSandbox;
 CONTENT_EXPORT extern const base::Feature kTextSuggestionsTouchBar;
 #endif  // defined(OS_MACOSX)
 

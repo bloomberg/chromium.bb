@@ -695,6 +695,9 @@ const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",
 const base::Feature kIOSurfaceCapturer{"IOSurfaceCapturer",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kMacV2GPUSandbox{"MacV2GPUSandbox",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the suggested text touch bar for autocomplete in textfields.
 const base::Feature kTextSuggestionsTouchBar{"TextSuggestionsTouchBar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

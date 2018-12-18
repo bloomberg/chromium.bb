@@ -30480,6 +30480,7 @@ from previous Chrome versions.
   <int value="-1284637134" label="pull-to-refresh"/>
   <int value="-1282992935"
       label="AutofillLocalCardMigrationShowFeedback:disabled"/>
+  <int value="-1281465357" label="MacV2GPUSandbox:disabled"/>
   <int value="-1278796760" label="QueryInOmnibox:enabled"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
   <int value="-1272593346" label="NewTabLoadingAnimation:disabled"/>
@@ -31813,6 +31814,7 @@ from previous Chrome versions.
   <int value="1179936481" label="enable-android-pay-integration-v1"/>
   <int value="1180722846" label="OculusVR:disabled"/>
   <int value="1181056275" label="enable-cloud-backup"/>
+  <int value="1182356056" label="MacV2GPUSandbox:enabled"/>
   <int value="1183260592" label="WebAssemblyBaseline:enabled"/>
   <int value="1183431946" label="v8-cache-options"/>
   <int value="1185424279" label="enable-media-router"/>
