@@ -10,6 +10,9 @@ per-file ash_strings.grd=*
 per-file ash_switches.*=*
 per-file BUILD.gn=*
 
+# Translation artifacts:
+per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
+
 per-file manifest.json=set noparent
 per-file manifest.json=file://ipc/SECURITY_OWNERS
 

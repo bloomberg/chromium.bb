@@ -5,4 +5,7 @@ lambroslambrou@chromium.org
 sergeyu@chromium.org
 yuweih@chromium.org
 
+# Translation artifacts:
+per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
+
 # COMPONENT: Services>Chromoting
