@@ -210,6 +210,7 @@ def GeneralTemplates(site_config, ge_build_config):
       compilecheck=True,
       build_packages=False,
       upload_standalone_images=False,
+      sync_chrome=False,
       profile='generic_build'
   )
 
