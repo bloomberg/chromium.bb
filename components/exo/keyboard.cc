@@ -42,7 +42,8 @@ const struct {
   int modifiers;
 } kReservedAccelerators[] = {
     {ui::VKEY_F13, ui::EF_NONE},
-    {ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN}};
+    {ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN},
+    {ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN}};
 
 bool ProcessAccelerator(Surface* surface, const ui::KeyEvent* event) {
   views::Widget* widget =
