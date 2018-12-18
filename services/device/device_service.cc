@@ -308,7 +308,8 @@ void DeviceService::BindSerialPortManagerRequest(
     mojom::SerialPortManagerRequest request) {
 #if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
     defined(OS_MACOSX)
-  SerialPortManagerImpl::Create(std::move(request));
+  if (io_task_runner_)
+    SerialPortManagerImpl::Create(std::move(request), io_task_runner_);
 #endif
 }
 

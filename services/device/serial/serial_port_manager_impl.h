@@ -9,20 +9,27 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "device/serial/serial_device_enumerator.h"
 #include "services/device/public/mojom/serial.mojom.h"
-#include "services/device/serial/serial_port_impl.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace device {
+
+class SerialDeviceEnumerator;
 
 // TODO(leonhsl): Merge this class with SerialDeviceEnumerator if/once
 // SerialDeviceEnumerator is exposed only via the Device Service.
 // crbug.com/748505
 class SerialPortManagerImpl : public mojom::SerialPortManager {
  public:
-  static void Create(mojom::SerialPortManagerRequest request);
+  static void Create(
+      mojom::SerialPortManagerRequest request,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   SerialPortManagerImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialPortManagerImpl() override;
 
@@ -32,8 +39,9 @@ class SerialPortManagerImpl : public mojom::SerialPortManager {
   void GetPort(const std::string& path,
                mojom::SerialPortRequest request) override;
 
-  std::unique_ptr<device::SerialDeviceEnumerator> enumerator_;
+  std::unique_ptr<SerialDeviceEnumerator> enumerator_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialPortManagerImpl);
