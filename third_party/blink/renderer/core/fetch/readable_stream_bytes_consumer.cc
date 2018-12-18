@@ -130,7 +130,8 @@ BytesConsumer::Result ReadableStreamBytesConsumer::BeginRead(
     DCHECK(!reader.IsEmpty());
     ReadableStreamOperations::DefaultReaderRead(script_state_, reader)
         .Then(OnFulfilled::CreateFunction(script_state_, this),
-              OnRejected::CreateFunction(script_state_, this));
+              OnRejected::CreateFunction(script_state_, this))
+        .MarkAsHandled();
   }
   return Result::kShouldWait;
 }

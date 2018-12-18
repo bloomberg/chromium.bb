@@ -67,9 +67,8 @@ class CORE_EXPORT ScriptPromise final {
 
   ~ScriptPromise();
 
-  ScriptPromise Then(
-      v8::Local<v8::Function> on_fulfilled,
-      v8::Local<v8::Function> on_rejected = v8::Local<v8::Function>());
+  ScriptPromise Then(v8::Local<v8::Function> on_fulfilled,
+                     v8::Local<v8::Function> on_rejected = {});
 
   bool IsObject() const { return promise_.IsObject(); }
 
