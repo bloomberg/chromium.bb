@@ -8,15 +8,16 @@
 #include <string>
 
 #include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/strike_database_integrator_base.h"
 
 namespace autofill {
 
-// Implementation of StrikeDatabase for credit card saves (both local and
-// upload).
-class CreditCardSaveStrikeDatabase : public StrikeDatabase {
+// Implementation of StrikeDatabaseIntegratorBase for credit card saves (both
+// local and upload).
+class CreditCardSaveStrikeDatabase : public StrikeDatabaseIntegratorBase {
  public:
-  CreditCardSaveStrikeDatabase(const base::FilePath& database_dir);
-  ~CreditCardSaveStrikeDatabase() override;
+  CreditCardSaveStrikeDatabase(StrikeDatabase* strike_database);
+  ~CreditCardSaveStrikeDatabase();
 
   std::string GetProjectPrefix() override;
   int GetMaxStrikesLimit() override;

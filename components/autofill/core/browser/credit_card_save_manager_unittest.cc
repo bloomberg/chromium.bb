@@ -100,11 +100,12 @@ class MockPersonalDataManager : public TestPersonalDataManager {
 class CreditCardSaveManagerTest : public testing::Test {
  public:
   void SetUp() override {
-    std::unique_ptr<TestLegacyStrikeDatabase> test_strike_database =
+    std::unique_ptr<TestLegacyStrikeDatabase> test_legacy_strike_database =
         std::make_unique<TestLegacyStrikeDatabase>();
-    legacy_strike_database_ = test_strike_database.get();
+    legacy_strike_database_ = test_legacy_strike_database.get();
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
-    autofill_client_.set_test_strike_database(std::move(test_strike_database));
+    autofill_client_.set_test_legacy_strike_database(
+        std::move(test_legacy_strike_database));
     personal_data_.Init(/*profile_database=*/database_,
                         /*account_database=*/nullptr,
                         /*pref_service=*/autofill_client_.GetPrefs(),

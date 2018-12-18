@@ -60,6 +60,7 @@ class FormStructure;
 class LegacyStrikeDatabase;
 class MigratableCreditCard;
 class PersonalDataManager;
+class StrikeDatabase;
 struct Suggestion;
 
 namespace payments {
@@ -182,6 +183,9 @@ class AutofillClient : public RiskDataLoader {
   // Gets the LegacyStrikeDatabase associated with the client.
   // TODO(crbug.com/884817): Delete this once v2 of StrikeDatabase is launched.
   virtual LegacyStrikeDatabase* GetLegacyStrikeDatabase() = 0;
+
+  // Gets the StrikeDatabase associated with the client.
+  virtual StrikeDatabase* GetStrikeDatabase() = 0;
 
   // Gets the UKM service associated with this client (for metrics).
   virtual ukm::UkmRecorder* GetUkmRecorder() = 0;

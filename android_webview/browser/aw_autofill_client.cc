@@ -82,6 +82,10 @@ autofill::LegacyStrikeDatabase* AwAutofillClient::GetLegacyStrikeDatabase() {
   return nullptr;
 }
 
+autofill::StrikeDatabase* AwAutofillClient::GetStrikeDatabase() {
+  return nullptr;
+}
+
 ukm::UkmRecorder* AwAutofillClient::GetUkmRecorder() {
   return nullptr;
 }

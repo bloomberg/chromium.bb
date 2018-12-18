@@ -40,6 +40,7 @@
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #include "ios/web_view/internal/autofill/web_view_legacy_strike_database_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
+#include "ios/web_view/internal/autofill/web_view_strike_database_factory.h"
 #import "ios/web_view/internal/passwords/cwv_password_controller.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
@@ -139,6 +140,11 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
             browserState->GetRecordingBrowserState()),
         ios_web_view::WebViewLegacyStrikeDatabaseFactory::GetForBrowserState(
             browserState->GetRecordingBrowserState()),
+        ios_web_view::WebViewStrikeDatabaseFactory::GetForBrowserState(
+            browserState->GetRecordingBrowserState()),
+        ios_web_view::WebViewWebDataServiceWrapperFactory::
+            GetAutofillWebDataForBrowserState(
+                browserState, ServiceAccessType::EXPLICIT_ACCESS),
         ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
             browserState)));
     autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(

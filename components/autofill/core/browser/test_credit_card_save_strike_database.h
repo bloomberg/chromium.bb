@@ -11,7 +11,7 @@ namespace autofill {
 
 class TestCreditCardSaveStrikeDatabase : public CreditCardSaveStrikeDatabase {
  public:
-  TestCreditCardSaveStrikeDatabase(const base::FilePath& database_dir);
+  TestCreditCardSaveStrikeDatabase(StrikeDatabase* strike_database);
 };
 
 }  // namespace autofill

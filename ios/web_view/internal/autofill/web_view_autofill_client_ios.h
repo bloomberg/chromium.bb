@@ -16,6 +16,8 @@
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -33,7 +35,9 @@ class WebViewAutofillClientIOS : public AutofillClient {
       web::WebState* web_state,
       id<CWVAutofillClientIOSBridge> bridge,
       identity::IdentityManager* identity_manager,
-      LegacyStrikeDatabase* strike_database,
+      LegacyStrikeDatabase* legacy_strike_database,
+      StrikeDatabase* strike_database,
+      scoped_refptr<AutofillWebDataService> autofill_web_data_service,
       syncer::SyncService* sync_service);
   ~WebViewAutofillClientIOS() override;
 
@@ -46,6 +50,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
   LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
+  StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
@@ -119,6 +124,8 @@ class WebViewAutofillClientIOS : public AutofillClient {
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   LegacyStrikeDatabase* legacy_strike_database_;
+  StrikeDatabase* strike_database_;
+  scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   syncer::SyncService* sync_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewAutofillClientIOS);

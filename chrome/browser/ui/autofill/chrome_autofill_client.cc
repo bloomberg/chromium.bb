@@ -16,6 +16,7 @@
 #include "chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
+#include "chrome/browser/autofill/strike_database_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
@@ -150,6 +151,13 @@ LegacyStrikeDatabase* ChromeAutofillClient::GetLegacyStrikeDatabase() {
   // LegacyStrikeDatabase.
   DCHECK(!profile->IsOffTheRecord());
   return LegacyStrikeDatabaseFactory::GetForProfile(profile);
+}
+
+StrikeDatabase* ChromeAutofillClient::GetStrikeDatabase() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  // Nullptr is returned if browser is in incognito mode.
+  return StrikeDatabaseFactory::GetForProfile(profile);
 }
 
 ukm::UkmRecorder* ChromeAutofillClient::GetUkmRecorder() {

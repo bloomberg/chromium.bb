@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/legacy_strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
@@ -54,6 +55,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
   LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
+  StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
@@ -130,6 +132,8 @@ class ChromeAutofillClientIOS : public AutofillClient {
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   LegacyStrikeDatabase* legacy_strike_database_;
+  StrikeDatabase* strike_database_;
+  scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   infobars::InfoBarManager* infobar_manager_;
   password_manager::PasswordGenerationManager* password_generation_manager_;
   CardUnmaskPromptControllerImpl unmask_controller_;

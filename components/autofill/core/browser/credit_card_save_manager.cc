@@ -36,6 +36,7 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -82,7 +83,11 @@ CreditCardSaveManager::CreditCardSaveManager(
       payments_client_(payments_client),
       app_locale_(app_locale),
       personal_data_manager_(personal_data_manager),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  // This is to initialize StrikeDatabase is if it hasn't been already, so that
+  // its cache would be loaded and ready to use when the first CCSM is created.
+  client_->GetStrikeDatabase();
+}
 
 CreditCardSaveManager::~CreditCardSaveManager() {}
 

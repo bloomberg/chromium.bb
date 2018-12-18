@@ -22,6 +22,10 @@ class StrikeData;
 // the user. Projects can earn strikes in a number of ways; for instance, if a
 // user ignores or declines a prompt, or if a user accepts a prompt but the task
 // fails.
+// This class is a Singleton which contains StrikeData information for all
+// projects. It should not be used directly, but rather by implementing the
+// StrikeDatabaseIntegratorBase (which contains a pointer to StrikeDatabase)
+// for specific projects.
 class StrikeDatabase : public KeyedService {
  public:
   using ClearStrikesCallback = base::RepeatingCallback<void(bool success)>;
@@ -43,23 +47,22 @@ class StrikeDatabase : public KeyedService {
   explicit StrikeDatabase(const base::FilePath& database_dir);
   ~StrikeDatabase() override;
 
-  bool IsMaxStrikesLimitReached(const std::string id);
-
   // Increments in-memory cache and updates underlying ProtoDatabase.
-  int AddStrike(const std::string id);
+  int AddStrike(const std::string key);
 
   // Removes an in-memory cache strike, updates last_update_timestamp, and
   // updates underlying ProtoDatabase.
-  int RemoveStrike(const std::string id);
+  int RemoveStrike(const std::string key);
 
   // Returns strike count from in-memory cache.
-  int GetStrikes(const std::string id);
+  int GetStrikes(const std::string key);
 
   // Removes all database entries from in-memory cache and underlying
   // ProtoDatabase.
-  void ClearStrikes(const std::string id);
+  void ClearStrikes(const std::string key);
 
  protected:
+  friend class StrikeDatabaseIntegratorBase;
   // Constructor for testing that does not initialize a ProtoDatabase.
   StrikeDatabase();
 
@@ -96,23 +99,6 @@ class StrikeDatabase : public KeyedService {
   void OnDatabaseLoadKeysAndEntries(
       bool success,
       std::unique_ptr<std::map<std::string, StrikeData>> entries);
-
-  // Returns a prefix unique to each project, which will be used to create
-  // database key.
-  virtual std::string GetProjectPrefix() = 0;
-
-  // Returns the maximum number of strikes after which the project's Autofill
-  // opportunity stops being offered.
-  virtual int GetMaxStrikesLimit() = 0;
-
-  // Returns the time after which the most recent strike should expire.
-  virtual long long GetExpiryTimeMicros() = 0;
-
-  // Generates key based on project-specific string identifier.
-  std::string GetKey(const std::string id);
-
-  // Generates project-specific string identifier based on key.
-  std::string GetIdPartFromKey(const std::string key);
 
   // Updates the StrikeData for |key| in the cache and ProtoDatabase to have
   // |num_stikes|, and the current time as timestamp.
