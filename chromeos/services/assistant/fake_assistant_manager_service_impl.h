@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
@@ -19,7 +20,8 @@ namespace assistant {
 
 // Stub implementation of AssistantManagerService.  Should return deterministic
 // result for testing.
-class FakeAssistantManagerServiceImpl : public AssistantManagerService {
+class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
+    : public AssistantManagerService {
  public:
   FakeAssistantManagerServiceImpl();
   ~FakeAssistantManagerServiceImpl() override;

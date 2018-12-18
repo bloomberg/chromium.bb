@@ -8,7 +8,16 @@ import("//services/service_manager/public/service_manifest.gni")
 assert(is_chromeos)
 assert(enable_cros_assistant)
 
-source_set("lib") {
+component("lib") {
+  output_name = "assistant_service"
+
+  friend = [
+    ":tests",
+    ":test_support",
+  ]
+
+  defines = [ "IS_ASSISTANT_SERVICE_IMPL" ]
+
   sources = [
     "assistant_manager_service.h",
     "assistant_settings_manager.h",
@@ -27,8 +36,6 @@ source_set("lib") {
     "//build/util:webkit_version",
     "//chromeos",
     "//chromeos/assistant:buildflags",
-    "//chromeos/services/assistant/public:feature_flags",
-    "//chromeos/services/assistant/public/mojom",
     "//components/account_id",
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
@@ -37,6 +44,8 @@ source_set("lib") {
 
   public_deps = [
     "//ash/public/cpp:cpp",
+    "//chromeos/services/assistant/public:feature_flags",
+    "//chromeos/services/assistant/public/mojom",
     "//mojo/public/cpp/bindings:bindings",
     "//services/audio/public/cpp:cpp",
     "//services/service_manager/public/cpp:cpp",
@@ -110,6 +119,7 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos",
+    "//chromeos/services/assistant/public/mojom",
     "//mojo/public/cpp/bindings:bindings",
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
