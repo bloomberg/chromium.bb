@@ -240,6 +240,10 @@ CGFloat ToolbarHeight() {
     [self scaleHintLabelForPercent:percent];
     self.fakeToolbarTopConstraint.constant = 0;
 
+    self.fakeLocationBarLeadingConstraint.constant = 0;
+    self.fakeLocationBarTrailingConstraint.constant = 0;
+    self.fakeLocationBarTopConstraint.constant = 0;
+
     return;
   } else {
     self.alpha = 1;
