@@ -186,11 +186,6 @@ class SimpleBuilder(generic_builders.Builder):
     # paygen can't complete without push_image.
     assert not config.paygen or config.push_image
 
-    if config.build_packages_in_background:
-      self._RunStage(build_stages.BuildPackagesStage, board,
-                     update_metadata=True, builder_run=builder_run,
-                     afdo_use=config.afdo_use)
-
     changes = self._GetChangesUnderTest()
     if changes:
       self._RunStage(report_stages.DetectRelevantChangesStage, board,
@@ -319,37 +314,36 @@ class SimpleBuilder(generic_builders.Builder):
     task_runner = self._RunBackgroundStagesForBoardAndMarkAsSuccessful
     with parallel.BackgroundTaskRunner(task_runner) as queue:
       for builder_run, board in tasks:
-        if not builder_run.config.build_packages_in_background:
-          # Run BuildPackages in the foreground, generating or using AFDO data
-          # if requested.
-          kwargs = {'builder_run': builder_run}
-          if builder_run.config.afdo_generate_min:
-            kwargs['afdo_generate_min'] = True
-          elif builder_run.config.afdo_use:
-            kwargs['afdo_use'] = True
+        # Run BuildPackages in the foreground, generating or using AFDO data
+        # if requested.
+        kwargs = {'builder_run': builder_run}
+        if builder_run.config.afdo_generate_min:
+          kwargs['afdo_generate_min'] = True
+        elif builder_run.config.afdo_use:
+          kwargs['afdo_use'] = True
 
-          self._RunStage(build_stages.BuildPackagesStage, board,
-                         update_metadata=True, **kwargs)
+        self._RunStage(build_stages.BuildPackagesStage, board,
+                       update_metadata=True, **kwargs)
 
-          if (builder_run.config.afdo_generate_min and
-              afdo.CanGenerateAFDOData(board)):
-            # Generate the AFDO data before allowing any other tasks to run.
-            self._RunStage(build_stages.BuildImageStage, board, **kwargs)
-            self._RunStage(artifact_stages.UploadTestArtifactsStage, board,
-                           builder_run=builder_run,
-                           suffix='[afdo_generate_min]')
-            for suite in builder_run.config.hw_tests:
-              self._RunStage(test_stages.HWTestStage, board, suite,
-                             builder_run=builder_run)
-            self._RunStage(afdo_stages.AFDODataGenerateStage, board,
+        if (builder_run.config.afdo_generate_min and
+            afdo.CanGenerateAFDOData(board)):
+          # Generate the AFDO data before allowing any other tasks to run.
+          self._RunStage(build_stages.BuildImageStage, board, **kwargs)
+          self._RunStage(artifact_stages.UploadTestArtifactsStage, board,
+                         builder_run=builder_run,
+                         suffix='[afdo_generate_min]')
+          for suite in builder_run.config.hw_tests:
+            self._RunStage(test_stages.HWTestStage, board, suite,
                            builder_run=builder_run)
+          self._RunStage(afdo_stages.AFDODataGenerateStage, board,
+                         builder_run=builder_run)
 
-          if (builder_run.config.afdo_generate_min and
-              builder_run.config.afdo_update_ebuild):
-            self._RunStage(afdo_stages.AFDOUpdateChromeEbuildStage,
-                           builder_run=builder_run)
-            self._RunStage(afdo_stages.AFDOUpdateKernelEbuildStage,
-                           builder_run=builder_run)
+        if (builder_run.config.afdo_generate_min and
+            builder_run.config.afdo_update_ebuild):
+          self._RunStage(afdo_stages.AFDOUpdateChromeEbuildStage,
+                         builder_run=builder_run)
+          self._RunStage(afdo_stages.AFDOUpdateKernelEbuildStage,
+                         builder_run=builder_run)
 
         # Kick off our background stages.
         queue.put([builder_run, board])

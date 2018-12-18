@@ -778,18 +778,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
             'As this is the %s branch, all release configs that are being used '
             'must end in %s.' % (branch, tracking_branch, branch))
 
-  def testNeverUseBackgroundBuildFlag(self):
-    """build_packages_in_background is deprecated.
-
-    Make sure nobody uses it, until we can remove it without breaking
-    builds.
-    """
-    for build_name, config in self.site_config.iteritems():
-      self.assertFalse(
-          config.build_packages_in_background,
-          'Deprecated flag build_packages_in_background used: %s' %
-          build_name)
-
   def testNoNewBuildersOnlyGroups(self):
     """Grouped builders are deprecated.
 

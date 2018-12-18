@@ -709,15 +709,6 @@ def DefaultSettings():
       # Use binary packages for build_packages and setup_board.
       usepkg_build_packages=True,
 
-      # If set, run BuildPackages in the background and allow subsequent
-      # stages to run in parallel with this one.
-      #
-      # For each release group, the first builder should be set to run in the
-      # foreground (to build binary packages), and the remainder of the
-      # builders should be set to run in parallel (to install the binary
-      # packages.)
-      build_packages_in_background=False,
-
       # Does this profile need to sync chrome?  If None, we guess based on
       # other factors.  If True/False, we always do that.
       sync_chrome=None,
