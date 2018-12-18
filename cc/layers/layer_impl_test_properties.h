@@ -62,6 +62,7 @@ struct CC_EXPORT LayerImplTestProperties {
   LayerImplList children;
   LayerImpl* mask_layer;
   LayerImpl* parent;
+  uint32_t main_thread_scrolling_reasons = 0;
   bool user_scrollable_horizontal = true;
   bool user_scrollable_vertical = true;
   OverscrollBehavior overscroll_behavior;

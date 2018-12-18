@@ -4323,24 +4323,21 @@ MainThreadScrollingReasons LocalFrameView::GetMainThreadScrollingReasons()
 }
 
 String LocalFrameView::MainThreadScrollingReasonsAsText() {
-  MainThreadScrollingReasons reasons = main_thread_scrolling_reasons_;
-  // TODO(pdr): We should also use the property tree main thread scrolling
-  // reasons when RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled is true.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+  MainThreadScrollingReasons reasons = 0;
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
-
-    // CompositeAfterPaint stores main thread scrolling reasons on property
-    // trees instead of in |main_thread_scrolling_reasons_|.
     if (const auto* scroll =
             GetLayoutView()->FirstFragment().PaintProperties()->Scroll()) {
       reasons = scroll->GetMainThreadScrollingReasons();
     }
   } else {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean);
+    reasons = main_thread_scrolling_reasons_;
     if (GraphicsLayer* layer_for_scrolling =
             LayoutViewport()->LayerForScrolling()) {
       if (cc::Layer* cc_layer = layer_for_scrolling->CcLayer())
-        reasons = cc_layer->main_thread_scrolling_reasons();
+        reasons = cc_layer->GetMainThreadScrollingReasons();
     }
   }
 

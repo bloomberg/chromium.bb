@@ -431,9 +431,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void AddMainThreadScrollingReasons(uint32_t main_thread_scrolling_reasons);
   void ClearMainThreadScrollingReasons(
       uint32_t main_thread_scrolling_reasons_to_clear);
-  uint32_t main_thread_scrolling_reasons() const {
-    return inputs_.main_thread_scrolling_reasons;
-  }
+  uint32_t GetMainThreadScrollingReasons() const;
 
   // Set or get an area of this layer within which initiating a scroll can not
   // be done from the compositor thread. Within this area, if the user attempts

@@ -309,14 +309,6 @@ class CC_EXPORT LayerImpl {
   gfx::Size scroll_container_bounds() const { return scroll_container_bounds_; }
   bool scrollable() const { return scrollable_; }
 
-  void set_main_thread_scrolling_reasons(
-      uint32_t main_thread_scrolling_reasons) {
-    main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
-  }
-  uint32_t main_thread_scrolling_reasons() const {
-    return main_thread_scrolling_reasons_;
-  }
-
   void SetNonFastScrollableRegion(const Region& region) {
     non_fast_scrollable_region_ = region;
   }
@@ -510,7 +502,6 @@ class CC_EXPORT LayerImpl {
   gfx::Size bounds_;
 
   gfx::Vector2dF offset_to_transform_parent_;
-  uint32_t main_thread_scrolling_reasons_;
 
   // Size of the scroll container that this layer scrolls in.
   gfx::Size scroll_container_bounds_;

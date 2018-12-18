@@ -170,6 +170,12 @@ void VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     state.max_scroll_offset_affected_by_page_scale = true;
     state.compositor_element_id = GetCompositorScrollElementId();
 
+    if (MainFrame() &&
+        !MainFrame()->GetSettings()->GetThreadedScrollingEnabled()) {
+      state.main_thread_scrolling_reasons =
+          MainThreadScrollingReason::kThreadedScrollingDisabled;
+    }
+
     if (!scroll_node_) {
       scroll_node_ =
           ScrollPaintPropertyNode::Create(*scroll_parent, std::move(state));

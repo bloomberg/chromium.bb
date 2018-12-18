@@ -20,7 +20,6 @@
 #include "cc/benchmarks/micro_benchmark_impl.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/layer_tree_debug_state.h"
-#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_state.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/clip_node.h"
@@ -52,8 +51,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_tree_impl_(tree_impl),
       will_always_push_properties_(will_always_push_properties),
       test_properties_(nullptr),
-      main_thread_scrolling_reasons_(
-          MainThreadScrollingReason::kNotScrollingOnMain),
       scrollable_(false),
       should_flatten_screen_space_transform_from_property_tree_(false),
       layer_property_changed_not_from_property_trees_(false),
@@ -310,7 +307,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->has_transform_node_ = has_transform_node_;
   layer->is_rounded_corner_mask_ = is_rounded_corner_mask_;
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
-  layer->main_thread_scrolling_reasons_ = main_thread_scrolling_reasons_;
   layer->should_flatten_screen_space_transform_from_property_tree_ =
       should_flatten_screen_space_transform_from_property_tree_;
   layer->masks_to_bounds_ = masks_to_bounds_;
@@ -411,9 +407,6 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() {
   result->SetBoolean("Is3dSorted", Is3dSorted());
   result->SetDouble("OPACITY", Opacity());
   result->SetBoolean("ContentsOpaque", contents_opaque_);
-  result->SetString(
-      "mainThreadScrollingReasons",
-      MainThreadScrollingReason::AsText(main_thread_scrolling_reasons_));
 
   if (scrollable())
     result->SetBoolean("Scrollable", true);
@@ -784,9 +777,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->SetBoolean("has_will_change_transform_hint",
                     has_will_change_transform_hint());
-
-  MainThreadScrollingReason::AddToTracedValue(main_thread_scrolling_reasons_,
-                                              *state);
 
   if (debug_info_)
     state->SetValue("debug_info", debug_info_);

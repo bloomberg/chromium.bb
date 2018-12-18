@@ -1231,8 +1231,8 @@ TEST_F(LayerTreeHostImplTest, ShouldScrollOnMainThread) {
   host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(50, 50));
   LayerImpl* root = host_impl_->active_tree()->root_layer_for_testing();
 
-  root->set_main_thread_scrolling_reasons(
-      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+  root->test_properties()->main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
   DrawFrame();
 
@@ -6518,8 +6518,8 @@ TEST_F(LayerTreeHostImplTest, ScrollBlockedByContentLayer) {
   gfx::Size surface_size(10, 10);
   std::unique_ptr<LayerImpl> content_layer =
       CreateScrollableLayer(1, surface_size);
-  content_layer->set_main_thread_scrolling_reasons(
-      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+  content_layer->test_properties()->main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
 
   // Note: we can use the same clip layer for both since both calls to
   // CreateScrollableLayer() use the same surface size.
@@ -8134,12 +8134,14 @@ TEST_F(LayerTreeHostImplTest, OverscrollOnMainThread) {
 
   host_impl_->active_tree()
       ->InnerViewportScrollLayer()
-      ->set_main_thread_scrolling_reasons(
-          MainThreadScrollingReason::kThreadedScrollingDisabled);
+      ->test_properties()
+      ->main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kThreadedScrollingDisabled;
   host_impl_->active_tree()
       ->OuterViewportScrollLayer()
-      ->set_main_thread_scrolling_reasons(
-          MainThreadScrollingReason::kThreadedScrollingDisabled);
+      ->test_properties()
+      ->main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kThreadedScrollingDisabled;
 
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
@@ -8557,8 +8559,11 @@ TEST_F(LayerTreeHostImplTest, OverscrollOnImplThread) {
   // By default, no main thread scrolling reasons should exist.
   LayerImpl* scroll_layer =
       host_impl_->active_tree()->InnerViewportScrollLayer();
+  ScrollNode* scroll_node =
+      host_impl_->active_tree()->property_trees()->scroll_tree.Node(
+          scroll_layer->scroll_tree_index());
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
-            scroll_layer->main_thread_scrolling_reasons());
+            scroll_node->main_thread_scrolling_reasons);
 
   DrawFrame();
 
@@ -13222,8 +13227,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
       host_impl_->active_tree()->OuterViewportScrollLayer();
 
   if (main_thread_scrolling) {
-    root_scroll->set_main_thread_scrolling_reasons(
-        MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+    root_scroll->test_properties()->main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }
 
   // scrollbar_1 on root scroll.
@@ -13337,8 +13342,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   ElementId child_element_id = child->element_id();
 
   if (main_thread_scrolling) {
-    child->set_main_thread_scrolling_reasons(
-        MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+    child->test_properties()->main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }
 
   scrollbar_2->SetScrollElementId(child_element_id);

@@ -1103,6 +1103,14 @@ static inline const base::Optional<SnapContainerData>& GetSnapContainerData(
   return layer->test_properties()->snap_container_data;
 }
 
+static inline uint32_t MainThreadScrollingReasons(Layer* layer) {
+  return layer->GetMainThreadScrollingReasons();
+}
+
+static inline uint32_t MainThreadScrollingReasons(LayerImpl* layer) {
+  return layer->test_properties()->main_thread_scrolling_reasons;
+}
+
 template <typename LayerType>
 void SetHasTransformNode(LayerType* layer, bool val) {
   layer->SetHasTransformNode(val);
@@ -1119,8 +1127,7 @@ void PropertyTreeBuilderContext<LayerType>::AddScrollNodeIfNeeded(
   bool scrollable = layer->scrollable();
   bool contains_non_fast_scrollable_region =
       !layer->non_fast_scrollable_region().IsEmpty();
-  uint32_t main_thread_scrolling_reasons =
-      layer->main_thread_scrolling_reasons();
+  uint32_t main_thread_scrolling_reasons = MainThreadScrollingReasons(layer);
 
   bool scroll_node_uninheritable_criteria =
       is_root || scrollable || contains_non_fast_scrollable_region;

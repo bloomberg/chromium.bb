@@ -225,23 +225,28 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
     frame_view->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(false);
   }
 
-  // TODO(pdr): Move the should_scroll_on_main_thread logic to use touch action
-  // rects. These features are similar and do not need independent
-  // implementations.
   if (should_scroll_on_main_thread_dirty ||
       frame_view->FrameIsScrollableDidChange()) {
-    SetShouldUpdateScrollLayerPositionOnMainThread(
-        frame, frame_view->GetMainThreadScrollingReasons());
+    // When blink generates property trees, main thread scrolling reasons are
+    // stored on scroll nodes.
+    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+      // TODO(pdr): This also takes over scroll animations if main thread
+      // reasons are present. This needs to be implemented for
+      // BlinkGenPropertyTrees.
+      SetShouldUpdateScrollLayerPositionOnMainThread(
+          frame, frame_view->GetMainThreadScrollingReasons());
 
-    // Need to update scroll on main thread reasons for subframe because
-    // subframe (e.g. iframe with background-attachment:fixed) should
-    // scroll on main thread while the main frame scrolls on impl.
-    frame_view->UpdateSubFrameScrollOnMainReason(*frame, 0);
+      // Need to update scroll on main thread reasons for subframe because
+      // subframe (e.g. iframe with background-attachment:fixed) should
+      // scroll on main thread while the main frame scrolls on impl.
+      frame_view->UpdateSubFrameScrollOnMainReason(*frame, 0);
+    }
     frame_view->GetScrollingContext()->SetShouldScrollOnMainThreadIsDirty(
         false);
   }
   frame_view->ClearFrameIsScrollableDidChange();
 
+  // TODO(pdr): Skip this callsite when blink generates property trees.
   UpdateUserInputScrollable(&page_->GetVisualViewport());
 }
 
@@ -803,6 +808,8 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
   }
 }
 
+// TODO(pdr): When blink generates property trees, the user input scrollable
+// bits are stored on scroll nodes instead of layers so this should be removed.
 void ScrollingCoordinator::UpdateUserInputScrollable(
     ScrollableArea* scrollable_area) {
   cc::Layer* cc_layer =

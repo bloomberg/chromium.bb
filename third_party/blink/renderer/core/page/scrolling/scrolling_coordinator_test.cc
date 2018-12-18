@@ -66,12 +66,26 @@
 
 namespace blink {
 
+// kScrollingCoordinatorTestNoFlags runs with BlinkGenPropertyTrees and
+// PaintTouchActionRects disabled. Using
+// (kScrollingCoordinatorTestBlinkGenPropertyTrees |
+// kScrollingCoordinatorTestPaintTouchActionRects) enables both features.
+enum {
+  kScrollingCoordinatorTestNoFlags = 1 << 0,
+  kScrollingCoordinatorTestBlinkGenPropertyTrees = 1 << 1,
+  kScrollingCoordinatorTestPaintTouchActionRects = 1 << 2,
+};
+
 class ScrollingCoordinatorTest : public testing::Test,
-                                 public testing::WithParamInterface<bool>,
+                                 public testing::WithParamInterface<unsigned>,
+                                 private ScopedBlinkGenPropertyTreesForTest,
                                  private ScopedPaintTouchActionRectsForTest {
  public:
   ScrollingCoordinatorTest()
-      : ScopedPaintTouchActionRectsForTest(GetParam()),
+      : ScopedBlinkGenPropertyTreesForTest(
+            GetParam() & kScrollingCoordinatorTestBlinkGenPropertyTrees),
+        ScopedPaintTouchActionRectsForTest(
+            GetParam() & kScrollingCoordinatorTestPaintTouchActionRects),
         base_url_("http://www.test.com/") {
     helper_.Initialize(nullptr, nullptr, &ConfigureSettings);
     GetWebView()->MainFrameWidget()->Resize(IntSize(320, 240));
@@ -143,7 +157,14 @@ class ScrollingCoordinatorTest : public testing::Test,
   frame_test_helpers::WebViewHelper helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, ScrollingCoordinatorTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    All,
+    ScrollingCoordinatorTest,
+    ::testing::Values(kScrollingCoordinatorTestNoFlags,
+                      kScrollingCoordinatorTestBlinkGenPropertyTrees,
+                      kScrollingCoordinatorTestPaintTouchActionRects,
+                      (kScrollingCoordinatorTestBlinkGenPropertyTrees |
+                       kScrollingCoordinatorTestPaintTouchActionRects)));
 
 TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   GetWebView()->MainFrameWidget()->Resize(WebSize(800, 600));
@@ -161,7 +182,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   cc::Layer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
   ASSERT_TRUE(root_scroll_layer->scrollable());
-  ASSERT_FALSE(root_scroll_layer->main_thread_scrolling_reasons());
+  ASSERT_FALSE(root_scroll_layer->GetMainThreadScrollingReasons());
   ASSERT_EQ(cc::EventListenerProperties::kNone,
             GetWebLayerTreeView()->EventListenerProperties(
                 cc::EventListenerClass::kTouchStartOrMove));
@@ -172,13 +193,14 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   cc::Layer* inner_viewport_scroll_layer =
       page->GetVisualViewport().ScrollLayer()->CcLayer();
   ASSERT_TRUE(inner_viewport_scroll_layer->scrollable());
-  ASSERT_FALSE(inner_viewport_scroll_layer->main_thread_scrolling_reasons());
+  ASSERT_FALSE(inner_viewport_scroll_layer->GetMainThreadScrollingReasons());
 }
 
 TEST_P(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
   GetWebView()->MainFrameWidget()->Resize(WebSize(800, 600));
   LoadHTML("<div id='spacer' style='height: 1000px'></div>");
   GetWebView()->GetSettings()->SetThreadedScrollingEnabled(false);
+  GetFrame()->View()->SetNeedsPaintPropertyUpdate();
   ForceFullCompositingUpdate();
 
   // Make sure the scrolling coordinator is active.
@@ -192,13 +214,13 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
   cc::Layer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
   ASSERT_TRUE(root_scroll_layer->scrollable());
-  ASSERT_TRUE(root_scroll_layer->main_thread_scrolling_reasons());
+  ASSERT_TRUE(root_scroll_layer->GetMainThreadScrollingReasons());
 
   // Main scrolling should also propagate to inner viewport layer.
   cc::Layer* inner_viewport_scroll_layer =
       page->GetVisualViewport().ScrollLayer()->CcLayer();
   ASSERT_TRUE(inner_viewport_scroll_layer->scrollable());
-  ASSERT_TRUE(inner_viewport_scroll_layer->main_thread_scrolling_reasons());
+  ASSERT_TRUE(inner_viewport_scroll_layer->GetMainThreadScrollingReasons());
 }
 
 TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
@@ -264,7 +286,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
   // Fixed position should not fall back to main thread scrolling.
   cc::Layer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
-  ASSERT_FALSE(root_scroll_layer->main_thread_scrolling_reasons());
+  ASSERT_FALSE(root_scroll_layer->GetMainThreadScrollingReasons());
 
   Document* document = GetFrame()->GetDocument();
   {
@@ -374,7 +396,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   // Sticky position should not fall back to main thread scrolling.
   cc::Layer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
-  EXPECT_FALSE(root_scroll_layer->main_thread_scrolling_reasons());
+  EXPECT_FALSE(root_scroll_layer->GetMainThreadScrollingReasons());
 
   Document* document = GetFrame()->GetDocument();
   {
@@ -1326,7 +1348,7 @@ TEST_P(ScrollingCoordinatorTest,
   bool has_cc_scrollbar_layer = !scrollbar_graphics_layer->DrawsContent();
   ASSERT_TRUE(
       has_cc_scrollbar_layer ||
-      scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons());
+      scrollbar_graphics_layer->CcLayer()->GetMainThreadScrollingReasons());
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -1360,6 +1382,9 @@ TEST_P(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
             contents_layer->contents_opaque());
 }
 
+// TODO(pdr): Main thread scrolling reason tests should be moved out of
+// scrolling_coordinator_test.cc because the reasons are calculated in
+// paint_property_tree_builder.cc for BlinkGeneratedPropertyTrees.
 TEST_P(ScrollingCoordinatorTest,
        FixedPositionLosingBackingShouldTriggerMainThreadScroll) {
   GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
@@ -1376,7 +1401,7 @@ TEST_P(ScrollingCoordinatorTest,
   EXPECT_TRUE(static_cast<LayoutBoxModelObject*>(fixed_pos->GetLayoutObject())
                   ->Layer()
                   ->HasCompositedLayerMapping());
-  EXPECT_FALSE(scroll_layer->main_thread_scrolling_reasons());
+  EXPECT_FALSE(scroll_layer->GetMainThreadScrollingReasons());
 
   fixed_pos->SetInlineStyleProperty(CSSPropertyTransform, CSSValueNone);
   ForceFullCompositingUpdate();
@@ -1384,7 +1409,7 @@ TEST_P(ScrollingCoordinatorTest,
   EXPECT_FALSE(static_cast<LayoutBoxModelObject*>(fixed_pos->GetLayoutObject())
                    ->Layer()
                    ->HasCompositedLayerMapping());
-  EXPECT_TRUE(scroll_layer->main_thread_scrolling_reasons());
+  EXPECT_TRUE(scroll_layer->GetMainThreadScrollingReasons());
 }
 
 TEST_P(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
@@ -1408,26 +1433,28 @@ TEST_P(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
   ASSERT_TRUE(box->UsesCompositedScrolling());
   CompositedLayerMapping* composited_layer_mapping =
       box->Layer()->GetCompositedLayerMapping();
-  GraphicsLayer* scrollbar_graphics_layer =
-      composited_layer_mapping->LayerForVerticalScrollbar();
-  ASSERT_TRUE(scrollbar_graphics_layer);
-  ASSERT_TRUE(
-      scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons());
-  ASSERT_TRUE(
-      scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons() &
-      MainThreadScrollingReason::kCustomScrollbarScrolling);
+  // When Blink generates property trees, the main thread reasons are stored in
+  // scroll nodes instead of being set on the custom scrollbar layer, so we use
+  // the scrolling contents layer to access the main thread scrolling reasons.
+  GraphicsLayer* layer =
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()
+          ? composited_layer_mapping->ScrollingContentsLayer()
+          : composited_layer_mapping->LayerForVerticalScrollbar();
+  ASSERT_TRUE(layer);
+  EXPECT_TRUE(layer->CcLayer()->GetMainThreadScrollingReasons());
+  EXPECT_TRUE(layer->CcLayer()->GetMainThreadScrollingReasons() &
+              MainThreadScrollingReason::kCustomScrollbarScrolling);
 
   // remove custom scrollbar class, the scrollbar is expected to scroll on
   // impl thread as it is an overlay scrollbar.
   container->removeAttribute("class");
   ForceFullCompositingUpdate();
-  scrollbar_graphics_layer =
-      composited_layer_mapping->LayerForVerticalScrollbar();
-  ASSERT_FALSE(
-      scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons());
-  ASSERT_FALSE(
-      scrollbar_graphics_layer->CcLayer()->main_thread_scrolling_reasons() &
-      MainThreadScrollingReason::kCustomScrollbarScrolling);
+  layer = RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()
+              ? composited_layer_mapping->ScrollingContentsLayer()
+              : composited_layer_mapping->LayerForVerticalScrollbar();
+  EXPECT_FALSE(layer->CcLayer()->GetMainThreadScrollingReasons());
+  EXPECT_FALSE(layer->CcLayer()->GetMainThreadScrollingReasons() &
+               MainThreadScrollingReason::kCustomScrollbarScrolling);
 }
 
 TEST_P(ScrollingCoordinatorTest,
@@ -1465,7 +1492,7 @@ TEST_P(ScrollingCoordinatorTest,
 
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_TRUE(cc_scroll_layer->main_thread_scrolling_reasons() &
+  ASSERT_TRUE(cc_scroll_layer->GetMainThreadScrollingReasons() &
               MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
 
   // Remove fixed background-attachment should make the iframe
@@ -1486,7 +1513,7 @@ TEST_P(ScrollingCoordinatorTest,
 
   cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_FALSE(cc_scroll_layer->main_thread_scrolling_reasons() &
+  ASSERT_FALSE(cc_scroll_layer->GetMainThreadScrollingReasons() &
                MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
 
   // Force main frame to scroll on main thread. All its descendants
@@ -1508,7 +1535,7 @@ TEST_P(ScrollingCoordinatorTest,
 
   cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
-  ASSERT_TRUE(cc_scroll_layer->main_thread_scrolling_reasons() &
+  ASSERT_TRUE(cc_scroll_layer->GetMainThreadScrollingReasons() &
               MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
 }
 
@@ -1543,7 +1570,7 @@ TEST_P(ScrollingCoordinatorTest,
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
   ASSERT_TRUE(
-      cc_scroll_layer->main_thread_scrolling_reasons() &
+      cc_scroll_layer->GetMainThreadScrollingReasons() &
       MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
 
   // The main thread scrolling reason should be reset upon the following change
@@ -1565,7 +1592,7 @@ TEST_P(ScrollingCoordinatorTest, StickyTriggersMainThreadScroll) {
   ScrollableArea* viewport = GetFrame()->View()->LayoutViewport();
   cc::Layer* scroll_layer = viewport->LayerForScrolling()->CcLayer();
   ASSERT_EQ(MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects,
-            scroll_layer->main_thread_scrolling_reasons());
+            scroll_layer->GetMainThreadScrollingReasons());
 }
 
 // LocalFrameView::FrameIsScrollableDidChange is used as a dirty bit and is
@@ -1632,6 +1659,9 @@ TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
   histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 2);
 }
 
+// TODO(pdr): Main thread scrolling reason tests should be moved out of
+// scrolling_coordinator_test.cc because the reasons are calculated in
+// paint_property_tree_builder.cc for BlinkGeneratedPropertyTrees.
 class NonCompositedMainThreadScrollingReasonTest
     : public ScrollingCoordinatorTest {
   static const uint32_t kLCDTextRelatedReasons =
@@ -1701,9 +1731,14 @@ class NonCompositedMainThreadScrollingReasonTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        NonCompositedMainThreadScrollingReasonTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    All,
+    NonCompositedMainThreadScrollingReasonTest,
+    ::testing::Values(kScrollingCoordinatorTestNoFlags,
+                      kScrollingCoordinatorTestBlinkGenPropertyTrees,
+                      kScrollingCoordinatorTestPaintTouchActionRects,
+                      (kScrollingCoordinatorTestBlinkGenPropertyTrees |
+                       kScrollingCoordinatorTestPaintTouchActionRects)));
 
 TEST_P(NonCompositedMainThreadScrollingReasonTest, TransparentTest) {
   TestNonCompositedReasons("transparent",
@@ -1873,9 +1908,14 @@ class ScrollingCoordinatorTestWithAcceleratedContext
   FakeGLES2Interface gl_;
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ScrollingCoordinatorTestWithAcceleratedContext,
-                        ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    All,
+    ScrollingCoordinatorTestWithAcceleratedContext,
+    ::testing::Values(kScrollingCoordinatorTestNoFlags,
+                      kScrollingCoordinatorTestBlinkGenPropertyTrees,
+                      kScrollingCoordinatorTestPaintTouchActionRects,
+                      (kScrollingCoordinatorTestBlinkGenPropertyTrees |
+                       kScrollingCoordinatorTestPaintTouchActionRects)));
 
 TEST_P(ScrollingCoordinatorTestWithAcceleratedContext, CanvasTouchActionRects) {
   LoadHTML(R"HTML(

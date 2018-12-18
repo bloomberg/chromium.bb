@@ -10031,7 +10031,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent2.element_id = parent2->element_id();
   scroll_parent2.scrollable = true;
   scroll_parent2.main_thread_scrolling_reasons =
-      parent2->main_thread_scrolling_reasons();
+      parent2->GetMainThreadScrollingReasons();
   scroll_parent2.container_bounds = root1->bounds();
   scroll_parent2.bounds = parent2->bounds();
   scroll_parent2.max_scroll_offset_affected_by_page_scale = true;
@@ -10045,7 +10045,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   ScrollNode scroll_child6;
   scroll_child6.id = 3;
   scroll_child6.main_thread_scrolling_reasons =
-      child6->main_thread_scrolling_reasons();
+      child6->GetMainThreadScrollingReasons();
   scroll_child6.should_flatten = true;
   scroll_child6.user_scrollable_horizontal = true;
   scroll_child6.user_scrollable_vertical = true;
