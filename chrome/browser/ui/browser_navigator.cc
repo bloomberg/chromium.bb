@@ -498,6 +498,15 @@ void Navigate(NavigateParams* params) {
   if (singleton_index != -1) {
     contents_to_navigate_or_insert =
         params->browser->tab_strip_model()->GetWebContentsAt(singleton_index);
+  } else if (params->disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
+    // The user is trying to open a tab that no longer exists. If we open a new
+    // tab, it could leave orphaned NTPs around, but always overwriting the
+    // current tab could could clobber state that the user was trying to
+    // preserve. Fallback to the behavior used for singletons: overwrite the
+    // current tab if it's the NTP, otherwise open a new tab.
+    params->disposition = WindowOpenDisposition::SINGLETON_TAB;
+    ShowSingletonTabOverwritingNTP(params->browser, std::move(*params));
+    return;
   }
 #if defined(OS_CHROMEOS)
   if (source_browser && source_browser != params->browser) {

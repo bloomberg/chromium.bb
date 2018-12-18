@@ -301,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_CurrentTab) {
 // This test verifies that a singleton tab is refocused if one is already opened
 // in another or an existing window, or added if it is not.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
-  GURL singleton_url1("http://maps.google.com/");
+  const GURL singleton_url1("http://maps.google.com/");
 
   // Register for a notification if an additional WebContents was instantiated.
   // Opening a Singleton tab that is already opened should not be opening a new
@@ -342,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabNoneExisting) {
-  GURL singleton_url1("http://maps.google.com/");
+  const GURL singleton_url1("http://maps.google.com/");
 
   // We should have one browser with 1 tab.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -754,7 +754,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // be switched away from and closed. It verifies that if we close the
 // earlier tab, that we don't use a stale index, and select the wrong tab.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, OutOfOrderTabSwitchTest) {
-  GURL singleton_url("http://maps.google.com/");
+  const GURL singleton_url("http://maps.google.com/");
 
   NavigateHelper(singleton_url, browser(),
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
@@ -763,6 +763,25 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, OutOfOrderTabSwitchTest) {
 
   NavigateHelper(singleton_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB,
                  false);
+}
+
+// This test verifies the two cases of attempting to switch to a tab that no
+// longer exists: if NTP, load in current tab, otherwise load in new
+// foreground tab.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NavigateOnTabSwitchLostTest) {
+  const GURL singleton_url("chrome://dino");
+
+  NavigateHelper(singleton_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB,
+                 true);
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  NavigateHelper(GURL("chrome://about"), browser(),
+                 WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
+  browser()->tab_strip_model()->CloseWebContentsAt(0,
+                                                   TabStripModel::CLOSE_NONE);
+  NavigateHelper(singleton_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB,
+                 true);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
 // This test verifies that IsTabOpenWithURL() and GetIndexOfExistingTab()
@@ -795,7 +814,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SchemeMismatchTabSwitchTest) {
 // switch to. It verifies that we don't recommend the active tab, and that,
 // when switching, we don't mistakenly pick the current browser.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabCorrectWindow) {
-  GURL singleton_url("http://maps.google.com/");
+  const GURL singleton_url("http://maps.google.com/");
 
   // Make singleton tab.
   Browser* orig_browser = NavigateHelper(
@@ -1193,8 +1212,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // the path) which is navigated to the specified URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExisting_IgnorePath) {
-  GURL singleton_url1(GetSettingsURL());
-  chrome::AddSelectedTabWithURL(browser(), singleton_url1,
+  const GURL singleton_url(GetSettingsURL());
+  chrome::AddSelectedTabWithURL(browser(), singleton_url,
                                 ui::PAGE_TRANSITION_LINK);
   chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
                                 ui::PAGE_TRANSITION_LINK);
@@ -1204,7 +1223,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
 
-  // Navigate to singleton_url1.
+  // Navigate to |singleton_url|.
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   params.url = GetContentSettingsURL();
@@ -1227,8 +1246,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // the path) which is navigated to the specified URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExistingSubPath_IgnorePath) {
-  GURL singleton_url1(GetContentSettingsURL());
-  chrome::AddSelectedTabWithURL(browser(), singleton_url1,
+  const GURL singleton_url(GetContentSettingsURL());
+  chrome::AddSelectedTabWithURL(browser(), singleton_url,
                                 ui::PAGE_TRANSITION_LINK);
   chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
                                 ui::PAGE_TRANSITION_LINK);
@@ -1238,7 +1257,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
 
-  // Navigate to singleton_url1.
+  // Navigate to |singleton_url|.
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   params.url = GetClearBrowsingDataURL();
@@ -1261,7 +1280,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // selected tab is a match but has a different path.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabFocused_IgnorePath) {
-  GURL singleton_url_current(GetContentSettingsURL());
+  const GURL singleton_url_current(GetContentSettingsURL());
   chrome::AddSelectedTabWithURL(browser(), singleton_url_current,
                                 ui::PAGE_TRANSITION_LINK);
 
@@ -1271,7 +1290,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
   // Navigate to a different settings path.
-  GURL singleton_url_target(GetClearBrowsingDataURL());
+  const GURL singleton_url_target(GetClearBrowsingDataURL());
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   params.url = singleton_url_target;
@@ -1294,7 +1313,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExisting_IgnoreQuery) {
   int initial_tab_count = browser()->tab_strip_model()->count();
-  GURL singleton_url_current("chrome://settings/internet");
+  const GURL singleton_url_current("chrome://settings/internet");
   chrome::AddSelectedTabWithURL(browser(), singleton_url_current,
                                 ui::PAGE_TRANSITION_LINK);
 
@@ -1302,7 +1321,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(initial_tab_count, browser()->tab_strip_model()->active_index());
 
   // Navigate to a different settings path.
-  GURL singleton_url_target(
+  const GURL singleton_url_target(
       "chrome://settings/internet?"
       "guid=ethernet_00aa00aa00aa&networkType=1");
   NavigateParams params(MakeNavigateParams());
@@ -1395,7 +1414,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 // This test makes sure a crashed singleton tab reloads from a new navigation.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NavigateToCrashedSingletonTab) {
-  GURL singleton_url(GetContentSettingsURL());
+  const GURL singleton_url(GetContentSettingsURL());
   WebContents* web_contents = chrome::AddSelectedTabWithURL(
       browser(), singleton_url, ui::PAGE_TRANSITION_LINK);
 
