@@ -340,10 +340,11 @@ void LocalFrame::ScheduleNavigation(Document& origin_document,
 }
 
 void LocalFrame::Navigate(const FrameLoadRequest& request,
-                          WebFrameLoadType frame_load_type) {
+                          WebFrameLoadType frame_load_type,
+                          NavigationPolicy policy) {
   if (!navigation_rate_limiter().CanProceed())
     return;
-  loader_.StartNavigation(request, frame_load_type);
+  loader_.StartNavigation(request, frame_load_type, policy);
 }
 
 void LocalFrame::DetachImpl(FrameDetachType type) {
