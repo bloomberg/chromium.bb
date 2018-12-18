@@ -152,9 +152,12 @@ builder.
 * [linux_layout_tests_layout_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_layout_tests_layout_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_layout_tests_layout_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_layout_tests_layout_ng))
 
   Path regular expressions:
-    * [`//third_party/blink/renderer/core/(layout|paint)/ng/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/renderer/core/(layout|paint)/ng/)
     * [`//third_party/blink/renderer/core/editing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/editing/)
+    * [`//third_party/blink/renderer/core/layout/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/)
+    * [`//third_party/blink/renderer/core/paint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/)
+    * [`//third_party/blink/renderer/core/svg/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/svg/)
     * [`//third_party/blink/renderer/platform/fonts/shaping/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/fonts/shaping/)
+    * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
     * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=LayoutNG`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=LayoutNG)
     * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/)
 
