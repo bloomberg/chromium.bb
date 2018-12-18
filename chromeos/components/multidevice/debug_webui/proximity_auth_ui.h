@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_PROXIMITY_AUTH_WEBUI_PROXIMITY_AUTH_UI_H_
-#define CHROMEOS_COMPONENTS_PROXIMITY_AUTH_WEBUI_PROXIMITY_AUTH_UI_H_
+#ifndef CHROMEOS_COMPONENTS_MULTIDEVICE_DEBUG_WEBUI_PROXIMITY_AUTH_UI_H_
+#define CHROMEOS_COMPONENTS_MULTIDEVICE_DEBUG_WEBUI_PROXIMITY_AUTH_UI_H_
 
 #include <string>
 
@@ -13,35 +13,37 @@
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace chromeos {
+
 namespace device_sync {
 class DeviceSyncClient;
 }  // namespace device_sync
+
 namespace secure_channel {
 class SecureChannelClient;
 }  // namespace secure_channel
-}  // namespace chromeos
 
-namespace proximity_auth {
+namespace multidevice {
 
 // The WebUI controller for chrome://proximity-auth.
 class ProximityAuthUI : public ui::MojoWebUIController {
  public:
   // Note: |web_ui| is not owned by this instance and must outlive this
   // instance.
-  ProximityAuthUI(
-      content::WebUI* web_ui,
-      chromeos::device_sync::DeviceSyncClient* device_sync_client,
-      chromeos::secure_channel::SecureChannelClient* secure_channel_client);
+  ProximityAuthUI(content::WebUI* web_ui,
+                  device_sync::DeviceSyncClient* device_sync_client,
+                  secure_channel::SecureChannelClient* secure_channel_client);
   ~ProximityAuthUI() override;
 
  protected:
   void BindMultiDeviceSetup(
-      chromeos::multidevice_setup::mojom::MultiDeviceSetupRequest request);
+      multidevice_setup::mojom::MultiDeviceSetupRequest request);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthUI);
 };
 
-}  // namespace proximity_auth
+}  // namespace multidevice
 
-#endif  // CHROMEOS_COMPONENTS_PROXIMITY_AUTH_WEBUI_PROXIMITY_AUTH_UI_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_COMPONENTS_MULTIDEVICE_DEBUG_WEBUI_PROXIMITY_AUTH_UI_H_

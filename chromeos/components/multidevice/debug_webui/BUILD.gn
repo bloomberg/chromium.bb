@@ -4,7 +4,7 @@
 
 assert(is_chromeos, "Proximity Auth is Chrome OS only")
 
-static_library("webui") {
+static_library("debug_webui") {
   sources = [
     "proximity_auth_ui.cc",
     "proximity_auth_ui.h",
