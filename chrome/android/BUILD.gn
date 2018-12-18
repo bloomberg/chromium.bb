@@ -1567,45 +1567,11 @@ monochrome_public_apk_or_module_tmpl("monochrome_public_base_module") {
   is_base_module = true
 }
 
-android_apk("trichrome_library_apk") {
-  apk_name = "TrichromeLibrary"
-  android_manifest = trichrome_library_android_manifest
-  android_manifest_dep = ":trichrome_library_android_manifest"
-
-  # TODO(torne): this contains the list of locales amongst other things.
-  # Skip building it because the version in the library won't be used anyway;
-  # the one in the main APK will take precedence.
-  generate_buildconfig_java = false
-
-  # TODO(torne): since there's no real java code in the library right now,
-  # leave out the build hooks and let them get compiled into each APK. Later
-  # this should probably be in the library.
-  no_build_hooks = true
-
-  alternative_android_sdk_dep = webview_framework_dep
-  app_as_shared_lib = true
-  use_chromium_linker = false
-  uncompress_shared_libraries = true
-
-  # Only try to generate the native library version in configurations that
-  # include a native library.
-  if (!android_64bit_target_cpu || build_apk_secondary_abi) {
-    _native_lib_file =
-        rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
-    native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
-    native_lib_version_rule = "//build/util:chrome_version_json"
-  }
-
-  if (android_64bit_target_cpu) {
-    # Include a 64-bit placeholder library to ensure that the library is treated
-    # as multiarch and gets its Java code precompiled for both architectures.
-    native_lib_placeholders = [ "libdummy.so" ]
-    if (build_apk_secondary_abi) {
-      # Include the actual 32-bit libmonochrome library.
-      secondary_abi_shared_libraries = [ ":monochrome_secondary_abi_lib" ]
-    }
-  } else {
-    shared_libraries = [ ":monochrome" ]
+if (public_android_sdk) {
+  trichrome_library_apk_tmpl("trichrome_library_apk") {
+    apk_name = "TrichromeLibrary"
+    android_manifest = trichrome_library_android_manifest
+    android_manifest_dep = ":trichrome_library_android_manifest"
   }
 }
 
