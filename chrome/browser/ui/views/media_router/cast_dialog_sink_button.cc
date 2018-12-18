@@ -50,7 +50,6 @@ class StopButton : public views::LabelButton {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     // Remove the outlines drawn when the button is in focus.
     SetInstallFocusRingOnFocus(false);
-    SetFocusPainter(nullptr);
 
     SetAccessibleName(l10n_util::GetStringFUTF16(
         IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON_ACCESSIBLE_NAME,

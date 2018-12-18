@@ -45,7 +45,6 @@ TabCloseButton::TabCloseButton(views::ButtonListener* listener,
   SetAnimationDuration(0);
 
   SetInstallFocusRingOnFocus(true);
-  SetFocusPainter(nullptr);
 }
 
 TabCloseButton::~TabCloseButton() {}

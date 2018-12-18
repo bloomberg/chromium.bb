@@ -75,9 +75,6 @@ LabelButton::LabelButton(ButtonListener* listener,
   AddChildView(label_);
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-
-  // Inset the button focus rect from the actual border; roughly match Windows.
-  SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(3)));
 }
 
 LabelButton::~LabelButton() {}

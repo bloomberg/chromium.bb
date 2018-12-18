@@ -169,7 +169,6 @@ MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
   const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH);
   SetMinSize(gfx::Size(minimum_width, 0));
-  SetFocusPainter(nullptr);
   SetInstallFocusRingOnFocus(true);
   label()->SetAutoColorReadabilityEnabled(false);
   set_request_focus_on_press(false);
