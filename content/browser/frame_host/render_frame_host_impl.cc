@@ -434,9 +434,8 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactory(
   // TODO(lukasza, nasko): https://crbug.com/888079: Use exact origin, instead
   // of falling back to site URL for about:blank and about:srcdoc.
   if (target_url.SchemeIs(url::kAboutScheme)) {
-    if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
-      return url::Origin::Create(site_instance->GetSiteURL());
-    return base::nullopt;
+    return SiteInstanceImpl::GetRequestInitiatorSiteLock(
+        site_instance->GetBrowserContext(), site_instance->GetSiteURL());
   }
 
   // In cases not covered above, URLLoaderFactory should be associated with the
