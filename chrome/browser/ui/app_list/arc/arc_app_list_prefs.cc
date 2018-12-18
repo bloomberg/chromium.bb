@@ -43,6 +43,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace {
@@ -72,6 +73,10 @@ constexpr char kVPNProvider[] = "vpnprovider";
 // case we change how app icons are produced on Android side. Can be updated in
 // unit tests.
 int current_icons_version = 1;
+
+// Set of default app icon dips that are required to support ARC icons in all
+// usage cases.
+constexpr int default_app_icon_dip_sizes[] = {16, 32, 48, 64};
 
 constexpr base::TimeDelta kDetectDefaultAppAvailabilityTimeout =
     base::TimeDelta::FromMinutes(1);
@@ -1148,7 +1153,19 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
               << current_icons_version;
       InvalidateAppIcons(app_id);
     }
+
     app_dict->SetKey(kIconVersion, base::Value(current_icons_version));
+
+    if (arc::IsArcForceCacheAppIcon()) {
+      // Request full set of app icons.
+      VLOG(1) << "Requested full set of app icons " << app_id;
+      for (auto scale_factor : ui::GetSupportedScaleFactors()) {
+        for (int dip_size : default_app_icon_dip_sizes) {
+          MaybeRequestIcon(app_id,
+                           ArcAppIconDescriptor(dip_size, scale_factor));
+        }
+      }
+    }
   }
 }
 
