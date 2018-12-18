@@ -96,7 +96,7 @@ void VolumeReaderJavaScriptStream::SetPassphraseAndSignal(
     const std::string& passphrase) {
   base::AutoLock al(shared_state_lock_);
   // Signal VolumeReaderJavaScriptStream::Passphrase to continue execution.
-  available_passphrase_ = passphrase;
+  available_passphrase_ = base::make_optional(passphrase);
   available_passphrase_cond_.Signal();
 }
 
@@ -212,14 +212,12 @@ void VolumeReaderJavaScriptStream::SetRequestId(const std::string& request_id) {
 }
 
 base::Optional<std::string> VolumeReaderJavaScriptStream::Passphrase() {
-  // The error is not recoverable. Once passphrase fails to be provided, it is
-  // never asked again. Note, that still users are able to retry entering the
-  // password, unless they click Cancel.
+  // Reset the state and prompt the user for a passphrase. Assume a correct
+  // passphrase from a previous request has been saved by the requestor.
   {
     base::AutoLock al(shared_state_lock_);
-    if (passphrase_error_) {
-      return {};
-    }
+    passphrase_error_ = false;
+    available_passphrase_.reset();
   }
 
   // Request the passphrase outside of the lock.
@@ -227,13 +225,10 @@ base::Optional<std::string> VolumeReaderJavaScriptStream::Passphrase() {
 
   base::AutoLock al(shared_state_lock_);
   // Wait for the passphrase from JavaScript.
-  // TODO(amistry): Handle spurious wakeups.
-  available_passphrase_cond_.Wait();
+  while (!passphrase_error_ && !available_passphrase_)
+    available_passphrase_cond_.Wait();
 
-  if (passphrase_error_)
-    return {};
-
-  return base::make_optional<std::string>(available_passphrase_);
+  return available_passphrase_;
 }
 
 void VolumeReaderJavaScriptStream::RequestChunk(int64_t length) {
