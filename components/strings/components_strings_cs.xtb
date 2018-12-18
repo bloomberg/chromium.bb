@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Restartujte počítač</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Zásada ignorována, protože bylo přepsána zásadou <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Smluvní podmínky</translation>
 <translation id="213826338245044447">Mobilní záložky</translation>
 <translation id="214556005048008348">Zrušit platbu</translation>
 <translation id="2147827593068025794">Synchronizace na pozadí</translation>
@@ -404,7 +403,6 @@
 <translation id="3583757800736429874">&amp;Opakovat přesunutí</translation>
 <translation id="3586931643579894722">Skrýt podrobnosti</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Ukládání karet...</translation>
 <translation id="3615877443314183785">Zadejte platné datum vypršení platnosti</translation>
 <translation id="36224234498066874">Smazat údaje o prohlížení...</translation>
 <translation id="362276910939193118">Zobrazit celou historii</translation>
@@ -724,7 +722,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5810442152076338065">Vaše připojení k doméně <ph name="DOMAIN" /> je šifrováno za použití zastaralé šifrovací sady.</translation>
 <translation id="5813119285467412249">&amp;Opakovat přidání</translation>
 <translation id="5838278095973806738">Na tento web byste neměli zadávat citlivé údaje (například hesla nebo čísla platebních karet), protože by je mohli odcizit útočníci.</translation>
-<translation id="5844286946362376359">Znám smluvní podmínky, zásady ochrany soukromí a právo na odstoupení od smlouvy služby <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (chcete-li si je přečíst, ponechte toto políčko nezaškrtnuté).</translation>
 <translation id="5863847714970149516">Následující stránka se vám může pokusit naúčtovat poplatky</translation>
 <translation id="5866257070973731571">Přidání telefonního čísla</translation>
 <translation id="5869405914158311789">Tento web není dostupný</translation>
@@ -849,7 +846,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6865412394715372076">Tuto kartu teď nelze ověřit</translation>
 <translation id="6868206169573555318">Spustit znovu a aktualizovat</translation>
 <translation id="6874604403660855544">&amp;Opakovat přidání</translation>
-<translation id="6885646002011712606">Asistent automatického vyplňování je k dispozici v dolní části obrazovky</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Úroveň zásady není podporována.</translation>
 <translation id="6895330447102777224">Vaše karta je ověřena</translation>
@@ -994,7 +990,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7716424297397655342">Tento web nelze načíst z mezipaměti</translation>
 <translation id="7723047071702270851">Úprava karty</translation>
 <translation id="774634243536837715">Byl zablokován nebezpečný obsah.</translation>
-<translation id="7747182086178764941">Je zobrazena obrazovka prvního spuštění asistenta automatického vyplňování</translation>
 <translation id="7752995774971033316">Nespravováno</translation>
 <translation id="7755287808199759310">Rodič ti jej může odblokovat.</translation>
 <translation id="7758069387465995638">Připojení mohlo být zablokováno firewallem nebo antivirovým softwarem.</translation>
@@ -1113,7 +1108,6 @@ Další podrobnosti:
 <translation id="8503559462189395349">Hesla Chrome</translation>
 <translation id="8503813439785031346">Uživatelské jméno</translation>
 <translation id="8508648098325802031">Ikona Vyhledávání</translation>
-<translation id="8524783101666974011">Uložit karty do účtu Google</translation>
 <translation id="8543181531796978784">Můžete <ph name="BEGIN_ERROR_LINK" />nahlásit problém se zjištěným webem<ph name="END_ERROR_LINK" />. Pokud bezpečnostní rizika chápete, můžete <ph name="BEGIN_LINK" />tento nespolehlivý web navštívit<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Máte nějaké dotazy? Kontaktujte osobu, která dohlíží na váš profil.</translation>
 <translation id="8553075262323480129">Překlad se nezdařil. Nepodařilo se rozpoznat jazyk stránky.</translation>

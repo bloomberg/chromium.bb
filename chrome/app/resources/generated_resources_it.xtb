@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">S&amp;trumenti</translation>
 <translation id="1122242684574577509">Autenticazione non riuscita. Fai clic per visitare la pagina di accesso della rete Wi-Fi in uso (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Aggiungi il nome ai segnalibri</translation>
-<translation id="1123187597739372905">Mostra impostazioni di sincronizzazione</translation>
 <translation id="1124772482545689468">Utente</translation>
 <translation id="1125550662859510761">Risoluzione di <ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1128109161498068552">Non consentire ai siti di utilizzare messaggi esclusivi di sistema per accedere a dispositivi MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Modifica motore di ricerca</translation>
 <translation id="1134009406053225289">Apri nella finestra di navigazione in incognito</translation>
-<translation id="1136155683023653803">Le password, i preferiti, la cronologia e altri dati vengono sincronizzati con il tuo account</translation>
 <translation id="1137673463384776352">Apri link in <ph name="APP" /></translation>
 <translation id="1140351953533677694">Accesso ai dispositivi seriali e Bluetooth</translation>
 <translation id="1140610710803014750">Accedi e attiva la sincronizzazione per trovare i tuoi preferiti su tutti i dispositivi.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Consenti sempre a <ph name="HOST" /> di accedere ai sensori</translation>
 <translation id="1153356358378277386">Dispositivi accoppiati</translation>
 <translation id="1156488781945104845">Ora corrente</translation>
-<translation id="1157102636231978136">L'attività e i dati di navigazione sincronizzati con il tuo account Google</translation>
 <translation id="1161575384898972166">Accedi a <ph name="TOKEN_NAME" /> per esportare il certificato client.</translation>
 <translation id="1161699061380012396">Metodo di immissione di Chrome OS</translation>
 <translation id="1163931534039071049">&amp;Visualizza sorgente frame</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Errore durante la configurazione della stampante</translation>
 <translation id="1396963298126346194">Il nome utente e la password inseriti non corrispondono</translation>
 <translation id="1397500194120344683">Nessun dispositivo idoneo. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Sincronizzazione e personalizzazione</translation>
 <translation id="1398853756734560583">Ingrandisci</translation>
 <translation id="1399511500114202393">Nessun certificato utente</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisionato)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Già scaricato</translation>
 <translation id="1632803087685957583">Consente di regolare la frequenza di ripetizione della tastiera, la previsione delle parole e altro ancora</translation>
 <translation id="1635033183663317347">Installata dal supervisore.</translation>
-<translation id="1635885551358739414">Google potrebbe usare i contenuti dei siti che visiti, le attività di navigazione e le interazioni con il browser per personalizzare Chrome e altri servizi Google come Traduttore, Ricerca e gli annunci. Puoi personalizzare questa opzione nelle Impostazioni.</translation>
 <translation id="1637224376458524414">Ricevi il preferito sull'iPhone</translation>
 <translation id="1637765355341780467">Si è verificato un errore durante l'apertura del profilo. Alcune funzioni potrebbero non essere disponibili.</translation>
 <translation id="1639239467298939599">Caricamento</translation>
@@ -2337,7 +2332,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4585793705637313973">Modifica pagina</translation>
 <translation id="4590324241397107707">Archiviazione database</translation>
 <translation id="4593021220803146968">Vai alla pa&amp;gina <ph name="URL" /></translation>
-<translation id="459505086032485258">Mostra le impostazioni dei servizi Google</translation>
 <translation id="4595560905247879544">Le app e le estensioni possono essere modificate solo dal gestore (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Hai dei certificati su file che identificano questi server</translation>
 <translation id="4598556348158889687">Gestione dello spazio di archiviazione</translation>
@@ -3269,7 +3263,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5982621672636444458">Opzioni ordinamento</translation>
 <translation id="5984222099446776634">Visitati di recente</translation>
 <translation id="5985458664595100876">Formato dell'URL non valido. I formati supportati sono \\server\share e smb://server/share.</translation>
-<translation id="5990142338020175451">Servizi Google più personalizzati, ad esempio suggerimenti di pagine più pertinenti</translation>
 <translation id="5990386583461751448">Tradotta</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Per assicurarti di poter continuare a navigare sul Web, chiedi al tuo amministratore di rimuovere questa applicazione.}other{Per assicurarti di poter continuare a navigare sul Web, chiedi al tuo amministratore di rimuovere queste applicazioni.}}</translation>
 <translation id="5997337190805127100">Ulteriori informazioni sull'accesso ai siti</translation>
@@ -3862,7 +3855,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6900284862687837908">App in background: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Voce per l'anteprima</translation>
 <translation id="6902837902700739466">Aggiungi il dispositivo al dominio</translation>
-<translation id="6903534926908201625">Puoi personalizzare in qualsiasi momento le informazioni raccolte da Google nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="6904344821472985372">Revoca accesso a file</translation>
 <translation id="6904655473976120856">Premi il pulsante App per uscire</translation>
 <translation id="6910211073230771657">Eliminato</translation>
@@ -4177,7 +4169,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7366415735885268578">Aggiunta di un sito</translation>
 <translation id="7366909168761621528">Dati di navigazione</translation>
 <translation id="7371006317849674875">Ora di inizio</translation>
-<translation id="737439367876257440">Migliora Chrome e la sua sicurezza inviando dati di sistema e utilizzo a Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Evidenzia il puntatore del mouse durante lo spostamento</translation>
 <translation id="7377169924702866686">La funzione Bloc maiusc è attiva.</translation>

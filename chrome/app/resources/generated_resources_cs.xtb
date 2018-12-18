@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Nástroje</translation>
 <translation id="1122242684574577509">Ověření selhalo. Kliknutím přejděte na přihlašovací stránku sítě Wi-Fi, kterou používáte (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Název záložky</translation>
-<translation id="1123187597739372905">Zobrazit nastavení synchronizace</translation>
 <translation id="1124772482545689468">Uživatel</translation>
 <translation id="1125550662859510761">Vypadá jako <ph name="WIDTH" /> × <ph name="HEIGHT" /> (nativní)</translation>
 <translation id="1128109161498068552">Nepovolovat žádným webům využívání exkluzivních zpráv systému pro přístup k zařízením MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Úprava vyhledávače</translation>
 <translation id="1134009406053225289">Otevřít v anonymním okně</translation>
-<translation id="1136155683023653803">Hesla, záložky, historie a další údaje se synchronizují do vašeho účtu</translation>
 <translation id="1137673463384776352">Otevřít odkaz v aplikaci <ph name="APP" /></translation>
 <translation id="1140351953533677694">Přistupovat k zařízením připojeným přes Bluetooth a sériový port</translation>
 <translation id="1140610710803014750">Chcete-li mít záložky ve všech zařízeních, přihlaste se a zapněte synchronizaci.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Vždy povolit webu <ph name="HOST" /> přístup k senzorům</translation>
 <translation id="1153356358378277386">Spárovaná zařízení</translation>
 <translation id="1156488781945104845">Aktuální čas</translation>
-<translation id="1157102636231978136">Vaše údaje o prohlížení a aktivita synchronizované do účtu Google</translation>
 <translation id="1161575384898972166">Chcete-li exportovat certifikát klienta, přihlaste se prosím do zařízení <ph name="TOKEN_NAME" />.</translation>
 <translation id="1161699061380012396">Metoda zadávání v systému Chrome OS</translation>
 <translation id="1163931534039071049">Zobrazit zdrojový kód rámu</translation>
@@ -280,7 +277,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1396139853388185343">Při nastavování tiskárny došlo k chybě</translation>
 <translation id="1396963298126346194">Zadané uživatelské jméno a heslo se neshodují.</translation>
 <translation id="1397500194120344683">Žádná způsobilá zařízení. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Synchronizace a personalizace</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
 <translation id="1399511500114202393">Žádný certifikát uživatele</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (dozorovaný)</translation>
@@ -437,7 +433,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1627408615528139100">Již staženo</translation>
 <translation id="1632803087685957583">Umožňuje upravit rychlost opakování klávesnice, předvídání slov a další nastavení</translation>
 <translation id="1635033183663317347">Nainstaloval váš opatrovník</translation>
-<translation id="1635885551358739414">Google vám může prohlížeč Chrome a další služby Google, jako jsou Překladač, Vyhledávání a reklamy, přizpůsobit na základě obsahu některých navštívených webů, aktivity v prohlížeči a dalších interakcí s prohlížečem. Tuto možnost můžete upravit v Nastavení.</translation>
 <translation id="1637224376458524414">Uložte si tuto záložku do iPhonu</translation>
 <translation id="1637765355341780467">Při otevírání vašeho profilu se něco pokazilo. Některé funkce mohou být nedostupné.</translation>
 <translation id="1639239467298939599">Načítání</translation>
@@ -2337,7 +2332,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4585793705637313973">Úprava stránky</translation>
 <translation id="4590324241397107707">Databázové úložiště</translation>
 <translation id="4593021220803146968">&amp;Přejít na adresu <ph name="URL" /></translation>
-<translation id="459505086032485258">Zobrazit nastavení služeb Google</translation>
 <translation id="4595560905247879544">Aplikace a rozšíření může upravit pouze správce (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Máte založené certifikáty, které identifikují tyto servery</translation>
 <translation id="4598556348158889687">Správa úložiště</translation>
@@ -3269,7 +3263,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5982621672636444458">Možnosti řazení</translation>
 <translation id="5984222099446776634">Nedávno navštívené</translation>
 <translation id="5985458664595100876">Neplatný formát adresy URL. Podporované formáty jsou \\server\share a smb://server/share.</translation>
-<translation id="5990142338020175451">Více osobních služeb Google, např. lepší návrhy stránek</translation>
 <translation id="5990386583461751448">Přeloženo</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Abyste mohli nadále procházet web, požádejte administrátora o odstranění této aplikace.}few{Abyste mohli nadále procházet web, požádejte administrátora o odstranění této aplikace.}many{Abyste mohli nadále procházet web, požádejte administrátora o odstranění této aplikace.}other{Abyste mohli nadále procházet web, požádejte administrátora o odstranění této aplikace.}}</translation>
 <translation id="5997337190805127100">Další informace o přístupu k webům</translation>
@@ -3862,7 +3855,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6900284862687837908">Aplikace na pozadí: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Hlas k náhledu</translation>
 <translation id="6902837902700739466">Přidat zařízení do domény</translation>
-<translation id="6903534926908201625">Informace shromažďované Googlem můžete v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" /> kdykoliv upravit.</translation>
 <translation id="6904344821472985372">Zrušit přístup k souboru</translation>
 <translation id="6904655473976120856">Ukončíte stisknutím tlačítka aplikace</translation>
 <translation id="6910211073230771657">Smazáno</translation>
@@ -4177,7 +4169,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7366415735885268578">Přidání webu</translation>
 <translation id="7366909168761621528">Údaje o prohlížení</translation>
 <translation id="7371006317849674875">Čas zahájení</translation>
-<translation id="737439367876257440">Vylepšete prohlížeč Chrome a jeho zabezpečení tím, že do Googlu budete odesílat informace o systému a využití</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Zvýraznit ukazatel myši, když se pohybuje.</translation>
 <translation id="7377169924702866686">Caps Lock je zapnutý.</translation>

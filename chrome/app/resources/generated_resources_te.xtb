@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;సాధనాలు</translation>
 <translation id="1122242684574577509">ప్రామాణీకరణ విఫలమైంది. మీరు ఉపయోగిస్తున్న Wi-Fi నెట్‌వర్క్ (<ph name="NETWORK_ID" />) లాగిన్ పేజీని సందర్శించడానికి క్లిక్ చేయండి.</translation>
 <translation id="1122960773616686544">పేరును బుక్‌మార్క్ చేయండి</translation>
-<translation id="1123187597739372905">సమకాలీకరణ సెట్టింగ్‌లను చూపు</translation>
 <translation id="1124772482545689468">వినియోగదారు</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> ఉన్నట్టుంది (అసలైనది)</translation>
 <translation id="1128109161498068552">MIDI పరికరాలను ప్రాప్యత చేయడం కోసం సిస్టమ్ విశిష్ట సందేశాలను ఉపయోగించడానికి ఏ సైట్‌లను అనుమతించవద్దు</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">శోధన ఇంజిన్‌ని సవరించండి</translation>
 <translation id="1134009406053225289">అజ్ఞాత విండోలో తెరువు</translation>
-<translation id="1136155683023653803">పాస్‌వర్డ్‌లు, బుక్‌మార్క్‌లు, చరిత్ర మరియు మరిన్ని మీ ఖాతాకు సమకాలీకరించబడతాయి</translation>
 <translation id="1137673463384776352">లింక్‌ను <ph name="APP" />లో తెరువు</translation>
 <translation id="1140351953533677694">మీ బ్లూటూత్ మరియు క్రమానుసార పరికరాలను ప్రాప్యత చేయడం</translation>
 <translation id="1140610710803014750">మీ బుక్‌మార్క్‌లను మీ అన్ని పరికరాలలోనూ పొందాలంటే, సైన్ ఇన్ చేసి, సమకాలీకరణను ఆన్ చేయండి.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">సెన్సార్‌లను యాక్సెస్ చేయడానికి ఎల్లవేళలా <ph name="HOST" />ని అనుమతించు</translation>
 <translation id="1153356358378277386">జత చేసిన పరికరాలు</translation>
 <translation id="1156488781945104845">ప్రస్తుత సమయం</translation>
-<translation id="1157102636231978136">మీ బ్రౌజింగ్ డేటా మరియు కార్యాకలాపం, మీ Google ఖాతాకు సమకాలీకరించబడ్డాయి</translation>
 <translation id="1161575384898972166">దయచేసి క్లయింట్ ప్రమాణపత్రాన్ని ఎగుమతి చెయ్యడానికి <ph name="TOKEN_NAME" />కి సైన్ ఇన్ చెయ్యండి.</translation>
 <translation id="1161699061380012396">Chrome OS ఇన్‌పుట్ విధానం</translation>
 <translation id="1163931534039071049">ఫ్రేమ్ మూలాన్ని &amp;వీక్షించండి</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">ప్రింటర్‌ని సెటప్ చేస్తున్నప్పుడు ఎర్రర్ ఏర్పడింది</translation>
 <translation id="1396963298126346194">మీరు నమోదు చేసిన వినియోగదారు పేరు మరియు పాస్‌వర్డ్ సరిపోలలేదు</translation>
 <translation id="1397500194120344683">అర్హత గల పరికరాలు లేవు. <ph name="LINK_BEGIN" />మరింత తెలుసుకోండి<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">సమకాలీకరణ మరియు వ్యక్తిగతీకరణ</translation>
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
 <translation id="1399511500114202393">వినియోగదారు సర్టిఫికెట్ లేదు</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (పర్యవేక్షించబడేవారు)</translation>
@@ -438,7 +434,6 @@
 <translation id="1627408615528139100">ఇప్పటికే డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="1632803087685957583">మీ కీబోర్డ్ పునరావృత రేటు, పద సూచన మొదలైనవి సర్దుబాటు చేయడానికి మిమ్మల్ని అనుమతిస్తుంది</translation>
 <translation id="1635033183663317347">మీ పర్యవేక్షకుడు ఇన్‌స్టాల్ చేసారు.</translation>
-<translation id="1635885551358739414">Chromeని మరియు అనువాదం, శోధన మరియు ప్రకటనలు వంటి ఇతర Google సేవలను వ్యక్తిగతీకరించడానికి, మీరు సందర్శించే సైట్‌లలోని కంటెంట్‌ను, అలాగే బ్రౌజర్ కార్యకలాపం మరియు పరస్పర చర్యలను Google ఉపయోగించవచ్చు. మీరు దీన్ని సెట్టింగ్‌‌లలో అనుకూలీకరించవచ్చు.</translation>
 <translation id="1637224376458524414">ఈ బుక్‌మార్క్‌ని మీ iPhoneలో పొందండి</translation>
 <translation id="1637765355341780467">మీ ప్రొఫైల్‌ను తెరుస్తున్నప్పుడు ఏదో తప్పు జరిగింది. కొన్ని లక్షణాలు అందుబాటులో ఉండకపోవచ్చు.</translation>
 <translation id="1639239467298939599">లోడ్ అవుతోంది</translation>
@@ -2342,7 +2337,6 @@
 <translation id="4585793705637313973">పేజీని సవరించండి</translation>
 <translation id="4590324241397107707">డేటాబేస్ నిల్వ</translation>
 <translation id="4593021220803146968"><ph name="URL" />కు &amp;వెళ్ళండి</translation>
-<translation id="459505086032485258">Google సేవల సెట్టింగ్‌లను చూపు</translation>
 <translation id="4595560905247879544">అనువర్తనాలు మరియు పొడిగింపులను నిర్వాహకుడు (<ph name="CUSTODIAN_NAME" />) మాత్రమే సవరించగలరు.</translation>
 <translation id="4596295440756783523">మీకు ఫైల్‌లో ఈ సర్వర్‌లను గుర్తించే ప్రమాణపత్రాలు ఉన్నాయి</translation>
 <translation id="4598556348158889687">నిల్వ నిర్వహణ</translation>
@@ -3275,7 +3269,6 @@
 <translation id="5982621672636444458">క్రమబద్ధీకరణ ఎంపికలు</translation>
 <translation id="5984222099446776634">ఇటీవల సందర్శించినవి</translation>
 <translation id="5985458664595100876">URL ఫార్మాట్ చెల్లదు. మద్దతు ఉన్న ఫార్మాట్‌లు \\server\share మరియు smb://server/share.</translation>
-<translation id="5990142338020175451">మెరుగైన పేజీ సూచనల వంటి, మరిన్ని వ్యక్తిగత Google సేవలు</translation>
 <translation id="5990386583461751448">అనువదించబడింది</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{వెబ్‌ను బ్రౌజ్ చేస్తూనే ఉండడాన్ని నిర్ధారించడానికి, మీ నిర్వాహకుడిని ఈ అప్లికేషన్‌ను తీసివేయమని కోరండి.}other{వెబ్‌ను బ్రౌజ్ చేస్తూనే ఉండడాన్ని నిర్ధారించడానికి, మీ నిర్వాహకుడిని ఈ అప్లికేషన్‌లను తీసివేయమని కోరండి.}}</translation>
 <translation id="5997337190805127100">సైట్ యాక్సెస్ గురించి మరింత తెలుసుకోండి</translation>
@@ -3868,7 +3861,6 @@
 <translation id="6900284862687837908">నేపథ్య అనువర్తనం: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">వాయిస్ యొక్క ప్రివ్యూ</translation>
 <translation id="6902837902700739466">పరికరాన్ని డొమైన్‌కు చేర్చండి</translation>
-<translation id="6903534926908201625">Google సేకరించిన సమాచారాన్ని మీరు ఏ సమయంలోనైనా <ph name="BEGIN_LINK" />సెట్టింగ్‌ల<ph name="END_LINK" />లో అనుకూలీకరించవచ్చు.</translation>
 <translation id="6904344821472985372">ఫైల్ ప్రాప్యతను ఉపసంహరించు</translation>
 <translation id="6904655473976120856">నిష్క్రమించడానికి అనువర్తన బటన్ నొక్కండి</translation>
 <translation id="6910211073230771657">తొలగించబడింది</translation>
@@ -4183,7 +4175,6 @@
 <translation id="7366415735885268578">సైట్‌ను జోడించండి</translation>
 <translation id="7366909168761621528">బ్రౌజింగ్ డేటా</translation>
 <translation id="7371006317849674875">ప్రారంభ సమయం</translation>
-<translation id="737439367876257440">సిస్టమ్ మరియు వినియోగ సమాచారాన్ని Googleకి పంపడం ద్వారా Chromeని మరియు దాని భద్రతను మెరుగుపరచండి</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">మౌస్ కర్సర్ జరుగుతున్నప్పుడు దాన్ని హైలైట్ చేయి</translation>
 <translation id="7377169924702866686">Caps Lock ఆన్‌లో ఉంది.</translation>

@@ -168,7 +168,6 @@
 <translation id="2156074688469523661">மீதமுள்ள தளங்கள் (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2173302385160625112">உங்கள் இணைய இணைப்பைச் சரிபார்க்கவும்</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, இணையப் பயன்பாடு. <ph name="APP_URL" /></translation>
-<translation id="2221802148287197464">தானாக இயக்குதல்</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> ஆகத் தொடர்க</translation>
 <translation id="2232379019872353004">சில சாதனத் தகவலையும் பக்க உள்ளடக்கத்தையும் Googleக்கு அனுப்பும்</translation>
 <translation id="2234876718134438132">ஒத்திசைவு &amp; Google சேவைகள்</translation>
@@ -240,7 +239,6 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> வினாடிகள் மீதமுள்ளன</translation>
 <translation id="2779651927720337254">தோல்வியுற்றது</translation>
 <translation id="2781151931089541271">1 வினாடி மீதமுள்ளது</translation>
-<translation id="2783359740176230170">விரைவான செக்அவுட்</translation>
 <translation id="2803478378562657435">சேமித்த கடவுச்சொற்களையும் கடவுச்சொல் விருப்பங்களையும் காண்பிக்கிறது</translation>
 <translation id="2810645512293415242">தரவைச் சேமித்து, வேகமாக ஏற்றுவதற்கு எளிதாக்கப்பட்ட பக்கம்.</translation>
 <translation id="281504910091592009">உங்கள் <ph name="BEGIN_LINK" />Google கணக்கில்<ph name="END_LINK" /> சேமிக்கப்பட்ட கடவுச்சொற்களைப் பார்த்து, நிர்வகிக்கவும்</translation>
@@ -547,7 +545,6 @@
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />அமைப்புகளை<ph name="END_LINK1" /> எப்போது வேண்டுமானாலும் மாற்றலாம். Chromeமையும் மொழியாக்கம், தேடல், விளம்பரங்கள் போன்ற பிற Google சேவைகளையும் தனிப்பயனாக்க, நீங்கள் பார்வையிடும் தளங்களில் உள்ள உள்ளடக்கம், உலாவிச் செயல்பாடு, உரையாடல்கள் ஆகியவற்றை Google பயன்படுத்தக்கூடும்.</translation>
 <translation id="526421993248218238">பக்கத்தை ஏற்ற முடியவில்லை</translation>
 <translation id="5271967389191913893">பதிவிறக்க வேண்டிய உள்ளடக்கத்தைச் சாதனத்தால் திறக்க முடியாது</translation>
-<translation id="5274381992091475657">அசிஸ்டண்ட் தன்னிரப்பி</translation>
 <translation id="528192093759286357">முழுத்திரையிலிருந்து வெளியேற, மேலிருந்து இழுத்து "முந்தையது" பொத்தானைத் தொடவும்.</translation>
 <translation id="5284584623296338184">புத்தகக்குறிகள், வரலாறு, கடவுச்சொற்கள் ஆகியவற்றிலும் பிற அமைப்புகளிலும் செய்யும் மாற்றங்கள், இனி உங்கள் Google கணக்குடன் ஒத்திசைக்கப்படாது. எனினும், ஏற்கனவே சேமிக்கப்பட்ட உங்கள் தரவு Google கணக்கில் அப்படியே இருக்கும்.</translation>
 <translation id="5301954838959518834">சரி, புரிந்தது</translation>
@@ -886,8 +883,6 @@
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> மொழியில் உள்ள பக்கங்களை எப்போதும் மொழிபெயர்</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">ஆபத்தான தளங்களிலிருந்து உங்களையும் உங்கள் சாதனத்தையும் பாதுகாக்கும்</translation>
-<translation id="7759822418208302953">தன்னிரப்பி அசிஸ்டண்ட் நிறுத்தப்படுகிறது</translation>
-<translation id="7761870125254530914">தொடர்வதன் மூலம், விரைவான செக்அவுட்டுக்கான Google விதிமுறைகள் மற்றும் நிபந்தனைகளை ஏற்கிறீர்கள். <ph name="BEGIN_LINK" />மேலும் படிக்கவும்<ph name="END_LINK" /></translation>
 <translation id="7762668264895820836">SD கார்டு <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">முகவரியைச் சேர்</translation>
 <translation id="7765158879357617694">நகர்த்து</translation>

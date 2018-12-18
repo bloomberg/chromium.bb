@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">パソコンを再起動する</translation>
 <translation id="2113977810652731515">カード</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> によって上書きされるため無視されます。</translation>
-<translation id="2129308444951592399">利用規約</translation>
 <translation id="213826338245044447">モバイルのブックマーク</translation>
 <translation id="214556005048008348">支払いをキャンセル</translation>
 <translation id="2147827593068025794">バックグラウンド同期</translation>
@@ -244,7 +243,7 @@
 <translation id="2501278716633472235">戻る</translation>
 <translation id="2503184589641749290">利用可能なデビットカードとプリペイド カード</translation>
 <translation id="2515629240566999685">電波状況を確認する</translation>
-<translation id="2523886232349826891">カードはこの端末のみに保存されます</translation>
+<translation id="2523886232349826891">カードはこのデバイスのみに保存されます</translation>
 <translation id="2524461107774643265">その他の情報の追加</translation>
 <translation id="2536110899380797252">住所を追加</translation>
 <translation id="2539524384386349900">検出</translation>
@@ -407,7 +406,6 @@
 <translation id="3583757800736429874">移動のやり直し（&amp;R）</translation>
 <translation id="3586931643579894722">詳細を非表示</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />、<ph name="DOMAIN" />、<ph name="TIME" /></translation>
-<translation id="3608659946467434602">カードを保存しています...</translation>
 <translation id="3615877443314183785">有効期限（日）を入力してください</translation>
 <translation id="36224234498066874">閲覧履歴を消去...</translation>
 <translation id="362276910939193118">全履歴を表示</translation>
@@ -728,7 +726,6 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" /> への接続は古い暗号スイートにより暗号化されています。</translation>
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
 <translation id="5838278095973806738">このサイトでは機密情報（パスワード、クレジット カードなど）を入力しないでください。悪意のあるユーザーに情報が盗まれる恐れがあります。</translation>
-<translation id="5844286946362376359">利用規約、プライバシー ポリシー、<ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> の利用を中止する権利について知っています（確認する場合はチェックボックスをオフのままにしてください）。</translation>
 <translation id="5863847714970149516">表示しようとしているページでは課金される恐れがあります</translation>
 <translation id="5866257070973731571">電話番号の追加</translation>
 <translation id="5869405914158311789">このサイトにアクセスできません</translation>
@@ -854,7 +851,6 @@
 <translation id="6865412394715372076">現在、このカードを確認できません</translation>
 <translation id="6868206169573555318">再起動して更新する</translation>
 <translation id="6874604403660855544">追加のやり直し（&amp;R）</translation>
-<translation id="6885646002011712606">画面下部にある自動入力アシスタントを使用できます</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">ポリシーレベルがサポートされていません。</translation>
 <translation id="6895330447102777224">カードを確認しました</translation>
@@ -1000,7 +996,6 @@
 <translation id="7716424297397655342">このサイトをキャッシュから読み込むことができません</translation>
 <translation id="7723047071702270851">カードの編集</translation>
 <translation id="774634243536837715">危険なコンテンツがブロックされました。</translation>
-<translation id="7747182086178764941">自動入力アシスタントの初回実行画面が表示されました</translation>
 <translation id="7752995774971033316">管理されていません</translation>
 <translation id="7755287808199759310">ブロックの解除は保護者が行うことができます</translation>
 <translation id="7758069387465995638">ファイアウォールまたはウイルス対策ソフトウェアによって接続がブロックされた可能性があります。</translation>
@@ -1119,7 +1114,6 @@
 <translation id="8503559462189395349">Chrome パスワード</translation>
 <translation id="8503813439785031346">ユーザー名</translation>
 <translation id="8508648098325802031">検索アイコン</translation>
-<translation id="8524783101666974011">Google アカウントにカードを保存</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />検出の問題をご報告<ph name="END_ERROR_LINK" />ください。<ph name="BEGIN_LINK" />安全でないこのサイトにアクセス<ph name="END_LINK" />する場合は、セキュリティ上のリスクがあることをご承知おきください。</translation>
 <translation id="8543556556237226809">ご不明な点は、プロフィールの管理担当者にお問い合わせください。</translation>
 <translation id="8553075262323480129">ページの言語を検出できないため翻訳できません。</translation>

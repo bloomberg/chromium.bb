@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Instrumente</translation>
 <translation id="1122242684574577509">Autentificarea nu a reușit. Dă clic pentru a accesa pagina de conectare a rețelei Wi-Fi pe care o folosești (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Nume marcaj</translation>
-<translation id="1123187597739372905">Afișează setările de sincronizare</translation>
 <translation id="1124772482545689468">Utilizator</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Nativ)</translation>
 <translation id="1128109161498068552">Nu permiteți niciunui site să utilizeze mesajele rezervate sistemului pentru a accesa dispozitive MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editează motorul de căutare</translation>
 <translation id="1134009406053225289">Deschide într-o fereastră incognito</translation>
-<translation id="1136155683023653803">Parolele, marcajele, istoricul și alte date sunt sincronizate cu contul tău</translation>
 <translation id="1137673463384776352">Deschide linkul în <ph name="APP" /></translation>
 <translation id="1140351953533677694">Accesează dispozitivele Bluetooth și seriale</translation>
 <translation id="1140610710803014750">Pentru a accesa marcajele pe toate dispozitivele, conectează-te și activează sincronizarea.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Permite întotdeauna accesul <ph name="HOST" /> la senzori</translation>
 <translation id="1153356358378277386">Dispozitive asociate</translation>
 <translation id="1156488781945104845">Ora actuală</translation>
-<translation id="1157102636231978136">Datele de navigare și activitatea ta, sincronizate în Contul Google</translation>
 <translation id="1161575384898972166">Conectează-te la <ph name="TOKEN_NAME" /> pentru a exporta certificatul client.</translation>
 <translation id="1161699061380012396">Metoda de introducere a textului din sistemul de operare Chrome</translation>
 <translation id="1163931534039071049">&amp;Afișează sursa cadrului</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Eroare la configurarea imprimantei</translation>
 <translation id="1396963298126346194">Numele de utilizator și parola introduse nu se potrivesc</translation>
 <translation id="1397500194120344683">Nu există dispozitive eligibile. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Sincronizare și personalizare</translation>
 <translation id="1398853756734560583">Maximizează</translation>
 <translation id="1399511500114202393">Niciun certificat de utilizator</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (monitorizat)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Descărcat deja</translation>
 <translation id="1632803087685957583">Cu ajutorul acestor setări, poți să ajustezi frecvența de repetare a tastelor, predicția cuvintelor și altele</translation>
 <translation id="1635033183663317347">Instalată de custode.</translation>
-<translation id="1635885551358739414">Google poate folosi conținutul de pe site-urile pe care le accesezi, activitatea browserului și interacțiunile pentru a personaliza Chrome și alte servicii Google, precum Traducere, Căutare și anunțuri. Poți personaliza această opțiune în Setări.</translation>
 <translation id="1637224376458524414">Obține marcajul pe iPhone</translation>
 <translation id="1637765355341780467">A apărut o eroare la deschiderea profilului. Este posibil ca unele funcții să nu fie disponibile.</translation>
 <translation id="1639239467298939599">Se încarcă</translation>
@@ -2341,7 +2336,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4585793705637313973">Editează pagina</translation>
 <translation id="4590324241397107707">Spațiu de stocare a bazei de date</translation>
 <translation id="4593021220803146968">&amp;Accesează <ph name="URL" /></translation>
-<translation id="459505086032485258">Afișează setările pentru serviciile Google</translation>
 <translation id="4595560905247879544">Aplicațiile și extensiile pot fi modificate numai de administrator (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Ai certificate stocate care identifică aceste servere</translation>
 <translation id="4598556348158889687">Gestionarea stocării</translation>
@@ -3274,7 +3268,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5982621672636444458">Opțiuni de sortare</translation>
 <translation id="5984222099446776634">Recently visited (Vizitate recent)</translation>
 <translation id="5985458664595100876">Format nevalid al adresei URL. Formatele acceptate sunt \\server\share și smb://server/share.</translation>
-<translation id="5990142338020175451">Servicii Google personalizate, cum ar fi sugestiile îmbunătățite privind paginile</translation>
 <translation id="5990386583461751448">Tradusă</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Ca să poți naviga în continuare pe web, trebuie să soliciți administratorului să elimine aplicația.}few{Ca să poți naviga în continuare pe web, trebuie să soliciți administratorului să elimine aplicațiile.}other{Ca să poți naviga în continuare pe web, trebuie să soliciți administratorului să elimine aplicațiile.}}</translation>
 <translation id="5997337190805127100">Află mai multe despre accesul la site</translation>
@@ -3867,7 +3860,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6900284862687837908">Aplicația de fundal: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Voce pentru previzualizare</translation>
 <translation id="6902837902700739466">Asociază dispozitivul cu domeniul</translation>
-<translation id="6903534926908201625">Poți personaliza oricând informațiile colectate de Google în <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
 <translation id="6904344821472985372">Revocați accesul la fișiere</translation>
 <translation id="6904655473976120856">Apasă pe butonul Aplicație pentru ieșire</translation>
 <translation id="6910211073230771657">Șters</translation>
@@ -4182,7 +4174,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7366415735885268578">Adaugă un site</translation>
 <translation id="7366909168761621528">Date de navigare</translation>
 <translation id="7371006317849674875">Ora de începere</translation>
-<translation id="737439367876257440">Poți îmbunătăți browserul Chrome și securitatea acestuia dacă trimiți la Google informații despre sistem și utilizare</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Evidențiază cursorul mouse-ului când se mișcă</translation>
 <translation id="7377169924702866686">Tasta Caps Lock este activată.</translation>

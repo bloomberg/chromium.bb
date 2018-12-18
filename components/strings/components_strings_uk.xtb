@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Перезавантажте комп’ютер</translation>
 <translation id="2113977810652731515">Картка</translation>
 <translation id="2114841414352855701">Правило ігнорується, оскільки його замінено правилом <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Умови використання</translation>
 <translation id="213826338245044447">Закладки для мобільних пристроїв</translation>
 <translation id="214556005048008348">Скасувати оплату</translation>
 <translation id="2147827593068025794">Фонова синхронізація</translation>
@@ -407,7 +406,6 @@
 <translation id="3583757800736429874">&amp;Повторити переміщення</translation>
 <translation id="3586931643579894722">Сховати докладні дані</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Зберігання карток…</translation>
 <translation id="3615877443314183785">Введіть дійсний термін дії</translation>
 <translation id="36224234498066874">Очистити дані веб-перегляду...</translation>
 <translation id="362276910939193118">Показати повну історію</translation>
@@ -728,7 +726,6 @@
 <translation id="5810442152076338065">З’єднання з доменом <ph name="DOMAIN" /> шифрується за допомогою застарілого набору шифрів.</translation>
 <translation id="5813119285467412249">&amp;Повторити додавання</translation>
 <translation id="5838278095973806738">Не вводьте конфіденційну інформацію на цьому сайті (як-от паролі й дані кредитних карток). Зловмисники можуть викрасти її.</translation>
-<translation id="5844286946362376359">Я ознайомлений(-а) з умовами використання, політикою конфіденційності та правом на відмову для <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (не ставте прапорець, щоб прочитати текст).</translation>
 <translation id="5863847714970149516">Наступна сторінка може спробувати стягнути плату</translation>
 <translation id="5866257070973731571">Додайте номер телефону</translation>
 <translation id="5869405914158311789">Немає зв’язку із сайтом</translation>
@@ -854,7 +851,6 @@
 <translation id="6865412394715372076">Зараз цю картку не можна підтвердити</translation>
 <translation id="6868206169573555318">Перезапустити, щоб оновити</translation>
 <translation id="6874604403660855544">&amp;Повторити додавання</translation>
-<translation id="6885646002011712606">Асистент автозаповнення доступний унизу екрана</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Правило не підтримується.</translation>
 <translation id="6895330447102777224">Дані картки підтверджено</translation>
@@ -1000,7 +996,6 @@
 <translation id="7716424297397655342">Не вдається завантажити цей сайт із кешу</translation>
 <translation id="7723047071702270851">Відредагуйте картку</translation>
 <translation id="774634243536837715">Заблоковано небезпечний вміст.</translation>
-<translation id="7747182086178764941">Показано екран першого запуску Асистента автозаповнення</translation>
 <translation id="7752995774971033316">Некерований клієнт</translation>
 <translation id="7755287808199759310">Хтось із батьків може розблокувати його</translation>
 <translation id="7758069387465995638">Можливо, брандмауер або антивірусна програма заблокували з’єднання.</translation>
@@ -1119,7 +1114,6 @@
 <translation id="8503559462189395349">Паролі Chrome</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
 <translation id="8508648098325802031">Значок пошуку</translation>
-<translation id="8524783101666974011">Збережіть картки в обліковому записі Google</translation>
 <translation id="8543181531796978784">Ви можете <ph name="BEGIN_ERROR_LINK" />повідомити про проблему з пошуком<ph name="END_ERROR_LINK" /> або <ph name="BEGIN_LINK" />перейти на цей незахищений сайт<ph name="END_LINK" /> (якщо розумієте, наскільки це небезпечно).</translation>
 <translation id="8543556556237226809">Маєте запитання? Зв’яжіться з особою, яка контролює ваш профіль.</translation>
 <translation id="8553075262323480129">Помилка перекладу. Неможливо визначити мову сторінки.</translation>

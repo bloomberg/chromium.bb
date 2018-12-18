@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Je computer opnieuw opstarten</translation>
 <translation id="2113977810652731515">Kaart</translation>
 <translation id="2114841414352855701">Genegeerd omdat het werd overschreven door <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Algemene voorwaarden</translation>
 <translation id="213826338245044447">Mobiele bladwijzers</translation>
 <translation id="214556005048008348">Betaling annuleren</translation>
 <translation id="2147827593068025794">Synchronisatie op de achtergrond</translation>
@@ -404,7 +403,6 @@
 <translation id="3583757800736429874">&amp;Opnieuw verplaatsen</translation>
 <translation id="3586931643579894722">Details verbergen</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Kaarten opslaan...</translation>
 <translation id="3615877443314183785">Geef een geldige vervaldatum op</translation>
 <translation id="36224234498066874">Browsegegevens wissen...</translation>
 <translation id="362276910939193118">Volledige geschiedenis weergeven</translation>
@@ -724,7 +722,6 @@
 <translation id="5810442152076338065">Je verbinding met <ph name="DOMAIN" /> is versleuteld via een verouderde Cipher Suite.</translation>
 <translation id="5813119285467412249">&amp;Opnieuw toevoegen</translation>
 <translation id="5838278095973806738">Je moet geen gevoelige gegevens (zoals wachtwoorden of creditcards) opgeven op deze site omdat ze kunnen worden gestolen door aanvallers.</translation>
-<translation id="5844286946362376359">Ik ben op de hoogte van de algemene voorwaarden, het privacybeleid en het herroepingsrecht voor <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (onaangevinkt laten om te kunnen lezen).</translation>
 <translation id="5863847714970149516">Op de komende pagina kan worden geprobeerd kosten in rekening te brengen</translation>
 <translation id="5866257070973731571">Telefoonnummer toevoegen</translation>
 <translation id="5869405914158311789">Deze site is niet bereikbaar</translation>
@@ -849,7 +846,6 @@
 <translation id="6865412394715372076">Deze kaart kan momenteel niet worden geverifieerd</translation>
 <translation id="6868206169573555318">Opnieuw starten om te updaten</translation>
 <translation id="6874604403660855544">&amp;Opnieuw toevoegen</translation>
-<translation id="6885646002011712606">Assistent voor automatisch aanvullen is beschikbaar onderaan het scherm</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Beleidsniveau wordt niet ondersteund.</translation>
 <translation id="6895330447102777224">Je creditcard is bevestigd</translation>
@@ -995,7 +991,6 @@ Aanvullende informatie:
 <translation id="7716424297397655342">Deze site kan niet worden geladen vanuit het cachegeheugen</translation>
 <translation id="7723047071702270851">Kaart bewerken</translation>
 <translation id="774634243536837715">Gevaarlijke content geblokkeerd.</translation>
-<translation id="7747182086178764941">Het scherm voor de eerste uitvoering van de assistent voor automatisch aanvullen wordt weergegeven</translation>
 <translation id="7752995774971033316">Niet-beheerd</translation>
 <translation id="7755287808199759310">Je ouder of voogd kan de blokkering van deze site opheffen</translation>
 <translation id="7758069387465995638">De verbinding is mogelijk geblokkeerd door de firewall of antivirussoftware.</translation>
@@ -1114,7 +1109,6 @@ Aanvullende informatie:
 <translation id="8503559462189395349">Chrome-wachtwoorden</translation>
 <translation id="8503813439785031346">Gebruikersnaam</translation>
 <translation id="8508648098325802031">Zoekpictogram</translation>
-<translation id="8524783101666974011">Kaarten opslaan in je Google-account</translation>
 <translation id="8543181531796978784">Je kunt <ph name="BEGIN_ERROR_LINK" />een detectieprobleem melden<ph name="END_ERROR_LINK" />. Als je de veiligheidsrisico's begrijpt, kun je ook <ph name="BEGIN_LINK" />deze onveilige site bezoeken<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Vragen? Neem contact op met de persoon die je profiel beheert.</translation>
 <translation id="8553075262323480129">De vertaling is mislukt omdat de taal van de pagina niet kan worden bepaald.</translation>

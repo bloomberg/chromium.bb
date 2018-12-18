@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Tools</translation>
 <translation id="1122242684574577509">Authentication failed. Click to visit the login page for the Wi-Fi network you are using (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Bookmark name</translation>
-<translation id="1123187597739372905">Show sync settings</translation>
 <translation id="1124772482545689468">User</translation>
 <translation id="1125550662859510761">Looks like <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Native)</translation>
 <translation id="1128109161498068552">Do not allow any sites to use system exclusive messages to access MIDI devices</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edit search engine</translation>
 <translation id="1134009406053225289">Open in incognito window</translation>
-<translation id="1136155683023653803">Passwords, bookmarks, history and more are synced to your account</translation>
 <translation id="1137673463384776352">Open link in <ph name="APP" /></translation>
 <translation id="1140351953533677694">Access your Bluetooth and Serial devices</translation>
 <translation id="1140610710803014750">To get your bookmarks on all your devices, sign in and turn on sync.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Always allow <ph name="HOST" /> to access sensors</translation>
 <translation id="1153356358378277386">Paired devices</translation>
 <translation id="1156488781945104845">Current time</translation>
-<translation id="1157102636231978136">Your browsing data and activity, synced to your Google account</translation>
 <translation id="1161575384898972166">Please sign in to <ph name="TOKEN_NAME" /> to export the client certificate.</translation>
 <translation id="1161699061380012396">Chrome OS input method</translation>
 <translation id="1163931534039071049">&amp;View frame source</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Error setting up printer</translation>
 <translation id="1396963298126346194">The username and password that you entered do not match</translation>
 <translation id="1397500194120344683">No eligible devices. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Sync and personalisation</translation>
 <translation id="1398853756734560583">Maximise</translation>
 <translation id="1399511500114202393">No user certificate</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Supervised)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Already downloaded</translation>
 <translation id="1632803087685957583">Allows you to adjust your keyboard repeat rate, word prediction and more</translation>
 <translation id="1635033183663317347">Installed by your custodian.</translation>
-<translation id="1635885551358739414">Google may use content on sites that you visit, plus browser activity and interactions, to personalise Chrome and other Google services such as Translate, Search and ads. You can customise this in Settings.</translation>
 <translation id="1637224376458524414">Get this bookmark on your iPhone</translation>
 <translation id="1637765355341780467">Something went wrong when opening your profile. Some features may be unavailable.</translation>
 <translation id="1639239467298939599">Loading</translation>
@@ -788,6 +783,7 @@
 <translation id="215753907730220065">Exit Full Screen</translation>
 <translation id="2157875535253991059">This page is now full screen.</translation>
 <translation id="216169395504480358">Add Wi-Fi ...</translation>
+<translation id="2162155940152307086">Sync will start once you leave sync settings</translation>
 <translation id="2163470535490402084">Please connect to the Internet to sign in to your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2166369534954157698">The quick brown fox jumps over the lazy dog</translation>
 <translation id="2169062631698640254">Sign in anyway</translation>
@@ -798,6 +794,7 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> on <ph name="PEPPER_PLUGIN_DOMAIN" /> wants to access your computer</translation>
 <translation id="2178614541317717477">CA Compromise</translation>
 <translation id="218070003709087997">Use a number to indicate how many copies to print (1 to 999).</translation>
+<translation id="2182253583899676504">The text that you type in text fields will be sent to Google.</translation>
 <translation id="2184515124301515068">Let Chrome choose when sites can play sound (recommended)</translation>
 <translation id="2187895286714876935">Server Certificate Import Error</translation>
 <translation id="2187906491731510095">Extensions updated</translation>
@@ -809,7 +806,9 @@
 <translation id="2192505247865591433">From:</translation>
 <translation id="2193365732679659387">Trust settings</translation>
 <translation id="2195729137168608510">Email Protection</translation>
+<translation id="2198757192731523470">Google may use your history to personalise Search, ads and other Google services.</translation>
 <translation id="2199298570273670671">Error</translation>
+<translation id="2199719347983604670">Data from Chrome sync</translation>
 <translation id="2200356397587687044">Chrome needs permission to continue</translation>
 <translation id="220138918934036434">Hide button</translation>
 <translation id="2202898655984161076">There was a problem while listing printers. Some of your printers may not have registered successfully with <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -1265,6 +1264,7 @@
 <translation id="2889925978073739256">Continue blocking unsandboxed plug-ins</translation>
 <translation id="2890678560483811744">Out of bounds page reference</translation>
 <translation id="2893168226686371498">Default browser</translation>
+<translation id="2895734772884435517">You can customise these settings anytime.</translation>
 <translation id="289644616180464099">SIM Card is locked</translation>
 <translation id="289695669188700754">Key ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Are you sure that you want to open <ph name="TAB_COUNT" /> tabs?</translation>
@@ -1742,6 +1742,7 @@
 <translation id="3636096452488277381">Hi, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> left</translation>
 <translation id="3637682276779847508">Your SIM card will be permanently disabled if you cannot enter the correct PIN Unlock Key.</translation>
+<translation id="363863692969456324">Fix spelling errors with enhanced spell check</translation>
 <translation id="3640214691812501263">Add "<ph name="EXTENSION_NAME" />" for <ph name="USER_NAME" />?</translation>
 <translation id="3644896802912593514">Width</translation>
 <translation id="3645372836428131288">Move slightly to capture a different part of the fingerprint.</translation>
@@ -2181,6 +2182,7 @@
 <translation id="4310139701823742692">File is in the wrong format. Check the PPD file and try again.</translation>
 <translation id="431076611119798497">&amp;Details</translation>
 <translation id="4312866146174492540">Block (default)</translation>
+<translation id="4314815835985389558">Manage sync</translation>
 <translation id="4316850752623536204">Developer Website</translation>
 <translation id="4320177379694898372">No internet connection</translation>
 <translation id="4320948194796820126">Add a bookmark to your email</translation>
@@ -2260,6 +2262,7 @@
 <translation id="4450974146388585462">Diagnose</translation>
 <translation id="4451757071857432900">Blocked on sites that show intrusive or misleading ads (recommended)</translation>
 <translation id="4453946976636652378">Search <ph name="SEARCH_ENGINE_NAME" /> or type a URL</translation>
+<translation id="4461835665417498653">Sends some system information and page content to Google anonymously.</translation>
 <translation id="4462159676511157176">Custom name servers</translation>
 <translation id="4467101674048705704">Expand <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Blocked on sites that show intrusive or misleading ads</translation>
@@ -2340,7 +2343,6 @@
 <translation id="4585793705637313973">Edit page</translation>
 <translation id="4590324241397107707">Database Storage</translation>
 <translation id="4593021220803146968">&amp;Go to <ph name="URL" /></translation>
-<translation id="459505086032485258">Show Google services settings</translation>
 <translation id="4595560905247879544">Apps and extensions can only be modified by the manager (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">You have certificates on file that identify these servers</translation>
 <translation id="4598556348158889687">Storage management</translation>
@@ -2430,6 +2432,7 @@
 <translation id="4735265153267957659">Enter your password to enable Smart Lock. Next time, your phone will unlock your <ph name="DEVICE_TYPE" />. Turn off Smart Lock in Settings.</translation>
 <translation id="473546211690256853">This account is managed by <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">The system failed to determine device identifiers for this device.</translation>
+<translation id="4736292055110123391">Sync your bookmarks, passwords, history and more on all your devices</translation>
 <translation id="4737715515457435632">Please connect to a network</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="474217410105706308">Mute Tab</translation>
@@ -3273,7 +3276,6 @@
 <translation id="5982621672636444458">Sort options</translation>
 <translation id="5984222099446776634">Recently Visited</translation>
 <translation id="5985458664595100876">Invalid URL format. Supported formats are \\server\share and smb://server/share.</translation>
-<translation id="5990142338020175451">More personal Google services, such as better page suggestions</translation>
 <translation id="5990386583461751448">Translated</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{To ensure that you can keep browsing the web, ask your administrator to remove this application.}other{To ensure that you can keep browsing the web, ask your administrator to remove these applications.}}</translation>
 <translation id="5997337190805127100">Learn more about site access</translation>
@@ -3866,7 +3868,6 @@
 <translation id="6900284862687837908">Background App: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Voice to preview</translation>
 <translation id="6902837902700739466">Join device to domain</translation>
-<translation id="6903534926908201625">You can customise what information Google collects in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" /> any time.</translation>
 <translation id="6904344821472985372">Revoke file access</translation>
 <translation id="6904655473976120856">Press App button to exit</translation>
 <translation id="6910211073230771657">Deleted</translation>
@@ -4181,7 +4182,6 @@
 <translation id="7366415735885268578">Add a site</translation>
 <translation id="7366909168761621528">Browsing data</translation>
 <translation id="7371006317849674875">Start time</translation>
-<translation id="737439367876257440">Improve Chrome and its security by sending system and usage information to Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Highlight the mouse cursor when it's moving</translation>
 <translation id="7377169924702866686">Caps Lock is on.</translation>
@@ -4987,6 +4987,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8598453409908276158">Unsandboxed plug-in blocked</translation>
 <translation id="8601206103050338563">TLS WWW Client Authentication</translation>
 <translation id="8602851771975208551">Another programme on your computer added an app that may change the way Chrome works.</translation>
+<translation id="8604763363205185560">Help improve Chrome and its security</translation>
 <translation id="8605428685123651449">SQLite Memory</translation>
 <translation id="8606726445206553943">Use your MIDI devices</translation>
 <translation id="8609465669617005112">Move up</translation>

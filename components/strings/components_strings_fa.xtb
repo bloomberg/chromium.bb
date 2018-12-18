@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">رایانه را راه‌اندازی مجدد کنید</translation>
 <translation id="2113977810652731515">کارت</translation>
 <translation id="2114841414352855701">نادیده گرفته شد زیرا <ph name="POLICY_NAME" /> آن را لغو می‌کند.</translation>
-<translation id="2129308444951592399">شرایط و ضوابط</translation>
 <translation id="213826338245044447">نشانک‌های تلفن‌ همراه</translation>
 <translation id="214556005048008348">لغو پرداخت</translation>
 <translation id="2147827593068025794">همگام‌سازی پس‌زمینه</translation>
@@ -407,7 +406,6 @@
 <translation id="3583757800736429874">&amp;انجام مجدد انتقال</translation>
 <translation id="3586931643579894722">عدم نمایش جزئیات</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />، <ph name="DOMAIN" />، <ph name="TIME" /></translation>
-<translation id="3608659946467434602">درحال ذخیره کارت‌ها...</translation>
 <translation id="3615877443314183785">تاریخ انقضای معتبری وارد کنید</translation>
 <translation id="36224234498066874">پاک کردن داده‌های محصول مرور…</translation>
 <translation id="362276910939193118">نمایش کل سابقه</translation>
@@ -728,7 +726,6 @@
 <translation id="5810442152076338065">اتصال شما به <ph name="DOMAIN" /> با استفاده از یک مجموعه رمز منسوخ، رمزگذاری شده است.</translation>
 <translation id="5813119285467412249">&amp;انجام مجدد افزودن</translation>
 <translation id="5838278095973806738">نباید هیچ اطلاعات حساسی (مثل گذرواژه یا کارت اعتباری) را در این سایت وارد کنید، زیرا ممکن است مهاجمین آن‌ها را سرقت کنند.</translation>
-<translation id="5844286946362376359">با شرایط و ضوابط، خط‌مشی رازداری و حق فسخ <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> آشنا هستم (برای خواندن کادر را علامت نزنید)</translation>
 <translation id="5863847714970149516">صفحه پیش‌رو ممکن است تلاش کند از شما پول دریافت کند</translation>
 <translation id="5866257070973731571">افزودن شماره تلفن</translation>
 <translation id="5869405914158311789">دسترسی به این سایت امکان‌پذیر نیست</translation>
@@ -854,7 +851,6 @@
 <translation id="6865412394715372076">درحال‌حاضر نمی‌توان این کارت را به تأیید رساند</translation>
 <translation id="6868206169573555318">برای به‌روزرسانی، دوباره راه‌اندازی کنید</translation>
 <translation id="6874604403660855544">&amp;انجام مجدد افزودن</translation>
-<translation id="6885646002011712606">دستیار تکمیل خودکار نزدیک پایین صفحه نمایش دردسترس است</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">سطح خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="6895330447102777224">کارتتان تأیید شد</translation>
@@ -1000,7 +996,6 @@
 <translation id="7716424297397655342">این سایت نمی‌تواند از حافظه پنهان بار شود</translation>
 <translation id="7723047071702270851">ویرایش کارت</translation>
 <translation id="774634243536837715">محتوای خطرناک مسدود شد.</translation>
-<translation id="7747182086178764941">صفحه اولین اجرای دستیار تکمیل خودکار نشان داده می‌شود</translation>
 <translation id="7752995774971033316">مدیریت نشده</translation>
 <translation id="7755287808199759310">والدینتان می‌توانند این سایت را برای شما بگشایند</translation>
 <translation id="7758069387465995638">دیوار آتش یا نرم‌افزار ضدویروس ممکن است مانع اتصال شده باشد.</translation>
@@ -1119,7 +1114,6 @@
 <translation id="8503559462189395349">‏گذرواژه‌های Chrome</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
 <translation id="8508648098325802031">نماد جستجو</translation>
-<translation id="8524783101666974011">‏ذخیره کردن کارت‌ها در حساب Google</translation>
 <translation id="8543181531796978784">می‌توانید <ph name="BEGIN_ERROR_LINK" />یک مشکل شناسایی‌شده را گزارش کنید<ph name="END_ERROR_LINK" /> یا اگر از خطراتی که امنیت شما را تهدید می‌کنند مطلع شدید، <ph name="BEGIN_LINK" />از این سایت ناامن دیدن کنید<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">سؤال دارید؟ با فردی که بر نمایه‌تان نظارت دارد تماس بگیرید.</translation>
 <translation id="8553075262323480129">ترجمه انجام نشد زیرا زبان صفحه تعیین نشد.</translation>

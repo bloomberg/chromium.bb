@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">工具(&amp;T)</translation>
 <translation id="1122242684574577509">驗證失敗。按一下即可造訪目前所用 Wi-Fi 網路 (<ph name="NETWORK_ID" />) 的登入頁面。</translation>
 <translation id="1122960773616686544">書籤名稱</translation>
-<translation id="1123187597739372905">顯示同步處理設定</translation>
 <translation id="1124772482545689468">使用者</translation>
 <translation id="1125550662859510761">螢幕解析度：<ph name="WIDTH" /> x <ph name="HEIGHT" /> (原生)</translation>
 <translation id="1128109161498068552">禁止任何網站使用系統專用訊息存取 MIDI 裝置</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">編輯搜尋引擎</translation>
 <translation id="1134009406053225289">在無痕式視窗中開啟</translation>
-<translation id="1136155683023653803">密碼、書籤、歷史記錄和其他設定會同步到你的帳戶</translation>
 <translation id="1137673463384776352">在「<ph name="APP" />」中開啟連結</translation>
 <translation id="1140351953533677694">存取你的藍牙和序列裝置</translation>
 <translation id="1140610710803014750">如要將書籤同步到所有裝置，請登入並開啟同步處理功能。</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">一律允許 <ph name="HOST" /> 存取感應器</translation>
 <translation id="1153356358378277386">配對裝置</translation>
 <translation id="1156488781945104845">目前時間</translation>
-<translation id="1157102636231978136">讓你的瀏覽資料和活動與你的 Google 帳戶保持同步</translation>
 <translation id="1161575384898972166">登入 <ph name="TOKEN_NAME" /> 即可匯出用戶端憑證。</translation>
 <translation id="1161699061380012396">Chrome 作業系統輸入法</translation>
 <translation id="1163931534039071049">檢視框架原始碼(&amp;V)</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">設定印表機時發生錯誤</translation>
 <translation id="1396963298126346194">你輸入的使用者名稱和密碼不相符</translation>
 <translation id="1397500194120344683">沒有適用裝置。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">同步處理和個人化</translation>
 <translation id="1398853756734560583">放到最大</translation>
 <translation id="1399511500114202393">不使用使用者憑證</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (受監管)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">已下載</translation>
 <translation id="1632803087685957583">讓你調整鍵盤按鍵重複輸入速率、字詞預測功能等等</translation>
 <translation id="1635033183663317347">由您的監護人安裝。</translation>
-<translation id="1635885551358739414">Google 可能會根據你所造訪網站的內容、瀏覽器活動和瀏覽器互動行為，提供個人化的 Chrome 體驗和其他 Google 服務體驗，例如翻譯、搜尋和廣告。你可以在「設定」中自訂這項功能。</translation>
 <translation id="1637224376458524414">在 iPhone 上取得這個書籤</translation>
 <translation id="1637765355341780467">開啟你的設定檔時發生錯誤，部分功能可能無法使用。</translation>
 <translation id="1639239467298939599">載入中</translation>
@@ -2338,7 +2333,6 @@
 <translation id="4585793705637313973">編輯頁面</translation>
 <translation id="4590324241397107707">資料庫儲存空間</translation>
 <translation id="4593021220803146968">前往 <ph name="URL" />(&amp;G)</translation>
-<translation id="459505086032485258">顯示 Google 服務設定</translation>
 <translation id="4595560905247879544">只有管理員 (<ph name="CUSTODIAN_NAME" />) 可以修改應用程式和擴充功能。</translation>
 <translation id="4596295440756783523">您儲存了這些伺服器的識別憑證</translation>
 <translation id="4598556348158889687">儲存空間管理</translation>
@@ -3271,7 +3265,6 @@
 <translation id="5982621672636444458">排序選項</translation>
 <translation id="5984222099446776634">最近造訪的網站</translation>
 <translation id="5985458664595100876">網址格式無效。支援的格式為 \\server\share 和 smb://server/share。</translation>
-<translation id="5990142338020175451">體驗更加個人化的 Google 服務 (例如更適切的網頁建議)</translation>
 <translation id="5990386583461751448">已翻譯</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{為確保你可以持續瀏覽網路，請要求你的管理員移除這個應用程式。}other{為確保你可以持續瀏覽網路，請要求你的管理員移除這些應用程式。}}</translation>
 <translation id="5997337190805127100">進一步瞭解網站存取權</translation>
@@ -3863,7 +3856,6 @@
 <translation id="6900284862687837908">背景應用程式：<ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">要預覽的語音</translation>
 <translation id="6902837902700739466">將裝置加入網域</translation>
-<translation id="6903534926908201625">你隨時可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中自訂 Google 可收集的資訊。</translation>
 <translation id="6904344821472985372">撤銷檔案存取權</translation>
 <translation id="6904655473976120856">按下 [應用程式] 按鈕即可結束</translation>
 <translation id="6910211073230771657">已刪除</translation>
@@ -4177,7 +4169,6 @@
 <translation id="7366415735885268578">新增網站</translation>
 <translation id="7366909168761621528">瀏覽資料</translation>
 <translation id="7371006317849674875">開始時間</translation>
-<translation id="737439367876257440">傳送系統資訊和使用情形資料給 Google，協助改善 Chrome 及其安全性</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">滑鼠游標移動時醒目顯示</translation>
 <translation id="7377169924702866686">大寫鍵已啟用。</translation>

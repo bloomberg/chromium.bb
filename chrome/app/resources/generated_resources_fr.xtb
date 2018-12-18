@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Outils</translation>
 <translation id="1122242684574577509">Échec de l'authentification. Cliquez ici pour accéder à la page de connexion du réseau Wi-Fi que vous utilisez (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Nom du favori</translation>
-<translation id="1123187597739372905">Afficher les paramètres de synchronisation</translation>
 <translation id="1124772482545689468">Utilisateur</translation>
 <translation id="1125550662859510761">La résolution est de <ph name="WIDTH" /> x <ph name="HEIGHT" /> (native)</translation>
 <translation id="1128109161498068552">N'autoriser aucun site à utiliser des messages spécifiques au système pour accéder aux appareils MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Modifier le moteur de recherche</translation>
 <translation id="1134009406053225289">Ouvrir dans une fenêtre de navigation privée</translation>
-<translation id="1136155683023653803">Les mots de passe, les favoris, l'historique et d'autres éléments sont synchronisés avec votre compte</translation>
 <translation id="1137673463384776352">Ouvrir le lien dans <ph name="APP" /></translation>
 <translation id="1140351953533677694">Accéder à vos appareils reliés via le Bluetooth et le port série</translation>
 <translation id="1140610710803014750">Pour synchroniser vos favoris sur tous vos appareils, connectez-vous et activez la synchronisation.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Toujours autoriser <ph name="HOST" /> à accéder aux capteurs</translation>
 <translation id="1153356358378277386">Appareils associés</translation>
 <translation id="1156488781945104845">Heure actuelle</translation>
-<translation id="1157102636231978136">Vos données de navigation et votre activité sont synchronisées avec votre compte Google</translation>
 <translation id="1161575384898972166">Connectez-vous à <ph name="TOKEN_NAME" /> pour exporter le certificat client.</translation>
 <translation id="1161699061380012396">Mode de saisie Chrome OS</translation>
 <translation id="1163931534039071049">&amp;Afficher le code source du cadre</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Erreur de configuration de l'imprimante</translation>
 <translation id="1396963298126346194">Le nom d'utilisateur et le mot de passe saisis ne correspondent pas</translation>
 <translation id="1397500194120344683">Aucun appareil éligible. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Synchronisation et personnalisation</translation>
 <translation id="1398853756734560583">Agrandir</translation>
 <translation id="1399511500114202393">Aucun certificat utilisateur</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisé)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Déjà téléchargé</translation>
 <translation id="1632803087685957583">Permet d'ajuster le taux de répétition du clavier, la prédiction de mots et bien plus</translation>
 <translation id="1635033183663317347">Installée par votre tuteur</translation>
-<translation id="1635885551358739414">Google peut utiliser le contenu des sites que vous consultez, votre activité de navigation et vos interactions pour personnaliser Chrome et d'autres de nos services comme Google Traduction, la recherche et les annonces. Vous pouvez modifier cette option dans les paramètres.</translation>
 <translation id="1637224376458524414">Enregistrer ce favori sur votre iPhone</translation>
 <translation id="1637765355341780467">Une erreur s'est produite lors de l'ouverture de votre profil. Il est possible que certaines fonctionnalités ne soient pas disponibles.</translation>
 <translation id="1639239467298939599">Chargement en cours</translation>
@@ -2341,7 +2336,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4585793705637313973">Modifier la page</translation>
 <translation id="4590324241397107707">Stockage des bases de données</translation>
 <translation id="4593021220803146968">&amp;Accéder à <ph name="URL" /></translation>
-<translation id="459505086032485258">Afficher les paramètres des services Google</translation>
 <translation id="4595560905247879544">Seul l'administrateur (<ph name="CUSTODIAN_NAME" />) est autorisé à modifier les applications et les extensions.</translation>
 <translation id="4596295440756783523">Certains de vos certificats enregistrés identifient ces serveurs.</translation>
 <translation id="4598556348158889687">Gestion du stockage</translation>
@@ -3275,7 +3269,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5982621672636444458">Options de tri</translation>
 <translation id="5984222099446776634">Consultations récentes</translation>
 <translation id="5985458664595100876">Le format de l'URL n'est pas valide. Les formats acceptés sont \\server\share et smb://server/share.</translation>
-<translation id="5990142338020175451">Des services Google plus personnalisés, comme des suggestions de pages plus pertinentes</translation>
 <translation id="5990386583461751448">Traduite</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Pour pouvoir continuer à naviguer sur Internet, demandez à votre administrateur de supprimer cette application.}one{Pour pouvoir continuer à naviguer sur Internet, demandez à votre administrateur de supprimer cette application.}other{Pour pouvoir continuer à naviguer sur Internet, demandez à votre administrateur de supprimer ces applications.}}</translation>
 <translation id="5997337190805127100">En savoir plus sur l'accès aux sites</translation>
@@ -3868,7 +3861,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6900284862687837908">Application en arrière-plan : <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Voix à écouter</translation>
 <translation id="6902837902700739466">Associer l'appareil au domaine</translation>
-<translation id="6903534926908201625">Vous pouvez personnaliser à tout moment les informations recueillies par Google dans les <ph name="BEGIN_LINK" />Paramètres<ph name="END_LINK" />.</translation>
 <translation id="6904344821472985372">Révoquer l'accès aux fichiers</translation>
 <translation id="6904655473976120856">Appuyer sur le bouton de l'application pour sortir</translation>
 <translation id="6910211073230771657">Supprimé</translation>
@@ -4183,7 +4175,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7366415735885268578">Ajouter un site</translation>
 <translation id="7366909168761621528">Données de navigation</translation>
 <translation id="7371006317849674875">Heure de début</translation>
-<translation id="737439367876257440">Aidez Google à améliorer Chrome et son niveau de sécurité en envoyant des informations relatives au système et à la consommation des données</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Mettre en surbrillance le curseur de la souris lorsqu'il se déplace</translation>
 <translation id="7377169924702866686">La touche de verrouillage des majuscules est activée</translation>

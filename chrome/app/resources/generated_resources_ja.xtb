@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">ツール(&amp;T)</translation>
 <translation id="1122242684574577509">認証できませんでした。クリックして、ご利用の Wi-Fi ネットワーク（<ph name="NETWORK_ID" />）のログインページにアクセスしてください。</translation>
 <translation id="1122960773616686544">ブックマーク名</translation>
-<translation id="1123187597739372905">同期設定を表示</translation>
 <translation id="1124772482545689468">ユーザー</translation>
 <translation id="1125550662859510761">表示上のサイズ: <ph name="WIDTH" />x<ph name="HEIGHT" />（ネイティブ）</translation>
 <translation id="1128109161498068552">システム エクスクルーシブ メッセージを使用して MIDI デバイスにアクセスすることをサイトに許可しない</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">検索エンジンの編集</translation>
 <translation id="1134009406053225289">シークレット ウィンドウで開く</translation>
-<translation id="1136155683023653803">パスワード、ブックマーク、履歴、その他の設定がアカウントに同期されます</translation>
 <translation id="1137673463384776352"><ph name="APP" /> でリンクを開く</translation>
 <translation id="1140351953533677694">Bluetooth デバイスとシリアル デバイスへのアクセス</translation>
 <translation id="1140610710803014750">お使いのどの端末でも同じブックマークを使用するには、ログインして同期を有効にします。</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366"><ph name="HOST" /> によるセンサーへのアクセスを常に許可する</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
 <translation id="1156488781945104845">現在の時刻</translation>
-<translation id="1157102636231978136">閲覧データとアクティビティ（Google アカウントに同期）</translation>
 <translation id="1161575384898972166">クライアント証明書をエクスポートするには <ph name="TOKEN_NAME" /> にログインしてください。</translation>
 <translation id="1161699061380012396">Chrome OS の入力方法</translation>
 <translation id="1163931534039071049">フレームのソースを表示(&amp;V)</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">プリンタの設定中にエラーが発生しました</translation>
 <translation id="1396963298126346194">入力したユーザー名とパスワードが一致しません</translation>
 <translation id="1397500194120344683">対象となる端末はありません。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">同期とカスタマイズ</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1399511500114202393">ユーザー証明書なし</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" />（管理対象）</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">ダウンロード済み</translation>
 <translation id="1632803087685957583">キーボードのリピート間隔、後続語予測などを設定できます</translation>
 <translation id="1635033183663317347">管理責任者によってインストールされています。</translation>
-<translation id="1635885551358739414">Google は、Chrome や他の Google サービス（翻訳、検索、広告など）をカスタマイズする目的で、ユーザーがアクセスしたサイトのコンテンツと、ブラウザのアクティビティおよび操作を使用することがあります。これは [設定] で変更できます。</translation>
 <translation id="1637224376458524414">このブックマークは iPhone でも使用できます</translation>
 <translation id="1637765355341780467">プロフィールを開こうとして問題が発生しました。一部の機能を使用できない可能性があります。</translation>
 <translation id="1639239467298939599">読み込み中</translation>
@@ -2341,7 +2336,6 @@
 <translation id="4585793705637313973">ページの編集</translation>
 <translation id="4590324241397107707">データベース ストレージ</translation>
 <translation id="4593021220803146968"><ph name="URL" /> に移動(&amp;G)</translation>
-<translation id="459505086032485258">Google サービスの設定を表示</translation>
 <translation id="4595560905247879544">アプリと拡張機能は管理者（<ph name="CUSTODIAN_NAME" />）だけが変更できます。</translation>
 <translation id="4596295440756783523">これらのサーバーを識別する証明書がファイルに格納されています</translation>
 <translation id="4598556348158889687">ストレージ管理</translation>
@@ -3274,7 +3268,6 @@
 <translation id="5982621672636444458">並べ替え方法</translation>
 <translation id="5984222099446776634">最近のアクセス</translation>
 <translation id="5985458664595100876">URL の形式が無効です。サポートされている形式は \\server\share と smb://server/share です。</translation>
-<translation id="5990142338020175451">おすすめのページなど、カスタマイズされた Google サービスを利用できます</translation>
 <translation id="5990386583461751448">翻訳済み</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{今後もウェブ ブラウジングを続けられるように、管理者にこのアプリケーションの削除を依頼してください。}other{今後もウェブ ブラウジングを続けられるように、管理者にこれらのアプリケーションの削除を依頼してください。}}</translation>
 <translation id="5997337190805127100">サイトアクセスの詳細</translation>
@@ -3867,7 +3860,6 @@
 <translation id="6900284862687837908">バックグラウンド アプリ: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">プレビューする音声</translation>
 <translation id="6902837902700739466">デバイスをドメインに追加しましょう</translation>
-<translation id="6903534926908201625">Google に送信する情報は、いつでも [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] ページでカスタマイズできます。</translation>
 <translation id="6904344821472985372">ファイル アクセス権を取り消す</translation>
 <translation id="6904655473976120856">終了するには [アプリ] ボタンを押します</translation>
 <translation id="6910211073230771657">削除済み</translation>
@@ -4182,7 +4174,6 @@
 <translation id="7366415735885268578">サイトの追加</translation>
 <translation id="7366909168761621528">閲覧履歴データ</translation>
 <translation id="7371006317849674875">開始時間</translation>
-<translation id="737439367876257440">システムと使用状況に関する情報が Google に送信され、Chrome とそのセキュリティの向上に役立てられます</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">移動時にマウスカーソルを強調表示する</translation>
 <translation id="7377169924702866686">CapsLock 

@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Tools</translation>
 <translation id="1122242684574577509">Fehler bei der Authentifizierung. Klicken Sie hier, um die Anmeldeseite für das verwendete WLAN aufzurufen (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Name des Lesezeichens</translation>
-<translation id="1123187597739372905">Synchronisierungseinstellungen anzeigen</translation>
 <translation id="1124772482545689468">Nutzer</translation>
 <translation id="1125550662859510761">Auflösung <ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativ)</translation>
 <translation id="1128109161498068552">Websites nicht gestatten, mittels systemexklusiver Meldungen auf MIDI-Geräte zuzugreifen</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Suchmaschine bearbeiten</translation>
 <translation id="1134009406053225289">In Inkognitofenster öffnen</translation>
-<translation id="1136155683023653803">Passwörter, Lesezeichen, der Verlauf und mehr werden mit Ihrem Konto synchronisiert</translation>
 <translation id="1137673463384776352">Link in <ph name="APP" /> öffnen</translation>
 <translation id="1140351953533677694">Auf Ihre Bluetooth- und seriellen Geräte zugreifen</translation>
 <translation id="1140610710803014750">Melden Sie sich an und aktivieren Sie die Synchronisierung, um Ihre Lesezeichen auf all Ihren Geräten zu haben.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366"><ph name="HOST" /> immer den Zugriff auf Sensoren erlauben</translation>
 <translation id="1153356358378277386">Gekoppelte Geräte</translation>
 <translation id="1156488781945104845">Aktuelle Uhrzeit</translation>
-<translation id="1157102636231978136">Mit Ihrem Google-Konto synchronisierte Browserdaten und -aktivitäten</translation>
 <translation id="1161575384898972166">Melden Sie sich in <ph name="TOKEN_NAME" /> an, um das Clientzertifikat zu exportieren.</translation>
 <translation id="1161699061380012396">Chrome OS-Eingabemethode</translation>
 <translation id="1163931534039071049">Frame-Quelltext &amp;anzeigen</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Fehler beim Einrichten des Druckers</translation>
 <translation id="1396963298126346194">Der eingegebene Nutzername und das Passwort stimmen nicht überein</translation>
 <translation id="1397500194120344683">Keine geeigneten Geräte vorhanden. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Synchronisieren und personalisieren</translation>
 <translation id="1398853756734560583">Vergrößern</translation>
 <translation id="1399511500114202393">Kein Nutzerzertifikat</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (betreut)</translation>
@@ -434,7 +430,6 @@
 <translation id="1627408615528139100">Bereits heruntergeladen</translation>
 <translation id="1632803087685957583">Ermöglicht die Anpassung der Wiederholungsrate, Wortvervollständigung und mehr für die Tastatur</translation>
 <translation id="1635033183663317347">Von deinem Erziehungsberechtigten installiert</translation>
-<translation id="1635885551358739414">Google kann die Inhalte der von Ihnen besuchten Websites, Browseraktivitäten und Ihre anderen Interaktionen nutzen, um Chrome und andere Google-Dienste wie Übersetzer, die Google-Suche und Werbung zu personalisieren. Dies lässt sich in den Einstellungen ändern.</translation>
 <translation id="1637224376458524414">Dieses Lesezeichen auf dem iPhone abrufen</translation>
 <translation id="1637765355341780467">Beim Öffnen Ihres Profils ist ein Fehler aufgetreten. Einige Funktionen sind möglicherweise nicht verfügbar.</translation>
 <translation id="1639239467298939599">Wird geladen...</translation>
@@ -2336,7 +2331,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4585793705637313973">Seite bearbeiten</translation>
 <translation id="4590324241397107707">Datenbankspeicher</translation>
 <translation id="4593021220803146968">Zu <ph name="URL" /> &amp;wechseln</translation>
-<translation id="459505086032485258">Einstellungen für Google-Dienste anzeigen</translation>
 <translation id="4595560905247879544">Apps und Erweiterungen können nur vom Administrator, <ph name="CUSTODIAN_NAME" />, geändert werden.</translation>
 <translation id="4596295440756783523">In Ihren gespeicherten Zertifikaten sind folgende Server angegeben</translation>
 <translation id="4598556348158889687">Speicherplatzverwaltung</translation>
@@ -3269,7 +3263,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5982621672636444458">Sortieroptionen</translation>
 <translation id="5984222099446776634">Kürzlich besucht</translation>
 <translation id="5985458664595100876">Ungültiges URL-Format. Unterstützt werden \\server\share und smb://server/share.</translation>
-<translation id="5990142338020175451">Personalisierte Google-Dienste, z. B. bessere Seitenvorschläge</translation>
 <translation id="5990386583461751448">Übersetzt</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Bitten Sie den Administrator, diese Anwendung zu entfernen, damit Sie weiterhin im Web surfen können.}other{Bitten Sie den Administrator, diese Anwendungen zu entfernen, damit Sie weiterhin im Web surfen können.}}</translation>
 <translation id="5997337190805127100">Weitere Informationen zum Websitezugriff</translation>
@@ -3862,7 +3855,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6900284862687837908">Hintergrund-App: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Stimme zum Anhören</translation>
 <translation id="6902837902700739466">Gerät bei Domain registrieren</translation>
-<translation id="6903534926908201625">Sie können die von Google erfassten Informationen jederzeit in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> anpassen.</translation>
 <translation id="6904344821472985372">Dateizugriff aufheben</translation>
 <translation id="6904655473976120856">Klicken Sie zum Beenden des Modus auf die App-Schaltfläche</translation>
 <translation id="6910211073230771657">Gelöscht</translation>
@@ -4177,7 +4169,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7366415735885268578">Website hinzufügen</translation>
 <translation id="7366909168761621528">Browserdaten</translation>
 <translation id="7371006317849674875">Startzeit</translation>
-<translation id="737439367876257440">System- und Nutzungsdaten an Google senden, um Chrome noch besser und sicherer zu machen</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Mauszeiger bei Bewegung hervorheben</translation>
 <translation id="7377169924702866686">Feststelltaste An</translation>

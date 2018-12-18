@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Znova zaženite računalnik</translation>
 <translation id="2113977810652731515">Kartica</translation>
 <translation id="2114841414352855701">Prezrto, ker je to preglasil pravilnik <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Pogoji in določila</translation>
 <translation id="213826338245044447">Zaznamki mobilne naprave</translation>
 <translation id="214556005048008348">Prekliči plačilo</translation>
 <translation id="2147827593068025794">Sinhroniziranje v ozadju</translation>
@@ -244,6 +243,7 @@
 <translation id="2501278716633472235">Nazaj</translation>
 <translation id="2503184589641749290">Sprejete debetne in predplačniške kartice</translation>
 <translation id="2515629240566999685">preveriti signal na svojem območju</translation>
+<translation id="2523886232349826891">Shranjena samo v tej napravi</translation>
 <translation id="2524461107774643265">Dodajanje več podatkov</translation>
 <translation id="2536110899380797252">Dodaj naslov</translation>
 <translation id="2539524384386349900">Zaznava</translation>
@@ -406,7 +406,6 @@
 <translation id="3583757800736429874">&amp;Uveljavi premik</translation>
 <translation id="3586931643579894722">Skrij podrobnosti</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Shranjevanje kartic ...</translation>
 <translation id="3615877443314183785">Vnesite veljaven datum poteka veljavnosti</translation>
 <translation id="36224234498066874">Izbriši podatke brskanja ...</translation>
 <translation id="362276910939193118">Prikaži celotno zgodovino</translation>
@@ -727,7 +726,6 @@
 <translation id="5810442152076338065">Povezava z domeno <ph name="DOMAIN" /> je šifrirana z zastarelo šifrirno zbirko.</translation>
 <translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
 <translation id="5838278095973806738">Na tem spletnem mestu ne vnašajte občutljivih informacij (npr. gesel ali številk kreditnih kartic), ker jih lahko ukradejo napadalci.</translation>
-<translation id="5844286946362376359">Poznam pravila in določila, pravilnik o zasebnosti in pravico do umika za <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (če želite prebrati, ne označite).</translation>
 <translation id="5863847714970149516">Stran, ki se bo odprla, vam bo morda poskusila kaj zaračunati</translation>
 <translation id="5866257070973731571">Dodajanje telefonske številke</translation>
 <translation id="5869405914158311789">Tega spletnega mesta ni mogoče doseči</translation>
@@ -853,7 +851,6 @@
 <translation id="6865412394715372076">Te kartice trenutno ni mogoče preveriti</translation>
 <translation id="6868206169573555318">Znova zaženite za posodobitev</translation>
 <translation id="6874604403660855544">&amp;Uveljavi dodajanje</translation>
-<translation id="6885646002011712606">Pomočnik za samodejno izpolnjevanje je na voljo pri dnu zaslona</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Raven pravilnika ni podprta.</translation>
 <translation id="6895330447102777224">Kartica je potrjena.</translation>
@@ -999,7 +996,6 @@ Dodatne podrobnosti:
 <translation id="7716424297397655342">Tega spletnega mesta ni mogoče naložiti iz predpomnilnika</translation>
 <translation id="7723047071702270851">Urejanje kartice</translation>
 <translation id="774634243536837715">Nevarna vsebina blokirana.</translation>
-<translation id="7747182086178764941">Prikazan je zaslon za prvi zagon pomočnika za samodejno izpolnjevanje</translation>
 <translation id="7752995774971033316">Odstranjen iz uporabe</translation>
 <translation id="7755287808199759310">Starš ga lahko odblokira</translation>
 <translation id="7758069387465995638">Povezavo je morda blokiral požarni zid ali protivirusni program.</translation>
@@ -1118,7 +1114,6 @@ Dodatne podrobnosti:
 <translation id="8503559462189395349">Gesla za Chrome</translation>
 <translation id="8503813439785031346">Uporabniško ime</translation>
 <translation id="8508648098325802031">Ikona za iskanje</translation>
-<translation id="8524783101666974011">Shranjevanje kartic v Google Računu</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />Prijavite lahko težavo z zaznavanjem<ph name="END_ERROR_LINK" />, če razumete varnostna tveganja, pa lahko <ph name="BEGIN_LINK" />obiščete to spletno mesto, ki ni varno<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Imate kakšno vprašanje? Obrnite se na osebo, ki nadzira vaš profil.</translation>
 <translation id="8553075262323480129">Prevod ni uspel, ker ni mogoče določiti jezika strani.</translation>

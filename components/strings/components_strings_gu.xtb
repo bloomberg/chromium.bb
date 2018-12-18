@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">તમારું કમ્પ્યુટર પુનઃપ્રારંભ કરો</translation>
 <translation id="2113977810652731515">કાર્ડ</translation>
 <translation id="2114841414352855701">અવગણ્યું કારણ કે તે <ph name="POLICY_NAME" /> દ્વારા ઓવરરાઇડ થયું હતું.</translation>
-<translation id="2129308444951592399">શરતો અને નિયમો</translation>
 <translation id="213826338245044447">મોબાઇલ બુકમાર્ક્સ</translation>
 <translation id="214556005048008348">ચુકવણી રદ કરો</translation>
 <translation id="2147827593068025794">પૃષ્ઠભૂમિ સમન્વયન</translation>
@@ -406,7 +405,6 @@
 <translation id="3583757800736429874">&amp;ખસેડવું ફરી કરો</translation>
 <translation id="3586931643579894722">વિગતો છુપાવો</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">કાર્ડ સાચવી રહ્યાં છીએ...</translation>
 <translation id="3615877443314183785">એક માન્ય સમાપ્તિ તારીખ દાખલ કરો</translation>
 <translation id="36224234498066874">બ્રાઉઝિંગ ડેટા સાફ કરો...</translation>
 <translation id="362276910939193118">પૂર્ણ ઇતિહાસ બતાવો</translation>
@@ -727,7 +725,6 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" /> સાથેના તમારા કનેક્શનને ઑબ્સોલિટ સાઇફર સ્યૂટનો ઉપયોગ કરીને એન્ક્રિપ્ટ કરાયું છે.</translation>
 <translation id="5813119285467412249">&amp;ઉમેરવું ફરી કરો</translation>
 <translation id="5838278095973806738">તમારે આ સાઇટ પર કોઈપણ સંવેદનશીલ માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ અથવા ક્રેડિટ કાર્ડ્સ) દાખલ કરવી જોઈએ નહીં, કારણ કે તે હુમલાખોર દ્વારા ચોરવામાં આવી શકે છે.</translation>
-<translation id="5844286946362376359">હું <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" />ની શરતો અને નિયમો, પ્રાઇવસી નીતિ અને પાછું ખેંચવાના અધિકાર વિશે જાણું છું (વાંચવા માટે ચેક કર્યા વિના રાખો).</translation>
 <translation id="5863847714970149516">આગળનું પેજ તમને શુલ્ક લાગુ કરી શકે છે</translation>
 <translation id="5866257070973731571">ફોન નંબર ઉમેરો</translation>
 <translation id="5869405914158311789">આ સાઇટ પર પહોંચી શકાતું નથી</translation>
@@ -853,7 +850,6 @@
 <translation id="6865412394715372076">હાલમાં આ કાર્ડની ચકાસણી કરી શકાતી નથી</translation>
 <translation id="6868206169573555318">અપડેટ કરવા માટે લૉન્ચ કરો</translation>
 <translation id="6874604403660855544">&amp;ઉમેરવું ફરી કરો</translation>
-<translation id="6885646002011712606">સ્ક્રીનના તળિયે ઑટોમેટિક રીતે ભરવા માટે આસિસ્ટંટ ઉપલબ્ધ છે</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">નીતિ સ્તર સમર્થિત નથી.</translation>
 <translation id="6895330447102777224">તમારા કાર્ડની પુષ્ટિ કરવામાં આવી છે</translation>
@@ -999,7 +995,6 @@
 <translation id="7716424297397655342">કૅશમાંથી આ સાઇટ લોડ કરી શકાતી નથી</translation>
 <translation id="7723047071702270851">કાર્ડમાં ફેરફાર કરો</translation>
 <translation id="774634243536837715">જોખમકારક કન્ટેન્ટ બ્લૉક કર્યું.</translation>
-<translation id="7747182086178764941">ઑટોમેટિક રીતે ભરવાના આસિસ્ટંટની પ્રથમ રન સ્ક્રીન બતાવવામાં આવે છે</translation>
 <translation id="7752995774971033316">બિનસંચાલિત</translation>
 <translation id="7755287808199759310">તમારા માટે તમારા માતાપિતા તેને અનાવરોધિત કરી શકે છે</translation>
 <translation id="7758069387465995638">ફાયરવોલ અથવા એન્ટિવાયરસ સોફ્ટવેર એ કનેક્શન અવરોધિત કર્યું હોઈ શકે છે.</translation>
@@ -1118,7 +1113,6 @@
 <translation id="8503559462189395349">Chrome પાસવર્ડ</translation>
 <translation id="8503813439785031346">વપરાશકર્તાનામ</translation>
 <translation id="8508648098325802031">શોધ આઇકન</translation>
-<translation id="8524783101666974011">તમારા Google એકાઉન્ટમાં કાર્ડ સાચવો</translation>
 <translation id="8543181531796978784">તમે <ph name="BEGIN_ERROR_LINK" />શોધ સમસ્યાની જાણ<ph name="END_ERROR_LINK" /> કરી શકો છો અથવા જો તમે તમારી સુરક્ષા અંગેનાં જોખમોને સમજતાં હોવ, તો <ph name="BEGIN_LINK" />આ અસુરક્ષિત સાઇટની મુલાકાત<ph name="END_LINK" /> લઈ શકો છો.</translation>
 <translation id="8543556556237226809">પ્રશ્નો છે? તમારી પ્રોફાઇલનું નિરીક્ષણ કરનાર વ્યક્તિનો સંપર્ક કરો.</translation>
 <translation id="8553075262323480129">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠની ભાષા નિર્ધારિત થઈ શકી નથી.</translation>

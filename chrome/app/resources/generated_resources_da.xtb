@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Værktøjer</translation>
 <translation id="1122242684574577509">Godkendelsen mislykkedes. Klik for at gå til loginsiden for det Wi-Fi-netværk, du bruger (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Bogmærkets navn</translation>
-<translation id="1123187597739372905">Vis indstillinger for synkronisering</translation>
 <translation id="1124772482545689468">Bruger</translation>
 <translation id="1125550662859510761">Ligner <ph name="WIDTH" /> x <ph name="HEIGHT" /> (oprindelig)</translation>
 <translation id="1128109161498068552">Tillad ikke, at websites bruger interne systemmeddelelser til at få adgang til MIDI-enheder</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Rediger søgemaskine</translation>
 <translation id="1134009406053225289">Åbn i inkognitovindue</translation>
-<translation id="1136155683023653803">Adgangskoder, bogmærker, historik m.m. synkroniseres med din konto</translation>
 <translation id="1137673463384776352">Åbn linket i <ph name="APP" /></translation>
 <translation id="1140351953533677694">Få adgang til dine Bluetooth- og serieenheder</translation>
 <translation id="1140610710803014750">Log ind, og aktivér synkronisering for at få dine bogmærker på alle dine enheder.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Tillad altid, at <ph name="HOST" /> kan få adgang til sensorer</translation>
 <translation id="1153356358378277386">Parrede enheder</translation>
 <translation id="1156488781945104845">Aktuel tid</translation>
-<translation id="1157102636231978136">Dine browserdata og -aktivitet, der synkroniseres med din Google-konto</translation>
 <translation id="1161575384898972166">Log ind på <ph name="TOKEN_NAME" /> for at eksportere klientcertifikatet.</translation>
 <translation id="1161699061380012396">Indtastningsmetode for Chrome OS</translation>
 <translation id="1163931534039071049">&amp;Vis rammens kildetekst</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Der opstod en fejl under konfigurationen af printeren</translation>
 <translation id="1396963298126346194">Brugernavnet og adgangskoden, du har angivet, stemmer ikke overens.</translation>
 <translation id="1397500194120344683">Der er ingen kvalificerede enheder. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Synkronisering og tilpasning</translation>
 <translation id="1398853756734560583">Maksimér</translation>
 <translation id="1399511500114202393">Ikke noget brugercertifikat</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (administreret)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Er allerede downloadet</translation>
 <translation id="1632803087685957583">Giver dig mulighed for at justere gentagelseshastighed, ordforslag og meget mere for tastaturet</translation>
 <translation id="1635033183663317347">Installeret af din tilsynsførende.</translation>
-<translation id="1635885551358739414">Google kan bruge indhold på de websites, du besøger, samt browseraktivitet og -interaktioner til at tilpasse Chrome og andre Google-tjenester som f.eks. Oversæt, Søgning og annoncer. Du kan tilpasse dette i Indstillinger.</translation>
 <translation id="1637224376458524414">Få dette bogmærke på din iPhone</translation>
 <translation id="1637765355341780467">Der gik noget galt ved åbningen af din profil. Nogle funktioner er muligvis ikke tilgængelige.</translation>
 <translation id="1639239467298939599">Indlæser...</translation>
@@ -2339,7 +2334,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4585793705637313973">Rediger side</translation>
 <translation id="4590324241397107707">Lagring i database</translation>
 <translation id="4593021220803146968">&amp;Gå til <ph name="URL" /></translation>
-<translation id="459505086032485258">Se indstillinger for Google-tjenester</translation>
 <translation id="4595560905247879544">Apps og udvidelser kan kun ændres af administratoren (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Du har lagrede certifikater, som identificerer følgende servere:</translation>
 <translation id="4598556348158889687">Administration af lagerplads</translation>
@@ -3272,7 +3266,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5982621672636444458">Sorteringsmuligheder</translation>
 <translation id="5984222099446776634">Besøgt for nylig</translation>
 <translation id="5985458664595100876">Ugyldigt webadresseformat. De understøttede formater er \\server\share og smb://server/share.</translation>
-<translation id="5990142338020175451">Mere personlige Google-tjenester, f.eks. bedre sideforslag</translation>
 <translation id="5990386583461751448">Oversat</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne denne app.}one{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne denne app.}other{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne disse apps.}}</translation>
 <translation id="5997337190805127100">Få flere oplysninger om websiteadgang</translation>
@@ -3866,7 +3859,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6900284862687837908">Baggrundsapp: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Eksempel på stemme</translation>
 <translation id="6902837902700739466">Føj enheden til domænet</translation>
-<translation id="6903534926908201625">Du kan til enhver tid tilpasse, hvilke oplysninger Google indsamler, i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="6904344821472985372">Tilbagekald filadgang</translation>
 <translation id="6904655473976120856">Tryk på knappen App for at afslutte</translation>
 <translation id="6910211073230771657">Slettet</translation>
@@ -4181,7 +4173,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7366415735885268578">Tilføj et website</translation>
 <translation id="7366909168761621528">Browserdata</translation>
 <translation id="7371006317849674875">Starttidspunkt</translation>
-<translation id="737439367876257440">Gør Chrome og dens sikkerhed bedre ved at sende systemoplysninger og oplysninger om brug til Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Fremhæv musemarkøren, når den bevæger sig</translation>
 <translation id="7377169924702866686">Caps Lock er slået til.</translation>

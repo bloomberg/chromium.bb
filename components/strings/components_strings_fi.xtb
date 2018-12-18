@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Käynnistä tietokone uudelleen.</translation>
 <translation id="2113977810652731515">Kortti</translation>
 <translation id="2114841414352855701">Ei käytetä – käytännön <ph name="POLICY_NAME" /> ohittama.</translation>
-<translation id="2129308444951592399">Käyttöehdot</translation>
 <translation id="213826338245044447">Mobiilikirjanmerkit</translation>
 <translation id="214556005048008348">Peruuta maksu</translation>
 <translation id="2147827593068025794">Taustasynkronointi</translation>
@@ -244,6 +243,7 @@
 <translation id="2501278716633472235">Takaisin</translation>
 <translation id="2503184589641749290">Hyväksytyt maksu- ja prepaid-kortit</translation>
 <translation id="2515629240566999685">Tarkista alueesi mobiilisignaali.</translation>
+<translation id="2523886232349826891">Tallennetaan vain tälle laitteelle</translation>
 <translation id="2524461107774643265">Lisää tietoja</translation>
 <translation id="2536110899380797252">Lisää osoite</translation>
 <translation id="2539524384386349900">Tunnista</translation>
@@ -407,7 +407,6 @@
 <translation id="3583757800736429874">&amp;Toista siirto</translation>
 <translation id="3586931643579894722">Piilota lisätiedot</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Tallennetaan kortteja…</translation>
 <translation id="3615877443314183785">Anna kelvollinen viimeinen voimassaolopäivä.</translation>
 <translation id="36224234498066874">Poista selaustiedot...</translation>
 <translation id="362276910939193118">Näytä koko selaushistoria</translation>
@@ -728,7 +727,6 @@
 <translation id="5810442152076338065">Yhteytesi kohteeseen <ph name="DOMAIN" /> on salattu vanhentuneella salaustekniikalla.</translation>
 <translation id="5813119285467412249">&amp;Toista lisäys</translation>
 <translation id="5838278095973806738">Älä anna tälle sivustolle salasanoja, luottokorttinumeroita tai muita arkaluonteisia tietoja, sillä hyökkääjät saattavat varastaa ne.</translation>
-<translation id="5844286946362376359">Olen tutustunut palvelun <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> käyttöehtoihin, tietosuojakäytäntöön ja peruutusoikeuteen (näet ehdot, jos et valitse tätä)</translation>
 <translation id="5863847714970149516">Avaamasi sivu voi yrittää veloittaa sinulta rahaa</translation>
 <translation id="5866257070973731571">Lisää puhelinnumero</translation>
 <translation id="5869405914158311789">Sivustoon ei saada yhteyttä</translation>
@@ -854,7 +852,6 @@
 <translation id="6865412394715372076">Korttia ei voi vahvistaa juuri nyt.</translation>
 <translation id="6868206169573555318">Käynnistä uudelleen ja päivitä</translation>
 <translation id="6874604403660855544">&amp;Toista lisäys</translation>
-<translation id="6885646002011712606">Automaattisen täytön apuri on käytettävissä näytön alareunassa</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Käytännön tasoa ei tueta.</translation>
 <translation id="6895330447102777224">Korttisi vahvistettiin.</translation>
@@ -1000,7 +997,6 @@ Lisätietoja:
 <translation id="7716424297397655342">Tätä sivustoa ei voi ladata välimuistista</translation>
 <translation id="7723047071702270851">Muokkaa korttia</translation>
 <translation id="774634243536837715">Vaarallinen sisältö estetty</translation>
-<translation id="7747182086178764941">Automaattisen täytön apurin ensimmäisen käyttökerran näyttö näkyy</translation>
 <translation id="7752995774971033316">Ei hallinnoida</translation>
 <translation id="7755287808199759310">Vanhempasi voi kumota eston puolestasi.</translation>
 <translation id="7758069387465995638">Palomuuri tai virustorjuntaohjelmisto on saattanut estää yhteyden.</translation>
@@ -1119,7 +1115,6 @@ Lisätietoja:
 <translation id="8503559462189395349">Chrome-salasanat</translation>
 <translation id="8503813439785031346">Käyttäjätunnus</translation>
 <translation id="8508648098325802031">Hakukuvake</translation>
-<translation id="8524783101666974011">Tallenna kortteja Google-tilillesi</translation>
 <translation id="8543181531796978784">Voit <ph name="BEGIN_ERROR_LINK" />ilmoittaa löytyneestä ongelmasta<ph name="END_ERROR_LINK" /> tai <ph name="BEGIN_LINK" />siirtyä mahdollisesti haitalliselle sivustolle<ph name="END_LINK" />, jos ymmärrät tietoturvariskit.</translation>
 <translation id="8543556556237226809">Onko sinulla kysyttävää? Ota yhteyttä profiiliasi valvovaan henkilöön.</translation>
 <translation id="8553075262323480129">Käännös epäonnistui, sillä sivun kieltä ei voitu määrittää.</translation>

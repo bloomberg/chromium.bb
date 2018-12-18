@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">אתחול המחשב</translation>
 <translation id="2113977810652731515">כרטיס</translation>
 <translation id="2114841414352855701">המערכת התעלמה משום שהמדיניות בוטלה על ידי <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">תנאים והגבלות</translation>
 <translation id="213826338245044447">סימניות לנייד</translation>
 <translation id="214556005048008348">ביטול תשלום</translation>
 <translation id="2147827593068025794">סינכרון ברקע</translation>
@@ -407,7 +406,6 @@
 <translation id="3583757800736429874">&amp;ביצוע מחדש של העברה</translation>
 <translation id="3586931643579894722">הסתר פרטים</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">אנחנו שומרים את הכרטיסים...</translation>
 <translation id="3615877443314183785">עליך להזין תאריך תפוגה חוקי</translation>
 <translation id="36224234498066874">נקה נתוני גלישה...</translation>
 <translation id="362276910939193118">הצג את כל ההיסטוריה</translation>
@@ -733,7 +731,6 @@ Del</translation>
 <translation id="5810442152076338065">החיבור שלך אל <ph name="DOMAIN" /> מוצפן באמצעות חבילת צופן מיושנת.</translation>
 <translation id="5813119285467412249">&amp;ביצוע מחדש של הוספה</translation>
 <translation id="5838278095973806738">אין להזין מידע רגיש באתר הזה (כמו סיסמאות או מספרי כרטיסי אשראי), מאחר שתוקפים עלולים לקבל אליו גישה.</translation>
-<translation id="5844286946362376359">התנאים וההגבלות ידועים לי, כמו גם מדיניות הפרטיות וזכות הביטול של <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (כדי לאפשר קריאה, התיבה צריכה להיות לא מסומנת).</translation>
 <translation id="5863847714970149516">בדף הבא עשויה להיות דרישה לתשלום</translation>
 <translation id="5866257070973731571">הוספת מספר טלפון</translation>
 <translation id="5869405914158311789">לא ניתן לגשת לאתר הזה</translation>
@@ -859,7 +856,6 @@ Del</translation>
 <translation id="6865412394715372076">אי אפשר לאמת כרגע את הכרטיס</translation>
 <translation id="6868206169573555318">הפעלה מחדש לעדכון</translation>
 <translation id="6874604403660855544">&amp;ביצוע מחדש של הוספה</translation>
-<translation id="6885646002011712606">‏ה-Assistant למילוי אוטומטי זמין בחלק התחתון של המסך</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">רמת המדיניות אינה נתמכת.</translation>
 <translation id="6895330447102777224">הכרטיס שלך מאושר</translation>
@@ -1005,7 +1001,6 @@ Del</translation>
 <translation id="7716424297397655342">לא ניתן לטעון את האתר הזה מהמטמון</translation>
 <translation id="7723047071702270851">עריכת כרטיס</translation>
 <translation id="774634243536837715">תוכן מסוכן נחסם.</translation>
-<translation id="7747182086178764941">‏מוצג מסך ההפעלה הראשונה של ה-Assistant למילוי אוטומטי</translation>
 <translation id="7752995774971033316">ללא ניהול</translation>
 <translation id="7755287808199759310">אחד מההורים שלך יכול לבטל בשבילך את החסימה</translation>
 <translation id="7758069387465995638">ייתכן שחומת אש או תוכנת אנטי-וירוס חסמו את החיבור.</translation>
@@ -1124,7 +1119,6 @@ Del</translation>
 <translation id="8503559462189395349">‏סיסמאות Chrome</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
 <translation id="8508648098325802031">סמל החיפוש</translation>
-<translation id="8524783101666974011">‏שמירת כרטיסים בחשבון Google</translation>
 <translation id="8543181531796978784">באפשרותך <ph name="BEGIN_ERROR_LINK" />לדווח על בעיית זיהוי<ph name="END_ERROR_LINK" /> או, אם אתה מבין את סיכוני האבטחה, <ph name="BEGIN_LINK" />להיכנס לאתר הזה, שאינו מאובטח<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">יש לך שאלות? עליך לפנות לאיש הקשר שמפקח על הפרופיל שלך.</translation>
 <translation id="8553075262323480129">התרגום נכשל כיוון שלא הייתה אפשרות לקבוע את שפת הדף.</translation>

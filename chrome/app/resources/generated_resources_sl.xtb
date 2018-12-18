@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Orodja</translation>
 <translation id="1122242684574577509">Preverjanje pristnosti ni uspelo. Kliknite, da obiščete prijavno stran za omrežje Wi-Fi, ki ga uporabljate (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Ime zaznamka</translation>
-<translation id="1123187597739372905">Prikaži nastavitve sinhronizacije</translation>
 <translation id="1124772482545689468">Uporabnik</translation>
 <translation id="1125550662859510761">Videti je <ph name="WIDTH" /> x <ph name="HEIGHT" /> (izvorna)</translation>
 <translation id="1128109161498068552">Nobenemu spletnemu mestu ne dovoli uporabe sporočil sysex za dostop do naprav MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Urejanje iskalnika</translation>
 <translation id="1134009406053225289">Odpri v oknu brez beleženja zgodovine</translation>
-<translation id="1136155683023653803">Gesla, zaznamki, zgodovina in drugo se sinhronizirajo z vašim računom</translation>
 <translation id="1137673463384776352">Odpri povezavo v aplikaciji <ph name="APP" /></translation>
 <translation id="1140351953533677694">Dostop do naprav Bluetooth in serijskih naprav</translation>
 <translation id="1140610710803014750">Če želite dostopati do zaznamkov v vseh napravah, se prijavite in vklopite sinhronizacijo.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Spletnemu mestu <ph name="HOST" /> vedno dovoli dostop do tipal</translation>
 <translation id="1153356358378277386">Seznanjene naprave</translation>
 <translation id="1156488781945104845">Trenutna ura</translation>
-<translation id="1157102636231978136">Podatki in dejavnost brskanja, sinhronizirani z Google Računom</translation>
 <translation id="1161575384898972166">Prijavite se v <ph name="TOKEN_NAME" />, da izvozite potrdilo odjemalca.</translation>
 <translation id="1161699061380012396">Način vnosa v okolju OS Chrome</translation>
 <translation id="1163931534039071049">&amp;Ogled vira okvirja</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Napaka pri nastavljanju tiskalnika</translation>
 <translation id="1396963298126346194">Vneseno uporabniško ime in geslo se ne ujemata</translation>
 <translation id="1397500194120344683">Ni ustreznih naprav. <ph name="LINK_BEGIN" />Preberite več o tem.<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Sinhronizacija in prilagajanje</translation>
 <translation id="1398853756734560583">Povečaj</translation>
 <translation id="1399511500114202393">Brez uporabniškega potrdila</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Zaščiten)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Že preneseno</translation>
 <translation id="1632803087685957583">Omogoča prilagajanje hitrosti ponavljanja za tipkovnico, predvidevanja besed in drugega</translation>
 <translation id="1635033183663317347">Namestil skrbnik</translation>
-<translation id="1635885551358739414">Google lahko vsebino na spletnih mestih, ki jih obiščete, ter vašo dejavnost brskanja in interakcije uporabi za prilagajanje Chroma ter drugih Googlovih storitev, kot so Prevajalnik, Iskanje Google in oglasi. To lahko prilagodite v nastavitvah.</translation>
 <translation id="1637224376458524414">Prejemanje tega zaznamka v iPhonu</translation>
 <translation id="1637765355341780467">Pri odpiranju profila je prišlo do težave. Nekatere funkcije morda niso na voljo.</translation>
 <translation id="1639239467298939599">Nalaganje</translation>
@@ -2341,7 +2336,6 @@
 <translation id="4585793705637313973">Urejanje strani</translation>
 <translation id="4590324241397107707">Shramba zbirke podatkov</translation>
 <translation id="4593021220803146968">&amp;Pojdi na <ph name="URL" /></translation>
-<translation id="459505086032485258">Pokaži nastavitve Googlovih storitev</translation>
 <translation id="4595560905247879544">Aplikacije in razširitve lahko spreminja samo skrbnik (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">V datoteki so potrdila, ki identificirajo te strežnike</translation>
 <translation id="4598556348158889687">Upravljanje shrambe</translation>
@@ -3276,7 +3270,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5982621672636444458">Možnosti razvrščanja</translation>
 <translation id="5984222099446776634">Nedavno obiskano</translation>
 <translation id="5985458664595100876">Neveljavna oblika URL-ja. Podprti obliki sta \\server\share in smb://server/share.</translation>
-<translation id="5990142338020175451">Bolj osebne Googlove storitve, kot so boljši predlogi strani</translation>
 <translation id="5990386583461751448">Prevedeno</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Če želite zagotoviti, da boste lahko še naprej brskali po spletu, prosite skrbnika, da odstrani to aplikacijo.}one{Če želite zagotoviti, da boste lahko še naprej brskali po spletu, prosite skrbnika, da odstrani te aplikacije.}two{Če želite zagotoviti, da boste lahko še naprej brskali po spletu, prosite skrbnika, da odstrani te aplikacije.}few{Če želite zagotoviti, da boste lahko še naprej brskali po spletu, prosite skrbnika, da odstrani te aplikacije.}other{Če želite zagotoviti, da boste lahko še naprej brskali po spletu, prosite skrbnika, da odstrani te aplikacije.}}</translation>
 <translation id="5997337190805127100">Več o dostopu do spletnih mest</translation>
@@ -3869,7 +3862,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6900284862687837908">Aplikacija v ozadju: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Predhodno poslušanje glasu</translation>
 <translation id="6902837902700739466">Pridružite napravo v domeno</translation>
-<translation id="6903534926908201625">V <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" /> lahko kadar koli prilagodite, katere podatke zbira Google.</translation>
 <translation id="6904344821472985372">Preklic dostopa do datotek</translation>
 <translation id="6904655473976120856">Pritisnite gumb za aplikacije, če želite zapreti</translation>
 <translation id="6910211073230771657">Izbrisano</translation>
@@ -4184,7 +4176,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7366415735885268578">Dodajanje spletnega mesta</translation>
 <translation id="7366909168761621528">Podatki brskanja</translation>
 <translation id="7371006317849674875">Začetni čas</translation>
-<translation id="737439367876257440">Izboljšajte Chrome in njegovo varnost tako, da pošiljate podatke o sistemu in uporabi Googlu</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Označitev miškinega kazalca med premikanjem</translation>
 <translation id="7377169924702866686">Tipka Caps Lock je vklopljena.</translation>

@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Verktyg</translation>
 <translation id="1122242684574577509">Autentiseringen misslyckades. Klicka här om du vill visa inloggningssidan för Wi-Fi-nätverket du använder (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Bokmärkets namn</translation>
-<translation id="1123187597739372905">Visa synkroniseringsinställningar</translation>
 <translation id="1124772482545689468">Användare</translation>
 <translation id="1125550662859510761">Ser ut som <ph name="WIDTH" /> × <ph name="HEIGHT" /> (fast)</translation>
 <translation id="1128109161498068552">Tillåt inte att några webbplatser använder systemexklusiva meddelanden för att komma åt MIDI-enheter</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Redigera sökmotor</translation>
 <translation id="1134009406053225289">Öppna i inkognitofönster</translation>
-<translation id="1136155683023653803">Bland annat bokmärken och historik synkroniseras med ditt konto</translation>
 <translation id="1137673463384776352">Öppna länken i <ph name="APP" /></translation>
 <translation id="1140351953533677694">Få åtkomst till dina Bluetooth-enheter och seriella enheter</translation>
 <translation id="1140610710803014750">Logga in och aktivera synkronisering om du vill få tillgång till dina bokmärken på alla enheter</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Låt alltid <ph name="HOST" /> använda enhetens sensorer</translation>
 <translation id="1153356358378277386">Kopplade enheter</translation>
 <translation id="1156488781945104845">Aktuell tid</translation>
-<translation id="1157102636231978136">Din webbinformation och aktivitet som synkroniseras med Google-kontot</translation>
 <translation id="1161575384898972166">Logga in på <ph name="TOKEN_NAME" /> om du vill exportera klientcertifikatet.</translation>
 <translation id="1161699061380012396">Inmatningsmetod för Chrome OS</translation>
 <translation id="1163931534039071049">&amp;Visa ramkälla</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Det gick inte att konfigurera skrivaren</translation>
 <translation id="1396963298126346194">Användarnamnet och lösenordet som du angav stämmer inte</translation>
 <translation id="1397500194120344683">Du har ingen enhet som uppfyller villkoren. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Synkronisering och anpassning</translation>
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1399511500114202393">Inget användarcertifikat</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (kontrollerad)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Har redan laddats ned</translation>
 <translation id="1632803087685957583">Här kan du ändra tangentbordsinställningar som upprepningsintervall, ordförslag med mera</translation>
 <translation id="1635033183663317347">Har installerats av din vårdnadshavare.</translation>
-<translation id="1635885551358739414">Google kan anpassa Chrome och andra tjänster från Google som Översätt, Sök och annonser utifrån innehållet på webbplatser du besöker samt aktivitet i och interaktion med webbläsaren. Du kan anpassa detta i inställningarna.</translation>
 <translation id="1637224376458524414">Få det här bokmärket till din iPhone</translation>
 <translation id="1637765355341780467">Något gick snett när profilen skulle öppnas. Vissa funktioner kanske inte är tillgängliga.</translation>
 <translation id="1639239467298939599">Läser in</translation>
@@ -2340,7 +2335,6 @@
 <translation id="4585793705637313973">Redigera sida</translation>
 <translation id="4590324241397107707">Databaslagring</translation>
 <translation id="4593021220803146968">&amp;Öppna <ph name="URL" /></translation>
-<translation id="459505086032485258">Visa inställningar för Googles tjänster</translation>
 <translation id="4595560905247879544">Appar och tillägg kan bara ändras av den ansvariga (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Du har sparade certifikat som identifierar dessa servrar</translation>
 <translation id="4598556348158889687">Lagringshantering</translation>
@@ -3273,7 +3267,6 @@
 <translation id="5982621672636444458">Sorteringsalternativ</translation>
 <translation id="5984222099446776634">Nyligen besökta</translation>
 <translation id="5985458664595100876">Ogiltigt webbadressformat. Följande format stöds: \\server\share och smb://server/share.</translation>
-<translation id="5990142338020175451">Personligare tjänster från Google, till exempel förbättrade förslag på sidor</translation>
 <translation id="5990386583461751448">Översatt</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Be administratören att ta bort den här appen så att du kan fortsätta att surfa på internet.}other{Be administratören att ta bort de här apparna så att du kan fortsätta att surfa på internet.}}</translation>
 <translation id="5997337190805127100">Läs mer om webbplatsåtkomst</translation>
@@ -3866,7 +3859,6 @@
 <translation id="6900284862687837908">Bakgrundsapp: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Röst att förhandsgranska</translation>
 <translation id="6902837902700739466">Anslut enheten till domänen</translation>
-<translation id="6903534926908201625">I <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" /> kan du när som helst anpassa vilken information Google samlar in.</translation>
 <translation id="6904344821472985372">Återkalla filåtkomst</translation>
 <translation id="6904655473976120856">Tryck på appknappen för att avsluta</translation>
 <translation id="6910211073230771657">Borttagen</translation>
@@ -4181,7 +4173,6 @@
 <translation id="7366415735885268578">Lägg till en webbplats</translation>
 <translation id="7366909168761621528">Webbinformation</translation>
 <translation id="7371006317849674875">Starttid</translation>
-<translation id="737439367876257440">Gör Chrome bättre och säkrare genom att skicka information om system och användning till Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Markera muspekaren när den är i rörelse</translation>
 <translation id="7377169924702866686">Caps Lock är på.</translation>

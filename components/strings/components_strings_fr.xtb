@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Redémarrez l'ordinateur</translation>
 <translation id="2113977810652731515">Carte</translation>
 <translation id="2114841414352855701">Ignorée parce que remplacée par <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Conditions d'utilisation</translation>
 <translation id="213826338245044447">Favoris sur mobile</translation>
 <translation id="214556005048008348">Annuler le paiement</translation>
 <translation id="2147827593068025794">Synchronisation en arrière-plan</translation>
@@ -244,6 +243,7 @@
 <translation id="2501278716633472235">Retour</translation>
 <translation id="2503184589641749290">Cartes de débit et cartes prépayées acceptées</translation>
 <translation id="2515629240566999685">Vérifier le signal dans votre zone</translation>
+<translation id="2523886232349826891">Enregistrée sur cet appareil uniquement</translation>
 <translation id="2524461107774643265">Ajouter des informations</translation>
 <translation id="2536110899380797252">Ajouter une adresse</translation>
 <translation id="2539524384386349900">Détecter</translation>
@@ -406,7 +406,6 @@
 <translation id="3583757800736429874">&amp;Rétablir le déplacement</translation>
 <translation id="3586931643579894722">Masquer les détails</translation>
 <translation id="3600246354004376029">"<ph name="TITLE" />", <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Enregistrement des cartes...</translation>
 <translation id="3615877443314183785">Saisissez une date d'expiration valide</translation>
 <translation id="36224234498066874">Effacer les données de navigation...</translation>
 <translation id="362276910939193118">Afficher l'historique complet</translation>
@@ -727,7 +726,6 @@
 <translation id="5810442152076338065">Votre connexion à <ph name="DOMAIN" /> est chiffrée à l'aide d'une méthode de chiffrement obsolète.</translation>
 <translation id="5813119285467412249">&amp;Rétablir l'ajout</translation>
 <translation id="5838278095973806738">Vous ne devriez pas saisir d'informations sensibles sur ce site (par exemple, vos mots de passe ou les informations de votre carte de paiement), car elles risquent d'être dérobées par des pirates informatiques.</translation>
-<translation id="5844286946362376359">Je connais les conditions d'utilisation et les règles de confidentialité de <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" />, et j'ai connaissance de mon droit de rétractation (décochez la case pour les consulter).</translation>
 <translation id="5863847714970149516">Il se peut que l'accès à la page suivante engendre des frais</translation>
 <translation id="5866257070973731571">Ajouter un numéro de téléphone</translation>
 <translation id="5869405914158311789">Ce site est inaccessible</translation>
@@ -853,7 +851,6 @@
 <translation id="6865412394715372076">Impossible de valider cette carte pour le moment</translation>
 <translation id="6868206169573555318">Redémarrer pour mettre à jour</translation>
 <translation id="6874604403660855544">&amp;Rétablir l'ajout</translation>
-<translation id="6885646002011712606">L'assistant de saisie automatique est disponible au bas de l'écran</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Le niveau de la règle n'est pas accepté.</translation>
 <translation id="6895330447102777224">Carte validée</translation>
@@ -999,7 +996,6 @@ Informations supplémentaires :
 <translation id="7716424297397655342">Impossible de charger ce site à partir du cache</translation>
 <translation id="7723047071702270851">Modifier la carte</translation>
 <translation id="774634243536837715">Contenu dangereux bloqué.</translation>
-<translation id="7747182086178764941">L'écran de première utilisation de l'assistant de saisie automatique est affiché</translation>
 <translation id="7752995774971033316">Non géré</translation>
 <translation id="7755287808199759310">Ton parent peut te le débloquer</translation>
 <translation id="7758069387465995638">Il est possible qu'un pare-feu ou un logiciel antivirus ait bloqué la connexion.</translation>
@@ -1118,7 +1114,6 @@ Informations supplémentaires :
 <translation id="8503559462189395349">Mots de passe Google Chrome</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>
 <translation id="8508648098325802031">Icône Recherche</translation>
-<translation id="8524783101666974011">Enregistrer des cartes dans votre compte Google</translation>
 <translation id="8543181531796978784">Vous pouvez <ph name="BEGIN_ERROR_LINK" />signaler un problème de détection<ph name="END_ERROR_LINK" />. Si vous avez compris les risques auxquels vous vous exposez, vous pouvez <ph name="BEGIN_LINK" />consulter ce site dangereux<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Des questions ? Contactez la personne qui supervise votre profil.</translation>
 <translation id="8553075262323480129">La traduction a échoué, car nous n'avons pas pu déterminer la langue de la page.</translation>

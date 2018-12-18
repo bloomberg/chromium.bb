@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Công cụ</translation>
 <translation id="1122242684574577509">Xác thực bị lỗi. Nhấp để truy cập trang đăng nhập của mạng Wi-Fi mà bạn đang sử dụng (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Tên dấu trang</translation>
-<translation id="1123187597739372905">Hiển thị mục cài đặt đồng bộ hóa</translation>
 <translation id="1124772482545689468">Người dùng</translation>
 <translation id="1125550662859510761">Có vẻ như là <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Gốc)</translation>
 <translation id="1128109161498068552">Không cho phép bất cứ trang web nào sử dụng thông báo dành riêng cho hệ thống để truy cập thiết bị MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Chỉnh sửa công cụ tìm kiếm</translation>
 <translation id="1134009406053225289">Mở trong cửa sổ ẩn danh</translation>
-<translation id="1136155683023653803">Mật khẩu, dấu trang, lịch sử, v.v. được đồng bộ hóa với tài khoản của bạn</translation>
 <translation id="1137673463384776352">Mở liên kết trong <ph name="APP" /></translation>
 <translation id="1140351953533677694">Truy cập thiết bị tuần tự và Bluetooth của bạn</translation>
 <translation id="1140610710803014750">Để sử dụng dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập và bật đồng bộ hóa.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Luôn cho phép <ph name="HOST" /> sử dụng các cảm biến của thiết bị</translation>
 <translation id="1153356358378277386">Thiết bị được ghép nối</translation>
 <translation id="1156488781945104845">Thời gian hiện tại</translation>
-<translation id="1157102636231978136">Hoạt động và dữ liệu duyệt web của bạn, được đồng bộ hóa với Tài khoản Google</translation>
 <translation id="1161575384898972166">Vui lòng đăng nhập vào <ph name="TOKEN_NAME" /> để xuất chứng chỉ ứng dụng khách.</translation>
 <translation id="1161699061380012396">Phương thức nhập trên Chrome OS</translation>
 <translation id="1163931534039071049">&amp;Xem nguồn khung</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Lỗi khi thiết lập máy in</translation>
 <translation id="1396963298126346194">Tên người dùng và mật khẩu bạn đã nhập không khớp</translation>
 <translation id="1397500194120344683">Không có thiết bị nào đủ điều kiện. <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Đồng bộ hóa và cá nhân hóa</translation>
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="1399511500114202393">Không có chứng chỉ người dùng</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (Được giám sát)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Đã tải xuống</translation>
 <translation id="1632803087685957583">Cho phép bạn điều chỉnh tốc độ lặp lại, tính năng dự đoán từ và các chức năng khác của bàn phím</translation>
 <translation id="1635033183663317347">Do người giám hộ của bạn cài đặt.</translation>
-<translation id="1635885551358739414">Google có thể sử dụng nội dung trên các trang web bạn truy cập, cùng với các tương tác và hoạt động trên trình duyệt để cá nhân hóa Chrome cũng như các dịch vụ khác của Google, chẳng hạn như Dịch, Tìm kiếm và quảng cáo. Bạn có thể tùy chỉnh phần này trong mục Cài đặt.</translation>
 <translation id="1637224376458524414">Truy cập dấu trang này trên iPhone của bạn</translation>
 <translation id="1637765355341780467">Đã xảy ra lỗi khi mở hồ sơ của bạn. Một số tính năng có thể không khả dụng.</translation>
 <translation id="1639239467298939599">Đang tải</translation>
@@ -2341,7 +2336,6 @@
 <translation id="4585793705637313973">Chỉnh sửa trang</translation>
 <translation id="4590324241397107707">Bộ nhớ cơ sở dữ liệu</translation>
 <translation id="4593021220803146968">Đ&amp;i đến <ph name="URL" /></translation>
-<translation id="459505086032485258">Hiển thị cài đặt dịch vụ của Google</translation>
 <translation id="4595560905247879544">Chỉ người quản lý mới có thể sửa đổi ứng dụng và tiện ích (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Bạn có các chứng chỉ trên tệp có thể nhận dạng các máy chủ này</translation>
 <translation id="4598556348158889687">Quản lý bộ nhớ</translation>
@@ -3274,7 +3268,6 @@
 <translation id="5982621672636444458">Tùy chọn sắp xếp</translation>
 <translation id="5984222099446776634">Truy cập gần đây</translation>
 <translation id="5985458664595100876">Định dạng URL không hợp lệ. Các định dạng được hỗ trợ là \\server\share và smb://server/share.</translation>
-<translation id="5990142338020175451">Tận hưởng nhiều dịch vụ cá nhân hóa khác của Google, như trang đề xuất có liên quan hơn</translation>
 <translation id="5990386583461751448">Đã dịch</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Để đảm bảo có thể tiếp tục duyệt web, hãy yêu cầu quản trị viên xóa ứng dụng này.}other{Để đảm bảo có thể tiếp tục duyệt web, hãy yêu cầu quản trị viên xóa những ứng dụng này.}}</translation>
 <translation id="5997337190805127100">Tìm hiểu thêm về quyền truy cập vào trang web</translation>
@@ -3867,7 +3860,6 @@
 <translation id="6900284862687837908">Ứng dụng nền: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Giọng nói để nghe trước</translation>
 <translation id="6902837902700739466">Để thiết bị tham gia vào miền</translation>
-<translation id="6903534926908201625">Bạn có thể tùy chỉnh thông tin mà Google thu thập trong phần <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" /> bất cứ lúc nào.</translation>
 <translation id="6904344821472985372">Thu hồi quyền truy cập tệp</translation>
 <translation id="6904655473976120856">Nhấn vào nút Ứng dụng để thoát</translation>
 <translation id="6910211073230771657">Đã xóa</translation>
@@ -4182,7 +4174,6 @@
 <translation id="7366415735885268578">Thêm trang web</translation>
 <translation id="7366909168761621528">Dữ liệu duyệt web</translation>
 <translation id="7371006317849674875">Thời gian bắt đầu</translation>
-<translation id="737439367876257440">Cải thiện Chrome và tăng cường bảo mật bằng cách gửi thông tin sử dụng và thông tin về hệ thống cho Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Đánh dấu con trỏ chuột khi đang di chuyển</translation>
 <translation id="7377169924702866686">Caps Lock đang bật.</translation>

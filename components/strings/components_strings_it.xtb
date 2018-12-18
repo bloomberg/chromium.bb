@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Riavvia il computer</translation>
 <translation id="2113977810652731515">Carta</translation>
 <translation id="2114841414352855701">Ignorata perché è stata sostituita da <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Termini e condizioni</translation>
 <translation id="213826338245044447">Preferiti su disp. mobili</translation>
 <translation id="214556005048008348">Annulla pagamento</translation>
 <translation id="2147827593068025794">Sincronizzazione in background</translation>
@@ -244,6 +243,7 @@
 <translation id="2501278716633472235">Indietro</translation>
 <translation id="2503184589641749290">Carte di debito e prepagate accettate</translation>
 <translation id="2515629240566999685">Controllare il segnale nella tua area</translation>
+<translation id="2523886232349826891">Salvataggio effettuato solo su questo dispositivo</translation>
 <translation id="2524461107774643265">Aggiungi altre informazioni</translation>
 <translation id="2536110899380797252">Aggiungi indirizzo</translation>
 <translation id="2539524384386349900">Rileva</translation>
@@ -403,7 +403,6 @@
 <translation id="3583757800736429874">&amp;Ripeti spostamento</translation>
 <translation id="3586931643579894722">Nascondi dettagli</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Salvataggio delle carte…</translation>
 <translation id="3615877443314183785">Inserisci una data di scadenza valida</translation>
 <translation id="36224234498066874">Cancella dati di navigazione...</translation>
 <translation id="362276910939193118">Mostra cronologia completa</translation>
@@ -724,7 +723,6 @@
 <translation id="5810442152076338065">La connessione a <ph name="DOMAIN" /> è criptata tramite un pacchetto di crittografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Ripeti aggiunta</translation>
 <translation id="5838278095973806738">Non dovresti inserire dati sensibili in questo sito (ad esempio password o carte di credito) perché potrebbero essere intercettati da utenti malintenzionati.</translation>
-<translation id="5844286946362376359">Conosco Termini e condizioni, norme sulla privacy e diritto di recesso per <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (lascia deselezionata la casella per leggere).</translation>
 <translation id="5863847714970149516">La pagina che segue potrebbe tentare di addebitarti dei costi</translation>
 <translation id="5866257070973731571">Aggiungi numero di telefono</translation>
 <translation id="5869405914158311789">Impossibile raggiungere il sito</translation>
@@ -849,7 +847,6 @@
 <translation id="6865412394715372076">Al momento non è possibile verificare questa carta.</translation>
 <translation id="6868206169573555318">Riavvia per aggiornare</translation>
 <translation id="6874604403660855544">&amp;Ripeti aggiunta</translation>
-<translation id="6885646002011712606">L'Assistente compilazione automatica è disponibile nella parte inferiore dello schermo</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Il livello della norma non è supportato.</translation>
 <translation id="6895330447102777224">La carta è stata confermata</translation>
@@ -995,7 +992,6 @@ Ulteriori dettagli:
 <translation id="7716424297397655342">Impossibile caricare il sito dalla cache</translation>
 <translation id="7723047071702270851">Modifica la carta</translation>
 <translation id="774634243536837715">Contenuti pericolosi bloccati.</translation>
-<translation id="7747182086178764941">È mostrata la schermata della prima esecuzione dell'Assistente compilazione automatica</translation>
 <translation id="7752995774971033316">Non gestito</translation>
 <translation id="7755287808199759310">Il tuo genitore può sbloccarlo per te</translation>
 <translation id="7758069387465995638">Il software antivirus o il firewall potrebbe avere bloccato la connessione.</translation>
@@ -1114,7 +1110,6 @@ Ulteriori dettagli:
 <translation id="8503559462189395349">Password Chrome</translation>
 <translation id="8503813439785031346">Nome utente</translation>
 <translation id="8508648098325802031">Icona Ricerca</translation>
-<translation id="8524783101666974011">Salva carte nel tuo Account Google</translation>
 <translation id="8543181531796978784">Puoi <ph name="BEGIN_ERROR_LINK" />segnalare un problema di rilevamento<ph name="END_ERROR_LINK" /> oppure, se sei consapevole dei rischi per la tua sicurezza, <ph name="BEGIN_LINK" />visita questo sito non sicuro<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Domande? Contatta il supervisore del tuo profilo.</translation>
 <translation id="8553075262323480129">La traduzione non è riuscita perché non è stato possibile determinare la lingua della pagina.</translation>

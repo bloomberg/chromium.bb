@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">तुमचा कॉंप्युटर रीस्टार्ट करा</translation>
 <translation id="2113977810652731515">कार्ड</translation>
 <translation id="2114841414352855701">दुर्लक्ष केले कारण ते <ph name="POLICY_NAME" /> कडून अधिलिखित झाले होते.</translation>
-<translation id="2129308444951592399">अटी आणि नियम</translation>
 <translation id="213826338245044447">Mobile बुकमार्क</translation>
 <translation id="214556005048008348">पेमेंट रद्द करा</translation>
 <translation id="2147827593068025794">पार्श्वभूमी संकालन</translation>
@@ -407,7 +406,6 @@
 <translation id="3583757800736429874">&amp;हलवा पुन्हा करा</translation>
 <translation id="3586931643579894722">तपशील लपवा</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">कार्डे सेव्ह करत आहे...</translation>
 <translation id="3615877443314183785">वैध समाप्ती दिनांक एंटर करा</translation>
 <translation id="36224234498066874">ब्राउझिंग डेटा साफ करा...</translation>
 <translation id="362276910939193118">पूर्ण इतिहास दर्शवा</translation>
@@ -728,7 +726,6 @@
 <translation id="5810442152076338065">तुमचे <ph name="DOMAIN" /> वरील कनेक्शन अॉब्सोलीट सायफर सूट वापरून एंक्रिप्ट केलेले आहे.</translation>
 <translation id="5813119285467412249">&amp;जोडा पुन्हा करा</translation>
 <translation id="5838278095973806738">या साइटवर कोणतीही संवेदनशील माहिती (उदाहरणार्थ, पासवर्ड किंवा क्रेडिट कार्ड) एंटर करू नका, कारण आक्रमणकर्ते ती चोरू शकतात.</translation>
-<translation id="5844286946362376359">मला अटी आणि नियम, गोपनीयता धोरण आणि <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> मधून बाहेर पडण्याच्या अधिकाराबद्दल माहिती आहे (वाचण्यासाठी चौकटीवर खूण न करता तसेच ठेवावे).</translation>
 <translation id="5863847714970149516">पुढील पेजवर तुमच्याकडून शुल्क आकारले जाऊ शकते</translation>
 <translation id="5866257070973731571">फोन नंबर जोडा</translation>
 <translation id="5869405914158311789">या साइटवर पोहचणे शक्य नाही</translation>
@@ -855,7 +852,6 @@
 <translation id="6865412394715372076">या कार्डची पडताळणी आता करू शकत नाही</translation>
 <translation id="6868206169573555318">अपडेट करण्यासाठी पुन्हा लाँच करा</translation>
 <translation id="6874604403660855544">&amp;जोडा पुन्हा करा</translation>
-<translation id="6885646002011712606">अॉटोफिल असिस्टंट स्क्रीनच्या तळाजवळ उपलब्ध आहे</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">धोरण स्तर समर्थित नाही.</translation>
 <translation id="6895330447102777224">आपल्या कार्डची पुष्टी केली</translation>
@@ -1001,7 +997,6 @@
 <translation id="7716424297397655342">ही साइट कॅशे मधून लोड करणे शक्य नाही</translation>
 <translation id="7723047071702270851">कार्ड संपादित करा</translation>
 <translation id="774634243536837715">धोकादायक आशय ब्लॉक केला.</translation>
-<translation id="7747182086178764941">ऑटोफिल असिस्टंट पहिला रन स्क्रीन दाखवलेला आहे</translation>
 <translation id="7752995774971033316">व्यवस्थापित न केलेले</translation>
 <translation id="7755287808199759310">तुमचे पालक तुमच्यासाठी ती अनावरोधित करू शकतात</translation>
 <translation id="7758069387465995638">फायरवॉल किंवा अँटीव्हायरस सॉफ्टवेअरने कदाचित कनेक्शन अवरोधित केले असावे.</translation>
@@ -1120,7 +1115,6 @@
 <translation id="8503559462189395349">Chrome पासवर्ड</translation>
 <translation id="8503813439785031346">वापरकर्तानाव</translation>
 <translation id="8508648098325802031">शोध आयकन</translation>
-<translation id="8524783101666974011">तुमच्या Google खात्यात कार्डे सेव्ह करा</translation>
 <translation id="8543181531796978784">तुम्ही <ph name="BEGIN_ERROR_LINK" />ओळखण्‍याच्या समस्येचीअहवाल<ph name="END_ERROR_LINK" /> देऊ शकता किंवा तुमच्या सुरक्षिततेस असणार्‍या जोखीम तुम्ही समजत असल्‍यास, <ph name="BEGIN_LINK" />या असुरक्षित साइटला भेट द्या<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">प्रश्न आहेत? तुमच्या प्रोफाइलचे निरीक्षण करणाऱ्या व्यक्तीशी संपर्क साधा.</translation>
 <translation id="8553075262323480129">भाषांतर करण्यात अयशस्वी कारण पृष्ठाची भाषा निर्धारित करणे शक्य नाही.</translation>

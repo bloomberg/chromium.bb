@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Eszközök</translation>
 <translation id="1122242684574577509">A hitelesítés nem sikerült. Kattintson az éppen használt Wi-Fi-hálózat (<ph name="NETWORK_ID" />) bejelentkezési oldalának felkereséséhez.</translation>
 <translation id="1122960773616686544">Könyvjelző neve</translation>
-<translation id="1123187597739372905">Szinkronizálási beállítások megjelenítése</translation>
 <translation id="1124772482545689468">Felhasználó</translation>
 <translation id="1125550662859510761">Megjelenés: <ph name="WIDTH" /> × <ph name="HEIGHT" /> (natív)</translation>
 <translation id="1128109161498068552">Ne engedélyezze a webhelyeknek, hogy exkluzív rendszerüzenetekkel elérhessék a MIDI-eszközöket</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Keresőmotor beállítása</translation>
 <translation id="1134009406053225289">Megnyitás inkognitóablakban</translation>
-<translation id="1136155683023653803">Jelszavak, könyvjelzők, előzmények és egyebek szinkronizálása a fiókjával.</translation>
 <translation id="1137673463384776352">Link megnyitása a következőben: <ph name="APP" /></translation>
 <translation id="1140351953533677694">Hozzáférés a Bluetooth- és a soros eszközökhöz</translation>
 <translation id="1140610710803014750">Ha az összes eszközén szeretné elérni könyvjelzőit, jelentkezzen be, és kapcsolja be a szinkronizálást.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">A(z) <ph name="HOST" /> mindig hozzáférhet az érzékelőkhöz</translation>
 <translation id="1153356358378277386">Párosított eszközök</translation>
 <translation id="1156488781945104845">Pontos idő</translation>
-<translation id="1157102636231978136">Böngészési adatai és tevékenységei, Google-fiókjával szinkronizálva.</translation>
 <translation id="1161575384898972166">Kérjük, jelentkezzen be a(z) <ph name="TOKEN_NAME" /> szolgáltatásba az ügyféltanúsítvány exportálásához.</translation>
 <translation id="1161699061380012396">Chrome OS beviteli módszere</translation>
 <translation id="1163931534039071049">&amp;Keret forrásának megtekintése</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Hiba történt a nyomtató beállítása közben</translation>
 <translation id="1396963298126346194">A megadott felhasználónév és jelszó nem egyezik</translation>
 <translation id="1397500194120344683">Nincsenek használható eszközök. <ph name="LINK_BEGIN" />További információ<ph name="LINK_END" />.</translation>
-<translation id="1397854323885047133">Szinkronizálás és személyre szabás</translation>
 <translation id="1398853756734560583">Teljes méret</translation>
 <translation id="1399511500114202393">Felhasználói tanúsítvány nélkül</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (felügyelt)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Már le lett töltve</translation>
 <translation id="1632803087685957583">Lehetővé teszi a billentyűzet ismétlési sebességére, a várható kifejezésekre stb. vonatkozó beállítások megadását.</translation>
 <translation id="1635033183663317347">A gondviselő telepítette.</translation>
-<translation id="1635885551358739414">A Google felhasználhatja az Ön által felkeresett webhelyeken lévő tartalmakat, a böngészési tevékenységeket és interakciókat a Chrome és az egyéb Google-szolgáltatások (például a Fordító, a Keresés és a megjelenő hirdetések) személyre szabásához. Ezt módosíthatja a Beállításokban.</translation>
 <translation id="1637224376458524414">Legyen meg ez a könyvjelző iPhone eszközén</translation>
 <translation id="1637765355341780467">Hiba történt a profil megnyitása során. Lehet, hogy egyes funkciók nem állnak rendelkezésre.</translation>
 <translation id="1639239467298939599">Betöltés</translation>
@@ -2341,7 +2336,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4585793705637313973">Oldal szerkesztése</translation>
 <translation id="4590324241397107707">Adatbázis-tároló</translation>
 <translation id="4593021220803146968">&amp;Ugrás: <ph name="URL" /></translation>
-<translation id="459505086032485258">Google-szolgáltatások beállításainak megjelenítése</translation>
 <translation id="4595560905247879544">Az alkalmazásokat és bővítményeket csak a kezelő (<ph name="CUSTODIAN_NAME" />) módosíthatja.</translation>
 <translation id="4596295440756783523">Vannak olyan tanúsítványok, amelyek ezeket a szervereket azonosítják</translation>
 <translation id="4598556348158889687">Tárhelykezelés</translation>
@@ -3276,7 +3270,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5982621672636444458">Rendezési beállítások</translation>
 <translation id="5984222099446776634">Legutóbb látogatott</translation>
 <translation id="5985458664595100876">Érvénytelen URL-formátum. A támogatott formátumok: \\server\share és smb://server/share.</translation>
-<translation id="5990142338020175451">Személyre szabottabb Google-szolgáltatások, például jobb oldaljavaslatok</translation>
 <translation id="5990386583461751448">Fordítás</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Annak érdekében, hogy biztosan tudjon böngészni az interneten, kérje meg rendszergazdáját az alkalmazás eltávolítására.}other{Annak érdekében, hogy biztosan tudjon böngészni az interneten, kérje meg rendszergazdáját az alkalmazások eltávolítására.}}</translation>
 <translation id="5997337190805127100">További információ a webhelyekhez való hozzáférésről</translation>
@@ -3869,7 +3862,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6900284862687837908">Háttéralkalmazás: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Meghallgatni kívánt hang</translation>
 <translation id="6902837902700739466">Eszköz csatlakoztatása domainhez</translation>
-<translation id="6903534926908201625">A <ph name="BEGIN_LINK" />Beállításokban<ph name="END_LINK" /> bármikor személyre szabhatja, hogy milyen adatokat gyűjthet a Google.</translation>
 <translation id="6904344821472985372">Fájlhozzáférés visszavonása</translation>
 <translation id="6904655473976120856">Kilépéshez nyomja meg az Alkalmazás gombot</translation>
 <translation id="6910211073230771657">Törölve</translation>
@@ -4184,7 +4176,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7366415735885268578">Webhely hozzáadása</translation>
 <translation id="7366909168761621528">Böngészési adatok</translation>
 <translation id="7371006317849674875">Kezdés ideje</translation>
-<translation id="737439367876257440">Ha elküldi a rendszer- és használati adatokat a Google-nak, hozzájárulhat a Chrome fejlesztéséhez és a böngésző biztonságának javításához</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Az egérmutató kiemelése mozgás közben</translation>
 <translation id="7377169924702866686">A Caps Lock be van kapcsolva.</translation>

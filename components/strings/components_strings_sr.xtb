@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Поново покрените рачунар</translation>
 <translation id="2113977810652731515">Картица</translation>
 <translation id="2114841414352855701">Занемарују се јер су замењене смерницама <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Услови и одредбе</translation>
 <translation id="213826338245044447">Обележивачи на мобилном уређају</translation>
 <translation id="214556005048008348">Откажи плаћање</translation>
 <translation id="2147827593068025794">Синхронизација у позадини</translation>
@@ -244,6 +243,7 @@
 <translation id="2501278716633472235">Иди назад</translation>
 <translation id="2503184589641749290">Дебитне и припејд картице које се прихватају</translation>
 <translation id="2515629240566999685">да проверите сигнал у својој области</translation>
+<translation id="2523886232349826891">Сачувано је само на овом уређају</translation>
 <translation id="2524461107774643265">Додајте још информација</translation>
 <translation id="2536110899380797252">Додај адресу</translation>
 <translation id="2539524384386349900">Откриј</translation>
@@ -406,7 +406,6 @@
 <translation id="3583757800736429874">&amp;Понови премештање</translation>
 <translation id="3586931643579894722">Сакриј детаље</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Картице се чувају...</translation>
 <translation id="3615877443314183785">Унесите важећи датум истека</translation>
 <translation id="36224234498066874">Обриши податке прегледања...</translation>
 <translation id="362276910939193118">Прикажи комплетну историју</translation>
@@ -727,7 +726,6 @@
 <translation id="5810442152076338065">Веза са доменом <ph name="DOMAIN" /> је шифрована помоћу застарелог пакета за шифровање.</translation>
 <translation id="5813119285467412249">&amp;Понови додавање</translation>
 <translation id="5838278095973806738">Немојте да уносите осетљиве информације на овом сајту (на пример, лозинке или кредитне картице) јер нападачи могу да их украду.</translation>
-<translation id="5844286946362376359">Упознат/а сам са условима и одредбама, политиком приватности и правом на одустајање за <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (немојте означити за читање).</translation>
 <translation id="5863847714970149516">Следећа страница може да покуша да вам нешто наплати</translation>
 <translation id="5866257070973731571">Додајте број телефона</translation>
 <translation id="5869405914158311789">Овај сајт није доступан</translation>
@@ -852,7 +850,6 @@
 <translation id="6865412394715372076">Тренутно не можемо да верификујемо ову картицу</translation>
 <translation id="6868206169573555318">Поново покрените да би се ажурирало</translation>
 <translation id="6874604403660855544">&amp;Понови додавање</translation>
-<translation id="6885646002011712606">Помоћник за аутоматско попуњавање је доступан у дну екрана</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Ниво смерница није подржан.</translation>
 <translation id="6895330447102777224">Картица је потврђена</translation>
@@ -998,7 +995,6 @@
 <translation id="7716424297397655342">Није могуће учитати овај сајт из кеша</translation>
 <translation id="7723047071702270851">Измените картицу</translation>
 <translation id="774634243536837715">Опасан садржај је блокиран.</translation>
-<translation id="7747182086178764941">Приказује се прво покретање екрана помоћника аутоматског попуњавања</translation>
 <translation id="7752995774971033316">Не управља</translation>
 <translation id="7755287808199759310">Родитељ може да га деблокира за тебе</translation>
 <translation id="7758069387465995638">Можда је заштитни зид или антивирусни софтвер блокирао везу.</translation>
@@ -1117,7 +1113,6 @@
 <translation id="8503559462189395349">Лозинке за Chrome</translation>
 <translation id="8503813439785031346">Корисничко име</translation>
 <translation id="8508648098325802031">Икона Претрага</translation>
-<translation id="8524783101666974011">Сачувајте картице на Google налогу</translation>
 <translation id="8543181531796978784">Можете да <ph name="BEGIN_ERROR_LINK" />пријавите проблем са откривањем<ph name="END_ERROR_LINK" /> или, ако схватате безбедносне ризике, <ph name="BEGIN_LINK" />посетите овај небезбедан сајт<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Имате питања? Контактирајте особу која вам надгледа профил.</translation>
 <translation id="8553075262323480129">Превод није успео јер језик странице није могао да буде утврђен.</translation>

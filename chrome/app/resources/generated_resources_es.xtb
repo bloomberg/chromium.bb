@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Herramientas</translation>
 <translation id="1122242684574577509">Error de autenticación. Haz clic para acceder a la página de inicio de sesión de la red Wi-Fi que estés utilizando (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Nombre de marcador</translation>
-<translation id="1123187597739372905">Mostrar ajustes de sincronización</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1125550662859510761">Resolución de <ph name="WIDTH" />x<ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1128109161498068552">No permitir que ningún sitio utilice mensajes exclusivos del sistema para acceder a los dispositivos MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editar motor de búsqueda</translation>
 <translation id="1134009406053225289">Abrir en una ventana de incógnito</translation>
-<translation id="1136155683023653803">Las contraseñas, los marcadores, el historial y otros datos se sincronizan con tu cuenta</translation>
 <translation id="1137673463384776352">Abrir enlace en <ph name="APP" /></translation>
 <translation id="1140351953533677694">Acceder a tus dispositivos en serie y Bluetooth</translation>
 <translation id="1140610710803014750">Inicia sesión y activa la sincronización para ver tus marcadores en todos tus dispositivos.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Permitir siempre que <ph name="HOST" /> acceda a los sensores</translation>
 <translation id="1153356358378277386">Dispositivos vinculados</translation>
 <translation id="1156488781945104845">Hora actual</translation>
-<translation id="1157102636231978136">Tu actividad y tus datos de navegación están sincronizados con tu cuenta de Google</translation>
 <translation id="1161575384898972166">Inicia sesión en <ph name="TOKEN_NAME" /> para exportar el certificado de cliente.</translation>
 <translation id="1161699061380012396">Método de introducción de Chrome OS</translation>
 <translation id="1163931534039071049">&amp;Ver fuente del marco</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">No se ha podido configurar la impresora</translation>
 <translation id="1396963298126346194">El nombre de usuario y la contraseña que has introducido no coinciden</translation>
 <translation id="1397500194120344683">No hay ningún dispositivo apto. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Sincronización y personalización</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Sin certificado de usuario</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisado)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Ya se ha descargado</translation>
 <translation id="1632803087685957583">Te permite configurar la frecuencia de repetición del teclado, la predicción de palabras y otros ajustes</translation>
 <translation id="1635033183663317347">Instalada por tu tutor legal.</translation>
-<translation id="1635885551358739414">Google puede utilizar el contenido de los sitios web que visites y la actividad e interacciones de navegación para personalizar Chrome y otros servicios de Google, como el Traductor, la Búsqueda y los anuncios. Puedes personalizar esta opción en Configuración.</translation>
 <translation id="1637224376458524414">Obtener este marcador en tu iPhone</translation>
 <translation id="1637765355341780467">Se ha producido un error al abrir tu perfil. Es posible que algunas funciones no estén disponibles.</translation>
 <translation id="1639239467298939599">Cargando</translation>
@@ -2338,7 +2333,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4585793705637313973">Editar página</translation>
 <translation id="4590324241397107707">Almacenamiento en bases de datos</translation>
 <translation id="4593021220803146968">&amp;Ir a <ph name="URL" /></translation>
-<translation id="459505086032485258">Mostrar opciones de servicios de Google</translation>
 <translation id="4595560905247879544">Únicamente el administrador (<ph name="CUSTODIAN_NAME" />) puede modificar las aplicaciones y las extensiones.</translation>
 <translation id="4596295440756783523">Tienes certificados registrados que identifican a estos servidores</translation>
 <translation id="4598556348158889687">Administración del almacenamiento</translation>
@@ -3271,7 +3265,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="5982621672636444458">Opciones de orden</translation>
 <translation id="5984222099446776634">Visitados recientemente</translation>
 <translation id="5985458664595100876">El formato de la URL no es válido. Los formatos admitidos son \\server\share y smb://server/share.</translation>
-<translation id="5990142338020175451">Servicios de Google más personalizados, como mejores sugerencias de páginas</translation>
 <translation id="5990386583461751448">Traducida</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para seguir navegando por Internet, pide a tu administrador que quite esta aplicación.}other{Para seguir navegando por Internet, pide a tu administrador que quite estas aplicaciones.}}</translation>
 <translation id="5997337190805127100">Más información sobre el acceso del sitio web</translation>
@@ -3864,7 +3857,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6900284862687837908">Aplicación en segundo plano: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Voz de vista previa</translation>
 <translation id="6902837902700739466">Vincular dispositivo con el dominio</translation>
-<translation id="6903534926908201625">Para personalizar la información que Google recopila en cualquier momento, accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="6904344821472985372">Revocar acceso a archivo</translation>
 <translation id="6904655473976120856">Pulsa el botón de la aplicación para salir.</translation>
 <translation id="6910211073230771657">Eliminado</translation>
@@ -4179,7 +4171,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7366415735885268578">Añadir un sitio web</translation>
 <translation id="7366909168761621528">Datos de navegación</translation>
 <translation id="7371006317849674875">Hora de inicio</translation>
-<translation id="737439367876257440">Envía información de uso y del sistema a Google para mejorar Chrome y su seguridad</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Resaltar el cursor del ratón al moverlo</translation>
 <translation id="7377169924702866686">El bloqueo de mayúsculas está activado.</translation>

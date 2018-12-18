@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Herramientas</translation>
 <translation id="1122242684574577509">Error de autenticación; haz clic para visitar la página de acceso correspondiente a la red Wi-Fi que estás usando (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Nombre del marcador</translation>
-<translation id="1123187597739372905">Mostrar la configuración de sincronización</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1125550662859510761">Resolución: <ph name="WIDTH" /> × <ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1128109161498068552">No permitir que los sitios usen mensajes exclusivos del sistema para acceder a dispositivos MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editar el motor de búsqueda</translation>
 <translation id="1134009406053225289">Abrir en una ventana de incógnito</translation>
-<translation id="1136155683023653803">Las contraseñas, los favoritos, el historial y otros datos se sincronizan con tu cuenta</translation>
 <translation id="1137673463384776352">Abrir vínculo en <ph name="APP" /></translation>
 <translation id="1140351953533677694">Acceder a los dispositivos en serie y Bluetooth</translation>
 <translation id="1140610710803014750">Para usar tus favoritos en todos los dispositivos, accede a tu cuenta y activa la sincronización.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Siempre permitir que <ph name="HOST" /> acceda a los sensores</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
 <translation id="1156488781945104845">Hora actual</translation>
-<translation id="1157102636231978136">Tus datos de navegación y actividad, sincronizados con tu cuenta de Google</translation>
 <translation id="1161575384898972166">Accede a <ph name="TOKEN_NAME" /> para exportar el certificado de cliente.</translation>
 <translation id="1161699061380012396">Método de entrada del Sistema operativo Chrome</translation>
 <translation id="1163931534039071049">&amp;Ver fuente de marco</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Se produjo un error al configurar la impresora</translation>
 <translation id="1396963298126346194">El nombre de usuario y la contraseña que ingresaste no coinciden</translation>
 <translation id="1397500194120344683">No hay dispositivos compatibles. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Sincronización y personalización</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Sin certificado del usuario</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisado)</translation>
@@ -434,7 +430,6 @@
 <translation id="1627408615528139100">Ya se descargó</translation>
 <translation id="1632803087685957583">Permite ajustar la velocidad de repetición del teclado, la predicción de palabras y más</translation>
 <translation id="1635033183663317347">Instalado por tu tutor</translation>
-<translation id="1635885551358739414">Es posible que usemos contenido de los sitios que visitas (así como tus interacciones y actividad de navegación) a fin de personalizar Chrome y otros servicios de Google, como el Traductor, la Búsqueda y los anuncios. Para cambiar esta acción, visita la sección Configuración.</translation>
 <translation id="1637224376458524414">Obtener este favorito en tu iPhone</translation>
 <translation id="1637765355341780467">Se produjo un error al abrir tu perfil. Es posible que algunas funciones no estén disponibles.</translation>
 <translation id="1639239467298939599">Cargando</translation>
@@ -2338,7 +2333,6 @@
 <translation id="4585793705637313973">Editar página</translation>
 <translation id="4590324241397107707">Almacenamiento en bases de datos</translation>
 <translation id="4593021220803146968">&amp;Ir a <ph name="URL" /></translation>
-<translation id="459505086032485258">Mostrar las opciones de configuración de los servicios de Google</translation>
 <translation id="4595560905247879544">Solo el administrador (<ph name="CUSTODIAN_NAME" />) puede modificar las apps y extensiones.</translation>
 <translation id="4596295440756783523">Tienes certificados archivados que identifican estos servidores</translation>
 <translation id="4598556348158889687">Administración de almacenamiento</translation>
@@ -3271,7 +3265,6 @@
 <translation id="5982621672636444458">Ordenar opciones</translation>
 <translation id="5984222099446776634">Visitados recientemente</translation>
 <translation id="5985458664595100876">El formato de la URL no es válido. Los formatos compatibles son \\server\share y smb://server/share.</translation>
-<translation id="5990142338020175451">Servicios de Google más personalizados, como mejores sugerencias de páginas</translation>
 <translation id="5990386583461751448">Traducida</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para asegurarte de que puedas seguir navegando en la Web, pídele a tu administrador que quite esta aplicación.}other{Para asegurarte de que puedas seguir navegando en la Web, pídele a tu administrador que quite estas aplicaciones.}}</translation>
 <translation id="5997337190805127100">Más información sobre el acceso a sitios</translation>
@@ -3864,7 +3857,6 @@
 <translation id="6900284862687837908">Aplicación en segundo plano: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Voz de prueba</translation>
 <translation id="6902837902700739466">Une el dispositivo al dominio</translation>
-<translation id="6903534926908201625">Puedes personalizar la información que recopila Google en la sección <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" /> en cualquier momento.</translation>
 <translation id="6904344821472985372">Revocar acceso al archivo</translation>
 <translation id="6904655473976120856">Presionar el botón de la app para salir</translation>
 <translation id="6910211073230771657">Eliminado</translation>
@@ -4179,7 +4171,6 @@
 <translation id="7366415735885268578">Agregar un sitio</translation>
 <translation id="7366909168761621528">Datos de navegación</translation>
 <translation id="7371006317849674875">Hora de inicio</translation>
-<translation id="737439367876257440">Para mejorar Chrome y su seguridad, envía información a Google sobre el sistema y el uso</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Resaltar el cursor del mouse cuando se mueve</translation>
 <translation id="7377169924702866686">Bloq Mayús está activado.</translation>

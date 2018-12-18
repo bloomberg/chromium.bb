@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Перезагрузите компьютер.</translation>
 <translation id="2113977810652731515">Карта</translation>
 <translation id="2114841414352855701">Игнорируется, так как правило <ph name="POLICY_NAME" /> имеет приоритет.</translation>
-<translation id="2129308444951592399">Условия использования</translation>
 <translation id="213826338245044447">Закладки на мобильном</translation>
 <translation id="214556005048008348">Отменить оплату</translation>
 <translation id="2147827593068025794">Фоновая синхронизация</translation>
@@ -244,6 +243,7 @@
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2503184589641749290">Дебетовые карты и карты предоплаты, которые принимаются к оплате</translation>
 <translation id="2515629240566999685">Проверьте уровень сигнала сети.</translation>
+<translation id="2523886232349826891">Карта сохранена только на этом устройстве</translation>
 <translation id="2524461107774643265">Укажите дополнительную информацию</translation>
 <translation id="2536110899380797252">Добавить адрес</translation>
 <translation id="2539524384386349900">Определять</translation>
@@ -405,7 +405,6 @@
 <translation id="3583757800736429874">&amp;Повторить перемещение</translation>
 <translation id="3586931643579894722">Скрыть подробности</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Сохранение карт…</translation>
 <translation id="3615877443314183785">Укажите правильный срок действия.</translation>
 <translation id="36224234498066874">Очистить историю...</translation>
 <translation id="362276910939193118">Показать всю историю</translation>
@@ -726,7 +725,6 @@
 <translation id="5810442152076338065">Соединение с <ph name="DOMAIN" /> зашифровано с помощью устаревшего набора шифров.</translation>
 <translation id="5813119285467412249">&amp;Повторить добавление</translation>
 <translation id="5838278095973806738">Не сообщайте этому сайту конфиденциальную информацию (например, пароли и номера банковских карт). К ней могут получить доступ злоумышленники.</translation>
-<translation id="5844286946362376359">Вы ознакомились с условиями использования, политикой конфиденциальности и знаете, что у вас есть право на отказ от услуг <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (прочитайте, прежде чем устанавливать флажок).</translation>
 <translation id="5863847714970149516">При открытии этой страницы с вашего счета могут быть списаны средства</translation>
 <translation id="5866257070973731571">Добавьте номер телефона</translation>
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
@@ -852,7 +850,6 @@
 <translation id="6865412394715372076">Невозможно подтвердить карту.</translation>
 <translation id="6868206169573555318">Перезапустить и обновить</translation>
 <translation id="6874604403660855544">&amp;Повторить добавление</translation>
-<translation id="6885646002011712606">Ассистент автозаполнения находится в нижней части экрана</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" />, <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Значение правила не поддерживается.</translation>
 <translation id="6895330447102777224">Ваша карта подтверждена</translation>
@@ -998,7 +995,6 @@
 <translation id="7716424297397655342">Не удалось загрузить сайт из кеша</translation>
 <translation id="7723047071702270851">Измените данные карты</translation>
 <translation id="774634243536837715">Опасный контент заблокирован</translation>
-<translation id="7747182086178764941">Показан экран первого запуска ассистента автозаполнения</translation>
 <translation id="7752995774971033316">Не управляется</translation>
 <translation id="7755287808199759310">Для разблокировки обратитесь к родителю.</translation>
 <translation id="7758069387465995638">Возможно, подключение заблокировано брандмауэром или антивирусным ПО.</translation>
@@ -1117,7 +1113,6 @@
 <translation id="8503559462189395349">Пароли Chrome</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>
 <translation id="8508648098325802031">Значок поиска</translation>
-<translation id="8524783101666974011">Сохраните карты в аккаунте Google</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />Сообщите о зараженном сайте<ph name="END_ERROR_LINK" />. Если вы готовы подвергнуть риску личные данные, то можете <ph name="BEGIN_LINK" />перейти на страницу<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Есть вопросы? Обратитесь к человеку, который контролирует ваш профиль.</translation>
 <translation id="8553075262323480129">Перевод не удался, так как не удается определить язык страницы.</translation>

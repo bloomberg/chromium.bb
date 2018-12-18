@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Reštartujte počítač</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Ignorované, pretože bolo prepísané pravidlom <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Zmluvné podmienky</translation>
 <translation id="213826338245044447">Záložky v mobile</translation>
 <translation id="214556005048008348">Zrušiť platbu</translation>
 <translation id="2147827593068025794">Synchronizácia na pozadí</translation>
@@ -244,6 +243,7 @@
 <translation id="2501278716633472235">Prejsť späť</translation>
 <translation id="2503184589641749290">Akceptované debetné a predplatené karty</translation>
 <translation id="2515629240566999685">Skontrolovať signál vo vašej oblasti</translation>
+<translation id="2523886232349826891">Uložené iba na tomto zariadení</translation>
 <translation id="2524461107774643265">Pridanie ďalších informácií</translation>
 <translation id="2536110899380797252">Pridať adresu</translation>
 <translation id="2539524384386349900">Rozpoznávať</translation>
@@ -403,7 +403,6 @@
 <translation id="3583757800736429874">&amp;Znova presunúť</translation>
 <translation id="3586931643579894722">Skryť podrobnosti</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Ukladajú sa karty…</translation>
 <translation id="3615877443314183785">Zadajte správny dátum vypršania platnosti</translation>
 <translation id="36224234498066874">Vymazať dáta prehliadania...</translation>
 <translation id="362276910939193118">Zobraziť celú históriu</translation>
@@ -723,7 +722,6 @@
 <translation id="5810442152076338065">Vaše pripojenie k doméne <ph name="DOMAIN" /> je šifrované pomocou zastaranej šifrovacej súpravy.</translation>
 <translation id="5813119285467412249">&amp;Znova pridať</translation>
 <translation id="5838278095973806738">Na tomto webe by ste nemali zadávať citlivé informácie (napríklad heslá alebo kreditné karty), pretože by ich mohli ukradnúť útočníci.</translation>
-<translation id="5844286946362376359">Poznám zmluvné podmienky, pravidlá ochrany súkromia a právo na odstúpenie, týkajúce sa domény <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (ak si ich chcete prečítať, nezačiarkujte).</translation>
 <translation id="5863847714970149516">Stránka, na ktorú sa chystáte prejsť, vám môže účtovať poplatky</translation>
 <translation id="5866257070973731571">Pridanie telefónneho čísla</translation>
 <translation id="5869405914158311789">K tomuto webu sa nedá pripojiť</translation>
@@ -848,7 +846,6 @@
 <translation id="6865412394715372076">Táto karta sa momentálne nedá overiť</translation>
 <translation id="6868206169573555318">Aktualizovať opätovným spustením</translation>
 <translation id="6874604403660855544">&amp;Znova pridať</translation>
-<translation id="6885646002011712606">Asistent automatického dopĺňania je k dispozícii v dolnej časti obrazovky</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Úroveň pravidla nie je podporovaná.</translation>
 <translation id="6895330447102777224">Vaša karta je overená</translation>
@@ -994,7 +991,6 @@
 <translation id="7716424297397655342">Tento web nie je možné načítať z vyrovnávacej pamäte</translation>
 <translation id="7723047071702270851">Úprava karty</translation>
 <translation id="774634243536837715">Nebezpečný obsah bol zablokovaný.</translation>
-<translation id="7747182086178764941">Zobrazuje sa obrazovka prvého spustenia Asistenta automatického dopĺňania</translation>
 <translation id="7752995774971033316">Nespravované</translation>
 <translation id="7755287808199759310">Váš rodič ho môže pre vás odblokovať</translation>
 <translation id="7758069387465995638">Pripojenie mohla zablokovať brána firewall alebo antivírusový softvér.</translation>
@@ -1113,7 +1109,6 @@
 <translation id="8503559462189395349">Heslá Chromu</translation>
 <translation id="8503813439785031346">Meno používateľa</translation>
 <translation id="8508648098325802031">Ikona vyhľadávania</translation>
-<translation id="8524783101666974011">Uloženie kariet do účtu Google</translation>
 <translation id="8543181531796978784">Môžete buď <ph name="BEGIN_ERROR_LINK" />nahlásiť problém s zisťovaním<ph name="END_ERROR_LINK" />, alebo <ph name="BEGIN_LINK" />tieto nebezpečné stránky navštíviť<ph name="END_LINK" /> (ak si uvedomujete bezpečnostné riziko).</translation>
 <translation id="8543556556237226809">Máte otázky? Obráťte sa na osobu, ktorá kontroluje váš profil.</translation>
 <translation id="8553075262323480129">Prekladanie zlyhalo, pretože sa nepodarilo určiť jazyk stránky.</translation>

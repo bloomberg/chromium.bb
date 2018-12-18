@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">重新啟動電腦</translation>
 <translation id="2113977810652731515">信用卡</translation>
 <translation id="2114841414352855701">由於政策被「<ph name="POLICY_NAME" />」覆寫了，因此遭到略過。</translation>
-<translation id="2129308444951592399">條款及細則</translation>
 <translation id="213826338245044447">行動版書籤</translation>
 <translation id="214556005048008348">取消付款</translation>
 <translation id="2147827593068025794">背景同步處理</translation>
@@ -724,7 +723,6 @@
 <translation id="5810442152076338065">您的 <ph name="DOMAIN" /> 連線使用過舊的加密套件進行加密。</translation>
 <translation id="5813119285467412249">重做新增(&amp;R)</translation>
 <translation id="5838278095973806738">請勿在這個網站上輸入任何機密資訊 (例如密碼或信用卡號碼)，以免遭到攻擊者竊取。</translation>
-<translation id="5844286946362376359">我瞭解 <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> 所制定的條款及細則、隱私權政策和服務撤銷權利 (如要閱讀相關規定，請勿勾選這個核取方塊)。</translation>
 <translation id="5863847714970149516">進入接下來的頁面後，系統可能會向您收取費用</translation>
 <translation id="5866257070973731571">新增電話號碼</translation>
 <translation id="5869405914158311789">無法連上這個網站</translation>
@@ -849,7 +847,6 @@
 <translation id="6865412394715372076">目前無法驗證這張信用卡</translation>
 <translation id="6868206169573555318">重新啟動即可更新</translation>
 <translation id="6874604403660855544">重做新增(&amp;R)</translation>
-<translation id="6885646002011712606">自動填入助理位於靠近畫面底部的位置</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">系統不支援這項政策的層級。</translation>
 <translation id="6895330447102777224">您的信用卡已通過驗證</translation>
@@ -992,7 +989,6 @@
 <translation id="7716424297397655342">無法從快取載入這個網站</translation>
 <translation id="7723047071702270851">編輯卡片資訊</translation>
 <translation id="774634243536837715">已封鎖危險內容。</translation>
-<translation id="7747182086178764941">系統會顯示自動填入助理首次執行的畫面</translation>
 <translation id="7752995774971033316">未管理</translation>
 <translation id="7755287808199759310">你的家長可以為你解除封鎖這個網站</translation>
 <translation id="7758069387465995638">防火牆或防毒軟體可能封鎖了連線。</translation>

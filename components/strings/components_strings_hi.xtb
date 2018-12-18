@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">अपना कंप्यूटर फिर से चालू करें</translation>
 <translation id="2113977810652731515">कार्ड</translation>
 <translation id="2114841414352855701">ध्यान नहीं दिया गया क्योंकि यह <ph name="POLICY_NAME" /> द्वारा ओवरराइड की गई थी.</translation>
-<translation id="2129308444951592399">नियम और शर्तें</translation>
 <translation id="213826338245044447">मोबाइल बुकमार्क</translation>
 <translation id="214556005048008348">भुगतान न करें</translation>
 <translation id="2147827593068025794">पृष्ठभूमि समन्वयन</translation>
@@ -244,6 +243,7 @@
 <translation id="2501278716633472235">वापस जाएं</translation>
 <translation id="2503184589641749290">स्वीकृत डेबिट और प्रीपेड कार्ड</translation>
 <translation id="2515629240566999685">अपने क्षेत्र में सिग्नल की जाँच करें</translation>
+<translation id="2523886232349826891">सिर्फ़ इस डिवाइस पर सेव किया गया</translation>
 <translation id="2524461107774643265">ज़्यादा जानकारी जोड़ें</translation>
 <translation id="2536110899380797252">पता जोड़ें</translation>
 <translation id="2539524384386349900">पता लगाएं</translation>
@@ -406,7 +406,6 @@
 <translation id="3583757800736429874">&amp;ले जाना फिर से करें</translation>
 <translation id="3586931643579894722">विवरण छुपाएं</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">कार्ड सेव किए जा रहे हैं...</translation>
 <translation id="3615877443314183785">खत्म होने की मान्य तारीख डालें</translation>
 <translation id="36224234498066874">ब्राउज़िंग डेटा साफ़ करें...</translation>
 <translation id="362276910939193118">संपूर्ण इतिहास दिखाएं</translation>
@@ -727,7 +726,6 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" /> से आपके कनेक्शन को किसी अप्रचलित सिफ़र सुइट का उपयोग करके एन्‍क्रिप्‍ट किया गया है.</translation>
 <translation id="5813119285467412249">&amp;जोड़ना फिर से करें</translation>
 <translation id="5838278095973806738">आपको इस साइट पर कोई भी संवेदनशील जानकारी (उदाहरण के लिए, पासवर्ड या क्रेडिट कार्ड) नहीं डालनी चाहिए, क्योंकि उसे हमलावर चुरा सकते हैं.</translation>
-<translation id="5844286946362376359">मुझे नियम और शर्तें, निजता नीति और <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> के निकालने के अधिकार के बारे में पता है (पढ़ने के लिए सही का निशान हटा कर रखें).</translation>
 <translation id="5863847714970149516">आगे आने वाला पेज आपसे शुल्क लेने की कोशिश कर सकता है</translation>
 <translation id="5866257070973731571">फ़ोन नंबर जोड़ें</translation>
 <translation id="5869405914158311789">इस साइट तक नहीं पहुंचा जा सकता</translation>
@@ -853,7 +851,6 @@
 <translation id="6865412394715372076">इस कार्ड की पुष्टि अभी नहीं की जा सकती</translation>
 <translation id="6868206169573555318">अपडेट करने के लिए फिर से लॉन्च करें</translation>
 <translation id="6874604403660855544">&amp;जोड़ना फिर से करें</translation>
-<translation id="6885646002011712606">'ऑटोमैटिक भरना' सहायक, स्क्रीन के सबसे नीचे उपलब्ध है</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">नीति स्तर समर्थित नहीं है.</translation>
 <translation id="6895330447102777224">आपके कार्ड की पुष्टि हो गई है</translation>
@@ -999,7 +996,6 @@
 <translation id="7716424297397655342">इस साइट को संचय से लोड नहीं किया जा सकता</translation>
 <translation id="7723047071702270851">कार्ड में बदलाव करें</translation>
 <translation id="774634243536837715">खतरनाक सामग्री ब्लॉक की गई.</translation>
-<translation id="7747182086178764941">'ऑटोमैटिक भरना' सहायक के पहली बार चलने की स्क्रीन दिखाई गई है</translation>
 <translation id="7752995774971033316">अप्रबंधित</translation>
 <translation id="7755287808199759310">आपका अभिभावक इसे आपके लिए अनवरोधित कर सकता है</translation>
 <translation id="7758069387465995638">हो सकता है कि फायरवॉल या एंटीवायरस द्वारा कनेक्शन अवरुद्ध हो.</translation>
@@ -1118,7 +1114,6 @@
 <translation id="8503559462189395349">Chrome पासवर्ड</translation>
 <translation id="8503813439785031346">उपयोगकर्ता नाम</translation>
 <translation id="8508648098325802031">सर्च अाइकॉन</translation>
-<translation id="8524783101666974011">अपने Google खाते में कार्ड सेव करें</translation>
 <translation id="8543181531796978784">आप <ph name="BEGIN_ERROR_LINK" />पहचान संबंधी समस्‍या की रिपोर्ट<ph name="END_ERROR_LINK" /> कर सकते हैं या अगर आप अपनी सुरक्षा संबंधी जोखिमों को समझते हैं तो, <ph name="BEGIN_LINK" />इस असुरक्षित साइट पर जा<ph name="END_LINK" /> सकते हैं.</translation>
 <translation id="8543556556237226809">प्रश्न पूछना चाहते हैं? तो उस व्यक्ति से संपर्क करें जो आपकी प्रोफ़ाइल की निगरानी करता है.</translation>
 <translation id="8553075262323480129">अनुवाद विफल हो गया क्योंकि पेज की भाषा निर्धारित नहीं की जा सकी.</translation>

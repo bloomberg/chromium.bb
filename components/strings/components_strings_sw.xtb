@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Zima na uwashe kompyuta yako</translation>
 <translation id="2113977810652731515">Kadi</translation>
 <translation id="2114841414352855701">Imepuuzwa kwa sababu ilifutwa na <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Sheria na Masharti</translation>
 <translation id="213826338245044447">Alamisho kwenye Simu</translation>
 <translation id="214556005048008348">Ghairi malipo</translation>
 <translation id="2147827593068025794">Usawazishaji wa Chini Chini</translation>
@@ -407,7 +406,6 @@
 <translation id="3583757800736429874">Rudia Hatua</translation>
 <translation id="3586931643579894722">Ficha maelezo</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Inahifadhi kadi...</translation>
 <translation id="3615877443314183785">Andika tarehe sahihi ya kuisha kwa muda wa matumizi</translation>
 <translation id="36224234498066874">Futa Data ya Kuvinjari...</translation>
 <translation id="362276910939193118">Onyesha Historia Kamili</translation>
@@ -728,7 +726,6 @@
 <translation id="5810442152076338065">Muunganisho wako kwenye <ph name="DOMAIN" /> umesimbwa kwa njia fiche kwa kutumia mipangilio ya kriptografia ya zamani.</translation>
 <translation id="5813119285467412249">Rudia Kuongeza</translation>
 <translation id="5838278095973806738">Hupaswi kuweka maelezo nyeti kwenye tovuti hii (kwa mfano, manenosiri au kadi za mikopo), kwa sababu wavamizi wanaweza kuyaiba.</translation>
-<translation id="5844286946362376359">Ninajua sheria na masharti, sera ya faragha na haki ya kuondolewa kwa <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (acha kama haijateuliwa ili kusoma).</translation>
 <translation id="5863847714970149516">Huenda ukurasa unaofuata ukajaribu kukutoza pesa</translation>
 <translation id="5866257070973731571">Ongeza Nambari ya Simu</translation>
 <translation id="5869405914158311789">Imeshindwa kufungua tovuti hii</translation>
@@ -854,7 +851,6 @@
 <translation id="6865412394715372076">Imeshindwa kuthibitisha kadi hii kwa sasa</translation>
 <translation id="6868206169573555318">Fungua Upya ili Usasishe</translation>
 <translation id="6874604403660855544">Rudia kuongeza</translation>
-<translation id="6885646002011712606">Kipengele cha Mratibu wa Kujaza Kiotomatiki kinapatikana karibu na sehemu ya chini ya skrini</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Kiwango cha sera hakitumiki.</translation>
 <translation id="6895330447102777224">Kadi yako imethibitishwa</translation>
@@ -998,7 +994,6 @@
 <translation id="7716424297397655342">Faili hii haiwezi kupakiwa kutoka akiba</translation>
 <translation id="7723047071702270851">Badilisha Kadi</translation>
 <translation id="774634243536837715">Maudhui hatari yamezuiwa.</translation>
-<translation id="7747182086178764941">Inaonyesha skrini ya programu ya Mratibu ya Kujaza Kiotomatiki haraka</translation>
 <translation id="7752995774971033316">Haidhibitiwi</translation>
 <translation id="7755287808199759310">Mzazi wako anaweza kukuondolea kizuizi</translation>
 <translation id="7758069387465995638">Huenda muunganisho huu umezuiwa na kinga mtandao au kingavirusi.</translation>
@@ -1115,7 +1110,6 @@
 <translation id="8503559462189395349">Manenosiri ya Chrome</translation>
 <translation id="8503813439785031346">Jina la mtumiaji</translation>
 <translation id="8508648098325802031">Aikoni ya Utafutaji</translation>
-<translation id="8524783101666974011">Hifadhi kadi kwenye Akaunti yako ya Google</translation>
 <translation id="8543181531796978784">Unaweza <ph name="BEGIN_ERROR_LINK" />kuripoti tatizo la ugunduzi<ph name="END_ERROR_LINK" /> au, ikiwa unaelewa kiwango cha hatari kinachoweza kutokea, <ph name="BEGIN_LINK" />tembelea tovuti hii isiyo salama<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Je, una maswali? Wasiliana na msimamizi wa wasifu wako.</translation>
 <translation id="8553075262323480129">Tafsiri imeshindwa kwa sababu lugha ya ukurasa isingeweza kuthibitishwa.</translation>

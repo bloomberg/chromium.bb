@@ -166,7 +166,6 @@
 <translation id="6373523479360886564">你確定要解除安裝 Chromium 嗎？</translation>
 <translation id="6400072781405947421">Chromium 已不再支援 Mac OS X 10.9，因此部分功能可能無法正常運作。</translation>
 <translation id="6403826409255603130">Chromium 網路瀏覽器開啟網頁和執行應用程式的速度十分迅速。除了迅速、穩定且易於使用之外，Chromium 的內建惡意軟體與網路釣魚防護功能，可讓你安心悠遊網路。</translation>
-<translation id="641451971369018375">與各項 Google 服務連結，讓瀏覽體驗和 Chromium 效能更臻完善</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 將於 1 秒後重新啟動}other{Chromium 將於 # 秒後重新啟動}}</translation>
 <translation id="6475912303565314141">這個擴充功能也會控管你啟動 Chromium 時所顯示的網頁。</translation>
 <translation id="6485906693002546646">你正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理你的 Chromium 資料。如要更新你的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chromium，請前往 [<ph name="SETTINGS_LINK" />]。</translation>

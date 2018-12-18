@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Rīki</translation>
 <translation id="1122242684574577509">Autentificēšana neizdevās. Noklikšķiniet, lai apmeklētu izmantotā Wi-Fi tīkla (<ph name="NETWORK_ID" />) pieteikšanās lapu.</translation>
 <translation id="1122960773616686544">Grāmatzīmes nosaukums</translation>
-<translation id="1123187597739372905">Rādīt sinhronizācijas iestatījumus</translation>
 <translation id="1124772482545689468">Lietotājs</translation>
 <translation id="1125550662859510761">Noteiktā izšķirtspēja: <ph name="WIDTH" /> x <ph name="HEIGHT" /> (iebūvētā)</translation>
 <translation id="1128109161498068552">Neļaut nevienai vietnei izmantot ekskluzīvus sistēmas ziņojumus, lai piekļūtu MIDI ierīcēm</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Meklētājprogrammas rediģēšana</translation>
 <translation id="1134009406053225289">Atvērt inkognito logā</translation>
-<translation id="1136155683023653803">Paroles, grāmatzīmes, vēsture un citi dati tiek sinhronizēti ar jūsu kontu</translation>
 <translation id="1137673463384776352">Atvērt saiti lietotnē <ph name="APP" /></translation>
 <translation id="1140351953533677694">Piekļūt jūsu Bluetooth un seriālajām ierīcēm</translation>
 <translation id="1140610710803014750">Lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs, pierakstieties un ieslēdziet sinhronizāciju.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Vienmēr atļaut <ph name="HOST" /> piekļuvi sensoriem</translation>
 <translation id="1153356358378277386">Pārī savienotās ierīces</translation>
 <translation id="1156488781945104845">Pašreizējais laiks</translation>
-<translation id="1157102636231978136">Pārlūkošanas dati un darbības tiek sinhronizētas ar jūsu Google kontu</translation>
 <translation id="1161575384898972166">Pierakstieties ierīcē <ph name="TOKEN_NAME" />, lai eksportētu klienta sertifikātu.</translation>
 <translation id="1161699061380012396">Chrome OS ievades metode</translation>
 <translation id="1163931534039071049">Skatīt rāmja avotu</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Kļūda, iestatot printeri</translation>
 <translation id="1396963298126346194">Ievadītais lietotājvārds un parole neatbilst.</translation>
 <translation id="1397500194120344683">Nav piemērotu ierīču. <ph name="LINK_BEGIN" />Uzziniet vairāk<ph name="LINK_END" />.</translation>
-<translation id="1397854323885047133">Sinhronizēšana un personalizācija</translation>
 <translation id="1398853756734560583">Maksimizēt</translation>
 <translation id="1399511500114202393">Bez lietotāja sertifikāta</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (uzraudzītais)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Jau lejupielādēts</translation>
 <translation id="1632803087685957583">Varat pielāgot tastatūras atkārtošanas ātrumu, vārdu paredzēšanu un citus iestatījumus.</translation>
 <translation id="1635033183663317347">Instalēja aizbildnis.</translation>
-<translation id="1635885551358739414">Google var izmantot jūsu apmeklēto vietņu saturu, kā arī pārlūkā veiktās darbības un mijiedarbības, lai personalizētu pārlūku Chrome un citus Google pakalpojumus, piemēram, Tulkotāju, Meklēšanu un reklāmas. Šos iestatījumus varat pielāgot sadaļā Iestatījumi.</translation>
 <translation id="1637224376458524414">Iegūstiet šo grāmatzīmi savā iPhone tālrunī</translation>
 <translation id="1637765355341780467">Atverot profilu, radās kļūda. Iespējams, dažas funkcijas nebūs pieejamas.</translation>
 <translation id="1639239467298939599">Notiek ielāde</translation>
@@ -2341,7 +2336,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4585793705637313973">Lapas rediģēšana</translation>
 <translation id="4590324241397107707">Datu bāzes krātuve</translation>
 <translation id="4593021220803146968">Doties uz <ph name="URL" /></translation>
-<translation id="459505086032485258">Rādīt Google pakalpojumu iestatījumus</translation>
 <translation id="4595560905247879544">Lietotnes un paplašinājumus var pārveidot tikai pārvaldnieks (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Sistēmā ir sertifikāti, kas identificē šos serverus</translation>
 <translation id="4598556348158889687">Krātuves pārvaldība</translation>
@@ -3274,7 +3268,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5982621672636444458">Kārtošanas iespējas</translation>
 <translation id="5984222099446776634">Nesen apmeklētie</translation>
 <translation id="5985458664595100876">Nederīgs vietrāža URL formāts. Atbalstītie formāti ir \\server\share un smb://server/share.</translation>
-<translation id="5990142338020175451">Personalizētāki Google pakalpojumi, piemēram, precīzāki lapu ieteikumi</translation>
 <translation id="5990386583461751448">Tulkojums</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Lai nodrošinātu iespēju turpmāk pārlūkot tīmekli, palūdziet administratoram noņemt šo lietojumprogrammu.}zero{Lai nodrošinātu iespēju turpmāk pārlūkot tīmekli, palūdziet administratoram noņemt šīs lietojumprogrammas.}one{Lai nodrošinātu iespēju turpmāk pārlūkot tīmekli, palūdziet administratoram noņemt šīs lietojumprogrammas.}other{Lai nodrošinātu iespēju turpmāk pārlūkot tīmekli, palūdziet administratoram noņemt šīs lietojumprogrammas.}}</translation>
 <translation id="5997337190805127100">Plašāka informācija par vietnes piekļuvi</translation>
@@ -3867,7 +3860,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6900284862687837908">Fona lietotne: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Balss priekšskatīšanai</translation>
 <translation id="6902837902700739466">Saistiet ierīci ar domēnu</translation>
-<translation id="6903534926908201625">Jebkurā brīdī sadaļā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" /> varat pielāgot, kādu informāciju Google apkopo.</translation>
 <translation id="6904344821472985372">Atsaukt piekļuvi failiem</translation>
 <translation id="6904655473976120856">Lai izietu, nospiediet lietotņu pogu</translation>
 <translation id="6910211073230771657">Dzēsts</translation>
@@ -4182,7 +4174,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7366415735885268578">Vietnes pievienošana</translation>
 <translation id="7366909168761621528">Pārlūkošanas dati</translation>
 <translation id="7371006317849674875">Sākuma laiks</translation>
-<translation id="737439367876257440">Uzlabojiet pārlūku Chrome un tā drošību, nosūtot sistēmas informāciju un lietojuma datus Google serveriem</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Izcelt peles kursoru, kad tas tiek kustināts</translation>
 <translation id="7377169924702866686">Funkcija Caps Lock ir ieslēgta.</translation>

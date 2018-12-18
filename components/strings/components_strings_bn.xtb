@@ -183,7 +183,6 @@
 <translation id="2108755909498034140">আপনার কম্পিউটার পুনরায় চালু করুন</translation>
 <translation id="2113977810652731515">কার্ড</translation>
 <translation id="2114841414352855701">এড়িয়ে যাওয়া হয়েছে কারণ এটি <ph name="POLICY_NAME" />-দ্বারা ওভাররাইড করা হয়েছিল৷</translation>
-<translation id="2129308444951592399">নিয়ম ও শর্তাবলী</translation>
 <translation id="213826338245044447">মোবাইল বুকমার্ক</translation>
 <translation id="214556005048008348">পেমেন্ট বাতিল করুন</translation>
 <translation id="2147827593068025794">পটভূমি সিঙ্ক</translation>
@@ -408,7 +407,6 @@
 <translation id="3583757800736429874">&amp;সরানোর কাজটি আবার করুন</translation>
 <translation id="3586931643579894722">বিশদ বিবরণ লুকান</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">কার্ডগুলি সেভ করা হচ্ছে...</translation>
 <translation id="3615877443314183785">মেয়াদ শেষ হওয়ার তারিখের সঠিক মান লিখুন</translation>
 <translation id="36224234498066874">ব্রাউজ করা ডেটা সাফ করুন...</translation>
 <translation id="362276910939193118">সম্পূর্ণ ইতিহাস দেখুন</translation>
@@ -729,7 +727,6 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" />-এ আপনার সংযোগ একটি অপ্রচলিত সাইফার স্যুট ব্যবহার করে এনক্রিপ্ট করা হয়েছে৷</translation>
 <translation id="5813119285467412249">&amp;যোগ করাকে পুনরায় করুন</translation>
 <translation id="5838278095973806738">এই সাইটে আপনার কোনো সংবেদনশীল তথ্য দেওয়া উচিত হবে না (উদাহরণস্বরূপ, পাসওয়ার্ড বা ক্রেডিট কার্ড) কারণ আক্রমণকারীরা এগুলি চুরি করতে পারে।</translation>
-<translation id="5844286946362376359">আমি <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" />-এর নিয়ম ও শর্তাবলী, গোপনীয়তা নীতি এবং টাকা তোলার অধিকারের বিষয়টি জানি (পড়া হয়নি বলে টিক চিহ্ন সরানো রয়েছে)।</translation>
 <translation id="5863847714970149516">পরের পৃষ্ঠাতে আপনাকে চার্জ করা হতে পারে</translation>
 <translation id="5866257070973731571">ফোন নম্বর যোগ করুন</translation>
 <translation id="5869405914158311789">এই সাইটটিতে পৌছানো যাচ্ছে না</translation>
@@ -854,7 +851,6 @@
 <translation id="6865412394715372076">এই কার্ডটি এখনই যাচাই করা যাবে না</translation>
 <translation id="6868206169573555318">আপডেট করার জন্য আবার লঞ্চ করুন</translation>
 <translation id="6874604403660855544">&amp;যোগ করাকে পুনরায় করুন</translation>
-<translation id="6885646002011712606">স্ক্রিনের একটু নিচে অটোফিল অ্যাসিস্ট্যান্ট পাওয়া যাবে</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">নীতি স্তর সমর্থিত নয়।</translation>
 <translation id="6895330447102777224">আপনার কার্ডটি নিশ্চিত করা হয়েছে</translation>
@@ -1000,7 +996,6 @@
 <translation id="7716424297397655342">এই সাইটটি ক্যাশে থেকে লোড করা যাবে না</translation>
 <translation id="7723047071702270851">কার্ড সম্পাদনা করুন</translation>
 <translation id="774634243536837715">বিপজ্জনক কন্টেন্ট ব্লক করা হয়েছে।</translation>
-<translation id="7747182086178764941">অটোফিল অ্যাসিস্ট্যান্টের প্রথম চালানো স্ক্রিন দেখানো হচ্ছে</translation>
 <translation id="7752995774971033316">অপরিচালিত</translation>
 <translation id="7755287808199759310">আপনার পিতামাতা এটি আপনার জন্য অবরোধ মুক্ত করতে পারবেন</translation>
 <translation id="7758069387465995638">ফায়ারওয়াল বা অ্যান্টিভাইরাস সফটওয়্যার সংযোগকে অবরুদ্ধ করে থাকতে পারে।</translation>
@@ -1119,7 +1114,6 @@
 <translation id="8503559462189395349">Chrome পাসওয়ার্ডগুলি</translation>
 <translation id="8503813439785031346">ইউজারনেম</translation>
 <translation id="8508648098325802031">সার্চ আইকন</translation>
-<translation id="8524783101666974011">আপনার Google অ্যাকাউন্টে কার্ড সেভ করুন</translation>
 <translation id="8543181531796978784">আপনি <ph name="BEGIN_ERROR_LINK" />একটি সনাক্তকরণ সমস্যা প্রতিবেদন করতে পারেন<ph name="END_ERROR_LINK" /> অথবা, আপনি আপনার নিরাপত্তা ঝুঁকি বুঝতে পারলে, <ph name="BEGIN_LINK" />এই অনিরাপদ সাইটটি ঘুরে দেখুন<ph name="END_LINK" />।</translation>
 <translation id="8543556556237226809">প্রশ্ন? আপনার প্রোফাইল যে তত্ত্বাবধান করে তার সাথে যোগাযোগ করুন।</translation>
 <translation id="8553075262323480129">পৃষ্ঠার ভাষা নির্ধারণ না করতে পারার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>

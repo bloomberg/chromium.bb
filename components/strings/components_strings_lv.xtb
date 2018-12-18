@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Restartējiet datoru</translation>
 <translation id="2113977810652731515">Karte</translation>
 <translation id="2114841414352855701">Ignorēta, jo to atcēla politika <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Pakalpojumu sniegšanas noteikumi</translation>
 <translation id="213826338245044447">Mobilās grāmatzīmes</translation>
 <translation id="214556005048008348">Atcelt maksājumu</translation>
 <translation id="2147827593068025794">Sinhronizācija fonā</translation>
@@ -244,6 +243,7 @@
 <translation id="2501278716633472235">Doties atpakaļ</translation>
 <translation id="2503184589641749290">Atbalstītās debetkartes un priekšapmaksas kartes</translation>
 <translation id="2515629240566999685">Pārbaudiet signālu savā apkaimē.</translation>
+<translation id="2523886232349826891">Tiks saglabāta tikai šajā ierīcē</translation>
 <translation id="2524461107774643265">Papildu informācijas pievienošana</translation>
 <translation id="2536110899380797252">Pievienot adresi</translation>
 <translation id="2539524384386349900">Noteikt</translation>
@@ -406,7 +406,6 @@
 <translation id="3583757800736429874">&amp;Pārvietošanas atsaukuma atcelšana</translation>
 <translation id="3586931643579894722">Slēpt detaļas</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Notiek karšu saglabāšana...</translation>
 <translation id="3615877443314183785">Ievadiet derīgu datumu</translation>
 <translation id="36224234498066874">Dzēst pārlūkošanas datus...</translation>
 <translation id="362276910939193118">Rādīt pilnu vēsturi</translation>
@@ -726,7 +725,6 @@
 <translation id="5810442152076338065">Savienojums ar domēnu <ph name="DOMAIN" /> ir šifrēts, izmantojot novecojušu šifra komplektu.</translation>
 <translation id="5813119285467412249">&amp;Pievienošanas atsaukuma atcelšana</translation>
 <translation id="5838278095973806738">Neievadiet šajā vietnē sensitīvu informāciju (piemēram, paroles vai kredītkartes), jo to var nozagt uzbrucēji.</translation>
-<translation id="5844286946362376359">Es esmu iepazinies ar <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> pakalpojumu sniegšanas noteikumiem, konfidencialitātes politiku un atteikuma tiesībām (lai lasītu, neatzīmējiet).</translation>
 <translation id="5863847714970149516">Nākamajā lapā var tikt mēģināts pieprasīt naudu</translation>
 <translation id="5866257070973731571">Tālruņa numura pievienošana</translation>
 <translation id="5869405914158311789">Šī vietne nav sasniedzama</translation>
@@ -852,7 +850,6 @@
 <translation id="6865412394715372076">Pašlaik nevar verificēt šo karti.</translation>
 <translation id="6868206169573555318">Palaist atkārtoti, lai atjauninātu</translation>
 <translation id="6874604403660855544">&amp;Atcelt pievienošanas atsaukšanu</translation>
-<translation id="6885646002011712606">Automātiskās aizpildes palīgs ir pieejams ekrāna apakšējā daļā</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" />: <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Politikas līmenis netiek atbalstīts.</translation>
 <translation id="6895330447102777224">Karte ir apstiprināta</translation>
@@ -998,7 +995,6 @@ Papildu informācija:
 <translation id="7716424297397655342">Šo vietni nevar ielādēt no kešatmiņas</translation>
 <translation id="7723047071702270851">Kartes informācijas rediģēšana</translation>
 <translation id="774634243536837715">Bloķēts bīstams saturs</translation>
-<translation id="7747182086178764941">Tiek rādīts automātiskās aizpildes palīga pirmās palaišanas ekrāns</translation>
 <translation id="7752995774971033316">Netiek pārvaldīts</translation>
 <translation id="7755287808199759310">Lai atbloķētu, vēsieties pie vecāka</translation>
 <translation id="7758069387465995638">Iespējams, savienojumu ir bloķējis ugunsmūris vai pretvīrusu programmatūra.</translation>
@@ -1117,7 +1113,6 @@ Papildu informācija:
 <translation id="8503559462189395349">Chrome paroles</translation>
 <translation id="8503813439785031346">Lietotājvārds</translation>
 <translation id="8508648098325802031">Meklēšanas ikona</translation>
-<translation id="8524783101666974011">Karšu saglabāšana Google kontā</translation>
 <translation id="8543181531796978784">Jūs varat <ph name="BEGIN_ERROR_LINK" />ziņot par noteikšanas problēmu<ph name="END_ERROR_LINK" /> vai, ja apzināties drošības riskus, <ph name="BEGIN_LINK" />apmeklēt šo nedrošo vietni<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Vai radušies jautājumi? Sazinieties ar personu, kas uzrauga jūsu profilu.</translation>
 <translation id="8553075262323480129">Tulkošana neizdevās, jo lapas valoda nav nosakāma.</translation>

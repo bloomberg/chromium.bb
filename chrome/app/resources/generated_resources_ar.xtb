@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;الأدوات</translation>
 <translation id="1122242684574577509">‏‫فشلت المصادقة‬. انقر للانتقال إلى صفحة تسجيل الدخول لشبكة Wi-Fi التي تستخدمها (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">اسم الإشارة</translation>
-<translation id="1123187597739372905">عرض إعدادات المزامنة</translation>
 <translation id="1124772482545689468">المستخدم</translation>
 <translation id="1125550662859510761">‏تبدو كـ <ph name="WIDTH" /> x <ph name="HEIGHT" /> (أصلية)</translation>
 <translation id="1128109161498068552">‏عدم السماح لأي موقع باستخدام الرسائل الحصرية في النظام للدخول إلى أجهزة MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">تعديل محرّك البحث</translation>
 <translation id="1134009406053225289">فتح في نافذة للتصفح المتخفي</translation>
-<translation id="1136155683023653803">تتم مزامنة كلمات المرور والإشارات المرجعية والسجل والمزيد من الخيارات مع حسابك.</translation>
 <translation id="1137673463384776352">فتح الرابط في <ph name="APP" /></translation>
 <translation id="1140351953533677694">الوصول إلى بلوتوث والأجهزة التسلسلية</translation>
 <translation id="1140610710803014750">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">السماح دائمًا لـ <ph name="HOST" /> بالوصول إلى أجهزة الاستشعار</translation>
 <translation id="1153356358378277386">الأجهزة المقترنة</translation>
 <translation id="1156488781945104845">الوقت الحالي</translation>
-<translation id="1157102636231978136">‏بيانات التصفُّح والنشاط المتزامنة في حسابك على Google</translation>
 <translation id="1161575384898972166">يُرجى تسجيل الدخول إلى <ph name="TOKEN_NAME" /> لتصدير شهادة العميل.</translation>
 <translation id="1161699061380012396">‏أسلوب الإدخال لنظام التشغيل Chrome</translation>
 <translation id="1163931534039071049">عرض م&amp;صدر الإطار</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">حدث خطأ أثناء إعداد الطابعة</translation>
 <translation id="1396963298126346194">اسم المستخدم وكلمة المرور اللذان أدخلتهما غير متطابقين</translation>
 <translation id="1397500194120344683">لا تتوفَّر أجهزة مؤهَّلة. <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">المزامنة والتخصيص</translation>
 <translation id="1398853756734560583">تكبير</translation>
 <translation id="1399511500114202393">لا توجد شهادة مستخدم.</translation>
 <translation id="140520891692800925">(خاضع للإدارة) <ph name="PROFILE_DISPLAY_NAME" /></translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">تم التنزيل من قبل</translation>
 <translation id="1632803087685957583">تسمح لك بضبط معدل تكرار لوحة المفاتيح، وتوقّع الكلمات، والمزيد</translation>
 <translation id="1635033183663317347">تم التثبيت من قبل الوصيّ.</translation>
-<translation id="1635885551358739414">‏قد تستخدم Google محتوى المواقع الإلكترونية التي تزورها، بالإضافة إلى نشاط المتصفِّح وتفاعلاته لتخصيص Chrome وخدمات Google الأخرى، مثل "ترجمة" و"بحث" والإعلانات. ويمكنك تخصيص هذه الميزة في "الإعدادات".</translation>
 <translation id="1637224376458524414">‏الحصول على هذه الإشارة المرجعية على جهاز iPhone</translation>
 <translation id="1637765355341780467">حدث خطأ ما أثناء فتح ملفك الشخصي. وقد تكون بعض الميزات غير متاحة.</translation>
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
@@ -788,6 +783,7 @@
 <translation id="215753907730220065">إنهاء وضع ملء الشاشة</translation>
 <translation id="2157875535253991059">هذه الصفحة في وضع ملء الشاشة الآن.</translation>
 <translation id="216169395504480358">‏إضافة Wi-Fi...</translation>
+<translation id="2162155940152307086">ستبدأ المزامنة بعد مغادرتك إعدادات المزامنة</translation>
 <translation id="2163470535490402084">يُرجى الاتصال بالإنترنت لتسجيل الدخول إلى <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2166369534954157698">أبجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ</translation>
 <translation id="2169062631698640254">تسجيل الدخول على أيّ حال</translation>
@@ -798,6 +794,7 @@
 <translation id="2178098616815594724">يريد <ph name="PEPPER_PLUGIN_NAME" /> الموجود على <ph name="PEPPER_PLUGIN_DOMAIN" /> الوصول إلى جهاز الكمبيوتر.</translation>
 <translation id="2178614541317717477">‏اختراق المرجع المصدق (CA)</translation>
 <translation id="218070003709087997">استخدم رقمًا للإشارة إلى عدد النُسخ المطلوب طباعتها (من 1 إلى 999).</translation>
+<translation id="2182253583899676504">‏سيتم إرسال النص الذي كتبته في حقول النص إلى Google.</translation>
 <translation id="2184515124301515068">‏السماح لمتصفِّح Chrome باختيار الوقت الذي يمكن للمواقع الإلكترونية تشغيل الصوت فيه (مُوصى به)</translation>
 <translation id="2187895286714876935">خط استيراد شهادة الخادم</translation>
 <translation id="2187906491731510095">تم تحديث الإضافات.</translation>
@@ -809,7 +806,9 @@
 <translation id="2192505247865591433">من:</translation>
 <translation id="2193365732679659387">إعدادات الثقة</translation>
 <translation id="2195729137168608510">حماية البريد الإلكتروني</translation>
+<translation id="2198757192731523470">‏قد تستخدم Google السجلّ لتخصيص "بحث Google" والإعلانات، وخدمات Google الأخرى</translation>
 <translation id="2199298570273670671">خطأ</translation>
+<translation id="2199719347983604670">‏البيانات من مزامنة Chrome</translation>
 <translation id="2200356397587687044">‏يحتاج Chrome إلى إذن للمتابعة</translation>
 <translation id="220138918934036434">إخفاء الزر</translation>
 <translation id="2202898655984161076">حدثت مشكلة أثناء إدراج الطابعات. ربما لا يتم تسجيل بعض الطابعات بنجاح في <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -1265,6 +1264,7 @@
 <translation id="2889925978073739256">متابعة حظر المكونات الإضافية غير المحمية</translation>
 <translation id="2890678560483811744">مرجع صفحة خارج الحدود المفروضة</translation>
 <translation id="2893168226686371498">المتصفح التلقائي</translation>
+<translation id="2895734772884435517">يمكنك تخصيص هذه الإعدادات في أي وقت.</translation>
 <translation id="289644616180464099">‏تم قفل شريحة SIM</translation>
 <translation id="289695669188700754">معرّف المفتاح: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">هل تريد فعلًا فتح هذا العدد من علامات التبويب<ph name="TAB_COUNT" />؟</translation>
@@ -1741,6 +1741,7 @@
 <translation id="3636096452488277381">مرحبًا، <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> وقت متبقٍ</translation>
 <translation id="3637682276779847508">‏سيتم إيقاف شريحة SIM نهائيًا إذا لم تتمكن من إدخال مفتاح إلغاء القفل باستخدام رقم التعريف الشخصي الصحيح.</translation>
+<translation id="363863692969456324">إصلاح الأخطاء الإملائية من خلال التدقيق الإملائي المُحسَّن</translation>
 <translation id="3640214691812501263">هل تريد إضافة "<ph name="EXTENSION_NAME" />" لـ <ph name="USER_NAME" />؟</translation>
 <translation id="3644896802912593514">العرض</translation>
 <translation id="3645372836428131288">حرّك إصبعك قليلاً لالتقاط جزء مختلف من بصمة الإصبع.</translation>
@@ -2177,6 +2178,7 @@
 <translation id="4310139701823742692">‏الملف بتنسيق خاطئ. تحقق من ملف PPD وأعد المحاولة.</translation>
 <translation id="431076611119798497">&amp;التفاصيل</translation>
 <translation id="4312866146174492540">حظر (تلقائي)</translation>
+<translation id="4314815835985389558">إدارة المزامنة</translation>
 <translation id="4316850752623536204">موقع الويب لمطوّر البرامج</translation>
 <translation id="4320177379694898372">لا يتوفر اتصال بالإنترنت</translation>
 <translation id="4320948194796820126">إضافة إشارة مرجعية إلى بريدك الإلكتروني</translation>
@@ -2256,6 +2258,7 @@
 <translation id="4450974146388585462">التشخيص</translation>
 <translation id="4451757071857432900">تم حظر الإعلانات على المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها (مُستحسَن)</translation>
 <translation id="4453946976636652378">‏البحث في <ph name="SEARCH_ENGINE_NAME" /> أو كتابة عنوان URL</translation>
+<translation id="4461835665417498653">‏يتم إرسال بعض معلومات النظام ومحتوى الصفحة إلى Google بدون الكشف عن الهوية.</translation>
 <translation id="4462159676511157176">خوادم أسماء مخصصة</translation>
 <translation id="4467101674048705704">توسيع <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">تم حظر الإعلانات على المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها</translation>
@@ -2336,7 +2339,6 @@
 <translation id="4585793705637313973">تعديل الصفحة</translation>
 <translation id="4590324241397107707">تخزين قاعدة البيانات</translation>
 <translation id="4593021220803146968">&amp;انتقال إلى <ph name="URL" /></translation>
-<translation id="459505086032485258">‏عرض إعدادات خدمات Google</translation>
 <translation id="4595560905247879544">لا يمكن تعديل التطبيقات والإضافات إلا من قِبل المدير (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">لديك شهادات في الملف تحدد هذه الخوادم</translation>
 <translation id="4598556348158889687">إدارة مساحة التخزين</translation>
@@ -2426,6 +2428,7 @@
 <translation id="4735265153267957659">‏يُرجى إدخال كلمة المرور لتفعيل Smart Lock. وفي المرة القادمة، سيفتح هاتفك قفل جهاز <ph name="DEVICE_TYPE" />. يمكنك إيقاف Smart Lock في "الإعدادات".</translation>
 <translation id="473546211690256853">تتم إدارة هذا الحساب من خلال <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">تعذَّر على النظام تحديد معرِّفات هذا الجهاز.</translation>
+<translation id="4736292055110123391">مزامنة الإشارات المرجعية وكلمات المرور والسجلّ وغيرها على جميع أجهزتك</translation>
 <translation id="4737715515457435632">يُرجى الاتصال بشبكة.</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="474217410105706308">تجاهل علامة التبويب</translation>
@@ -3269,7 +3272,6 @@
 <translation id="5982621672636444458">خيارات التصنيف</translation>
 <translation id="5984222099446776634">تم الانتقال إليها مؤخرًا</translation>
 <translation id="5985458664595100876">‏تنسيق عنوان URL غير صالح. التنسيقات المدعومة هي \\server\share وsmb://server/share.</translation>
-<translation id="5990142338020175451">‏مزيد من خدمات Google الشخصية، مثل أفضل اقتراحات الصفحة</translation>
 <translation id="5990386583461751448">مترجَمة</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذا التطبيق.}zero{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذه التطبيقات.}two{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذين التطبيقين.}few{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذه التطبيقات.}many{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذه التطبيقات.}other{لضمان مواصلة تصفّح الويب، يُرجى الطلب من المُشرف إزالة هذه التطبيقات.}}</translation>
 <translation id="5997337190805127100">مزيد من المعلومات عن إمكانية الوصول إلى موقع الويب</translation>
@@ -3863,7 +3865,6 @@
 <translation id="6900284862687837908">تطبيق الخلفية: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">صوت للمعاينة</translation>
 <translation id="6902837902700739466">انضمام الجهاز إلى النطاق</translation>
-<translation id="6903534926908201625">‏يمكنك تخصيص المعلومات التي تجمعها Google في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" /> في أي وقت.</translation>
 <translation id="6904344821472985372">إلغاء الوصول إلى الملف</translation>
 <translation id="6904655473976120856">اضغط زر التطبيق للخروج</translation>
 <translation id="6910211073230771657">تم الحذف</translation>
@@ -4178,7 +4179,6 @@
 <translation id="7366415735885268578">إضافة موقع ويب</translation>
 <translation id="7366909168761621528">بيانات التصفح</translation>
 <translation id="7371006317849674875">وقت البدء</translation>
-<translation id="737439367876257440">‏تحسين Chrome وإعدادات الأمان فيه عن طريق إرسال معلومات النظام والاستخدام إلى Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">تمييز مؤشر الماوس عندما يتحرك</translation>
 <translation id="7377169924702866686">‏مفتاح Caps Lock في وضع التشغيل.</translation>
@@ -4984,6 +4984,7 @@
 <translation id="8598453409908276158">تم حظر المكوّن الإضافي دون استخدام وضع الحماية</translation>
 <translation id="8601206103050338563">‏مصادقة TLS (بروتوكول أمان طبقة النقل) لشبكة الإنترنت العالمية (WWW)</translation>
 <translation id="8602851771975208551">‏أضاف برنامج آخر بجهاز الكمبيوتر تطبيقًا قد يؤدي إلى تغيير طريقة عمل Chrome.</translation>
+<translation id="8604763363205185560">‏المساعدة في تحسين Chrome وأمانه</translation>
 <translation id="8605428685123651449">‏ذاكرة SQLite</translation>
 <translation id="8606726445206553943">‏استخدام أجهزة MIDI</translation>
 <translation id="8609465669617005112">التحريك إلى أعلى</translation>

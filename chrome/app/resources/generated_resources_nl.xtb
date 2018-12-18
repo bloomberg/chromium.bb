@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Extra</translation>
 <translation id="1122242684574577509">Verificatie mislukt. Klik om naar de loginpagina te gaan van het wifi-netwerk dat je gebruikt (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Naam van bladwijzer</translation>
-<translation id="1123187597739372905">Synchronisatie-instellingen weergeven</translation>
 <translation id="1124772482545689468">Gebruiker</translation>
 <translation id="1125550662859510761">Ziet eruit als <ph name="WIDTH" /> x <ph name="HEIGHT" /> (systeemeigen resolutie)</translation>
 <translation id="1128109161498068552">Sites niet toestaan berichten exclusief voor het systeem te gebruiken om toegang te krijgen tot MIDI-apparaten</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Zoekmachine bewerken</translation>
 <translation id="1134009406053225289">Openen in incognitovenster</translation>
-<translation id="1136155683023653803">Wachtwoorden, bladwijzers, geschiedenis en meer worden gesynchroniseerd met je account</translation>
 <translation id="1137673463384776352">Link openen in <ph name="APP" /></translation>
 <translation id="1140351953533677694">Toegang tot je seriële en Bluetooth-apparaten</translation>
 <translation id="1140610710803014750">Log in en schakel synchroniseren in om al je bladwijzers op al je apparaten te bekijken.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366"><ph name="HOST" /> altijd toegang tot sensoren geven</translation>
 <translation id="1153356358378277386">Gekoppelde apparaten</translation>
 <translation id="1156488781945104845">Huidige tijd</translation>
-<translation id="1157102636231978136">Je browsergegevens en activiteit die zijn gesynchroniseerd met je Google-account</translation>
 <translation id="1161575384898972166">Log in bij <ph name="TOKEN_NAME" /> om het klantcertificaat te exporteren.</translation>
 <translation id="1161699061380012396">Invoermethode voor Chrome OS</translation>
 <translation id="1163931534039071049">&amp;Framebron weergeven</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Fout bij instellen van printer</translation>
 <translation id="1396963298126346194">De gebruikersnaam en het wachtwoord die je hebt opgegeven, komen niet overeen</translation>
 <translation id="1397500194120344683">Geen geschikte apparaten. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Synchronisatie en personalisatie</translation>
 <translation id="1398853756734560583">Maximaliseren</translation>
 <translation id="1399511500114202393">Geen gebruikerscertificaat</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (met beperkte rechten)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Al gedownload</translation>
 <translation id="1632803087685957583">Hiermee kun je de herhaalsnelheid van het toetsenbord, woordvoorspelling en meer aanpassen</translation>
 <translation id="1635033183663317347">Geïnstalleerd door je ouder/verzorger.</translation>
-<translation id="1635885551358739414">Google kan content op sites die je bezoekt en je browseractiviteit en -interactie gebruiken om Chrome en andere Google-services (zoals Translate, Zoeken en advertenties) te personaliseren. Je kunt deze functies op elk gewenst moment aanpassen via Instellingen.</translation>
 <translation id="1637224376458524414">Deze bladwijzer gebruiken op je iPhone</translation>
 <translation id="1637765355341780467">Er is iets misgegaan bij het openen van je profiel. Mogelijk zijn sommige functies niet beschikbaar.</translation>
 <translation id="1639239467298939599">Laden</translation>
@@ -2341,7 +2336,6 @@
 <translation id="4585793705637313973">Pagina bewerken</translation>
 <translation id="4590324241397107707">Opslag in database</translation>
 <translation id="4593021220803146968">&amp;Ga naar <ph name="URL" /></translation>
-<translation id="459505086032485258">Instellingen van Google-services weergeven</translation>
 <translation id="4595560905247879544">Apps en extensies kunnen alleen worden aangepast door de beheerder (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Je hebt certificaten waarmee deze servers worden geïdentificeerd</translation>
 <translation id="4598556348158889687">Opslagbeheer</translation>
@@ -3275,7 +3269,6 @@
 <translation id="5982621672636444458">Sorteeropties</translation>
 <translation id="5984222099446776634">Recent bezocht</translation>
 <translation id="5985458664595100876">Ongeldige URL-indeling. Ondersteunde formaten zijn \\server\share en smb://server/share.</translation>
-<translation id="5990142338020175451">Meer persoonlijke Google-services, zoals betere paginasuggesties</translation>
 <translation id="5990386583461751448">Vertaald</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Vraag je beheerder deze app te verwijderen om ervoor te zorgen dat je kunt blijven browsen op het web.}other{Vraag je beheerder deze apps te verwijderen om ervoor te zorgen dat je kunt blijven browsen op het web.}}</translation>
 <translation id="5997337190805127100">Meer informatie over sitetoegang</translation>
@@ -3868,7 +3861,6 @@
 <translation id="6900284862687837908">Achtergrond-app: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Stem om als voorbeeld te beluisteren</translation>
 <translation id="6902837902700739466">Apparaat koppelen aan domein</translation>
-<translation id="6903534926908201625">Via <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" /> kun je op elk gewenst moment aanpassen welke informatie Google verzamelt.</translation>
 <translation id="6904344821472985372">Toegang tot bestand intrekken</translation>
 <translation id="6904655473976120856">Druk op de app-knop om af te sluiten</translation>
 <translation id="6910211073230771657">Verwijderd</translation>
@@ -4183,7 +4175,6 @@
 <translation id="7366415735885268578">Een site toevoegen</translation>
 <translation id="7366909168761621528">Browsegegevens</translation>
 <translation id="7371006317849674875">Starttijd</translation>
-<translation id="737439367876257440">Verbeter Chrome en de beveiliging ervan door systeem- en gebruiksgegevens naar Google te verzenden</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">De muisaanwijzer markeren terwijl deze beweegt</translation>
 <translation id="7377169924702866686">Caps Lock is ingeschakeld.</translation>

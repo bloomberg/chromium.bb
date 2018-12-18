@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Ferramentas</translation>
 <translation id="1122242684574577509">Falha na autenticação. Clique para visitar a página de login da rede Wi-Fi que você está usando (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Nome do favorito</translation>
-<translation id="1123187597739372905">Mostrar configurações de sincronização</translation>
 <translation id="1124772482545689468">Usuário</translation>
 <translation id="1125550662859510761">Resolução: <ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1128109161498068552">Não permitir que nenhum site use mensagens exclusivas do sistema para acessar dispositivos MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editar mecanismo de pesquisa</translation>
 <translation id="1134009406053225289">Abrir em uma janela anônima</translation>
-<translation id="1136155683023653803">Senhas, favoritos, histórico e outros itens são sincronizados com sua conta</translation>
 <translation id="1137673463384776352">Abrir link no <ph name="APP" /></translation>
 <translation id="1140351953533677694">Acessar seus dispositivos de série e Bluetooth</translation>
 <translation id="1140610710803014750">Para ter seus favoritos em todos os seus dispositivos, faça login e ative a sincronização.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Sempre permitir que <ph name="HOST" /> acesse os sensores</translation>
 <translation id="1153356358378277386">Dispositivos pareados</translation>
 <translation id="1156488781945104845">Hora atual</translation>
-<translation id="1157102636231978136">Seus dados e atividades de navegação, sincronizados com sua Conta do Google</translation>
 <translation id="1161575384898972166">Faça login no <ph name="TOKEN_NAME" /> para exportar o certificado do cliente.</translation>
 <translation id="1161699061380012396">Método de entrada do Chrome OS</translation>
 <translation id="1163931534039071049">&amp;Exibir código fonte do frame</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Erro na configuração da impressora</translation>
 <translation id="1396963298126346194">O nome de usuário e a senha inseridos não correspondem</translation>
 <translation id="1397500194120344683">Nenhum dispositivo qualificado. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Sincronização e personalização</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1399511500114202393">Nenhum certificado do usuário</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (supervisionado)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Download já concluído</translation>
 <translation id="1632803087685957583">Permite ajustar a taxa de repetição, a previsão de palavras e outras configurações do teclado</translation>
 <translation id="1635033183663317347">Instalada pelo custodiante.</translation>
-<translation id="1635885551358739414">O Google pode usar o conteúdo dos sites que você visita, além das interações e atividades do navegador, para personalizar o Chrome e outros serviços do Google, como o Tradutor, a Pesquisa e os anúncios. Você pode personalizar isso em "Configurações".</translation>
 <translation id="1637224376458524414">Receber esse favorito no seu iPhone</translation>
 <translation id="1637765355341780467">Ocorreu um erro ao abrir seu perfil. É possível que alguns recursos estejam indisponíveis.</translation>
 <translation id="1639239467298939599">Carregando</translation>
@@ -788,6 +783,7 @@
 <translation id="215753907730220065">Sair do modo tela cheia</translation>
 <translation id="2157875535253991059">Esta página está no modo de tela inteira.</translation>
 <translation id="216169395504480358">Adicionar Wi-Fi...</translation>
+<translation id="2162155940152307086">A sincronização será iniciada assim que você sair das configurações</translation>
 <translation id="2163470535490402084">Conecte-se à Internet para fazer login no seu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2166369534954157698">Jane quer LP, fax, CD, giz, TV e bom whisky.</translation>
 <translation id="2169062631698640254">Fazer login assim mesmo</translation>
@@ -798,6 +794,7 @@
 <translation id="2178098616815594724">O plug-in <ph name="PEPPER_PLUGIN_NAME" /> do domínio <ph name="PEPPER_PLUGIN_DOMAIN" /> quer acessar seu computador</translation>
 <translation id="2178614541317717477">Compromisso da autoridade de certificação</translation>
 <translation id="218070003709087997">Use um número para indicar o número de cópias a serem impressas (1 a 999).</translation>
+<translation id="2182253583899676504">O que você digita nos campos de texto será enviado ao Google.</translation>
 <translation id="2184515124301515068">Permitir que Chrome defina quando os sites podem reproduzir sons (recomendado)</translation>
 <translation id="2187895286714876935">Erro de importação do certificado de servidor</translation>
 <translation id="2187906491731510095">Extensões atualizadas</translation>
@@ -809,7 +806,9 @@
 <translation id="2192505247865591433">De:</translation>
 <translation id="2193365732679659387">Configurações de confiança</translation>
 <translation id="2195729137168608510">Proteção de e-mail</translation>
+<translation id="2198757192731523470">O Google pode usar seu histórico para personalizar a Pesquisa, os anúncios e outros serviços que ele oferece.</translation>
 <translation id="2199298570273670671">Erro</translation>
+<translation id="2199719347983604670">Dados da "Sincronização do Chrome"</translation>
 <translation id="2200356397587687044">O Chrome precisa de permissão para continuar</translation>
 <translation id="220138918934036434">Ocultar botão</translation>
 <translation id="2202898655984161076">Ocorreu um problema na listagem de impressoras. Algumas impressoras podem não ter sido registradas no <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -1266,6 +1265,7 @@
 <translation id="2889925978073739256">Continuar bloqueando plug-ins sem sandbox</translation>
 <translation id="2890678560483811744">Referência de página fora dos limites</translation>
 <translation id="2893168226686371498">Navegador padrão</translation>
+<translation id="2895734772884435517">Você pode personalizar essas configurações a qualquer momento.</translation>
 <translation id="289644616180464099">O chip está bloqueado</translation>
 <translation id="289695669188700754">ID da chave: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Você tem certeza que quer abrir <ph name="TAB_COUNT" /> guias?</translation>
@@ -1743,6 +1743,7 @@
 <translation id="3636096452488277381">Olá, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> restantes</translation>
 <translation id="3637682276779847508">Seu chip será permanentemente desativado se você não informar a chave correta de desbloqueio por PIN.</translation>
+<translation id="363863692969456324">Corrija os erros de ortografia com a verificação ortográfica aprimorada</translation>
 <translation id="3640214691812501263">Adicionar "<ph name="EXTENSION_NAME" />" para <ph name="USER_NAME" />?</translation>
 <translation id="3644896802912593514">Largura</translation>
 <translation id="3645372836428131288">Mova o dedo levemente para capturar outra parte da impressão digital.</translation>
@@ -2182,6 +2183,7 @@
 <translation id="4310139701823742692">O arquivo está no formato errado. Verifique o arquivo PPD e tente novamente.</translation>
 <translation id="431076611119798497">&amp;Detalhes</translation>
 <translation id="4312866146174492540">Bloquear (padrão)</translation>
+<translation id="4314815835985389558">Gerenciar sincronização</translation>
 <translation id="4316850752623536204">Website do desenvolvedor</translation>
 <translation id="4320177379694898372">Sem conexão com a Internet</translation>
 <translation id="4320948194796820126">Adicione seu e-mail aos favoritos</translation>
@@ -2261,6 +2263,7 @@
 <translation id="4450974146388585462">Diagnosticar</translation>
 <translation id="4451757071857432900">Bloqueados em sites que mostram anúncios invasivos ou enganosos (recomendado)</translation>
 <translation id="4453946976636652378">Pesquisar no <ph name="SEARCH_ENGINE_NAME" /> ou digitar URL</translation>
+<translation id="4461835665417498653">Envia algumas informações do sistema e conteúdo da página para o Google anonimamente.</translation>
 <translation id="4462159676511157176">Servidores de nome personalizados</translation>
 <translation id="4467101674048705704">Expandir <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Bloqueados em sites que mostram anúncios invasivos ou enganosos</translation>
@@ -2341,7 +2344,6 @@
 <translation id="4585793705637313973">Editar página</translation>
 <translation id="4590324241397107707">Armazenamento de banco de dados</translation>
 <translation id="4593021220803146968">&amp;Ir até <ph name="URL" /></translation>
-<translation id="459505086032485258">Exibir configurações dos serviços do Google</translation>
 <translation id="4595560905247879544">Apps e extensões só podem ser modificadas pelo gerente (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Você tem certificados no arquivo que identificam estes servidores</translation>
 <translation id="4598556348158889687">Gestão de armazenamento</translation>
@@ -2431,6 +2433,7 @@
 <translation id="4735265153267957659">Digite sua senha para ativar o Smart Lock. Na próxima vez, seu smartphone desbloqueará o <ph name="DEVICE_TYPE" />. Desative o Smart Lock nas configurações.</translation>
 <translation id="473546211690256853">Esta conta é gerenciada por <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Falha do sistema ao determinar os identificadores do dispositivo.</translation>
+<translation id="4736292055110123391">Sincronize favoritos, senhas, histórico e muito mais em todos os seus dispositivos</translation>
 <translation id="4737715515457435632">Conecte-se a uma rede</translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="474217410105706308">Desativar som da guia</translation>
@@ -3275,7 +3278,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5982621672636444458">Opções de classificação</translation>
 <translation id="5984222099446776634">Visitados recentemente</translation>
 <translation id="5985458664595100876">Formato de URL inválido. Os formatos compatíveis são \\server\share e smb://server/share.</translation>
-<translation id="5990142338020175451">Serviços do Google mais personalizados, como melhores sugestões de páginas</translation>
 <translation id="5990386583461751448">Traduzida</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para que você possa continuar navegando na Web, peça ao seu administrador para remover esse aplicativo.}one{Para que você possa continuar navegando na Web, peça ao seu administrador para remover esse aplicativo.}other{Para que você possa continuar navegando na Web, peça ao seu administrador para remover esses aplicativos.}}</translation>
 <translation id="5997337190805127100">Saiba mais sobre o acesso aos sites</translation>
@@ -3869,7 +3871,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6900284862687837908">Aplicativo de segundo plano: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Voz para visualização</translation>
 <translation id="6902837902700739466">Vincular dispositivo ao domínio</translation>
-<translation id="6903534926908201625">Você pode personalizar a qualquer momento nas <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" /> quais informações o Google coleta.</translation>
 <translation id="6904344821472985372">Revogar acesso a arquivos</translation>
 <translation id="6904655473976120856">Pressione o botão App para sair</translation>
 <translation id="6910211073230771657">Excluído</translation>
@@ -4184,7 +4185,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7366415735885268578">Adicionar um site</translation>
 <translation id="7366909168761621528">Dados de navegação</translation>
 <translation id="7371006317849674875">Horário de início</translation>
-<translation id="737439367876257440">Ajude a aprimorar o Chrome e a segurança do app enviando informações de uso e do sistema para o Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Destacar o cursor do mouse quando ele estiver se movendo</translation>
 <translation id="7377169924702866686">O Caps Lock está ativado.</translation>
@@ -4991,6 +4991,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8598453409908276158">Plug-in sem sandbox bloqueado</translation>
 <translation id="8601206103050338563">Autenticação do cliente TLS WWW</translation>
 <translation id="8602851771975208551">Outro programa em seu computador adicionou um aplicativo que pode mudar a forma como o Google Chrome funciona.</translation>
+<translation id="8604763363205185560">Ajude a melhorar o Chrome e a segurança do navegador</translation>
 <translation id="8605428685123651449">Memória SQLite</translation>
 <translation id="8606726445206553943">Usar seus dispositivos MIDI</translation>
 <translation id="8609465669617005112">Mover para cima</translation>

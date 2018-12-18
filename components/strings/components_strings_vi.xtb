@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">Khởi động lại máy tính của bạn</translation>
 <translation id="2113977810652731515">Thẻ</translation>
 <translation id="2114841414352855701">Bỏ qua vì đã bị <ph name="POLICY_NAME" /> ghi đè.</translation>
-<translation id="2129308444951592399">Điều khoản và Điều kiện</translation>
 <translation id="213826338245044447">Dấu trang di động</translation>
 <translation id="214556005048008348">Hủy thanh toán</translation>
 <translation id="2147827593068025794">Đồng bộ hóa dưới nền</translation>
@@ -244,6 +243,7 @@
 <translation id="2501278716633472235">Quay lại</translation>
 <translation id="2503184589641749290">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>
 <translation id="2515629240566999685">Kiểm tra tín hiệu trong khu vực của bạn</translation>
+<translation id="2523886232349826891">Chỉ lưu trên thiết bị này</translation>
 <translation id="2524461107774643265">Thêm thông tin khác</translation>
 <translation id="2536110899380797252">Thêm địa chỉ</translation>
 <translation id="2539524384386349900">Phát hiện</translation>
@@ -406,7 +406,6 @@
 <translation id="3583757800736429874">&amp;Làm lại di chuyển</translation>
 <translation id="3586931643579894722">Ẩn chi tiết</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">Đang lưu thẻ...</translation>
 <translation id="3615877443314183785">Nhập ngày hết hạn hợp lệ</translation>
 <translation id="36224234498066874">Xóa DL duyệt web</translation>
 <translation id="362276910939193118">Hiển thị Toàn bộ Lịch sử</translation>
@@ -727,7 +726,6 @@
 <translation id="5810442152076338065">Kết nối của bạn tới <ph name="DOMAIN" /> được mã hóa bằng bộ số 0 đã lỗi thời.</translation>
 <translation id="5813119285467412249">&amp;Làm lại thêm</translation>
 <translation id="5838278095973806738">Bạn không nên nhập bất kỳ thông tin nhạy cảm nào trên trang web này (ví dụ: mật khẩu hoặc thẻ tín dụng), vì những kẻ tấn công có thể đánh cắp thông tin đó.</translation>
-<translation id="5844286946362376359">Tôi biết các điều khoản và điều kiện, chính sách quyền riêng tư và quyền hủy <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (bỏ chọn để đọc).</translation>
 <translation id="5863847714970149516">Trang phía trước có thể tìm cách tính phí bạn</translation>
 <translation id="5866257070973731571">Thêm số điện thoại</translation>
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
@@ -853,7 +851,6 @@
 <translation id="6865412394715372076">Hiện không thể xác minh thẻ này</translation>
 <translation id="6868206169573555318">Khởi động lại để cập nhật</translation>
 <translation id="6874604403660855544">&amp;Làm lại thêm</translation>
-<translation id="6885646002011712606">Trợ lý tự động điền có ở gần cuối màn hình</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Cấp chính sách không được hỗ trợ.</translation>
 <translation id="6895330447102777224">Thẻ của bạn đã được xác nhận</translation>
@@ -999,7 +996,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7716424297397655342">Không thể tải trang web này từ bộ nhớ đệm</translation>
 <translation id="7723047071702270851">Chỉnh sửa thẻ</translation>
 <translation id="774634243536837715">Đã chặn nội dung nguy hiểm.</translation>
-<translation id="7747182086178764941">Màn hình chạy đầu tiên của Trợ lý tự động điền hiển thị</translation>
 <translation id="7752995774971033316">Không được quản lý</translation>
 <translation id="7755287808199759310">Cha mẹ của bạn có thể bỏ chặn trang web cho bạn</translation>
 <translation id="7758069387465995638">Tường lửa hoặc phần mềm diệt vi-rút có thể đã chặn kết nối.</translation>
@@ -1118,7 +1114,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8503559462189395349">Mật khẩu Chrome</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>
 <translation id="8508648098325802031">Biểu tượng Tìm kiếm</translation>
-<translation id="8524783101666974011">Lưu thẻ vào Tài khoản Google</translation>
 <translation id="8543181531796978784">Bạn có thể <ph name="BEGIN_ERROR_LINK" />báo cáo sự cố đã phát hiện<ph name="END_ERROR_LINK" /> hoặc nếu bạn hiểu rủi ro với bảo mật của mình, hãy <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">Bạn có câu hỏi? Hãy liên hệ với người giám sát hồ sơ của bạn.</translation>
 <translation id="8553075262323480129">Dịch thất bại do ngôn ngữ của trang không được xác định.</translation>

@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;साधने</translation>
 <translation id="1122242684574577509">अॉथेंटिकेशन अयशस्वी. तुम्ही वापरत असलेल्या (<ph name="NETWORK_ID" />) वाय-फाय नेटवर्कसाठी लॉग इन पेजला भेट देण्यासाठी क्लिक करा.</translation>
 <translation id="1122960773616686544">बुकमार्क नाव</translation>
-<translation id="1123187597739372905">सिंक सेटिंग्ज दाखवा</translation>
 <translation id="1124772482545689468">वापरकर्ता</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (नेटिव्ह) सारखे दिसते</translation>
 <translation id="1128109161498068552">MIDI डिव्हाइसवर प्रवेश करण्यासाठी सिस्टम विशेष संदेश वापरण्याकरिता कोणत्याही साइटला अनुमती देऊ नका</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">शोध इंजिन संपादित करा</translation>
 <translation id="1134009406053225289">गुप्त विंडोमध्ये उघडा</translation>
-<translation id="1136155683023653803">पासवर्ड, बुकमार्क, इतिहास आणि बरेच काही तुमच्या खात्यावर सिंक केले जाते</translation>
 <translation id="1137673463384776352">लिंक <ph name="APP" /> मध्ये उघडा</translation>
 <translation id="1140351953533677694">तुमच्या ब्लूटूथ आणि अनुक्रमिक डिव्हाइसवर अॅक्सेस करा</translation>
 <translation id="1140610710803014750">तुमच्या सर्व डिव्हाइसवर तुमचे बुकमार्क मिळवण्यासाठी, साइन इन करा आणि सिंक चालू करा.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366"><ph name="HOST" /> ला नेहमी सेन्सर अॅक्सेस करू द्या</translation>
 <translation id="1153356358378277386">जोडलेली डिव्हाइस</translation>
 <translation id="1156488781945104845">वर्तमान वेळ</translation>
-<translation id="1157102636231978136">तुमच्या Google खात्याशी सिंक केलेला, तुमचा ब्राउझ केलेला डेटा आणि अॅक्टिव्हिटी</translation>
 <translation id="1161575384898972166">कृपया क्लायंट प्रमाणपत्र एक्सपोर्ट करण्यासाठी <ph name="TOKEN_NAME" /> मध्ये साइन इन करा.</translation>
 <translation id="1161699061380012396">Chrome OS इनपुट पद्धत</translation>
 <translation id="1163931534039071049">फ्रेम स्त्रोत &amp;पहा</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">प्रिंटर सेट अप करण्यात एरर आली</translation>
 <translation id="1396963298126346194">तुम्ही प्रविष्‍ट केलेले वापरकर्तानाव आणि पासवर्ड जुळत नाही</translation>
 <translation id="1397500194120344683">कोणतीही पात्र डिव्हाइस नाहीत. <ph name="LINK_BEGIN" />अधिक जाणून घ्या.<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">सिंक आणि पर्सनलायझेयन</translation>
 <translation id="1398853756734560583">वाढवा</translation>
 <translation id="1399511500114202393">वापरकर्ता सर्टिफिकेट नाही</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (पर्यवेक्षी)</translation>
@@ -436,7 +432,6 @@
 <translation id="1627408615528139100">आधीच डाउनलोड केलेले आहे</translation>
 <translation id="1632803087685957583">आपल्या कीबोर्डचा पुनरावृत्ती दर, शब्दाचे पूर्वानुमान आणि बरेच काही समायोजित करण्याची तुम्हाला अनुमती देते</translation>
 <translation id="1635033183663317347">आपल्‍या पालकाद्वारे इंस्टॉल केले.</translation>
-<translation id="1635885551358739414">Chrome आणि भाषांतर, शोध आणि जाहिरातींसारख्या इतर Google सेवा पर्सनलाइझ करण्यासाठी Google तुम्ही भेट देत असलेल्या साइटवरील आशय आणि ब्राउझर अॅक्टिव्हिटी तसेच संवाद वापरू शकते. तुम्ही हे सेटिंग्जमध्ये कस्टमाइझ करू शकता.</translation>
 <translation id="1637224376458524414">आपल्या iPhone वर हा बुकमार्क मिळवा</translation>
 <translation id="1637765355341780467">तुमचे प्रोफाइल उघडताना काहीतरी चूक झाली. काही वैशिष्ट्ये अनुपलब्ध असू शकतात.</translation>
 <translation id="1639239467298939599">लोड करीत आहे</translation>
@@ -2340,7 +2335,6 @@
 <translation id="4585793705637313973">पृष्ठ संपादित करा</translation>
 <translation id="4590324241397107707">डेटाबेस संचयन</translation>
 <translation id="4593021220803146968"><ph name="URL" /> &amp;येथे जा</translation>
-<translation id="459505086032485258">Google सेवा सेटिंग्ज दाखवा</translation>
 <translation id="4595560905247879544">अॅप्स आणि विस्तार केवळ (<ph name="CUSTODIAN_NAME" />) व्यवस्थापकाद्वारे सुधारित केले जाऊ शकतात.</translation>
 <translation id="4596295440756783523">आपल्‍याकडे फाईलवर अशी प्रमाणपत्रे आहेत जी या सर्व्हरला ओळखतात</translation>
 <translation id="4598556348158889687">स्टोरेज व्यवस्थापन</translation>
@@ -3274,7 +3268,6 @@
 <translation id="5982621672636444458">क्रमवारी पर्याय</translation>
 <translation id="5984222099446776634">अलीकडे भेट दिलेले</translation>
 <translation id="5985458664595100876">चुकीचा URL फॉरमॅट. सपोर्ट केले जाणारे फॉरमॅट \\server\share आणि smb://server/share आहेत.</translation>
-<translation id="5990142338020175451">आणखी चांगल्या पेज सूचना, यासारख्या अधिक वैयक्तिक Google सेवा</translation>
 <translation id="5990386583461751448">भाषांतर केले</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{तुमचे वेब ब्राउझिंग सुरू राहावे याची खात्री करण्यासाठी, तुम्हाला अॅडमिनिस्ट्रेटरला हे अॅप्लिकेशन काढून टाकण्यास सांगा.}one{तुमचे वेब ब्राउझिंग सुरू राहावे याची खात्री करण्यासाठी, तुम्हाला अॅडमिनिस्ट्रेटरला हे अॅप्लिकेशन काढून टाकण्यास सांगा.}other{तुमचे वेब ब्राउझिंग सुरू राहावे याची खात्री करण्यासाठी, तुम्हाला अॅडमिनिस्ट्रेटरला हे अॅप्लिकेशन काढून टाकण्यास सांगा.}}</translation>
 <translation id="5997337190805127100">साइट अॅक्सेसबद्दल अधिक जाणून घ्या</translation>
@@ -3867,7 +3860,6 @@
 <translation id="6900284862687837908">पार्श्वभूमी अॅप: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">पूर्वावलोकनासाठी व्हॉइस</translation>
 <translation id="6902837902700739466">डोमेनशी डिव्हाइस जोडा</translation>
-<translation id="6903534926908201625">Google गोळा करत असलेली माहिती तुम्‍ही <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मध्ये जाऊन कधीही कस्‍टमाइझ करू शकता.</translation>
 <translation id="6904344821472985372">फाईल प्रवेश मागे घ्या</translation>
 <translation id="6904655473976120856">बाहेर पडण्यासाठी अ‍ॅप बटण दाबा</translation>
 <translation id="6910211073230771657">हटवला</translation>
@@ -4182,7 +4174,6 @@
 <translation id="7366415735885268578">एक साइट जोडा</translation>
 <translation id="7366909168761621528">ब्राउझिंग डेटा</translation>
 <translation id="7371006317849674875">सुरू होण्‍याची वेळ</translation>
-<translation id="737439367876257440">Google ला सिस्टम आणि वापर माहिती पाठवून Chrome आणि त्याच्या सुरक्षिततेत सुधारणा करा</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">माऊस कर्सर हलताना हायलाइट करा</translation>
 <translation id="7377169924702866686">Caps Lock सुरू आहे.</translation>

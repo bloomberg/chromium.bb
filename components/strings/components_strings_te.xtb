@@ -182,7 +182,6 @@
 <translation id="2108755909498034140">మీ కంప్యూటర్‌ను పునఃప్రారంభించండి</translation>
 <translation id="2113977810652731515">కార్డ్</translation>
 <translation id="2114841414352855701">ఇది <ph name="POLICY_NAME" /> ద్వారా భర్తీ చేయబడినందున విస్మరించబడింది.</translation>
-<translation id="2129308444951592399">నిబంధనలు &amp; షరతులు</translation>
 <translation id="213826338245044447">మొబైల్ బుక్‌మార్క్‌లు</translation>
 <translation id="214556005048008348">చెల్లింపును రద్దు చేయి</translation>
 <translation id="2147827593068025794">నేపథ్య సమకాలీకరణ</translation>
@@ -407,7 +406,6 @@
 <translation id="3583757800736429874">&amp;తరలించడాన్ని పునరావృతం చేయి</translation>
 <translation id="3586931643579894722">వివరాలను దాచిపెట్టు</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608659946467434602">కార్డ్‌లను సేవ్ చేస్తోంది...</translation>
 <translation id="3615877443314183785">చెల్లుబాటు అయ్యే గడువు ముగింపు తేదీని నమోదు చేయండి</translation>
 <translation id="36224234498066874">బ్రౌజింగ్ డేటాను తొలగించు...</translation>
 <translation id="362276910939193118">పూర్తి చరిత్రను చూపించు</translation>
@@ -728,7 +726,6 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" />కి గల మీ కనెక్షన్ వాడుకలో లేని సైఫర్ సూట్ ఉపయోగించి గుప్తీకరించబడింది.</translation>
 <translation id="5813119285467412249">&amp;జోడించడాన్ని పునరావృతం చేయి</translation>
 <translation id="5838278095973806738">మీరు ఈ సైట్‌లో ఎలాంటి గోప్యమైన సమాచారాన్ని నమోదు చేయకూడదు (ఉదాహరణకు, పాస్‌వర్డ్‌లు లేదా క్రెడిట్ కార్డ్‌లు), దాడికి పాల్పడేవారు ఆ సమాచారం దొంగిలించే అవకాశం ఉంటుంది.</translation>
-<translation id="5844286946362376359">నాకు నిబంధనలు &amp; షరతులు, గోప్యతా విధానం మరియు <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> ఉపసంహరణ హక్కు గురించి తెలుసు (చదవడం కోసం ఎంచుకోకుండా వదిలివేయండి).</translation>
 <translation id="5863847714970149516">మీరు చూడబోతున్న పేజీ మీకు డబ్బు ఛార్జ్ చేయడానికి ప్రయత్నించవచ్చు</translation>
 <translation id="5866257070973731571">ఫోన్ నంబర్‌ను జోడించండి</translation>
 <translation id="5869405914158311789">ఈ సైట్‌ను చేరుకోలేకపోయాము</translation>
@@ -853,7 +850,6 @@
 <translation id="6865412394715372076">ప్రస్తుతం ఈ కార్డ్‌ని ధృవీకరించడం సాధ్యపడదు</translation>
 <translation id="6868206169573555318">అప్‌డేట్ చేయడానికి తిరిగి తెరవండి</translation>
 <translation id="6874604403660855544">&amp;జోడించడాన్ని పునరావృతం చేయి</translation>
-<translation id="6885646002011712606">స్క్రీన్ దిగువ భాగానికి దగ్గర్లో స్వీయ పూరింపు అసిస్టెంట్ అందుబాటులో ఉంటుంది</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">విధానం స్థాయికి మద్దతు లేదు.</translation>
 <translation id="6895330447102777224">మీ కార్డ్ నిర్ధారించబడింది</translation>
@@ -999,7 +995,6 @@
 <translation id="7716424297397655342">కాష్ నుండి ఈ సైట్‌ను లోడ్ చేయలేకపోయాము</translation>
 <translation id="7723047071702270851">కార్డ్‌ను సవరించండి</translation>
 <translation id="774634243536837715">హానికరమైన కంటెంట్ బ్లాక్ చేయబడింది.</translation>
-<translation id="7747182086178764941">స్వీయ పూరింపు అసిస్టెంట్ మొదటి అమలు స్క్రీన్ చూపబడింది</translation>
 <translation id="7752995774971033316">నిర్వహించడం లేదు</translation>
 <translation id="7755287808199759310">మీ తల్లి/తండ్రి దీన్ని మీ కోసం అన్‌బ్లాక్ చేయగలరు</translation>
 <translation id="7758069387465995638">ఫైర్‌వాల్ లేదా యాంటీవైరస్ సాఫ్ట్‌వేర్ కనెక్షన్‌ను బ్లాక్ చేసి ఉండవచ్చు.</translation>
@@ -1118,7 +1113,6 @@
 <translation id="8503559462189395349">Chrome పాస్‌వర్డ్‌లు</translation>
 <translation id="8503813439785031346">యూజర్‌పేరు</translation>
 <translation id="8508648098325802031">శోధన చిహ్నం</translation>
-<translation id="8524783101666974011">కార్డ్‌లను మీ Google ఖాతాలో సేవ్ చేయండి</translation>
 <translation id="8543181531796978784">మీరు <ph name="BEGIN_ERROR_LINK" />గుర్తింపు సమస్యను నివేదించవచ్చు<ph name="END_ERROR_LINK" /> లేదా మీకు మీ భద్రతకు పొంచి ఉన్న ప్రమాదాలు అర్థం అయ్యి ఉంటే, <ph name="BEGIN_LINK" />ఈ అసురక్షిత సైట్‌ను సందర్శించండి<ph name="END_LINK" />.</translation>
 <translation id="8543556556237226809">ప్రశ్నలు ఏమైనా ఉన్నాయా? మీ ప్రొఫైల్‌ను పర్యవేక్షించే వ్యక్తిని సంప్రదించండి.</translation>
 <translation id="8553075262323480129">పేజీ భాష నిర్థారించలేకపోయినందున అనువాదం విఫలమైంది.</translation>

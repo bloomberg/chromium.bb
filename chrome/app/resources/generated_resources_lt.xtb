@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Įrankiai</translation>
 <translation id="1122242684574577509">Nepavyko autentifikuoti. Spustelėkite, kad apsilankytumėte naudojamo „Wi-Fi“ tinklo (<ph name="NETWORK_ID" />) prisijungimo puslapyje.</translation>
 <translation id="1122960773616686544">Žymės pavadinimas</translation>
-<translation id="1123187597739372905">Rodyti sinchronizavimo nustatymus</translation>
 <translation id="1124772482545689468">Naudotojas</translation>
 <translation id="1125550662859510761">Atrodo kaip <ph name="WIDTH" /> × <ph name="HEIGHT" /> (savasis)</translation>
 <translation id="1128109161498068552">Neleisti jokioms svetainėms naudoti sistemos išskirtinių pranešimų MIDI įrenginiams pasiekti</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Paieškos variklio redagavimas</translation>
 <translation id="1134009406053225289">Atidaryti nežinomame lange</translation>
-<translation id="1136155683023653803">Slaptažodžiai, žymės, istorija ir kiti duomenys sinchronizuojami su paskyra</translation>
 <translation id="1137673463384776352">Atidaryti nuorodą programoje „<ph name="APP" />“</translation>
 <translation id="1140351953533677694">Pasiekti „Bluetooth“ ir nuosekliuosius įtaisus</translation>
 <translation id="1140610710803014750">Jei norite gauti žymes visuose įrenginiuose, prisijunkite ir įjunkite sinchronizavimą.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Visada leisti <ph name="HOST" /> pasiekti jutiklius</translation>
 <translation id="1153356358378277386">Susieti įrenginiai</translation>
 <translation id="1156488781945104845">Dabartinis laikas</translation>
-<translation id="1157102636231978136">Su „Google“ paskyra sinchronizuojami jūsų naršymo duomenys ir veikla</translation>
 <translation id="1161575384898972166">Jei norite eksportuoti programos sertifikatą, prisijunkite prie „<ph name="TOKEN_NAME" />“.</translation>
 <translation id="1161699061380012396">„Chrome OS“ įvesties metodas</translation>
 <translation id="1163931534039071049">&amp;Rodyti rėmelio šaltinį</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Nustatant spausdintuvą įvyko klaida</translation>
 <translation id="1396963298126346194">Įvesti naudotojo vardas ir slaptažodis neatitinka</translation>
 <translation id="1397500194120344683">Nėra tinkamų įrenginių. <ph name="LINK_BEGIN" />Sužinokite daugiau<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Sinchronizavimas ir suasmeninimas</translation>
 <translation id="1398853756734560583">Išskleisti</translation>
 <translation id="1399511500114202393">Naudotojo sertifikato nereikia</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (prižiūrimas)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Jau atsisiųsta</translation>
 <translation id="1632803087685957583">Suteikiama galimybė koreguoti klaviatūros kartojimo dažnį, žodžių numatymą ir daugiau</translation>
 <translation id="1635033183663317347">Įdiegė jūsų prižiūrėtojas.</translation>
-<translation id="1635885551358739414">„Google“ gali naudoti jūsų lankomų svetainių turinį ir naršyklės veiklą bei sąveikas suasmenindama „Chrome“ ir kitas „Google“ paslaugas, pvz., Vertėją, Paiešką bei skelbimus. Tai bet kada galite tinkinti skiltyje „Nustatymai“.</translation>
 <translation id="1637224376458524414">Gaukite šią žymę „iPhone“ įrenginyje</translation>
 <translation id="1637765355341780467">Atidarant profilį įvyko klaida. Kai kurios funkcijos gali būti nepasiekiamos.</translation>
 <translation id="1639239467298939599">Įkeliama</translation>
@@ -2341,7 +2336,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4585793705637313973">Redaguoti puslapį</translation>
 <translation id="4590324241397107707">Duomenų atmintinė</translation>
 <translation id="4593021220803146968">&amp;Eiti į <ph name="URL" /></translation>
-<translation id="459505086032485258">Rodyti „Google“ paslaugų nustatymus</translation>
 <translation id="4595560905247879544">Programas ir plėtinius gali keisti tik valdytojas (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">Turite pateiktų sertifikatų, kurie identifikuoja šiuos serverius</translation>
 <translation id="4598556348158889687">Saugyklos tvarkymas</translation>
@@ -3275,7 +3269,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5982621672636444458">Rūšiuoti parinktis</translation>
 <translation id="5984222099446776634">Neseniai lankyta</translation>
 <translation id="5985458664595100876">Netinkamas URL formatas. Palaikomi formatai yra „\\server\share“ ir „smb://server/share“.</translation>
-<translation id="5990142338020175451">Daugiau suasmenintų „Google“ paslaugų, pvz., geresni puslapių pasiūlymai</translation>
 <translation id="5990386583461751448">Išversta</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Kad galėtumėte toliau naršyti žiniatinklį, paprašykite administratoriaus pašalinti šią programą.}one{Kad galėtumėte toliau naršyti žiniatinklį, paprašykite administratoriaus pašalinti šias programas.}few{Kad galėtumėte toliau naršyti žiniatinklį, paprašykite administratoriaus pašalinti šias programas.}many{Kad galėtumėte toliau naršyti žiniatinklį, paprašykite administratoriaus pašalinti šias programas.}other{Kad galėtumėte toliau naršyti žiniatinklį, paprašykite administratoriaus pašalinti šias programas.}}</translation>
 <translation id="5997337190805127100">Sužinokite daugiau apie prieigą prie svetainės</translation>
@@ -3868,7 +3861,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6900284862687837908">Foninė programa: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Balsas, kurio galite paklausyti</translation>
 <translation id="6902837902700739466">Prijunkite įrenginį prie domeno</translation>
-<translation id="6903534926908201625">Bet kuriuo metu galite tinkinti, kokią informaciją „Google“ renka, nuėję į skiltį <ph name="BEGIN_LINK" />„Nustatymai“<ph name="END_LINK" />.</translation>
 <translation id="6904344821472985372">Anuliuoti prieigą prie failo</translation>
 <translation id="6904655473976120856">Jei norite išeiti, paspauskite mygtuką „Programa“</translation>
 <translation id="6910211073230771657">Ištrintas</translation>
@@ -4183,7 +4175,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7366415735885268578">Svetainės pridėjimas</translation>
 <translation id="7366909168761621528">Naršymo duomenys</translation>
 <translation id="7371006317849674875">Pradžios laikas</translation>
-<translation id="737439367876257440">Patobulinkite „Chrome“ ir jos saugą siųsdami sistemos bei naudojimo informaciją „Google“</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Paryškinti pelės žymeklį, kai jis juda</translation>
 <translation id="7377169924702866686">Įjungtas didžiųjų raidžių klavišas.</translation>

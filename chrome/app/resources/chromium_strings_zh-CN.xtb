@@ -166,7 +166,6 @@
 <translation id="6373523479360886564">确定要卸载 Chromium 吗？</translation>
 <translation id="6400072781405947421">Chromium 可能无法正常运行，因为它不再支持 Mac OS X 10.9。</translation>
 <translation id="6403826409255603130">Chromium 是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Chromium 内置的防护恶意软件和网上诱骗的功能可让您更安全地浏览网页。</translation>
-<translation id="641451971369018375">与 Google 通信，以便改进浏览功能和 Chromium</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 将在 1 秒后重新启动}other{Chromium 将在 # 秒后重新启动}}</translation>
 <translation id="6475912303565314141">它还能够控制Chromium启动后显示的页面。</translation>
 <translation id="6485906693002546646">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chromium资料和数据。要更新您的同步偏好设置或在不登录Google帐号的情况下使用Chromium，请前往<ph name="SETTINGS_LINK" />部分。</translation>

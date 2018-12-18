@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Työkalut</translation>
 <translation id="1122242684574577509">Todennus epäonnistui. Siirry käyttämäsi Wi-Fi-verkon (<ph name="NETWORK_ID" />) kirjautumissivulle klikkaamalla.</translation>
 <translation id="1122960773616686544">Kirjanmerkin nimi</translation>
-<translation id="1123187597739372905">Näytä synkronointiasetukset</translation>
 <translation id="1124772482545689468">Käyttäjä</translation>
 <translation id="1125550662859510761">Näyttää olevan <ph name="WIDTH" /> x <ph name="HEIGHT" /> (natiivi)</translation>
 <translation id="1128109161498068552">Älä anna sivustojen käyttää MIDI-laitteita järjestelmän omien viestien avulla</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Muokkaa hakukonetta</translation>
 <translation id="1134009406053225289">Avaa incognito-ikkunassa</translation>
-<translation id="1136155683023653803">Salasanat, kirjanmerkit, historia ja muita tietoja synkronoidaan tilillesi.</translation>
 <translation id="1137673463384776352">Avaa linkki: <ph name="APP" /></translation>
 <translation id="1140351953533677694">Käyttää Bluetooth- ja sarjaporttilaitteitasi</translation>
 <translation id="1140610710803014750">Kirjaudu sisään ja ota synkronointi käyttöön, niin voit käyttää kirjanmerkkejä kaikilla laitteillasi.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366"><ph name="HOST" /> saa aina luvan käyttää tunnistimia</translation>
 <translation id="1153356358378277386">Laiteparit</translation>
 <translation id="1156488781945104845">Nykyinen aika</translation>
-<translation id="1157102636231978136">Google-tilillesi synkronoitu selausdata ja ‑toiminta</translation>
 <translation id="1161575384898972166">Kirjaudu sisään laitteeseen <ph name="TOKEN_NAME" /> ja tuo asiakkaan varmenne.</translation>
 <translation id="1161699061380012396">Chrome-käyttöjärjestelmän syöttötapa</translation>
 <translation id="1163931534039071049">&amp;Näytä kehyksen lähdekoodi</translation>
@@ -280,7 +277,6 @@
 <translation id="1396139853388185343">Virhe tulostimen määrityksessä</translation>
 <translation id="1396963298126346194">Antamasi käyttäjänimi ja salasana eivät vastaa toisiaan.</translation>
 <translation id="1397500194120344683">Ei kelvollisia laitteita. <ph name="LINK_BEGIN" />Lisätietoja<ph name="LINK_END" /></translation>
-<translation id="1397854323885047133">Synkronointi ja räätälöinti</translation>
 <translation id="1398853756734560583">Suurenna</translation>
 <translation id="1399511500114202393">Ei käyttäjävarmennetta</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME" /> (valvottu käyttäjä)</translation>
@@ -437,7 +433,6 @@
 <translation id="1627408615528139100">Ladattu aiemmin</translation>
 <translation id="1632803087685957583">Voit muuttaa näppäinten toistoprosenttia, sanojen ennakointia ja muuta.</translation>
 <translation id="1635033183663317347">Valvojasi asentama</translation>
-<translation id="1635885551358739414">Google voi personoida Chromea ja muita palveluitaan (esim. Kääntäjää, Hakua ja mainoksia) avaamiesi sivustojen sisällön sekä selaus- ja muun toimintasi perusteella. Voit muuttaa tätä asetuksista.</translation>
 <translation id="1637224376458524414">Käytä tätä kirjanmerkkiä iPhonessa</translation>
 <translation id="1637765355341780467">Profiiliasi avattaessa tapahtui virhe. Jotkin ominaisuudet eivät ehkä ole käytettävissä.</translation>
 <translation id="1639239467298939599">Ladataan</translation>
@@ -2339,7 +2334,6 @@
 <translation id="4585793705637313973">Muokkaa sivua</translation>
 <translation id="4590324241397107707">Tietokannan tallennustila</translation>
 <translation id="4593021220803146968">&amp;Siirry osoitteeseen <ph name="URL" /></translation>
-<translation id="459505086032485258">Näytä Google-palveluiden asetukset</translation>
 <translation id="4595560905247879544">Vain ylläpitäjä (<ph name="CUSTODIAN_NAME" />) voi muokata sovelluksia ja laajennuksia.</translation>
 <translation id="4596295440756783523">Olet tallentanut seuraavat palvelimet tunnistavat varmenteet</translation>
 <translation id="4598556348158889687">Tallennustilan hallinta</translation>
@@ -3272,7 +3266,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="5982621672636444458">Lajitteluasetukset</translation>
 <translation id="5984222099446776634">Viimeksi vieraillut</translation>
 <translation id="5985458664595100876">Virheellinen URL-osoitteen muoto. Tuettuja muotoja ovat \\server\share ja smb://server/share.</translation>
-<translation id="5990142338020175451">Personoidumpia Google-palveluja, kuten parempia sivuehdotuksia</translation>
 <translation id="5990386583461751448">Käännetty</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Pyydä järjestelmänvalvojaasi poistamaan tämä sovellus, jotta voit varmasti jatkaa verkon selaamista.}other{Pyydä järjestelmänvalvojaasi poistamaan nämä sovellukset, jotta voit varmasti jatkaa verkon selaamista.}}</translation>
 <translation id="5997337190805127100">Lisätietoja sivustojen käyttöoikeuksista</translation>
@@ -3867,7 +3860,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6900284862687837908">Taustasovellus: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6902066522699286937">Esikatselun ääni</translation>
 <translation id="6902837902700739466">Liitä laite verkkotunnukseen</translation>
-<translation id="6903534926908201625">Voit koska tahansa muokata <ph name="BEGIN_LINK" />asetuksista<ph name="END_LINK" />, mitä tietoja Google kerää.</translation>
 <translation id="6904344821472985372">Peruuta pääsy tiedostoon</translation>
 <translation id="6904655473976120856">Sulje painamalla Sovellukset-painiketta.</translation>
 <translation id="6910211073230771657">Poistettu</translation>
@@ -4182,7 +4174,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7366415735885268578">Lisää sivusto</translation>
 <translation id="7366909168761621528">Selailutiedot</translation>
 <translation id="7371006317849674875">Aloitusaika</translation>
-<translation id="737439367876257440">Paranna Chromea ja sen turvallisuutta lähettämällä järjestelmä- ja käyttötietoja Googlelle</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Korosta hiiren osoitinta, kun se liikkuu</translation>
 <translation id="7377169924702866686">Caps Lock on päällä.</translation>
