@@ -336,12 +336,12 @@ class MapFileParserLld(object):
     # code symbols). To provided better size estimates in this case, the "span"
     # of a Level 3 symbol is computed as:
     #  (A) The |address| difference compared to the next Level 3 symbol.
-    #  (B) If the Level 3 symbol is the last one among Level 3 lines nested
-    #      in a Level 2 line: The difference between the Level 3 symbol's
-    #      |address| with the containing Level 2 line's end address.
+    #  (B) If the Level 3 symbol is the last among Level 3 lines nested under a
+    #      Level 2 line: The difference between the Level 3 symbol's |address|
+    #      and the containing Level 2 line's end address.
     # To handle (A), |lines| is visited using a one-step lookahead, using
-    # |sentinel| to handle the last line. To handle (B), |level2_end_address|
-    # is updated whenever a Level 2 line is processed.
+    # |sentinel| to handle the last line. To handle (B), |level2_end_address| is
+    # computed for each Level 2 line.
     sentinel = '0 0 0 0 THE_END'
     assert pattern.match(sentinel)
     level2_end_address = None
@@ -432,10 +432,23 @@ class MapFileParserLld(object):
     cur_section = None
     cur_section_is_useful = None
     promoted_name_count = 0
+    # A Level 2 line does not supply |full_name| data (unless '<internal>').
+    # This would be taken from a Level 3 line. |is_partial| indicates that an
+    # eligible Level 3 line should be used to update |syms[-1].full_name|
+    # instead of creating a new symbol.
+    is_partial = False
+    # Assembly code can create consecutive Level 3 lines with |size == 0|. These
+    # lines can represent
+    #  (1) assembly functions (should form symbol), or
+    #  (2) assembly labels (should NOT form symbol).
+    # It seems (2) correlates with the presence of a leading Level 3 line with
+    # |size > 0|. This gives rise to the following strategy: Each symbol S from
+    # a Level 3 line suppresses Level 3 lines with |address| less than
+    # |next_usable_address := S.address + S.size|.
+    next_usable_address = 0
 
     tokenizer = self.Tokenize(lines)
-    # TODO(huangs): Use |span| from |tokenizer| to fix http://crbug.com/892648.
-    for (line, address, size, level, _, tok) in tokenizer:
+    for (line, address, size, level, span, tok) in tokenizer:
       # Level 1 data match the "Out" column. They specify sections or
       # PROVIDE_HIDDEN lines.
       if level == 1:
@@ -454,11 +467,12 @@ class MapFileParserLld(object):
         # Level 2 data match the "In" column. They specify object paths and
         # section names within objects, or '<internal>:...'.
         if level == 2:
-          # Create symbol, which can be modified as sym[-1] by Level 3 parsing.
+          # Create a symbol here since there may be no ensuing Level 3 lines.
+          # But if there are, then the symbol can be modified later as sym[-1].
           syms.append(models.Symbol(cur_section, size, address=address))
-          # E.g. path.o:(.text._name)
+          # E.g., 'path.o:(.text._name)' => ['path.o', '(.text._name)'].
           cur_obj, paren_value = tok.split(':')
-          # '(.text._name)' -> '_name'.
+          # E.g., '(.text._name)' -> '_name'.
           mangled_name = paren_value[mangled_start_idx:-1]
           # As of 2017/11 LLD does not distinguish merged strings from other
           # merged data. Feature request is filed under:
@@ -472,10 +486,15 @@ class MapFileParserLld(object):
             else:
               # e.g. <internal>:(.text.thunk)
               syms[-1].full_name = '** ' + mangled_name
+            cur_obj = None
           elif cur_obj == 'lto.tmp' or 'thinlto-cache' in cur_obj:
-            pass
-          else:
+            cur_obj = None
+          if cur_obj is not None:
             syms[-1].object_path = cur_obj
+
+          is_partial = not bool(syms[-1].full_name)
+          # Level 3 |address| is nested under Level 2, don't add |size|.
+          next_usable_address = address
 
         # Level 3 data match the "Symbol" column. They specify symbol names or
         # special names such as '.L_MergeGlobals'. Annotations such as '$d',
@@ -486,9 +505,17 @@ class MapFileParserLld(object):
           # happen for ARM (32-bit) builds.
           if tok.startswith('.L_MergedGlobals'):
             continue
-          # Multiple Level 3 entries may exist. Take the first with |size != 0|.
-          # TODO(huangs): Process all entries to fix http://crbug.com/892648.
-          if size and not syms[-1].full_name:
+
+          # Use |span| to decide whether to use a Level 3 line for Symbols. This
+          # is useful for two purposes:
+          # * This is a better indicator than |size|, which can be 0 for
+          #   assembly functions.
+          # * If multiple Level 3 lines have the same starting address, this
+          #   cause all but the last line to have |span > 0|. This dedups lines
+          #   with identical symbol names (why do they exist?). Note that this
+          #   also skips legitimate aliases, but that's desired because nm.py
+          #   (downstream) assumes no aliases already exist.
+          if span > 0:
             # Outlined functions have names like OUTLINED_FUNCTION_0, which can
             # appear 1000+ time, and can cause false aliasing. We treat these as
             # special cases by designating them as a placeholder symbols and
@@ -499,7 +526,33 @@ class MapFileParserLld(object):
             if len(tok) != len(stripped_tok):
               promoted_name_count += 1
               tok = stripped_tok
-            syms[-1].full_name = tok
+
+            # Handle special case where a partial symbol consumes bytes before
+            # the first Level 3 symbol.
+            if is_partial and syms[-1].address < address:
+              # Truncate the partial symbol and leave it without |full_name|.
+              # The data from the current line will form a new symbol.
+              syms[-1].size = address - syms[-1].address
+              next_usable_address = address
+              is_partial = False
+
+            if is_partial:
+              syms[-1].full_name = tok
+              syms[-1].size = size if size > 0 else min(syms[-1].size, span)
+              next_usable_address = address + syms[-1].size
+              is_partial = False
+            elif address >= next_usable_address:
+              # Prefer |size|, and only fall back to |span| if |size == 0|.
+              size_to_use = size if size > 0 else span
+              syms.append(
+                  models.Symbol(
+                      cur_section, size_to_use, address=address, full_name=tok))
+              # Suppress symbols with overlapping |address|. This eliminates
+              # labels from assembly sources.
+              next_usable_address = address + size_to_use
+              if cur_obj is not None:
+                syms[-1].object_path = cur_obj
+
         else:
           logging.error('Problem line: %r', line)
 
