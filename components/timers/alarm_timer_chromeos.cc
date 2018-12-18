@@ -21,7 +21,8 @@
 namespace timers {
 
 SimpleAlarmTimer::SimpleAlarmTimer()
-    : alarm_fd_(timerfd_create(CLOCK_REALTIME_ALARM, 0)), weak_factory_(this) {}
+    : alarm_fd_(timerfd_create(CLOCK_REALTIME_ALARM, TFD_CLOEXEC)),
+      weak_factory_(this) {}
 
 SimpleAlarmTimer::~SimpleAlarmTimer() {
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
