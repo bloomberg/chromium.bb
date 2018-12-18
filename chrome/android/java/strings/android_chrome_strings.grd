@@ -3563,7 +3563,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         Manage data
       </message>
       <message name="IDS_TWA_CLEAR_DATA_DIALOG_TITLE" desc="Title of the clear data dialog showing after user uninstalls or clears data of an app hosting a Trusted Web Activity" translateable="false">
-        This app also has data in Chrome
+        <ph name="APP_NAME">%1$s<ex>YouTube</ex></ph> also has data in Chrome
       </message>
       <message name="IDS_TWA_CLEAR_DATA_DIALOG_MESSAGE" desc="Message of the clear data dialog" translateable="false">
         You can clear the data in Chrome Settings
