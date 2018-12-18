@@ -1230,9 +1230,14 @@ if (is_win) {
     if (is_chrome_branded) {
       framework_contents += [
         "Default Apps",
-        "Frameworks",  # For KeystoneRegistration.framework.
       ]
+      if (enable_keystone_registration_framework) {
+        framework_contents += [
+          "Frameworks",  # For KeystoneRegistration.framework.
+        ]
+      }
     }
+
     if (enable_nacl) {
       framework_contents += [ "Internet Plug-Ins" ]
     }
