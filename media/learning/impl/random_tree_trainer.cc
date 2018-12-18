@@ -35,9 +35,7 @@ RandomTreeTrainer::Split::~Split() = default;
 RandomTreeTrainer::Split& RandomTreeTrainer::Split::operator=(Split&& rhs) =
     default;
 
-RandomTreeTrainer::Split::BranchInfo::BranchInfo(
-    scoped_refptr<TrainingDataStorage> storage)
-    : training_data(std::move(storage)) {}
+RandomTreeTrainer::Split::BranchInfo::BranchInfo() = default;
 
 RandomTreeTrainer::Split::BranchInfo::BranchInfo(BranchInfo&& rhs) = default;
 
@@ -121,9 +119,10 @@ struct InteriorNode : public Model {
 };
 
 struct LeafNode : public Model {
-  LeafNode(const TrainingData& training_data) {
-    for (WeightedExample example : training_data)
-      distribution_ += example;
+  LeafNode(const TrainingData& training_data,
+           const std::vector<size_t> training_idx) {
+    for (size_t idx : training_idx)
+      distribution_ += training_data[idx];
   }
 
   // TreeNode
@@ -143,25 +142,38 @@ RandomTreeTrainer::~RandomTreeTrainer() = default;
 std::unique_ptr<Model> RandomTreeTrainer::Train(
     const LearningTask& task,
     const TrainingData& training_data) {
-  if (training_data.empty())
-    return std::make_unique<LeafNode>(training_data);
+  // Start with all the training data.
+  std::vector<size_t> training_idx;
+  training_idx.reserve(training_data.size());
+  for (size_t idx = 0; idx < training_data.size(); idx++)
+    training_idx.push_back(idx);
 
-  return Build(task, training_data, FeatureSet());
+  return Train(task, training_data, training_idx);
+}
+
+std::unique_ptr<Model> RandomTreeTrainer::Train(
+    const LearningTask& task,
+    const TrainingData& training_data,
+    const std::vector<size_t>& training_idx) {
+  if (training_data.empty())
+    return std::make_unique<LeafNode>(training_data, std::vector<size_t>());
+
+  return Build(task, training_data, training_idx, FeatureSet());
 }
 
 std::unique_ptr<Model> RandomTreeTrainer::Build(
     const LearningTask& task,
     const TrainingData& training_data,
+    const std::vector<size_t>& training_idx,
     const FeatureSet& used_set) {
-  DCHECK_GT(training_data.total_weight(), 0u);
+  DCHECK_GT(training_idx.size(), 0u);
 
   // TODO(liberato): Does it help if we refuse to split without an info gain?
   Split best_potential_split;
 
   // Select the feature subset to consider at this leaf.
   FeatureSet feature_candidates;
-  for (size_t i = 0; i < training_data.begin()->example()->features.size();
-       i++) {
+  for (size_t i = 0; i < training_data[0].features.size(); i++) {
     if (used_set.find(i) != used_set.end())
       continue;
     feature_candidates.insert(i);
@@ -180,7 +192,8 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
 
   // Find the best split among the candidates that we have.
   for (int i : feature_candidates) {
-    Split potential_split = ConstructSplit(task, training_data, i);
+    Split potential_split =
+        ConstructSplit(task, training_data, training_idx, i);
     if (potential_split.nats_remaining < best_potential_split.nats_remaining) {
       best_potential_split = std::move(potential_split);
     }
@@ -191,7 +204,7 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
   // but all had the same value).  Either way, we should end up with a leaf.
   if (best_potential_split.branch_infos.size() < 2) {
     // Stop when there is no more tree.
-    return std::make_unique<LeafNode>(training_data);
+    return std::make_unique<LeafNode>(training_data, training_idx);
   }
 
   // Build an interior node
@@ -210,7 +223,8 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
 
   for (auto& branch_iter : best_potential_split.branch_infos) {
     node->AddChild(branch_iter.first,
-                   Build(task, branch_iter.second.training_data, new_used_set));
+                   Build(task, training_data, branch_iter.second.training_idx,
+                         new_used_set));
   }
 
   return node;
@@ -219,29 +233,34 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
 RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
     const LearningTask& task,
     const TrainingData& training_data,
-    int index) {
+    const std::vector<size_t>& training_idx,
+    int split_index) {
   // We should not be given a training set of size 0, since there's no need to
   // check an empty split.
-  DCHECK_GT(training_data.total_weight(), 0u);
+  DCHECK_GT(training_idx.size(), 0u);
 
-  Split split(index);
+  Split split(split_index);
   base::Optional<FeatureValue> split_point;
 
   // For a numeric split, find the split point.  Otherwise, we'll split on every
   // nominal value that this feature has in |training_data|.
-  if (task.feature_descriptions[index].ordering ==
+  if (task.feature_descriptions[split_index].ordering ==
       LearningTask::Ordering::kNumeric) {
-    split_point = FindNumericSplitPoint(split.split_index, training_data);
+    split_point =
+        FindNumericSplitPoint(split.split_index, training_data, training_idx);
     split.split_point = *split_point;
   }
 
   // Find the split's feature values and construct the training set for each.
   // I think we want to iterate on the underlying vector, and look up the int in
   // the training data directly.
-  for (WeightedExample weighted_example : training_data) {
-    const TrainingExample* example = weighted_example.example();
+  double total_weight = 0.;
+  for (size_t idx : training_idx) {
+    const TrainingExample& example = training_data[idx];
+    total_weight += example.weight;
+
     // Get the value of the |index|-th feature for |example|.
-    FeatureValue v_i = example->features[split.split_index];
+    FeatureValue v_i = example.features[split.split_index];
 
     // Figure out what value this example would use for splitting.  For nominal,
     // it's just |v_i|.  For numeric, it's whether |v_i| is <= the split point
@@ -254,13 +273,13 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
 
     // Add |v_i| to the right training set.  Remember that emplace will do
     // nothing if the key already exists.
-    auto result = split.branch_infos.emplace(
-        split_feature, Split::BranchInfo(training_data.storage()));
+    auto result =
+        split.branch_infos.emplace(split_feature, Split::BranchInfo());
     auto iter = result.first;
 
     Split::BranchInfo& branch_info = iter->second;
-    branch_info.training_data.push_back(example);
-    branch_info.target_distribution += weighted_example;
+    branch_info.training_idx.push_back(idx);
+    branch_info.target_distribution += example;
   }
 
   // Compute the nats given that we're at this node.
@@ -270,8 +289,7 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
 
     const double total_counts = branch_info.target_distribution.total_counts();
     // |p_branch| is the probability of following this branch.
-    const double p_branch =
-        ((double)total_counts) / training_data.total_weight();
+    const double p_branch = total_counts / total_weight;
     for (auto& iter : branch_info.target_distribution) {
       double p = iter.second / total_counts;
       // p*log(p) is the expected nats if the answer is |iter|.  We multiply
@@ -284,23 +302,24 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
 }
 
 FeatureValue RandomTreeTrainer::FindNumericSplitPoint(
-    size_t index,
-    const TrainingData& training_data) {
+    size_t split_index,
+    const TrainingData& training_data,
+    const std::vector<size_t>& training_idx) {
   // We should not be given a training set of size 0, since there's no need to
   // check an empty split.
-  DCHECK_GT(training_data.total_weight(), 0u);
+  DCHECK_GT(training_idx.size(), 0u);
 
   // We should either (a) choose the single best split point given all our
   // training data (i.e., choosing between the splits that are equally between
   // adjacent feature values), or (b) choose the best split point by drawing
   // uniformly over the range that contains our feature values.  (a) is
   // appropriate with RandomForest, while (b) is appropriate with ExtraTrees.
-  FeatureValue v_min = (*training_data.begin()).example()->features[index];
-  FeatureValue v_max = (*training_data.begin()).example()->features[index];
-  for (WeightedExample weighted_example : training_data) {
-    const TrainingExample* example = weighted_example.example();
-    // Get the value of the |index|-th feature for
-    FeatureValue v_i = example->features[index];
+  FeatureValue v_min = training_data[training_idx[0]].features[split_index];
+  FeatureValue v_max = training_data[training_idx[0]].features[split_index];
+  for (size_t idx : training_idx) {
+    const TrainingExample& example = training_data[idx];
+    // Get the value of the |split_index|-th feature for
+    FeatureValue v_i = example.features[split_index];
     if (v_i < v_min)
       v_min = v_i;
 

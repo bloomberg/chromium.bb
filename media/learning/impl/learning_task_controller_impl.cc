@@ -13,7 +13,7 @@ namespace media {
 namespace learning {
 
 LearningTaskControllerImpl::LearningTaskControllerImpl(const LearningTask& task)
-    : task_(task), storage_(base::MakeRefCounted<TrainingDataStorage>()) {
+    : task_(task), training_data_(std::make_unique<TrainingData>()) {
   switch (task_.model) {
     case LearningTask::Model::kRandomForest:
       // TODO(liberato): forest!
@@ -30,7 +30,7 @@ LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
 
 void LearningTaskControllerImpl::AddExample(const TrainingExample& example) {
   // TODO(liberato): do we ever trim older examples?
-  storage_->push_back(example);
+  training_data_->push_back(example);
 
   // Once we have a model, see if we'd get |example| correct.
   if (model_) {
@@ -45,13 +45,18 @@ void LearningTaskControllerImpl::AddExample(const TrainingExample& example) {
   }
 
   // Train every time we get a multiple of |data_set_size|.
-  if ((storage_->total_weight() % task_.min_data_set_size) != 0)
+  // TODO(liberato): weight might go up by more than one.
+  if ((training_data_->total_weight() % task_.min_data_set_size) != 0)
     return;
 
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
   TrainedModelCB model_cb =
       base::BindOnce(&LearningTaskControllerImpl::OnModelTrained, AsWeakPtr());
-  training_cb_.Run(training_data, std::move(model_cb));
+  // TODO(liberato): Post to a background task runner.
+  training_cb_.Run(*training_data_.get(), std::move(model_cb));
+
+  // TODO(liberato): replace |training_data_| and merge them once the model is
+  // trained.  Else, new examples will change the data during training.  For
+  // now, training is synchronous, so it's okay as it is.
 }
 
 void LearningTaskControllerImpl::OnModelTrained(std::unique_ptr<Model> model) {

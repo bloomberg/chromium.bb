@@ -46,7 +46,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   LearningTask task_;
 
   // Current batch of examples.
-  scoped_refptr<TrainingDataStorage> storage_;
+  std::unique_ptr<TrainingData> training_data_;
 
   // Most recently trained model, or null.
   std::unique_ptr<Model> model_;

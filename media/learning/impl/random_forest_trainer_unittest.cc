@@ -16,7 +16,6 @@ class RandomForestTest : public testing::TestWithParam<LearningTask::Ordering> {
  public:
   RandomForestTest()
       : rng_(0),
-        storage_(base::MakeRefCounted<TrainingDataStorage>()),
         ordering_(GetParam()) {
     trainer_.SetRandomNumberGeneratorForTesting(&rng_);
   }
@@ -32,14 +31,13 @@ class RandomForestTest : public testing::TestWithParam<LearningTask::Ordering> {
 
   TestRandomNumberGenerator rng_;
   RandomForestTrainer trainer_;
-  scoped_refptr<TrainingDataStorage> storage_;
   LearningTask task_;
   // Feature ordering.
   LearningTask::Ordering ordering_;
 };
 
 TEST_P(RandomForestTest, EmptyTrainingDataWorks) {
-  TrainingData empty(storage_);
+  TrainingData empty;
   auto result = trainer_.Train(task_, empty);
   EXPECT_NE(result->model.get(), nullptr);
   EXPECT_EQ(result->model->PredictDistribution(FeatureVector()),
@@ -53,10 +51,10 @@ TEST_P(RandomForestTest, UniformTrainingDataWorks) {
   const int n_examples = 10;
 
   // We need distinct pointers.
+  TrainingData training_data;
   for (int i = 0; i < n_examples; i++)
-    storage_->push_back(example);
+    training_data.push_back(example);
 
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
   auto result = trainer_.Train(task_, training_data);
 
   // The tree should produce a distribution for one value (our target), which
@@ -73,9 +71,9 @@ TEST_P(RandomForestTest, SimpleSeparableTrainingData) {
   // and the remaining trees will get it wrong.
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
-  storage_->push_back(example_1);
-  storage_->push_back(example_2);
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
+  TrainingData training_data;
+  training_data.push_back(example_1);
+  training_data.push_back(example_2);
   auto result = trainer_.Train(task_, training_data);
 
   // Each value should have a distribution with the correct target value.
@@ -96,6 +94,7 @@ TEST_P(RandomForestTest, ComplexSeparableTrainingData) {
   SetupFeatures(4);
   // Build a four-feature training set that's completely separable, but one
   // needs all four features to do it.
+  TrainingData training_data;
   for (int f1 = 0; f1 < 2; f1++) {
     for (int f2 = 0; f2 < 2; f2++) {
       for (int f3 = 0; f3 < 2; f3++) {
@@ -106,27 +105,23 @@ TEST_P(RandomForestTest, ComplexSeparableTrainingData) {
               TargetValue(f1 * 1 + f2 * 2 + f3 * 4 + f4 * 8));
           // Add two distinct copies of each example.
           // i guess we don't need to, but oob estimation won't work.
-          storage_->push_back(example);
-          storage_->push_back(example);
+          training_data.push_back(example);
+          training_data.push_back(example);
         }
       }
     }
   }
 
-  // Add all examples.
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
-
   auto result = trainer_.Train(task_, training_data);
   EXPECT_NE(result->model.get(), nullptr);
 
   // Each example should have a distribution in which it is the max.
-  for (WeightedExample weighted_example : training_data) {
-    const TrainingExample* example = weighted_example.example();
+  for (const TrainingExample& example : training_data) {
     TargetDistribution distribution =
-        result->model->PredictDistribution(example->features);
+        result->model->PredictDistribution(example.features);
     TargetValue max_value;
     EXPECT_TRUE(distribution.FindSingularMax(&max_value));
-    EXPECT_EQ(max_value, example->target_value);
+    EXPECT_EQ(max_value, example.target_value);
   }
 }
 
@@ -134,9 +129,9 @@ TEST_P(RandomForestTest, UnseparableTrainingData) {
   SetupFeatures(1);
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
-  storage_->push_back(example_1);
-  storage_->push_back(example_2);
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
+  TrainingData training_data;
+  training_data.push_back(example_1);
+  training_data.push_back(example_2);
   auto result = trainer_.Train(task_, training_data);
   EXPECT_NE(result->model.get(), nullptr);
 
@@ -165,14 +160,13 @@ TEST_P(RandomForestTest, FisherIrisDataset) {
 
   // Verify predictions on the training set, just for sanity.
   size_t num_correct = 0;
-  for (WeightedExample weighted_example : training_data) {
-    const TrainingExample* example = weighted_example.example();
+  for (const TrainingExample& example : training_data) {
     TargetDistribution distribution =
-        result->model->PredictDistribution(example->features);
+        result->model->PredictDistribution(example.features);
     TargetValue predicted_value;
     if (distribution.FindSingularMax(&predicted_value) &&
-        predicted_value == example->target_value) {
-      num_correct += weighted_example.weight();
+        predicted_value == example.target_value) {
+      num_correct += example.weight;
     }
   }
 
@@ -187,19 +181,16 @@ TEST_P(RandomForestTest, FisherIrisDataset) {
 TEST_P(RandomForestTest, WeightedTrainingSetIsUnsupported) {
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
-  storage_->push_back(example_1);
-  storage_->push_back(example_2);
-
   const size_t weight = 100;
+  TrainingData training_data;
+  example_1.weight = weight;
+  training_data.push_back(example_1);
+  example_2.weight = weight;
+  training_data.push_back(example_2);
 
   // Create a weighed set with |weight| for each example's weight.
-  TrainingData weighted_training_data(storage_);
-  weighted_training_data.push_back(
-      WeightedExample((*storage_)[0].example(), weight));
-  weighted_training_data.push_back(
-      WeightedExample((*storage_)[1].example(), weight));
-  EXPECT_FALSE(weighted_training_data.is_unweighted());
-  auto weighted_result = trainer_.Train(task_, weighted_training_data);
+  EXPECT_FALSE(training_data.is_unweighted());
+  auto weighted_result = trainer_.Train(task_, training_data);
   EXPECT_EQ(weighted_result->model.get(), nullptr);
 }
 

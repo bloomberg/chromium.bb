@@ -150,8 +150,8 @@ TEST_F(TargetDistributionTest, UnequalDistributionsCompareAsNotEqual) {
 
 TEST_F(TargetDistributionTest, WeightedTrainingExamplesCountCorrectly) {
   TrainingExample example = {{}, value_1};
-  WeightedExample weighted_example(&example, counts_1);
-  distribution_ += weighted_example;
+  example.weight = counts_1;
+  distribution_ += example;
 
   TargetDistribution distribution_2;
   for (size_t i = 0; i < counts_1; i++)

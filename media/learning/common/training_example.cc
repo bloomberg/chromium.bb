@@ -13,12 +13,9 @@ TrainingExample::TrainingExample(std::initializer_list<FeatureValue> init_list,
                                  TargetValue target)
     : features(init_list), target_value(target) {}
 
-TrainingExample::TrainingExample(const TrainingExample& rhs)
-    : features(rhs.features), target_value(rhs.target_value) {}
+TrainingExample::TrainingExample(const TrainingExample& rhs) = default;
 
-TrainingExample::TrainingExample(TrainingExample&& rhs) noexcept
-    : features(std::move(rhs.features)),
-      target_value(std::move(rhs.target_value)) {}
+TrainingExample::TrainingExample(TrainingExample&& rhs) noexcept = default;
 
 TrainingExample::~TrainingExample() = default;
 
@@ -55,28 +52,7 @@ TrainingExample& TrainingExample::operator=(const TrainingExample& rhs) =
 
 TrainingExample& TrainingExample::operator=(TrainingExample&& rhs) = default;
 
-TrainingDataStorage::TrainingDataStorage() = default;
-
-TrainingDataStorage::~TrainingDataStorage() = default;
-
-WeightedExample::WeightedExample(const TrainingExample* example,
-                                 weight_t weight)
-    : example_(example), weight_(weight) {}
-
-WeightedExample::~WeightedExample() = default;
-
-TrainingData::TrainingData(scoped_refptr<TrainingDataStorage> backing_storage)
-    : backing_storage_(std::move(backing_storage)) {}
-
-TrainingData::TrainingData(scoped_refptr<TrainingDataStorage> backing_storage,
-                           TrainingDataStorage::const_iterator begin,
-                           TrainingDataStorage::const_iterator end)
-    : backing_storage_(std::move(backing_storage)) {
-  for (; begin != end; begin++) {
-    examples_.push_back(*begin);
-    total_weight_ += begin->weight();
-  }
-}
+TrainingData::TrainingData() = default;
 
 TrainingData::TrainingData(const TrainingData& rhs) = default;
 

@@ -183,16 +183,15 @@ std::vector<IrisExample> iris_examples({
 namespace media {
 namespace learning {
 
-FisherIrisDataset::FisherIrisDataset()
-    : storage_(base::MakeRefCounted<TrainingDataStorage>()) {
+FisherIrisDataset::FisherIrisDataset() {
   for (auto& example : iris_examples)
-    storage_->push_back(example);
+    training_data_.push_back(example);
 }
 
 FisherIrisDataset::~FisherIrisDataset() = default;
 
-TrainingData FisherIrisDataset::GetTrainingData() const {
-  return TrainingData(storage_, storage_->begin(), storage_->end());
+const TrainingData& FisherIrisDataset::GetTrainingData() const {
+  return training_data_;
 }
 
 }  // namespace learning
