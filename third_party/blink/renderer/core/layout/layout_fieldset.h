@@ -39,6 +39,8 @@ class LayoutFieldset final : public LayoutBlockFlow {
 
   bool CreatesNewFormattingContext() const final { return true; }
 
+  bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override;
+
  private:
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectFieldset || LayoutBlockFlow::IsOfType(type);

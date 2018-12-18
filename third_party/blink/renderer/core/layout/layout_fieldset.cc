@@ -173,4 +173,14 @@ void LayoutFieldset::PaintMask(const PaintInfo& paint_info,
   FieldsetPainter(*this).PaintMask(paint_info, paint_offset);
 }
 
+bool LayoutFieldset::BackgroundIsKnownToBeOpaqueInRect(
+    const LayoutRect& local_rect) const {
+  // If the field set has a legend, then it probably does not completely fill
+  // its background.
+  if (FindInFlowLegend())
+    return false;
+
+  return LayoutBlockFlow::BackgroundIsKnownToBeOpaqueInRect(local_rect);
+}
+
 }  // namespace blink
