@@ -2082,6 +2082,13 @@ void AutofillManager::GetAvailableSuggestions(
       // Don't send suggestions or track forms that should not be parsed.
       context->form_structure->ShouldBeParsed();
 
+  // Early exit here in the case where we want to disable company names.
+  if (got_autofillable_form &&
+      context->focused_field->Type().GetStorableType() == COMPANY_NAME &&
+      !base::FeatureList::IsEnabled(features::kAutofillEnableCompanyName)) {
+    got_autofillable_form = false;
+  }
+
   // Log interactions of forms that are autofillable.
   if (got_autofillable_form) {
     if (context->focused_field->Type().group() == CREDIT_CARD) {
