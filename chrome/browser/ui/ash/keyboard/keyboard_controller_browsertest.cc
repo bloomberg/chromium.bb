@@ -175,32 +175,36 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
   EXPECT_FALSE(ChromeKeyboardControllerClient::Get()->is_keyboard_visible());
 }
 
+// This test requires using the Ash keyboard window for EventGenerator to work.
+// TODO(stevenjb/shend): Investigate/fix.
 IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
                        CanDragFloatingKeyboardWithMouse) {
+  if (::features::IsMultiProcessMash())
+    return;
+
   ChromeKeyboardControllerClient::Get()->SetContainerType(
       keyboard::mojom::ContainerType::kFloating, base::nullopt,
       base::DoNothing());
 
-  auto* controller = ChromeKeyboardControllerClient::Get();
-  controller->ShowKeyboard();
+  auto* controller = keyboard::KeyboardController::Get();
+  controller->ShowKeyboard(false);
   KeyboardVisibleWaiter(true).Wait();
 
-  aura::Window* contents_window = controller->GetKeyboardWindow();
-  contents_window->SetBounds(gfx::Rect(0, 0, 100, 100));
-  EXPECT_EQ(gfx::Point(0, 0), contents_window->bounds().origin());
+  aura::Window* keyboard_window = controller->GetKeyboardWindow();
+  keyboard_window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ(gfx::Point(0, 0), keyboard_window->bounds().origin());
 
-  controller->SetDraggableArea(contents_window->bounds());
-  controller->FlushForTesting();
+  controller->SetDraggableArea(keyboard_window->bounds());
 
   // Drag the top left corner of the keyboard to move it.
-  ui::test::EventGenerator event_generator(contents_window->GetRootWindow());
+  ui::test::EventGenerator event_generator(keyboard_window->GetRootWindow());
   event_generator.MoveMouseTo(gfx::Point(0, 0));
   event_generator.PressLeftButton();
   event_generator.MoveMouseTo(gfx::Point(50, 50));
   event_generator.ReleaseLeftButton();
   event_generator.MoveMouseTo(gfx::Point(100, 100));
 
-  EXPECT_EQ(gfx::Point(50, 50), contents_window->bounds().origin());
+  EXPECT_EQ(gfx::Point(50, 50), keyboard_window->bounds().origin());
 }
 
 class KeyboardControllerAppWindowTest

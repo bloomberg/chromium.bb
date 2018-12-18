@@ -1,10 +1,6 @@
 # These tests currently fail with SingleProcessMash enabled.
 # Bug: crbug.com/877118
 
-# Mouse move events are not handled correctly in tests.
-# TODO(stevenjb): Determine why this works in practice but fails in the test.
--KeyboardControllerWebContentTest.CanDragFloatingKeyboardWithMouse
-
 # RemoteTextInputClient is not forwarding focus requests to show/hide the
 # virtual keyboard: https://crbug.com/631527
 -KeyboardEndToEndFormTest.ChangeInputModeToNoneHidesKeyboard
