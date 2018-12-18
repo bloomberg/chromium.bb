@@ -103,6 +103,26 @@ void RecordEnumWithAndWithoutSuffix(const std::string& metric,
   }
 }
 
+void RecordBooleanWithAndWithoutSuffix(const std::string& metric,
+                                       bool value,
+                                       const base::FilePath& file_path) {
+  // The histograms below are an expansion of the UMA_HISTOGRAM_BOOLEAN
+  // macro adapted to allow for a dynamically suffixed histogram name.
+  // Note: The factory creates and owns the histogram.
+  base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
+      metric, base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (histogram) {
+    histogram->Add(value);
+  }
+
+  std::string suffix = GetUmaSuffixForStore(file_path);
+  base::HistogramBase* histogram_suffix = base::BooleanHistogram::FactoryGet(
+      metric + suffix, base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (histogram_suffix) {
+    histogram_suffix->Add(value);
+  }
+}
+
 void RecordApplyUpdateResult(const std::string& base_metric,
                              ApplyUpdateResult result,
                              const base::FilePath& file_path) {
@@ -189,6 +209,8 @@ void V4Store::Initialize() {
 }
 
 bool V4Store::HasValidData() const {
+  RecordBooleanWithAndWithoutSuffix("SafeBrowsing.V4Store.IsStoreValid",
+                                    has_valid_data_, store_path_);
   return has_valid_data_;
 }
 
