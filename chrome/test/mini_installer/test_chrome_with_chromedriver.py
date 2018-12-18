@@ -65,6 +65,9 @@ def CreateChromedriver(args):
       user_data_dir: The full path of the User Data dir.
       output_dir: If not None, a path to which collected crash reports are to be
         moved.
+
+    Returns:
+      The number of crash reports found.
     """
     report_dir = os.path.join(user_data_dir, 'Crashpad', 'reports')
     dumps = []
@@ -72,7 +75,7 @@ def CreateChromedriver(args):
       dumps = os.listdir(report_dir)
     except OSError:
       # Assume this is file not found, meaning no crash reports.
-      return
+      return 0
     for dump in dumps:
       dump_path = os.path.join(report_dir, dump)
       if (output_dir):
@@ -85,6 +88,7 @@ def CreateChromedriver(args):
                             dump_path, target_path)
       else:
         logging.error('Found Chrome crash dump at %s', dump_path)
+    return len(dumps)
 
   driver = None
   user_data_dir = tempfile.mkdtemp()
@@ -108,10 +112,8 @@ def CreateChromedriver(args):
   finally:
     if driver:
       driver.quit()
-    chrome_helper.WaitForChromeExit()
-    # To help with local crash analysis, change None to tempfile.gettempdir().
-    # TODO(grt): Copy crash dumps into ${ISOLATED_OUTDIR}.
-    CollectCrashReports(user_data_dir, None)
+    chrome_helper.WaitForChromeExit(args.chrome_path)
+    report_count = CollectCrashReports(user_data_dir, args.output_dir)
     try:
       DeleteWithRetry(user_data_dir, shutil.rmtree)
     except:
@@ -122,6 +124,9 @@ def CreateChromedriver(args):
         with open(log_file) as fh:
           logging.error(fh.read())
       DeleteWithRetry(log_file, os.remove)
+    if report_count:
+      raise Exception('Failing test due to %s crash reports found' %
+                      report_count)
 
 
 def main():
@@ -133,6 +138,9 @@ def main():
   parser.add_argument(
     '--chromedriver-path', default='chromedriver.exe', metavar='FILENAME',
     help='Path to chromedriver')
+  parser.add_argument('--output-dir', metavar='DIR',
+                      help='Directory into which crash dumps and other output '
+                      ' files are to be written')
   parser.add_argument(
     'chrome_path', metavar='FILENAME', help='Path to chrome installer')
   args = parser.parse_args()

@@ -65,7 +65,7 @@ class VariableExpander:
   """Expands variables in strings."""
 
   def __init__(self, mini_installer_path, previous_version_mini_installer_path,
-               chromedriver_path, quiet):
+               chromedriver_path, quiet, output_dir):
     """Constructor.
 
     The constructor initializes a variable dictionary that maps variables to
@@ -94,7 +94,8 @@ class VariableExpander:
         * $CHROME_UPDATE_REGISTRY_SUBKEY_SXS: the registry key, excluding the
             root key, of Chrome SxS for Google Update.
         * $CHROMEDRIVER_PATH: Path to chromedriver.
-        * $QUIET: Supress output
+        * $QUIET: Supress output.
+        * $OUTPUT_DIR: "--output-dir=DIR" or an empty string.
         * $LAUNCHER_UPDATE_REGISTRY_SUBKEY: the registry key, excluding the root
             key, of the app launcher for Google Update if $BRAND is 'Google
         *   Chrome'.
@@ -157,6 +158,7 @@ class VariableExpander:
     self._variable_mapping = {
         'CHROMEDRIVER_PATH': chromedriver_path,
         'QUIET': '-q' if quiet else '',
+        'OUTPUT_DIR': '"--output-dir=%s"' % output_dir if output_dir else '',
         'LOCAL_APPDATA': shell.SHGetFolderPath(0, shellcon.CSIDL_LOCAL_APPDATA,
                                                None, 0),
         'MINI_INSTALLER': mini_installer_abspath,
