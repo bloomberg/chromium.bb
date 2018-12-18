@@ -149,8 +149,9 @@ public class ClientAppBroadcastReceiver extends BroadcastReceiver {
             // cleaned up.
             Set<String> domains = register.getDomainsForRegisteredUid(uid);
             Set<String> origins = register.getOriginsForRegisteredUid(uid);
-            Intent intent =
-                    ClearDataDialogActivity.createIntent(context, domains, origins, uninstalled);
+            String appName = register.getAppNameForRegisteredUid(uid);
+            Intent intent = ClearDataDialogActivity
+                    .createIntent(context, appName, domains, origins, uninstalled);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);

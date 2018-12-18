@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.browserservices;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -19,6 +21,7 @@ import android.content.Intent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
@@ -116,6 +119,34 @@ public class ClientAppBroadcastReceiverTest {
                 any(), eq(appName), eq(domain1), eq(true));
         verify(mNotificationManager).showClearDataNotification(
                 any(), eq(appName), eq(domain2), eq(true));
+    }
+
+    /** Tests we plumb the correct information to the {@link ClearDataDialogActivity}. */
+    @Test
+    @Feature("TrustedWebActivities")
+    public void dialogStrategy_ValidIntent() {
+        mReceiver = new ClientAppBroadcastReceiver(
+                new ClientAppBroadcastReceiver.DialogClearDataStrategy(), mDataRegister,
+                mock(ChromePreferenceManager.class));
+
+        int id = 67;
+        String appName = "App Name 3";
+        Set<String> domains = new HashSet<>(Arrays.asList("example.com", "example2.com"));
+
+        addToRegister(id, appName, domains);
+
+        Context context = mock(Context.class);
+
+        mReceiver.onReceive(context, createMockIntent(id, Intent.ACTION_PACKAGE_FULLY_REMOVED));
+
+        ArgumentCaptor<Intent> intentArgumentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(context).startActivity(intentArgumentCaptor.capture());
+
+        Intent intent = intentArgumentCaptor.getValue();
+
+        assertEquals(appName, ClearDataDialogActivity.getAppNameFromIntent(intent));
+        assertTrue(ClearDataDialogActivity.getIsAppUninstalledFromIntent(intent));
+        assertEquals(domains, new HashSet<>(ClearDataDialogActivity.getDomainsFromIntent(intent)));
     }
 
     /** Tests we differentiate between app uninstalled and data cleared. */
