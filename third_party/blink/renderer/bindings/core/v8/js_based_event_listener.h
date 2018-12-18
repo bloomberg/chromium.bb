@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -22,23 +23,12 @@ class SourceLocation;
 // implements the common features.
 class CORE_EXPORT JSBasedEventListener : public EventListener {
  public:
-  static const JSBasedEventListener* Cast(const EventListener* listener) {
-    return listener && listener->IsJSBased()
-               ? static_cast<const JSBasedEventListener*>(listener)
-               : nullptr;
-  }
-
-  static JSBasedEventListener* Cast(EventListener* listener) {
-    return const_cast<JSBasedEventListener*>(
-        Cast(const_cast<const EventListener*>(listener)));
-  }
-
   // TODO(bindings): consider to remove this (and use GetListenerObject()
   // instead) because this method is used in mostly only generated classes.
   static v8::Local<v8::Value> GetListenerOrNull(v8::Isolate* isolate,
                                                 EventTarget* event_target,
                                                 EventListener* listener) {
-    if (auto* v8_listener = Cast(listener))
+    if (auto* v8_listener = DynamicTo<JSBasedEventListener>(listener))
       return v8_listener->GetListenerObject(*event_target);
     return v8::Null(isolate);
   }
@@ -70,8 +60,14 @@ class CORE_EXPORT JSBasedEventListener : public EventListener {
 
   virtual std::unique_ptr<SourceLocation> GetSourceLocation(EventTarget&);
 
+  // Helper functions for DowncastTraits.
+  bool IsJSBasedEventListener() const override { return true; }
+  virtual bool IsJSEventListener() const { return false; }
+  virtual bool IsJSEventHandler() const { return false; }
+
  protected:
-  explicit JSBasedEventListener(ListenerType);
+  JSBasedEventListener();
+
   virtual v8::Isolate* GetIsolate() const = 0;
   // Returns the ScriptState of the relevant realm of the callback object.
   // Must be used only when it's sure that the callback object is the same
@@ -94,6 +90,13 @@ class CORE_EXPORT JSBasedEventListener : public EventListener {
   virtual void InvokeInternal(EventTarget&,
                               Event&,
                               v8::Local<v8::Value> js_event) = 0;
+};
+
+template <>
+struct DowncastTraits<JSBasedEventListener> {
+  static bool AllowFrom(const EventListener& event_listener) {
+    return event_listener.IsJSBasedEventListener();
+  }
 };
 
 }  // namespace blink

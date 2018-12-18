@@ -127,7 +127,7 @@ void ReportBlockedEvent(EventTarget& target,
                         RegisteredEventListener* registered_listener,
                         base::TimeDelta delayed) {
   JSBasedEventListener* listener =
-      JSBasedEventListener::Cast(registered_listener->Callback());
+      DynamicTo<JSBasedEventListener>(registered_listener->Callback());
   if (!listener)
     return;
 
@@ -289,7 +289,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
       event_type == event_type_names::kMousewheel && ToLocalDOMWindow() &&
       event_listener && !options->hasPassive()) {
     JSBasedEventListener* v8_listener =
-        JSBasedEventListener::Cast(event_listener);
+        DynamicTo<JSBasedEventListener>(event_listener);
     if (!v8_listener)
       return;
     v8::Local<v8::Value> callback_object =
@@ -412,7 +412,8 @@ bool EventTarget::AddEventListenerInternal(
       event_type, listener, options, &registered_listener);
   if (added) {
     AddedEventListener(event_type, registered_listener);
-    if (listener->IsJSBased() && IsInstrumentedForAsyncStack(event_type)) {
+    if (IsA<JSBasedEventListener>(listener) &&
+        IsInstrumentedForAsyncStack(event_type)) {
       probe::AsyncTaskScheduled(GetExecutionContext(), event_type, listener);
     }
   }
@@ -547,7 +548,8 @@ bool EventTarget::SetAttributeEventListener(const AtomicString& event_type,
     return false;
   }
   if (registered_listener) {
-    if (listener->IsJSBased() && IsInstrumentedForAsyncStack(event_type)) {
+    if (IsA<JSBasedEventListener>(listener) &&
+        IsInstrumentedForAsyncStack(event_type)) {
       probe::AsyncTaskScheduled(GetExecutionContext(), event_type, listener);
     }
     registered_listener->SetCallback(listener);

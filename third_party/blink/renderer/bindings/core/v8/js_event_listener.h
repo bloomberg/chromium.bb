@@ -25,8 +25,7 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
   JSEventListener(ScriptState* script_state,
                   v8::Local<v8::Object> listener,
                   const V8PrivateProperty::Symbol& property)
-      : JSBasedEventListener(kJSEventListenerType),
-        event_listener_(V8EventListener::Create(listener)) {
+      : event_listener_(V8EventListener::Create(listener)) {
     Attach(script_state, listener, property, this);
   }
 
@@ -40,10 +39,9 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
   // |CallbackInterfaceBase::callback_object_| but have different
   // |CallbackInterfaceBase::incumbent_script_state_|s.
   bool operator==(const EventListener& other) const override {
-    if (other.GetType() != kJSEventListenerType)
-      return false;
-    return event_listener_->HasTheSameCallbackObject(
-        *static_cast<const JSEventListener*>(&other)->event_listener_);
+    auto* other_listener = DynamicTo<JSEventListener>(other);
+    return other_listener && event_listener_->HasTheSameCallbackObject(
+                                 *other_listener->event_listener_);
   }
 
   // blink::JSBasedEventListener overrides:
@@ -53,6 +51,9 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
     return event_listener_->CallbackObject();
   }
   v8::Local<v8::Value> GetEffectiveFunction(EventTarget&) override;
+
+  // Helper functions for DowncastTraits.
+  bool IsJSEventListener() const override { return true; }
 
  protected:
   // blink::JSBasedEventListener overrides:
@@ -78,6 +79,14 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
                       v8::Local<v8::Value> js_event) override;
 
   const TraceWrapperMember<V8EventListener> event_listener_;
+};
+
+template <>
+struct DowncastTraits<JSEventListener> {
+  static bool AllowFrom(const EventListener& event_listener) {
+    auto* js_based = DynamicTo<JSBasedEventListener>(event_listener);
+    return js_based && js_based->IsJSEventListener();
+  }
 };
 
 }  // namespace blink
