@@ -582,7 +582,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   };
 
   FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
-      blockURL, minFaviconSizeInPixel, desiredFaviconSizeInPixel,
+      blockURL, desiredFaviconSizeInPixel, minFaviconSizeInPixel,
       /*fallback_to_google_server=*/fallbackToGoogleServer, faviconLoadedBlock);
   DCHECK(cachedAttributes);
   faviconLoadedBlock(cachedAttributes);

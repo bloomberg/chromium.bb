@@ -168,11 +168,11 @@ const CGFloat kFaviconMinWidthHeight = 16;
 
         [strongSelf.dataSink itemHasChangedAfterDelay:strongItem];
       };
-    FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
-        item.faviconPageURL, kFaviconMinWidthHeight, kFaviconWidthHeight,
-        /*fallback_to_google_server=*/false, completionBlock);
-    DCHECK(cachedAttributes);
-    return completionBlock(cachedAttributes);
+  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForUrl(
+      item.faviconPageURL, kFaviconWidthHeight, kFaviconMinWidthHeight,
+      /*fallback_to_google_server=*/false, completionBlock);
+  DCHECK(cachedAttributes);
+  return completionBlock(cachedAttributes);
 }
 
 - (void)beginBatchUpdates {
