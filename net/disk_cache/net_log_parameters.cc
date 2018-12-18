@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_source.h"
 
@@ -60,9 +61,7 @@ std::unique_ptr<base::Value> NetLogSparseOperationCallback(
     int buf_len,
     net::NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  // Values can only be created with at most 32-bit integers.  Using a string
-  // instead circumvents that restriction.
-  dict->SetString("offset", base::Int64ToString(offset));
+  dict->SetKey("offset", net::NetLogNumberValue(offset));
   dict->SetInteger("buf_len", buf_len);
   return std::move(dict);
 }
@@ -84,7 +83,7 @@ std::unique_ptr<base::Value> NetLogGetAvailableRangeResultCallback(
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   if (result > 0) {
     dict->SetInteger("length", result);
-    dict->SetString("start",  base::Int64ToString(start));
+    dict->SetKey("start", net::NetLogNumberValue(start));
   } else {
     dict->SetInteger("net_error", result);
   }

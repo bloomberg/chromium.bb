@@ -49,7 +49,7 @@ std::unique_ptr<base::Value> NetLogInt64Callback(
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> event_params(
       new base::DictionaryValue());
-  event_params->SetString(name, base::Int64ToString(value));
+  event_params->SetKey(name, NetLogNumberValue(value));
   return std::move(event_params);
 }
 
@@ -81,6 +81,31 @@ std::unique_ptr<base::Value> NetLogString16Callback(
       new base::DictionaryValue());
   event_params->SetString(name, *value);
   return std::move(event_params);
+}
+
+// IEEE 64-bit doubles have a 52-bit mantissa, and can therefore represent
+// 53-bits worth of precision (see also documentation for JavaScript's
+// Number.MAX_SAFE_INTEGER for more discussion on this).
+//
+// If the number can be represented with an int or double use that. Otherwise
+// fallback to encoding it as a string.
+template <typename T>
+base::Value NetLogNumberValueHelper(T num) {
+  // Fits in a (32-bit) int: [-2^31, 2^31 - 1]
+  if ((!std::is_signed<T>::value || (num >= static_cast<T>(-2147483648))) &&
+      (num <= static_cast<T>(2147483647))) {
+    return base::Value(static_cast<int>(num));
+  }
+
+  // Fits in a double: (-2^53, 2^53)
+  if ((!std::is_signed<T>::value ||
+       (num >= static_cast<T>(-9007199254740991))) &&
+      (num <= static_cast<T>(9007199254740991))) {
+    return base::Value(static_cast<double>(num));
+  }
+
+  // Otherwise format as a string.
+  return base::Value(base::NumberToString(num));
 }
 
 }  // namespace
@@ -185,6 +210,7 @@ bool NetLog::HasObserver(ThreadSafeObserver* observer) {
 // static
 std::string NetLog::TickCountToString(const base::TimeTicks& time) {
   int64_t delta_time = (time - base::TimeTicks()).InMilliseconds();
+  // TODO(https://crbug.com/915391): Use NetLogNumberValue().
   return base::Int64ToString(delta_time);
 }
 
@@ -320,6 +346,14 @@ base::Value NetLogBinaryValue(const void* bytes, size_t length) {
   Base64Encode(base::StringPiece(reinterpret_cast<const char*>(bytes), length),
                &b64);
   return base::Value(std::move(b64));
+}
+
+base::Value NetLogNumberValue(int64_t num) {
+  return NetLogNumberValueHelper(num);
+}
+
+base::Value NetLogNumberValue(uint64_t num) {
+  return NetLogNumberValueHelper(num);
 }
 
 }  // namespace net
