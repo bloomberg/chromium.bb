@@ -86,10 +86,13 @@ void KeyboardHandler::OnJavascriptDisallowed() {
   observer_.RemoveAll();
 }
 
-void KeyboardHandler::OnKeyboardDeviceConfigurationChanged() {
-  AllowJavascript();
-  UpdateShowKeys();
-  UpdateKeyboards();
+void KeyboardHandler::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kKeyboard) {
+    AllowJavascript();
+    UpdateShowKeys();
+    UpdateKeyboards();
+  }
 }
 
 void KeyboardHandler::HandleInitialize(const base::ListValue* args) {

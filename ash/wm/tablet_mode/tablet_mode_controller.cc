@@ -395,14 +395,16 @@ void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
   tablet_mode_usage_interval_start_time_ = base::Time::Now();
 }
 
-void TabletModeController::OnMouseDeviceConfigurationChanged() {
-  VLOG(1) << "Mouse device configuration changed.";
-  HandlePointingDeviceAddedOrRemoved();
-}
-
-void TabletModeController::OnTouchpadDeviceConfigurationChanged() {
-  VLOG(1) << "Touchpad device configuration changed.";
-  HandlePointingDeviceAddedOrRemoved();
+void TabletModeController::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & (ui::InputDeviceEventObserver::kMouse |
+                            ui::InputDeviceEventObserver::kTouchpad)) {
+    if (input_device_types & ui::InputDeviceEventObserver::kMouse)
+      VLOG(1) << "Mouse device configuration changed.";
+    if (input_device_types & ui::InputDeviceEventObserver::kTouchpad)
+      VLOG(1) << "Touchpad device configuration changed.";
+    HandlePointingDeviceAddedOrRemoved();
+  }
 }
 
 void TabletModeController::OnDeviceListsComplete() {

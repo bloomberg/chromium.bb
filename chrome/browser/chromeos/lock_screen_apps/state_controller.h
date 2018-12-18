@@ -147,7 +147,7 @@ class StateController : public ash::mojom::TrayActionClient,
   void OnAppWindowRemoved(extensions::AppWindow* app_window) override;
 
   // ui::InputDeviceEventObserver:
-  void OnTouchscreenDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
   // chromeos::PowerManagerClient::Observer
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;

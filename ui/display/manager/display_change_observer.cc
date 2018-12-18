@@ -199,15 +199,18 @@ void DisplayChangeObserver::OnDisplayModeChangeFailed(
     OnDisplayModeChanged(displays);
 }
 
-void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
-  // If there are no cached display snapshots, either there are no attached
-  // displays or the cached snapshots have been invalidated. For the first case
-  // there aren't any touchscreens to associate. For the second case, the
-  // displays and touch input-devices will get associated when display
-  // configuration finishes.
-  const auto& cached_displays = display_configurator_->cached_displays();
-  if (!cached_displays.empty())
-    OnDisplayModeChanged(cached_displays);
+void DisplayChangeObserver::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kTouchscreen) {
+    // If there are no cached display snapshots, either there are no attached
+    // displays or the cached snapshots have been invalidated. For the first
+    // case there aren't any touchscreens to associate. For the second case,
+    // the displays and touch input-devices will get associated when display
+    // configuration finishes.
+    const auto& cached_displays = display_configurator_->cached_displays();
+    if (!cached_displays.empty())
+      OnDisplayModeChanged(cached_displays);
+  }
 }
 
 void DisplayChangeObserver::UpdateInternalDisplay(

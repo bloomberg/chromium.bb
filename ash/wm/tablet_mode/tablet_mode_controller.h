@@ -136,8 +136,7 @@ class ASH_EXPORT TabletModeController
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // ui::InputDeviceEventObserver:
-  void OnMouseDeviceConfigurationChanged() override;
-  void OnTouchpadDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
   void OnDeviceListsComplete() override;
 
  private:

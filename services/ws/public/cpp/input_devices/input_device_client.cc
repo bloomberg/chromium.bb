@@ -99,15 +99,16 @@ void InputDeviceClient::OnTouchscreenDeviceConfigurationChanged(
 void InputDeviceClient::OnMouseDeviceConfigurationChanged(
     const std::vector<ui::InputDevice>& devices) {
   mouse_devices_ = devices;
-  for (auto& observer : observers_)
-    observer.OnMouseDeviceConfigurationChanged();
+  for (auto& observer : observers_) {
+    observer.OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kMouse);
+  }
 }
 
 void InputDeviceClient::OnTouchpadDeviceConfigurationChanged(
     const std::vector<ui::InputDevice>& devices) {
   touchpad_devices_ = devices;
-  for (auto& observer : observers_)
-    observer.OnTouchpadDeviceConfigurationChanged();
+  NotifyObserversTouchpadDeviceConfigurationChanged();
 }
 
 void InputDeviceClient::OnDeviceListsComplete(
@@ -149,18 +150,24 @@ void InputDeviceClient::NotifyObserversDeviceListsComplete() {
 }
 
 void InputDeviceClient::NotifyObserversKeyboardDeviceConfigurationChanged() {
-  for (auto& observer : observers_)
-    observer.OnKeyboardDeviceConfigurationChanged();
+  for (auto& observer : observers_) {
+    observer.OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kKeyboard);
+  }
 }
 
 void InputDeviceClient::NotifyObserversTouchscreenDeviceConfigurationChanged() {
-  for (auto& observer : observers_)
-    observer.OnTouchscreenDeviceConfigurationChanged();
+  for (auto& observer : observers_) {
+    observer.OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kTouchscreen);
+  }
 }
 
 void InputDeviceClient::NotifyObserversTouchpadDeviceConfigurationChanged() {
-  for (auto& observer : observers_)
-    observer.OnTouchpadDeviceConfigurationChanged();
+  for (auto& observer : observers_) {
+    observer.OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kTouchpad);
+  }
 }
 
 }  // namespace ws

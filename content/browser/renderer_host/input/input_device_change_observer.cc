@@ -43,22 +43,6 @@ void InputDeviceChangeObserver::OnInputDeviceConfigurationChanged(uint8_t) {
   NotifyRenderViewHost();
 }
 
-void InputDeviceChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
-  NotifyRenderViewHost();
-}
-
-void InputDeviceChangeObserver::OnKeyboardDeviceConfigurationChanged() {
-  NotifyRenderViewHost();
-}
-
-void InputDeviceChangeObserver::OnMouseDeviceConfigurationChanged() {
-  NotifyRenderViewHost();
-}
-
-void InputDeviceChangeObserver::OnTouchpadDeviceConfigurationChanged() {
-  NotifyRenderViewHost();
-}
-
 void InputDeviceChangeObserver::NotifyRenderViewHost() {
   WebPreferences prefs = render_view_host_->GetWebkitPreferences();
   int available_pointer_types, available_hover_types;

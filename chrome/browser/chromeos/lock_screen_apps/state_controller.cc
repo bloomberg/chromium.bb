@@ -393,9 +393,12 @@ void StateController::OnAppWindowRemoved(extensions::AppWindow* app_window) {
       false /*close_window*/, CloseLockScreenNoteReason::kAppWindowClosed);
 }
 
-void StateController::OnTouchscreenDeviceConfigurationChanged() {
-  if (stylus_input_missing_ && ash::stylus_utils::HasStylusInput())
+void StateController::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if ((input_device_types & ui::InputDeviceEventObserver::kTouchscreen) &&
+      stylus_input_missing_ && ash::stylus_utils::HasStylusInput()) {
     InitializeWithStylusInputPresent();
+  }
 }
 
 void StateController::SuspendImminent(

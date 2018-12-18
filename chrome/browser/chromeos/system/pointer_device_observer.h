@@ -38,8 +38,7 @@ class PointerDeviceObserver : public ui::InputDeviceEventObserver {
 
  private:
   // InputDeviceEventObserver:
-  void OnMouseDeviceConfigurationChanged() override;
-  void OnTouchpadDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
   // Check for pointer devices.
   void CheckTouchpadExists();

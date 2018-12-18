@@ -107,8 +107,11 @@ void OobeDisplayChooser::OnTouchDeviceAssociationChanged() {
   MaybeMoveToTouchDisplay();
 }
 
-void OobeDisplayChooser::OnTouchscreenDeviceConfigurationChanged() {
-  MaybeMoveToTouchDisplay();
+void OobeDisplayChooser::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kTouchscreen) {
+    MaybeMoveToTouchDisplay();
+  }
 }
 
 void OobeDisplayChooser::OnDeviceListsComplete() {

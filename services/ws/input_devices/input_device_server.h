@@ -38,10 +38,7 @@ class InputDeviceServer : public mojom::InputDeviceServer,
   void AddObserver(mojom::InputDeviceObserverMojoPtr observer) override;
 
   // ui::InputDeviceEventObserver:
-  void OnKeyboardDeviceConfigurationChanged() override;
-  void OnTouchscreenDeviceConfigurationChanged() override;
-  void OnMouseDeviceConfigurationChanged() override;
-  void OnTouchpadDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
   void OnDeviceListsComplete() override;
   void OnStylusStateChanged(ui::StylusState state) override;
   void OnTouchDeviceAssociationChanged() override;
@@ -50,7 +47,10 @@ class InputDeviceServer : public mojom::InputDeviceServer,
   // Sends the current state of all input-devices to an observer.
   void SendDeviceListsComplete(mojom::InputDeviceObserverMojo* observer);
 
-  void CallOnTouchscreenDeviceConfigurationChanged();
+  void OnKeyboardDeviceConfigurationChanged();
+  void OnTouchscreenDeviceConfigurationChanged();
+  void OnMouseDeviceConfigurationChanged();
+  void OnTouchpadDeviceConfigurationChanged();
 
   mojo::BindingSet<mojom::InputDeviceServer> bindings_;
   mojo::InterfacePtrSet<mojom::InputDeviceObserverMojo> observers_;
