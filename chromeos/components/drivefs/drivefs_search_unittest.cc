@@ -292,4 +292,62 @@ TEST_F(DriveFsSearchTest, Search_SharedWithMeCaching) {
   EXPECT_TRUE(called);
 }
 
+TEST_F(DriveFsSearchTest, Search_NoErrorCaching) {
+  DriveFsSearch search(&mock_drivefs_, &clock_);
+
+  EXPECT_CALL(mock_drivefs_,
+              OnStartSearchQuery(
+                  MatchQuery(mojom::QueryParameters::QuerySource::kCloudOnly,
+                             nullptr, nullptr, true, false)))
+      .Times(2);
+  EXPECT_CALL(mock_drivefs_,
+              OnStartSearchQuery(
+                  MatchQuery(mojom::QueryParameters::QuerySource::kLocalOnly,
+                             nullptr, nullptr, true, false)))
+      .Times(0);
+
+  EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
+      .WillOnce(
+          testing::DoAll(PopulateSearch(0),
+                         testing::Return(drive::FileError::FILE_ERROR_FAILED)))
+      .WillOnce(testing::DoAll(
+          PopulateSearch(3), testing::Return(drive::FileError::FILE_ERROR_OK)));
+
+  mojom::QueryParametersPtr params = mojom::QueryParameters::New();
+  params->query_source = mojom::QueryParameters::QuerySource::kCloudOnly;
+  params->shared_with_me = true;
+
+  bool called = false;
+  mojom::QueryParameters::QuerySource source = search.PerformSearch(
+      std::move(params),
+      base::BindLambdaForTesting(
+          [&called](drive::FileError err,
+                    base::Optional<std::vector<mojom::QueryItemPtr>>) {
+            called = true;
+            EXPECT_EQ(drive::FileError::FILE_ERROR_FAILED, err);
+          }));
+  EXPECT_EQ(mojom::QueryParameters::QuerySource::kCloudOnly, source);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+
+  params = mojom::QueryParameters::New();
+  params->query_source = mojom::QueryParameters::QuerySource::kCloudOnly;
+  params->shared_with_me = true;
+
+  // As previous call failed this one will go to the cloud again.
+  called = false;
+  source = search.PerformSearch(
+      std::move(params),
+      base::BindLambdaForTesting(
+          [&called](drive::FileError err,
+                    base::Optional<std::vector<mojom::QueryItemPtr>> items) {
+            called = true;
+            EXPECT_EQ(drive::FileError::FILE_ERROR_OK, err);
+            EXPECT_EQ(3u, items->size());
+          }));
+  EXPECT_EQ(mojom::QueryParameters::QuerySource::kCloudOnly, source);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+}
+
 }  // namespace drivefs
