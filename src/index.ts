@@ -6,14 +6,16 @@ import { TestTree } from "framework";
   ]);
 
   // Print test listing
-  for await (const t of trunk.iterate()) {
+  for await (const {path, run} of trunk.iterate()) {
+    console.log("*", path.join("/"));
   }
 
   // tslint:disable-next-line:no-console
   console.log("");
 
   // Actually run tests
-  for await (const t of trunk.iterate()) {
-    t();
+  for await (const {path, run} of trunk.iterate()) {
+    console.log("*", path.join("/"));
+    run();
   }
 })();

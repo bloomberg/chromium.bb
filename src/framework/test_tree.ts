@@ -10,6 +10,14 @@ interface ITestTreeModule {
 type PTestFn = (param: object) => (Promise<void> | void);
 type TestFn = () => (Promise<void> | void);
 type Test = () => Promise<void>;
+interface ILeaf {
+  name: string;
+  run: Test;
+}
+interface ITestWithPath {
+  path: string[];
+  run: Test;
+}
 
 export class TestTree {
 
@@ -23,7 +31,7 @@ export class TestTree {
   public name: string;
   public description: string;
   public subtrees: TestTree[];
-  public tests: Test[];
+  public tests: ILeaf[];
 
   private constructor(name: string, description: string) {
     this.name = name;
@@ -33,32 +41,33 @@ export class TestTree {
   }
 
   public ptest(name: string, params: ParamIterable, fn: PTestFn): void {
-    this.tests.push(async () => {
+    this.tests.push({name, run: async () => {
       for (const p of params) {
         // tslint:disable-next-line:no-console
         console.log("  * " + name + "/" + JSON.stringify(p));
         await fn(p);
       }
-    });
+    }});
   }
 
   public test(name: string, fn: TestFn): void {
-    this.tests.push(async () => {
+    this.tests.push({name, run: async () => {
       // tslint:disable-next-line:no-console
-      console.log("  * " + name);
       fn();
-    });
+    }});
   }
 
-  public async * iterate(path: string[] = []): AsyncIterable<Test> {
+  public async * iterate(path: string[] = []): AsyncIterable<ITestWithPath> {
     const subtrees = await Promise.all(this.subtrees);
     for (const t of this.tests) {
-      yield t;
+      yield {
+        path: path.concat([t.name]),
+        run: t.run,
+      };
     }
     for (const st of subtrees) {
       const subpath = path.concat([st.name]);
       // tslint:disable-next-line:no-console
-      console.log("* " + subpath.join("/"));
       yield* st.iterate(subpath);
     }
   }

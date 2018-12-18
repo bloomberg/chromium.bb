@@ -2,7 +2,7 @@ export const name = "sub1";
 export const description = ``;
 
 export const subtrees = [
-  import('./sub'),
+  import("./sub"),
 ];
 
 import {
