@@ -18,6 +18,7 @@ function ExternalMetadataProvider() {
  * @const {!Array<string>}
  */
 ExternalMetadataProvider.PROPERTY_NAMES = [
+  'alternateUrl',
   'availableOffline',
   'availableWhenMetered',
   'contentMimeType',
@@ -90,6 +91,8 @@ ExternalMetadataProvider.prototype.convertResults_ =
   for (var i = 0; i < propertiesList.length; i++) {
     var prop = propertiesList[i];
     var item = new MetadataItem();
+    if (prop.alternateUrl !== undefined || nameMap['alternateUrl'])
+      item.alternateUrl = prop.alternateUrl;
     if (prop.availableOffline !== undefined || nameMap['availableOffline'])
       item.availableOffline = prop.availableOffline;
     if (prop.availableWhenMetered !== undefined ||
