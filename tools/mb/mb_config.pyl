@@ -168,6 +168,8 @@
       'Afl Upload Linux ASan': 'afl_asan_release_bot',
       'ChromiumOS ASAN Release': 'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
       'Libfuzzer Upload Chrome OS ASan': 'libfuzzer_chromeos_asan_release_bot',
+      'Libfuzzer Upload Linux32 ASan': 'libfuzzer_asan_release_bot_x86',
+      'Libfuzzer Upload Linux32 ASan Debug': 'libfuzzer_asan_debug_bot_x86',
       'Libfuzzer Upload Linux ASan': 'libfuzzer_asan_release_bot',
       'Libfuzzer Upload Linux ASan Debug': 'libfuzzer_asan_debug_bot',
       'Libfuzzer Upload Linux MSan': 'libfuzzer_msan_release_bot',
@@ -1293,6 +1295,10 @@
       'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
+    'libfuzzer_asan_debug_bot_x86': [
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',
+    ],
+
     'debug_trybot': [
       'debug_trybot',
     ],
@@ -1487,6 +1493,10 @@
 
     'libfuzzer_asan_release_bot': [
       'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+    ],
+
+    'libfuzzer_asan_release_bot_x86': [
+      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',
     ],
 
     'libfuzzer_asan_release_trybot': [
@@ -2273,6 +2283,10 @@
 
     'x86': {
       'gn_args': 'target_cpu="x86"',
+    },
+
+    'x86_host': {
+      'gn_args': 'host_cpu="x86"',
     },
   },
 }
