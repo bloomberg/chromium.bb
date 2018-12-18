@@ -32,13 +32,13 @@
 					<key>INIntentParameterCombinationIsPrimary</key>
 					<true/>
 					<key>INIntentParameterCombinationSubtitle</key>
-					<string>SearchInChromeIntentDescription</string>
+					<string>Start a search in a new Chrome tab.</string>
 					<key>INIntentParameterCombinationSubtitleID</key>
 					<string>4nGj7v</string>
 					<key>INIntentParameterCombinationSupportsBackgroundExecution</key>
 					<false/>
 					<key>INIntentParameterCombinationTitle</key>
-					<string>SearchInChromeIntentTitle</string>
+					<string></string>
 					<key>INIntentParameterCombinationTitleID</key>
 					<string>bGBl4a</string>
 				</dict>
@@ -78,7 +78,7 @@
 			<key>INIntentRestrictions</key>
 			<integer>0</integer>
 			<key>INIntentTitle</key>
-			<string>SearchInChromeIntentTitle</string>
+			<string>Search in Chrome</string>
 			<key>INIntentTitleID</key>
 			<string>Z6KvRw</string>
 			<key>INIntentType</key>
