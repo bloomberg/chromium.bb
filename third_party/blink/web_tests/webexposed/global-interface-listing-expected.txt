@@ -10283,18 +10283,13 @@ interface XRDevice
     method constructor
     method requestSession
     method supportsSession
-interface XRDevicePose
-    attribute @@toStringTag
-    getter poseModelMatrix
-    method constructor
-    method getViewMatrix
 interface XRFrame
     attribute @@toStringTag
     getter session
     getter views
     method constructor
-    method getDevicePose
     method getInputPose
+    method getViewerPose
 interface XRFrameOfReference : XRCoordinateSystem
     attribute @@toStringTag
     getter bounds
@@ -10373,6 +10368,11 @@ interface XRView
     getter eye
     getter projectionMatrix
     method constructor
+interface XRViewerPose
+    attribute @@toStringTag
+    getter poseModelMatrix
+    method constructor
+    method getViewMatrix
 interface XRViewport
     attribute @@toStringTag
     getter height

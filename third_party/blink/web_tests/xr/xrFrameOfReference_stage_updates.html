@@ -42,7 +42,7 @@ let testFunction = function(session, t, fakeDeviceController) {
         // should be using an emulated frame of reference because it has no
         // stageParameters yet. So the pose should be ~1.5 meters off the floor.
         t.step( () => {
-          let pose = xrFrame.getDevicePose(frameOfRef);
+          let pose = xrFrame.getViewerPose(frameOfRef);
 
           let poseMatrix = pose.poseModelMatrix;
           assert_approx_equals(poseMatrix[12], 0.0, FLOAT_EPSILON);
@@ -59,7 +59,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       function onFrame(time, xrFrame) {
         t.step( () => {
           // Check that stage transform was updated.
-          let pose = xrFrame.getDevicePose(frameOfRef);
+          let pose = xrFrame.getViewerPose(frameOfRef);
           assert_not_equals(pose, null);
 
           let poseMatrix = pose.poseModelMatrix;

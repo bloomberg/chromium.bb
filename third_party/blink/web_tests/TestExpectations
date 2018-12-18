@@ -3373,7 +3373,7 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-
 crbug.com/626703 external/wpt/quirks/text-decoration-doesnt-propagate-into-tables/quirks.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-transform-translatez.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow-hidden.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/webxr/xrSession_requestAnimationFrame_getDevicePose.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-painting-order.html [ Failure ]
 crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/tasks.window.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-transitions/event-dispatch.tentative.html [ Timeout ]

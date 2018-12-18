@@ -143,7 +143,7 @@ function onXRFrame(t, frame) {
 
   let frameOfRef = null;
   frameOfRef = sessionInfos[getSessionType(session)].currentFrameOfRef;
-  let pose = frame.getDevicePose(frameOfRef);
+  let pose = frame.getViewerPose(frameOfRef);
   if (onPoseCallback) {
     onPoseCallback(pose);
   }

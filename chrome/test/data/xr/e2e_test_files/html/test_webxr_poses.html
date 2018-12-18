@@ -42,13 +42,13 @@ test can query for whether each submitted frame used the correct pose.
 
       function checkFrameView(frame_id, eye, expected) {
         let frame_data = frame_data_array[frame_id];
-        let pose = frame_data.getDevicePose(cached_frame_of_ref);
+        let pose = frame_data.getViewerPose(cached_frame_of_ref);
         return MatrixCompare(pose.getViewMatrix(frame_data_array[frame_id].views[eye]), expected);
       }
 
       function checkFramePose(frame_id, expected) {
         let frame_data = frame_data_array[frame_id];
-        let pose = frame_data.getDevicePose(cached_frame_of_ref);
+        let pose = frame_data.getViewerPose(cached_frame_of_ref);
         if (!pose) {
           // We can intermittently get null poses.  For now treat them as passing,
           // even though this should be fixed.

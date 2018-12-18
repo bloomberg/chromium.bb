@@ -5,11 +5,11 @@
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 
 #include "third_party/blink/renderer/modules/xr/xr_coordinate_system.h"
-#include "third_party/blink/renderer/modules/xr/xr_device_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
+#include "third_party/blink/renderer/modules/xr/xr_viewer_pose.h"
 
 namespace blink {
 
@@ -19,7 +19,7 @@ const HeapVector<Member<XRView>>& XRFrame::views() const {
   return session_->views();
 }
 
-XRDevicePose* XRFrame::getDevicePose(
+XRViewerPose* XRFrame::getViewerPose(
     XRCoordinateSystem* coordinate_system) const {
   session_->LogGetPose();
 
@@ -41,7 +41,7 @@ XRDevicePose* XRFrame::getDevicePose(
     return nullptr;
   }
 
-  return MakeGarbageCollected<XRDevicePose>(session(), std::move(pose));
+  return MakeGarbageCollected<XRViewerPose>(session(), std::move(pose));
 }
 
 XRInputPose* XRFrame::getInputPose(
