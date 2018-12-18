@@ -32,6 +32,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
+from chromite.lib import portage_util
 from chromite.lib import request_build
 
 BUILD_PACKAGES_PREBUILTS = '10774.0.0'
@@ -184,6 +185,31 @@ class WorkspaceSyncStage(WorkspaceStageBase):
         branch=self._run.config.workspace_branch,
         version=self._run.options.force_version,
         suffix=' [Branch]').Run()
+
+
+class WorkspaceSyncChromeStage(WorkspaceStageBase):
+  """Stage that syncs Chrome sources if needed."""
+
+  option_name = 'managed_chrome'
+  category = constants.PRODUCT_CHROME_STAGE
+
+  def DetermineChromeVersion(self):
+    cpv = portage_util.PortageqBestVisible(constants.CHROME_CP,
+                                           cwd=self._build_root)
+    return cpv.version_no_rev.partition('_')[0]
+
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    chrome_version = self.DetermineChromeVersion()
+
+    logging.PrintBuildbotStepText('tag %s' % chrome_version)
+
+    useflags = self._run.config.useflags
+    commands.SyncChrome(build_root=self._orig_root,
+                        chrome_root=self._run.options.chrome_root,
+                        useflags=useflags,
+                        tag=chrome_version)
 
 
 class WorkspaceUprevAndPublishStage(WorkspaceStageBase):

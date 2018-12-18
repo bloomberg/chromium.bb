@@ -91,6 +91,9 @@ class FactoryBranchBuilder(BuildSpecBuilder):
     self._RunStage(workspace_stages.WorkspaceInitSDKStage,
                    build_root=self._run.options.workspace)
 
+    self._RunStage(workspace_stages.WorkspaceSyncChromeStage,
+                   build_root=self._run.options.workspace)
+
     for board in self._run.config.boards:
       self._RunStage(workspace_stages.WorkspaceSetupBoardStage,
                      build_root=self._run.options.workspace,
