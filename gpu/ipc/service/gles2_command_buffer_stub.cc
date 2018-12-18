@@ -237,6 +237,9 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   }
 
   if (context_group_->use_passthrough_cmd_decoder()) {
+    // Virtualized contexts don't work with passthrough command decoder.
+    // See https://crbug.com/914976
+    use_virtualized_gl_context_ = false;
     // When using the passthrough command decoder, only share with other
     // contexts in the explicitly requested share group
     if (share_command_buffer_stub) {
