@@ -11,7 +11,6 @@
 <translation id="1112015203684611006">Stampa non riuscita.</translation>
 <translation id="1125564390852150847">Crea una nuova scheda.</translation>
 <translation id="1145536944570833626">Elimina dati esistenti.</translation>
-<translation id="1157102636231978136">L'attività e i dati di navigazione sincronizzati con il tuo account Google</translation>
 <translation id="1165039591588034296">Errore</translation>
 <translation id="1172898394251786223">Campo successivo</translation>
 <translation id="1176932207622159128">Impossibile salvare l'immagine</translation>
@@ -63,9 +62,9 @@
 <translation id="1820259098641718022">Aggiunta all'elenco di lettura</translation>
 <translation id="1821253160463689938">Utilizza i cookie per memorizzare le tue preferenze, anche se non visiti quelle pagine</translation>
 <translation id="1876721852596493031">Invia dati di utilizzo</translation>
+<translation id="1880677175115548835">Seleziona testo</translation>
 <translation id="1886928167269928266">Tutto</translation>
 <translation id="1911619930368729126">Carica su Google Drive</translation>
-<translation id="191179954310195971">Altri servizi Google</translation>
 <translation id="1941314575388338491">Tocca due volte per copiare.</translation>
 <translation id="1952728750904661634">Accedi con l'account gestito</translation>
 <translation id="1974060860693918893">Avanzate</translation>
@@ -225,6 +224,7 @@
 <translation id="4666531726415300315">Accesso eseguito come <ph name="EMAIL" />.
 
 I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inseriscila per avviare la sincronizzazione.</translation>
+<translation id="4689564913179979534">Gestisci metodi di pagamento…</translation>
 <translation id="473775607612524610">Aggiorna</translation>
 <translation id="4747097190499141774">La crittografia della passphrase non include metodi di pagamento e indirizzi di Google Pay. Soltanto chi conosce la tua passphrase può leggere i tuoi dati criptati. La passphrase non viene inviata a Google né memorizzata. Se dimentichi la passphrase o vuoi modificare questa impostazione, dovrai reimpostare la sincronizzazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Trova nella pagina...</translation>
@@ -272,7 +272,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5548760955356983418">Handoff ti consente di iniziare a consultare un sito web su questo dispositivo per poi continuare facilmente sul Mac. Il sito web attualmente aperto verrà visualizzato nel Dock sul Mac.
 
 La funzione Handoff deve anche essere attivata nella sezione Generali di Impostazioni e sui dispositivi deve essere in uso lo stesso account iCloud.</translation>
-<translation id="5554368826343982379">Sincronizzazione e personalizzazione</translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5614553682702429503">Salvare la password?</translation>
 <translation id="5626245204502895507">Il file non può essere scaricato in questo momento.</translation>
@@ -347,6 +346,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi eliminati</translation>
 <translation id="6541915733953096570">Ultima ora</translation>
 <translation id="6548479190262846511">Non è stata trovata alcuna password per questo sito</translation>
+<translation id="6642362222295953972">Passa alle schede esistenti</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6656103420185847513">Modifica cartella</translation>
 <translation id="6657585470893396449">Password</translation>

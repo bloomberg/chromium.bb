@@ -198,6 +198,7 @@
 <translation id="4261870227682513959">צפייה בהגדרות של הודעות. ההודעות מושבתות</translation>
 <translation id="4269883910223712419">מנהל המכשיר הזה יכול:</translation>
 <translation id="4279490309300973883">שיקוף</translation>
+<translation id="4281007048406351813">הוספת דקה לטיימר</translation>
 <translation id="4292681942966152062">המערכת מפעילה את <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">הקשת על מקש הקיצור של ניגודיות גבוהה. להפעיל אותה?</translation>
@@ -240,13 +241,14 @@
 <translation id="4924411785043111640">הפעלה מחדש ואתחול</translation>
 <translation id="4961318399572185831">העברת מסך</translation>
 <translation id="5030687792513154421">נגמר הזמן</translation>
-<translation id="5035236842988137213"><ph name="DEVICE_NAME" /> התחבר לטלפון חדש</translation>
+<translation id="5035236842988137213">מכשיר <ph name="DEVICE_NAME" /> התחבר לטלפון חדש</translation>
 <translation id="5083553833479578423">‏אפשר להפעיל תכונות Assistant נוספות.</translation>
 <translation id="5136175204352732067">חוברה מקלדת אחרת</translation>
 <translation id="5168181903108465623">מכשירי העברה זמינים</translation>
 <translation id="5207949376430453814">הדגשה של סמן הטקסט</translation>
 <translation id="5222676887888702881">יציאה</translation>
 <translation id="523505283826916779">הגדרות נגישות</translation>
+<translation id="5283198616748585639">הוספת דקה</translation>
 <translation id="5302048478445481009">שפה</translation>
 <translation id="5313326810920013265">‏הגדרות Bluetooth</translation>
 <translation id="5331975486040154427">‏מכשיר עם יציאת USB-C (יציאה שמאלית-אחורית)</translation>
@@ -348,7 +350,7 @@
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="698231206551913481">כל הקבצים והנתונים המשויכים למשתמש זה יימחקו לצמיתות ברגע שהמשתמש יוסר.</translation>
 <translation id="7015766095477679451">אפשר לחזור בשעה <ph name="COME_BACK_TIME" />.</translation>
-<translation id="7025533177575372252">חיבור <ph name="DEVICE_NAME" /> לטלפון שלך</translation>
+<translation id="7025533177575372252">חיבור <ph name="DEVICE_NAME" /> לטלפון</translation>
 <translation id="7029814467594812963">צא מההפעלה</translation>
 <translation id="7066646422045619941">מנהל המערכת השבית את הרשת הזו.</translation>
 <translation id="7067196344162293536">סיבוב אוטומטי</translation>
@@ -429,7 +431,7 @@
 <translation id="8308637677604853869">התפריט הקודם</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">יצירת הערה</translation>
-<translation id="8375916635258623388">מכשיר <ph name="DEVICE_NAME" /> זה והטלפון שלך יחוברו באופן אוטומטי</translation>
+<translation id="8375916635258623388">מכשיר <ph name="DEVICE_NAME" /> זה והטלפון יחוברו באופן אוטומטי</translation>
 <translation id="8392451568018454956">תפריט אפשרויות עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">הורה נעל את המכשיר הזה</translation>
 <translation id="8406981827175133772">זכוכית מגדלת במסך מלא</translation>

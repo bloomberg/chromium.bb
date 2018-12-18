@@ -121,15 +121,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="1291880496936992484">Advarsel: RC4 fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
 
       Hvis regelen ikke er angitt eller er satt til false (usann), er ikke RC4-chifferserier i TLS slått på. Ellers kan den settes til true (sann) for å sikre kompatibilitet med en utdatert tjener. Dette er en midlertidig løsning, og tjeneren bør konfigureres på nytt.</translation>
-<translation id="1297117713060236551">Denne regelen kontrollerer listen over nettsteder som aldri fører til bytting av nettleser.
-
-      Merk at elementer også kan legges til på denne listen via regelen <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Hvis denne regelen ikke er angitt, blir ingen nettsteder lagt til på listen.
-
-      Hvis denne regelen er angitt, blir hvert element behandlet som en regel, på samme måte som regelen <ph name="URL_LIST_POLICY_NAME" />. Men logikken er reversert: Samsvarende regler åpnes ikke i en alternativ nettleser.
-
-      I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder regler begge veier. Det betyr at når Internet Explorer-tilleggsprogrammet er aktivert, kontrollerer det også om <ph name="IE_PRODUCT_NAME" /> skal åpne disse nettadressene i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Bruk et PAC-skript for proxy-tjenere</translation>
 <translation id="1304973015437969093">ID-er for utvidelser/apper og oppdateringsnettadresser som skal installeres stille</translation>
 <translation id="1307415922184340052">Send brukernavnet og filnavnet til tjeneren for egne skrivere sammen med hver utskriftsjobb. Dette sendes ikke som standard.</translation>
@@ -151,6 +142,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis denne regelen ikke angis, brukes standardfunksjonaliteten der sammenslåing av HTTP/2-tilkoblinger der klientsertifikater brukes, ikke tillates.</translation>
 <translation id="1353966721814789986">Oppstartsider</translation>
+<translation id="1354424209129232709">Maksimum:</translation>
 <translation id="1359553908012294236">Hvis denne regelen settes til true (sann) eller ikke konfigureres, slås gjestepålogginger på i <ph name="PRODUCT_NAME" />. Gjestepålogginger er <ph name="PRODUCT_NAME" />-profiler der alle vinduene er i inkognitomodus.
 
       Hvis denne regelen settes til false (usann), tillater ikke <ph name="PRODUCT_NAME" /> at gjesteprofiler startes.</translation>
@@ -776,6 +768,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen ikke er angitt, brukes <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maksimalt antall samtidige tilkoblinger til proxytjeneren</translation>
+<translation id="2952347049958405264">Begrensninger:</translation>
 <translation id="2956777931324644324">Denne innstillingen har ikke vært tilgjengelig siden <ph name="PRODUCT_NAME" />-versjon 36.
 
       Angi om TLS-domenebetingende sertifikatsutvidelser bør aktiveres.
@@ -873,13 +866,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3205825995289802549">Maksimer det første nettleservinduet ved den første kjøringen</translation>
 <translation id="3211426942294667684">Innstillinger for nettleserpålogging</translation>
-<translation id="3213821784736959823">Kontrollerer hvorvidt den innebygde DNS-klinten brukes i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne innstillingen er angitt som «true», blir den innebygde DNS-klienten brukt, så sant den er tilgjengelig.
-
-      Hvis denne innstillingen angis til «false», blir den innebygde DNS-klienten aldri brukt.
-
-      Hvis denne innstillingen ikke angis, kan brukerne endre hvorvidt den innebygde DNS-klienten blir brukt ved å redigere chrome://flagg, eller spesifiserer et kommandolinjeflagg.</translation>
 <translation id="3214164532079860003">Denne retningslinjen tvinger startsiden til å bli importert fra nåværende standard nettleser hvis den er aktivert. Hvis retningslinjen er deaktivert, importeres ikke startsiden. Hvis retningslinjen ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="3219421230122020860">Inkognitomodus er tilgjengelig</translation>
 <translation id="3220624000494482595">Hvis kioskappen er en Android-app, har den ikke kontroll over <ph name="PRODUCT_OS_NAME" />-versjonen – selv ikke hvis regelen er angitt som <ph name="TRUE" />.</translation>
@@ -1012,19 +998,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er angitt som «DeveloperToolsDisallowed» (verdi 2), kan ikke utviklerverktøyene brukes, og elementer på nettsteder kan ikke inspiseres lenger. Alle hurtigtaster og alle oppføringer for menyer eller kontekstuelle menyer for å åpne utviklerverktøy eller JavaScript-konsollen deaktiveres.</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="355118380775352753">Nettsteder som skal åpnes i en alternativ nettleser</translation>
-<translation id="3556806727696701427">Slår på Safe Browsing-funksjonen i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
-
-      Hvis du slår på denne innstillingen, er Safe Browsing alltid aktiv.
-
-      Hvis du slår av denne innstillingen, er Safe Browsing aldri aktiv.
-
-      Hvis du slår på eller av denne innstillingen, kan ikke brukerne endre eller overstyre innstillingen for «Aktivér beskyttelse mot nettfisking og skadelig programvare» i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne regelen ikke angis, er innstillingen av, men brukerne kan endre den.
-
-      Du finner mer informasjon om Safe Browsing på https://developers.google.com/safe-browsing.
-
-      Denne regelen er ikke tilgjengelig i Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="3577251398714997599">Annonseinnstillinger for nettsteder med forstyrrende annonser</translation>
 <translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
 <translation id="3624171042292187668">
@@ -1442,6 +1415,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="465099050592230505">Nettadresse for bedriftens nettbutikk (avviklet)</translation>
 <translation id="4665897631924472251">Innstillinger for administrasjon av utvidelser</translation>
 <translation id="4668325077104657568">Standardinnstilling for bilder</translation>
+<translation id="4670865688564083639">Minimum:</translation>
 <translation id="4671708336564240458">Lar deg angi om nettsteder med villedende innhold skal hindres i å åpne nye vinduer eller faner.
       Hvis denne regelen er angitt som Sann, hindres nettsteder med villedende innhold i å åpne nye vinduer og faner.
       Denne virkemåten utløses imidlertid ikke hvis SafeBrowsingEnabled-regelen er satt til Usann.
@@ -1818,17 +1792,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis denne regelen ikke er spesifisert, eller hvis den er satt til «false», bruker <ph name="PRODUCT_NAME" /> de gjeldende alternativene for opphevelsessjekking på nettet.</translation>
 <translation id="5728154254076636808">Slå på oppretting av roaming-kopier for <ph name="PRODUCT_NAME" />-profildata</translation>
-<translation id="5728661376331491504">Denne regelen kontrollerer listen over nettsteder som skal åpnes i en alternativ nettleser.
-
-      Vær oppmerksom på at elementer også kan legges til på denne listen via <ph name="USE_IE_SITELIST_POLICY_NAME" />-regelen.
-
-      Hvis denne regelen ikke er angitt, blir ingen nettsteder lagt til på listen.
-
-      Hvis denne regelen er angitt, blir hvert element behandlet som en regel for noe som skal åpnes i en alternativ nettleser. <ph name="PRODUCT_NAME" /> bruker begge disse reglene når det velges om nettadresser skal åpnes i en alternativ nettleser.
-
-      Når Internet Explorer-tilleggsprogrammet er aktivert, bytter Internet Explorer tilbake til <ph name="PRODUCT_NAME" /> når reglene ikke samsvarer.
-
-      Hvis reglene ikke samsvarer, bruker <ph name="PRODUCT_NAME" /> den mest spesifikke regelen.</translation>
 <translation id="5732972008943405952">Importér autofylldata for skjemaer fra standardnettleseren ved den første kjøringen</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5770738360657678870">Utviklerkanal (kan være ustabil)</translation>
@@ -1872,6 +1835,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Nettadresser (for eksempel https://example.com/some/path) samsvarer bare som U2F-app-ID-er. Domener (for eksempel example.com) samsvarer bare som webauthn RP-ID-er. For å dekke både U2F- og webauthn-API-er for et bestemt nettsted må derfor både app-ID-nettadressen og domenet listes opp.</translation>
 <translation id="5836064773277134605">Begrens UDP-portområdet som brukes av fjerntilgangsverten</translation>
+<translation id="5861856285460256766">Konfigurasjon for tilgangskode for foreldre</translation>
 <translation id="5862253018042179045">Angi standard tilstand for tilgjengelighetsfunksjonen for muntlig tilbakemelding på påloggingssiden.
 
           Hvis innstillingen angis til «true», aktiveres muntlig tilbakemelding når påloggingssiden vises.
@@ -2323,13 +2287,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       MERK: Denne regelen gjelder bare for Chrome på Android med mer enn 1 GB RAM. Bruk SitePerProcess for å anvende regelen på andre plattformer.
       </translation>
-<translation id="6922040258551909078">
-      Hvis regelen er satt til Sann, prioriteres den foran maskinens retningslinjer hvis de er i konflikt med hverandre.
-      Hvis regelen er satt til Usann eller ikke er konfigurert, prioriteres maskinens retningslinjer hvis de er i konflikt med hverandre.
-      Hvis du vil vite mer om retningslinjenes prioritet, kan du besøke: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til et <ph name="MS_AD_NAME" />-domene.
-      </translation>
 <translation id="6922884955650325312">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget</translation>
 <translation id="6923366716660828830">Angir navnet på standard søkeleverandør. Hvis dette ikke angis, brukes vertsnavnet angitt av søkenettadressen.
 
@@ -2400,14 +2357,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       </translation>
 <translation id="706669471845501145">Tillat nettsteder å vise varsler på skrivebordet</translation>
 <translation id="7072208053150563108">Endringsfrekvens for maskinpassord</translation>
-<translation id="7074513465313721551">Konfigurer listen over domener som Safe Browsing skal stole på. Dette betyr at
-     Safe Browsing ikke ser etter skadelige ressurser (f.eks. nettfisking, skadelig programvare og uønsket programvare) hvis nettadressene deres samsvarer med disse domenene.
-      Safe Browsing-tjenesten for nedlastingsbeskyttelse kontrollerer ikke nedlastinger fra disse domenene.
-      Safe Browsing-tjenesten for passordbeskyttelse kontrollerer ikke gjenbruk av passord for sider med nettadresser som samsvarer med disse domenene.
-
-      Hvis denne innstillingen er aktivert, stoler Safe Browsing på disse domenene.
-      Hvis denne innstillingen er deaktivert, brukes standard Safe Browsing-beskyttelse for alle ressurser.
-      Denne regelen er ikke tilgjengelig i Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="7079519252486108041">Blokkér forgrunnsvinder på disse nettstedene</translation>
 <translation id="7085803328069945025">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder som kan be brukeren om tilgang til en USB-enhet.
 
@@ -2490,13 +2439,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis innstillingen ikke angis, slås lupen av når påloggingssiden vises for første gang. Brukere kan slå lupen på eller av når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
 <translation id="7249828445670652637">Slå på CA-sertifikater for <ph name="PRODUCT_OS_NAME" /> for ARC-apper</translation>
-<translation id="725322441686394886">Hvis regelen ikke er angitt og Opprydning for Chrome oppdager uønsket programvare, kan metadata om skanningen rapporteres til Google i samsvar med retningslinjene som er angitt av SafeBrowsingExtendedReportingEnabled. Opprydning for Chrome spør da brukeren om den uønskede programvaren skal fjernes. Brukeren kan velge å dele resultatene av opprydningen med Google for å bistå med gjenkjenning av uønsket programvare i fremtiden. Disse resultatene inneholder filmetadata, automatisk installerte utvidelser og registernøkler som beskrevet av det tekniske dokumentet om personvern i Chrome.
-
-      Hvis regelen er deaktivert og Opprydning for Chrome oppdager uønsket programvare, rapporteres ikke metadata om skanningen til Google. Dette overstyrer enhver regel som er angitt av SafeBrowsingExtendedReportingEnabled. Opprydning for Chrome spør ikke brukeren om den uønskede programvaren skal fjernes. Resultatene av opprydningen rapporteres ikke til Google, og brukeren har ikke muligheten til å gjøre det.
-
-      Hvis regelen er aktivert og Opprydning for Chrome oppdager uønsket programvare, kan metadata om skanningen rapporteres til Google i samsvar med retningslinjene som er angitt av SafeBrowsingExtendedReportingEnabled. Opprydning for Chrome spør brukeren om den uønskede programvaren skal fjernes. Resultatene av opprydningen rapporteres til Google, og brukeren får ikke mulighet til å forhindre det.
-
-      Denne regelen er ikke tilgjengelig i forekomster av Windows som ikke er tilknyttet et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="7258823566580374486">Aktiver begrensning (curtaining) av verter for fjerntilgang</translation>
 <translation id="7260277299188117560">Automatisk oppdatering for p2p aktivert</translation>
 <translation id="7261252191178797385">Bakgrunnsbilde på enheten</translation>
@@ -2593,11 +2535,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Du kan finne ut mer om Safe Browsing på https://developers.google.com/safe-browsing.</translation>
 <translation id="737655323154569539">Begrenser sidestørrelse på utskrift. Regler som ikke er konfigurert, regnes for å være uten begrensninger.</translation>
-<translation id="7417728346887499628">Hvis denne regelen er deaktivert, hindres Opprydning for Chrome i å gjennomsøke systemet etter uønsket programvare og gjennomføre opprydning. Manuell utløsing av Opprydning for Chrome via chrome://settings/cleanup er deaktivert.
-
-      Hvis regelen er aktivert eller ikke er angitt, gjennomsøker Opprydning for Chrome systemet regelmessig etter uønsket programvare, og hvis det blir oppdaget, blir brukeren spurt om det skal fjernes. Manuell utløsing av Opprydning for Chrome via chrome://settings/cleanup er aktivert.
-
-      Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="7417972229667085380">Prosentandelen for skalering av inaktivitetsforsinkelsen i presentasjonsmodus (avviklet)</translation>
 <translation id="7421483919690710988">Angi størrelse på mediediskbuffer i byte</translation>
 <translation id="7424751532654212117">Liste over unntak fra listen over deaktiverte programtillegg</translation>
@@ -2669,6 +2606,18 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis en utvidelse ikke er på listen, eller hvis listen ikke er angitt, kan ikke API-et kalles opp – i stedet vises en feilkode.</translation>
 <translation id="7618907117929117943">Rull tilbake og behold målversjonen hvis OS-versjonen er nyere enn målet og det er mulig å overføre konfigurering på enhetsnivå (inkludert nettverkslegitimasjon) gjennom rollback samt å unngå fabrikkny konfigurasjon etter rollback. Ikke gjennomfør eller avbryt rollback hvis dette ikke er mulig (fordi målversjonen ikke støtter gjenoppretting av data, eller på grunn av en bakover-inkompatibel endring). 
           Støttes på <ph name="PRODUCT_OS_NAME" /> versjon 70 og nyere. For eldre klienter betyr denne verdien at rollback er deaktivert.</translation>
+<translation id="7620869951155758729">Denne regelen spesifiserer konfigurasjon som brukes for å generere og bekrefte tilgangskoden for foreldre.
+
+      |current_config| brukes alltid for å generere tilgangskoden og bør bare brukes for å validere tilgangskoden når dette ikke kan gjøres med |future_config|.
+      |future_config| er hovedkonfigurasjonen som brukes for å validere tilgangskoden.
+      |old_configs| bør bare brukes for å validere tilgangskoden når dette ikke kan gjøres med |future_config| eller |current_config|.
+
+      Den forventede bruken av denne regelen er å rullere konfigurasjoner for tilgangskoden gradvis. Nye konfigurasjoner legges alltid inn i |future_config|. Samtidig
+      flyttes den eksisterende verdien til |current_config|. De tidligere verdiene for |current_config| flyttes til |old_configs| og fjernes når rulleringssyklusen er ferdig.
+
+      Denne regelen gjelder bare for barnebrukere.
+      Når denne regelen er angitt, kan tilgangskoden for foreldre bekreftes på enhetene til barnebrukerne.
+      Når denne regelen ikke er angitt, er det ikke mulig å bekrefte tilgangskoden for foreldre på enhetene til barnebrukerne.</translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-bibliotek</translation>
 <translation id="7635471475589566552">Konfigurerer programmets språk i <ph name="PRODUCT_NAME" />, og hindrer brukeren i å endre på språket.
@@ -3036,12 +2985,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
           Du finner eksempelmønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Deaktiver lagring av nettleserlogg</translation>
-<translation id="8498293625012059298">Konfigurer nettadressen for endring av passord (kun HTTP og HTTPS). Beskyttelsestjenesten for passord sender brukere til denne nettadressen for å endrer passordene etter at de har sett en advarsel i nettleseren.
-       For at <ph name="PRODUCT_NAME" /> skal ha mulighet til å fange opp fingeravtrykket til det nye passordet på denne nettsiden for bytte av passord, må du passe på at siden for endring av passord følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Hvis denne innstillingen er aktivert, sender beskyttelsestjenesten for passord brukerne til denne nettadressen for å endre passordet etter at de har sett en advarsel i nettleseren.
-      Hvis denne innstillingen er deaktivert eller ikke angitt, sender beskyttelsestjenesten for passord brukerne til https://myaccounts.google.com for å endre passordet.
-      Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="8499172469244085141">Standardinnstillinger (kan overstyres av brukere)</translation>
 <translation id="8507835864888987300">Angir en målversjon for automatiske oppdateringer.
 
@@ -3256,12 +3199,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="8976248126101463034">Tillat gnubby-autentisering for fjerntilgangsverter</translation>
 <translation id="8976531594979650914">Bruk standardskriveren i systemet, som standard</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
-<translation id="9012851181124311976">Konfigurer listen over påloggingsadresser for bedrifter (bare HTTP- og HTTPS-protokoller). Fingeravtrykk for passord registreres på disse nettadressene og brukes til å oppdage gjenbruk av passord.
-      For at <ph name="PRODUCT_NAME" /> skal registrere fingeravtrykk for passord riktig, må du påse at påloggingssidene følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Hvis denne innstillingen er aktivert, registrerer tjenesten for passordbeskyttelse fingeravtrykk for passord på disse nettadressene, for å oppdage gjenbruk av passord.
-      Hvis denne innstillingen er deaktivert eller ikke er angitt, registrerer tjenesten for passordbeskyttelse bare fingeravtrykk for passord på https://accounts.google.com.
-      Denne regelen er ikke tilgjengelig i Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">

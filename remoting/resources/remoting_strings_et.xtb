@@ -24,6 +24,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="1520828917794284345">Muuda suurust töölaua sobitamiseks</translation>
 <translation id="154040539590487450">Kaugühenduse teenuse käivitamine ebaõnnestus.</translation>
 <translation id="1546934824884762070">Ilmnes ootamatu viga. Teatage sellest probleemist arendajatele.</translation>
+<translation id="1624185583382384493">Chrome Remote Desktop on nüüd saadaval ka veebis. Proovige meie <ph name="LINK_BEGIN" />veebirakendust<ph name="LINK_END" /> — see on kiire ja tasuta ning pakub veelgi rohkem funktsioone, sh täiustatud tuge mitme monitori kasutamiseks.</translation>
 <translation id="1643640058022401035">Lehelt lahkudes katkeb teie rakenduse Chromoting seanss.</translation>
 <translation id="1654128982815600832">Arvuti kaugühenduste lubamine …</translation>
 <translation id="170207782578677537">Arvuti registreerimine ebaõnnestus.</translation>
@@ -242,6 +243,7 @@ Funktsiooni lubamiseks valige nupp „<ph name="BUTTON_NAME" />”, et kuvada tu
 <translation id="6198252989419008588">Muuda PIN-koodi</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (aegunud)</translation>
 <translation id="6221358653751391898">Te ei ole Chrome'i sisse logitud. Logige sisse ja proovige uuesti.</translation>
+<translation id="6227369581881558336">Chrome Remote Desktop on nüüd saadaval ka veebis ja pakub uusi funktsioone, sh failiedastust. Vaadake meie <ph name="LINK_BEGIN" />veebirakendust<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Konsooli loogikakuval käitatav host on varjatud režiimi toetamiseks välja lülitatud, lülitades hostile, mida käitatakse kasutajapõhises seansis.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Klient</translation>

@@ -131,15 +131,6 @@
 <translation id="1291880496936992484">Ostrzeżenie: RC4 zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 52 (około września 2016 r.) i wtedy ta zasada przestanie działać.
 
       Jeśli ta zasada nie jest ustawiona lub jest wyłączona, to mechanizmy szyfrowania RC4 w TLS będą wyłączone. Można ją włączyć dla zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.</translation>
-<translation id="1297117713060236551">Ta zasada określa listę witryn, które nigdy nie będą powodować zmiany przeglądarki.
-
-      Uwaga: elementy można dodawać do tej listy również za pomocą zasady <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Gdy ta zasada jest nieskonfigurowana, do listy nie są dodawane żadne witryny.
-
-      Gdy zasada jest skonfigurowana, każda pozycja jest traktowana jako reguła, podobnie jak w przypadku zasady <ph name="URL_LIST_POLICY_NAME" />, ale działanie jest odwrotne: witryny pasujące do reguł nie są otwierane w alternatywnej przeglądarce.
-
-      W przeciwieństwie do zasady <ph name="URL_LIST_POLICY_NAME" /> reguły są stosowane w obu kierunkach, czyli gdy dodatek do Internet Explorera jest zainstalowany i włączony, ta zasada określa również, czy <ph name="IE_PRODUCT_NAME" /> ma otwierać te adresy URL w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Używaj skryptu PAC serwera proxy</translation>
 <translation id="1304973015437969093">Identyfikatory rozszerzeń/aplikacji i adresy URL aktualizacji, które mają być instalowane dyskretnie</translation>
 <translation id="1307415922184340052">Wysyłaj nazwę użytkownika i nazwę pliku na serwer drukarek natywnych przy każdym zadaniu drukowania. Ustawienie domyślne nie zezwala na wysyłanie tych danych.</translation>
@@ -162,6 +153,7 @@
 
       Jeśli ta zasada będzie nieskonfigurowana, stosowane będzie domyślne rozwiązanie: połączenia HTTP/2, które używają certyfikatów klienta, nie będą zespalane.</translation>
 <translation id="1353966721814789986">Strony otwierane po uruchomieniu</translation>
+<translation id="1354424209129232709">Maksymalnie:</translation>
 <translation id="1359553908012294236">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie umożliwiać logowanie się w trybie gościa. Dane logowania gościa to profile <ph name="PRODUCT_NAME" />, dla których wszystkie okna otwierają się w trybie incognito.
 
       Jeśli zasada jest wyłączona, <ph name="PRODUCT_NAME" /> nie zezwala na uruchamianie sesji gościa.</translation>
@@ -773,6 +765,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
       Jeśli ta zasada nie została skonfigurowana, domyślnie stosowana jest opcja <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maksymalna liczba jednoczesnych połączeń z serwerem proxy</translation>
+<translation id="2952347049958405264">Ograniczenia:</translation>
 <translation id="2956777931324644324">Ta zasada została wycofana w wersji 36 <ph name="PRODUCT_NAME" />.
 
       Określa, czy ma być włączone rozszerzenie certyfikatów TLS powiązanych z domeną.
@@ -868,13 +861,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
           Pozostawienie tej zasady nieskonfigurowanej pozwoli użytkownikom samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="3205825995289802549">Zmaksymalizuj pierwsze okno wyświetlone przy pierwszym uruchomieniu przeglądarki</translation>
 <translation id="3211426942294667684">Ustawienia logowania w przeglądarce</translation>
-<translation id="3213821784736959823">Określa, czy w <ph name="PRODUCT_NAME" /> jest używany wbudowany klient DNS.
-
-      W przypadku włączenia tej opcji będzie używany wbudowany klient DNS (jeśli będzie dostępny).
-
-      Jeśli ta opcja zostanie wyłączona, wbudowany klient DNS w ogóle nie będzie używany.
-
-      W przypadku nieskonfigurowania tego ustawienia użytkownicy będą mogli wybrać, czy używać wbudowanego klienta DNS. W tym celu trzeba edytować chrome://flags lub podać opcje wiersza poleceń.</translation>
 <translation id="3214164532079860003">W przypadku włączenia ta zasada wymusza zaimportowanie strony głównej z aktualnej przeglądarki domyślnej.
 
 Jeśli zasada będzie wyłączona, strona główna nie zostanie zaimportowana.
@@ -1011,19 +997,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
       Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), narzędzia dla programistów są niedostępne i nie można badać elementów na stronach. Wyłączone będą wszystkie skróty klawiszowe oraz pozycje menu i menu kontekstowego, które otwierają narzędzia dla programistów i konsolę JavaScript.</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="355118380775352753">Witryny otwierane w alternatywnej przeglądarce</translation>
-<translation id="3556806727696701427">Włącza funkcję Bezpieczne przeglądanie w: <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
-
-      Jeśli włączysz to ustawienie, Bezpieczne przeglądanie będzie zawsze aktywne.
-
-      Jeśli wyłączysz to ustawienie, Bezpieczne przeglądanie nigdy nie będzie aktywne.
-
-      Jeśli włączysz lub wyłączysz to ustawienie, użytkownicy nie będą mogli zmienić ani zastąpić ustawienia „Włącz ochronę przed wyłudzaniem danych (phishingiem) i złośliwym oprogramowaniem” w: <ph name="PRODUCT_NAME" />.
-
-      Jeśli ta zasada nie jest skonfigurowana, ustawienie jest włączone, ale użytkownik może je zmienić.
-
-      Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing
-
-      Ta zasada nie jest dostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="3577251398714997599">Ustawienia reklam dla stron zawierających uciążliwe reklamy</translation>
 <translation id="3591584750136265240">Skonfiguruj sposób uwierzytelniania logowania</translation>
 <translation id="3624171042292187668">
@@ -1437,6 +1410,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="465099050592230505">URL firmowego sklepu internetowego (wycofana)</translation>
 <translation id="4665897631924472251">Ustawienia zarządzania rozszerzeniami</translation>
 <translation id="4668325077104657568">Domyślne ustawienie grafik</translation>
+<translation id="4670865688564083639">Minimalnie:</translation>
 <translation id="4671708336564240458">Umożliwia ustawienie blokowania wyświetlania w nowych oknach lub kartach stron z elementami wprowadzającymi w błąd.
 
       Jeśli zasada jest ustawiona jako True, witryny z elementami wprowadzającymi w błąd nie będą otwierane w nowych oknach lub kartach.
@@ -1791,17 +1765,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Jeśli nie ustawisz tej zasady lub wybierzesz wartość fałsz, <ph name="PRODUCT_NAME" /> będzie korzystać z istniejących ustawień sprawdzania online, czy certyfikaty nie zostały unieważnione.</translation>
 <translation id="5728154254076636808">Włącz tworzenie przenośnych kopii danych profilu <ph name="PRODUCT_NAME" /></translation>
-<translation id="5728661376331491504">Ta zasada określa listę witryn, które mają być otwierane w alternatywnej przeglądarce.
-
-      Uwaga: witryny można dodawać do tej listy również za pomocą zasady <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Gdy ta zasada jest nieskonfigurowana, do listy nie są dodawane żadne witryny.
-
-      Gdy zasada jest skonfigurowana, każdy element jest traktowany jako reguła. <ph name="PRODUCT_NAME" /> używa tych reguł do ustalania, czy URL ma być otwarty w alternatywnej przeglądarce.
-
-      Gdy dodatek do Internet Explorera jest zainstalowany i włączony, Internet Explorer będzie otwierać witryny niepasujące do reguł w <ph name="PRODUCT_NAME" />.
-
-      Jeśli reguły są sprzeczne, <ph name="PRODUCT_NAME" /> użyje najbardziej szczegółowej reguły.</translation>
 <translation id="5732972008943405952">Importuj dane autouzupełniania formularzy z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5770738360657678870">Wersja deweloperska (może być niestabilna)</translation>
@@ -1839,6 +1802,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       Adresy URL (takie jak https://example.com/jakaś/ścieżka) będą dopasowywane tylko jako identyfikatory appID typu U2F. Domeny (takie jak example.com) będą dopasowane tylko jako identyfikatory RP typu webauthn. Dlatego jeśli w przypadku danej witryny mają zostać uwzględnione zarówno interfejsy API U2F, jak i webauthn, na liście muszą znajdować się zarówno URL identyfikatora appID, jak i domena.</translation>
 <translation id="5836064773277134605">Ogranicz zakres portów UDP używanych przez host zdalnego dostępu</translation>
+<translation id="5861856285460256766">Konfiguracja kodu dostępu rodzica</translation>
 <translation id="5862253018042179045">Ustawia domyślny stan funkcji ułatwień dostępu w postaci potwierdzeń głosowych na ekranie logowania.
 
           Jeśli ta zasada ma wartość „prawda”, po wyświetleniu ekranu logowania potwierdzenia głosowe są włączone.
@@ -2282,13 +2246,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
       UWAGA: ta zasada ma zastosowanie tylko do Chrome na urządzeniach z Androidem wyposażonych w więcej niż 1 GB pamięci RAM. Aby zasada mogła mieć zastosowanie na platformach, które nie wykorzystują systemu Android, należy użyć ustawienia SitePerProcess.
       </translation>
-<translation id="6922040258551909078">
-      Gdy ta zasada jest włączona, zasady dotyczące chmury mają pierwszeństwo przed zasadami dotyczącymi komputera w przypadku konfliktu.
-      Gdy ta zasada jest wyłączona lub nie została skonfigurowana, zasady dotyczące komputera mają pierwszeństwo przed zasadami dotyczącymi chmury w przypadku konfliktu.
-      Więcej informacji o pierwszeństwie zasad znajdziesz na stronie: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Ta zasada jest niedostępna w systemach Windows, które nie są dołączone do domeny <ph name="MS_AD_NAME" />.
-      </translation>
 <translation id="6922884955650325312">Blokuj wtyczkę <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Określa nazwę domyślnego dostawcy wyszukiwania. Jeśli ta zasada pozostanie pusta lub nieskonfigurowana, będzie używana nazwa hosta określona w URL-u wyszukiwarki. Ta zasada jest uwzględniana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="6926703471186170050">Włącz drukowanie dwustronne względem długiej krawędzi</translation>
@@ -2347,14 +2304,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
       </translation>
 <translation id="706669471845501145">Zezwalaj witrynom na pokazywanie powiadomień na pulpicie</translation>
 <translation id="7072208053150563108">Częstotliwość zmieniania hasła komputera</translation>
-<translation id="7074513465313721551">Pozwala skonfigurować listę domen, którym będzie ufać Bezpieczne przeglądanie. Działanie zasady:
-      Bezpieczne przeglądanie nie będzie sprawdzać, czy witryny zawierają niebezpieczne zasoby (np. wyłudzające informacje, złośliwe lub niechciane oprogramowanie), jeśli ich adresy URL pasują do tych domen.
-      Funkcja Bezpiecznego przeglądania polegająca na ochronie przy pobieraniu nie będzie sprawdzać plików pobieranych z tych domen.
-      Funkcja Bezpiecznego przeglądania polegająca na ochronie haseł nie będzie sprawdzać użycia haseł, jeśli adresy URL stron będą pasować do tych domen.
-
-      Jeśli ta zasada jest włączona, Bezpieczne przeglądanie będzie ufać tym domenom.
-      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, funkcje Bezpiecznego przeglądania są stosowane do wszystkich zasobów.
-      Ta zasada jest niedostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blokuj wyskakujące okienka w tych witrynach</translation>
 <translation id="7085803328069945025">Pozwala utworzyć listę wzorców adresów URL określających witryny, które mogą prosić użytkownika o przyznanie dostępu do urządzeń USB.
 
@@ -2437,16 +2386,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 
           Jeśli zasada pozostanie nieustawiona, po pierwszym wyświetleniu ekranu logowania lupa jest wyłączona. Użytkownicy mogą ją w każdej chwili włączyć lub wyłączyć i jej stan na ekranie logowania jest trwały dla wszystkich użytkowników.</translation>
 <translation id="7249828445670652637">Włącz korzystanie z certyfikatów CA <ph name="PRODUCT_OS_NAME" /> w aplikacjach ARC</translation>
-<translation id="725322441686394886">Gdy ta zasada jest nieskonfigurowana, Czyszczenie Chrome po wykryciu niechcianego oprogramowania może przesłać metadane skanowania do Google zgodnie z ustawieniem zasady SafeBrowsingExtendedReportingEnabled. Następnie Czyszczenie Chrome zapyta użytkownika, czy usunąć niechciane oprogramowanie. Użytkownik może zdecydować, czy przesłać do Google wyniki czyszczenia, by pomóc ulepszyć wykrywanie niechcianego oprogramowania. 
-Te wyniki zawierają metadane plików, informacje o automatycznie zainstalowanych rozszerzeniach i klucze rejestru zgodnie z opisem w Dokumencie na temat ochrony prywatności w Google Chrome.
-
-      Jeśli ta zasada jest wyłączona, Czyszczenie Chrome po wykryciu niechcianego oprogramowania nie prześle metadanych skanowania do Google, ignorując ustawienie zasady SafeBrowsingExtendedReportingEnabled. Następnie Czyszczenie Chrome zapyta użytkownika, czy usunąć niechciane oprogramowanie. 
-Wyniki czyszczenia nie będą przesyłane do Google, a użytkownik nie będzie pytany, czy chce to zrobić.
-
-      Gdy ta zasada jest włączona, Czyszczenie Chrome po wykryciu niechcianego oprogramowania może przesłać metadane skanowania do Google zgodnie z ustawieniem zasady SafeBrowsingExtendedReportingEnabled. Następnie Czyszczenie Chrome zapyta użytkownika, czy usunąć niechciane oprogramowanie. 
-Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytany, czy się na to zgadza.
-
-      Ta zasada jest niedostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Włącz separację hostów zdalnego dostępu</translation>
 <translation id="7260277299188117560">Sieć P2P aktualizacji automatycznych włączona</translation>
 <translation id="7261252191178797385">Tapeta na urządzeniu</translation>
@@ -2542,11 +2481,6 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
 
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na https://developers.google.com/safe-browsing</translation>
 <translation id="737655323154569539">Ogranicza rozmiar drukowanych stron. Zasada nieskonfigurowana i pusty zbiór są traktowane jako brak ograniczeń.</translation>
-<translation id="7417728346887499628">Wyłączenie tej zasady powoduje, że Czyszczenie Chrome nie będzie skanować systemu w celu wykrycia i usunięcia niechcianego oprogramowania. Ręczne uruchamianie Czyszczenia Chrome na stronie chrome://settings/cleanup będzie wyłączone.
-
-      Jeśli zasada zostanie włączona lub nie będzie skonfigurowana, Czyszczenie Chrome będzie okresowo skanować system, a gdy wykryje niechciane oprogramowanie, zapyta użytkownika, czy je usunąć. Ręczne uruchamianie Czyszczenia Chrome na stronie chrome://settings będzie włączone.
-
-      Ta zasada jest niedostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Wartość procentowa skalowania opóźnienia bezczynności w trybie prezentacji (wycofana)</translation>
 <translation id="7421483919690710988">Ustaw rozmiar dyskowej pamięci podręcznej multimediów w bajtach</translation>
 <translation id="7424751532654212117">Lista wyjątków od listy wyłączonych wtyczek</translation>
@@ -2616,6 +2550,18 @@ Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytan
           Jeśli rozszerzenie nie znajduje się na liście lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
 <translation id="7618907117929117943">Przywrócenie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa i jest możliwe zachowanie konfiguracji na poziomie urządzenia (w tym danych logowania do sieci) podczas przywracania danej wersji. Po jej przywróceniu pomijana jest procedura pierwszego uruchomienia (OOBE). Jeśli nie jest to możliwe (ponieważ wersja docelowa nie umożliwia przywrócenia danych lub z powodu niezgodnej wstecznie zmiany), wybrana wersja nie zostanie przywrócona lub jej przywrócenie zostanie przerwane.
           Obsługiwane w <ph name="PRODUCT_OS_NAME" /> w wersji 70 lub nowszej. W przypadku starszych klientów ta wartość wyłącza możliwość przywrócenia wersji.</translation>
+<translation id="7620869951155758729">Ta zasada określa konfigurację używaną do generowania i weryfikacji kodu dostępu rodzica.
+
+      Konfiguracja |current_config| służy zawsze do generowania kodu dostępu. Należy jej używać do weryfikacji kodu dostępu tylko wtedy, gdy nie można tego zrobić przy użyciu konfiguracji |future_config|.
+      Konfiguracja |future_config| służy przede wszystkim do weryfikacji kodu dostępu.
+      Konfiguracji |old_configs| należy używać do weryfikacji kodu dostępu tylko wtedy, gdy nie można tego zrobić przy użyciu konfiguracji |future_config| ani |current_config|.
+
+      Przeznaczeniem tej zasady jest stopniowa rotacja konfiguracji kodu dostępu. Nowa konfiguracja jest zawsze zapisywana w elemencie |future_config|, a istniejąca wartość
+      jest przenoszona do elementu |current_config|. Wcześniejsze wartości zapisane w konfiguracji |current_config| są przenoszone konfiguracji |old_configs| i usuwane po zakończeniu cyklu rotacji.
+
+      Ta zasada dotyczy tylko dzieci.
+      Jeśli ta zasada jest ustawiona, kod dostępu rodzica można zweryfikować na urządzeniu dziecka.
+      Jeśli ta zasada nie jest ustawiona, nie można zweryfikować kodu dostępu rodzica na urządzeniu dziecka.</translation>
 <translation id="7625444193696794922">Określa kanał wersji, z którym to urządzenie powinno być powiązane na stałe.</translation>
 <translation id="7632724434767231364">Nazwa biblioteki GSSAPI</translation>
 <translation id="7635471475589566552">Pozwala skonfigurować język w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jego zmianę. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME" /> będzie używany określony język. W przypadku, gdy skonfigurowany język nie jest obsługiwany, wybierana jest opcja „en-US”. Jeśli ustawienie jest wyłączone lub nieskonfigurowane, w <ph name="PRODUCT_NAME" /> używany jest preferowany język określony przez użytkownika (jeśli został skonfigurowany), język ustawiony w systemie lub zastępcza opcja „en-US”.</translation>
@@ -2983,12 +2929,6 @@ Zalecamy skonfigurowanie zasady w systemie Windows przy użyciu obiektu zasad gr
           Przykładowe wzorce znajdziesz na https://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Wyłącz zapisywanie historii przeglądarki</translation>
-<translation id="8498293625012059298">Konfigurowanie adresu URL do zmiany hasła (tylko schematy HTTP i HTTPS). Usługa ochrony haseł będzie kierować użytkowników na stronę pod tym adresem URL, by zmienili hasło, po wyświetleniu ostrzeżenia w przeglądarce.
-      Jeśli <ph name="PRODUCT_NAME" /> ma poprawnie rejestrować odciski cyfrowe nowych haseł na stronie zmiany hasła, strona powinna być zgodna z wytycznymi podanymi na https://www.chromium.org/developers/design-documents/create-amazing-password-forms
-
-      Jeśli to ustawienie jest włączone, po wyświetleniu ostrzeżenia w przeglądarce usługa ochrony haseł kieruje użytkowników na stronę pod tym adresem URL, by zmienili hasło.
-      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł kieruje użytkowników na stronę https://myaccounts.google.com, by zmienili hasło.
-      Ta zasada nie jest dostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Ustawienia domyślne (użytkownicy mogą zmienić)</translation>
 <translation id="8507835864888987300">Ustawia wersję docelową dla automatycznych aktualizacji.
 
@@ -3216,12 +3156,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 <translation id="8976248126101463034">Zezwalaj na uwierzytelnianie Gnubby w przypadku hostów dostępu zdalnego</translation>
 <translation id="8976531594979650914">Użyj domyślnej drukarki systemowej</translation>
 <translation id="8992176907758534924">Nie zezwalaj na pokazywanie grafik w żadnej witrynie</translation>
-<translation id="9012851181124311976">Konfigurowanie listy adresów URL stron logowania aplikacji firmowych (tylko schematy HTTP i HTTPS). Na tych stronach będzie rejestrowany odcisk cyfrowy hasła służący do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
-      Jeśli <ph name="PRODUCT_NAME" /> ma poprawnie rejestrować odciski cyfrowe haseł, strony logowania powinny być zgodne z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms
-
-      Jeśli to ustawienie jest włączone, usługa ochrony haseł będzie rejestrować na tych stronach odciski cyfrowe haseł służące do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
-      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł rejestruje odciski cyfrowe haseł tylko na stronie https://accounts.google.com
-      Ta zasada nie jest dostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">

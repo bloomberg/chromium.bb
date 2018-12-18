@@ -121,15 +121,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="1291880496936992484">Advarsel! RC4 bliver fjernet helt fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og på det tidspunkt vil denne politik holde op med at virke.
 
       Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres RC4-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør rekonfigureres.</translation>
-<translation id="1297117713060236551">Politikken styrer listen over websites, der aldrig skal medføre et browserskift.
-
-      Bemærk, at elementerne også kan føjes til denne liste via politikken <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Hvis politikken ikke konfigureres, føjes der ikke nogen websites til listen.
-
-      Hvis politikken er konfigureret, behandles hvert element som en regel på samme måde som politikken <ph name="URL_LIST_POLICY_NAME" />. Logikken er dog omvendt: Regler, der matcher, åbner ikke en alternativ browser.
-
-      I modsætning til <ph name="URL_LIST_POLICY_NAME" /> gælder regler for begge retninger. Når Internet Explorer-tilføjelsen er til stede og aktiveret, styrer den dermed også, om <ph name="IE_PRODUCT_NAME" /> skal åbne disse webadresser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Brug et .pac-proxyscript</translation>
 <translation id="1304973015437969093">Udvidelses-/app-id'er og opdateringswebadresser skal installeres ubemærket</translation>
 <translation id="1307415922184340052">Send brugernavn og filnavn til native-printerens server ved alle udskriftsjob. Standardindstillingen er ikke at sende.</translation>
@@ -151,6 +142,7 @@ Anmodninger om sammenkædning til forskellige hosts via forbindelser, der bruger
 
 Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-forbindelser får tilladelse til sammenkædning med forbindelser ved hjælp af klientcertifikater.</translation>
 <translation id="1353966721814789986">Startsider</translation>
+<translation id="1354424209129232709">Maksimum:</translation>
 <translation id="1359553908012294236">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_NAME" /> gæstelogins. Gæstelogins er <ph name="PRODUCT_NAME" />-profiler, hvor alle vinduer er i inkognitotilstand.
 
       Hvis denne politik er angivet til falsk, tillader <ph name="PRODUCT_NAME" /> ikke, at der startes gæsteprofiler.</translation>
@@ -761,6 +753,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis politikken ikke angives, anvendes <ph name="PRINTERS_ALLOW_ALL" /> som standard.
       </translation>
 <translation id="2908277604670530363">Maksimalt antal samtidige forbindelser til proxyserveren</translation>
+<translation id="2952347049958405264">Begrænsninger:</translation>
 <translation id="2956777931324644324">Denne politik udgik fra og med <ph name="PRODUCT_NAME" /> version 36.
 
       Angiver, om udvidelsen for certifikater, der er bundet af TLS-domænet, skal aktiveres.
@@ -859,13 +852,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="3205825995289802549">Maksimer det første browservindue ved første kørsel</translation>
 <translation id="3211426942294667684">Indstillinger for browserlogin</translation>
-<translation id="3213821784736959823">Styrer, om den indbyggede DNS-klient bruges i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne politik er angivet som Sand, anvendes den indbyggede DNS-klient, hvis den er tilgængelig.
-
-      Hvis denne politik er angivet som Falsk, anvendes den indbyggede DNS-klient aldrig.
-
-      Hvis denne politik ikke er konfigureret, kan brugerne ændre, om den indbyggede DNS-klient skal anvendes, ved at redigere chrome://flags eller angive en kommandolinjemarkering.</translation>
 <translation id="3214164532079860003">Denne politik tvinger import af startsiden fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis den er deaktiveret, importeres startsiden ikke. Hvis den ikke er angivet, kan brugeren blive spurgt, om den skal importeres, eller også sker det automatisk.</translation>
 <translation id="3219421230122020860">Inkognitotilstand er tilgængelig</translation>
 <translation id="3220624000494482595">Hvis terminalappen er en Android-app, har den ingen kontrol over <ph name="PRODUCT_OS_NAME" />-versionen, selv hvis denne politik angives som <ph name="TRUE" />.</translation>
@@ -1000,19 +986,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne politik er indstillet til "DeveloperToolsDisallowed" (værdi 2), kan der ikke opnås adgang til Udviklerværktøjer, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje samt menuer eller genvejsmenuer, der åbner Udviklerværktøjer eller JavaScript-konsollen, deaktiveres.</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
 <translation id="355118380775352753">Websites, der skal åbnes i en alternativ browser</translation>
-<translation id="3556806727696701427">Aktiverer funktionen Beskyttet browsing i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
-
-      Hvis du aktiverer denne indstilling, er Beskyttet browsing altid aktiv.
-
-      Hvis du deaktiverer denne indstilling, er Beskyttet browsing aldrig aktiv.
-
-      Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen "Aktivér beskyttelse mod phishing og malware (skadevoldende programmer)" i <ph name="PRODUCT_NAME" />.
-
-      Hvis politikken ikke angives, aktiveres indstillingen, men brugerne har mulighed for at ændre den.
-
-      Få flere oplysninger om Beskyttet browsing på https://developers.google.com/safe-browsing.
-
-      Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="3577251398714997599">Annonceindstilling for websites med påtrængende annoncer</translation>
 <translation id="3591584750136265240">Konfigurer adfærden for logingodkendelse</translation>
 <translation id="3624171042292187668">
@@ -1420,6 +1393,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="465099050592230505">Webadresse for virksomhedens webshop (udfaset)</translation>
 <translation id="4665897631924472251">Indstillinger for administration af udvidelser</translation>
 <translation id="4668325077104657568">Standardindstilling for billeder</translation>
+<translation id="4670865688564083639">Minimum:</translation>
 <translation id="4671708336564240458">Giver dig mulighed for at angive, om det er tilladt for websites med vildledende adfærd at åbne nye vinduer eller faner.
 
       Hvis denne politik er angivet som Sand, forhindres websites med vildledende adfærd i at åbne nye vinduer eller faner.
@@ -1778,17 +1752,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis denne politik ikke er angivet eller angivet som falsk, vil <ph name="PRODUCT_NAME" /> anvende de eksisterende indstillinger for onlinesøgning efter tilbagekaldelser.</translation>
 <translation id="5728154254076636808">Aktivér oprettelse af roamingkopier til profildata i <ph name="PRODUCT_NAME" />.</translation>
-<translation id="5728661376331491504">Politikken styrer listen over websites, der skal åbnes i en alternativ browser.
-
-      Bemærk, at elementer også kan føjes til denne liste via politikken <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Hvis politikken ikke konfigureres, føjes der ikke nogen websites til listen.
-
-      Når politikken er konfigureret, behandles hvert element som en regel for noget, der skal åbnes i en alternativ browser. <ph name="PRODUCT_NAME" /> anvender disse regler til at bestemme, om en webadresse skal åbnes i en alternativ browser.
-
-      Når Internet Explorer-tilføjelsen er til stede og aktiveret, skifter Internet Explorer tilbage til <ph name="PRODUCT_NAME" />, hvis reglerne ikke matcher.
-
-      Hvis reglerne modsiger hinanden, anvender <ph name="PRODUCT_NAME" /> den mest specifikke regel.</translation>
 <translation id="5732972008943405952">Importér formulardata for AutoFyld fra standardbrowseren ved første visning</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5770738360657678870">Udviklerkanal (kan være ustabil)</translation>
@@ -1826,6 +1789,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Webadresser (såsom https://eksempel.dk/en/sti) matcher kun som U2F-app-id'er. Domæner (såsom eksempel.dk) matcher kun som webauthn RP-id'er. Derfor skal både app-id, webadresse og domæne angives for at dække både U2F- og webauthn-API'er for et givet website.</translation>
 <translation id="5836064773277134605">Begræns rækkevidden for den UDP-port, der bruges af hosten for fjernadgang</translation>
+<translation id="5861856285460256766">Konfiguration af forældreadgangskode</translation>
 <translation id="5862253018042179045">Angiv standardtilstanden for hjælpefunktionen Talefeedback på loginskærmen.
 
           Hvis denne politik angives som sand, aktiveres talefeedback, når loginskærmen vises.
@@ -2271,13 +2235,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       BEMÆRK! Politikken gælder kun for Chrome på Android-enheder med mere end 1 GB RAM. Hvis du vil anvende denne politik på andre platforme, skal du bruge SitePerProcess.
       </translation>
-<translation id="6922040258551909078">
-      Hvis politikken er angivet som sand, har Cloudpolitikken forrang, hvis den er i konflikt med maskinpolitikken.
-      Hvis politikken er angivet som falsk eller ikke er konfigureret, har maskinpolitikken forrang, hvis den er i konflikt med Cloudpolitikken.
-      Du kan finde flere oplysninger om prioritering af politikker på: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Denne politik er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.
-      </translation>
 <translation id="6922884955650325312">Bloker <ph name="FLASH_PLUGIN_NAME" />-pluginnet</translation>
 <translation id="6923366716660828830">Angiver navnet på standardsøgemaskinen. Hvis det ikke udfyldes eller angives, vil det hostname, der er angivet af søgewebadressen, blive anvendt. Denne politik overvejes kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="6926703471186170050">Aktivér duplex-udskrivning med lang kant</translation>
@@ -2344,14 +2301,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
       </translation>
 <translation id="706669471845501145">Tillad, at websites viser skrivebordsunderretninger</translation>
 <translation id="7072208053150563108">Hvor ofte computeradgangskoden skiftes</translation>
-<translation id="7074513465313721551">Konfigurer listen over domæner, som Beskyttet browsing skal have tillid til. Dette betyder følgende:
-      Beskyttet browsing tjekker ikke, om der er skadelige ressourcer (f.eks. phishing, malware eller uønsket software) på en side, hvis sidens webadresse matcher disse domæner.
-      Tjenesten til downloadbeskyttelse i Beskyttet browsing tjekker ikke downloads, der hostes på disse domæner.
-      Tjenesten til adgangskodebeskyttelse i Beskyttet browsing tjekker ikke, om adgangskoder genbruges på en side, hvis sidens webadresse matcher disse domæner.
-
-      Hvis indstillingen er aktiveret, har Beskyttet browsing tillid til disse domæner.
-      Hvis indstillingen er deaktiveret eller ikke angives, anvendes Beskyttet browsing som standard for alle ressourcer.
-      Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="7079519252486108041">Bloker pop op-vinduer på disse websites</translation>
 <translation id="7085803328069945025">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som gerne må anmode brugeren om adgang til en USB-enhed.
 
@@ -2434,13 +2383,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 
           Hvis denne politik ikke indstilles, deaktiveres luppen, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere luppen, og dens status på loginskærmen fastholdes hos brugerne.</translation>
 <translation id="7249828445670652637">Aktivér CA-certifikater i <ph name="PRODUCT_OS_NAME" /> til ARC-apps</translation>
-<translation id="725322441686394886">Hvis den ikke er angivet, kan Chrome-oprydning rapportere metadata om scanningen til Google i overensstemmelse med den politik, der er angivet af SafeBrowsingExtendedReportingEnabled, hvis scanningen finder uønsket software. Chrome-oprydning spørger derefter brugeren, om den uønskede software skal fjernes. Brugeren kan vælge at dele resultaterne af oprydningen med Google for at bidrage til registrering af uønsket software i fremtiden. Disse resultater indeholder filmetadata, automatisk installerede udvidelser og registreringsdatabasenøgler som beskrevet i Chromes hvidbog om beskyttelse af personlige oplysninger.
-
-      Hvis den ikke er aktiveret, rapporterer Chrome-oprydning ikke metadata om scanningen til Google og tilsidesætter alle politikker, der er angivet af SafeBrowsingExtendedReportingEnabled, hvis scanningen finder uønsket software. Chrome-oprydning spørger brugeren, om den uønskede software skal fjernes.  Resultaterne af oprydningen rapporteres ikke til Google, og brugeren kan ikke vælge at gøre det.
-
-      Hvis den er aktiveret, kan Chrome-oprydning rapportere metadata om scanningen til Google i overensstemmelse med den politik, der er angivet af SafeBrowsingExtendedReportingEnabled, hvis scanningen finder uønsket software. Chrome-oprydning spørger brugeren, om den uønskede software skal fjernes.  Resultaterne af oprydningen rapporteres til Google, og brugeren har ikke mulighed for at forhindre det.
-
-      Denne politik er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="7258823566580374486">Aktivér skærmning af eksterne adgangsværter</translation>
 <translation id="7260277299188117560">Automatisk opdatering af p2p er aktiveret</translation>
 <translation id="7261252191178797385">Baggrundsbillede på enheden</translation>
@@ -2537,11 +2479,6 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 
       Få flere oplysninger om Beskyttet browsing på https://developers.google.com/safe-browsing.</translation>
 <translation id="737655323154569539">Begrænser størrelsen på udskrivningssiden. En ikke-angivet politik og en tom indstilling behandles som ingen begrænsning.</translation>
-<translation id="7417728346887499628">Hvis den ikke er aktiveret, forhindres Chrome-oprydning i at scanne systemet for uønsket software og i at udføre oprydning. Manuel aktivering af Chrome-oprydning via chrome://settings/cleanup er deaktiveret.
-
-      Hvis den er aktiveret eller ikke er angivet, scanner Chrome-oprydning systemet med jævne mellemrum for uønsket software. Hvis der findes uønsket software, bliver brugeren spurgt, om den skal fjernes. Manuel aktivering af Chrome-oprydning via chrome://settings er aktiveret.
-
-      Denne politik er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="7417972229667085380">Den procentdel, som inaktivitetsforsinkelsen i præsentationstilstand skaleres efter (udfases)</translation>
 <translation id="7421483919690710988">Angiv størrelsen på mediediskcache i bytes</translation>
 <translation id="7424751532654212117">Liste over undtagelser for listen over ​​deaktiverede plugins</translation>
@@ -2611,6 +2548,18 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
           Hvis en udvidelse ikke findes på listen, eller listen ikke er angivet, vil kaldet til API'en mislykkes og returnere en fejlkode.</translation>
 <translation id="7618907117929117943">Træk udgivelsen tilbage, og behold målversionen, hvis OS-versionen er nyere end målversionen, og hvis det er muligt at overføre konfiguration på enhedsniveau (herunder loginoplysninger til netværket) via tilbagetrækning, hvor OOBE også springes over efter tilbagetrækning. Udfør ikke eller annuller tilbagetrækningen, hvis dette ikke er muligt (fordi målversionen ikke understøtter gendannelse af data eller på grund af en ikke-kompatibel ændring tilbage).
           Understøttes i <ph name="PRODUCT_OS_NAME" /> version 70 og nyere. Ved ældre klienter betyder denne værdi, at tilbagetrækning er deaktiveret.</translation>
+<translation id="7620869951155758729">Denne politik angiver en konfiguration, som bruges til at generere og bekræfte en forældreadgangskode.
+
+      |current_config| bruges altid til at generere adgangskoder og bør kun anvendes til validering af adgangskoder, når disse ikke kan valideres ved hjælp af |future_config|.
+      |future_config| er den mest brugte konfiguration til validering af adgangskoder.
+      |old_configs| bør kun bruges til validering af adgangskoder, når disse ikke kan valideres ved hjælp af |future_config| eller |current_config|.
+
+      Denne politik bruges normalt ved gradvist at rotere konfigurationen af den pågældende adgangskode. Nye konfigurationer lægges altid i |future_config|, og samtidig flyttes
+      eksisterende værdier til |current_config|. Tidligere værdier for |current_config| flyttes til |old_configs| og fjernes, når rotationscyklussen er afsluttet.
+
+      Denne politik gælder kun for børn.
+      Når politikken er angivet, kan en forældreadgangskode bekræftes på barnets enhed.
+      Hvis politikken ikke er angivet, er det ikke muligt at bekræfte en forældreadgangskode på barnets enhed.</translation>
 <translation id="7625444193696794922">Angiver den udgivelseskanal, som denne enhed skal være låst til.</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-samling</translation>
 <translation id="7635471475589566552">Konfigurerer applikationens landestandard i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre landestandarden. Hvis du aktiverer denne indstilling, anvender <ph name="PRODUCT_NAME" /> den angivne landestandard. Hvis den konfigurerede landestandard ikke understøttes, bruges "en-US" i stedet. Hvis denne indstilling er deaktiveret eller ikke konfigureret, bruger <ph name="PRODUCT_NAME" /> enten den brugerdefinerede landestandard (hvis denne er konfigureret), systemets landestandard eller reservelandestandarden "en-US".</translation>
@@ -2975,12 +2924,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
           Se eksempler på mønstre på https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Deaktiver lagring af browserhistorik</translation>
-<translation id="8498293625012059298">Konfigurer den webadresse, hvor adgangskoden skal ændres (kun HTTP- og HTTPS-skemaer). Tjenesten til adgangskodebeskyttelse sender brugerne til denne webadresse, hvor de kan ændre deres adgangskode, efter at have set en advarsel i browseren.
-      Før <ph name="PRODUCT_NAME" /> kan registrere fingeraftrykket for den nye adgangskode korrekt på denne side til ændring af adgangskoder, skal du sørge for, at din side til ændring af adgangskoder følger retningslinjerne på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Hvis denne indstilling er aktiveret, sender tjenesten til beskyttelse af adgangskoder brugerne til denne webadresse, så de kan ændre adgangskoden, efter først at have set en advarsel i browseren.
-      Hvis denne indstilling er deaktiveret, eller der ikke er angivet en værdi, sender tjenesten til beskyttelse af adgangskoder brugerne til https://myaccounts.google.com, så adgangskoden kan ændres der.
-      Denne politik er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="8499172469244085141">Standardindstillinger (brugere kan tilsidesætte)</translation>
 <translation id="8507835864888987300">Angiver en målversion for automatiske opdateringer.
 
@@ -3191,12 +3134,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="8976248126101463034">Tillad gnubby-godkendelse for hosts for fjernadgang</translation>
 <translation id="8976531594979650914">Brug systemets standardprinter som standard</translation>
 <translation id="8992176907758534924">Tillad ikke, at websites viser billeder</translation>
-<translation id="9012851181124311976">Konfigurer listen over webadresser til virksomhedslogin (kun HTTP- og HTTPS-adresser). Fingeraftryk registreres som adgangskoder på disse webadresser og anvendes til at registrere genbrug af adgangskoder.
-      Sørg for, at dine sider til login følger retningslinjerne på https://www.chromium.org/developers/design-documents/create-amazing-password-forms, så <ph name="PRODUCT_NAME" /> registrerer fingeraftryk som adgangskoder på korrekt vis.
-
-      Hvis denne indstilling er aktiveret, registrerer tjenesten til adgangskodebeskyttelse fingeraftryk som adgangskoder på disse webadresser med henblik på at registrere genbrug af adgangskoder.
-      Hvis denne indstilling er deaktiveret eller ikke er angivet, registrerer tjenesten til adgangskodebeskyttelse kun fingeraftryk som adgangskoder på https://accounts.google.com.
-      Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">

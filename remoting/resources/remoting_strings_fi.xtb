@@ -24,6 +24,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="1520828917794284345">Sovita työpöydän koko</translation>
 <translation id="154040539590487450">Etäkäyttöpalvelun käynnistäminen epäonnistui.</translation>
 <translation id="1546934824884762070">Odottamaton virhe. Ilmoita tästä ongelmasta kehittäjille.</translation>
+<translation id="1624185583382384493">Chrome-etäkäyttö on nyt verkossa. Kokeile <ph name="LINK_BEGIN" />verkkosovellusta<ph name="LINK_END" />: se on nopea ja maksuton ja siinä on entistä enemmän ominaisuuksia, mukaan lukien parannettu useiden näyttöjen tuki.</translation>
 <translation id="1643640058022401035">Vaihtamalla sivua päätät Chromoting-käyttökerran.</translation>
 <translation id="1654128982815600832">Otetaan tietokoneen etäyhteyksiä käyttöön…</translation>
 <translation id="170207782578677537">Tietokoneen rekisteröinti epäonnistui.</translation>
@@ -242,6 +243,7 @@ Ota ominaisuus käyttöön valitsemalla ensin <ph name="BUTTON_NAME" />, jolloin
 <translation id="6198252989419008588">Vaihda PIN-koodi</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (vanhentunut)</translation>
 <translation id="6221358653751391898">Et ole kirjautunut Chromeen. Kirjaudu sisään ja yritä uudelleen.</translation>
+<translation id="6227369581881558336">Chrome-etäkäyttö on nyt verkossa uusine ominaisuuksineen, mukaan lukien tiedostonsiirto. Tutustu <ph name="LINK_BEGIN" />verkkosovellukseen<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Konsolin logiikkaruudussa käynnissä ollut isäntä sulkeutui tukeakseen verhotilaa. Vaihdetaan käyttäjäkohtaisessa istunnossa käynnissä olevaan isäntään.</translation>
 <translation id="629730747756840877">Tili</translation>
 <translation id="6304318647555713317">Asiakas</translation>

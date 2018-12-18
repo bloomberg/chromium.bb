@@ -36,7 +36,6 @@
 <translation id="5945387852661427312">Вы входите в аккаунт, которым управляет администратор домена <ph name="DOMAIN" />. Он может контролировать ваши данные Chromium, которые теперь будут связаны с управляемым аккаунтом. При выходе из системы все данные Chromium, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="6068866989048414399">Условия использования Chromium</translation>
 <translation id="6268381023930128611">Выйти из Chromium?</translation>
-<translation id="641451971369018375">Обмен информацией с Google для улучшения работы Chromium</translation>
 <translation id="6424492062988593837">Chromium становится лучше! Доступна новая версия.</translation>
 <translation id="6604711459180487467">Откройте доступ к геоданным, чтобы использовать дополнительные возможности Chromium.</translation>
 <translation id="6626296268883197964">Работая с Chromium, вы принимаете <ph name="BEGIN_LINK_TOS" />Условия использования<ph name="END_LINK_TOS" /> и <ph name="BEGIN_LINK_PRIVACY" />Примечание о конфиденциальности<ph name="END_LINK_PRIVACY" />.</translation>

@@ -127,7 +127,7 @@
 <translation id="2946119680249604491">कनेक्शन जोड़ें</translation>
 <translation id="2961963223658824723">कुछ गड़बड़ी हो गई. कुछ सेकंड में फिर से कोशिश करें.</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2970920913501714344">ऐप्लिकेशन, एक्सटेंशन और थीम</translation>
+<translation id="2970920913501714344">ऐप्लिकेशन, एक्सटेंशन, और थीम इंस्टॉल करें</translation>
 <translation id="2995447421581609334">कास्ट डिवाइस दिखाएं.</translation>
 <translation id="2996462380875591307">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा चालू है. उसे बंद पर टॉगल करने के लिए Ctrl+Search+D फिर से दबाएं.</translation>
 <translation id="3000461861112256445">मोनो ऑडियो</translation>
@@ -199,6 +199,7 @@
 <translation id="4261870227682513959">सूचना सेटिंग दिखाएं. सूचनाएं बंद हैं</translation>
 <translation id="4269883910223712419">इस डिवाइस के एडमिन ये काम कर सकते हैं:</translation>
 <translation id="4279490309300973883">स्क्रीन शेयर करने की सुविधा चालू है</translation>
+<translation id="4281007048406351813">टाइमर में एक मिनट जोड़ें</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> चालू हो रहा है</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">आपने 'हाई कंट्रास्ट' का कीबोर्ड शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
@@ -248,6 +249,7 @@
 <translation id="5207949376430453814">लेख कैरेट हाइलाइट करें</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>
 <translation id="523505283826916779">पहुंच-योग्यता विकल्प</translation>
+<translation id="5283198616748585639">एक मिनट जोड़ें</translation>
 <translation id="5302048478445481009">भाषा</translation>
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग</translation>
 <translation id="5331975486040154427">USB-C डिवाइस (बायां पिछला पोर्ट)</translation>
@@ -329,7 +331,7 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया डिवाइस पर यह पासकुंजी डालें: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
-<translation id="6665545700722362599">वेबसाइट, ऐप्लिकेशन और एक्सटेंशन को जगह की जानकारी, डिवाइस के माइक्रोफ़ोन, कैमरा या दूसरी सुविधाओं का इस्तेमाल करने की अनुमति दें</translation>
+<translation id="6665545700722362599">वेबसाइट, ऐप्लिकेशन, और एक्सटेंशन को जगह की जानकारी, डिवाइस के माइक्रोफ़ोन, कैमरा या दूसरी सुविधाओं का इस्तेमाल करने की अनुमति दें</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">आपके अलग किए जाने लायक कीबोर्ड में एक महत्वपूर्ण अपडेट ज़रूरी है</translation>
 <translation id="6700713906295497288">IME मेनू बटन</translation>

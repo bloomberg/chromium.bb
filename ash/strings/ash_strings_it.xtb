@@ -40,7 +40,7 @@
 <translation id="15373452373711364">Puntatore del mouse grande</translation>
 <translation id="1550523713251050646">Fai clic per visualizzare altre opzioni</translation>
 <translation id="1570871743947603115">Attiva/disattiva Bluetooth. <ph name="STATE_TEXT" /></translation>
-<translation id="1589090746204042747">Accedi a tutte le tue attività in questa sessione</translation>
+<translation id="1589090746204042747">Accedere a tutte le tue attività in questa sessione.</translation>
 <translation id="1608626060424371292">Rimuovi questo utente</translation>
 <translation id="1621499497873603021">Tempo rimanente all'esaurimento della batteria: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Avvia una query vocale</translation>
@@ -127,7 +127,7 @@
 <translation id="2946119680249604491">Aggiungi connessione</translation>
 <translation id="2961963223658824723">Si è verificato un problema. Riprova tra qualche secondo.</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2970920913501714344">Installa app, estensioni e temi</translation>
+<translation id="2970920913501714344">Installare app, estensioni e temi.</translation>
 <translation id="2995447421581609334">Mostra dispositivi di trasmissione.</translation>
 <translation id="2996462380875591307">Lente d'ingrandimento ancorata attivata. Premi di nuovo CTRL + tasto per la ricerca + D per disattivarla.</translation>
 <translation id="3000461861112256445">Audio in formato mono</translation>
@@ -199,6 +199,7 @@
 <translation id="4261870227682513959">Mostra impostazioni di notifica. Le notifiche sono disattivate</translation>
 <translation id="4269883910223712419">L'amministratore di questo dispositivo ha la possibilità di:</translation>
 <translation id="4279490309300973883">Mirroring</translation>
+<translation id="4281007048406351813">Aggiungi un minuto al timer</translation>
 <translation id="4292681942966152062">Attivazione della rete <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Hai premuto la scorciatoia da tastiera per l'alto contrasto. Vuoi attivarlo?</translation>
@@ -248,6 +249,7 @@
 <translation id="5207949376430453814">Evidenzia il cursore di testo</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
+<translation id="5283198616748585639">Aggiungi 1 min</translation>
 <translation id="5302048478445481009">Lingua</translation>
 <translation id="5313326810920013265">Impostazioni Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta posteriore sinistra)</translation>
@@ -329,7 +331,7 @@
 <translation id="6627638273713273709">Tasto per la ricerca + MAIUSC + K</translation>
 <translation id="6650933572246256093">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questa passkey sul dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
-<translation id="6665545700722362599">Concedi a siti web, app ed estensioni l'autorizzazione a utilizzare i servizi di geolocalizzazione, il microfono del dispositivo, la fotocamera o altre funzioni</translation>
+<translation id="6665545700722362599">Concedere a siti web, app ed estensioni l'autorizzazione a utilizzare i servizi di geolocalizzazione, il microfono del dispositivo, la fotocamera o altre funzioni.</translation>
 <translation id="6691659475504239918">Tasto per la ricerca + MAIUSC + H</translation>
 <translation id="6696025732084565524">La tastiera rimovibile richiede un aggiornamento critico</translation>
 <translation id="6700713906295497288">Pulsante di menu IME</translation>

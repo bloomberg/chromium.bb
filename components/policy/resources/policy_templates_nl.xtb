@@ -125,23 +125,14 @@
       Als je Fast Transition wilt gebruiken, moeten deze instelling en de ONC-property van het netwerk zijn ingeschakeld.
       Zodra Fast Transition is ingesteld, wordt deze instelling gehandhaafd totdat het beleid wordt gewijzigd en de instelling wordt uitgeschakeld.
 
-      Als er geen beleid is ingesteld of het beleid is ingesteld op 'false', wordt Fast Transition niet gebruikt.
-      Als het beleid is ingesteld op 'true', wordt Fast Transition gebruikt wanneer dit wordt ondersteund door het draadloze toegangspunt.</translation>
+      Als er geen beleid is ingesteld of het beleid is ingesteld op 'False', wordt Fast Transition niet gebruikt.
+      Als het beleid is ingesteld op 'True', wordt Fast Transition gebruikt wanneer dit wordt ondersteund door het draadloze toegangspunt.</translation>
 <translation id="1243570869342663665">SafeSites-filters voor content voor volwassenen beheren.</translation>
 <translation id="1257550411839719984">Standaardmap voor downloads instellen</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
 <translation id="1291880496936992484">Waarschuwing: RC4 wordt volledig verwijderd van <ph name="PRODUCT_NAME" /> na versie 52 (rond september 2016) en dit beleid werkt vanaf dan niet meer.
 
       Als het beleid niet is ingesteld of is ingesteld op 'False', worden de RC4-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'True' om compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.</translation>
-<translation id="1297117713060236551">Met dit beleid wordt de lijst met websites bepaald die nooit schakelen tussen browsers veroorzaken.
-
-      Onthoud dat er ook elementen aan deze lijst kunnen worden toegevoegd via het beleid <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Wanneer dit beleid niet is ingesteld, kunnen er geen websites worden toegevoegd aan de lijst.
-
-      Wanneer dit beleid is ingesteld, wordt elk item behandeld als een regel, vergelijkbaar met het beleid <ph name="URL_LIST_POLICY_NAME" />. De logica is echter andersom: regels die overeenkomen, openen geen alternatieve browser.
-
-      Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richtingen worden toegepast. Dat betekent dat wanneer de add-in van Internet Explorer aanwezig is en is ingeschakeld, deze optie ook beheert of <ph name="IE_PRODUCT_NAME" /> deze URL's moet openen in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Een PAC-script voor de proxy gebruiken</translation>
 <translation id="1304973015437969093">ID's voor extensies/apps en URL's voor updates die op de achtergrond moeten worden geïnstalleerd</translation>
 <translation id="1307415922184340052">Gebruikersnaam en bestandsnaam bij elke afdruktaak naar systeemeigen printerserver verzenden. De standaardinstelling is om deze gegevens niet te verzenden.</translation>
@@ -164,6 +155,7 @@
 
       Als dit beleid niet wordt ingesteld, wordt het standaardgedrag toegepast. Dit houdt in dat HTTP/2-verbindingen niet kunnen worden samengevoegd voor verbindingen die client certificates gebruiken.</translation>
 <translation id="1353966721814789986">Homepage's</translation>
+<translation id="1354424209129232709">Maximum:</translation>
 <translation id="1359553908012294236">Als dit beleid is ingesteld op 'True' of niet is geconfigureerd, schakelt <ph name="PRODUCT_NAME" /> gast-logins in. Gast-logins zijn profielen van <ph name="PRODUCT_NAME" /> waarbij alle vensters in de incognitomodus worden geopend.
 
       Als dit beleid is ingesteld op 'False', staat <ph name="PRODUCT_NAME" /> niet toe dat er gastprofielen worden gestart.</translation>
@@ -797,6 +789,7 @@
       Als dit beleid niet is ingesteld, wordt er uitgegaan van <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Maximaal aantal gelijktijdige verbindingen met de proxyserver</translation>
+<translation id="2952347049958405264">Beperkingen:</translation>
 <translation id="2956777931324644324">Dit beleid is buiten gebruik gesteld vanaf <ph name="PRODUCT_NAME" /> versie 36.
 
       Geeft aan of de extensie voor TLS-domeingebonden certificaten moet worden ingeschakeld.
@@ -897,13 +890,6 @@
           Als je dit beleid niet instelt, kunnen gebruikers zelf de gewenste proxyinstellingen selecteren.</translation>
 <translation id="3205825995289802549">Het eerste browservenster maximaliseren bij eerste uitvoering</translation>
 <translation id="3211426942294667684">Instellingen voor inloggen bij browser</translation>
-<translation id="3213821784736959823">Hiermee wordt bepaald of de ingebouwde DNS-client wordt gebruikt in <ph name="PRODUCT_NAME" />.
-
-      Als dit beleid is ingesteld op 'True', wordt de ingebouwde DNS-client gebruikt (indien beschikbaar).
-
-      Als dit beleid is ingesteld op 'False', wordt de ingebouwde DNS-client nooit gebruikt.
-
-      Als dit beleid niet wordt ingesteld, kunnen de gebruikers wijzigen of de ingebouwde DNS-client wordt gebruikt door chrome://flags te bewerken of een opdrachtregelmarkering op te geven.</translation>
 <translation id="3214164532079860003">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de homepage wordt geïmporteerd uit de huidige standaardbrowser.
 
       Als dit beleid is uitgeschakeld, wordt de homepage niet geïmporteerd.
@@ -1042,19 +1028,6 @@
       Als dit beleid is ingesteld op DeveloperToolsDisallowed (waarde 2), zijn de Developer Tools niet toegankelijk en kunnen de website-elementen niet meer worden geïnspecteerd. De sneltoetsen en items van menu's of contextmenu's waarmee de Developer Tools of de JavaScript-console kunnen worden geopend, zijn uitgeschakeld.</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="355118380775352753">Websites die worden geopend in de alternatieve browser</translation>
-<translation id="3556806727696701427">Hiermee schakel je de functie Safe Browsing van <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze instelling kunnen aanpassen.
-
-      Als je deze instelling inschakelt, is Safe Browsing altijd geactiveerd.
-
-      Als je deze instelling uitschakelt, is Safe Browsing nooit geactiveerd.
-
-      Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling van 'Bescherming tegen phishing en malware inschakelen' van <ph name="PRODUCT_NAME" /> niet wijzigen of negeren.
-
-      Als dit beleid niet wordt ingesteld, wordt het ingeschakeld maar kan de gebruiker het wijzigen.
-
-      Ga naar https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.
-
-      Dit beleid is niet beschikbaar voor Windows-instanties die geen deel uitmaken van een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="3577251398714997599">Advertentie-instellingen voor sites met opdringerige advertenties</translation>
 <translation id="3591584750136265240">Het verificatiegedrag voor inloggen configureren</translation>
 <translation id="3624171042292187668">
@@ -1472,6 +1445,7 @@
 <translation id="465099050592230505">URL van zakelijke webwinkel (verouderd)</translation>
 <translation id="4665897631924472251">Instellingen voor extensiebeheer</translation>
 <translation id="4668325077104657568">Standaardinstelling voor afbeeldingen</translation>
+<translation id="4670865688564083639">Minimum:</translation>
 <translation id="4671708336564240458">Hiermee kun je instellen of moet worden voorkomen dat sites met misleidende functionaliteit nieuwe vensters of tabbladen openen.
 
       Als dit beleid is ingesteld op 'True', kunnen sites met misleidende functionaliteit geen nieuwe vensters of tabbladen openen.
@@ -1853,17 +1827,6 @@
 
       Als dit beleid niet is ingesteld of is ingesteld op 'false', gebruikt <ph name="PRODUCT_NAME" /> de bestaande instellingen voor online intrekkingscontrole.</translation>
 <translation id="5728154254076636808">Het maken van roaming-exemplaren voor <ph name="PRODUCT_NAME" />-profielgegevens inschakelen</translation>
-<translation id="5728661376331491504">Met dit beleid wordt de lijst met websites bepaald die worden geopend in een alternatieve browser.
-
-      Onthoud dat elementen aan deze lijst kunnen worden toegevoegd via het beleid <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Wanneer dit beleid niet is ingesteld, worden er geen websites toegevoegd aan de lijst.
-
-      Wanneer dit beleid is ingesteld, wordt elk item behandeld als regel waarmee iets wordt geopend in een alternatieve browser. <ph name="PRODUCT_NAME" /> gebruikt deze regels bij de keuze of een URL moet worden geopend in een alternatieve browser.
-
-      Wanneer de add-in van Internet Explorer aanwezig en ingeschakeld is, schakelt Internet Explorer terug naar <ph name="PRODUCT_NAME" /> wanneer de regels niet overeenkomen.
-
-      Als regels elkaar tegenspreken, gebruikt <ph name="PRODUCT_NAME" /> de meest specifieke regel.</translation>
 <translation id="5732972008943405952">Formuliergegevens voor Automatisch aanvullen importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="5765780083710877561">Beschrijving:</translation>
 <translation id="5770738360657678870">Ontwikkelaarskanaal (mogelijk instabiel)</translation>
@@ -1908,6 +1871,7 @@
 
       URL's (zoals https://example.com/some/path) komen alleen overeen als U2F appID's. Domeinen (zoals example.com) komen alleen overeen als webauthn RP ID's. Dus om zowel de U2F- als webauthn-API voor een bepaalde site te omvatten, moeten zowel de appID-URL als het appID-domein worden vermeld.</translation>
 <translation id="5836064773277134605">Het UDP-poortbereik beperken dat voor de host voor externe toegang wordt gebruikt</translation>
+<translation id="5861856285460256766">Configuratie van toegangscode voor ouders</translation>
 <translation id="5862253018042179045">De standaardstatus van de toegankelijkheidsfunctie voor gesproken feedback instellen op het inlogscherm.
 
           Als dit beleid is ingesteld op 'True', wordt gesproken feedback ingeschakeld wanneer het inlogscherm wordt weergegeven.
@@ -2343,11 +2307,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       OPMERKING: Dit beleid is alleen van toepassing op Chrome op Android-apparaten met meer dan 1 GB RAM. Als je het beleid op andere platforms wilt toepassen, gebruik je SitePerProcess.
       </translation>
-<translation id="6922040258551909078">Als het beleid is ingesteld op 'True', krijgt het cloudbeleid voorrang als dit conflicteert met het apparaatbeleid.
-      Als het beleid is ingesteld op 'False' of niet is geconfigureerd, krijgt het apparaatbeleid voorrang als dit conflicteert met het cloudbeleid.
-      Voor meer informatie over beleidsprioriteit ga je naar: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Dit beleid is niet beschikbaar op Windows-instanties die niet zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="6922884955650325312">De <ph name="FLASH_PLUGIN_NAME" />-plug-in blokkeren</translation>
 <translation id="6923366716660828830">Hiermee wordt de naam van de standaardzoekprovider gespecificeerd. Als dit leeg is of niet wordt ingesteld, wordt de hostnaam gebruikt die door de zoek-URL wordt gespecificeerd.
 
@@ -2424,14 +2383,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Google mag deze logboeken aan de hand van de sessie-ID koppelen aan andere logboeken die door de Google-service zelf zijn verzameld. Het doel hiervan is dat fouten makkelijker kunnen worden opgespoord.</translation>
 <translation id="706669471845501145">Sites toestaan bureaubladmeldingen weer te geven</translation>
 <translation id="7072208053150563108">Wijzigingsfrequentie van computerwachtwoord</translation>
-<translation id="7074513465313721551">Stel de lijst met domeinen in die door Safe Browsing worden vertrouwd. Dit betekent het volgende:
-      Safe Browsing controleert niet op gevaarlijke bronnen (bijvoorbeeld phishing, malware of ongewenste software) als de URL's overeenkomen met deze domeinen.
-      De downloadbeveiligingsservice van Safe Browsing controleert geen downloads die worden gehost op deze domeinen.
-      De wachtwoordbeveiligingsservice van Safe Browsing controleert niet of een wachtwoord opnieuw wordt gebruikt als de pagina-URL overeenkomt met deze domeinen.
-
-      Als deze instelling is ingeschakeld, worden deze domeinen door Safe Browsing vertrouwd.
-      Als deze instelling is uitgeschakeld of niet is ingesteld, wordt standaard de Safe Browsing-beveiliging toegepast op alle bronnen.
-      Dit beleid is niet beschikbaar op Windows-instanties die niet aan een <ph name="MS_AD_NAME" />-domein zijn gekoppeld.</translation>
 <translation id="7079519252486108041">Pop-ups blokkeren op deze sites</translation>
 <translation id="7085803328069945025">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de gebruiker toestemming mogen vragen om ze toegang te verlenen tot een USB-apparaat.
 
@@ -2513,13 +2464,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als je dit beleid niet instelt, is het vergrootglas uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen het vergrootglas op elk moment in- of uitschakelen en de status op het inlogscherm is van toepassing op alle gebruikers.</translation>
 <translation id="7249828445670652637">CA-certificaten van <ph name="PRODUCT_OS_NAME" /> voor ARC-apps inschakelen</translation>
-<translation id="725322441686394886">Als dit niet is ingesteld en Chrome Cleanup ongewenste software detecteert, kan Chrome Cleanup metadata over de scan doorgeven aan Google in overeenstemming met het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De gebruiker kan ervoor kiezen de resultaten van de opschoning met Google te delen, zodat Google de detectie van ongewenste software kan verbeteren. Deze resultaten bevatten metadata van bestanden, automatisch geïnstalleerde extensies en registersleutels, zoals wordt beschreven in de whitepaper over Chrome en privacy.
-
-      Als dit is uitgeschakeld en Chrome Cleanup ongewenste software detecteert, worden er geen metadata van de scan met Google gedeeld. Het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled wordt genegeerd. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden niet met Google gedeeld, en de gebruiker krijgt niet de keuze om dit wel te doen.
-
-      Als dit is ingeschakeld en Chrome Cleanup ongewenste software detecteert, kan Chrome Cleanup metadata over de scan doorgeven aan Google in overeenstemming met het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden met Google gedeeld, en de gebruiker krijgt niet de keuze om dit te voorkomen.
-
-      Dit beleid is niet beschikbaar voor Windows-instanties die niet aan een <ph name="MS_AD_NAME" />-domein zijn gekoppeld.</translation>
 <translation id="7258823566580374486">Afschermen van hosts voor externe toegang inschakelen</translation>
 <translation id="7260277299188117560">Automatisch updaten van p2p ingeschakeld</translation>
 <translation id="7261252191178797385">Achtergrondafbeelding voor apparaat</translation>
@@ -2616,11 +2560,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="737655323154569539">Hiermee beperk je de grootte van de afdrukpagina. Als er geen beleid is ingesteld of de instelling leeg is, gelden er geen beperkingen.</translation>
-<translation id="7417728346887499628">Als dit beleid is uitgeschakeld, scant Chrome Cleanup het systeem niet op ongewenste software en kan de tool niets opschonen. Het is in dit geval ook niet meer mogelijk Chrome Cleanup handmatig te starten via chrome://settings/cleanup.
-
-      Als de waarde is ingeschakeld of niet is ingesteld, scant Chrome Cleanup het systeem periodiek op ongewenste software. Als er ongewenste software wordt aangetroffen, wordt de gebruiker gevraagd of deze software moet worden verwijderd. Het is in dit geval mogelijk Chrome Cleanup te starten via chrome://settings.
-
-      Dit beleid is niet beschikbaar voor Windows-instanties die niet aan een <ph name="MS_AD_NAME" />-domein zijn gekoppeld.</translation>
 <translation id="7417972229667085380">Het percentage waarmee je de inactieve vertraging in presentatiemodus kunt schalen (verouderd)</translation>
 <translation id="7421483919690710988">Grootte van mediaschijfcache in bytes instellen</translation>
 <translation id="7424751532654212117">Lijst van uitzonderingen op de lijst met uitgeschakelde plug-ins</translation>
@@ -2692,6 +2631,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als een extensie niet in de lijst voorkomt of als de lijst niet is ingesteld, mislukt het aanroepen van de API en wordt er een foutcode weergegeven.</translation>
 <translation id="7618907117929117943">Herstel en blijf op de doelversie als de OS-versie nieuwer is dan de doelversie en het mogelijk is om de instellingen op apparaatniveau over te dragen (inclusief de inloggegevens voor het netwerk) via rollback. OOBE moet ook worden overgeslagen na rollback. Je moet geen rollback uitvoeren of een rollback niet annuleren als dit niet mogelijk is (omdat de doelversie geen ondersteuning biedt om gegevens te herstellen of omdat de wijziging niet werkt met eerdere versies).
           Wordt ondersteund door <ph name="PRODUCT_OS_NAME" /> versie 70 en hoger. Voor oudere clients betekent deze waarde dat rollback is uitgeschakeld.</translation>
+<translation id="7620869951155758729">Dit beleid specificeert de configuratie die wordt gebruikt om de toegangscode voor ouders te genereren en te verifiëren.
+
+      |current_config| wordt altijd gebruikt om de toegangscode te genereren en moet alleen worden gebruikt om de toegangscode te valideren wanneer deze niet kan worden gevalideerd met |future_config|.
+      |future_config| is de primaire configuratie die wordt gebruikt om de toegangscode te valideren.
+      |old_configs| moet alleen worden gebruikt om de toegangscode te valideren wanneer deze niet kan worden gevalideerd met |future_config| of |current_config|.
+
+      De verwachte gebruiksmethode van dit beleid is de configuratie voor de toegangscode geleidelijk rouleren. Een nieuwe configuratie wordt altijd in |future_config| geplaatst en tegelijkertijd wordt de bestaande waarde verplaatst naar |current_config|. De eerdere waarden van |current_config| worden verplaatst naar |old_configs| en verwijderd nadat de roulatiecyclus is afgelopen.
+
+      Dit beleid is alleen van toepassing op gebruikers met een kinderaccount.
+      Wanneer dit beleid is ingesteld, kan de toegangscode voor ouders worden geverifieerd op het apparaat van de gebruiker met een kinderaccount.
+      Wanneer dit beleid niet is ingesteld, kan de toegangscode voor ouders niet worden geverifieerd op het apparaat van de gebruiker met een kinderaccount.</translation>
 <translation id="7625444193696794922">Hiermee wordt het releasekanaal gespecificeerd waarmee dit apparaat moet worden vergrendeld.</translation>
 <translation id="7632724434767231364">Naam van GSSAPI-bibliotheek</translation>
 <translation id="7635471475589566552">Hiermee wordt de landinstelling voor de applicatie geconfigureerd in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers de landinstelling kunnen wijzigen.
@@ -3049,12 +2999,6 @@ Dit beleid wordt verwijderd in M75.</translation>
           Ga voor voorbeeldpatronen naar https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Opslaan van browsegeschiedenis uitschakelen</translation>
-<translation id="8498293625012059298">Hiermee stel je de URL voor het wijzigen van het wachtwoord in (alleen http- en https-schema's). De wachtwoordbeveiligingsservice stuurt gebruikers naar deze URL, waar ze hun wachtwoord kunnen wijzigen nadat ze een waarschuwing in de browser hebben gezien.
-      Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> de nieuwe vingerafdruk van het wachtwoord correct vastlegt op deze pagina voor wachtwoordwijziging, moet je ervoor zorgen dat je pagina voor wachtwoordwijziging voldoet aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Als deze instelling is ingeschakeld, stuurt de wachtwoordbeveiligingsservice gebruikers naar deze URL, waar ze hun wachtwoord kunnen wijzigen nadat ze een waarschuwing in de browser hebben gezien.
-      Als deze instelling is uitgeschakeld of niet is ingesteld, stuurt de wachtwoordbeveiligingsservice gebruikers naar https://myaccounts.google.com, waar ze hun wachtwoord kunnen wijzigen.
-      Dit beleid is niet beschikbaar voor Windows-instanties die geen deel uitmaken van een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="8499172469244085141">Standaardinstellingen (gebruikers kunnen overschrijven)</translation>
 <translation id="8507835864888987300">Hiermee stel je een doelversie voor 'Automatische updates' in.
 
@@ -3283,12 +3227,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="8976248126101463034">Gnubby-verificatie toestaan voor hosts voor externe toegang</translation>
 <translation id="8976531594979650914">Standaardprinter van systeem gebruiken als standaard</translation>
 <translation id="8992176907758534924">Niet toestaan dat sites afbeeldingen weergeven</translation>
-<translation id="9012851181124311976">Configureer de lijst met zakelijke login-URL's (alleen http- en https-schema's). De vingerafdruk van het wachtwoord wordt op deze URL's vastgelegd, zodat hergebruik van het wachtwoord kan worden gedetecteerd.
-      Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> vingerafdrukken van wachtwoorden correct vastlegt, moet je ervoor zorgen dat je inlogpagina's voldoen aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Als deze instelling is ingeschakeld, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord vast op deze URL's om hergebruik van het wachtwoord te kunnen detecteren.
-      Als deze instelling is uitgeschakeld of niet is ingesteld, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord alleen vast op https://accounts.google.com.
-      Dit beleid is niet beschikbaar voor Windows-instanties die geen deel uitmaken van een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="9035964157729712237">Extensie-ID's die zijn vrijgesteld van de zwarte lijst</translation>
 <translation id="9042911395677044526">Hiermee kun je een gebruikerspecifieke netwerkconfiguratie toepassen op een <ph name="PRODUCT_OS_NAME" />-apparaat. De netwerkconfiguratie is een tekenreeks met JSON-indeling, zoals gedefinieerd door de indeling voor open netwerkconfiguratie, beschreven op <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">

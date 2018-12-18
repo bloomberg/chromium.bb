@@ -50,7 +50,6 @@
 <translation id="2718390899429598676">セキュリティ強化のため、Chromium ではデータが暗号化されます。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="2799223571221894425">再起動</translation>
-<translation id="2818397554133737874">この操作を行うと、このユーザーの閲覧データがこの端末から削除されます。データを復元するには、$2 として Chromium にログインしてください。</translation>
 <translation id="2847479871509788944">Chromium から削除...</translation>
 <translation id="2886012850691518054">オプション: 使用状況データと障害レポートを Google に自動送信して Chromium の機能向上に役立てる。</translation>
 <translation id="2898082584336937987">Chromium をスマートフォンにインストールしませんか。お客様のアカウント再設定用の電話番号（<ph name="PHONE_NUMBER" />）に、Google より SMS をお送りします。</translation>

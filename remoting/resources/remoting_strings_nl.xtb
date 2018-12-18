@@ -24,6 +24,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="1520828917794284345">Formaat van bureaublad aanpassen</translation>
 <translation id="154040539590487450">Kan de service voor externe toegang niet starten.</translation>
 <translation id="1546934824884762070">Er is een onverwachte fout opgetreden. Meld dit probleem aan de ontwikkelaars.</translation>
+<translation id="1624185583382384493">Chrome Remote Desktop is nu beschikbaar op internet. Probeer onze <ph name="LINK_BEGIN" />web-app<ph name="LINK_END" />. Deze is snel en gratis en beschikt over nog meer functies, waaronder verbeterde ondersteuning voor meerdere beeldschermen.</translation>
 <translation id="1643640058022401035">Als je deze pagina verlaat, wordt je Chromoting-sessie beëindigd.</translation>
 <translation id="1654128982815600832">Externe verbindingen voor deze computer inschakelen…</translation>
 <translation id="170207782578677537">Kan deze computer niet registreren.</translation>
@@ -242,6 +243,7 @@ Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAM
 <translation id="6198252989419008588">Pincode wijzigen</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (verouderd)</translation>
 <translation id="6221358653751391898">Je bent niet ingelogd bij Chrome. Log in en probeer het opnieuw.</translation>
+<translation id="6227369581881558336">Chrome Remote Desktop is nu beschikbaar op internet met nieuwe functies, waaronder bestandsoverdracht. Bekijk onze <ph name="LINK_BEGIN" />web-app<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">De host die werd uitgevoerd op het console-inlogscherm, is uitgeschakeld om de gordijnmodus te ondersteunen door over te schakelen naar een host die in een gebruikersspecifieke sessie wordt uitgevoerd.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6304318647555713317">Client</translation>

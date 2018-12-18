@@ -121,15 +121,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="1291880496936992484">Avertisment: compatibilitatea cu RC4 va fi eliminată complet din <ph name="PRODUCT_NAME" /> după versiunea 52 (aproximativ în septembrie 2016), iar această politică nu va mai funcționa de la momentul respectiv.
 
       Dacă această politică nu este configurată sau dacă este dezactivată, suitele de codificare RC4 din TLS nu vor fi activate. În caz contrar, politica poate fi activată pentru a se menține compatibilitatea cu un server învechit. Aceasta este o măsură temporară, iar serverul trebuie să fie reconfigurat.</translation>
-<translation id="1297117713060236551">Această politică controlează lista de site-uri web care nu vor comuta niciodată browserul.
-
-      Reține că pot fi adăugate elemente pe această listă cu ajutorul politicii <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Când această politică nu este setată, nu este adăugat niciun site pe listă.
-
-      Când această politică este activată, fiecare element este considerat o regulă, similar cu politica <ph name="URL_LIST_POLICY_NAME" />. Cu toate acestea, logica este inversată: regulile care se potrivesc nu vor deschide un browser secundar.
-
-      Spre deosebire de politica <ph name="URL_LIST_POLICY_NAME" />, regulile se aplică în ambele direcții: când suplimentul Internet Explorer este prezent și este activat, stabilește și dacă <ph name="IE_PRODUCT_NAME" /> trebuie să deschidă aceste URL-uri în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Utilizează un script .pac pentru proxy</translation>
 <translation id="1304973015437969093">ID-uri pentru extensii/aplicații și adrese URL pentru actualizări de instalat în fundal</translation>
 <translation id="1307415922184340052">Trimite numele de utilizator sau numele fișierului la serverul imprimantelor native cu fiecare sarcină de printare. Setarea prestabilită este de a nu trimite.</translation>
@@ -151,6 +142,7 @@ Solicitările de fuzionare pentru diferite gazde din conexiuni ce folosesc certi
 
 Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu permite fuzionarea conexiunilor HTTP/2 pentru conexiunile care folosesc certificate client.</translation>
 <translation id="1353966721814789986">Pagini de pornire</translation>
+<translation id="1354424209129232709">Maximum:</translation>
 <translation id="1359553908012294236">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va permite conectările ca invitat. Conectările ca invitat sunt profiluri <ph name="PRODUCT_NAME" /> în care toate ferestrele sunt în modul incognito.
 
       Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> nu va permite crearea profilurilor pentru invitați.</translation>
@@ -764,6 +756,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica nu este configurată, se va folosi <ph name="PRINTERS_ALLOW_ALL" /> în mod prestabilit.
       </translation>
 <translation id="2908277604670530363">Numărul maxim de conexiuni simultane la serverul proxy</translation>
+<translation id="2952347049958405264">Restricții:</translation>
 <translation id="2956777931324644324">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 36.
 
       Specifică dacă extensia pentru certificatele TLS legate la domeniu trebuie să fie activată.
@@ -862,13 +855,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Dacă nu configurezi politica, utilizatorii vor avea permisiunea să aleagă setările de proxy.</translation>
 <translation id="3205825995289802549">Maximizează prima fereastră din browser la prima rulare</translation>
 <translation id="3211426942294667684">Setări de conectare pentru browser</translation>
-<translation id="3213821784736959823">Stabilește dacă clientul DNS integrat este utilizat în <ph name="PRODUCT_NAME" />.
-
-      Dacă această politică este activată, va fi utilizat clientul DNS integrat, atunci când este disponibil.
-
-      Dacă această politică este dezactivată, clientul DNS integrat nu va fi utilizat niciodată.
-
-     Dacă această politică nu este configurată, utilizatorii vor putea alege dacă se utilizează clientul DNS integrat, modificând chrome://flags sau specificând un semnalizator în linia de comandă.</translation>
 <translation id="3214164532079860003">Dacă este activată, această politică forțează importarea paginii de pornire din browserul prestabilit actual. Dacă este dezactivată, pagina de pornire nu este importată. Dacă nu este setată, este posibil ca utilizatorul să fie întrebat dacă se efectuează importarea sau aceasta ar putea avea loc în mod automat.</translation>
 <translation id="3219421230122020860">Modul incognito este disponibil</translation>
 <translation id="3220624000494482595">Dacă aplicația chioșc este o aplicație Android, aceasta nu va avea control asupra versiunii <ph name="PRODUCT_OS_NAME" />, chiar dacă această politică este setată la <ph name="TRUE" />.</translation>
@@ -1003,19 +989,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această politică este setată la „DeveloperToolsDisallowed” (valoarea 2), Instrumentele pentru dezvoltatori nu pot fi accesate și elementele site-urilor nu mai pot fi inspectate. Comenzile rapide de la tastatură și intrările din meniuri sau din meniurile contextuale pentru deschiderea Instrumentelor pentru dezvoltatori sau a consolei JavaScript vor fi dezactivate.</translation>
 <translation id="3547954654003013442">Setări proxy</translation>
 <translation id="355118380775352753">Site-uri care vor fi deschise în browserul secundar</translation>
-<translation id="3556806727696701427">Activează funcția Navigare sigură din <ph name="PRODUCT_NAME" /> și nu le permite utilizatorilor să modifice această setare.
-
-      Dacă activezi această setare, Navigarea sigură este activată întotdeauna.
-
-      Dacă dezactivezi această setare, Navigarea sigură nu este niciodată activată.
-
-      Dacă activezi sau dezactivezi această setare, utilizatorii nu pot modifica sau ignora setarea „Activează protecția împotriva phishingului și a programelor malware” din <ph name="PRODUCT_NAME" />.
-
-      Dacă politica nu este configurată, această opțiune va fi activată, dar utilizatorul va putea să o modifice.
-
-      Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.
-
-      Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="3577251398714997599">Setare pentru anunțurile de pe site-urile cu anunțuri deranjante</translation>
 <translation id="3591584750136265240">Configurează comportamentul de autentificare la conectare</translation>
 <translation id="3624171042292187668">
@@ -1425,6 +1398,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="465099050592230505">Adresa URL a magazinului web pentru întreprinderi (politică învechită)</translation>
 <translation id="4665897631924472251">Setările de gestionare a extensiilor</translation>
 <translation id="4668325077104657568">Setare pentru imagini prestabilite</translation>
+<translation id="4670865688564083639">Minimum:</translation>
 <translation id="4671708336564240458">Îți permite să setezi dacă site-urile cu antecedente abuzive trebuie împiedicate să deschidă ferestre sau file noi.
 
       Dacă această politică este activată, site-urile cu antecedente abuzive vor fi împiedicate să deschidă ferestre sau file noi.
@@ -1788,17 +1762,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă politica nu este configurată sau nu este activată, <ph name="PRODUCT_NAME" /> va folosi setările existente pentru verificarea revocărilor online.</translation>
 <translation id="5728154254076636808">Activează crearea unor copii de roaming pentru datele profilului <ph name="PRODUCT_NAME" /></translation>
-<translation id="5728661376331491504">Această politică controlează lista de site-uri care se vor deschide într-un browser secundar.
-
-      Reține că pot fi adăugate elemente pe listă folosind și politica <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Când această politică nu este configurată, pe listă nu va fi adăugat niciun site.
-
-      Când această politică este configurată, fiecare element este considerat o regulă pentru ca ceva să se deschidă într-un browser secundar. <ph name="PRODUCT_NAME" /> folosește aceste reguli când alege dacă să deschidă sau nu un URL într-un browser secundar.
-
-      Când suplimentul Internet Explorer este prezent și activat, Internet Explorer revine la <ph name="PRODUCT_NAME" /> când regulile nu se potrivesc.
-
-      Dacă regulile se contrazic, <ph name="PRODUCT_NAME" /> folosește regula cea mai specifică.</translation>
 <translation id="5732972008943405952">Importă datele salvate pentru completarea automată a formularelor din browserul prestabilit la prima lansare</translation>
 <translation id="5765780083710877561">Descriere:</translation>
 <translation id="5770738360657678870">Canalul pentru dezvoltatori (poate fi instabil)</translation>
@@ -1836,6 +1799,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Adresele URL (cum ar fi https://example.com/some/path) vor putea fi folosite numai drept coduri ale aplicației U2F. Domeniile (cum ar fi example.com) vor putea fi folosite numai ca ID-uri webauthn RP. Prin urmare, pentru a acoperi atât API-urile U2F, cât și API-urile webauthn pentru un anumit site, trebuie listate atât adresa URL, cât și domeniul cu codul aplicației.</translation>
 <translation id="5836064773277134605">Limitați intervalul pentru portul UDP folosit de gazda de acces la distanță</translation>
+<translation id="5861856285460256766">Configurare cod de acces parental</translation>
 <translation id="5862253018042179045">Setați funcția de accesibilitate pentru feedback vocal ca stare prestabilită pe ecranul de conectare.
 
           Dacă această politică este activată, feedbackul vocal va fi activat când este afișat ecranul de conectare.
@@ -2280,13 +2244,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       NOTĂ: această politică se aplică numai pentru Chrome pe Android ce rulează pe dispozitive cu peste 1 GB de RAM. Pentru a aplica politica pe platforme diferite de Android, folosește SitePerProcess.
       </translation>
-<translation id="6922040258551909078">
-      Când politica este activată, politica în cloud are prioritate dacă este în conflict cu politica dispozitivului.
-      Când politica este dezactivată sau nu este configurată, politica dispozitivului are prioritate dacă este în conflict cu politica în cloud.
-      Pentru mai multe detalii despre prioritatea politicilor, accesează https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.
-      </translation>
 <translation id="6922884955650325312">Blochează pluginul <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Specifică numele furnizorului de căutare prestabilit. Dacă nu este completată sau este nesetată, va fi utilizat numele de gazdă specificat de adresa URL de căutare. Această politică este luată în considerare numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="6926703471186170050">Activează printarea duplex pe lungime</translation>
@@ -2352,14 +2309,6 @@ Dacă politica este setată la True sau nu este setată, modelul inteligent de r
       </translation>
 <translation id="706669471845501145">Permite site-urilor să afișeze notificări pe desktop</translation>
 <translation id="7072208053150563108">Frecvența de schimbare a parolelor de computer</translation>
-<translation id="7074513465313721551">Configurează lista de domenii în care Navigarea sigură va avea încredere. Aceasta înseamnă că:
-      Navigarea sigură nu va verifica dacă există resurse periculoase (de exemplu, phishing, programe malware sau software nedorit) dacă adresele URL corespund acestor domenii;
-      serviciul de protecție a descărcării pentru Navigarea sigură nu va verifica descărcările găzduite pe aceste domenii;
-      serviciul de protecție prin parolă pentru Navigarea sigură nu va verifica refolosirea parolei dacă adresa URL a paginii corespunde acestor domenii.
-
-      Dacă setarea este activată, Navigarea sigură va avea încredere în aceste domenii.
-      Dacă setarea este dezactivată sau neconfigurată, protecția prestabilită prin Navigarea sigură se aplică tuturor resurselor.
-      Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blochează ferestrele pop-up de pe aceste site-uri</translation>
 <translation id="7085803328069945025">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care au permisiunea să ceară utilizatorului să le acorde acces la un dispozitiv USB.
 
@@ -2443,12 +2392,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă această politică nu este configurată, lupa pentru ecran este dezactivată la afișarea inițială a ecranului de conectare. Utilizatorii pot oricând să activeze sau să dezactiveze lupa pentru ecran, iar starea sa pe ecranul de conectare persistă de la un utilizator la altul.</translation>
 <translation id="7249828445670652637">Activează certificatele CA <ph name="PRODUCT_OS_NAME" /> pentru aplicațiile ARC</translation>
-<translation id="725322441686394886">Dacă nu este configurată, în cazul în care Chrome Cleanup detectează software nedorit, poate să trimită la Google rapoarte cu metadate privind scanarea, conform politicii setate de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba apoi utilizatorul dacă dorește să elimine software-ul nedorit. Utilizatorul poate alege să trimită la Google rezultatele curățării pentru a contribui la detectarea software-ului nedorit în viitor. Aceste rezultate conțin metadate ale fișierului, extensii instalate automat și chei registry, așa cum este prevăzut în Documentația privind confidențialitatea Google Chrome.
-      Dacă este dezactivată, în cazul în care Chrome Cleanup detectează software nedorit, nu va trimite la Google rapoarte cu metadate privind scanarea, ignorând orice politică setată de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba utilizatorul dacă dorește să elimine software-ul nedorit. Rezultatele curățării nu vor fi trimise la Google și utilizatorul nu va avea opțiunea de a le raporta.
-
-      Dacă este activată, în cazul în care Chrome Cleanup detectează software nedorit, poate să trimită la Google rapoarte cu metadate privind scanarea, conform politicii setate de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba utilizatorul dacă dorește să elimine software-ul nedorit. Rezultatele curățării vor fi trimise la Google și utilizatorul nu va avea opțiunea de a împiedica această acțiune.
-
-      Această politică nu este disponibilă în instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Permite protecția gazdelor de acces la distanță</translation>
 <translation id="7260277299188117560">Actualizare automată p2p este activată</translation>
 <translation id="7261252191178797385">Imaginea de fundal a dispozitivului</translation>
@@ -2543,11 +2486,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
 <translation id="737655323154569539">Restricționează dimensiunea paginii de printare. Politica nesetată și setul gol sunt tratate ca lipsa oricărei restricții.</translation>
-<translation id="7417728346887499628">Dacă este dezactivată, împiedică Chrome Cleanup să scaneze sistemul pentru a detecta software nedorit și să îl elimine. Activarea manuală a funcției Chrome Cleanup din chrome://settings/cleanup este dezactivată.
-
-      Dacă este activată sau neconfigurată, Chrome Cleanup scanează periodic sistemul pentru a detecta software nedorit și, dacă detectează un astfel de software, va întreba utilizatorul dacă dorește să îl elimine. Activarea manuală a funcției Chrome Cleanup din chrome://settings este activată.
-
-      Această politică nu este disponibilă în instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Procentul cu care se ajustează intervalul de inactivitate în modul de prezentare (politică învechită)</translation>
 <translation id="7421483919690710988">Setați dimensiunea în octeți a memoriei cache pe disc pentru conținut media</translation>
 <translation id="7424751532654212117">Lista de excepții de la lista cu pluginuri dezactivate</translation>
@@ -2617,6 +2555,17 @@ nu poate fi stabilit de utilizator din setările browserului.
           Dacă o extensie nu este în listă sau dacă lista nu este configurată, apelul către API nu va reuși și va genera un cod de eroare.</translation>
 <translation id="7618907117929117943">Revino și rămâi la versiunea țintă dacă versiunea sistemului de operare este mai nouă decât ținta și poți prelua configurația la nivel de dispozitiv (inclusiv acreditările de rețea) prin revenire, apoi omite OOBE. Nu aplica și nu abandona revenirea dacă nu poți prelua configurația (deoarece versiunea țintă nu acceptă restabilirea datelor sau din cauza unei schimbări care nu acceptă revenirea la starea anterioară).
           Se acceptă în versiunea 70 și versiunile ulterioare de <ph name="PRODUCT_OS_NAME" />. Pentru clienții mai vechi, această valoare înseamnă că revenirea este dezactivată.</translation>
+<translation id="7620869951155758729">Această politică specifică ce configurație este utilizată pentru generarea și verificarea codului de acces parental.
+
+      |current_config| este folosită întotdeauna pentru generarea codului de acces și trebuie folosită pentru validarea codului de acces numai atunci când nu poate fi validată cu |future_config|.
+      |future_config| este configurația principală folosită pentru validarea codului de acces.
+      |old_configs| trebuie folosită pentru validarea codului de acces numai atunci când nu poate fi validată nici cu |future_config|, nici cu |current_config|.
+
+      Modul așteptat de a folosi această politică este de a schimba prin rotație treptat configurația codului de acces. Configurația nouă este întotdeauna introdusă în |future_config| și, în același timp, valoarea existentă este mutată în |current_config|. Valorile anterioare ale |current_config| sunt mutate în |old_configs| și eliminate după ciclul de rotație.
+
+      Această politică se aplică numai utilizatorilor copii.
+      Când această politică este setată, codul de acces parental poate fi verificat pe dispozitivul utilizatorului copil.
+      Când această politică este dezactivată, nu este posibil să verifici codul de acces parental pe dispozitivul utilizatorului copil.</translation>
 <translation id="7625444193696794922">Specifică un canal de lansare la care ar trebui să fie blocat acest dispozitiv.</translation>
 <translation id="7632724434767231364">Nume bibliotecă GSSAPI</translation>
 <translation id="7635471475589566552">Configurează limba aplicației din <ph name="PRODUCT_NAME" /> și împiedică modificarea limbii de către utilizatori. Dacă activați această setare, <ph name="PRODUCT_NAME" /> utilizează limba indicată. Dacă limba configurată nu este acceptată, este utilizată „en-US”. Dacă această setare este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME" /> utilizează limba preferată specificată de utilizator (dacă este configurată), limba sistemului sau limba „en-US” alternativă.</translation>
@@ -2974,12 +2923,6 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
           Pentru exemple de șabloane, accesează https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Dezactivează salvarea istoricului browserului</translation>
-<translation id="8498293625012059298">Configurează adresa URL de modificare a parolei (doar schemele HTTP și HTTPS). Serviciul de protecție a parolei va direcționa utilizatorii la această adresă URL pentru a-și schimba parola după ce se afișează un avertisment în browser.
-      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect noua amprentă a parolei pe această pagină de schimbare a parolei, asigură-te că pagina de schimbare a parolei respectă regulile prevăzute la https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Dacă această setare este activată, serviciul de protecție a parolei va direcționa utilizatorii la această adresă URL pentru a-și schimba parola după ce se afișează un avertisment în browser.
-      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție a parolei va direcționa utilizatorii la https://myaccounts.google.com pentru a-și schimba parola.
-      Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Setări prestabilite (utilizatorii le pot ignora)</translation>
 <translation id="8507835864888987300">Setează o versiune țintă pentru actualizările automate.
 
@@ -3191,12 +3134,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="8976248126101463034">Permite autentificarea gnubby pentru gazdele de acces la distanță</translation>
 <translation id="8976531594979650914">Folosește imprimanta prestabilită a sistemului ca setare prestabilită</translation>
 <translation id="8992176907758534924">Nu permite niciunui site să afișeze imagini</translation>
-<translation id="9012851181124311976">Configurează lista de adrese URL de autentificare de întreprindere (doar schemele HTTP și HTTPS). Amprenta parolei va fi scanată la aceste adrese URL și folosită pentru detectarea refolosirii parolelor.
-      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect amprenta parolei, asigură-te că paginile de conectare respectă regulile prevăzute în https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Dacă această setare este activată, serviciul de protecție prin parolă va scana amprenta parolei la aceste adrese URL pentru a detecta refolosirea parolelor.
-      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție prin parolă va scana amprenta parolei doar la https://accounts.google.com.
-      Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
 <translation id="9042911395677044526">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de către formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">

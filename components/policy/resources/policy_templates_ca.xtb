@@ -121,15 +121,6 @@
 <translation id="1291880496936992484">Advertiment: RC4 se suprimirà completament del producte <ph name="PRODUCT_NAME" /> a partir de la versió 52 (cap al setembre de 2016) i aquesta política deixarà de funcionar en aquell moment.
 
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
-<translation id="1297117713060236551">Aquesta política controla la llista de llocs web que mai no provocaran un canvi de navegador.
-
-      Tingues en compte que també es poden afegir elements a la llista a través de la política <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Si aquesta política es deixa sense establir, no s'afegirà cap lloc web a la llista.
-
-      Quan aquesta política es defineix, cadascun dels elements es tractarà com una regla, de manera similar que amb la política <ph name="URL_LIST_POLICY_NAME" />. Ara bé, la lògica és la contrària: les regles que coincideixin no obriran un navegador alternatiu.
-
-      A diferència de la política <ph name="URL_LIST_POLICY_NAME" />, les regles són bidireccionals. És a dir, si hi ha el complement d'Internet Explorer i està activat, també controlarà si <ph name="IE_PRODUCT_NAME" /> ha d'obrir aquests URL a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
 <translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
 <translation id="1307415922184340052">Envia el nom d'usuari i el del fitxer al servidor de les impressores natives amb cada tasca d'impressió. Amb la configuració predeterminada, no s'envia.</translation>
@@ -151,6 +142,7 @@
 
       Si aquesta política es deixa sense definir, s'utilitzarà el comportament predeterminat: no permetre cap fusió de connexions HTTP/2 en connexions que utilitzin certificats de client.</translation>
 <translation id="1353966721814789986">Pàgines d'inici</translation>
+<translation id="1354424209129232709">Màxim:</translation>
 <translation id="1359553908012294236">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà els inicis de sessió en mode de convidat. Aquests inicis són perfils de <ph name="PRODUCT_NAME" /> on totes les finestres utilitzen el mode d'incògnit.
 
       Si aquesta política s'estableix en "false", <ph name="PRODUCT_NAME" /> no permetrà que s'iniciïn els perfils de convidat.</translation>
@@ -757,6 +749,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
       Si aquesta política no es defineix, es pressuposa que s'aplica <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Nombre màxim de connexions paral·leles al servidor intermediari</translation>
+<translation id="2952347049958405264">Restriccions:</translation>
 <translation id="2956777931324644324">Aquesta política s'ha retirat a partir de <ph name="PRODUCT_NAME" />, versió 36.
 
       Especifica si l'extensió de certificats lligats al domini TLS ha d'estar activada.
@@ -855,13 +848,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Si deixes aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3205825995289802549">Maximitza la primera finestra del navegador en iniciar-lo per primera vegada</translation>
 <translation id="3211426942294667684">Configuració de l'inici de sessió al navegador</translation>
-<translation id="3213821784736959823">Controla si el client DNS integrat s'utilitza a <ph name="PRODUCT_NAME" />.
-
-Si aquesta política s'activa, s'utilitzarà el client DNS integrat, si està disponible.
-
-Si aquesta política no s'activa, el client DNS integrat no s'utilitzarà mai.
-
-Si aquesta política no es defineix, els usuaris podran canviar l'ús del client DNS integrat mitjançant l'edició de chrome://flags o mitjançant l'especificació d'una marca de línia d'ordres.</translation>
 <translation id="3214164532079860003">Si està activada, aquesta política fa que la pàgina d'inici s'importi des del navegador predeterminat actual. Si està desactivada, la pàgina d'inici no s'importarà. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="3219421230122020860">Mode d'incògnit disponible</translation>
 <translation id="3220624000494482595">Si l'aplicació de quiosc és per a Android, no controlarà la versió <ph name="PRODUCT_OS_NAME" />, tot i que aquesta política s'estableixi en "<ph name="TRUE" />".</translation>
@@ -995,19 +981,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Si aquesta política s'estableix en "DeveloperToolsDisallowed" (valor 2), no es podrà accedir a les Eines per a desenvolupadors i ja no es podran inspeccionar els elements del lloc web. Es desactivaran totes les dreceres de teclat i les entrades de menú o de menú contextual que obrin les Eines per a desenvolupadors o la Consola de JavaScript.</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="355118380775352753">Llocs web que s'obriran al navegador alternatiu</translation>
-<translation id="3556806727696701427">Activa Navegació segura a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
-
-      Si actives aquesta opció de configuració, Navegació segura sempre estarà activa.
-
-      Si desactives aquesta opció de configuració, Navegació segura no estarà mai activa.
-
-      Si actives o desactives aquesta opció de configuració, els usuaris no podran canviar ni substituir l'opció de configuració "Activa la protecció contra pesca de credencials i programari maliciós" a <ph name="PRODUCT_NAME" />.
-
-      Si aquesta política no s'estableix, aquesta opció de configuració s'activarà però l'usuari la podrà canviar.
-
-      Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.
-
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="3577251398714997599">Configuració d'anuncis per als llocs web amb anuncis intrusius</translation>
 <translation id="3591584750136265240">Configura el comportament de l'autenticació d'inici de sessió</translation>
 <translation id="3624171042292187668">
@@ -1412,6 +1385,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="465099050592230505">URL de la botiga web de l'empresa (obsolet)</translation>
 <translation id="4665897631924472251">Configuració de la gestió d'extensions</translation>
 <translation id="4668325077104657568">Configuració predeterminada de les imatges</translation>
+<translation id="4670865688564083639">Mínim:</translation>
 <translation id="4671708336564240458">Et permet definir si s'ha d'impedir que els llocs web amb experiències abusives s'obrin en finestres o pestanyes noves.
 
       Si aquesta política es defineix amb el valor "True", els llocs web amb experiències abusives no s'obriran en finestres ni pestanyes noves.
@@ -1764,17 +1738,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 
       Si aquesta política no està definida o si es defineix com a "false", <ph name="PRODUCT_NAME" /> utilitzarà la configuració de la comprovació de revocació en línia existent.</translation>
 <translation id="5728154254076636808">Permet crear còpies itinerants de les dades de perfil que tingui <ph name="PRODUCT_NAME" /></translation>
-<translation id="5728661376331491504">Aquesta política controla la llista de llocs web que cal obrir en un navegador alternatiu.
-
-      Tingues en compte que també es poden afegir elements a la llista a través de la política <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Si aquesta política es deixa sense establir, no s'afegirà cap lloc web a la llista.
-
-      Si aquesta política s'estableix, cadascun dels elements es tractarà com una regla perquè algun lloc web s'obri en un navegador alternatiu. <ph name="PRODUCT_NAME" /> utilitza aquestes regles quan ha de triar si un URL s'ha d'obrir en un navegador alternatiu.
-
-      Si hi ha present el complement d'Internet Explorer i està activat, Internet Explorer torna a <ph name="PRODUCT_NAME" /> quan les regles no coincideixen.
-
-      Si les regles es contradiuen, <ph name="PRODUCT_NAME" /> n'utilitza la més específica.</translation>
 <translation id="5732972008943405952">Importa les dades d'emplenament automàtic de formularis des del navegador predeterminat quan s'inicia per primera vegada</translation>
 <translation id="5765780083710877561">Descripció:</translation>
 <translation id="5770738360657678870">Canal per a desenvolupadors (pot ser inestable)</translation>
@@ -1812,6 +1775,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 
       Els URL (com ara https://example.com/un/camí) només s'identifiquen com a appID d'U2F. Els dominis (com ara example.com) només tornaran resultats com a identificadors RP de WebAuthn. Per tant, per permetre alhora les API de WebAuthn i d'U2F en un lloc web determinat, s'ha d'incloure tant el domini com l'URL de WebAuthn.</translation>
 <translation id="5836064773277134605">Restringeix l'interval de port UDP utilitzat per l'amfitrió d'accés remot</translation>
+<translation id="5861856285460256766">Configuració del codi d'accés parental</translation>
 <translation id="5862253018042179045">Estableix l'estat predeterminat de la funció d'accessibilitat de comentaris de veu a la pantalla d'inici de sessió.
 
           Si el valor d'aquesta política s'estableix com a vertader, els comentaris de veu s'activaran quan es mostri la pantalla d'inici de sessió.
@@ -2243,13 +2207,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       NOTA: aquesta política només s'aplica a Chrome als dispositius Android amb més d'1 GB de RAM. Per aplicar-la en altres plataformes que no siguin d'Android, fes servir SitePerProcess.
       </translation>
-<translation id="6922040258551909078">
-      Si la política s'estableix en "true", la política per al núvol té prioritat si entra en conflicte amb la política de l'equip.
-      Si la política s'estableix en "false" o no es configura, la política de l'equip té prioritat si entra en conflicte amb la política per al núvol.
-      Per obtenir més informació sobre la prioritat de les polítiques, visita la pàgina: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Aquesta política no està disponible en instàncies de Windows que no s'hagin unit a un domini de <ph name="MS_AD_NAME" />.
-      </translation>
 <translation id="6922884955650325312">Bloqueja el connector <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Especifica el nom del proveïdor de cerca predeterminat. Si es deixa buit o no es defineix, s'utilitzarà el nom de l'amfitrió especificat a l'URL de cerca. Aquesta política només es tindrà en compte si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="6926703471186170050">Permet la impressió a doble cara per la vora llarga</translation>
@@ -2317,14 +2274,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       </translation>
 <translation id="706669471845501145">Permet que els llocs mostrin les notificacions d'escriptori</translation>
 <translation id="7072208053150563108">Freqüència de canvi de la contrasenya de l'ordinador</translation>
-<translation id="7074513465313721551">Configura la llista de dominis en què Navegació segura confiarà. És a dir:
-      Navegació segura no cercarà recursos perillosos (per exemple, programari de pesca de credencials, maliciós o no desitjat) si els URL coincideixen amb aquests dominis.
-      El servei de protecció a l'hora de baixar contingut de Navegació segura no revisarà les baixades allotjades en aquests dominis.
-      El servei de protecció de contrasenyes de Navegació segura no cercarà la reutilització de contrasenyes si l'URL de la pàgina coincideix amb aquests dominis.
-
-      Si aquesta opció de configuració està activada, Navegació segura confiarà en aquests dominis.
-      Si aquesta opció de configuració està desactivada o no s'estableix, s'aplicarà la protecció predeterminada de Navegació segura a tots els recursos.
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloqueja les finestres emergents en aquests llocs</translation>
 <translation id="7085803328069945025">Permet definir una llista de patrons d'URL que especifiquin llocs web que poden demanar a l'usuari que els concedeixi accés a un dispositiu USB.
 
@@ -2403,13 +2352,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si no s'estableix aquesta política, la lupa es desactivarà la primera vegada que es mostri la pantalla d'inici de sessió. Els usuaris poden activar o desactivar la lupa en qualsevol moment i el seu estat a la pàgina d'inici de sessió es mantindrà entre els usuaris.</translation>
 <translation id="7249828445670652637">Activa l'ús de certificats de CA de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
-<translation id="725322441686394886">Si no s'estableix, en el cas que Neteja de Chrome detecti programari no desitjat, podrà comunicar les metadades de l'escaneig a Google de conformitat amb la política establerta per SafeBrowsingExtendedReportingEnabled. A continuació, Neteja de Chrome preguntarà a l'usuari si vol netejar el programari no desitjat. L'usuari podrà optar per compartir els resultats de la neteja amb Google per contribuir a la detecció de programari no desitjat en el futur. Aquests resultats contenen metadades de fitxers, extensions instal·lades automàticament i claus de registre, segons es descriu al llibre blanc de privadesa de Chrome.
-
-      Si es desactiva, en el cas que Neteja de Chrome detecti programari no desitjat, no comunicarà les metadades de l'escaneig a Google i substituirà qualsevol política establerta per SafeBrowsingExtendedReportingEnabled. Neteja de Chrome preguntarà a l'usuari si vol netejar el programari no desitjat. Els resultats de la neteja no es comunicaran a Google i l'usuari no podrà fer-ho.
-
-      Si s'activa, en el cas que Neteja de Chrome detecti programari no desitjat, podrà comunicar les metadades de l'escaneig a Google de conformitat amb la política establerta per SafeBrowsingExtendedReportingEnabled. Neteja de Chrome preguntarà a l'usuari si vol netejar el programari no desitjat. Els resultats de la neteja es comunicaran a Google i l'usuari no podrà impedir-ho.
-
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Activa l'ocultació d'amfitrions d'accés remot</translation>
 <translation id="7260277299188117560">Actualització automàtica de P2P activada</translation>
 <translation id="7261252191178797385">Imatge de fons de pantalla del dispositiu</translation>
@@ -2504,11 +2446,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="737655323154569539">Restringeix la mida de la pàgina d'impressió. Si la política no es defineix o es deixa buida, no s'aplica cap restricció.</translation>
-<translation id="7417728346887499628">Si es desactiva, Neteja de Chrome no podrà escanejar el sistema per detectar-hi programari no desitjat ni per netejar-lo. L'opció per activar Neteja de Chrome manualment des de chrome://settings/cleanup estarà desactivada.
-
-      Si s'activa o es deixa sense establir, Neteja de Chrome escanejarà periòdicament el sistema per detectar-hi programari no desitjat i, si en troba, preguntarà a l'usuari si el vol suprimir. L'opció per activar Neteja de Chrome manualment des de chrome://settings estarà activada.
-
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Percentatge que permet ajustar el retard d'inactivitat en mode de presentació (desactivat)</translation>
 <translation id="7421483919690710988">Defineix la mida de la memòria cau del disc multimèdia en bytes</translation>
 <translation id="7424751532654212117">Llista d'excepcions de la llista de connectors desactivats</translation>
@@ -2578,6 +2515,17 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si no s'estableix la llista o no s'hi inclou alguna extensió, les crides a l'API tornaran un codi d'error.</translation>
 <translation id="7618907117929117943">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació i es pot dur a terme una configuració a nivell del dispositiu (que inclogui les credencials de xarxa) mitjançant la reversió, i també ometre OOBE després de la reversió. No duguis a terme o cancel·lis la reversió si no és possible, ja sigui perquè la versió de destinació no admet la restauració de dades o a causa d'un canvi incompatible amb versions anteriors.
           S'admet a <ph name="PRODUCT_OS_NAME" /> en la versió 70 i posteriors. En clients més antics, aquest valor indica que la reversió està desactivada.</translation>
+<translation id="7620869951155758729">Aquesta política especifica la configuració que s'utilitza per generar i verificar el codi d'accés parental.
+
+      S'utilitza sempre |current_config| per generar el codi d'accés i s'ha de fer servir per validar-lo només quan no es pugui amb |future_config|.
+      |future_config| és la configuració principal per validar el codi d'accés.
+      |old_configs| només s'ha d'utilitzar per validar el codi d'accés quan no es pugui amb |future_config| ni amb |current_config|.
+
+      La manera prevista d'utilitzar aquesta política és alternant gradualment la configuració del codi d'accés. La configuració nova es defineix sempre a |future_config| i, al mateix temps, el valor existent es mou a |current_config|. Els valors anteriors de |current_config| es mouen a |old_configs| i se suprimeixen quan finalitza el cicle de rotació.
+
+      Aquesta política s'aplica només als menors.
+      Si s'estableix aquesta política, el codi d'accés parental es pot verificar al dispositiu dels menors.
+      Si no s'estableix aquesta política, el codi d'accés parental no es pot verificar al dispositiu dels menors.</translation>
 <translation id="7625444193696794922">Especifica el canal de llançament al qual aquest dispositiu s'hauria de bloquejar.</translation>
 <translation id="7632724434767231364">Nom de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Defineix la configuració regional de les aplicacions a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris la modifiquin. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> fa servir la configuració regional especificada. Si aquesta configuració regional no és compatible, es fa servir "en-US" en lloc seu. Si aquest paràmetre està desactivat o bé si no està configurat, <ph name="PRODUCT_NAME" /> fa servir la configuració regional preferida que hagi especificat l'usuari (en cas que n'hagi configurat cap), la configuració regional del sistema o bé la configuració regional alternativa "en-US".</translation>
@@ -2939,12 +2887,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
           Per veure exemples de patrons, consulteu l'enllaç https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Desactiva el desament de l'historial de navegació</translation>
-<translation id="8498293625012059298">Configura l'URL per canviar la contrasenya (només esquemes HTTP i HTTPS). El servei de protecció de contrasenyes enviarà els usuaris a aquest URL perquè canviïn la contrasenya després que vegin un advertiment al navegador.
-      Perquè <ph name="PRODUCT_NAME" /> pugui capturar correctament l'empremta digital de la nova contrasenya en aquesta pàgina per canviar de contrasenya, assegura't que la pàgina segueixi les directrius descrites a https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si aquesta opció de configuració està activada, el servei de protecció de contrasenyes enviarà els usuaris a aquest URL perquè canviïn la contrasenya després que vegin un advertiment al navegador.
-      Si aquesta opció de configuració està desactivada o no s'estableix, el servei de protecció de contrasenyes enviarà els usuaris a https://myaccounts.google.com perquè canviïn la contrasenya.
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Configuració predeterminada (els usuaris la poden sobreescriure)</translation>
 <translation id="8507835864888987300">Defineix una versió de destinació per a les actualitzacions automàtiques.
 
@@ -3147,12 +3089,6 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="8976248126101463034">Permet l'autenticació Gnubby als amfitrions d'accés remot</translation>
 <translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
-<translation id="9012851181124311976">Configura la llista d'URL d'inici de sessió per a empreses (només esquemes HTTP i HTTPS). L'empremta digital de la contrasenya es capturarà en aquests URL i s'utilitzarà per detectar la reutilització de contrasenyes.
-      Perquè <ph name="PRODUCT_NAME" /> pugui capturar les empremtes digitals correctament, assegura't que les pàgines d'inici de sessió compleixin les directrius descrites a https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si aquesta opció de configuració està activada, el servei de protecció de contrasenyes capturarà l'empremta digital de la contrasenya en aquests URL per detectar la reutilització de contrasenyes.
-      Si aquesta opció de configuració està desactivada o no s'estableix, el servei de protecció de contrasenyes només capturarà l'empremta digital de la contrasenya a https://accounts.google.com.
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">

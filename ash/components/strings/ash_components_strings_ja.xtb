@@ -145,6 +145,7 @@
 <translation id="671928215901716392">画面をロック</translation>
 <translation id="6727005317916125192">前のウィンドウ</translation>
 <translation id="6740781404993465795">次の単語または文字を選択する</translation>
+<translation id="6755851152783057058">最後に使用した入力方法に切り替えます</translation>
 <translation id="6760706756348334449">音量を下げる</translation>
 <translation id="6941333068993625698">フィードバックを送信します</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
@@ -155,6 +156,7 @@
 <translation id="7237562915163138771">アドレスバーにウェブアドレスを入力して、<ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> キーを押します</translation>
 <translation id="7254764037241667478">端末をスリープモード（停止）にします</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> キーまたは<ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" />キーを押す</translation>
+<translation id="7422707470576323858">次の入力方法に切り替えます</translation>
 <translation id="743754632698445141">アプリの固定を解除します</translation>
 <translation id="7439718573248533901">次の文字を削除する（カーソルの右側を削除する）</translation>
 <translation id="7611271430932669992">ポップアップとダイアログにフォーカスを移動します</translation>

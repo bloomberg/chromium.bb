@@ -127,7 +127,7 @@
 <translation id="123081309365616809">ડિવાઇસ પર કન્ટેન્ટને કાસ્ટ કરવાનું ચાલુ કરો</translation>
 <translation id="1231349879329465225">ફાસ્ટ ટ્રાંઝિશનને ચાલુ અથવા બંધ કરવાની મંજૂરી આપે છે.
       આ ડિવાઇસ પર રહેલા બધા વપરાશકર્તાઓ અને બધા ઇન્ટરફેસ પર લાગુ થાય છે.
-      ફાસ્ટ ટ્રાંઝિશનનો ઉપયોગ કરવામાં આવે તે માટે, આ સેટિંગ અને પર-નેટવર્ક ONC પ્રોપર્ટી બન્ને ચાલુ કરવી પડશે.
+      ફાસ્ટ ટ્રાંઝિશનનો ઉપયોગ કરવા, આ સેટિંગ તેમજ નેટવર્ક દીઠ ONC પ્રોપર્ટી ચાલુ કરવા જરૂરી છે.
       એકવાર સેટ થઈ જાય તે પછી, જ્યાં સુધી ફાસ્ટ ટ્રાંઝિશનને બંધ કરવા માટે પૉલિસી બદલાઈ નથી જતી ત્યાં સુધી ફાસ્ટ ટ્રાંઝિશન ચાલુ રહે છે.
 
       જો આ પૉલિસી સેટ કરેલી નથી અથવા false પર સેટ કરેલી છે, તો ફાસ્ટ ટ્રાંઝિશનનો ઉપયોગ થતો નથી.
@@ -138,15 +138,6 @@
 <translation id="1291880496936992484">ચેતવણી: વર્ઝન 52 પછી <ph name="PRODUCT_NAME" />માંથી RC4 પૂરેપૂરી રીતે દૂર કરવામાં આવશે (સપ્ટેમ્બર 2016ની આસપાસ) અને તે પછી આ પોલિસી કામ કરવાનું બંધ કરશે.
 
       જો પોલિસી સેટ કરેલ નથી અથવા તો false પર સેટ કરેલ છે, તો પછી TLSમાં RC4 સાઇફર સ્યૂટ ચાલુ કરવામાં આવશે નહિ. નહિતર, એ જૂના સર્વર સાથે બંધબેસતું રાખવા માટે એ true પર સેટ કરવામાં આવી શકે છે. આ એક કામચલાઉ પગલું છે અને સર્વરને ફરીથી ગોઠવવું જોઈએ.</translation>
-<translation id="1297117713060236551">આ નીતિ વેબસાઇટની સૂચિને નિયંત્રિત કરે છે કે જે ક્યારેય બ્રાઉઝર સ્વિચ કરશે નહીં.
-
-      નોંધો કે આ સૂચિમાં ઘટકો, <ph name="USE_IE_SITELIST_POLICY_NAME" /> નીતિ મારફતે પણ ઉમેરવામાં આવી શકે છે.
-
-      જ્યારે આ નીતિ સેટ કર્યા વિના છોડી દીધી હોય, ત્યારે સૂચિમાં કોઈ વેબસાઇટ ઉમેરવામાં આવતી નથી.
-
-      જ્યારે આ નીતિ સેટ કરી હોય, ત્યારે દરેક આઇટમને <ph name="URL_LIST_POLICY_NAME" /> નીતિની જેમ નિયમ તરીકે ગણવામાં આવે છે. જો કે, તર્ક ઉલટાવવામાં આવ્યો છે: મેળ ખાતા નિયમો વૈકલ્પિક બ્રાઉઝર ખોલશે નહીં.
-
-      <ph name="URL_LIST_POLICY_NAME" /> કરતાં વિપરીત, નિયમો બન્ને દિશા નિર્દેશો પર લાગુ થાય છે. એટલે કે, જ્યારે Internet Explorer એડ-ઇન હાજર અને ચાલુ હોય, ત્યારે તે <ph name="IE_PRODUCT_NAME" />એ આ URLsને <ph name="PRODUCT_NAME" />માં ખોલવા જોઈએ કે નહીં તેને પણ નિયંત્રિત કરે છે.</translation>
 <translation id="1297182715641689552">.pac પ્રૉક્સી સ્ક્રિપ્ટનો ઉપયોગ કરો</translation>
 <translation id="1304973015437969093">ચુપચાપ ઇન્સ્ટોલ કરવાના ઍક્સ્ટેન્શન/ઍપ્લિકેશન ID અને અપડેટ URL</translation>
 <translation id="1307415922184340052">દરેક પ્રિન્ટ જોબ સાથે મૂળ પ્રિન્ટર સર્વર પર વપરાશકર્તાનું નામ અને ફાઇલનું નામ મોકલો. ડિફૉલ્ટ મોકલવા માટે નથી.</translation>
@@ -176,6 +167,7 @@
 
 જો આ નીતિને સેટ કર્યા વિનાની રાખવામાં આવશે, તો ક્લાયન્ટ પ્રમાણપત્રનો ઉપયોગ કરતાં કનેક્શન પર કોઈપણ HTTP/2 કનેક્શનની સહવર્ધન પ્રક્રિયાને મંજૂરી ન આપવાની ડિફૉલ્ટ વર્તણૂકનો ઉપયોગ કરવામાં આવશે.</translation>
 <translation id="1353966721814789986">સ્ટાર્ટઅપ પૃષ્ઠો</translation>
+<translation id="1354424209129232709">મહત્તમ:</translation>
 <translation id="1354452738176731363">જ્યારે આ નીતિને false પર સેટ કરેલી હોય, ત્યારે વપરાશકર્તાએ લૉગ ઇન કરેલું હોવા પર ડિવાઇસ પર ઑડિયો આઉટપુટ ઉપલબ્ધ થશે નહીં.
 
       આ નીતિ તમામ પ્રકારનાં ઑડિયો આઉટપુટને પ્રભાવિત કરે છે અને ફક્ત બિલ્ટ-ઇન સ્પીકરને જ નહીં. ઑડિયો ઍક્સેસિબિલિટી સુવિધાઓ પણ આ નીતિ દ્વારા નિયંત્રિત છે. જો વપરાશકર્તા માટે સ્ક્રીન રીડર આવશ્યક છે, તો આ નીતિને ચાલુ કરશો નહીં.
@@ -775,17 +767,6 @@
           આ નીતિ વૈકલ્પિક છે. જો તે સેટ નથી, તો ડિફૉલ્ટ જે UTF-8 છે તેનો ઉપયોગ કરશે.
 
           આ નીતિ તો જ લાગુ છે જો 'DefaultSearchProviderEnabled' નીતિ ચાલુ કરેલી છે.</translation>
-<translation id="2682697254900811431">Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME" /> to Google and prevents users from changing this setting.
-
-      If this setting is enabled, anonymous reporting of usage and crash-related
-      data is sent to Google.  If it is disabled, this information is not sent
-      to Google.  In both cases, users cannot change or override the setting.
-      If this policy is left not set, the setting will be what the user chose
-      upon installation / first run.
-
-      This policy is not available on Windows instances that are not joined to
-      a <ph name="MS_AD_NAME" /> domain.  (For Chrome OS, see
-      DeviceMetricsReportingEnabled.)</translation>
 <translation id="268577405881275241">ડેટા સંકોચન પ્રૉક્સી સુવિધા ચાલુ કરો</translation>
 <translation id="2693108589792503178">પાસવર્ડ બદલો URLને ગોઠવો.</translation>
 <translation id="2696531058295423290"><ph name="PRODUCT_OS_NAME" /> પર <ph name="PLUGIN_VM_NAME" />નો ઉપયોગ કરવાની ડિવાઇસોને મંજૂરી આપો.</translation>
@@ -886,6 +867,7 @@
       જો આ નીતિ સેટ કરેલ ન હોય, તો <ph name="PRINTERS_ALLOW_ALL" />ને માની લેવામાં આવે છે.
       </translation>
 <translation id="2908277604670530363">પ્રૉક્સી સર્વર સાથે એકસાથે જોડી શકાતાં કનેક્શનની મહત્તમ સંખ્યા</translation>
+<translation id="2952347049958405264">પ્રતિબંધો:</translation>
 <translation id="2956777931324644324">આ નીતિને <ph name="PRODUCT_NAME" /> વર્ઝન 36ની સાથે જ સમાપ્ત કરવામાં આવી છે.
 
       TLS ડોમેન-બાઉન્ડ પ્રમાણપત્રો એક્સ્ટેંશનને ચાલુ કરવું જોઈએ કે કેમ તેનો ઉલ્લેખ કરે છે.
@@ -1001,13 +983,6 @@
           આ નીતિને સેટ કર્યા વિના છોડવી વપરાશકર્તાઓને પોતાની જાતે પ્રૉક્સી સેટિંગને પસંદ કરવાની મંજૂરી આપશે.</translation>
 <translation id="3205825995289802549">પહેલીવાર શરૂ કરવા પર પ્રથમ બ્રાઉઝર વિંડોને મોટી કરવી</translation>
 <translation id="3211426942294667684">બ્રાઉઝર સાઇન ઇન સેટિંગ</translation>
-<translation id="3213821784736959823">બિલ્ટ-ઇન DNS ક્લાયંટને <ph name="PRODUCT_NAME" /> માં ઉપયોગમાં લેવું કે નહીં તે નિયંત્રિત કરે છે.
-
-      જો આ નીતિ સાચા પર સેટ હોય, તો બિલ્ટ-ઇન DNS ક્લાયંટનો ઉપયોગ થશે, જો ઉપલબ્ધ હોય તો.
-
-      જો આ નીતિ ખોટા પર સેટ હોય, તો બિલ્ટ-ઇન DNS ક્લાયંટનો ક્યારેય ઉપયોગ થશે નહીં.
-
-      જો આ નીતિ સેટ કર્યા વગર છોડી હોય, તો વપરાશકર્તાઓ બિલ્ટ-ઇન DNS ક્લાયંટનો ઉપયોગ chrome://flags ને સંપાદિત કરીને કરવો કે એક આદેશ-રેખા ધ્વજનો ઉલ્લેખ કરીને કરવો તે ફેરફાર કરવામાં સક્ષમ હશે.</translation>
 <translation id="3214164532079860003">જો સક્ષમ કરેલું હોય, તો આ નીતિ મુખ પૃષ્ઠને વર્તમાન ડિફૉલ્ટ બ્રાઉઝરથી આયાત કરવાની ફરજ પાડે છે.
 
       જો અક્ષમ હોય, તો મુખ પૃષ્ઠ આયાત કરવામાં આવતું નથી.
@@ -1163,13 +1138,6 @@
       જો આ નીતિ 'DeveloperToolsDisallowed' (મૂલ્ય 2) પર સેટ કરાઈ હોય તો, હવે ડેવલપર સાધન ઍક્સેસ કરી શકાશે નહીં અને વેબ-સાઇટનાં તત્ત્વની તપાસ થઈ શકે નહીં. ડેવલપર સાધન અથવા જાવાસ્ક્રિપ્ટ કન્સોલ ખોલવા માટેનાં કોઈપણ કીબોર્ડ શૉર્ટકટ તેમજ કોઈપણ મેનૂ કે સંદર્ભ મેનૂ એન્ટ્રી બંધ થશે.</translation>
 <translation id="3547954654003013442">પ્રૉક્સી સેટિંગ</translation>
 <translation id="355118380775352753">વૈકલ્પિક બ્રાઉઝરમાં ખોલવા માટેની વેબસાઇટ</translation>
-<translation id="3556806727696701427"><ph name="PRODUCT_NAME" />ની સુરક્ષિત બ્રાઉઝિંગ સુવિધાને ચાલુ કરે છે અને વપરાશકર્તાઓને આ સેટિંગ બદલતા અટકાવે છે.
-    જો તમે આ સેટિંગ ચાલુ કરો, તો સુરક્ષિત બ્રાઉઝિંગ હંમેશા સક્રિય રહે છે.
-    જો તમે આ સેટિંગ બંધ કરો, તો સુરક્ષિત બ્રાઉઝિંગ ક્યારેય સક્રિય થતું નથી.
-    જો તમે આ સેટિંગ ચાલુ અથવા બંધ કરો, તો વપરાશકર્તાઓ <ph name="PRODUCT_NAME" />માં "ફિશિંગ અને માલવેર સુરક્ષા ચાલુ કરો" બદલી અથવા ઓવરરાઇડ કરી શકતા નથી.
-     જો આ નીતિ સેટ કર્યા વિનાની રાખી છે, તો આ ચાલુ થશે પરંતુ વપરાશકર્તા તેને બદલી શકશે.
-    સુરક્ષિત બ્રાઉઝિંગ વિશે વધુ માહિતી માટે https://developers.google.com/safe-browsing જુઓ.
-    આ નીતિ <ph name="MS_AD_NAME" /> ડોમેન સાથે ન જોડાયેલી હોય તેવી Windows આવૃત્તિઓ પર ઉપલબ્ધ નથી.</translation>
 <translation id="3577251398714997599">ખલેલ પાડતી જાહેરાતોવાળી સાઇટ માટે જાહેરાતની સેટિંગ</translation>
 <translation id="3591584750136265240">લોગિન પ્રમાણીકરણ વર્તણૂંકને ગોઠવો</translation>
 <translation id="3624171042292187668">
@@ -1352,20 +1320,6 @@
       જો false પર સેટ કરવામાં આવ્યું હોય અથવા સેટ ન કરવામાં આવ્યું હોય, તો કોઈ પૅકેટ્સ મોકલવામાં આવશે નહિ.</translation>
 <translation id="3950239119790560549">સમય મર્યાદાઓને અપડેટ કરો</translation>
 <translation id="3956686688560604829">લેગસી બ્રાઉઝર સહાય માટે Internet Explorerની SiteList નીતિનો ઉપયોગ કરો.</translation>
-<translation id="3957134519352019843">Enables the use of a default search provider.
-
-          If you enable this setting, a default search is performed when the user types text in the omnibox that is not a URL.
-
-          You can specify the default search provider to be used by setting the rest of the default search policies. If these are left empty, the user can choose the default provider.
-
-          If you disable this setting, no search is performed when the user enters non-URL text in the omnibox.
-
-          If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
-
-          If this policy is left not set, the default search provider is enabled, and the user will be able to set the search provider list.
-
-          This policy is not available on Windows instances that are not joined
-          to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="3958586912393694012">Smart Lock નો ઉપયોગ કરવાની મંજૂરી આપો</translation>
 <translation id="3963602271515417124">જો true હોય, તો ઉપકરણ અને પ્રમાણપત્ર માટે મંજૂરી આપેલ રિમોટ પ્રમાણન આપમેળે બનશે અને ઉપકરણ સંચાલન સર્વર પર અપલોડ થશે.
 
@@ -1661,20 +1615,12 @@
           જો આ નીતિ true પર સેટ કરી છે, તો કીબોર્ડની કીઝની ટોચની પંક્તિ પ્રતિ ડિફૉલ્ટ ફંક્શન કી આદેશ બનાવશે. શોધ કીને મીડિયા કીઝ પરની તેમની વર્તણૂક પર પાછા જવા માટે દબાવવી પડે છે.
 
           જો આ false પર સેટ કરી છે અથવા સેટ કર્યા વિનાની રહેવા દીધી છે, તો કીબોર્ડ પ્રતિ ડિફૉલ્ટ મીડિયા કી આદેશ અને જ્યારે શોધ કી રાખેલી હોય ત્યારે ફંક્શન કી આદેશ બનાવશે.</translation>
-<translation id="4634322756082542180">આ નીતિ વપરાશકર્તાને બ્લેકલિસ્ટ કરેલ URL પરથી વેબ પેજને લોડ કરવાથી અટકાવે છે. બ્લેકલિસ્ટ એવી URL પેટર્નની સૂચિ પૂરી પાડે છે જે કયા URL બ્લેકલિસ્ટ કરવામાં આવશે તેનો ઉલ્લેખ કરે છે.
-
-      URL પેટર્નને https://www.chromium.org/administrators/url-blacklist-filter-format મુજબ ફૉર્મેટ કરવી જોઈએ.
-
-      URL વ્હાઇટલિસ્ટ નીતિમાં અપવાદોને વ્યાખ્યાયિત કરવામાં આવી શકે છે. આ નીતિઓ 1000 એન્ટ્રીઓ સુધી સીમિત છે; ત્યારપછીની એન્ટ્રીઓને અવગણવામાં આવશે.
-
-      નોંધ લેશો કે આંતરિક 'chrome://*' URL ને અવરોધિત કરવાની ભલામણ કરવામાં આવતી નથી કેમ કે આ અનપેક્ષિત ભૂલોનું કારણ બની શકે છે.
-
-      જો આ નીતિ સેટ ન કરવામાં આવી હોય, તો બ્રાઉઝરમાં કોઈ URL બ્લેકલિસ્ટ કરવામાં આવશે નહીં.</translation>
 <translation id="4639407427807680016">બ્લેકલિસ્ટમાંથી બાકાત રાખવા માટે મૂળ મેસેજિંગ હોસ્ટ્સના નામ</translation>
 <translation id="4650759511838826572">URL પ્રોટોકોલ યોજનાઓને બંધ કરો</translation>
 <translation id="465099050592230505">એન્ટરપ્રાઇઝ વેબ સ્ટોર URL (ટાળેલ)</translation>
 <translation id="4665897631924472251">એક્સ્ટેન્શન સંચાલન સેટિંગ્સ</translation>
 <translation id="4668325077104657568">ડિફોલ્ટ છબી સેટિંગ</translation>
+<translation id="4670865688564083639">ન્યૂનતમ:</translation>
 <translation id="4671708336564240458">દુરૂપયોગના અનુભવવાળી સાઇટને કોઈ નવી વિંડો અથવા ટૅબ ખોલવાથી અટકાવવા માટે તમને સેટિંગ કરવાની મંજૂરી આપે છે.
 
       જો આ નીતિને સક્ષમ કરવામાં આવે, તો દુરૂપયોગના અનુભવવાળી સાઇટને કોઈ નવી વિંડો અથવા ટૅબ ખોલવાથી અટકાવવામાં આવશે.
@@ -1750,21 +1696,6 @@
 <translation id="4816674326202173458">એન્ટરપ્રાઇઝ વપરાશકર્તાને પ્રાથમિક અને દ્વિતીય એમ બંને થવાની મંજૂરી આપો  (બિન-સંચાલિત વપરાશકર્તાઓ માટે ડિફોલ્ટ વર્તણૂક)</translation>
 <translation id="4826326557828204741">બેટરી પાવર પર ચાલુ હોવ ત્યારે નિષ્ક્રિય વિલંબ પર પહોંચવા પર લેવા માટેનું પગલું</translation>
 <translation id="4834526953114077364">પૂરતી ખાલી જગ્યા ન થાય ત્યાં સુધી તાજેતરમાં ખૂબ ઓછા ઉપયોગમાં લીધેલા વપરાશકર્તાઓમાંથી છેલ્લા 3 મહિનાની અંદર લોગ ઇન ન થયેલાને દૂર કર્યા છે</translation>
-<translation id="4852080537521553509">Allows you to specify the behavior on startup.
-
-          If you choose 'Open New Tab Page' the New Tab Page will always be opened when you start <ph name="PRODUCT_NAME" />.
-
-          If you choose 'Restore the last session', the URLs that were open last time <ph name="PRODUCT_NAME" /> was closed will be reopened and the browsing session will be restored as it was left.
-          Choosing this option disables some settings that rely on sessions or that perform actions on exit (such as Clear browsing data on exit or session-only cookies).
-
-          If you choose 'Open a list of URLs', the list of 'URLs to open on startup' will be opened when a user starts <ph name="PRODUCT_NAME" />.
-
-          If you enable this setting, users cannot change or override it in <ph name="PRODUCT_NAME" />.
-
-          Disabling this setting is equivalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME" />.
-
-          This policy is not available on Windows instances that are not joined
-          to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="4858735034935305895">પૂર્ણસ્ક્રીન મોડની મંજૂરી આપો</translation>
 <translation id="4861767323695239729">વપરાશકર્તાના સત્રમાં મંજૂર કરેલ ઇનપુટ પદ્ધતિઓની ગોઠવણી કરો</translation>
 <translation id="487460824085252184">આપમેળે સ્થાનાંતરણ કરો, વપરાશકર્તાની સંમતિ માગશો નહીં.</translation>
@@ -1830,16 +1761,6 @@
       જો નીતિ 0 પર સેટ કરેલી હોય, તો મશીન એકાઉન્ટ પાસવર્ડ બદલવાનું બંધ કરવામાં આવે છે.
 
       નોંધ રાખશો કે જો ક્લાયન્ટ વધુ સમયની અવધિ માટે ઑફલાઇન રહ્યા હોય, તો પાસવર્ડ ઉલ્લેખિત દિવસોની સંખ્યા કરતાં જૂના થઈ શકે છે.</translation>
-<translation id="5102187683953991824">Identify if <ph name="PRODUCT_NAME" /> can allow download without Safe Browsing checks when it's from a trusted source.
-
-      When False, downloaded files will not be sent to be analyzed by Safe Browsing when it's from a trusted source.
-
-      When not set (or set to True), downloaded files are sent to be analyzed by Safe Browsing, even when it's from a trusted source.
-
-      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option. These restrictions do not apply to the save / download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
-
-      This policy is not available on Windows instances that are not joined
-      to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="5105313908130842249">જ્યારે બેટરી પાવર પર ચાલી રહ્યું હોય ત્યારે સ્ક્રીન લૉક વિલંબ</translation>
 <translation id="5108031557082757679">બંધ કરેલ એન્ટરપ્રાઇઝ ઉપકરણ પ્રિન્ટર</translation>
 <translation id="5130288486815037971">TLS માંના RC4 સાઇફર સ્યૂટ્સ સક્ષમ કરેલ છે કે કેમ</translation>
@@ -1891,18 +1812,6 @@
       જો આ નીતિ સેટ કરેલી નથી, તો સમય સમાપ્તિ તરીકે 0 મિલિસેકન્ડનો ઉપયોગ કરવામાં આવશે.
       આ નીતિ મિલિસેકન્ડમાં નિર્દિષ્ટ કરવામાં આવે છે.</translation>
 <translation id="523505283826916779">ઍક્સેસિબિલિટી સેટિંગ્સ</translation>
-<translation id="5235958368503433463">Configures the type of the default home page in <ph name="PRODUCT_NAME" /> and prevents users from changing home page preferences. The home page can either be set to a URL you specify or set to the New Tab Page.
-
-          If you enable this setting, the New Tab Page is always used for the home page, and the home page URL location is ignored.
-
-          If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.
-
-          If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME" />.
-
-          Leaving this policy not set will allow the user to choose whether the new tab page is their home page on their own.
-
-          This policy is not available on Windows instances that are not joined
-          to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="5236882091572996759">જો નીતિ True પર સેટ હોય અથવા અનસેટ હોય, તો ઑડિઓ ચલાવતી વખતે વપરાશકર્તાને નિષ્ક્રિય ગણવામાં આવતો નથી. આ નિષ્ક્રિય સમયસમાપ્તિ પર પહોંચવાથી અને નિષ્ક્રિય ક્રિયા લેવાથી અટકાવે છે. તેમ છતાં, ઑડિઓ પ્રવૃત્તિને ધ્યાનમાં ન લેતા, ગોઠવેલ સમય સમાપ્ત થાય પછી સ્ક્રીન મંદ, સ્ક્રીન બંધ અને સ્ક્રીન લૉક કરે છે.
 
          જો આ નીતિ False પર સેટ હોય, તો ઑડિઓ પ્રવૃત્તિ વપરાશકર્તાને નિષ્ક્રિય ગણવાથી અટકાવતી નથી.</translation>
@@ -2164,17 +2073,6 @@
 
       જો આ નીતિ સેટ નથી, અથવા તે false પર સેટ છે, તો પછી <ph name="PRODUCT_NAME" /> સેટિંગ ચકાસણી અસ્તિત્વમાંની ઓનલાઇન રદબાતલ તપાસ સેટિંગનો ઉપયોગ કરશે.</translation>
 <translation id="5728154254076636808"><ph name="PRODUCT_NAME" />ના પ્રોફાઇલ ડેટા માટે રોમિંગ કૉપિની રચનાને ચાલુ કરો</translation>
-<translation id="5728661376331491504">આ નીતિ વૈકલ્પિક બ્રાઉઝરમાં ખોલવા માટેની વેબસાઇટની સૂચિને નિયંત્રિત કરે છે.
-
-      નોંધ લો કે આ સૂચિમાં ઘટકો, <ph name="USE_IE_SITELIST_POLICY_NAME" /> નીતિ મારફતે પણ ઉમેરવામાં આવી શકે છે.
-
-      જ્યારે આ નીતિ સેટ કર્યા વિના છોડી દીધી હોય, ત્યારે સૂચિમાં કોઈ વેબસાઇટ ઉમેરવામાં આવતી નથી.
-
-      જ્યારે આ નીતિ સેટ કરેલી હોય, ત્યારે દરેક આઇટમને વૈકલ્પિક બ્રાઉઝરમાં ખોલવા માટેની કોઈ વસ્તુ માટે નિયમ તરીકે ગણવામાં આવે છે. URL વૈકલ્પિક બ્રાઉઝરમાં ખોલવું જોઈએ કે કેમ તે પસંદ કરવા પર <ph name="PRODUCT_NAME" /> તે નિયમોનો ઉપયોગ કરે છે.
-
-      જ્યારે Internet Explorer એડ-ઇન હાજર અને ચાલુ હોય, તો જ્યારે નિયમો મેળ ખાતા ન હોય ત્યારે Internet Explorer પાછું <ph name="PRODUCT_NAME" /> પર સ્વિચ થાય છે.
-
-      જો નિયમોનો એકબીજા સાથે વિરોધાભાસ થાય, તો <ph name="PRODUCT_NAME" /> સૌથી વધુ સચોટ નિયમનો ઉપયોગ કરે છે.</translation>
 <translation id="5732972008943405952">પહેલીવાર શરૂ કરવા પર ડિફોલ્ટ બ્રાઉઝરમાંથી સ્વતઃભરણ ફોર્મ ડેટા આયાત કરવો</translation>
 <translation id="5741810844420698449">જ્યારે આ નીતિ સેટ કરી હોય છે, ત્યારે વપરાશકર્તા ઉપકરણની લિડ બંધ કરે છે ત્યારે <ph name="PRODUCT_OS_NAME" /> લે છે તે ક્રિયા નિર્દિષ્ટ કરે છે.
 
@@ -2223,6 +2121,7 @@
      
 ઉપરાંત, એક સંકેત સુરક્ષા કીને મોકલવામાં આવશે કે જે વ્યક્તિગત પ્રમાણનનો ઉપયોગ કરી શકે. આના વિના, જ્યારે સાઇટ સુરક્ષા કીના પ્રમાણનની વિનંતી કરશે, ત્યારે વપરાશકર્તાઓને Chrome 65+ માં સંકેત અપાશે. URLs (https://example.com/some/path જેવી) ફક્ત U2F appIDs તરીકે મેળ ખાશે. ડોમેન (example.com જેવા) ફક્ત webauthn RP IDs તરીકે મેળ ખાશે. જો કે, આપેલી સાઇટ માટે U2F અને webauthn APIs કવર કરવા માટે, બન્ને appID URL અને ડોમેન સૂચિમાં હોવા જરૂરી છે.</translation>
 <translation id="5836064773277134605">રીમોટ ઍક્સેસ હોસ્ટ દ્વારા ઉપયોગમાં લીધેલ UDP પોર્ટ શ્રેણીને પ્રતિબંધિત કરો</translation>
+<translation id="5861856285460256766">માતાપિતાના ઍક્સેસ કોડની ગોઠવણી</translation>
 <translation id="5862253018042179045">લૉગ ઇન સ્ક્રીન પર બોલાયેલ પ્રતિસાદની ઍક્સેસિબિલિટી સુવિધાની ડિફૉલ્ટ સ્થિતિ સેટ કરો.
 
           જો આ નીતિ true પર સેટ કરેલી હોય, તો જ્યારે લૉગ ઇન સ્ક્રીન બતાવવામાં આવે ત્યારે બોલાયેલ પ્રતિસાદ ચાલુ કરવામાં આવશે.
@@ -2341,18 +2240,6 @@
 <translation id="602728333950205286">ડિફોલ્ટ શોધ પ્રદાતા ત્વરિત URL</translation>
 <translation id="603410445099326293">POST નો ઉપયોગ કરતી URL સૂચવવા માટેના પેરામીટર્સ</translation>
 <translation id="6036523166753287175">રીમોટ ઍક્સેસ હોસ્ટથી ફાયરવૉલ ટ્રાવર્સલને ચાલુ કરો</translation>
-<translation id="6041625286664587019">Configures the default home page URL in <ph name="PRODUCT_NAME" /> and prevents users from changing it.
-
-          The home page is the page opened by the Home button. The pages that open on startup are controlled by the RestoreOnStartup policies.
-
-          The home page type can either be set to a URL you specify here or set to the New Tab Page. If you select the New Tab Page, then this policy does not take effect.
-
-          If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME" />, but they can still choose the New Tab Page as their home page.
-
-          Leaving this policy not set will allow the user to choose their home page on their own if HomepageIsNewTabPage is not set too.
-
-          This policy is not available on Windows instances that are not joined
-          to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="6070667616071269965">ઉપકરણ સાઇન-ઇન સ્ક્રીન કીબોર્ડ લેઆઉટ</translation>
 <translation id="6074963268421707432">કોઈ પણ સાઇટને ડેસ્કટૉપ સૂચનાઓ બતાવવાની મંજૂરી આપશો નહીં</translation>
 <translation id="6074964551275531965">અપડેટના નોટિફિકેશન માટેનો સમયગાળો સેટ કરો</translation>
@@ -2689,13 +2576,6 @@
 
       નોંધ: આ નીતિ ચુસ્તપણે 1GB કરતાં વધુ RAM ધરાવતા ઉપકરણોમાં ચાલતા Android પરના Chromeને લાગુ થાય છે. બિન-Android પ્લૅટફૉર્મ પર આ નીતિ લાગુ કરવા માટે, SitePerProcessનો ઉપયોગ કરો.
       </translation>
-<translation id="6922040258551909078">
-      જો પોલિસી true પર સેટ કરેલ હોય અને જો તેનો મશીન પોલિસી સાથે વિરોધ હોય, તો ક્લાઉડ પોલિસી પ્રભુત્વ ધરાવે છે.
-      જો આ પોલિસીને false પર સેટ કરેલી હોય અથવા ગોઠવવામાં આવી ન હોય અને જો તેનો ક્લાઉડ સાથે વિરોધ હોય, તો મશીન પોલિસી પ્રભુત્વ ધરાવે છે.
-      પ્રાધાન્યતા વિશે વધુ વિગતો માટે, કૃપા કરીને આ સાઇટની મુલાકાત લો: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      આ પોલિસી <ph name="MS_AD_NAME" /> ડોમેન સાથે ન જોડાયેલ હોય તેવી Windows આવૃત્તિઓ પર ઉપલબ્ધ નથી.
-      </translation>
 <translation id="6922884955650325312"><ph name="FLASH_PLUGIN_NAME" /> પ્લગ-ઇન અવરોધિત કરો</translation>
 <translation id="6923366716660828830">ડિફોલ્ટ શોધ પ્રદાતાના નામનો ઉલ્લેખ કરે છે. જો ખાલી છોડવામાં આવે અથવા સેટ કરવામાં ન આવે, તો શોધ URL દ્વારા ઉલ્લેખિત હોસ્ટનું નામ ઉપયોગમાં લેવાશે.
 
@@ -2778,14 +2658,6 @@
 <translation id="706669471845501145">સાઇટ્સને ડેસ્કટૉપ સૂચનાઓ બતાવવાની મંજૂરી આપો</translation>
 <translation id="7070525176564511548">દર અઠવાડિયે (168 કલાકે) પાસવર્ડ એન્ટ્રી જરૂરી છે</translation>
 <translation id="7072208053150563108">મશીન પાસવર્ડ બદલવાનો દર</translation>
-<translation id="7074513465313721551">ડોમેનની એ સૂચિ ગોઠવો, જેના પર સુરક્ષિત બ્રાઉઝિંગ વિશ્વાસ કરશે. આનો અર્થ છે કે:
-      જો જોખમી સંસાધનો (દા.ત. ફિશિંગ, માલવેર, અથવા ન જોઈતા સૉફ્ટવેર)ની URLs આ ડોમેન સાથે મેળ ખાશે તો સુરક્ષિત બ્રાઉઝિંગ તેમની તપાસ નહીં કરે.
-      સુરક્ષિત બ્રાઉઝિંગની ડાઉનલોડ સુરક્ષા સેવા આ ડોમેન પર હોસ્ટ કરાતા ડાઉનલોડની તપાસ નહીં કરે.
-      જો પેજની URL આ ડોમેન સાથે મેળ ખાશે, તો સુરક્ષિત બ્રાઉઝિંગની પાસવર્ડ સુરક્ષા સેવા પાસવર્ડના ફરીથી ઉપયોગની તપાસ નહીં કરે.
-
-      જો આ સેટિંગ ચાલુ કરેલી હશે, તો સુરક્ષિત બ્રાઉઝિંગ આ ડોમેનનો વિશ્વાસ કરશે.                 
-      જો આ સેટિંગ બંધ કરી હોય અથવા સેટ નહીં કરી હોય, તો બધા સંસાધનો પર ડિફૉલ્ટ સુરક્ષિત બ્રાઉઝિંગ સુરક્ષા લાગુ કરવામાં આવે છે.
-      આ નીતિ <ph name="MS_AD_NAME" /> ડોમેન સાથે જોડાયેલ ન હોય તેવી Windows આવૃત્તિઓ પર ઉપલબ્ધ નથી.</translation>
 <translation id="7079519252486108041">આ સાઇટ્સ પર પોપ-અપ્સને અવરોધિત કરો</translation>
 <translation id="7085803328069945025">તમને તે URL પેટર્નની સૂચિ સેટ કરવાની મંજૂરી આપે છે કે જેમાં વપરાશકર્તાને USB ઉપકરણ પર ઍક્સેસ આપવા માટે પૂછવાની મંજૂરી આપે તેવી સાઇટનો ઉલ્લેખ કરેલો હોય.
 
@@ -2879,15 +2751,6 @@
 
           જો આ નીતિને સેટ કર્યા વિના છોડેલી હોય, તો લૉગ ઇન સ્ક્રીન પહેલી વખત બતાવવામાં આવે ત્યારે સ્ક્રીન મેગ્નિફાયર બંધ હોય છે. વપરાશકર્તાઓ કોઈપણ સમયે સ્ક્રીન મેગ્નિફાયરને ચાલુ અથવા બંધ કરી શકે છે અને લૉગ ઇન સ્ક્રીન પર તેની સ્થિતિ વપરાશકર્તાઓ વચ્ચે નિરંતર રહે છે.</translation>
 <translation id="7249828445670652637">ARC ઍપ માટે <ph name="PRODUCT_OS_NAME" /> CA પ્રમાણપત્રોને ચાલુ કરો</translation>
-<translation id="725322441686394886">જો સેટ કરેલ ન હોય, તો Chrome ક્લિનઅપ વણજોઈતું સૉફ્ટવેર શોધશે, જે SafeBrowsingExtendedReportingEnabled દ્વારા સેટ કરવામાં આવેલ નીતિ અનુસાર Googleને સ્કૅન વિશેના મેટાડેટાની જાણ કરશે. પછી Chrome ક્લિનઅપ વપરાશકર્તાને પૂછશે કે તેઓ વણજોઈતા સૉફ્ટવેરને સાફ કરવા માગે છે કે કેમ. વપરાશકર્તા ભવિષ્યમાં વણજોઈતા સૉફ્ટવેરને ક્લિનઅપ કરવામાં મદદ કરવા માટે ક્લિનઅપના પરિણામોને Google સાથે શેર કરવાનું પસંદ કરી શકે છે. આ પરિણામોમાં Chrome ગોપનીયતા વ્હાઇટપેપર દ્વારા વર્ણવેલ મુજબ ફાઇલ મેટાડેટા, આપમેળે ઇન્સ્ટૉલ થયેલા એક્સટેન્શન અને રજિસ્ટ્રી કીનો સમાવેશ હોય છે. 
-
-      જો false પર સેટ કરેલ હોય, તો Chrome ક્લિનઅપ વણજોઈતું સૉફ્ટવેર શોધશે, જે SafeBrowsingExtendedReportingEnabled દ્વારા સેટ કરવામાં આવેલ નીતિને ઓવરરાઇડ કરીને Googleને સ્કૅન વિશેના મેટાડેટાની જાણ કરશે નહીં. Chrome Cleanup વપરાશકર્તાને પૂછશે કે તેઓ વણજોઈતા સૉફ્ટવેરને સાફ કરવા માગે છે કે કેમ. Googleને ક્લિનઅપના પરિણામોની જાણ કરવામાં આવશે નહીં અને વપરાશકર્તા પાસે આમ કરવા માટેનો વિકલ્પ હશે નહીં.
-
-      જો true પર સેટ કરેલ હોય, તો Chrome ક્લિનઅપ વણજોઈતું સૉફ્ટવેર જે SafeBrowsingExtendedReportingEnabled દ્વારા સેટ કરવામાં આવેલ નીતિ અનુસાર Googleને સ્કૅન વિશેના મેટાડેટાની જાણ કરશે. Chrome Cleanup વપરાશકર્તાને પૂછશે કે તેઓ વણજોઈતા સૉફ્ટવેરને સાફ કરવા માગે છે કે કેમ. Googleને ક્લિનઅપના પરિણામોની જાણ કરવામાં આવશે નહીં અને વપરાશકર્તા પાસે આ અટકાવવા માટેનો વિકલ્પ હશે નહીં.
-
-
-      આ નીતિ તે Windows આવૃત્તિઓ પર ઉપલબ્ધ નથી કે 
- જે <ph name="MS_AD_NAME" /> ડોમેન સાથે જોડાયેલ નથી.</translation>
 <translation id="7258823566580374486">રીમોટ ઍક્સસ હોસ્ટને રોકવાનું ચાલુ કરો</translation>
 <translation id="7260277299188117560">સ્વતઃ અપડેટ p2p સક્ષમ કર્યું</translation>
 <translation id="7261252191178797385">ઉપકરણ વૉલપેપર છબી</translation>
@@ -2987,11 +2850,6 @@
 <translation id="7389872682701720082">જો તમે આ સેટિંગ ચાલુ કરો છો, તો જૂના ન થયા હોય તેવા પ્લગ ઇન હંમેશાં ચાલશે નહીં.
 
       જો આ સેટિંગ બંધ કરેલું હોય અથવા સેટ ન હોય, તો અધિકૃતતાની જરૂર હોય તેવા પ્લગ ઇન ચલાવવા માટે વપરાશકર્તાની મંજૂરી લેવાશે. આ પ્લગ ઇન તે છે જે સુરક્ષા સાથે બાંધછોડ કરી શકે છે.</translation>
-<translation id="7417728346887499628">જો બંધ કરેલ હોય, તો Chrome ક્લિનઅપને વણજોઈતા સૉફ્ટવેર માટે સિસ્ટમ સ્કૅન કરવાથી અને ક્લિનઅપની પ્રક્રિયા કરવાથી અટકાવે છે. Chrome ક્લિનઅપને chrome માંથી મેન્યુઅલી ટ્રિગર કરવું://સેટિંગ/ક્લિનઅપ બંધ કરેલ છે.
-
-      જો ચાલુ કરેલ હોય અથવા સેટ કરેલ ન હોય, તો Chrome ક્લિનઅપ વણજોઈતા સૉફ્ટવેર માટે સમયાંતરે સિસ્ટમને સ્કૅન કરશે અને જો કોઈપણ મળશે, તો વપરાશકર્તાને પૂછશે કે તેઓ કાઢી નાખવા માગે છે કે કેમ. Chrome ક્લિનઅપને chromeમાંથી મેન્યુઅલી ટ્રિગર કરવું://સેટિંગ/ક્લિનઅપ ચાલુ કરેલ છે.
-
-      આ નીતિ તે Windows આવૃત્તિઓ પર ઉપલબ્ધ નથી કે જે <ph name="MS_AD_NAME" /> ડોમેન સાથે જોડાયેલ નથી.</translation>
 <translation id="7417972229667085380">પ્રસ્તુતિ મોડમાં નિષ્ક્રિય વિલંબને માપવા માટેની ટકાવારી (ટાળેલ)</translation>
 <translation id="7421483919690710988">મીડિયા ડિસ્ક કૅસ કદને બાઇટ્સમાં સેટ કરો</translation>
 <translation id="7424751532654212117">અક્ષમ પ્લગિન્સની સૂચિમાંથી અપવાદોની સૂચિ </translation>
@@ -3067,6 +2925,18 @@
           જો કોઈ એક્સ્ટેન્શન સૂચિમાં ન હોય અથવા તો સૂચિ સેટ કરેલ ન હોય, તો API પરનો કૉલ એક ભૂલ કોડ સાથે નિષ્ફળ થશે.</translation>
 <translation id="7618907117929117943">જો OS વર્ઝન લક્ષ્ય કરતાં નવું હોય તેમજ રોલબૅક મારફત (નેટવર્ક ઓળખપત્રો સહિતની) ઉપકરણ-સ્તરની ગોઠવણ હાથ ધરવી શક્ય હોય, અને સાથે રોલબૅક બાદ OOBE છોડી દેવું શક્ય હોય, તો લક્ષ્ય વર્ઝન પર રોલબૅક કરો અને તેના પર રહો. તે શક્ય ન હોય, તો રોલબૅક ન કરો અથવા રદ ન કરો (કારણ કે લક્ષ્ય વર્ઝન ડેટા રિસ્ટોર કરવાને સહાય કરતું નથી અથવા બૅકવર્ડ-ઇન્કમપેટિબલ ફેરફારને કારણે).
          <ph name="PRODUCT_OS_NAME" /> વર્ઝન 70 અને તેનાથી ઉપરના પર સહાય છે. જૂના ક્લાયન્ટ માટે, આ મૂલ્યનો અર્થ એ છે કે રોલબૅક બંધ કર્યું છે.</translation>
+<translation id="7620869951155758729">આ નીતિ માતાપિતાના ઍક્સેસ કોડને જનરેટ કરવા અને ચકાસવા માટે ઉપયોગમાં લેવાતી ગોઠવણીનો ઉલ્લેખ કરે છે.
+
+      ઍક્સેસ કોડને જનરેટ કરવા માટે હંમેશાં |current_config|નો ઉપયોગ કરવામાં આવે છે અને જ્યારે |future_config| વડે ઍક્સેસ કોડને માન્ય ન કરી શકાતો હોય, માત્ર ત્યારે જ તેનો ઉપયોગ કરવો જોઈએ.
+|future_config| એ ઍક્સેસ કોડને માન્ય કરવા માટે પ્રાથમિક ગોઠવણી છે.
+      જ્યારે |future_config| અથવા |current_config| વડે ઍક્સેસ કોડને માન્ય ન કરી શકાતો હોય, માત્ર ત્યારે જ |old_configs|નો ઉપયોગ કરવો જોઈએ.
+
+ઍક્સેસ કોડ ગોઠવણીને ધીરે ધીરે ફેરવવી એ આ નીતિનો ઉપયોગ કરવાની અપેક્ષિત રીત છે. નવી ગોઠવણીને હંમેશાં |future_config|માં મૂકવામાં આવે છે અને તે જ સમયે
+હાજર મૂલ્યને |current_config|માં ખસેડવામાં આવે છે. |current_config|ના પહેલાંના મૂલ્યોને |old_configs|માં ખસેડવામાં આવે છે અને રોટેશન સાઇકલ પૂર્ણ થયા પછી કાઢી નાખવામાં આવે છે.
+
+      આ નીતિ માત્ર બાળક વપરાશકર્તાને લાગુ પડે છે.
+      જ્યારે આ નીતિ સેટ કરેલી હોય, ત્યારે માતાપિતાનો ઍક્સેસ કોડ બાળક વપરાશકર્તાના ડિવાઇસ પર ચકાસી શકાશે.
+      જ્યારે આ નીતિ સેટ કરેલી નહીં હોય, ત્યારે માતાપિતાનો ઍક્સેસ કોડ બાળક વપરાશકર્તાના ડિવાઇસ પર ચકાસવો શક્ય નથી.</translation>
 <translation id="7625444193696794922">તે રીલિઝ ચૅનલનો ઉલ્લેખ કરે છે કે જેના પર આ ઉપકરણ લૉક હોવું જોઈએ.</translation>
 <translation id="7632724434767231364">GSSAPI લાઇબ્રેરી નામ</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME" />માં ઍપ્લિકેશન લોકેલને ગોઠવે છે અને વપરાશકર્તાઓને લોકેલ બદલવાથી રોકે છે. જો તમે આ સેટિંગને ચાલુ કરો છો, તો <ph name="PRODUCT_NAME" /> ઉલ્લેખિત લોકેલનો ઉપયોગ કરે છે. જો તમે ગોઠવેલા લોકેલ સપોર્ટ નથી કરતા, તો તેને બદલે 'en-US'નો ઉપયોગ કરવામાં આવે છે. જો આ સેટિંગ બંધ કરેલી છે અથવા સેટ કરેલી નથી, તો <ph name="PRODUCT_NAME" /> વપરાશકર્તા-ઉલ્લેખિત પસંદીદા લોકેલ (જો ગોઠવેલ છે)નો, સિસ્ટમ લોકેલનો અથવા ફૉલબૅક લોકેલ 'en-US' નો ઉપયોગ કરે છે.</translation>
@@ -3485,12 +3355,6 @@ Windows પર GPO મારફતે પોલિસી ગોઠવવી એ 
            ઉદાહરણની પેટર્ન્સ માટે http://www.chromium.org/developers/how-tos/chrome-frame-getting-started જુઓ.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">બ્રાઉઝર ઇતિહાસ સાચવવાનું બંધ કરો</translation>
-<translation id="8498293625012059298">પાસવર્ડ બદલો URL (માત્ર HTTP અને HTTPS સ્કીમો) કન્ફિગર કરો. વપરાશકર્તાઓ બ્રાઉઝરમાં ચેતવણી જુએ તે પછી તેમનો પાસવર્ડ બદલવા માટે પાસવર્ડ સંરક્ષણ સેવા તેમને આ URL પર મોકલશે.
-      પાસવર્ડ બદલોના આ પેજ પર <ph name="PRODUCT_NAME" /> નવા પાસવર્ડની ફિંગરપ્રિન્ટ સાચી રીતે કૅપ્ચર કરી શકે તે માટે, કૃપા કરીને ખાતરી કરો કે તમારું પાસવર્ડ બદલો પેજ https://www.chromium.org/developers/design-documents/create-amazing-password-forms પરની માર્ગદર્શિકાઓનું પાલન કરે છે.
-
-      જો આ સેટિંગ ચાલુ કરેલી હશે, તો વપરાશકર્તાઓ બ્રાઉઝરમાં ચેતવણી જુએ તે પછી તેમનો પાસવર્ડ બદલવા માટે પાસવર્ડ સંરક્ષણ સેવા તેમને આ URL પર મોકલશે.
-      જો આ સેટિંગ બંધ કરેલી હશે અથવા સેટ નહીં કરી હોય, તો પાસવર્ડ સંરક્ષણ સેવા વપરાશકર્તાઓને તેમનો પાસવર્ડ બદલવા માટે https://myaccounts.google.com to change their password પર મોકલશે.
-      આ નીતિ <ph name="MS_AD_NAME" /> ડોમેન સાથે જોડાયેલ ન હોય તેવી Windows આવૃત્તિઓ પર ઉપલબ્ધ નથી.</translation>
 <translation id="8499172469244085141">ડિફૉલ્ટ સેટિંગ્સ (વપરાશકર્તાઓ ઓવરરાઇડ કરી શકે છે)</translation>
 <translation id="8507835864888987300">ઑટોમૅટિક રીતે અપડેટ માટે લક્ષ્ય વર્ઝન સેટ કરે છે.
 
@@ -3731,12 +3595,6 @@ Windows પર GPO મારફતે પોલિસી ગોઠવવી એ 
 <translation id="8976248126101463034">રિમોટ ઍક્સેસ હોસ્ટ્સ માટે gnubby પ્રમાણીકરણને મંજૂરી આપવી</translation>
 <translation id="8976531594979650914">ડિફૉલ્ટ તરીકે સિસ્ટમ ડિફૉલ્ટ પ્રિન્ટરનો ઉપયોગ કરો</translation>
 <translation id="8992176907758534924">કોઈ પણ સાઇટને છબીઓ બતાવવાની મંજૂરી આપશો નહીં</translation>
-<translation id="9012851181124311976">એન્ટરપ્રાઇઝ લૉગ ઇન URLsની સૂચિ કન્ફિગર કરો (માત્ર HTTP અને HTTPS સ્કીમો). આ URLs પર પાસવર્ડની ફિંગરપ્રિન્ટ કૅપ્ચર કરવામાં આવશે અને પાસવર્ડના ફરી ઉપયોગની શોધ માટે ઉપયોગમાં લેવામાં આવશે.
-      <ph name="PRODUCT_NAME" /> યોગ્ય રીતે પાસવર્ડ ફિંગરપ્રિન્ટ કૅપ્ચર કરે તે માટે, કૃપા કરીને ખાતરી કરો કે તમારા લૉગ ઇન પેજ https://www.chromium.org/developers/design-documents/create-amazing-password-forms પરની માર્ગદર્શિકાઓને અનુસરે છે.
-
-      જો આ સેટિંગ ચાલુ કરવામાં આવ્યું હોય, તો પાસવર્ડના ફરી ઉપયોગની શોધના હેતુ માટે પાસવર્ડ સંરક્ષણ સેવા આ URLs પરના પાસવર્ડની ફિંગરપ્રિન્ટ કૅપ્ચર કરશે.
-      જો આ સેટિંગ બંધ કરેલ હશે અથવા સેટ કરેલ નહીં હોય, તો પાસવર્ડ સંરક્ષણ સેવા માત્ર https://accounts.google.com પરની પાસવર્ડ ફિંગરપ્રિન્ટ કૅપ્ચર કરશે.
-      આ નીતિ <ph name="MS_AD_NAME" /> ડોમેન સાથે જોડાયેલ ન હોય તેવી Windows આવૃત્તિઓ પર ઉપલબ્ધ નથી.</translation>
 <translation id="9013875414788074110">લોગિન દરમિયાન, <ph name="PRODUCT_OS_NAME" /> કોઈ સર્વર (ઑનલાઇન) સામે અથવા કૅશ મેમરી કરેલ પાસવર્ડ (ઑફલાઇન)નો ઉપયોગ કરીને પ્રમાણીકૃત કરી શકે છે.
 
       જ્યારે આ નીતિ -1 ના મૂલ્ય પર સેટ કરેલ હોય, ત્યારે વપરાશકર્તા અચોક્કસ રૂપે ઑફલાઇન પ્રમાણીકૃત કરી શકે છે. જ્યારે આ નીતિ કોઈ પણ અન્ય મૂલ્ય પર સેટ કરેલ હોય, ત્યારે તે છેલ્લે ઓનલાઇન પ્રમાણીકરણ કર્યા પછીની સમયાવધિનો ઉલ્લેખ કરે છે કે જેના પછી વપરાશકર્તાએ ફરીથી ઑનલાઇન પ્રમાણીકૃત કરાવવું જરૂરી છે.

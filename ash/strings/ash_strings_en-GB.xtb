@@ -198,6 +198,7 @@
 <translation id="4261870227682513959">Show notification settings. Notifications are off</translation>
 <translation id="4269883910223712419">The admin of this device has the ability to:</translation>
 <translation id="4279490309300973883">Mirroring</translation>
+<translation id="4281007048406351813">Add 1 min to timer</translation>
 <translation id="4292681942966152062">Activating <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">You pressed the keyboard shortcut for high contrast. Do you want to turn it on?</translation>
@@ -247,6 +248,7 @@
 <translation id="5207949376430453814">Highlight text caret</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="523505283826916779">Accessibility settings</translation>
+<translation id="5283198616748585639">Add 1 min</translation>
 <translation id="5302048478445481009">Language</translation>
 <translation id="5313326810920013265">Bluetooth settings</translation>
 <translation id="5331975486040154427">USB-C device (left side back port)</translation>
@@ -445,7 +447,7 @@
 <translation id="8517041960877371778">Your <ph name="DEVICE_TYPE" /> may not charge while it is turned on.</translation>
 <translation id="8627191004499078455">Connected to <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> remaining</translation>
-<translation id="8649101189709089199">Select-to-Speak</translation>
+<translation id="8649101189709089199">Select to Speak</translation>
 <translation id="8652175077544655965">Close settings</translation>
 <translation id="8653151467777939995">Show notification settings. Notifications are on</translation>
 <translation id="8664753092453405566">Show network list. <ph name="STATE_TEXT" /></translation>

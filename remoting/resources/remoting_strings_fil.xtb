@@ -24,6 +24,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="1520828917794284345">Baguhin ang laki ng desktop upang kumasya</translation>
 <translation id="154040539590487450">Nabigong simulan ang serbisyo ng malayuang pag-access.</translation>
 <translation id="1546934824884762070">May naganap na hindi inaasahang error. Paki-ulat ang problemang ito sa mga developer.</translation>
+<translation id="1624185583382384493">Nasa web na ang Remote na Desktop ng Chrome. Subukan ang aming <ph name="LINK_BEGIN" />web app<ph name="LINK_END" />—mabilis ito at libre, na may mas marami pang feature, kasama na ang pinahusay na suporta sa maraming monitor.</translation>
 <translation id="1643640058022401035">Tatapusin ng pag-alis sa pahinang ito ang iyong session ng Chromoting.</translation>
 <translation id="1654128982815600832">Pinapagana ang mga malayuang koneksyon para sa computer na ito…</translation>
 <translation id="170207782578677537">Nabigong irehistro ang computer na ito.</translation>
@@ -242,6 +243,7 @@ Para ma-enable ang functionality na ito, piliin ang '<ph name="BUTTON_NAME" />' 
 <translation id="6198252989419008588">Palitan ang PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (luma)</translation>
 <translation id="6221358653751391898">Hindi ka naka-sign in sa Chrome. Mangyaring mag-sign in at subukang muli.</translation>
+<translation id="6227369581881558336">Nasa web na ang Remote na Desktop ng Chrome at may mga bago itong feature kasama na ang paglilipat ng file! Tingnan ang aming <ph name="LINK_BEGIN" />web app<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Nag-shutdown ang host na tumatakbo sa console logic screen upang masuportahan ang curtain mode sa pamamagitan ng paglipat sa isang host na tumatakbo sa isang user-specific session.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6304318647555713317">Client</translation>

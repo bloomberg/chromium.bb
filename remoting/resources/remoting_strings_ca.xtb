@@ -24,6 +24,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="1520828917794284345">Ajusta la mida de l'escriptori</translation>
 <translation id="154040539590487450">No s'ha pogut iniciar el servei d'accés remot.</translation>
 <translation id="1546934824884762070">S'ha produït un error inesperat. Informeu d'aquest problema als desenvolupadors.</translation>
+<translation id="1624185583382384493">Ara Escriptori remot de Chrome és al web. Prova l'<ph name="LINK_BEGIN" />aplicació web<ph name="LINK_END" />: és ràpida, gratuïta i ofereix més funcions encara, com la compatibilitat amb diversos monitors.</translation>
 <translation id="1643640058022401035">Si sortiu d'aquesta pàgina, la sessió de Chromoting finalitzarà.</translation>
 <translation id="1654128982815600832">S'estan activant les connexions remotes en aquest ordinador...</translation>
 <translation id="170207782578677537">No s'ha pogut registrar aquest ordinador.</translation>
@@ -242,6 +243,7 @@ Si vols activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> per 
 <translation id="6198252989419008588">Canvia el PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (obsolet)</translation>
 <translation id="6221358653751391898">No heu iniciat la sessió a Chrome. Inicieu-hi la sessió i torneu-ho a provar.</translation>
+<translation id="6227369581881558336">Ara Escriptori remot de Chrome és al web, amb funcions noves com la transferència de fitxers. Dona un cop d'ull a l'<ph name="LINK_BEGIN" />aplicació web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">L'amfitrió que s'executa a la pantalla d'inici de la consola s'ha aturat per admetre el mode Curtain, i fa servir un amfitrió que s'executa en una sessió específica de l'usuari.</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="6304318647555713317">Client</translation>

@@ -24,6 +24,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="1520828917794284345">Přizpůsobit velikost plochy obrazovce</translation>
 <translation id="154040539590487450">Spuštění služby pro vzdálený přístup se nezdařilo.</translation>
 <translation id="1546934824884762070">Došlo k neočekávané chybě. Nahlaste prosím tento problém vývojářům.</translation>
+<translation id="1624185583382384493">Vzdálená plocha Chrome je teď na webu. Vyzkoušejte naši <ph name="LINK_BEGIN" />webovou aplikaci<ph name="LINK_END" /> – je rychlá a zdarma a nabízí ještě více funkcí, včetně vylepšené podpory pro více monitorů.</translation>
 <translation id="1643640058022401035">Pokud opustíte tuto stránku, relace funkce Chromoting bude ukončena.</translation>
 <translation id="1654128982815600832">Povolování vzdálených připojení k tomuto počítači…</translation>
 <translation id="170207782578677537">Registrace tohoto počítače se nezdařila.</translation>
@@ -242,6 +243,7 @@ Chcete-li tuto funkci aktivovat, kliknutím na tlačítko <ph name="BUTTON_NAME"
 <translation id="6198252989419008588">Změnit kód PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (zastaralé)</translation>
 <translation id="6221358653751391898">Nejste do prohlížeče Chrome přihlášeni. Přihlaste se a zkuste to znovu.</translation>
+<translation id="6227369581881558336">Na webu je teď Vzdálená plocha Chrome s novými funkcemi, včetně přenosu souborů. Vyzkoušejte naši <ph name="LINK_BEGIN" />webovou aplikaci<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Hostitel spuštěný na obrazovce logiky konzole byl ukončen za účelem zajištění podpory režimu opony prostřednictvím přepnutí na hostitele spuštěného v relaci specifické pro uživatele.</translation>
 <translation id="629730747756840877">Účet</translation>
 <translation id="6304318647555713317">Klient</translation>

@@ -132,15 +132,6 @@
 <translation id="1291880496936992484">Įspėjimas: RC4 bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ įdiegus 52 versiją (maždaug 2016 m. rugsėjo mėn.) ir ši politika nebegalios.
 
       Jei politika nenustatyta arba nustatyta į „false“, TLS RC4 šifruotieji programų komplektai nebus įgalinti. Priešingu atveju ją galima nustatyti į „true“, kad būtų išsaugotas suderinamumas su pasenusiu serveriu. Tai laikina priemonė; serverį reikia iš naujo sukonfigūruoti.</translation>
-<translation id="1297117713060236551">Ši politika valdo svetainių, kurios niekada neperjungia naršyklės, sąrašą.
-
-      Atminkite, kad elementų prie šio sąrašo taip pat galima pridėti taikant politiką „<ph name="USE_IE_SITELIST_POLICY_NAME" />“.
-
-      Kai ši politika nenustatyta, jokios svetainės nepridedamos prie sąrašo.
-
-      Kai ši politika nustatyta, kiekvienas elementas laikomas taisykle, panašiai kaip taikant politiką „<ph name="URL_LIST_POLICY_NAME" />“. Tačiau taikoma atvirkštinė logika: nustačius taisyklių atitiktį alternatyvi naršyklė neatidaroma.
-
-      Taisyklės taikomos abiem kryptimis, priešingai nei „<ph name="URL_LIST_POLICY_NAME" />“. T. y., kai pateikiamas ir įgalinamas „Internet Explorer“ priedas, jis taip pat valdo, ar „<ph name="IE_PRODUCT_NAME" />“ turėtų atidaryti šiuos URL sistemoje „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="1297182715641689552">Naudoti .pac tarpinio serverio scenarijų</translation>
 <translation id="1304973015437969093">Automatiškai diegiami plėtinių / programų ID ir atnaujinimo URL</translation>
 <translation id="1307415922184340052">Siųsti naudotojo vardą ir failo pavadinimą į savuosius spausdintuvus kiekvieną kartą spausdinant. Pagal numatytuosius nustatymus nustatyta nesiųsti.</translation>
@@ -163,6 +154,7 @@
 
       Jei ši politika nenustatyta, bus taikoma numatytoji elgsena – neleisti HTTP/2 ryšiui susijungti su ryšiais, kuriuose naudojami kliento sertifikatai.</translation>
 <translation id="1353966721814789986">Paleisties puslapiai</translation>
+<translation id="1354424209129232709">Maksimalus:</translation>
 <translation id="1359553908012294236">Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ įgalins svečių prisijungimą. Svečių prisijungimas yra „<ph name="PRODUCT_NAME" />“ profiliai, kur visi langai naudojami inkognito režimu.
 
       Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis pradėti svečio profilių.</translation>
@@ -795,6 +787,7 @@
       Jei ši politika nenustatyta, taikoma „<ph name="PRINTERS_ALLOW_ALL" />“.
       </translation>
 <translation id="2908277604670530363">Didžiausias jungčių prie tarpinio serverio vienu metu skaičius</translation>
+<translation id="2952347049958405264">Apribojimai:</translation>
 <translation id="2956777931324644324">Ši politika nebenaudojama nuo 36 versijos „<ph name="PRODUCT_NAME" />“.
 
       Nurodoma, ar TLS domeno sertifikatų plėtinys turėtų būti įgalintas.
@@ -895,13 +888,6 @@
           Jie šią politiką paliksite nenustatytą, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="3205825995289802549">Pirmo naršyklės lango padidinimas pirmą kartą paleidus programą</translation>
 <translation id="3211426942294667684">Prisijungimo prie naršyklės nustatymai</translation>
-<translation id="3213821784736959823">Valdoma, ar integruota DNS kliento programa naudojama „<ph name="PRODUCT_NAME" />“.
-
-      Jei ši politika aktyvinta, esant galimybei integruota DNS kliento programa bus naudojama.
-
-      Jei ši politika deaktyvinta, integruota DNS kliento programa niekada nebus naudojama.
-
-      Jei ši politika nenustatyta, naudotojai galės pakeisti, ar integruota DNS kliento programa naudojama, redaguodami chrome://flags arba nurodydami komandų eilutės žymą.</translation>
 <translation id="3214164532079860003">Pagal šią politiką pagrindinis puslapis priverstinai importuojamas iš esamos numatytosios naršyklės (jei įgalinta).
 
       Jei neleidžiama, pagrindinis puslapis neimportuojamas.
@@ -1040,19 +1026,6 @@
       Jei ši politika nustatyta kaip „DeveloperToolsDisallowed“ (2 vertė), kūrėjo įrankių negalima pasiekti ir nebegalima tikrinti svetainės elementų. Bus išjungti visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ pultui atidaryti.</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="355118380775352753">Svetainės, skirtos atidaryti alternatyvioje naršyklėje</translation>
-<translation id="3556806727696701427">Įgalinama „<ph name="PRODUCT_NAME" />“ saugaus naršymo funkcija. Naudotojams šio nustatymo keisti neleidžiama.
-
-      Jei įgalinsite šį nustatymą, Saugus naršymas bus visada aktyvus.
-
-      Jei šį nustatymą išjungsite, Saugus naršymas niekada nebus aktyvus.
-
-      Jei šį nustatymą įgalinsite arba išjungsite, naudotojai negalės pakeisti ar nepaisyti „<ph name="PRODUCT_NAME" />“ nustatymo „Įgalinti apsaugą nuo sukčiavimo ir kenkėjiškų programų“.
-
-      Jei ši politika nenustatyta, ši funkcija bus įgalinta, bet naudotojas galės tai pakeisti.
-
-      Daugiau informacijos apie Saugų naršymą pateikiama adresu https://developers.google.com/safe-browsing.
-
-      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="3577251398714997599">Skelbimų nustatymai svetainėms su nepageidaujamais skelbimais</translation>
 <translation id="3591584750136265240">Konfigūruoti prisijungimo autentifikavimo elgseną</translation>
 <translation id="3624171042292187668">
@@ -1471,6 +1444,7 @@
 <translation id="465099050592230505">Įmonės internetinės parduotuvės URL (nebenaudojama)</translation>
 <translation id="4665897631924472251">Plėtinių valdymo nustatymai</translation>
 <translation id="4668325077104657568">Numatytasis vaizdų nustatymas</translation>
+<translation id="4670865688564083639">Minimalus:</translation>
 <translation id="4671708336564240458">Leidžia nustatyti, ar draudžiama svetainėms, kuriose užfiksuota piktnaudžiavimo atvejų, atidaryti naujus langus ar skirtukus.
 
       Jei šiai politikai priskirta vertė „True“, svetainėms, kuriose užfiksuota piktnaudžiavimo atvejų, nebus leidžiama atidaryti naujų langų ar skirtukų.
@@ -1854,17 +1828,6 @@
 
       Jei ši politika nenustatyta arba nustatyta kaip „false“, „<ph name="PRODUCT_NAME" />“ naudoja esamus panaikinimo tikrinimo prisijungus nustatymus.</translation>
 <translation id="5728154254076636808">Įgalinti „<ph name="PRODUCT_NAME" />“ profilio duomenų tarptinklinio ryšio kopijų kūrimą</translation>
-<translation id="5728661376331491504">Ši politika valdo svetainių, kurios turi būti atidarytos alternatyvioje naršyklėje, sąrašą.
-
-      Atminkite, kad elementų prie šio sąrašo taip pat galima pridėti taikant politiką „<ph name="USE_IE_SITELIST_POLICY_NAME" />“.
-
-      Kai ši politika nenustatyta, jokios svetainės nepridedamos prie sąrašo.
-
-      Kai ši politika nustatyta, kiekvienas elementas laikomas elemento atidarymo alternatyvioje naršyklėje taisykle. Sistemoje „<ph name="PRODUCT_NAME" />“ šios taisyklės naudojamos pasirenkant, ar URL turėtų būti atidarytas alternatyvioje naršyklėje.
-
-      Kai „Internet Explorer“ priedas rodomas ir įgalintas, „Internet Explorer“ vėl perjungiama į „<ph name="PRODUCT_NAME" />“, jei taisyklės neatitinka.
-
-      Jei taisyklės prieštarauja viena kitai, sistemoje „<ph name="PRODUCT_NAME" />“ naudojama konkrečiausia taisyklė.</translation>
 <translation id="5732972008943405952">Automatinio pildymo formų duomenų importavimas iš numatytosios naršyklės paleidus pirmą kartą</translation>
 <translation id="5765780083710877561">Aprašas:</translation>
 <translation id="5770738360657678870">Kuriamas kanalas (gali būti nestabilus)</translation>
@@ -1908,6 +1871,7 @@
 
       URL (pvz., https://example.com/some/path) atitiks tik kaip U2F „appID“. Domenai (pvz., example.com) atitiks tik kaip „webauthn“ RP ID. Todėl, kad būtų įtrauktos ir tam tikros svetainės U2F, ir „webauthn“ API, sąraše turi būti ir „appID“ URL, ir domenas.</translation>
 <translation id="5836064773277134605">Apriboti UDP prievado diapazoną, naudojamą nuotolinės prieigos prieglobos</translation>
+<translation id="5861856285460256766">Tėvų prieigos kodo konfigūracija</translation>
 <translation id="5862253018042179045">Nustatyti numatytąją ekrano skaitymo balsu būklę prisijungimo ekrane.
 
           Jei ši politika nustatyta, ekrano skaitymas balsu bus įgalintas, kai bus rodomas prisijungimo ekranas.
@@ -2357,13 +2321,6 @@
 
       PASTABA: ši politika taikoma tik naršyklei „Chrome“ sistemoje „Android“, įrenginiuose, kuriuose būtinai yra daugiau nei 1 GB laisvosios prieigos atminties. Kad politiką pritaikytumėte ne „Android“ platformose, naudokite „SitePerProcess“.
       </translation>
-<translation id="6922040258551909078">
-      Jei ši politika nustatyta kaip „True“, debesies politikai yra teikiama pirmenybė, jei ji prieštarauja įrenginio politikai.
-      Jei ši politika nustatyta kaip „False“ arba nėra sukonfigūruota, įrenginio politikai yra teikiama pirmenybė, jei ji prieštarauja debesies politikai.
-      Jei reikia daugiau informacijos apie politikų pirmumą, apsilankykite adresu https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Ši politika negalima „Windows“ objektuose, kurie nėra prijungti prie „<ph name="MS_AD_NAME" />“ domeno.
-      </translation>
 <translation id="6922884955650325312">Užblokuoti papildinį „<ph name="FLASH_PLUGIN_NAME" />“</translation>
 <translation id="6923366716660828830">Nurodomas numatytojo paieškos teikėjo pavadinimas. Jei laukas paliekamas tuščias arba nenustatomas, naudojamas paieškos URL nurodytas prieglobos pavadinimas.
 
@@ -2444,14 +2401,6 @@
       </translation>
 <translation id="706669471845501145">Leisti svetainėse rodyti darbalaukio pranešimus</translation>
 <translation id="7072208053150563108">Įrenginio slaptažodžio keitimo dažnis</translation>
-<translation id="7074513465313721551">Konfigūruojamas domenų, kuriais Saugaus naršymo funkcija galėtų pasitikėti, sąrašas. Tai reiškia, kad:
-      Saugaus naršymo funkcija netikrins pavojingų šaltinių (pvz., sukčiavimo, kenkėjiškų programų ar nepageidaujamos programinės įrangos), jei jų URL atitiks šiuos domenus;
-      naudojant Saugaus naršymo atsisiuntimo apsaugos paslaugą nebus tikrinami šiuose domenuose priglobiami atsisiuntimai;
-      naudojant Saugaus naršymo slaptažodžių apsaugos paslaugą nebus tikrinama, ar slaptažodis naudojamas pakartotinai, jei puslapio URL atitiks šiuos domenus.
-
-      Jei šis nustatymas įgalintas, Saugaus naršymo funkcija pasitikės šiais domenais.
-      Jei šis nustatymas išjungtas arba nenustatytas, visiems šaltiniams taikoma numatytoji Saugaus naršymo apsauga.
-       Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="7079519252486108041">Blokuoti iššokančiuosius langus šiose svetainėse</translation>
 <translation id="7085803328069945025">Galite nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms leidžiama prašyti naudotojo suteikti jiems galimybę pasiekti USB įrenginį, sąrašą.
 
@@ -2533,13 +2482,6 @@
 
           Jei ši politika nenustatyta, ekrano didinimas išjungiamas, kai pirmą kartą rodomas prisijungimo ekranas. Naudotojai gali bet kada įjungti arba išjungti ekrano didinimą ir jo būsena skirtingiems naudotojams prisijungimo ekrane bus vienoda.</translation>
 <translation id="7249828445670652637">Įgalinti „<ph name="PRODUCT_OS_NAME" />“ CA sertifikatus ARC programose</translation>
-<translation id="725322441686394886">Jei nustatymas nenustatytas, „Chrome“ valymo įrankiui aptikus nepageidaujamos programinės įrangos, „Google“ gali būti pateikta nuskaitymo metaduomenų ataskaita, vadovaujantis „SafeBrowsingExtendedReportingEnabled“ nustatyta politika. Tada naudojant „Chrome“ valymo įrankį naudotojo bus klausiama, ar jis nori išvalyti nepageidaujamą programinę įrangą. Naudotojas gali pasirinkti bendrinti valymo rezultatus su „Google“, kad padėtų vėliau aptikti nepageidaujamą programinę įrangą. Šie rezultatai apima failų metaduomenis, automatiškai įdiegtus plėtinius ir registro raktus, kaip aprašyta „Chrome“ privatumo baltojoje knygoje.
-
-      Jei nustatymas išjungtas, „Chrome“ valymo įrankiui aptikus nepageidaujamos programinės įrangos, nuskaitymo metaduomenų ataskaita „Google“ nebus teikiama, nepaisant bet kokios „SafeBrowsingExtendedReportingEnabled“ nustatytos politikos. Naudojant „Chrome“ valymo įrankį naudotojo bus klausiama, ar jis nori išvalyti nepageidaujamą programinę įrangą. „Google“ nebus teikiama valymo rezultatų ataskaita ir naudotojui nebus suteikta parinktis tai atlikti.
-
-      Jei nustatymas įgalintas, „Chrome“ valymo įrankiui aptikus nepageidaujamos programinės įrangos, „Google“ gali būti pateikta nuskaitymo metaduomenų ataskaita, vadovaujantis „SafeBrowsingExtendedReportingEnabled“ nustatyta politika. Naudojant „Chrome“ valymo įrankį naudotojo bus klausiama, ar jis nori išvalyti nepageidaujamą programinę įrangą. Valymo rezultatų ataskaita bus pateikta „Google“ ir naudotojas negalės jos neteikti.
-
-      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="7258823566580374486">Įgalinti nuotolinės prieigos prieglobų slėpimą</translation>
 <translation id="7260277299188117560">Įgalintas automatinis P2P naujinys</translation>
 <translation id="7261252191178797385">Įrenginio ekrano fono vaizdas</translation>
@@ -2637,11 +2579,6 @@
 
       Daugiau informacijos apie Saugų naršymą pateikiama adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="737655323154569539">Apribojamas spausdinamo puslapio dydis. Jei politika nenustatyta ar nenurodyta vertė, netaikomas joks apribojimas.</translation>
-<translation id="7417728346887499628">Jei šis nustatymas išjungtas, „Chrome“ valymo įrankiui neleidžiama nuskaityti sistemos ieškant nepageidaujamos programinės įrangos ir atlikti valymo veiksmų. Neautomatinis „Chrome“ valymo įrankio suaktyvinimas apsilankius adresu chrome://settings/cleanup išjungtas.
-
-      Jei šis nustatymas įgalintas arba nenustatytas, „Chrome“ valymo įrankis periodiškai nuskaitys sistemą ieškodamas nepageidaujamos programinės įrangos, o radus tokios įrangos naudotojo bus klausiama, ar jis nori ją pašalinti. Neautomatinis „Chrome“ valymo įrankio suaktyvinimas apsilankius adresu chrome://settings įgalintas.
-
-      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="7417972229667085380">Procentas, pagal kurį bus keičiamas neveikos delsos mastelis dirbant pristatymo režimu (nebenaudojama)</translation>
 <translation id="7421483919690710988">Nustatyti medijos disko talpyklos dydį baitais</translation>
 <translation id="7424751532654212117">Neleidžiamų papildinių sąrašo išimčių sąrašas</translation>
@@ -2713,6 +2650,18 @@
           Jei plėtinio nėra sąraše arba sąrašas nenustatytas, iškviečiant API įvyks klaida ir bus pateiktas jos kodas.</translation>
 <translation id="7618907117929117943">Grąžinti ir palikti tikslinę versiją, jei OS versija naujesnė nei tikslinė ir galima perduoti įrenginio lygio konfigūraciją (įskaitant tinklo prisijungimo duomenis) grąžinant, taip pat praleidžiant OOBE po grąžinimo. Nevykdykite ar nenutraukite grąžinimo, jei tai neįmanoma (nes tikslinė versija nepalaiko duomenų atkūrimo arba dėl nesuderinamo atgalinio pakeitimo).
           Palaikoma naudojant 70 ir naujesnių versijų „<ph name="PRODUCT_OS_NAME" />“. Jei kliento programa senesnė, ši vertė reiškia, kad grąžinimas išjungtas.</translation>
+<translation id="7620869951155758729">Ši politika nurodo konfigūraciją, kuri naudojama tėvų prieigos kodui generuoti ir patvirtinti.
+
+      |current_config| visada naudojama prieigos kodui generuoti, o prieigos kodui patvirtinti turėtų būti naudojama, tik kai jo negalima patvirtinti naudojant |future_config|.
+      |future_config| yra pagrindinė konfigūracija, naudojama patvirtinant.
+      |old_configs| turėtų būti naudojama prieigos kodui patvirtinti, tik kai jo negalima patvirtinti naudojant |future_config| arba |current_config|.
+
+      Numatytas šios politikos naudojimo metodas – palaipsniui kaitalioti prieigos kodo konfigūraciją. Nauja konfigūracija visada įtraukiama į |future_config| ir tuo pačiu
+      metu esama vertė perkeliama į |current_config|. |current_config| ankstesnės vertės perkeliamos į |old_configs| ir pašalinamos pasibaigus kaitaliojimo ciklui.
+
+      Ši politika taikoma, tik kai naudotojas yra vaikas.
+      Kai ši politika nustatyta, tėvų prieigos kodą galima patvirtinti vaiko įrenginyje.
+      Kai ši politika nenustatyta, negalima patvirtinti tėvų prieigos kodo vaiko įrenginyje.</translation>
 <translation id="7625444193696794922">Nurodomas leidimo kanalas, su kuriuo šis įrenginys turėtų būti sujungtas.</translation>
 <translation id="7632724434767231364">GSSAPI bibliotekos pavadinimas</translation>
 <translation id="7635471475589566552">„<ph name="PRODUCT_NAME" />“ konfigūruojama programos lokalė ir naudotojams neleidžiama jos keisti.
@@ -3089,12 +3038,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
           Šablonų pavyzdžių galite rasti apsilankę adresu https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Neleisti išsaugoti naršyklės istorijos</translation>
-<translation id="8498293625012059298">Konfigūruojamas slaptažodžio keitimo URL (tik HTTP ir HTTPS schemos). Naudojant slaptažodžio apsaugos paslaugą naudotojai bus nukreipiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
-      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio piršto antspaudą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad slaptažodžio keitimo puslapyje laikomasi gairių, pasiekiamų adresu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jei šis nustatymas įgalintas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
-      Jei šis nustatymas išjungtas arba nenustatytas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami adresu https://myaccounts.google.com, kad pakeistų slaptažodį.
-      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="8499172469244085141">Numatytieji nustatymai (naudotojai gali nepaisyti)</translation>
 <translation id="8507835864888987300">Nustatoma tikslinė automatinių naujinių versija.
 
@@ -3329,12 +3272,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8976248126101463034">Leidžiamas nuotolinės prieigos prieglobos serverių „Gnubby“ autentifikavimas</translation>
 <translation id="8976531594979650914">Naudoti sistemos numatytąjį spausdintuvą kaip numatytąjį nustatymą</translation>
 <translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
-<translation id="9012851181124311976">Konfigūruojamas įmonių prisijungimo URL (tik HTTP ir HTTPS schemų) sąrašas. Šiais URL bus užfiksuotas slaptažodžio piršto antspaudas, kuris bus naudojamas aptinkant, kada slaptažodis naudojamas pakartotinai.
-      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų slaptažodžių kontrolinius kodus, įsitikinkite, kad prisijungimo puslapiuose laikomasi šių gairių: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Įgalinus šį nustatymą, taikant slaptažodžio apsaugos paslaugą bus fiksuojamas slaptažodžio piršto antspaudas šiais URL adresais, siekiant aptikti, kada slaptažodis naudojamas pakartotinai.
-      Jei šis nustatymas išjungtas arba nenustatytas, taikant slaptažodžio apsaugos paslaugą slaptažodžio piršto antspaudas bus užfiksuotas tik adresu https://accounts.google.com.
-      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">
