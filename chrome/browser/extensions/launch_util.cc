@@ -105,9 +105,7 @@ LaunchContainer GetLaunchContainer(const ExtensionPrefs* prefs,
 
   base::Optional<LaunchContainer> result;
 
-  if (manifest_launch_container == LAUNCH_CONTAINER_PANEL) {
-    // Apps with app.launch.container = 'panel' should always respect the
-    // manifest setting.
+  if (manifest_launch_container == LAUNCH_CONTAINER_PANEL_DEPRECATED) {
     result = manifest_launch_container;
   } else if (manifest_launch_container == LAUNCH_CONTAINER_TAB) {
     // Look for prefs that indicate the user's choice of launch container. The

@@ -40,9 +40,6 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     root_window->SetProperty(
         kBlockedForAssistantSnapshotKey,
         window->GetProperty(kBlockedForAssistantSnapshotKey));
-  } else if (key == kPanelAttachedKey) {
-    bool value = window->GetProperty(kPanelAttachedKey);
-    root_window->SetProperty(kPanelAttachedKey, value);
   } else if (key == kShelfItemTypeKey) {
     int32_t value = window->GetProperty(kShelfItemTypeKey);
     root_window->SetProperty(kShelfItemTypeKey, value);

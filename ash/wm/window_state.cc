@@ -221,8 +221,7 @@ bool WindowState::IsActive() const {
 }
 
 bool WindowState::IsUserPositionable() const {
-  return (window_->type() == aura::client::WINDOW_TYPE_NORMAL ||
-          window_->type() == aura::client::WINDOW_TYPE_PANEL);
+  return window_->type() == aura::client::WINDOW_TYPE_NORMAL;
 }
 
 bool WindowState::HasMaximumWidthOrHeight() const {
@@ -258,10 +257,7 @@ bool WindowState::CanActivate() const {
 }
 
 bool WindowState::CanSnap() const {
-  const bool is_panel_window =
-      window_->type() == aura::client::WINDOW_TYPE_PANEL;
-
-  if (!CanResize() || is_panel_window || IsPip())
+  if (!CanResize() || IsPip())
     return false;
 
   // Allow windows with no maximum width or height to be snapped.

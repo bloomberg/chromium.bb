@@ -28,7 +28,7 @@ TEST_F(AppLaunchManifestTest, AppLaunchContainer) {
             AppLaunchInfo::GetLaunchContainer(extension.get()));
 
   extension = LoadAndExpectSuccess("launch_panel.json");
-  EXPECT_EQ(LAUNCH_CONTAINER_PANEL,
+  EXPECT_EQ(LAUNCH_CONTAINER_PANEL_DEPRECATED,
             AppLaunchInfo::GetLaunchContainer(extension.get()));
 
   extension = LoadAndExpectSuccess("launch_default.json");

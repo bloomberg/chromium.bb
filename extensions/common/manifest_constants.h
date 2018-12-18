@@ -233,7 +233,7 @@ extern const char kKeySeparator[];
 extern const char kKeySpace[];
 extern const char kKeyTab[];
 extern const char kKeyUp[];
-extern const char kLaunchContainerPanel[];
+extern const char kLaunchContainerPanelDeprecated[];
 extern const char kLaunchContainerTab[];
 extern const char kLaunchContainerWindow[];
 extern const char kPageActionCommandEvent[];

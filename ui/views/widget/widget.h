@@ -155,8 +155,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     enum Type {
       TYPE_WINDOW,      // A decorated Window, like a frame window.
                         // Widgets of TYPE_WINDOW will have a NonClientView.
-      TYPE_PANEL,       // Always on top window managed by PanelManager.
-                        // Widgets of TYPE_PANEL will have a NonClientView.
       TYPE_WINDOW_FRAMELESS,
                         // An undecorated Window.
       TYPE_CONTROL,     // A control, like a button.

@@ -112,10 +112,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kIsShowingInOverviewKey;
 
-// If true (and the window is a panel), it's attached to its shelf item.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kPanelAttachedKey;
-
 // Maps to ws::mojom::WindowManager::kRenderParentTitleArea_Property.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kRenderTitleAreaProperty;

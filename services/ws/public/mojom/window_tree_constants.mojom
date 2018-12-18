@@ -94,7 +94,6 @@ enum WindowType {
   // TODO: see if we can reduce this set. For example, why do we need both
   // BUBBLE and POPUP.
   WINDOW,
-  PANEL,
   WINDOW_FRAMELESS,
   CONTROL,
   POPUP,

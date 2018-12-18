@@ -138,8 +138,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
                                             property_converter, properties);
 
   const bool provide_non_client_frame =
-      window_type == ws::mojom::WindowType::WINDOW ||
-      window_type == ws::mojom::WindowType::PANEL;
+      window_type == ws::mojom::WindowType::WINDOW;
   if (provide_non_client_frame) {
     // See NonClientFrameController for details on lifetime.
     NonClientFrameController* non_client_frame_controller =
