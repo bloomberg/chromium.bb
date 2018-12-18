@@ -13,7 +13,8 @@
 # Crash in media::AudioOutputController::Create()
 -KioskVirtualKeyboardTest.RestrictFeatures
 
-# Timeouts. https://crbug.com/594887
+# Flaky timeouts. Also flaky without SingleProcessMash, but less so.
+# https://crbug.com/795840 and https://crbug.com/751046
 -ChromeVoxPanelTest.ActivateMenu
 -ChromeVoxPanelTest.LinkMenu
 
