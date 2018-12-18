@@ -4279,7 +4279,6 @@
         "args": [
           "--enable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.browser_tests.filter",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "single_process_mash_browser_tests",
@@ -5361,7 +5360,6 @@
         "args": [
           "--enable-features=SingleProcessMash",
           "--override-use-software-gl-for-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.browser_tests.filter",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "single_process_mash_browser_tests",

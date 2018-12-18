@@ -16,6 +16,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/public/keyboard_switches.h"
@@ -226,6 +227,11 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
 
 IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
                        ChangeInputModeToNoneHidesKeyboard) {
+  // TODO(crbug.com/631527): RemoteTextInputClient is not forwarding focus
+  // requests to show/hide the virtual keyboard.
+  if (features::IsSingleProcessMash())
+    return;
+
   ClickElementWithId(web_contents_, "username");
   ASSERT_TRUE(WaitUntilShown());
 
@@ -287,6 +293,11 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     KeyboardEndToEndFocusTest,
     TriggerAsyncInputFocusFromUserGestureAfterBlurShowsKeyboard) {
+  // TODO(crbug.com/631527): RemoteTextInputClient is not forwarding focus
+  // requests to show/hide the virtual keyboard.
+  if (features::IsSingleProcessMash())
+    return;
+
   // If async focus occurs quickly after blur, then it should still invoke the
   // keyboard.
   ClickElementWithId(web_contents_, "text");
