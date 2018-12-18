@@ -59,7 +59,7 @@
   if (contentViewController) {
     [contentViewController willMoveToParentViewController:self];
     [self addChildViewController:contentViewController];
-    [self.view addSubview:contentViewController.view];
+    [self.view insertSubview:contentViewController.view atIndex:0];
     [contentViewController didMoveToParentViewController:self];
   }
 }
@@ -72,7 +72,7 @@
   _contentView = contentView;
 
   if (contentView)
-    [self.view addSubview:contentView];
+    [self.view insertSubview:contentView atIndex:0];
 }
 
 #pragma mark - Private
