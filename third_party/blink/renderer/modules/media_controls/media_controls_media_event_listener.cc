@@ -18,7 +18,7 @@ namespace blink {
 
 MediaControlsMediaEventListener::MediaControlsMediaEventListener(
     MediaControlsImpl* media_controls)
-    : EventListener(kCPPEventListenerType), media_controls_(media_controls) {
+    : media_controls_(media_controls) {
   if (GetMediaElement().isConnected())
     Attach();
 }
@@ -126,11 +126,6 @@ void MediaControlsMediaEventListener::Detach() {
         remote_playback_availability_callback_id_.value());
     remote_playback_availability_callback_id_.reset();
   }
-}
-
-bool MediaControlsMediaEventListener::operator==(
-    const EventListener& other) const {
-  return this == &other;
 }
 
 HTMLMediaElement& MediaControlsMediaEventListener::GetMediaElement() {
@@ -248,7 +243,7 @@ void MediaControlsMediaEventListener::OnRemotePlaybackAvailabilityChanged() {
 }
 
 void MediaControlsMediaEventListener::Trace(blink::Visitor* visitor) {
-  EventListener::Trace(visitor);
+  NativeEventListener::Trace(visitor);
   visitor->Trace(media_controls_);
 }
 

@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -21,7 +21,7 @@
 namespace blink {
 
 class DOMContentLoadedListener final
-    : public EventListener,
+    : public NativeEventListener,
       public ProcessingInstruction::DetachableEventListener {
   USING_GARBAGE_COLLECTED_MIXIN(DOMContentLoadedListener);
 
@@ -31,12 +31,7 @@ class DOMContentLoadedListener final
   }
 
   DOMContentLoadedListener(ProcessingInstruction* pi)
-      : EventListener(EventListener::kCPPEventListenerType),
-        processing_instruction_(pi) {}
-
-  bool operator==(const EventListener& rhs) const override {
-    return this == &rhs;
-  }
+      : processing_instruction_(pi) {}
 
   void Invoke(ExecutionContext* execution_context, Event* event) override {
     DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
@@ -64,7 +59,7 @@ class DOMContentLoadedListener final
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(processing_instruction_);
-    EventListener::Trace(visitor);
+    NativeEventListener::Trace(visitor);
     ProcessingInstruction::DetachableEventListener::Trace(visitor);
   }
 

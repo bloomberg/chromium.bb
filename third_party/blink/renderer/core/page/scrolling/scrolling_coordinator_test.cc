@@ -37,6 +37,7 @@
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -1056,16 +1057,9 @@ TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandler) {
 }
 
 namespace {
-class ScrollingCoordinatorMockEventListener final : public EventListener {
+class ScrollingCoordinatorMockEventListener final : public NativeEventListener {
  public:
-  ScrollingCoordinatorMockEventListener()
-      : EventListener(kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const final {
-    return this == &other;
-  }
-
-  void Invoke(ExecutionContext*, Event*) final {}
+  void Invoke(ExecutionContext*, Event*) override {}
 };
 }  // namespace
 

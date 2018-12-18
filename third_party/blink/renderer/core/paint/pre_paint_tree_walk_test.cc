@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -303,14 +303,8 @@ TEST_P(PrePaintTreeWalkTest, ClipChangeHasRadius) {
 }
 
 namespace {
-class PrePaintTreeWalkMockEventListener final : public EventListener {
+class PrePaintTreeWalkMockEventListener final : public NativeEventListener {
  public:
-  PrePaintTreeWalkMockEventListener() : EventListener(kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const final {
-    return this == &other;
-  }
-
   void Invoke(ExecutionContext*, Event*) final {}
 };
 }  // namespace

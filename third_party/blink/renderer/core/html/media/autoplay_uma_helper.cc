@@ -56,8 +56,7 @@ AutoplayUmaHelper* AutoplayUmaHelper::Create(HTMLMediaElement* element) {
 }
 
 AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
-    : EventListener(kCPPEventListenerType),
-      ContextLifecycleObserver(nullptr),
+    : ContextLifecycleObserver(nullptr),
       element_(element),
       muted_video_play_method_visibility_observer_(nullptr),
       is_visible_(false),
@@ -66,10 +65,6 @@ AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
 }
 
 AutoplayUmaHelper::~AutoplayUmaHelper() = default;
-
-bool AutoplayUmaHelper::operator==(const EventListener& other) const {
-  return this == &other;
-}
 
 void AutoplayUmaHelper::OnLoadStarted() {
   if (element_->GetLoadType() == WebMediaPlayer::kLoadTypeURL)
@@ -481,7 +476,7 @@ bool AutoplayUmaHelper::ShouldRecordUserPausedAutoplayingCrossOriginVideo()
 }
 
 void AutoplayUmaHelper::Trace(blink::Visitor* visitor) {
-  EventListener::Trace(visitor);
+  NativeEventListener::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(element_);
   visitor->Trace(muted_video_play_method_visibility_observer_);

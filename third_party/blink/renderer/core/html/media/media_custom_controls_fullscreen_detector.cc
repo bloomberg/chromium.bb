@@ -26,8 +26,7 @@ constexpr float kMostlyFillViewportThresholdOfVisibleProportion = 0.75f;
 
 MediaCustomControlsFullscreenDetector::MediaCustomControlsFullscreenDetector(
     HTMLVideoElement& video)
-    : EventListener(kCPPEventListenerType),
-      video_element_(video),
+    : video_element_(video),
       check_viewport_intersection_timer_(
           video.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
@@ -35,11 +34,6 @@ MediaCustomControlsFullscreenDetector::MediaCustomControlsFullscreenDetector(
               OnCheckViewportIntersectionTimerFired) {
   if (VideoElement().isConnected())
     Attach();
-}
-
-bool MediaCustomControlsFullscreenDetector::operator==(
-    const EventListener& other) const {
-  return this == &other;
 }
 
 void MediaCustomControlsFullscreenDetector::Attach() {
@@ -167,7 +161,7 @@ bool MediaCustomControlsFullscreenDetector::IsVideoOrParentFullscreen() {
 }
 
 void MediaCustomControlsFullscreenDetector::Trace(blink::Visitor* visitor) {
-  EventListener::Trace(visitor);
+  NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
 }
 

@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/context_features_client_impl.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -239,19 +240,12 @@ bool WebViewImpl::UseExternalPopupMenus() {
 
 namespace {
 
-class EmptyEventListener final : public EventListener {
+class EmptyEventListener final : public NativeEventListener {
  public:
   static EmptyEventListener* Create() {
     return MakeGarbageCollected<EmptyEventListener>();
   }
 
-  EmptyEventListener() : EventListener(kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const override {
-    return this == &other;
-  }
-
- private:
   void Invoke(ExecutionContext* execution_context, Event*) override {}
 };
 

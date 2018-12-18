@@ -6,7 +6,7 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
@@ -23,16 +23,14 @@ const char kTransparentClassName[] = "transparent";
 
 // Listens for the 'transitionend' event.
 class MediaControlPanelElement::TransitionEventListener final
-    : public EventListener {
+    : public NativeEventListener {
  public:
   using Callback = base::RepeatingCallback<void()>;
 
   // |element| is the element to listen for the 'transitionend' event on.
   // |callback| is the callback to call when the event is handled.
   explicit TransitionEventListener(Element* element, Callback callback)
-      : EventListener(EventListener::kCPPEventListenerType),
-        callback_(callback),
-        element_(element) {
+      : callback_(callback), element_(element) {
     DCHECK(callback_);
     DCHECK(element_);
   }
@@ -54,16 +52,6 @@ class MediaControlPanelElement::TransitionEventListener final
 
   bool IsAttached() const { return attached_; }
 
-  bool operator==(const EventListener& other) const override {
-    return this == &other;
-  }
-
-  void Trace(blink::Visitor* visitor) override {
-    EventListener::Trace(visitor);
-    visitor->Trace(element_);
-  }
-
- private:
   void Invoke(ExecutionContext* context, Event* event) override {
     if (event->target() != element_)
       return;
@@ -76,6 +64,12 @@ class MediaControlPanelElement::TransitionEventListener final
     NOTREACHED();
   }
 
+  void Trace(blink::Visitor* visitor) override {
+    NativeEventListener::Trace(visitor);
+    visitor->Trace(element_);
+  }
+
+ private:
   bool attached_ = false;
 
   Callback callback_;

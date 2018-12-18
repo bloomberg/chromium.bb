@@ -17,8 +17,7 @@
 namespace blink {
 
 VideoWakeLock::VideoWakeLock(HTMLVideoElement& video)
-    : EventListener(kCPPEventListenerType),
-      PageVisibilityObserver(video.GetDocument().GetPage()),
+    : PageVisibilityObserver(video.GetDocument().GetPage()),
       video_element_(video) {
   VideoElement().addEventListener(event_type_names::kPlaying, this, true);
   VideoElement().addEventListener(event_type_names::kPause, this, true);
@@ -33,16 +32,12 @@ VideoWakeLock::VideoWakeLock(HTMLVideoElement& video)
     remote_playback_controller->AddObserver(this);
 }
 
-bool VideoWakeLock::operator==(const EventListener& other) const {
-  return this == &other;
-}
-
 void VideoWakeLock::PageVisibilityChanged() {
   Update();
 }
 
 void VideoWakeLock::Trace(blink::Visitor* visitor) {
-  EventListener::Trace(visitor);
+  NativeEventListener::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   visitor->Trace(video_element_);
 }

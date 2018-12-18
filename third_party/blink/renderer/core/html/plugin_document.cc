@@ -26,7 +26,7 @@
 
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/raw_data_document_parser.h"
 #include "third_party/blink/renderer/core/events/before_unload_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
@@ -49,18 +49,14 @@ namespace blink {
 
 using namespace html_names;
 
-class PluginDocument::BeforeUnloadEventListener : public EventListener {
+class PluginDocument::BeforeUnloadEventListener : public NativeEventListener {
  public:
   static BeforeUnloadEventListener* Create(PluginDocument* document) {
     return MakeGarbageCollected<BeforeUnloadEventListener>(document);
   }
 
   explicit BeforeUnloadEventListener(PluginDocument* document)
-      : EventListener(kCPPEventListenerType), doc_(document) {}
-
-  bool operator==(const EventListener& listener) const override {
-    return this == &listener;
-  }
+      : doc_(document) {}
 
   void SetShowBeforeUnloadDialog(bool show_dialog) {
     show_dialog_ = show_dialog;
@@ -68,7 +64,7 @@ class PluginDocument::BeforeUnloadEventListener : public EventListener {
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(doc_);
-    EventListener::Trace(visitor);
+    NativeEventListener::Trace(visitor);
   }
 
  private:

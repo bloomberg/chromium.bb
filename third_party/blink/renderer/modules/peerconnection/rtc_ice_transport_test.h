@@ -7,20 +7,14 @@
 
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_ice_transport_adapter.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 
 namespace blink {
 
-class MockEventListener final : public EventListener {
+class MockEventListener final : public NativeEventListener {
  public:
-  MockEventListener() : EventListener(ListenerType::kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const final {
-    return this == &other;
-  }
-
   MOCK_METHOD2(Invoke, void(ExecutionContext*, Event*));
 };
 

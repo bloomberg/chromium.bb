@@ -8,7 +8,7 @@
 #include "base/optional.h"
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -53,7 +53,7 @@ class HTMLVideoElement;
 // - MaybeLockedFullscreen => PendingFullscreen: on fullscreenchange event
 //   (exiting fullscreen) or on deviceorientation event (rotated to match the
 //   orientation of the video).
-class MediaControlsOrientationLockDelegate final : public EventListener {
+class MediaControlsOrientationLockDelegate final : public NativeEventListener {
  public:
   explicit MediaControlsOrientationLockDelegate(HTMLVideoElement&);
 
@@ -66,9 +66,8 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
   // object to be garbage collected.
   void Detach();
 
-  // EventListener implementation.
-  bool operator==(const EventListener&) const override;
-
+  // NativeEventListener implementation.
+  void Invoke(ExecutionContext*, Event*) override;
   void Trace(blink::Visitor*) override;
 
  private:
@@ -88,9 +87,6 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
     kPortrait,
     kLandscape
   };
-
-  // EventListener implementation.
-  void Invoke(ExecutionContext*, Event*) override;
 
   HTMLVideoElement& VideoElement() const;
   Document& GetDocument() const;

@@ -8,7 +8,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/audio_track_list.h"
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
@@ -23,22 +23,17 @@ namespace {
 
 // Class to register to the events of |m_mediaElement|, acting accordingly on
 // the tracks of |m_mediaStream|.
-class MediaElementEventListener final : public EventListener {
-  WTF_MAKE_NONCOPYABLE(MediaElementEventListener);
-
+class MediaElementEventListener final : public NativeEventListener {
  public:
   MediaElementEventListener(HTMLMediaElement*, MediaStream*);
   void UpdateSources(ExecutionContext*);
 
   void Trace(blink::Visitor*) override;
 
- private:
   // EventListener implementation.
   void Invoke(ExecutionContext*, Event*) override;
-  bool operator==(const EventListener& other) const override {
-    return this == &other;
-  }
 
+ private:
   Member<HTMLMediaElement> media_element_;
   Member<MediaStream> media_stream_;
   HeapHashSet<WeakMember<MediaStreamSource>> sources_;
@@ -46,9 +41,7 @@ class MediaElementEventListener final : public EventListener {
 
 MediaElementEventListener::MediaElementEventListener(HTMLMediaElement* element,
                                                      MediaStream* stream)
-    : EventListener(kCPPEventListenerType),
-      media_element_(element),
-      media_stream_(stream) {
+    : NativeEventListener(), media_element_(element), media_stream_(stream) {
   UpdateSources(element->GetExecutionContext());
 }
 

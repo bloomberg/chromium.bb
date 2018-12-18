@@ -25,8 +25,9 @@
 #include "third_party/blink/renderer/core/html/image_document.h"
 
 #include <limits>
+
 #include "third_party/blink/public/platform/web_content_settings_client.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/raw_data_document_parser.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
@@ -53,37 +54,44 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
 using namespace html_names;
 
-class ImageEventListener : public EventListener {
+class ImageEventListener : public NativeEventListener {
  public:
   static ImageEventListener* Create(ImageDocument* document) {
     return MakeGarbageCollected<ImageEventListener>(document);
   }
-  static const ImageEventListener* Cast(const EventListener* listener) {
-    return listener->GetType() == kImageEventListenerType
-               ? static_cast<const ImageEventListener*>(listener)
-               : nullptr;
-  }
 
-  ImageEventListener(ImageDocument* document)
-      : EventListener(kImageEventListenerType), doc_(document) {}
+  ImageEventListener(ImageDocument* document) : doc_(document) {}
 
   bool operator==(const EventListener& other) const override;
 
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(doc_);
-    EventListener::Trace(visitor);
-  }
-
- private:
   void Invoke(ExecutionContext*, Event*) override;
 
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(doc_);
+    NativeEventListener::Trace(visitor);
+  }
+
+  bool IsImageEventListener() const override { return true; }
+
+ private:
   Member<ImageDocument> doc_;
+};
+
+template <>
+struct DowncastTraits<ImageEventListener> {
+  static bool AllowFrom(const EventListener& event_listener) {
+    const NativeEventListener* native_event_listener =
+        DynamicTo<NativeEventListener>(event_listener);
+    return native_event_listener &&
+           native_event_listener->IsImageEventListener();
+  }
 };
 
 class ImageDocumentParser : public RawDataDocumentParser {
@@ -579,8 +587,9 @@ void ImageEventListener::Invoke(ExecutionContext*, Event* event) {
 
 bool ImageEventListener::operator==(const EventListener& listener) const {
   if (const ImageEventListener* image_event_listener =
-          ImageEventListener::Cast(&listener))
+          DynamicTo<ImageEventListener>(listener)) {
     return doc_ == image_event_listener->doc_;
+  }
   return false;
 }
 

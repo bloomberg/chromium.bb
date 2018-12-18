@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_remote_playback_availability_callback.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -40,14 +40,8 @@ class MockFunction : public ScriptFunction {
       : ScriptFunction(script_state) {}
 };
 
-class MockEventListenerForRemotePlayback : public EventListener {
+class MockEventListenerForRemotePlayback : public NativeEventListener {
  public:
-  MockEventListenerForRemotePlayback() : EventListener(kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const final {
-    return this == &other;
-  }
-
   MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
 };
 

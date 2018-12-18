@@ -41,13 +41,10 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
     // |kJSEventHandlerType| corresponds to EventHandler defined in standard:
     // https://html.spec.whatwg.org/multipage/webappapis.html#event-handler-attributes
     kJSEventHandlerType,
-    // These are for C++ native callbacks.
-    kImageEventListenerType,
+    // For C++ native callbacks.
     kCPPEventListenerType,
-    kConditionEventListenerType,
   };
 
-  explicit EventListener(ListenerType type) : type_(type) {}
   ~EventListener() override = default;
 
   // Invokes this event listener.
@@ -83,8 +80,19 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
 
   const char* NameInHeapSnapshot() const override { return "EventListener"; }
 
+  // Helper functions for DowncastTraits.
+  virtual bool IsJSBasedEventListener() const { return false; }
+  virtual bool IsNativeEventListener() const { return false; }
+
  private:
+  explicit EventListener(ListenerType type) : type_(type) {}
+
   ListenerType type_;
+
+  // Only these two classes are direct subclasses of EventListener.  Other
+  // subclasses must inherit from either of them.
+  friend class JSBasedEventListener;
+  friend class NativeEventListener;
 };
 
 }  // namespace blink

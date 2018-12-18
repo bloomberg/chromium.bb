@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_DISPLAY_CUTOUT_DELEGATE_H_
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -19,7 +19,7 @@ class TouchEvent;
 // to expand the video element into the display cutout when the video is
 // fullscreen.
 class MODULES_EXPORT MediaControlsDisplayCutoutDelegate final
-    : public EventListener {
+    : public NativeEventListener {
  public:
   static bool IsEnabled();
 
@@ -34,7 +34,8 @@ class MODULES_EXPORT MediaControlsDisplayCutoutDelegate final
   // object to be garbage collected.
   void Detach();
 
-  bool operator==(const EventListener&) const override;
+  // EventListener implementation.
+  void Invoke(ExecutionContext*, Event*) override;
 
   void Trace(blink::Visitor*) override;
 
@@ -55,9 +56,6 @@ class MODULES_EXPORT MediaControlsDisplayCutoutDelegate final
 
   void DidEnterFullscreen();
   void DidExitFullscreen();
-
-  // EventListener implementation.
-  void Invoke(ExecutionContext*, Event*) override;
 
   void HandleTouchEvent(TouchEvent*);
 

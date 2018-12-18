@@ -5,12 +5,13 @@
 #include "third_party/blink/renderer/core/dom/scripted_animation_controller.h"
 
 #include <memory>
+
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -117,14 +118,10 @@ TEST_F(ScriptedAnimationControllerTest, EnqueueWithinTask) {
 
 namespace {
 
-class RunTaskEventListener final : public EventListener {
+class RunTaskEventListener final : public NativeEventListener {
  public:
-  RunTaskEventListener(base::RepeatingClosure task)
-      : EventListener(kCPPEventListenerType), task_(std::move(task)) {}
+  RunTaskEventListener(base::RepeatingClosure task) : task_(std::move(task)) {}
   void Invoke(ExecutionContext*, Event*) override { task_.Run(); }
-  bool operator==(const EventListener& other) const override {
-    return this == &other;
-  }
 
  private:
   base::RepeatingClosure task_;
