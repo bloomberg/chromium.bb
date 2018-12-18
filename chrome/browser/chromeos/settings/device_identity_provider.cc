@@ -33,7 +33,10 @@ void DeviceIdentityProvider::SetActiveAccountId(const std::string& account_id) {
   if (!account_id.empty()) {
     // TODO(melandory): figire out why ProfileSyncService is created
     // with empty account id for the Kiosk mode.
-    CHECK(token_service_->GetRobotAccountId() == account_id);
+    auto robot_account_id = token_service_->GetRobotAccountId();
+    LOG_IF(FATAL, account_id != robot_account_id)
+        << "Account ids mismatch, account_id:\"" << account_id
+        << "\" robot_account_id: \"" << robot_account_id << "\"";
   }
   return;
 }
