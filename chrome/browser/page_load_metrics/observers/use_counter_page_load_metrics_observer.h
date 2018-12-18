@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_USE_COUNTER_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include <bitset>
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
@@ -15,6 +16,8 @@
 namespace internal {
 
 const char kFeaturesHistogramName[] = "Blink.UseCounter.Features";
+const char kFeaturesHistogramMainFrameName[] =
+    "Blink.UseCounter.MainFrame.Features";
 const char kCssPropertiesHistogramName[] = "Blink.UseCounter.CSSProperties";
 const char kAnimatedCssPropertiesHistogramName[] =
     "Blink.UseCounter.AnimatedCSSProperties";
@@ -31,19 +34,38 @@ class UseCounterPageLoadMetricsObserver
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   void OnFeaturesUsageObserved(
+      content::RenderFrameHost* rfh,
       const page_load_metrics::mojom::PageLoadFeatures&,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnComplete(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnFailedProvisionalLoad(
+      const page_load_metrics::FailedProvisionalLoadInfo&
+          failed_provisional_load_info,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  ObservePolicy FlushMetricsOnAppEnterBackground(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   ObservePolicy ShouldObserveMimeType(
       const std::string& mime_type) const override;
 
+  using UkmFeatureList = base::flat_set<blink::mojom::WebFeature>;
+
  private:
+  // Returns a list of opt-in UKM features for use counter.
+  static const UkmFeatureList& GetAllowedUkmFeatures();
+
   // To keep tracks of which features have been measured.
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       features_recorded_;
+  std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
+      main_frame_features_recorded_;
   std::bitset<static_cast<size_t>(blink::mojom::kMaximumCSSSampleId + 1)>
       css_properties_recorded_;
   std::bitset<static_cast<size_t>(blink::mojom::kMaximumCSSSampleId + 1)>
       animated_css_properties_recorded_;
+  std::set<size_t> ukm_features_recorded_;
   DISALLOW_COPY_AND_ASSIGN(UseCounterPageLoadMetricsObserver);
 };
 

@@ -2,18 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/use_counter/ukm_features.h"
+#include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 
-#include "base/containers/flat_set.h"
 #include "base/no_destructor.h"
+
+// This file defines a list of UseCounter WebFeature measured in the
+// UKM-based UseCounter. Features must all satisfy UKM privacy requirements
+// (see go/ukm). In addition, features should only be added if it's shown
+// (or highly likely be) rare, e.g. <1% of page views as measured by UMA.
+//
+// UKM-based UseCounter should be used to cover the case when UMA UseCounter
+// data shows a behaviour that is rare but too common to bindly change.
+// UKM-based UseCounter would allow use to find specific pages to reason about
+// either a breaking change is acceptable or not.
 
 using WebFeature = blink::mojom::WebFeature;
 
 // UKM-based UseCounter features (WebFeature) should be defined in
 // opt_in_features list.
-bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
-  static base::NoDestructor<base::flat_set<WebFeature>> opt_in_features(
-      base::flat_set<WebFeature>({
+const UseCounterPageLoadMetricsObserver::UkmFeatureList&
+UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
+  static base::NoDestructor<UseCounterPageLoadMetricsObserver::UkmFeatureList>
+      opt_in_features({
           WebFeature::kNavigatorVibrate,
           WebFeature::kNavigatorVibrateSubFrame,
           WebFeature::kTouchEventPreventedNoTouchAction,
@@ -83,6 +93,6 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kDownloadInAdFrameWithUserGesture,
           WebFeature::kDownloadInAdFrameWithoutUserGesture,
           WebFeature::kOpenWebDatabase,
-      }));
-  return opt_in_features->count(feature);
+      });
+  return *opt_in_features;
 }

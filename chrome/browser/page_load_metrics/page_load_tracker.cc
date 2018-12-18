@@ -642,10 +642,11 @@ void PageLoadTracker::BroadcastEventToObservers(const void* const event_key) {
 }
 
 void PageLoadTracker::UpdateFeaturesUsage(
+    content::RenderFrameHost* rfh,
     const mojom::PageLoadFeatures& new_features) {
   PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
   for (const auto& observer : observers_) {
-    observer->OnFeaturesUsageObserved(new_features, extra_info);
+    observer->OnFeaturesUsageObserved(rfh, new_features, extra_info);
   }
 }
 

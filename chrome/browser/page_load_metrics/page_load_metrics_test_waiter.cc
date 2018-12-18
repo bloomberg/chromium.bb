@@ -137,6 +137,7 @@ void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
 }
 
 void PageLoadMetricsTestWaiter::OnFeaturesUsageObserved(
+    content::RenderFrameHost* rfh,
     const mojom::PageLoadFeatures& features,
     const PageLoadExtraInfo& extra_info) {
   if (WebFeaturesExpectationsSatisfied())
@@ -263,10 +264,11 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
 }
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnFeaturesUsageObserved(
+    content::RenderFrameHost* rfh,
     const mojom::PageLoadFeatures& features,
     const PageLoadExtraInfo& extra_info) {
   if (waiter_)
-    waiter_->OnFeaturesUsageObserved(features, extra_info);
+    waiter_->OnFeaturesUsageObserved(nullptr, features, extra_info);
 }
 
 }  // namespace page_load_metrics

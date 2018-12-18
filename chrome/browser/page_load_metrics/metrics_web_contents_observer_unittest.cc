@@ -104,7 +104,8 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
     loaded_resources_->emplace_back(extra_request_complete_info);
   }
 
-  void OnFeaturesUsageObserved(const mojom::PageLoadFeatures& features,
+  void OnFeaturesUsageObserved(content::RenderFrameHost* rfh,
+                               const mojom::PageLoadFeatures& features,
                                const PageLoadExtraInfo& extra_info) override {
     observed_features_->push_back(features);
   }

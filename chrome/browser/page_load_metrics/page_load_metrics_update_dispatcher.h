@@ -109,6 +109,7 @@ class PageLoadMetricsUpdateDispatcher {
     virtual void OnMainFrameMetadataChanged() = 0;
     virtual void OnSubframeMetadataChanged() = 0;
     virtual void UpdateFeaturesUsage(
+        content::RenderFrameHost* rfh,
         const mojom::PageLoadFeatures& new_features) = 0;
     virtual void UpdateResourceDataUse(
         const std::vector<mojom::ResourceDataUpdatePtr>& resources) = 0;
