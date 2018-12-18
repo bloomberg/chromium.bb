@@ -183,9 +183,12 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
         constraintEqualToAnchor:contentView.centerYAnchor],
     [_errorIcon.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
-    [contentView.heightAnchor
-        constraintEqualToAnchor:verticalCenteringView.heightAnchor
-                       constant:kTableViewLargeVerticalSpacing],
+    [verticalCenteringView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:contentView.topAnchor
+                                    constant:kTableViewVerticalSpacing],
+    [verticalCenteringView.bottomAnchor
+        constraintLessThanOrEqualToAnchor:contentView.bottomAnchor
+                                 constant:kTableViewVerticalSpacing],
 
     // Set trailing anchors.
     [_errorIcon.trailingAnchor
