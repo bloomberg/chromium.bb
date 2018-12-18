@@ -753,8 +753,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("applyConstraintsVideoOverconstrained()");
 }
 
-// Flaky on Win-ASAN, see https://crbug.com/915135
-#if defined(ADDRESS_SANITIZER) && defined(OS_WIN)
+// Flaky on Win, see https://crbug.com/915135
+#if defined(OS_WIN)
 #define MAYBE_ApplyConstraintsNonDevice DISABLED_ApplyConstraintsNonDevice
 #else
 #define MAYBE_ApplyConstraintsNonDevice ApplyConstraintsNonDevice
