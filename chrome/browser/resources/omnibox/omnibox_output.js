@@ -782,7 +782,7 @@ cr.define('omnibox_output', function() {
             'of the result.',
         ['contents', 'description'], OutputPairProperty),
     new Column(
-        ['Can Be Default'], '', 'allowedToBeDefaultMatch', false,
+        ['Can Be Default'], '', 'allowedToBeDefaultMatch', true,
         'A green checkmark indicates that the result can be the default ' +
             'match(i.e., can be the match that pressing enter in the ' +
             'omniboxnavigates to).',
