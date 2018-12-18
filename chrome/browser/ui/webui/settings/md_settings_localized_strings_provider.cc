@@ -83,6 +83,10 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #endif
 #endif  // defined(OS_WIN)
 
@@ -983,9 +987,18 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
           .spec();
   html_source->AddString("chromeCleanupLearnMoreUrl", cleanup_learn_more_url);
 
+  // The "powered by" footer contains an HTML fragment with the SVG logo of the
+  // partner. The logo is added directly to the DOM, rather than as an <img>
+  // src, to make sure that screen readers can find accessibility tags inside
+  // the SVG.
+  const std::string powered_by_element =
+      base::StrCat({"<span id='powered-by-logo'>",
+                    ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+                        IDR_CHROME_CLEANUP_PARTNER),
+                    "</span>"});
   const base::string16 powered_by_html =
       l10n_util::GetStringFUTF16(IDS_SETTINGS_RESET_CLEANUP_FOOTER_POWERED_BY,
-                                 L"<span id='powered-by-logo'></span>");
+                                 base::UTF8ToUTF16(powered_by_element));
   html_source->AddString("chromeCleanupPoweredByHtml", powered_by_html);
 
   const base::string16 cleanup_details_explanation =

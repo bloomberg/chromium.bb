@@ -61,7 +61,6 @@
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/token_util_win.h"
 #include "chrome/browser/ui/webui/settings/incompatible_applications_handler_win.h"
-#include "chrome/grit/chrome_unscaled_resources.h"
 #endif
 #endif  // defined(OS_WIN)
 
@@ -246,13 +245,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
 #if defined(OS_WIN)
   AddSettingsPageUIHandler(std::make_unique<ChromeCleanupHandler>(profile));
-
-#if defined(GOOGLE_CHROME_BUILD)
-  html_source->AddResourcePath("partner-logo.svg", IDR_CHROME_CLEANUP_PARTNER);
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  exclude_from_gzip.push_back("partner-logo.svg");
-#endif
-#endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
