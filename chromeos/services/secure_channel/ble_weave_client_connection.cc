@@ -169,7 +169,7 @@ BluetoothLowEnergyWeaveClientConnection::
 
 BluetoothLowEnergyWeaveClientConnection::
     ~BluetoothLowEnergyWeaveClientConnection() {
-  if (sub_status() != SubStatus::DISCONNECTED) {
+  if (sub_status() == SubStatus::WAITING_CONNECTION_RESPONSE || IsConnected()) {
     // Deleting this object without calling Disconnect() may result in the
     // connection staying active longer than intended, which can lead to errors.
     // See https://crbug.com/763604.
