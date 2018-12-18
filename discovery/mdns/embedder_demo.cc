@@ -120,32 +120,6 @@ std::vector<platform::UdpSocketPtr> SetupMulticastSockets(
   return fds;
 }
 
-std::vector<platform::UdpSocketPtr> RegisterInterfaces(
-    const std::vector<platform::InterfaceAddresses>& addrinfo,
-    mdns::MdnsResponderAdapter* mdns_adapter) {
-  std::vector<platform::InterfaceIndex> index_list;
-  for (const auto& interface : addrinfo) {
-    if (!interface.addresses.empty())
-      index_list.push_back(interface.info.index);
-  }
-
-  auto sockets = SetupMulticastSockets(index_list);
-  // Listen on all interfaces
-  auto fd_it = sockets.begin();
-  for (platform::InterfaceIndex index : index_list) {
-    const auto& addr = *std::find_if(
-        addrinfo.begin(), addrinfo.end(),
-        [index](const openscreen::platform::InterfaceAddresses& addr) {
-          return addr.info.index == index;
-        });
-    // Pick any address for the given interface.
-    mdns_adapter->RegisterInterface(addr.info, addr.addresses.front(),
-                                    *fd_it++);
-  }
-
-  return sockets;
-}
-
 void LogService(const Service& s) {
   OSP_LOG_INFO << "PTR: (" << s.service_instance << ")";
   OSP_LOG_INFO << "SRV: " << s.domain_name << ":" << s.port;
@@ -162,8 +136,10 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
     switch (ptr_event.header.response_type) {
       case mdns::QueryEventHeader::Type::kAdded:
       case mdns::QueryEventHeader::Type::kAddedNoCache:
-        mdns_adapter->StartSrvQuery(ptr_event.service_instance);
-        mdns_adapter->StartTxtQuery(ptr_event.service_instance);
+        mdns_adapter->StartSrvQuery(ptr_event.header.socket,
+                                    ptr_event.service_instance);
+        mdns_adapter->StartTxtQuery(ptr_event.header.socket,
+                                    ptr_event.service_instance);
         if (it == g_services->end()) {
           g_services->emplace(ptr_event.service_instance,
                               Service(ptr_event.service_instance));
@@ -188,7 +164,8 @@ void HandleEvents(mdns::MdnsResponderAdapterImpl* mdns_adapter) {
     switch (srv_event.header.response_type) {
       case mdns::QueryEventHeader::Type::kAdded:
       case mdns::QueryEventHeader::Type::kAddedNoCache:
-        mdns_adapter->StartAQuery(srv_event.domain_name);
+        mdns_adapter->StartAQuery(srv_event.header.socket,
+                                  srv_event.domain_name);
         it->second.domain_name = std::move(srv_event.domain_name);
         it->second.port = srv_event.port;
         break;
@@ -258,11 +235,31 @@ void BrowseDemo(const std::string& service_name,
   platform::EventWaiterPtr waiter = platform::CreateEventWaiter();
   mdns_adapter->Init();
   mdns_adapter->SetHostLabel("gigliorononomicon");
-  auto addrinfo = platform::GetInterfaceAddresses();
-  for (const auto& ifa : addrinfo) {
+  auto interface_addresses = platform::GetInterfaceAddresses();
+  for (const auto& ifa : interface_addresses) {
     OSP_LOG_INFO << "Found interface: " << ifa;
   }
-  auto sockets = RegisterInterfaces(addrinfo, mdns_adapter.get());
+
+  std::vector<platform::InterfaceIndex> index_list;
+  for (const auto& interface : interface_addresses) {
+    if (!interface.addresses.empty())
+      index_list.push_back(interface.info.index);
+  }
+
+  auto sockets = SetupMulticastSockets(index_list);
+  // Listen on all interfaces
+  auto fd_it = sockets.begin();
+  for (platform::InterfaceIndex index : index_list) {
+    const auto& addr = *std::find_if(
+        interface_addresses.begin(), interface_addresses.end(),
+        [index](const openscreen::platform::InterfaceAddresses& addr) {
+          return addr.info.index == index;
+        });
+    // Pick any address for the given interface.
+    mdns_adapter->RegisterInterface(addr.info, addr.addresses.front(),
+                                    *fd_it++);
+  }
+
   if (!service_instance.empty()) {
     mdns_adapter->RegisterService(service_instance, service_name,
                                   service_protocol, mdns::DomainName(), 12345,
@@ -271,9 +268,9 @@ void BrowseDemo(const std::string& service_name,
 
   for (auto* socket : sockets) {
     platform::WatchUdpSocketReadable(waiter, socket);
+    mdns_adapter->StartPtrQuery(socket, service_type);
   }
 
-  mdns_adapter->StartPtrQuery(service_type);
   while (!g_done) {
     HandleEvents(mdns_adapter.get());
     if (g_dump_services) {

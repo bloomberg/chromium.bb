@@ -89,6 +89,7 @@ struct IPEndpoint {
 };
 
 bool operator==(const IPEndpoint& a, const IPEndpoint& b);
+bool operator!=(const IPEndpoint& a, const IPEndpoint& b);
 
 class IPEndpointComparator {
  public:

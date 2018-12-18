@@ -8,6 +8,7 @@
 #include <array>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -64,19 +65,35 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
  private:
   // NOTE: service_instance implicit in map key.
   struct ServiceInstance {
-    platform::InterfaceIndex ptr_interface_index =
-        platform::kInvalidInterfaceIndex;
+    platform::UdpSocketPtr ptr_socket = nullptr;
     mdns::DomainName domain_name;
     uint16_t port = 0;
+    bool has_ptr_record = false;
     std::vector<std::string> txt_info;
+
+    // |port| == 0 signals that we have no SRV record.
+    bool has_srv() const { return port != 0; }
   };
 
   // NOTE: hostname implicit in map key.
-  struct HostnameWatchers {
+  struct HostInfo {
     std::vector<ServiceInstance*> services;
-    // TODO(btolsch): std::vector<IPAddress>
-    IPAddress address;
+    IPAddress v4_address;
+    IPAddress v6_address;
   };
+
+  struct NetworkScopedDomainName {
+    platform::UdpSocketPtr socket;
+    mdns::DomainName domain_name;
+  };
+
+  struct NetworkScopedDomainNameComparator {
+    bool operator()(const NetworkScopedDomainName& a,
+                    const NetworkScopedDomainName& b) const;
+  };
+
+  using InstanceNameSet =
+      std::set<mdns::DomainName, mdns::DomainNameComparator>;
 
   void HandleMdnsEvents();
   void StartListening();
@@ -84,22 +101,36 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   void StartService();
   void StopService();
   void StopMdnsResponder();
-  void PushScreenInfo(const mdns::DomainName& service_instance,
-                      const ServiceInstance& instance_info,
-                      const IPAddress& address);
-  void MaybePushScreenInfo(const mdns::DomainName& service_instance,
-                           const ServiceInstance& instance_info);
-  void MaybePushScreenInfo(const mdns::DomainName& domain_name,
-                           const IPAddress& address);
-  void RemoveScreenInfo(const mdns::DomainName& service_instance);
-  void RemoveScreenInfoByDomain(const mdns::DomainName& domain_name);
+  void UpdatePendingScreenInfoSet(InstanceNameSet* modified_instance_names,
+                                  const mdns::DomainName& domain_name);
   void RemoveAllScreens();
 
-  bool HandlePtrEvent(const mdns::PtrEvent& ptr_event);
-  bool HandleSrvEvent(const mdns::SrvEvent& srv_event);
-  bool HandleTxtEvent(const mdns::TxtEvent& txt_event);
-  bool HandleAEvent(const mdns::AEvent& a_event);
-  bool HandleAaaaEvent(const mdns::AaaaEvent& aaaa_event);
+  // NOTE: |modified_instance_names| is used to track which service instances
+  // are modified by the record events.  See HandleMdnsEvents for more details.
+  bool HandlePtrEvent(const mdns::PtrEvent& ptr_event,
+                      InstanceNameSet* modified_instance_names);
+  bool HandleSrvEvent(const mdns::SrvEvent& srv_event,
+                      InstanceNameSet* modified_instance_names);
+  bool HandleTxtEvent(const mdns::TxtEvent& txt_event,
+                      InstanceNameSet* modified_instance_names);
+  bool HandleAddressEvent(platform::UdpSocketPtr socket,
+                          mdns::QueryEventHeader::Type response_type,
+                          const mdns::DomainName& domain_name,
+                          bool a_event,
+                          const IPAddress& address,
+                          InstanceNameSet* modified_instance_names);
+  bool HandleAEvent(const mdns::AEvent& a_event,
+                    InstanceNameSet* modified_instance_names);
+  bool HandleAaaaEvent(const mdns::AaaaEvent& aaaa_event,
+                       InstanceNameSet* modified_instance_names);
+
+  HostInfo* AddOrGetHostInfo(platform::UdpSocketPtr socket,
+                             const mdns::DomainName& domain_name);
+  HostInfo* GetHostInfo(platform::UdpSocketPtr socket,
+                        const mdns::DomainName& domain_name);
+  bool IsServiceReady(const ServiceInstance& instance, HostInfo* host) const;
+  platform::InterfaceIndex GetInterfaceIndexFromSocket(
+      platform::UdpSocketPtr socket) const;
 
   // Service type separated as service name and service protocol for both
   // listening and publishing (e.g. {"_openscreen", "_udp"}).
@@ -123,15 +154,17 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   std::map<mdns::DomainName,
            std::unique_ptr<ServiceInstance>,
            mdns::DomainNameComparator>
-      services_;
+      service_by_name_;
 
-  // A map of hostnames to IPAddresses which also includes pointers to dependent
+  // The map key is a combination of the interface to which the address records
+  // belong and the hostname of the address records.  The values are IPAddresses
+  // for the given hostname on the given network and pointers to dependent
   // service instances.  The service instance pointers act as a reference count
   // to keep the A/AAAA queries alive, when more than one service refers to the
   // same hostname.  This is not currently used by openscreen, but is used by
   // Cast, so may be supported in openscreen in the future.
-  std::map<mdns::DomainName, HostnameWatchers, mdns::DomainNameComparator>
-      hostname_watchers_;
+  std::map<NetworkScopedDomainName, HostInfo, NetworkScopedDomainNameComparator>
+      network_scoped_domain_to_host_;
 
   std::map<std::string, ScreenInfo> screen_info_;
 };

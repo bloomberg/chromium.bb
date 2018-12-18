@@ -210,6 +210,10 @@ bool operator==(const IPEndpoint& a, const IPEndpoint& b) {
   return (a.address == b.address) && (a.port == b.port);
 }
 
+bool operator!=(const IPEndpoint& a, const IPEndpoint& b) {
+  return !(a == b);
+}
+
 bool IPEndpointComparator::operator()(const IPEndpoint& a,
                                       const IPEndpoint& b) const {
   if (a.address.version() != b.address.version())

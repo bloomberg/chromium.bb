@@ -19,7 +19,8 @@ struct ScreenInfo {
 
   bool Update(std::string&& friendly_name,
               platform::InterfaceIndex network_interface_index,
-              IPEndpoint endpoint);
+              const IPEndpoint& v4_endpoint,
+              const IPEndpoint& v6_endpoint);
 
   // Identifier uniquely identifying the screen.
   std::string screen_id;
@@ -31,8 +32,9 @@ struct ScreenInfo {
   platform::InterfaceIndex network_interface_index =
       platform::kInvalidInterfaceIndex;
 
-  // The network endpoint to create a new connection to the screen.
-  IPEndpoint endpoint;
+  // The network endpoints to create a new connection to the screen.
+  IPEndpoint v4_endpoint;
+  IPEndpoint v6_endpoint;
 };
 
 }  // namespace openscreen

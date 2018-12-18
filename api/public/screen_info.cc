@@ -4,7 +4,10 @@
 
 #include "api/public/screen_info.h"
 
+#include <algorithm>
 #include <utility>
+
+#include "platform/api/logging.h"
 
 namespace openscreen {
 
@@ -12,8 +15,7 @@ bool ScreenInfo::operator==(const ScreenInfo& other) const {
   return (screen_id == other.screen_id &&
           friendly_name == other.friendly_name &&
           network_interface_index == other.network_interface_index &&
-          endpoint.address == other.endpoint.address &&
-          endpoint.port == other.endpoint.port);
+          v4_endpoint == other.v4_endpoint && v6_endpoint == other.v6_endpoint);
 }
 
 bool ScreenInfo::operator!=(const ScreenInfo& other) const {
@@ -22,14 +24,20 @@ bool ScreenInfo::operator!=(const ScreenInfo& other) const {
 
 bool ScreenInfo::Update(std::string&& new_friendly_name,
                         platform::InterfaceIndex new_network_interface_index,
-                        IPEndpoint new_endpoint) {
+                        const IPEndpoint& new_v4_endpoint,
+                        const IPEndpoint& new_v6_endpoint) {
+  OSP_DCHECK(!new_v4_endpoint.address ||
+             IPAddress::Version::kV4 == new_v4_endpoint.address.version());
+  OSP_DCHECK(!new_v6_endpoint.address ||
+             IPAddress::Version::kV6 == new_v6_endpoint.address.version());
   bool changed = (friendly_name != new_friendly_name) ||
                  (network_interface_index != new_network_interface_index) ||
-                 (endpoint.address != new_endpoint.address) ||
-                 (endpoint.port != new_endpoint.port);
+                 (v4_endpoint != new_v4_endpoint) ||
+                 (v6_endpoint != new_v6_endpoint);
   friendly_name = std::move(new_friendly_name);
   network_interface_index = new_network_interface_index;
-  endpoint = new_endpoint;
+  v4_endpoint = new_v4_endpoint;
+  v6_endpoint = new_v6_endpoint;
   return changed;
 }
 

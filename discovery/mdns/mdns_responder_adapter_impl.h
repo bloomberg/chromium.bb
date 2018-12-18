@@ -40,27 +40,36 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
                       platform::UdpSocketPtr receiving_socket) override;
   int RunTasks() override;
 
-  std::vector<AEvent> TakeAResponses() override;
-  std::vector<AaaaEvent> TakeAaaaResponses() override;
   std::vector<PtrEvent> TakePtrResponses() override;
   std::vector<SrvEvent> TakeSrvResponses() override;
   std::vector<TxtEvent> TakeTxtResponses() override;
+  std::vector<AEvent> TakeAResponses() override;
+  std::vector<AaaaEvent> TakeAaaaResponses() override;
 
-  MdnsResponderErrorCode StartAQuery(const DomainName& domain_name) override;
-  MdnsResponderErrorCode StartAaaaQuery(const DomainName& domain_name) override;
-  MdnsResponderErrorCode StartPtrQuery(const DomainName& service_type) override;
+  MdnsResponderErrorCode StartPtrQuery(platform::UdpSocketPtr socket,
+                                       const DomainName& service_type) override;
   MdnsResponderErrorCode StartSrvQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& service_instance) override;
   MdnsResponderErrorCode StartTxtQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& service_instance) override;
-
-  MdnsResponderErrorCode StopAQuery(const DomainName& domain_name) override;
-  MdnsResponderErrorCode StopAaaaQuery(const DomainName& domain_name) override;
-  MdnsResponderErrorCode StopPtrQuery(const DomainName& service_type) override;
+  MdnsResponderErrorCode StartAQuery(platform::UdpSocketPtr socket,
+                                     const DomainName& domain_name) override;
+  MdnsResponderErrorCode StartAaaaQuery(platform::UdpSocketPtr socket,
+                                        const DomainName& domain_name) override;
+  MdnsResponderErrorCode StopPtrQuery(platform::UdpSocketPtr socket,
+                                      const DomainName& service_type) override;
   MdnsResponderErrorCode StopSrvQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& service_instance) override;
   MdnsResponderErrorCode StopTxtQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& service_instance) override;
+  MdnsResponderErrorCode StopAQuery(platform::UdpSocketPtr socket,
+                                    const DomainName& domain_name) override;
+  MdnsResponderErrorCode StopAaaaQuery(platform::UdpSocketPtr socket,
+                                       const DomainName& domain_name) override;
 
   MdnsResponderErrorCode RegisterService(
       const std::string& service_instance,
@@ -80,6 +89,14 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
       const std::map<std::string, std::string>& txt_data) override;
 
  private:
+  struct Questions {
+    std::map<DomainName, DNSQuestion, DomainNameComparator> a;
+    std::map<DomainName, DNSQuestion, DomainNameComparator> aaaa;
+    std::map<DomainName, DNSQuestion, DomainNameComparator> ptr;
+    std::map<DomainName, DNSQuestion, DomainNameComparator> srv;
+    std::map<DomainName, DNSQuestion, DomainNameComparator> txt;
+  };
+
   static void AQueryCallback(mDNS* m,
                              DNSQuestion* question,
                              const ResourceRecord* answer,
@@ -106,6 +123,7 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
 
   void AdvertiseInterfaces();
   void DeadvertiseInterfaces();
+  void RemoveQuestionsIfEmpty(platform::UdpSocketPtr socket);
 
   CacheEntity rr_cache_[kRrCacheSize];
 
@@ -117,11 +135,7 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
   // platform sockets.
   mDNS_PlatformSupport platform_storage_;
 
-  std::map<DomainName, DNSQuestion, DomainNameComparator> a_questions_;
-  std::map<DomainName, DNSQuestion, DomainNameComparator> aaaa_questions_;
-  std::map<DomainName, DNSQuestion, DomainNameComparator> ptr_questions_;
-  std::map<DomainName, DNSQuestion, DomainNameComparator> srv_questions_;
-  std::map<DomainName, DNSQuestion, DomainNameComparator> txt_questions_;
+  std::map<platform::UdpSocketPtr, Questions> socket_to_questions_;
 
   std::map<platform::UdpSocketPtr, NetworkInterfaceInfo>
       responder_interface_info_;

@@ -9,20 +9,20 @@
 namespace openscreen {
 
 TEST(ScreenInfoTest, Compare) {
-  const ScreenInfo screen1{"id1", "name1", 1, {{192, 168, 1, 10}, 12345}};
-  const ScreenInfo screen2{"id2", "name2", 1, {{192, 168, 1, 11}, 12346}};
+  const ScreenInfo screen1{"id1", "name1", 1, {{192, 168, 1, 10}, 12345}, {}};
+  const ScreenInfo screen2{"id2", "name2", 1, {{192, 168, 1, 11}, 12346}, {}};
   const ScreenInfo screen1_alt_id{
-      "id3", "name1", 1, {{192, 168, 1, 10}, 12345}};
+      "id3", "name1", 1, {{192, 168, 1, 10}, 12345}, {}};
   const ScreenInfo screen1_alt_name{
-      "id1", "name2", 1, {{192, 168, 1, 10}, 12345}};
+      "id1", "name2", 1, {{192, 168, 1, 10}, 12345}, {}};
   const ScreenInfo screen1_alt_interface{
-      "id1", "name1", 2, {{192, 168, 1, 10}, 12345}};
+      "id1", "name1", 2, {{192, 168, 1, 10}, 12345}, {}};
   const ScreenInfo screen1_alt_ip{
-      "id3", "name1", 1, {{192, 168, 1, 12}, 12345}};
+      "id3", "name1", 1, {{192, 168, 1, 12}, 12345}, {}};
   const ScreenInfo screen1_alt_port{
-      "id3", "name1", 1, {{192, 168, 1, 10}, 12645}};
-  ScreenInfo screen1_ipv6{"id3", "name1", 1, {{}, 4321}};
-  ASSERT_TRUE(IPAddress::Parse("::12:34", &screen1_ipv6.endpoint.address));
+      "id3", "name1", 1, {{192, 168, 1, 10}, 12645}, {}};
+  ScreenInfo screen1_ipv6{"id3", "name1", 1, {}, {}};
+  ASSERT_TRUE(IPAddress::Parse("::12:34", &screen1_ipv6.v6_endpoint.address));
 
   EXPECT_EQ(screen1, screen1);
   EXPECT_EQ(screen2, screen2);

@@ -140,6 +140,46 @@ void FakeMdnsResponderAdapter::AddAaaaEvent(mdns::AaaaEvent&& aaaa_event) {
     aaaa_events_.push_back(std::move(aaaa_event));
 }
 
+bool FakeMdnsResponderAdapter::ptr_queries_empty() const {
+  for (const auto& queries : queries_) {
+    if (!queries.second.ptr_queries.empty())
+      return false;
+  }
+  return true;
+}
+
+bool FakeMdnsResponderAdapter::srv_queries_empty() const {
+  for (const auto& queries : queries_) {
+    if (!queries.second.srv_queries.empty())
+      return false;
+  }
+  return true;
+}
+
+bool FakeMdnsResponderAdapter::txt_queries_empty() const {
+  for (const auto& queries : queries_) {
+    if (!queries.second.txt_queries.empty())
+      return false;
+  }
+  return true;
+}
+
+bool FakeMdnsResponderAdapter::a_queries_empty() const {
+  for (const auto& queries : queries_) {
+    if (!queries.second.a_queries.empty())
+      return false;
+  }
+  return true;
+}
+
+bool FakeMdnsResponderAdapter::aaaa_queries_empty() const {
+  for (const auto& queries : queries_) {
+    if (!queries.second.aaaa_queries.empty())
+      return false;
+  }
+  return true;
+}
+
 bool FakeMdnsResponderAdapter::Init() {
   OSP_CHECK(!running_);
   running_ = true;
@@ -147,14 +187,12 @@ bool FakeMdnsResponderAdapter::Init() {
 }
 
 void FakeMdnsResponderAdapter::Close() {
-  ptr_queries_.clear();
-  srv_queries_.clear();
-  txt_queries_.clear();
-  a_queries_.clear();
+  queries_.clear();
   ptr_events_.clear();
   srv_events_.clear();
   txt_events_.clear();
   a_events_.clear();
+  aaaa_events_.clear();
   registered_interfaces_.clear();
   registered_services_.clear();
   running_ = false;
@@ -208,132 +246,126 @@ int FakeMdnsResponderAdapter::RunTasks() {
   return 1;
 }
 
-std::vector<mdns::AEvent> FakeMdnsResponderAdapter::TakeAResponses() {
-  const auto query_it = std::stable_partition(
-      a_events_.begin(), a_events_.end(), [this](const mdns::AEvent& a_event) {
-        for (const auto& query : a_queries_) {
-          if (a_event.domain_name == query)
-            return false;
-        }
-        return true;
-      });
-  std::vector<mdns::AEvent> result;
-  for (auto it = query_it; it != a_events_.end(); ++it) {
-    result.push_back(std::move(*it));
-  }
-  OSP_LOG_INFO << "taking " << result.size() << " a response(s)";
-  a_events_.erase(query_it, a_events_.end());
-  return result;
-}
-
-std::vector<mdns::AaaaEvent> FakeMdnsResponderAdapter::TakeAaaaResponses() {
-  const auto query_it =
-      std::stable_partition(aaaa_events_.begin(), aaaa_events_.end(),
-                            [this](const mdns::AaaaEvent& aaaa_event) {
-                              for (const auto& query : aaaa_queries_) {
-                                if (aaaa_event.domain_name == query)
-                                  return false;
-                              }
-                              return true;
-                            });
-  std::vector<mdns::AaaaEvent> result;
-  for (auto it = query_it; it != aaaa_events_.end(); ++it) {
-    result.push_back(std::move(*it));
-  }
-  OSP_LOG_INFO << "taking " << result.size() << " a response(s)";
-  aaaa_events_.erase(query_it, aaaa_events_.end());
-  return result;
-}
-
 std::vector<mdns::PtrEvent> FakeMdnsResponderAdapter::TakePtrResponses() {
-  const auto query_it = std::stable_partition(
-      ptr_events_.begin(), ptr_events_.end(),
-      [this](const mdns::PtrEvent& ptr_event) {
-        const auto instance_labels = ptr_event.service_instance.GetLabels();
-        for (const auto& query : ptr_queries_) {
-          const auto query_labels = query.GetLabels();
-          // TODO(btolsch): Just use qname if it's added to PtrEvent.
-          if (std::equal(instance_labels.begin() + 1, instance_labels.end(),
-                         query_labels.begin())) {
-            return false;
-          }
-        }
-        return true;
-      });
   std::vector<mdns::PtrEvent> result;
-  for (auto it = query_it; it != ptr_events_.end(); ++it) {
-    result.push_back(std::move(*it));
+  for (auto& queries : queries_) {
+    const auto query_it = std::stable_partition(
+        ptr_events_.begin(), ptr_events_.end(),
+        [&queries](const mdns::PtrEvent& ptr_event) {
+          const auto instance_labels = ptr_event.service_instance.GetLabels();
+          for (const auto& query : queries.second.ptr_queries) {
+            const auto query_labels = query.GetLabels();
+            // TODO(btolsch): Just use qname if it's added to PtrEvent.
+            if (ptr_event.header.socket == queries.first &&
+                std::equal(instance_labels.begin() + 1, instance_labels.end(),
+                           query_labels.begin())) {
+              return false;
+            }
+          }
+          return true;
+        });
+    for (auto it = query_it; it != ptr_events_.end(); ++it) {
+      result.push_back(std::move(*it));
+    }
+    ptr_events_.erase(query_it, ptr_events_.end());
   }
   OSP_LOG_INFO << "taking " << result.size() << " ptr response(s)";
-  ptr_events_.erase(query_it, ptr_events_.end());
   return result;
 }
 
 std::vector<mdns::SrvEvent> FakeMdnsResponderAdapter::TakeSrvResponses() {
-  const auto query_it =
-      std::stable_partition(srv_events_.begin(), srv_events_.end(),
-                            [this](const mdns::SrvEvent& srv_event) {
-                              for (const auto& query : srv_queries_) {
-                                if (srv_event.service_instance == query)
-                                  return false;
-                              }
-                              return true;
-                            });
   std::vector<mdns::SrvEvent> result;
-  for (auto it = query_it; it != srv_events_.end(); ++it) {
-    result.push_back(std::move(*it));
+  for (auto& queries : queries_) {
+    const auto query_it = std::stable_partition(
+        srv_events_.begin(), srv_events_.end(),
+        [&queries](const mdns::SrvEvent& srv_event) {
+          for (const auto& query : queries.second.srv_queries) {
+            if (srv_event.header.socket == queries.first &&
+                srv_event.service_instance == query)
+              return false;
+          }
+          return true;
+        });
+    for (auto it = query_it; it != srv_events_.end(); ++it) {
+      result.push_back(std::move(*it));
+    }
+    srv_events_.erase(query_it, srv_events_.end());
   }
   OSP_LOG_INFO << "taking " << result.size() << " srv response(s)";
-  srv_events_.erase(query_it, srv_events_.end());
   return result;
 }
 
 std::vector<mdns::TxtEvent> FakeMdnsResponderAdapter::TakeTxtResponses() {
-  const auto query_it =
-      std::stable_partition(txt_events_.begin(), txt_events_.end(),
-                            [this](const mdns::TxtEvent& txt_event) {
-                              for (const auto& query : txt_queries_) {
-                                if (txt_event.service_instance == query)
-                                  return false;
-                              }
-                              return true;
-                            });
   std::vector<mdns::TxtEvent> result;
-  for (auto it = query_it; it != txt_events_.end(); ++it) {
-    result.push_back(std::move(*it));
+  for (auto& queries : queries_) {
+    const auto query_it = std::stable_partition(
+        txt_events_.begin(), txt_events_.end(),
+        [&queries](const mdns::TxtEvent& txt_event) {
+          for (const auto& query : queries.second.txt_queries) {
+            if (txt_event.header.socket == queries.first &&
+                txt_event.service_instance == query) {
+              return false;
+            }
+          }
+          return true;
+        });
+    for (auto it = query_it; it != txt_events_.end(); ++it) {
+      result.push_back(std::move(*it));
+    }
+    txt_events_.erase(query_it, txt_events_.end());
   }
   OSP_LOG_INFO << "taking " << result.size() << " txt response(s)";
-  txt_events_.erase(query_it, txt_events_.end());
   return result;
 }
 
-mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAQuery(
-    const mdns::DomainName& domain_name) {
-  if (!running_)
-    return mdns::MdnsResponderErrorCode::kUnknownError;
-
-  auto maybe_inserted = a_queries_.insert(domain_name);
-  if (maybe_inserted.second) {
-    return mdns::MdnsResponderErrorCode::kNoError;
-  } else {
-    return mdns::MdnsResponderErrorCode::kUnknownError;
+std::vector<mdns::AEvent> FakeMdnsResponderAdapter::TakeAResponses() {
+  std::vector<mdns::AEvent> result;
+  for (auto& queries : queries_) {
+    const auto query_it = std::stable_partition(
+        a_events_.begin(), a_events_.end(),
+        [&queries](const mdns::AEvent& a_event) {
+          for (const auto& query : queries.second.a_queries) {
+            if (a_event.header.socket == queries.first &&
+                a_event.domain_name == query) {
+              return false;
+            }
+          }
+          return true;
+        });
+    for (auto it = query_it; it != a_events_.end(); ++it) {
+      result.push_back(std::move(*it));
+    }
+    a_events_.erase(query_it, a_events_.end());
   }
+  OSP_LOG_INFO << "taking " << result.size() << " a response(s)";
+  return result;
 }
 
-mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAaaaQuery(
-    const mdns::DomainName& domain_name) {
-  if (!running_)
-    return mdns::MdnsResponderErrorCode::kUnknownError;
-
-  auto maybe_inserted = aaaa_queries_.insert(domain_name);
-  if (maybe_inserted.second) {
-    return mdns::MdnsResponderErrorCode::kNoError;
-  } else {
-    return mdns::MdnsResponderErrorCode::kUnknownError;
+std::vector<mdns::AaaaEvent> FakeMdnsResponderAdapter::TakeAaaaResponses() {
+  std::vector<mdns::AaaaEvent> result;
+  for (auto& queries : queries_) {
+    const auto query_it = std::stable_partition(
+        aaaa_events_.begin(), aaaa_events_.end(),
+        [&queries](const mdns::AaaaEvent& aaaa_event) {
+          for (const auto& query : queries.second.aaaa_queries) {
+            if (aaaa_event.header.socket == queries.first &&
+                aaaa_event.domain_name == query) {
+              return false;
+            }
+          }
+          return true;
+        });
+    for (auto it = query_it; it != aaaa_events_.end(); ++it) {
+      result.push_back(std::move(*it));
+    }
+    aaaa_events_.erase(query_it, aaaa_events_.end());
   }
+  OSP_LOG_INFO << "taking " << result.size() << " a response(s)";
+  return result;
 }
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartPtrQuery(
+    platform::UdpSocketPtr socket,
     const mdns::DomainName& service_type) {
   if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
@@ -343,7 +375,8 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartPtrQuery(
     OSP_CHECK(
         canonical_service_type.Append(mdns::DomainName::GetLocalDomain()));
 
-  auto maybe_inserted = ptr_queries_.insert(canonical_service_type);
+  auto maybe_inserted =
+      queries_[socket].ptr_queries.insert(canonical_service_type);
   if (maybe_inserted.second) {
     return mdns::MdnsResponderErrorCode::kNoError;
   } else {
@@ -352,11 +385,12 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartPtrQuery(
 }
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartSrvQuery(
+    platform::UdpSocketPtr socket,
     const mdns::DomainName& service_instance) {
   if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
 
-  auto maybe_inserted = srv_queries_.insert(service_instance);
+  auto maybe_inserted = queries_[socket].srv_queries.insert(service_instance);
   if (maybe_inserted.second) {
     return mdns::MdnsResponderErrorCode::kNoError;
   } else {
@@ -365,11 +399,12 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartSrvQuery(
 }
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartTxtQuery(
+    platform::UdpSocketPtr socket,
     const mdns::DomainName& service_instance) {
   if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
 
-  auto maybe_inserted = txt_queries_.insert(service_instance);
+  auto maybe_inserted = queries_[socket].txt_queries.insert(service_instance);
   if (maybe_inserted.second) {
     return mdns::MdnsResponderErrorCode::kNoError;
   } else {
@@ -377,58 +412,111 @@ mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartTxtQuery(
   }
 }
 
-mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAQuery(
+mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAQuery(
+    platform::UdpSocketPtr socket,
     const mdns::DomainName& domain_name) {
-  auto it = a_queries_.find(domain_name);
-  if (it == a_queries_.end())
+  if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
 
-  a_queries_.erase(it);
-  return mdns::MdnsResponderErrorCode::kNoError;
+  auto maybe_inserted = queries_[socket].a_queries.insert(domain_name);
+  if (maybe_inserted.second) {
+    return mdns::MdnsResponderErrorCode::kNoError;
+  } else {
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+  }
 }
 
-mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAaaaQuery(
+mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StartAaaaQuery(
+    platform::UdpSocketPtr socket,
     const mdns::DomainName& domain_name) {
-  auto it = aaaa_queries_.find(domain_name);
-  if (it == aaaa_queries_.end())
+  if (!running_)
     return mdns::MdnsResponderErrorCode::kUnknownError;
 
-  aaaa_queries_.erase(it);
-  return mdns::MdnsResponderErrorCode::kNoError;
+  auto maybe_inserted = queries_[socket].aaaa_queries.insert(domain_name);
+  if (maybe_inserted.second) {
+    return mdns::MdnsResponderErrorCode::kNoError;
+  } else {
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+  }
 }
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopPtrQuery(
+    platform::UdpSocketPtr socket,
     const mdns::DomainName& service_type) {
+  auto interface_entry = queries_.find(socket);
+  if (interface_entry == queries_.end())
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+  auto& ptr_queries = interface_entry->second.ptr_queries;
   auto canonical_service_type = service_type;
   if (!canonical_service_type.EndsWithLocalDomain())
     OSP_CHECK(
         canonical_service_type.Append(mdns::DomainName::GetLocalDomain()));
 
-  auto it = ptr_queries_.find(canonical_service_type);
-  if (it == ptr_queries_.end())
+  auto it = ptr_queries.find(canonical_service_type);
+  if (it == ptr_queries.end())
     return mdns::MdnsResponderErrorCode::kUnknownError;
 
-  ptr_queries_.erase(it);
+  ptr_queries.erase(it);
   return mdns::MdnsResponderErrorCode::kNoError;
 }
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopSrvQuery(
+    platform::UdpSocketPtr socket,
     const mdns::DomainName& service_instance) {
-  auto it = srv_queries_.find(service_instance);
-  if (it == srv_queries_.end())
+  auto interface_entry = queries_.find(socket);
+  if (interface_entry == queries_.end())
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+  auto& srv_queries = interface_entry->second.srv_queries;
+  auto it = srv_queries.find(service_instance);
+  if (it == srv_queries.end())
     return mdns::MdnsResponderErrorCode::kUnknownError;
 
-  srv_queries_.erase(it);
+  srv_queries.erase(it);
   return mdns::MdnsResponderErrorCode::kNoError;
 }
 
 mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopTxtQuery(
+    platform::UdpSocketPtr socket,
     const mdns::DomainName& service_instance) {
-  auto it = txt_queries_.find(service_instance);
-  if (it == txt_queries_.end())
+  auto interface_entry = queries_.find(socket);
+  if (interface_entry == queries_.end())
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+  auto& txt_queries = interface_entry->second.txt_queries;
+  auto it = txt_queries.find(service_instance);
+  if (it == txt_queries.end())
     return mdns::MdnsResponderErrorCode::kUnknownError;
 
-  txt_queries_.erase(it);
+  txt_queries.erase(it);
+  return mdns::MdnsResponderErrorCode::kNoError;
+}
+
+mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAQuery(
+    platform::UdpSocketPtr socket,
+    const mdns::DomainName& domain_name) {
+  auto interface_entry = queries_.find(socket);
+  if (interface_entry == queries_.end())
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+  auto& a_queries = interface_entry->second.a_queries;
+  auto it = a_queries.find(domain_name);
+  if (it == a_queries.end())
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+
+  a_queries.erase(it);
+  return mdns::MdnsResponderErrorCode::kNoError;
+}
+
+mdns::MdnsResponderErrorCode FakeMdnsResponderAdapter::StopAaaaQuery(
+    platform::UdpSocketPtr socket,
+    const mdns::DomainName& domain_name) {
+  auto interface_entry = queries_.find(socket);
+  if (interface_entry == queries_.end())
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+  auto& aaaa_queries = interface_entry->second.aaaa_queries;
+  auto it = aaaa_queries.find(domain_name);
+  if (it == aaaa_queries.end())
+    return mdns::MdnsResponderErrorCode::kUnknownError;
+
+  aaaa_queries.erase(it);
   return mdns::MdnsResponderErrorCode::kNoError;
 }
 

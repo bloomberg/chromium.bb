@@ -50,7 +50,7 @@ TEST(MdnsResponderAdapterImplTest, ExampleData) {
   auto mdns_adapter = std::unique_ptr<mdns::MdnsResponderAdapter>(
       new mdns::MdnsResponderAdapterImpl);
   mdns_adapter->Init();
-  mdns_adapter->StartPtrQuery(openscreen_service);
+  mdns_adapter->StartPtrQuery(0, openscreen_service);
   mdns_adapter->OnDataReceived({{192, 168, 0, 2}, 6556}, mdns_endpoint, data,
                                sizeof(data), 0);
   mdns_adapter->RunTasks();
@@ -59,8 +59,8 @@ TEST(MdnsResponderAdapterImplTest, ExampleData) {
   ASSERT_EQ(1u, ptr.size());
   ASSERT_THAT(ptr[0].service_instance.GetLabels(),
               ElementsAre("turtle", "_openscreen", "_udp", "local"));
-  mdns_adapter->StartSrvQuery(ptr[0].service_instance);
-  mdns_adapter->StartTxtQuery(ptr[0].service_instance);
+  mdns_adapter->StartSrvQuery(0, ptr[0].service_instance);
+  mdns_adapter->StartTxtQuery(0, ptr[0].service_instance);
   mdns_adapter->RunTasks();
 
   auto srv = mdns_adapter->TakeSrvResponses();
@@ -74,7 +74,7 @@ TEST(MdnsResponderAdapterImplTest, ExampleData) {
   const std::string expected_txt[] = {"yurtle", "turtle"};
   EXPECT_THAT(txt[0].txt_info, ElementsAreArray(expected_txt));
 
-  mdns_adapter->StartAQuery(srv[0].domain_name);
+  mdns_adapter->StartAQuery(0, srv[0].domain_name);
   mdns_adapter->RunTasks();
 
   auto a = mdns_adapter->TakeAResponses();

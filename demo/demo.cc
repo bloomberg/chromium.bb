@@ -105,7 +105,7 @@ class ListenerObserver final : public ScreenListener::Observer {
       auto_message_ = MakeUnique<AutoMessage>();
       auto_message_->TakeRequest(
           NetworkServiceManager::Get()->GetProtocolConnectionClient()->Connect(
-              info.endpoint, auto_message_.get()));
+              info.v4_endpoint, auto_message_.get()));
     }
   }
   void OnScreenChanged(const ScreenInfo& info) override {

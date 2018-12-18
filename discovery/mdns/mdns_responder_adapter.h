@@ -37,34 +37,6 @@ struct QueryEventHeader {
   platform::UdpSocketPtr socket;
 };
 
-struct AEvent {
-  AEvent();
-  AEvent(const QueryEventHeader& header,
-         DomainName domain_name,
-         const IPAddress& address);
-  AEvent(AEvent&&);
-  ~AEvent();
-  AEvent& operator=(AEvent&&);
-
-  QueryEventHeader header;
-  DomainName domain_name;
-  IPAddress address;
-};
-
-struct AaaaEvent {
-  AaaaEvent();
-  AaaaEvent(const QueryEventHeader& header,
-            DomainName domain_name,
-            const IPAddress& address);
-  AaaaEvent(AaaaEvent&&);
-  ~AaaaEvent();
-  AaaaEvent& operator=(AaaaEvent&&);
-
-  QueryEventHeader header;
-  DomainName domain_name;
-  IPAddress address;
-};
-
 struct PtrEvent {
   PtrEvent();
   PtrEvent(const QueryEventHeader& header, DomainName service_instance);
@@ -107,6 +79,34 @@ struct TxtEvent {
   // NOTE: mDNS does not specify a character encoding for the data in TXT
   // records.
   std::vector<std::string> txt_info;
+};
+
+struct AEvent {
+  AEvent();
+  AEvent(const QueryEventHeader& header,
+         DomainName domain_name,
+         const IPAddress& address);
+  AEvent(AEvent&&);
+  ~AEvent();
+  AEvent& operator=(AEvent&&);
+
+  QueryEventHeader header;
+  DomainName domain_name;
+  IPAddress address;
+};
+
+struct AaaaEvent {
+  AaaaEvent();
+  AaaaEvent(const QueryEventHeader& header,
+            DomainName domain_name,
+            const IPAddress& address);
+  AaaaEvent(AaaaEvent&&);
+  ~AaaaEvent();
+  AaaaEvent& operator=(AaaaEvent&&);
+
+  QueryEventHeader header;
+  DomainName domain_name;
+  IPAddress address;
 };
 
 enum class MdnsResponderErrorCode {
@@ -201,31 +201,41 @@ class MdnsResponderAdapter {
   // Returns the number of seconds after which this method must be called again.
   virtual int RunTasks() = 0;
 
-  virtual std::vector<AEvent> TakeAResponses() = 0;
-  virtual std::vector<AaaaEvent> TakeAaaaResponses() = 0;
   virtual std::vector<PtrEvent> TakePtrResponses() = 0;
   virtual std::vector<SrvEvent> TakeSrvResponses() = 0;
   virtual std::vector<TxtEvent> TakeTxtResponses() = 0;
+  virtual std::vector<AEvent> TakeAResponses() = 0;
+  virtual std::vector<AaaaEvent> TakeAaaaResponses() = 0;
 
-  virtual MdnsResponderErrorCode StartAQuery(const DomainName& domain_name) = 0;
-  virtual MdnsResponderErrorCode StartAaaaQuery(
-      const DomainName& domain_name) = 0;
   virtual MdnsResponderErrorCode StartPtrQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& service_type) = 0;
   virtual MdnsResponderErrorCode StartSrvQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& service_instance) = 0;
   virtual MdnsResponderErrorCode StartTxtQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& service_instance) = 0;
-
-  virtual MdnsResponderErrorCode StopAQuery(const DomainName& domain_name) = 0;
-  virtual MdnsResponderErrorCode StopAaaaQuery(
+  virtual MdnsResponderErrorCode StartAQuery(platform::UdpSocketPtr socket,
+                                             const DomainName& domain_name) = 0;
+  virtual MdnsResponderErrorCode StartAaaaQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& domain_name) = 0;
+
   virtual MdnsResponderErrorCode StopPtrQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& service_type) = 0;
   virtual MdnsResponderErrorCode StopSrvQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& service_instance) = 0;
   virtual MdnsResponderErrorCode StopTxtQuery(
+      platform::UdpSocketPtr socket,
       const DomainName& service_instance) = 0;
+  virtual MdnsResponderErrorCode StopAQuery(platform::UdpSocketPtr socket,
+                                            const DomainName& domain_name) = 0;
+  virtual MdnsResponderErrorCode StopAaaaQuery(
+      platform::UdpSocketPtr socket,
+      const DomainName& domain_name) = 0;
 
   // The following methods concern advertising a service via mDNS.  The
   // arguments correspond to values needed in the PTR, SRV, and TXT records that
