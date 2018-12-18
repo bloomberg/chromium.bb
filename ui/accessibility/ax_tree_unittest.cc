@@ -1546,7 +1546,7 @@ TEST(AXTreeTest, TestSetSizePosInSetDiverseList) {
   tree_update.nodes[1].id = 2;
   tree_update.nodes[1].role = ax::mojom::Role::kMenuItem;  // 1 of 4
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].role = ax::mojom::Role::kMenuItem;  // 2 of 4
+  tree_update.nodes[2].role = ax::mojom::Role::kMenuItemCheckBox;  // 2 of 4
   tree_update.nodes[3].id = 4;
   tree_update.nodes[3].role = ax::mojom::Role::kMenuItemRadio;  // 3 of 4
   tree_update.nodes[4].id = 5;
@@ -1555,12 +1555,15 @@ TEST(AXTreeTest, TestSetSizePosInSetDiverseList) {
   tree_update.nodes[5].role = ax::mojom::Role::kTab;  // 0 of 0
   AXTree tree(tree_update);
 
+  // kMenu is allowed to contain: kMenuItem, kMenuItemCheckbox,
+  // and kMenuItemRadio. For PosInSet and SetSize purposes, these items
+  // are treated as the same role.
   AXNode* item1 = tree.GetFromId(2);
   EXPECT_EQ(item1->GetPosInSet(), 1);
   EXPECT_EQ(item1->GetSetSize(), 4);
-  AXNode* item2 = tree.GetFromId(3);
-  EXPECT_EQ(item2->GetPosInSet(), 2);
-  EXPECT_EQ(item2->GetSetSize(), 4);
+  AXNode* checkbox = tree.GetFromId(3);
+  EXPECT_EQ(checkbox->GetPosInSet(), 2);
+  EXPECT_EQ(checkbox->GetSetSize(), 4);
   AXNode* radio = tree.GetFromId(4);
   EXPECT_EQ(radio->GetPosInSet(), 3);
   EXPECT_EQ(radio->GetSetSize(), 4);
@@ -2002,7 +2005,7 @@ TEST(AXTreeTest, TestOrderedSetReportsSetSize) {
   EXPECT_EQ(inner_list4->GetSetSize(), 5);
 }
 
-// Tests GetPosInSet and GetSetSize code on invalid input
+// Tests GetPosInSet and GetSetSize code on invalid input.
 TEST(AXTreeTest, TestSetSizePosInSetInvalid) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
@@ -2027,6 +2030,166 @@ TEST(AXTreeTest, TestSetSizePosInSetInvalid) {
   AXNode* item3 = tree.GetFromId(3);
   EXPECT_EQ(item3->GetPosInSet(), 0);
   EXPECT_EQ(item3->GetSetSize(), 0);
+}
+
+// Tests GetPosInSet and GetSetSize code on kRadioButtons. Radio buttons
+// behave differently than other item-like elements; most notably, they do not
+// need to be contained within an ordered set to report a PosInSet or SetSize.
+TEST(AXTreeTest, TestSetSizePosInSetRadioButtons) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(13);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3, 4, 10, 13};
+
+  // Radio buttons are not required to be contained within an ordered set.
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kRadioButton;  // 1 of 5
+  tree_update.nodes[1].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                          "sports");
+  tree_update.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 1);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kRadioButton;  // 2 of 5
+  tree_update.nodes[2].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                          "books");
+  tree_update.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 2);
+  tree_update.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 5);
+
+  // Radio group with nested generic container.
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kRadioGroup;  // setsize = 4
+  tree_update.nodes[3].child_ids = {5, 6, 7};
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kRadioButton;
+  tree_update.nodes[4].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                          "recipes");  // 1 of 4
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].role = ax::mojom::Role::kRadioButton;
+  tree_update.nodes[5].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                          "recipes");  // 2 of 4
+  tree_update.nodes[6].id = 7;
+  tree_update.nodes[6].role = ax::mojom::Role::kGenericContainer;
+  tree_update.nodes[6].child_ids = {8, 9};
+  tree_update.nodes[7].id = 8;
+  tree_update.nodes[7].role = ax::mojom::Role::kRadioButton;
+  tree_update.nodes[7].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                          "recipes");  // 3 of 4
+  tree_update.nodes[8].id = 9;
+  tree_update.nodes[8].role = ax::mojom::Role::kRadioButton;
+  tree_update.nodes[8].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                          "recipes");  // 4 of 4
+
+  // Radio buttons are allowed to be contained within forms.
+  tree_update.nodes[9].id = 10;
+  tree_update.nodes[9].role = ax::mojom::Role::kForm;
+  tree_update.nodes[9].child_ids = {11, 12};
+  tree_update.nodes[10].id = 11;
+  tree_update.nodes[10].role = ax::mojom::Role::kRadioButton;
+  tree_update.nodes[10].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                           "cities");  // 1 of 2
+  tree_update.nodes[11].id = 12;
+  tree_update.nodes[11].role = ax::mojom::Role::kRadioButton;
+  tree_update.nodes[11].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                           "cities");  // 2 of 2
+  tree_update.nodes[12].id = 13;
+  tree_update.nodes[12].role = ax::mojom::Role::kRadioButton;  // 4 of 5
+  tree_update.nodes[12].AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                           "sports");
+  tree_update.nodes[12].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 4);
+
+  AXTree tree(tree_update);
+
+  AXNode* sports_button1 = tree.GetFromId(2);
+  EXPECT_EQ(sports_button1->GetPosInSet(), 1);
+  EXPECT_EQ(sports_button1->GetSetSize(), 5);
+  AXNode* books_button = tree.GetFromId(3);
+  EXPECT_EQ(books_button->GetPosInSet(), 2);
+  EXPECT_EQ(books_button->GetSetSize(), 5);
+
+  AXNode* radiogroup1 = tree.GetFromId(4);
+  EXPECT_EQ(radiogroup1->GetPosInSet(), 0);
+  EXPECT_EQ(radiogroup1->GetSetSize(), 4);
+  AXNode* recipes_button1 = tree.GetFromId(5);
+  EXPECT_EQ(recipes_button1->GetPosInSet(), 1);
+  EXPECT_EQ(recipes_button1->GetSetSize(), 4);
+  AXNode* recipes_button2 = tree.GetFromId(6);
+  EXPECT_EQ(recipes_button2->GetPosInSet(), 2);
+  EXPECT_EQ(recipes_button2->GetSetSize(), 4);
+
+  AXNode* generic_container = tree.GetFromId(7);
+  EXPECT_EQ(generic_container->GetPosInSet(), 0);
+  EXPECT_EQ(generic_container->GetSetSize(), 0);
+  AXNode* recipes_button3 = tree.GetFromId(8);
+  EXPECT_EQ(recipes_button3->GetPosInSet(), 3);
+  EXPECT_EQ(recipes_button3->GetSetSize(), 4);
+  AXNode* recipes_button4 = tree.GetFromId(9);
+  EXPECT_EQ(recipes_button4->GetPosInSet(), 4);
+  EXPECT_EQ(recipes_button4->GetSetSize(), 4);
+
+  // Elements with role kForm shouldn't report posinset or setsize
+  AXNode* form = tree.GetFromId(10);
+  EXPECT_EQ(form->GetPosInSet(), 0);
+  EXPECT_EQ(form->GetSetSize(), 0);
+  AXNode* cities_button1 = tree.GetFromId(11);
+  EXPECT_EQ(cities_button1->GetPosInSet(), 1);
+  EXPECT_EQ(cities_button1->GetSetSize(), 2);
+  AXNode* cities_button2 = tree.GetFromId(12);
+  EXPECT_EQ(cities_button2->GetPosInSet(), 2);
+  EXPECT_EQ(cities_button2->GetSetSize(), 2);
+
+  AXNode* sports_button2 = tree.GetFromId(13);
+  EXPECT_EQ(sports_button2->GetPosInSet(), 4);
+  EXPECT_EQ(sports_button2->GetSetSize(), 5);
+}
+
+// Tests GetPosInSet and GetSetSize on a list that includes radio buttons.
+// Note that radio buttons do not contribute to the SetSize of the outerlying
+// list.
+TEST(AXTreeTest, TestSetSizePosInSetRadioButtonsInList) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(6);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role =
+      ax::mojom::Role::kList;  // set_size = 2, since only contains 2 ListItems
+  tree_update.nodes[0].child_ids = {2, 3, 4, 5, 6};
+
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kRadioButton;  // 1 of 3
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kListItem;  // 1 of 2
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kRadioButton;  // 2 of 3
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kListItem;  // 2 of 2
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].role = ax::mojom::Role::kRadioButton;  // 3 of 3
+  AXTree tree(tree_update);
+
+  AXNode* list = tree.GetFromId(1);
+  EXPECT_EQ(list->GetPosInSet(), 0);
+  EXPECT_EQ(list->GetSetSize(), 2);
+
+  AXNode* radiobutton1 = tree.GetFromId(2);
+  EXPECT_EQ(radiobutton1->GetPosInSet(), 1);
+  EXPECT_EQ(radiobutton1->GetSetSize(), 3);
+  AXNode* item1 = tree.GetFromId(3);
+  EXPECT_EQ(item1->GetPosInSet(), 1);
+  EXPECT_EQ(item1->GetSetSize(), 2);
+  AXNode* radiobutton2 = tree.GetFromId(4);
+  EXPECT_EQ(radiobutton2->GetPosInSet(), 2);
+  EXPECT_EQ(radiobutton2->GetSetSize(), 3);
+  AXNode* item2 = tree.GetFromId(5);
+  EXPECT_EQ(item2->GetPosInSet(), 2);
+  EXPECT_EQ(item2->GetSetSize(), 2);
+  AXNode* radiobutton3 = tree.GetFromId(6);
+  EXPECT_EQ(radiobutton3->GetPosInSet(), 3);
+  EXPECT_EQ(radiobutton3->GetSetSize(), 3);
+
+  // Ensure that the setsize of list was not modified after calling GetPosInSet
+  // and GetSetSize on kRadioButtons.
+  EXPECT_EQ(list->GetPosInSet(), 0);
+  EXPECT_EQ(list->GetSetSize(), 2);
 }
 
 }  // namespace ui

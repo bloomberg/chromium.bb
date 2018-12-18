@@ -33,9 +33,9 @@ class AX_EXPORT AXNode final {
     // See AXTree.
     virtual AXNode* GetFromId(int32_t id) const = 0;
 
-    virtual int32_t GetPosInSet(const int32_t node_id,
+    virtual int32_t GetPosInSet(const AXNode& node,
                                 const AXNode* ordered_set) = 0;
-    virtual int32_t GetSetSize(const int32_t node_id,
+    virtual int32_t GetSetSize(const AXNode& node,
                                const AXNode* ordered_set) = 0;
   };
 
