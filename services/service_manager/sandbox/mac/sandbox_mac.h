@@ -33,9 +33,6 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxMac {
   // Returns true on success, false if an error occurred enabling the sandbox.
   static bool Enable(SandboxType sandbox_type);
 
-  // Returns true if the sandbox has been enabled for the current process.
-  static bool IsCurrentlyActive();
-
   // Convert provided path into a "canonical" path matching what the Sandbox
   // expects i.e. one without symlinks.
   // This path is not necessarily unique e.g. in the face of hardlinks.
