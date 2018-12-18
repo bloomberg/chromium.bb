@@ -20,13 +20,17 @@ using ::testing::_;
 
 class CountUsageMockFetchContext : public MockFetchContext {
  public:
-  CountUsageMockFetchContext()
+  explicit CountUsageMockFetchContext(
+      scoped_refptr<const SecurityOrigin> security_origin)
       : MockFetchContext(MockFetchContext::kShouldLoadNewResource,
                          nullptr,
+                         std::move(security_origin),
                          nullptr) {}
-  static CountUsageMockFetchContext* Create() {
+  static CountUsageMockFetchContext* Create(
+      scoped_refptr<const SecurityOrigin> security_origin) {
     return MakeGarbageCollected<
-        ::testing::StrictMock<CountUsageMockFetchContext>>();
+        ::testing::StrictMock<CountUsageMockFetchContext>>(
+        std::move(security_origin));
   }
   MOCK_CONST_METHOD1(CountUsage, void(mojom::WebFeature));
   MOCK_CONST_METHOD2(AddErrorConsoleMessage, void(const String&, LogSource));
@@ -87,9 +91,9 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
                  << "\n  strict_allowed: "
                  << (testcase.strict_allowed ? "true" : "false"));
 
-    auto* context = CountUsageMockFetchContext::Create();
     const KURL url("https://bla.com/");
-    context->SetSecurityOrigin(SecurityOrigin::Create(url));
+    auto* context =
+        CountUsageMockFetchContext::Create(SecurityOrigin::Create(url));
     ResourceResponse response(url);
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
 
@@ -193,8 +197,8 @@ TEST_F(AllowedByNosniffTest, Counters) {
                                     << "\n  origin: " << testcase.origin
                                     << "\n  mime type: " << testcase.mimetype
                                     << "\n  webfeature: " << testcase.expected);
-    auto* context = CountUsageMockFetchContext::Create();
-    context->SetSecurityOrigin(SecurityOrigin::Create(KURL(testcase.origin)));
+    auto* context = CountUsageMockFetchContext::Create(
+        SecurityOrigin::Create(KURL(testcase.origin)));
     ResourceResponse response(KURL(testcase.url));
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
 
@@ -233,7 +237,7 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
   };
 
   for (auto& testcase : data) {
-    auto* context = CountUsageMockFetchContext::Create();
+    auto* context = CountUsageMockFetchContext::Create(nullptr);
     EXPECT_CALL(*context, AddErrorConsoleMessage(_, _))
         .Times(::testing::AnyNumber());
     SCOPED_TRACE(testing::Message() << "\n  url: " << testcase.url

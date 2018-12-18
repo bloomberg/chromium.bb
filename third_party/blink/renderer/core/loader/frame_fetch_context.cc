@@ -223,6 +223,43 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame,
                             MainResourceType::kIsNotMainResource, load_type);
 }
 
+FetchClientSettingsObject& CreateFetchClientSettingsObjectForNavigation() {
+  // This FetchClientSettingsObject can be used only for navigation, as
+  // at the creation of the corresponding Document a new
+  // FetchClientSettingsObject is set.
+  // Also, currently all the members except for SecurityOrigin are not
+  // used in FrameFetchContext, and therefore we set some safe default
+  // values here.
+  // Once PlzNavigate removes ResourceFetcher usage in navigations, we
+  // might be able to remove this FetchClientSettingsObject at all.
+  return *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+      KURL(),
+
+      // SecurityOrigin. This is actually used via
+      // FetchContext::GetSecurityOrigin().
+      // TODO(hiroshige): Assign non-nullptr SecurityOrigin.
+      nullptr,
+
+      // Currently this is not used, and referrer for navigation request
+      // is set based on previous Document's referrer policy, for example
+      // in FrameLoader::SetReferrerForFrameRequest().
+      // If we want to set referrer based on FetchClientSettingsObject,
+      // it should refer to the FetchClientSettingsObject of the previous
+      // Document, probably not this one.
+      network::mojom::ReferrerPolicy::kDefault, String(),
+
+      // MixedContentChecker::ShouldBlockFetch() doesn't check mixed
+      // contents if frame type is not kNone, which is always true in
+      // RawResource::FetchMainResource().
+      // Therefore HttpsState here isn't (and isn't expected to be)
+      // used and thus it's safe to pass a safer default value.
+      HttpsState::kModern,
+
+      // This is only for workers and this value is not (and isn't
+      // expected to be) used.
+      AllowedByNosniff::MimeTypeCheck::kStrict);
+}
+
 }  // namespace
 
 struct FrameFetchContext::FrozenState final
@@ -288,53 +325,16 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
     : BaseFetchContext(
-          document ? document->GetTaskRunner(blink::TaskType::kNetworking)
-                   : loader->GetFrame()->GetTaskRunner(
-                         blink::TaskType::kNetworking)),
+          document
+              ? document->GetTaskRunner(blink::TaskType::kNetworking)
+              : loader->GetFrame()->GetTaskRunner(blink::TaskType::kNetworking),
+          document
+              ? *MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document)
+              : CreateFetchClientSettingsObjectForNavigation()),
       document_loader_(loader),
       document_(document),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {
-  if (document_) {
-    SetFetchClientSettingsObject(
-        MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document_));
-  } else {
-    // This FetchClientSettingsObject can be used only for navigation, as
-    // at the creation of the corresponding Document a new
-    // FetchClientSettingsObject is set.
-    // Also, currently all the members except for SecurityOrigin are not
-    // used in FrameFetchContext, and therefore we set some safe default
-    // values here.
-    // Once PlzNavigate removes ResourceFetcher usage in navigations, we
-    // might be able to remove this FetchClientSettingsObject at all.
-    SetFetchClientSettingsObject(
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            KURL(),
-
-            // SecurityOrigin. This is actually used via
-            // FetchContext::GetSecurityOrigin().
-            // TODO(hiroshige): Assign non-nullptr SecurityOrigin.
-            nullptr,
-
-            // Currently this is not used, and referrer for navigation request
-            // is set based on previous Document's referrer policy, for example
-            // in FrameLoader::SetReferrerForFrameRequest().
-            // If we want to set referrer based on FetchClientSettingsObject,
-            // it should refer to the FetchClientSettingsObject of the previous
-            // Document, probably not this one.
-            network::mojom::ReferrerPolicy::kDefault, String(),
-
-            // MixedContentChecker::ShouldBlockFetch() doesn't check mixed
-            // contents if frame type is not kNone, which is always true in
-            // RawResource::FetchMainResource().
-            // Therefore HttpsState here isn't (and isn't expected to be)
-            // used and thus it's safe to pass a safer default value.
-            HttpsState::kModern,
-
-            // This is only for workers and this value is not (and isn't
-            // expected to be) used.
-            AllowedByNosniff::MimeTypeCheck::kStrict));
-  }
   DCHECK(GetFrame());
 }
 

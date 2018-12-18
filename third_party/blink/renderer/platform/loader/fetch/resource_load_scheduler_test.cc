@@ -60,8 +60,9 @@ class ResourceLoadSchedulerTest : public testing::Test {
   using ThrottleOption = ResourceLoadScheduler::ThrottleOption;
   void SetUp() override {
     DCHECK(RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled());
-    scheduler_ = ResourceLoadScheduler::Create(
-        MockFetchContext::Create(MockFetchContext::kShouldNotLoadNewResource));
+    scheduler_ =
+        ResourceLoadScheduler::Create(MakeGarbageCollected<MockFetchContext>(
+            MockFetchContext::kShouldNotLoadNewResource));
     Scheduler()->SetOutstandingLimitForTesting(1);
   }
   void TearDown() override { Scheduler()->Shutdown(); }

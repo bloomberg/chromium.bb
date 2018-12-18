@@ -32,12 +32,6 @@ class ResourceLoaderTest : public testing::Test {
   ResourceLoaderTest()
       : foo_url_("https://foo.test"), bar_url_("https://bar.test"){};
 
-  void SetUp() override {
-    context_ = MockFetchContext::Create(
-        MockFetchContext::kShouldLoadNewResource, nullptr,
-        std::make_unique<TestWebURLLoaderFactory>());
-  }
-
  protected:
   using FetchRequestMode = network::mojom::FetchRequestMode;
   using FetchResponseType = network::mojom::FetchResponseType;
@@ -51,15 +45,12 @@ class ResourceLoaderTest : public testing::Test {
     const FetchResponseType expectation;
   };
 
-  Persistent<MockFetchContext> context_;
-
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
 
   const KURL foo_url_;
   const KURL bar_url_;
 
- private:
   class TestWebURLLoaderFactory final : public WebURLLoaderFactory {
     std::unique_ptr<WebURLLoader> CreateURLLoader(
         const WebURLRequest& request,
@@ -69,6 +60,7 @@ class ResourceLoaderTest : public testing::Test {
     }
   };
 
+ private:
   class TestWebURLLoader final : public WebURLLoader {
    public:
     ~TestWebURLLoader() override = default;
@@ -164,8 +156,10 @@ TEST_F(ResourceLoaderTest, ResponseType) {
                  << ", original_response_type: "
                  << test.original_response_type);
 
-    context_->SetSecurityOrigin(origin);
-    ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context_);
+    FetchContext* context = MakeGarbageCollected<MockFetchContext>(
+        MockFetchContext::kShouldLoadNewResource, nullptr, origin,
+        std::make_unique<TestWebURLLoaderFactory>());
+    ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context);
 
     ResourceRequest request;
     request.SetURL(test.url);

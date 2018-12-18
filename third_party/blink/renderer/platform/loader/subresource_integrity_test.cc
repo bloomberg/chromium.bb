@@ -88,8 +88,8 @@ class SubresourceIntegrityTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    context =
-        MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
+    context = MakeGarbageCollected<MockFetchContext>(
+        MockFetchContext::kShouldLoadNewResource);
   }
 
   SubresourceIntegrity::IntegrityFeatures Features() const {

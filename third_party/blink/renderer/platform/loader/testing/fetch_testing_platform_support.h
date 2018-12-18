@@ -11,15 +11,11 @@
 
 namespace blink {
 
-class MockFetchContext;
-
 class FetchTestingPlatformSupport
     : public TestingPlatformSupportWithMockScheduler {
  public:
   FetchTestingPlatformSupport();
   ~FetchTestingPlatformSupport() override;
-
-  MockFetchContext* Context();
 
   // Platform:
   WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
@@ -28,7 +24,6 @@ class FetchTestingPlatformSupport
  private:
   class FetchTestingWebURLLoaderMockFactory;
 
-  Persistent<MockFetchContext> context_;
   std::unique_ptr<WebURLLoaderMockFactory> url_loader_mock_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchTestingPlatformSupport);
