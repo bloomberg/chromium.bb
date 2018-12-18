@@ -518,6 +518,7 @@ TEST_F(FilePathTest, PathComponentsTest) {
 TEST_F(FilePathTest, IsParentTest) {
   const struct BinaryBooleanTestData cases[] = {
     { { FPL("/"),             FPL("/foo/bar/baz") },      true},
+    { { FPL("/foo"),          FPL("/foo/bar/baz") },      true},
     { { FPL("/foo/bar"),      FPL("/foo/bar/baz") },      true},
     { { FPL("/foo/bar/"),     FPL("/foo/bar/baz") },      true},
     { { FPL("//foo/bar/"),    FPL("//foo/bar/baz") },     true},
@@ -526,6 +527,7 @@ TEST_F(FilePathTest, IsParentTest) {
     { { FPL("/foo/bar"),      FPL("/foo/bar2/baz") },     false},
     { { FPL("/foo/bar"),      FPL("/foo/bar") },          false},
     { { FPL("/foo/bar/baz"),  FPL("/foo/bar") },          false},
+    { { FPL("foo"),           FPL("foo/bar/baz") },       true},
     { { FPL("foo/bar"),       FPL("foo/bar/baz") },       true},
     { { FPL("foo/bar"),       FPL("foo2/bar/baz") },      false},
     { { FPL("foo/bar"),       FPL("foo/bar2/baz") },      false},
