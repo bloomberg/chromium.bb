@@ -458,9 +458,9 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
   // be replaced with the demo url provided on the command line via
   // --google-base-url.
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
-  if (google_base_url.is_valid()) {
-    std::string url = full_page_url.spec();
-    int pos = url.find(kGoogleUrl);
+  std::string url = full_page_url.spec();
+  auto pos = url.find(kGoogleUrl);
+  if (google_base_url.is_valid() && pos != std::string::npos) {
     url.replace(pos, strlen(kGoogleUrl), google_base_url.spec());
     result->SetString("fullPageUrl", url);
   }
