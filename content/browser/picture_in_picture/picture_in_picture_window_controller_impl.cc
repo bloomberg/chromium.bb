@@ -86,6 +86,11 @@ void PictureInPictureWindowControllerImpl::Close(bool should_pause_video,
   CloseInternal(should_pause_video, should_reset_pip_player);
 }
 
+void PictureInPictureWindowControllerImpl::CloseAndFocusInitiator() {
+  Close(false /* should_pause_video */, true /* should_reset_pip_player */);
+  initiator_->Activate();
+}
+
 void PictureInPictureWindowControllerImpl::OnWindowDestroyed() {
   window_ = nullptr;
   embedder_ = nullptr;

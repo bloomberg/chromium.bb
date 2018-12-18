@@ -16,6 +16,7 @@
 #endif
 
 namespace views {
+class BackToTabImageButton;
 class ControlImageButton;
 class CloseImageButton;
 class PlaybackImageButton;
@@ -68,6 +69,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Gets the bounds of the controls.
+  gfx::Rect GetBackToTabControlsBounds();
   gfx::Rect GetCloseControlsBounds();
   gfx::Rect GetResizeHandleControlsBounds();
   gfx::Rect GetPlayPauseControlsBounds();
@@ -83,6 +85,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   bool AreControlsVisible() const;
 
   views::PlaybackImageButton* play_pause_controls_view_for_testing() const;
+  gfx::Point back_to_tab_image_position_for_testing() const;
   gfx::Point close_image_position_for_testing() const;
   gfx::Point resize_handle_position_for_testing() const;
   views::View* controls_parent_view_for_testing() const;
@@ -135,6 +138,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   void SetSecondCustomControlsBounds();
 
   ui::Layer* GetControlsScrimLayer();
+  ui::Layer* GetBackToTabControlsLayer();
   ui::Layer* GetCloseControlsLayer();
   ui::Layer* GetResizeHandleLayer();
   ui::Layer* GetControlsParentLayer();
@@ -186,8 +190,9 @@ class OverlayWindowViews : public content::OverlayWindow,
   std::unique_ptr<views::View> video_view_;
   std::unique_ptr<views::View> controls_scrim_view_;
   // |controls_parent_view_| is the parent view of all control views except
-  // the close view.
+  // the back-to-tab and close views.
   std::unique_ptr<views::View> controls_parent_view_;
+  std::unique_ptr<views::BackToTabImageButton> back_to_tab_controls_view_;
   std::unique_ptr<views::CloseImageButton> close_controls_view_;
   std::unique_ptr<views::ResizeHandleButton> resize_handle_view_;
   std::unique_ptr<views::PlaybackImageButton> play_pause_controls_view_;
