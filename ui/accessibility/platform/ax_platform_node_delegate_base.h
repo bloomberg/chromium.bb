@@ -92,17 +92,33 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Tables. All of these should be called on a node that's a table-like
   // role.
   //
-
-  int GetTableRowCount() const override;
-  int GetTableColCount() const override;
+  bool IsTable() const override;
+  int32_t GetTableColCount() const override;
+  int32_t GetTableRowCount() const override;
+  int32_t GetTableAriaColCount() const override;
+  int32_t GetTableAriaRowCount() const override;
+  int32_t GetTableCellCount() const override;
   const std::vector<int32_t> GetColHeaderNodeIds() const override;
   const std::vector<int32_t> GetColHeaderNodeIds(
       int32_t col_index) const override;
   const std::vector<int32_t> GetRowHeaderNodeIds() const override;
   const std::vector<int32_t> GetRowHeaderNodeIds(
       int32_t row_index) const override;
-  int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
+
+  // Table row-like nodes.
+  bool IsTableRow() const override;
+  int32_t GetTableRowRowIndex() const override;
+
+  // Table cell-like nodes.
+  bool IsTableCellOrHeader() const override;
   int32_t GetTableCellIndex() const override;
+  int32_t GetTableCellColIndex() const override;
+  int32_t GetTableCellRowIndex() const override;
+  int32_t GetTableCellColSpan() const override;
+  int32_t GetTableCellRowSpan() const override;
+  int32_t GetTableCellAriaColIndex() const override;
+  int32_t GetTableCellAriaRowIndex() const override;
+  int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
   int32_t CellIndexToId(int32_t cell_index) const override;
 
   // Only called on ordered-set-like elements and item-like elements.

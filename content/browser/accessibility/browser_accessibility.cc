@@ -4,7 +4,7 @@
 
 #include "content/browser/accessibility/browser_accessibility.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 #include <algorithm>
 #include <iterator>
@@ -1045,12 +1045,28 @@ BrowserAccessibility::GetTargetForNativeAccessibilityEvent() {
   return root_delegate->AccessibilityGetAcceleratedWidget();
 }
 
-int BrowserAccessibility::GetTableRowCount() const {
+bool BrowserAccessibility::IsTable() const {
+  return node()->IsTable();
+}
+
+int32_t BrowserAccessibility::GetTableRowCount() const {
   return node()->GetTableRowCount();
 }
 
-int BrowserAccessibility::GetTableColCount() const {
+int32_t BrowserAccessibility::GetTableColCount() const {
   return node()->GetTableColCount();
+}
+
+int32_t BrowserAccessibility::GetTableAriaColCount() const {
+  return node()->GetTableAriaColCount();
+}
+
+int32_t BrowserAccessibility::GetTableAriaRowCount() const {
+  return node()->GetTableAriaRowCount();
+}
+
+int32_t BrowserAccessibility::GetTableCellCount() const {
+  return node()->GetTableCellCount();
 }
 
 const std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds() const {
@@ -1077,6 +1093,42 @@ const std::vector<int32_t> BrowserAccessibility::GetRowHeaderNodeIds(
   std::vector<int32_t> result;
   node()->GetTableRowHeaderNodeIds(row_index, &result);
   return result;
+}
+
+bool BrowserAccessibility::IsTableRow() const {
+  return node()->IsTableRow();
+}
+
+int32_t BrowserAccessibility::GetTableRowRowIndex() const {
+  return node()->GetTableRowRowIndex();
+}
+
+bool BrowserAccessibility::IsTableCellOrHeader() const {
+  return node()->IsTableCellOrHeader();
+}
+
+int32_t BrowserAccessibility::GetTableCellColIndex() const {
+  return node()->GetTableCellColIndex();
+}
+
+int32_t BrowserAccessibility::GetTableCellRowIndex() const {
+  return node()->GetTableCellRowIndex();
+}
+
+int32_t BrowserAccessibility::GetTableCellColSpan() const {
+  return node()->GetTableCellColSpan();
+}
+
+int32_t BrowserAccessibility::GetTableCellRowSpan() const {
+  return node()->GetTableCellRowSpan();
+}
+
+int32_t BrowserAccessibility::GetTableCellAriaColIndex() const {
+  return node()->GetTableCellAriaColIndex();
+}
+
+int32_t BrowserAccessibility::GetTableCellAriaRowIndex() const {
+  return node()->GetTableCellAriaRowIndex();
 }
 
 int32_t BrowserAccessibility::GetCellId(int32_t row_index,

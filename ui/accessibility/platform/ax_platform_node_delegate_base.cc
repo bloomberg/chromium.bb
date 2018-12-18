@@ -70,11 +70,27 @@ AXPlatformNodeDelegateBase::GetTargetForNativeAccessibilityEvent() {
   return gfx::kNullAcceleratedWidget;
 }
 
+bool AXPlatformNodeDelegateBase::IsTable() const {
+  return false;
+}
+
 int AXPlatformNodeDelegateBase::GetTableRowCount() const {
   return 0;
 }
 
 int AXPlatformNodeDelegateBase::GetTableColCount() const {
+  return 0;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetTableAriaColCount() const {
+  return 0;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetTableAriaRowCount() const {
+  return 0;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetTableCellCount() const {
   return 0;
 }
 
@@ -96,6 +112,42 @@ const std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds()
 const std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds(
     int32_t row_index) const {
   return std::vector<int32_t>();
+}
+
+bool AXPlatformNodeDelegateBase::IsTableRow() const {
+  return false;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetTableRowRowIndex() const {
+  return 0;
+}
+
+bool AXPlatformNodeDelegateBase::IsTableCellOrHeader() const {
+  return false;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetTableCellColIndex() const {
+  return 0;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetTableCellRowIndex() const {
+  return 0;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetTableCellColSpan() const {
+  return 0;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetTableCellRowSpan() const {
+  return 0;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetTableCellAriaColIndex() const {
+  return 0;
+}
+
+int32_t AXPlatformNodeDelegateBase::GetTableCellAriaRowIndex() const {
+  return 0;
 }
 
 int32_t AXPlatformNodeDelegateBase::GetCellId(int32_t row_index,

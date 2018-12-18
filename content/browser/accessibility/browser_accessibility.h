@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include <map>
 #include <utility>
@@ -348,17 +348,34 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
   int GetIndexInParent() const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
-  int GetTableRowCount() const override;
-  int GetTableColCount() const override;
+
+  bool IsTable() const override;
+  int32_t GetTableColCount() const override;
+  int32_t GetTableRowCount() const override;
+  int32_t GetTableAriaColCount() const override;
+  int32_t GetTableAriaRowCount() const override;
+  int32_t GetTableCellCount() const override;
   const std::vector<int32_t> GetColHeaderNodeIds() const override;
   const std::vector<int32_t> GetColHeaderNodeIds(
       int32_t col_index) const override;
   const std::vector<int32_t> GetRowHeaderNodeIds() const override;
   const std::vector<int32_t> GetRowHeaderNodeIds(
       int32_t row_index) const override;
-  int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
+
+  bool IsTableRow() const override;
+  int32_t GetTableRowRowIndex() const override;
+
+  bool IsTableCellOrHeader() const override;
   int32_t GetTableCellIndex() const override;
+  int32_t GetTableCellColIndex() const override;
+  int32_t GetTableCellRowIndex() const override;
+  int32_t GetTableCellColSpan() const override;
+  int32_t GetTableCellRowSpan() const override;
+  int32_t GetTableCellAriaColIndex() const override;
+  int32_t GetTableCellAriaRowIndex() const override;
+  int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
   int32_t CellIndexToId(int32_t cell_index) const override;
+
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
