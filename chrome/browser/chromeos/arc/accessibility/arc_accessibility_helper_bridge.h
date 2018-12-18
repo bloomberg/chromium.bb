@@ -76,9 +76,6 @@ class ArcAccessibilityHelperBridge
   void OnConnectionClosed() override;
 
   // mojom::AccessibilityHelperHost overrides.
-  void OnAccessibilityEventDeprecated(
-      mojom::AccessibilityEventType event_type,
-      mojom::AccessibilityNodeInfoDataPtr event_source) override;
   void OnAccessibilityEvent(
       mojom::AccessibilityEventDataPtr event_data) override;
   void OnNotificationStateChanged(

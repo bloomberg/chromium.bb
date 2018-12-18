@@ -251,13 +251,6 @@ void ArcAccessibilityHelperBridge::OnConnectionClosed() {
     surface_manager->RemoveObserver(this);
 }
 
-void ArcAccessibilityHelperBridge::OnAccessibilityEventDeprecated(
-    mojom::AccessibilityEventType event_type,
-    mojom::AccessibilityNodeInfoDataPtr event_source) {
-  if (event_type == arc::mojom::AccessibilityEventType::VIEW_FOCUSED)
-    DispatchFocusChange(event_source.get(), profile_);
-}
-
 void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
     mojom::AccessibilityEventDataPtr event_data) {
   // TODO(yawano): Handle AccessibilityFilterType::OFF.

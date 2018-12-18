@@ -372,11 +372,9 @@ struct AccessibilityActionData {
 };
 
 // Interface for Android communicating to Chrome.
+// Deprecated method IDs: 0
 // Next method ID: 3
 interface AccessibilityHelperHost {
-  OnAccessibilityEventDeprecated@0(AccessibilityEventType event_type,
-                                   AccessibilityNodeInfoData? event_source);
-
   // OnAccessibilityEvent is called when a converted Android accessibility event
   // is sent from Android.
   OnAccessibilityEvent@1(AccessibilityEventData event_data);
@@ -388,29 +386,18 @@ interface AccessibilityHelperHost {
 };
 
 // Interface for communicating to Android.
+// Deprecated method IDs: 0, 1, 3, 5
 // Next method ID: 10
 interface AccessibilityHelperInstance {
-  // DEPRECATED: Please use Init@7 instead.
-  InitDeprecated@0(AccessibilityHelperHost host);
-
   // Establishes full-duplex communication with the host.
   [MinVersion=9] Init@7(AccessibilityHelperHost host) => ();
-
-  PerformActionDeprecated@1(int32 id, AccessibilityActionType action);
 
   // Set a filter on the event types received.
   SetFilter@2(AccessibilityFilterType filter_type);
 
-  [MinVersion=3] PerformActionDeprecated2@3(AccessibilityActionData action_data);
-
   // Perform an action on a node requested by a Chrome client.
   [MinVersion=4] PerformAction@4(AccessibilityActionData action_data)
       => (bool result);
-
-  // Sets the package to use ChromeVox (true) or TalkBack (false). Returns true
-  // if the request was processed.
-  [MinVersion=7] SetNativeChromeVoxArcSupportDeprecated@5(
-      string package_name, bool enabled) => (bool processed);
 
   // Sets the focused window's package to use ChromeVox (true) or TalkBack
   // (false).
