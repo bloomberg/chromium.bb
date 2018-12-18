@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -319,13 +320,12 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
 
   // Encryption is not supported.
   media::CdmContext* cdm_context = nullptr;
-  media::VideoDecoder::WaitingForDecryptionKeyCB waiting_cb;
 
   media::VideoDecoder::OutputCB output_cb =
       base::BindRepeating(&RTCVideoDecoderAdapter::OnOutput, weak_this_);
 
   video_decoder_->Initialize(config, low_delay, cdm_context, std::move(init_cb),
-                             std::move(output_cb), std::move(waiting_cb));
+                             std::move(output_cb), base::DoNothing());
 }
 
 void RTCVideoDecoderAdapter::DecodeOnMediaThread() {

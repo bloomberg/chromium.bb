@@ -97,7 +97,7 @@ class MEDIA_EXPORT VideoRendererImpl
   void OnPlaybackEnded();
   void OnStatisticsUpdate(const PipelineStatistics& stats);
   void OnBufferingStateChange(BufferingState state);
-  void OnWaitingForDecryptionKey();
+  void OnWaiting(WaitingReason reason);
 
   // Called by the VideoDecoderStream when a config change occurs. Will notify
   // RenderClient of the new config.

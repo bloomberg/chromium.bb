@@ -38,7 +38,6 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   using DecoderConfigType = AudioDecoderConfig;
   using InitCB = AudioDecoder::InitCB;
   using OutputCB = AudioDecoder::OutputCB;
-  using WaitingForDecryptionKeyCB = AudioDecoder::WaitingForDecryptionKeyCB;
 
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
@@ -47,14 +46,13 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   DecoderStreamTraits(MediaLog* media_log, ChannelLayout initial_hw_layout);
 
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
-  void InitializeDecoder(
-      DecoderType* decoder,
-      const DecoderConfigType& config,
-      bool low_delay,
-      CdmContext* cdm_context,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb);
+  void InitializeDecoder(DecoderType* decoder,
+                         const DecoderConfigType& config,
+                         bool low_delay,
+                         CdmContext* cdm_context,
+                         const InitCB& init_cb,
+                         const OutputCB& output_cb,
+                         const WaitingCB& waiting_cb);
   DecoderConfigType GetDecoderConfig(DemuxerStream* stream);
   void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(const scoped_refptr<OutputType>& buffer);
@@ -83,7 +81,6 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   using DecoderConfigType = VideoDecoderConfig;
   using InitCB = VideoDecoder::InitCB;
   using OutputCB = VideoDecoder::OutputCB;
-  using WaitingForDecryptionKeyCB = VideoDecoder::WaitingForDecryptionKeyCB;
 
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
@@ -93,14 +90,13 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
 
   DecoderConfigType GetDecoderConfig(DemuxerStream* stream);
   void ReportStatistics(const StatisticsCB& statistics_cb, int bytes_decoded);
-  void InitializeDecoder(
-      DecoderType* decoder,
-      const DecoderConfigType& config,
-      bool low_delay,
-      CdmContext* cdm_context,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb);
+  void InitializeDecoder(DecoderType* decoder,
+                         const DecoderConfigType& config,
+                         bool low_delay,
+                         CdmContext* cdm_context,
+                         const InitCB& init_cb,
+                         const OutputCB& output_cb,
+                         const WaitingCB& waiting_cb);
   void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(const scoped_refptr<OutputType>& buffer);
   void OnStreamReset(DemuxerStream* stream);

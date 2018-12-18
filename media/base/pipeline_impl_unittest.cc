@@ -178,7 +178,7 @@ class PipelineImplTest : public ::testing::Test {
 
   void StartPipeline(
       Pipeline::StartType start_type = Pipeline::StartType::kNormal) {
-    EXPECT_CALL(callbacks_, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(callbacks_, OnWaiting(_)).Times(0);
     pipeline_->Start(
         start_type, demuxer_.get(), std::move(scoped_renderer_), &callbacks_,
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));

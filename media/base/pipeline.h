@@ -20,6 +20,7 @@
 #include "media/base/text_track.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_rotation.h"
+#include "media/base/waiting.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -57,8 +58,8 @@ class MEDIA_EXPORT Pipeline {
     virtual void OnAddTextTrack(const TextTrackConfig& config,
                                 const AddTextTrackDoneCB& done_cb) = 0;
 
-    // Executed whenever the key needed to decrypt the stream is not available.
-    virtual void OnWaitingForDecryptionKey() = 0;
+    // Executed whenever the pipeline is waiting because of |reason|.
+    virtual void OnWaiting(WaitingReason reason) = 0;
 
     // Executed for the first video frame and whenever natural size changes.
     virtual void OnVideoNaturalSizeChange(const gfx::Size& size) = 0;

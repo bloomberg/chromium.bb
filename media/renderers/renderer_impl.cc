@@ -48,8 +48,8 @@ class RendererImpl::RendererClientInternal final : public RendererClient {
   void OnBufferingStateChange(BufferingState state) override {
     renderer_->OnBufferingStateChange(type_, state);
   }
-  void OnWaitingForDecryptionKey() override {
-    renderer_->OnWaitingForDecryptionKey();
+  void OnWaiting(WaitingReason reason) override {
+    renderer_->OnWaiting(reason);
   }
   void OnAudioConfigChange(const AudioDecoderConfig& config) override {
     renderer_->OnAudioConfigChange(config);
@@ -909,9 +909,9 @@ void RendererImpl::OnError(PipelineStatus error) {
     FinishFlush();
 }
 
-void RendererImpl::OnWaitingForDecryptionKey() {
+void RendererImpl::OnWaiting(WaitingReason reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnWaitingForDecryptionKey();
+  client_->OnWaiting(reason);
 }
 
 void RendererImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {

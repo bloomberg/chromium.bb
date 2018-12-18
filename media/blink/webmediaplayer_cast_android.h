@@ -68,7 +68,7 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
   void OnTimeUpdate(base::TimeDelta current_timestamp,
                     base::TimeTicks current_time_ticks) override;
 
-  // void OnWaitingForDecryptionKey() override;
+  // void OnWaiting(WaitingReason reason) override;
   void OnPlayerReleased() override;
 
   // Functions called when media player status changes.

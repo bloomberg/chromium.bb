@@ -62,6 +62,10 @@ enum VideoPixelFormat;
 [Native]
 enum VideoRotation;
 
+// See media/base/waiting.h for descriptions.
+[Native]
+enum WaitingReason;
+
 // See media/base/watch_time_keys.h for descriptions.
 [Native]
 enum WatchTimeKey;

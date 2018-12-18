@@ -208,13 +208,12 @@ GUID D3D11VideoDecoder::GetD3D11DecoderGUID(const VideoDecoderConfig& config) {
   return {};
 }
 
-void D3D11VideoDecoder::Initialize(
-    const VideoDecoderConfig& config,
-    bool low_delay,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) {
+void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                   bool low_delay,
+                                   CdmContext* cdm_context,
+                                   const InitCB& init_cb,
+                                   const OutputCB& output_cb,
+                                   const WaitingCB& waiting_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsPotentiallySupported(config)) {

@@ -81,14 +81,12 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_CONST_METHOD0(GetDisplayName, std::string());
 
   // Initialize() records values before delegating to the mock method.
-  void Initialize(
-      const VideoDecoderConfig& config,
-      bool /* low_delay */,
-      CdmContext* /* cdm_context */,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */)
-      override {
+  void Initialize(const VideoDecoderConfig& config,
+                  bool /* low_delay */,
+                  CdmContext* /* cdm_context */,
+                  const InitCB& init_cb,
+                  const OutputCB& output_cb,
+                  const WaitingCB& /* waiting_cb */) override {
     config_ = config;
     output_cb_ = output_cb;
     DoInitialize(init_cb);

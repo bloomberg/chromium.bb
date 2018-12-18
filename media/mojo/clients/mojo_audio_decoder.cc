@@ -42,12 +42,11 @@ bool MojoAudioDecoder::IsPlatformDecoder() const {
   return true;
 }
 
-void MojoAudioDecoder::Initialize(
-    const AudioDecoderConfig& config,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
+                                  CdmContext* cdm_context,
+                                  const InitCB& init_cb,
+                                  const OutputCB& output_cb,
+                                  const WaitingCB& /* waiting_cb */) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 

@@ -92,8 +92,7 @@ class AudioDecoderSelectorTestParam {
         .WillRepeatedly(
             [capability](const AudioDecoderConfig& config, CdmContext*,
                          const AudioDecoder::InitCB& init_cb,
-                         const AudioDecoder::OutputCB&,
-                         const AudioDecoder::WaitingForDecryptionKeyCB&) {
+                         const AudioDecoder::OutputCB&, const WaitingCB&) {
               init_cb.Run(IsConfigSupported(capability, config.is_encrypted()));
             });
   }
@@ -129,8 +128,7 @@ class VideoDecoderSelectorTestParam {
         .WillRepeatedly(
             [capability](const VideoDecoderConfig& config, bool low_delay,
                          CdmContext*, const VideoDecoder::InitCB& init_cb,
-                         const VideoDecoder::OutputCB&,
-                         const VideoDecoder::WaitingForDecryptionKeyCB&) {
+                         const VideoDecoder::OutputCB&, const WaitingCB&) {
               init_cb.Run(IsConfigSupported(capability, config.is_encrypted()));
             });
   }
@@ -162,7 +160,7 @@ class DecoderSelectorTest : public ::testing::Test {
       : traits_(TypeParam::CreateStreamTraits(&media_log_)),
         demuxer_stream_(TypeParam::kStreamType) {}
 
-  void OnWaitingForDecryptionKey() { NOTREACHED(); }
+  void OnWaiting(WaitingReason reason) { NOTREACHED(); }
   void OnOutput(const scoped_refptr<Output>& output) { NOTREACHED(); }
 
   MOCK_METHOD2_T(OnDecoderSelected,
@@ -249,8 +247,7 @@ class DecoderSelectorTest : public ::testing::Test {
             &media_log_);
     decoder_selector_->Initialize(
         traits_.get(), &demuxer_stream_, cdm_context_.get(),
-        base::BindRepeating(&Self::OnWaitingForDecryptionKey,
-                            base::Unretained(this)));
+        base::BindRepeating(&Self::OnWaiting, base::Unretained(this)));
   }
 
   void UseClearDecoderConfig() {

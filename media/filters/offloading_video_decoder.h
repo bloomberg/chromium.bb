@@ -79,13 +79,12 @@ class MEDIA_EXPORT OffloadingVideoDecoder : public VideoDecoder {
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
-  void Initialize(
-      const VideoDecoderConfig& config,
-      bool low_delay,
-      CdmContext* cdm_context,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) override;
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  CdmContext* cdm_context,
+                  const InitCB& init_cb,
+                  const OutputCB& output_cb,
+                  const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::Closure& reset_cb) override;

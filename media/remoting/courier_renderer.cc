@@ -21,6 +21,7 @@
 #include "media/base/media_resource.h"
 #include "media/base/renderer_client.h"
 #include "media/base/video_renderer_sink.h"
+#include "media/base/waiting.h"
 #include "media/remoting/demuxer_stream_adapter.h"
 #include "media/remoting/proto_enum_utils.h"
 #include "media/remoting/proto_utils.h"
@@ -421,7 +422,7 @@ void CourierRenderer::OnReceivedRpc(std::unique_ptr<pb::RpcMessage> message) {
       break;
     case pb::RpcMessage::RPC_RC_ONWAITINGFORDECRYPTIONKEY:
       VLOG(2) << __func__ << ": Received RPC_RC_ONWAITINGFORDECRYPTIONKEY.";
-      client_->OnWaitingForDecryptionKey();
+      client_->OnWaiting(WaitingReason::kNoDecryptionKey);
       break;
     case pb::RpcMessage::RPC_RC_ONDURATIONCHANGE:
       OnDurationChange(std::move(message));

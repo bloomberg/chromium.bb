@@ -132,7 +132,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnEnded() final;
   void OnStatisticsUpdate(const PipelineStatistics& stats) final;
   void OnBufferingStateChange(BufferingState state) final;
-  void OnWaitingForDecryptionKey() final;
+  void OnWaiting(WaitingReason reason) final;
   void OnAudioConfigChange(const AudioDecoderConfig& config) final;
   void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
@@ -708,12 +708,11 @@ void PipelineImpl::RendererWrapper::OnBufferingStateChange(
       base::Bind(&PipelineImpl::OnBufferingStateChange, weak_pipeline_, state));
 }
 
-void PipelineImpl::RendererWrapper::OnWaitingForDecryptionKey() {
+void PipelineImpl::RendererWrapper::OnWaiting(WaitingReason reason) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PipelineImpl::OnWaitingForDecryptionKey, weak_pipeline_));
+      FROM_HERE, base::Bind(&PipelineImpl::OnWaiting, weak_pipeline_, reason));
 }
 
 void PipelineImpl::RendererWrapper::OnVideoNaturalSizeChange(
@@ -1315,13 +1314,13 @@ void PipelineImpl::OnDurationChange(base::TimeDelta duration) {
   client_->OnDurationChange();
 }
 
-void PipelineImpl::OnWaitingForDecryptionKey() {
+void PipelineImpl::OnWaiting(WaitingReason reason) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
   DCHECK(client_);
-  client_->OnWaitingForDecryptionKey();
+  client_->OnWaiting(reason);
 }
 
 void PipelineImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {

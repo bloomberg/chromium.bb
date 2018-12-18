@@ -79,13 +79,12 @@ std::string OffloadingVideoDecoder::GetDisplayName() const {
   return helper_->decoder()->GetDisplayName();
 }
 
-void OffloadingVideoDecoder::Initialize(
-    const VideoDecoderConfig& config,
-    bool low_delay,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) {
+void OffloadingVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                        bool low_delay,
+                                        CdmContext* cdm_context,
+                                        const InitCB& init_cb,
+                                        const OutputCB& output_cb,
+                                        const WaitingCB& waiting_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(config.IsValidConfig());
 
@@ -109,8 +108,7 @@ void OffloadingVideoDecoder::Initialize(
           // possible for this class to be destroyed during Initialize().
           base::BindOnce(&OffloadingVideoDecoder::Initialize,
                          weak_factory_.GetWeakPtr(), config, low_delay,
-                         cdm_context, init_cb, output_cb,
-                         waiting_for_decryption_key_cb));
+                         cdm_context, init_cb, output_cb, waiting_cb));
       return;
     }
 
@@ -132,8 +130,7 @@ void OffloadingVideoDecoder::Initialize(
   if (disable_offloading) {
     offload_task_runner_ = nullptr;
     helper_->decoder()->Initialize(config, low_delay, cdm_context,
-                                   bound_init_cb, bound_output_cb,
-                                   waiting_for_decryption_key_cb);
+                                   bound_init_cb, bound_output_cb, waiting_cb);
     return;
   }
 
@@ -146,8 +143,7 @@ void OffloadingVideoDecoder::Initialize(
       FROM_HERE,
       base::BindOnce(&OffloadableVideoDecoder::Initialize,
                      base::Unretained(helper_->decoder()), config, low_delay,
-                     cdm_context, bound_init_cb, bound_output_cb,
-                     waiting_for_decryption_key_cb));
+                     cdm_context, bound_init_cb, bound_output_cb, waiting_cb));
 }
 
 void OffloadingVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

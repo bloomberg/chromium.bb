@@ -60,12 +60,11 @@ std::string MediaCodecAudioDecoder::GetDisplayName() const {
   return "MediaCodecAudioDecoder";
 }
 
-void MediaCodecAudioDecoder::Initialize(
-    const AudioDecoderConfig& config,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
+                                        CdmContext* cdm_context,
+                                        const InitCB& init_cb,
+                                        const OutputCB& output_cb,
+                                        const WaitingCB& /* waiting_cb */) {
   DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK_NE(state_, STATE_WAITING_FOR_MEDIA_CRYPTO);
 

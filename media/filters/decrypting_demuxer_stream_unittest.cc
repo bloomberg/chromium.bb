@@ -70,7 +70,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
       : demuxer_stream_(new DecryptingDemuxerStream(
             message_loop_.task_runner(),
             &media_log_,
-            base::Bind(&DecryptingDemuxerStreamTest::OnWaitingForDecryptionKey,
+            base::Bind(&DecryptingDemuxerStreamTest::OnWaiting,
                        base::Unretained(this)))),
         cdm_context_(new StrictMock<MockCdmContext>()),
         decryptor_(new StrictMock<MockDecryptor>()),
@@ -232,7 +232,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
         .WillRepeatedly(
             RunCallback<2>(Decryptor::kNoKey, scoped_refptr<DecoderBuffer>()));
     EXPECT_MEDIA_LOG(HasSubstr("DecryptingDemuxerStream: no key for key ID"));
-    EXPECT_CALL(*this, OnWaitingForDecryptionKey());
+    EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey));
     demuxer_stream_->Read(base::Bind(&DecryptingDemuxerStreamTest::BufferReady,
                                      base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
@@ -261,7 +261,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
 
   MOCK_METHOD2(BufferReady,
                void(DemuxerStream::Status, scoped_refptr<DecoderBuffer>));
-  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
+  MOCK_METHOD1(OnWaiting, void(WaitingReason));
 
   base::MessageLoop message_loop_;
   StrictMock<MockMediaLog> media_log_;

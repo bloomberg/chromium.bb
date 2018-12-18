@@ -47,14 +47,13 @@ namespace {
 class MockVideoDecoder : public media::VideoDecoder {
  public:
   std::string GetDisplayName() const override { return "MockVideoDecoder"; }
-  MOCK_METHOD6(
-      Initialize,
-      void(const media::VideoDecoderConfig& config,
-           bool low_delay,
-           media::CdmContext* cdm_context,
-           const InitCB& init_cb,
-           const OutputCB& output_cb,
-           const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb));
+  MOCK_METHOD6(Initialize,
+               void(const media::VideoDecoderConfig& config,
+                    bool low_delay,
+                    media::CdmContext* cdm_context,
+                    const InitCB& init_cb,
+                    const OutputCB& output_cb,
+                    const media::WaitingCB& waiting_cb));
   MOCK_METHOD2(Decode,
                void(scoped_refptr<media::DecoderBuffer> buffer,
                     const DecodeCB&));

@@ -64,12 +64,11 @@ std::string FFmpegAudioDecoder::GetDisplayName() const {
   return "FFmpegAudioDecoder";
 }
 
-void FFmpegAudioDecoder::Initialize(
-    const AudioDecoderConfig& config,
-    CdmContext* /* cdm_context */,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
+                                    CdmContext* /* cdm_context */,
+                                    const InitCB& init_cb,
+                                    const OutputCB& output_cb,
+                                    const WaitingCB& /* waiting_cb */) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
 

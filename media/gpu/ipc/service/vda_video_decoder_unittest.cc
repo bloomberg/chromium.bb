@@ -311,9 +311,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
   testing::NiceMock<MockMediaLog> media_log_;
   testing::StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb_;
   testing::StrictMock<base::MockCallback<VideoDecoder::OutputCB>> output_cb_;
-  testing::StrictMock<
-      base::MockCallback<VideoDecoder::WaitingForDecryptionKeyCB>>
-      waiting_cb_;
+  testing::StrictMock<base::MockCallback<WaitingCB>> waiting_cb_;
   testing::StrictMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb_;
   testing::StrictMock<base::MockCallback<base::RepeatingClosure>> reset_cb_;
 

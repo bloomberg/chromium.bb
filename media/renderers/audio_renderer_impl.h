@@ -196,7 +196,7 @@ class MEDIA_EXPORT AudioRendererImpl
   void OnPlaybackEnded();
   void OnStatisticsUpdate(const PipelineStatistics& stats);
   void OnBufferingStateChange(BufferingState state);
-  void OnWaitingForDecryptionKey();
+  void OnWaiting(WaitingReason reason);
 
   // Generally called by the AudioDecoderStream when a config change occurs. May
   // also be called internally with an empty config to reset config-based state.

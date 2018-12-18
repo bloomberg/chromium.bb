@@ -188,7 +188,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     last_statistics_.audio_memory_usage += stats.audio_memory_usage;
   }
   MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
-  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
+  MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnAudioConfigChange, void(const AudioDecoderConfig&));
   MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig&));
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));
@@ -197,7 +197,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
 
   void InitializeRenderer(DemuxerStream* demuxer_stream,
                           const PipelineStatusCB& pipeline_status_cb) {
-    EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(*this, OnWaiting(_)).Times(0);
     EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(0);
     EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(0);
     EXPECT_CALL(*this, OnVideoConfigChange(_)).Times(0);

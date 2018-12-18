@@ -261,7 +261,7 @@ void VideoRendererImpl::Initialize(
       cdm_context,
       base::BindRepeating(&VideoRendererImpl::OnStatisticsUpdate,
                           weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&VideoRendererImpl::OnWaitingForDecryptionKey,
+      base::BindRepeating(&VideoRendererImpl::OnWaiting,
                           weak_factory_.GetWeakPtr()));
 }
 
@@ -387,9 +387,9 @@ void VideoRendererImpl::OnBufferingStateChange(BufferingState state) {
   client_->OnBufferingStateChange(state);
 }
 
-void VideoRendererImpl::OnWaitingForDecryptionKey() {
+void VideoRendererImpl::OnWaiting(WaitingReason reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnWaitingForDecryptionKey();
+  client_->OnWaiting(reason);
 }
 
 void VideoRendererImpl::OnConfigChange(const VideoDecoderConfig& config) {

@@ -56,13 +56,12 @@ std::string FakeVideoDecoder::GetDisplayName() const {
   return decoder_name_;
 }
 
-void FakeVideoDecoder::Initialize(
-    const VideoDecoderConfig& config,
-    bool low_delay,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) {
+void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                  bool low_delay,
+                                  CdmContext* cdm_context,
+                                  const InitCB& init_cb,
+                                  const OutputCB& output_cb,
+                                  const WaitingCB& waiting_cb) {
   DVLOG(1) << decoder_name_ << ": " << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(config.IsValidConfig());

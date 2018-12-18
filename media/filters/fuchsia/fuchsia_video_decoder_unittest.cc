@@ -5,6 +5,7 @@
 #include "media/filters/fuchsia/fuchsia_video_decoder.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
@@ -32,7 +33,7 @@ class FuchsiaVideoDecoderTest : public testing::Test {
             &init_cb_result, &run_loop),
         base::BindRepeating(&FuchsiaVideoDecoderTest::OnVideoFrame,
                             base::Unretained(this)),
-        VideoDecoder::WaitingForDecryptionKeyCB());
+        base::NullCallback());
 
     run_loop.Run();
     return init_cb_result;

@@ -82,7 +82,7 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   void OnVideoConfigChange(const VideoDecoderConfig& config) override;
   void OnVideoNaturalSizeChange(const gfx::Size& size) override;
   void OnVideoOpacityChange(bool opaque) override;
-  void OnWaitingForDecryptionKey() override;
+  void OnWaiting(WaitingReason reason) override;
   void OnStatisticsUpdate(const PipelineStatistics& stats) override;
   void OnDurationChange(base::TimeDelta duration) override;
 

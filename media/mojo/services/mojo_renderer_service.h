@@ -86,7 +86,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   void OnEnded() final;
   void OnStatisticsUpdate(const PipelineStatistics& stats) final;
   void OnBufferingStateChange(BufferingState state) final;
-  void OnWaitingForDecryptionKey() final;
+  void OnWaiting(WaitingReason reason) final;
   void OnAudioConfigChange(const AudioDecoderConfig& config) final;
   void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;

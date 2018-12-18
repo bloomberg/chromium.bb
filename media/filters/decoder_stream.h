@@ -22,6 +22,7 @@
 #include "media/base/moving_average.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/timestamp_constants.h"
+#include "media/base/waiting.h"
 #include "media/filters/decoder_selector.h"
 #include "media/filters/decoder_stream_traits.h"
 
@@ -78,7 +79,7 @@ class MEDIA_EXPORT DecoderStream {
                   InitCB init_cb,
                   CdmContext* cdm_context,
                   StatisticsCB statistics_cb,
-                  base::RepeatingClosure waiting_for_decryption_key_cb);
+                  WaitingCB waiting_cb);
 
   // Reads a decoded Output and returns it via the |read_cb|. Note that
   // |read_cb| is always called asynchronously. This method should only be
@@ -227,7 +228,7 @@ class MEDIA_EXPORT DecoderStream {
 
   StatisticsCB statistics_cb_;
   InitCB init_cb_;
-  base::RepeatingClosure waiting_for_decryption_key_cb_;
+  WaitingCB waiting_cb_;
 
   ReadCB read_cb_;
   base::OnceClosure reset_cb_;

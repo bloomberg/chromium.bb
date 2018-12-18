@@ -220,8 +220,8 @@ void CastRenderer::OnGetMultiroomInfo(
   // Initialize audio.
   if (audio_stream) {
     AvPipelineClient audio_client;
-    audio_client.wait_for_key_cb = base::Bind(
-        &CastRenderer::OnWaitingForDecryptionKey, weak_factory_.GetWeakPtr());
+    audio_client.waiting_cb =
+        base::Bind(&CastRenderer::OnWaiting, weak_factory_.GetWeakPtr());
     audio_client.eos_cb = base::Bind(&CastRenderer::OnEnded,
                                      weak_factory_.GetWeakPtr(), STREAM_AUDIO);
     audio_client.playback_error_cb =
@@ -244,8 +244,8 @@ void CastRenderer::OnGetMultiroomInfo(
   // Initialize video.
   if (video_stream) {
     VideoPipelineClient video_client;
-    video_client.av_pipeline_client.wait_for_key_cb = base::Bind(
-        &CastRenderer::OnWaitingForDecryptionKey, weak_factory_.GetWeakPtr());
+    video_client.av_pipeline_client.waiting_cb =
+        base::Bind(&CastRenderer::OnWaiting, weak_factory_.GetWeakPtr());
     video_client.av_pipeline_client.eos_cb = base::Bind(
         &CastRenderer::OnEnded, weak_factory_.GetWeakPtr(), STREAM_VIDEO);
     video_client.av_pipeline_client.playback_error_cb =
@@ -389,9 +389,9 @@ void CastRenderer::OnBufferingStateChange(::media::BufferingState state) {
     client_->OnBufferingStateChange(state);
 }
 
-void CastRenderer::OnWaitingForDecryptionKey() {
+void CastRenderer::OnWaiting(::media::WaitingReason reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnWaitingForDecryptionKey();
+  client_->OnWaiting(reason);
 }
 
 void CastRenderer::OnVideoNaturalSizeChange(const gfx::Size& size) {

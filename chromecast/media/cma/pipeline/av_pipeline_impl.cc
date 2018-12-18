@@ -236,8 +236,8 @@ void AvPipelineImpl::ProcessPendingBuffer() {
       LOG(INFO) << "frame(pts=" << pending_buffer_->timestamp()
                 << "): waiting for key id "
                 << base::HexEncode(&key_id[0], key_id.size());
-      if (!client_.wait_for_key_cb.is_null())
-        client_.wait_for_key_cb.Run();
+      if (!client_.waiting_cb.is_null())
+        client_.waiting_cb.Run(::media::WaitingReason::kNoDecryptionKey);
       return;
     }
 

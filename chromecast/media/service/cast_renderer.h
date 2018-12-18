@@ -14,6 +14,7 @@
 #include "chromecast/media/base/video_resolution_policy.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/base/renderer.h"
+#include "media/base/waiting.h"
 #include "media/mojo/interfaces/application_session_id_manager.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -83,7 +84,7 @@ class CastRenderer : public ::media::Renderer,
   void OnEnded(Stream stream);
   void OnStatisticsUpdate(const ::media::PipelineStatistics& stats);
   void OnBufferingStateChange(::media::BufferingState state);
-  void OnWaitingForDecryptionKey();
+  void OnWaiting(::media::WaitingReason reason);
   void OnVideoNaturalSizeChange(const gfx::Size& size);
   void OnVideoOpacityChange(bool opaque);
   void CheckVideoResolutionPolicy();

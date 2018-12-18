@@ -305,10 +305,10 @@ void MojoRenderer::OnStatisticsUpdate(const PipelineStatistics& stats) {
   client_->OnStatisticsUpdate(stats);
 }
 
-void MojoRenderer::OnWaitingForDecryptionKey() {
+void MojoRenderer::OnWaiting(WaitingReason reason) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnWaitingForDecryptionKey();
+  client_->OnWaiting(reason);
 }
 
 void MojoRenderer::OnConnectionError() {

@@ -73,12 +73,12 @@ class DecryptingVideoDecoderTest : public testing::Test {
   // can succeed or fail.
   void InitializeAndExpectResult(const VideoDecoderConfig& config,
                                  bool success) {
-    decoder_->Initialize(
-        config, false, cdm_context_.get(), NewExpectedBoolCB(success),
-        base::Bind(&DecryptingVideoDecoderTest::FrameReady,
-                   base::Unretained(this)),
-        base::Bind(&DecryptingVideoDecoderTest::OnWaitingForDecryptionKey,
-                   base::Unretained(this)));
+    decoder_->Initialize(config, false, cdm_context_.get(),
+                         NewExpectedBoolCB(success),
+                         base::Bind(&DecryptingVideoDecoderTest::FrameReady,
+                                    base::Unretained(this)),
+                         base::Bind(&DecryptingVideoDecoderTest::OnWaiting,
+                                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -171,7 +171,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   void EnterWaitingForKeyState() {
     EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
         .WillRepeatedly(RunCallback<1>(Decryptor::kNoKey, null_video_frame_));
-    EXPECT_CALL(*this, OnWaitingForDecryptionKey());
+    EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey));
     decoder_->Decode(encrypted_buffer_,
                      base::Bind(&DecryptingVideoDecoderTest::DecodeDone,
                                 base::Unretained(this)));
@@ -216,7 +216,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   MOCK_METHOD1(FrameReady, void(const scoped_refptr<VideoFrame>&));
   MOCK_METHOD1(DecodeDone, void(DecodeStatus));
 
-  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
+  MOCK_METHOD1(OnWaiting, void(WaitingReason));
 
   base::MessageLoop message_loop_;
   MediaLog media_log_;
