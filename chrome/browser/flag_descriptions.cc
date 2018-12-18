@@ -3019,6 +3019,10 @@ const char kEnableCustomMacPaperSizesDescription[] =
 const char kMacTouchBarName[] = "Hardware Touch Bar";
 const char kMacTouchBarDescription[] = "Control the use of the Touch Bar.";
 
+const char kMacV2GPUSandboxName[] = "Mac V2 GPU Sandbox";
+const char kMacV2GPUSandboxDescription[] =
+    "Controls whether the GPU process on macOS uses the V1 or V2 sandbox.";
+
 const char kMacViewsNativeAppWindowsName[] = "Toolkit-Views App Windows.";
 const char kMacViewsNativeAppWindowsDescription[] =
     "Controls whether to use Toolkit-Views based Chrome App windows.";

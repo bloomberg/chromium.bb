@@ -1793,6 +1793,9 @@ extern const char kEnableCustomMacPaperSizesDescription[];
 extern const char kMacTouchBarName[];
 extern const char kMacTouchBarDescription[];
 
+extern const char kMacV2GPUSandboxName[];
+extern const char kMacV2GPUSandboxDescription[];
+
 extern const char kMacViewsNativeAppWindowsName[];
 extern const char kMacViewsNativeAppWindowsDescription[];
 

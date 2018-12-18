@@ -2222,6 +2222,9 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kTrySupportedChannelLayouts)},
 #endif  // OS_WIN
 #if defined(OS_MACOSX)
+    {"mac-v2-gpu-sandbox", flag_descriptions::kMacV2GPUSandboxName,
+     flag_descriptions::kMacV2GPUSandboxDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kMacV2GPUSandbox)},
     {"mac-views-task-manager", flag_descriptions::kMacViewsTaskManagerName,
      flag_descriptions::kMacViewsTaskManagerDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kViewsTaskManager)},
