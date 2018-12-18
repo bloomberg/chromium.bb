@@ -146,12 +146,7 @@ void FetchContext::AddWarningConsoleMessage(const String&, LogSource) const {}
 void FetchContext::AddErrorConsoleMessage(const String&, LogSource) const {}
 
 const SecurityOrigin* FetchContext::GetSecurityOrigin() const {
-  // This can be called before |fetch_client_settings_object_| is set in
-  // FrameFetchContext.
-  // TODO(hiroshige): Make |fetch_client_settings_object_| always non-null.
-  if (!fetch_client_settings_object_)
-    return nullptr;
-  return fetch_client_settings_object_->GetSecurityOrigin();
+  return GetFetchClientSettingsObject()->GetSecurityOrigin();
 }
 
 void FetchContext::SetFetchClientSettingsObject(
