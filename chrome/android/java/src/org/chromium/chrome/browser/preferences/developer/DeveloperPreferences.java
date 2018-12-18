@@ -19,6 +19,9 @@ import org.chromium.components.version_info.VersionConstants;
 public class DeveloperPreferences extends PreferenceFragment {
     private static final String PREF_DEVELOPER_ENABLED = "developer";
 
+    // Non-translated strings:
+    private static final String MSG_DEVELOPER_OPTIONS_TITLE = "Developer options";
+
     public static boolean shouldShowDeveloperPreferences() {
         // Always enabled on canary, dev and local builds, otherwise can be enabled by tapping the
         // Chrome version in Settings>About multiple times.
@@ -36,7 +39,7 @@ public class DeveloperPreferences extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setTitle(R.string.prefs_developer);
+        getActivity().setTitle(MSG_DEVELOPER_OPTIONS_TITLE);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.developer_preferences);
     }
 }

@@ -103,7 +103,7 @@
         android:fragment="org.chromium.chrome.browser.preferences.developer.DeveloperPreferences"
         android:key="developer"
         android:order="19"
-        android:title="@string/prefs_developer"/>
+        android:title="Developer options"/>
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.AboutChromePreferences"
         android:key="about_chrome"

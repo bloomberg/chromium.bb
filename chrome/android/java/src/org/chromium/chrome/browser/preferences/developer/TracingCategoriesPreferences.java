@@ -31,10 +31,13 @@ public class TracingCategoriesPreferences
     private @TracingPreferences.CategoryType int mType;
     private Set<String> mEnabledCategories;
 
+    // Non-translated strings:
+    private static final String MSG_CATEGORY_SELECTION_TITLE = "Select categories";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setTitle(R.string.prefs_tracing_category_selection_title);
+        getActivity().setTitle(MSG_CATEGORY_SELECTION_TITLE);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.blank_preference_fragment_screen);
         getPreferenceScreen().setOrderingAsAdded(true);
 

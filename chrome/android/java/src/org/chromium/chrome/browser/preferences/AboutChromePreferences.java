@@ -31,6 +31,15 @@ public class AboutChromePreferences
     private static final String PREF_OS_VERSION = "os_version";
     private static final String PREF_LEGAL_INFORMATION = "legal_information";
 
+    // Non-translated strings:
+    private static final String MSG_DEVELOPER_ENABLE_COUNTDOWN =
+            "%s more taps to enable Developer options.";
+    private static final String MSG_DEVELOPER_ENABLE_COUNTDOWN_LAST_TAP =
+            "1 more tap to enable Developer options.";
+    private static final String MSG_DEVELOPER_ENABLED = "Developer options are now enabled.";
+    private static final String MSG_DEVELOPER_ALREADY_ENABLED =
+            "Developer options are already enabled.";
+
     private int mDeveloperHitCountdown = DeveloperPreferences.shouldShowDeveloperPreferences()
             ? -1
             : TAPS_FOR_DEVELOPER_PREFERENCES;
@@ -89,8 +98,7 @@ public class AboutChromePreferences
                 if (mToast != null) {
                     mToast.cancel();
                 }
-                mToast = Toast.makeText(
-                        getActivity(), R.string.prefs_developer_enabled, Toast.LENGTH_LONG);
+                mToast = Toast.makeText(getActivity(), MSG_DEVELOPER_ENABLED, Toast.LENGTH_LONG);
                 mToast.show();
             } else if (mDeveloperHitCountdown > 0
                     && mDeveloperHitCountdown < (TAPS_FOR_DEVELOPER_PREFERENCES - 2)) {
@@ -98,11 +106,13 @@ public class AboutChromePreferences
                 if (mToast != null) {
                     mToast.cancel();
                 }
-                mToast = Toast.makeText(getActivity(),
-                        getActivity().getResources().getQuantityString(
-                                R.plurals.prefs_developer_enable_countdown, mDeveloperHitCountdown,
-                                mDeveloperHitCountdown),
-                        Toast.LENGTH_SHORT);
+                String title;
+                if (mDeveloperHitCountdown == 1) {
+                    title = MSG_DEVELOPER_ENABLE_COUNTDOWN_LAST_TAP;
+                } else {
+                    title = String.format(MSG_DEVELOPER_ENABLE_COUNTDOWN, mDeveloperHitCountdown);
+                }
+                mToast = Toast.makeText(getActivity(), title, Toast.LENGTH_SHORT);
                 mToast.show();
             }
         } else if (mDeveloperHitCountdown < 0) {
@@ -110,8 +120,8 @@ public class AboutChromePreferences
             if (mToast != null) {
                 mToast.cancel();
             }
-            mToast = Toast.makeText(
-                    getActivity(), R.string.prefs_developer_already_enabled, Toast.LENGTH_LONG);
+            mToast =
+                    Toast.makeText(getActivity(), MSG_DEVELOPER_ALREADY_ENABLED, Toast.LENGTH_LONG);
             mToast.show();
         }
         return true;

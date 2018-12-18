@@ -44,8 +44,28 @@ public class TracingPreferences extends PreferenceFragment implements TracingCon
     private static final String PREF_TRACING_CATEGORIES = "tracing_categories";
     private static final String PREF_TRACING_MODE = "tracing_mode";
 
+    // Non-translated strings:
+    private static final String MSG_TRACING_TITLE = "Tracing";
+    private static final String MSG_PRIVACY_NOTICE =
+            "Traces may contain user or site data related to the active browsing session, "
+            + "including incognito tabs.";
+    private static final String MSG_ACTIVE_SUMMARY =
+            "A trace is being recorded. Use the notification to stop and share the result.";
+    @VisibleForTesting
+    static final String MSG_START = "Record trace";
+    @VisibleForTesting
+    static final String MSG_ACTIVE = "Recording…";
+    private static final String MSG_CATEGORIES_SUMMARY = "%s out of %s enabled";
+    private static final String MSG_MODE_RECORD_UNTIL_FULL = "Record until full";
+    private static final String MSG_MODE_RECORD_AS_MUCH_AS_POSSIBLE =
+            "Record until full (large buffer)";
+    private static final String MSG_MODE_RECORD_CONTINUOUSLY = "Record continuously";
+    @VisibleForTesting
+    static final String MSG_NOTIFICATIONS_DISABLED =
+            "Please enable Chrome browser notifications to record a trace.";
+
     // Ordered map that maps tracing mode string to resource id for its description.
-    private static final Map<String, Integer> TRACING_MODES = createTracingModesMap();
+    private static final Map<String, String> TRACING_MODES = createTracingModesMap();
 
     private Preference mPrefDefaultCategories;
     private Preference mPrefNondefaultCategories;
@@ -63,12 +83,11 @@ public class TracingPreferences extends PreferenceFragment implements TracingCon
         int NON_DEFAULT = 1;
     }
 
-    private static Map<String, Integer> createTracingModesMap() {
-        Map<String, Integer> map = new LinkedHashMap<>();
-        map.put("record-until-full", R.string.prefs_tracing_mode_record_until_full);
-        map.put("record-as-much-as-possible",
-                R.string.prefs_tracing_mode_record_as_much_as_possible);
-        map.put("record-continuously", R.string.prefs_tracing_mode_record_continuously);
+    private static Map<String, String> createTracingModesMap() {
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("record-until-full", MSG_MODE_RECORD_UNTIL_FULL);
+        map.put("record-as-much-as-possible", MSG_MODE_RECORD_AS_MUCH_AS_POSSIBLE);
+        map.put("record-continuously", MSG_MODE_RECORD_CONTINUOUSLY);
         return map;
     }
 
@@ -160,7 +179,7 @@ public class TracingPreferences extends PreferenceFragment implements TracingCon
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setTitle(R.string.prefs_tracing);
+        getActivity().setTitle(MSG_TRACING_TITLE);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.tracing_preferences);
 
         mPrefDefaultCategories = findPreference(UI_PREF_DEFAULT_CATEGORIES);
@@ -176,11 +195,8 @@ public class TracingPreferences extends PreferenceFragment implements TracingCon
                 TracingCategoriesPreferences.EXTRA_CATEGORY_TYPE, CategoryType.NON_DEFAULT);
 
         mPrefMode.setEntryValues(TRACING_MODES.keySet().toArray(new String[TRACING_MODES.size()]));
-        String[] descriptions = new String[TRACING_MODES.size()];
-        int i = 0;
-        for (int resourceId : TRACING_MODES.values()) {
-            descriptions[i++] = getActivity().getResources().getString(resourceId);
-        }
+        String[] descriptions =
+                TRACING_MODES.values().toArray(new String[TRACING_MODES.values().size()]);
         mPrefMode.setEntries(descriptions);
         mPrefMode.setOnPreferenceChangeListener((preference, newValue) -> {
             setSelectedTracingMode((String) newValue);
@@ -239,24 +255,24 @@ public class TracingPreferences extends PreferenceFragment implements TracingCon
             int defaultEnabled = getEnabledCategories(CategoryType.DEFAULT).size();
             int nondefaultEnabled = getEnabledCategories(CategoryType.NON_DEFAULT).size();
 
-            mPrefDefaultCategories.setSummary(getActivity().getResources().getString(
-                    R.string.prefs_tracing_categories_summary, defaultEnabled, defaultTotal));
-            mPrefNondefaultCategories.setSummary(getActivity().getResources().getString(
-                    R.string.prefs_tracing_categories_summary, nondefaultEnabled, nondefaultTotal));
+            mPrefDefaultCategories.setSummary(
+                    String.format(MSG_CATEGORIES_SUMMARY, defaultEnabled, defaultTotal));
+            mPrefNondefaultCategories.setSummary(
+                    String.format(MSG_CATEGORIES_SUMMARY, nondefaultEnabled, nondefaultTotal));
 
             mPrefMode.setValue(getSelectedTracingMode());
             mPrefMode.setSummary(TRACING_MODES.get(getSelectedTracingMode()));
         }
 
         if (!notificationsEnabled) {
-            mPrefStartRecording.setTitle(R.string.prefs_tracing_start);
-            mPrefTracingStatus.setTitle(R.string.tracing_notifications_disabled);
+            mPrefStartRecording.setTitle(MSG_START);
+            mPrefTracingStatus.setTitle(MSG_NOTIFICATIONS_DISABLED);
         } else if (idle) {
-            mPrefStartRecording.setTitle(R.string.prefs_tracing_start);
-            mPrefTracingStatus.setTitle(R.string.prefs_tracing_privacy_notice);
+            mPrefStartRecording.setTitle(MSG_START);
+            mPrefTracingStatus.setTitle(MSG_PRIVACY_NOTICE);
         } else {
-            mPrefStartRecording.setTitle(R.string.prefs_tracing_active);
-            mPrefTracingStatus.setTitle(R.string.prefs_tracing_active_summary);
+            mPrefStartRecording.setTitle(MSG_ACTIVE);
+            mPrefTracingStatus.setTitle(MSG_ACTIVE_SUMMARY);
         }
     }
 }
