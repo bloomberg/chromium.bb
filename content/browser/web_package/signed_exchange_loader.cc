@@ -136,36 +136,6 @@ SignedExchangeLoader::SignedExchangeLoader(
         outer_request_url_, outer_response_.response_time);
   }
 
-  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#privacy-considerations
-  // This can be difficult to determine when the exchange is being loaded from
-  // local disk, but when the client itself requested the exchange over a
-  // network it SHOULD require TLS ([I-D.ietf-tls-tls13]) or a successor
-  // transport layer, and MUST NOT accept exchanges transferred over plain HTTP
-  // without TLS. [spec text]
-  if (!IsOriginSecure(outer_request_url)) {
-    const SignedExchangeLoadResult result =
-        SignedExchangeLoadResult::kSXGServedFromNonHTTPS;
-    UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
-    if (load_flags_ & net::LOAD_PREFETCH) {
-      UMA_HISTOGRAM_ENUMERATION(kPrefetchLoadResultHistogram, result);
-      metric_recorder_->OnSignedExchangePrefetchFinished(
-          outer_request_url_, outer_response_.response_time);
-    }
-
-    devtools_proxy_->ReportError(
-        "Signed exchange response from non secure origin is not supported.",
-        base::nullopt /* error_field */);
-    // Calls OnSignedExchangeReceived() to show the outer response in DevTool's
-    // Network panel and the error message in the Preview panel.
-    devtools_proxy_->OnSignedExchangeReceived(base::nullopt /* header */,
-                                              nullptr /* certificate */,
-                                              nullptr /* ssl_info */);
-    // This will asynchronously delete |this|.
-    forwarding_client_->OnComplete(
-        network::URLLoaderCompletionStatus(net::ERR_INVALID_SIGNED_EXCHANGE));
-    return;
-  }
-
   // Can't use HttpResponseHeaders::GetMimeType() because SignedExchangeHandler
   // checks "v=" parameter.
   outer_response.headers->EnumerateHeader(nullptr, "content-type",
@@ -243,7 +213,8 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
   }
 
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
-      content_type_, std::make_unique<DataPipeToSourceStream>(std::move(body)),
+      IsOriginSecure(outer_request_url_), content_type_,
+      std::make_unique<DataPipeToSourceStream>(std::move(body)),
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(cert_fetcher_factory), load_flags_, std::move(devtools_proxy_),
