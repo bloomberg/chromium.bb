@@ -32,6 +32,17 @@ public class TracingNotificationManager {
     private static ChromeNotificationBuilder sTracingActiveNotificationBuilder;
     private static int sTracingActiveNotificationBufferPercentage;
 
+    // Non-translated strings:
+    private static final String MSG_ACTIVE_NOTIFICATION_TITLE = "Chrome trace is being recorded";
+    private static final String MSG_ACTIVE_NOTIFICATION_MESSAGE = "Trace buffer usage: %s%%";
+    private static final String MSG_STOPPING_NOTIFICATION_TITLE = "Chrome trace is stopping";
+    private static final String MSG_STOPPING_NOTIFICATION_MESSAGE =
+            "Trace data is being collected and compressed.";
+    private static final String MSG_COMPLETE_NOTIFICATION_TITLE = "Chrome trace is complete";
+    private static final String MSG_COMPLETE_NOTIFICATION_MESSAGE = "The trace is ready to share.";
+    private static final String MSG_STOP = "Stop recording";
+    private static final String MSG_SHARE = "Share trace";
+
     // TODO(eseckler): Consider recording UMAs, see e.g. IncognitoNotificationManager.
 
     private static NotificationManagerProxy getNotificationManager(Context context) {
@@ -87,20 +98,17 @@ public class TracingNotificationManager {
      */
     public static void showTracingActiveNotification() {
         Context context = ContextUtils.getApplicationContext();
-        String title = context.getResources().getString(R.string.tracing_active_notification_title);
+        String title = MSG_ACTIVE_NOTIFICATION_TITLE;
         sTracingActiveNotificationBufferPercentage = 0;
-        String message =
-                context.getResources().getString(R.string.tracing_active_notification_message,
-                        sTracingActiveNotificationBufferPercentage);
+        String message = String.format(
+                MSG_ACTIVE_NOTIFICATION_MESSAGE, sTracingActiveNotificationBufferPercentage);
 
         sTracingActiveNotificationBuilder =
                 createNotificationBuilder()
                         .setContentTitle(title)
                         .setContentText(message)
                         .setOngoing(true)
-                        .addAction(R.drawable.ic_stop_white_36dp,
-                                ContextUtils.getApplicationContext().getResources().getString(
-                                        R.string.tracing_stop),
+                        .addAction(R.drawable.ic_stop_white_36dp, MSG_STOP,
                                 TracingNotificationService.getStopRecordingIntent(context));
         showNotification(sTracingActiveNotificationBuilder.build());
     }
@@ -126,9 +134,8 @@ public class TracingNotificationManager {
         if (sTracingActiveNotificationBufferPercentage == newPercentage) return;
         sTracingActiveNotificationBufferPercentage = newPercentage;
 
-        String message =
-                context.getResources().getString(R.string.tracing_active_notification_message,
-                        sTracingActiveNotificationBufferPercentage);
+        String message = String.format(
+                MSG_ACTIVE_NOTIFICATION_MESSAGE, sTracingActiveNotificationBufferPercentage);
 
         sTracingActiveNotificationBuilder.setContentText(message);
         showNotification(sTracingActiveNotificationBuilder.build());
@@ -138,11 +145,8 @@ public class TracingNotificationManager {
      * Replace the tracing notification with one indicating that a trace is being finalized.
      */
     public static void showTracingStoppingNotification() {
-        Context context = ContextUtils.getApplicationContext();
-        String title =
-                context.getResources().getString(R.string.tracing_stopping_notification_title);
-        String message =
-                context.getResources().getString(R.string.tracing_stopping_notification_message);
+        String title = MSG_STOPPING_NOTIFICATION_TITLE;
+        String message = MSG_STOPPING_NOTIFICATION_MESSAGE;
 
         ChromeNotificationBuilder builder = createNotificationBuilder()
                                                     .setContentTitle(title)
@@ -156,19 +160,15 @@ public class TracingNotificationManager {
      */
     public static void showTracingCompleteNotification() {
         Context context = ContextUtils.getApplicationContext();
-        String title =
-                context.getResources().getString(R.string.tracing_complete_notification_title);
-        String message =
-                context.getResources().getString(R.string.tracing_complete_notification_message);
+        String title = MSG_COMPLETE_NOTIFICATION_TITLE;
+        String message = MSG_COMPLETE_NOTIFICATION_MESSAGE;
 
         ChromeNotificationBuilder builder =
                 createNotificationBuilder()
                         .setContentTitle(title)
                         .setContentText(message)
                         .setOngoing(false)
-                        .addAction(R.drawable.ic_share_white_24dp,
-                                ContextUtils.getApplicationContext().getResources().getString(
-                                        R.string.tracing_share),
+                        .addAction(R.drawable.ic_share_white_24dp, MSG_SHARE,
                                 TracingNotificationService.getShareTraceIntent(context))
                         .setDeleteIntent(TracingNotificationService.getDiscardTraceIntent(context));
         showNotification(builder.build());

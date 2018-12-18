@@ -36,7 +36,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
@@ -166,8 +165,7 @@ public class TracingPreferencesTest {
             Assert.assertEquals(
                     TracingController.State.IDLE, TracingController.getInstance().getState());
             Assert.assertTrue(startTracingButton.isEnabled());
-            Assert.assertEquals(
-                    context.getString(R.string.prefs_tracing_start), startTracingButton.getTitle());
+            Assert.assertEquals(TracingPreferences.MSG_START, startTracingButton.getTitle());
 
             // Tap the button to start recording a trace.
             PreferencesTest.clickPreference(fragment, startTracingButton);
@@ -175,8 +173,7 @@ public class TracingPreferencesTest {
             Assert.assertEquals(
                     TracingController.State.STARTING, TracingController.getInstance().getState());
             Assert.assertFalse(startTracingButton.isEnabled());
-            Assert.assertEquals(context.getString(R.string.prefs_tracing_active),
-                    startTracingButton.getTitle());
+            Assert.assertEquals(TracingPreferences.MSG_ACTIVE, startTracingButton.getTitle());
 
             // Observe state changes to RECORDING, STOPPING, STOPPED, and IDLE.
             TracingController.getInstance().addObserver(new TracingController.Observer() {
@@ -263,8 +260,8 @@ public class TracingPreferencesTest {
         waitForTracingControllerInitialization(fragment);
 
         Assert.assertFalse(startTracingButton.isEnabled());
-        Assert.assertEquals(context.getString(R.string.tracing_notifications_disabled),
-                statusPreference.getTitle());
+        Assert.assertEquals(
+                TracingPreferences.MSG_NOTIFICATIONS_DISABLED, statusPreference.getTitle());
 
         mMockNotificationManager.setNotificationsEnabled(true);
     }

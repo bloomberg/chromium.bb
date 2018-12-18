@@ -7,5 +7,5 @@
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.developer.TracingPreferences"
         android:key="tracing"
-        android:title="@string/prefs_tracing"/>
+        android:title="Tracing"/>
 </PreferenceScreen>
