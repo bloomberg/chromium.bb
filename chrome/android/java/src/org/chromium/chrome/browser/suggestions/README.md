@@ -175,7 +175,7 @@ Sample code path: [`SigninPromo.SigninObserver#onSignedOut()`][cs_link_1]
 - The Adapter transfers the ViewHolder down the tree to the leaf associated to
   that position
 - The leaf node updates the view holder with the data to be displayed.
-- The RecyclerView perfoms the associated canned animation, attaches the view
+- The RecyclerView performs the associated canned animation, attaches the view
   and displays it.
 
 [cs_link_1]: https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/ntp/cards/SignInPromo.java?l=174&rcl=da4b23b1d2a82705f7f4fdfb6c9c8de00341c0af

@@ -39,7 +39,7 @@ class MEDIA_EXPORT VideoBitrateAllocation {
   }
 
  private:
-  int sum_;  // Cached sum of all elements of |bitrates_|, for perfomance.
+  int sum_;  // Cached sum of all elements of |bitrates_|, for performance.
   int bitrates_[kMaxSpatialLayers][kMaxTemporalLayers];
 };
 
