@@ -181,6 +181,26 @@ std::string GetUmaSuffixForPVer3FileNameSuffix(const std::string& suffix) {
   return uma_suffix;
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum StoreAvailabilityResult {
+  // Unknown availability. This is unexpected.
+  UNKNOWN = 0,
+
+  // The local database is not enabled.
+  NOT_ENABLED = 1,
+
+  // The database is still being loaded.
+  DATABASE_UNAVAILABLE = 2,
+
+  // The requested store is unavailable.
+  STORE_UNAVAILABLE = 3,
+
+  // The store is available.
+  AVAILABLE = 4,
+  COUNT,
+};
+
 }  // namespace
 
 V4LocalDatabaseManager::PendingCheck::PendingCheck(
@@ -441,6 +461,7 @@ bool V4LocalDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   StoresToCheck stores_to_check({GetUrlCsdDownloadWhitelistId()});
+
   if (!AreAllStoresAvailableNow(stores_to_check) || !CanCheckUrl(url)) {
     // Fail close: Whitelist nothing. This may generate download-protection
     // pings for whitelisted domains, but that's fine.
@@ -945,8 +966,19 @@ void V4LocalDatabaseManager::UpdateRequestCompleted(
 
 bool V4LocalDatabaseManager::AreAllStoresAvailableNow(
     const StoresToCheck& stores_to_check) const {
-  return enabled_ && v4_database_ &&
-         v4_database_->AreAllStoresAvailable(stores_to_check);
+  StoreAvailabilityResult result = StoreAvailabilityResult::AVAILABLE;
+  if (!enabled_) {
+    result = StoreAvailabilityResult::NOT_ENABLED;
+  } else if (!v4_database_) {
+    result = StoreAvailabilityResult::DATABASE_UNAVAILABLE;
+  } else if (!v4_database_->AreAllStoresAvailable(stores_to_check)) {
+    result = StoreAvailabilityResult::STORE_UNAVAILABLE;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "SafeBrowsing.V4LocalDatabaseManager.AreAllStoresAvailableNow", result,
+      StoreAvailabilityResult::COUNT);
+  return (result == StoreAvailabilityResult::AVAILABLE);
 }
 
 bool V4LocalDatabaseManager::AreAnyStoresAvailableNow(

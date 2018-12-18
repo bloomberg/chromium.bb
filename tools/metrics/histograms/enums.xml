@@ -45325,6 +45325,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="BLACKLISTED"/>
 </enum>
 
+<enum name="SafeBrowsingStoreAvailabilityResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Not Enabled"/>
+  <int value="2" label="Database Unavailable"/>
+  <int value="3" label="Store Unavailable"/>
+  <int value="4" label="Available"/>
+</enum>
+
 <enum name="SafeBrowsingUserConsentVsUrlCheckRaceResult">
   <int value="0" label="URL check finished first, URL is safe"/>
   <int value="1" label="URL check finished first, URL is malicious"/>
