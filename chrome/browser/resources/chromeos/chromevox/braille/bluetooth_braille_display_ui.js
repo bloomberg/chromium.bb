@@ -73,6 +73,8 @@ BluetoothBrailleDisplayUI.prototype = {
     controls.appendChild(connectOrDisconnect);
     connectOrDisconnect.id = 'connectOrDisconnect';
     connectOrDisconnect.disabled = true;
+    connectOrDisconnect.textContent =
+        Msgs.getMsg('options_bluetooth_braille_display_connect');
 
     var forget = document.createElement('button');
     controls.appendChild(forget);

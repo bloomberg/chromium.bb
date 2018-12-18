@@ -56,8 +56,8 @@ BluetoothBrailleDisplayManager = function() {
   this.displayNames_ = [
     '"EL12-', 'Esys-', 'Focus 14 BT', 'Focus 40 BT', 'Brailliant BI',
     /Hansone|HansoneXL|BrailleSense|BrailleEDGE|SmartBeetle/, 'Refreshabraille',
-    'Orbit', 'VarioConnect', 'VarioUltra', 'HWG Brailliant', 'braillex trio',
-    /Alva BC/i, 'TSM', 'TS5',
+    'Orbit', 'Baum SuperVario', 'VarioConnect', 'VarioUltra', 'HWG Brailliant',
+    'braillex trio', /Alva BC/i, 'TSM', 'TS5',
     new RegExp(
         '(Actilino.*|Active Star.*|Braille Wave( BRW)?|Braillino( BL2)?' +
         '|Braille Star 40( BS4)?|Easy Braille( EBR)?|Active Braille( AB4)?' +
