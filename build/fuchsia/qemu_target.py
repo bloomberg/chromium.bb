@@ -5,6 +5,7 @@
 """Implements commands for running and interacting with Fuchsia on QEMU."""
 
 import boot_data
+import common
 import logging
 import target
 import os
@@ -23,15 +24,6 @@ GUEST_NET = '192.168.3.0/24'
 GUEST_IP_ADDRESS = '192.168.3.9'
 HOST_IP_ADDRESS = '192.168.3.2'
 GUEST_MAC_ADDRESS = '52:54:00:63:5e:7b'
-
-
-def _GetAvailableTcpPort():
-  """Finds a (probably) open port by opening and closing a listen socket."""
-  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  sock.bind(("", 0))
-  port = sock.getsockname()[1]
-  sock.close()
-  return port
 
 
 class QemuTarget(target.Target):
@@ -130,7 +122,7 @@ class QemuTarget(target.Target):
     netdev_config = 'user,id=net0,net=%s,dhcpstart=%s,host=%s' % \
             (GUEST_NET, GUEST_IP_ADDRESS, HOST_IP_ADDRESS)
 
-    self._host_ssh_port = _GetAvailableTcpPort()
+    self._host_ssh_port = common.GetAvailableTcpPort()
     netdev_config += ",hostfwd=tcp::%s-:22" % self._host_ssh_port
     qemu_command.extend([
       '-netdev', netdev_config,
