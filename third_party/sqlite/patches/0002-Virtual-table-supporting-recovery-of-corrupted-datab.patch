@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Sat, 20 Jul 2013 11:42:21 -0700
-Subject: [PATCH 3/6] Virtual table supporting recovery of corrupted databases.
+Subject: [PATCH 2/6] Virtual table supporting recovery of corrupted databases.
 
 "recover" implements a virtual table which uses the SQLite pager layer
 to read table pages and pull out the data which is structurally sound
@@ -33,7 +33,7 @@ third_party/sqlite/src/src/{recover,recover-alt}.c .
  create mode 100644 third_party/sqlite/src/test/recover2.test
 
 diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
-index 05c8f83b4212..9b50874926dc 100644
+index d18313bdc79a..81774f9b100f 100644
 --- a/third_party/sqlite/src/main.mk
 +++ b/third_party/sqlite/src/main.mk
 @@ -77,6 +77,8 @@ LIBOBJ+= vdbe.o parse.o \
