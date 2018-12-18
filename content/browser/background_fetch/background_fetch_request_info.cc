@@ -50,7 +50,13 @@ void BackgroundFetchRequestInfo::SetResult(
   DCHECK(result);
 
   result_ = std::move(result);
-  PopulateWithResponse(std::move(result_->response));
+  // The BackgroundFetchResponse was extracted when the download started.
+  // This is sent over again when the download was complete in case the
+  // browser was restarted.
+  if (response_headers_.empty())
+    PopulateWithResponse(std::move(result_->response));
+  else
+    result_->response.reset();
 }
 
 void BackgroundFetchRequestInfo::SetEmptyResultWithFailureReason(

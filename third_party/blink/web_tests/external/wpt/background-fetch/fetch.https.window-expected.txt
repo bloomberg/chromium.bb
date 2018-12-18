@@ -15,5 +15,6 @@ PASS Fetches with mixed content should fail.
 PASS Matching to a single request should work
 PASS Matching to a non-existing request should work
 PASS Matching multiple times on the same request works as expected.
+PASS Responses failing CORS checks are not leaked
 Harness: the test ran to completion.
 
