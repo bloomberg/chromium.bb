@@ -77,7 +77,7 @@ void DriveFsSearch::OnSearchDriveFs(
     return;
   }
 
-  if (IsCloudSharedWithMeQuery(query)) {
+  if (error == drive::FILE_ERROR_OK && IsCloudSharedWithMeQuery(query)) {
     // Mark that DriveFS should have cached the required info.
     last_shared_with_me_response_ = clock_->Now();
   }
