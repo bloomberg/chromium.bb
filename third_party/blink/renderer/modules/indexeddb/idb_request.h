@@ -155,7 +155,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
     // cannot be null.
     const char* trace_event_name_ = nullptr;
     // Uniquely generated ID that ties an async trace's begin and end events.
-    size_t id_;
+    size_t id_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(AsyncTraceState);
   };
