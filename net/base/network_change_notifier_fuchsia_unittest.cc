@@ -4,6 +4,7 @@
 
 #include "net/base/network_change_notifier_fuchsia.h"
 
+#include <fuchsia/netstack/cpp/fidl_test_base.h>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -95,7 +96,7 @@ fuchsia::netstack::NetInterface CreateNetInterface(
 // Partial fake implementation of a Netstack.
 // GMock is not used because the methods make heavy use of move-only datatypes,
 // which aren't handled well by GMock.
-class FakeNetstack : public fuchsia::netstack::Netstack {
+class FakeNetstack : public fuchsia::netstack::testing::Netstack_TestBase {
  public:
   explicit FakeNetstack(
       fidl::InterfaceRequest<fuchsia::netstack::Netstack> netstack_request)
@@ -135,40 +136,9 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
     callback(std::move(table));
   }
 
-  // No-op stubs for the methods we don't care about.
-  void GetPortForService(::fidl::StringPtr service,
-                         fuchsia::netstack::Protocol protocol,
-                         GetPortForServiceCallback callback) override {}
-  void GetAddress(::fidl::StringPtr address,
-                  uint16_t port,
-                  GetAddressCallback callback) override {}
-  void GetStats(uint32_t nicid, GetStatsCallback callback) override {}
-  void GetAggregateStats(GetAggregateStatsCallback callback) override {}
-  void SetInterfaceStatus(uint32_t nicid, bool enabled) override {}
-  void SetInterfaceAddress(uint32_t nicid,
-                           fuchsia::net::IpAddress addr,
-                           uint8_t prefixLen,
-                           SetInterfaceAddressCallback callback) override {}
-  void RemoveInterfaceAddress(
-      uint32_t nicid,
-      fuchsia::net::IpAddress addr,
-      uint8_t prefixLen,
-      RemoveInterfaceAddressCallback callback) override {}
-  void SetDhcpClientStatus(uint32_t nicid,
-                           bool enabled,
-                           SetDhcpClientStatusCallback callback) override {}
-  void BridgeInterfaces(::fidl::VectorPtr<uint32_t> nicids,
-                        BridgeInterfacesCallback callback) override {}
-  void SetNameServers(
-      ::fidl::VectorPtr<::fuchsia::net::IpAddress> servers) override {}
-  void AddEthernetDevice(
-      ::fidl::StringPtr topological_path,
-      fuchsia::netstack::InterfaceConfig interfaceConfig,
-      ::fidl::InterfaceHandle<::zircon::ethernet::Device> device) override {}
-  void StartRouteTableTransaction(
-      ::fidl::InterfaceRequest<::fuchsia::netstack::RouteTableTransaction>
-          routeTableTransaction,
-      StartRouteTableTransactionCallback callback) override {}
+  void NotImplemented_(const std::string& name) override {
+    LOG(FATAL) << "Unimplemented function called: " << name;
+  }
 
   ::fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces_ =
       fidl::VectorPtr<fuchsia::netstack::NetInterface>::New(0);
