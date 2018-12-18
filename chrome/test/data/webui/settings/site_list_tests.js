@@ -311,7 +311,6 @@ suite('SiteList', function() {
     if (cr.isChromeOS) {
       // Reset multidevice enabled flag.
       loadTimeData.overrideValues({
-        enableMultideviceSettings: false,
         multideviceAllowedByPolicy: false
       });
     }
@@ -399,7 +398,6 @@ suite('SiteList', function() {
 
   if (cr.isChromeOS) {
     test('update androidSmsInfo', function() {
-      loadTimeData.overrideValues({enableMultideviceSettings: true});
       setUpCategory(
           settings.ContentSettingsTypes.NOTIFICATIONS,
           settings.ContentSetting.ALLOW, prefsAndroidSms);

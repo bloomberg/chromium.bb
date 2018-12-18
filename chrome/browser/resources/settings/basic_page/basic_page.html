@@ -119,8 +119,7 @@
             </settings-bluetooth-page>
           </settings-section>
         </template>
-        <template is="dom-if"
-            if="[[canShowMultideviceSection_(showMultidevice, pageVisibility)]]"
+        <template is="dom-if" if="[[showPage_(pageVisibility.multidevice)]]"
             restamp>
           <settings-section page-title="$i18n{multidevicePageTitle}"
               section="multidevice">

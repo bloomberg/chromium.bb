@@ -278,8 +278,6 @@ Polymer({
     // |androidSmsInfo_| is only relevant for NOTIFICATIONS category. Don't
     // bother fetching it for other categories.
     if (this.category === settings.ContentSettingsTypes.NOTIFICATIONS &&
-        loadTimeData.valueExists('enableMultideviceSettings') &&
-        loadTimeData.getBoolean('enableMultideviceSettings') &&
         loadTimeData.valueExists('multideviceAllowedByPolicy') &&
         loadTimeData.getBoolean('multideviceAllowedByPolicy') &&
         !this.androidSmsInfo_) {

@@ -278,9 +278,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                           password_protection_available);
 
 #if defined(OS_CHROMEOS)
-  if (!profile->IsGuestSession() &&
-      base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSettings)) {
+  if (!profile->IsGuestSession()) {
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::MultideviceHandler>(
             profile->GetPrefs(),
@@ -290,10 +288,6 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
                 chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(
                 profile)));
   }
-  html_source->AddBoolean(
-      "enableMultideviceSettings",
-      base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSettings));
   html_source->AddBoolean(
       "multideviceAllowedByPolicy",
       chromeos::multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
