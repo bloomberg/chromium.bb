@@ -24,12 +24,12 @@
 #include "services/service_manager/embedder/result_codes.h"
 #include "services/service_manager/sandbox/mac/audio.sb.h"
 #include "services/service_manager/sandbox/mac/cdm.sb.h"
-#include "services/service_manager/sandbox/mac/common_v2.sb.h"
+#include "services/service_manager/sandbox/mac/common.sb.h"
 #include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
 #include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
 #include "services/service_manager/sandbox/mac/pdf_compositor.sb.h"
-#include "services/service_manager/sandbox/mac/ppapi_v2.sb.h"
-#include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
+#include "services/service_manager/sandbox/mac/ppapi.sb.h"
+#include "services/service_manager/sandbox/mac/renderer.sb.h"
 #include "services/service_manager/sandbox/mac/utility.sb.h"
 #include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -79,7 +79,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   if (use_v2 && !no_sandbox) {
     // Generate the profile string.
     std::string profile =
-        std::string(service_manager::kSeatbeltPolicyString_common_v2);
+        std::string(service_manager::kSeatbeltPolicyString_common);
 
     switch (sandbox_type) {
       case service_manager::SANDBOX_TYPE_CDM:
@@ -92,10 +92,10 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
         profile += service_manager::kSeatbeltPolicyString_nacl_loader;
         break;
       case service_manager::SANDBOX_TYPE_PPAPI:
-        profile += service_manager::kSeatbeltPolicyString_ppapi_v2;
+        profile += service_manager::kSeatbeltPolicyString_ppapi;
         break;
       case service_manager::SANDBOX_TYPE_RENDERER:
-        profile += service_manager::kSeatbeltPolicyString_renderer_v2;
+        profile += service_manager::kSeatbeltPolicyString_renderer;
         break;
       case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
         profile += service_manager::kSeatbeltPolicyString_pdf_compositor;
@@ -154,10 +154,6 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       LOG(ERROR) << "The file descriptor for the sandboxed child is invalid.";
       return false;
     }
-
-    base::FilePath helper_executable;
-    CHECK(
-        base::PathService::Get(content::CHILD_PROCESS_EXE, &helper_executable));
 
     options->fds_to_remap.push_back(std::make_pair(pipe, pipe));
 
