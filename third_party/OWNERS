@@ -21,3 +21,6 @@ chromium-third-party@google.com
 thakis@chromium.org
 
 per-file .gitignore=*
+
+# Translation artifacts:
+per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS

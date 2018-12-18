@@ -3,6 +3,8 @@ per-file chromeos_features.h=*
 per-file chromeos_switches.cc=*
 per-file chromeos_switches.h=*
 per-file BUILD.gn=*
+# Translation artifacts:
+per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 
 achuith@chromium.org
 alemate@chromium.org

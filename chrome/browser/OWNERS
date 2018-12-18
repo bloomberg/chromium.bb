@@ -9,6 +9,9 @@ per-file about_flags_unittest.cc=file://components/flags_ui/OWNERS
 # structural changes, use usual OWNERS rules.
 per-file BUILD.gn=*
 
+# Translation artifacts:
+per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
+
 per-file *_android.*=file://chrome/browser/android/OWNERS
 
 per-file browser_resources.grd=file://ui/webui/PLATFORM_OWNERS
