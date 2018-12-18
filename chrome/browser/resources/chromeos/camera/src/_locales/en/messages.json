@@ -92,7 +92,7 @@
     "description": "Label for the button of timer-duration options."
   },
   "feedbackButton": {
-    "message": "Send feedbacks",
+    "message": "Send feedback",
     "description": "Label for the feedback button."
   },
   "helpButton": {

@@ -91,7 +91,7 @@ body {
 .buttons button:focus:after,
 .buttons input:focus:after {
   position: absolute;
-  border: 2px solid rgba(26, 115, 232, 0.5);
+  border: 2px solid rgba(37, 129, 223, 0.7);
   border-radius: 4px;
   top: -3px;
   left: -3px;
