@@ -24,12 +24,8 @@ static const LayoutBoxModelObject* ClippingContainerFromClipChainParent(
              : clip_chain_parent->ClippingContainer();
 }
 
-CompositingInputsUpdater::CompositingInputsUpdater(
-    PaintLayer* root_layer,
-    CompositingReasonFinder& compositing_reason_finder)
-    : geometry_map_(kUseTransforms),
-      root_layer_(root_layer),
-      compositing_reason_finder_(compositing_reason_finder) {}
+CompositingInputsUpdater::CompositingInputsUpdater(PaintLayer* root_layer)
+    : geometry_map_(kUseTransforms), root_layer_(root_layer) {}
 
 CompositingInputsUpdater::~CompositingInputsUpdater() = default;
 
@@ -229,8 +225,8 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
        layer->AncestorScrollingLayer()->NeedsCompositedScrolling());
 
   layer->SetPotentialCompositingReasonsFromNonStyle(
-      compositing_reason_finder_.NonStyleDeterminedDirectReasons(
-          layer, ignore_lcd_text));
+      CompositingReasonFinder::NonStyleDeterminedDirectReasons(
+          *layer, ignore_lcd_text));
 
   if (layer->GetScrollableArea()) {
     layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(

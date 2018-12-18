@@ -210,15 +210,8 @@ static CompositingReasons SubtreeReasonsForCompositing(
 }
 
 CompositingRequirementsUpdater::CompositingRequirementsUpdater(
-    LayoutView& layout_view,
-    CompositingReasonFinder& compositing_reason_finder)
-    : layout_view_(layout_view)
-#if DCHECK_IS_ON()
-      ,
-      compositing_reason_finder_(compositing_reason_finder)
-#endif
-{
-}
+    LayoutView& layout_view)
+    : layout_view_(layout_view) {}
 
 CompositingRequirementsUpdater::~CompositingRequirementsUpdater() = default;
 
@@ -317,12 +310,12 @@ void CompositingRequirementsUpdater::UpdateRecursive(
 #if DCHECK_IS_ON()
   if (layer_can_be_composited) {
     DCHECK(direct_from_paint_layer ==
-           compositing_reason_finder_.DirectReasons(
-               layer,
+           CompositingReasonFinder::DirectReasons(
+               *layer,
                ignore_lcd_text || moves_with_respect_to_compositing_ancestor))
         << " Expected: "
         << CompositingReason::ToString(
-               compositing_reason_finder_.DirectReasons(layer, ignore_lcd_text))
+               CompositingReasonFinder::DirectReasons(*layer, ignore_lcd_text))
         << " Actual: " << CompositingReason::ToString(direct_from_paint_layer);
   }
 #endif
