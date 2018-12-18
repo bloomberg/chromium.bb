@@ -28,8 +28,6 @@ source_set("cells") {
     "password_details_item.mm",
     "settings_cells_constants.h",
     "settings_cells_constants.mm",
-    "settings_collapsible_item.h",
-    "settings_collapsible_item.mm",
     "settings_detail_item.h",
     "settings_detail_item.mm",
     "settings_image_detail_text_item.h",

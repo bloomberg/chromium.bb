@@ -21,7 +21,6 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_collapsible_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
@@ -50,12 +49,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   NonPersonalizedSectionIdentifier,
 };
 
-// Keys for ListModel to save collapse/expanded prefences, for each section.
-NSString* const kGoogleServicesSettingsPersonalizedSectionKey =
-    @"GoogleServicesSettingsPersonalizedSection";
-NSString* const kGoogleServicesSettingsNonPersonalizedSectionKey =
-    @"GoogleServicesSettingsNonPersonalizedSection";
-
 // List of items.
 typedef NS_ENUM(NSInteger, ItemType) {
   // SyncErrorSectionIdentifier,
@@ -63,7 +56,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // SyncEverythingSectionIdentifier section.
   SyncEverythingItemType,
   // PersonalizedSectionIdentifier section.
-  SyncPersonalizationItemType,
   SyncBookmarksItemType,
   SyncHistoryItemType,
   SyncPasswordsItemType,
@@ -76,7 +68,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   EncryptionItemType,
   ManageSyncedDataItemType,
   // NonPersonalizedSectionIdentifier section.
-  NonPersonalizedServicesItemType,
   AutocompleteSearchesAndURLsItemType,
   PreloadPagesItemType,
   ImproveChromeItemType,
@@ -95,8 +86,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     unified_consent::UnifiedConsentService* unifiedConsentService;
 // Returns YES if the user is authenticated.
 @property(nonatomic, assign, readonly) BOOL isAuthenticated;
-// Returns YES if the user has given his consent to use Google services.
-@property(nonatomic, assign, readonly) BOOL isConsentGiven;
 // Sync setup service.
 @property(nonatomic, assign, readonly) SyncSetupService* syncSetupService;
 // Preference value for the autocomplete wallet feature.
@@ -135,16 +124,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, strong) SettingsImageDetailTextItem* syncErrorItem;
 // Item for "Sync Everything" section.
 @property(nonatomic, strong, readonly) SyncSwitchItem* syncEverythingItem;
-// Collapsible item for the personalized section.
-@property(nonatomic, strong, readonly)
-    SettingsCollapsibleItem* syncPersonalizationItem;
 // All the items for the personalized section.
 @property(nonatomic, strong, readonly) ItemArray personalizedItems;
 // Item for the autocomplete wallet feature.
 @property(nonatomic, strong, readonly) SyncSwitchItem* autocompleteWalletItem;
-// Collapsible item for the non-personalized section.
-@property(nonatomic, strong, readonly)
-    SettingsCollapsibleItem* nonPersonalizedServicesItem;
 // All the items for the non-personalized section.
 @property(nonatomic, strong, readonly) ItemArray nonPersonalizedItems;
 
@@ -170,10 +153,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _personalizedSectionBeingAnimated;
 @synthesize syncErrorItem = _syncErrorItem;
 @synthesize syncEverythingItem = _syncEverythingItem;
-@synthesize syncPersonalizationItem = _syncPersonalizationItem;
 @synthesize personalizedItems = _personalizedItems;
 @synthesize autocompleteWalletItem = _autocompleteWalletItem;
-@synthesize nonPersonalizedServicesItem = _nonPersonalizedServicesItem;
 @synthesize nonPersonalizedItems = _nonPersonalizedItems;
 
 #pragma mark - Load model
@@ -232,22 +213,12 @@ initWithUserPrefService:(PrefService*)userPrefService
   [model addSectionWithIdentifier:SyncEverythingSectionIdentifier];
   [model addItem:self.syncEverythingItem
       toSectionWithIdentifier:SyncEverythingSectionIdentifier];
-  self.syncEverythingItem.on = self.isConsentGiven;
 }
 
 // Loads PersonalizedSectionIdentifier section.
 - (void)loadPersonalizedSection {
   CollectionViewModel* model = self.consumer.collectionViewModel;
   [model addSectionWithIdentifier:PersonalizedSectionIdentifier];
-  [model setSectionIdentifier:PersonalizedSectionIdentifier
-                 collapsedKey:kGoogleServicesSettingsPersonalizedSectionKey];
-  SettingsCollapsibleItem* syncPersonalizationItem =
-      self.syncPersonalizationItem;
-  [model addItem:syncPersonalizationItem
-      toSectionWithIdentifier:PersonalizedSectionIdentifier];
-  BOOL collapsed = self.isAuthenticated ? self.isConsentGiven : YES;
-  syncPersonalizationItem.collapsed = collapsed;
-  [model setSection:PersonalizedSectionIdentifier collapsed:collapsed];
   for (CollectionViewItem* item in self.personalizedItems) {
     [model addItem:item toSectionWithIdentifier:PersonalizedSectionIdentifier];
   }
@@ -258,15 +229,6 @@ initWithUserPrefService:(PrefService*)userPrefService
 - (void)loadNonPersonalizedSection {
   CollectionViewModel* model = self.consumer.collectionViewModel;
   [model addSectionWithIdentifier:NonPersonalizedSectionIdentifier];
-  [model setSectionIdentifier:NonPersonalizedSectionIdentifier
-                 collapsedKey:kGoogleServicesSettingsNonPersonalizedSectionKey];
-  SettingsCollapsibleItem* nonPersonalizedServicesItem =
-      self.nonPersonalizedServicesItem;
-  [model addItem:nonPersonalizedServicesItem
-      toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
-  BOOL collapsed = self.isAuthenticated ? self.isConsentGiven : NO;
-  nonPersonalizedServicesItem.collapsed = collapsed;
-  [model setSection:NonPersonalizedSectionIdentifier collapsed:collapsed];
   for (CollectionViewItem* item in self.nonPersonalizedItems) {
     [model addItem:item
         toSectionWithIdentifier:NonPersonalizedSectionIdentifier];
@@ -278,10 +240,6 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 - (BOOL)isAuthenticated {
   return self.authService->IsAuthenticated();
-}
-
-- (BOOL)isConsentGiven {
-  return NO;
 }
 
 - (SettingsImageDetailTextItem*)syncErrorItem {
@@ -312,18 +270,6 @@ initWithUserPrefService:(PrefService*)userPrefService
                       dataType:0];
   }
   return _syncEverythingItem;
-}
-
-- (SettingsCollapsibleItem*)syncPersonalizationItem {
-  if (!_syncPersonalizationItem) {
-    _syncPersonalizationItem = [self
-        collapsibleItemWithItemType:SyncPersonalizationItemType
-                       textStringID:
-                           IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_PERSONALIZATION_TEXT
-                     detailStringID:
-                         IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_PERSONALIZATION_DETAIL];
-  }
-  return _syncPersonalizationItem;
 }
 
 - (ItemArray)personalizedItems {
@@ -419,18 +365,6 @@ initWithUserPrefService:(PrefService*)userPrefService
   return _autocompleteWalletItem;
 }
 
-- (SettingsCollapsibleItem*)nonPersonalizedServicesItem {
-  if (!_nonPersonalizedServicesItem) {
-    _nonPersonalizedServicesItem = [self
-        collapsibleItemWithItemType:NonPersonalizedServicesItemType
-                       textStringID:
-                           IDS_IOS_GOOGLE_SERVICES_SETTINGS_NON_PERSONALIZED_SERVICES_TEXT
-                     detailStringID:
-                         IDS_IOS_GOOGLE_SERVICES_SETTINGS_NON_PERSONALIZED_SERVICES_DETAIL];
-  }
-  return _nonPersonalizedServicesItem;
-}
-
 - (ItemArray)nonPersonalizedItems {
   if (!_nonPersonalizedItems) {
     SyncSwitchItem* autocompleteSearchesAndURLsItem = [self
@@ -478,19 +412,6 @@ initWithUserPrefService:(PrefService*)userPrefService
 }
 
 #pragma mark - Private
-
-// Creates a SettingsCollapsibleItem instance.
-- (SettingsCollapsibleItem*)collapsibleItemWithItemType:(NSInteger)itemType
-                                           textStringID:(int)textStringID
-                                         detailStringID:(int)detailStringID {
-  SettingsCollapsibleItem* collapsibleItem =
-      [[SettingsCollapsibleItem alloc] initWithType:itemType];
-  collapsibleItem.text = GetNSString(textStringID);
-  collapsibleItem.numberOfTextLines = 0;
-  collapsibleItem.detailText = GetNSString(detailStringID);
-  collapsibleItem.numberOfDetailTextLines = 0;
-  return collapsibleItem;
-}
 
 // Creates a SyncSwitchItem instance.
 - (SyncSwitchItem*)switchItemWithItemType:(NSInteger)itemType
@@ -589,12 +510,10 @@ textItemWithItemType:(NSInteger)itemType
 
 // Updates the personalized section according to the user consent.
 - (void)updatePersonalizedSection {
-  BOOL enabled = self.isAuthenticated && !self.isConsentGiven;
-  [self updateSectionWithCollapsibleItem:self.syncPersonalizationItem
-                                   items:self.personalizedItems
-                  collapsibleItemEnabled:enabled
-                       switchItemEnabled:enabled
-                         textItemEnabled:self.isAuthenticated];
+  BOOL enabled = self.isAuthenticated;
+  [self updateSectionWithItems:self.personalizedItems
+             switchItemEnabled:enabled
+               textItemEnabled:self.isAuthenticated];
   syncer::ModelType autofillModelType =
       _syncSetupService->GetModelType(SyncSetupService::kSyncAutofill);
   BOOL isAutofillOn = _syncSetupService->IsDataTypePreferred(autofillModelType);
@@ -607,25 +526,16 @@ textItemWithItemType:(NSInteger)itemType
 
 // Updates the non-personalized section according to the user consent.
 - (void)updateNonPersonalizedSection {
-  BOOL enabled = !self.isAuthenticated || !self.isConsentGiven;
-  [self updateSectionWithCollapsibleItem:self.nonPersonalizedServicesItem
-                                   items:self.nonPersonalizedItems
-                  collapsibleItemEnabled:enabled
-                       switchItemEnabled:enabled
-                         textItemEnabled:enabled];
+  BOOL enabled = YES;
+  [self updateSectionWithItems:self.nonPersonalizedItems
+             switchItemEnabled:enabled
+               textItemEnabled:enabled];
 }
 
-// Updates |collapsibleItem| and |items| using |collapsibleItemEnabled|,
-// |switchItemEnabled| and |textItemEnabled|.
-- (void)updateSectionWithCollapsibleItem:
-            (SettingsCollapsibleItem*)collapsibleItem
-                                   items:(ItemArray)items
-                  collapsibleItemEnabled:(BOOL)collapsibleItemEnabled
-                       switchItemEnabled:(BOOL)switchItemEnabled
-                         textItemEnabled:(BOOL)textItemEnabled {
-  UIColor* textColor =
-      collapsibleItemEnabled ? nil : [[MDCPalette greyPalette] tint500];
-  collapsibleItem.textColor = textColor;
+// Updates |items| using |switchItemEnabled| and |textItemEnabled|.
+- (void)updateSectionWithItems:(ItemArray)items
+             switchItemEnabled:(BOOL)switchItemEnabled
+               textItemEnabled:(BOOL)textItemEnabled {
   for (CollectionViewItem* item in items) {
     if ([item isKindOfClass:[SyncSwitchItem class]]) {
       SyncSwitchItem* switchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
@@ -676,8 +586,6 @@ textItemWithItemType:(NSInteger)itemType
 - (void)googleServicesSettingsViewControllerLoadModel:
     (GoogleServicesSettingsViewController*)controller {
   DCHECK_EQ(self.consumer, controller);
-  self.consumer.collectionViewModel.collapsableMode =
-      ListModelCollapsableModeFirstCell;
   if (self.isAuthenticated)
     [self loadSyncEverythingSection];
   [self loadPersonalizedSection];
@@ -688,7 +596,7 @@ textItemWithItemType:(NSInteger)itemType
 #pragma mark - GoogleServicesSettingsServiceDelegate
 
 - (void)toggleSyncEverythingWithValue:(BOOL)value {
-  if (value == self.isConsentGiven)
+  if (!value)
     return;
   // Mark the switch has being animated to avoid being reloaded.
   base::AutoReset<BOOL> autoReset(&_syncEverythingSwitchBeingAnimated, YES);
