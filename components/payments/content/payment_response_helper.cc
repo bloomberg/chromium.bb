@@ -88,28 +88,29 @@ void PaymentResponseHelper::OnAddressNormalized(
   }
 }
 
-mojom::PayerDetailPtr PaymentResponseHelper::GeneratePayerDetail() const {
+mojom::PayerDetailPtr PaymentResponseHelper::GeneratePayerDetail(
+    const autofill::AutofillProfile* selected_contact_profile) const {
   mojom::PayerDetailPtr payer = mojom::PayerDetail::New();
 
   if (spec_->request_payer_name()) {
-    DCHECK(selected_contact_profile_);
+    DCHECK(selected_contact_profile);
     payer->name = base::UTF16ToUTF8(
-        selected_contact_profile_->GetInfo(autofill::NAME_FULL, app_locale_));
+        selected_contact_profile->GetInfo(autofill::NAME_FULL, app_locale_));
   }
   if (spec_->request_payer_email()) {
-    DCHECK(selected_contact_profile_);
+    DCHECK(selected_contact_profile);
     payer->email = base::UTF16ToUTF8(
-        selected_contact_profile_->GetRawInfo(autofill::EMAIL_ADDRESS));
+        selected_contact_profile->GetRawInfo(autofill::EMAIL_ADDRESS));
   }
   if (spec_->request_payer_phone()) {
-    DCHECK(selected_contact_profile_);
+    DCHECK(selected_contact_profile);
 
     // Try to format the phone number to the E.164 format to send in the Payment
     // Response, as defined in the Payment Request spec. If it's not possible,
     // send the original. More info at:
     // https://w3c.github.io/payment-request/#paymentrequest-updated-algorithm
     const std::string original_number =
-        base::UTF16ToUTF8(selected_contact_profile_->GetInfo(
+        base::UTF16ToUTF8(selected_contact_profile->GetInfo(
             autofill::PHONE_HOME_WHOLE_NUMBER, app_locale_));
 
     const std::string default_region_code =
@@ -145,7 +146,7 @@ void PaymentResponseHelper::GeneratePaymentResponse() {
   }
 
   // Contact Details section.
-  payment_response->payer = GeneratePayerDetail();
+  payment_response->payer = GeneratePayerDetail(selected_contact_profile_);
 
   delegate_->OnPaymentResponseReady(std::move(payment_response));
 }

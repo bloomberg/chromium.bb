@@ -140,6 +140,44 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseAllContactDetailsTest,
                       "\"payerPhone\": \"+16502111111\""});
 }
 
+// Tests that the PaymentResponse contains all the correct contact details
+// when user changes the selected contact information after retry() called once.
+IN_PROC_BROWSER_TEST_F(
+    PaymentRequestPaymentResponseAllContactDetailsTest,
+    RetryWithPayerErrors_HasSameValueButDifferentErrorsShown) {
+  NavigateTo("/payment_request_retry_with_payer_errors.html");
+
+  autofill::AutofillProfile contact = autofill::test::GetFullProfile();
+  contact.set_use_count(1000);
+  AddAutofillProfile(contact);
+
+  autofill::AutofillProfile contact2 = autofill::test::GetFullProfile2();
+  AddAutofillProfile(contact2);
+
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(contact.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+  PayWithCreditCard(base::ASCIIToUTF16("123"));
+  ExpectBodyContains({"\"payerName\": \"John H. Doe\"",
+                      "\"payerEmail\": \"johndoe@hades.com\"",
+                      "\"payerPhone\": \"+16502111111\""});
+
+  RetryPaymentRequest("{}", dialog_view());
+
+  // Select "contact2" profile
+  OpenContactInfoScreen();
+  views::View* list_view = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::CONTACT_INFO_SHEET_LIST_VIEW));
+  DCHECK(list_view);
+  ClickOnDialogViewAndWait(list_view->child_at(1));
+
+  ExpectBodyContains({"\"payerName\": \"Jane A. Smith\"",
+                      "\"payerEmail\": \"jsmith@example.com\"",
+                      "\"payerPhone\": \"+13105557889\""});
+}
+
 class PaymentRequestPaymentResponseOneContactDetailTest
     : public PaymentRequestBrowserTestBase {
  protected:
