@@ -7,9 +7,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_CONSTANTS_H_
 #define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_CONSTANTS_H_
 
-#include <stddef.h>  // For size_t
-
-#include "base/time/time.h"
+#include <stddef.h>         // For size_t
 
 namespace autofill {
 
@@ -43,12 +41,6 @@ enum ShowPasswordSuggestionsOptions {
 // TODO(crbug.com/884817): Remove once StrikeDatabase v2 moves this constant to
 // its own credit card save policy.
 const int kMaxStrikesToPreventPoppingUpOfferToSavePrompt = 3;
-
-// Constants for the soft/hard deletion of Autofill data.
-constexpr base::TimeDelta kDisusedDataModelTimeDelta =
-    base::TimeDelta::FromDays(180);
-constexpr base::TimeDelta kDisusedDataModelDeletionTimeDelta =
-    base::TimeDelta::FromDays(395);
 
 }  // namespace autofill
 
