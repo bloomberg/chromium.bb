@@ -283,9 +283,11 @@ GWP_ASAN_EXPORT GuardedPageAllocator& GetGpaForTesting() {
   return GetGpa();
 }
 
-void InstallAllocatorHooks(size_t num_pages, size_t sampling_frequency) {
+void InstallAllocatorHooks(size_t max_allocated_pages,
+                           size_t total_pages,
+                           size_t sampling_frequency) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  GetGpa().Init(num_pages);
+  GetGpa().Init(max_allocated_pages, total_pages);
   RegisterAllocatorAddress(GetGpa().GetCrashKeyAddress());
   sampling_state.Init(sampling_frequency);
   base::allocator::InsertAllocatorDispatch(&g_allocator_dispatch);

@@ -18,19 +18,19 @@ static constexpr size_t kGpaMaxPages = AllocatorState::kGpaMaxPages;
 class AllocatorStateTest : public testing::Test {
  protected:
   void InitializeState(size_t page_size,
-                       size_t num_pages,
+                       size_t total_pages,
                        int base_addr_offset = 0,
                        int first_page_offset = 0,
                        int end_addr_offset = 0) {
     state_.page_size = page_size;
-    state_.num_pages = num_pages;
+    state_.total_pages = total_pages;
 
     // Some arbitrary page-aligned address
     const uintptr_t base = page_size * 10;
     state_.pages_base_addr = base_addr_offset + base;
     state_.first_page_addr = first_page_offset + base + page_size;
     state_.pages_end_addr =
-        end_addr_offset + base + page_size * (num_pages * 2 + 1);
+        end_addr_offset + base + page_size * (total_pages * 2 + 1);
   }
 
   AllocatorState state_;

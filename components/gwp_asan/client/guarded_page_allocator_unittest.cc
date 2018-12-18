@@ -20,8 +20,8 @@ static constexpr size_t kGpaMaxPages = AllocatorState::kGpaMaxPages;
 
 class GuardedPageAllocatorTest : public testing::Test {
  protected:
-  explicit GuardedPageAllocatorTest(size_t num_pages = kGpaMaxPages) {
-    gpa_.Init(num_pages);
+  explicit GuardedPageAllocatorTest(size_t max_allocated_pages = kGpaMaxPages) {
+    gpa_.Init(max_allocated_pages, kGpaMaxPages);
   }
 
   // Get a left- or right- aligned allocation (or nullptr on error.)
@@ -127,9 +127,9 @@ class GuardedPageAllocatorParamTest
 };
 
 TEST_P(GuardedPageAllocatorParamTest, AllocDeallocAllPages) {
-  size_t num_pages = GetParam();
+  size_t num_allocations = GetParam();
   char* bufs[kGpaMaxPages];
-  for (size_t i = 0; i < num_pages; i++) {
+  for (size_t i = 0; i < num_allocations; i++) {
     bufs[i] = reinterpret_cast<char*>(gpa_.Allocate(1));
     EXPECT_NE(bufs[i], nullptr);
     EXPECT_TRUE(gpa_.PointerIsMine(bufs[i]));
@@ -142,11 +142,11 @@ TEST_P(GuardedPageAllocatorParamTest, AllocDeallocAllPages) {
 
   // Ensure that no allocation is returned twice.
   std::set<char*> ptr_set;
-  for (size_t i = 0; i < num_pages; i++)
+  for (size_t i = 0; i < num_allocations; i++)
     ptr_set.insert(bufs[i]);
-  EXPECT_EQ(ptr_set.size(), num_pages);
+  EXPECT_EQ(ptr_set.size(), num_allocations);
 
-  for (size_t i = 0; i < num_pages; i++) {
+  for (size_t i = 0; i < num_allocations; i++) {
     SCOPED_TRACE(i);
     // Ensure all allocations are valid and writable.
     bufs[i][0] = 'A';

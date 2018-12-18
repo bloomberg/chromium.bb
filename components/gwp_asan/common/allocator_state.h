@@ -38,7 +38,7 @@ class GuardedPageAllocator;
 class AllocatorState {
  public:
   // Maximum number of pages this class can allocate.
-  static constexpr size_t kGpaMaxPages = 64;
+  static constexpr size_t kGpaMaxPages = 256;
 
   enum class ErrorType {
     kUseAfterFree = 0,
@@ -129,8 +129,8 @@ class AllocatorState {
   uintptr_t pages_base_addr = 0;  // Points to start of mapped region.
   uintptr_t pages_end_addr = 0;   // Points to the end of mapped region.
   uintptr_t first_page_addr = 0;  // Points to first allocatable page.
-  size_t num_pages = 0;  // Number of pages mapped (excluding guard pages).
-  size_t page_size = 0;  // Page size.
+  size_t total_pages = 0;         // Size of the page pool to allocate from.
+  size_t page_size = 0;           // Page size.
 
   // Set to true if a double free has occurred.
   std::atomic<bool> double_free_detected{false};
