@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/proximity_auth/webui/url_constants.h"
+#include "chromeos/components/multidevice/debug_webui/url_constants.h"
 
-namespace proximity_auth {
+namespace chromeos {
+
+namespace multidevice {
 
 const char kChromeUIProximityAuthHost[] = "proximity-auth";
 const char kChromeUIProximityAuthURL[] = "chrome://proximity-auth/";
 
-}  // namespace proximity_auth
+}  // namespace multidevice
+
+}  // namespace chromeos

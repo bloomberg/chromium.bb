@@ -14,26 +14,25 @@
 #include "chromeos/components/multidevice/software_feature_state.h"
 
 namespace chromeos {
+
 class EasyUnlockServiceRegular;
+
 namespace multidevice_setup {
 class MultiDeviceSetupImpl;
 }  // namespace multidevice_setup
+
 namespace secure_channel {
 class SecureChannelClientImpl;
 }  // namespace secure_channel
+
 namespace tether {
 class TetherHostFetcherImpl;
 class TetherHostFetcherImplTest;
 }  // namespace tether
-}  // namespace chromeos
-
-namespace proximity_auth {
-class ProximityAuthWebUIHandler;
-}  // namespace proximity_auth
-
-namespace chromeos {
 
 namespace multidevice {
+
+class ProximityAuthWebUIHandler;
 
 // Contains metadata specific to a device associated with a user's account.
 // Because this metadata contains large and expensive data types, and that data
@@ -84,8 +83,8 @@ class RemoteDeviceRef {
   bool operator<(const RemoteDeviceRef& other) const;
 
  private:
-  friend class chromeos::multidevice_setup::MultiDeviceSetupImpl;
-  friend class chromeos::secure_channel::SecureChannelClientImpl;
+  friend class multidevice_setup::MultiDeviceSetupImpl;
+  friend class secure_channel::SecureChannelClientImpl;
   friend class RemoteDeviceCache;
   friend class RemoteDeviceRefBuilder;
   friend class RemoteDeviceRefTest;
@@ -98,10 +97,10 @@ class RemoteDeviceRef {
 
   // TODO(crbug.com/752273): Remove these once clients have migrated to Device
   // Sync service.
-  friend class chromeos::EasyUnlockServiceRegular;
-  friend class chromeos::tether::TetherHostFetcherImpl;
-  friend class chromeos::tether::TetherHostFetcherImplTest;
-  friend class proximity_auth::ProximityAuthWebUIHandler;
+  friend class EasyUnlockServiceRegular;
+  friend class tether::TetherHostFetcherImpl;
+  friend class tether::TetherHostFetcherImplTest;
+  friend class ProximityAuthWebUIHandler;
 
   explicit RemoteDeviceRef(std::shared_ptr<RemoteDevice> remote_device);
 

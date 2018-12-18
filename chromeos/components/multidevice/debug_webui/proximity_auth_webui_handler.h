@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_PROXIMITY_AUTH_WEBUI_PROXIMITY_AUTH_WEBUI_HANDLER_H_
-#define CHROMEOS_COMPONENTS_PROXIMITY_AUTH_WEBUI_PROXIMITY_AUTH_WEBUI_HANDLER_H_
+#ifndef CHROMEOS_COMPONENTS_MULTIDEVICE_DEBUG_WEBUI_PROXIMITY_AUTH_WEBUI_HANDLER_H_
+#define CHROMEOS_COMPONENTS_MULTIDEVICE_DEBUG_WEBUI_PROXIMITY_AUTH_WEBUI_HANDLER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -23,33 +23,36 @@ class ListValue;
 }
 
 namespace proximity_auth {
-
-class RemoteDeviceLifeCycle;
 struct RemoteStatusUpdate;
+}  // namespace proximity_auth
+
+namespace chromeos {
+
+namespace multidevice {
 
 // Handles messages from the chrome://proximity-auth page.
 class ProximityAuthWebUIHandler
     : public content::WebUIMessageHandler,
-      public chromeos::multidevice::LogBuffer::Observer,
-      public chromeos::device_sync::DeviceSyncClient::Observer,
-      public RemoteDeviceLifeCycle::Observer,
-      public MessengerObserver {
+      public multidevice::LogBuffer::Observer,
+      public device_sync::DeviceSyncClient::Observer,
+      public proximity_auth::RemoteDeviceLifeCycle::Observer,
+      public proximity_auth::MessengerObserver {
  public:
   ProximityAuthWebUIHandler(
-      chromeos::device_sync::DeviceSyncClient* device_sync_client,
-      chromeos::secure_channel::SecureChannelClient* secure_channel_client);
+      device_sync::DeviceSyncClient* device_sync_client,
+      secure_channel::SecureChannelClient* secure_channel_client);
   ~ProximityAuthWebUIHandler() override;
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
 
  private:
-  // chromeos::multidevice::LogBuffer::Observer:
+  // multidevice::LogBuffer::Observer:
   void OnLogMessageAdded(
-      const chromeos::multidevice::LogBuffer::LogMessage& log_message) override;
+      const multidevice::LogBuffer::LogMessage& log_message) override;
   void OnLogBufferCleared() override;
 
-  // chromeos::device_sync::DeviceSyncClient::Observer:
+  // device_sync::DeviceSyncClient::Observer:
   void OnEnrollmentFinished() override;
   void OnNewDevicesSynced() override;
 
@@ -64,31 +67,31 @@ class ProximityAuthWebUIHandler
   void ForceDeviceSync(const base::ListValue* args);
   void ToggleConnection(const base::ListValue* args);
 
-  void StartRemoteDeviceLifeCycle(
-      chromeos::multidevice::RemoteDeviceRef remote_device);
+  void StartRemoteDeviceLifeCycle(multidevice::RemoteDeviceRef remote_device);
   void CleanUpRemoteDeviceLifeCycle();
 
   std::unique_ptr<base::DictionaryValue> RemoteDeviceToDictionary(
-      const chromeos::multidevice::RemoteDeviceRef& remote_device);
+      const multidevice::RemoteDeviceRef& remote_device);
 
-  // RemoteDeviceLifeCycle::Observer:
-  void OnLifeCycleStateChanged(RemoteDeviceLifeCycle::State old_state,
-                               RemoteDeviceLifeCycle::State new_state) override;
+  // proximity_auth::RemoteDeviceLifeCycle::Observer:
+  void OnLifeCycleStateChanged(
+      proximity_auth::RemoteDeviceLifeCycle::State old_state,
+      proximity_auth::RemoteDeviceLifeCycle::State new_state) override;
 
-  // MessengerObserver:
-  void OnRemoteStatusUpdate(const RemoteStatusUpdate& status_update) override;
+  // proximity_auth::MessengerObserver:
+  void OnRemoteStatusUpdate(
+      const proximity_auth::RemoteStatusUpdate& status_update) override;
 
   void OnForceEnrollmentNow(bool success);
   void OnForceSyncNow(bool success);
   void OnSetSoftwareFeatureState(
       const std::string public_key,
-      chromeos::device_sync::mojom::NetworkRequestResult result_code);
+      device_sync::mojom::NetworkRequestResult result_code);
   void OnFindEligibleDevices(
-      chromeos::device_sync::mojom::NetworkRequestResult result_code,
-      chromeos::multidevice::RemoteDeviceRefList eligible_devices,
-      chromeos::multidevice::RemoteDeviceRefList ineligible_devices);
-  void OnGetDebugInfo(
-      chromeos::device_sync::mojom::DebugInfoPtr debug_info_ptr);
+      device_sync::mojom::NetworkRequestResult result_code,
+      multidevice::RemoteDeviceRefList eligible_devices,
+      multidevice::RemoteDeviceRefList ineligible_devices);
+  void OnGetDebugInfo(device_sync::mojom::DebugInfoPtr debug_info_ptr);
 
   void NotifyOnEnrollmentFinished(
       bool success,
@@ -107,8 +110,8 @@ class ProximityAuthWebUIHandler
   std::unique_ptr<base::ListValue> GetRemoteDevicesList();
 
   // The delegate used to fetch dependencies. Must outlive this instance.
-  chromeos::device_sync::DeviceSyncClient* device_sync_client_;
-  chromeos::secure_channel::SecureChannelClient* secure_channel_client_;
+  device_sync::DeviceSyncClient* device_sync_client_;
+  secure_channel::SecureChannelClient* secure_channel_client_;
 
   // True if we get a message from the loaded WebContents to know that it is
   // initialized, and we can inject JavaScript.
@@ -116,10 +119,10 @@ class ProximityAuthWebUIHandler
 
   // Member variables for connecting to and authenticating the remote device.
   // TODO(tengs): Support multiple simultaenous connections.
-  base::Optional<chromeos::multidevice::RemoteDeviceRef>
-      selected_remote_device_;
-  std::unique_ptr<RemoteDeviceLifeCycle> life_cycle_;
-  std::unique_ptr<RemoteStatusUpdate> last_remote_status_update_;
+  base::Optional<multidevice::RemoteDeviceRef> selected_remote_device_;
+  std::unique_ptr<proximity_auth::RemoteDeviceLifeCycle> life_cycle_;
+  std::unique_ptr<proximity_auth::RemoteStatusUpdate>
+      last_remote_status_update_;
 
   bool enrollment_update_waiting_for_debug_info_ = false;
   bool sync_update_waiting_for_debug_info_ = false;
@@ -130,6 +133,8 @@ class ProximityAuthWebUIHandler
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthWebUIHandler);
 };
 
-}  // namespace proximity_auth
+}  // namespace multidevice
 
-#endif  // CHROMEOS_COMPONENTS_PROXIMITY_AUTH_WEBUI_PROXIMITY_AUTH_WEBUI_HANDLER_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_COMPONENTS_MULTIDEVICE_DEBUG_WEBUI_PROXIMITY_AUTH_WEBUI_HANDLER_H_

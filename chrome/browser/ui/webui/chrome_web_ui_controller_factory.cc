@@ -160,8 +160,8 @@
 #include "chrome/browser/ui/webui/chromeos/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 #include "chromeos/chromeos_features.h"
-#include "chromeos/components/proximity_auth/webui/proximity_auth_ui.h"
-#include "chromeos/components/proximity_auth/webui/url_constants.h"
+#include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
+#include "chromeos/components/multidevice/debug_webui/url_constants.h"
 #endif
 
 #if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
@@ -261,11 +261,12 @@ WebUIController* NewWebUI<chromeos::OobeUI>(WebUI* web_ui, const GURL& url) {
 
 // Special case for chrome://proximity_auth.
 template <>
-WebUIController* NewWebUI<proximity_auth::ProximityAuthUI>(WebUI* web_ui,
-                                                           const GURL& url) {
+WebUIController* NewWebUI<chromeos::multidevice::ProximityAuthUI>(
+    WebUI* web_ui,
+    const GURL& url) {
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
-  return new proximity_auth::ProximityAuthUI(
+  return new chromeos::multidevice::ProximityAuthUI(
       web_ui,
       chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context)),
@@ -496,8 +497,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::OobeUI>;
   if (url.host_piece() == chrome::kChromeUIPowerHost)
     return &NewWebUI<chromeos::PowerUI>;
-  if (url.host_piece() == proximity_auth::kChromeUIProximityAuthHost)
-    return &NewWebUI<proximity_auth::ProximityAuthUI>;
+  if (url.host_piece() == chromeos::multidevice::kChromeUIProximityAuthHost)
+    return &NewWebUI<chromeos::multidevice::ProximityAuthUI>;
   if (url.host_piece() == chrome::kChromeUIInternetConfigDialogHost)
     return &NewWebUI<chromeos::InternetConfigDialogUI>;
   if (url.host_piece() == chrome::kChromeUIInternetDetailDialogHost)
