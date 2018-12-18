@@ -26,7 +26,7 @@ void CloudPrinterHandler::StartGetPrinters(
 void CloudPrinterHandler::StartGetCapability(const std::string& destination_id,
                                              GetCapabilityCallback callback) {
   // TODO(https://crbug.com/829414): Get capabilities.
-  std::move(callback).Run(nullptr);
+  std::move(callback).Run(base::Value());
 }
 
 void CloudPrinterHandler::StartPrint(

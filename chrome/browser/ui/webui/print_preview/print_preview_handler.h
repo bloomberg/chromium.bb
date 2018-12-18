@@ -245,15 +245,14 @@ class PrintPreviewHandler
   // Sends the printer capabilities to the Web UI. |settings_info| contains
   // printer capabilities information. If |settings_info| is empty, sends
   // error notification to the Web UI instead.
-  void SendPrinterCapabilities(
-      const std::string& callback_id,
-      std::unique_ptr<base::DictionaryValue> settings_info);
+  void SendPrinterCapabilities(const std::string& callback_id,
+                               base::Value settings_info);
 
   // Send the result of performing printer setup. |settings_info| contains
   // printer capabilities.
   void SendPrinterSetup(const std::string& callback_id,
                         const std::string& printer_name,
-                        std::unique_ptr<base::DictionaryValue> settings_info);
+                        base::Value settings_info);
 
   // Send whether cloud print integration should be enabled.
   void SendCloudPrintEnabled();

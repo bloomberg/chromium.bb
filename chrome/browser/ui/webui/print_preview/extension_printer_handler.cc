@@ -284,13 +284,13 @@ void ExtensionPrinterHandler::WrapGetPrintersCallback(
 void ExtensionPrinterHandler::WrapGetCapabilityCallback(
     GetCapabilityCallback callback,
     const base::DictionaryValue& capability) {
-  auto capabilities = std::make_unique<base::DictionaryValue>();
+  base::Value capabilities(base::Value::Type::DICTIONARY);
   std::unique_ptr<base::DictionaryValue> cdd =
       printing::ValidateCddForPrintPreview(capability);
   // Leave |capabilities| empty if |cdd| is empty.
   if (!cdd->empty()) {
-    capabilities->SetKey(printing::kSettingCapabilities,
-                         base::Value::FromUniquePtrValue(std::move(cdd)));
+    capabilities.SetKey(printing::kSettingCapabilities,
+                        base::Value::FromUniquePtrValue(std::move(cdd)));
   }
   std::move(callback).Run(std::move(capabilities));
 }

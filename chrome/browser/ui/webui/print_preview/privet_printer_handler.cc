@@ -161,7 +161,7 @@ void PrivetPrinterHandler::CapabilitiesUpdateClient(
     std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
   if (!UpdateClient(std::move(http_client))) {
     DCHECK(capabilities_callback_);
-    std::move(capabilities_callback_).Run(nullptr);
+    std::move(capabilities_callback_).Run(base::Value());
     return;
   }
 
@@ -177,7 +177,7 @@ void PrivetPrinterHandler::OnGotCapabilities(
   DCHECK(capabilities_callback_);
   if (!capabilities || capabilities->HasKey(cloud_print::kPrivetKeyError) ||
       !printer_lister_) {
-    std::move(capabilities_callback_).Run(nullptr);
+    std::move(capabilities_callback_).Run(base::Value());
     return;
   }
 
@@ -186,7 +186,7 @@ void PrivetPrinterHandler::OnGotCapabilities(
       printer_lister_->GetDeviceDescription(name);
 
   if (!description) {
-    std::move(capabilities_callback_).Run(nullptr);
+    std::move(capabilities_callback_).Run(base::Value());
     return;
   }
 
@@ -201,7 +201,8 @@ void PrivetPrinterHandler::OnGotCapabilities(
   printer_info_and_caps.SetDictionary(printing::kSettingCapabilities,
                                       std::move(capabilities_copy));
   std::move(capabilities_callback_)
-      .Run(printing::ValidateCddForPrintPreview(printer_info_and_caps));
+      .Run(std::move(
+          *printing::ValidateCddForPrintPreview(printer_info_and_caps)));
   privet_capabilities_operation_.reset();
 }
 

@@ -137,9 +137,7 @@ class TestPrinterHandler : public PrinterHandler {
 
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback callback) override {
-    std::move(callback).Run(
-        base::DictionaryValue::From(std::make_unique<base::Value>(
-            printer_capabilities_[destination_id]->Clone())));
+    std::move(callback).Run(printer_capabilities_[destination_id]->Clone());
   }
 
   void StartGrantPrinterAccess(const std::string& printer_id,

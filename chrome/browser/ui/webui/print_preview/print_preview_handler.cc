@@ -1099,13 +1099,12 @@ void PrintPreviewHandler::SendAccessToken(const std::string& callback_id,
 
 void PrintPreviewHandler::SendPrinterCapabilities(
     const std::string& callback_id,
-    std::unique_ptr<base::DictionaryValue> settings_info) {
+    base::Value settings_info) {
   // Check that |settings_info| is valid.
-  if (settings_info &&
-      settings_info->FindKeyOfType(printing::kSettingCapabilities,
-                                   base::Value::Type::DICTIONARY)) {
+  if (settings_info.FindKeyOfType(printing::kSettingCapabilities,
+                                  base::Value::Type::DICTIONARY)) {
     VLOG(1) << "Get printer capabilities finished";
-    ResolveJavascriptCallback(base::Value(callback_id), *settings_info);
+    ResolveJavascriptCallback(base::Value(callback_id), settings_info);
     return;
   }
 
@@ -1113,22 +1112,19 @@ void PrintPreviewHandler::SendPrinterCapabilities(
   RejectJavascriptCallback(base::Value(callback_id), base::Value());
 }
 
-void PrintPreviewHandler::SendPrinterSetup(
-    const std::string& callback_id,
-    const std::string& printer_name,
-    std::unique_ptr<base::DictionaryValue> destination_info) {
-  base::DictionaryValue response;
-  base::Value* caps_value =
-      destination_info
-          ? destination_info->FindKeyOfType(printing::kSettingCapabilities,
-                                            base::Value::Type::DICTIONARY)
-          : nullptr;
-  response.SetString("printerId", printer_name);
-  response.SetBoolean("success", !!caps_value);
-  response.SetKey("capabilities", caps_value ? std::move(*caps_value)
-                                             : base::DictionaryValue());
+void PrintPreviewHandler::SendPrinterSetup(const std::string& callback_id,
+                                           const std::string& printer_name,
+                                           base::Value destination_info) {
+  base::Value response(base::Value::Type::DICTIONARY);
+  base::Value* caps_value = destination_info.FindKeyOfType(
+      printing::kSettingCapabilities, base::Value::Type::DICTIONARY);
+  response.SetKey("printerId", base::Value(printer_name));
+  response.SetKey("success", base::Value(!!caps_value));
+  response.SetKey("capabilities",
+                  caps_value ? std::move(*caps_value)
+                             : base::Value(base::Value::Type::DICTIONARY));
   if (caps_value) {
-    base::Value* printer = destination_info->FindKeyOfType(
+    base::Value* printer = destination_info.FindKeyOfType(
         printing::kPrinter, base::Value::Type::DICTIONARY);
     if (printer) {
       base::Value* policies_value = printer->FindKeyOfType(
