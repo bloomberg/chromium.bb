@@ -133,7 +133,8 @@
 
 # .text: Extract symbols and size (executable code).
   82f000   82f000  251b7e8    64 .text
-# Multiple Level 3 symbols under Level 2. $a annotates ARM symbols (i.e., not Thumb2).
+# Multiple Level 3 symbols under Level 2. $a annotates ARM symbols (not Thumb2).
+# Also, data precede first Level 3 line.
   82f000   82f000      cdc    32         obj/third_party/boringssl/boringssl_asm/chacha-armv4.o:(.text)
   82f004   82f004        0     1                 $d.0
   82f040   82f040        0     1                 $a.1
@@ -157,7 +158,7 @@
   830dc0   830dc0      1f8     1                 _armv4_AES_decrypt
   830fb8   830fb8        0     1                 $d.4
 
-# Level 2 symbol followed by data before first Level 3 symbol.
+# Many Level 3 annotations. Also, data precede first Level 3 line.
   831000   831000      a28    32         obj/third_party/boringssl/boringssl_asm/aesv8-armx32.o:(.text)
   831004   831004        0     1                 $d.0
   831040   831040        0     1                 $a.1
@@ -198,6 +199,7 @@
   83135c   83135c        0     1                 $a.31
   831360   831360        0     1                 $d.32
   831364   831364        0     1                 $a.33
+# ... (truncated).
 
 # Symbols with Size = 0 from assembly. Level 3 items are functions.
   83c640   83c640   13aee0    32         obj/v8/v8_external_snapshot/embedded.o:(.text)
@@ -210,7 +212,7 @@
   83fa40   83fa40        0     1                 Builtins_CallFunction_ReceiverIsNotNullOrUndefined
   83fb80   83fb80        0     1                 Builtins_CallFunction_ReceiverIsAny
   83fd00   83fd00        0     1                 Builtins_CallBoundFunction
-# ... (okay to skip).
+# ... (truncated).
 
   977520   977520       18    16         obj/third_party/blink/renderer/platform/heap/asm/asm/SaveRegisters_arm.o:(.text)
   977520   977520        0     1                 $a.0
