@@ -74,11 +74,10 @@ TrustedTypePolicyFactory::GetWrapperTypeInfoFromScriptValue(
     ScriptState* script_state,
     const ScriptValue& script_value) {
   v8::Local<v8::Value> value = script_value.V8Value();
-  v8::Isolate* isolate = script_state->GetIsolate();
   if (value.IsEmpty() || !value->IsObject() ||
-      !V8DOMWrapper::IsWrapper(isolate, value))
+      !V8DOMWrapper::IsWrapper(script_state->GetIsolate(), value))
     return nullptr;
-  v8::Local<v8::Object> object = script_value.V8Value()->ToObject(isolate);
+  v8::Local<v8::Object> object = value.As<v8::Object>();
   return ToWrapperTypeInfo(object);
 }
 
