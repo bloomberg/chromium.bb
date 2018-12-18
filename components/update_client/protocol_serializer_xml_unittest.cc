@@ -20,7 +20,7 @@ TEST(SerializeRequestXml, Serialize) {
   // attributes related to the updater state are not serialized.
   const auto request =
       std::make_unique<ProtocolSerializerXml>()->Serialize(MakeProtocolRequest(
-          "15160585-8ADE-4D3C-839B-1281A6035D1F", "prod_id", "1.0", "lang",
+          "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "prod_id", "1.0", "lang",
           "channel", "OS", "cacheable", {{"extra", "params"}}, nullptr, {}));
   constexpr char regex[] =
       R"(<\?xml version="1\.0" encoding="UTF-8"\?>)"
@@ -40,13 +40,13 @@ TEST(SerializeRequestXml, DownloadPreference) {
   // Verifies that an empty |download_preference| is not serialized.
   const auto serializer = std::make_unique<ProtocolSerializerXml>();
   auto request = serializer->Serialize(
-      MakeProtocolRequest("15160585-8ADE-4D3C-839B-1281A6035D1F", "", "", "",
+      MakeProtocolRequest("{15160585-8ADE-4D3C-839B-1281A6035D1F}", "", "", "",
                           "", "", "", {}, nullptr, {}));
   EXPECT_FALSE(RE2::PartialMatch(request, " dlpref=")) << request;
 
   // Verifies that |download_preference| is serialized.
   request = serializer->Serialize(
-      MakeProtocolRequest("15160585-8ADE-4D3C-839B-1281A6035D1F", "", "", "",
+      MakeProtocolRequest("{15160585-8ADE-4D3C-839B-1281A6035D1F}", "", "", "",
                           "", "", "cacheable", {}, nullptr, {}));
   EXPECT_TRUE(RE2::PartialMatch(request, R"( dlpref="cacheable")")) << request;
 }
@@ -65,7 +65,7 @@ TEST(SerializeRequestXml, UpdaterStateAttributes) {
   attributes["autoupdatecheckenabled"] = "0";
   attributes["updatepolicy"] = "-1";
   const auto request = serializer->Serialize(MakeProtocolRequest(
-      "15160585-8ADE-4D3C-839B-1281A6035D1F", "prod_id", "1.0", "lang",
+      "{15160585-8ADE-4D3C-839B-1281A6035D1F}", "prod_id", "1.0", "lang",
       "channel", "OS", "cacheable", {{"extra", "params"}}, &attributes, {}));
   constexpr char regex[] =
       R"(<\?xml version="1\.0" encoding="UTF-8"\?>)"

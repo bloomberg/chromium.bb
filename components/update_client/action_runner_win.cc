@@ -4,8 +4,11 @@
 
 #include "components/update_client/action_runner.h"
 
+#include <tuple>
 #include <utility>
+
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -51,7 +54,7 @@ void ActionRunner::WaitForCommand(base::Process process) {
 base::CommandLine ActionRunner::MakeCommandLine(
     const base::FilePath& unpack_path) const {
   base::CommandLine command_line(unpack_path.Append(kRecoveryFileName));
-  if (!component_.config()->IsPerUserInstall())
+  if (!is_per_user_install_)
     command_line.AppendSwitch("system");
   command_line.AppendSwitchASCII(
       "browser-version", component_.config()->GetBrowserVersion().GetString());
@@ -61,6 +64,28 @@ base::CommandLine ActionRunner::MakeCommandLine(
     command_line.AppendSwitchASCII("appguid", app_guid);
   VLOG(1) << "run action: " << command_line.GetCommandLineString();
   return command_line;
+}
+
+void ActionRunner::RunRecoveryCRXElevated(const base::FilePath& crx_path) {
+  base::CreateCOMSTATaskRunnerWithTraits(
+      kTaskTraitsRunCommand, base::SingleThreadTaskRunnerThreadMode::DEDICATED)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&ActionRunner::RunRecoveryCRXElevatedInSTA,
+                                base::Unretained(this), crx_path));
+}
+
+void ActionRunner::RunRecoveryCRXElevatedInSTA(const base::FilePath& crx_path) {
+  bool succeeded = false;
+  int error_code = 0;
+  int extra_code = 0;
+  const auto config = component_.config();
+  std::tie(succeeded, error_code, extra_code) =
+      component_.config()->GetRecoveryCRXElevator().Run(
+          crx_path, config->GetAppGuid(),
+          config->GetBrowserVersion().GetString(), component_.session_id());
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(run_complete_), succeeded, error_code,
+                                extra_code));
 }
 
 }  // namespace update_client

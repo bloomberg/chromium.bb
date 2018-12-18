@@ -105,6 +105,7 @@ class TestConfigurator : public Configurator {
   std::string GetAppGuid() const override;
   std::unique_ptr<ProtocolHandlerFactory> GetProtocolHandlerFactory()
       const override;
+  RecoveryCRXElevator GetRecoveryCRXElevator() const override;
 
   void SetBrand(const std::string& brand);
   void SetOnDemandTime(int seconds);
