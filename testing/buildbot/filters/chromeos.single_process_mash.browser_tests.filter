@@ -27,6 +27,3 @@
 
 # Flaky https://crbug.com/914232
 -ExtensionWebRequestApiTest.WebRequestTypes
-
-# Flaky crbug.com/914176
--DumpAccessibilityTreeTest.AccessibilityVideoControls
