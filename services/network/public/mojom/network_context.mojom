@@ -788,6 +788,11 @@ interface NetworkContext {
   // See net::TransportSecurityState::DeleteDynamicDataForHost for more detail.
   DeleteDynamicDataForHost(string host) => (bool result);
 
+  // Looks up credentials in the HttpAuthCache using the origin and path from
+  // |url|. Only supports basic auth scheme.
+  LookupBasicAuthCredentials(url.mojom.Url url)
+      => (AuthCredentials? credentials);
+
   [Sync]
   // Enables the checking of static PKP records.
   EnableStaticKeyPinningForTesting() => ();

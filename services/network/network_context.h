@@ -328,6 +328,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       AddDomainReliabilityContextForTestingCallback callback) override;
   void ForceDomainReliabilityUploadsForTesting(
       ForceDomainReliabilityUploadsForTestingCallback callback) override;
+  void LookupBasicAuthCredentials(
+      const GURL& url,
+      LookupBasicAuthCredentialsCallback callback) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);

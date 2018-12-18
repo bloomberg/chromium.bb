@@ -1713,6 +1713,47 @@ TEST_F(NetworkContextTest, ClearEmptyHttpAuthCache) {
   EXPECT_EQ(0u, cache->GetEntriesSizeForTesting());
 }
 
+TEST_F(NetworkContextTest, LookupBasicAuthCredentials) {
+  GURL origin("http://google.com");
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  net::HttpAuthCache* cache = network_context->url_request_context()
+                                  ->http_transaction_factory()
+                                  ->GetSession()
+                                  ->http_auth_cache();
+
+  base::string16 user = base::ASCIIToUTF16("user");
+  base::string16 password = base::ASCIIToUTF16("pass");
+  cache->Add(origin, "Realm", net::HttpAuth::AUTH_SCHEME_BASIC,
+             "basic realm=Realm", net::AuthCredentials(user, password), "/");
+
+  base::RunLoop run_loop1;
+  base::Optional<net::AuthCredentials> result;
+  network_context->LookupBasicAuthCredentials(
+      origin, base::BindLambdaForTesting(
+                  [&](const base::Optional<net::AuthCredentials>& credentials) {
+                    result = credentials;
+                    run_loop1.Quit();
+                  }));
+  run_loop1.Run();
+
+  EXPECT_TRUE(result.has_value());
+  EXPECT_EQ(user, result->username());
+  EXPECT_EQ(password, result->password());
+
+  base::RunLoop run_loop2;
+  result = base::nullopt;
+  network_context->LookupBasicAuthCredentials(
+      GURL("http://foo.com"),
+      base::BindLambdaForTesting(
+          [&](const base::Optional<net::AuthCredentials>& credentials) {
+            result = credentials;
+            run_loop2.Quit();
+          }));
+  run_loop2.Run();
+  EXPECT_FALSE(result.has_value());
+}
+
 #if BUILDFLAG(ENABLE_REPORTING)
 TEST_F(NetworkContextTest, ClearReportingCacheReports) {
   std::unique_ptr<NetworkContext> network_context =

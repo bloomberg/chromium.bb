@@ -25,8 +25,6 @@
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -106,72 +104,6 @@ static void RequestPlaformPathFromFileSystemURL(
     ReturnResultOnUIThread(std::move(callback), std::string());
 }
 
-// The task object that retrieves media resources on the IO thread.
-// TODO(qinmin): refactor this class to make the code reusable by others as
-// there are lots of duplicated functionalities elsewhere.
-// http://crbug.com/395762.
-class MediaResourceGetterTask
-     : public base::RefCountedThreadSafe<MediaResourceGetterTask> {
- public:
-  MediaResourceGetterTask(BrowserContext* browser_context);
-
-  // Called by MediaResourceGetterImpl to start getting auth credentials.
-  net::AuthCredentials RequestAuthCredentials(const GURL& url) const;
-
-  // Returns the task runner that all methods should be called.
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const;
-
- private:
-  friend class base::RefCountedThreadSafe<MediaResourceGetterTask>;
-  virtual ~MediaResourceGetterTask();
-
-  // Context getter used to get the CookieStore and auth cache.
-  net::URLRequestContextGetter* context_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaResourceGetterTask);
-};
-
-MediaResourceGetterTask::MediaResourceGetterTask(
-    BrowserContext* browser_context)
-    : context_getter_(
-          BrowserContext::GetDefaultStoragePartition(browser_context)
-              ->GetURLRequestContext()) {}
-
-MediaResourceGetterTask::~MediaResourceGetterTask() {}
-
-net::AuthCredentials MediaResourceGetterTask::RequestAuthCredentials(
-    const GURL& url) const {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  if (!url.IsStandard()) {
-    // Non-standard URLs, such as data, will not be found in HTTP auth cache
-    // anyway, because they have no valid origin, so don't waste the time.
-    return net::AuthCredentials();
-  }
-  net::HttpTransactionFactory* factory =
-      context_getter_->GetURLRequestContext()->http_transaction_factory();
-  if (!factory)
-    return net::AuthCredentials();
-
-  net::HttpAuthCache* auth_cache =
-      factory->GetSession()->http_auth_cache();
-  if (!auth_cache)
-    return net::AuthCredentials();
-
-  net::HttpAuthCache::Entry* entry =
-      auth_cache->LookupByPath(url.GetOrigin(), url.path());
-
-  // TODO(qinmin): handle other auth schemes. See http://crbug.com/395219.
-  if (entry && entry->scheme() == net::HttpAuth::AUTH_SCHEME_BASIC)
-    return entry->credentials();
-  else
-    return net::AuthCredentials();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-MediaResourceGetterTask::GetTaskRunner() const {
-  return context_getter_->GetNetworkTaskRunner();
-}
-
 MediaResourceGetterImpl::MediaResourceGetterImpl(
     BrowserContext* browser_context,
     storage::FileSystemContext* file_system_context,
@@ -190,14 +122,19 @@ void MediaResourceGetterImpl::GetAuthCredentials(
     const GURL& url,
     GetAuthCredentialsCB callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto task = base::MakeRefCounted<MediaResourceGetterTask>(browser_context_);
+  // Non-standard URLs, such as data, will not be found in HTTP auth cache
+  // anyway, because they have no valid origin, so don't waste the time.
+  if (!url.IsStandard()) {
+    GetAuthCredentialsCallback(std::move(callback), base::nullopt);
+    return;
+  }
 
-  PostTaskAndReplyWithResult(
-      task->GetTaskRunner().get(), FROM_HERE,
-      base::BindOnce(&MediaResourceGetterTask::RequestAuthCredentials, task,
-                     url),
-      base::BindOnce(&MediaResourceGetterImpl::GetAuthCredentialsCallback,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  BrowserContext::GetDefaultStoragePartition(browser_context_)
+      ->GetNetworkContext()
+      ->LookupBasicAuthCredentials(
+          url,
+          base::BindOnce(&MediaResourceGetterImpl::GetAuthCredentialsCallback,
+                         weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void MediaResourceGetterImpl::GetCookies(const GURL& url,
@@ -230,9 +167,12 @@ void MediaResourceGetterImpl::GetCookies(const GURL& url,
 
 void MediaResourceGetterImpl::GetAuthCredentialsCallback(
     GetAuthCredentialsCB callback,
-    const net::AuthCredentials& credentials) {
+    const base::Optional<net::AuthCredentials>& credentials) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::move(callback).Run(credentials.username(), credentials.password());
+  if (credentials)
+    std::move(callback).Run(credentials->username(), credentials->password());
+  else
+    std::move(callback).Run(base::string16(), base::string16());
 }
 
 void MediaResourceGetterImpl::GetPlatformPathFromURL(

@@ -202,6 +202,9 @@ class TestNetworkContext : public mojom::NetworkContext {
       AddDomainReliabilityContextForTestingCallback callback) override {}
   void ForceDomainReliabilityUploadsForTesting(
       ForceDomainReliabilityUploadsForTestingCallback callback) override {}
+  void LookupBasicAuthCredentials(
+      const GURL& url,
+      LookupBasicAuthCredentialsCallback callback) override {}
 };
 
 }  // namespace network
