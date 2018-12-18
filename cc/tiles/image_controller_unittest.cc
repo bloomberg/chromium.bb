@@ -15,6 +15,7 @@
 #include "cc/paint/paint_image_builder.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/stub_decode_cache.h"
+#include "cc/test/test_paint_worklet_input.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -285,6 +286,24 @@ class ImageControllerTest : public testing::Test {
 
   void ResetController() { controller_.reset(); }
 
+  SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {
+    SkMatrix matrix;
+    matrix.setScale(scale.width(), scale.height());
+
+    if (!is_decomposable) {
+      // Perspective is not decomposable, add it.
+      matrix[SkMatrix::kMPersp0] = 0.1f;
+    }
+
+    return matrix;
+  }
+
+  PaintImage CreatePaintImage(int width, int height) {
+    scoped_refptr<TestPaintWorkletInput> input =
+        base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(width, height));
+    return CreatePaintWorkletPaintImage(input);
+  }
+
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<WorkerTaskRunner> worker_task_runner_;
@@ -294,6 +313,28 @@ class ImageControllerTest : public testing::Test {
 
   base::WeakPtrFactory<ImageControllerTest> weak_ptr_factory_;
 };
+
+// Test that GetTasksForImagesAndRef does not generate task for PaintWorklet
+// images.
+TEST_F(ImageControllerTest, GetTasksForImagesAndRefForPaintWorkletImages) {
+  std::vector<DrawImage> images(1);
+  ImageDecodeCache::TracingInfo tracing_info;
+
+  PaintImage paint_image = CreatePaintImage(100, 100);
+  DrawImage draw_image(
+      paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
+      kNone_SkFilterQuality, CreateMatrix(SkSize::Make(1.f, 1.f), true),
+      PaintImage::kDefaultFrameIndex);
+  images[0] = draw_image;
+
+  ASSERT_EQ(1u, images.size());
+
+  std::vector<scoped_refptr<TileTask>> tasks;
+  bool has_at_raster_images = false;
+  controller()->GetTasksForImagesAndRef(&images, &tasks, &has_at_raster_images,
+                                        tracing_info);
+  EXPECT_EQ(tasks.size(), 0u);
+}
 
 TEST_F(ImageControllerTest, NullControllerUnrefsImages) {
   std::vector<DrawImage> images(10);

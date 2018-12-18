@@ -147,6 +147,26 @@ void ImageController::SetImageDecodeCache(ImageDecodeCache* cache) {
   }
 }
 
+void ImageController::GetTasksForPaintWorkletImages(
+    std::vector<DrawImage>* sync_decoded_images,
+    std::vector<scoped_refptr<TileTask>>* tasks) {
+  for (auto it = sync_decoded_images->begin();
+       it != sync_decoded_images->end();) {
+    if (!it->paint_image().IsPaintWorklet()) {
+      ++it;
+      continue;
+    }
+    scoped_refptr<TileTask> result =
+        paint_worklet_image_cache_->GetTaskForPaintWorkletImage(*it);
+    DCHECK(result);
+    tasks->push_back(std::move(result));
+    // Remove it so that there is no need to check whether an image is
+    // PaintWorklet generated or not in TileManager's
+    // work_to_schedule->extra_prepaint_images.insert.
+    it = sync_decoded_images->erase(it);
+  }
+}
+
 void ImageController::GetTasksForImagesAndRef(
     std::vector<DrawImage>* sync_decoded_images,
     std::vector<scoped_refptr<TileTask>>* tasks,
@@ -156,6 +176,10 @@ void ImageController::GetTasksForImagesAndRef(
   *has_at_raster_images = false;
   for (auto it = sync_decoded_images->begin();
        it != sync_decoded_images->end();) {
+    if (it->paint_image().IsPaintWorklet()) {
+      ++it;
+      continue;
+    }
     ImageDecodeCache::TaskResult result =
         cache_->GetTaskForImageAndRef(*it, tracing_info);
     *has_at_raster_images |= result.IsAtRaster();

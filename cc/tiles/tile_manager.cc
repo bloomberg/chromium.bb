@@ -1180,6 +1180,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   bool has_at_raster_images = false;
   image_controller_.GetTasksForImagesAndRef(
       &sync_decoded_images, &decode_tasks, &has_at_raster_images, tracing_info);
+  image_controller_.GetTasksForPaintWorkletImages(&sync_decoded_images,
+                                                  &decode_tasks);
   // Notify |decoded_image_tracker_| after |image_controller_| to ensure we've
   // taken new refs on the images before releasing the predecode API refs.
   decoded_image_tracker_.OnImagesUsedInDraw(sync_decoded_images);
