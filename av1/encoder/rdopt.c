@@ -8920,6 +8920,9 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
         rd = RDCOST(x->rdmult, rmode + tmp_rate_mv + rwedge + rate_sum,
                     dist_sum);
       best_interintra_rd_wedge = rd;
+      if (!cpi->oxcf.enable_smooth_interintra &&
+          best_interintra_rd_wedge == INT64_MAX)
+        return -1;
       if (best_interintra_rd_wedge < best_interintra_rd_nowedge) {
         mbmi->use_wedge_interintra = 1;
         mbmi->mv[0].as_int = tmp_mv.as_int;
@@ -8931,9 +8934,10 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
         av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
       }
     } else {
+      if (!cpi->oxcf.enable_smooth_interintra) return -1;
       mbmi->use_wedge_interintra = 0;
     }
-  }  // if (is_interintra_wedge_used(bsize))
+  }  // if (is_wedge_used)
   if (num_planes > 1) {
     av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, orig_dst, bsize);
   }
