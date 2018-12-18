@@ -214,7 +214,7 @@ class ReporterRunnerTest
                      policy::POLICY_SOURCE_PLATFORM,
                      std::make_unique<base::Value>(is_enabled), nullptr);
         policy_provider_.UpdateChromePolicy(policies);
-        EXPECT_CALL(mock_chrome_cleaner_controller_, logs_enabled())
+        EXPECT_CALL(mock_chrome_cleaner_controller_, logs_enabled(_))
             .WillRepeatedly(Return(is_enabled));
         break;
       }

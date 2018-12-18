@@ -213,9 +213,9 @@ void ChromeCleanupHandler::HandleStartScanning(const base::ListValue* args) {
   CHECK(controller_->IsAllowedByPolicy());
 
   // The state is propagated to all open tabs and should be consistent.
-  DCHECK_EQ(controller_->logs_enabled(), allow_logs_upload);
+  DCHECK_EQ(controller_->logs_enabled(profile_), allow_logs_upload);
 
-  controller_->RequestUserInitiatedScan();
+  controller_->RequestUserInitiatedScan(profile_);
 
   base::RecordAction(
       base::UserMetricsAction("SoftwareReporter.CleanupWebui_StartScanning"));
@@ -236,7 +236,7 @@ void ChromeCleanupHandler::HandleStartCleanup(const base::ListValue* args) {
   args->GetBoolean(0, &allow_logs_upload);
 
   // The state is propagated to all open tabs and should be consistent.
-  DCHECK_EQ(controller_->logs_enabled(), allow_logs_upload);
+  DCHECK_EQ(controller_->logs_enabled(profile_), allow_logs_upload);
 
   safe_browsing::RecordCleanupStartedHistogram(
       safe_browsing::CLEANUP_STARTED_FROM_PROMPT_IN_SETTINGS);

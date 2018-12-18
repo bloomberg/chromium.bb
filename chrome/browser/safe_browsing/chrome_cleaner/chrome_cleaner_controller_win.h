@@ -122,8 +122,8 @@ class ChromeCleanerController {
   // Called by Chrome Cleaner's UI when the user changes Cleaner logs upload
   // permissions. Observers are notified if |logs_enabled| is different from the
   // current permission state.
-  virtual void SetLogsEnabled(bool logs_enabled) = 0;
-  virtual bool logs_enabled() const = 0;
+  virtual void SetLogsEnabled(Profile* profile, bool logs_enabled) = 0;
+  virtual bool logs_enabled(Profile* profile) const = 0;
 
   // Called by the Chrome Cleaner's UI when the user dismisses the card while
   // in the kIdle state. Does nothing if the current state is not |kIdle|.
@@ -153,7 +153,7 @@ class ChromeCleanerController {
   //
   // This can have adverse effects on the component updater subsystem and
   // should only be called from direct user action.
-  virtual void RequestUserInitiatedScan() = 0;
+  virtual void RequestUserInitiatedScan(Profile* profile) = 0;
 
   // Calls |MaybeStartSwReporter| with the |invocation_type| of the next
   // scheduled run, which will be |SwReporterInvocationType::kPeriodicRun|
@@ -209,11 +209,8 @@ class ChromeCleanerController {
   // Returns true if the cleaner is allowed to run by enterprise policy.
   virtual bool IsAllowedByPolicy() = 0;
 
-  // Returns true if cleaner reporting is allowed to run by enterprise policy.
-  virtual bool IsReportingAllowedByPolicy() = 0;
-
   // Returns true if cleaner reporting is managed by enterprise policy.
-  virtual bool IsReportingManagedByPolicy() = 0;
+  virtual bool IsReportingManagedByPolicy(Profile* profile) = 0;
 
  protected:
   ChromeCleanerController();

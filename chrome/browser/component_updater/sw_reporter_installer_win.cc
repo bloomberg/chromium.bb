@@ -442,14 +442,13 @@ void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kSwReporterLastExitCode, -1);
   registry->RegisterInt64Pref(prefs::kSwReporterLastTimeSentReport, 0);
   registry->RegisterBooleanPref(prefs::kSwReporterEnabled, true);
-  registry->RegisterBooleanPref(prefs::kSwReporterReportingEnabled, true);
 }
 
 void RegisterProfilePrefsForSwReporter(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kSwReporterPromptVersion, "");
-
   registry->RegisterStringPref(prefs::kSwReporterPromptSeed, "");
+  registry->RegisterBooleanPref(prefs::kSwReporterReportingEnabled, true);
 }
 
 void ReportUMAForLastCleanerRun() {
