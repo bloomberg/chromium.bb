@@ -28,11 +28,6 @@ std::unique_ptr<AshTestEnvironment> AshTestEnvironment::Create() {
   return std::make_unique<AshTestEnvironmentContent>();
 }
 
-// static
-std::string AshTestEnvironment::Get100PercentResourceFileName() {
-  return "ash_test_resources_with_content_100_percent.pak";
-}
-
 AshTestEnvironmentContent::AshTestEnvironmentContent()
     : network_connection_tracker_(
           network::TestNetworkConnectionTracker::CreateInstance()),

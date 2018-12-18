@@ -4,7 +4,6 @@
 
 #include "ash/test/ash_test_suite.h"
 
-#include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
@@ -50,7 +49,7 @@ void AshTestSuite::Initialize() {
 
   if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_100P)) {
     base::FilePath ash_test_resources_100 =
-        path.AppendASCII(AshTestEnvironment::Get100PercentResourceFileName());
+        path.AppendASCII("ash_test_resources_100_percent.pak");
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         ash_test_resources_100, ui::SCALE_FACTOR_100P);
   }
