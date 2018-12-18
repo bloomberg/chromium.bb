@@ -4,8 +4,8 @@
 
 #include "components/user_manager/user_manager_base.h"
 
-#include <memory>
 #include <stddef.h>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -91,6 +91,10 @@ UserType GetStoredUserType(const base::DictionaryValue* prefs_user_types,
 }
 
 }  // namespace
+
+// Feature that hides Supervised Users.
+const base::Feature kHideSupervisedUsers{"HideSupervisedUsers",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // static
 void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -828,6 +832,8 @@ void UserManagerBase::EnsureUsersLoaded() {
        it != regular_users.end(); ++it) {
     User* user = nullptr;
     if (IsSupervisedAccountId(*it)) {
+      if (base::FeatureList::IsEnabled(kHideSupervisedUsers))
+        continue;
       user = User::CreateSupervisedUser(*it);
     } else {
       user = User::CreateRegularUser(*it,

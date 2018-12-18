@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -30,6 +31,9 @@ class TaskRunner;
 }
 
 namespace user_manager {
+
+// Hides all Supervised Users.
+USER_MANAGER_EXPORT extern const base::Feature kHideSupervisedUsers;
 
 class RemoveUserDelegate;
 
