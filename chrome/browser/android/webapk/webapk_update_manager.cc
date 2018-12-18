@@ -62,6 +62,10 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     jint java_orientation,
     jlong java_theme_color,
     jlong java_background_color,
+    const JavaParamRef<jstring>& java_share_target_action,
+    const JavaParamRef<jstring>& java_share_target_param_title,
+    const JavaParamRef<jstring>& java_share_target_param_text,
+    const JavaParamRef<jstring>& java_share_target_param_url,
     const JavaParamRef<jstring>& java_web_manifest_url,
     const JavaParamRef<jstring>& java_webapk_package,
     jint java_webapk_version,
@@ -88,6 +92,19 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
   info.best_badge_icon_url =
       GURL(ConvertJavaStringToUTF8(env, java_badge_icon_url));
   info.manifest_url = GURL(ConvertJavaStringToUTF8(env, java_web_manifest_url));
+
+  GURL share_target_action =
+      GURL(ConvertJavaStringToUTF8(env, java_share_target_action));
+  if (!share_target_action.is_empty()) {
+    info.share_target = ShareTarget();
+    info.share_target->action = share_target_action;
+    info.share_target->params.title =
+        ConvertJavaStringToUTF16(java_share_target_param_title);
+    info.share_target->params.text =
+        ConvertJavaStringToUTF16(java_share_target_param_text);
+    info.share_target->params.url =
+        ConvertJavaStringToUTF16(java_share_target_param_url);
+  }
 
   base::android::AppendJavaStringArrayToStringVector(env, java_icon_urls,
                                                      &info.icon_urls);

@@ -62,11 +62,6 @@ public class WebApkShareTargetUtil {
         return shareActivityInfo.metaData;
     }
 
-    private static boolean methodFromMetaDataIsPost(Bundle metaData) {
-        String method = IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.SHARE_METHOD);
-        return method != null && "POST".equals(method.toUpperCase(Locale.ENGLISH));
-    }
-
     private static boolean enctypeFromMetaDataIsMultipart(Bundle metaData) {
         String enctype = IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.SHARE_ENCTYPE);
         return enctype != null && "multipart/form-data".equals(enctype.toLowerCase(Locale.ENGLISH));
@@ -229,10 +224,16 @@ public class WebApkShareTargetUtil {
         return postData;
     }
 
+    protected static boolean methodFromShareTargetMetaDataIsPost(Bundle metaData) {
+        String method = IntentUtils.safeGetString(metaData, WebApkMetaDataKeys.SHARE_METHOD);
+        return method != null && "POST".equals(method.toUpperCase(Locale.ENGLISH));
+    }
+
     protected static PostData computePostData(
             String apkPackageName, WebApkInfo.ShareData shareData) {
         Bundle shareTargetMetaData = computeShareTargetMetaData(apkPackageName, shareData);
-        if (shareTargetMetaData == null || !methodFromMetaDataIsPost(shareTargetMetaData)) {
+        if (shareTargetMetaData == null
+                || !methodFromShareTargetMetaDataIsPost(shareTargetMetaData)) {
             return null;
         }
         if (enctypeFromMetaDataIsMultipart(shareTargetMetaData)) {

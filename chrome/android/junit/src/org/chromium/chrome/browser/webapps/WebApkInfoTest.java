@@ -154,6 +154,9 @@ public class WebApkInfoTest {
         Assert.assertEquals(null, info.icon());
         Assert.assertEquals(null, info.badgeIcon());
         Assert.assertEquals(null, info.splashIcon());
+
+        WebApkInfo.ShareTarget shareTarget = info.shareTarget();
+        Assert.assertNotNull(shareTarget);
     }
 
     /**
@@ -419,23 +422,21 @@ public class WebApkInfoTest {
         Assert.assertEquals(WebApkInfo.WebApkDistributor.OTHER, info.distributor());
     }
 
-    // Test whether getSerializedShareTarget can handle special characters
+    /**
+     * Test that {@link WebApkInfo#shareTarget()} returns a non-null but empty object if the WebAPK
+     * does not handle share intents.
+     */
     @Test
-    public void testGetSerializedShareTarget() {
-        String serializedShareTarget =
-                WebApkInfo.getSerializedShareTarget("\n", "\\", "", "", "", "", "", "");
-        Assert.assertEquals("action: \"\n\", method: \"\\\", enctype: \"\", title: \"\""
-                        + "text: \"\", url: \"\", names: \"\", accepts: \"\"",
-                serializedShareTarget);
-    }
+    public void testGetShareTargetNotNullEvenIfDoesNotHandleShareIntents() {
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+        WebApkInfo info = WebApkInfo.create(intent);
 
-    // Test that getSerializedShareTarget() returns the same result for empty and null parameters.
-    @Test
-    public void testGetSerializedShareTargetNullValues() {
-        String serializedShareTarget1 = WebApkInfo.getSerializedShareTarget(
-                "action", "", "", "awesome title", "", "", "", "");
-        String serializedShareTarget2 = WebApkInfo.getSerializedShareTarget(
-                "action", null, null, "awesome title", "", "", "", "");
-        Assert.assertEquals(serializedShareTarget1, serializedShareTarget2);
+        Assert.assertNotNull(info.shareTarget());
+        Assert.assertEquals("", info.shareTarget().getAction());
     }
 }
