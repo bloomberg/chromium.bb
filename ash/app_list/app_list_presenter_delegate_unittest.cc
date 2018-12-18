@@ -52,6 +52,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
@@ -1081,24 +1082,56 @@ TEST_F(AppListPresenterDelegateTest, LauncherCannotGetSmallerThanShelf) {
 
 // Tests that the AppListView is on screen on a small display.
 TEST_F(AppListPresenterDelegateTest, SearchBoxShownOnSmallDisplay) {
+  // Update the display to a small scale factor.
+  UpdateDisplay("600x400");
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+
+  // Animate to Half.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
   app_list::AppListView* view = GetAppListView();
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::HALF);
-
-  // Update the display to a small scale factor after the AppList is in HALF,
-  // the AppList should still be on screen.
-  UpdateDisplay("600x400");
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::HALF);
   EXPECT_LE(0, view->GetWidget()->GetNativeView()->bounds().y());
 
   // Animate to peeking.
-  generator->PressKey(ui::KeyboardCode::VKEY_DELETE, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_BACK, 0);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
   EXPECT_LE(0, view->GetWidget()->GetNativeView()->bounds().y());
 
   // Animate back to Half.
   generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::HALF);
   EXPECT_LE(0, view->GetWidget()->GetNativeView()->bounds().y());
+}
+
+// Tests that the AppListView is on screen on a small work area.
+TEST_F(AppListPresenterDelegateTest, SearchBoxShownOnSmallWorkArea) {
+  // Update the work area to a small size.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  ASSERT_TRUE(display_manager()->UpdateWorkAreaOfDisplay(
+      GetPrimaryDisplayId(), gfx::Insets(400, 0, 0, 0)));
+
+  // Animate to Half.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  app_list::AppListView* view = GetAppListView();
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::HALF);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::HALF);
+  EXPECT_LE(GetPrimaryDisplay().work_area().y(),
+            view->GetWidget()->GetNativeView()->bounds().y());
+
+  // Animate to peeking.
+  generator->PressKey(ui::KeyboardCode::VKEY_BACK, 0);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+  EXPECT_LE(GetPrimaryDisplay().work_area().y(),
+            view->GetWidget()->GetNativeView()->bounds().y());
+
+  // Animate back to Half.
+  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::HALF);
+  EXPECT_LE(GetPrimaryDisplay().work_area().y(),
+            view->GetWidget()->GetNativeView()->bounds().y());
 }
 
 // Tests that no crash occurs after an attempt to show app list in an invalid
