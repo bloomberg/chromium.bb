@@ -45,8 +45,8 @@ TEST_F(FontResourceTest,
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response), "");
 
-  MockFetchContext* context =
-      MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
+  MockFetchContext* context = MakeGarbageCollected<MockFetchContext>(
+      MockFetchContext::kShouldLoadNewResource);
   ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(context);
 
   // Fetch to cache a resource.

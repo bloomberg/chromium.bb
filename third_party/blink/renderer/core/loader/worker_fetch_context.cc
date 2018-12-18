@@ -42,6 +42,7 @@ WorkerFetchContext* WorkerFetchContext::Create(
     FetchClientSettingsObject* fetch_client_settings_object) {
   if (!web_context)
     return nullptr;
+  DCHECK(fetch_client_settings_object);
   return MakeGarbageCollected<WorkerFetchContext>(
       global_scope, std::move(web_context), subresource_filter,
       fetch_client_settings_object);
@@ -52,14 +53,14 @@ WorkerFetchContext::WorkerFetchContext(
     scoped_refptr<WebWorkerFetchContext> web_context,
     SubresourceFilter* subresource_filter,
     FetchClientSettingsObject* fetch_client_settings_object)
-    : BaseFetchContext(global_scope.GetTaskRunner(TaskType::kInternalLoading)),
+    : BaseFetchContext(global_scope.GetTaskRunner(TaskType::kInternalLoading),
+                       *fetch_client_settings_object),
       global_scope_(global_scope),
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   DCHECK(global_scope.IsContextThread());
   DCHECK(web_context_);
-  SetFetchClientSettingsObject(fetch_client_settings_object);
 }
 
 KURL WorkerFetchContext::GetSiteForCookies() const {

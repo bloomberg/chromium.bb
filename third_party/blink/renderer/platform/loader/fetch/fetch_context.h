@@ -86,8 +86,8 @@ class PLATFORM_EXPORT FetchContext
   WTF_MAKE_NONCOPYABLE(FetchContext);
 
  public:
-  explicit FetchContext(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  FetchContext(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+               FetchClientSettingsObject&);
 
   // This enum corresponds to blink::MessageSource. We have this not to
   // introduce any dependency to core/.

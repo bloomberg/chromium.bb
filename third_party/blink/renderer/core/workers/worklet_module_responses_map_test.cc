@@ -26,8 +26,8 @@ class WorkletModuleResponsesMapTest : public testing::Test {
 
   void SetUp() override {
     platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
-    auto* context =
-        MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
+    auto* context = MakeGarbageCollected<MockFetchContext>(
+        MockFetchContext::kShouldLoadNewResource);
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(context);
     map_ = MakeGarbageCollected<WorkletModuleResponsesMap>();
   }

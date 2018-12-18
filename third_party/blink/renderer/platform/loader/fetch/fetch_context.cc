@@ -42,13 +42,14 @@ class NullFetchContext final : public FetchContext {
  public:
   explicit NullFetchContext(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : FetchContext(std::move(task_runner)) {
-    SetFetchClientSettingsObject(
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            KURL(), nullptr /* security_origin */,
-            network::mojom::ReferrerPolicy::kDefault, String(),
-            HttpsState::kNone, AllowedByNosniff::MimeTypeCheck::kStrict));
-  }
+      : FetchContext(std::move(task_runner),
+                     *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+                         KURL(),
+                         nullptr /* security_origin */,
+                         network::mojom::ReferrerPolicy::kDefault,
+                         String(),
+                         HttpsState::kNone,
+                         AllowedByNosniff::MimeTypeCheck::kStrict)) {}
 
   void CountUsage(mojom::WebFeature) const override {}
   void CountDeprecation(mojom::WebFeature) const override {}
@@ -62,9 +63,11 @@ FetchContext& FetchContext::NullInstance(
 }
 
 FetchContext::FetchContext(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    FetchClientSettingsObject& fetch_client_settings_object)
     : platform_probe_sink_(MakeGarbageCollected<PlatformProbeSink>()),
-      task_runner_(std::move(task_runner)) {
+      task_runner_(std::move(task_runner)),
+      fetch_client_settings_object_(&fetch_client_settings_object) {
   platform_probe_sink_->addPlatformTraceEvents(
       MakeGarbageCollected<PlatformTraceEventsAgent>());
 }

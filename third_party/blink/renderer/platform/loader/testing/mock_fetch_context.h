@@ -33,29 +33,28 @@ class MockFetchContext : public FetchContext {
     kShouldLoadNewResource,
     kShouldNotLoadNewResource,
   };
-  static MockFetchContext* Create(
-      LoadPolicy load_policy,
-      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner = nullptr,
-      std::unique_ptr<WebURLLoaderFactory> url_loader_factory = nullptr) {
-    return MakeGarbageCollected<MockFetchContext>(
-        load_policy, std::move(loading_task_runner),
-        std::move(url_loader_factory));
-  }
 
   MockFetchContext(
       LoadPolicy load_policy,
-      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      std::unique_ptr<WebURLLoaderFactory> url_loader_factory)
+      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner = nullptr,
+      scoped_refptr<const SecurityOrigin> security_origin = nullptr,
+      std::unique_ptr<WebURLLoaderFactory> url_loader_factory = nullptr)
       : FetchContext(loading_task_runner
                          ? std::move(loading_task_runner)
-                         : base::MakeRefCounted<scheduler::FakeTaskRunner>()),
+                         : base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+                     *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+                         KURL(),
+                         security_origin ? std::move(security_origin)
+                                         : SecurityOrigin::CreateUniqueOpaque(),
+                         network::mojom::ReferrerPolicy::kDefault,
+                         String(),
+                         HttpsState::kNone,
+                         AllowedByNosniff::MimeTypeCheck::kStrict)),
         load_policy_(load_policy),
         frame_scheduler_(new MockFrameScheduler(GetLoadingTaskRunner())),
         url_loader_factory_(std::move(url_loader_factory)),
         complete_(false),
-        transfer_size_(-1) {
-    SetSecurityOrigin(SecurityOrigin::CreateUniqueOpaque());
-  }
+        transfer_size_(-1) {}
   ~MockFetchContext() override = default;
 
   void SetLoadComplete(bool complete) { complete_ = complete; }
@@ -63,14 +62,6 @@ class MockFetchContext : public FetchContext {
 
   void CountUsage(mojom::WebFeature) const override {}
   void CountDeprecation(mojom::WebFeature) const override {}
-
-  void SetSecurityOrigin(scoped_refptr<const SecurityOrigin> security_origin) {
-    SetFetchClientSettingsObject(
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            KURL(), std::move(security_origin),
-            network::mojom::ReferrerPolicy::kDefault, String(),
-            HttpsState::kNone, AllowedByNosniff::MimeTypeCheck::kStrict));
-  }
 
   // The last ResourceRequest passed to DispatchWillSendRequest.
   base::Optional<ResourceRequest> RequestFromWillSendRequest() const {
