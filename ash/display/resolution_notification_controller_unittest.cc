@@ -321,8 +321,7 @@ TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
 }
 
 // See http://crbug.com/869401 for details.
-TEST_F(ResolutionNotificationControllerTest,
-       DISABLED_MultipleResolutionChange) {
+TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
   UpdateDisplay(
       "300x300#300x300%56|200x200%57,"
       "250x250#250x250%58|200x200%59");
