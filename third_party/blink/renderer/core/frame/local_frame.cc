@@ -529,6 +529,12 @@ void LocalFrame::Reload(WebFrameLoadType load_type,
   request.SetClientRedirect(client_redirect_policy);
   if (const WebInputEvent* input_event = CurrentInputEvent::Get())
     request.SetInputStartTime(input_event->TimeStamp());
+  if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
+    probe::frameScheduledNavigation(this, request.GetResourceRequest().Url(),
+                                    0.0, ClientNavigationReason::kReload);
+    probe::frameClearedScheduledNavigation(this);
+  }
+
   loader_.StartNavigation(request, load_type);
 }
 

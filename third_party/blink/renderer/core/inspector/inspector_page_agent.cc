@@ -88,23 +88,23 @@ using protocol::Response;
 
 namespace {
 
-String ScheduledNavigationReasonToProtocol(ScheduledNavigation::Reason reason) {
+String ClientNavigationReasonToProtocol(ClientNavigationReason reason) {
   using ReasonEnum =
       protocol::Page::FrameScheduledNavigationNotification::ReasonEnum;
   switch (reason) {
-    case ScheduledNavigation::Reason::kFormSubmissionGet:
+    case ClientNavigationReason::kFormSubmissionGet:
       return ReasonEnum::FormSubmissionGet;
-    case ScheduledNavigation::Reason::kFormSubmissionPost:
+    case ClientNavigationReason::kFormSubmissionPost:
       return ReasonEnum::FormSubmissionPost;
-    case ScheduledNavigation::Reason::kHttpHeaderRefresh:
+    case ClientNavigationReason::kHttpHeaderRefresh:
       return ReasonEnum::HttpHeaderRefresh;
-    case ScheduledNavigation::Reason::kFrameNavigation:
+    case ClientNavigationReason::kFrameNavigation:
       return ReasonEnum::ScriptInitiated;
-    case ScheduledNavigation::Reason::kMetaTagRefresh:
+    case ClientNavigationReason::kMetaTagRefresh:
       return ReasonEnum::MetaTagRefresh;
-    case ScheduledNavigation::Reason::kPageBlock:
+    case ClientNavigationReason::kPageBlock:
       return ReasonEnum::PageBlockInterstitial;
-    case ScheduledNavigation::Reason::kReload:
+    case ClientNavigationReason::kReload:
       return ReasonEnum::Reload;
     default:
       NOTREACHED();
@@ -936,11 +936,12 @@ void InspectorPageAgent::FrameStoppedLoading(LocalFrame* frame) {
 
 void InspectorPageAgent::FrameScheduledNavigation(
     LocalFrame* frame,
-    ScheduledNavigation* scheduled_navigation) {
+    const KURL& url,
+    double delay,
+    ClientNavigationReason reason) {
   GetFrontend()->frameScheduledNavigation(
-      IdentifiersFactory::FrameId(frame), scheduled_navigation->Delay(),
-      ScheduledNavigationReasonToProtocol(scheduled_navigation->GetReason()),
-      scheduled_navigation->Url().GetString());
+      IdentifiersFactory::FrameId(frame), delay,
+      ClientNavigationReasonToProtocol(reason), url.GetString());
 }
 
 void InspectorPageAgent::FrameClearedScheduledNavigation(LocalFrame* frame) {

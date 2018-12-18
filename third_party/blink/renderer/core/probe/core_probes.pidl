@@ -57,7 +57,6 @@ interface CoreProbes {
   class FontCustomPlatformData;
   class FontFace;
   class HTMLDocumentParser;
-  class ScheduledNavigation;
   class ThreadableLoaderClient;
   class WorkerInspectorProxy;
   class XMLHttpRequest;
@@ -120,7 +119,7 @@ interface CoreProbes {
   void frameOwnerContentUpdated([Keep] LocalFrame*, HTMLFrameOwnerElement*);
   void frameStartedLoading([Keep] LocalFrame*);
   void frameStoppedLoading([Keep] LocalFrame*);
-  void frameScheduledNavigation([Keep] LocalFrame*, ScheduledNavigation*);
+  void frameScheduledNavigation([Keep] LocalFrame*, const KURL& url, double delay, ClientNavigationReason reason);
   void frameClearedScheduledNavigation([Keep] LocalFrame*);
   void didCreateWebSocket([Keep] ExecutionContext*, unsigned long identifier, const KURL& requestURL, const String& protocol);
   void willSendWebSocketHandshakeRequest([Keep] ExecutionContext*, unsigned long identifier, network::mojom::blink::WebSocketHandshakeRequest* request);

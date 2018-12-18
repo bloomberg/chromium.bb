@@ -66,7 +66,7 @@ unsigned NavigationDisablerForBeforeUnload::navigation_disable_count_ = 0;
 
 class ScheduledURLNavigation : public ScheduledNavigation {
  protected:
-  ScheduledURLNavigation(Reason reason,
+  ScheduledURLNavigation(ClientNavigationReason reason,
                          double delay,
                          Document* origin_document,
                          const KURL& url,
@@ -173,17 +173,18 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
   }
 
  private:
-  static Reason ToReason(Document::HttpRefreshType http_refresh_type) {
+  static ClientNavigationReason ToReason(
+      Document::HttpRefreshType http_refresh_type) {
     switch (http_refresh_type) {
       case Document::HttpRefreshType::kHttpRefreshFromHeader:
-        return Reason::kHttpHeaderRefresh;
+        return ClientNavigationReason::kHttpHeaderRefresh;
       case Document::HttpRefreshType::kHttpRefreshFromMetaTag:
-        return Reason::kMetaTagRefresh;
+        return ClientNavigationReason::kMetaTagRefresh;
       default:
         break;
     }
     NOTREACHED();
-    return Reason::kMetaTagRefresh;
+    return ClientNavigationReason::kMetaTagRefresh;
   }
 };
 
@@ -201,7 +202,7 @@ class ScheduledFrameNavigation final : public ScheduledURLNavigation {
                            const KURL& url,
                            WebFrameLoadType frame_load_type,
                            base::TimeTicks input_timestamp)
-      : ScheduledURLNavigation(Reason::kFrameNavigation,
+      : ScheduledURLNavigation(ClientNavigationReason::kFrameNavigation,
                                0.0,
                                origin_document,
                                url,
@@ -217,7 +218,7 @@ class ScheduledPageBlock final : public ScheduledNavigation {
   }
 
   ScheduledPageBlock(Document* origin_document, int reason)
-      : ScheduledNavigation(Reason::kPageBlock,
+      : ScheduledNavigation(ClientNavigationReason::kPageBlock,
                             0.0,
                             origin_document,
                             true,
@@ -249,8 +250,8 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
                           WebFrameLoadType frame_load_type,
                           base::TimeTicks input_timestamp)
       : ScheduledNavigation(submission->Method() == FormSubmission::kGetMethod
-                                ? Reason::kFormSubmissionGet
-                                : Reason::kFormSubmissionPost,
+                                ? ClientNavigationReason::kFormSubmissionGet
+                                : ClientNavigationReason::kFormSubmissionPost,
                             0,
                             document,
                             true,
@@ -453,7 +454,8 @@ void NavigationScheduler::StartTimer() {
       WTF::Bind(&NavigationScheduler::NavigateTask, WrapWeakPersistent(this)),
       TimeDelta::FromSecondsD(redirect_->Delay()));
 
-  probe::frameScheduledNavigation(frame_, redirect_.Get());
+  probe::frameScheduledNavigation(frame_, redirect_->Url(), redirect_->Delay(),
+                                  redirect_->GetReason());
 }
 
 void NavigationScheduler::Cancel() {
