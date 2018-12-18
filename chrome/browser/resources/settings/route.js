@@ -100,6 +100,7 @@
  *   STORAGE: (undefined|!settings.Route),
  *   STYLUS: (undefined|!settings.Route),
  *   SYNC: (undefined|!settings.Route),
+ *   SYNC_ADVANCED: (undefined|!settings.Route),
  *   SYSTEM: (undefined|!settings.Route),
  *   TRIGGERED_RESET_DIALOG: (undefined|!settings.Route),
  * }}
@@ -281,6 +282,7 @@ cr.define('settings', function() {
     if (pageVisibility.people !== false) {
       r.PEOPLE = r.BASIC.createSection('/people', 'people');
       r.SYNC = r.PEOPLE.createChild('/syncSetup');
+      r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
       // <if expr="not chromeos">
       r.MANAGE_PROFILE = r.PEOPLE.createChild('/manageProfile');
       // </if>

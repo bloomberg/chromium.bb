@@ -1715,9 +1715,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"deleteProfileWarningWithoutCounts",
      IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITHOUT_COUNTS},
     {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
-    {"sync", unified_consent::IsUnifiedConsentFeatureEnabled()
-                 ? IDS_SETTINGS_SYNC_UNIFIED_CONSENT
-                 : IDS_SETTINGS_SYNC},
+    {"sync", IDS_SETTINGS_SYNC},
     {"nonPersonalizedServicesSectionLabel",
      IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL},
     {"syncAndNonPersonalizedServices",
@@ -1725,6 +1723,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"syncPageTitle", unified_consent::IsUnifiedConsentFeatureEnabled()
                           ? IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES
                           : IDS_SETTINGS_SYNC_PAGE_TITLE},
+    {"syncAdvancedPageTitle", IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE},
     {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
     {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},
     {"syncEverythingCheckboxLabel",
@@ -1742,7 +1741,10 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"openTabsCheckboxLabel", IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL},
     {"driveSuggestPref", IDS_DRIVE_SUGGEST_PREF},
     {"driveSuggestPrefDesc", IDS_DRIVE_SUGGEST_PREF_DESC},
-    {"manageSyncedDataTitle", IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE},
+    {"manageSyncedDataTitle",
+     unified_consent::IsUnifiedConsentFeatureEnabled()
+         ? IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT
+         : IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE},
     {"encryptionOptionsTitle", IDS_SETTINGS_ENCRYPTION_OPTIONS},
     {"syncDataEncryptedText", IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT},
     {"encryptWithGoogleCredentialsLabel",
