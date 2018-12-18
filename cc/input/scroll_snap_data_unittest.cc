@@ -229,4 +229,82 @@ TEST_F(ScrollSnapDataTest, DoesNotSnapToPositionsOutsideProximityRange) {
   EXPECT_EQ(100, snap_position.y());
 }
 
+TEST_F(ScrollSnapDataTest, MandatoryReturnsToCurrentIfNoValidAreaForward) {
+  SnapContainerData container(
+      ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kMandatory),
+      gfx::RectF(0, 0, 200, 200), gfx::ScrollOffset(2000, 2000));
+  SnapAreaData area(ScrollSnapAlign(SnapAlignment::kStart),
+                    gfx::RectF(600, 0, 100, 100), false);
+  container.AddSnapAreaData(area);
+  gfx::ScrollOffset snap_position;
+
+  std::unique_ptr<SnapSelectionStrategy> direction_strategy =
+      SnapSelectionStrategy::CreateForDirection(gfx::ScrollOffset(600, 0),
+                                                gfx::ScrollOffset(5, 0));
+  EXPECT_TRUE(container.FindSnapPosition(*direction_strategy, &snap_position));
+  // The snap direction is right. However, there is no valid snap position on
+  // that direction. So we have to stay at the current snap position of 600 as
+  // the snap type is mandatory.
+  EXPECT_EQ(600, snap_position.x());
+  EXPECT_EQ(0, snap_position.y());
+
+  std::unique_ptr<SnapSelectionStrategy> end_direction_strategy =
+      SnapSelectionStrategy::CreateForEndAndDirection(
+          gfx::ScrollOffset(600, 0), gfx::ScrollOffset(15, 15));
+  EXPECT_TRUE(
+      container.FindSnapPosition(*end_direction_strategy, &snap_position));
+  // The snap direction is down and right. However, there is no valid snap
+  // position on that direction. So we have to stay at the current snap position
+  // of (600, 0) as the snap type is mandatory.
+  EXPECT_EQ(600, snap_position.x());
+  EXPECT_EQ(0, snap_position.y());
+
+  // If the scroll-snap-type is proximity, we wouldn't consider the current
+  // snap area valid even if there is no snap area forward.
+  container.set_scroll_snap_type(
+      ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kProximity));
+  EXPECT_FALSE(container.FindSnapPosition(*direction_strategy, &snap_position));
+  EXPECT_FALSE(
+      container.FindSnapPosition(*end_direction_strategy, &snap_position));
+}
+
+TEST_F(ScrollSnapDataTest, MandatorySnapsBackwardIfNoValidAreaForward) {
+  SnapContainerData container(
+      ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kMandatory),
+      gfx::RectF(0, 0, 200, 200), gfx::ScrollOffset(2000, 2000));
+  SnapAreaData area(ScrollSnapAlign(SnapAlignment::kStart),
+                    gfx::RectF(600, 0, 100, 100), false);
+  container.AddSnapAreaData(area);
+  gfx::ScrollOffset snap_position;
+
+  std::unique_ptr<SnapSelectionStrategy> direction_strategy =
+      SnapSelectionStrategy::CreateForDirection(gfx::ScrollOffset(650, 0),
+                                                gfx::ScrollOffset(5, 0));
+  EXPECT_TRUE(container.FindSnapPosition(*direction_strategy, &snap_position));
+  // The snap direction is right. However, there is no valid snap position on
+  // that direction. So we have to scroll back to the snap position of 600 as
+  // the snap type is mandatory.
+  EXPECT_EQ(600, snap_position.x());
+  EXPECT_EQ(0, snap_position.y());
+
+  std::unique_ptr<SnapSelectionStrategy> end_direction_strategy =
+      SnapSelectionStrategy::CreateForEndAndDirection(
+          gfx::ScrollOffset(650, 10), gfx::ScrollOffset(15, 15));
+  EXPECT_TRUE(
+      container.FindSnapPosition(*end_direction_strategy, &snap_position));
+  // The snap direction is down and right. However, there is no valid snap
+  // position on that direction. So we have to scroll back to the snap position
+  // of (600, 0) as the snap type is mandatory.
+  EXPECT_EQ(600, snap_position.x());
+  EXPECT_EQ(0, snap_position.y());
+
+  // If the scroll-snap-type is proximity, we wouldn't consider the backward
+  // snap area valid even if there is no snap area forward.
+  container.set_scroll_snap_type(
+      ScrollSnapType(false, SnapAxis::kBoth, SnapStrictness::kProximity));
+  EXPECT_FALSE(container.FindSnapPosition(*direction_strategy, &snap_position));
+  EXPECT_FALSE(
+      container.FindSnapPosition(*end_direction_strategy, &snap_position));
+}
+
 }  // namespace cc

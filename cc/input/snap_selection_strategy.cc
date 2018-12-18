@@ -29,6 +29,10 @@ SnapSelectionStrategy::CreateForEndAndDirection(
                                                    displacement);
 }
 
+bool SnapSelectionStrategy::HasIntendedDirection() const {
+  return true;
+}
+
 bool EndPositionStrategy::ShouldSnapOnX() const {
   return scrolled_x_;
 }
@@ -50,6 +54,10 @@ bool EndPositionStrategy::IsValidSnapPosition(SearchAxis axis,
                                               float position) const {
   return (scrolled_x_ && axis == SearchAxis::kX) ||
          (scrolled_y_ && axis == SearchAxis::kY);
+}
+
+bool EndPositionStrategy::HasIntendedDirection() const {
+  return false;
 }
 
 const base::Optional<SnapSearchResult>& EndPositionStrategy::PickBestResult(
