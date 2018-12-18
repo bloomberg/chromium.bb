@@ -40,6 +40,7 @@
 #include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/js_password_manager.h"
 #import "components/password_manager/ios/password_suggestion_helper.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -53,7 +54,9 @@
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/origin_util.h"
@@ -126,6 +129,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 // Helper contains common password suggestion logic.
 @property(nonatomic, readonly) PasswordSuggestionHelper* suggestionHelper;
+
+// The action sheet coordinator, if one is currently being shown.
+@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
 
 @end
 
@@ -426,8 +432,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       LogSuggestionClicked(PasswordSuggestionType::SHOW_ALL);
       return;
     case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
-      // TODO(crbug.com/886583): Display ActionSheet with suggested password.
-      completion();
+      [self generatePasswordForForm:formName
+                    fieldIdentifier:fieldIdentifier
+                  completionHandler:completion];
       return;
     default:
       LogSuggestionClicked(PasswordSuggestionType::CREDENTIALS);
@@ -652,9 +659,54 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   if (![fieldType isEqualToString:@"password"])
     return NO;
 
-  // TODO(crbug.com/886583): validate field against _formGenerationData;
+  // TODO(crbug.com/886583): validate field against _formGenerationData
 
   return YES;
+}
+
+- (void)generatePasswordForForm:(NSString*)formName
+                fieldIdentifier:(NSString*)fieldIdentifier
+              completionHandler:(SuggestionHandledCompletion)completion {
+  // TODO(crbug.com/886583): form_signature, field_signature, max_length and
+  // spec_priority in PGM::GeneratePassword are being refactored, passing 0 for
+  // now to get a generic random password.
+  base::string16 generatedPassword =
+      _passwordGenerationManager->GeneratePassword(
+          _passwordManager->client()->GetLastCommittedEntryURL(), 0, 0, 0,
+          nullptr);
+
+  NSString* displayPassword = base::SysUTF16ToNSString(generatedPassword);
+
+  // TODO(crbug.com/886583): i18n
+  NSString* title = [NSString
+      stringWithFormat:@"Chrome Suggested Password: %@", displayPassword];
+  NSString* message = @"Chrome will remember this password for you. You don't "
+                      @"have to remember it.";
+
+  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                           title:title
+                         message:message
+                            rect:self.baseViewController.view.frame
+                            view:self.baseViewController.view];
+  self.actionSheetCoordinator.popoverArrowDirection = 0;
+  self.actionSheetCoordinator.alertStyle =
+      IsIPadIdiom() ? UIAlertControllerStyleAlert
+                    : UIAlertControllerStyleActionSheet;
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_SUGGEST_PASSWORD)
+                action:^{
+                  // TODO(crbug.com/886583): inject in password form
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                action:nil
+                 style:UIAlertActionStyleCancel];
+
+  [self.actionSheetCoordinator start];
 }
 
 @end
