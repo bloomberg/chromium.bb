@@ -164,7 +164,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/system/devicemode.h"
@@ -995,15 +994,11 @@ void Shell::Init(
   screen_switch_check_controller_ =
       std::make_unique<ScreenSwitchCheckController>();
   // Connector can be null in tests.
-  if (connector_ && base::FeatureList::IsEnabled(
-                        chromeos::features::kEnableUnifiedMultiDeviceSetup)) {
+  if (connector_) {
     multidevice_notification_presenter_ =
         std::make_unique<MultiDeviceNotificationPresenter>(
             message_center::MessageCenter::Get(), connector_);
-  }
 
-  // Connector can be null in tests.
-  if (connector_) {
     // Connect to local state prefs now, but wait for an active user before
     // connecting to the profile pref service. The login screen has a temporary
     // user profile that is not associated with a real user.
