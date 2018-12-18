@@ -36,7 +36,7 @@ constexpr int kAssistantStrokeWidthDip = 1;
 
 // App list specific style:
 constexpr SkColor kAppListBackgroundColor =
-    SkColorSetA(gfx::kGoogleGrey900, 0x33);
+    SkColorSetA(gfx::kGoogleGrey100, 0x14);
 constexpr SkColor kAppListTextColor = gfx::kGoogleGrey100;
 constexpr SkColor kAppListRippleColor = SkColorSetA(gfx::kGoogleGrey100, 0x0F);
 constexpr SkColor kAppListFocusColor = SkColorSetA(gfx::kGoogleGrey100, 0x14);
@@ -159,13 +159,12 @@ void SuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
   gfx::Rect bounds = GetContentsBounds();
 
   // Background.
+  flags.setColor(assistant_style_ ? kAssistantBackgroundColor
+                                  : kAppListBackgroundColor);
+  canvas->DrawRoundRect(bounds, height() / 2, flags);
   if (HasFocus()) {
     flags.setColor(assistant_style_ ? kAssistantFocusColor
                                     : kAppListFocusColor);
-    canvas->DrawRoundRect(bounds, height() / 2, flags);
-  } else {
-    flags.setColor(assistant_style_ ? kAssistantBackgroundColor
-                                    : kAppListBackgroundColor);
     canvas->DrawRoundRect(bounds, height() / 2, flags);
   }
 
