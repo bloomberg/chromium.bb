@@ -2009,8 +2009,11 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 		return NULL;
 
 	fb = drm_fb_get_from_view(output_state, ev);
-	if (!fb)
+	if (!fb) {
+		drm_debug(b, "\t\t\t\t[scanout] not placing view %p on scanout: "
+			     " couldn't get fb\n", ev);
 		return NULL;
+	}
 
 	/* Can't change formats with just a pageflip */
 	if (!b->atomic_modeset && fb->format->format != output->gbm_format) {
