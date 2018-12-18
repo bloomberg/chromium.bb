@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/drivefs/drivefs_host_observer.h"
+#include "chromeos/components/drivefs/drivefs_search.h"
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "components/drive/drive_notification_manager.h"
 #include "components/drive/drive_notification_observer.h"
@@ -30,7 +31,6 @@ constexpr char kMountScheme[] = "drivefs://";
 constexpr char kDataPath[] = "GCache/v2";
 constexpr char kIdentityConsumerId[] = "drivefs";
 constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(20);
-constexpr base::TimeDelta kQueryCacheTtl = base::TimeDelta::FromMinutes(5);
 
 class MojoConnectionDelegateImpl : public DriveFsHost::MojoConnectionDelegate {
  public:
@@ -203,6 +203,9 @@ class DriveFsHost::MountState
     host_->timer_->Start(
         FROM_HERE, kMountTimeout,
         base::BindOnce(&MountState::OnTimedOut, base::Unretained(this)));
+
+    search_ =
+        std::make_unique<DriveFsSearch>(GetDriveFsInterface(), host_->clock_);
   }
 
   ~MountState() override {
@@ -242,32 +245,7 @@ class DriveFsHost::MountState
   mojom::QueryParameters::QuerySource SearchDriveFs(
       mojom::QueryParametersPtr query,
       mojom::SearchQuery::GetNextPageCallback callback) {
-    // The only cacheable query is 'shared with me'.
-    if (IsCloudSharedWithMeQuery(query)) {
-      // Check if we should have the response cached.
-      auto delta = host_->clock_->Now() - last_shared_with_me_response_;
-      if (delta <= kQueryCacheTtl) {
-        query->query_source =
-            drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
-      }
-    }
-
-    drivefs::mojom::SearchQueryPtr search;
-    drivefs::mojom::QueryParameters::QuerySource source = query->query_source;
-    if (net::NetworkChangeNotifier::IsOffline() &&
-        source != drivefs::mojom::QueryParameters::QuerySource::kLocalOnly) {
-      // No point trying cloud query if we know we are offline.
-      source = drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
-      OnSearchDriveFs(std::move(search), std::move(query), std::move(callback),
-                      drive::FILE_ERROR_NO_CONNECTION, {});
-    } else {
-      drivefs_->StartSearchQuery(mojo::MakeRequest(&search), query.Clone());
-      auto* raw_search = search.get();
-      raw_search->GetNextPage(base::BindOnce(
-          &MountState::OnSearchDriveFs, weak_ptr_factory_.GetWeakPtr(),
-          std::move(search), std::move(query), std::move(callback)));
-    }
-    return source;
+    return search_->PerformSearch(std::move(query), std::move(callback));
   }
 
  private:
@@ -429,42 +407,6 @@ class DriveFsHost::MountState
 
   void OnNotificationTimerFired() override { drivefs_->FetchAllChangeLogs(); }
 
-  void OnSearchDriveFs(
-      drivefs::mojom::SearchQueryPtr search,
-      drivefs::mojom::QueryParametersPtr query,
-      mojom::SearchQuery::GetNextPageCallback callback,
-      drive::FileError error,
-      base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
-    if (error == drive::FILE_ERROR_NO_CONNECTION &&
-        query->query_source !=
-            drivefs::mojom::QueryParameters::QuerySource::kLocalOnly) {
-      // Retry with offline query.
-      query->query_source =
-          drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
-      if (query->text_content) {
-        // Full-text searches not supported offline.
-        std::swap(query->text_content, query->title);
-        query->text_content.reset();
-      }
-      SearchDriveFs(std::move(query), std::move(callback));
-      return;
-    }
-
-    if (IsCloudSharedWithMeQuery(query)) {
-      // Mark that DriveFS should have cached the required info.
-      last_shared_with_me_response_ = host_->clock_->Now();
-    }
-
-    std::move(callback).Run(error, std::move(items));
-  }
-
-  static bool IsCloudSharedWithMeQuery(
-      const drivefs::mojom::QueryParametersPtr& query) {
-    return query->query_source ==
-               drivefs::mojom::QueryParameters::QuerySource::kCloudOnly &&
-           query->shared_with_me && !query->text_content && !query->title;
-  }
-
   // Owns |this|.
   DriveFsHost* const host_;
 
@@ -484,6 +426,8 @@ class DriveFsHost::MountState
   // Mojo connections to the DriveFS process.
   mojom::DriveFsPtr drivefs_;
   mojo::Binding<mojom::DriveFsDelegate> binding_;
+
+  std::unique_ptr<DriveFsSearch> search_;
 
   bool drivefs_has_mounted_ = false;
   bool drivefs_has_terminated_ = false;
