@@ -580,6 +580,10 @@ converted to I420 pixel format. Written out by
 video_decode_accelerator_unittest when input file is test-25fps.h264.
 This value must be identical on all platforms.
 
+#### test-25fps.h264.json:
+JSON file that contains metadata of test-25fps.h264.
+This is used by video_decode_accelerator_tests.
+
 #### test-25fps.vp8
 ffmpeg git-2012-07-19-a8d8e86, libvpx ToT 7/19, chromium r147247,
 mkvextract v5.0.1
@@ -597,6 +601,10 @@ MD5s of frame which is decoded with Intel VAAPI and V4L2 decoders and is
 converted to I420 pixel format. Written out by
 video_decode_accelerator_unittest when input file is test-25fps.vp8.
 This value must be identical on all platforms.
+
+#### test-25fps.vp8.json:
+JSON file that contains metadata of test-25fps.vp8.
+This is used by video_decode_accelerator_tests.
 
 #### test-25fps.vp9
 avconv 9.16-6:9.16-0ubuntu0.14.04.1, vpxenc v1.3.0
@@ -621,6 +629,10 @@ converted to I420 pixel format. Written out by
 video_decode_accelerator_unittest when input file is test-25fps.vp9.
 This value must be identical on all platforms.
 
+#### test-25fps.vp9.json:
+JSON file that contains metadata of test-25fps.vp9.
+This is used by video_decode_accelerator_tests.
+
 #### test-25fps.vp9_2
 Similar to test-25fps.vp9, substituting the option `--profile=0` with
 `--profile=2 --bit-depth=10` to vpxenc. (Note that vpxenc must have been
@@ -635,6 +647,10 @@ MD5s of frame which is decoded with Intel VAAPI and V4L2 decoders and is
 converted to I420 pixel format. Written out by
 video_decode_accelerator_unittest when input file is test-25fps.vp9_2.
 This value must be identical on all platforms.
+
+#### test-25fps.vp9_2.json:
+JSON file that contains metadata of test-25fps.vp9_2.
+This is used by video_decode_accelerator_tests.
 
 
 ### VP9 video with show_existing_frame flag
