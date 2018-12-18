@@ -221,11 +221,6 @@ void GetSecurityInfo(
     IsOriginSecureCallback is_origin_secure_callback,
     SecurityInfo* result);
 
-// Returns true if an experimental form warning UI about HTTP passwords
-// and credit cards is enabled. This warning UI can be enabled with the
-// |kHttpFormWarningFeature| feature.
-bool IsHttpWarningInFormEnabled();
-
 // Returns true for a valid |url| with a cryptographic scheme, e.g., HTTPS, WSS.
 bool IsSchemeCryptographic(const GURL& url);
 

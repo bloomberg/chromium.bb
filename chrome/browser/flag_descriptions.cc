@@ -603,13 +603,6 @@ const char kEnableLitePageServerPreviewsDescription[] =
     "to a Google-owned domain that serves a pre-rendered version of the "
     "original page. Also known as Lite Page Redirect Previews.";
 
-const char kEnableHttpFormWarningName[] =
-    "Show in-form warnings for sensitive fields when the top-level page is not "
-    "HTTPS";
-const char kEnableHttpFormWarningDescription[] =
-    "Attaches a warning UI to any password or credit card fields detected when "
-    "the top-level page is not HTTPS";
-
 const char kLayeredAPIName[] = "Experimental layered APIs";
 const char kLayeredAPIDescription[] =
     "Enable layered API infrastructure, as well as several experimental "
