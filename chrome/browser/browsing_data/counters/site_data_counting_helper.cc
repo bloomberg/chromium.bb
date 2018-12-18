@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -24,6 +25,10 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if defined(OS_ANDROID)
+#include "components/cdm/browser/media_drm_storage_impl.h"
+#endif
 
 using content::BrowserThread;
 
@@ -93,6 +98,13 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
                    base::Unretained(this)));
   }
 #endif
+
+#if defined(OS_ANDROID)
+  // Count origins with media licenses on Android.
+  tasks_ += 1;
+  Done(cdm::MediaDrmStorageImpl::GetOriginsModifiedSince(profile_->GetPrefs(),
+                                                         begin_));
+#endif  // defined(OS_ANDROID)
 
   // Counting site usage data and durable permissions.
   auto* hcsm = HostContentSettingsMapFactory::GetForProfile(profile_);

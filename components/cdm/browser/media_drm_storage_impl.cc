@@ -381,6 +381,29 @@ std::vector<base::UnguessableToken> ClearMatchingLicenseData(
   return origin_ids_to_unprovision;
 }
 
+// Returns true if any session in |sessions_dict| has been modified more
+// recently than |modified_since|, and otherwise returns false.
+bool SessionsModifiedSince(const base::Value* sessions_dict,
+                           base::Time modified_since) {
+  DCHECK(sessions_dict->is_dict());
+  for (const auto& key_value : sessions_dict->DictItems()) {
+    const base::Value* session_dict = &key_value.second;
+    if (!session_dict->is_dict())
+      continue;
+
+    std::unique_ptr<SessionData> session_data =
+        SessionData::FromDictValue(*session_dict);
+    if (!session_data)
+      continue;
+
+    if (session_data->creation_time() >= modified_since)
+      return true;
+  }
+
+  // No session creation time >= |modified_since|.
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -406,6 +429,57 @@ std::set<GURL> MediaDrmStorageImpl::GetAllOrigins(
   }
 
   return origin_set;
+}
+
+// static
+std::vector<GURL> MediaDrmStorageImpl::GetOriginsModifiedSince(
+    const PrefService* pref_service,
+    base::Time modified_since) {
+  DCHECK(pref_service);
+
+  const base::DictionaryValue* storage_dict =
+      pref_service->GetDictionary(kMediaDrmStorage);
+  if (!storage_dict)
+    return {};
+
+  // Check each origin to see if it has been modified since |modified_since|.
+  // If there are any errors in kMediaDrmStorage, ignore them.
+  std::vector<GURL> matching_origins;
+  for (const auto& key_value : storage_dict->DictItems()) {
+    GURL origin(key_value.first);
+    if (!origin.is_valid())
+      continue;
+
+    const base::Value* origin_dict = &key_value.second;
+    if (!origin_dict->is_dict())
+      continue;
+
+    std::unique_ptr<OriginData> origin_data =
+        OriginData::FromDictValue(*origin_dict);
+    if (!origin_data)
+      continue;
+
+    // There is no need to check the sessions if the origin was provisioned
+    // after |modified_since|.
+    if (origin_data->provision_time() < modified_since) {
+      // See if any session created recently.
+      const base::Value* sessions =
+          origin_dict->FindKeyOfType(kSessions, base::Value::Type::DICTIONARY);
+      if (!sessions)
+        continue;
+
+      // If no sessions modified recently, move on to the next origin.
+      if (!SessionsModifiedSince(sessions, modified_since))
+        continue;
+    }
+
+    // Either the origin has been provisioned after |modified_since| or there
+    // are sessions created after |modified_since|, so add the origin to the
+    // list returned.
+    matching_origins.push_back(origin);
+  }
+
+  return matching_origins;
 }
 
 // static

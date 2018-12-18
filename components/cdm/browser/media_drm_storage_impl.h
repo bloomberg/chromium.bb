@@ -40,6 +40,11 @@ class MediaDrmStorageImpl final
   // Get a list of origins that have persistent storage on the device.
   static std::set<GURL> GetAllOrigins(const PrefService* pref_service);
 
+  // Get a list of all origins that have been modified after |modified_since|.
+  static std::vector<GURL> GetOriginsModifiedSince(
+      const PrefService* pref_service,
+      base::Time modified_since);
+
   // Clear licenses if:
   // 1. The license creation time falls in [|start|, |end|], and
   // 2. |filter| returns true on the media license's origin.

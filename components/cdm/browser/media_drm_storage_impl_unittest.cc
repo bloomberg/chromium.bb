@@ -293,4 +293,46 @@ TEST_F(MediaDrmStorageImplTest, RemoveSession_InvalidSession) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(MediaDrmStorageImplTest, GetAllOrigins) {
+  OnProvisioned();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify the origin is found.
+  std::set<GURL> origins =
+      MediaDrmStorageImpl::GetAllOrigins(pref_service_.get());
+  EXPECT_EQ(1u, origins.count(GURL(kTestOrigin)));
+}
+
+TEST_F(MediaDrmStorageImplTest, GetOriginsModifiedSince) {
+  base::Time start_time = base::Time::Now();
+  OnProvisioned();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify the origin is found from all time.
+  std::vector<GURL> origins1 = MediaDrmStorageImpl::GetOriginsModifiedSince(
+      pref_service_.get(), base::Time());
+  EXPECT_EQ(origins1, std::vector<GURL>{GURL(kTestOrigin)});
+
+  // Should also be found from |start_time|.
+  std::vector<GURL> origins2 = MediaDrmStorageImpl::GetOriginsModifiedSince(
+      pref_service_.get(), start_time);
+  EXPECT_EQ(origins2, std::vector<GURL>{GURL(kTestOrigin)});
+
+  // Should not be found from Now().
+  base::Time check_time = base::Time::Now();
+  EXPECT_GT(check_time, start_time);
+  std::vector<GURL> origins3 = MediaDrmStorageImpl::GetOriginsModifiedSince(
+      pref_service_.get(), check_time);
+  EXPECT_EQ(origins3, std::vector<GURL>{});
+
+  // Save a new session.
+  SavePersistentSession("session_id", {1, 0}, "mime/type");
+  base::RunLoop().RunUntilIdle();
+
+  // Now that a new session has been added, the origin should be found.
+  std::vector<GURL> origins4 = MediaDrmStorageImpl::GetOriginsModifiedSince(
+      pref_service_.get(), check_time);
+  EXPECT_EQ(origins4, std::vector<GURL>{GURL(kTestOrigin)});
+}
+
 }  // namespace cdm
