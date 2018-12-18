@@ -39,7 +39,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
     private int mSecurityIconResource;
 
     @StatusButtonType
-    private int mLocationBarButtonType;
+    private int mStatusButtonType;
     private boolean mUrlHasFocus;
 
     /**
@@ -55,7 +55,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
                 new PropertyModel.Builder(StatusProperties.ALL_KEYS)
                         .with(StatusProperties.ICON_TINT_COLOR_RES,
                                 R.color.locationbar_status_separator_color)
-                        .with(StatusProperties.LOCATION_BAR_BUTTON_TYPE, StatusButtonType.NONE)
+                        .with(StatusProperties.STATUS_BUTTON_TYPE, StatusButtonType.NONE)
                         .build();
 
         PropertyModelChangeProcessor.create(model, mStatusView, new StatusViewBinder());
@@ -142,8 +142,8 @@ public class StatusViewCoordinator implements View.OnClickListener {
     }
 
     private void changeLocationBarIcon() {
-        mLocationBarButtonType = getLocationBarButtonToShow();
-        mMediator.setLocationBarButtonType(mLocationBarButtonType);
+        mStatusButtonType = getLocationBarButtonToShow();
+        mMediator.setStatusButtonType(mStatusButtonType);
     }
 
     /**
@@ -167,7 +167,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
 
         updateVerboseStatusVisibility();
 
-        if (mSecurityIconResource == id && mLocationBarButtonType == getLocationBarButtonToShow()) {
+        if (mSecurityIconResource == id && mStatusButtonType == getLocationBarButtonToShow()) {
             return;
         }
         mSecurityIconResource = id;
@@ -188,7 +188,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     @VisibleForTesting
     public boolean isSecurityButtonShown() {
-        return mLocationBarButtonType == StatusButtonType.SECURITY_ICON;
+        return mStatusButtonType == StatusButtonType.SECURITY_ICON;
     }
 
     /**

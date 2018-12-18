@@ -162,9 +162,9 @@ public class StatusView extends LinearLayout {
     }
 
     /**
-     * Specify location bar button type.
+     * Specify status bar button type.
      */
-    void setLocationBarButtonType(@StatusButtonType int type) {
+    void setStatusButtonType(@StatusButtonType int type) {
         // Terminate any animation currently taking place.
         // We won't be terminating animation that is currently presenting the
         // same object - property mechanism will prevent this.

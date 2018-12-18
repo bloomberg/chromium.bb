@@ -24,8 +24,8 @@ class StatusViewBinder implements ViewBinder<PropertyModel, StatusView, Property
     public void bind(PropertyModel model, StatusView view, PropertyKey propertyKey) {
         if (StatusProperties.ANIMATIONS_ENABLED.equals(propertyKey)) {
             view.setAnimationsEnabled(model.get(StatusProperties.ANIMATIONS_ENABLED));
-        } else if (StatusProperties.LOCATION_BAR_BUTTON_TYPE.equals(propertyKey)) {
-            view.setLocationBarButtonType(model.get(StatusProperties.LOCATION_BAR_BUTTON_TYPE));
+        } else if (StatusProperties.STATUS_BUTTON_TYPE.equals(propertyKey)) {
+            view.setStatusButtonType(model.get(StatusProperties.STATUS_BUTTON_TYPE));
         } else if (StatusProperties.NAVIGATION_BUTTON_TYPE.equals(propertyKey)
                 || StatusProperties.ICON_TINT_COLOR_RES.equals(propertyKey)) {
             updateNavigationButtonType(view, model.get(StatusProperties.NAVIGATION_BUTTON_TYPE),

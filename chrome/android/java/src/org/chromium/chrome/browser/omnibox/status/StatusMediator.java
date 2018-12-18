@@ -35,8 +35,8 @@ class StatusMediator {
     /**
      * Specify type of displayed location bar button.
      */
-    public void setLocationBarButtonType(@StatusButtonType int type) {
-        mModel.set(StatusProperties.LOCATION_BAR_BUTTON_TYPE, type);
+    public void setStatusButtonType(@StatusButtonType int type) {
+        mModel.set(StatusProperties.STATUS_BUTTON_TYPE, type);
     }
 
     /**
