@@ -2659,10 +2659,10 @@ public class CustomTabActivityTest {
         CriteriaHelper.pollUiThread(new Criteria("Tab was not created") {
             @Override
             public boolean isSatisfied() {
-                return connection.mSpeculation != null && connection.mSpeculation.tab != null;
+                return connection.getSpeculationParamsForTesting() != null;
             }
         }, LONG_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-        ChromeTabUtils.waitForTabPageLoaded(connection.mSpeculation.tab, url);
+        ChromeTabUtils.waitForTabPageLoaded(connection.getSpeculationParamsForTesting().tab, url);
     }
 
     /**
