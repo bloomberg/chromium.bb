@@ -25,6 +25,7 @@ class FormStructure;
 class LegacyStrikeDatabase;
 class MigratableCreditCard;
 class PersonalDataManager;
+class StrikeDatabase;
 }
 
 namespace content {
@@ -69,6 +70,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   autofill::FormDataImporter* GetFormDataImporter() override;
   autofill::payments::PaymentsClient* GetPaymentsClient() override;
   autofill::LegacyStrikeDatabase* GetLegacyStrikeDatabase() override;
+  autofill::StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   autofill::AddressNormalizer* GetAddressNormalizer() override;

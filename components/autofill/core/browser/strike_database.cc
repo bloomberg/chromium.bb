@@ -21,7 +21,6 @@ namespace autofill {
 
 namespace {
 const char kDatabaseClientName[] = "StrikeService";
-const char kKeyDeliminator[] = "__";
 const int kMaxInitAttempts = 3;
 }  // namespace
 
@@ -40,43 +39,32 @@ StrikeDatabase::StrikeDatabase(const base::FilePath& database_dir)
 
 StrikeDatabase::~StrikeDatabase() {}
 
-bool StrikeDatabase::IsMaxStrikesLimitReached(const std::string id) {
-  return GetStrikes(id) >= GetMaxStrikesLimit();
-}
-
-int StrikeDatabase::AddStrike(const std::string id) {
-  std::string key = GetKey(id);
+int StrikeDatabase::AddStrike(const std::string key) {
   int num_strikes = strike_map_cache_.count(key)  // Cache has entry for |key|.
                         ? strike_map_cache_[key].num_strikes() + 1
                         : 1;
   SetStrikeData(key, num_strikes);
-  base::UmaHistogramCounts1000(
-      "Autofill.StrikeDatabase.NthStrikeAdded." + GetProjectPrefix(),
-      num_strikes);
   return num_strikes;
 }
 
-int StrikeDatabase::RemoveStrike(const std::string id) {
-  std::string key = GetKey(id);
+int StrikeDatabase::RemoveStrike(const std::string key) {
   DCHECK(strike_map_cache_.count(key));
   int num_strikes = strike_map_cache_[key].num_strikes() - 1;
   if (num_strikes < 1) {
-    ClearStrikes(id);
+    ClearStrikes(key);
     return 0;
   }
   SetStrikeData(key, num_strikes);
   return num_strikes;
 }
 
-int StrikeDatabase::GetStrikes(const std::string id) {
-  std::string key = GetKey(id);
+int StrikeDatabase::GetStrikes(const std::string key) {
   return strike_map_cache_.count(key)  // Cache contains entry for |key|.
              ? strike_map_cache_[key].num_strikes()
              : 0;
 }
 
-void StrikeDatabase::ClearStrikes(const std::string id) {
-  std::string key = GetKey(id);
+void StrikeDatabase::ClearStrikes(const std::string key) {
   strike_map_cache_.erase(key);
   ClearAllProtoStrikesForKey(key, base::DoNothing());
 }
@@ -113,30 +101,13 @@ void StrikeDatabase::OnDatabaseLoadKeysAndEntries(
     return;
   }
   strike_map_cache_.insert(entries->begin(), entries->end());
-  // Remove all expired strikes.
-  for (auto entry : *entries) {
-    if (AutofillClock::Now().ToDeltaSinceWindowsEpoch().InMicroseconds() -
-            entry.second.last_update_timestamp() >
-        GetExpiryTimeMicros()) {
-      if (GetStrikes(GetIdPartFromKey(entry.first)) > 0)
-        RemoveStrike(GetIdPartFromKey(entry.first));
-    }
-  }
-}
-
-std::string StrikeDatabase::GetKey(const std::string id) {
-  return GetProjectPrefix() + kKeyDeliminator + id;
-}
-
-std::string StrikeDatabase::GetIdPartFromKey(const std::string key) {
-  return key.substr((GetProjectPrefix() + kKeyDeliminator).size());
 }
 
 void StrikeDatabase::SetStrikeData(const std::string key, int num_strikes) {
   StrikeData data;
   data.set_num_strikes(num_strikes);
   data.set_last_update_timestamp(
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+      AutofillClock::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
   UpdateCache(key, data);
   SetProtoStrikeData(key, data, base::DoNothing());
 }

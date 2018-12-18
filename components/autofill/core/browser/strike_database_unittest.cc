@@ -45,27 +45,6 @@ class TestStrikeDatabase : public StrikeDatabase {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestStrikeDatabase);
-
-  // Do not use. This virtual function needed to be implemented but
-  // TestStrikeDatabase is not a project class.
-  std::string GetProjectPrefix() override {
-    NOTIMPLEMENTED();
-    return " ";
-  }
-
-  // Do not use. This virtual function needed to be implemented but
-  // TestStrikeDatabase is not a project class.
-  int GetMaxStrikesLimit() override {
-    NOTIMPLEMENTED();
-    return 0;
-  }
-
-  // Do not use. This virtual function needed to be implemented but
-  // TestStrikeDatabase is not a project class.
-  long long GetExpiryTimeMicros() override {
-    NOTIMPLEMENTED();
-    return 0;
-  }
 };
 
 }  // anonymous namespace

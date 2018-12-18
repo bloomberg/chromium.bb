@@ -22,7 +22,8 @@ namespace autofill {
 
 class CreditCardSaveStrikeDatabaseTest : public ::testing::Test {
  public:
-  CreditCardSaveStrikeDatabaseTest() : strike_database_(InitFilePath()) {}
+  CreditCardSaveStrikeDatabaseTest()
+      : strike_database_(new StrikeDatabase(InitFilePath())) {}
 
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
@@ -44,11 +45,6 @@ class CreditCardSaveStrikeDatabaseTest : public ::testing::Test {
 TEST_F(CreditCardSaveStrikeDatabaseTest, GetKeyForCreditCardSaveTest) {
   const std::string last_four = "1234";
   EXPECT_EQ("CreditCardSave__1234", strike_database_.GetKey(last_four));
-}
-
-TEST_F(CreditCardSaveStrikeDatabaseTest, GetIdForCreditCardSaveTest) {
-  const std::string key = "CreditCardSave__1234";
-  EXPECT_EQ("1234", strike_database_.GetIdPartFromKey(key));
 }
 
 TEST_F(CreditCardSaveStrikeDatabaseTest, MaxStrikesLimitReachedTest) {
@@ -109,47 +105,34 @@ TEST_F(CreditCardSaveStrikeDatabaseTest, ClearStrikesForZeroStrikesTest) {
   EXPECT_EQ(0, strike_database_.GetStrikes(last_four));
 }
 
-TEST_F(CreditCardSaveStrikeDatabaseTest, RemoveExpiredStrikesOnLoadTest) {
+TEST_F(CreditCardSaveStrikeDatabaseTest, RemoveExpiredStrikesTest) {
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(AutofillClock::Now());
   const std::string last_four1 = "1234";
   const std::string last_four2 = "9876";
+  strike_database_.AddStrike(last_four1);
 
-  StrikeData data1;
-  data1.set_num_strikes(2);
-  data1.set_last_update_timestamp(
-      AutofillClock::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-
-  // Advance clock to past |data1|'s expiry time.
+  // Advance clock to past the entry for |last_four1|'s expiry time.
   test_clock.Advance(base::TimeDelta::FromMicroseconds(
       strike_database_.GetExpiryTimeMicros() + 1));
 
-  StrikeData data2;
-  data2.set_num_strikes(2);
-  data2.set_last_update_timestamp(
-      AutofillClock::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  strike_database_.AddStrike(last_four2);
+  strike_database_.RemoveExpiredStrikes();
 
-  std::map<std::string, StrikeData> entries;
-  entries[strike_database_.GetKey(last_four1)] = data1;
-  entries[strike_database_.GetKey(last_four2)] = data2;
-
-  // |data1| should have its most recent strike expire, but |data2| should not.
-  strike_database_.OnDatabaseLoadKeysAndEntries(
-      true, std::make_unique<std::map<std::string, StrikeData>>(entries));
-
-  EXPECT_EQ(1, strike_database_.GetStrikes(last_four1));
-  EXPECT_EQ(2, strike_database_.GetStrikes(last_four2));
-
-  // Advance clock to past both |data1| andd |data2|'s expiry time.
-  test_clock.Advance(base::TimeDelta::FromMicroseconds(
-      strike_database_.GetExpiryTimeMicros() + 1));
-
-  // |data1| and |data2| should both have its most recent strike expire.
-  strike_database_.OnDatabaseLoadKeysAndEntries(
-      true, std::make_unique<std::map<std::string, StrikeData>>(entries));
-
+  // |last_four1|'s entry should have its most recent strike expire, but
+  // |last_four2|'s should not.
   EXPECT_EQ(0, strike_database_.GetStrikes(last_four1));
   EXPECT_EQ(1, strike_database_.GetStrikes(last_four2));
+
+  // Advance clock to past |last_four2|'s expiry time.
+  test_clock.Advance(base::TimeDelta::FromMicroseconds(
+      strike_database_.GetExpiryTimeMicros() + 1));
+
+  strike_database_.RemoveExpiredStrikes();
+
+  // |last_four1| and |last_four2| should have no more unexpired strikes.
+  EXPECT_EQ(0, strike_database_.GetStrikes(last_four1));
+  EXPECT_EQ(0, strike_database_.GetStrikes(last_four2));
 }
 
 }  // namespace autofill

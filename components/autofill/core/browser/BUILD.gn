@@ -170,6 +170,8 @@ jumbo_static_library("browser") {
     "state_names.h",
     "strike_database.cc",
     "strike_database.h",
+    "strike_database_integrator_base.cc",
+    "strike_database_integrator_base.h",
     "subkey_requester.cc",
     "subkey_requester.h",
     "suggestion.cc",

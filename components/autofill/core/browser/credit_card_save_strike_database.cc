@@ -9,8 +9,10 @@
 namespace autofill {
 
 CreditCardSaveStrikeDatabase::CreditCardSaveStrikeDatabase(
-    const base::FilePath& database_dir)
-    : StrikeDatabase(database_dir) {}
+    StrikeDatabase* strike_database)
+    : StrikeDatabaseIntegratorBase(strike_database) {
+  RemoveExpiredStrikes();
+}
 
 CreditCardSaveStrikeDatabase::~CreditCardSaveStrikeDatabase() {}
 

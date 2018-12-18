@@ -50,6 +50,10 @@ LegacyStrikeDatabase* TestAutofillClient::GetLegacyStrikeDatabase() {
   return test_legacy_strike_database_.get();
 }
 
+StrikeDatabase* TestAutofillClient::GetStrikeDatabase() {
+  return test_strike_database_.get();
+}
+
 ukm::UkmRecorder* TestAutofillClient::GetUkmRecorder() {
   return ukm::UkmRecorder::Get();
 }

@@ -27,6 +27,7 @@
 #include "ios/chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #include "ios/chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/autofill/strike_database_factory.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 #include "ios/chrome/browser/metrics/ukm_url_recorder.h"
@@ -141,6 +142,10 @@ payments::PaymentsClient* ChromeAutofillClientIOS::GetPaymentsClient() {
 
 LegacyStrikeDatabase* ChromeAutofillClientIOS::GetLegacyStrikeDatabase() {
   return legacy_strike_database_;
+}
+
+StrikeDatabase* ChromeAutofillClientIOS::GetStrikeDatabase() {
+  return strike_database_;
 }
 
 ukm::UkmRecorder* ChromeAutofillClientIOS::GetUkmRecorder() {

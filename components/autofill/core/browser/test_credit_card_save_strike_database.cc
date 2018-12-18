@@ -7,9 +7,7 @@
 namespace autofill {
 
 TestCreditCardSaveStrikeDatabase::TestCreditCardSaveStrikeDatabase(
-    const base::FilePath& database_dir)
-    : CreditCardSaveStrikeDatabase(database_dir) {
-  database_initialized_ = true;
-}
+    StrikeDatabase* strike_database)
+    : CreditCardSaveStrikeDatabase(strike_database) {}
 
 }  // namespace autofill
