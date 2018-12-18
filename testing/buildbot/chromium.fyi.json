@@ -3870,6 +3870,44 @@
   "chromeos-kevin-rel-hw-tests": {
     "additional_compile_targets": [
       "chromiumos_preflight"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "kevin",
+              "os": "ChromeOS"
+            }
+          ]
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "kevin",
+              "os": "ChromeOS"
+            }
+          ]
+        },
+        "test": "chrome_all_tast_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "kevin",
+              "os": "ChromeOS"
+            }
+          ]
+        },
+        "test": "cros_vm_sanity_test"
+      }
     ]
   },
   "fuchsia-fyi-arm64-rel": {

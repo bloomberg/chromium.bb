@@ -1400,6 +1400,20 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              # TODO(crbug.com/866062): Ensure these tests prefer to run on
+              # devices running an OS version at or above the LKGM. For now,
+              # just accept any OS version.
+              'device_type': 'kevin',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_kevin_tests',
+        },
       },
       'fuchsia-fyi-arm64-rel': {
         'additional_compile_targets': [
