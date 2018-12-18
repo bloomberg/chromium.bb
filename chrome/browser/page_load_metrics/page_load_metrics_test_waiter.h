@@ -95,8 +95,10 @@ class PageLoadMetricsTestWaiter
         const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
             resources) override;
 
-    void OnFeaturesUsageObserved(const mojom::PageLoadFeatures& features,
-                                 const PageLoadExtraInfo& extra_info) override;
+    void OnFeaturesUsageObserved(
+        content::RenderFrameHost* rfh,
+        const page_load_metrics::mojom::PageLoadFeatures&,
+        const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
    private:
     const base::WeakPtr<PageLoadMetricsTestWaiter> waiter_;
@@ -161,7 +163,8 @@ class PageLoadMetricsTestWaiter
 
   // Updates |observed_web_features_| to record any new feature observed.
   // Stops waiting if expectations are satisfied after update.
-  void OnFeaturesUsageObserved(const mojom::PageLoadFeatures& features,
+  void OnFeaturesUsageObserved(content::RenderFrameHost* rfh,
+                               const mojom::PageLoadFeatures& features,
                                const PageLoadExtraInfo& extra_info);
 
   void OnTrackerCreated(page_load_metrics::PageLoadTracker* tracker) override;

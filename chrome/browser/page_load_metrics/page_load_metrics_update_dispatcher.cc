@@ -454,7 +454,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     UpdateSubFrameTiming(render_frame_host, std::move(new_timing));
     // TODO: Handle subframe PageRenderData.
   }
-  client_->UpdateFeaturesUsage(*new_features);
+  client_->UpdateFeaturesUsage(render_frame_host, *new_features);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
@@ -466,7 +466,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
     // these as they could skew metrics. See http://crbug.com/761037
     return;
   }
-  client_->UpdateFeaturesUsage(new_features);
+  client_->UpdateFeaturesUsage(render_frame_host, new_features);
 }
 
 void PageLoadMetricsUpdateDispatcher::DidFinishSubFrameNavigation(

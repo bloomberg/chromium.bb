@@ -964,6 +964,12 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="IsMainFrameFeature">
+    <summary>
+      Emits True(1) or False(0) to indicate whether the Feature recorded is in
+      the main frame or not.
+    </summary>
+  </metric>
 </event>
 
 <event name="BloatedRenderer">

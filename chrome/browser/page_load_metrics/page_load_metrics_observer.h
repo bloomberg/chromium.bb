@@ -427,7 +427,8 @@ class PageLoadMetricsObserver {
   virtual void OnLoadingBehaviorObserved(const PageLoadExtraInfo& extra_info) {}
 
   // Invoked when new use counter features are observed across all frames.
-  virtual void OnFeaturesUsageObserved(const mojom::PageLoadFeatures& features,
+  virtual void OnFeaturesUsageObserved(content::RenderFrameHost* rfh,
+                                       const mojom::PageLoadFeatures& features,
                                        const PageLoadExtraInfo& extra_info) {}
 
   // Invoked when there is data use for loading a resource on the page

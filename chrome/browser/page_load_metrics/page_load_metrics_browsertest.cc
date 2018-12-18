@@ -1013,13 +1013,25 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kTextWholeText), 1);
   histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kTextWholeText), 1);
+  histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
+  histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kDataUriHasOctothorpe), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
       static_cast<int32_t>(WebFeature::kDataUriHasOctothorpe), 1);
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
@@ -1027,7 +1039,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
           WebFeature::kApplicationCacheManifestSelectSecureOrigin),
       1);
   histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(
+          WebFeature::kApplicationCacheManifestSelectSecureOrigin),
+      1);
+  histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kPageVisits), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
@@ -1191,19 +1211,37 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kTextWholeText), 1);
   histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kTextWholeText), 1);
+  histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
+  histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kDataUriHasOctothorpe), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
       static_cast<int32_t>(WebFeature::kDataUriHasOctothorpe), 1);
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
   histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kPageVisits), 1);
+  histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kFullscreenInsecureOrigin), 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
       static_cast<int32_t>(WebFeature::kFullscreenInsecureOrigin), 1);
 }
 
@@ -1227,9 +1265,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
+    test_ukm_recorder_->ExpectEntryMetric(
+        entry, ukm::builders::Blink_UseCounter::kIsMainFrameFeatureName, 1);
     const auto* metric = test_ukm_recorder_->GetEntryMetric(
         entry, ukm::builders::Blink_UseCounter::kFeatureName);
-    EXPECT_TRUE(metric);
+    DCHECK(metric);
     ukm_features.push_back(*metric);
   }
   EXPECT_THAT(
@@ -1268,9 +1308,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
+    test_ukm_recorder_->ExpectEntryMetric(
+        entry, ukm::builders::Blink_UseCounter::kIsMainFrameFeatureName, 1);
     const auto* metric = test_ukm_recorder_->GetEntryMetric(
         entry, ukm::builders::Blink_UseCounter::kFeatureName);
-    EXPECT_TRUE(metric);
+    DCHECK(metric);
     ukm_features.push_back(*metric);
   }
   EXPECT_THAT(ukm_features,
@@ -1311,6 +1353,19 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, UseCounterFeaturesInIframe) {
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
+  // No feature but page visits should get counted.
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kTextWholeText), 0);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 0);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kNavigatorVibrate), 0);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
 // Test UseCounter Features observed in multiple child frames are recorded,
@@ -1339,6 +1394,19 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
+      static_cast<int32_t>(WebFeature::kPageVisits), 1);
+  // No feature but page visits should get counted.
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kTextWholeText), 0);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 0);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
+      static_cast<int32_t>(WebFeature::kNavigatorVibrate), 0);
+  histogram_tester_.ExpectBucketCount(
+      internal::kFeaturesHistogramMainFrameName,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
