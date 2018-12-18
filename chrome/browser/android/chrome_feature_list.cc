@@ -215,7 +215,7 @@ const base::Feature kAndroidSiteSettingsUIRefresh{
     "AndroidSiteSettingsUIRefresh", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAutofillAssistant{"AutofillAssistant",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kBackgroundTaskComponentUpdate{
     "BackgroundTaskComponentUpdate", base::FEATURE_DISABLED_BY_DEFAULT};

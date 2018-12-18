@@ -30,7 +30,6 @@ public class AutofillAssistantFacade {
     /** Returns true if all conditions are satisfied to start Autofill Assistant. */
     public static boolean isConfigured(@Nullable Bundle intentExtras) {
         return getBooleanParameter(intentExtras, PARAMETER_ENABLED)
-                && !AutofillAssistantStudy.getUrl().isEmpty()
                 && AutofillAssistantPreferencesUtil.canShowAutofillAssistant();
     }
 

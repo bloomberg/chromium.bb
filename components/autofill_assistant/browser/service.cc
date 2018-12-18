@@ -29,7 +29,6 @@ namespace switches {
 const char* const kAutofillAssistantAuth = "autofill-assistant-auth";
 }  // namespace switches
 
-// TODO(crbug.com/806868): Provide correct server and endpoint.
 const char* const kScriptEndpoint = "/v1/supportsSite2";
 const char* const kActionEndpoint = "/v1/actions2";
 

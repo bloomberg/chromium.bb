@@ -34,9 +34,4 @@ class AutofillAssistantStudy {
         }
         return color;
     }
-
-    /** Parameter to change the script repository url. Returns an empty string if not set.*/
-    static String getUrl() {
-        return VariationsAssociatedData.getVariationParamValue(STUDY_NAME, URL_PARAMETER_NAME);
-    }
 }

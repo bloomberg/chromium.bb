@@ -12,6 +12,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -26,7 +27,6 @@
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/variations/variations_associated_data.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,6 +45,10 @@ const char* const kAutofillAssistantServerKey = "autofill-assistant-key";
 }  // namespace switches
 
 namespace {
+
+const base::FeatureParam<std::string> kAutofillAssistantServerUrl{
+    &chrome::android::kAutofillAssistant, "url",
+    "https://automate-pa.googleapis.com"};
 
 // Time between two attempts to destroy the controller.
 static constexpr base::TimeDelta kDestroyRetryInterval =
@@ -67,6 +71,7 @@ std::unique_ptr<std::map<std::string, std::string>> BuildParametersFromJava(
   }
   return parameters;
 }
+
 }  // namespace
 
 UiControllerAndroid::UiControllerAndroid(
@@ -484,8 +489,7 @@ autofill::PersonalDataManager* UiControllerAndroid::GetPersonalDataManager() {
 }
 
 std::string UiControllerAndroid::GetServerUrl() {
-  return variations::GetVariationParamValueByFeature(
-      chrome::android::kAutofillAssistant, "url");
+  return kAutofillAssistantServerUrl.Get();
 }
 
 UiController* UiControllerAndroid::GetUiController() {
