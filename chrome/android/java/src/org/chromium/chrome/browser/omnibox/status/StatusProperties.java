@@ -19,16 +19,15 @@ class StatusProperties {
     /** Specifies status icon tint color. */
     public static final WritableIntPropertyKey ICON_TINT_COLOR_RES = new WritableIntPropertyKey();
 
-    /** Specifies current selection of the location bar button type. */
-    public static final WritableIntPropertyKey LOCATION_BAR_BUTTON_TYPE =
-            new WritableIntPropertyKey();
-
     /** Specifies navigation button type (eg: PAGE, MAGNIFIER) */
     public static final WritableIntPropertyKey NAVIGATION_BUTTON_TYPE =
             new WritableIntPropertyKey();
 
     /** Specifies status separator color. */
     public static final WritableIntPropertyKey SEPARATOR_COLOR_RES = new WritableIntPropertyKey();
+
+    /** Specifies current selection of the location bar button type. */
+    public static final WritableIntPropertyKey STATUS_BUTTON_TYPE = new WritableIntPropertyKey();
 
     /** Specifies verbose status text color. */
     public static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_COLOR_RES =
@@ -47,8 +46,8 @@ class StatusProperties {
             new WritableIntPropertyKey();
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ANIMATIONS_ENABLED,
-            ICON_TINT_COLOR_RES, LOCATION_BAR_BUTTON_TYPE, NAVIGATION_BUTTON_TYPE,
-            SEPARATOR_COLOR_RES, VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
+            ICON_TINT_COLOR_RES, NAVIGATION_BUTTON_TYPE, SEPARATOR_COLOR_RES, STATUS_BUTTON_TYPE,
+            VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
             VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH};
 
     private StatusProperties() {}
