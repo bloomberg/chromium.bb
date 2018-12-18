@@ -9,14 +9,14 @@
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
 // Used to report per-origin storage info for a storage type. The storage type
 // (Cache API, Indexed DB, Local Storage, etc) is implied by context.
 struct CONTENT_EXPORT StorageUsageInfo {
-  StorageUsageInfo(const GURL& origin,
+  StorageUsageInfo(const url::Origin& origin,
                    int64_t total_size_bytes,
                    base::Time last_modified)
       : origin(origin),
@@ -27,8 +27,7 @@ struct CONTENT_EXPORT StorageUsageInfo {
   StorageUsageInfo() = default;
 
   // The origin this object is describing.
-  // TODO(jsbell): Convert this to url::Origin.
-  GURL origin;
+  url::Origin origin;
 
   // The total size, including resources, in bytes.
   int64_t total_size_bytes;

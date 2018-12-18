@@ -922,7 +922,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   // Only "origin2.com" now has a service worker.
   service_workers = GetServiceWorkers();
   ASSERT_EQ(1u, service_workers.size());
-  EXPECT_EQ(service_workers[0].origin,
+  EXPECT_EQ(service_workers[0].origin.GetURL(),
             https_server()->GetURL("origin2.com", "/"));
 
   // TODO(msramek): Test that the service worker update ping also deletes

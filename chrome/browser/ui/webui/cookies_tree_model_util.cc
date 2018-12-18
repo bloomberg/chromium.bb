@@ -173,7 +173,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       const content::StorageUsageInfo& indexed_db_info =
           *node.GetDetailedInfo().indexed_db_info;
 
-      dict->SetString(kKeyOrigin, indexed_db_info.origin.spec());
+      dict->SetString(kKeyOrigin, indexed_db_info.origin.Serialize());
       dict->SetString(kKeySize,
                       ui::FormatBytes(indexed_db_info.total_size_bytes));
       dict->SetString(kKeyModified,
@@ -235,7 +235,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       const content::StorageUsageInfo& service_worker_info =
           *node.GetDetailedInfo().service_worker_info;
 
-      dict->SetString(kKeyOrigin, service_worker_info.origin.spec());
+      dict->SetString(kKeyOrigin, service_worker_info.origin.Serialize());
       dict->SetString(kKeySize,
                       ui::FormatBytes(service_worker_info.total_size_bytes));
       // TODO(jsbell): Include kKeyModified like other storage types.
@@ -257,7 +257,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       const content::StorageUsageInfo& cache_storage_info =
           *node.GetDetailedInfo().cache_storage_info;
 
-      dict->SetString(kKeyOrigin, cache_storage_info.origin.spec());
+      dict->SetString(kKeyOrigin, cache_storage_info.origin.Serialize());
       dict->SetString(kKeySize,
                       ui::FormatBytes(cache_storage_info.total_size_bytes));
       dict->SetString(kKeyModified,

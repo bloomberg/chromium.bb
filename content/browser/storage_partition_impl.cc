@@ -168,14 +168,16 @@ void OnLocalStorageUsageInfo(
       base::BarrierClosure(infos.size(), std::move(done_callback));
   for (size_t i = 0; i < infos.size(); ++i) {
     if (!origin_matcher.is_null() &&
-        !origin_matcher.Run(infos[i].origin, special_storage_policy.get())) {
+        !origin_matcher.Run(infos[i].origin.GetURL(),
+                            special_storage_policy.get())) {
       barrier.Run();
       continue;
     }
 
     if (infos[i].last_modified >= delete_begin &&
         infos[i].last_modified <= delete_end) {
-      dom_storage_context->DeleteLocalStorage(infos[i].origin, barrier);
+      dom_storage_context->DeleteLocalStorage(infos[i].origin.GetURL(),
+                                              barrier);
     } else {
       barrier.Run();
     }

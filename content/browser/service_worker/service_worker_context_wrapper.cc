@@ -1128,7 +1128,8 @@ void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
     auto it = origins.find(origin);
     if (it == origins.end()) {
       origins[origin] = StorageUsageInfo(
-          origin, registration_info.stored_version_size_bytes, base::Time());
+          url::Origin::Create(origin),
+          registration_info.stored_version_size_bytes, base::Time());
     } else {
       it->second.total_size_bytes +=
           registration_info.stored_version_size_bytes;

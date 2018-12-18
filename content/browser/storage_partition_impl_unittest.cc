@@ -200,7 +200,7 @@ class RemoveLocalStorageTester {
     GetLocalStorageUsage();
     await_completion_.BlockUntilNotified();
     for (size_t i = 0; i < infos_.size(); ++i) {
-      if (origin == url::Origin::Create(infos_[i].origin))
+      if (origin == infos_[i].origin)
         return true;
     }
     return false;

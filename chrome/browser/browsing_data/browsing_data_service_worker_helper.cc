@@ -30,7 +30,7 @@ void GetAllOriginsInfoForServiceWorkerCallback(
 
   std::list<StorageUsageInfo> result;
   for (const StorageUsageInfo& origin : origins) {
-    if (!BrowsingDataHelper::HasWebScheme(origin.origin))
+    if (!BrowsingDataHelper::HasWebScheme(origin.origin.GetURL()))
       continue;  // Non-websafe state is not considered browsing data.
     result.push_back(origin);
   }
@@ -147,7 +147,8 @@ void CannedBrowsingDataServiceWorkerHelper::StartFetching(
   std::list<StorageUsageInfo> result;
   for (const PendingServiceWorkerUsageInfo& pending_info :
        pending_service_worker_info_) {
-    result.emplace_back(pending_info.origin, 0, base::Time());
+    result.emplace_back(url::Origin::Create(pending_info.origin), 0,
+                        base::Time());
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},

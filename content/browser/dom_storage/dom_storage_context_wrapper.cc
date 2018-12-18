@@ -55,9 +55,8 @@ void GetLegacyLocalStorageUsage(
        path = enumerator.Next()) {
     if (path.MatchesExtension(DOMStorageArea::kDatabaseFileExtension)) {
       base::FileEnumerator::FileInfo find_info = enumerator.GetInfo();
-      infos.emplace_back(
-          DOMStorageArea::OriginFromDatabaseFileName(path).GetURL(),
-          find_info.GetSize(), find_info.GetLastModifiedTime());
+      infos.emplace_back(DOMStorageArea::OriginFromDatabaseFileName(path),
+                         find_info.GetSize(), find_info.GetLastModifiedTime());
     }
   }
   reply_task_runner->PostTask(

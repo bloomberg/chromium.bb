@@ -126,10 +126,10 @@ void SessionDataDeleter::ClearSessionOnlyLocalStorage(
   DCHECK(storage_policy_->HasSessionOnlyOrigins());
   for (size_t i = 0; i < usages.size(); ++i) {
     const content::StorageUsageInfo& usage = usages[i];
-    if (!storage_policy_->IsStorageSessionOnly(usage.origin))
+    if (!storage_policy_->IsStorageSessionOnly(usage.origin.GetURL()))
       continue;
     storage_partition->GetDOMStorageContext()->DeleteLocalStorage(
-        usage.origin, base::DoNothing());
+        usage.origin.GetURL(), base::DoNothing());
   }
 }
 

@@ -944,7 +944,7 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
     std::vector<StorageUsageInfo> result;
     base::Time now = base::Time::Now();
     for (const auto& it : areas_)
-      result.emplace_back(it.first.GetURL(), 0, now);
+      result.emplace_back(it.first, 0, now);
     std::move(callback).Run(std::move(result));
     return;
   }
@@ -978,7 +978,7 @@ void LocalStorageContextMojo::OnGotMetaData(
       continue;
     }
     result.emplace_back(
-        origin, row_data.size_bytes(),
+        url::Origin::Create(origin), row_data.size_bytes(),
         base::Time::FromInternalValue(row_data.last_modified()));
   }
   // Add any origins for which StorageAreas exist, but which haven't
@@ -992,7 +992,7 @@ void LocalStorageContextMojo::OnGotMetaData(
         it.second->storage_area()->empty()) {
       continue;
     }
-    result.emplace_back(it.first.GetURL(), 0, now);
+    result.emplace_back(it.first, 0, now);
   }
   std::move(callback).Run(std::move(result));
 }
@@ -1001,12 +1001,12 @@ void LocalStorageContextMojo::OnGotStorageUsageForShutdown(
     std::vector<StorageUsageInfo> usage) {
   std::vector<leveldb::mojom::BatchedOperationPtr> operations;
   for (const auto& info : usage) {
-    if (special_storage_policy_->IsStorageProtected(info.origin))
+    if (special_storage_policy_->IsStorageProtected(info.origin.GetURL()))
       continue;
-    if (!special_storage_policy_->IsStorageSessionOnly(info.origin))
+    if (!special_storage_policy_->IsStorageSessionOnly(info.origin.GetURL()))
       continue;
 
-    AddDeleteOriginOperations(&operations, url::Origin::Create(info.origin));
+    AddDeleteOriginOperations(&operations, info.origin);
   }
 
   if (!operations.empty()) {

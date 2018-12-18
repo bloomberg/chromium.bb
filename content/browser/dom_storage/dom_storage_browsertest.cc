@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DeletePhysicalOrigin) {
   SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
   std::vector<StorageUsageInfo> usage = GetUsage();
   ASSERT_EQ(1U, usage.size());
-  DeletePhysicalOrigin(usage[0].origin);
+  DeletePhysicalOrigin(usage[0].origin.GetURL());
   EXPECT_EQ(0U, GetUsage().size());
 }
 
