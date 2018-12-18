@@ -330,6 +330,8 @@ struct SVGAttributeHashTranslator {
   }
 };
 
+FloatRect ComputeSVGTransformReferenceBox(const LayoutObject&);
+
 DEFINE_ELEMENT_TYPE_CASTS(SVGElement, IsSVGElement());
 
 template <typename T>

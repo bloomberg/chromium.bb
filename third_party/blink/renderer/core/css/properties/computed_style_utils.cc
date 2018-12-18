@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
-#include "third_party/blink/renderer/core/svg_element_type_helpers.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
 
 namespace blink {
 
@@ -1642,18 +1642,26 @@ CSSFunctionValue* ValueForMatrixTransform(
   return transform_value;
 }
 
+static FloatRect ReferenceBoxForTransform(const LayoutObject& layout_object) {
+  if (layout_object.IsSVGChild())
+    return ComputeSVGTransformReferenceBox(layout_object);
+  if (layout_object.IsBox()) {
+    return FloatRect(
+        PixelSnappedIntRect(ToLayoutBox(layout_object).BorderBoxRect()));
+  }
+  return FloatRect();
+}
+
 CSSValue* ComputedStyleUtils::ComputedTransform(
     const LayoutObject* layout_object,
     const ComputedStyle& style) {
   if (!layout_object || !style.HasTransform())
     return CSSIdentifierValue::Create(CSSValueNone);
 
-  IntRect box;
-  if (layout_object->IsBox())
-    box = PixelSnappedIntRect(ToLayoutBox(layout_object)->BorderBoxRect());
+  FloatRect reference_box = ReferenceBoxForTransform(*layout_object);
 
   TransformationMatrix transform;
-  style.ApplyTransform(transform, LayoutSize(box.Size()),
+  style.ApplyTransform(transform, reference_box,
                        ComputedStyle::kExcludeTransformOrigin,
                        ComputedStyle::kExcludeMotionPath,
                        ComputedStyle::kExcludeIndependentTransformProperties);

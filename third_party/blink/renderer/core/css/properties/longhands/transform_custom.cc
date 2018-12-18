@@ -25,7 +25,8 @@ const CSSValue* Transform::ParseSingleValue(
 
 bool Transform::IsLayoutDependent(const ComputedStyle* style,
                                   LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox();
+  return layout_object &&
+         (layout_object->IsBox() || layout_object->IsSVGChild());
 }
 
 const CSSValue* Transform::CSSValueFromComputedStyleInternal(
