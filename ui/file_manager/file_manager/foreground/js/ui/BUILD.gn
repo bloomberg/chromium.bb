@@ -374,6 +374,7 @@ js_library("multi_menu") {
   deps = [
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js/cr/ui:menu",
+    "//ui/webui/resources/js/cr/ui:menu_button",
     "//ui/webui/resources/js/cr/ui:menu_item",
     "//ui/webui/resources/js/cr/ui:position_util",
   ]
@@ -385,7 +386,6 @@ js_unittest("multi_menu_unittest") {
     "../../../common/js:util",
     "//ui/file_manager/base/js:test_error_reporting",
     "//ui/webui/resources/js:webui_resource_test",
-    "//ui/webui/resources/js/cr/ui:menu_button",
   ]
 }
 
