@@ -15,6 +15,11 @@
 
 FakeGaiaCookieManagerService::FakeGaiaCookieManagerService(
     OAuth2TokenService* token_service,
+    SigninClient* client)
+    : GaiaCookieManagerService(token_service, client) {}
+
+FakeGaiaCookieManagerService::FakeGaiaCookieManagerService(
+    OAuth2TokenService* token_service,
     SigninClient* client,
     network::TestURLLoaderFactory* test_url_loader_factory)
     : GaiaCookieManagerService(token_service, client),

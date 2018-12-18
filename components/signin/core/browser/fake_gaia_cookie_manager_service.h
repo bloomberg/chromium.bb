@@ -27,6 +27,9 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
     bool verified;
   };
 
+  FakeGaiaCookieManagerService(OAuth2TokenService* token_service,
+                               SigninClient* client);
+
   FakeGaiaCookieManagerService(
       OAuth2TokenService* token_service,
       SigninClient* client,
