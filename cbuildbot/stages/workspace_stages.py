@@ -290,8 +290,12 @@ class WorkspaceScheduleChildrenStage(WorkspaceStageBase):
           master_buildbucket_id=master_buildbucket_id,
           extra_args=extra_args,
       )
-      child.Submit(dryrun=self._run.options.debug)
+      result = child.Submit(dryrun=self._run.options.debug)
 
+      logging.info(
+          'Build_name %s buildbucket_id %s created_timestamp %s',
+          result.build_config, result.buildbucket_id, result.created_ts)
+      logging.PrintBuildbotLink(result.build_config, result.url)
 
 class WorkspaceInitSDKStage(WorkspaceStageBase):
   """Stage that is responsible for initializing the SDK."""
