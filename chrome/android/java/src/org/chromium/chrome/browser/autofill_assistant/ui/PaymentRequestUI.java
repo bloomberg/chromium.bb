@@ -17,7 +17,6 @@ import android.content.DialogInterface;
 import android.support.annotation.IntDef;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.text.TextUtils;
-import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +24,6 @@ import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -47,8 +45,6 @@ import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.animation.FocusAnimator;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
-import org.chromium.ui.text.SpanApplier;
-import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -111,7 +107,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private ViewGroup mBottomBar;
     private Button mPayButton;
     private View mSpinnyLayout;
-    private CheckBox mTermsCheckBox;
     // View used to store a view to be replaced with the current payment request UI.
     private ViewGroup mBackupView;
 
@@ -306,14 +301,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mBottomBar = (ViewGroup) mRequestView.findViewById(R.id.bottom_bar);
         mPayButton = (Button) mBottomBar.findViewById(R.id.button_primary);
         mPayButton.setOnClickListener(this);
-
-        // Terms and services accepted checkbox. The state is passively propagated along to the
-        // client when the pay/continue button is clicked.
-        mTermsCheckBox = (CheckBox) mRequestView.findViewById(R.id.terms_checkbox);
-        StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
-        String termsString = context.getString(R.string.autofill_assistant_terms, origin);
-        mTermsCheckBox.setText(
-                SpanApplier.applySpans(termsString, new SpanInfo("<b>", "</b>", boldSpan)));
 
         // Create all the possible sections.
         mSectionSeparators = new ArrayList<>();
@@ -613,7 +600,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 mShippingOptionsSectionInformation == null
                         ? null
                         : mShippingOptionsSectionInformation.getSelectedItem(),
-                mPaymentMethodSectionInformation.getSelectedItem(), mTermsCheckBox.isChecked());
+                mPaymentMethodSectionInformation.getSelectedItem(), false);
 
         if (shouldShowSpinner) {
             changeSpinnerVisibility(true);
