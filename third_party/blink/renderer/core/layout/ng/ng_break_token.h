@@ -34,7 +34,10 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
  public:
   virtual ~NGBreakToken() = default;
 
-  enum NGBreakTokenType { kBlockBreakToken, kInlineBreakToken };
+  enum NGBreakTokenType {
+    kBlockBreakToken = NGLayoutInputNode::kBlock,
+    kInlineBreakToken = NGLayoutInputNode::kInline
+  };
   NGBreakTokenType Type() const { return static_cast<NGBreakTokenType>(type_); }
 
   bool IsBlockType() const { return Type() == kBlockBreakToken; }
@@ -47,7 +50,10 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
 
   // Returns the node associated with this break token. A break token cannot be
   // used with any other node.
-  NGLayoutInputNode InputNode() const { return node_; }
+  NGLayoutInputNode InputNode() const {
+    return NGLayoutInputNode::Create(
+        box_, static_cast<NGLayoutInputNode::NGLayoutInputNodeType>(type_));
+  }
 
 #ifndef NDEBUG
   virtual String ToString() const;
@@ -58,13 +64,40 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   NGBreakToken(NGBreakTokenType type,
                NGBreakTokenStatus status,
                NGLayoutInputNode node)
-      : type_(type), status_(status), node_(node) {}
+      : box_(node.GetLayoutBox()),
+        type_(type),
+        status_(status),
+        flags_(0),
+        ignore_floats_(false),
+        is_break_before_(false),
+        has_last_resort_break_(false) {
+    DCHECK_EQ(type, static_cast<NGBreakTokenType>(node.Type()));
+  }
 
  private:
+  // Because |NGLayoutInputNode| has a pointer and 1 bit flag, and it's fast to
+  // re-construct, keep |LayoutBox| to save the memory consumed by alignment.
+  LayoutBox* box_;
+
   unsigned type_ : 1;
   unsigned status_ : 1;
 
-  NGLayoutInputNode node_;
+ protected:
+  // The following bitfields are only to be used by NGInlineBreakToken (it's
+  // defined here to save memory, since that class has no bitfields).
+
+  unsigned flags_ : 2;  // NGInlineBreakTokenFlags
+  unsigned ignore_floats_ : 1;
+
+  // The following bitfields are only to be used by NGBlockBreakToken (it's
+  // defined here to save memory, since that class has no bitfields).
+
+  unsigned is_break_before_ : 1;
+
+  // We're attempting to break at an undesirable place. Sometimes that's
+  // unavoidable, but we should only break here if we cannot find a better break
+  // point further up in the ancestry.
+  unsigned has_last_resort_break_ : 1;
 };
 
 typedef Vector<scoped_refptr<NGBreakToken>, 16> NGBreakTokenVector;

@@ -54,8 +54,17 @@ class CORE_EXPORT NGLayoutInputNode {
     // When adding new values, ensure type_ below has enough bits.
   };
 
+  static NGLayoutInputNode Create(LayoutBox* box, NGLayoutInputNodeType type) {
+    // This function should create an instance of the subclass. This works
+    // because subclasses are not virtual and do not add fields.
+    return NGLayoutInputNode(box, type);
+  }
+
   NGLayoutInputNode(std::nullptr_t) : box_(nullptr), type_(kBlock) {}
 
+  NGLayoutInputNodeType Type() const {
+    return static_cast<NGLayoutInputNodeType>(type_);
+  }
   bool IsInline() const { return type_ == kInline; }
   bool IsBlock() const { return type_ == kBlock; }
 

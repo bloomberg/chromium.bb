@@ -127,13 +127,6 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
 
   LayoutUnit used_block_size_;
 
-  bool is_break_before_ = false;
-
-  // We're attempting to break at an undesirable place. Sometimes that's
-  // unavoidable, but we should only break here if we cannot find a better break
-  // point further up in the ancestry.
-  bool has_last_resort_break_ = false;
-
   wtf_size_t num_children_;
   // This must be the last member, because it is a flexible array.
   NGBreakToken* child_break_tokens_[];
