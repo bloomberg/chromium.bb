@@ -112,6 +112,8 @@ struct av1_extracfg {
   int enable_warped_motion;      // sequence level
   int allow_warped_motion;       // frame level
   int enable_filter_intra;       // enable filter intra for sequence
+  int enable_smooth_intra;       // enable smooth intra modes for sequence
+  int enable_paeth_intra;        // enable Peeth intra mode for sequence
   int enable_superres;
   int enable_palette;
   int enable_intrabc;
@@ -202,6 +204,8 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // enable_warped_motion at sequence level
   1,                            // allow_warped_motion at frame level
   1,                            // enable filter intra at sequence level
+  1,                            // enable smooth intra modes usage for sequence
+  1,                            // enable Paeth intra mode usage for sequence
   1,                            // superres
   1,                            // enable palette
   1,                            // enable intrabc
@@ -722,6 +726,8 @@ static aom_codec_err_t set_encoder_config(
   oxcf->allow_warped_motion =
       extra_cfg->allow_warped_motion & extra_cfg->enable_warped_motion;
   oxcf->enable_filter_intra = extra_cfg->enable_filter_intra;
+  oxcf->enable_smooth_intra = extra_cfg->enable_smooth_intra;
+  oxcf->enable_paeth_intra = extra_cfg->enable_paeth_intra;
 
   oxcf->enable_superres =
       (oxcf->superres_mode != SUPERRES_NONE) && extra_cfg->enable_superres;
@@ -1196,6 +1202,20 @@ static aom_codec_err_t ctrl_set_enable_filter_intra(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_filter_intra = CAST(AV1E_SET_ENABLE_FILTER_INTRA, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_smooth_intra(aom_codec_alg_priv_t *ctx,
+                                                    va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_smooth_intra = CAST(AV1E_SET_ENABLE_SMOOTH_INTRA, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_paeth_intra(aom_codec_alg_priv_t *ctx,
+                                                   va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_paeth_intra = CAST(AV1E_SET_ENABLE_PAETH_INTRA, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1973,6 +1993,8 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ENABLE_WARPED_MOTION, ctrl_set_enable_warped_motion },
   { AV1E_SET_ALLOW_WARPED_MOTION, ctrl_set_allow_warped_motion },
   { AV1E_SET_ENABLE_FILTER_INTRA, ctrl_set_enable_filter_intra },
+  { AV1E_SET_ENABLE_SMOOTH_INTRA, ctrl_set_enable_smooth_intra },
+  { AV1E_SET_ENABLE_PAETH_INTRA, ctrl_set_enable_paeth_intra },
   { AV1E_SET_ENABLE_SUPERRES, ctrl_set_enable_superres },
   { AV1E_SET_ENABLE_PALETTE, ctrl_set_enable_palette },
   { AV1E_SET_ENABLE_INTRABC, ctrl_set_enable_intrabc },

@@ -496,6 +496,13 @@ static const arg_def_t enable_filter_intra =
     ARG_DEF(NULL, "enable-filter-intra", 1,
             "Enable filter intra prediction mode "
             "(0: false, 1: true (default))");
+static const arg_def_t enable_smooth_intra =
+    ARG_DEF(NULL, "enable-smooth-intra", 1,
+            "Enable smooth intra prediction modes "
+            "(0: false, 1: true (default))");
+static const arg_def_t enable_paeth_intra =
+    ARG_DEF(NULL, "enable-paeth-intra", 1,
+            "Enable Paeth intra prediction mode (0: false, 1: true (default))");
 static const arg_def_t enable_obmc = ARG_DEF(
     NULL, "enable-obmc", 1, "Enable OBMC (0: false, 1: true (default))");
 static const arg_def_t enable_palette =
@@ -726,6 +733,8 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_global_motion,
                                        &enable_warped_motion,
                                        &enable_filter_intra,
+                                       &enable_smooth_intra,
+                                       &enable_paeth_intra,
                                        &enable_obmc,
                                        &enable_palette,
                                        &enable_intrabc,
@@ -804,6 +813,8 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_GLOBAL_MOTION,
                                         AV1E_SET_ENABLE_WARPED_MOTION,
                                         AV1E_SET_ENABLE_FILTER_INTRA,
+                                        AV1E_SET_ENABLE_SMOOTH_INTRA,
+                                        AV1E_SET_ENABLE_PAETH_INTRA,
                                         AV1E_SET_ENABLE_OBMC,
                                         AV1E_SET_ENABLE_PALETTE,
                                         AV1E_SET_ENABLE_INTRABC,

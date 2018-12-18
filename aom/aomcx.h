@@ -872,6 +872,22 @@ enum {
    */
   AV1E_SET_ENABLE_FILTER_INTRA,
 
+  /*!\brief Codec control function to turn on / off smooth intra modes usage.
+   *
+   * This will enable or disable usage of smooth, smooth_h and smooth_v intra
+   * modes. The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_SMOOTH_INTRA,
+
+  /*!\brief Codec control function to turn on / off Paeth intra mode usage.
+   *
+   * This will enable or disable usage of Paeth intra mode. The default value
+   * is 1.
+   *
+   */
+  AV1E_SET_ENABLE_PAETH_INTRA,
+
   /*!\brief Codec control function to turn on / off frame superresolution.
    *
    * This will enable or disable frame superresolution. The default value is 1
@@ -1206,6 +1222,12 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ALLOW_WARPED_MOTION, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_FILTER_INTRA, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_FILTER_INTRA
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_SMOOTH_INTRA, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_SMOOTH_INTRA
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_PAETH_INTRA, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_PAETH_INTRA
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_SUPERRES, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_SUPERRES
