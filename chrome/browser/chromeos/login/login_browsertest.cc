@@ -114,7 +114,7 @@ class LoginTest : public LoginManagerTest {
       "$('error-offline-login-link').onclick();"
     "})();";
     // clang-format on
-    ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
+    test::ExecuteOobeJS(js);
 
     std::string message;
     do {
@@ -149,12 +149,11 @@ class LoginTest : public LoginManagerTest {
         "function() {"
         "window.domAutomationController.send('switchToPassword');"
         "})";
-    ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
+    test::ExecuteOobeJS(js);
     std::string set_email = email_input + ".value = '$Email'";
     base::ReplaceSubstringsAfterOffset(&set_email, 0, "$Email", user_email);
-    ASSERT_TRUE(content::ExecuteScript(web_contents(), set_email));
-    ASSERT_TRUE(content::ExecuteScript(web_contents(),
-                                       email_next_button + ".fire('tap')"));
+    test::ExecuteOobeJS(set_email);
+    test::ExecuteOobeJS(email_next_button + ".fire('tap')");
     std::string message;
     do {
       ASSERT_TRUE(message_queue.WaitForMessage(&message));
@@ -162,9 +161,8 @@ class LoginTest : public LoginManagerTest {
 
     std::string set_password = password_input + ".value = '$Password'";
     base::ReplaceSubstringsAfterOffset(&set_password, 0, "$Password", password);
-    ASSERT_TRUE(content::ExecuteScript(web_contents(), set_password));
-    ASSERT_TRUE(content::ExecuteScript(web_contents(),
-                                       password_next_button + ".fire('tap')"));
+    test::ExecuteOobeJS(set_password);
+    test::ExecuteOobeJS(password_next_button + ".fire('tap')");
   }
 
   void PrepareOfflineLogin() {

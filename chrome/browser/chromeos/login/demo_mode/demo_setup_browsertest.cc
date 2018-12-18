@@ -225,13 +225,13 @@ class DemoSetupTest : public LoginManagerTest {
   }
 
   void SetPlayStoreTermsForTesting() {
-    EXPECT_TRUE(
-        JSExecute("login.ArcTermsOfServiceScreen.setTosForTesting('Test "
-                  "Play Store Terms of Service');"));
+    test::ExecuteOobeJS(
+        R"(login.ArcTermsOfServiceScreen.setTosForTesting(
+              'Test Play Store Terms of Service');)");
   }
 
   void InvokeDemoModeWithAccelerator() {
-    EXPECT_TRUE(JSExecute("cr.ui.Oobe.handleAccelerator('demo_mode');"));
+    test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('demo_mode');");
   }
 
   void InvokeDemoModeWithTaps() {
@@ -244,16 +244,15 @@ class DemoSetupTest : public LoginManagerTest {
     const std::string query = base::StrCat(
         {"for (var i = 0; i < ", base::NumberToString(tapsCount), "; ++i)",
          "{ document.querySelector('#outer-container').click(); }"});
-    EXPECT_TRUE(JSExecute(query));
+    test::ExecuteOobeJS(query);
   }
 
   void ClickOkOnConfirmationDialog() {
-    EXPECT_TRUE(JSExecute("document.querySelector('.cr-dialog-ok').click();"));
+    test::ExecuteOobeJS("document.querySelector('.cr-dialog-ok').click();");
   }
 
   void ClickCancelOnConfirmationDialog() {
-    EXPECT_TRUE(
-        JSExecute("document.querySelector('.cr-dialog-cancel').click();"));
+    test::ExecuteOobeJS("document.querySelector('.cr-dialog-cancel').click();");
   }
 
   // Simulates |button| click on a specified OOBE |screen|. Can be used for
@@ -274,10 +273,10 @@ class DemoSetupTest : public LoginManagerTest {
          button_selector, "').click();"});
     switch (execution) {
       case JSExecution::kAsync:
-        JSExecuteAsync(query);
+        test::ExecuteOobeJSAsync(query);
         return;
       case JSExecution::kSync:
-        EXPECT_TRUE(JSExecute(query));
+        test::ExecuteOobeJS(query);
         return;
       default:
         NOTREACHED();
@@ -306,10 +305,10 @@ class DemoSetupTest : public LoginManagerTest {
          ".querySelector('", button_selector, "').click();"});
     switch (execution) {
       case JSExecution::kAsync:
-        JSExecuteAsync(query);
+        test::ExecuteOobeJSAsync(query);
         return;
       case JSExecution::kSync:
-        EXPECT_TRUE(JSExecute(query));
+        test::ExecuteOobeJS(query);
         return;
       default:
         NOTREACHED();
@@ -323,7 +322,7 @@ class DemoSetupTest : public LoginManagerTest {
         base::StrCat({ScreenToContentQuery(OobeScreen::SCREEN_OOBE_NETWORK),
                       ".getNetworkListItemWithQueryForTest('[aria-label=\"",
                       element, "\"]').click()"});
-    JSExecuteAsync(query);
+    test::ExecuteOobeJSAsync(query);
   }
 
   void SkipToErrorDialog() {
@@ -422,27 +421,19 @@ class DemoSetupTest : public LoginManagerTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  bool JSExecute(const std::string& script) {
-    return content::ExecuteScript(web_contents(), script);
-  }
-
-  void JSExecuteAsync(const std::string& script) {
-    content::ExecuteScriptAsync(web_contents(), script);
-  }
-
   // Sets fake time in MultiTapDetector to remove dependency on real time in
   // test environment.
   void SetFakeTimeForMultiTapDetector(base::Time fake_time) {
     const std::string query =
         base::StrCat({"MultiTapDetector.FAKE_TIME_FOR_TESTS = new Date('",
                       base::TimeToISO8601(fake_time), "');"});
-    EXPECT_TRUE(JSExecute(query));
+    test::ExecuteOobeJS(query);
   }
 
  private:
   void DisableConfirmationDialogAnimations() {
-    EXPECT_TRUE(
-        JSExecute("cr.ui.dialogs.BaseDialog.ANIMATE_STABLE_DURATION = 0;"));
+    test::ExecuteOobeJS(
+        "cr.ui.dialogs.BaseDialog.ANIMATE_STABLE_DURATION = 0;");
   }
 
   // TODO(agawronska): Maybe create a separate test fixture for offline setup.

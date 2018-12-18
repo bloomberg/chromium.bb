@@ -65,45 +65,41 @@ class ResetTest : public LoginManagerTest {
     StartupUtils::MarkOobeCompleted();
   }
 
-  bool JSExecuted(const std::string& script) {
-    return content::ExecuteScript(web_contents(), script);
-  }
-
   void InvokeResetScreen() {
-    ASSERT_TRUE(JSExecuted("cr.ui.Oobe.handleAccelerator('reset');"));
+    test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('reset');");
     OobeScreenWaiter(OobeScreen::SCREEN_OOBE_RESET).Wait();
   }
 
   void InvokeRollbackOption() {
-    ASSERT_TRUE(JSExecuted("cr.ui.Oobe.handleAccelerator('reset');"));
+    test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('reset');");
   }
 
   void HideRollbackOption() {
-    ASSERT_TRUE(JSExecuted("cr.ui.Oobe.handleAccelerator('reset');"));
+    test::ExecuteOobeJS("cr.ui.Oobe.handleAccelerator('reset');");
   }
 
   void CloseResetScreen() {
-    ASSERT_TRUE(JSExecuted(
-        "chrome.send('login.ResetScreen.userActed', ['cancel-reset']);"));
+    test::ExecuteOobeJS(
+        "chrome.send('login.ResetScreen.userActed', ['cancel-reset']);");
   }
 
   void ClickResetButton() {
-    ASSERT_TRUE(JSExecuted(
-        "chrome.send('login.ResetScreen.userActed', ['powerwash-pressed']);"));
+    test::ExecuteOobeJS(
+        "chrome.send('login.ResetScreen.userActed', ['powerwash-pressed']);");
   }
 
   void ClickRestartButton() {
-    ASSERT_TRUE(JSExecuted(
-        "chrome.send('login.ResetScreen.userActed', ['restart-pressed']);"));
+    test::ExecuteOobeJS(
+        "chrome.send('login.ResetScreen.userActed', ['restart-pressed']);");
   }
   void ClickToConfirmButton() {
-    ASSERT_TRUE(JSExecuted(
-        "chrome.send('login.ResetScreen.userActed', ['show-confirmation']);"));
+    test::ExecuteOobeJS(
+        "chrome.send('login.ResetScreen.userActed', ['show-confirmation']);");
   }
   void ClickDismissConfirmationButton() {
-    ASSERT_TRUE(
-        JSExecuted("chrome.send('login.ResetScreen.userActed', "
-                   "['reset-confirm-dismissed']);"));
+    test::ExecuteOobeJS(
+        "chrome.send('login.ResetScreen.userActed', "
+        "['reset-confirm-dismissed']);");
   }
 
   FakeUpdateEngineClient* update_engine_client_;

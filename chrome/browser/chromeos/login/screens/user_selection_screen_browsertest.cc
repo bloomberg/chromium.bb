@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/chromeos_switches.h"
@@ -56,9 +57,7 @@ class UserSelectionScreenTest : public LoginManagerTest {
     return fake_cryptohome_client_;
   }
 
-  OobeUI* GetOobeUI() {
-    return static_cast<OobeUI*>(web_contents()->GetWebUI()->GetController());
-  }
+  OobeUI* GetOobeUI() { return LoginDisplayHost::default_host()->GetOobeUI(); }
 
   void FocusUserPod(int pod_id) {
     base::RunLoop pod_focus_wait_loop;

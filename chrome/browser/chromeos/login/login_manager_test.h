@@ -15,10 +15,6 @@
 
 class AccountId;
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace chromeos {
 
 class UserContext;
@@ -64,8 +60,6 @@ class LoginManagerTest : public MixinBasedBrowserTest {
 
   // Add user with |user_id| to session.
   void AddUser(const AccountId& user_id);
-
-  content::WebContents* web_contents();
 
   static std::string GetGaiaIDForUserID(const std::string& user_id);
 
