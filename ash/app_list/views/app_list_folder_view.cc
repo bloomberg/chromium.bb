@@ -48,7 +48,7 @@ namespace app_list {
 namespace {
 
 constexpr int kItemGridsBottomPadding = 24;
-constexpr int kOnscreenKeyboardTopPadding = 8;
+constexpr int kOnscreenKeyboardTopPadding = 16;
 
 // Indexes of interesting views in ViewModel of AppListFolderView.
 constexpr int kIndexBackground = 0;
