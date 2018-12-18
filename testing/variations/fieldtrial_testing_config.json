@@ -1841,26 +1841,6 @@
             ]
         }
     ],
-    "EnableEasterEggBdayMode": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "enabled",
-                    "enable_features": [
-                        "DinoEasterEggBdayMode"
-                    ]
-                }
-            ]
-        }
-    ],
     "EnableEmojiContextMenu": [
         {
             "platforms": [
@@ -2265,25 +2245,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PreferHtmlOverPlugins"
-                    ]
-                }
-            ]
-        }
-    ],
-    "HttpFormWarning": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "HttpFormWarning"
                     ]
                 }
             ]
@@ -4331,28 +4292,6 @@
                     "enable_features": [
                         "SearchEnginePromo.ExistingDevice",
                         "SearchEnginePromo.NewDevice"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SecurityChip": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "animation": "animate-nonsecure-only",
-                        "visibility": "show-all"
-                    },
-                    "enable_features": [
-                        "SecurityChip"
                     ]
                 }
             ]
