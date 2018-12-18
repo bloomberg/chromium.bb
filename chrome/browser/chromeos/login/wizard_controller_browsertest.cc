@@ -71,6 +71,7 @@
 #include "chromeos/chromeos_test_utils.h"
 #include "chromeos/dbus/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
 #include "chromeos/dbus/fake_system_clock_client.h"
@@ -1056,7 +1057,9 @@ INSTANTIATE_TEST_CASE_P(
 
 class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
  protected:
-  WizardControllerDeviceStateTest() {
+  WizardControllerDeviceStateTest()
+      : fake_cryptohome_client_(nullptr),
+        fake_session_manager_client_(nullptr) {
     fake_statistics_provider_.SetMachineStatistic(
         system::kSerialNumberKeyForTest, "test");
     fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
@@ -1079,10 +1082,32 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
     loop.Run();
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    WizardControllerFlowTest::SetUpInProcessBrowserTestFixture();
+
+    fake_cryptohome_client_ = new FakeCryptohomeClient();
+    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
+        std::unique_ptr<CryptohomeClient>(fake_cryptohome_client_));
+    fake_session_manager_client_ = new FakeSessionManagerClient(
+        FakeSessionManagerClient::PolicyStorageType::kOnDisk);
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
+  }
+
   void SetUpOnMainThread() override {
     WizardControllerFlowTest::SetUpOnMainThread();
 
     histogram_tester_ = std::make_unique<base::HistogramTester>();
+
+    // Initialize the FakeShillManagerClient. This does not happen
+    // automatically because of the |DBusThreadManager::GetSetterForTesting|
+    // call in |SetUpInProcessBrowserTestFixture|. See https://crbug.com/847422.
+    // TODO(pmarko): Find a way for FakeShillManagerClient to be initialized
+    // automatically (https://crbug.com/847422).
+    DBusThreadManager::Get()
+        ->GetShillManagerClient()
+        ->GetTestInterface()
+        ->SetupDefaultEnvironment();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1100,6 +1125,10 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
+
+ protected:
+  FakeCryptohomeClient* fake_cryptohome_client_;
+  FakeSessionManagerClient* fake_session_manager_client_;
 
  private:
   ScopedStubInstallAttributes test_install_attributes_{
@@ -1145,6 +1174,11 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   mock_auto_enrollment_check_screen_->RealShow();
   EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             auto_enrollment_controller()->state());
+  EXPECT_EQ(1,
+            fake_cryptohome_client_
+                ->remove_firmware_management_parameters_from_tpm_call_count());
+  EXPECT_EQ(1, fake_session_manager_client_
+                   ->clear_forced_re_enrollment_vpd_call_count());
 }
 
 // TODO(https://crbug.com/911661) Flaky time outs on Linux Chromium OS ASan
@@ -1207,6 +1241,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
 
   // Make sure the device disabled screen is shown.
   CheckCurrentScreen(OobeScreen::SCREEN_DEVICE_DISABLED);
+
+  EXPECT_EQ(0,
+            fake_cryptohome_client_
+                ->remove_firmware_management_parameters_from_tpm_call_count());
+  EXPECT_EQ(0, fake_session_manager_client_
+                   ->clear_forced_re_enrollment_vpd_call_count());
 
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
 }
@@ -1293,9 +1333,19 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     // (because the check_enrollment VPD key was set to "1", making FRE
     // explicitly required).
     EXPECT_EQ("none", JSExecuteStringExpression(guest_session_link_display));
+    EXPECT_EQ(
+        0, fake_cryptohome_client_
+               ->remove_firmware_management_parameters_from_tpm_call_count());
+    EXPECT_EQ(0, fake_session_manager_client_
+                     ->clear_forced_re_enrollment_vpd_call_count());
   } else {
     // Check that guest sign-in is allowed if FRE was not explicitly required.
     EXPECT_EQ("block", JSExecuteStringExpression(guest_session_link_display));
+    EXPECT_EQ(
+        1, fake_cryptohome_client_
+               ->remove_firmware_management_parameters_from_tpm_call_count());
+    EXPECT_EQ(1, fake_session_manager_client_
+                     ->clear_forced_re_enrollment_vpd_call_count());
   }
 
   base::DictionaryValue device_state;
@@ -1414,6 +1464,11 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     OnExit(ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED);
 
     EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+    EXPECT_EQ(
+        0, fake_cryptohome_client_
+               ->remove_firmware_management_parameters_from_tpm_call_count());
+    EXPECT_EQ(0, fake_session_manager_client_
+                     ->clear_forced_re_enrollment_vpd_call_count());
   } else {
     // Don't expect that the auto enrollment screen will be hidden, because
     // OOBE is exited from the auto enrollment screen. Instead only expect
@@ -1430,6 +1485,11 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
 
     EXPECT_TRUE(StartupUtils::IsOobeCompleted());
     login_screen_waiter.Wait();
+    EXPECT_EQ(
+        0, fake_cryptohome_client_
+               ->remove_firmware_management_parameters_from_tpm_call_count());
+    EXPECT_EQ(0, fake_session_manager_client_
+                     ->clear_forced_re_enrollment_vpd_call_count());
   }
 }
 
@@ -1452,20 +1512,6 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
     system_clock_client_ = system_clock_client.get();
     DBusThreadManager::GetSetterForTesting()->SetSystemClockClient(
         std::move(system_clock_client));
-  }
-
-  void SetUpOnMainThread() override {
-    WizardControllerDeviceStateTest::SetUpOnMainThread();
-
-    // Initialize the FakeShillManagerClient. This does not happen
-    // automatically because of the |DBusThreadManager::GetSetterForTesting|
-    // call in |SetUpInProcessBrowserTestFixture|. See https://crbug.com/847422.
-    // TODO(pmarko): Find a way for FakeShillManagerClient to be initialized
-    // automatically (https://crbug.com/847422).
-    DBusThreadManager::Get()
-        ->GetShillManagerClient()
-        ->GetTestInterface()
-        ->SetupDefaultEnvironment();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1932,7 +1978,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
 class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
  protected:
-  WizardControllerBrokenLocalStateTest() : fake_session_manager_client_(NULL) {}
+  WizardControllerBrokenLocalStateTest()
+      : fake_session_manager_client_(nullptr) {}
 
   ~WizardControllerBrokenLocalStateTest() override {}
 

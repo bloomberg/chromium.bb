@@ -101,6 +101,10 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual bool HasObserver(const Observer* observer) const = 0;
 
+  // Runs the callback as soon as the service becomes available.
+  virtual void WaitForServiceToBeAvailable(
+      WaitForServiceToBeAvailableCallback callback) = 0;
+
   // Returns the most recent screen-lock state received from session_manager.
   // This method should only be called by low-level code that is unable to
   // depend on UI code and get the lock state from it instead.
@@ -135,6 +139,9 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
 
   // Starts the factory reset.
   virtual void StartDeviceWipe() = 0;
+
+  // Set the block_demode and check_enrollment flags to 0 in the VPD.
+  virtual void ClearForcedReEnrollmentVpd(VoidDBusMethodCallback callback) = 0;
 
   // Triggers a TPM firmware update.
   virtual void StartTPMFirmwareUpdate(const std::string& update_mode) = 0;

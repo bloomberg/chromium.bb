@@ -40,6 +40,8 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   bool HasObserver(const Observer* observer) const override;
+  void WaitForServiceToBeAvailable(
+      WaitForServiceToBeAvailableCallback callback) override;
   bool IsScreenLocked() const override;
   void EmitLoginPromptVisible() override;
   void EmitAshInitialized() override;
@@ -53,6 +55,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void NotifySupervisedUserCreationStarted() override;
   void NotifySupervisedUserCreationFinished() override;
   void StartDeviceWipe() override;
+  void ClearForcedReEnrollmentVpd(VoidDBusMethodCallback callback) override;
   void StartTPMFirmwareUpdate(const std::string& update_mode) override;
   void RequestLockScreen() override;
   void NotifyLockScreenShown() override;
@@ -175,6 +178,10 @@ class FakeSessionManagerClient : public SessionManagerClient {
     server_backed_state_keys_ = state_keys;
   }
 
+  int clear_forced_re_enrollment_vpd_call_count() const {
+    return clear_forced_re_enrollment_vpd_call_count_;
+  }
+
   int start_device_wipe_call_count() const {
     return start_device_wipe_call_count_;
   }
@@ -218,6 +225,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   // If set to false, StorePolicy() always fails.
   bool store_policy_success_ = true;
 
+  int clear_forced_re_enrollment_vpd_call_count_;
   int start_device_wipe_call_count_;
   int request_lock_screen_call_count_;
   int notify_lock_screen_shown_call_count_;

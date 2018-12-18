@@ -44,6 +44,7 @@ constexpr size_t kInstallAttributesFileMaxSize = 16384;
 
 FakeCryptohomeClient::FakeCryptohomeClient()
     : service_is_available_(true),
+      remove_firmware_management_parameters_from_tpm_call_count_(0),
       async_call_id_(1),
       unmount_result_(true),
       system_salt_(GetStubSystemSalt()),
@@ -662,6 +663,7 @@ void FakeCryptohomeClient::MigrateToDircrypto(
 void FakeCryptohomeClient::RemoveFirmwareManagementParametersFromTpm(
     const cryptohome::RemoveFirmwareManagementParametersRequest& request,
     DBusMethodCallback<cryptohome::BaseReply> callback) {
+  remove_firmware_management_parameters_from_tpm_call_count_++;
   ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 

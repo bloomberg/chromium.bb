@@ -747,16 +747,19 @@ void AutoEnrollmentController::UpdateState(
   }
 
   if (state_ == policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT) {
-    // Cryptohome D-Bus service may not be available yet. See
-    // https://crbug.com/841627.
-    DBusThreadManager::Get()
-        ->GetCryptohomeClient()
-        ->WaitForServiceToBeAvailable(base::BindOnce(
-            &AutoEnrollmentController::StartRemoveFirmwareManagementParameters,
-            weak_ptr_factory_.GetWeakPtr()));
+    StartCleanupForcedReEnrollment();
   } else {
     progress_callbacks_.Notify(state_);
   }
+}
+
+void AutoEnrollmentController::StartCleanupForcedReEnrollment() {
+  // D-Bus services may not be available yet, so we call
+  // WaitForServiceToBeAvailable. See https://crbug.com/841627.
+  DBusThreadManager::Get()->GetCryptohomeClient()->WaitForServiceToBeAvailable(
+      base::BindOnce(
+          &AutoEnrollmentController::StartRemoveFirmwareManagementParameters,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::StartRemoveFirmwareManagementParameters(
@@ -782,6 +785,36 @@ void AutoEnrollmentController::OnFirmwareManagementParametersRemoved(
     base::Optional<cryptohome::BaseReply> reply) {
   if (!reply.has_value())
     LOG(ERROR) << "Failed to remove firmware management parameters.";
+
+  // D-Bus services may not be available yet, so we call
+  // WaitForServiceToBeAvailable. See https://crbug.com/841627.
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->WaitForServiceToBeAvailable(base::BindOnce(
+          &AutoEnrollmentController::StartClearForcedReEnrollmentVpd,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AutoEnrollmentController::StartClearForcedReEnrollmentVpd(
+    bool service_is_ready) {
+  DCHECK_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+  if (!service_is_ready) {
+    LOG(ERROR)
+        << "Failed waiting for session_manager D-Bus service availability.";
+    progress_callbacks_.Notify(state_);
+    return;
+  }
+
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->ClearForcedReEnrollmentVpd(base::BindOnce(
+          &AutoEnrollmentController::OnForcedReEnrollmentVpdCleared,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AutoEnrollmentController::OnForcedReEnrollmentVpdCleared(bool reply) {
+  if (!reply)
+    LOG(ERROR) << "Failed to clear forced re-enrollment flags in RW VPD.";
 
   progress_callbacks_.Notify(state_);
 }
