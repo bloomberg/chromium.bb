@@ -17,6 +17,7 @@ import android.support.test.filters.SmallTest;
 import android.support.test.uiautomator.UiDevice;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -455,9 +456,53 @@ public class CustomTabsDynamicModuleUITest {
             CustomTabActivity cctActivity = getActivity();
             int defaultHeight = cctActivity.getFullscreenManager().getTopControlsHeight();
             int newHeight = defaultHeight + 10;
-            cctActivity.getComponent().resolveDynamicModuleCoordinator().setTopBarHeight(newHeight);
+            getModuleCoordinator().setTopBarHeight(newHeight);
             assertEquals(newHeight, cctActivity.getFullscreenManager().getTopControlsHeight());
         });
+    }
+
+    @Test
+    @SmallTest
+    @Features.DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
+    public void testSetTopBarContentView_featureDisabled_progressBarNoChange() throws Exception {
+        Intent intent = new IntentBuilder(mModuleManagedPage)
+                                .setModuleHostList(getServerHostsList())
+                                .setModuleManagedUrlRegex(getModuleManagedRegex())
+                                .setHideCCTHeader(true)
+                                .build();
+        mActivityRule.startCustomTabActivityWithIntent(intent);
+
+        runOnUiThread(() -> Assert.assertFalse(canChangeProgressBarTopMargin()));
+    }
+
+    @Test
+    @SmallTest
+    @Features.
+    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+    public void testSetTopBarContentView_cctHeaderNotHidden_progressBarNoChange() throws Exception {
+        Intent intent = new IntentBuilder(mModuleManagedPage)
+                                .setModuleHostList(getServerHostsList())
+                                .setModuleManagedUrlRegex(getModuleManagedRegex())
+                                .setHideCCTHeader(false)
+                                .build();
+        mActivityRule.startCustomTabActivityWithIntent(intent);
+
+        runOnUiThread(() -> Assert.assertFalse(canChangeProgressBarTopMargin()));
+    }
+
+    @Test
+    @SmallTest
+    @Features.
+    EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+    public void testSetTopBarContentView_withModuleAndExtras_progressBarChanged() throws Exception {
+        Intent intent = new IntentBuilder(mModuleManagedPage)
+                                .setModuleHostList(getServerHostsList())
+                                .setModuleManagedUrlRegex(getModuleManagedRegex())
+                                .setHideCCTHeader(true)
+                                .build();
+        mActivityRule.startCustomTabActivityWithIntent(intent);
+
+        runOnUiThread(() -> Assert.assertTrue(canChangeProgressBarTopMargin()));
     }
 
     private void assertNoTopBar() {
@@ -520,5 +565,37 @@ public class CustomTabsDynamicModuleUITest {
 
     private DynamicModuleCoordinator getModuleCoordinator() {
         return getActivity().getComponent().resolveDynamicModuleCoordinator();
+    }
+
+    private boolean canChangeProgressBarTopMargin() {
+        CustomTabActivity cctActivity = getActivity();
+        ViewGroup controlContainerView = cctActivity.findViewById(R.id.control_container);
+        int progressBarHeight = 0;
+        for (int index = 0; index < controlContainerView.getChildCount(); index++) {
+            View childView = controlContainerView.getChildAt(index);
+            if (childView.getId() != R.id.toolbar_container) {
+                // Either ToolbarProgressBar or ToolbarProgressBarAnimatingView
+                progressBarHeight = childView.getHeight();
+                break;
+            }
+        }
+        Assert.assertNotEquals(progressBarHeight, 0);
+
+        View anyView = new View(cctActivity);
+        getModuleCoordinator().setTopBarContentView(anyView);
+        int newMargin = anyView.getBottom() - progressBarHeight;
+
+        boolean canChange = false;
+        for (int index = 0; index < controlContainerView.getChildCount(); index++) {
+            View childView = controlContainerView.getChildAt(index);
+            if (childView.getId() != R.id.toolbar_container) {
+                if (((MarginLayoutParams) childView.getLayoutParams()).topMargin != newMargin) {
+                    return false;
+                } else {
+                    canChange = true;
+                }
+            }
+        }
+        return canChange;
     }
 }
