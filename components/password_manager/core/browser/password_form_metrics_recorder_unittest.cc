@@ -281,29 +281,6 @@ TEST(PasswordFormMetricsRecorder, Actions) {
                   ::testing::ElementsAre(base::Bucket(test.actions_taken, 1)));
     }
 
-    switch (test.user_action) {
-      case UserAction::kNone:
-        break;
-      case UserAction::kChoose:
-        EXPECT_EQ(1, user_action_tester.GetActionCount(
-                         "PasswordManager_UsedNonDefaultUsername"));
-        break;
-      case UserAction::kChoosePslMatch:
-        EXPECT_EQ(1, user_action_tester.GetActionCount(
-                         "PasswordManager_ChoseSubdomainPassword"));
-        break;
-      case UserAction::kOverridePassword:
-        EXPECT_EQ(1, user_action_tester.GetActionCount(
-                         "PasswordManager_LoggedInWithNewPassword"));
-        break;
-      case UserAction::kOverrideUsernameAndPassword:
-        EXPECT_EQ(1, user_action_tester.GetActionCount(
-                         "PasswordManager_LoggedInWithNewUsername"));
-        break;
-      case UserAction::kMax:
-        break;
-    }
-
     ExpectUkmValueCount(&test_ukm_recorder,
                         UkmEntry::kUser_ActionSimplifiedName,
                         static_cast<int64_t>(test.user_action), 1);
@@ -332,11 +309,6 @@ TEST(PasswordFormMetricsRecorder, ActionSequence) {
 
   EXPECT_THAT(histogram_tester.GetAllSamples("PasswordManager.ActionsTakenV3"),
               ::testing::ElementsAre(base::Bucket(39, 1)));
-
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "PasswordManager_ChoseSubdomainPassword"));
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "PasswordManager_LoggedInWithNewUsername"));
 }
 
 TEST(PasswordFormMetricsRecorder, SubmittedFormType) {

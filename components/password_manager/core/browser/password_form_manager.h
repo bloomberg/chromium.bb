@@ -289,9 +289,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   const autofill::PasswordForm* FindBestSavedMatch(
       const autofill::PasswordForm* form) const;
 
-  // Sets |user_action_| and records some metrics.
-  void SetUserAction(UserAction user_action);
-
   // Goes through |not_best_matches_|, updates the password of those which share
   // the old password and username with |pending_credentials_| to the new
   // password of |pending_credentials_|, and returns copies of all such modified
@@ -384,10 +381,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // (filling etc.). These drivers are kept in |drivers_| to allow updating of
   // the filling information when needed.
   std::vector<base::WeakPtr<PasswordManagerDriver>> drivers_;
-
-  // Records the action the user has taken while interacting with the password
-  // form.
-  UserAction user_action_;
 
   // FormSaver instance used by |this| to all tasks related to storing
   // credentials.

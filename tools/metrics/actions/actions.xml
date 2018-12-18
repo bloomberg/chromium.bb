@@ -15258,6 +15258,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordManager_ChoseSubdomainPassword">
+  <obsolete>
+    Introduction of Manual Fallbacks broke recording of this action.
+  </obsolete>
   <owner>vasilii@chromium.org</owner>
   <description>
     The user submitted a form with an existing credential saved for another
@@ -15278,6 +15281,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordManager_LoggedInWithNewPassword">
+  <obsolete>
+    Introduction of Manual Fallbacks broke recording of this action.
+  </obsolete>
   <owner>vasilii@chromium.org</owner>
   <description>
     The user tried to log in with an existing (possibly for another subdomain)
@@ -15286,6 +15292,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordManager_LoggedInWithNewUsername">
+  <obsolete>
+    Introduction of Manual Fallbacks broke recording of this action.
+  </obsolete>
   <owner>vasilii@chromium.org</owner>
   <description>
     The user tried to log in with a completely new (possibly auto generated)
@@ -15373,6 +15382,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordManager_UsedNonDefaultUsername">
+  <obsolete>
+    Introduction of Manual Fallbacks broke recording of this action.
+  </obsolete>
   <owner>vasilii@chromium.org</owner>
   <description>
     The user logged in with an existing credential other than the default one.
