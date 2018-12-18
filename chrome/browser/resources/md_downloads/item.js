@@ -263,7 +263,8 @@ cr.define('downloads', function() {
     },
 
     /**
-     * @return {string} 'action-button' for a resume button, empty otherwise.
+     * @return {string} 'action-button' for a resume button, 'pause-button'
+     *     otherwise.
      * @private
      */
     computePauseOrResumeClass_: function() {
