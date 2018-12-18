@@ -2775,6 +2775,7 @@ test("unit_tests") {
     "../renderer/content_settings_observer_unittest.cc",
     "../renderer/instant_restricted_id_cache_unittest.cc",
     "../renderer/media/chrome_key_systems_provider_unittest.cc",
+    "../renderer/media/flash_embed_rewrite_unittest.cc",
     "../renderer/net/net_error_helper_core_unittest.cc",
     "../renderer/page_load_metrics/fake_page_timing_sender.cc",
     "../renderer/page_load_metrics/fake_page_timing_sender.h",

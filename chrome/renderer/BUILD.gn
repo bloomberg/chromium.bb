@@ -67,6 +67,8 @@ jumbo_static_library("renderer") {
     "media/chrome_key_systems_provider.h",
     "media/chrome_webrtc_log_message_delegate.cc",
     "media/chrome_webrtc_log_message_delegate.h",
+    "media/flash_embed_rewrite.cc",
+    "media/flash_embed_rewrite.h",
     "media/webrtc_logging_message_filter.cc",
     "media/webrtc_logging_message_filter.h",
     "net/net_error_helper.cc",
