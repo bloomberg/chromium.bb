@@ -61,7 +61,6 @@ bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
 BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
     : AppMenuButton(toolbar_view), toolbar_view_(toolbar_view) {
   SetInkDropMode(InkDropMode::ON);
-  SetFocusPainter(nullptr);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
   set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);

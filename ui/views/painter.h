@@ -86,10 +86,6 @@ class VIEWS_EXPORT Painter {
   // Top-Left/Top/Top-Right/Left/[Center]/Right/Bottom-Left/Bottom/Bottom-Right.
   static std::unique_ptr<Painter> CreateImageGridPainter(const int image_ids[]);
 
-  // Factory methods for creating painters intended for rendering focus.
-  static std::unique_ptr<Painter> CreateDashedFocusPainter();
-  static std::unique_ptr<Painter> CreateDashedFocusPainterWithInsets(
-      const gfx::Insets& insets);
   // Deprecated: used the InsetsF version below.
   static std::unique_ptr<Painter> CreateSolidFocusPainter(
       SkColor color,

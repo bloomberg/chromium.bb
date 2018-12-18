@@ -36,7 +36,6 @@ Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
     : LabelButton(listener, label), checked_(false), label_ax_id_(0) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetFocusForPlatform();
-  SetFocusPainter(nullptr);
 
   set_request_focus_on_press(false);
   SetInkDropMode(InkDropMode::ON);

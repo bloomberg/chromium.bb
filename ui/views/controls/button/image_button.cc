@@ -33,7 +33,6 @@ ImageButton::ImageButton(ButtonListener* listener)
       h_alignment_(ALIGN_LEFT),
       v_alignment_(ALIGN_TOP),
       draw_image_mirrored_(false) {
-  SetFocusPainter(Painter::CreateDashedFocusPainter());
   // By default, we request that the gfx::Canvas passed to our View::OnPaint()
   // implementation is flipped horizontally so that the button's images are
   // mirrored when the UI directionality is right-to-left.

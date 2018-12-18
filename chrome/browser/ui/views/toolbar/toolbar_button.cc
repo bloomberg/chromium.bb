@@ -47,7 +47,6 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
   SetInkDropMode(InkDropMode::ON);
-  SetFocusPainter(nullptr);
 
   // Make sure icons are flipped by default so that back, forward, etc. follows
   // UI direction.

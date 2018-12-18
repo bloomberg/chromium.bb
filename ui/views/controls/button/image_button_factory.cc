@@ -21,7 +21,6 @@ void ConfigureVectorImageButton(ImageButton* button) {
   button->set_has_ink_drop_action_on_click(true);
   button->SetImageAlignment(ImageButton::ALIGN_CENTER,
                             ImageButton::ALIGN_MIDDLE);
-  button->SetFocusPainter(nullptr);
   button->SetBorder(CreateEmptyBorder(
       LayoutProvider::Get()->GetInsetsMetric(INSETS_VECTOR_IMAGE_BUTTON)));
 }

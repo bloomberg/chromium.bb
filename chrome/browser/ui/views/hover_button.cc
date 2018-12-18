@@ -73,7 +73,6 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       listener_(button_listener) {
   SetInstallFocusRingOnFocus(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  SetFocusPainter(nullptr);
 
   const int vert_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_CONTROL_LIST_VERTICAL);

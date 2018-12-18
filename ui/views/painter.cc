@@ -99,40 +99,6 @@ void SolidRoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   }
 }
 
-// DashedFocusPainter ----------------------------------------------------------
-
-class DashedFocusPainter : public Painter {
- public:
-  explicit DashedFocusPainter(const gfx::Insets& insets);
-  ~DashedFocusPainter() override;
-
-  // Painter:
-  gfx::Size GetMinimumSize() const override;
-  void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
-
- private:
-  const gfx::Insets insets_;
-
-  DISALLOW_COPY_AND_ASSIGN(DashedFocusPainter);
-};
-
-DashedFocusPainter::DashedFocusPainter(const gfx::Insets& insets)
-    : insets_(insets) {
-}
-
-DashedFocusPainter::~DashedFocusPainter() {
-}
-
-gfx::Size DashedFocusPainter::GetMinimumSize() const {
-  return gfx::Size();
-}
-
-void DashedFocusPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  gfx::Rect rect(size);
-  rect.Inset(insets_);
-  canvas->DrawFocusRect(rect);
-}
-
 // SolidFocusPainter -----------------------------------------------------------
 
 class SolidFocusPainter : public Painter {
@@ -310,17 +276,6 @@ std::unique_ptr<Painter> Painter::CreateImagePainter(
 std::unique_ptr<Painter> Painter::CreateImageGridPainter(
     const int image_ids[]) {
   return std::make_unique<ImagePainter>(image_ids);
-}
-
-// static
-std::unique_ptr<Painter> Painter::CreateDashedFocusPainter() {
-  return std::make_unique<DashedFocusPainter>(gfx::Insets());
-}
-
-// static
-std::unique_ptr<Painter> Painter::CreateDashedFocusPainterWithInsets(
-    const gfx::Insets& insets) {
-  return std::make_unique<DashedFocusPainter>(insets);
 }
 
 // static

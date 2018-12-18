@@ -29,8 +29,6 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
   views::SetHitTestComponent(this, static_cast<int>(HTMENU));
 
   SetInkDropMode(InkDropMode::ON);
-  // Disable focus ring for consistency with sibling buttons and AppMenuButton.
-  SetFocusPainter(nullptr);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   // Avoid the native theme border, which would crop the icon (see
   // https://crbug.com/831968).

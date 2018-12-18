@@ -59,7 +59,6 @@ ToolbarActionView::ToolbarActionView(
       menu_(nullptr),
       weak_factory_(this) {
   SetInkDropMode(InkDropMode::ON);
-  SetFocusPainter(nullptr);
   set_has_ink_drop_action_on_click(true);
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
