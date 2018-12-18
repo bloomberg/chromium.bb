@@ -56,7 +56,6 @@ EventListener* CreateAttributeEventListener(Node* node,
   String source_url;
 
   v8::Isolate* isolate = ToIsolate(&node->GetDocument());
-  v8::HandleScope scope(isolate);
 
   if (LocalFrame* frame = node->GetDocument().GetFrame()) {
     ScriptController& script_controller = frame->GetScriptController();
@@ -66,16 +65,15 @@ EventListener* CreateAttributeEventListener(Node* node,
     source_url = node->GetDocument().Url().GetString();
   }
 
-  // |v8_context| can be an empty handle when this listener is added as content
-  // attribute like <hoge onclick="fuga"></hoge> because there is no JS context
-  // when parsing HTML. In that case we should assume the main world.
-  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+  // An assumption here is that the content attributes are used only in the main
+  // world or the isolated world for the content scripts, they are never used in
+  // other isolated worlds nor worker/worklets.
+  // In case of the content scripts, Blink runs script in the main world instead
+  // of the isolated world for the content script by design.
+  DOMWrapperWorld& world = DOMWrapperWorld::MainWorld();
 
   return JSEventHandlerForContentAttribute::Create(
-      name.LocalName(), value, source_url, position, isolate,
-      v8_context.IsEmpty() ? DOMWrapperWorld::MainWorld()
-                           : ScriptState::From(v8_context)->World(),
-      type);
+      name.LocalName(), value, source_url, position, isolate, world, type);
 }
 
 EventListener* CreateAttributeEventListener(LocalFrame* frame,
@@ -95,18 +93,16 @@ EventListener* CreateAttributeEventListener(LocalFrame* frame,
   String source_url = frame->GetDocument()->Url().GetString();
 
   v8::Isolate* isolate = ToIsolate(frame);
-  v8::HandleScope scope(isolate);
 
-  // |v8_context| can be an empty handle when this listener is added as content
-  // attribute like <hoge onclick="fuga"></hoge> because there is no JS context
-  // when parsing HTML. In that case we should assume the main world.
-  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+  // An assumption here is that the content attributes are used only in the main
+  // world or the isolated world for the content scripts, they are never used in
+  // other isolated worlds nor worker/worklets.
+  // In case of the content scripts, Blink runs script in the main world instead
+  // of the isolated world for the content script by design.
+  DOMWrapperWorld& world = DOMWrapperWorld::MainWorld();
 
   return JSEventHandlerForContentAttribute::Create(
-      name.LocalName(), value, source_url, position, isolate,
-      v8_context.IsEmpty() ? DOMWrapperWorld::MainWorld()
-                           : ScriptState::From(v8_context)->World(),
-      type);
+      name.LocalName(), value, source_url, position, isolate, world, type);
 }
 
 }  // namespace blink
