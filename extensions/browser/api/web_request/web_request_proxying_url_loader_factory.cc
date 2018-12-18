@@ -790,7 +790,7 @@ void WebRequestProxyingURLLoaderFactory::OnHeadersReceived(
     OnHeadersReceivedCallback callback) {
   auto it = network_request_id_to_web_request_id_.find(request_id);
   if (it == network_request_id_to_web_request_id_.end()) {
-    std::move(callback).Run(net::OK, nullptr, GURL());
+    std::move(callback).Run(net::OK, base::nullopt, GURL());
     return;
   }
 
