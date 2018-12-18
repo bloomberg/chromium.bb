@@ -73,8 +73,6 @@ def WriteBasicMetadata(builder_run):
       # instead to luci-milo.
       # Once we phase out completely, we can get rid of this metadata entry.
       'buildbot-url': os.environ.get('BUILDBOT_BUILDBOTURL', ''),
-      'buildbot-master-name':
-          os.environ.get('BUILDBOT_MASTERNAME', ''),
       'bot-config': builder_run.config['name'],
       'time': {
           'start': start_time_stamp,
