@@ -5,7 +5,7 @@
 #include "chromeos/services/multidevice_setup/host_status_provider.h"
 
 #include "base/logging.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace chromeos {
 

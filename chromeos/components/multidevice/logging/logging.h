@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_PROXIMITY_AUTH_LOGGING_LOGGING_H_
-#define CHROMEOS_COMPONENTS_PROXIMITY_AUTH_LOGGING_LOGGING_H_
+#ifndef CHROMEOS_COMPONENTS_MULTIDEVICE_LOGGING_LOGGING_H_
+#define CHROMEOS_COMPONENTS_MULTIDEVICE_LOGGING_LOGGING_H_
 
 #include <sstream>
 
 #include "base/logging.h"
 #include "base/macros.h"
 
-namespace proximity_auth {
+namespace chromeos {
+
+namespace multidevice {
 
 // Use the PA_LOG() macro for all logging related to Proximity Auth, so the
 // system is aware of all logs related to this feature. We display these logs in
@@ -21,9 +23,9 @@ namespace proximity_auth {
 // Examples:
 //   PA_LOG(INFO) << "Waiting for " << x << " pending requests.";
 //   PA_LOG(ERROR) << "Request failed: " << error_string;
-#define PA_LOG(severity)                                    \
-  proximity_auth::ScopedLogMessage(__FILE__, __LINE__,      \
-                                   logging::LOG_##severity) \
+#define PA_LOG(severity)                                           \
+  chromeos::multidevice::ScopedLogMessage(__FILE__, __LINE__,      \
+                                          logging::LOG_##severity) \
       .stream()
 
 // Disables all logging while in scope. Intended to be called only from test
@@ -55,6 +57,8 @@ class ScopedLogMessage {
   DISALLOW_COPY_AND_ASSIGN(ScopedLogMessage);
 };
 
-}  // namespace proximity_auth
+}  // namespace multidevice
 
-#endif  // CHROMEOS_COMPONENTS_PROXIMITY_AUTH_LOGGING_LOGGING_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_COMPONENTS_MULTIDEVICE_LOGGING_LOGGING_H_

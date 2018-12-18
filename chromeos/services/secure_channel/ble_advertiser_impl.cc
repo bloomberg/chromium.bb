@@ -11,7 +11,7 @@
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/ble_service_data_helper.h"
 #include "chromeos/services/secure_channel/error_tolerant_ble_advertisement_impl.h"
 #include "chromeos/services/secure_channel/shared_resource_scheduler.h"

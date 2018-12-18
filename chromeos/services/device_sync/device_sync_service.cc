@@ -5,7 +5,7 @@
 #include "chromeos/services/device_sync/device_sync_service.h"
 
 #include "base/timer/timer.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/device_sync_base.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

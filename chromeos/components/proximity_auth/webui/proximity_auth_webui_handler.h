@@ -9,8 +9,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/values.h"
+#include "chromeos/components/multidevice/logging/log_buffer.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/proximity_auth/logging/log_buffer.h"
 #include "chromeos/components/proximity_auth/messenger_observer.h"
 #include "chromeos/components/proximity_auth/proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
@@ -30,7 +30,7 @@ struct RemoteStatusUpdate;
 // Handles messages from the chrome://proximity-auth page.
 class ProximityAuthWebUIHandler
     : public content::WebUIMessageHandler,
-      public LogBuffer::Observer,
+      public chromeos::multidevice::LogBuffer::Observer,
       public chromeos::device_sync::DeviceSyncClient::Observer,
       public RemoteDeviceLifeCycle::Observer,
       public MessengerObserver {
@@ -44,8 +44,9 @@ class ProximityAuthWebUIHandler
   void RegisterMessages() override;
 
  private:
-  // LogBuffer::Observer:
-  void OnLogMessageAdded(const LogBuffer::LogMessage& log_message) override;
+  // chromeos::multidevice::LogBuffer::Observer:
+  void OnLogMessageAdded(
+      const chromeos::multidevice::LogBuffer::LogMessage& log_message) override;
   void OnLogBufferCleared() override;
 
   // chromeos::device_sync::DeviceSyncClient::Observer:

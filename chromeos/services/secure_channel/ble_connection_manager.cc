@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
 
 namespace chromeos {

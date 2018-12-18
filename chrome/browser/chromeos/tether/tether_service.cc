@@ -16,7 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/gms_core_notifications_state_tracker_impl.h"
 #include "chromeos/components/tether/tether_component.h"
 #include "chromeos/components/tether/tether_component_impl.h"

@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_client_impl.h"
 #include "crypto/sha2.h"
 

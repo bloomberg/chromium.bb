@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/prefs/pref_service.h"

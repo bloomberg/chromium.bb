@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #endif
 
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace chromeos {
 

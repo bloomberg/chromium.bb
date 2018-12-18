@@ -5,7 +5,7 @@
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
 
 #include "base/bind.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/pref_names.h"
 #include "chromeos/network/network_connection_handler.h"

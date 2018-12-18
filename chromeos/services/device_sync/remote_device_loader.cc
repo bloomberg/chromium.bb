@@ -10,11 +10,11 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/components/multidevice/software_feature.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
 
 namespace chromeos {

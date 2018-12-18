@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/proto/securemessage.pb.h"
 

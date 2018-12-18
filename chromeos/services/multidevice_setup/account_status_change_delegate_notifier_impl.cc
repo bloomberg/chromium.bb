@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/time/clock.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/host_device_timestamp_manager.h"
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "components/prefs/pref_registry_simple.h"

@@ -5,7 +5,7 @@
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier.h"
 
 #include "base/logging.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace chromeos {
 

@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 

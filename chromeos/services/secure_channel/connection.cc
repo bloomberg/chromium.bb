@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/connection_observer.h"
 #include "chromeos/services/secure_channel/wire_message.h"
 

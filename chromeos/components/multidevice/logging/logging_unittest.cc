@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 
 #include <stddef.h>
 
 #include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromeos/components/proximity_auth/logging/log_buffer.h"
+#include "chromeos/components/multidevice/logging/log_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace proximity_auth {
+namespace chromeos {
+
+namespace multidevice {
 
 namespace {
 
@@ -126,4 +128,6 @@ TEST_F(ProximityAuthLoggingTest, StandardLogsCreated) {
   EXPECT_NE(std::string::npos, g_standard_logs.Get()[2].find(kLog3));
 }
 
-}  // namespace proximity_auth
+}  // namespace multidevice
+
+}  // namespace chromeos

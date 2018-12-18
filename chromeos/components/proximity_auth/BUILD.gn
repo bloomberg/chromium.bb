@@ -53,7 +53,7 @@ static_library("proximity_auth") {
     "//base",
     "//chromeos",
     "//chromeos/components/multidevice",
-    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/components/multidevice/logging",
     "//chromeos/components/proximity_auth/public/interfaces",
 
     # TODO(hansberry): Remove this dependency once https://crbug.com/870123 is
@@ -91,7 +91,7 @@ static_library("test_support") {
     "//base",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
-    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/components/multidevice/logging",
     "//chromeos/services/device_sync",
     "//chromeos/services/secure_channel:test_support",
     "//chromeos/services/secure_channel/public/cpp/client",
@@ -122,8 +122,7 @@ source_set("unit_tests") {
     "//chromeos",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
-    "//chromeos/components/proximity_auth/logging",
-    "//chromeos/components/proximity_auth/logging:unit_tests",
+    "//chromeos/components/multidevice/logging",
 
     # TODO(hansberry): Remove this dependency once https://crbug.com/870123 is
     # fixed.

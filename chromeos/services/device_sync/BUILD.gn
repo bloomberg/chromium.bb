@@ -61,7 +61,7 @@ static_library("device_sync") {
 
   public_deps = [
     "//chromeos/components/multidevice",
-    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/components/multidevice/logging",
     "//chromeos/services/device_sync/public/mojom",
     "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
@@ -70,7 +70,7 @@ static_library("device_sync") {
   deps = [
     "//base",
     "//chromeos/components/multidevice",
-    "//chromeos/components/proximity_auth/logging",
+    "//chromeos/components/multidevice/logging",
     "//chromeos/services/device_sync/proto:util",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",

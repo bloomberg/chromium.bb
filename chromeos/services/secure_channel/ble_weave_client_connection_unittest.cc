@@ -17,9 +17,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/connection_observer.h"
 #include "chromeos/services/secure_channel/fake_wire_message.h"
 #include "chromeos/services/secure_channel/wire_message.h"
@@ -267,7 +267,7 @@ class MockBluetoothLowEnergyCharacteristicsFinder
 
 class MockConnectionObserver : public ConnectionObserver {
  public:
-  MockConnectionObserver(Connection* connection)
+  explicit MockConnectionObserver(Connection* connection)
       : connection_(connection),
         num_send_completed_(0),
         delete_on_disconnect_(false),
@@ -650,7 +650,7 @@ class SecureChannelBluetoothLowEnergyWeaveClientConnectionTest
   const device::BluetoothUUID service_uuid_;
   const device::BluetoothUUID tx_characteristic_uuid_;
   const device::BluetoothUUID rx_characteristic_uuid_;
-  const proximity_auth::ScopedDisableLoggingForTesting disable_logging_;
+  const multidevice::ScopedDisableLoggingForTesting disable_logging_;
 
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
   base::MockOneShotTimer* test_timer_;

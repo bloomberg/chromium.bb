@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 
-#include "chromeos/components/proximity_auth/logging/log_buffer.h"
+#include "chromeos/components/multidevice/logging/log_buffer.h"
 
-namespace proximity_auth {
+namespace chromeos {
+
+namespace multidevice {
+
 namespace {
 
 bool g_logging_enabled = true;
@@ -47,4 +50,6 @@ ScopedLogMessage::~ScopedLogMessage() {
   log_message.stream() << string_from_stream;
 }
 
-}  // namespace proximity_auth
+}  // namespace multidevice
+
+}  // namespace chromeos

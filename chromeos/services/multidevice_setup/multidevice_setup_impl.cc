@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/time/default_clock.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/android_sms_app_installing_status_observer.h"
 #include "chromeos/services/multidevice_setup/device_reenroller.h"

@@ -6,7 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/multiplexed_channel_impl.h"
 
 namespace chromeos {

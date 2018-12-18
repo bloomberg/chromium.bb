@@ -5,8 +5,8 @@
 #include "chromeos/components/tether/connection_preserver_impl.h"
 
 #include "base/timer/timer.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"

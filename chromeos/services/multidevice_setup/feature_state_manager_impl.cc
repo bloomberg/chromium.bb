@@ -11,9 +11,9 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/software_feature.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/prefs/pref_service.h"
 

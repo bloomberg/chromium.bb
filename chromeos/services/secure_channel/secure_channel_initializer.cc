@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/secure_channel_impl.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
