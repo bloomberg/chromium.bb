@@ -58,7 +58,9 @@ class CWVSyncControllerTest : public PlatformTest {
         token_service_(browser_state_.GetPrefs(),
                        std::unique_ptr<ProfileOAuth2TokenServiceIOSDelegate>(
                            token_service_delegate_)),
-        gaia_cookie_manager_service_(&token_service_, &signin_client_),
+        gaia_cookie_manager_service_(&token_service_,
+                                     &signin_client_,
+                                     /*use_fake_url_fetcher=*/true),
         signin_error_controller_(
             SigninErrorController::AccountMode::ANY_ACCOUNT,
             &token_service_),

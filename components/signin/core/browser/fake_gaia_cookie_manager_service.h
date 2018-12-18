@@ -37,7 +37,7 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
   // removed.
   FakeGaiaCookieManagerService(OAuth2TokenService* token_service,
                                SigninClient* client,
-                               bool use_fake_url_fetcher = true);
+                               bool use_fake_url_fetcher);
 
   ~FakeGaiaCookieManagerService() override;
 
