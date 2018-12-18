@@ -31,24 +31,20 @@ class IdentityTestEnvironmentProfileAdaptor {
   // cookie-related network requests.
   static std::unique_ptr<TestingProfile>
   CreateProfileForIdentityTestEnvironment(
-      const TestingProfile::TestingFactories& input_factories,
-      bool create_fake_url_loader_factory_for_cookie_requests = false);
+      const TestingProfile::TestingFactories& input_factories);
 
   // Creates and returns a TestingProfile that has been configured with the
   // given |builder| and the set of testing factories that
   // IdentityTestEnvironment requires.
   // See the above variant for comments on common parameters.
   static std::unique_ptr<TestingProfile>
-  CreateProfileForIdentityTestEnvironment(
-      TestingProfile::Builder& builder,
-      bool create_fake_url_loader_factory_for_cookie_requests = false);
+  CreateProfileForIdentityTestEnvironment(TestingProfile::Builder& builder);
 
   // Sets the testing factories that identity::IdentityTestEnvironment
   // requires explicitly on a Profile that is passed to it.
   // See the above variant for comments on common parameters.
   static void SetIdentityTestEnvironmentFactoriesOnBrowserContext(
-      content::BrowserContext* browser_context,
-      bool create_fake_url_loader_factory_for_cookie_requests = false);
+      content::BrowserContext* browser_context);
 
   // Appends the set of testing factories that identity::IdentityTestEnvironment
   // requires to |factories_to_append_to|, which should be the set of testing
