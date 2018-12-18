@@ -147,6 +147,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
     return observers_.HasObserver(observer);
   }
 
+  void WaitForServiceToBeAvailable(
+      WaitForServiceToBeAvailableCallback callback) override {
+    session_manager_proxy_->WaitForServiceToBeAvailable(std::move(callback));
+  }
+
   bool IsScreenLocked() const override { return screen_is_locked_; }
 
   void EmitLoginPromptVisible() override {
@@ -219,6 +224,17 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void StartDeviceWipe() override {
     SimpleMethodCallToSessionManager(
         login_manager::kSessionManagerStartDeviceWipe);
+  }
+
+  void ClearForcedReEnrollmentVpd(VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerClearForcedReEnrollmentVpd);
+    dbus::MessageWriter writer(&method_call);
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void StartTPMFirmwareUpdate(const std::string& update_mode) override {

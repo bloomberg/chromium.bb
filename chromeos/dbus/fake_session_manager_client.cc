@@ -218,6 +218,7 @@ FakeSessionManagerClient::FakeSessionManagerClient()
 FakeSessionManagerClient::FakeSessionManagerClient(
     PolicyStorageType policy_storage)
     : policy_storage_(policy_storage),
+      clear_forced_re_enrollment_vpd_call_count_(0),
       start_device_wipe_call_count_(0),
       request_lock_screen_call_count_(0),
       notify_lock_screen_shown_call_count_(0),
@@ -245,6 +246,12 @@ void FakeSessionManagerClient::RemoveObserver(Observer* observer) {
 
 bool FakeSessionManagerClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
+}
+
+void FakeSessionManagerClient::WaitForServiceToBeAvailable(
+    WaitForServiceToBeAvailableCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 bool FakeSessionManagerClient::IsScreenLocked() const {
@@ -280,6 +287,12 @@ void FakeSessionManagerClient::NotifySupervisedUserCreationFinished() {}
 
 void FakeSessionManagerClient::StartDeviceWipe() {
   start_device_wipe_call_count_++;
+}
+
+void FakeSessionManagerClient::ClearForcedReEnrollmentVpd(
+    VoidDBusMethodCallback callback) {
+  clear_forced_re_enrollment_vpd_call_count_++;
+  PostReply(FROM_HERE, std::move(callback), true);
 }
 
 void FakeSessionManagerClient::StartTPMFirmwareUpdate(
