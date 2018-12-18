@@ -25,6 +25,9 @@ declare_args() {
   # Requires debug info, so disabled for symbol_level=0 & strip_debug_info=true.
   enable_resource_whitelist_generation =
       is_android && !is_debug &&
+      # Don't enable for Android-on-Chrome OS so that they can build with
+      # symbol_level=0 without this failing (crbug.com/891164).
+      target_os == "android" &&
       # Always enable for official builds, but enable for release builds by
       # default only when other args allow.
       (is_official_build ||
