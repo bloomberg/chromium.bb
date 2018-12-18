@@ -864,8 +864,18 @@ class ReporterRunner {
   bool ShouldSendReporterLogs(const std::string& suffix) {
     UMAHistogramReporter uma(suffix);
 
+    Browser* browser = chrome::FindLastActive();
+    if (!browser) {
+      return false;
+    }
+
+    Profile* profile = browser->profile();
+    DCHECK(profile);
+    PrefService* prefs = profile->GetPrefs();
+    DCHECK(prefs);
+
     // The enterprise policy overrides all other choices.
-    if (!SwReporterReportingIsAllowedByPolicy()) {
+    if (!SwReporterReportingIsAllowedByPolicy(profile)) {
       uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_DISABLED_BY_POLICY);
       return false;
     }
@@ -1168,17 +1178,19 @@ bool SwReporterIsAllowedByPolicy() {
   return is_allowed;
 }
 
-bool SwReporterReportingIsAllowedByPolicy() {
+bool SwReporterReportingIsAllowedByPolicy(Profile* profile) {
   // Reporting is allowed when cleanup is enabled by policy and when the
   // specific reporting policy is allowed.  While the former policy is not
   // dynamic, the latter one is.
   bool is_allowed = SwReporterIsAllowedByPolicy();
   if (is_allowed) {
-    PrefService* local_state = g_browser_process->local_state();
-    is_allowed =
-        !local_state ||
-        !local_state->IsManagedPreference(prefs::kSwReporterReportingEnabled) ||
-        local_state->GetBoolean(prefs::kSwReporterReportingEnabled);
+    PrefService* profile_prefs = profile->GetPrefs();
+    DCHECK(profile_prefs);
+
+    is_allowed = !profile_prefs ||
+                 !profile_prefs->IsManagedPreference(
+                     prefs::kSwReporterReportingEnabled) ||
+                 profile_prefs->GetBoolean(prefs::kSwReporterReportingEnabled);
   }
   return is_allowed;
 }

@@ -4050,9 +4050,7 @@
     "os": ["win"],
     "test_policy": { "ChromeCleanupReportingEnabled": false },
     "pref_mappings": [
-      { "pref": "software_reporter.reporting",
-        "local_state": true
-      }
+      { "pref": "software_reporter.reporting" }
     ]
   },
 

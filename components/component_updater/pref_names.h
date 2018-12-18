@@ -18,12 +18,12 @@ extern const char kSwReporterLastExitCode[];
 extern const char kSwReporterLastTimeTriggered[];
 extern const char kSwReporterLastTimeSentReport[];
 extern const char kSwReporterEnabled[];
-extern const char kSwReporterReportingEnabled[];
 
 // Profile prefs.
 extern const char kSwReporterPromptReason[];
 extern const char kSwReporterPromptVersion[];
 extern const char kSwReporterPromptSeed[];
+extern const char kSwReporterReportingEnabled[];
 #endif
 
 }  // namespace prefs

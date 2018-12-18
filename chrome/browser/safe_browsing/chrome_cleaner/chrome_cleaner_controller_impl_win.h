@@ -54,14 +54,14 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   // ChromeCleanerController overrides.
   State state() const override;
   IdleReason idle_reason() const override;
-  void SetLogsEnabled(bool logs_enabled) override;
-  bool logs_enabled() const override;
+  void SetLogsEnabled(Profile* profile, bool logs_enabled) override;
+  bool logs_enabled(Profile* profile) const override;
   void ResetIdleState() override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   void OnReporterSequenceStarted() override;
   void OnReporterSequenceDone(SwReporterInvocationResult result) override;
-  void RequestUserInitiatedScan() override;
+  void RequestUserInitiatedScan(Profile* profile) override;
   void OnSwReporterReady(SwReporterInvocationSequence&& invocations) override;
   void Scan(const SwReporterInvocation& reporter_invocation) override;
   void ReplyWithUserResponse(Profile* profile,
@@ -69,8 +69,7 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
                              UserResponse user_response) override;
   void Reboot() override;
   bool IsAllowedByPolicy() override;
-  bool IsReportingAllowedByPolicy() override;
-  bool IsReportingManagedByPolicy() override;
+  bool IsReportingManagedByPolicy(Profile* profile) override;
 
   static void ResetInstanceForTesting();
   // Passing in a nullptr as |delegate| resets the delegate to a default
