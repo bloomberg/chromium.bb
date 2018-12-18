@@ -11,7 +11,6 @@
 <translation id="1112015203684611006">打印操作失败。</translation>
 <translation id="1125564390852150847">创建新的标签页。</translation>
 <translation id="1145536944570833626">删除现有数据。</translation>
-<translation id="1157102636231978136">您的浏览数据和活动，会同步到您的 Google 帐号</translation>
 <translation id="1165039591588034296">错误</translation>
 <translation id="1172898394251786223">下一个字段</translation>
 <translation id="1176932207622159128">无法保存图片</translation>
@@ -63,9 +62,9 @@
 <translation id="1820259098641718022">已添加到阅读清单</translation>
 <translation id="1821253160463689938">使用 Cookie 记住您的偏好设置（即使您不访问这些网页）</translation>
 <translation id="1876721852596493031">发送使用情况数据</translation>
+<translation id="1880677175115548835">选择文字</translation>
 <translation id="1886928167269928266">全部</translation>
 <translation id="1911619930368729126">上传到Google云端硬盘</translation>
-<translation id="191179954310195971">其他 Google 服务</translation>
 <translation id="1941314575388338491">点按两次即可复制。</translation>
 <translation id="1952728750904661634">登录受管理的帐号</translation>
 <translation id="1974060860693918893">高级</translation>
@@ -225,6 +224,7 @@
 <translation id="4666531726415300315">目前登录的帐号是 <ph name="EMAIL" />。
 
 您的数据已使用您的同步密码加密。输入该密码即可开始同步。</translation>
+<translation id="4689564913179979534">管理付款方式…</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4747097190499141774">密码加密不包括 Google Pay 中的付款方式和地址。只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">在网页中查找…</translation>
@@ -272,7 +272,6 @@
 <translation id="5548760955356983418">借助 Handoff 功能，您在此设备上浏览网站时，可轻松改用 Mac 继续浏览。当前打开的网站将显示在 Mac 的 Dock 中。
 
 另外，您必须在“设置”的“常规”部分启用 Handoff 功能，并且您的设备必须使用同一个 iCloud 帐号。</translation>
-<translation id="5554368826343982379">同步和个性化</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5614553682702429503">要保存密码吗？</translation>
 <translation id="5626245204502895507">该文件目前无法下载。</translation>
@@ -346,7 +345,8 @@
 <translation id="6464071786529933911">在新的无痕式标签页中打开</translation>
 <translation id="6482629121755362506">删除了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="6541915733953096570">过去 1 小时</translation>
-<translation id="6548479190262846511">未找到任何用于登录此网站的密码</translation>
+<translation id="6548479190262846511">未找到任何用于此网站的密码</translation>
+<translation id="6642362222295953972">切换到已打开的标签页</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6656103420185847513">修改文件夹</translation>
 <translation id="6657585470893396449">密码</translation>

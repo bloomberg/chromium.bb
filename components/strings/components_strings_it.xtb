@@ -175,6 +175,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suggerimento}other{# suggerimenti}}</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="20817612488360358">Devono essere utilizzate le impostazioni del proxy di sistema ma è stata specificata anche una configurazione proxy esplicita.</translation>
+<translation id="2082238445998314030">Risultato <ph name="RESULT_NUMBER" /> di <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Audio</translation>
 <translation id="2094505752054353250">Dominio non corrispondente</translation>
 <translation id="2096368010154057602">Dipartimento</translation>
@@ -182,7 +183,6 @@
 <translation id="2108755909498034140">Riavvia il computer</translation>
 <translation id="2113977810652731515">Carta</translation>
 <translation id="2114841414352855701">Ignorata perché è stata sostituita da <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Termini e condizioni</translation>
 <translation id="213826338245044447">Preferiti su disp. mobili</translation>
 <translation id="214556005048008348">Annulla pagamento</translation>
 <translation id="2147827593068025794">Sincronizzazione in background</translation>
@@ -244,6 +244,7 @@
 <translation id="2501278716633472235">Indietro</translation>
 <translation id="2503184589641749290">Carte di debito e prepagate accettate</translation>
 <translation id="2515629240566999685">Controllare il segnale nella tua area</translation>
+<translation id="2523886232349826891">Salvataggio effettuato solo su questo dispositivo</translation>
 <translation id="2524461107774643265">Aggiungi altre informazioni</translation>
 <translation id="2536110899380797252">Aggiungi indirizzo</translation>
 <translation id="2539524384386349900">Rileva</translation>
@@ -516,6 +517,7 @@
 <translation id="4275830172053184480">Riavvia il dispositivo</translation>
 <translation id="4277028893293644418">Reimposta password</translation>
 <translation id="4280429058323657511">, scad.: <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="428639260510061158">{NUM_CARDS,plural, =1{Questa carta è stata salvata nel tuo Account Google}other{Queste carte sono state salvate nel tuo Account Google}}</translation>
 <translation id="4305817255990598646">Cambia</translation>
 <translation id="4312866146174492540">Blocca (predefinita)</translation>
 <translation id="4325863107915753736">Impossibile trovare l'articolo</translation>
@@ -544,6 +546,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Prova a disattivare le estensioni.</translation>
 <translation id="457875822857220463">Consegna</translation>
+<translation id="4582204425268416675">Carta rimossa</translation>
 <translation id="4587425331216688090">Rimuovere l'indirizzo da Chrome?</translation>
 <translation id="4592951414987517459">La connessione a <ph name="DOMAIN" /> è criptata tramite un pacchetto di crittografia moderno.</translation>
 <translation id="4594403342090139922">&amp;Annulla eliminazione</translation>
@@ -591,6 +594,7 @@
 <translation id="4926049483395192435">Deve essere specificato.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> dice</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943872375798546930">Nessun risultato</translation>
 <translation id="495170559598752135">Azioni</translation>
 <translation id="4958444002117714549">Espandi elenco</translation>
 <translation id="4974590756084640048">Riattiva avvisi</translation>
@@ -650,6 +654,7 @@
 <translation id="5344579389779391559">Questa pagina potrebbe tentare di addebitarti dei costi</translation>
 <translation id="5355557959165512791">Al momento non puoi visitare il sito <ph name="SITE" /> perché il relativo certificato è stato revocato. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
 <translation id="536296301121032821">Archiviazione delle impostazioni criterio non riuscita</translation>
+<translation id="5363056109122666249">Chrome chiede se vuoi salvare le tue carte nel tuo Account Google poiché ora sei collegato all'account. Puoi modificare questo comportamento nelle impostazioni.</translation>
 <translation id="5371425731340848620">Aggiorna carta</translation>
 <translation id="5377026284221673050">"L'orologio è indietro", "L'orologio è avanti" oppure "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5384855140246857529">Accedi e attiva la sincronizzazione per utilizzare le tue carte su tutti i dispositivi.</translation>
@@ -720,7 +725,6 @@
 <translation id="5810442152076338065">La connessione a <ph name="DOMAIN" /> è criptata tramite un pacchetto di crittografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Ripeti aggiunta</translation>
 <translation id="5838278095973806738">Non dovresti inserire dati sensibili in questo sito (ad esempio password o carte di credito) perché potrebbero essere intercettati da utenti malintenzionati.</translation>
-<translation id="5844286946362376359">Conosco Termini e condizioni, norme sulla privacy e diritto di recesso per <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (lascia deselezionata la casella per leggere).</translation>
 <translation id="5863847714970149516">La pagina che segue potrebbe tentare di addebitarti dei costi</translation>
 <translation id="5866257070973731571">Aggiungi numero di telefono</translation>
 <translation id="5869405914158311789">Impossibile raggiungere il sito</translation>
@@ -753,6 +757,7 @@
 <translation id="6047233362582046994">Se sei consapevole dei rischi per la tua sicurezza, potresti <ph name="BEGIN_LINK" />visitare questo sito<ph name="END_LINK" /> senza aspettare che vengano rimosse le app dannose.</translation>
 <translation id="6047927260846328439">Questi contenuti potrebbero cercare di indurti con l'inganno a installare software o a rivelare informazioni personali. <ph name="BEGIN_LINK" />Mostra comunque<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Al momento non puoi visitare il sito web <ph name="SITE" /> perché utilizza il blocco dei certificati. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
+<translation id="6058977677006700226">Utilizzare le carte su tutti i tuoi dispositivi?</translation>
 <translation id="6059925163896151826">Dispositivi USB</translation>
 <translation id="6071091556643036997">Il tipo di norma non è valido.</translation>
 <translation id="6080696365213338172">Hai raggiunto i contenuti utilizzando un certificato fornito dall'amministratore. I dati che fornisci a <ph name="DOMAIN" /> possono essere intercettati dal tuo amministratore.</translation>
@@ -844,7 +849,6 @@
 <translation id="6865412394715372076">Al momento non è possibile verificare questa carta.</translation>
 <translation id="6868206169573555318">Riavvia per aggiornare</translation>
 <translation id="6874604403660855544">&amp;Ripeti aggiunta</translation>
-<translation id="6885646002011712606">L'Assistente compilazione automatica è disponibile nella parte inferiore dello schermo</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Il livello della norma non è supportato.</translation>
 <translation id="6895330447102777224">La carta è stata confermata</translation>
@@ -871,6 +875,7 @@
 <translation id="7016992613359344582">L'addebito potrebbe essere singolo oppure ricorrente e potrebbe non essere evidente.</translation>
 <translation id="7029809446516969842">Password</translation>
 <translation id="7050187094878475250">Hai tentato di visitare il sito <ph name="DOMAIN" />, ma il server ha presentato un certificato con periodo di validità troppo lungo per poter essere ritenuto attendibile.</translation>
+<translation id="705310974202322020">{NUM_CARDS,plural, =1{Al momento questa carta non può essere salvata}other{Al momento queste carte non possono essere salvate}}</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7064851114919012435">Informazioni di contatto</translation>
 <translation id="7079718277001814089">Questo sito contiene malware</translation>
@@ -941,6 +946,7 @@ Ulteriori dettagli:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Leggere ulteriori informazioni<ph name="END_LINK" /> sul problema.</translation>
 <translation id="7453467225369441013">Verrai scollegato dalla maggior parte dei siti, ma non dal tuo account Google.</translation>
 <translation id="7455133967321480974">Usa predefinita globale (Blocca)</translation>
+<translation id="7460618730930299168">I contenuti mostrati sono diversi da quelli che hai selezionato. Continuare?</translation>
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7485870689360869515">Nessun dato trovato.</translation>
@@ -980,6 +986,7 @@ Ulteriori dettagli:
 <translation id="7681101578153515023">Cambia motore di ricerca</translation>
 <translation id="7682287625158474539">Spedizione</translation>
 <translation id="7687186412095877299">Compila i moduli di pagamento con i metodi di pagamento salvati</translation>
+<translation id="769721561045429135">Al momento hai carte che possono essere utilizzate solo su questo dispositivo. Fai clic su Continua per controllare le carte.</translation>
 <translation id="7699293099605015246">Gli articoli non sono al momento disponibili</translation>
 <translation id="7701040980221191251">Nessuno</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Procedi su <ph name="SITE" /> (non sicuro)<ph name="END_LINK" /></translation>
@@ -988,7 +995,6 @@ Ulteriori dettagli:
 <translation id="7716424297397655342">Impossibile caricare il sito dalla cache</translation>
 <translation id="7723047071702270851">Modifica la carta</translation>
 <translation id="774634243536837715">Contenuti pericolosi bloccati.</translation>
-<translation id="7747182086178764941">È mostrata la schermata della prima esecuzione dell'Assistente compilazione</translation>
 <translation id="7752995774971033316">Non gestito</translation>
 <translation id="7755287808199759310">Il tuo genitore può sbloccarlo per te</translation>
 <translation id="7758069387465995638">Il software antivirus o il firewall potrebbe avere bloccato la connessione.</translation>
@@ -1042,9 +1048,11 @@ Ulteriori dettagli:
 <translation id="808894953321890993">Cambia password</translation>
 <translation id="8091372947890762290">Attivazione in attesa sul server</translation>
 <translation id="8094917007353911263">La rete in uso potrebbe richiedere la visita della pagina <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8100588592594801589">Le carte non valide sono state rimosse</translation>
 <translation id="8103161714697287722">Metodo di pagamento</translation>
 <translation id="8118489163946903409">Metodo di pagamento</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" non è stato installato correttamente sul computer o sulla rete. Chiedi all'amministratore IT di risolvere il problema.</translation>
+<translation id="8130693978878176684">Non posso più aiutarti. Continua autonomamente.</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8149426793427495338">Il computer è entrato in modalità sospensione.</translation>
 <translation id="8150722005171944719">Il file all'indirizzo <ph name="URL" /> non è leggibile. Potrebbe essere stato rimosso, spostato oppure delle autorizzazioni del file potrebbero impedire l'accesso.</translation>
@@ -1208,6 +1216,7 @@ Ulteriori dettagli:
 <translation id="939736085109172342">Nuova cartella</translation>
 <translation id="945855313015696284">Controlla le informazioni riportate di seguito ed elimina le schede non valide</translation>
 <translation id="951104842009476243">Carte di debito e prepagate accettate</translation>
+<translation id="960701843220172709">{NUM_CARDS,plural, =1{Potrai utilizzarla dopo avere eseguito l'accesso. Questa carta e il relativo indirizzo di fatturazione verranno salvati nel tuo Account Google.}other{Potrai utilizzarle dopo avere eseguito l'accesso. Queste carte e i relativi indirizzi di fatturazione verranno salvati nel tuo Account Google.}}</translation>
 <translation id="962484866189421427">Questi contenuti potrebbero installare app ingannevoli che si spacciano per qualcos'altro o raccolgono dati che potrebbero essere usati per monitorare la tua attività. <ph name="BEGIN_LINK" />Mostra comunque<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Build ufficiale</translation>
 <translation id="973773823069644502">Aggiungi l'indirizzo di consegna</translation>

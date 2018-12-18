@@ -24,6 +24,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="1520828917794284345">Badilisha ukubwa wa eneo-kazi ili litoshe</translation>
 <translation id="154040539590487450">Imeshindwa kuanza huduma ya ufikiaji wa mbali.</translation>
 <translation id="1546934824884762070">Hitilafu isiyotarajiwa imetokea. Tafadhali ripoti tatizo hili kwa wasanidi programu.</translation>
+<translation id="1624185583382384493">Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali sasa iko kwenye wavuti. Jaribu <ph name="LINK_BEGIN" />programu yetu ya wavuti<ph name="LINK_END" />—ina kasi na hailipishwi, ina vipengele vingi zaidi, ikiwa ni pamoja na uwezo ulioboreshwa wa kutumia skrini nyingi.</translation>
 <translation id="1643640058022401035">Kuondoka kwenye ukurasa huu kutakamilisha kipindi chako cha Chromoting.</translation>
 <translation id="1654128982815600832">Inawasha miunganisho ya mbali kwa kompyuta hii...</translation>
 <translation id="170207782578677537">Ilishindwa kusajili kompyuta hii.</translation>
@@ -242,6 +243,7 @@ Ili uwashe kipengele hiki, chagua '<ph name="BUTTON_NAME" />' ili uonyeshe kidir
 <translation id="6198252989419008588">Badilisha PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (imepitwa na wakati)</translation>
 <translation id="6221358653751391898">Hujaingia kwenye Chrome. Tafadhali ingia na ujaribu tena.</translation>
+<translation id="6227369581881558336">Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali sasa inapatikana kwenye wavuti na ina vipengele vipya ikiwa ni pamoja na uhamishaji wa faili! Angalia <ph name="LINK_BEGIN" />programu yetu ya wavuti<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Seva pangishi inayotumika kwenye skrini ya dashibodi imezima ili kutumia hali ya pazia kwa kubadilisha hadi seva pangishi inayotumika katika kipindi mahususi cha mtumiaji.</translation>
 <translation id="629730747756840877">Akaunti</translation>
 <translation id="6304318647555713317">Kiteja</translation>

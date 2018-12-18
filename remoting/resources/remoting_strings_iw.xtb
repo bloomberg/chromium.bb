@@ -24,6 +24,7 @@
 <translation id="1520828917794284345">שנה את גודל שולחן העבודה</translation>
 <translation id="154040539590487450">הפעלת שירות הגישה מרחוק נכשלה.</translation>
 <translation id="1546934824884762070">אירעה שגיאה לא צפויה. דיווח על בעיה זו למפתחים.</translation>
+<translation id="1624185583382384493">‏Chrome Remote Desktop זמין עכשיו באינטרנט. כדאי לנסות את <ph name="LINK_BEGIN" />אפליקציית האינטרנט<ph name="LINK_END" /> — היא מהירה וחינמית, ויש בה יותר תכונות, כולל תמיכה משופרת בצגים מרובים.</translation>
 <translation id="1643640058022401035">‏יציאה מדף זה תגרום לסיום ההפעלה של Chromoting.</translation>
 <translation id="1654128982815600832">מפעיל חיבורים מרוחקים למחשב זה...</translation>
 <translation id="170207782578677537">הרישום של מחשב זה נכשל.</translation>
@@ -242,6 +243,7 @@ Chrome
 <translation id="6198252989419008588">‏שנה PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (לא עדכני)</translation>
 <translation id="6221358653751391898">‏אתה לא מחובר ל-Chrome. היכנס ונסה שוב.</translation>
+<translation id="6227369581881558336">‏Chrome Remote Desktop זמין עכשיו באינטרנט, עם יותר תכונות - כולל העברת קבצים! אפשר להתנסות ב<ph name="LINK_BEGIN" />אפליקציית האינטרנט<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">המארח הפועל במסך הכניסה למסוף כבה כדי לתמוך במצב הסתרה על ידי מעבר אל מארח הרץ בפעילות באתר שהיא ספציפית למשתמש.</translation>
 <translation id="629730747756840877">חשבון</translation>
 <translation id="6304318647555713317">לקוח</translation>

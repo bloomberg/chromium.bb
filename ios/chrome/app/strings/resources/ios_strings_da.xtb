@@ -11,7 +11,6 @@
 <translation id="1112015203684611006">Udskrift mislykkedes.</translation>
 <translation id="1125564390852150847">Opret ny fane.</translation>
 <translation id="1145536944570833626">Slet eksisterende data.</translation>
-<translation id="1157102636231978136">Dine browserdata og -aktivitet, der synkroniseres med din Google-konto</translation>
 <translation id="1165039591588034296">Fejl</translation>
 <translation id="1172898394251786223">Næste felt</translation>
 <translation id="1176932207622159128">Billedet kan ikke gemmes</translation>
@@ -63,9 +62,9 @@
 <translation id="1820259098641718022">Føjet til læseliste</translation>
 <translation id="1821253160463689938">Anvender cookies til at huske dine præferencer, også selvom du ikke besøger siderne</translation>
 <translation id="1876721852596493031">Send anvendelsesdata</translation>
+<translation id="1880677175115548835">Vælg tekst</translation>
 <translation id="1886928167269928266">Altid</translation>
 <translation id="1911619930368729126">Upload til Google Drev</translation>
-<translation id="191179954310195971">Andre Google-tjenester</translation>
 <translation id="1941314575388338491">Tryk to gange for at kopiere.</translation>
 <translation id="1952728750904661634">Log ind med en administreret konto</translation>
 <translation id="1974060860693918893">Avanceret</translation>
@@ -225,6 +224,7 @@
 <translation id="4666531726415300315">Logget ind som <ph name="EMAIL" />.
 
 Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for at starte synkroniseringen.</translation>
+<translation id="4689564913179979534">Administrer betalingsmetoder…</translation>
 <translation id="473775607612524610">Opdater</translation>
 <translation id="4747097190499141774">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay. Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkronisering. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Find på siden...</translation>
@@ -244,7 +244,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="4930268273022498155">Slet eksisterende data. Du kan hente dem ved at skifte tilbage til <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Beklager, men der opstod et problem med at dele dit element.</translation>
 <translation id="4979397965658815378">Log ind med din Google-konto for at få adgang til dine bogmærker, dine adgangskoder, din historik og andre indstillinger på alle dine enheder.</translation>
-<translation id="5004416275253351869">Administration af aktivitet på Google</translation>
+<translation id="5004416275253351869">Aktivitetsadministration på Google</translation>
 <translation id="5005498671520578047">Kopiér adgangskode</translation>
 <translation id="5010803260590204777">Åbn en inkognitofane for at søge på nettet uden at blive registreret.</translation>
 <translation id="5011684439661633295">Hej <ph name="FULL_ACCOUNT_NAME" /></translation>
@@ -272,7 +272,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5548760955356983418">Med Handoff kan du begynde at se på et website på denne enhed og derefter nemt fortsætte på din Mac. Det website, du har åbent, vises i docken på din Mac.
 
 Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enheder skal benytte den samme iCloud-konto.</translation>
-<translation id="5554368826343982379">Synkronisering og tilpasning</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
 <translation id="5614553682702429503">Vil du gemme adgangskoden?</translation>
 <translation id="5626245204502895507">Filen kunne ikke downloades på nuværende tidspunkt.</translation>
@@ -347,6 +346,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev slettet</translation>
 <translation id="6541915733953096570">Seneste time</translation>
 <translation id="6548479190262846511">Der blev ikke fundet nogen adgangskoder til dette website</translation>
+<translation id="6642362222295953972">Skift til den eksisterende fane</translation>
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="6656103420185847513">Rediger mappe</translation>
 <translation id="6657585470893396449">Adgangskode</translation>
@@ -474,7 +474,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="895541991026785598">Rapportér et problem</translation>
 <translation id="8971089644512329999">OK</translation>
 <translation id="8976382372951310360">Hjælp</translation>
-<translation id="8981454092730389528">Administration af aktivitet på Google</translation>
+<translation id="8981454092730389528">Aktivitetsadministration på Google</translation>
 <translation id="8985320356172329008">Du er logget ind på Google som</translation>
 <translation id="902659348151742535">Google kan bruge din browserhistorik til at personliggøre Søgning, annoncer og andre Google-tjenester.</translation>
 <translation id="9034759925968272072">Du logges ikke ud af din Google-konto. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>

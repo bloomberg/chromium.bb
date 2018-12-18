@@ -54,13 +54,13 @@
 <translation id="1812997170047690955">నా స్క్రీన్‌పై ఏమి ఉన్నాయి?</translation>
 <translation id="1823873187264960516">ఈథర్‌నెట్: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">సహాయకం (లోడ్ అవుతోంది...)</translation>
-<translation id="1850504506766569011">Wi-Fi నిలిపివేయబడింది.</translation>
+<translation id="1850504506766569011">Wi-Fi ఆఫ్ చేయబడింది.</translation>
 <translation id="1864454756846565995">USB-C పరికరం (వెనుకవైపు పోర్ట్)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />కు మిర్రరింగ్ చేస్తోంది</translation>
 <translation id="1885785240814121742">వేలిముద్రతో అన్‌లాక్ చేయండి</translation>
 <translation id="1919743966458266018">విధి నిర్వాహికిని తెరిచే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="1923539912171292317">స్వయంచాలక క్లిక్‌లు</translation>
-<translation id="1928739107511554905">అప్‌డేట్‌ని పొందడానికి, కీబోర్డ్‌ని అలానే జోడించి ఉంచి మీ Chromebookని పునఃప్రారంభించడం కోసం టచ్‌స్క్రీన్‌ని ఉపయోగించండి.</translation>
+<translation id="1928739107511554905">అప్‌డేట్‌ని పొందడానికి, కీబోర్డ్‌‌ని అలానే జోడించి ఉంచి మీ Chromebookని పునఃప్రారంభించడం కోసం టచ్‌స్క్రీన్‌ని ఉపయోగించండి.</translation>
 <translation id="1942830294380034169">నిండిపోయిన బటన్</translation>
 <translation id="1951012854035635156">సహాయకం</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -199,6 +199,7 @@
 <translation id="4261870227682513959">నోటిఫికేషన్ సెట్టింగ్‌లను చూపుతుంది. నోటిఫికేషన్‌లు ఆఫ్ చేయబడి ఉన్నాయి</translation>
 <translation id="4269883910223712419">ఈ పరికర నిర్వాహకుడికి వీటిని చేయగల సామర్థ్యం ఉంది:</translation>
 <translation id="4279490309300973883">మిర్రరింగ్</translation>
+<translation id="4281007048406351813">టైమర్‌కు 1 నిమి జోడించు</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> యాక్టివేట్ చేయబడుతోంది</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">మీరు అధిక కాంట్రాస్ట్‌ కోసం కీబోర్డ్ షార్ట్‌కట్‌ను నొక్కారు. మీరు దీన్ని ఆన్ చేయాలనుకుంటున్నారా?</translation>
@@ -248,6 +249,7 @@
 <translation id="5207949376430453814">వచన కర్సర్ గుర్తును హైలైట్ చేయి</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="523505283826916779">ప్రాప్యత సెట్టింగ్‌లు</translation>
+<translation id="5283198616748585639">1 నిమి జోడించు</translation>
 <translation id="5302048478445481009">భాష</translation>
 <translation id="5313326810920013265">బ్లూటూత్ సెట్టింగ్‌లు</translation>
 <translation id="5331975486040154427">USB-C పరికరం (ఎడమవైపు వెనుక పోర్ట్)</translation>
@@ -420,7 +422,7 @@
 <translation id="8132793192354020517"><ph name="NAME" />కు కనెక్ట్ చేయబడింది</translation>
 <translation id="813913629614996137">ప్రారంభిస్తోంది...</translation>
 <translation id="8142699993796781067">ప్రైవేట్ నెట్‌వర్క్</translation>
-<translation id="8190698733819146287">భాషలను అనుకూలీకరించి, ఇన్‌పుట్ చెయ్యి...</translation>
+<translation id="8190698733819146287">భాషలు మరియు ఇన్‌పుట్ పద్ధతిని అనుకూలీకరించండి...</translation>
 <translation id="8192202700944119416">నోటిఫికేషన్‌లు దాచబడ్డాయి.</translation>
 <translation id="8236042855478648955">విరామ సమయం</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
@@ -438,7 +440,7 @@
 <translation id="8433186206711564395">నెట్‌వర్క్ సెట్టింగ్‌లు</translation>
 <translation id="8433977262951327081">అరలో ఇన్‌పుట్ ఎంపికల మెను బబుల్‌ని చూపడానికి ఉపయోగించే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="8452135315243592079">SIM కార్డ్ లేదు</translation>
-<translation id="8454013096329229812">Wi-Fi ప్రారంభించబడింది.</translation>
+<translation id="8454013096329229812">Wi-Fi ఆన్ చేయబడింది.</translation>
 <translation id="847056008324733326">స్కేల్ సెట్టింగ్‌లను ప్రదర్శించండి</translation>
 <translation id="8477270416194247200">రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: మళ్లీ కనెక్ట్ చేస్తోంది...</translation>

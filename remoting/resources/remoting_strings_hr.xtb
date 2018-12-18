@@ -24,6 +24,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="1520828917794284345">Prilagodi veličinu radne površine</translation>
 <translation id="154040539590487450">Nisam uspio pokrenuti uslugu daljinskog pristupa.</translation>
 <translation id="1546934824884762070">Pojavila se neočekivana pogreška. Prijavite taj problem razvojnim programerima.</translation>
+<translation id="1624185583382384493">Udaljena radna površina Chrome sad je na webu. Isprobajte našu <ph name="LINK_BEGIN" />web-aplikaciju<ph name="LINK_END" />– brza je i besplatna te ima još više značajki, uključujući poboljšanu podršku za više monitora.</translation>
 <translation id="1643640058022401035">Napuštanjem ove stranice završit ćete svoju sesiju aplikacije Chromoting.</translation>
 <translation id="1654128982815600832">Omogućavanje daljinskih veza za ovo računalo…</translation>
 <translation id="170207782578677537">Nisam uspio registrirati ovo računalo.</translation>
@@ -242,6 +243,7 @@ Da biste omogućili ovu funkciju, odaberite '<ph name="BUTTON_NAME" />' za prika
 <translation id="6198252989419008588">Promijeni PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (zastarjelo)</translation>
 <translation id="6221358653751391898">Niste prijavljeni u Chrome. Prijavite se i pokušajte ponovo.</translation>
+<translation id="6227369581881558336">Udaljena radna površina Chrome sad je na webu s novim značajkama, uključujući prijenos datoteka! Provjerite našu <ph name="LINK_BEGIN" />web-aplikaciju<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Host koji je pokrenut na zaslonu za prijavu na konzolu isključio se radi podrške za način zavjese prelaskom na host koji je pokrenut u sesiji korisnika.</translation>
 <translation id="629730747756840877">Račun</translation>
 <translation id="6304318647555713317">Klijent</translation>

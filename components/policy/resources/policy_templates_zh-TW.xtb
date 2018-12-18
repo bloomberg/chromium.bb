@@ -122,15 +122,6 @@
 <translation id="1291880496936992484">警告：自 <ph name="PRODUCT_NAME" /> 52 版 (將於 2016 年 9 月左右推出) 起，系統將全面移除 RC4，屆時這項政策將停止運作。
 
       如果未設定這項政策或將其設為 False，系統就不會在 TLS 中啟用 RC4 加密套件。您也可以將這項政策設為 True，以保持與過舊伺服器的相容性。這種方法是權宜之計，伺服器應重新設定，才是正確的做法。</translation>
-<translation id="1297117713060236551">這項政策可控管完全不會觸發瀏覽器切換的網站清單。
-
-      請注意，系統也可以透過 <ph name="USE_IE_SITELIST_POLICY_NAME" /> 政策將元素加入這個清單。
-
-      如果不設定這項政策，系統不會將任何網站加入清單。
-
-      如果設定這項政策，這會像 <ph name="URL_LIST_POLICY_NAME" /> 政策一樣將每個項目視為規則，但套用的邏輯恰恰相反，也就是相符的規則不會開啟替代瀏覽器。
-
-      這項政策與 <ph name="URL_LIST_POLICY_NAME" /> 的不同之處在於，規則為雙向適用。換句話說，如果 Internet Explorer 已安裝並啟用增益集，這項政策也會控制 <ph name="IE_PRODUCT_NAME" /> 是否該在 <ph name="PRODUCT_NAME" /> 中開啟這些網址。</translation>
 <translation id="1297182715641689552">使用 .pac Proxy 指令碼</translation>
 <translation id="1304973015437969093">自動在背景中安裝的擴充功能/應用程式 ID 和更新網址</translation>
 <translation id="1307415922184340052">將使用者名稱和檔案名稱連同每個列印工作一起傳送到原生印表機伺服器。系統預設為不傳送。</translation>
@@ -860,13 +851,6 @@
           如未設定這項政策，則使用者可自行選擇 Proxy 設定。</translation>
 <translation id="3205825995289802549">首次執行時將第一個瀏覽器視窗最大化</translation>
 <translation id="3211426942294667684">瀏覽器登入設定</translation>
-<translation id="3213821784736959823">控制是否要在 <ph name="PRODUCT_NAME" /> 中使用內建 DNS 用戶端。
-
-      如果你將這項政策設為 True，系統就會使用內建 DNS 用戶端 (如果可用)。
-
-      如果你將這項政策設為 False，系統就一律不會使用內建 DNS 用戶端。
-
-      如未設定這項政策，使用者可以透過編輯 chrome://flags 或指定命令列參數，自行變更是否要使用內建 DNS 用戶端。</translation>
 <translation id="3214164532079860003">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入首頁。如果停用這項政策，則不會匯入首頁。如果未設定這項政策，系統會自動匯入首頁，或詢問使用者是否要匯入首頁。</translation>
 <translation id="3219421230122020860">可使用無痕模式</translation>
 <translation id="3220624000494482595">如果資訊站應用程式是 Android 應用程式，即使將這項政策設為 <ph name="TRUE" />，仍無法控制 <ph name="PRODUCT_OS_NAME" />版本。</translation>
@@ -999,19 +983,6 @@
       如果將這項政策設為「DeveloperToolsDisallowed」(值為 2)，使用者將無法再存取開發人員工具，也無法再檢查網站元素。此外，所有可開啟開發人員工具或 JavaScript 控制台的鍵盤快速鍵、選單項目或內容選單項目都會遭到停用。</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="355118380775352753">要在替代瀏覽器中開啟的網站</translation>
-<translation id="3556806727696701427">啟用 <ph name="PRODUCT_NAME" /> 的安全瀏覽功能並禁止使用者變更這項設定。
-
-      如果啟用這項設定，系統會一律啟用安全瀏覽功能。
-
-      如果停用這項設定，系統一律不會啟用安全瀏覽功能。
-
-      不論啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫「阻擋釣魚網站及惡意程式」設定。
-
-      如果未設定這項政策，系統會啟用這項功能，不過使用者可以變更設定。
-
-      如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。
-
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="3577251398714997599">含侵入式廣告的網站的廣告設定</translation>
 <translation id="3591584750136265240">設定登入驗證行為</translation>
 <translation id="3624171042292187668">
@@ -1773,17 +1744,6 @@
 
       如未設定這項政策，或是設定為 False，<ph name="PRODUCT_NAME" /> 將會套用目前的線上撤銷檢查設定。</translation>
 <translation id="5728154254076636808">允許建立 <ph name="PRODUCT_NAME" /> 設定檔資料的漫遊複本</translation>
-<translation id="5728661376331491504">這項政策可控管要在替代瀏覽器中開啟的網站清單。
-
-      請注意，系統也可以透過 <ph name="USE_IE_SITELIST_POLICY_NAME" /> 政策將元素加入這個清單。
-
-      如果不設定這項政策，系統就不會將任何網站加入清單。
-
-      如果設定這項政策，系統會將每個項目視為規則，據此透過替代瀏覽器開啟網站。<ph name="PRODUCT_NAME" /> 會運用這些規則，決定是否該以替代瀏覽器開啟某個網址。
- 
-      如果 Internet Explorer 已安裝並啟用增益集，當規則不相符時，Internet Explorer 就會切換回 <ph name="PRODUCT_NAME" />。
-
-      如果規則互相衝突，<ph name="PRODUCT_NAME" /> 會使用最精確的規則。</translation>
 <translation id="5732972008943405952">首次執行時從預設瀏覽器匯入自動填入表單資料</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5770738360657678870">開發頻道 (可能不穩定)</translation>
@@ -2251,13 +2211,6 @@
 
       注意：這項政策僅適用於 Android 裝置上的 Chrome，而且裝置一定要有超過 1GB 的 RAM。如要在非 Android 平台上套用這項政策，請使用 SitePerProcess。
       </translation>
-<translation id="6922040258551909078">
-      如果將這項政策設為 True，當雲端政策與裝置政策發生衝突時，系統會優先採用前者。
-      如果將這項政策設為 False 或不予設定，則會優先採用後者。
-      如要進一步瞭解政策優先順序，請參閱 https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。
-      </translation>
 <translation id="6922884955650325312">封鎖 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
 <translation id="6923366716660828830">指定預設搜尋引擎名稱。如果名稱欄位留空或未設定，系統會使用搜尋網址指定的主機名稱。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="6926703471186170050">啟用長邊雙面列印</translation>
@@ -2324,14 +2277,6 @@
       </translation>
 <translation id="706669471845501145">允許網站顯示桌面通知</translation>
 <translation id="7072208053150563108">裝置密碼變更頻率</translation>
-<translation id="7074513465313721551">設定安全瀏覽功能將信任的網域清單。也就是說：
-      如果危險資源 (例如網路詐騙軟體、惡意軟體或垃圾軟體) 的網址與這些網域相符，安全瀏覽功能就不會加以檢查。
-      安全瀏覽功能的下載保護服務不會檢查由這些網域所代管的下載內容。
-      如果網頁的網址與這些網域相符，安全瀏覽功能的密碼保護服務就不會檢查密碼重複使用情形。
-
-      如果啟用這項設定，安全瀏覽功能將信任這些網域。
-      如果停用或不指定這項設定，則會對所有資源套用預設的安全瀏覽保護機制。
-      這項設定不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="7079519252486108041">封鎖這些網站的彈出式視窗</translation>
 <translation id="7085803328069945025">允許你設定網址模式清單，指定可要求使用者授予 USB 裝置存取權的網站。
 
@@ -2411,13 +2356,6 @@
 
           如果你未設定這項政策，則系統會在初次顯示登入畫面時停用螢幕放大鏡。使用者隨時都可以啟用或停用螢幕放大鏡，而螢幕放大鏡在登入畫面的狀態則視使用者的選擇而定 (均為永久性)。</translation>
 <translation id="7249828445670652637">允許 ARC 應用程式使用「<ph name="PRODUCT_OS_NAME" />」CA 憑證</translation>
-<translation id="725322441686394886">如果未設定這項政策，當 Chrome 清理功能偵測到垃圾軟體時，可能會根據 SafeBrowsingExtendedReportingEnabled 設定的政策，將掃描作業的相關中繼資料回報給 Google。回報完畢後，Chrome 清理功能會詢問使用者是否要將偵測到的垃圾軟體清除。使用者可以選擇將清理作業的執行結果分享給 Google，讓日後的垃圾軟體偵測作業更精確。分享的結果包括檔案中繼資料、自動安裝的擴充功能和登錄機碼，詳情請見《Chrome 隱私權白皮書》。
-
-      如果停用這項政策，當 Chrome 清理功能偵測到垃圾軟體時，就不會將掃描作業的相關中繼資料回報給 Google (覆寫 SafeBrowsingExtendedReportingEnabled 設定的政策)。此外，Chrome 清理功能會詢問使用者是否要將偵測到的垃圾軟體清除。清理作業的執行結果不會回報給 Google，使用者也無法選擇回報。
-
-      如果啟用這項政策，當 Chrome 清理功能偵測到垃圾軟體時，可能會根據 SafeBrowsingExtendedReportingEnabled 設定的政策，將掃描作業的相關中繼資料回報給 Google。此外，Chrome 清理功能會詢問使用者是否要將偵測到的垃圾軟體清除。清理作業的執行結果將回報給 Google，且使用者無法選擇不回報。
-
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="7258823566580374486">啟用遠端存取主機遮幕</translation>
 <translation id="7260277299188117560">已啟用自動更新 P2P</translation>
 <translation id="7261252191178797385">裝置桌布圖片</translation>
@@ -2512,11 +2450,6 @@
 
       如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="737655323154569539">限制列印頁面大小。未設定這項政策或將設定留空，系統會視為未設限制。</translation>
-<translation id="7417728346887499628">如果停用這項政策，系統會禁止 Chrome 清理功能掃描系統中的垃圾軟體並執行清理作業。此外，使用者將無法透過 chrome://settings/cleanup 手動觸發 Chrome 清理功能。
-
-      如果啟用或未設定這項政策，Chrome 清理功能會定期掃描系統中的垃圾軟體，並且在找到垃圾軟體時詢問使用者是否要予以移除。此外，使用者也可以透過 chrome://settings 手動觸發 Chrome 清理功能。
-
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="7417972229667085380">簡報模式中的閒置延遲時間延長百分比 (已不適用)</translation>
 <translation id="7421483919690710988">設定媒體磁碟快取大小 (以位元組為單位)</translation>
 <translation id="7424751532654212117">停用的外掛程式清單的例外清單</translation>
@@ -2936,12 +2869,6 @@
           如需模式範例，請參閱 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">停用儲存瀏覽記錄功能</translation>
-<translation id="8498293625012059298">設定變更密碼網址 (僅限 HTTP 和 HTTPS 配置)。一旦使用者在瀏覽器中看到警告訊息，密碼保護服務便會將其傳送到這個網址來變更密碼。
-      為了讓 <ph name="PRODUCT_NAME" /> 能在這個變更密碼頁面中正確擷取新的密碼指紋，請確認變更密碼頁面符合以下網址所述的規範：https://www.chromium.org/developers/design-documents/create-amazing-password-forms。
-
-      如果啟用這項設定，一旦使用者在瀏覽器中看到警告訊息，密碼保護服務便會將其傳送到這個網址來變更密碼。
-      如果停用這項設定或不予設定，則密碼保護服務會將使用者傳送到 https://myaccounts.google.com 來變更密碼。
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="8499172469244085141">預設設定 (使用者可覆寫)</translation>
 <translation id="8507835864888987300">設定自動更新的目標版本。
 
@@ -3153,12 +3080,6 @@
 <translation id="8976248126101463034">允許針對遠端存取主機進行 gnubby 驗證機制</translation>
 <translation id="8976531594979650914">使用系統預設印表機做為預設值</translation>
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
-<translation id="9012851181124311976">設定企業登入網址 (僅限 HTTP 和 HTTPS 配置) 清單。系統會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
-      為了讓 <ph name="PRODUCT_NAME" /> 能正確擷取密碼指紋，請確認登入頁面符合相關規範，網址是：https://www.chromium.org/developers/design-documents/create-amazing-password-forms。
-
-      如果啟用這項設定，密碼保護服務會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
-      如果停用這項設定或不予設定，密碼保護服務就只會針對 https://accounts.google.com 擷取密碼指紋。
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="906631898352326790">

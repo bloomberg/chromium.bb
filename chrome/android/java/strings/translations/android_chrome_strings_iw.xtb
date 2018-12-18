@@ -167,7 +167,6 @@
 <translation id="2156074688469523661">אתרים שנותרו (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2173302385160625112">יש לבדוק את החיבור לאינטרנט</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, אפליקציית אינטרנט. <ph name="APP_URL" /></translation>
-<translation id="2221802148287197464">אוטומטי</translation>
 <translation id="2227444325776770048">המשך בשם <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">‏שליחת חלק מפרטי המערכת ותוכן הדף אל Google</translation>
 <translation id="2234876718134438132">‏סנכרון ושירותי Google</translation>
@@ -238,7 +237,6 @@
 <translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
 <translation id="2779651927720337254">נכשל</translation>
 <translation id="2781151931089541271">נותרה שניה אחת</translation>
-<translation id="2783359740176230170">תשלום מהיר בקופה</translation>
 <translation id="2803478378562657435">הצגת סיסמאות שמורות ואפשרויות סיסמה</translation>
 <translation id="2810645512293415242">דף פשוט יותר שחוסך בנתונים ונטען מהר יותר.</translation>
 <translation id="281504910091592009">‏הצגה וניהול של סיסמאות שמורות ב<ph name="BEGIN_LINK" />חשבון Google<ph name="END_LINK" /></translation>
@@ -295,7 +293,7 @@
 <translation id="3269956123044984603">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את האפשרות 'סנכרון אוטומטי של נתונים' בהגדרות של חשבון Android.</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
 <translation id="32895400574683172">יש הרשאה להצגת הודעות</translation>
-<translation id="3295530008794733555">גלישה מהירה יותר. הפחתה של צריכת הנתונים.</translation>
+<translation id="3295530008794733555">יותר מהירות. פחות נתונים.</translation>
 <translation id="3295602654194328831">הסתר פרטים</translation>
 <translation id="3298243779924642547">‏מצב Lite</translation>
 <translation id="3303414029551471755">האם להוריד את התוכן?</translation>
@@ -341,7 +339,7 @@
 <translation id="3692944402865947621">ההורדה של <ph name="FILE_NAME" /> נכשלה כי מיקום האחסון לא נגיש.</translation>
 <translation id="3714981814255182093">פתח את סרגל החיפוש</translation>
 <translation id="3716182511346448902">‏הדף הזה מנצל יותר מדי זיכרון, כך שהוא הושהה על-ידי Chrome.</translation>
-<translation id="3724958268700778519">‏כדי לחסוך לך זמן, Google Assistant מאפשר לך להשלים במהירות את שלב הקופה באתר.</translation>
+<translation id="3724958268700778519">‏כדי לחסוך זמן, Google Assistant מאפשר להשלים במהירות את שלב הקופה באתר.</translation>
 <translation id="3739899004075612870">נוסף לסימניות ב-<ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">‏‎<ph name="MEGABYTES" /> MB ליישומים אחרים</translation>
 <translation id="3744111561329211289">סינכרון ברקע</translation>
@@ -359,7 +357,7 @@
 <translation id="3859306556332390985">הרץ קדימה</translation>
 <translation id="3894427358181296146">הוספת תיקייה</translation>
 <translation id="3895926599014793903">אלץ הפעלת שינוי מרחק מתצוגה</translation>
-<translation id="3912508018559818924">אנחנו מחפשים את התוכן הטוב ביותר באינטרנט…</translation>
+<translation id="3912508018559818924">כל הטוב שבאינטרנט…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">שילוב הנתונים שלי</translation>
 <translation id="393697183122708255">חיפוש קולי מופעל לא זמין</translation>
@@ -541,7 +539,6 @@
 <translation id="5264003212305142034">‏בכל שלב ניתן להתאים אישית את <ph name="BEGIN_LINK1" />ההגדרות<ph name="END_LINK1" />. Google עשויה להשתמש בתוכן באתרים שביקרת בהם, וגם בפעילות בדפדפן ובאינטראקציות, כדי להתאים אישית את Chrome ושירותי Google אחרים כמו Translate, חיפוש ומודעות.</translation>
 <translation id="526421993248218238">לא ניתן לטעון את הדף</translation>
 <translation id="5271967389191913893">המכשיר לא מצליח לפתוח את התוכן להורדה.</translation>
-<translation id="5274381992091475657">‏Assistant למילוי אוטומטי</translation>
 <translation id="528192093759286357">כדי לצאת ממסך מלא, גרור מלמעלה וגע בלחצן 'הקודם'.</translation>
 <translation id="5284584623296338184">‏שינויים בסימניות, בהיסטוריה, בסיסמאות ובהגדרות נוספות לא יסונכרנו עוד עם חשבון Google. עם זאת, הנתונים הקיימים עדיין יאוחסנו בחשבון Google שלך.</translation>
 <translation id="5301954838959518834">בסדר, הבנתי</translation>
@@ -705,7 +702,6 @@
 <translation id="6395288395575013217">קישור</translation>
 <translation id="6404511346730675251">ערוך סימניה</translation>
 <translation id="6406506848690869874">סנכרן</translation>
-<translation id="641482588075295793">ההפעלה האוטומטית לא זמינה במצב טעינה מהירה</translation>
 <translation id="641643625718530986">הדפס…</translation>
 <translation id="6416782512398055893">‏בוצעה הורדה של MB <ph name="MBS" /></translation>
 <translation id="6433501201775827830">בחירת מנוע החיפוש</translation>
@@ -837,7 +833,7 @@
 <translation id="7423538860840206698">הגישה לקריאה מלוח העריכה נחסמה</translation>
 <translation id="7431991332293347422">קביעת אופן השימוש בהיסטוריית הגלישה להתאמה אישית של החיפוש ועוד</translation>
 <translation id="7437998757836447326">‏יציאה מ-Chrome</translation>
-<translation id="7438641746574390233">‏כשמצב הטעינה המהירה מופעל, Chrome משתמש בשרתים של Google כדי לגרום לדפים להיטען מהר יותר. אם מדובר בדפים איטיים מאוד, במצב הטעינה המהירה הם עוברים שכתוב כך שרק התוכן החיוני שלהם נטען. מצב הטעינה מהירה לא חל על כרטיסיות גלישה בסתר.</translation>
+<translation id="7438641746574390233">‏כשמצב הטעינה המהירה מופעל, Chrome משתמש בשרתים של Google כדי להאיץ את טעינת הדפים. אם מדובר בדפים איטיים מאוד, במצב הטעינה המהירה הם עוברים שכתוב כך שרק התוכן החיוני שלהם נטען. מצב הטעינה המהירה לא חל על כרטיסיות גלישה בסתר.</translation>
 <translation id="7444811645081526538">קטגוריות נוספות</translation>
 <translation id="7445411102860286510">התר לאתרים להפעיל באופן אוטומטי סרטונים מושתקים (מומלץ)</translation>
 <translation id="7453467225369441013">‏תבוצע יציאה שלך מרוב האתרים. לא תבוצע יציאה מחשבון Google שלך.</translation>
@@ -881,8 +877,6 @@
 <translation id="773466115871691567">תרגם תמיד דפים ב<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">הגנה מפני אתרים שעלולים לסכן אותך ואת המכשיר</translation>
-<translation id="7759822418208302953">‏פעולת ה-Assistant למילוי אוטומטי מופסקת</translation>
-<translation id="7761870125254530914">‏המשך מהווה את הסכמתך לתנאים ולהגבלות של Google בנוגע לתשלום מהיר בקופה. <ph name="BEGIN_LINK" />קרא עוד<ph name="END_LINK" /></translation>
 <translation id="7762668264895820836">‏כרטיס SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">הוסף כתובת</translation>
 <translation id="7765158879357617694">העבר</translation>
@@ -1026,7 +1020,7 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, כרטיסייה</translation>
 <translation id="885701979325669005">אחסון</translation>
 <translation id="8901170036886848654">לא נמצאו סימניות</translation>
-<translation id="8903053969062019677">{OPEN_TABS,plural, =1{‏כרטיסיה פתוחה אחת (%1$d), אפשר להקיש כדי להחליף כרטיסיות}two{2 כרטיסיות פתוחות, אפשר להקיש כדי להחליף כרטיסיות}many{‏%1$d כרטיסיות פתוחות, אפשר להקיש כדי להחליף כרטיסיות}other{‏%1$d כרטיסיות פתוחות, אפשר להקיש כדי להחליף כרטיסיות}}</translation>
+<translation id="8903053969062019677">{OPEN_TABS,plural, =1{‏כרטיסייה פתוחה %1$d, אפשר להקיש כדי לעבור לכרטיסייה אחרת}two{2 כרטיסיות פתוחות, אפשר להקיש כדי לעבור לכרטיסייה אחרת}many{‏%1$d כרטיסיות פתוחות, אפשר להקיש כדי לעבור לכרטיסייה אחרת}other{‏%1$d כרטיסיות פתוחות, אפשר להקיש כדי לעבור לכרטיסייה אחרת}}</translation>
 <translation id="8905378131945614900">‏נכשלה התקנת מודול VR</translation>
 <translation id="8909135823018751308">שתף…</translation>
 <translation id="8912362522468806198">‏חשבון Google</translation>
@@ -1054,7 +1048,7 @@
 <translation id="9070377983101773829">התחל חיפוש קולי</translation>
 <translation id="9071742570345586758">‏עליך להתקין את Google VR Services כדי שתוכל להציג תוכן של מציאות מדומה</translation>
 <translation id="9074336505530349563">‏כדי לקבל מ-Google הצעות לתוכן מותאם אישית, יש להיכנס ולהפעיל את הסנכרון</translation>
-<translation id="9079796397681444569">‏נווט בקלות לכל מקום ב-Chrome באמצעות הלחצנים בתחתית המסך</translation>
+<translation id="9079796397681444569">‏מנווטים בקלות לכל מקום באמצעות הלחצנים של Chrome בתחתית המסך</translation>
 <translation id="9080642952018487277">מעבר למצב פרטי</translation>
 <translation id="9086455579313502267">אין אפשרות לגשת לרשת</translation>
 <translation id="9099018167121903954">‏‎<ph name="KILOBYTES" /> KB להורדות</translation>

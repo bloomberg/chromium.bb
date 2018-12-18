@@ -24,6 +24,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="1520828917794284345">Desktop-Größe anpassen</translation>
 <translation id="154040539590487450">Fehler beim Starten des Remote-Zugriffsdienstes</translation>
 <translation id="1546934824884762070">Ein unerwarteter Fehler ist aufgetreten. Bitte melden Sie dieses Problem den Entwicklern.</translation>
+<translation id="1624185583382384493">Chrome Remote Desktop ist jetzt im Web verfügbar. Testen Sie unsere <ph name="LINK_BEGIN" />Web-App<ph name="LINK_END" />: Sie ist schnell, kostenlos und bietet noch mehr Funktionen. So wurde zum Beispiel die Unterstützung für mehrere Bildschirme verbessert.</translation>
 <translation id="1643640058022401035">Wenn Sie diese Seite verlassen, wird Ihre Chromoting-Sitzung beendet.</translation>
 <translation id="1654128982815600832">Remote-Verbindungen für diesen Computer werden aktiviert…</translation>
 <translation id="170207782578677537">Fehler beim Registrieren dieses Computers</translation>
@@ -242,6 +243,7 @@ Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME"
 <translation id="6198252989419008588">PIN ändern</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (veraltet)</translation>
 <translation id="6221358653751391898">Sie sind nicht in Chrome angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
+<translation id="6227369581881558336">Chrome Remote Desktop ist jetzt im Web verfügbar und bietet neue Funktionen wie die Dateiübertragung. <ph name="LINK_BEGIN" />Hier gehts zur Web App.<ph name="LINK_END" /></translation>
 <translation id="6284412385303060032">Der Host, der auf dem Anmeldebildschirm für die Konsole ausgeführt wird, wurde heruntergefahren, um den Vorhangmodus zu unterstützen, indem zu einem Host in einer nutzerspezfischen Sitzung gewechselt wurde.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Client</translation>

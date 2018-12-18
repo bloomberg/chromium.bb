@@ -198,6 +198,7 @@
 <translation id="4261870227682513959">বিজ্ঞপ্তি সেটিংস দেখান। বিজ্ঞপ্তি বন্ধ আছে</translation>
 <translation id="4269883910223712419">এই ডিভাইসের প্রশাসক এগুলি করতে পারেন:</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
+<translation id="4281007048406351813">টাইমারে ১ মিনিট যোগ করুন</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> চালু করা হচ্ছে</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">উচ্চ কনট্রাস্টের জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি এটি চালু করতে চান?</translation>
@@ -247,6 +248,7 @@
 <translation id="5207949376430453814">পাঠ্যের কার্সার হাইলাইট করুন</translation>
 <translation id="5222676887888702881">প্রস্থান করুন</translation>
 <translation id="523505283826916779">অ্যাক্সেসযোগ্যতার সেটিংস</translation>
+<translation id="5283198616748585639">১ মিনিট যোগ করুন</translation>
 <translation id="5302048478445481009">ভাষা</translation>
 <translation id="5313326810920013265">ব্লুটুথ সেটিংস</translation>
 <translation id="5331975486040154427">USB-C ডিভাইস (বাঁ দিকের পিছনের পোর্ট)</translation>
@@ -329,7 +331,7 @@
 <translation id="6627638273713273709">সার্চ+Shift+K</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পাস কীটি প্রবেশ করুন: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
-<translation id="6665545700722362599">ওয়েবসাইট, অ্যাপ এবং এক্সটেনশনকে লোকেশন ভিত্তিক পরিষেবা, ডিভাইসের মাইক্রোফোন, ক্যামেরা ও অন্যান্য ফিচার ব্যবহার করতে অনুমতি দেয়</translation>
+<translation id="6665545700722362599">ওয়েবসাইট, অ্যাপ এবং এক্সটেনশনকে লোকেশন ভিত্তিক পরিষেবা, ডিভাইসের মাইক্রোফোন, ক্যামেরা ও অন্যান্য ফিচার ব্যবহারের অনুমতি দেয়</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">আলাদা করা যায় এমন কীবোর্ডের একটি জরুরি আপডেট প্রয়োজন</translation>
 <translation id="6700713906295497288">IME মেনু বোতাম</translation>

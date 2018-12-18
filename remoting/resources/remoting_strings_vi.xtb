@@ -24,6 +24,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="1520828917794284345">Thay đổi kích thước màn hình cho vừa</translation>
 <translation id="154040539590487450">Không thể bắt đầu dịch vụ truy cập từ xa.</translation>
 <translation id="1546934824884762070">Đã xảy ra lỗi không mong muốn. Vui lòng báo cáo vấn đề này cho nhà phát triển.</translation>
+<translation id="1624185583382384493">Chrome Remote Desktop hiện đã có trên web. Hãy dùng thử <ph name="LINK_BEGIN" />ứng dụng web<ph name="LINK_END" /> của chúng tôi — ứng dụng nhanh và miễn phí với nhiều tính năng hơn nữa, trong đó đã cải thiện khả năng hỗ trợ nhiều màn hình.</translation>
 <translation id="1643640058022401035">Thoát khỏi trang này sẽ kết thúc phiên Kết nối từ xa trên Chrome của bạn.</translation>
 <translation id="1654128982815600832">Đang bật kết nối từ xa cho máy tính này…</translation>
 <translation id="170207782578677537">Không thể đăng ký máy tính này.</translation>
@@ -242,6 +243,7 @@ PC</translation>
 <translation id="6198252989419008588">Thay đổi mã PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (lỗi thời)</translation>
 <translation id="6221358653751391898">Bạn chưa đăng nhập vào Chrome. Vui lòng đăng nhập và thử lại.</translation>
+<translation id="6227369581881558336">Chrome Remote Desktop hiện có trên web với nhiều tính năng mới, bao gồm cả tính năng truyền tệp! Hãy dùng thử <ph name="LINK_BEGIN" />ứng dụng web<ph name="LINK_END" /> của chúng tôi.</translation>
 <translation id="6284412385303060032">Máy chủ chạy trên màn hình logic của bảng điều khiển đã tắt để hỗ trợ chế độ màn bằng cách chuyển sang máy chủ chạy trong phiên dành riêng cho người dùng.</translation>
 <translation id="629730747756840877">Tài khoản</translation>
 <translation id="6304318647555713317">Ứng dụng khách</translation>

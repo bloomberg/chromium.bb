@@ -227,7 +227,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7626032353295482388">A Chrome üdvözli Önt!</translation>
 <translation id="7651907282515937834">Chrome Enterprise-embléma</translation>
 <translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
-<translation id="7756122083761163394">A személy böngészési adatai törlődnek az eszközről. Az adatok visszaállításához jelentkezzen be a Chrome-ba $2 felhasználóként.</translation>
 <translation id="7761834446675418963">Kattintson a nevére a Chrome megnyitásához és a böngészés megkezdéséhez.</translation>
 <translation id="7781002470561365167">Elérhető a Google Chrome új verziója</translation>
 <translation id="7787950393032327779">Úgy tűnik, a profilt egy másik Google Chrome-folyamat (<ph name="PROCESS_ID" />) használja egy másik számítógépen (<ph name="HOST_NAME" />). A Chrome zárolta a profilt, hogy az ne sérülhessen. Ha biztos benne, hogy nem használja másik folyamat a profilt, feloldhatja azt, és újraindíthatja a Chrome-ot.</translation>

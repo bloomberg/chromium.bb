@@ -175,6 +175,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 คำแนะนำ}other{# คำแนะนำ}}</translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="20817612488360358">มีการกำหนดให้ใช้การตั้งค่าพร็อกซีระบบ แต่ก็มีการระบุการกำหนดค่าพร็อกซีอย่างชัดเจนไว้ด้วยเช่นกัน</translation>
+<translation id="2082238445998314030">ผลลัพธ์ <ph name="RESULT_NUMBER" /> จาก <ph name="TOTAL_RESULTS" /> รายการ</translation>
 <translation id="2091887806945687916">เสียง</translation>
 <translation id="2094505752054353250">โดเมนไม่ตรง</translation>
 <translation id="2096368010154057602">แผนก</translation>
@@ -182,7 +183,6 @@
 <translation id="2108755909498034140">รีสตาร์ทคอมพิวเตอร์</translation>
 <translation id="2113977810652731515">บัตร</translation>
 <translation id="2114841414352855701">ไม่สนใจเพราะถูกแทนที่โดย <ph name="POLICY_NAME" /></translation>
-<translation id="2129308444951592399">ข้อกำหนดและเงื่อนไข</translation>
 <translation id="213826338245044447">บุ๊กมาร์กบนมือถือ</translation>
 <translation id="214556005048008348">ยกเลิกการชำระเงิน</translation>
 <translation id="2147827593068025794">การซิงค์ในแบ็กกราวด์</translation>
@@ -244,6 +244,7 @@
 <translation id="2501278716633472235">ย้อนกลับ</translation>
 <translation id="2503184589641749290">บัตรเดบิตและบัตรเติมเงินที่ยอมรับ</translation>
 <translation id="2515629240566999685">ตรวจสอบสัญญาณในพื้นที่ของคุณ</translation>
+<translation id="2523886232349826891">บันทึกไว้เฉพาะในอุปกรณ์นี้</translation>
 <translation id="2524461107774643265">เพิ่มข้อมูลอื่นๆ</translation>
 <translation id="2536110899380797252">เพิ่มที่อยู่</translation>
 <translation id="2539524384386349900">ตรวจหา</translation>
@@ -519,6 +520,7 @@
 <translation id="4275830172053184480">รีสตาร์ทอุปกรณ์ของคุณ</translation>
 <translation id="4277028893293644418">รีเซ็ตรหัสผ่าน</translation>
 <translation id="4280429058323657511">หมดอายุ <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="428639260510061158">{NUM_CARDS,plural, =1{บันทึกบัตรนี้ลงในบัญชี Google ของคุณแล้ว}other{บันทึกบัตรเหล่านี้ลงในบัญชี Google ของคุณแล้ว}}</translation>
 <translation id="4305817255990598646">สลับ</translation>
 <translation id="4312866146174492540">บล็อก (ค่าเริ่มต้น)</translation>
 <translation id="4325863107915753736">การค้นหาบทความล้มเหลว</translation>
@@ -547,6 +549,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">ลองปิดใช้ส่วนขยาย</translation>
 <translation id="457875822857220463">การจัดส่ง</translation>
+<translation id="4582204425268416675">นำบัตรออก</translation>
 <translation id="4587425331216688090">นำที่อยู่ออกจาก Chrome ไหม</translation>
 <translation id="4592951414987517459">มีการเข้ารหัสการเชื่อมต่อของคุณกับ <ph name="DOMAIN" /> ด้วยชุดการเข้ารหัสที่ทันสมัย</translation>
 <translation id="4594403342090139922">&amp;เลิกทำการนำออก</translation>
@@ -594,6 +597,7 @@
 <translation id="4926049483395192435">ต้องระบุ</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> บอกว่า</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
 <translation id="495170559598752135">การทำงาน</translation>
 <translation id="4958444002117714549">ขยายรายการ</translation>
 <translation id="4974590756084640048">เปิดใช้คำเตือนอีกครั้ง</translation>
@@ -653,6 +657,7 @@
 <translation id="5344579389779391559">อาจมีการพยายามเรียกเก็บเงินจากคุณในหน้านี้</translation>
 <translation id="5355557959165512791">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากใบรับรองถูกเพิกถอนแล้ว โดยปกติข้อผิดพลาดของเครือข่ายและการโจมตีจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงอาจจะใช้งานได้ในภายหลัง</translation>
 <translation id="536296301121032821">ไม่สามารถจัดเก็บการตั้งค่านโยบาย</translation>
+<translation id="5363056109122666249">Chrome เสนอที่จะบันทึกบัตรลงในบัญชี Google ของคุณเพราะคุณลงชื่อเข้าใช้อยู่ คุณปรับเปลี่ยนลักษณะการทำงานนี้ได้ในการตั้งค่า</translation>
 <translation id="5371425731340848620">อัปเดตบัตร</translation>
 <translation id="5377026284221673050">"นาฬิกาของคุณช้ากว่าปัจจุบัน" หรือ "นาฬิกาของคุณเร็วกว่าปัจจุบัน" หรือ "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5384855140246857529">ลงชื่อเข้าใช้และเปิดการซิงค์เพื่อใช้บัตรในอุปกรณ์ทุกเครื่อง</translation>
@@ -723,7 +728,6 @@
 <translation id="5810442152076338065">มีการเข้ารหัสการเชื่อมต่อของคุณกับ <ph name="DOMAIN" /> ด้วยชุดการเข้ารหัสที่ล้าสมัยแล้ว</translation>
 <translation id="5813119285467412249">&amp;ทำซ้ำการเพิ่ม</translation>
 <translation id="5838278095973806738">คุณไม่ควรป้อนข้อมูลที่ละเอียดอ่อนบนเว็บไซต์นี้ (ตัวอย่างเช่น รหัสผ่านหรือบัตรเครดิต) เนื่องจากผู้โจมตีอาจขโมยข้อมูลดังกล่าวไปได้</translation>
-<translation id="5844286946362376359">ฉันทราบข้อกำหนดและเงื่อนไข นโยบายความเป็นส่วนตัว และสิทธิ์การถอนของ <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (ไม่ต้องเลือกหากต้องการอ่าน)</translation>
 <translation id="5863847714970149516">ระบบอาจพยายามเรียกเก็บเงินจากคุณในหน้าถัดไป</translation>
 <translation id="5866257070973731571">เพิ่มหมายเลขโทรศัพท์</translation>
 <translation id="5869405914158311789">ไม่สามารถเข้าถึงเว็บไซต์นี้</translation>
@@ -756,6 +760,7 @@
 <translation id="6047233362582046994">หากคุณเข้าใจความเสี่ยงต่อความปลอดภัย คุณสามารถ<ph name="BEGIN_LINK" />ไปยังไซต์นี้<ph name="END_LINK" />ก่อนที่จะมีการนำแอปอันตรายออก</translation>
 <translation id="6047927260846328439">เนื้อหานี้อาจพยายามหลอกล่อให้คุณติดตั้งซอฟต์แวร์หรือเปิดเผยข้อมูลส่วนบุคคล <ph name="BEGIN_LINK" />แสดงเนื้อหา<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากเว็บไซต์ใช้การตรึงใบรับรอง โดยปกติข้อผิดพลาดของเครือข่ายและการโจมตีจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงอาจใช้งานได้ในภายหลัง</translation>
+<translation id="6058977677006700226">ต้องการใช้บัตรในอุปกรณ์ทุกเครื่องไหม</translation>
 <translation id="6059925163896151826">อุปกรณ์ USB</translation>
 <translation id="6071091556643036997">ประเภทนโยบายไม่ถูกต้อง</translation>
 <translation id="6080696365213338172">คุณเข้าถึงเนื้อหาโดยใช้ใบรับรองที่ผู้ดูแลระบบออกให้ ข้อมูลที่คุณให้กับ <ph name="DOMAIN" /> อาจถูกสกัดกั้นโดยผู้ดูแลระบบ</translation>
@@ -848,7 +853,6 @@
 <translation id="6865412394715372076">ยืนยันบัตรนี้ไม่ได้ในขณะนี้</translation>
 <translation id="6868206169573555318">เปิดอีกครั้งเพื่ออัปเดต</translation>
 <translation id="6874604403660855544">&amp;ทำซ้ำการเพิ่ม</translation>
-<translation id="6885646002011712606">Assistant ป้อนข้อความอัตโนมัติพร้อมใช้งานที่บริเวณด้านล่างของหน้าจอ</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">ระดับนโยบายไม่ได้รับการสนับสนุน</translation>
 <translation id="6895330447102777224">บัตรของคุณได้รับการยืนยันแล้ว</translation>
@@ -875,6 +879,7 @@
 <translation id="7016992613359344582">การเรียกเก็บเงินเหล่านี้อาจเกิดขึ้นครั้งเดียวหรือเป็นเกิดขึ้นซ้ำๆ และอาจไม่แสดงอย่างชัดแจ้ง</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
 <translation id="7050187094878475250">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์ได้แสดงใบรับรองที่มีระยะเวลาที่สามารถใช้ได้นานเกินกว่าที่จะเชื่อถือได้</translation>
+<translation id="705310974202322020">{NUM_CARDS,plural, =1{บันทึกบัตรนี้ไม่ได้ในตอนนี้}other{บันทึกบัตรเหล่านี้ไม่ได้ในตอนนี้}}</translation>
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="7064851114919012435">ข้อมูลติดต่อ</translation>
 <translation id="7079718277001814089">เว็บไซต์นี้มีมัลแวร์</translation>
@@ -945,6 +950,7 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" />เกี่ยวกับปัญหานี้</translation>
 <translation id="7453467225369441013">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="7455133967321480974">ใช้ค่าเริ่มต้นสากล (บล็อก)</translation>
+<translation id="7460618730930299168">การคัดกรองแตกต่างจากที่คุณเลือก ต้องการดำเนินการต่อไหม</translation>
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="7481312909269577407">ส่งต่อ</translation>
 <translation id="7485870689360869515">ไม่พบข้อมูล</translation>
@@ -984,6 +990,7 @@
 <translation id="7681101578153515023">เปลี่ยนเครื่องมือค้นหา</translation>
 <translation id="7682287625158474539">จัดส่ง</translation>
 <translation id="7687186412095877299">กรอกฟอร์มการชำระเงินด้วยวิธีการชำระเงินที่คุณบันทึกไว้</translation>
+<translation id="769721561045429135">ขณะนี้คุณมีบัตรต่างๆ ที่ใช้ได้ในอุปกรณ์นี้เท่านั้น คลิก "ทำต่อ" เพื่อดูบัตร</translation>
 <translation id="7699293099605015246">บทความไม่พร้อมใช้งานในขณะนี้</translation>
 <translation id="7701040980221191251">ไม่มี</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />ไปยัง <ph name="SITE" /> (ไม่ปลอดภัย)<ph name="END_LINK" /></translation>
@@ -992,7 +999,6 @@
 <translation id="7716424297397655342">ไม่สามารถโหลดเว็บไซต์นี้จากแคช</translation>
 <translation id="7723047071702270851">แก้ไขบัตร</translation>
 <translation id="774634243536837715">บล็อกเนื้อหาอันตรายแล้ว</translation>
-<translation id="7747182086178764941">กำลังแสดงหน้าจอเรียกใช้ Assistant ป้อนข้อความอัตโนมัติครั้งแรก</translation>
 <translation id="7752995774971033316">ไม่ได้จัดการ</translation>
 <translation id="7755287808199759310">ผู้ปกครองสามารถเลิกบล็อกเว็บไซต์ให้คุณ</translation>
 <translation id="7758069387465995638">ไฟร์วอลล์หรือซอฟต์แวร์ป้องกันไวรัสอาจบล็อกการเชื่อมต่อนี้</translation>
@@ -1046,9 +1052,11 @@
 <translation id="808894953321890993">เปลี่ยนรหัสผ่าน</translation>
 <translation id="8091372947890762290">กำลังรอการเปิดใช้งานบนเซิร์ฟเวอร์</translation>
 <translation id="8094917007353911263">เครือข่ายที่คุณใช้อาจต้องการให้คุณไปที่ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /></translation>
+<translation id="8100588592594801589">นำบัตรที่ใช้ไม่ได้ออกแล้ว</translation>
 <translation id="8103161714697287722">วิธีการชำระเงิน</translation>
 <translation id="8118489163946903409">วิธีการชำระเงิน</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" ไม่ได้ติดตั้งในคอมพิวเตอร์หรือเครือข่ายอย่างถูกต้อง โปรดขอให้ผู้ดูแลระบบ IT แก้ไขปัญหานี้</translation>
+<translation id="8130693978878176684">ช่วยต่อไม่ได้แล้ว ลองดำเนินการต่อเองนะ</translation>
 <translation id="8131740175452115882">ยืนยัน</translation>
 <translation id="8149426793427495338">คอมพิวเตอร์ของคุณเข้าสู่โหมดสลีปแล้ว</translation>
 <translation id="8150722005171944719">ไฟล์ที่ <ph name="URL" /> ไม่สามารถอ่านได้ เนื่องจากอาจถูกลบ ย้ายไปแล้ว หรือการอนุญาตของไฟล์อาจป้องกันการเข้าถึง</translation>
@@ -1213,6 +1221,7 @@
 <translation id="939736085109172342">โฟลเดอร์ใหม่</translation>
 <translation id="945855313015696284">ตรวจสอบข้อมูลด้านล่างและลบบัตรที่ไม่ถูกต้อง</translation>
 <translation id="951104842009476243">บัตรเดบิตและบัตรเติมเงินที่ยอมรับ</translation>
+<translation id="960701843220172709">{NUM_CARDS,plural, =1{คุณจะใช้บัตรนี้ได้เมื่อลงชื่อเข้าใช้ บัตรนี้และที่อยู่สำหรับการเรียกเก็บเงินของบัตรจะบันทึกอยู่ในบัญชี Google ของคุณ}other{คุณจะใช้บัตรเหล่านี้ได้เมื่อลงชื่อเข้าใช้ บัตรเหล่านี้และที่อยู่สำหรับการเรียกเก็บเงินของบัตรจะบันทึกอยู่ในบัญชี Google ของคุณ}}</translation>
 <translation id="962484866189421427">เนื้อหานี้อาจพยายามติดตั้งแอปที่หลอกลวงซึ่งปลอมเป็นเนื้อหาอย่างอื่นหรือรวบรวมข้อมูลที่อาจนำไปใช้ติดตามคุณ <ph name="BEGIN_LINK" />แสดงเนื้อหา<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">รุ่นที่เป็นทางการ</translation>
 <translation id="973773823069644502">เพิ่มที่อยู่สำหรับนำส่งสินค้า</translation>

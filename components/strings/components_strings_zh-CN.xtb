@@ -175,6 +175,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 条建议}other{# 条建议}}</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="20817612488360358">已设置为使用系统代理设置，但同时指定了一个明确的代理配置。</translation>
+<translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
 <translation id="2091887806945687916">声音</translation>
 <translation id="2094505752054353250">网域不匹配</translation>
 <translation id="2096368010154057602">省</translation>
@@ -182,7 +183,6 @@
 <translation id="2108755909498034140">重新启动计算机</translation>
 <translation id="2113977810652731515">信用卡</translation>
 <translation id="2114841414352855701">由于已被 <ph name="POLICY_NAME" /> 替换，该政策已忽略。</translation>
-<translation id="2129308444951592399">条款及条件</translation>
 <translation id="213826338245044447">移动设备书签</translation>
 <translation id="214556005048008348">取消付款</translation>
 <translation id="2147827593068025794">后台同步</translation>
@@ -244,6 +244,7 @@
 <translation id="2501278716633472235">返回</translation>
 <translation id="2503184589641749290">接受的借记卡和预付卡</translation>
 <translation id="2515629240566999685">检查您所在区域的网络信号</translation>
+<translation id="2523886232349826891">仅会保存在此设备上</translation>
 <translation id="2524461107774643265">添加更多信息</translation>
 <translation id="2536110899380797252">添加地址</translation>
 <translation id="2539524384386349900">检测</translation>
@@ -516,6 +517,7 @@
 <translation id="4275830172053184480">重启您的设备</translation>
 <translation id="4277028893293644418">重置密码</translation>
 <translation id="4280429058323657511">，到期日期：<ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="428639260510061158">{NUM_CARDS,plural, =1{这张卡已保存到您的 Google 帐号中}other{这些卡已保存到您的 Google 帐号中}}</translation>
 <translation id="4305817255990598646">切换</translation>
 <translation id="4312866146174492540">屏蔽（默认）</translation>
 <translation id="4325863107915753736">找不到文章</translation>
@@ -544,6 +546,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">尝试停用扩展程序。</translation>
 <translation id="457875822857220463">递送</translation>
+<translation id="4582204425268416675">移除卡</translation>
 <translation id="4587425331216688090">从 Chrome 中移除地址？</translation>
 <translation id="4592951414987517459">您与 <ph name="DOMAIN" /> 之间的连接采用新型加密套件进行了加密。</translation>
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
@@ -591,6 +594,7 @@
 <translation id="4926049483395192435">必须指定。</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> 显示</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943872375798546930">找不到结果</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4958444002117714549">展开列表</translation>
 <translation id="4974590756084640048">重新启用警告功能</translation>
@@ -650,6 +654,7 @@
 <translation id="5344579389779391559">此页面可能会向您收取费用</translation>
 <translation id="5355557959165512791">您目前无法访问 <ph name="SITE" />，因为此证书已被撤消。网络错误和攻击行为通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="536296301121032821">无法存储策略设置</translation>
+<translation id="5363056109122666249">由于您已登录，因此 Chrome 会主动询问是否要将您的卡保存到您的 Google 帐号中。您可在“设置”中更改此行为。</translation>
 <translation id="5371425731340848620">更新信用卡</translation>
 <translation id="5377026284221673050">“您的时钟慢了”、“您的时钟快了”或“&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
 <translation id="5384855140246857529">要在所有设备上使用您的卡，请登录您的帐号并开启同步功能。</translation>
@@ -720,7 +725,6 @@
 <translation id="5810442152076338065">您与 <ph name="DOMAIN" /> 之间的连接采用过时的加密套件进行了加密。</translation>
 <translation id="5813119285467412249">恢复添加(&amp;R)</translation>
 <translation id="5838278095973806738">请勿在此网站上输入任何敏感信息（例如密码或信用卡信息），因为攻击者可能会盗取这些信息。</translation>
-<translation id="5844286946362376359">我知道 <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> 的条款及条件、隐私权政策和撤消权（保留未选中状态即可阅读）。</translation>
 <translation id="5863847714970149516">进入接下来的页面后，系统可能会向您收取费用</translation>
 <translation id="5866257070973731571">添加电话号码</translation>
 <translation id="5869405914158311789">无法访问此网站</translation>
@@ -753,6 +757,7 @@
 <translation id="6047233362582046994">如果您了解自己将面临的安全风险，则可在有害应用被移除之前<ph name="BEGIN_LINK" />访问此网站<ph name="END_LINK" />。</translation>
 <translation id="6047927260846328439">此内容可能会试图诱骗您安装软件或透露个人信息。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">您目前无法访问 <ph name="SITE" />，因为此网站使用了证书锁定。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
+<translation id="6058977677006700226">在您的所有设备上使用您的卡？</translation>
 <translation id="6059925163896151826">USB 设备</translation>
 <translation id="6071091556643036997">政策类型无效。</translation>
 <translation id="6080696365213338172">您已使用管理员提供的证书访问了内容，因此管理员可以拦截您提供给 <ph name="DOMAIN" /> 的数据。</translation>
@@ -844,7 +849,6 @@
 <translation id="6865412394715372076">暂时无法验证此信用卡</translation>
 <translation id="6868206169573555318">重新启动以进行更新</translation>
 <translation id="6874604403660855544">恢复添加(&amp;R)</translation>
-<translation id="6885646002011712606">自动填充助理位于屏幕底部附近</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">政策级别不受支持。</translation>
 <translation id="6895330447102777224">已确认您的信用卡</translation>
@@ -871,6 +875,7 @@
 <translation id="7016992613359344582">这些费用可能只收取一次，也可能会周期性收取，而且可能不易察觉。</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7050187094878475250">您尝试访问 <ph name="DOMAIN" />，但服务器提供的证书不可信（有效期过长）。</translation>
+<translation id="705310974202322020">{NUM_CARDS,plural, =1{此刻无法保存这张卡}other{此刻无法保存这些卡}}</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7064851114919012435">联系信息</translation>
 <translation id="7079718277001814089">此网站包含恶意软件</translation>
@@ -941,6 +946,7 @@
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>
 <translation id="7453467225369441013">您会从大多数网站退出，但不会退出自己的 Google 帐号。</translation>
 <translation id="7455133967321480974">使用全局默认设置（阻止）</translation>
+<translation id="7460618730930299168">此处显示的放映时间不同于您的选择。继续？</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
@@ -980,6 +986,7 @@
 <translation id="7681101578153515023">更改搜索引擎</translation>
 <translation id="7682287625158474539">送货地址</translation>
 <translation id="7687186412095877299">在付款表单中填入已保存的付款方式</translation>
+<translation id="769721561045429135">此刻，您有一些卡只能在这部设备上使用。点击“继续”即可查看这些卡。</translation>
 <translation id="7699293099605015246">目前没有文章可显示</translation>
 <translation id="7701040980221191251">无</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />继续前往<ph name="SITE" />（不安全）<ph name="END_LINK" /></translation>
@@ -988,7 +995,6 @@
 <translation id="7716424297397655342">无法从缓存中加载此网站</translation>
 <translation id="7723047071702270851">修改支付卡</translation>
 <translation id="774634243536837715">危险内容已被拦截。</translation>
-<translation id="7747182086178764941">系统会显示自动填充助理首次运行屏幕</translation>
 <translation id="7752995774971033316">非托管</translation>
 <translation id="7755287808199759310">您的父亲/母亲可为您取消屏蔽此网站</translation>
 <translation id="7758069387465995638">防火墙或防病毒软件可能已阻止您连接到网络。</translation>
@@ -1042,9 +1048,11 @@
 <translation id="808894953321890993">更改密码</translation>
 <translation id="8091372947890762290">正等待在服务器上激活</translation>
 <translation id="8094917007353911263">您要使用的网络可能需要您访问 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
+<translation id="8100588592594801589">无效的卡已被移除</translation>
 <translation id="8103161714697287722">付款方式</translation>
 <translation id="8118489163946903409">付款方式</translation>
 <translation id="8127301229239896662">“<ph name="SOFTWARE_NAME" />”没有正确地安装到您的计算机或网络上。请让您的 IT 管理员解决此问题。</translation>
+<translation id="8130693978878176684">我已无法再提供帮助，请自行继续。</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8149426793427495338">您的计算机已进入休眠模式。</translation>
 <translation id="8150722005171944719">无法读取 <ph name="URL" /> 上的文件。该文件可能已遭到删除、移动，或者文件权限不允许进行访问。</translation>
@@ -1209,6 +1217,7 @@
 <translation id="939736085109172342">新建文件夹</translation>
 <translation id="945855313015696284">请查看下面的信息，并删除所有无效卡片</translation>
 <translation id="951104842009476243">接受的借记卡和预付卡</translation>
+<translation id="960701843220172709">{NUM_CARDS,plural, =1{登录后即可使用这张卡。这张卡及其帐单邮寄地址将会保存到您的 Google 帐号中。}other{登录后即可使用这些卡。这些卡及其帐单邮寄地址将会保存到您的 Google 帐号中。}}</translation>
 <translation id="962484866189421427">此内容可能会尝试安装欺骗性应用，而这些应用能够冒充其他内容或收集可用于对您进行跟踪的数据。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">正式版本</translation>
 <translation id="973773823069644502">添加速递地址</translation>

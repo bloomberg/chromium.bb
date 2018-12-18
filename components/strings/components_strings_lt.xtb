@@ -175,6 +175,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 pasiūlymas}one{# pasiūlymas}few{# pasiūlymai}many{# pasiūlymo}other{# pasiūlymų}}</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="20817612488360358">Sistemos įgaliotojo serverio nustatymai nustatyti kaip naudotini, bet taip pat nurodyta tiksli įgaliotojo serverio konfigūracija.</translation>
+<translation id="2082238445998314030">Rezultatų: <ph name="RESULT_NUMBER" /> iš <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Garsas</translation>
 <translation id="2094505752054353250">Domeno neatitikimas</translation>
 <translation id="2096368010154057602">Departamentas</translation>
@@ -182,7 +183,6 @@
 <translation id="2108755909498034140">Iš naujo paleiskite kompiuterį</translation>
 <translation id="2113977810652731515">Kortelė</translation>
 <translation id="2114841414352855701">Nepaisoma, nes buvo pakeista taikant „<ph name="POLICY_NAME" />“.</translation>
-<translation id="2129308444951592399">Taisyklės ir nuostatos</translation>
 <translation id="213826338245044447">Žymės mobiliesiems</translation>
 <translation id="214556005048008348">Atšaukti mokėjimą</translation>
 <translation id="2147827593068025794">Fono sinchronizavimas</translation>
@@ -244,6 +244,7 @@
 <translation id="2501278716633472235">Grįžti</translation>
 <translation id="2503184589641749290">Tinkamos debeto ir išankstinio mokėjimo kortelės</translation>
 <translation id="2515629240566999685">Patikrinti signalo stiprumą savo srityje</translation>
+<translation id="2523886232349826891">Išsaugota tik šiame įrenginyje</translation>
 <translation id="2524461107774643265">Daugiau informacijos pridėjimas</translation>
 <translation id="2536110899380797252">Pridėti adresą</translation>
 <translation id="2539524384386349900">Aptikti</translation>
@@ -520,6 +521,7 @@
 <translation id="4275830172053184480">Iš naujo paleisti įrenginį</translation>
 <translation id="4277028893293644418">Iš naujo nustatyti slaptažodį</translation>
 <translation id="4280429058323657511">, gal. pab. <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="428639260510061158">{NUM_CARDS,plural, =1{Ši kortelė išsaugota jūsų „Google“ paskyroje}one{Šios kortelės išsaugotos jūsų „Google“ paskyroje}few{Šios kortelės išsaugotos jūsų „Google“ paskyroje}many{Šios kortelės išsaugotos jūsų „Google“ paskyroje}other{Šios kortelės išsaugotos jūsų „Google“ paskyroje}}</translation>
 <translation id="4305817255990598646">Perjungti</translation>
 <translation id="4312866146174492540">Užblokuoti (numatytoji parinktis)</translation>
 <translation id="4325863107915753736">Nepavyko rasti straipsnio</translation>
@@ -548,6 +550,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Pabandykite išjungti plėtinius.</translation>
 <translation id="457875822857220463">Pristatymas</translation>
+<translation id="4582204425268416675">Pašalinti kortelę</translation>
 <translation id="4587425331216688090">Pašalinti adresą iš „Chrome“?</translation>
 <translation id="4592951414987517459">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant modernų šifravimo paketą.</translation>
 <translation id="4594403342090139922">&amp;Anuliuoti ištrynimą</translation>
@@ -595,6 +598,7 @@
 <translation id="4926049483395192435">Turi būti nurodyta.</translation>
 <translation id="4926159001844873046">Svetainėje <ph name="SITE" /> nurodyta:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" /> / <ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943872375798546930">Rezultatų nėra</translation>
 <translation id="495170559598752135">Veiksmai</translation>
 <translation id="4958444002117714549">Išskleisti sąrašą</translation>
 <translation id="4974590756084640048">Iš naujo įgalinti įspėjimus</translation>
@@ -654,6 +658,7 @@
 <translation id="5344579389779391559">Šiame puslapyje gali būti bandoma jus apmokestinti</translation>
 <translation id="5355557959165512791">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes jos sertifikatas buvo anuliuotas. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
 <translation id="536296301121032821">Išsaugant politikos nustatymus įvyko klaida</translation>
+<translation id="5363056109122666249">„Chrome“ siūlo išsaugoti korteles „Google“ paskyroje, nes esate prisijungę. Šią elgseną galite pakeisti nustatymuose.</translation>
 <translation id="5371425731340848620">Atnaujinkite kortelę</translation>
 <translation id="5377026284221673050">„Laikrodis atsilieka“, „Laikrodis skuba“ arba „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
 <translation id="5384855140246857529">Norėdami naudoti korteles visuose įrenginiuose, prisijunkite ir įjunkite sinchronizavimą.</translation>
@@ -724,7 +729,6 @@
 <translation id="5810442152076338065">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant pasenusį šifravimo paketą.</translation>
 <translation id="5813119285467412249">&amp;Pridėti dar kartą</translation>
 <translation id="5838278095973806738">Šioje svetainėje neturėtumėte pateikti neskelbtinos informacijos (pvz., slaptažodžių ar kredito kortelių numerių), nes ją gali pavogti užpuolikai.</translation>
-<translation id="5844286946362376359">Žinau taisykles ir nuostatas, privatumo politiką ir teisę atsisakyti <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (norėdami skaityti palikite nepažymėtą).</translation>
 <translation id="5863847714970149516">Toliau pateiktame puslapyje gali būti bandoma jus apmokestinti</translation>
 <translation id="5866257070973731571">Telefono numerio pridėjimas</translation>
 <translation id="5869405914158311789">Nepavyksta pasiekti šios svetainės</translation>
@@ -757,6 +761,7 @@
 <translation id="6047233362582046994">Jei suprantate, kokia rizika gali kilti jūsų saugai, galite <ph name="BEGIN_LINK" />apsilankyti šioje svetainėje<ph name="END_LINK" />, kol iš jos dar nepašalintos kenkėjiškos programos.</translation>
 <translation id="6047927260846328439">Šiuo turiniu gali būti bandoma apgaule priversti jus įdiegti programinę įrangą arba atskleisti asmens informaciją. <ph name="BEGIN_LINK" />Rodyti vis tiek<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Šiuo metu negalite apsilankyti <ph name="SITE" />, nes svetainėje naudojamas sertifikatų prisegimas. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
+<translation id="6058977677006700226">Naudojate korteles visuose įrenginiuose?</translation>
 <translation id="6059925163896151826">USB įrenginiai</translation>
 <translation id="6071091556643036997">Politikos tipas netinkamas.</translation>
 <translation id="6080696365213338172">Pasiekėte turinį naudodami administratoriaus pateiktą sertifikatą. Duomenys, kuriuos pateikiate <ph name="DOMAIN" />, gali būti perimti administratoriaus.</translation>
@@ -849,7 +854,6 @@
 <translation id="6865412394715372076">Šiuo metu kortelės patvirtinti nepavyksta</translation>
 <translation id="6868206169573555318">Paleisti iš naujo, kad būtų atnaujinta</translation>
 <translation id="6874604403660855544">&amp;Pridėti dar kartą</translation>
-<translation id="6885646002011712606">Automatinio pildymo padėjėjas rodomas netoli ekrano apačios</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Politikos lygis nepalaikomas.</translation>
 <translation id="6895330447102777224">Kortelė patvirtinta</translation>
@@ -876,6 +880,7 @@
 <translation id="7016992613359344582">Šie mokesčiai gali būti vienkartiniai arba pasikartojantys ir gali būti neaiškūs.</translation>
 <translation id="7029809446516969842">Slaptažodžiai</translation>
 <translation id="7050187094878475250">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė sertifikatą, kurio galiojimo laikotarpis per ilgas, kad būtų patikimas.</translation>
+<translation id="705310974202322020">{NUM_CARDS,plural, =1{Šiuo metu šios kortelės išsaugoti negalima}one{Šiuo metu šių kortelių išsaugoti negalima}few{Šiuo metu šių kortelių išsaugoti negalima}many{Šiuo metu šių kortelių išsaugoti negalima}other{Šiuo metu šių kortelių išsaugoti negalima}}</translation>
 <translation id="7053983685419859001">Blokuoti</translation>
 <translation id="7064851114919012435">Kontaktinė informacija</translation>
 <translation id="7079718277001814089">Šioje svetainėje yra kenkėjiškų programų</translation>
@@ -946,6 +951,7 @@ Papildoma išsami informacija:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /> apie šią problemą.</translation>
 <translation id="7453467225369441013">Būsite atjungti nuo daugelio svetainių. Nebūsite atjungti nuo „Google“ paskyros.</translation>
 <translation id="7455133967321480974">Naudoti visuotinį numatytąjį nustatymą (blokuoti)</translation>
+<translation id="7460618730930299168">Vaizdas ekrane skiriasi nuo to, ką pasirinkote. Tęsti?</translation>
 <translation id="7473891865547856676">Ne, ačiū</translation>
 <translation id="7481312909269577407">Persiųsti</translation>
 <translation id="7485870689360869515">Nerasta jokių duomenų.</translation>
@@ -985,6 +991,7 @@ Papildoma išsami informacija:
 <translation id="7681101578153515023">Keisti paieškos variklį</translation>
 <translation id="7682287625158474539">Pristatymas</translation>
 <translation id="7687186412095877299">Užpildomos mokėjimo formos naudojant išsaugotus mokėjimo metodus</translation>
+<translation id="769721561045429135">Šiuo metu turite kortelių, kurias galima naudoti tik šiuo įrenginiu. Jei norite peržiūrėti korteles, spustelėkite „Tęsti“.</translation>
 <translation id="7699293099605015246">Straipsniai šiuo metu negalimi</translation>
 <translation id="7701040980221191251">Nieko</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Eiti į svetainę <ph name="SITE" /> (nesaugu)<ph name="END_LINK" /></translation>
@@ -993,7 +1000,6 @@ Papildoma išsami informacija:
 <translation id="7716424297397655342">Nepavyksta įkelti šios svetainės iš talpyklos</translation>
 <translation id="7723047071702270851">Kortelės redagavimas</translation>
 <translation id="774634243536837715">Pavojingas turinys užblokuotas.</translation>
-<translation id="7747182086178764941">Rodomas automatinio pildymo padėjėjo pirmosios paleisties ekranas</translation>
 <translation id="7752995774971033316">Netvarkoma</translation>
 <translation id="7755287808199759310">Jūsų tėtis ar mama gali ją atblokuoti už jus</translation>
 <translation id="7758069387465995638">Gali būti, kad užkarda arba antivirusinė programinė įranga užblokavo ryšį.</translation>
@@ -1047,9 +1053,11 @@ Papildoma išsami informacija:
 <translation id="808894953321890993">Keisti slaptažodį</translation>
 <translation id="8091372947890762290">Laukiama aktyvinimo serveryje</translation>
 <translation id="8094917007353911263">Naudojant šį tinklą gali būti prašoma apsilankyti <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8100588592594801589">Netinkamos kortelės pašalintos</translation>
 <translation id="8103161714697287722">Mokėjimo metodas</translation>
 <translation id="8118489163946903409">Mokėjimo metodas</translation>
 <translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />“ nebuvo tinkamai įdiegta kompiuteryje ar tinkle. Kreipkitės į IT administratorių, kad ši problema būtų išspręsta.</translation>
+<translation id="8130693978878176684">Nebegaliu padėti, tolesnius veiksmus atlikite patys.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8149426793427495338">Įjungta kompiuterio miego būsena.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> nurodyto failo negalima skaityti. Gali būti, kad jis pašalintas, perkeltas arba neleidžiama prieiga prie jo dėl failo leidimų.</translation>
@@ -1214,6 +1222,7 @@ Papildoma išsami informacija:
 <translation id="939736085109172342">Naujas aplankas</translation>
 <translation id="945855313015696284">Patikrinkite toliau pateiktą informaciją ir ištrinkite visas netinkamas korteles</translation>
 <translation id="951104842009476243">Tinkamos debeto ir išankstinio mokėjimo kortelės</translation>
+<translation id="960701843220172709">{NUM_CARDS,plural, =1{Galėsite naudoti prisijungę. Ši kortelė ir atsiskaitymo adresas bus išsaugoti jūsų „Google“ paskyroje.}one{Galėsite naudoti prisijungę. Šios kortelės ir atsiskaitymo adresai bus išsaugoti jūsų „Google“ paskyroje.}few{Galėsite naudoti prisijungę. Šios kortelės ir atsiskaitymo adresai bus išsaugoti jūsų „Google“ paskyroje.}many{Galėsite naudoti prisijungę. Šios kortelės ir atsiskaitymo adresai bus išsaugoti jūsų „Google“ paskyroje.}other{Galėsite naudoti prisijungę. Šios kortelės ir atsiskaitymo adresai bus išsaugoti jūsų „Google“ paskyroje.}}</translation>
 <translation id="962484866189421427">Šis turinys gali bandyti įdiegti klaidinančių programų, kurios apsimeta kitomis programomis, arba rinkti duomenis, naudojamus jums stebėti. <ph name="BEGIN_LINK" />Rodyti vis tiek<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Oficialiai pagaminta</translation>
 <translation id="973773823069644502">Pridėti pristatymo adresą</translation>

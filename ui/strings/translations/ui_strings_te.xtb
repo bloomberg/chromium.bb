@@ -125,6 +125,7 @@
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 సెకను క్రితం}other{# సెకన్ల క్రితం}}</translation>
 <translation id="654149438358937226">అన్ని నోటిఫికేషన్‌లను బ్లాక్ చేయి</translation>
 <translation id="6567071839949112727">క్లిక్ మూలకం</translation>
+<translation id="6578407462441924264">పేరు లేదు</translation>
 <translation id="6612467943526193239">క్రమాంకనం నుండి నిష్క్రమించేందుకు, Esc నొక్కండి.</translation>
 <translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయి</translation>
 <translation id="6699343763173986273">మీడియా తదుపరి ట్రాక్</translation>
@@ -167,7 +168,7 @@
 <translation id="8328145009876646418">ఎడమ హద్దు</translation>
 <translation id="8331626408530291785">పైకి స్క్రోల్ చెయ్యి</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 సంవత్సరం}other{# సంవత్సరాలు}}</translation>
-<translation id="838869780401515933">తనిఖీ చెయ్యి</translation>
+<translation id="838869780401515933">తనిఖీ చేయి</translation>
 <translation id="8393700583063109961">సందేశాన్ని పంపండి</translation>
 <translation id="8394908167088220973">మీడియా ప్లే/పాజ్</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1సం}other{#సం}}</translation>

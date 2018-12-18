@@ -24,6 +24,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="1520828917794284345">デスクトップを画面に合わせてサイズ変更する</translation>
 <translation id="154040539590487450">リモート アクセス サービスを開始できませんでした。</translation>
 <translation id="1546934824884762070">予期しないエラーが発生しました。この問題をデベロッパーに報告してください。</translation>
+<translation id="1624185583382384493">Chrome リモート デスクトップがウェブに対応しました。高速で無料の<ph name="LINK_BEGIN" />ウェブアプリ<ph name="LINK_END" />をお試しください。複数モニターへの対応など、機能がさらに追加されました。</translation>
 <translation id="1643640058022401035">このページを閉じると、Chromoting セッションが終了します。</translation>
 <translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
@@ -242,6 +243,7 @@ PC</translation>
 <translation id="6198252989419008588">PIN を変更</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" />（最新ではありません）</translation>
 <translation id="6221358653751391898">Chrome にログインしていません。ログインしてもう一度お試しください。</translation>
+<translation id="6227369581881558336">Chrome リモート デスクトップがウェブに対応し、ファイル転送などの新しい機能が追加されました。<ph name="LINK_BEGIN" />ウェブアプリ<ph name="LINK_END" />をご確認ください。</translation>
 <translation id="6284412385303060032">コンソールのログイン画面で実行されるホストは、カーテンモードをサポートするために終了されました（ユーザー固有のセッションで実行されるホストに切り替えられました）。</translation>
 <translation id="629730747756840877">アカウント</translation>
 <translation id="6304318647555713317">クライアント</translation>

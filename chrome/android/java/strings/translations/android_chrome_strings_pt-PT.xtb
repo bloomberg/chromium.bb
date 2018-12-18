@@ -167,7 +167,6 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2173302385160625112">Verifique a ligação à Internet</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
-<translation id="2221802148287197464">Automatizar</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Enviar algumas informações do sistema e conteúdo da página para a Google</translation>
 <translation id="2234876718134438132">Sincronização e serviços Google</translation>
@@ -238,7 +237,6 @@ No entanto, a navegação não é invisível. Passar para o modo privado não oc
 <translation id="2777555524387840389">Faltam <ph name="SECONDS" /> segundos</translation>
 <translation id="2779651927720337254">falhou</translation>
 <translation id="2781151931089541271">Falta 1 segundo</translation>
-<translation id="2783359740176230170">Pagamento rápido</translation>
 <translation id="2803478378562657435">A mostrar palavras-passe guardadas e opções de palavra-passe</translation>
 <translation id="2810645512293415242">Página simplificada para poupar dados e carregar mais rapidamente.</translation>
 <translation id="281504910091592009">Veja e faça a gestão das palavras-passe guardadas na sua <ph name="BEGIN_LINK" />Conta Google<ph name="END_LINK" />.</translation>
@@ -541,7 +539,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5264003212305142034">Pode personalizar as <ph name="BEGIN_LINK1" />definições<ph name="END_LINK1" /> em qualquer altura. A Google pode utilizar conteúdos nos sites que visita, assim como as interações e a atividade com o navegador, para personalizar o Chrome e outros serviços Google, como o Tradutor, a Pesquisa e os anúncios.</translation>
 <translation id="526421993248218238">Não é possível carregar esta página.</translation>
 <translation id="5271967389191913893">O dispositivo não consegue abrir o conteúdo a transferir.</translation>
-<translation id="5274381992091475657">Assistente Preenchimento Autom.</translation>
 <translation id="528192093759286357">Arraste a partir da parte superior e toque no botão de retrocesso para sair do ecrã inteiro.</translation>
 <translation id="5284584623296338184">As alterações aos marcadores, ao histórico, às palavras-passe e a outras definições deixam de ser sincronizadas com a Conta Google. Contudo, os dados existentes permanecem armazenados na Conta Google.</translation>
 <translation id="5301954838959518834">OK, compreendi</translation>
@@ -705,7 +702,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6406506848690869874">Sincronização</translation>
-<translation id="641482588075295793">A reprodução automática não está disponível no Modo Lite.</translation>
 <translation id="641643625718530986">Imprimir…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB transferido(s)</translation>
 <translation id="6433501201775827830">Escolher o motor de pesquisa</translation>
@@ -881,8 +877,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="773466115871691567">Traduza sempre páginas em <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Protege o utilizador e o seu dispositivo contra sites perigosos.</translation>
-<translation id="7759822418208302953">Interrupção do Assistente de preenchimento automático</translation>
-<translation id="7761870125254530914">Ao continuar, aceita os Termos de Utilização do Google para o Pagamento rápido. <ph name="BEGIN_LINK" />Ler mais<ph name="END_LINK" /></translation>
 <translation id="7762668264895820836">Cartão SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7765158879357617694">Mover</translation>

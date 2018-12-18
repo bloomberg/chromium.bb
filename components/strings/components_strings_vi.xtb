@@ -175,6 +175,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 đề xuất}other{# đề xuất}}</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="20817612488360358">Cài đặt proxy hệ thống được đặt để sử dụng nhưng cấu hình proxy rõ ràng cũng được chỉ định.</translation>
+<translation id="2082238445998314030">Kết quả <ph name="RESULT_NUMBER" /> trong tổng số <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Âm thanh</translation>
 <translation id="2094505752054353250">Miền không khớp</translation>
 <translation id="2096368010154057602">Khu vực hành chính</translation>
@@ -182,7 +183,6 @@
 <translation id="2108755909498034140">Khởi động lại máy tính của bạn</translation>
 <translation id="2113977810652731515">Thẻ</translation>
 <translation id="2114841414352855701">Bỏ qua vì đã bị <ph name="POLICY_NAME" /> ghi đè.</translation>
-<translation id="2129308444951592399">Điều khoản và Điều kiện</translation>
 <translation id="213826338245044447">Dấu trang di động</translation>
 <translation id="214556005048008348">Hủy thanh toán</translation>
 <translation id="2147827593068025794">Đồng bộ hóa dưới nền</translation>
@@ -244,6 +244,7 @@
 <translation id="2501278716633472235">Quay lại</translation>
 <translation id="2503184589641749290">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>
 <translation id="2515629240566999685">Kiểm tra tín hiệu trong khu vực của bạn</translation>
+<translation id="2523886232349826891">Chỉ lưu trên thiết bị này</translation>
 <translation id="2524461107774643265">Thêm thông tin khác</translation>
 <translation id="2536110899380797252">Thêm địa chỉ</translation>
 <translation id="2539524384386349900">Phát hiện</translation>
@@ -519,6 +520,7 @@
 <translation id="4275830172053184480">Khởi động lại thiết bị của bạn</translation>
 <translation id="4277028893293644418">Đặt lại mật khẩu</translation>
 <translation id="4280429058323657511">, hết hạn <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="428639260510061158">{NUM_CARDS,plural, =1{Đã lưu thẻ này vào Tài khoản Google của bạn}other{Đã lưu các thẻ này vào Tài khoản Google của bạn}}</translation>
 <translation id="4305817255990598646">Chuyển</translation>
 <translation id="4312866146174492540">Chặn (mặc định)</translation>
 <translation id="4325863107915753736">Không tìm được bài viết</translation>
@@ -547,6 +549,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Thử tắt tiện ích.</translation>
 <translation id="457875822857220463">Giao hàng</translation>
+<translation id="4582204425268416675">Xóa thẻ</translation>
 <translation id="4587425331216688090">Xóa địa chỉ khỏi Chrome?</translation>
 <translation id="4592951414987517459">Kết nối của bạn tới <ph name="DOMAIN" /> được mã hóa bằng bộ số 0 hiện đại.</translation>
 <translation id="4594403342090139922">&amp;Hoàn tác xóa</translation>
@@ -594,6 +597,7 @@
 <translation id="4926049483395192435">Phải được chỉ định.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> cho biết</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
 <translation id="495170559598752135">Tác vụ</translation>
 <translation id="4958444002117714549">Mở rộng danh sách</translation>
 <translation id="4974590756084640048">Bật lại cảnh báo</translation>
@@ -653,6 +657,7 @@
 <translation id="5344579389779391559">Trang này có thể tìm cách tính phí bạn</translation>
 <translation id="5355557959165512791">Bạn không thể truy cập vào <ph name="SITE" /> ngay bây giờ vì chứng chỉ của trang này đã bị thu hồi. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời nên trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
+<translation id="5363056109122666249">Chrome đang đề xuất lưu thẻ của bạn vào Tài khoản Google vì bạn đã đăng nhập. Bạn có thể thay đổi hành động này trong mục cài đặt.</translation>
 <translation id="5371425731340848620">Cập nhật thẻ</translation>
 <translation id="5377026284221673050">"Đồng hồ của bạn chạy chậm" hoặc "Đồng hồ của bạn chạy nhanh" hay "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5384855140246857529">Để sử dụng thẻ trên tất cả thiết bị, hãy đăng nhập và bật tính năng đồng bộ hóa.</translation>
@@ -723,7 +728,6 @@
 <translation id="5810442152076338065">Kết nối của bạn tới <ph name="DOMAIN" /> được mã hóa bằng bộ số 0 đã lỗi thời.</translation>
 <translation id="5813119285467412249">&amp;Làm lại thêm</translation>
 <translation id="5838278095973806738">Bạn không nên nhập bất kỳ thông tin nhạy cảm nào trên trang web này (ví dụ: mật khẩu hoặc thẻ tín dụng), vì những kẻ tấn công có thể đánh cắp thông tin đó.</translation>
-<translation id="5844286946362376359">Tôi biết các điều khoản và điều kiện, chính sách quyền riêng tư và quyền hủy <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (bỏ chọn để đọc).</translation>
 <translation id="5863847714970149516">Trang phía trước có thể tìm cách tính phí bạn</translation>
 <translation id="5866257070973731571">Thêm số điện thoại</translation>
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
@@ -756,6 +760,7 @@
 <translation id="6047233362582046994">Nếu bạn hiểu các rủi ro về bảo mật, bạn có thể <ph name="BEGIN_LINK" />truy cập trang này<ph name="END_LINK" /> trước khi các ứng dụng có hại bị xóa.</translation>
 <translation id="6047927260846328439">Nội dung này có thể tìm cách đánh lừa bạn cài đặt phần mềm hoặc tiết lộ thông tin cá nhân. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Bạn không thể truy cập vào <ph name="SITE" /> ngay bây giờ do trang web sử dụng tính năng ghim chứng chỉ. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời nên trang này có thể sẽ hoạt động lại sau.</translation>
+<translation id="6058977677006700226">Bạn muốn sử dụng thẻ trên tất cả thiết bị?</translation>
 <translation id="6059925163896151826">Thiết bị USB</translation>
 <translation id="6071091556643036997">Loại chính sách là không hợp lệ.</translation>
 <translation id="6080696365213338172">Bạn đã truy cập nội dung bằng chứng chỉ do quản trị viên cấp. Dữ liệu mà bạn cung cấp cho <ph name="DOMAIN" /> có thể bị quản trị viên của bạn chặn.</translation>
@@ -848,7 +853,6 @@
 <translation id="6865412394715372076">Hiện không thể xác minh thẻ này</translation>
 <translation id="6868206169573555318">Khởi động lại để cập nhật</translation>
 <translation id="6874604403660855544">&amp;Làm lại thêm</translation>
-<translation id="6885646002011712606">Trợ lý tự động điền có ở gần cuối màn hình</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Cấp chính sách không được hỗ trợ.</translation>
 <translation id="6895330447102777224">Thẻ của bạn đã được xác nhận</translation>
@@ -875,6 +879,7 @@
 <translation id="7016992613359344582">Các khoản phí này có thể là khoản thu một lần hoặc định kỳ và có thể không rõ ràng.</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="7050187094878475250">Bạn đã cố gắng truy cập <ph name="DOMAIN" /> nhưng máy chủ đã hiển thị chứng chỉ có thời gian hiệu lực quá dài để có thể tin cậy.</translation>
+<translation id="705310974202322020">{NUM_CARDS,plural, =1{Không thể lưu thẻ này ngay bây giờ}other{Không thể lưu các thẻ này ngay bây giờ}}</translation>
 <translation id="7053983685419859001">Chặn</translation>
 <translation id="7064851114919012435">Thông tin liên hệ</translation>
 <translation id="7079718277001814089">Trang web này có chứa phần mềm độc hại</translation>
@@ -945,6 +950,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /> về sự cố này.</translation>
 <translation id="7453467225369441013">Đăng xuất bạn khỏi hầu hết các trang web. Bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình.</translation>
 <translation id="7455133967321480974">Sử dụng cài đặt mặc định chung (Chặn)</translation>
+<translation id="7460618730930299168">Màn hình khác với nội dung bạn đã chọn. Bạn có muốn tiếp tục không?</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
@@ -984,6 +990,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7681101578153515023">Thay đổi công cụ tìm kiếm</translation>
 <translation id="7682287625158474539">Địa chỉ gửi hàng</translation>
 <translation id="7687186412095877299">Điền vào biểu mẫu thanh toán bằng phương thức thanh toán đã lưu</translation>
+<translation id="769721561045429135">Bạn hiện có các thẻ chỉ dùng được trên thiết bị này. Nhấp vào Tiếp tục để xem lại các thẻ.</translation>
 <translation id="7699293099605015246">Không có bài viết nào ngay lúc này</translation>
 <translation id="7701040980221191251">Không</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Tiếp tục truy cập <ph name="SITE" /> (không an toàn)<ph name="END_LINK" /></translation>
@@ -992,7 +999,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7716424297397655342">Không thể tải trang web này từ bộ nhớ đệm</translation>
 <translation id="7723047071702270851">Chỉnh sửa thẻ</translation>
 <translation id="774634243536837715">Đã chặn nội dung nguy hiểm.</translation>
-<translation id="7747182086178764941">Màn hình chạy đầu tiên của Trợ lý tự động điền hiển thị</translation>
 <translation id="7752995774971033316">Không được quản lý</translation>
 <translation id="7755287808199759310">Cha mẹ của bạn có thể bỏ chặn trang web cho bạn</translation>
 <translation id="7758069387465995638">Tường lửa hoặc phần mềm diệt vi-rút có thể đã chặn kết nối.</translation>
@@ -1046,9 +1052,11 @@ Thông tin chi tiết bổ sung:
 <translation id="808894953321890993">Đổi mật khẩu</translation>
 <translation id="8091372947890762290">Kích hoạt đang chờ xử lý trên máy chủ</translation>
 <translation id="8094917007353911263">Mạng mà bạn đang sử dụng có thể yêu cầu bạn phải truy cập <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8100588592594801589">Đã xóa các thẻ không hợp lệ</translation>
 <translation id="8103161714697287722">Phương thức thanh toán</translation>
 <translation id="8118489163946903409">Phương thức thanh toán</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" đã được cài đặt không đúng trên máy tính hoặc mạng của bạn. Hãy yêu cầu quản trị viên CNTT của bạn giải quyết vấn đề này.</translation>
+<translation id="8130693978878176684">Tôi không thể trợ giúp được nữa. Bạn vui lòng tự thực hiện hành động này.</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
 <translation id="8149426793427495338">Máy tính của bạn đã chuyển sang chế độ ngủ.</translation>
 <translation id="8150722005171944719">Không thể đọc được tệp tại <ph name="URL" />.  Tệp này có thể đã bị xóa, di chuyển hoặc quyền tệp có thể đang chặn truy cập.</translation>
@@ -1213,6 +1221,7 @@ Thông tin chi tiết bổ sung:
 <translation id="939736085109172342">Thư mục mới</translation>
 <translation id="945855313015696284">Kiểm tra thông tin bên dưới và xóa mọi thẻ không hợp lệ</translation>
 <translation id="951104842009476243">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>
+<translation id="960701843220172709">{NUM_CARDS,plural, =1{Bạn có thể sử dụng thẻ này khi đã đăng nhập. Thẻ này và địa chỉ thanh toán của thẻ sẽ được lưu vào Tài khoản Google của bạn.}other{Bạn có thể sử dụng những thẻ này khi đã đăng nhập. Những thẻ này và địa chỉ thanh toán của thẻ sẽ được lưu vào Tài khoản Google của bạn.}}</translation>
 <translation id="962484866189421427">Nội dung này có thể tìm cách cài đặt ứng dụng lừa đảo giả mạo nội dung khác hoặc thu thập dữ liệu có thể được dùng để theo dõi bạn. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Phiên bản Chính thức</translation>
 <translation id="973773823069644502">Thêm địa chỉ giao hàng</translation>

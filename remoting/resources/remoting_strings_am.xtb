@@ -24,6 +24,7 @@
 <translation id="1520828917794284345">እንዲመጣጠን የዴስክቶፑን መጠን ይቀይሩ</translation>
 <translation id="154040539590487450">የርቀት መዳረሻ አገልግሎትን መጀመር አልተሳካም።</translation>
 <translation id="1546934824884762070">ያልተጠበቀ ስህተት ተከስቷል። እባክዎ ይህንን ችግር ለገንቢዎች ሪፖርት ያድርጉት።</translation>
+<translation id="1624185583382384493">Chrome የርቀት ዴስክቶፕ አሁን በድሩ ላይ ነው የእኛን <ph name="LINK_BEGIN" />የድር መተግበሪያ<ph name="LINK_END" /> ይሞክሩት — ፈጣን እና ነጻ ነው፣ እንዲሁም ለበርካታ መቆጣጠሪያዎች የተሻሻለ ድጋፍን ጨምሮ ተጨማሪ ባህሪያት አሉት።</translation>
 <translation id="1643640058022401035">ከዚህ ገጽ መውጣት የChromoting ክፍለ-ጊዜዎን ያጠናቅቀዋል።</translation>
 <translation id="1654128982815600832">ለዚህ ኮምፒውተር የርቀት ግንኙነቶችን በማንቃት ላይ…</translation>
 <translation id="170207782578677537">ይህንን ኮምፒውተር መመዝገብ አልተሳካም።</translation>
@@ -242,6 +243,7 @@
 <translation id="6198252989419008588">ፒን ይቀይሩ</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (ቀኑ ያለፈበት)</translation>
 <translation id="6221358653751391898">ወደ Chrome በመለያ አልገቡም። እባክዎ ይግቡ እና እንደገና ይሞክሩ።</translation>
+<translation id="6227369581881558336">Chrome የርቀት ዴስክቶፕ የፋይል ሽግግርን ጨምሮ አሁን ላይ ከአዳዲስ ባህሪያት ጋር በድሩ ላይ ነው። የእኛን <ph name="LINK_BEGIN" />የድር መተግበሪያ<ph name="LINK_END" /> ይሞክሩት።</translation>
 <translation id="6284412385303060032">በመሥሪያ አመክንዮ ማያ ገጽ ላይ አያሄደ ያለው አስተናጋጅ በተጠቃሚ-ተኮር ክፍለ-ጊዜ ውስጥ በማሄድ የመጋረጃ ሁነታን ለመደገፍ ተዘግቷል።</translation>
 <translation id="629730747756840877">መለያ</translation>
 <translation id="6304318647555713317">ደንበኛ</translation>

@@ -24,6 +24,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="1520828917794284345">Redimensionar o ambiente de trabalho para ajustar ao tamanho</translation>
 <translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Comunique este problema aos programadores.</translation>
+<translation id="1624185583382384493">Agora, o Ambiente de Trabalho Remoto do Chrome está na Web. Experimente a nossa <ph name="LINK_BEGIN" />aplicação Web<ph name="LINK_END" />, que é rápida, gratuita e tem ainda mais funcionalidades, incluindo a compatibilidade melhorada com vários monitores.</translation>
 <translation id="1643640058022401035">Se sair desta página, terminará a sessão do Chromoting.</translation>
 <translation id="1654128982815600832">A ativar as ligações remotas neste computador…</translation>
 <translation id="170207782578677537">Falha ao registar o computador.</translation>
@@ -242,6 +243,7 @@ Para ativar esta funcionalidade, selecione "<ph name="BUTTON_NAME" />" para apre
 <translation id="6198252989419008588">Alterar PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (desatualizado)</translation>
 <translation id="6221358653751391898">Não tem sessão iniciada no Chrome. Inicie sessão e tente novamente.</translation>
+<translation id="6227369581881558336">Agora, o Ambiente de Trabalho Remoto do Chrome está na Web com novas funcionalidades, incluindo a transferência de ficheiros. Veja a nossa <ph name="LINK_BEGIN" />aplicação Web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">O anfitrião em execução no ecrã de início de sessão da consola foi encerrado para suportar o modo de cortina ao alternar para um anfitrião em execução numa sessão específica de utilizador.</translation>
 <translation id="629730747756840877">Conta</translation>
 <translation id="6304318647555713317">Cliente</translation>

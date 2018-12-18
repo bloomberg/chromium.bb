@@ -228,7 +228,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="7626032353295482388">Benvenuto in Chrome</translation>
 <translation id="7651907282515937834">Logo di Chrome Enterprise</translation>
 <translation id="7747138024166251722">Il programma di installazione non ha creato una directory temporanea. Verifica di disporre di spazio libero sul disco e dell'autorizzazione per l'installazione del software.</translation>
-<translation id="7756122083761163394">I dati di navigazione di questa persona verranno eliminati dal dispositivo. Per recuperare i dati, accedi a Chrome con il nome utente $2.</translation>
 <translation id="7761834446675418963">Fai clic sul tuo nome per aprire Chrome e iniziare a navigare.</translation>
 <translation id="7781002470561365167">È disponibile una nuova versione di Google Chrome.</translation>
 <translation id="7787950393032327779">Sembra che il profilo sia in uso in un altro processo Google Chrome (<ph name="PROCESS_ID" />) su un altro computer (<ph name="HOST_NAME" />). Chrome ha bloccato il profilo affinché non venga danneggiato. Se sei sicuro che nessun altro processo stia utilizzando questo profilo, puoi sbloccare il profilo e riavviare Chrome.</translation>

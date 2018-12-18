@@ -120,15 +120,6 @@
 <translation id="1291880496936992484">Uyarı: RC4, sürüm 52'den sonra (yaklaşık olarak Eylül 2016'da) <ph name="PRODUCT_NAME" /> ürününden tamamen kaldırılacak ve sonrasında bu politika çalışmayacaktır.
 
       Politika ayarlanmamışsa veya yanlış seçeneğine ayarlanmışsa, TLS'deki RC4 şifre paketleri etkinleştirilmez. Aksi takdirde, eski bir sunucuyla uyumluluğun korunması için doğru seçeneğine ayarlanabilir. Bu geçici bir tedbirdir ve sunucu yeniden yapılandırılmalıdır.</translation>
-<translation id="1297117713060236551">Bu politika, hiçbir zaman farklı bir tarayıcıya geçişe neden olmayacak web sitelerinin listesini kontrol eder.
-
-      Bu listeye <ph name="USE_IE_SITELIST_POLICY_NAME" /> politikası aracılığıyla öğeler eklenebileceğini de unutmayın.
-
-      Bu politika ayarlanmadan bırakılırsa listeye hiçbir web sitesi eklenmez.
-
-      Bu politika ayarlanırsa, <ph name="URL_LIST_POLICY_NAME" /> politikasına benzer şekilde her öğe bir kural olarak değerlendirilir. Ancak mantık tam tersidir: Eşleşen kurallar başka bir tarayıcı açmaz.
-
-      <ph name="URL_LIST_POLICY_NAME" /> politikasının aksine, kurallar iki yönlü olarak uygulanır. Yani, Internet Explorer eklentisi mevcutsa ve etkinse, aynı zamanda <ph name="IE_PRODUCT_NAME" /> tarayıcısının bu URL'leri <ph name="PRODUCT_NAME" /> tarayıcısında açıp açmayacağını da kontrol eder.</translation>
 <translation id="1297182715641689552">.pac proxy komut dosyası kullan</translation>
 <translation id="1304973015437969093">Uzantı/Uygulama kimlikleri ve güncelleme URL'leri sessizce yüklenir</translation>
 <translation id="1307415922184340052">Her yazdırma işinde kullanıcı adını ve dosya adını yerel yazıcı sunucusuna gönderir. Varsayılan ayar göndermemektir.</translation>
@@ -150,6 +141,7 @@
 
       Bu politika ayarlanmadan bırakılırsa, istemci sertifikaları kullanan bağlantılarda HTTP/2 bağlantı birleşmesine izin vermeme varsayılan davranışı kullanılır.</translation>
 <translation id="1353966721814789986">Başlangıç sayfaları</translation>
+<translation id="1354424209129232709">Maksimum:</translation>
 <translation id="1359553908012294236">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, misafir modunda giriş yapılmasına izin verir. Misafir modunda girişler, tüm pencerelerin gizli modda açıldığı <ph name="PRODUCT_NAME" /> profilleridir.
 
       Bu politika yanlış seçeneğine ayarlanırsa, <ph name="PRODUCT_NAME" /> misafir profillerinin başlatılmasına izin vermez.</translation>
@@ -784,6 +776,7 @@
       Bu politika ayarlanmazsa <ph name="PRINTERS_ALLOW_ALL" /> uygulanır.
       </translation>
 <translation id="2908277604670530363">Proxy sunucusuyla yapılabilecek maksimum eşzamanlı bağlantı sayısı</translation>
+<translation id="2952347049958405264">Kısıtlamalar:</translation>
 <translation id="2956777931324644324">Bu politika, <ph name="PRODUCT_NAME" /> 36. sürümü itibariyle geri çekilmiştir.
 
       TLS alan adına bağlı sertifikalar uzantısının etkinleştirilip etkinleştirilmeyeceğini belirtir.
@@ -883,13 +876,6 @@
           Bu politikanın ayarlanmadan bırakılması, kullanıcıların proxy ayarlarını kendi başlarına seçmelerine olanak tanır.</translation>
 <translation id="3205825995289802549">İlk çalıştırmada ilk tarayıcı penceresini ekranı kaplayacak şekilde büyüt</translation>
 <translation id="3211426942294667684">Tarayıcı oturum açma ayarları</translation>
-<translation id="3213821784736959823"><ph name="PRODUCT_NAME" /> ürününde dahili DNS istemcisinin kullanılıp kullanılmayacağını kontrol eder.
-
-      Bu politika doğru seçeneğine ayarlandığında, dahili DNS istemcisi (varsa) kullanılır.
-
-      Bu seçenek yanlış seçeneğine ayarlanırsa, dahili DNS istemcisi hiçbir zaman kullanılmaz.
-
-      Bu politika ayarlanmamış olarak bırakılırsa, kullanıcılar chrome://flags'i düzenleyerek veya bir komut satırı bayrağı belirterek dahili DNS istemcisinin kullanılıp kullanılmayacağını belirleyebilir.</translation>
 <translation id="3214164532079860003">Bu politika etkinleştirilirse, ana sayfanın mevcut varsayılan tarayıcıdan içe aktarılmasını zorlar.
 
       Devre dışı bırakılırsa, ana sayfa içe aktarılmaz.
@@ -1026,19 +1012,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
       Bu politika "DeveloperToolsDisallowed" (2 değeri) olarak ayarlanırsa Geliştirici Araçları'na erişilemez ve web sitesi öğeleri bundan sonra incelenemez. Geliştirici Araçları veya JavaScript Konsolu'nu açmaya yönelik klavye kısayolları ve menü ya da içerik menüsü girişleri devre dışı bırakılır.</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
 <translation id="355118380775352753">Alternatif tarayıcıda açılacak web siteleri</translation>
-<translation id="3556806727696701427"><ph name="PRODUCT_NAME" /> ürününün Güvenli Tarama özelliğini etkinleştirir ve kullanıcıların bu ayarı değiştirmelerini önler.
-
-      Bu ayarı etkinleştirirseniz Güvenli Tarama her zaman etkin olur.
-
-      Bu ayarı devre dışı bırakırsanız Güvenli Tarama hiçbir zaman etkin olmaz.
-
-      Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar "Kimlik avı ve kötü amaçlı yazılım korumasını etkinleştirme" ayarını <ph name="PRODUCT_NAME" /> içinde değiştiremez veya geçersiz kılamazlar.
-
-      Bu politika ayarlanmadan bırakılırsa, bu özellik etkinleştirilir ancak kullanıcı tarafından değiştirilebilir.
-
-      Güvenli Tarama ile ilgili daha fazla bilgi edinmek için https://developers.google.com/safe-browsing sayfasına bakın.
-
-      Bu politika, bir <ph name="MS_AD_NAME" /> alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="3577251398714997599">Araya giren reklamların yer aldığı siteler için reklam ayarı</translation>
 <translation id="3591584750136265240">Giriş için kimlik doğrulama yöntemini yapılandır</translation>
 <translation id="3624171042292187668">
@@ -1455,6 +1428,7 @@ politikayı geçersiz kılamaz.
 <translation id="465099050592230505">Kurumsal web mağazası URL'si (kullanımdan kaldırıldı)</translation>
 <translation id="4665897631924472251">Uzantı yönetim ayarları</translation>
 <translation id="4668325077104657568">Varsayılan resimler ayarı</translation>
+<translation id="4670865688564083639">Minimum:</translation>
 <translation id="4671708336564240458">Kötüye kullanım deneyimine sahip sitelerin yeni pencere veya sekme açıp açmayacağını ayarlamanızı sağlar.
 
       Bu politika True (Doğru) olarak ayarlanırsa kötüye kullanım deneyimine sahip sitelerin yeni pencere veya sekme açması engellenir..
@@ -1834,17 +1808,6 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmazsa veya yanlış değerine ayarlanırsa <ph name="PRODUCT_NAME" />, varolan çevrimiçi iptal kontrolü ayarlarını kullanır.</translation>
 <translation id="5728154254076636808"><ph name="PRODUCT_NAME" /> profil verileri için dolaşım kopyalarının oluşturulmasını etkinleştir</translation>
-<translation id="5728661376331491504">Bu politika, alternatif bir tarayıcıda açılacak web sitelerinin listesini kontrol eder.
-
-      Bu listeye <ph name="USE_IE_SITELIST_POLICY_NAME" /> politikası aracılığıyla öğeler eklenebileceğini de unutmayın.
-
-      Bu politika ayarlanmadan bırakılırsa listeye hiçbir web sitesi eklenmez.
-
-      Bu politika ayarlanırsa, her öğe, bir şeyin alternatif tarayıcıda açılması için bir kural olarak değerlendirilir. <ph name="PRODUCT_NAME" />, bir URL'nin alternatif tarayıcıda açılıp açılmayacağını belirlerken bu kuralları kullanır.
-
-      Internet Explorer eklentisi mevcutsa ve etkinse, kurallar eşleşmediğinde Internet Explorer tekrar <ph name="PRODUCT_NAME" /> tarayıcısına geçer.
-
-      Kurallar birbiriyle çelişirse, <ph name="PRODUCT_NAME" /> en ayrıntılı kuralı kullanır.</translation>
 <translation id="5732972008943405952">İlk çalıştırmada, otomatik doldurma formu verilerini varsayılan tarayıcıdan içe aktar</translation>
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5770738360657678870">Yeni geliştirilenler kanalı (kararsız olabilir)</translation>
@@ -1888,6 +1851,7 @@ politikayı geçersiz kılamaz.
 
       URL'ler (https://example.com/herhangibir/yoladı gibi) yalnızca U2F appID'leri olarak eşleşir. Alan adları (example.com gibi) yalnızca webauthn RP ID'leri olarak eşleşir. Dolayısıyla, belirli bir site için hem U2F hem de webauthn API'lerini kapsamak istiyorsanız hem appID URL'sini hem de alan adını listelemeniz gerekir.</translation>
 <translation id="5836064773277134605">Uzaktan erişen ana makine tarafından kullanılan UDP bağlantı noktası aralığını kısıtla</translation>
+<translation id="5861856285460256766">Ebeveyn Erişim Kodu Yapılandırma</translation>
 <translation id="5862253018042179045">Giriş ekranında sesli geri bildirim erişilebilirlik özelliğinin varsayılan durumunu ayarla.
 
           Bu politika true (doğru) olarak ayarlanırsa, giriş ekranı görüntülendiğinde sesli geri bildirim etkinleştirilir.
@@ -2325,13 +2289,6 @@ politikayı geçersiz kılamaz.
 
       NOT: Bu politika yalnızca 1 GB'tan daha fazla RAM'e sahip cihazlarda çalıştırılan Android işletim sistemindeki Chrome tarayıcı için geçerlidir. Bu politikayı Android dışındaki platformlarda uygulamak için SitePerProcess'i kullanın.
       </translation>
-<translation id="6922040258551909078">
-      Bu politika true (doğru) değerine ayarlanırsa, makine politikasıyla çelişmesi halinde bulut politikası öncelikli olur.
-      Politika false (yanlış) değerine ayarlanırsa veya yapılandırılmazsa, bulut politikasıyla çelişmesi halinde makine politikası öncelikli olur.
-      Politika önceliği hakkında daha fazla bilgi edinmek için lütfen şu adresi ziyaret edin: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Bu politika bir <ph name="MS_AD_NAME" /> alanına katılmamış Windows örneklerinde kullanılamaz.
-      </translation>
 <translation id="6922884955650325312"><ph name="FLASH_PLUGIN_NAME" /> eklentisini engelle</translation>
 <translation id="6923366716660828830">Varsayılan arama sağlayıcısının adını belirtir. Boş bırakılır veya ayarlanmazsa, arama URL'sinin belirttiği ana makine adı kullanılır.
 
@@ -2411,14 +2368,6 @@ politikayı geçersiz kılamaz.
       </translation>
 <translation id="706669471845501145">Sitelerin masaüstü bildirimi göstermesine izin ver</translation>
 <translation id="7072208053150563108">Makine şifresi değişim hızı</translation>
-<translation id="7074513465313721551">Güvenli Tarama'nın güveneceği alanların listesini yapılandırın. Bunun anlamı şudur:
-      Tehlikeli kaynakların (ör. kimlik avı, kötü amaçlı yazılım veya istenmeyen yazılım) URL'leri bu alanlarla eşleşirse Güvenli Tarama tehlikeli kaynakları kontrol etmeyecektir.
-      Güvenli Tarama'nın indirme koruma hizmeti, bu alanlarda barındırılan indirmeleri kontrol etmeyecektir.
-      Sayfa URL'si bu alanlarla eşleşirse Güvenli Tarama'nın şifre koruma hizmeti şifre yeniden kullanımını kontrol etmeyecektir.
-
-      Bu ayar etkinleştirilirse Güvenli Tarama bu alanlara güvenecektir.
-      Bu ayar devre dışı bırakılırsa veya ayarlanmazsa varsayılan Güvenli Tarama koruması tüm kaynaklara uygulanır.
-      Bu politika, bir <ph name="MS_AD_NAME" /> alanına katılmayan Windows örneklerinde kullanılamaz.</translation>
 <translation id="7079519252486108041">Bu sitelerde pop-up'ları engelle</translation>
 <translation id="7085803328069945025">USB cihazlarına erişmek için kullanıcıya sormasına izin verilen sitelerin belirtildiği URL kalıpları listesini ayarlamanıza olanak sağlar.
 
@@ -2499,13 +2448,6 @@ politikayı geçersiz kılamaz.
           Bu politikayı ayarlarsanız, kullanıcılar ekran büyütecini etkinleştirip veya devre dışı bırakıp geçici olarak politikayı geçersiz kılabilir. Ancak, kullanıcının seçimi kalıcı değildir ve giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika boşta kalırsa varsayılan değer geri yüklenir.
           Bu politika ayarlanmadan bırakılırsa, giriş ekranı ilk kez gösterildiğinde ekran büyüteci devre dışı olur. Kullanıcılar ekran büyütecini her zaman etkinleştirebilir veya devre dışı bırakabilir ve giriş ekranındaki ekran büyütecinin durumu kullanıcılar arasında kalıcıdır.</translation>
 <translation id="7249828445670652637">ARC uygulamalarına ilişkin <ph name="PRODUCT_OS_NAME" /> CA sertifikalarını etkinleştir</translation>
-<translation id="725322441686394886">Ayarlanmadan bırakılırsa Chrome Temizleme Aracı istenmeyen yazılımları tespit eder, SafeBrowsingExtendedReportingEnabled tarafından ayarlanan politikaya uygun şekilde taramayla ilgili meta verileri Google'a raporlayabilir. Chrome Temizleme Aracı, daha sonra kullanıcıya istenmeyen yazılımın temizlenmesini isteyip istemediğini sorar. Kullanıcı, ileride istenmeyen yazılımların tespiti konusunda yardımcı olması için temizleme işlemi sonuçlarının Google ile paylaşılmasını seçebilir. Bu sonuçlar, Chrome Gizlilik Raporu'nda açıklandığı gibi dosya meta verilerini, otomatik olarak yüklenen uzantıları ve kayıt defteri anahtarlarını içerir.
-
-      Devre dışı bırakılırsa Chrome Temizleme Aracı istenmeyen yazılımları tespit eder, SafeBrowsingExtendedReportingEnabled tarafından ayarlanan politikayı geçersiz kılarak taramayla ilgili meta verileri Google'a raporlamaz. Chrome Temizleme Aracı, kullanıcıya istenmeyen yazılımın temizlenmesini isteyip istemediğini sorar. Temizleme işleminin sonuçları Google'a bildirilmez ve kullanıcıya bununla ilgili bir seçenek sunulmaz.
-
-      Etkinleştirilirse Chrome Temizleme Aracı istenmeyen yazılımları tespit eder, SafeBrowsingExtendedReportingEnabled tarafından ayarlanan politikaya uygun şekilde taramayla ilgili meta verileri Google'a raporlayabilir. Chrome Temizleme Aracı, kullanıcıya istenmeyen yazılımın temizlenmesini isteyip istemediğini sorar. Temizleme işleminin sonuçları Google'a bildirilir ve kullanıcıya bunu önleme seçeneği sunulmaz.
-
-      Bu politika, <ph name="MS_AD_NAME" /> alanına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="7258823566580374486">Uzaktan erişen ana makinelerin perdelenmesini etkinleştirme</translation>
 <translation id="7260277299188117560">p2p otomatik güncellemesi etkin</translation>
 <translation id="7261252191178797385">Cihaz duvar kağıdı resmi</translation>
@@ -2603,11 +2545,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="737655323154569539">Yazdırma sayfası boyutunu kısıtlar. Ayarlanmayan ve boş bırakılan politika kısıtlama yokmuş gibi işlenir.</translation>
-<translation id="7417728346887499628">Devre dışı bırakılırsa, Chrome Temizleme Aracı'nın sistemdeki istenmeyen yazılımları taramasını ve temizleme işlemleri gerçekleştirmesini engeller. Chrome Temizleme Aracı'nın chrome://settings/cleanup adresinden manuel olarak tetiklenmesi devre dışı bırakılır.
-
-      Etkinleştilir veya ayarlanmadan bırakılırsa, Chrome Temizleme Aracı belirli aralıklarla sistemdeki istenmeyen yazılımları tarar ve böyle bir yazılım bulursa kullanıcıya, bulduğu yazılımı kaldırmak isteyip istemediğini sorar. Chrome Temizleme Aracı'nın chrome://settings adresinden manuel olarak tetiklenmesi etkinleştirilir.
-
-      Bu politika, bir <ph name="MS_AD_NAME" /> alanına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="7417972229667085380">Sunum modundayken boşta gecikme süresini ölçekleme yüzdesi (kullanımdan kaldırıldı)</translation>
 <translation id="7421483919690710988">Medya disk önbelleği boyutunu bayt olarak ayarla</translation>
 <translation id="7424751532654212117">Devre dışı bırakılmış eklentiler listesinin istisnalar listesi</translation>
@@ -2679,6 +2616,18 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           Bir uzantı listede yoksa veya liste ayarlanmamışsa API'ye yapılan çağrılar başarısız olur ve hata kodu görüntülenir.</translation>
 <translation id="7618907117929117943">OS sürümü hedeften daha yeniyse ve geri alma, ayrıca geri alma sonrası OOBE'nin atlanması yoluyla cihaz düzeyinde yapılandırmanın (ağ kimlik bilgileri dahil) aktarılması mümkünse sürümü geri alın ev hedefin sürümünde kalın. Bu mümkün değilse (hedef sürüm geri yüklemeyi desteklememesi veya geriye dönük uyumluluğu olmayan bir değişiklik nedeniyle) geri alma işlemini yapmayın veya iptal etmeyin.
           <ph name="PRODUCT_OS_NAME" /> sürüm 70'te ve sonraki sürümlerde desteklenir. Daha eski istemciler için bu değer, geri yüklemenin devre dışı bırakıldığı anlamına gelir.</translation>
+<translation id="7620869951155758729">Bu politika, Ebeveyn Erişim Kodu'nu oluşturmak ve doğrulamak için kullanılan yapılandırmayı belirtir.
+
+      |current_config| her zaman erişim kodu oluşturmak için kullanılır ve yalnızca erişim kodunun |future_config| ile doğrulanamadığı zamanlarda erişim kodu doğrulamak için kullanılmalıdır.
+      |future_config|, erişim kodu doğrulamak için kullanılan birincil yapılandırmadır.
+      |old_configs| yalnızca erişim kodunun |future_config| veya |current_config| ile doğrulanamadığı zamanlarda erişim kodu doğrulamak için kullanılmalıdır.
+
+      Bu politika kullanılırken erişim kodu yapılandırmanın yavaş yavaş döndürülmesi beklenir. Yeni yapılandırma her zaman |future_config|'in içine koyulur. Aynı zamanda
+      mevcut değer de |current_config|'in içine taşınır. |current_config|'in önceki değerleri |old_configs|'e taşınır ve rotasyon döngüsü bittikten sonra kaldırılır.
+
+      Bu politika yalnızca çocuk kullanıcılar için geçerlidir.
+      Bu politika ayarlandığında, Ebeveyn Erişim Kodu çocuk kullanıcının cihazında doğrulanabilir.
+      Bu politika ayarlanmadığında, Ebeveyn Erişim Kodu çocuk kullanıcının cihazında doğrulanamaz.</translation>
 <translation id="7625444193696794922">Bu cihazın kilitlenmesi gereken yayın kanalını belirtir.</translation>
 <translation id="7632724434767231364">GSSAPI kitaplığı adı</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME" /> içindeki uygulama yerel ayarını yapılandırır ve kullanıcıların yerel ayarı değiştirmelerini önler.
@@ -3039,12 +2988,6 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
           Örnek kalıplar için https://www.chromium.org/developers/how-tos/chrome-frame-getting-started sayfasına bakın.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Tarayıcı geçmişini kaydetmeyi devre dışı bırak</translation>
-<translation id="8498293625012059298">Şifre değiştirme URL'sini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Şifre koruma hizmeti, tarayıcıda bir uyarı gördükten sonra şifrelerini değiştirmeleri için kullanıcıları bu URL'ye gönderir.
-      <ph name="PRODUCT_NAME" /> ürününün bu şifre değiştirme sayfasında yeni şifre parmak izini doğru bir şekilde yakalayabilmesi için lütfen şifre değiştirme sayfanızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresinde belirtilen yönergelere uygun olduğundan emin olun.
-
-      Bu ayar etkinleştirilirse şifre koruma hizmeti, tarayıcıda bir uyarı gördükten sonra şifrelerini değiştirmeleri için kullanıcıları bu URL'ye gönderir.
-      Bu ayar devre dışı bırakılır veya ayarlanmazsa şifre koruma hizmeti, şifrelerini değiştirmeleri için kullanıcıları https://myaccounts.google.com adresine gönderir.
-      Bu politika, bir <ph name="MS_AD_NAME" /> alanına katılmayan Windows örneklerinde kullanılamaz.</translation>
 <translation id="8499172469244085141">Varsayılan Ayarlar (kullanıcılar geçersiz kılabilir)</translation>
 <translation id="8507835864888987300">Otomatik Güncellemeler için bir hedef sürüm ayarlar.
 
@@ -3261,12 +3204,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8976248126101463034">Uzak erişim ana makineleri için gnubby kimlik doğrulamasına izin ver</translation>
 <translation id="8976531594979650914">Varsayılan Olarak Sistem Varsayılan Yazıcısını Kullan</translation>
 <translation id="8992176907758534924">Hiçbir sitenin resimleri görüntülemesine izin verme</translation>
-<translation id="9012851181124311976">Kurumsal giriş URL'lerinin listesini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Bu URL'lerde şifrelerin dijital parmak izleri yakalanır ve şifrenin tekrar kullanımını algılamak için bu dijital parmak izlerinden yararlanılır.
-      <ph name="PRODUCT_NAME" /> uygulamasının şifrelerin dijital parmak izlerini doğru bir şekilde yakalaması için giriş sayfalarınızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresinde bulunan kurallara uyduğundan emin olun.
-
-      Bu ayar etkinleştirilirse şifre koruma hizmeti, şifre yeniden kullanımı algılaması için bu URL'lerdeki şifrelerin dijital parmak izlerini yakalar.
-      Bu ayar devre dışı bırakılırsa veya ayarlanmazsa, şifre koruma hizmeti yalnızca https://accounts.google.com adresindeki şifrelerin dijital parmak izlerini yakalar.
-      Bu politika, bir <ph name="MS_AD_NAME" /> alanına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="9035964157729712237">Kara listeden muaf tutulacak uzantı kimlikleri</translation>
 <translation id="9042911395677044526">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME" /> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
 <translation id="906631898352326790">

@@ -235,7 +235,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7626032353295482388">Welcome to Chrome</translation>
 <translation id="7651907282515937834">Chrome Enterprise logo</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
-<translation id="7756122083761163394">This person's browsing data will be deleted from this device. To recover the data, sign in to Chrome as $2.</translation>
 <translation id="7761834446675418963">Click your name to open Chrome and start browsing.</translation>
 <translation id="7781002470561365167">There is a new version of Google Chrome available.</translation>
 <translation id="7787950393032327779">The profile appears to be in use by another Google Chrome process (<ph name="PROCESS_ID" />) on another computer (<ph name="HOST_NAME" />). Chrome has locked the profile so that it doesn't get corrupted. If you are sure no other processes are using this profile, you can unlock the profile and relaunch Chrome.</translation>

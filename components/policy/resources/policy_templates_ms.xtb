@@ -134,15 +134,6 @@
 <translation id="1291880496936992484">Amaran: RC4 akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 52 (sekitar September 2016) dan dasar ini akan berhenti berfungsi selepas itu.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka suit sifer RC4 dalam TLS tidak akan didayakan. Jika tidak, dasar mungkin ditetapkan kepada benar untuk mengekalkan keserasian dengan pelayan yang sudah lapuk. Ini adalah langkah sementara dan pelayan harus dikonfigurasi semula.</translation>
-<translation id="1297117713060236551">Dasar ini mengawal senarai tapak web yang tidak akan menyebabkan penukaran penyemak imbas.
-
-      Sila ambil perhatian bahawa unsur juga boleh ditambahkan pada senarai ini melalui dasar <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Apabila dasar ini dibiarkan tanpa ditetapkan, tiada tapak web akan ditambahkan pada senarai.
-
-      Apabila dasar ini ditetapkan, setiap item akan dikendalikan sebagai peraturan, sama seperti dasar <ph name="URL_LIST_POLICY_NAME" />. Walau bagaimanapun, logik akan diterbalikkan: peraturan yang sepadan tidak akan membuka penyemak imbas alternatif.
-
-      Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua-dua hala. Maknanya, apabila terdapat alat tambah Internet Explorer dan alat itu didayakan, peraturan tersebut juga mengawal sama ada <ph name="IE_PRODUCT_NAME" /> harus membuka URL ini dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Gunakan skrip proksi .pac</translation>
 <translation id="1304973015437969093">ID Sambungan/Apl dan URL kemas kini untuk dipasang secara senyap</translation>
 <translation id="1307415922184340052">Hantar nama pengguna dan nama fail kepada pelayan pencetak asli untuk setiap tugas cetakan. Tindakan lalai ialah tidak menghantar.</translation>
@@ -165,6 +156,7 @@
 
       Jika dasar ini dibiarkan tidak ditetapkan, maka gelagat lalai yang tidak membenarkan mana-mana sambungan HTTP/2 bertaut pada sambungan yang menggunakan sijil pelanggan akan digunakan.</translation>
 <translation id="1353966721814789986">Halaman permulaan</translation>
+<translation id="1354424209129232709">Maksimum:</translation>
 <translation id="1359553908012294236">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu merupakan profil <ph name="PRODUCT_NAME" /> yang semua tetingkapnya dalam mod inkognito.
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan profil tetamu dimulakan.</translation>
@@ -797,6 +789,7 @@
       Jika dasar ini tidak ditetapkan, <ph name="PRINTERS_ALLOW_ALL" /> akan digunakan.
       </translation>
 <translation id="2908277604670530363">Bilangan maksimum sambungan serentak kepada pelayan proksi</translation>
+<translation id="2952347049958405264">Pengehadan:</translation>
 <translation id="2956777931324644324">Dasar ini telah dihentikan mengikut <ph name="PRODUCT_NAME" /> versi 36.
 
       Menyatakan sama ada sambungan sijil hala domain TLS harus didayakan.
@@ -897,13 +890,6 @@
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih sendiri tetapan proksi mereka.</translation>
 <translation id="3205825995289802549">Maksimumkan tetingkap penyemak imbas pertama pada kendalian pertama</translation>
 <translation id="3211426942294667684">Tetapan log masuk penyemak imbas</translation>
-<translation id="3213821784736959823">Mengawal sama ada pelanggan DNS terbina dalam digunakan dalam <ph name="PRODUCT_NAME" />.
-
-      Jika dasar ini ditetapkan kepada benar, pelanggan DNS terbina dalam akan digunakan, jika tersedia.
-
-      Jika dasar ini ditetapkan kepada palsu, pelanggan DNS terbina dalam tidak akan digunakan.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, pengguna akan dapat menukar sama ada pelanggan DNS terbina dalam digunakan dengan mengedit chrome://flags atau menetapkan bendera baris arahan.</translation>
 <translation id="3214164532079860003">Jika didayakan, dasar ini memaksa halaman utama diimport daripada penyemak imbas semasa.
 
       Jika dilumpuhkan, halaman utama tidak diimport.
@@ -1042,19 +1028,6 @@
       Jika dasar ini ditetapkan kepada 'DeveloperToolsDisallowed' (nilai 2), Alat Pembangun tidak boleh diakses dan unsur tapak web tidak boleh disemak lagi. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="355118380775352753">Tapak web untuk dibuka dalam penyemak imbas alternatif</translation>
-<translation id="3556806727696701427">Mendayakan ciri Penyemakan Imbas Selamat <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubah tetapan ini.
-
-      Jika anda mendayakan tetapan ini, Penyemakan Imbas Selamat akan sentiasa aktif.
-
-      Jika anda melumpuhkan tetapan ini, Penyemakan Imbas Selamat tidak akan aktif.
-
-      Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan "Dayakan perlindungan pancingan data dan perlindungan perisian hasad" dalam <ph name="PRODUCT_NAME" />.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan tetapi pengguna akan dapat mengubahnya.
-
-      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.
-
-      Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="3577251398714997599">Tetapan iklan untuk tapak yang mengandungi iklan yang mengganggu</translation>
 <translation id="3591584750136265240">Konfigurasikan gelagat pengesahan log masuk</translation>
 <translation id="3624171042292187668">
@@ -1472,6 +1445,7 @@
 <translation id="465099050592230505">URL kedai web perusahaan (tidak akan digunakan lagi)</translation>
 <translation id="4665897631924472251">Tetapan pengurusan sambungan</translation>
 <translation id="4668325077104657568">Tetapan imej lalai</translation>
+<translation id="4670865688564083639">Minimum:</translation>
 <translation id="4671708336564240458">Membenarkan anda menetapkan sama ada tapak yang mengandungi pengalaman kesat harus dihalang daripada membuka tetingkap atau tab baharu.
 
       Jika dasar ini ditetapkan kepada True, tapak yang mengandungi pengalaman kesat akan dihalang daripada membuka tetingkap atau tab baharu.
@@ -1852,17 +1826,6 @@
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka <ph name="PRODUCT_NAME" /> akan menggunakan tetapan semakan pembatalan dalam talian yang sedia ada.</translation>
 <translation id="5728154254076636808">Dayakan pembuatan salinan perayauan bagi data profil <ph name="PRODUCT_NAME" /></translation>
-<translation id="5728661376331491504">Dasar ini mengawal senarai tapak web yang hendak dibuka dalam penyemak imbas alternatif.
-
-      Sila ambil perhatian bahawa unsur juga boleh ditambahkan pada senarai ini melalui dasar <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Apabila dasar ini dibiarkan tanpa ditetapkan, tiada tapak web akan ditambahkan pada senarai.
-
-      Apabila dasar ini ditetapkan, setiap item akan dikendalikan sebagai peraturan untuk sesuatu dibuka dalam penyemak imbas alternatif. <ph name="PRODUCT_NAME" /> menggunakan peraturan itu apabila memilih sama ada URL harus dibuka dalam penyemak imbas alternatif.
-
-      Apabila terdapat alat tambah Internet Explorer dan alat itu didayakan, Internet Explorer beralih semula kepada <ph name="PRODUCT_NAME" /> apabila peraturan tidak sepadan.
-
-      Jika peraturan bercanggah antara satu sama lain, <ph name="PRODUCT_NAME" /> akan menggunakan peraturan yang paling khusus.</translation>
 <translation id="5732972008943405952">Import data borang autolengkap daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="5765780083710877561">Huraian:</translation>
 <translation id="5770738360657678870">Saluran Dev (mungkin tidak stabil)</translation>
@@ -1906,6 +1869,7 @@
 
       URL (seperti https://example.com/some/path) hanya akan sepadan sebagai appID U2F. Domain (seperti example.com) hanya sepadan sebagai ID RP webauthn. Oleh sebab itu, untuk meliputi kedua-dua API U2F dan webauthn bagi tapak tertentu, kedua-dua URL dan domain appID perlu disenaraikan.</translation>
 <translation id="5836064773277134605">Hadkan julat port UDP yang digunakan oleh hos akses jauh</translation>
+<translation id="5861856285460256766">Konfigurasi Kod Akses Ibu Bapa</translation>
 <translation id="5862253018042179045">Tetapkan keadaan lalai ciri kebolehcapaian maklum balas pertuturan pada skrin log masuk.
 
           Jika dasar ini ditetapkan kepada benar, maklum balas pertuturan akan didayakan apabila skrin log masuk dipaparkan.
@@ -2355,13 +2319,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       NOTA: Dasar ini hanya digunakan pada Chrome di Android yang dijalankan pada peranti dengan 1GB RAM ke atas sahaja. Untuk menggunakan dasar ini pada platform bukan Android, gunakan SitePerProcess.
       </translation>
-<translation id="6922040258551909078">
-      Jika dasar ini ditetapkan kepada benar, dasar awan akan diutamakan sekiranya bercanggah dengan dasar mesin.
-      Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, dasar mesin akan diutamakan sekiranya bercanggah dengan dasar awan.
-      Untuk mendapatkan butiran lanjut tentang keutamaan dasar, sila lawati: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.
-      </translation>
 <translation id="6922884955650325312">Sekat pemalam <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Menentukan nama penyedia carian lalai. Jika dibiarkan kosong atau tidak ditetapkan, nama hos yang ditentukan oleh URL carian akan digunakan.
 
@@ -2443,14 +2400,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       </translation>
 <translation id="706669471845501145">Benarkan tapak untuk memaparkan pemberitahuan desktop</translation>
 <translation id="7072208053150563108">Kadar penukaran kata laluan mesin</translation>
-<translation id="7074513465313721551">Konfigurasikan senarai domain yang akan dipercayai oleh Safe Browsing. Ini bermakna:
-      Safe Browsing tidak akan menyemak sumber berbahaya (mis. pancingan data, perisian hasad atau perisian tidak dikehendaki) jika URL sumber tersebut sepadan dengan domain ini.
-      Perkhidmatan perlindungan muat turun Safe Browsing tidak akan menyemak muat turun yang dihoskan pada domain ini.
-      Perkhidmatan perlindungan kata laluan Safe Browsing tidak akan meyemak pemasukan semula kata laluan jika URL halaman tersebut sepadan dengan domain ini.
-
-      Jika tetapan ini didayakan, maka Safe Browsing akan mempercayai domain ini.
-      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perlindungan Safe Browsing lalai akan digunakan pada semua sumber.
-      Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Sekat pop muncul pada tapak ini</translation>
 <translation id="7085803328069945025">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dibenarkan meminta pengguna memberi tapak tersebut akses kepada peranti USB.
 
@@ -2533,13 +2482,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika dasar ini dibiarkan tanpa ditetapkan, penggadang skrin dilumpuhkan apabila skrin log masuk mula-mula dipaparkan. Pengguna boleh mendayakan atau melumpuhkan penggadang skrin pada bila-bila masa dan statusnya pada skrin log masuk yang berterusan antara pengguna.</translation>
 <translation id="7249828445670652637">Dayakan sijil CA <ph name="PRODUCT_OS_NAME" /> pada apl ARC</translation>
-<translation id="725322441686394886">Jika tidak ditetapkan, sekiranya Pembersih Chrome mengesan perisian yang tidak dikehendaki, Pembersih Chrome boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome kemudiannya akan menanyakan pengguna sama ada mereka ingin membersihkan perisian yang tidak dikehendaki itu. Pengguna boleh memilih untuk berkongsi keputusan pembersihan dengan Google untuk membantu pengesanan perisian yang tidak dikehendaki pada masa akan datang. Keputusan ini mengandungi metadata fail, sambungan yang dipasang secara automatik dan kunci daftaran seperti yang diterangkan oleh Kertas Putih Privasi Chrome.
-
-      Jika dilumpuhkan, sekiranya Pembersih Chrome mengesan perisian yang tidak dikehendaki, Pembersih Chrome tidak akan melaporkan metadata tentang imbasan itu kepada Google, mengatasi sebarang dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan pengguna sama ada mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan tidak akan dilaporkan kepada Google dan pengguna tidak akan mempunyai pilihan untuk melakukannya.
-
-      Jika didayakan, sekiranya Pembersih Chrome mengesan perisian yang tidak dikehendaki, Pembersih Chrome boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan pengguna sama ada mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan akan dilaporkan kepada Google dan pengguna tidak mempunyai pilihan untuk menghalangnya.
-
-      Dasar ini tidak tersedia pada tika Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Dayakan pengadangan hos akses jauh</translation>
 <translation id="7260277299188117560">Auto kemas kini p2p didayakan</translation>
 <translation id="7261252191178797385">Imej kertas dinding peranti</translation>
@@ -2638,11 +2580,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
 <translation id="737655323154569539">Mengehadkan saiz halaman pencetakan. Dasar yang tidak ditetapkan dan set kosong dianggap sebagai tiada sekatan.</translation>
-<translation id="7417728346887499628">Jika dilumpuhkan, Pembersih Chrome tidak akan dapat mengimbas sistem untuk mengesan perisian yang tidak dikehendaki dan melakukan pembersihan. Tindakan memulakan Pembersih Chrome secara manual daripada chrome://settings/cleanup dilumpuhkan.
-
-      Jika didayakan atau tidak ditetapkan, Pembersih Chrome akan mengimbas sistem secara berkala untuk mengesan perisian yang tidak dikehendaki dan sekiranya menemui perisian tersebut, Pembersih Chrome akan bertanya kepada pengguna sama ada mereka ingin mengalih keluar perisian tersebut. Tindakan memulakan Pembersih Chrome secara manual daripada chrome://settings didayakan.
-
-      Dasar ini tidak tersedia pada tika Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Peratusan yang digunakan untuk skala kelewatan melahu dalam mod penyampaian (tidak akan digunakan lagi)</translation>
 <translation id="7421483919690710988">Tetapkan saiz cache cakera media dalam bait</translation>
 <translation id="7424751532654212117">Senarai pengecualian kepada senarai pemalam dilumpuhkan</translation>
@@ -2714,6 +2651,18 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika sambungan tidak tersenarai atau senarai tidak ditetapkan, panggilan kepada API tersebut akan gagal dengan kod ralat.</translation>
 <translation id="7618907117929117943">Undur dan kekal pada versi sasaran jika versi OS lebih baharu daripada versi sasaran dan konfigurasi tahap peranti mungkin boleh dibawa ke depan (termasuk bukti kelayakan rangkaian) melalui pengunduran dan melangkau OOBE selepas pengunduran juga. Jangan lakukan atau batalkan pengunduran jika tidak boleh dilakukan (kerana versi sasaran tidak meyokong pemulihan data atau kerana perubahan undur yang tidak serasi).
           Disokong pada <ph name="PRODUCT_OS_NAME" /> versi 70 ke atas. Untuk klien lama, nilai ini bermakna pengunduran telah dilumpuhkan.</translation>
+<translation id="7620869951155758729">Dasar ini menentukan konfigurasi yang digunakan untuk menjana dan mengesahkan Kod Akses Ibu Bapa.
+
+      |current_config| sentiasa digunakan untuk menjana kod akses dan perlu digunakan untuk mengesahkan kod akses hanya apabila kod tersebut tidak dapat disahkan dengan |future_config|.
+      |future_config| ialah konfigurasi utama yang digunakan untuk mengesahkan kod akses.
+      |old_configs| perlu digunakan untuk mengesahkan kod akses hanya apabila kod tersebut tidak dapat disahkan dengan |future_config| mahupun |current_config|.
+
+      Cara penggunaan dasar ini yang dijangka adalah dengan menggilirkan konfigurasi kod akses secara beransur-ansur. Konfigurasi baharu sentiasa diletakkan dalam |future_config| dan pada masa yang sama,
+      nilai yang sedia ada dialihkan ke dalam |current_config|. Nilai |current_config| yang terdahulu dialihkan ke dalam |old_configs| dan dialih keluar selepas kitaran prnggiliran selesai.
+
+      Dasar ini digunakan pada pengguna kanak-kanak sahaja.
+      Apabila dasar ini ditetapkan , Kod Akses Ibu Bapa boleh disahkan pada peranti pengguna kanak-kanak.
+      Apabila dasar ini tidak ditetapkan, Kod Akses Ibu Bapa tidak dapat disahkan pada peranti pengguna kanak-kanak.</translation>
 <translation id="7625444193696794922">Menetapkan saluran pelepasan yang harus mengunci peranti ini.</translation>
 <translation id="7632724434767231364">Nama perpustakaan GSSAPI</translation>
 <translation id="7635471475589566552">Mengkonfigurasi penempatan aplikasi dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar penempatan.
@@ -3089,12 +3038,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
           Untuk melihat contoh pola, lihat http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Lumpuhkan penyimpanan sejarah penyemakan imbas</translation>
-<translation id="8498293625012059298">Konfigurasikan URL tukar kata laluan (skema HTTP dan HTTPS sahaja). Perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka selepas melihat amaran dalam penyemak imbas.
-      Untuk membolehkan <ph name="PRODUCT_NAME" /> menangkap cap jari kata laluan baharu itu dengan betul di halaman tukar kata laluan ini, sila pastikan halaman tukar kata laluan anda mematuhi garis panduan di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jika tetapan ini didayakan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka selepas melihat amaran dalam penyemak imbas.
-      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke https://myaccounts.google.com untuk menukar kata laluan mereka.
-      Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Tetapan lalai (pengguna boleh mengatasi)</translation>
 <translation id="8507835864888987300">Menetapkan versi sasaran untuk Autokemas Kini.
 
@@ -3333,12 +3276,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8976248126101463034">Benarkan pengesahan gnubby untuk hos akses jauh</translation>
 <translation id="8976531594979650914">Gunakan Pencetak Lalai Sistem sebagai Lalai</translation>
 <translation id="8992176907758534924">Jangan benarkan mana-mana tapak untuk menunjukkan imej</translation>
-<translation id="9012851181124311976">Konfigurasikan senarai URL log masuk perusahaan (skema HTTP dan HTTPS sahaja). Cap jari kata laluan akan ditangkap pada URL ini dan digunakan untuk pengesanan penggunaan semula kata laluan.
-      Untuk membolehkan <ph name="PRODUCT_NAME" /> menangkap cap jari kata laluan dengan betul, sila pastikan halaman log masuk anda mematuhi garis panduan di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jika tetapan ini didayakan, maka perkhidmatan perlindungan kata laluan akan menangkap cap jari kata laluan pada URL ini untuk tujuan pengesanan penggunaan semula kata laluan.
-      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan hanya akan menangkap cap jari kata laluan di https://accounts.google.com.
-      Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
 <translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">

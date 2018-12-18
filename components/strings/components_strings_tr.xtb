@@ -175,6 +175,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 öneri}other{# öneri}}</translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="20817612488360358">Sistem proxy ayarları kullanılmak üzere ayarlandı, ancak açık bir proxy yapılandırması da belirtildi.</translation>
+<translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> sonuçtan <ph name="RESULT_NUMBER" /> numaralı sonuç</translation>
 <translation id="2091887806945687916">Ses</translation>
 <translation id="2094505752054353250">Alan adı uyuşmazlığı</translation>
 <translation id="2096368010154057602">Bölüm</translation>
@@ -182,7 +183,6 @@
 <translation id="2108755909498034140">Bilgisayarınızı yeniden başlatın</translation>
 <translation id="2113977810652731515">Kart</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> tarafından geçersiz kılındığı için yoksayıldı.</translation>
-<translation id="2129308444951592399">Şartlar ve Koşullar</translation>
 <translation id="213826338245044447">Mobil Yer İşaretleri</translation>
 <translation id="214556005048008348">Ödemeyi iptal et</translation>
 <translation id="2147827593068025794">Arka Plan Senkronizasyonu</translation>
@@ -244,6 +244,7 @@
 <translation id="2501278716633472235">Geri dön</translation>
 <translation id="2503184589641749290">Kabul edilen banka ve ön ödemeli kartlar</translation>
 <translation id="2515629240566999685">Bulunduğunuz bölgedeki sinyali kontrol etme</translation>
+<translation id="2523886232349826891">Yalnızca bu cihazda kaydedildi</translation>
 <translation id="2524461107774643265">Daha Fazla Bilgi Ekleyin</translation>
 <translation id="2536110899380797252">Adres Ekle</translation>
 <translation id="2539524384386349900">Algıla</translation>
@@ -519,6 +520,7 @@
 <translation id="4275830172053184480">Cihazınızı yeniden başlatın</translation>
 <translation id="4277028893293644418">Şifreyi sıfırla</translation>
 <translation id="4280429058323657511">, son kullanma tarihi <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="428639260510061158">{NUM_CARDS,plural, =1{Bu kart Google Hesabınıza kaydedildi}other{Bu kartlar Google Hesabınıza kaydedildi}}</translation>
 <translation id="4305817255990598646">Anahtar</translation>
 <translation id="4312866146174492540">Engelle (varsayılan)</translation>
 <translation id="4325863107915753736">Makale bulunamadı</translation>
@@ -547,6 +549,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Uzantılarınızı devre dışı bırakmayı deneyin</translation>
 <translation id="457875822857220463">Teslimat</translation>
+<translation id="4582204425268416675">Kartı kaldır</translation>
 <translation id="4587425331216688090">Adres Chrome'dan kaldırılsın mı?</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> ile olan bağlantınız modern bir şifre seti kullanılarak şifrelendi.</translation>
 <translation id="4594403342090139922">Silmeyi &amp;Geri Al</translation>
@@ -594,6 +597,7 @@
 <translation id="4926049483395192435">Belirtilmelidir.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> web sitesinin mesajı</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943872375798546930">Sonuç yok</translation>
 <translation id="495170559598752135">İşlemler</translation>
 <translation id="4958444002117714549">Listeyi genişlet</translation>
 <translation id="4974590756084640048">Uyarıları yeniden etkinleştir</translation>
@@ -653,6 +657,7 @@
 <translation id="5344579389779391559">Bu sayfa sizden para almaya çalışabilir</translation>
 <translation id="5355557959165512791">Sertifikası iptal edildiği için <ph name="SITE" /> sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan, bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="536296301121032821">Politika ayarları saklanamadı</translation>
+<translation id="5363056109122666249">Chrome, oturumunuz açık olduğu için kartlarınızı Google Hesabınıza kaydetmeyi öneriyor. Bu davranışı ayarlardan değiştirebilirsiniz.</translation>
 <translation id="5371425731340848620">Kartı güncelle</translation>
 <translation id="5377026284221673050">"Saatiniz geri", "Saatiniz ileri" veya "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5384855140246857529">Kartlarınızı tüm cihazlarınızda kullanmak için oturum açın ve senkronizasyonu etkinleştirin.</translation>
@@ -723,7 +728,6 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" /> ile olan bağlantınız eski bir şifre seti kullanılarak şifrelendi.</translation>
 <translation id="5813119285467412249">Eklemeyi &amp;Yeniden Yap</translation>
 <translation id="5838278095973806738">Bu sitede hiçbir hassas bilginizi (örneğin şifrelerinizi veya kredi kartı bilgilerinizi) girmemelisiniz. Aksi takdirde bu bilgiler saldırganlar tarafından çalınabilir.</translation>
-<translation id="5844286946362376359"><ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> şartları ve koşulları, gizlilik politikası ve para çekme hakkı konusunda bilgi sahibiyim (okumak için işaretlemeden bırakın).</translation>
 <translation id="5863847714970149516">Gireceğiniz sayfa sizden para almaya çalışabilir</translation>
 <translation id="5866257070973731571">Telefon Numarası Ekleyin</translation>
 <translation id="5869405914158311789">Bu siteye ulaşılamıyor</translation>
@@ -756,6 +760,7 @@
 <translation id="6047233362582046994">Güvenliğinize ilişkin riskleri anladıysanız zararlı programlar kaldırılmadan önce <ph name="BEGIN_LINK" />bu siteyi ziyaret edebilirsiniz<ph name="END_LINK" />.</translation>
 <translation id="6047927260846328439">Bu içerik sizi kandırarak yazılım yüklemenizi veya kişisel bilgilerinizi ifşa etmenizi sağlamaya çalışabilir. <ph name="BEGIN_LINK" />Yine de göster<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923"><ph name="SITE" /> sitesi sertifika sabitleme yöntemi kullandığından siteyi şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
+<translation id="6058977677006700226">Kartlarınızı tüm cihazlarınızda kullanmak istiyor musunuz?</translation>
 <translation id="6059925163896151826">USB cihazları</translation>
 <translation id="6071091556643036997">Politika türü geçersiz.</translation>
 <translation id="6080696365213338172">Yönetici tarafından sağlanmış bir sertifika kullanan içeriğe eriştiniz. <ph name="DOMAIN" /> alan adına sağladığınız verileri yöneticiniz görebilir ve bunlara müdahale edebilir.</translation>
@@ -848,7 +853,6 @@
 <translation id="6865412394715372076">Bu kart şu anda doğrulanamıyor</translation>
 <translation id="6868206169573555318">Güncellemek için Yeniden Başlat</translation>
 <translation id="6874604403660855544">Eklemeyi &amp;yeniden yap</translation>
-<translation id="6885646002011712606">Otomatik doldurma asistanı, ekranın alt kısmına yakın bir yerde bulunur</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Politika düzeyi desteklenmiyor.</translation>
 <translation id="6895330447102777224">Kartınız onaylandı</translation>
@@ -875,6 +879,7 @@
 <translation id="7016992613359344582">Bu ödemeler bir defalık alınabileceği gibi yinelenen ödemeler de olabilir ve bu durum açıkça belli olmayabilir.</translation>
 <translation id="7029809446516969842">Şifreler</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" /> alan adına erişmeyi denediniz, ancak sunucu, geçerlilik dönemi güvenilir olmayacak kadar uzun olan bir sertifika sundu.</translation>
+<translation id="705310974202322020">{NUM_CARDS,plural, =1{Bu kart şu anda kaydedilemiyor}other{Bu kartlar şu anda kaydedilemiyor}}</translation>
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7064851114919012435">İletişim bilgileri</translation>
 <translation id="7079718277001814089">Bu site kötü amaçlı yazılım içeriyor</translation>
@@ -945,6 +950,7 @@ Ek ayrıntılar:
 <translation id="7451311239929941790">Bu sorun hakkında <ph name="BEGIN_LINK" />daha fazla<ph name="END_LINK" /> bilgi edinme.</translation>
 <translation id="7453467225369441013">Çoğu sitedeki oturumunuz kapatılır. Google Hesabınızdaki oturumunuz kapatılmaz.</translation>
 <translation id="7455133967321480974">Genel varsayılanı kullan (Engelle)</translation>
+<translation id="7460618730930299168">Filtreleme sizin seçiminizden farklı. Devam etmek istiyor musunuz?</translation>
 <translation id="7473891865547856676">Hayır, Teşekkürler</translation>
 <translation id="7481312909269577407">İleri</translation>
 <translation id="7485870689360869515">Hiçbir veri bulunamadı.</translation>
@@ -984,6 +990,7 @@ Ek ayrıntılar:
 <translation id="7681101578153515023">Arama Motorunu değiştir</translation>
 <translation id="7682287625158474539">Sevkiyat</translation>
 <translation id="7687186412095877299">Ödeme formlarını kayıtlı ödeme yöntemlerinizle doldurur</translation>
+<translation id="769721561045429135">Şu anda, yalnızca bu cihazda kullanılabilen kartlarınız var. Kartları incelemek için Devam'ı tıklayın.</translation>
 <translation id="7699293099605015246">Makaleler şu anda kullanılamıyor</translation>
 <translation id="7701040980221191251">Yok</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" /> sitesine ilerle (güvenli değil)<ph name="END_LINK" /></translation>
@@ -992,7 +999,6 @@ Ek ayrıntılar:
 <translation id="7716424297397655342">Bu site önbellekten yüklenemiyor</translation>
 <translation id="7723047071702270851">Kartı Düzenleyin</translation>
 <translation id="774634243536837715">Tehlikeli içerik engellendi.</translation>
-<translation id="7747182086178764941">Otomatik doldurma asistanının ilk çalıştırma ekranı gösteriliyor</translation>
 <translation id="7752995774971033316">Yönetimden kaldırıldı</translation>
 <translation id="7755287808199759310">Ebeveyniniz engellemeyi sizin için kaldırabilir</translation>
 <translation id="7758069387465995638">Bağlantıyı güvenlik duvarı veya virüsten korunma yazılımı engellemiş olabilir.</translation>
@@ -1046,9 +1052,11 @@ Ek ayrıntılar:
 <translation id="808894953321890993">Şifreyi değiştir</translation>
 <translation id="8091372947890762290">Etkinleştirme sunucuda bekliyor</translation>
 <translation id="8094917007353911263">Kullandığınız ağ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> adresini ziyaret etmenizi gerektiriyor olabilir.</translation>
+<translation id="8100588592594801589">Geçersiz kartlar kaldırıldı</translation>
 <translation id="8103161714697287722">Ödeme Yöntemi</translation>
 <translation id="8118489163946903409">Ödeme yöntemi</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" yazılımı bilgisayarınıza veya ağa düzgün şekilde yüklenmemiş. BT yöneticinizden sorunu çözmesini isteyin.</translation>
+<translation id="8130693978878176684">Daha fazla yardımcı olamıyorum, lütfen kendiniz devam edin.</translation>
 <translation id="8131740175452115882">Onayla</translation>
 <translation id="8149426793427495338">Bilgisayarınız uyku moduna geçti.</translation>
 <translation id="8150722005171944719"><ph name="URL" /> konumundaki dosya okunamıyor. Kaldırılmış ya da taşınmış olabilir veya dosya izinleri erişimi önlüyordur.</translation>
@@ -1213,6 +1221,7 @@ Ek ayrıntılar:
 <translation id="939736085109172342">Yeni klasör</translation>
 <translation id="945855313015696284">Aşağıdaki bilgileri kontrol edin ve geçersiz kartları silin</translation>
 <translation id="951104842009476243">Kabul Edilen Banka ve Ön Ödemeli Kartlar</translation>
+<translation id="960701843220172709">{NUM_CARDS,plural, =1{Kaydettiğiniz kartı oturumunuz açıkken kullanabilirsiniz. Aşağıdaki kart ve ona ait fatura adresi Google Hesabınıza kaydedilecektir.}other{Kaydettiğiniz kartları oturumunuz açıkken kullanabilirsiniz. Aşağıdaki kartlar ve onlara ait fatura adresleri Google Hesabınıza kaydedilecektir.}}</translation>
 <translation id="962484866189421427">Bu içerik başka bir şeyi taklit eden aldatıcı uygulamalar yükleyebilir veya sizi izlemek için kullanılabilecek veriler toplayabilir. <ph name="BEGIN_LINK" />Yine de göster<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Resmi Derleme</translation>
 <translation id="973773823069644502">Teslimat Adresi Ekle</translation>

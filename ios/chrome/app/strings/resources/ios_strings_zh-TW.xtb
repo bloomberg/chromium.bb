@@ -11,7 +11,6 @@
 <translation id="1112015203684611006">列印失敗。</translation>
 <translation id="1125564390852150847">新增分頁。</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
-<translation id="1157102636231978136">讓你的瀏覽資料和活動與你的 Google 帳戶保持同步</translation>
 <translation id="1165039591588034296">錯誤</translation>
 <translation id="1172898394251786223">下一個欄位</translation>
 <translation id="1176932207622159128">無法儲存圖片</translation>
@@ -65,7 +64,6 @@
 <translation id="1876721852596493031">傳送使用情況資料</translation>
 <translation id="1886928167269928266">不限時間</translation>
 <translation id="1911619930368729126">上傳至 Google 雲端硬碟</translation>
-<translation id="191179954310195971">其他 Google 服務</translation>
 <translation id="1941314575388338491">輕觸兩下即可複製。</translation>
 <translation id="1952728750904661634">使用受管理的帳戶登入</translation>
 <translation id="1974060860693918893">進階</translation>
@@ -272,7 +270,6 @@
 <translation id="5548760955356983418">有了 Handoff，您使用這個裝置開始瀏覽網站後，可輕鬆改用 Mac 繼續瀏覽。目前開啟的網站會自動顯示在 Mac 的 Dock 中。
 
 此外，您必須在 [設定] 的「一般設定」部分中啟用 Handoff，且您的裝置必須使用同一個 iCloud 帳戶。</translation>
-<translation id="5554368826343982379">同步處理和個人化</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5614553682702429503">要儲存密碼嗎？</translation>
 <translation id="5626245204502895507">目前無法下載這個檔案。</translation>

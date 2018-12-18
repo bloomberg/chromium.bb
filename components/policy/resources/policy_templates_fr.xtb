@@ -125,22 +125,13 @@
       La transition rapide reste active jusqu'à ce que vous la désactiviez en modifiant la règle.
 
       Si cette règle n'est pas configurée, la transition rapide n'est pas utilisée.
-      Si elle est définie sur "True", la transition rapide est utilisée lorsque le point d'accès sans fil est compatible.</translation>
+      Si elle est définie sur "True", la transition rapide est utilisée lorsque le point d'accès sans fil accepte cette fonctionnalité.</translation>
 <translation id="1243570869342663665">Contrôler le filtrage SafeSites des contenus réservés aux adultes.</translation>
 <translation id="1257550411839719984">Définir le répertoire de téléchargement par défaut</translation>
 <translation id="1265053460044691532">Limiter la durée pendant laquelle un utilisateur authentifié via SAML peut se connecter hors connexion</translation>
 <translation id="1291880496936992484">Avertissement : RC4 sera intégralement supprimé de <ph name="PRODUCT_NAME" /> après la version 52 (autour de septembre 2016) et cette règle ne sera plus valable.
 
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les suites de chiffrement RC4 dans TLS ne seront pas activées. La règle peut être définie sur "True" pour assurer la compatibilité avec un serveur obsolète. Il s'agit là d'une solution provisoire, et le serveur devrait être reconfiguré.</translation>
-<translation id="1297117713060236551">Cette règle contrôle la liste des sites Web qui n'entraîneront jamais de changement de navigateur.
-
-      Notez que vous pouvez ajouter des éléments à cette liste avec la règle <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Si cette règle n'est pas définie, aucun site Web n'est ajouté à la liste.
-
-      Si cette règle est définie, chaque élément est traité comme une instruction, à l'instar de la règle <ph name="URL_LIST_POLICY_NAME" />. Toutefois, la logique est inversée : les instructions correspondantes n'ouvrent pas d'autre navigateur.
-
-      Contrairement à <ph name="URL_LIST_POLICY_NAME" />, les instructions s'appliquent dans les deux sens. Autrement dit, si le module complémentaire Internet Explorer est présent et qu'il est activé, il détermine également si <ph name="IE_PRODUCT_NAME" /> doit ouvrir ces URL dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Utiliser un script de proxy .pac</translation>
 <translation id="1304973015437969093">Identifiants d'extension ou d'application et URL de mise à jour à installer en arrière-plan</translation>
 <translation id="1307415922184340052">Envoyez le nom d'utilisateur et le nom de fichier au serveur des imprimantes en natif avec chaque tâche d'impression. Le paramètre par défaut est de ne pas les envoyer.</translation>
@@ -163,6 +154,7 @@
 
       Si cette règle n'est pas configurée, le multiplexage des connexions HTTP/2 utilisant des certificats client n'est pas autorisé par défaut.</translation>
 <translation id="1353966721814789986">Pages d'accueil</translation>
+<translation id="1354424209129232709">Plage maximale :</translation>
 <translation id="1359553908012294236">Si cette règle est définie sur "True" ou n'est pas définie, <ph name="PRODUCT_NAME" /> autorisera les connexions en tant qu'invité. Les connexions en tant qu'invité correspondent à des profils <ph name="PRODUCT_NAME" /> où toutes les fenêtres s'ouvrent en mode navigation privée.
 
       Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'autorisera pas la création de profils d'invités.</translation>
@@ -805,6 +797,7 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
       Si cette règle n'est pas définie, <ph name="PRINTERS_ALLOW_ALL" /> est supposé s'appliquer.
       </translation>
 <translation id="2908277604670530363">Nombre maximal de connexions simultanées au serveur proxy</translation>
+<translation id="2952347049958405264">Restrictions :</translation>
 <translation id="2956777931324644324">Cette règle a été supprimée dès la version 36 de <ph name="PRODUCT_NAME" />.
 
       Elle indique si l'extension des certificats TLS liés au domaine doit être activée.
@@ -905,13 +898,6 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
           Si cette règle n'est pas configurée, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="3205825995289802549">Agrandir la première fenêtre du navigateur à la première exécution</translation>
 <translation id="3211426942294667684">Paramètres de connexion au navigateur</translation>
-<translation id="3213821784736959823">Définit si le client DNS intégré est utilisé dans <ph name="PRODUCT_NAME" />.
-
-      Si cette règle est définie sur "True", le client DNS intégré est utilisé, si disponible.
-
-      Si cette règle est définie sur "False", le client DNS intégré n'est jamais utilisé.
-
-      Si cette règle n'est pas configurée, l'utilisateur peut choisir si le client DNS intégré doit être utilisé ou non, soit en modifiant chrome://flags, soit à l'aide d'un indicateur de ligne de commande.</translation>
 <translation id="3214164532079860003">Lorsqu'elle est activée, cette règle force l'importation de la page d'accueil à partir du navigateur par défaut actuel. 
 
 Si elle est désactivée, la page d'accueil n'est pas importée. 
@@ -1050,19 +1036,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), les outils pour les développeurs sont inaccessibles et les éléments de sites Web ne peuvent plus être examinés. En outre, les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript sont désactivés.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
-<translation id="3556806727696701427">Active la fonctionnalité de navigation sécurisée de <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
-
-      Si vous activez ce paramètre, la navigation sécurisée est active en permanence.
-
-      Si vous désactivez ce paramètre, la navigation sécurisée n'est jamais active.
-
-      Si vous activez ou désactivez ce paramètre, les utilisateurs ne peuvent pas modifier ni remplacer le paramètre "Activer la protection contre le hameçonnage et les logiciels malveillants" dans <ph name="PRODUCT_NAME" />.
-
-      Si cette règle n'est pas configurée, la navigation sécurisée est activée, mais les utilisateurs peuvent modifier ce paramètre.
-
-      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.
-
-      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="3577251398714997599">Paramètre des annonces pour les sites présentant des annonces intrusives</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
 <translation id="3624171042292187668">
@@ -1481,6 +1454,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="465099050592230505">URL de boutique en ligne d'entreprise (abandonné)</translation>
 <translation id="4665897631924472251">Paramètres de gestion des extensions</translation>
 <translation id="4668325077104657568">Paramètres d'images par défaut</translation>
+<translation id="4670865688564083639">Plage minimale :</translation>
 <translation id="4671708336564240458">Vous permet de définir si les sites présentant une expérience abusive doivent être autorisés ou non à ouvrir de nouvelles fenêtres ou de nouveaux onglets.
 
       Si cette règle est définie sur True, les sites présentant une expérience abusive ne pourront pas ouvrir de nouvelles fenêtres ou de nouveaux onglets.
@@ -1865,17 +1839,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si cette règle n'est pas définie ou si elle est définie sur "False", les paramètres de vérification en ligne de la révocation sont utilisés dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5728154254076636808">Permet de créer des copies itinérantes pour les données de profil <ph name="PRODUCT_NAME" /></translation>
-<translation id="5728661376331491504">Cette règle contrôle la liste des sites Web à ouvrir dans un navigateur secondaire.
-
-      Notez que vous pouvez ajouter des éléments à cette liste avec la règle <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Si cette règle n'est pas définie, aucun site Web n'est ajouté à la liste.
-
-      Si cette règle est définie, chaque élément est traité comme une instruction pour un élément à ouvrir dans un navigateur secondaire. <ph name="PRODUCT_NAME" /> utilise ces instructions pour décider si une URL doit être ouverte dans un navigateur secondaire ou non.
-
-      Si le module complémentaire d'Internet Explorer est présent et activé, Internet Explorer rebascule sur <ph name="PRODUCT_NAME" /> lorsque les instructions ne concordent pas.
-
-      Si les instructions se contredisent, <ph name="PRODUCT_NAME" /> utilise l'instruction la plus spécifique.</translation>
 <translation id="5732972008943405952">Importer les données de saisie automatique du navigateur par défaut à la première exécution</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5770738360657678870">Version en développement (peut être instable)</translation>
@@ -1919,6 +1882,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
       Les URL (comme https://example.com/ce/chemin) ne sont reconnues que comme des identifiants d'application U2F. Les domaines (comme example.com) ne sont reconnus que comme des identifiants RP WebAuthn. Ainsi, pour couvrir à la fois les API U2F et WebAuthn d'un site donné, vous devez préciser l'URL et le domaine de l'identifiant d'application.</translation>
 <translation id="5836064773277134605">Restreindre la plage de ports UDP utilisés par l'hôte d'accès à distance</translation>
+<translation id="5861856285460256766">Configuration du code d'accès parental</translation>
 <translation id="5862253018042179045">Définir l'état par défaut de la fonctionnalité d'accessibilité de commentaires audio sur l'écran de connexion
 
           Si vous définissez cette règle sur "True", les commentaires audio sont activés à l'affichage de l'écran de connexion.
@@ -2372,13 +2336,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       REMARQUE : Cette règle ne s'applique qu'à Chrome sur les appareils Android possédant plus de 1 Go de RAM. Pour l'appliquer sur d'autres plates-formes, utilisez SitePerProcess.
       </translation>
-<translation id="6922040258551909078">
-      Si la règle est définie sur la valeur "true", les règles relatives au cloud ont priorité en cas de conflit avec celles de la machine.
-      Si la règle est définie sur la valeur "false" ou si elle n'est pas configurée, les règles de la machine ont priorité en cas de conflit avec celles du cloud.
-      Pour en savoir plus sur la priorité des règles, consultez la page https://support.google.com/chrome?p=set_chrome_policies_for_devices.
-
-      Cette règle n'est pas disponible sur les instances de Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.
-      </translation>
 <translation id="6922884955650325312">Bloquer le plug-in "<ph name="FLASH_PLUGIN_NAME" />"</translation>
 <translation id="6923366716660828830">Indique le nom du moteur de recherche par défaut. Si cette règle n'est pas configurée, le nom d'hôte spécifié par l'URL de recherche est utilisé. 
 
@@ -2453,14 +2410,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       </translation>
 <translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
 <translation id="7072208053150563108">Fréquence de modification du mot de passe machine</translation>
-<translation id="7074513465313721551">Configurez la liste des domaines de confiance pour la navigation privée. Cela signifie que, pour les domaines de cette liste :
-      la navigation privée ne recherchera pas la présence de ressources dangereuses (par exemple, hameçonnage, logiciels malveillants ou logiciels indésirables) si leur URL correspond à ces domaines ;
-      le service de protection des téléchargements de la navigation privée ne vérifiera pas les téléchargements hébergés sur ces domaines ;
-      le service de protection de mot de passe de la navigation privée ne contrôlera pas la réutilisation des mots de passe si l'URL de la page correspond à ces domaines.
-
-      Si ce paramètre est activé, la navigation privée fait confiance à ces domaines.
-      S'il est désactivé ou qu'il n'est pas configuré, la protection par défaut offerte par la navigation privée est appliquée à toutes les ressources.
-      Cette règle n'est pas disponible sur les instances de Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloquer les fenêtres pop-up sur ces sites</translation>
 <translation id="7085803328069945025">Cette règle permet de définir une liste de formats d'URL spécifiant les sites autorisés à demander à l'utilisateur l'accès à un périphérique USB.
 
@@ -2543,13 +2492,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Si vous ne définissez pas cette règle, la loupe est désactivée au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou la désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
 <translation id="7249828445670652637">Activer les certificats CA <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
-<translation id="725322441686394886">Si cette règle n'est pas configurée et si l'outil Chrome Cleanup détecte des logiciels indésirables, celui-ci peut envoyer à Google des métadonnées concernant l'analyse, conformément à la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demandera ensuite à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés. Ce dernier peut choisir de nous communiquer les résultats du nettoyage afin de nous aider à améliorer la détection de ces logiciels. Ces résultats comprennent des métadonnées de fichiers, des extensions installées automatiquement et des clés de registre, tel que décrit dans le livre blanc sur la confidentialité dans Google Chrome.
-
-      Si cette règle est désactivée et si Chrome Cleanup détecte des logiciels indésirables, aucune métadonnée sur l'analyse ne sera envoyée à Google, quelle que soit la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demandera à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés. Les résultats du nettoyage ne nous seront pas transmis et l'utilisateur n'aura pas non plus la possibilité de le faire.
-
-      Si cette règle est activée et si Chrome Cleanup détecte des logiciels indésirables, celui-ci peut envoyer à Google des métadonnées sur l'analyse conformément à la configuration de la règle SafeBrowsingExtendedReportingEnabled. Chrome Cleanup demandera à l'utilisateur s'il souhaite supprimer les logiciels indésirables détectés. Les résultats du nettoyage nous seront transmis, et l'utilisateur n'aura pas la possibilité d'empêcher cette transmission.
-
-      Cette règle n'est pas disponible pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Activer la protection des hôtes d'accès à distance</translation>
 <translation id="7260277299188117560">Mise à jour automatique avec connexion P2P activée</translation>
 <translation id="7261252191178797385">Image de fond d'écran de l'appareil</translation>
@@ -2647,11 +2589,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 
       Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="737655323154569539">Limite le format de la page d'impression. Si la règle n'est pas définie ou qu'elle est vide, on considère qu'il n'y a aucune restriction.</translation>
-<translation id="7417728346887499628">Si cette règle est désactivée, Chrome Cleanup ne peut pas analyser le système pour détecter les éventuels logiciels indésirables et les supprimer. Notez également que le déclenchement manuel de Chrome Cleanup depuis la page chrome://settings/cleanup est désactivé.
-
-      Si cette règle est activée ou si elle n'est pas configurée, Chrome Cleanup analyse régulièrement le système pour détecter les éventuels logiciels indésirables. Si Chrome Cleanup en trouve un, l'utilisateur devra confirmer s'il souhaite le supprimer. Notez également que le déclenchement manuel de Chrome Cleanup depuis la page chrome://settings est activé.
-
-      Cette règle n'est pas disponible pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Pourcentage d'adaptation du délai d'inactivité en mode Présentation (abandonné)</translation>
 <translation id="7421483919690710988">Définir la taille du cache du disque de support en octets</translation>
 <translation id="7424751532654212117">Liste des exceptions à la liste des plug-ins désactivés</translation>
@@ -2723,6 +2660,17 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si une extension ne figure pas dans la liste, ou si la liste n'est pas définie, l'appel vers l'API échoue, et un code d'erreur est renvoyé.</translation>
 <translation id="7618907117929117943">Rétablissez et conservez la version cible si elle est antérieure à la version de l'OS et qu'il est possible de conserver la configuration de l'appareil (y compris les identifiants réseau) par ce biais, tout en ignorant OOBE après la restauration. Si cela n'est pas possible, n'effectuez pas et n'annulez pas la restauration (car la version cible n'est pas compatible avec la restauration de données ou en raison d'une modification incompatible avec la restauration).
           Compatible avec la version 70 et les versions ultérieures de <ph name="PRODUCT_OS_NAME" />. Pour les clients plus anciens, cette valeur signifie que la restauration est désactivée.</translation>
+<translation id="7620869951155758729">Cette règle définit la configuration utilisée pour générer et validerle code d'accès parental.
+
+      |current_config| est toujours utilisée pour générer le code d'accès et ne doit être employée pour valider le code d'accès que lorsque ce dernier ne peut pas être validé avec |future_config|.
+|future_config| est la configuration principale utilisée pour valider le code d'accès.
+      |old_configs| ne doit être utilisée pour valider le code d'accès que si ce dernier ne peut pas être validé avec |future_config| ni avec |current_config|.
+
+On attend de cette règle qu'elle soit utilisée dans le cadre de la modification progressive de la configuration du code d'accès. La nouvelle configuration est toujours enregistrée dans |future_config| et, simultanément, la valeur existante est déplacée vers |current_config|. Les valeurs précédentes de |current_config| sont déplacées vers |old_configs|, puis supprimées au terme du cycle de rotation.
+
+      Cette règle s'applique uniquement aux enfants.
+      Lorsque cette règle est activée, le code d'accès parental peut être validé sur l'appareil d'un enfant.
+      Lorsqu'elle est désactivée, il est impossible de valider ce code sur l'appareil d'un enfant.</translation>
 <translation id="7625444193696794922">Indique le canal de distribution sur lequel cet appareil devrait être verrouillé.</translation>
 <translation id="7632724434767231364">Nom de la bibliothèque GSSAPI</translation>
 <translation id="7635471475589566552">Configure les paramètres régionaux de l'application dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ces paramètres. 
@@ -3092,12 +3040,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Désactiver l'enregistrement de l'historique du navigateur</translation>
-<translation id="8498293625012059298">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe dirigera les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
-      Afin que <ph name="PRODUCT_NAME" /> enregistre correctement la nouvelle empreinte numérique du mot de passe sur la page de modification de ce dernier, vérifiez si cette page respecte bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si ce paramètre est activé, le service de protection par mot de passe dirigera les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
-      Si ce paramètre est désactivé ou n'est pas défini, le service de protection par mot de passe dirigera les utilisateurs vers la page https://myaccounts.google.com afin que ces derniers modifient leur mot de passe.
-      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Paramètres par défaut (les utilisateurs peuvent les contourner)</translation>
 <translation id="8507835864888987300">Définit une version cible pour les mises à jour automatiques.
 
@@ -3330,12 +3272,6 @@ indique uniquement les imprimantes qui peuvent être choisies.
 <translation id="8976248126101463034">Autoriser l'authentification gnubby pour les hôtes d'accès à distance</translation>
 <translation id="8976531594979650914">Utiliser l'imprimante système par défaut</translation>
 <translation id="8992176907758534924">Interdire à tous les sites d'afficher des images</translation>
-<translation id="9012851181124311976">Permet de configurer la liste des URL de connexion d'entreprise (protocoles HTTP et HTTPS uniquement). L'empreinte numérique du mot de passe est enregistrée au niveau de ces URL et sert à détecter les mots de passe réutilisés.
-      Afin que <ph name="PRODUCT_NAME" /> enregistre correctement les empreintes numériques de vos mots de passe, vérifiez que vos pages de connexion respectent bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si cette règle est activée, le service de protection par mot de passe enregistre l'empreinte numérique du mot de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
-      Si cette règle est désactivée ou n'est pas configurée, le service de protection par mot de passe n'enregistre l'empreinte numérique du mot de passe que sur https://accounts.google.com.
-      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
 <translation id="9042911395677044526">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert, décrit sous <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="906631898352326790">

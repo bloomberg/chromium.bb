@@ -118,15 +118,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1291880496936992484">Avviso. RC4 sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo di settembre 2016), dopodiché questa norma non sarà più attiva.
 
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia RC4 in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.</translation>
-<translation id="1297117713060236551">Questa norma consente di stabilire l'elenco di siti web che non provocano mai il cambio di browser.
-
-      Puoi anche aggiungere elementi all'elenco tramite la norma <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Se questa norma non viene impostata, nessun sito web viene aggiunto all'elenco.
-
-      Se questa norma viene impostata, ogni elemento è considerato come una regola, in modo simile alla norma <ph name="URL_LIST_POLICY_NAME" />. Tuttavia, la logica funziona al contrario: le regole con una corrispondenza non aprono un browser alternativo.
-
-      A differenza della norma <ph name="URL_LIST_POLICY_NAME" />, le regole vengono applicate in entrambe le direzioni. In altre parole, quando il componente aggiuntivo Internet Explorer è presente e attivato, la norma stabilisce se <ph name="IE_PRODUCT_NAME" /> deve aprire questi URL in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Utilizza uno script proxy .pac</translation>
 <translation id="1304973015437969093">ID app/estensioni e URL di aggiornamento da installare automaticamente</translation>
 <translation id="1307415922184340052">Invia nome utente e nome file al server delle stampanti native per ogni processo di stampa. L'impostazione predefinita non prevede l'invio.</translation>
@@ -148,6 +139,7 @@ Le richieste di coalescenza indirizzate a diversi host tra connessioni che utili
 
 Se questa norma non viene impostata, verrà applicato il comportamento predefinito che non consente la coalescenza di connessioni HTTP/2 per le connessioni che utilizzano certificati client.</translation>
 <translation id="1353966721814789986">Pagine di avvio</translation>
+<translation id="1354424209129232709">Massimo:</translation>
 <translation id="1359553908012294236">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_NAME" /> verranno attivati gli accessi come ospite, che sono profili <ph name="PRODUCT_NAME" /> in cui tutte le finestre sono in modalità di navigazione in incognito.
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_NAME" /> non sarà possibile avviare profili ospite.</translation>
@@ -744,6 +736,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se questa norma non viene impostata, viene usata l'opzione <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Numero massimo di connessioni simultanee al server proxy</translation>
+<translation id="2952347049958405264">Limitazioni:</translation>
 <translation id="2956777931324644324">Questa norma è stata ritirata a partire dalla versione 36 di <ph name="PRODUCT_NAME" />.
 
       Consente di specificare se attivare o meno l'estensione di certificati associati al dominio TLS.
@@ -839,13 +832,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Se la norma non viene impostata, gli utenti possono scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="3205825995289802549">Ingrandisci la prima finestra del browser alla prima esecuzione</translation>
 <translation id="3211426942294667684">Impostazioni di accesso al browser</translation>
-<translation id="3213821784736959823">Controlla se il client DNS integrato è in uso in <ph name="PRODUCT_NAME" />.
-
-      Se il criterio è impostato su True, verrà utilizzato il client DNS integrato, se disponibile.
-
-      Se il criterio è impostato su False, il client DNS integrato non verrà mai utilizzato.
-
-      Se il criterio non viene impostato, gli utenti saranno in grado di scegliere se il client DNS integrato è utilizzato modificando chrome://flags o specificando un flag della riga di comando.</translation>
 <translation id="3214164532079860003">Se è attiva, questa norma impone l'importazione della pagina iniziale dal browser predefinito corrente. Se non è attiva, la pagina iniziale non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="3219421230122020860">Modalità di navigazione in incognito disponibile</translation>
 <translation id="3220624000494482595">Se l'app kiosk è un'app Android, non avrà controllo sulla versione di <ph name="PRODUCT_OS_NAME" />, anche se la norma viene impostata su <ph name="TRUE" />.</translation>
@@ -978,19 +964,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se questa norma viene impostata su "DeveloperToolsDisallowed" (valore 2), gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile esaminare gli elementi del sito web. Le eventuali scorciatoie da tastiera e le voci dei menu contestuali o di altri menu che consentono di aprire gli Strumenti per sviluppatori o la console JavaScript verranno disattivate.</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
 <translation id="355118380775352753">Siti web da aprire in un browser alternativo</translation>
-<translation id="3556806727696701427">Attiva la funzione Navigazione sicura di <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
-
-      Se attivi questa impostazione, la Navigazione sicura è sempre attiva.
-
-      Se la disattivi, la Navigazione sicura non è mai attiva.
-
-      Se attivi o disattivi l'impostazione, gli utenti non possono modificare o sostituire l'opzione "Attiva protezione contro phishing e malware" in <ph name="PRODUCT_NAME" />.
-
-      Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utenti potranno modificarla.
-
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.
-
-      Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="3577251398714997599">Impostazione annunci per i siti con annunci invasivi</translation>
 <translation id="3591584750136265240">Configura il comportamento di autenticazione dell'accesso</translation>
 <translation id="3624171042292187668">
@@ -1388,6 +1361,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="465099050592230505">URL del web store dell'azienda (obsoleta)</translation>
 <translation id="4665897631924472251">Impostazioni di gestione delle estensioni</translation>
 <translation id="4668325077104657568">Impostazione immagini predefinite</translation>
+<translation id="4670865688564083639">Minimo:</translation>
 <translation id="4671708336564240458">Ti consente di determinare se evitare l'apertura di nuove finestre o schede da parte di siti con esperienze intrusive.
 
       Se questa norma è impostata su True, verrà evitata l'apertura di nuove finestre o schede da parte di siti con esperienze intrusive.
@@ -1740,17 +1714,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se questa norma non viene impostata o se viene impostata su false, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni di controllo delle revoche online esistenti.</translation>
 <translation id="5728154254076636808">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" /></translation>
-<translation id="5728661376331491504">Questa norma consente di stabilire l'elenco di siti web da aprire in un browser alternativo.
-
-      Puoi anche aggiungere elementi all'elenco tramite la norma <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-      Se questa norma non viene impostata, nessun sito web viene aggiunto all'elenco.
-
-      Se questa norma viene impostata, ogni elemento è considerato come una regola per aprire qualcosa in un browser alternativo. <ph name="PRODUCT_NAME" /> utilizza queste regole quando deve scegliere se aprire un URL in un browser alternativo.
-
-      Quando il componente aggiuntivo Internet Explorer è presente e attivato, Internet Explorer torna a <ph name="PRODUCT_NAME" /> se non c'è corrispondenza tra le regole.
-
-      Se le regole si contraddicono a vicenda, <ph name="PRODUCT_NAME" /> usa quella più specifica.</translation>
 <translation id="5732972008943405952">Importa i dati della Compilazione automatica dei moduli dal browser predefinito alla prima esecuzione</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
 <translation id="5770738360657678870">Canale Dev (potrebbe essere instabile)</translation>
@@ -1788,6 +1751,7 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
 
       Gli URL (ad esempio https://example.com/some/path) corrisponderanno soltanto ad appID U2F. I domini (come example.com) corrisponderanno soltanto a ID RP webauthn. Di conseguenza, per includere entrambe le API U2F e webauthn per un determinato sito, devono essere elencati sia il dominio sia l'URL appID.</translation>
 <translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
+<translation id="5861856285460256766">Configurazione codice di accesso genitori</translation>
 <translation id="5862253018042179045">Consente di impostare lo stato predefinito della funzione di accessibilità di lettura vocale nella schermata di accesso.
 
 Se questa norma viene impostata su true, la lettura vocale viene attivata quando viene visualizzata la schermata di accesso.
@@ -2228,13 +2192,6 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
 
       NOTA: questa norma viene applicata solo a Chrome su dispositivi Android con più di 1 GB di RAM. Per applicare la norma su piattaforme non Android, utilizza SitePerProcess.
       </translation>
-<translation id="6922040258551909078">
-      Se la norma è impostata su true, la norma cloud ha la precedenza in caso di conflitto con la norma della macchina.
-      Se la norma è impostata su false o non è configurata, la norma della macchina ha la precedenza in caso di conflitto con la norma cloud.
-      Per ulteriori informazioni riguardo alla priorità delle norme, visita il sito all'indirizzo: https://support.google.com/chrome?p=set_chrome_policies_for_devices
-
-      Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.
-      </translation>
 <translation id="6922884955650325312">Blocca il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Consente di specificare il nome del provider di ricerca predefinito. Se il nome non viene impostato verrà utilizzato il nome host specificato nell'URL di ricerca. Questa norma viene considerata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="6926703471186170050">Attiva la stampa fronte/retro su lato lungo</translation>
@@ -2300,13 +2257,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       </translation>
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7072208053150563108">Frequenza di modifica della password del computer</translation>
-<translation id="7074513465313721551">Configura l'elenco dei domini che Navigazione sicura ritiene affidabili. Ciò significa che Navigazione sicura non controllerà la presenza di risorse pericolose (ad es. phishing, malware o software indesiderato) se i rispettivi URL corrispondono a questi domini.
-      Il servizio di protezione dei download di Navigazione sicura non controllerà i download ospitati su questi domini.
-      Il servizio di protezione tramite password di Navigazione sicura non controllerà il riutilizzo della password se l'URL della pagina corrisponde a questi domini.
-
-      Se questa impostazione è attivata, Navigazione sicura considererà questi domini affidabili.
-      Se questa impostazione è disattivata o non impostata, a tutte le risorse verrà applicata la protezione predefinita di Navigazione sicura.
-      Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blocca popup su questi siti</translation>
 <translation id="7085803328069945025">Consente di impostare un elenco di pattern URL che specificano i siti che possono richiedere all'utente l'accesso al dispositivo USB.
 
@@ -2385,13 +2335,6 @@ Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attiva
 
 Se la norma non viene impostata, l'ingrandimento dello schermo viene disattivato alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare l'ingrandimento dello schermo in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
 <translation id="7249828445670652637">Attiva i certificati CA <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
-<translation id="725322441686394886">Se questa norma non viene impostata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base alla norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà poi all'utente se vuole ripulire il software indesiderato. L'utente potrà decidere di condividere i risultati della pulizia con Google per contribuire a rilevare software indesiderato in futuro. Questi risultati contengono metadati di file, estensioni installate automaticamente e chiavi del registro di sistema, come spiegato nel Whitepaper sulla privacy di Chrome.
-
-      Se la norma viene disattivata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google non verranno segnalati metadati relativi alla scansione, ignorando qualsiasi norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà all'utente se vuole ripulire il software indesiderato. I risultati della pulizia non verranno segnalati a Google e l'utente non avrà la possibilità di segnalarli.
-
-      Se la norma viene attivata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base alla norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà all'utente se vuole ripulire il software indesiderato. I risultati della pulizia verranno segnalati a Google e l'utente non avrà la possibilità di impedire la segnalazione. 
-
-      Questa norma non è disponibile sulle istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Attiva separazione degli host di accesso remoto</translation>
 <translation id="7260277299188117560">Aggiornamento automatico p2p attivato</translation>
 <translation id="7261252191178797385">Immagine di sfondo del dispositivo</translation>
@@ -2487,11 +2430,6 @@ Questa norma consente agli amministratori di fornire configurazioni delle stampa
 
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="737655323154569539">Consente di limitare le dimensioni delle pagine di stampa. Se la norma non viene impostata o viene lasciata vuota non vengono applicate limitazioni.</translation>
-<translation id="7417728346887499628">Se questa norma viene disattivata, Chrome Software Cleaner non potrà eseguire la scansione del sistema per individuare eventuale software indesiderato e ripulire il sistema. L'attivazione manuale di Chrome Software Cleaner da chrome://settings/cleanup viene disattivata.
-
-      Se la norma viene attivata o non viene impostata, Chrome Software Cleaner eseguirà periodicamente la scansione del sistema per individuare eventuale software indesiderato e, qualora fosse presente, chiederà all'utente se vuole rimuoverlo. L'attivazione manuale di Chrome Software Cleaner da chrome://settings viene attivata.
-
-      Questa norma non è disponibile sulle istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Percentuale di regolazione del ritardo di inattività in modalità di presentazione (obsoleta)</translation>
 <translation id="7421483919690710988">Imposta le dimensioni della cache su disco multimediale in byte</translation>
 <translation id="7424751532654212117">Elenco delle eccezioni all'elenco dei plug-in disattivati</translation>
@@ -2559,6 +2497,18 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
           Se un'estensione non è presente nell'elenco o l'elenco non è impostato, la chiamata all'API non va a buon fine e viene generato un codice di errore.</translation>
 <translation id="7618907117929117943">Esegui il rollback e rimani nella versione target se la versione del sistema operativo è più recente di quella target ed è possibile trasferire la configurazione a livello di dispositivo (incluse le credenziali di rete) tramite il rollback, saltando anche l'OOBE dopo il rollback. Non eseguire o interrompere il rollback se non è possibile (perché la versione target non supporta il ripristino dei dati o a causa di una modifica non compatibile con le versioni precedenti).
           Supportato su <ph name="PRODUCT_OS_NAME" /> 70 e versioni successive. Per i client precedenti, questo valore indica che il rollback è disattivato.</translation>
+<translation id="7620869951155758729">Questa norma consente di specificare la configurazione utilizzata per generare e verificare il codice di accesso genitori.
+
+      La configurazione |current_config| viene sempre utilizzata per generare un codice di accesso e deve essere utilizzata per convalidare il codice di accesso solo quando non può essere convalidato con |future_config|.
+     La configurazione |future_config| è la configurazione principale utilizzata per la convalida del codice di accesso.
+      La configurazione |old_configs| deve essere utilizzata per convalidare il codice di accesso quando non può essere convalidato né con |future_config| né con |current_config|.
+
+      La modalità di utilizzo prevista per questa norma consiste nella rotazione graduale della configurazione del codice di accesso. La nuova configurazione è sempre all'interno di |future_config| e allo stesso
+      tempo il valore esistente viene spostato in |current_config|. I valori precedenti della configurazione |current_config| vengono spostati all'interno di |old_configs| e rimossi al termine del ciclo di rotazione.
+
+      Questa norma viene applicata solo agli utenti che sono bambini o ragazzi.
+      Quando questa norma è impostata, il codice di accesso genitori può essere verificato sul dispositivo dell'utente bambino o ragazzo.
+      Quando questa norma è non è impostata, non è possibile verificare il codice di accesso genitori sul dispositivo dell'utente bambino o ragazzo.</translation>
 <translation id="7625444193696794922">Consente di specificare il canale di rilascio su cui deve essere bloccato questo dispositivo.</translation>
 <translation id="7632724434767231364">Nome della libreria GSSAPI</translation>
 <translation id="7635471475589566552">Consente di configurare in <ph name="PRODUCT_NAME" /> le impostazioni della lingua e di impedirne la modifica agli utenti. Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni della lingua specificate. Se la lingua configurata non è supportata, verrà utilizzata la lingua "en-US". Se questa impostazione viene disattivata o non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà la lingua preferita specificata dall'utente (se configurata), quella del sistema o la lingua di fallback "en-US".</translation>
@@ -2916,11 +2866,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
           Per avere pattern di esempio, visita il sito https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Disabilita salvataggio della cronologia del browser</translation>
-<translation id="8498293625012059298">Configura l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password indirizzerà gli utenti a questo URL dopo la visualizzazione di un avviso nel browser perché modifichino la loro password.
-      Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente l'impronta digitale della nuova password in questa pagina di modifica della password, assicurati che la pagina di modifica della password che stai utilizzando rispetti le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-      Se questa impostazione è attiva, il servizio di protezione tramite password indirizza gli utenti a questo URL per modificare la password, dopo la visualizzazione di un avviso nel browser.
-      Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password indirizzerà gli utenti alla pagina https://myaccounts.google.com per modificare la password.
-      Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="8499172469244085141">Impostazioni predefinite (gli utenti possono ignorarle)</translation>
 <translation id="8507835864888987300">Consente di impostare una versione target per gli Aggiornamenti automatici.
 
@@ -3122,12 +3067,6 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="8976248126101463034">Consenti l'autenticazione Gnubby per gli host di accesso remoto</translation>
 <translation id="8976531594979650914">Usa stampante di sistema come predefinita</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
-<translation id="9012851181124311976">Configura l'elenco di URL di accesso aziendali (solo schemi HTTP e HTTPS). L'impronta digitale della password sarà acquisita su questi URL e utilizzata successivamente per il rilevamento del riutilizzo della password.
-      Affinché <ph name="PRODUCT_NAME" /> possa acquisire correttamente le impronte digitali delle password, assicurati che le pagine di accesso rispettino le linee guida all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se questa impostazione è attiva, il servizio di protezione tramite password acquisisce l'impronta della password su questi URL ai fini del rilevamento del riutilizzo della password.
-      Se questa impostazione è disattiva o non configurata, il servizio di protezione tramite password acquisirà l'impronta della password solo all'indirizzo https://accounts.google.com.
-      Questa norma non è disponibile su istanze Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="906631898352326790">

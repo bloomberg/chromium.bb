@@ -24,6 +24,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="1520828917794284345">Ubah saiz desktop supaya sesuai</translation>
 <translation id="154040539590487450">Gagal memulakan perkhidmatan akses jauh.</translation>
 <translation id="1546934824884762070">Ralat yang tidak dijangka telah berlaku. Sila laporkan masalah ini kepada pembangun.</translation>
+<translation id="1624185583382384493">Desktop Jauh Chrome kini tersedia di web. Cuba <ph name="LINK_BEGIN" />apl web<ph name="LINK_END" /> kami—apl ini pantas dan percuma, dengan lebih banyak ciri, termasuk sokongan yang dipertingkatkan untuk berbilang monitor.</translation>
 <translation id="1643640058022401035">Tindakan meninggalkan halaman ini akan menamatkan sesi Chromoting anda.</translation>
 <translation id="1654128982815600832">Mendayakan sambungan jauh untuk komputer ini…</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
@@ -242,6 +243,7 @@ Untuk mendayakan fungsian ini, pilih '<ph name="BUTTON_NAME" />' untuk mendapatk
 <translation id="6198252989419008588">Tukar PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (sudah lapuk)</translation>
 <translation id="6221358653751391898">Anda tidak log masuk ke Chrome. Sila log masuk dan cuba lagi.</translation>
+<translation id="6227369581881558336">Desktop Jauh Chrome kini tersedia di web dengan ciri baharu, termasuk pemindahan fail! Lihat <ph name="LINK_BEGIN" />apl web<ph name="LINK_END" /> kami.</translation>
 <translation id="6284412385303060032">Hos yang berjalan pada skrin logik konsol telah ditutup untuk menyokong mod tirai dengan menukar kepada hos yang berjalan dalam sesi khusus pengguna.</translation>
 <translation id="629730747756840877">Akaun</translation>
 <translation id="6304318647555713317">Klien</translation>

@@ -24,6 +24,7 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="1520828917794284345">Prispôsobiť veľkosť pracovnej plochy obrazovke klienta</translation>
 <translation id="154040539590487450">Spustenie služby vzdialeného prístupu zlyhalo.</translation>
 <translation id="1546934824884762070">Vyskytla sa neočakávaná chyba. Nahláste tento problém vývojárom.</translation>
+<translation id="1624185583382384493">Vzdialená plocha Chrome je teraz k dispozícii na internete. Vyskúšajte našu <ph name="LINK_BEGIN" />webovú aplikáciu<ph name="LINK_END" />. Je rýchla, zdarma a obsahuje ešte viac funkcií vrátane vylepšenej podpory viacerých monitorov.</translation>
 <translation id="1643640058022401035">Ak opustíte túto stránku, relácia aplikácie Chromoting sa ukončí.</translation>
 <translation id="1654128982815600832">Prebieha povoľovanie vzdialených pripojení pre tento počítač...</translation>
 <translation id="170207782578677537">Registrácia tohto počítača zlyhala.</translation>
@@ -242,6 +243,7 @@ Túto funkciu povolíte tak, že si tlačidlom <ph name="BUTTON_NAME" /> zobraz�
 <translation id="6198252989419008588">Zmeniť PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (zastarané)</translation>
 <translation id="6221358653751391898">Nie ste prihlásený/-á do prehliadača Chrome. Prihláste sa a skúste to znova.</translation>
+<translation id="6227369581881558336">Vzdialená plocha Chrome je teraz k dispozícii na internete s novými funkciami vrátane prenosu súborov! Vyskúšajte našu <ph name="LINK_BEGIN" />webovú aplikáciu<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Hostiteľ spustený na obrazovke logiky konzoly bol ukončený, aby sa tým zaistil režim opony (curtain mode), a to prepnutím na hostiteľa spúšťaného v relácii konkrétneho používateľa</translation>
 <translation id="629730747756840877">Účet</translation>
 <translation id="6304318647555713317">Klient</translation>

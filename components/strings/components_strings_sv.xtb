@@ -175,6 +175,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 förslag}other{# förslag}}</translation>
 <translation id="2079545284768500474">Ångra</translation>
 <translation id="20817612488360358">Datorns proxyinställningar är inställda på att användas, men det finns också en explicit proxykonfiguration.</translation>
+<translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2091887806945687916">Ljud</translation>
 <translation id="2094505752054353250">Domänen matchar inte</translation>
 <translation id="2096368010154057602">Departement</translation>
@@ -182,7 +183,6 @@
 <translation id="2108755909498034140">Starta om datorn</translation>
 <translation id="2113977810652731515">Kort</translation>
 <translation id="2114841414352855701">Ignoreras eftersom den åsidosätts av <ph name="POLICY_NAME" />.</translation>
-<translation id="2129308444951592399">Användarvillkor</translation>
 <translation id="213826338245044447">Bokmärken i mobilen</translation>
 <translation id="214556005048008348">Avbryt betalningen</translation>
 <translation id="2147827593068025794">Bakgrundssynkronisering</translation>
@@ -244,6 +244,7 @@
 <translation id="2501278716633472235">Föregående</translation>
 <translation id="2503184589641749290">Godkända betalkort och förbetalda kort</translation>
 <translation id="2515629240566999685">kontrollera mottagningen i området</translation>
+<translation id="2523886232349826891">Endast sparat på den här enheten</translation>
 <translation id="2524461107774643265">Lägg till mer information</translation>
 <translation id="2536110899380797252">Lägg till adress</translation>
 <translation id="2539524384386349900">Identifiera</translation>
@@ -519,6 +520,7 @@
 <translation id="4275830172053184480">Starta om enheten</translation>
 <translation id="4277028893293644418">Återställ lösenord</translation>
 <translation id="4280429058323657511">, utgångsdatum <ph name="EXPIRATION_DATE_ABBR" /></translation>
+<translation id="428639260510061158">{NUM_CARDS,plural, =1{Det här kortet har sparats i ditt Google-konto}other{De här korten har sparats i ditt Google-konto}}</translation>
 <translation id="4305817255990598646">Byt</translation>
 <translation id="4312866146174492540">Blockera (standard)</translation>
 <translation id="4325863107915753736">Det gick inte att hitta artikeln</translation>
@@ -547,6 +549,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Testa att inaktivera tilläggen.</translation>
 <translation id="457875822857220463">Leverans</translation>
+<translation id="4582204425268416675">Ta bort kort</translation>
 <translation id="4587425331216688090">Vill du ta bort adressen från Chrome?</translation>
 <translation id="4592951414987517459">Anslutningen till <ph name="DOMAIN" /> är krypterad med en modern krypteringssvit.</translation>
 <translation id="4594403342090139922">&amp;Ångra Ta bort</translation>
@@ -594,6 +597,7 @@
 <translation id="4926049483395192435">Värdet måste anges.</translation>
 <translation id="4926159001844873046">Från <ph name="SITE" />:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4943872375798546930">Inga resultat</translation>
 <translation id="495170559598752135">Åtgärder</translation>
 <translation id="4958444002117714549">Expandera lista</translation>
 <translation id="4974590756084640048">Aktivera varningar igen</translation>
@@ -653,6 +657,7 @@
 <translation id="5344579389779391559">Den här sidan kan försöka debitera dig</translation>
 <translation id="5355557959165512791">Det går inte att besöka <ph name="SITE" /> just nu eftersom dess certifikat har återkallats. Nätverksfel och attacker är ofta tillfälliga, så sidan kommer förmodligen att fungera senare.</translation>
 <translation id="536296301121032821">Det gick inte att spara policyinställningarna</translation>
+<translation id="5363056109122666249">Du erbjuds av Chrome att spara dina kort i Google-kontot eftersom du är inloggad. Du kan ändra detta i inställningarna.</translation>
 <translation id="5371425731340848620">Uppdatera kortet</translation>
 <translation id="5377026284221673050">Klockan går efter, Klockan går före eller &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;</translation>
 <translation id="5384855140246857529">Logga in och aktivera synkronisering så kan du använda korten på alla enheter.</translation>
@@ -723,7 +728,6 @@
 <translation id="5810442152076338065">Anslutningen till <ph name="DOMAIN" /> är krypterad med en gammal krypteringssvit.</translation>
 <translation id="5813119285467412249">&amp;Gör om Lägg till</translation>
 <translation id="5838278095973806738">Du bör inte ange några känsliga uppgifter på den här webbplatsen (till exempel lösenord eller kreditkortsuppgifter) eftersom hackare kan stjäla dem.</translation>
-<translation id="5844286946362376359">Jag känner till användarvillkor, sekretesspolicy och ångerrätt hos <ph name="BEGIN_BOLD" /><ph name="ORIGIN" /><ph name="END_BOLD" /> (låt detta vara avmarkerat om du vill läsa dem).</translation>
 <translation id="5863847714970149516">Sidan du är på väg till kan försöka debitera dig</translation>
 <translation id="5866257070973731571">Ange telefonnummer</translation>
 <translation id="5869405914158311789">Webbplatsen kan inte nås</translation>
@@ -756,6 +760,7 @@
 <translation id="6047233362582046994">Om du är medveten om säkerhetsriskerna kan du <ph name="BEGIN_LINK" />besöka webbplatsen<ph name="END_LINK" /> innan de skadliga apparna har tagits bort.</translation>
 <translation id="6047927260846328439">Sidan kan ha till syfte att försöka lura dig att installera programvara eller avslöja personliga uppgifter. <ph name="BEGIN_LINK" />Visa ändå<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Du kan inte besöka <ph name="SITE" /> just nu eftersom tekniken att fästa certifikat används på webbplatsen. Nätverksfel och attacker är ofta tillfälliga, så sidan kommer förmodligen att fungera senare.</translation>
+<translation id="6058977677006700226">Vill du använda dina kort på alla enheter?</translation>
 <translation id="6059925163896151826">USB-enheter</translation>
 <translation id="6071091556643036997">Ogiltig policytyp.</translation>
 <translation id="6080696365213338172">Du har visat innehåll med hjälp av ett certifikat från en administratör. Det innebär att data som du har angett på <ph name="DOMAIN" /> även kan visas av administratören.</translation>
@@ -848,7 +853,6 @@
 <translation id="6865412394715372076">Det går inte att verifiera kortet just nu</translation>
 <translation id="6868206169573555318">Starta om för att uppdatera</translation>
 <translation id="6874604403660855544">&amp;Gör om Lägg till</translation>
-<translation id="6885646002011712606">Du hittar Autofyll-assistenten nära skärmens nederkant</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" />, <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Policynivån stöds inte.</translation>
 <translation id="6895330447102777224">Kortet har bekräftats</translation>
@@ -875,6 +879,7 @@
 <translation id="7016992613359344582">Debiteringen kan göras en gång eller återkommande och det behöver inte framgå tydligt att detta händer.</translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="7050187094878475250">Du försökte nå <ph name="DOMAIN" />, men servern svarade med ett certifikat vars giltighetstid är för lång för att det ska vara trovärdigt.</translation>
+<translation id="705310974202322020">{NUM_CARDS,plural, =1{Det går inte att lägga till det här kortet just nu}other{Det går inte att lägga till de här korten just nu}}</translation>
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7064851114919012435">Kontaktuppgifter</translation>
 <translation id="7079718277001814089">Webbplatsen innehåller skadlig programvara.</translation>
@@ -945,6 +950,7 @@ Mer information.
 <translation id="7451311239929941790"><ph name="BEGIN_LINK" />att läsa mer<ph name="END_LINK" /> om det här problemet.</translation>
 <translation id="7453467225369441013">Du loggas ut från de flesta webbplatser. Du loggas inte ut från Google-kontot.</translation>
 <translation id="7455133967321480974">Använd global standardinställning (Blockera)</translation>
+<translation id="7460618730930299168">Visningen skiljer sig från den du valde. Vill du fortsätta?</translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="7485870689360869515">Ingen data hittades.</translation>
@@ -984,6 +990,7 @@ Mer information.
 <translation id="7681101578153515023">Ändra sökmotor</translation>
 <translation id="7682287625158474539">Frakt</translation>
 <translation id="7687186412095877299">Fyller i sparade betalningsmetoder i betalningsformulär</translation>
+<translation id="769721561045429135">Du har för närvarande kort som bara kan användas på den här enheten. Klicka på Fortsätt om du vill granska korten.</translation>
 <translation id="7699293099605015246">Inga artiklar är tillgängliga just nu</translation>
 <translation id="7701040980221191251">Inget</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsätt till <ph name="SITE" /> (osäkert)<ph name="END_LINK" /></translation>
@@ -992,7 +999,6 @@ Mer information.
 <translation id="7716424297397655342">Det går inte att läsa in webbplatsen från cachelagringen</translation>
 <translation id="7723047071702270851">Redigera kortet</translation>
 <translation id="774634243536837715">Farligt innehåll har blockerats.</translation>
-<translation id="7747182086178764941">Skärmen vid första användningen av Autofyll-assistenten visas</translation>
 <translation id="7752995774971033316">Hanteras inte</translation>
 <translation id="7755287808199759310">En förälder kan ta bort blockeringen</translation>
 <translation id="7758069387465995638">Anslutningen kan ha blockerats av en brandvägg eller antivirusprogram.</translation>
@@ -1046,9 +1052,11 @@ Mer information.
 <translation id="808894953321890993">Ändra lösenord</translation>
 <translation id="8091372947890762290">Aktiveringen väntar på servern</translation>
 <translation id="8094917007353911263">Nätverket du använder kanske kräver att du besöker <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8100588592594801589">De ogiltiga korten har tagits bort</translation>
 <translation id="8103161714697287722">Betalningsmetod</translation>
 <translation id="8118489163946903409">Betalningsmetod</translation>
 <translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> har inte installerats korrekt på datorn eller nätverket. Be IT-administratören om hjälp med problemet.</translation>
+<translation id="8130693978878176684">Jag kan inte hjälpa till mer. Fortsätt på egen hand.</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8149426793427495338">Datorn gick i viloläge.</translation>
 <translation id="8150722005171944719">Det går inte att läsa filen på <ph name="URL" />. Den kan ha tagits bort eller flyttats, eller så krävs behörighet för att få åtkomst till den.</translation>
@@ -1213,6 +1221,7 @@ Mer information:
 <translation id="939736085109172342">Ny mapp</translation>
 <translation id="945855313015696284">Kontrollera informationen nedan och radera alla ogiltiga kort</translation>
 <translation id="951104842009476243">Godkända bankkort och förbetalda kort</translation>
+<translation id="960701843220172709">{NUM_CARDS,plural, =1{Du kan använda kortet när du har loggat in. Det här kortet och dess faktureringsadress sparas i ditt Google-konto.}other{Du kan använda korten när du har loggat in. De här korten och deras faktureringsadresser sparas i ditt Google-konto.}}</translation>
 <translation id="962484866189421427">Bedrägliga appar som inte gör vad de påstås göra eller insamling av data som används för att spåra dig skulle kunna installeras via innehållet. <ph name="BEGIN_LINK" />Visa ändå<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Officiell version</translation>
 <translation id="973773823069644502">Lägg till leveransadress</translation>

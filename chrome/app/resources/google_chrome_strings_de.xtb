@@ -227,7 +227,6 @@ Weitere Informationen wurden per E-Mail an <ph name="ACCOUNT_EMAIL" /> gesendet.
 <translation id="7626032353295482388">Willkommen bei Chrome</translation>
 <translation id="7651907282515937834">Logo von Chrome Enterprise</translation>
 <translation id="7747138024166251722">Das Installationsprogramm konnte kein temporäres Verzeichnis erstellen. Überprüfen Sie, ob freier Speicherplatz und die Rechte zum Installieren von Software vorhanden sind.</translation>
-<translation id="7756122083761163394">Die Browserdaten dieser Person werden von diesem Gerät gelöscht. Um die Daten wiederherzustellen, melden Sie sich als $2 in Chrome an.</translation>
 <translation id="7761834446675418963">Klicken Sie auf Ihren Namen, um Chrome zu öffnen und im Web zu surfen.</translation>
 <translation id="7781002470561365167">Eine neue Version von Google Chrome ist verfügbar.</translation>
 <translation id="7787950393032327779">Das Profil wird offenbar gerade von einem Google Chrome-Prozess (<ph name="PROCESS_ID" />) auf einem anderen Computer (<ph name="HOST_NAME" />) verwendet. Das Profil wurde von Chrome gesperrt, damit es nicht beschädigt wird. Wenn Sie sicher sind, dass das Profil nicht von anderen Prozessen verwendet wird, können Sie das Profil entsperren und Chrome neu starten.</translation>

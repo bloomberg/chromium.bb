@@ -229,7 +229,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
 <translation id="7651907282515937834">Chrome Enterprise 標誌</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
-<translation id="7756122083761163394">這位使用者的瀏覽資料將從這個裝置上刪除。如要還原資料，請以「$2」的身分登入 Chrome。</translation>
 <translation id="7761834446675418963">按一下你的名稱即可開啟 Chrome 並開始瀏覽。</translation>
 <translation id="7781002470561365167">Google Chrome 已推出新版。</translation>
 <translation id="7787950393032327779">另一台電腦 (<ph name="HOST_NAME" />) 的 Google Chrome 處理程序 (<ph name="PROCESS_ID" />) 正在使用這個設定檔。Chrome 已鎖定此設定檔，確保其不致受損。如果你確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chrome。</translation>
