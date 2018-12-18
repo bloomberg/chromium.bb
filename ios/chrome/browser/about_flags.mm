@@ -494,6 +494,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"search-copied-image", flag_descriptions::kSearchCopiedImageName,
      flag_descriptions::kSearchCopiedImageDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSearchCopiedImage)},
+    {"copied-text-behavior", flag_descriptions::kCopiedTextBehaviorName,
+     flag_descriptions::kCopiedTextBehaviorName, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCopiedTextBehavior)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -271,6 +271,11 @@ extern const char kShowAutofillTypePredictionsDescription[];
 extern const char kSSOWithWKWebViewName[];
 extern const char kSSOWithWKWebViewDescription[];
 
+// Title and description for the flag to diffentiate between copied
+// text and urls.
+extern const char kCopiedTextBehaviorName[];
+extern const char kCopiedTextBehaviorDescription[];
+
 // Title and description for the flag to enable the toolbar container
 // implementation.
 extern const char kToolbarContainerName[];
