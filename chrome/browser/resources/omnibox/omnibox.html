@@ -18,7 +18,7 @@
   <template id="omnibox-inputs-template">
     <link rel="stylesheet" href="omnibox.css">
     <p>
-      <input id="input-text" type="text" size="60" placeholder="Enter omnibox input text [Alt+L]" accesskey="l" autofocus>
+      <input id="input-text" type="text" size="60" placeholder="Enter omnibox input text [Alt+L]" accesskey="l" autocomplete="off" autofocus>
     </p>
     <p>Input parameters:</p>
     <p>
@@ -78,7 +78,7 @@
     </div>
 
     <div class="section">
-      <input id="filter-text" type="text" size="60" placeholder="Enter filter text (e.g. 'google', 'is:star', 'not:del') [Alt+G]" accesskey="g" title="Checks each cell individually; i.e. filter text should not span multiple columns. Supports fuzzyness; each character of filter text must be present in the cell, either adjacent to the previous matched character, or at the start of a new word. Words are defined as being delimited by either capital letters, groups of digits, or non alpha characters. E.g. 'abc' matches 'abc', 'a big cat', 'a-bigCat', 'a very big cat', and 'an amBer cat'; but does not match 'abigcat' or 'an amber cat'. 'green rainbow' is matched by 'gre rain', but not by 'gre bow'. One exception is the first character, which may be matched mid-word. E.g. 'een rain' can also match 'green rainbow'. Boolean properties can be searched for via the property name prefixed by 'is:' or 'not:'. Boolean property names are: 'Can Be Default', 'Starred', 'Has Tab Match', 'Del', 'Prev', and 'Done'.">
+      <input id="filter-text" type="text" size="60" placeholder="Enter filter text (e.g. 'google', 'is:star', 'not:del') [Alt+G]" accesskey="g" autocomplete="off" title="Checks each cell individually; i.e. filter text should not span multiple columns. Supports fuzzyness; each character of filter text must be present in the cell, either adjacent to the previous matched character, or at the start of a new word. Words are defined as being delimited by either capital letters, groups of digits, or non alpha characters. E.g. 'abc' matches 'abc', 'a big cat', 'a-bigCat', 'a very big cat', and 'an amBer cat'; but does not match 'abigcat' or 'an amber cat'. 'green rainbow' is matched by 'gre rain', but not by 'gre bow'. One exception is the first character, which may be matched mid-word. E.g. 'een rain' can also match 'green rainbow'. Boolean properties can be searched for via the property name prefixed by 'is:' or 'not:'. Boolean property names are: 'Can Be Default', 'Starred', 'Has Tab Match', 'Del', 'Prev', and 'Done'.">
     </div>
   </template>
 
