@@ -22,6 +22,7 @@
 
 #include <blpwtk2_webframeimpl.h>
 
+#include <blpwtk2_stringref.h>
 #include <blpwtk2_webcontentsettingsdelegate.h>
 
 #include <base/logging.h>  // for CHECK
@@ -50,6 +51,19 @@ WebFrameImpl::~WebFrameImpl()
 v8::Local<v8::Context> WebFrameImpl::mainWorldScriptContext() const
 {
     return d_impl->ToWebLocalFrame()->MainWorldScriptContext();
+}
+
+v8::Local<v8::Context> WebFrameImpl::mainWorldScriptContextForFrame(
+                                          const blpwtk2::StringRef& name) const
+{
+    blink::WebFrame *frame =
+        d_impl->ToWebLocalFrame()->FindFrameByName(toWebString(name));
+
+    if (!frame || !frame->IsWebLocalFrame()) {
+        return v8::Local<v8::Context>();
+    }
+
+    return frame->ToWebLocalFrame()->MainWorldScriptContext();
 }
 
 v8::Isolate* WebFrameImpl::scriptIsolate() const
