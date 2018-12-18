@@ -4866,4 +4866,62 @@ TEST_F(PasswordFormManagerTest, UserEventsForGeneration) {
   }
 }
 
+TEST_F(PasswordFormManagerTest, ProvisionallySaveUpdatesUserAction) {
+  // Setup existing matches.
+  PasswordForm preferred_match = *saved_match();
+
+  PasswordForm other_match = *saved_match();
+  other_match.username_value = ASCIIToUTF16("other_username");
+  other_match.password_value = ASCIIToUTF16("other_password");
+  other_match.preferred = false;
+
+  PasswordForm psl_match = *psl_saved_match();
+  psl_match.username_value = ASCIIToUTF16("psl_match_username");
+
+  fake_form_fetcher()->SetNonFederated(
+      {&preferred_match, &other_match, &psl_match}, 0);
+
+  // Verify that provisionally saving the |preferred_match| results in the
+  // correct user action.
+  form_manager()->ProvisionallySave(preferred_match);
+  EXPECT_EQ(UserAction::kNone,
+            form_manager()->GetMetricsRecorder()->GetUserAction());
+
+  // Verify that provisionally saving an |other_match| results in the
+  // correct user action.
+  form_manager()->ProvisionallySave(other_match);
+  EXPECT_EQ(UserAction::kChoose,
+            form_manager()->GetMetricsRecorder()->GetUserAction());
+
+  // Verify that provisionally saving a |psl_match| results in the correct user
+  // action.
+  form_manager()->ProvisionallySave(psl_match);
+  EXPECT_EQ(UserAction::kChoosePslMatch,
+            form_manager()->GetMetricsRecorder()->GetUserAction());
+
+  // Verify that provisionally saving a credential with a |new_password| results
+  // in the correct user action.
+  PasswordForm new_password;
+  new_password.username_value = preferred_match.username_value;
+  new_password.password_value = ASCIIToUTF16("new_password");
+  form_manager()->ProvisionallySave(new_password);
+  EXPECT_EQ(UserAction::kOverridePassword,
+            form_manager()->GetMetricsRecorder()->GetUserAction());
+
+  // Verify that provisionally saving a |new_credential| results in the correct
+  // user action.
+  PasswordForm new_credential;
+  new_credential.username_value = ASCIIToUTF16("new_username");
+  new_credential.password_value = ASCIIToUTF16("new_password");
+  form_manager()->ProvisionallySave(new_credential);
+  EXPECT_EQ(UserAction::kOverrideUsernameAndPassword,
+            form_manager()->GetMetricsRecorder()->GetUserAction());
+
+  // Verify that provisionally saving the |preferred_match| results in resetting
+  // the user action.
+  form_manager()->ProvisionallySave(preferred_match);
+  EXPECT_EQ(UserAction::kNone,
+            form_manager()->GetMetricsRecorder()->GetUserAction());
+}
+
 }  // namespace password_manager

@@ -74,21 +74,6 @@ void CopyFieldPropertiesMasks(const FormData& from, FormData* to) {
   }
 }
 
-// Returns true iff |best_matches| contain a preferred credential with a
-// username other than |preferred_username|.
-bool DidPreferenceChange(
-    const std::map<base::string16, const PasswordForm*>& best_matches,
-    const base::string16& preferred_username) {
-  for (const auto& key_value_pair : best_matches) {
-    const PasswordForm& form = *key_value_pair.second;
-    if (form.preferred && !form.is_public_suffix_match &&
-        form.username_value != preferred_username) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // Filter sensitive information, duplicates and |username_value| out from
 // |form->other_possible_usernames|.
 void SanitizePossibleUsernames(PasswordForm* form) {
@@ -248,11 +233,7 @@ void NewPasswordFormManager::Save() {
   DCHECK(!client_->IsIncognito());
 
   // TODO(https://crbug.com/831123): Implement indicator event metrics.
-  if (user_action_ == UserAction::kNone &&
-      DidPreferenceChange(best_matches_, pending_credentials_.username_value)) {
-    SetUserAction(UserAction::kChoose);
-  }
-  if (user_action_ == UserAction::kOverridePassword &&
+  if (password_overridden_ &&
       pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
       !HasGeneratedPassword()) {
     metrics_util::LogPasswordGenerationSubmissionEvent(
@@ -483,7 +464,6 @@ std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   //   (3) They are not changed during ProcessMatches, triggered at some point
   //       by the cloned FormFetcher.
   result->generated_password_ = generated_password_;
-  result->user_action_ = user_action_;
   result->votes_uploader_ = votes_uploader_;
   if (parser_.predictions())
     result->parser_.set_predictions(*parser_.predictions());
@@ -728,8 +708,9 @@ void NewPasswordFormManager::CreatePendingCredentials() {
       // from Android apps, store a copy with the current origin and signon
       // realm. This ensures that on the next visit, a precise match is found.
       is_new_login_ = true;
-      SetUserAction(password_overridden_ ? UserAction::kOverridePassword
-                                         : UserAction::kChoosePslMatch);
+      metrics_recorder_->SetUserAction(password_overridden_
+                                           ? UserAction::kOverridePassword
+                                           : UserAction::kChoosePslMatch);
 
       // Update credential to reflect that it has been used for submission.
       // If this isn't updated, then password generation uploads are off for
@@ -768,8 +749,17 @@ void NewPasswordFormManager::CreatePendingCredentials() {
       }
     } else {  // Not a PSL match but a match of an already stored credential.
       is_new_login_ = false;
-      if (password_overridden_)
-        SetUserAction(UserAction::kOverridePassword);
+      if (password_overridden_) {
+        metrics_recorder_->SetUserAction(UserAction::kOverridePassword);
+      } else {
+        // In case |saved_form| is pointing to the same form as
+        // |preferred_match_|, the user either did not do anything, or
+        // re-selected the default option. Otherwise, the user purposefully
+        // chose an alternative.
+        metrics_recorder_->SetUserAction(saved_form == preferred_match_
+                                             ? UserAction::kNone
+                                             : UserAction::kChoose);
+      }
     }
   } else if (!best_matches_.empty() &&
              parsed_submitted_form_->type != PasswordForm::TYPE_API &&
@@ -921,7 +911,7 @@ void NewPasswordFormManager::CreatePendingCredentialsForNewCredentials(
     const PasswordForm& submitted_password_form,
     const base::string16& password_element) {
   // User typed in a new, unknown username.
-  SetUserAction(UserAction::kOverrideUsernameAndPassword);
+  metrics_recorder_->SetUserAction(UserAction::kOverrideUsernameAndPassword);
   // TODO(https://crbug.com/831123): Replace parsing of the observed form with
   // usage of already parsed submitted form.
   std::unique_ptr<PasswordForm> parsed_observed_form =
@@ -944,11 +934,6 @@ void NewPasswordFormManager::CreatePendingCredentialsForNewCredentials(
   // The new password's value and element name should be empty.
   pending_credentials_.new_password_value.clear();
   pending_credentials_.new_password_element.clear();
-}
-
-void NewPasswordFormManager::SetUserAction(UserAction user_action) {
-  user_action_ = user_action;
-  metrics_recorder_->SetUserAction(user_action);
 }
 
 void NewPasswordFormManager::ProcessUpdate() {

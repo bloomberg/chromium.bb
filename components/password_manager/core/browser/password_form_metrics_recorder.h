@@ -248,9 +248,13 @@ class PasswordFormMetricsRecorder
   // is was overridden for the form.
   void ReportSpecPriorityForGeneratedPassword(uint32_t spec_priority);
 
-  // Stores the password manager and user actions and logs them.
+  // Stores the password manager and user actions. During destruction the last
+  // set values will be logged.
   void SetManagerAction(ManagerAction manager_action);
   void SetUserAction(UserAction user_action);
+
+  // Gets the current value of |user_action_|.
+  UserAction GetUserAction() const;
 
   // Call these if/when we know the form submission worked or failed.
   // These routines are used to update internal statistics ("ActionsTaken").

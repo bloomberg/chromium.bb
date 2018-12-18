@@ -197,22 +197,11 @@ void PasswordFormMetricsRecorder::SetManagerAction(
 }
 
 void PasswordFormMetricsRecorder::SetUserAction(UserAction user_action) {
-  if (user_action == UserAction::kChoose) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_UsedNonDefaultUsername"));
-  } else if (user_action == UserAction::kChoosePslMatch) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_ChoseSubdomainPassword"));
-  } else if (user_action == UserAction::kOverridePassword) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_LoggedInWithNewPassword"));
-  } else if (user_action == UserAction::kOverrideUsernameAndPassword) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_LoggedInWithNewUsername"));
-  } else {
-    NOTREACHED();
-  }
   user_action_ = user_action;
+}
+
+UserAction PasswordFormMetricsRecorder::GetUserAction() const {
+  return user_action_;
 }
 
 void PasswordFormMetricsRecorder::LogSubmitPassed() {

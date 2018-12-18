@@ -201,9 +201,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   const autofill::PasswordForm* FindBestSavedMatch(
       const autofill::PasswordForm* form) const;
 
-  // Sets |user_action_| and records some metrics.
-  void SetUserAction(UserAction user_action);
-
   void SetPasswordOverridden(bool password_overridden) {
     password_overridden_ = password_overridden;
     votes_uploader_.set_password_overridden(password_overridden);
@@ -308,10 +305,6 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // a password that is not part of any password form stored for this origin
   // and it was entered on a retry password form.
   bool retry_password_form_password_update_ = false;
-
-  // Records the action the user has taken while interacting with the password
-  // form.
-  UserAction user_action_ = UserAction::kNone;
 
   // If Chrome has already autofilled a few times, it is probable that autofill
   // is triggered by programmatic changes in the page. We set a maximum number
