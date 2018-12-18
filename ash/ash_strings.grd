@@ -1471,7 +1471,7 @@ This file contains the strings for ash.
         All files and local data associated with this user will be permanently deleted once this user is removed.
       </message>
       <message name="IDS_ASH_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING_PART_2" desc="Text shown as a warning when attempting to remove non-owner user. Also see IDS_ASH_LOGIN_POD_NON_OWNER_USER_REMOVE_WARNING_PART_1.">
-        $1 can still sign in later.
+        <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph> can still sign in later.
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
         Managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>
