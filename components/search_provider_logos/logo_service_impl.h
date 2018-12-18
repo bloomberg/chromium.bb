@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "components/search_provider_logos/logo_common.h"
 #include "components/search_provider_logos/logo_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 class TemplateURLService;
 
@@ -30,10 +31,6 @@ namespace image_fetcher {
 class ImageDecoder;
 }  // namespace image_fetcher
 
-namespace identity {
-class IdentityManager;
-}  // namespace identity
-
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
@@ -44,7 +41,8 @@ namespace search_provider_logos {
 class LogoCache;
 class LogoObserver;
 
-class LogoServiceImpl : public LogoService {
+class LogoServiceImpl : public LogoService,
+                        public identity::IdentityManager::Observer {
  public:
   LogoServiceImpl(
       const base::FilePath& cache_directory,
@@ -104,9 +102,9 @@ class LogoServiceImpl : public LogoService {
 
   const int kDownloadOutcomeNotTracked = -1;
 
-  class SigninObserver;
-
-  void SigninStatusChanged();
+  // identity::IdentityManager::Observer implementation.
+  void OnAccountsInCookieUpdated(const identity::AccountsInCookieJarInfo&,
+                                 const GoogleServiceAuthError&) override;
 
   // Clear any cached logo we might have. Useful on sign-out to get rid of
   // (potentially) personalized data.
@@ -155,6 +153,7 @@ class LogoServiceImpl : public LogoService {
 
   // Constructor arguments.
   const base::FilePath cache_directory_;
+  identity::IdentityManager* const identity_manager_;
   TemplateURLService* const template_url_service_;
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
@@ -163,8 +162,6 @@ class LogoServiceImpl : public LogoService {
   base::RepeatingCallback<bool()> want_gray_logo_getter_;
 
   std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
-
-  std::unique_ptr<SigninObserver> signin_observer_;
 
   // The URL from which the logo is fetched.
   GURL logo_url_;

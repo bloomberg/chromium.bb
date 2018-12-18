@@ -378,6 +378,7 @@ class LogoServiceImplTest : public ::testing::Test {
     // a background sequence after the LogoService's destruction. Ensure that
     // |logo_cache_| is actually destroyed before the test ends to make gmock
     // happy.
+    logo_service_->Shutdown();
     logo_service_.reset();
     task_environment_.RunUntilIdle();
   }

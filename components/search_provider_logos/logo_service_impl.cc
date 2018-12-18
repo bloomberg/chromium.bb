@@ -29,7 +29,6 @@
 #include "components/search_provider_logos/switches.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/gfx/image/image.h"
@@ -178,36 +177,6 @@ void NotifyAndClear(std::vector<EncodedLogoCallback>* encoded_callbacks,
 
 }  // namespace
 
-class LogoServiceImpl::SigninObserver
-    : public identity::IdentityManager::Observer {
- public:
-  using SigninStatusChangedCallback = base::RepeatingClosure;
-
-  SigninObserver(identity::IdentityManager* identity_manager,
-                 const SigninStatusChangedCallback& callback)
-      : identity_manager_(identity_manager), callback_(callback) {
-    if (identity_manager_) {
-      identity_manager_->AddObserver(this);
-    }
-  }
-
-  ~SigninObserver() override {
-    if (identity_manager_) {
-      identity_manager_->RemoveObserver(this);
-    }
-  }
-
- private:
-  // identity::IdentityManager::Observer implementation.
-  void OnAccountsInCookieUpdated(const identity::AccountsInCookieJarInfo&,
-                                 const GoogleServiceAuthError&) override {
-    callback_.Run();
-  }
-
-  identity::IdentityManager* const identity_manager_;
-  SigninStatusChangedCallback callback_;
-};
-
 LogoServiceImpl::LogoServiceImpl(
     const base::FilePath& cache_directory,
     identity::IdentityManager* identity_manager,
@@ -216,14 +185,11 @@ LogoServiceImpl::LogoServiceImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::RepeatingCallback<bool()> want_gray_logo_getter)
     : cache_directory_(cache_directory),
+      identity_manager_(identity_manager),
       template_url_service_(template_url_service),
       url_loader_factory_(url_loader_factory),
       want_gray_logo_getter_(std::move(want_gray_logo_getter)),
       image_decoder_(std::move(image_decoder)),
-      signin_observer_(std::make_unique<SigninObserver>(
-          identity_manager,
-          base::BindRepeating(&LogoServiceImpl::SigninStatusChanged,
-                              base::Unretained(this)))),
       is_idle_(true),
       is_cached_logo_valid_(false),
       cache_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
@@ -231,14 +197,16 @@ LogoServiceImpl::LogoServiceImpl(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       logo_cache_(new LogoCache(cache_directory_),
                   base::OnTaskRunnerDeleter(cache_task_runner_)),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  identity_manager_->AddObserver(this);
+}
 
 LogoServiceImpl::~LogoServiceImpl() = default;
 
 void LogoServiceImpl::Shutdown() {
   // The IdentityManager may be destroyed at any point after Shutdown,
   // so make sure we drop any references to it.
-  signin_observer_.reset();
+  identity_manager_->RemoveObserver(this);
   ReturnToIdle(kDownloadOutcomeNotTracked);
 }
 
@@ -693,7 +661,9 @@ void LogoServiceImpl::OnURLLoadComplete(const network::SimpleURLLoader* source,
                      base::Owned(parsing_failed), from_http_cache));
 }
 
-void LogoServiceImpl::SigninStatusChanged() {
+void LogoServiceImpl::OnAccountsInCookieUpdated(
+    const identity::AccountsInCookieJarInfo&,
+    const GoogleServiceAuthError&) {
   // Clear any cached logo, since it may be personalized (e.g. birthday Doodle).
   if (!clock_) {
     clock_ = base::DefaultClock::GetInstance();
