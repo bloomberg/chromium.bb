@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr/ui/splitter.html">
 <link rel="import" href="chrome://bookmarks/api_listener.html">
@@ -13,7 +12,6 @@
 <link rel="import" href="chrome://bookmarks/router.html">
 <link rel="import" href="chrome://bookmarks/shared_vars.html">
 <link rel="import" href="chrome://bookmarks/store.html">
-<link rel="import" href="chrome://bookmarks/strings.html">
 <link rel="import" href="chrome://bookmarks/toast_manager.html">
 <link rel="import" href="chrome://bookmarks/toolbar.html">
 <link rel="import" href="chrome://bookmarks/util.html">
@@ -55,24 +53,13 @@
       }
 
       #sidebar {
-        display: flex;
-        flex-direction: column;
+        display: block;
         max-width: 40%;
         min-width: var(--min-sidebar-width);
-        width: var(--min-sidebar-width);
-      }
-
-      bookmarks-folder-node {
-        flex: 1;
         overflow-y: auto;
         padding: 8px 3px 0 3px;
         user-select: none;
-      }
-
-      managed-footnote {
-        flex: 0;
-        padding-bottom: 24px;
-        padding-top: 24px;
+        width: var(--min-sidebar-width);
       }
 
       bookmarks-list {
@@ -83,9 +70,8 @@
     <bookmarks-toolbar sidebar-width="[[sidebarWidth_]]" role="banner">
     </bookmarks-toolbar>
     <div id="main-container">
-      <div id="sidebar" role="tree" aria-label="$i18n{sidebarAxLabel}">
-        <bookmarks-folder-node item-id="0" depth="-1"></bookmarks-folder-node>
-        <managed-footnote></managed-footnote>
+       <div id="sidebar" role="tree" aria-label="$i18n{sidebarAxLabel}">
+         <bookmarks-folder-node item-id="0" depth="-1"></bookmarks-folder-node>
       </div>
       <div id="splitter"></div>
       <bookmarks-list></bookmarks-list>
