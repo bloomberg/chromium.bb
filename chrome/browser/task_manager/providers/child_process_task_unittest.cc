@@ -82,7 +82,7 @@ class ChildProcessTaskTest
   DISALLOW_COPY_AND_ASSIGN(ChildProcessTaskTest);
 };
 
-// Perfoms a basic test.
+// Performs a basic test.
 TEST_F(ChildProcessTaskTest, BasicTest) {
   ChildProcessTaskProvider provider;
   EXPECT_TRUE(provided_tasks_.empty());

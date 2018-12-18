@@ -1028,7 +1028,7 @@ bool AwContents::OnDraw(JNIEnv* env,
   }
 
   // TODO(hush): Right now webview size is passed in as the auxiliary bitmap
-  // size, which might hurt performace (only for software draws with auxiliary
+  // size, which might hurt performance (only for software draws with auxiliary
   // bitmap). For better performance, get global visible rect, transform it
   // from screen space to view space, then intersect with the webview in
   // viewspace.  Use the resulting rect as the auxiliary bitmap.

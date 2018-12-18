@@ -4568,7 +4568,7 @@ function saveSlot(a, b, index, slot)
     set2(a.lengths, b.lengths, index, l + length(slot));
 }
 
-// Creates a node or leaf with a given length at their arrays for perfomance.
+// Creates a node or leaf with a given length at their arrays for performance.
 // Is only used by shuffle.
 function createNode(h, length)
 {

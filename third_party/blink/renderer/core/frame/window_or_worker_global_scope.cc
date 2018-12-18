@@ -174,7 +174,7 @@ int WindowOrWorkerGlobalScope::setTimeoutFromString(
   if (!IsAllowed(script_state, execution_context, true, handler))
     return 0;
   // Don't allow setting timeouts to run empty functions.  Was historically a
-  // perfomance issue.
+  // performance issue.
   if (handler.IsEmpty())
     return 0;
   if (timeout >= 0 && execution_context->IsDocument()) {
@@ -232,7 +232,7 @@ int WindowOrWorkerGlobalScope::setIntervalFromString(
   if (!IsAllowed(script_state, execution_context, true, handler))
     return 0;
   // Don't allow setting timeouts to run empty functions.  Was historically a
-  // perfomance issue.
+  // performance issue.
   if (handler.IsEmpty())
     return 0;
   ScheduledAction* action =

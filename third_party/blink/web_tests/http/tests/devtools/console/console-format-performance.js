@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult(`Tests that console nicely formats perfomance getters.\n`);
+  TestRunner.addResult(`Tests that console nicely formats performance getters.\n`);
 
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');

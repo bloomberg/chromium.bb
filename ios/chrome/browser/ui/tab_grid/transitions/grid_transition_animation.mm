@@ -365,7 +365,7 @@ const CGFloat kInactiveItemScale = 0.95;
   [self.animations addAnimator:fadeOutCells];
 }
 
-// Perfroms the initial setup for the animation, computing scale based on the
+// Performs the initial setup for the animation, computing scale based on the
 // superview size and adding the transition cells to the view hierarchy.
 - (void)prepareForAnimationInSuperview:(UIView*)newSuperview {
   // Add the selection item first, so it's under ther other views.

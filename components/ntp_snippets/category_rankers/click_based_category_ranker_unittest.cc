@@ -301,7 +301,7 @@ TEST_F(ClickBasedCategoryRankerTest, ShouldDecayClickCountsWithTime) {
 
   // The user behavior changes and they start using the second category instead.
   // According to our requirenments after such a long time it should take less
-  // than |first_clicks| for the second category to outperfom the first one.
+  // than |first_clicks| for the second category to outperform the first one.
   int second_clicks = 0;
   while (CompareCategories(first, second) && second_clicks < first_clicks) {
     NotifyOnSuggestionOpened(/*times=*/1, second);

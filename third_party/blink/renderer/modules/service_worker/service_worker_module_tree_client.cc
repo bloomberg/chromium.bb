@@ -16,7 +16,7 @@ ServiceWorkerModuleTreeClient::ServiceWorkerModuleTreeClient(
     : modulator_(modulator) {}
 
 // This client is used for both new and installed scripts. In the new scripts
-// case, this is a partial implementation of the custom "perfom the fetch" hook
+// case, this is a partial implementation of the custom "perform the fetch" hook
 // in the spec: https://w3c.github.io/ServiceWorker/#update-algorithm For
 // installed scripts, there is no corresponding specification text because there
 // is no fetching process there. The service worker simply uses its associated

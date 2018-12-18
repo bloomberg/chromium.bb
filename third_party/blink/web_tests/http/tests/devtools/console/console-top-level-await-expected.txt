@@ -1,4 +1,4 @@
-Tests that evaluation with top-level await may be perfomed in console.
+Tests that evaluation with top-level await may be performed in console.
 await Promise.resolve(1)
 1
 {a:await Promise.resolve(1)}

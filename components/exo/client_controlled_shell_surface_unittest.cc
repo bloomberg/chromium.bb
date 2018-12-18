@@ -675,7 +675,7 @@ TEST_F(ClientControlledShellSurfaceTest,
 
   EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
 
-  // Show system tray by perfoming a gesture tap at tray.
+  // Show system tray by performing a gesture tap at tray.
   ash::UnifiedSystemTray* system_tray = GetPrimaryUnifiedSystemTray();
   ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));
