@@ -10495,7 +10495,8 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
                    rd_cost->dist)
           : INT64_MAX;
 
-  if (skip_mode_rd_stats.rdcost <= best_intra_inter_mode_cost) {
+  if (skip_mode_rd_stats.rdcost <= best_intra_inter_mode_cost &&
+      (!xd->lossless[mbmi->segment_id] || skip_mode_rd_stats.dist == 0)) {
     assert(mode_index != -1);
     search_state->best_mbmode.skip_mode = 1;
     search_state->best_mbmode = *mbmi;
