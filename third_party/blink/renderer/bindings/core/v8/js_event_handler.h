@@ -37,14 +37,11 @@ class CORE_EXPORT JSEventHandler : public JSBasedEventListener {
                  v8::Local<v8::Object> listener,
                  const V8PrivateProperty::Symbol& property,
                  HandlerType type)
-      : JSBasedEventListener(kJSEventHandlerType),
-        event_handler_(V8EventHandlerNonNull::Create(listener)),
-        type_(type) {
+      : event_handler_(V8EventHandlerNonNull::Create(listener)), type_(type) {
     Attach(script_state, listener, property, this);
   }
 
-  explicit JSEventHandler(HandlerType type)
-      : JSBasedEventListener(kJSEventHandlerType), type_(type) {}
+  explicit JSEventHandler(HandlerType type) : type_(type) {}
 
   // blink::CustomWrappable overrides:
   void Trace(blink::Visitor* visitor) override;

@@ -15,9 +15,7 @@
 
 namespace blink {
 
-JSBasedEventListener::JSBasedEventListener(ListenerType listener_type)
-    : EventListener(listener_type) {
-  DCHECK(IsJSBased());
+JSBasedEventListener::JSBasedEventListener() {
   if (IsMainThread()) {
     InstanceCounters::IncrementCounter(
         InstanceCounters::kJSEventListenerCounter);

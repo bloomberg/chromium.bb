@@ -27,7 +27,7 @@ class CORE_EXPORT NativeEventListener : public EventListener {
   virtual bool IsImageEventListener() const { return false; }
 
  protected:
-  NativeEventListener() : EventListener(kCPPEventListenerType) {}
+  NativeEventListener() = default;
 };
 
 template <>

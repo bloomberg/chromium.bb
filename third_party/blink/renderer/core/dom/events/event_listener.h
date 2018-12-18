@@ -34,17 +34,6 @@ class ExecutionContext;
 
 class CORE_EXPORT EventListener : public CustomWrappableAdapter {
  public:
-  enum ListenerType {
-    // |kJSEventListenerType| corresponds to EventListener defined in standard:
-    // https://dom.spec.whatwg.org/#callbackdef-eventlistener
-    kJSEventListenerType,
-    // |kJSEventHandlerType| corresponds to EventHandler defined in standard:
-    // https://html.spec.whatwg.org/multipage/webappapis.html#event-handler-attributes
-    kJSEventHandlerType,
-    // For C++ native callbacks.
-    kCPPEventListenerType,
-  };
-
   ~EventListener() override = default;
 
   // Invokes this event listener.
@@ -68,16 +57,6 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
 
   virtual bool operator==(const EventListener&) const = 0;
 
-  ListenerType GetType() const { return type_; }
-
-  // Returns true if this EventListener is implemented based on JS object.
-  bool IsJSBased() const {
-    return type_ == kJSEventListenerType || type_ == kJSEventHandlerType;
-  }
-
-  // Returns true if this EventListener is C++ native callback.
-  bool IsNativeBased() const { return !IsJSBased(); }
-
   const char* NameInHeapSnapshot() const override { return "EventListener"; }
 
   // Helper functions for DowncastTraits.
@@ -85,9 +64,7 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
   virtual bool IsNativeEventListener() const { return false; }
 
  private:
-  explicit EventListener(ListenerType type) : type_(type) {}
-
-  ListenerType type_;
+  EventListener() = default;
 
   // Only these two classes are direct subclasses of EventListener.  Other
   // subclasses must inherit from either of them.

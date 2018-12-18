@@ -110,7 +110,7 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
     for (wtf_size_t k = 0; k < listeners->size(); ++k) {
       EventListener* event_listener = listeners->at(k).Callback();
       JSBasedEventListener* v8_event_listener =
-          JSBasedEventListener::Cast(event_listener);
+          DynamicTo<JSBasedEventListener>(event_listener);
       if (!v8_event_listener)
         continue;
       v8::Local<v8::Context> context = ToV8Context(
