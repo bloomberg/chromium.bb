@@ -55,6 +55,7 @@
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 
 using session_manager::SessionState;
@@ -89,10 +90,7 @@ constexpr int kButtonMarginBottomDp = 18;
 constexpr int kButtonMarginRightDp = 16;
 
 // The margins of the button background.
-constexpr int kButtonBackgroundMarginTopDp = 8;
-constexpr int kButtonBackgroundMarginLeftDp = 8;
-constexpr int kButtonBackgroundMarginBottomDp = 8;
-constexpr int kButtonBackgroundMarginRightDp = 0;
+constexpr gfx::Insets kButtonBackgroundMargin(8, 8, 8, 0);
 
 // Spacing between the button image and label.
 constexpr int kImageLabelSpacingDp = 10;
@@ -110,6 +108,22 @@ constexpr SkColor kButtonTextColor = gfx::kGoogleGrey100;
 // The color of the button icon.
 constexpr SkColor kButtonIconColor = SkColorSetRGB(0xEB, 0xEA, 0xED);
 
+std::unique_ptr<SkPath> GetButtonHighlightPath(views::View* view) {
+  auto path = std::make_unique<SkPath>();
+
+  gfx::Rect rect(view->GetLocalBounds());
+  rect.Inset(kButtonBackgroundMargin);
+
+  path->addRoundRect(gfx::RectToSkRect(rect), kButtonRoundedBorderRadiusDp,
+                     kButtonRoundedBorderRadiusDp);
+  return path;
+}
+
+void SetButtonHighlightPath(views::View* view) {
+  view->SetProperty(views::kHighlightPathKey,
+                    GetButtonHighlightPath(view).release());
+}
+
 class LoginShelfButton : public views::LabelButton,
                          public ash::SessionObserver {
  public:
@@ -125,8 +139,9 @@ class LoginShelfButton : public views::LabelButton,
                  icon, SkColorSetA(kButtonIconColor,
                                    login_constants::kButtonDisabledAlpha)));
     SetFocusBehavior(FocusBehavior::ALWAYS);
-    SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-        kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
+    SetInstallFocusRingOnFocus(true);
+    focus_ring()->set_is_opaque();
+    SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
     set_ink_drop_base_color(kShelfInkDropBaseColor);
@@ -152,16 +167,15 @@ class LoginShelfButton : public views::LabelButton,
 
   ~LoginShelfButton() override = default;
 
-  gfx::Insets GetBackgroundInsets() const {
-    return gfx::Insets(
-        kButtonBackgroundMarginTopDp, kButtonBackgroundMarginLeftDp,
-        kButtonBackgroundMarginBottomDp, kButtonBackgroundMarginRightDp);
-  }
-
   // views::LabelButton:
   gfx::Insets GetInsets() const override {
     return gfx::Insets(kButtonMarginTopDp, kButtonMarginLeftDp,
                        kButtonMarginBottomDp, kButtonMarginRightDp);
+  }
+
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    SetButtonHighlightPath(this);
+    LabelButton::OnBoundsChanged(previous_bounds);
   }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
@@ -169,9 +183,7 @@ class LoginShelfButton : public views::LabelButton,
     flags.setAntiAlias(true);
     flags.setColor(kButtonBackgroundColor);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    gfx::Rect bounds = GetLocalBounds();
-    bounds.Inset(GetBackgroundInsets());
-    canvas->DrawRoundRect(bounds, kButtonRoundedBorderRadiusDp, flags);
+    canvas->DrawPath(*GetButtonHighlightPath(this), flags);
   }
 
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
@@ -179,10 +191,6 @@ class LoginShelfButton : public views::LabelButton,
     ink_drop->SetShowHighlightOnHover(false);
     ink_drop->SetShowHighlightOnFocus(false);
     return ink_drop;
-  }
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::RoundRectInkDropMask>(
-        size(), GetBackgroundInsets(), kButtonRoundedBorderRadiusDp);
   }
 
   // ash::SessionObserver:
@@ -219,8 +227,9 @@ class KioskAppsButton : public views::MenuButton,
   KioskAppsButton(const base::string16& text, const gfx::ImageSkia& image)
       : MenuButton(text, this), ui::SimpleMenuModel(this) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
-    SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-        kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
+    SetInstallFocusRingOnFocus(true);
+    focus_ring()->set_is_opaque();
+    SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
     set_ink_drop_base_color(kShelfInkDropBaseColor);
@@ -257,16 +266,15 @@ class KioskAppsButton : public views::MenuButton,
 
   bool HasApps() const { return !kiosk_apps_.empty(); }
 
-  gfx::Insets GetBackgroundInsets() const {
-    return gfx::Insets(
-        kButtonBackgroundMarginTopDp, kButtonBackgroundMarginLeftDp,
-        kButtonBackgroundMarginBottomDp, kButtonBackgroundMarginRightDp);
-  }
-
   // views::MenuButton:
   gfx::Insets GetInsets() const override {
     return gfx::Insets(kButtonMarginTopDp, kButtonMarginLeftDp,
                        kButtonMarginBottomDp, kButtonMarginRightDp);
+  }
+
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    SetButtonHighlightPath(this);
+    LabelButton::OnBoundsChanged(previous_bounds);
   }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
@@ -274,9 +282,7 @@ class KioskAppsButton : public views::MenuButton,
     flags.setAntiAlias(true);
     flags.setColor(kButtonBackgroundColor);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    gfx::Rect bounds = GetLocalBounds();
-    bounds.Inset(GetBackgroundInsets());
-    canvas->DrawRoundRect(bounds, kButtonRoundedBorderRadiusDp, flags);
+    canvas->DrawPath(*GetButtonHighlightPath(this), flags);
   }
 
   void SetVisible(bool visible) override {
@@ -290,11 +296,6 @@ class KioskAppsButton : public views::MenuButton,
     ink_drop->SetShowHighlightOnHover(false);
     ink_drop->SetShowHighlightOnFocus(false);
     return ink_drop;
-  }
-
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::RoundRectInkDropMask>(
-        size(), GetBackgroundInsets(), kButtonRoundedBorderRadiusDp);
   }
 
   // views::MenuButtonListener:

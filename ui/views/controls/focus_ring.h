@@ -74,6 +74,8 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // focus, but the FocusRing sits on the parent instead of the inner view.
   void SetHasFocusPredicate(const ViewPredicate& predicate);
 
+  void set_is_opaque() { is_opaque_ = true; }
+
   // View:
   const char* GetClassName() const override;
   void Layout() override;
@@ -104,6 +106,9 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   // Whether the enclosed View is in an invalid state, which controls whether
   // the focus ring shows an invalid appearance (usually a different color).
   bool invalid_ = false;
+
+  // Whether the focus ring is painted with full opacity.
+  bool is_opaque_ = false;
 
   // The predicate used to determine whether the parent has focus.
   ViewPredicate has_focus_predicate_;

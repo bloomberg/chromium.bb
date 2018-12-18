@@ -75,7 +75,7 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
 
   cc::PaintFlags paint;
   paint.setAntiAlias(true);
-  paint.setColor(SkColorSetA(base_color, 0x66));
+  paint.setColor(is_opaque_ ? base_color : SkColorSetA(base_color, 0x66));
   paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(PlatformStyle::kFocusHaloThickness);
 
