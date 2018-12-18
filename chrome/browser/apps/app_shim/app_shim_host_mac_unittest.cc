@@ -150,8 +150,10 @@ class AppShimHostTest : public testing::Test,
     host_ = (new TestingAppShimHost(bootstrap->GetAppId(),
                                     bootstrap->GetProfilePath()))
                 ->GetWeakPtr();
-    host_->OnBootstrapConnected(std::move(bootstrap));
-    host_->OnAppLaunchComplete(launch_result_);
+    if (launch_result_ == apps::APP_SHIM_LAUNCH_SUCCESS)
+      host_->OnBootstrapConnected(std::move(bootstrap));
+    else
+      bootstrap->OnFailedToConnectToHost(launch_result_);
   }
 
   void OnShimClose(AppShimHost* host) override { ++close_count_; }

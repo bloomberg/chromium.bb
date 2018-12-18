@@ -26,8 +26,10 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   static void CreateForChannel(mojo::PlatformChannelEndpoint endpoint);
   ~AppShimHostBootstrap() override;
 
-  void OnLaunchAppSucceeded(chrome::mojom::AppShimRequest app_shim_request);
-  void OnLaunchAppFailed(apps::AppShimLaunchResult result);
+  // Called in response to connecting (or failing to connect to) an
+  // AppShimHost.
+  void OnConnectedToHost(chrome::mojom::AppShimRequest app_shim_request);
+  void OnFailedToConnectToHost(apps::AppShimLaunchResult result);
 
   chrome::mojom::AppShimHostRequest GetLaunchAppShimHostRequest();
   base::ProcessId GetAppShimPid() const { return pid_; }
