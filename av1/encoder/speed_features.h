@@ -605,10 +605,6 @@ typedef struct SPEED_FEATURES {
   // Prune intra mode candidates based on source block gradient stats.
   int intra_angle_estimation;
 
-  // Performs full pixel motion search before none_partition to decide if we
-  // want to split directly without trying other partition types.
-  int full_pixel_motion_search_based_split;
-
   // Skip obmc or warped motion mode when neighborhood motion field is
   // identical
   int skip_obmc_in_uniform_mv_field;
@@ -638,6 +634,10 @@ typedef struct SPEED_FEATURES {
   // Perform simple_motion_search on each possible subblock and use it to prune
   // PARTITION_HORZ and PARTITION_VERT.
   int simple_motion_search_prune_rect;
+
+  // Perform simple motion search before none_partition to decide if we
+  // want to split directly without trying other partition types.
+  int simple_motion_search_split_only;
 
   int cb_pred_filter_search;
 
