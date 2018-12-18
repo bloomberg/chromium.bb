@@ -29,8 +29,6 @@ Polymer({
 
     allowCrostini_: Boolean,
 
-    showMultidevice: Boolean,
-
     havePlayStoreApp: Boolean,
     // </if>
 
@@ -251,17 +249,6 @@ Polymer({
     }
 
     return true;
-  },
-
-  /**
-   * @return {boolean} Whether the account supports the features managed in
-   * this section.
-   * @private
-   */
-  canShowMultideviceSection_: function() {
-    const visibility = /** @type {boolean|undefined} */ (
-        this.get('pageVisibility.multidevice'));
-    return this.showMultidevice && this.showPage_(visibility);
   },
 
   /**
