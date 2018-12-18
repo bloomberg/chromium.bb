@@ -216,9 +216,9 @@ public class CustomTabsConnectionTest {
                 mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null));
         final CallbackHelper tabDestroyedHelper = new CallbackHelper();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertNotNull(
-                    "Null speculation, first one", mCustomTabsConnection.mSpeculation);
-            Tab tab = mCustomTabsConnection.mSpeculation.tab;
+            Assert.assertNotNull("Null speculation, first one",
+                    mCustomTabsConnection.getSpeculationParamsForTesting());
+            Tab tab = mCustomTabsConnection.getSpeculationParamsForTesting().tab;
             Assert.assertNotNull("No first tab", tab);
             tab.addObserver(new EmptyTabObserver() {
                 @Override
@@ -233,10 +233,11 @@ public class CustomTabsConnectionTest {
         Assert.assertTrue("Failed second mayLaunchUrl()",
                 mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL2), null, null));
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertNotNull(
-                    "Null speculation, new hidden tab", mCustomTabsConnection.mSpeculation);
-            Assert.assertNotNull("No second tab", mCustomTabsConnection.mSpeculation.tab);
-            Assert.assertEquals(URL2, mCustomTabsConnection.mSpeculation.url);
+            Assert.assertNotNull("Null speculation, new hidden tab",
+                    mCustomTabsConnection.getSpeculationParamsForTesting());
+            Assert.assertNotNull("No second tab",
+                    mCustomTabsConnection.getSpeculationParamsForTesting().tab);
+            Assert.assertEquals(URL2, mCustomTabsConnection.getSpeculationParamsForTesting().url);
         });
         tabDestroyedHelper.waitForCallback("The first hidden tab should have been destroyed", 0);
 
@@ -264,8 +265,9 @@ public class CustomTabsConnectionTest {
                 mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null));
         final CallbackHelper tabDestroyedHelper = new CallbackHelper();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertNotNull("Null speculation", mCustomTabsConnection.mSpeculation);
-            Tab speculationTab = mCustomTabsConnection.mSpeculation.tab;
+            Assert.assertNotNull("Null speculation",
+                    mCustomTabsConnection.getSpeculationParamsForTesting());
+            Tab speculationTab = mCustomTabsConnection.getSpeculationParamsForTesting().tab;
             Assert.assertNotNull("Null speculation tab", speculationTab);
             speculationTab.addObserver(new EmptyTabObserver() {
                 @Override
