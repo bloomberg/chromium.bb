@@ -257,6 +257,9 @@ void TrackAudioRenderer::SwitchOutputDevice(
 
   media::OutputDeviceStatus new_sink_status =
       new_sink->GetOutputDeviceInfo().device_status();
+  UMA_HISTOGRAM_ENUMERATION("Media.Audio.TrackAudioRenderer.SwitchDeviceStatus",
+                            new_sink_status,
+                            media::OUTPUT_DEVICE_STATUS_MAX + 1);
   if (new_sink_status != media::OUTPUT_DEVICE_STATUS_OK) {
     new_sink->Stop();
     std::move(callback).Run(new_sink_status);
@@ -294,6 +297,9 @@ void TrackAudioRenderer::MaybeStartSink() {
     return;
 
   const media::OutputDeviceInfo& device_info = sink_->GetOutputDeviceInfo();
+  UMA_HISTOGRAM_ENUMERATION("Media.Audio.TrackAudioRenderer.DeviceStatus",
+                            device_info.device_status(),
+                            media::OUTPUT_DEVICE_STATUS_MAX + 1);
   if (device_info.device_status() != media::OUTPUT_DEVICE_STATUS_OK)
     return;
 

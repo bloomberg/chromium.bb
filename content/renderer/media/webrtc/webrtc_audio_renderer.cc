@@ -196,8 +196,11 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
       AudioDeviceFactory::kSourceWebRtc, source_render_frame_id_, sink_params);
 
-  if (sink_->GetOutputDeviceInfo().device_status() !=
-      media::OUTPUT_DEVICE_STATUS_OK) {
+  media::OutputDeviceStatus sink_status =
+      sink_->GetOutputDeviceInfo().device_status();
+  UMA_HISTOGRAM_ENUMERATION("Media.Audio.WebRTCAudioRenderer.DeviceStatus",
+                            sink_status, media::OUTPUT_DEVICE_STATUS_MAX + 1);
+  if (sink_status != media::OUTPUT_DEVICE_STATUS_OK) {
     sink_->Stop();
     return false;
   }
@@ -388,6 +391,10 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
           sink_params);
   media::OutputDeviceStatus status =
       new_sink->GetOutputDeviceInfo().device_status();
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.Audio.WebRTCAudioRenderer.SwitchDeviceStatus", status,
+      media::OUTPUT_DEVICE_STATUS_MAX + 1);
+
   if (status != media::OUTPUT_DEVICE_STATUS_OK) {
     new_sink->Stop();
     std::move(callback).Run(status);
