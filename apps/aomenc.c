@@ -503,6 +503,10 @@ static const arg_def_t enable_smooth_intra =
 static const arg_def_t enable_paeth_intra =
     ARG_DEF(NULL, "enable-paeth-intra", 1,
             "Enable Paeth intra prediction mode (0: false, 1: true (default))");
+static const arg_def_t enable_cfl_intra =
+    ARG_DEF(NULL, "enable-cfl-intra", 1,
+            "Enable chroma from luma intra prediction mode "
+            "(0: false, 1: true (default))");
 static const arg_def_t enable_obmc = ARG_DEF(
     NULL, "enable-obmc", 1, "Enable OBMC (0: false, 1: true (default))");
 static const arg_def_t enable_palette =
@@ -735,6 +739,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_filter_intra,
                                        &enable_smooth_intra,
                                        &enable_paeth_intra,
+                                       &enable_cfl_intra,
                                        &enable_obmc,
                                        &enable_palette,
                                        &enable_intrabc,
@@ -815,6 +820,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_FILTER_INTRA,
                                         AV1E_SET_ENABLE_SMOOTH_INTRA,
                                         AV1E_SET_ENABLE_PAETH_INTRA,
+                                        AV1E_SET_ENABLE_CFL_INTRA,
                                         AV1E_SET_ENABLE_OBMC,
                                         AV1E_SET_ENABLE_PALETTE,
                                         AV1E_SET_ENABLE_INTRABC,

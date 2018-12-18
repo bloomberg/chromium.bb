@@ -6340,7 +6340,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
 
   const BLOCK_SIZE bsize = mbmi->sb_type;
 #if CONFIG_DEBUG
-  assert(is_cfl_allowed(xd));
+  assert(is_cfl_allowed(xd) && cpi->oxcf.enable_cfl_intra);
   const int ssx = xd->plane[AOM_PLANE_U].subsampling_x;
   const int ssy = xd->plane[AOM_PLANE_U].subsampling_y;
   const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, ssx, ssy);
@@ -6482,7 +6482,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     mbmi->uv_mode = mode;
     int cfl_alpha_rate = 0;
     if (mode == UV_CFL_PRED) {
-      if (!is_cfl_allowed(xd)) continue;
+      if (!is_cfl_allowed(xd) || !cpi->oxcf.enable_cfl_intra) continue;
       assert(!is_directional_mode);
       const TX_SIZE uv_tx_size = av1_get_tx_size(AOM_PLANE_U, xd);
       cfl_alpha_rate = cfl_rd_pick_alpha(x, cpi, uv_tx_size, best_rd);
@@ -6506,7 +6506,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     this_rate = tokenonly_rd_stats.rate +
                 intra_mode_info_cost_uv(cpi, x, mbmi, bsize, mode_cost);
     if (mode == UV_CFL_PRED) {
-      assert(is_cfl_allowed(xd));
+      assert(is_cfl_allowed(xd) && cpi->oxcf.enable_cfl_intra);
 #if CONFIG_DEBUG
       if (!xd->lossless[mbmi->segment_id])
         assert(xd->cfl.rate == tokenonly_rd_stats.rate + mode_cost);

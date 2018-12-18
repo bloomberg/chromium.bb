@@ -888,6 +888,14 @@ enum {
    */
   AV1E_SET_ENABLE_PAETH_INTRA,
 
+  /*!\brief Codec control function to turn on / off CFL uv intra mode usage.
+   *
+   * This will enable or disable usage of chroma-from-luma intra mode. The
+   * default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_CFL_INTRA,
+
   /*!\brief Codec control function to turn on / off frame superresolution.
    *
    * This will enable or disable frame superresolution. The default value is 1
@@ -1228,6 +1236,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_SMOOTH_INTRA, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_PAETH_INTRA, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_PAETH_INTRA
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_CFL_INTRA, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_CFL_INTRA
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_SUPERRES, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_SUPERRES
