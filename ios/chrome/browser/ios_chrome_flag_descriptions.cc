@@ -41,6 +41,12 @@ extern const char kBreakpadNoDelayInitialUploadDescription[] =
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
 
+const char kCompactTranslateInfobarName[] =
+    "Enable the compact translate infobar";
+const char kCompactTranslateInfobarDescription[] =
+    "When enabled, replaces the exisitng translate infobars with a new compact "
+    "one.";
+
 const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[] =
     "Enable updated prompt explanation when offering credit card upload";
 const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =

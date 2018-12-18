@@ -29,6 +29,10 @@ extern const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[];
 extern const char kBreakpadNoDelayInitialUploadName[];
 extern const char kBreakpadNoDelayInitialUploadDescription[];
 
+// Title and description for the flag to enable the compact translate infobar.
+extern const char kCompactTranslateInfobarName[];
+extern const char kCompactTranslateInfobarDescription[];
+
 // Title and description for the flag to control if a crash report is generated
 // on main thread freeze.
 extern const char kDetectMainThreadFreezeName[];

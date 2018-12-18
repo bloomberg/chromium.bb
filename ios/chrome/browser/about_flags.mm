@@ -41,6 +41,7 @@
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
@@ -446,6 +447,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBreakpadNoDelayInitialUploadDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(crash_report::kBreakpadNoDelayInitialUpload)},
+    {"enable-compact-translate-infobar",
+     flag_descriptions::kCompactTranslateInfobarName,
+     flag_descriptions::kCompactTranslateInfobarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(translate::kCompactTranslateInfobarIOS)},
     {"non-modal-dialogs", flag_descriptions::kNonModalDialogsName,
      flag_descriptions::kNonModalDialogsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(dialogs::kNonModalDialogs)},
