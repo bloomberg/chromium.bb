@@ -136,7 +136,7 @@ class BlobDataHandleTest : public testing::Test {
 
   void TestCreateBlob(std::unique_ptr<BlobData> data,
                       Vector<ExpectedElement> expected_elements) {
-    size_t blob_size = data->length();
+    uint64_t blob_size = data->length();
     String type = data->ContentType();
     bool is_single_unknown_size_file = data->IsSingleUnknownSizeFile();
 

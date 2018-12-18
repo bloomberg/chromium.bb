@@ -136,7 +136,7 @@ bool StaticBitmapImage::ConvertToArrayBufferContents(
       data_size.ValueOrDie() > v8::TypedArray::kMaxLength)
     return false;
 
-  size_t alloc_size_in_bytes = rect.Size().Area() * bytes_per_pixel;
+  int alloc_size_in_bytes = data_size.ValueOrDie();
   if (!src_image) {
     auto data = WTF::ArrayBufferContents::CreateDataHandle(
         alloc_size_in_bytes, WTF::ArrayBufferContents::kZeroInitialize);

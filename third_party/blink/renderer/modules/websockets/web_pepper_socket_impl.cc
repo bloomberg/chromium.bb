@@ -157,7 +157,7 @@ void WebPepperSocketImpl::DidError() {
   client_->DidReceiveMessageError();
 }
 
-void WebPepperSocketImpl::DidConsumeBufferedAmount(unsigned long consumed) {
+void WebPepperSocketImpl::DidConsumeBufferedAmount(uint64_t consumed) {
   client_->DidConsumeBufferedAmount(consumed);
 
   // FIXME: Deprecate the following statements.

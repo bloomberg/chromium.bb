@@ -168,7 +168,7 @@ class NetworkResourcesData final
 
    private:
     bool HasData() const { return data_buffer_.get(); }
-    size_t DataLength() const;
+    uint64_t DataLength() const;
     void AppendData(const char* data, size_t data_length);
     size_t DecodeDataToContent();
     void ClearWeakMembers(Visitor*);
@@ -247,9 +247,9 @@ class NetworkResourcesData final
  private:
   ResourceData* ResourceDataForRequestId(const String& request_id) const;
   void EnsureNoDataForRequestId(const String& request_id);
-  bool EnsureFreeSpace(size_t);
+  bool EnsureFreeSpace(uint64_t);
   ResourceData* PrepareToAddResourceData(const String& request_id,
-                                         size_t data_length);
+                                         uint64_t data_length);
   void MaybeAddResourceData(const String& request_id,
                             scoped_refptr<const SharedBuffer>);
 

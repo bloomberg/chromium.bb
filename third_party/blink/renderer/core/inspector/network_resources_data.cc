@@ -156,9 +156,9 @@ void NetworkResourcesData::ResourceData::ClearWeakMembers(Visitor* visitor) {
   cached_resource_ = nullptr;
 }
 
-size_t NetworkResourcesData::ResourceData::DataLength() const {
-  size_t data_buffer_size = data_buffer_ ? data_buffer_->size() : 0;
-  size_t post_data_size = post_data_ ? post_data_->SizeInBytes() : 0;
+uint64_t NetworkResourcesData::ResourceData::DataLength() const {
+  uint64_t data_buffer_size = data_buffer_ ? data_buffer_->size() : 0;
+  uint64_t post_data_size = post_data_ ? post_data_->SizeInBytes() : 0;
   return data_buffer_size + post_data_size;
 }
 
@@ -274,7 +274,7 @@ void NetworkResourcesData::SetResourceContent(const String& request_id,
 
 NetworkResourcesData::ResourceData*
 NetworkResourcesData::PrepareToAddResourceData(const String& request_id,
-                                               size_t data_length) {
+                                               uint64_t data_length) {
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
   if (!resource_data)
     return nullptr;
@@ -431,7 +431,7 @@ void NetworkResourcesData::EnsureNoDataForRequestId(const String& request_id) {
   request_id_to_resource_data_map_.erase(request_id);
 }
 
-bool NetworkResourcesData::EnsureFreeSpace(size_t size) {
+bool NetworkResourcesData::EnsureFreeSpace(uint64_t size) {
   if (size > maximum_resources_content_size_)
     return false;
 

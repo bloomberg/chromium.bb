@@ -159,7 +159,7 @@ bool DictionaryHelper::Get(const Dictionary& dictionary,
   int64_t int64_value;
   if (!v8_value->IntegerValue(dictionary.V8Context()).To(&int64_value))
     return false;
-  value = int64_value;
+  value = static_cast<unsigned long>(int64_value);
   return true;
 }
 

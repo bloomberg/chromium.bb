@@ -67,7 +67,7 @@ class WebPepperSocketImpl final : public WebPepperSocket {
   void DidReceiveTextMessage(const String& payload);
   void DidReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload);
   void DidError();
-  void DidConsumeBufferedAmount(unsigned long consumed);
+  void DidConsumeBufferedAmount(uint64_t consumed);
   void DidStartClosingHandshake();
   void DidClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus,
                 unsigned short code,
