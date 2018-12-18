@@ -72,7 +72,7 @@ import java.util.List;
  */
 public class LocationBarLayout extends FrameLayout
         implements OnClickListener, LocationBar, AutocompleteDelegate, FakeboxDelegate,
-                   LocationBarVoiceRecognitionHandler.Delegate, StatusViewCoordinator.Delegate {
+                   LocationBarVoiceRecognitionHandler.Delegate {
     private static final String TAG = "cr_LocationBar";
 
     protected ImageButton mDeleteButton;
@@ -203,8 +203,9 @@ public class LocationBarLayout extends FrameLayout
         setLayoutTransition(null);
 
         mStatusViewCoordinator =
-                new StatusViewCoordinator(mIsTablet, findViewById(R.id.location_bar_status), this);
+                new StatusViewCoordinator(mIsTablet, findViewById(R.id.location_bar_status));
 
+        updateShouldAnimateIconChanges();
         mUrlBar.setOnKeyListener(new UrlBarKeyListener());
 
         // mLocationBar's direction is tied to this UrlBar's text direction. Icons inside the
@@ -306,9 +307,22 @@ public class LocationBarLayout extends FrameLayout
         updateMicButtonVisibility(mUrlFocusChangePercent);
     }
 
-    @Override
-    public boolean shouldAnimateIconChanges() {
-        return mUrlHasFocus;
+    /**
+     * Evaluate state and update child components' animations.
+     *
+     * This call and all overrides should invoke `notifyShouldAnimateIconChanges(boolean)` with a
+     * computed boolean value toggling animation support in child components.
+     */
+    protected void updateShouldAnimateIconChanges() {
+        notifyShouldAnimateIconChanges(mUrlHasFocus);
+    }
+
+    /**
+     * Toggle child components animations.
+     * @param shouldAnimate Boolean flag indicating whether animations should be enabled.
+     */
+    protected void notifyShouldAnimateIconChanges(boolean shouldAnimate) {
+        mStatusViewCoordinator.setShouldAnimateIconChanges(shouldAnimate);
     }
 
     /**
@@ -408,6 +422,7 @@ public class LocationBarLayout extends FrameLayout
         mUrlHasFocus = hasFocus;
         updateButtonVisibility();
         updateNavigationButton();
+        updateShouldAnimateIconChanges();
 
         if (hasFocus) {
             if (mNativeInitialized) RecordUserAction.record("FocusLocation");

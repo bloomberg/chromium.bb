@@ -10,6 +10,7 @@ import android.support.annotation.StringRes;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.omnibox.status.StatusView.NavigationButtonType;
+import org.chromium.chrome.browser.omnibox.status.StatusView.StatusButtonType;
 
 /**
  * Contains the controller logic of the Status component.
@@ -29,6 +30,13 @@ class StatusMediator {
 
     public StatusMediator(PropertyModel model) {
         mModel = model;
+    }
+
+    /**
+     * Specify type of displayed location bar button.
+     */
+    public void setLocationBarButtonType(@StatusButtonType int type) {
+        mModel.set(StatusProperties.LOCATION_BAR_BUTTON_TYPE, type);
     }
 
     /**
@@ -61,6 +69,11 @@ class StatusMediator {
     }
 
     /**
+     * Toggle animations of icon changes.
+     */
+    public void setAnimationsEnabled(boolean enabled) {
+        mModel.set(StatusProperties.ANIMATIONS_ENABLED, enabled);
+    }
 
     /**
      * Specify minimum width of the separator field.
