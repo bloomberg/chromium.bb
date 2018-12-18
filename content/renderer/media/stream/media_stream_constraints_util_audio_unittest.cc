@@ -576,6 +576,70 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
   }
 }
 
+TEST_P(MediaStreamConstraintsUtilAudioTest, SampleSize) {
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetExact(16);
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetExact(0);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Only set a min value for the constraint.
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetMin(16);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetMin(17);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Only set a max value for the constraint.
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetMax(16);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetMax(15);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Define a bounded range for the constraint.
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetMin(10);
+  constraint_factory_.basic().sample_size.SetMax(20);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetMin(-10);
+  constraint_factory_.basic().sample_size.SetMax(10);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetMin(20);
+  constraint_factory_.basic().sample_size.SetMax(30);
+  result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+
+  // Test ideal constraints.
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetIdeal(16);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+
+  ResetFactory();
+  constraint_factory_.basic().sample_size.SetIdeal(0);
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+}
+
 // DeviceID tests.
 TEST_P(MediaStreamConstraintsUtilAudioTest, ExactArbitraryDeviceID) {
   const std::string kArbitraryDeviceID = "arbitrary";

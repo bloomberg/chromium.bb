@@ -27,24 +27,30 @@
 
 namespace content {
 
-using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
 using ConstraintSet = blink::WebMediaTrackConstraintSet;
+using BooleanConstraint = blink::BooleanConstraint;
+using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
 using ProcessingType = AudioCaptureSettings::ProcessingType;
 using StringConstraint = blink::StringConstraint;
-using BooleanConstraint = blink::BooleanConstraint;
 
 namespace {
 
-using StringSet = media_constraints::DiscreteSet<std::string>;
 using BoolSet = media_constraints::DiscreteSet<bool>;
 using EchoCancellationTypeSet =
     media_constraints::DiscreteSet<EchoCancellationType>;
+using IntRangeSet = media_constraints::NumericRangeSet<int>;
+using StringSet = media_constraints::DiscreteSet<std::string>;
 
 // The presence of a MediaStreamAudioSource object indicates whether the source
 // in question is currently in use, or not. This convenience enum helps
 // identifying whether a source is available and, if so, whether it has audio
 // processing enabled or disabled.
 enum class SourceType { kNone, kUnprocessed, kNoApmProcessed, kApmProcessed };
+
+// The sample size is set to 16 due to the Signed-16 format representation.
+int32_t GetSampleSize() {
+  return media::SampleFormatToBitsPerChannel(media::kSampleFormatS16);
+}
 
 // This class encapsulates two values that together build up the score of each
 // processed candidate.
@@ -177,6 +183,56 @@ class StringContainer {
 
  private:
   StringSet allowed_values_;
+};
+
+// Container for each independent integer constrainable property.
+class IntegerContainer {
+ public:
+  explicit IntegerContainer(IntRangeSet allowed_values = IntRangeSet())
+      : allowed_values_(std::move(allowed_values)) {}
+
+  const char* ApplyConstraintSet(const blink::LongConstraint& constraint) {
+    auto constraint_set = IntRangeSet::FromConstraint(constraint);
+    allowed_values_ = allowed_values_.Intersection(constraint_set);
+    return IsEmpty() ? constraint.GetName() : nullptr;
+  }
+
+  std::tuple<double, int> SelectSettingsAndScore(
+      const blink::LongConstraint& constraint,
+      int default_setting) const {
+    DCHECK(!IsEmpty());
+
+    if (constraint.HasIdeal()) {
+      if (allowed_values_.Contains(constraint.Ideal()))
+        return std::make_tuple(1.0, constraint.Ideal());
+
+      int value = SelectClosestValueTo(constraint.Ideal());
+      double fitness =
+          1.0 - NumericConstraintFitnessDistance(value, constraint.Ideal());
+      return std::make_tuple(fitness, value);
+    }
+
+    if (allowed_values_.Contains(default_setting))
+      return std::make_tuple(0.0, default_setting);
+
+    // If the default value provided is not contained, select the value closest
+    // to it.
+    int selected_value = SelectClosestValueTo(default_setting);
+    return std::make_tuple(0.0, selected_value);
+  }
+
+  bool IsEmpty() const { return allowed_values_.IsEmpty(); }
+
+ private:
+  int SelectClosestValueTo(int value) const {
+    DCHECK(allowed_values_.Min() || allowed_values_.Max());
+    DCHECK(!allowed_values_.Contains(value));
+    return allowed_values_.Min() && value < *allowed_values_.Min()
+               ? *allowed_values_.Min()
+               : *allowed_values_.Max();
+  }
+
+  IntRangeSet allowed_values_;
 };
 
 // Container to manage the properties related to echo cancellation:
@@ -537,6 +593,7 @@ class ProcessingBasedContainer {
         BoolSet(), /* goog_experimental_noise_suppression_set */
         BoolSet(), /* goog_highpass_filter_set */
         BoolSet(), /* goog_experimental_auto_gain_control_set */
+        IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
         properties, has_active_source, is_device_capture, parameters);
   }
 
@@ -561,6 +618,7 @@ class ProcessingBasedContainer {
         BoolSet({false}), /* goog_experimental_noise_suppression_set */
         BoolSet({false}), /* goog_highpass_filter_set */
         BoolSet({false}), /* goog_experimental_auto_gain_control_set */
+        IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
         properties, has_active_source, is_device_capture, parameters);
   }
 
@@ -584,6 +642,7 @@ class ProcessingBasedContainer {
         BoolSet({false}), /* goog_experimental_noise_suppression_set */
         BoolSet({false}), /* goog_highpass_filter_set */
         BoolSet({false}), /* goog_experimental_auto_gain_control_set */
+        IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
         properties, has_active_source, is_device_capture, parameters);
   }
 
@@ -592,6 +651,11 @@ class ProcessingBasedContainer {
 
     failed_constraint_name =
         echo_cancellation_container_->ApplyConstraintSet(constraint_set);
+    if (failed_constraint_name != nullptr)
+      return failed_constraint_name;
+
+    failed_constraint_name =
+        sample_size_container_.ApplyConstraintSet(constraint_set.sample_size);
     if (failed_constraint_name != nullptr)
       return failed_constraint_name;
 
@@ -612,6 +676,11 @@ class ProcessingBasedContainer {
 
     Score score(0.0);
     double sub_score(0.0);
+
+    std::tie(sub_score, std::ignore) =
+        sample_size_container_.SelectSettingsAndScore(
+            constraint_set.sample_size, GetSampleSize());
+    score += sub_score;
 
     AudioProcessingProperties properties;
     Score ec_score(0.0);
@@ -648,7 +717,8 @@ class ProcessingBasedContainer {
       if (container.IsEmpty())
         return true;
     }
-    return echo_cancellation_container_->IsEmpty();
+    return echo_cancellation_container_->IsEmpty() ||
+           sample_size_container_.IsEmpty();
   }
 
  private:
@@ -714,11 +784,13 @@ class ProcessingBasedContainer {
       BoolSet goog_experimental_noise_suppression_set,
       BoolSet goog_highpass_filter_set,
       BoolSet goog_experimental_auto_gain_control_set,
+      IntRangeSet sample_size_range,
       AudioProcessingProperties properties,
       bool has_active_source,
       bool is_device_capture,
       media::AudioParameters device_parameters)
-      : processing_type_(processing_type) {
+      : processing_type_(processing_type),
+        sample_size_container_(sample_size_range) {
     // If the parameters indicate that system echo cancellation is available, we
     // add such value in the allowed values for the EC type.
     if (device_parameters.effects() & media::AudioParameters::ECHO_CANCELLER ||
@@ -781,6 +853,7 @@ class ProcessingBasedContainer {
   ProcessingType processing_type_;
   std::array<BooleanContainer, kNumBooleanContainerIds> boolean_containers_;
   base::Optional<EchoCancellationContainer> echo_cancellation_container_;
+  IntegerContainer sample_size_container_;
 };
 
 constexpr ProcessingBasedContainer::BooleanPropertyContainerInfo
