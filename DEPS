@@ -61,6 +61,12 @@ vars = {
   # e.g. with custom_vars.
   'checkout_android_sdk_sources': False,
 
+  # By default, do not check out Chromium autofill captured sites test
+  # dependencies. These dependencies include very large numbers of very
+  # large web capture files. Captured sites test dependencies are also
+  # restricted to Googlers only.
+  'checkout_chromium_autofill_test_dependencies': False,
+
   # Check out and download nacl by default. This can be disabled e.g. with
   # custom_vars.
   'checkout_nacl': True,
@@ -284,6 +290,17 @@ deps = {
   'src/chrome/installer/mac/third_party/xz/xz': {
       'url': Var('chromium_git') + '/chromium/deps/xz.git' + '@' + 'eecaf55632ca72e90eb2641376bce7cdbc7284f7',
       'condition': 'checkout_mac',
+  },
+
+  'src/chrome/test/data/autofill/captured_sites': {
+    'packages': [
+      {
+        'package': 'chromium/chrome/test/data/autofill/captured_sites',
+        'version': 'iTTirmwddgzWZrhbBLyYSUn-PFZNRIm5NjY9eYBgk0cC',
+      }
+    ],
+    'condition': 'checkout_chromium_autofill_test_dependencies',
+    'dep_type': 'cipd',
   },
 
   'src/chrome/test/data/perf/canvas_bench':
