@@ -105,6 +105,9 @@ bool IsArcOptInVerificationDisabled();
 // |window| is nullptr, returns false.
 bool IsArcAppWindow(const aura::Window* window);
 
+// Returns true if ARC app icons are forced to cache.
+bool IsArcForceCacheAppIcon();
+
 // Returns true if data clean up is requested for each ARC start.
 bool IsArcDataCleanupOnStartRequested();
 

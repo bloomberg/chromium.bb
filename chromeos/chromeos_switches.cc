@@ -102,6 +102,9 @@ const char kArcAvailable[] = "arc-available";
 // Flag that forces ARC data be cleaned on each start.
 const char kArcDataCleanupOnStart[] = "arc-data-cleanup-on-start";
 
+// Flag that forces ARC to cache icons for apps.
+const char kArcForceCacheAppIcons[] = "arc-force-cache-app-icons";
+
 // Flag that forces the OptIn ui to be shown. Used in tests.
 const char kArcForceShowOptInUi[] = "arc-force-show-optin-ui";
 

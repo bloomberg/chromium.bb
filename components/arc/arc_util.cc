@@ -191,6 +191,11 @@ void SetArcCpuRestriction(bool do_restrict) {
       state, base::BindOnce(SetArcCpuRestrictionCallback, state));
 }
 
+bool IsArcForceCacheAppIcon() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kArcForceCacheAppIcons);
+}
+
 bool IsArcDataCleanupOnStartRequested() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kArcDataCleanupOnStart);

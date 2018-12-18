@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
+#include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -1159,6 +1160,48 @@ TEST_P(ArcAppModelBuilderTest, RequestShortcutIcons) {
     const base::FilePath icon_path = prefs->GetIconPath(
         ArcAppTest::GetAppId(shortcut), GetAppListIconDescriptor(scale_factor));
     EXPECT_TRUE(base::PathExists(icon_path));
+  }
+}
+
+// Verifies that if required flag is provided then ARC app icons are
+// automatically cached for the set of dpi and supported scale factors.
+TEST_P(ArcAppModelBuilderTest, ForceCacheIcons) {
+  // Make sure we are on UI thread.
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitch(
+      chromeos::switches::kArcForceCacheAppIcons);
+
+  const std::string app_id = ArcAppTest::GetAppId(fake_apps()[0]);
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList({fake_apps()[0]});
+
+  // Number of requests per size in pixels.
+  std::map<int, int> requests_expectation;
+  const std::vector<int> expected_dip_sizes({16, 32, 48, 64});
+  for (auto scale_factor : ui::GetSupportedScaleFactors()) {
+    for (int dip_size : expected_dip_sizes) {
+      const int size_in_pixels =
+          ArcAppIconDescriptor(dip_size, scale_factor).GetSizeInPixels();
+      requests_expectation[size_in_pixels]++;
+    }
+  }
+
+  const std::vector<std::unique_ptr<arc::FakeAppInstance::IconRequest>>&
+      icon_requests = app_instance()->icon_requests();
+
+  EXPECT_EQ(ui::GetSupportedScaleFactors().size() * expected_dip_sizes.size(),
+            icon_requests.size());
+
+  for (size_t i = 0; i < icon_requests.size(); ++i) {
+    const arc::FakeAppInstance::IconRequest* icon_request =
+        icon_requests[i].get();
+    const std::string request_app_id = ArcAppListPrefs::GetAppId(
+        icon_request->package_name(), icon_request->activity());
+    EXPECT_EQ(app_id, request_app_id);
+    EXPECT_GE(--requests_expectation[icon_request->dimension()], 0);
   }
 }
 
