@@ -115,7 +115,8 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
                           std::make_unique<BackgroundFetchServiceImpl>(
                               test->context_,
                               origin,
-                              nullptr /* render_frame_host */)) {}
+                              /* render_frame_tree_node_id= */ 0,
+                              /* wc_getter= */ base::NullCallback())) {}
 
    private:
     base::AutoReset<std::unique_ptr<BackgroundFetchServiceImpl>>
@@ -305,7 +306,9 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
 
     context_->InitializeOnIOThread();
     service_ = std::make_unique<BackgroundFetchServiceImpl>(
-        context_, origin(), nullptr /* render_frame_host */);
+        context_, origin(),
+        /* render_frame_tree_node_id= */ 0,
+        /* wc_getter= */ base::NullCallback());
   }
 
   void TearDown() override {
