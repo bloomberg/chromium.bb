@@ -73,8 +73,11 @@ void AutocompleteHistoryManager::UMARecorder::OnWebDataServiceRequestDone(
 
 AutocompleteHistoryManager::QueryHandler::QueryHandler(
     int client_query_id,
+    base::string16 prefix,
     base::WeakPtr<SuggestionsHandler> handler)
-    : client_query_id_(client_query_id), handler_(std::move(handler)) {}
+    : client_query_id_(client_query_id),
+      prefix_(prefix),
+      handler_(std::move(handler)) {}
 
 AutocompleteHistoryManager::QueryHandler::QueryHandler(
     const QueryHandler& original) = default;
@@ -111,7 +114,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
 
   if (!is_autocomplete_enabled || form_control_type == "textarea" ||
       IsInAutofillSuggestionsDisabledExperiment()) {
-    SendSuggestions({}, QueryHandler(query_id, handler));
+    SendSuggestions({}, QueryHandler(query_id, prefix, handler));
     uma_recorder_.OnGetAutocompleteSuggestions(name,
                                                0 /* pending_query_handle */);
     return;
@@ -123,7 +126,8 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     uma_recorder_.OnGetAutocompleteSuggestions(name, query_handle);
 
     // We can simply insert, since |query_handle| is always unique.
-    pending_queries_.insert({query_handle, QueryHandler(query_id, handler)});
+    pending_queries_.insert(
+        {query_handle, QueryHandler(query_id, prefix, handler)});
   }
 }
 
@@ -189,11 +193,19 @@ void AutocompleteHistoryManager::SendSuggestions(
     return;
   }
 
+  // If there is only one suggestion that is the exact same string as
+  // what is in the input box, then don't show the suggestion.
+  bool hide_suggestions = autocomplete_results.size() == 1 &&
+                          query_handler.prefix_ == autocomplete_results[0];
+
   std::vector<Suggestion> suggestions;
-  std::transform(
-      autocomplete_results.begin(), autocomplete_results.end(),
-      std::back_inserter(suggestions),
-      [](const base::string16& result) { return Suggestion(result); });
+
+  if (!hide_suggestions) {
+    std::transform(
+        autocomplete_results.begin(), autocomplete_results.end(),
+        std::back_inserter(suggestions),
+        [](const base::string16& result) { return Suggestion(result); });
+  }
 
   query_handler.handler_->OnSuggestionsReturned(query_handler.client_query_id_,
                                                 suggestions);

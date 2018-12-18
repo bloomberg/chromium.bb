@@ -29,6 +29,7 @@
 
 using base::ASCIIToUTF16;
 using testing::_;
+using testing::Eq;
 using testing::Field;
 using testing::Return;
 using testing::UnorderedElementsAre;
@@ -362,6 +363,81 @@ TEST_F(AutocompleteHistoryManagerTest,
   auto test_prefix = ASCIIToUTF16("SomePrefix");
 
   std::vector<base::string16> expected_values = {ASCIIToUTF16("SomePrefixOne")};
+
+  std::unique_ptr<WDTypedResult> mocked_results =
+      std::make_unique<WDResult<std::vector<base::string16>>>(
+          AUTOFILL_VALUE_RESULT, expected_values);
+
+  EXPECT_CALL(*web_data_service_,
+              GetFormValuesForElementName(test_name, test_prefix, _,
+                                          autocomplete_manager_.get()))
+      .WillOnce(Return(mocked_db_query_id));
+
+  // Simulate request for suggestions.
+  autocomplete_manager_->OnGetAutocompleteSuggestions(
+      test_query_id, /*is_autocomplete_enabled=*/true, test_name, test_prefix,
+      "Some Type", suggestions_handler->GetWeakPtr());
+
+  // Setting up mock to verify that DB response triggers a call to the handler's
+  EXPECT_CALL(*suggestions_handler.get(),
+              OnSuggestionsReturned(
+                  test_query_id, UnorderedElementsAre(Field(
+                                     &Suggestion::value, expected_values[0]))));
+
+  // Simulate response from DB.
+  autocomplete_manager_->OnWebDataServiceRequestDone(mocked_db_query_id,
+                                                     std::move(mocked_results));
+}
+
+// Tests that we don't return any suggestion if we only have one suggestion that
+// is case-sensitive equal to the given prefix.
+TEST_F(AutocompleteHistoryManagerTest,
+       SuggestionsReturned_InvokeHandler_SingleValue_EqualsPrefix) {
+  int mocked_db_query_id = 100;
+
+  auto suggestions_handler = std::make_unique<MockSuggestionsHandler>();
+  int test_query_id = 2;
+  auto test_name = ASCIIToUTF16("Some Field Name");
+  auto test_prefix = ASCIIToUTF16("SomePrefix");
+
+  std::vector<base::string16> expected_values = {test_prefix};
+
+  std::unique_ptr<WDTypedResult> mocked_results =
+      std::make_unique<WDResult<std::vector<base::string16>>>(
+          AUTOFILL_VALUE_RESULT, expected_values);
+
+  EXPECT_CALL(*web_data_service_,
+              GetFormValuesForElementName(test_name, test_prefix, _,
+                                          autocomplete_manager_.get()))
+      .WillOnce(Return(mocked_db_query_id));
+
+  // Simulate request for suggestions.
+  autocomplete_manager_->OnGetAutocompleteSuggestions(
+      test_query_id, /*is_autocomplete_enabled=*/true, test_name, test_prefix,
+      "Some Type", suggestions_handler->GetWeakPtr());
+
+  // Setting up mock to verify that DB response triggers a call to the handler's
+  EXPECT_CALL(*suggestions_handler.get(),
+              OnSuggestionsReturned(test_query_id,
+                                    testing::Truly(IsEmptySuggestionVector)));
+
+  // Simulate response from DB.
+  autocomplete_manager_->OnWebDataServiceRequestDone(mocked_db_query_id,
+                                                     std::move(mocked_results));
+}
+
+// Tests the case sensitivity of the unique suggestion equal to the prefix
+// filter.
+TEST_F(AutocompleteHistoryManagerTest,
+       SuggestionsReturned_InvokeHandler_SingleValue_EqualsPrefix_DiffCase) {
+  int mocked_db_query_id = 100;
+
+  auto suggestions_handler = std::make_unique<MockSuggestionsHandler>();
+  int test_query_id = 2;
+  auto test_name = ASCIIToUTF16("Some Field Name");
+  auto test_prefix = ASCIIToUTF16("SomePrefix");
+
+  std::vector<base::string16> expected_values = {ASCIIToUTF16("someprefix")};
 
   std::unique_ptr<WDTypedResult> mocked_results =
       std::make_unique<WDResult<std::vector<base::string16>>>(
