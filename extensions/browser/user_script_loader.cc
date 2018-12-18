@@ -224,7 +224,7 @@ void UserScriptLoader::Observe(int type,
   if (!ExtensionsBrowserClient::Get()->IsSameContext(
           browser_context_, process->GetBrowserContext()))
     return;
-  if (scripts_ready()) {
+  if (initial_load_complete()) {
     SendUpdate(process, shared_memory_.get(),
                std::set<HostID>());  // Include all hosts.
   }

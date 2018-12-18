@@ -155,9 +155,9 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     extensions::SharedUserScriptMaster* master =
         extensions::ExtensionSystem::Get(browser()->profile())
             ->shared_user_script_master();
-    if (!master->scripts_ready())
+    if (!master->initial_load_complete())
       user_scripts_observer.Wait();
-    ASSERT_TRUE(master->scripts_ready());
+    ASSERT_TRUE(master->initial_load_complete());
   }
 
   void TestInjection(bool expect_css, bool expect_script) {
