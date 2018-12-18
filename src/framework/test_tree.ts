@@ -4,7 +4,7 @@ interface ITestTreeModule {
   name: string;
   description: string;
   subtrees?: Array<Promise<ITestTreeModule>>;
-  add?: any;
+  add?: (tree: TestTree) => void;
 }
 
 type PTestFn = (param: object) => (Promise<void> | void);
