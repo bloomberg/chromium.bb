@@ -517,15 +517,17 @@ void AXNode::IdVectorToNodeVector(std::vector<int32_t>& ids,
 int32_t AXNode::GetPosInSet() {
   // Only allow this to be called on nodes that can hold pos_in_set values,
   // which are defined in the ARIA spec.
-  if (!IsItemLike(data().role))
+  if (!IsItemLike(data().role)) {
     return 0;
+  }
 
   const AXNode* ordered_set = GetOrderedSet();
-  if (!ordered_set)
+  if (!ordered_set) {
     return 0;
+  }
 
   // See AXTree::GetPosInSet
-  return tree_->GetPosInSet(id(), ordered_set);
+  return tree_->GetPosInSet(*this, ordered_set);
 }
 
 // Uses AXTree's cache to calculate node's set_size.
@@ -544,7 +546,7 @@ int32_t AXNode::GetSetSize() {
     return 0;
 
   // See AXTree::GetSetSize
-  return tree_->GetSetSize(id(), ordered_set);
+  return tree_->GetSetSize(*this, ordered_set);
 }
 
 // Returns true if the role of ordered set matches the role of item.
@@ -614,11 +616,6 @@ AXNode* AXNode::GetOrderedSet() const {
                     result->data().role == ax::mojom::Role::kIgnored)) {
     result = result->parent();
   }
-
-  // If the parent of this node isn't a valid ordered set, return nullptr
-  if (result && !IsSetLike(result->data().role))
-    return nullptr;
-
   return result;
 }
 

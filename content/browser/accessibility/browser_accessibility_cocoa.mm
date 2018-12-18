@@ -734,8 +734,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)ariaPosInSet {
   if (![self instanceActive])
     return nil;
-  return [NSNumber numberWithInt:owner_->GetIntAttribute(
-                                     ax::mojom::IntAttribute::kPosInSet)];
+  return [NSNumber numberWithInt:owner_->node()->GetPosInSet()];
 }
 
 - (NSString*)ariaRelevant {
@@ -762,8 +761,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)ariaSetSize {
   if (![self instanceActive])
     return nil;
-  return [NSNumber
-      numberWithInt:owner_->GetIntAttribute(ax::mojom::IntAttribute::kSetSize)];
+  return [NSNumber numberWithInt:owner_->node()->GetSetSize()];
 }
 
 - (NSString*)autocompleteValue {
@@ -2973,13 +2971,13 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     [ret addObjectsFromArray:@[ NSAccessibilityURLAttribute ]];
   }
 
-  // Position in set and Set size
-  if (owner_->HasIntAttribute(ax::mojom::IntAttribute::kPosInSet)) {
+  // Position in set and Set size.
+  // Only add these attributes for roles that use posinset and setsize.
+  if (ui::IsItemLike(owner_->node()->data().role))
     [ret addObjectsFromArray:@[ NSAccessibilityARIAPosInSetAttribute ]];
-  }
-  if (owner_->HasIntAttribute(ax::mojom::IntAttribute::kSetSize)) {
+  if (ui::IsSetLike(owner_->node()->data().role) ||
+      ui::IsItemLike(owner_->node()->data().role))
     [ret addObjectsFromArray:@[ NSAccessibilityARIASetSizeAttribute ]];
-  }
 
   // Live regions.
   if (owner_->HasStringAttribute(ax::mojom::StringAttribute::kLiveStatus)) {

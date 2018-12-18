@@ -896,10 +896,12 @@ int32_t AXTree::GetNextNegativeInternalNodeId() {
 }
 
 // Populates items vector with all items within ordered_set.
-// Will only add items whose roles match the role of the ordered_set.
+// Will only add items whose roles match the role of the
+// ordered_set.
 void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
                                      const AXNode* local_parent,
-                                     std::vector<const AXNode*>& items) const {
+                                     std::vector<const AXNode*>& items,
+                                     bool node_is_radio_button) const {
   // Stop searching current path if roles of local_parent and ordered set match.
   // Don't compare the container to itself.
   if (!(ordered_set == local_parent)) {
@@ -909,13 +911,22 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
 
   for (int i = 0; i < local_parent->child_count(); ++i) {
     const AXNode* child = local_parent->GetUnignoredChildAtIndex(i);
-    // Add child to items if role matches with ordered set's role.
-    if (child->SetRoleMatchesItemRole(ordered_set))
+
+    // If role of node is kRadioButton, only add other kRadioButtons.
+    if (node_is_radio_button &&
+        child->data().role == ax::mojom::Role::kRadioButton)
       items.push_back(child);
+
+    // Add child to items if role matches with ordered set's role. If role of
+    // node is kRadioButton, don't add items of other roles, even if item role
+    // matches ordered set role.
+    if (!node_is_radio_button && child->SetRoleMatchesItemRole(ordered_set))
+      items.push_back(child);
+
     // Recurse if there is a generic container or is ignored.
     if (child->data().role == ax::mojom::Role::kGenericContainer ||
         child->data().role == ax::mojom::Role::kIgnored) {
-      PopulateOrderedSetItems(ordered_set, child, items);
+      PopulateOrderedSetItems(ordered_set, child, items, node_is_radio_button);
     }
   }
 }
@@ -923,17 +934,20 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
 // Given an ordered_set, compute pos_in_set and set_size for all of its items
 // and store values in cache.
 // Ordered_set should never be nullptr.
-void AXTree::ComputeSetSizePosInSetAndCache(const AXNode* ordered_set) {
+void AXTree::ComputeSetSizePosInSetAndCache(const AXNode& node,
+                                            const AXNode* ordered_set) {
   DCHECK(ordered_set);
+  std::vector<const AXNode*> items;
 
-  // Default ordered_set's pos_in_set and set_size to 0.
-  ordered_set_info_map_[ordered_set->id()] = OrderedSetInfo();
+  // True if the role of AXNode GetPosInSet() was called on is a kRadioButton.
+  bool node_is_radio_button =
+      (node.data().role == ax::mojom::Role::kRadioButton);
 
   // Find all items within ordered_set and add to vector.
-  std::vector<const AXNode*> items;
-  PopulateOrderedSetItems(ordered_set, ordered_set, items);
+  PopulateOrderedSetItems(ordered_set, ordered_set, items,
+                          node_is_radio_button);
 
-  // Keep track of the number of elements ordered_set has
+  // Keep track of the number of elements ordered_set has.
   int32_t num_elements = 0;
 
   // Necessary for calculating set_size.
@@ -969,24 +983,30 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode* ordered_set) {
   // Compute set_size value.
   // The SetSize of an ordered set (and all of its items) is the maximum of the
   // following candidate values:
-  // 1. The PosInSet of the last item in the ordered set
+  // 1. The number of elements in the ordered set.
   // 2. The Largest assigned SetSize in the ordered set.
   // 3. The SetSize assigned within the ordered set.
-  int32_t pos_candidate = num_elements;
-  int32_t largest_set_size_candidate = largest_assigned_set_size;
-  int32_t ordered_set_candidate = 0;
-  if (ordered_set->HasIntAttribute(ax::mojom::IntAttribute::kSetSize)) {
-    ordered_set_candidate =
-        ordered_set->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
-  }
-  int32_t set_size_value =
-      std::max(std::max(pos_candidate, largest_set_size_candidate),
-               ordered_set_candidate);
 
-  // Assign set_size to ordered set
-  ordered_set_info_map_[ordered_set->id()].set_size = set_size_value;
+  // Set to 0 if ordered_set has no kSetSize attribute.
+  int32_t ordered_set_candidate =
+      ordered_set->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
 
-  // Assign set_size to items
+  int32_t set_size_value = std::max(
+      std::max(num_elements, largest_assigned_set_size), ordered_set_candidate);
+
+  // If ordered_set is not in the cache, assign it a new set_size.
+  if (ordered_set_info_map_.find(ordered_set->id()) ==
+      ordered_set_info_map_.end())
+    ordered_set_info_map_[ordered_set->id()] = OrderedSetInfo();
+
+  // Assign set_size to ordered_set.
+  // Must meet one of two conditions:
+  // 1. Node role matches ordered set role.
+  // 2. The node that calculations were called on is the ordered_set.
+  if (node.SetRoleMatchesItemRole(ordered_set) || ordered_set == &node)
+    ordered_set_info_map_[ordered_set->id()].set_size = set_size_value;
+
+  // Assign set_size to items.
   for (size_t j = 0; j < items.size(); ++j) {
     const AXNode* item = items[j];
     ordered_set_info_map_[item->id()].set_size = set_size_value;
@@ -998,11 +1018,11 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode* ordered_set) {
 // the same ordered set) if no value is present in the cache.
 // This function is guaranteed to be only called on nodes that can hold
 // pos_in_set values, minimizing the size of the cache.
-int32_t AXTree::GetPosInSet(const int32_t node_id, const AXNode* ordered_set) {
+int32_t AXTree::GetPosInSet(const AXNode& node, const AXNode* ordered_set) {
   // If item's id is not in the cache, compute it.
-  if (ordered_set_info_map_.find(node_id) == ordered_set_info_map_.end())
-    ComputeSetSizePosInSetAndCache(ordered_set);
-  return ordered_set_info_map_[node_id].pos_in_set;
+  if (ordered_set_info_map_.find(node.id()) == ordered_set_info_map_.end())
+    ComputeSetSizePosInSetAndCache(node, ordered_set);
+  return ordered_set_info_map_[node.id()].pos_in_set;
 }
 
 // Returns the set_size of node. node could be an ordered set or an item.
@@ -1011,11 +1031,11 @@ int32_t AXTree::GetPosInSet(const int32_t node_id, const AXNode* ordered_set) {
 // cache.
 // This function is guaranteed to be only called on nodes that can hold
 // set_size values, minimizing the size of the cache.
-int32_t AXTree::GetSetSize(const int32_t node_id, const AXNode* ordered_set) {
+int32_t AXTree::GetSetSize(const AXNode& node, const AXNode* ordered_set) {
   // If node's id is not in the cache, compute it.
-  if (ordered_set_info_map_.find(node_id) == ordered_set_info_map_.end())
-    ComputeSetSizePosInSetAndCache(ordered_set);
-  return ordered_set_info_map_[node_id].set_size;
+  if (ordered_set_info_map_.find(node.id()) == ordered_set_info_map_.end())
+    ComputeSetSizePosInSetAndCache(node, ordered_set);
+  return ordered_set_info_map_[node.id()].set_size;
 }
 
 }  // namespace ui
