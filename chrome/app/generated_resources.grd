@@ -3872,10 +3872,10 @@ are declared in tools/grit/grit_rule.gni.
         Confirm Access
       </message>
       <message name="IDS_EXTENSIONS_DIRECTORY_CONFIRMATION_DIALOG_MESSAGE_READ_ONLY" desc="Text of the message of the directory access confirmation dialog if the app does not have write access.">
-        The folder you selected contains sensitive files. Are you sure you want to grant "$1" permanent read access to this folder?
+        The folder you selected contains sensitive files. Are you sure you want to grant "<ph name="APP_NAME">$1<ex>Text</ex></ph>" permanent read access to this folder?
       </message>
       <message name="IDS_EXTENSIONS_DIRECTORY_CONFIRMATION_DIALOG_MESSAGE_WRITABLE" desc="Text of the message of the directory access confirmation dialog if the app has write access.">
-        The folder you selected contains sensitive files. Are you sure you want to grant "$1" permanent write access to this folder?
+        The folder you selected contains sensitive files. Are you sure you want to grant "<ph name="APP_NAME">$1<ex>Text</ex></ph>" permanent write access to this folder?
       </message>
 
       <!-- Extensions strings, which are not used by chrome://extensions. -->
