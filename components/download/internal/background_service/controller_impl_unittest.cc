@@ -778,7 +778,7 @@ TEST_F(DownloadServiceControllerImplTest, Resume) {
   EXPECT_FALSE(driver_->Find(entry1.guid)->paused);
   EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry1.guid)->state);
 
-  // Entries in paused state can't be resumed.
+  // Entries in active state can't be resumed.
   controller_->ResumeDownload(entry2.guid);
   EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry2.guid)->state);
   EXPECT_FALSE(driver_->Find(entry2.guid)->paused);
