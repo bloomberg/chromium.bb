@@ -15,20 +15,18 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/widget/widget.h"
-
-namespace gfx {
-class SlideAnimation;
-}  // namespace gfx
 
 namespace ui {
 class Shadow;
 }  // namespace ui
 
+namespace views {
+class Widget;
+}  // namespace views
+
 namespace ash {
 
+class CaptionContainerView;
 class WindowGrid;
 
 // This class represents an item in overview mode.
@@ -36,29 +34,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
                                       public aura::WindowObserver,
                                       public ui::ImplicitAnimationObserver {
  public:
-  // An image button with a close window icon.
-  class OverviewCloseButton : public views::ImageButton {
-   public:
-    explicit OverviewCloseButton(views::ButtonListener* listener);
-    ~OverviewCloseButton() override;
-
-    // Resets the listener so that the listener can go out of scope.
-    void ResetListener() { listener_ = nullptr; }
-
-   protected:
-    // views::Button:
-    std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-    std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-    std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-        const override;
-    std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
-
-   private:
-    int GetInkDropRadius() const;
-
-    DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
-  };
-
   WindowSelectorItem(aura::Window* window,
                      WindowSelector* window_selector,
                      WindowGrid* window_grid);
@@ -123,8 +98,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void set_selected(bool selected) { selected_ = selected; }
 
   // Sends an accessibility event indicating that this window became selected
-  // so that it's highlighted and announced if accessibility features are
-  // enabled.
+  // so that it is highlighted and announced.
   void SendAccessibleSelectionEvent();
 
   // Slides the item up or down and then closes the associated window. Used by
@@ -278,8 +252,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   gfx::Rect GetShadowBoundsForTesting();
 
  private:
-  class CaptionContainerView;
-  class RoundedContainerView;
   friend class WindowSelectorTest;
   FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
                            OverviewUnsnappableIndicatorVisibility);
@@ -291,7 +263,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
                      OverviewAnimationType animation_type);
 
   // Creates the window label.
-  void CreateWindowLabel(const base::string16& title);
+  void CreateWindowLabel();
 
   // Updates the |item_widget|'s bounds. Any change in bounds will be animated
   // from the current bounds to the new bounds as per the |animation_type|.
@@ -300,9 +272,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Animates opacity of the |transform_window_| and its caption to |opacity|
   // using |animation_type|.
   void AnimateOpacity(float opacity, OverviewAnimationType animation_type);
-
-  // Updates the accessibility name to match the window title.
-  void UpdateAccessibilityName();
 
   // Allows a test to directly set animation state.
   gfx::SlideAnimation* GetBackgroundViewAnimation();
@@ -349,22 +318,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Container view that owns a Button view covering the |transform_window_|.
   // That button serves as an event shield to receive all events such as clicks
   // targeting the |transform_window_| or the overview header above the window.
-  // The shield button owns a header view which owns |label_view_|
-  // and |close_button_|.
+  // The shield button owns a header view which shows an icon, close button and
+  // title.
   CaptionContainerView* caption_container_view_ = nullptr;
-
-  // A View for the text label above the window owned by the a header view in
-  // |caption_container_view_|.
-  views::Label* label_view_ = nullptr;
-
-  // A View for the text label in the center of the window warning users that
-  // this window cannot be snapped for splitview. Owned by a container in
-  // |caption_container_view_|.
-  views::Label* cannot_snap_label_view_ = nullptr;
-
-  // A close button for the window in this item owned by a header view in
-  // |caption_container_view_|.
-  OverviewCloseButton* close_button_ = nullptr;
 
   // Pointer to the WindowSelector that owns the WindowGrid containing |this|.
   // Guaranteed to be non-null for the lifetime of |this|.

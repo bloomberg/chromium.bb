@@ -27,6 +27,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/caption_container_view.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
@@ -69,6 +70,8 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/window_util.h"
@@ -335,11 +338,15 @@ class WindowSelectorTest : public AshTestBase {
   }
 
   views::Widget* GetCloseButton(WindowSelectorItem* window) {
-    return window->close_button_->GetWidget();
+    return window->caption_container_view_->GetCloseButton()->GetWidget();
   }
 
   views::Label* GetLabelView(WindowSelectorItem* window) {
-    return window->label_view_;
+    return window->caption_container_view_->title_label();
+  }
+
+  views::Label* GetCannotSnapLabelView(WindowSelectorItem* window) {
+    return window->caption_container_view_->cannot_snap_label();
   }
 
   // Tests that a window is contained within a given WindowSelectorItem, and
@@ -4376,18 +4383,18 @@ TEST_F(SplitViewWindowSelectorTest, OverviewUnsnappableIndicatorVisibility) {
   WindowSelectorItem* unsnappable_selector_item =
       GetWindowItemForWindow(grid_index, unsnappable_window.get());
 
-  // Note: the container for |cannot_snap_label_view_| will be created
-  // on demand, and its parent remains null until the container is created.
-  EXPECT_FALSE(snappable_selector_item->cannot_snap_label_view_->parent());
-  ASSERT_FALSE(unsnappable_selector_item->cannot_snap_label_view_->parent());
+  // Note: |cannot_snap_label_view_| and its parent will be created on demand.
+  EXPECT_FALSE(GetCannotSnapLabelView(snappable_selector_item));
+  ASSERT_FALSE(GetCannotSnapLabelView(unsnappable_selector_item));
 
   // Snap the extra snappable window to enter split view mode.
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
-  EXPECT_FALSE(snappable_selector_item->cannot_snap_label_view_->parent());
-  ASSERT_TRUE(unsnappable_selector_item->cannot_snap_label_view_->parent());
+  EXPECT_FALSE(GetCannotSnapLabelView(snappable_selector_item));
+  ASSERT_TRUE(GetCannotSnapLabelView(unsnappable_selector_item));
+  ASSERT_TRUE(GetCannotSnapLabelView(unsnappable_selector_item)->parent());
   ui::Layer* unsnappable_layer =
-      unsnappable_selector_item->cannot_snap_label_view_->parent()->layer();
+      GetCannotSnapLabelView(unsnappable_selector_item)->parent()->layer();
   EXPECT_EQ(1.f, unsnappable_layer->opacity());
 
   // Exiting the splitview will hide the unsnappable label.
