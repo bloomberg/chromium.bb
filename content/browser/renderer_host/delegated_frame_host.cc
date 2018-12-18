@@ -130,6 +130,12 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     }
     request->set_result_selection(gfx::Rect(output_size));
     const gfx::Rect& area = request->area();
+    if (area.IsEmpty()) {
+      // Viz would normally return an empty result for an empty area.
+      // However, this guard here is still necessary to protect against setting
+      // an illegal scaling ratio.
+      return;
+    }
     request->SetScaleRatio(
         gfx::Vector2d(area.width(), area.height()),
         gfx::Vector2d(output_size.width(), output_size.height()));
