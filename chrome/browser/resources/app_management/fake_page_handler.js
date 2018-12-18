@@ -35,6 +35,7 @@ cr.define('app_management', function() {
         id: id,
         type: apps.mojom.AppType.kUnknown,
         title: 'App Title',
+        isPinned: apps.mojom.OptionalBool.kUnknown,
       });
       if (config)
         Object.assign(app, config);

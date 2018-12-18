@@ -79,7 +79,7 @@ Polymer({
    * @private
    */
   onAppsChanged_: function() {
-    this.$['more-apps'].hidden =
+    this.$['expander-row'].hidden =
         this.apps_.length <= NUMBER_OF_APPS_DISPLAYED_DEFAULT;
     this.displayedApps_ = this.apps_.slice(0, NUMBER_OF_APPS_DISPLAYED_DEFAULT);
     this.collapsedApps_ =

@@ -14,44 +14,30 @@
 <dom-module id="app-management-main-view">
   <template>
     <style include="app-management-shared-css">
-      cr-toolbar {
-        color: var(--secondary-text-color);
-      }
-
-      #app-list {
-        @apply --cr-card-elevation;
-        background-color: #fff;
-        border-radius: var(--cr-card-border-radius);
-        margin: 24px auto;
-        width: var(--card-width);
-      }
-
       #app-list-title {
-        color: var(--card-title-text-color);
-        font-weight: 400;
         padding: 16px 24px;
       }
 
-      #more-apps {
+      #expand-button {
+        height: 36px;
+        margin-inline-end: 12px;
+        width: 36px;
+      }
+
+      #expander-row {
         align-items: center;
         border-top: var(--card-separator);
         color: var(--secondary-text-color);
         display: flex;
         height: 50px;
         justify-content: space-between;
+        padding-inline-end: 8px;
         padding-inline-start: 24px;
       }
-
-      #right-button {
-        height: 36px;
-        margin-inline-end: 12px;
-        width: 36px;
-      }
     </style>
-    <cr-toolbar page-name="$i18n{title}" search-prompt="$i18n{searchPrompt}">
-    </cr-toolbar>
-    <div id="app-list">
-      <div id="app-list-title">$i18n{appListTitle}</div>
+
+    <div class="card-container">
+      <div id="app-list-title" class="header-text">$i18n{appListTitle}</div>
       <template is="dom-repeat" items="[[displayedApps_]]">
         <app-management-item app="[[item]]"></app-management-item>
       </template>
@@ -62,12 +48,11 @@
         </template>
       </iron-collapse>
 
-      <div id="more-apps" on-click="toggleListExpanded_">
+      <div id="expander-row" on-click="toggleListExpanded_">
         <span>[[moreAppsString_(apps_.length,listExpanded_)]]</span>
-        <paper-icon-button-light id="right-button">
-          <button id="collapse-button">
-            <iron-icon icon="[[getCollapsedIcon_(listExpanded_)]]"
-                id="dropdown-indicator">
+        <paper-icon-button-light id="expand-button">
+          <button>
+            <iron-icon icon="[[getCollapsedIcon_(listExpanded_)]]">
             </iron-icon>
           </button>
         </paper-icon-button-light>
