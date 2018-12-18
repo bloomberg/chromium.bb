@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://immersive-web.github.io/webxr/#xrdevicepose-interface
+// https://immersive-web.github.io/webxr/#xrviewerpose-interface
+// TODO(https://crbug.com/915021): Update definition to match spec.
 [
     SecureContext,
     Exposed=Window,
     OriginTrialEnabled=WebXR
-] interface XRDevicePose {
+] interface XRViewerPose {
   readonly attribute Float32Array poseModelMatrix;
 
   Float32Array getViewMatrix(XRView view);

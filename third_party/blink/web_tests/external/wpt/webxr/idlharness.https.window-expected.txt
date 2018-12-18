@@ -50,7 +50,7 @@ PASS XRFrame interface: existence and properties of interface prototype object
 PASS XRFrame interface: existence and properties of interface prototype object's "constructor" property
 PASS XRFrame interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRFrame interface: attribute session
-FAIL XRFrame interface: operation getViewerPose(XRReferenceSpace) assert_own_property: interface prototype object missing non-static operation expected property "getViewerPose" missing
+FAIL XRFrame interface: operation getViewerPose(XRReferenceSpace) assert_equals: property has wrong .length expected 0 but got 1
 FAIL XRFrame interface: operation getInputPose(XRInputSource, XRReferenceSpace) assert_equals: property has wrong .length expected 1 but got 2
 FAIL XRSpace interface: existence and properties of interface object assert_own_property: self does not have own property "XRSpace" expected property "XRSpace" missing
 FAIL XRSpace interface object length assert_own_property: self does not have own property "XRSpace" expected property "XRSpace" missing
@@ -124,14 +124,14 @@ PASS XRRay interface: existence and properties of interface prototype object's @
 PASS XRRay interface: attribute origin
 PASS XRRay interface: attribute direction
 FAIL XRRay interface: attribute matrix assert_true: The prototype object must have a property "matrix" expected true got false
-FAIL XRViewerPose interface: existence and properties of interface object assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
-FAIL XRViewerPose interface object length assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
-FAIL XRViewerPose interface object name assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
-FAIL XRViewerPose interface: existence and properties of interface prototype object assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
-FAIL XRViewerPose interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
-FAIL XRViewerPose interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
-FAIL XRViewerPose interface: attribute transform assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
-FAIL XRViewerPose interface: attribute views assert_own_property: self does not have own property "XRViewerPose" expected property "XRViewerPose" missing
+PASS XRViewerPose interface: existence and properties of interface object
+PASS XRViewerPose interface object length
+PASS XRViewerPose interface object name
+PASS XRViewerPose interface: existence and properties of interface prototype object
+PASS XRViewerPose interface: existence and properties of interface prototype object's "constructor" property
+PASS XRViewerPose interface: existence and properties of interface prototype object's @@unscopables property
+FAIL XRViewerPose interface: attribute transform assert_true: The prototype object must have a property "transform" expected true got false
+FAIL XRViewerPose interface: attribute views assert_true: The prototype object must have a property "views" expected true got false
 PASS XRInputSource interface: existence and properties of interface object
 PASS XRInputSource interface object length
 PASS XRInputSource interface object name

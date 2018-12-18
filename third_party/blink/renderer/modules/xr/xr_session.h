@@ -221,7 +221,7 @@ class XRSession final : public EventTargetWithInlineData,
   // Indicates that we've already logged a metric, so don't need to log it
   // again.
   mutable bool did_log_getInputSources_ = false;
-  mutable bool did_log_getDevicePose_ = false;
+  mutable bool did_log_getViewerPose_ = false;
 
   // Dimensions of the output canvas.
   int output_width_ = 1;

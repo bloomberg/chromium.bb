@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/xr/xr_device_pose.h"
+#include "third_party/blink/renderer/modules/xr/xr_viewer_pose.h"
 
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
@@ -10,18 +10,18 @@
 
 namespace blink {
 
-XRDevicePose::XRDevicePose(
+XRViewerPose::XRViewerPose(
     XRSession* session,
     std::unique_ptr<TransformationMatrix> pose_model_matrix)
     : session_(session), pose_model_matrix_(std::move(pose_model_matrix)) {}
 
-DOMFloat32Array* XRDevicePose::poseModelMatrix() const {
+DOMFloat32Array* XRViewerPose::poseModelMatrix() const {
   if (!pose_model_matrix_)
     return nullptr;
   return transformationMatrixToDOMFloat32Array(*pose_model_matrix_);
 }
 
-DOMFloat32Array* XRDevicePose::getViewMatrix(XRView* view) {
+DOMFloat32Array* XRViewerPose::getViewMatrix(XRView* view) {
   if (view->session() != session_)
     return nullptr;
 
@@ -39,7 +39,7 @@ DOMFloat32Array* XRDevicePose::getViewMatrix(XRView* view) {
   return transformationMatrixToDOMFloat32Array(view_matrix);
 }
 
-void XRDevicePose::Trace(blink::Visitor* visitor) {
+void XRViewerPose::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
 }

@@ -15,7 +15,7 @@
 namespace blink {
 
 class XRCoordinateSystem;
-class XRDevicePose;
+class XRViewerPose;
 class XRInputPose;
 class XRInputSource;
 class XRSession;
@@ -30,7 +30,7 @@ class XRFrame final : public ScriptWrappable {
   XRSession* session() const { return session_; }
 
   const HeapVector<Member<XRView>>& views() const;
-  XRDevicePose* getDevicePose(XRCoordinateSystem*) const;
+  XRViewerPose* getViewerPose(XRCoordinateSystem*) const;
   XRInputPose* getInputPose(XRInputSource*, XRCoordinateSystem*) const;
 
   void SetBasePoseMatrix(const TransformationMatrix&);

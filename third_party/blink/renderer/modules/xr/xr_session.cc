@@ -526,8 +526,8 @@ void XRSession::OnFrame(
 
 void XRSession::LogGetPose() const {
   Document* doc = To<Document>(GetExecutionContext());
-  if (!did_log_getDevicePose_ && doc) {
-    did_log_getDevicePose_ = true;
+  if (!did_log_getViewerPose_ && doc) {
+    did_log_getViewerPose_ = true;
 
     ukm::builders::XR_WebXR(device_->GetSourceId())
         .SetDidRequestPose(1)
