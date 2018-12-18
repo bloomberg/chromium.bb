@@ -1217,6 +1217,144 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   EXPECT_TRUE(intersection.IsEmpty());
 }
 
+TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetFromConstraint) {
+  // Exact value translates in a range with a single value.
+  blink::LongConstraint constraint = blink::LongConstraint("aConstraint");
+  constraint.SetExact(10);
+  NumericRangeSet<int> range = NumericRangeSet<int>::FromConstraint(constraint);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 10);
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 10);
+
+  // A constraint with min and max translates to range with same min and same
+  // max.
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(0);
+  constraint.SetMax(100);
+  range = NumericRangeSet<int>::FromConstraint(constraint);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 0);
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 100);
+
+  // A constraint with only a min or a max value translates to a half-bounded
+  // set in both cases.
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(0);
+  range = NumericRangeSet<int>::FromConstraint(constraint);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 0);
+  EXPECT_FALSE(range.Max());
+
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMax(100);
+  range = NumericRangeSet<int>::FromConstraint(constraint);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 100);
+  EXPECT_FALSE(range.Min());
+
+  // A constraint with no values specified maps to an unbounded range.
+  constraint = blink::LongConstraint("aConstraint");
+  range = NumericRangeSet<int>::FromConstraint(constraint);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_FALSE(range.Min());
+  EXPECT_FALSE(range.Max());
+}
+
+TEST_F(MediaStreamConstraintsUtilSetsTest,
+       NumericRangeSetFromConstraintWithBounds) {
+  int upper_bound = 25;
+  int lower_bound = 5;
+  // Exact value translates in a range with a single value.
+  blink::LongConstraint constraint = blink::LongConstraint("aConstraint");
+  constraint.SetExact(10);
+  NumericRangeSet<int> range = NumericRangeSet<int>::FromConstraint(
+      constraint, lower_bound, upper_bound);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 10);
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 10);
+
+  // A constraint with min and max translates to range with same min and same
+  // max. If lower and upper bound do not permit that, will have unspecified
+  // min and max respectively.
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(0);
+  constraint.SetMax(100);
+  range = NumericRangeSet<int>::FromConstraint(constraint, 0, 100);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 0);
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 100);
+  range = NumericRangeSet<int>::FromConstraint(constraint, lower_bound,
+                                               upper_bound);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_FALSE(range.Min());
+  EXPECT_FALSE(range.Max());
+
+  // A constraint with only a min or a max value translates to a half-bounded
+  // or unbounded range depending on the whether the lower and the upper bounds
+  // allow for it.
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(0);
+  range = NumericRangeSet<int>::FromConstraint(constraint, lower_bound,
+                                               upper_bound);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_FALSE(range.Min());
+  EXPECT_FALSE(range.Max());
+
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMax(100);
+  range = NumericRangeSet<int>::FromConstraint(constraint, lower_bound,
+                                               upper_bound);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_FALSE(range.Min());
+  EXPECT_FALSE(range.Max());
+
+  // A constraint with no values specified maps to an unbounded range
+  // independently of upper and lower bounds.
+  constraint = blink::LongConstraint("aConstraint");
+  range = NumericRangeSet<int>::FromConstraint(constraint, lower_bound,
+                                               upper_bound);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_FALSE(range.Min());
+  EXPECT_FALSE(range.Max());
+
+  // If the constraint specifies a range that does not overlap with lower and
+  // upper bounds, the resulting range will be empty.
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(-5);
+  constraint.SetMax(0);
+  range = NumericRangeSet<int>::FromConstraint(constraint, lower_bound,
+                                               upper_bound);
+  EXPECT_TRUE(range.IsEmpty());
+
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(105);
+  constraint.SetMax(110);
+  range = NumericRangeSet<int>::FromConstraint(constraint, lower_bound,
+                                               upper_bound);
+  EXPECT_TRUE(range.IsEmpty());
+}
+
+TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetFromValue) {
+  // Getting a range from a single value, will return a range with a single
+  // value set as both max and min.
+  auto range = NumericRangeSet<int>::FromValue(0);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 0);
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 0);
+}
+
 TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetString) {
   // Universal set.
   using StringSet = DiscreteSet<std::string>;

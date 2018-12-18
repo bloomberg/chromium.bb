@@ -86,6 +86,23 @@ class NumericRangeSet {
             : base::Optional<T>());
   }
 
+  // Creates a NumericRangeSet based on the minimum and maximum values of
+  // |constraint| and a client-provided range of valid values.
+  template <typename ConstraintType>
+  static NumericRangeSet<T> FromConstraint(ConstraintType constraint) {
+    return NumericRangeSet<T>(
+        ConstraintHasMin(constraint) ? ConstraintMin(constraint)
+                                     : base::Optional<T>(),
+        ConstraintHasMax(constraint) ? ConstraintMax(constraint)
+                                     : base::Optional<T>());
+  }
+
+  // Creates a NumericRangeSet based on a single value representing both the
+  // minimum and the maximum values for this range.
+  static NumericRangeSet<T> FromValue(T value) {
+    return NumericRangeSet<T>(value, value);
+  }
+
   static NumericRangeSet<T> EmptySet() { return NumericRangeSet(1, 0); }
 
  private:
