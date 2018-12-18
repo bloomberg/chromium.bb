@@ -213,11 +213,13 @@ void LayoutImage::UpdateIntrinsicSizeIfNeeded(const LayoutSize& new_size) {
 bool LayoutImage::NeedsLayoutOnIntrinsicSizeChange() const {
   // If the actual area occupied by the image has changed and it is not
   // constrained by style then a layout is required.
-  bool image_size_is_constrained = StyleRef().LogicalWidth().IsSpecified() &&
-                                   StyleRef().LogicalHeight().IsSpecified();
+  bool image_size_is_constrained =
+      StyleRef().LogicalWidth().IsSpecified() &&
+      StyleRef().LogicalHeight().IsSpecified() &&
+      !HasAutoHeightOrContainingBlockWithAutoHeight(
+          kDontRegisterPercentageDescendant);
   if (!image_size_is_constrained)
     return true;
-
   // FIXME: We only need to recompute the containing block's preferred size if
   // the containing block's size depends on the image's size (i.e., the
   // container uses shrink-to-fit sizing). There's no easy way to detect that
