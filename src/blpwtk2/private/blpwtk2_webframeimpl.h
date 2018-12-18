@@ -57,6 +57,8 @@ class WebFrameImpl : public WebFrame,
     ~WebFrameImpl() final;
 
     v8::Local<v8::Context> mainWorldScriptContext() const override;
+    v8::Local<v8::Context> mainWorldScriptContextForFrame(
+                                const blpwtk2::StringRef& name) const override;
     v8::Isolate* scriptIsolate() const override;
     void setContentSettingsDelegate(
             WebContentSettingsDelegate *contentSettingsDelegate) override;

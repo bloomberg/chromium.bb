@@ -28,11 +28,14 @@
 
 namespace blpwtk2 {
 
+class StringRef;
 class WebContentSettingsDelegate;
 
 class WebFrame {
 public:
     virtual v8::Local<v8::Context> mainWorldScriptContext() const = 0;
+    virtual v8::Local<v8::Context> mainWorldScriptContextForFrame(
+                                     const blpwtk2::StringRef& name) const = 0;
     virtual v8::Isolate* scriptIsolate() const = 0;
     virtual void setContentSettingsDelegate(WebContentSettingsDelegate *contentSettingsDelegate) = 0;
 
