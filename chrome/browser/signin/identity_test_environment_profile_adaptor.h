@@ -26,9 +26,6 @@ class IdentityTestEnvironmentProfileAdaptor {
 
   // Like the above, but additionally configures the returned Profile with
   // |input_factories|.
-  // If |create_fake_url_loader_factory_for_cookie_requests| is set to true,
-  // this method will internally construct a TestURLLoaderFactory to use for
-  // cookie-related network requests.
   static std::unique_ptr<TestingProfile>
   CreateProfileForIdentityTestEnvironment(
       const TestingProfile::TestingFactories& input_factories);
