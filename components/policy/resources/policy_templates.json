@@ -7543,7 +7543,7 @@
 
       If this policy is set to false, the built-in DNS client will never be used.
 
-      If this policy is left not set, the users will be able to change whether the built-in DNS client is used by editing chrome://flags or specifying a command-line flag.''',
+      If this policy is left not set, the built-in DNS client will be enabled by default on MacOS, Android (when neither Private DNS nor VPN are enabled) and ChromeOS, and the users will be able to change whether the built-in DNS client is used by editing chrome://flags or specifying a command-line flag.''',
     },
     {
       'name': 'ShelfAutoHideBehavior',
