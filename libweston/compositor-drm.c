@@ -2008,9 +2008,6 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 	    extents->y2 != output->base.y + output->base.height)
 		return NULL;
 
-	if (ev->alpha != 1.0f)
-		return NULL;
-
 	fb = drm_fb_get_from_view(output_state, ev);
 	if (!fb)
 		return NULL;
