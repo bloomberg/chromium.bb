@@ -822,6 +822,7 @@ TEST_F(PasswordAutofillAgentTest,
 // Fill username and password fields when username field contains a prefilled
 // value that matches the list of known possible prefilled values usually used
 // as placeholders.
+// TODO(crbug.com/855383): Leaks under ASAN.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_AutocompleteForPrefilledUsernameValue \
   DISABLED_AutocompleteForPrefilledUsernameValue
@@ -1237,7 +1238,8 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_Redirection) {
 }
 
 // Tests that a password will only be filled as a suggested and will not be
-// accessible by the DOM until a user gesture has occurred. Leaks under ASan.
+// accessible by the DOM until a user gesture has occurred.
+// TODO(crbug.com/855383): Leaks under ASAN.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_GestureRequiredTest DISABLED_GestureRequiredTest
 #else
@@ -1270,7 +1272,8 @@ TEST_F(PasswordAutofillAgentTest, NoDOMActivationTest) {
 }
 
 // Verifies that password autofill triggers events in JavaScript for forms that
-// are filled on page load. Leaks under ASan.
+// are filled on page load.
+// TODO(crbug.com/855383): Leaks under ASAN.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_PasswordAutofillTriggersOnChangeEventsOnLoad \
   DISABLED_PasswordAutofillTriggersOnChangeEventsOnLoad
@@ -1689,7 +1692,7 @@ TEST_F(PasswordAutofillAgentTest, FillIntoFocusedReadonlyTextField) {
 }
 
 // Tests that |FillIntoFocusedField| properly fills user-provided credentials.
-// Leaks under ASan. Disabled due to https://crbug.com/855383.
+// TODO(crbug.com/855383): Leaks under ASAN.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_FillIntoFocusedWritableTextField \
   DISABLED_FillIntoFocusedWritableTextField
@@ -3205,7 +3208,8 @@ TEST_F(PasswordAutofillAgentTest,
 }
 
 // Tests that password manager sees both autofill assisted and user entered
-// data on saving that is triggered by form submission. Leaks under ASan.
+// data on saving that is triggered by form submission.
+// TODO(crbug.com/855383): Leaks under ASAN.
 // Disabled on Win due to https://crbug.com/835865.
 #if defined(ADDRESS_SANITIZER) || defined(OS_WIN)
 #define MAYBE_UsernameChangedAfterPasswordInput_FormSubmitted \
@@ -3232,7 +3236,8 @@ TEST_F(PasswordAutofillAgentTest,
 }
 
 // Tests that a suggestion dropdown is shown on a password field even if a
-// username field is present. Leaks under ASan.
+// username field is present.
+// TODO(crbug.com/855383): Leaks under ASAN.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_SuggestPasswordFieldSignInForm \
   DISABLED_SuggestPasswordFieldSignInForm
