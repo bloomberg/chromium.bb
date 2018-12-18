@@ -124,12 +124,19 @@ class ServiceWorkerClientsApiBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpOnMainThread() override {
+    old_content_browser_client_ =
+        SetBrowserClientForTesting(&content_browser_client_);
+
     embedded_test_server()->StartAcceptingConnections();
 
     StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
         shell()->web_contents()->GetBrowserContext());
     wrapper_ = static_cast<ServiceWorkerContextWrapper*>(
         partition->GetServiceWorkerContext());
+  }
+
+  void TearDownOnMainThread() override {
+    SetBrowserClientForTesting(old_content_browser_client_);
   }
 
   void DispatchNotificationClickEvent(int64_t version_id) {
@@ -178,8 +185,12 @@ class ServiceWorkerClientsApiBrowserTest : public ContentBrowserTest {
 
   ServiceWorkerContextWrapper* wrapper() { return wrapper_.get(); }
 
+ protected:
+  ServiceWorkerClientsContentBrowserClient content_browser_client_;
+
  private:
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
+  ContentBrowserClient* old_content_browser_client_;
 };
 
 // Tests a successful WindowClient.navigate() call.
@@ -216,10 +227,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerClientsApiBrowserTest, Navigate) {
 // Tests a WindowClient.navigate() call to a disallowed URL.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerClientsApiBrowserTest,
                        NavigateDisallowedUrl) {
-  ServiceWorkerClientsContentBrowserClient content_browser_client;
-  content_browser_client.SetToAllowOpenURL(false);
-  auto* old_content_browser_client =
-      SetBrowserClientForTesting(&content_browser_client);
+  content_browser_client_.SetToAllowOpenURL(false);
 
   // Load a page that registers a service worker.
   EXPECT_TRUE(NavigateToURL(shell(),
@@ -247,16 +255,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerClientsApiBrowserTest,
   const base::string16 title = base::ASCIIToUTF16("about:blank");
   TitleWatcher title_watcher(shell()->web_contents(), title);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
-
-  SetBrowserClientForTesting(old_content_browser_client);
 }
 
 // Tests a successful Clients.openWindow() call.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerClientsApiBrowserTest, OpenWindow) {
-  ServiceWorkerClientsContentBrowserClient content_browser_client;
-  auto* old_content_browser_client =
-      SetBrowserClientForTesting(&content_browser_client);
-
   ActivatedServiceWorkerObserver observer;
   wrapper()->AddObserver(&observer);
 
@@ -275,21 +277,17 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerClientsApiBrowserTest, OpenWindow) {
   DispatchNotificationClickEvent(id);
 
   // OpenURL() should be called.
-  content_browser_client.WaitForOpenURL();
+  content_browser_client_.WaitForOpenURL();
   EXPECT_EQ(embedded_test_server()->GetURL("/service_worker/empty.html"),
-            content_browser_client.opened_url());
+            content_browser_client_.opened_url());
 
   wrapper()->RemoveObserver(&observer);
-  SetBrowserClientForTesting(old_content_browser_client);
 }
 
 // Tests a Clients.openWindow() call to a disallowed URL.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerClientsApiBrowserTest,
                        OpenWindowDisallowedUrl) {
-  ServiceWorkerClientsContentBrowserClient content_browser_client;
-  content_browser_client.SetToAllowOpenURL(false);
-  auto* old_content_browser_client =
-      SetBrowserClientForTesting(&content_browser_client);
+  content_browser_client_.SetToAllowOpenURL(false);
 
   ActivatedServiceWorkerObserver observer;
   wrapper()->AddObserver(&observer);
@@ -309,11 +307,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerClientsApiBrowserTest,
   DispatchNotificationClickEvent(id);
 
   // OpenURL() should be called with about:blank instead of the requested URL.
-  content_browser_client.WaitForOpenURL();
-  EXPECT_EQ(GURL("about:blank"), content_browser_client.opened_url());
+  content_browser_client_.WaitForOpenURL();
+  EXPECT_EQ(GURL("about:blank"), content_browser_client_.opened_url());
 
   wrapper()->RemoveObserver(&observer);
-  SetBrowserClientForTesting(old_content_browser_client);
 }
 
 }  // namespace content
