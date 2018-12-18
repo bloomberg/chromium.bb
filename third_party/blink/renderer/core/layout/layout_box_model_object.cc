@@ -696,16 +696,18 @@ LayoutBlock* LayoutBoxModelObject::ContainingBlockForAutoHeightDetection(
   return cb;
 }
 
-bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight()
-    const {
+bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
+    RegisterPercentageDescendant register_percentage_descendant) const {
   // TODO(rego): Check if we can somehow reuse LayoutBlock::
   // availableLogicalHeightForPercentageComputation() (see crbug.com/635655).
   const LayoutBox* this_box = IsBox() ? ToLayoutBox(this) : nullptr;
   Length logical_height_length = StyleRef().LogicalHeight();
   LayoutBlock* cb =
       ContainingBlockForAutoHeightDetection(logical_height_length);
-  if (logical_height_length.IsPercentOrCalc() && cb && IsBox())
+  if (register_percentage_descendant == kRegisterPercentageDescendant &&
+      logical_height_length.IsPercentOrCalc() && cb && IsBox()) {
     cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(ToLayoutBox(this)));
+  }
   if (this_box && this_box->IsFlexItem()) {
     const LayoutFlexibleBox& flex_box = ToLayoutFlexibleBox(*Parent());
     if (flex_box.UseOverrideLogicalHeightForPerentageResolution(*this_box))
