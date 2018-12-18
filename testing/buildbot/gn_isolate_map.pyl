@@ -1516,6 +1516,7 @@
     "args": [
       "--isolated-script-test-output=${ISOLATED_OUTDIR}/results.json",
       "../../chrome/test/mini_installer/test_installer.py",
+      "--output-dir=${ISOLATED_OUTDIR}",
     ],
     "label": "//chrome/test/mini_installer:mini_installer_tests",
     "script": "//testing/scripts/run_isolated_script_test.py",
