@@ -380,7 +380,8 @@ void PaymentRequestState::SetSelectedContactProfile(
   UpdateIsReadyToPayAndNotifyObservers();
 
   if (IsPaymentAppInvoked()) {
-    delegate_->OnPayerInfoSelected(response_helper_->GeneratePayerDetail());
+    delegate_->OnPayerInfoSelected(
+        response_helper_->GeneratePayerDetail(profile));
   }
 }
 
