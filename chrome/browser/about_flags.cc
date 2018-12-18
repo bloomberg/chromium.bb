@@ -3095,12 +3095,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kServiceWorkerLongRunningMessage)},
 
 #if defined(OS_CHROMEOS)
-    {"ChromeVoxArcSupport", flag_descriptions::kChromeVoxArcSupportName,
-     flag_descriptions::kChromeVoxArcSupportDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kChromeVoxArcSupport)},
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
     {"force-tablet-mode", flag_descriptions::kUiModeName,
      flag_descriptions::kUiModeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAshUiModeChoices)},

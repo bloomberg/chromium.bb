@@ -1887,9 +1887,6 @@ extern const char kBulkPrintersDescription[];
 extern const char kCaptivePortalBypassProxyName[];
 extern const char kCaptivePortalBypassProxyDescription[];
 
-extern const char kChromeVoxArcSupportName[];
-extern const char kChromeVoxArcSupportDescription[];
-
 extern const char kCrOSComponentName[];
 extern const char kCrOSComponentDescription[];
 
