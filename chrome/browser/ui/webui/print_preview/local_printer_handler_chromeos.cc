@@ -67,7 +67,7 @@ void CapabilitiesFetched(base::DictionaryValue policies,
                          std::unique_ptr<base::DictionaryValue> printer_info) {
   printer_info->FindKey(printing::kPrinter)
       ->SetKey(printing::kSettingPolicies, std::move(policies));
-  std::move(cb).Run(std::move(printer_info));
+  std::move(cb).Run(std::move(*printer_info));
 }
 
 void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
@@ -148,7 +148,7 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
   if (!printer) {
     // If the printer was removed, the lookup will fail.
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(std::move(cb), nullptr));
+                             base::BindOnce(std::move(cb), base::Value()));
     return;
   }
 
@@ -227,7 +227,7 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
   }
 
   // TODO(skau): Open printer settings if this is resolvable.
-  std::move(cb).Run(nullptr);
+  std::move(cb).Run(base::Value());
 }
 
 void LocalPrinterHandlerChromeos::StartPrint(

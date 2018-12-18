@@ -168,11 +168,12 @@ void PdfPrinterHandler::StartGetPrinters(
 
 void PdfPrinterHandler::StartGetCapability(const std::string& destination_id,
                                            GetCapabilityCallback callback) {
-  auto printer_info = std::make_unique<base::DictionaryValue>();
-  printer_info->SetString(printing::kSettingDeviceName, destination_id);
-  printer_info->Set(
-      printing::kSettingCapabilities,
-      GetPdfCapabilities(g_browser_process->GetApplicationLocale()));
+  base::Value printer_info(base::Value::Type::DICTIONARY);
+  printer_info.SetKey(printing::kSettingDeviceName,
+                      base::Value(destination_id));
+  printer_info.SetKey(printing::kSettingCapabilities,
+                      std::move(*GetPdfCapabilities(
+                          g_browser_process->GetApplicationLocale())));
   std::move(callback).Run(std::move(printer_info));
 }
 

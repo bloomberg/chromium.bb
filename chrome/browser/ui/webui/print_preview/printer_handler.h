@@ -54,8 +54,8 @@ class PrinterHandler {
   // If the dictionary with key printing::kSettingCapabilities is
   // empty, this indicates capabilities were retrieved but the printer does
   // not support any of the capability fields in a CDD.
-  using GetCapabilityCallback = base::OnceCallback<void(
-      std::unique_ptr<base::DictionaryValue> capability)>;
+  using GetCapabilityCallback =
+      base::OnceCallback<void(base::Value capability)>;
   using PrintCallback = base::OnceCallback<void(const base::Value& error)>;
   using GetPrinterInfoCallback =
       base::OnceCallback<void(const base::DictionaryValue& printer_info)>;

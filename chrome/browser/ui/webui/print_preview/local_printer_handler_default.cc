@@ -34,8 +34,7 @@ printing::PrinterList EnumeratePrintersAsync() {
   return printer_list;
 }
 
-std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
-    const std::string& device_name) {
+base::Value FetchCapabilitiesAsync(const std::string& device_name) {
   printing::PrinterSemanticCapsAndDefaults::Papers additional_papers;
 #if defined(OS_MACOSX)
   if (base::FeatureList::IsEnabled(
@@ -52,16 +51,15 @@ std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
 
   if (!print_backend->IsValidPrinter(device_name)) {
     LOG(WARNING) << "Invalid printer " << device_name;
-    return nullptr;
+    return base::Value();
   }
 
   printing::PrinterBasicInfo basic_info;
-  if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info)) {
-    return nullptr;
-  }
+  if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info))
+    return base::Value();
 
-  return printing::GetSettingsOnBlockingPool(device_name, basic_info,
-                                             additional_papers, print_backend);
+  return std::move(*printing::GetSettingsOnBlockingPool(
+      device_name, basic_info, additional_papers, print_backend));
 }
 
 std::string GetDefaultPrinterAsync() {

@@ -210,12 +210,12 @@ void RecordPrintersDone(bool* is_done_out) {
 // Increases |*call_count| and records values returned by StartGetCapability.
 void RecordCapability(size_t* call_count,
                       std::unique_ptr<base::DictionaryValue>* capability_out,
-                      std::unique_ptr<base::DictionaryValue> capability) {
+                      base::Value capability) {
   ++(*call_count);
   const base::Value* capabilities = nullptr;
-  if (capability) {
-    capabilities = capability->FindKeyOfType(printing::kSettingCapabilities,
-                                             base::Value::Type::DICTIONARY);
+  if (capability.is_dict()) {
+    capabilities = capability.FindKeyOfType(printing::kSettingCapabilities,
+                                            base::Value::Type::DICTIONARY);
   }
   *capability_out =
       capabilities ? base::DictionaryValue::From(
