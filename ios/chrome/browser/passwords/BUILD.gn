@@ -77,6 +77,7 @@ source_set("passwords") {
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/translate:translate",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/infobars:infobars_ui",

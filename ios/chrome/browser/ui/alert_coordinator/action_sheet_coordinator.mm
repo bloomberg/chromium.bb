@@ -36,7 +36,6 @@ enum class AnchorMode {
 @end
 
 @implementation ActionSheetCoordinator
-@synthesize popoverArrowDirection = _popoverArrowDirection;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                      title:(NSString*)title
@@ -51,6 +50,7 @@ enum class AnchorMode {
     _rect = rect;
     _view = view;
     _popoverArrowDirection = UIPopoverArrowDirectionAny;
+    _alertStyle = UIAlertControllerStyleActionSheet;
   }
   return self;
 }
@@ -66,16 +66,17 @@ enum class AnchorMode {
     _anchorMode = AnchorMode::BAR_BUTTON_ITEM;
     _barButtonItem = barButtonItem;
     _popoverArrowDirection = UIPopoverArrowDirectionAny;
+    _alertStyle = UIAlertControllerStyleActionSheet;
   }
   return self;
 }
 
 - (UIAlertController*)alertControllerWithTitle:(NSString*)title
                                        message:(NSString*)message {
-  UIAlertController* alert = [UIAlertController
-      alertControllerWithTitle:title
-                       message:message
-                preferredStyle:UIAlertControllerStyleActionSheet];
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:title
+                                          message:message
+                                   preferredStyle:_alertStyle];
   alert.popoverPresentationController.permittedArrowDirections =
       _popoverArrowDirection;
 

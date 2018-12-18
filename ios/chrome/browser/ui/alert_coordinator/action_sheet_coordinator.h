@@ -39,6 +39,10 @@
 // Default is UIPopoverArrowDirectionAny.
 @property(nonatomic, assign) UIPopoverArrowDirection popoverArrowDirection;
 
+// Configures the underlying UIAlertController's style. Defaults to
+// UIAlertControllerStyleActionSheet.
+@property(nonatomic, assign) UIAlertControllerStyle alertStyle;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_ACTION_SHEET_COORDINATOR_H_
