@@ -216,36 +216,6 @@ class FileSystemRestoreEntryFunction : public FileSystemEntryFunction {
   ResponseAction Run() override;
 };
 
-class FileSystemObserveDirectoryFunction : public UIThreadExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileSystem.observeDirectory",
-                             FILESYSTEM_OBSERVEDIRECTORY)
-
- protected:
-  ~FileSystemObserveDirectoryFunction() override {}
-  ResponseAction Run() override;
-};
-
-class FileSystemUnobserveEntryFunction : public UIThreadExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileSystem.unobserveEntry",
-                             FILESYSTEM_UNOBSERVEENTRY)
-
- protected:
-  ~FileSystemUnobserveEntryFunction() override {}
-  ResponseAction Run() override;
-};
-
-class FileSystemGetObservedEntriesFunction : public UIThreadExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileSystem.getObservedEntries",
-                             FILESYSTEM_GETOBSERVEDENTRIES);
-
- protected:
-  ~FileSystemGetObservedEntriesFunction() override {}
-  ResponseAction Run() override;
-};
-
 #if !defined(OS_CHROMEOS)
 // Stub for non Chrome OS operating systems.
 class FileSystemRequestFileSystemFunction : public UIThreadExtensionFunction {
