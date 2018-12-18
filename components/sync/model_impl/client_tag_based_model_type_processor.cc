@@ -977,13 +977,22 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
   metadata_changes->UpdateModelTypeState(model_type_state_);
 
   for (const UpdateResponseData& update : updates) {
-    if (update.entity->client_tag_hash.empty()) {
+    const std::string& client_tag_hash = update.entity->client_tag_hash;
+    if (client_tag_hash.empty()) {
       // Ignore updates missing a client tag hash (e.g. permanent nodes).
       continue;
     }
     if (update.entity->is_deleted()) {
       DLOG(WARNING) << "Ignoring tombstone found during initial update: "
-                    << "client_tag_hash = " << update.entity->client_tag_hash;
+                    << "client_tag_hash = " << client_tag_hash;
+      continue;
+    }
+    if (bridge_->SupportsGetClientTag() &&
+        client_tag_hash !=
+            GenerateSyncableHash(
+                type_, bridge_->GetClientTag(update.entity.value()))) {
+      DLOG(WARNING) << "Received unexpected client tag hash: "
+                    << client_tag_hash;
       continue;
     }
 
@@ -991,10 +1000,9 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     // TODO(crbug.com/872360): The CreateEntity() call below assumes that no
     // entity with this client_tag_hash exists already, but in some cases it
     // does.
-    if (entities_.find(update.entity->client_tag_hash) != entities_.end()) {
-      DLOG(ERROR) << "Received duplicate client_tag_hash "
-                  << update.entity->client_tag_hash << " for "
-                  << ModelTypeToString(type_);
+    if (entities_.find(client_tag_hash) != entities_.end()) {
+      DLOG(ERROR) << "Received duplicate client_tag_hash " << client_tag_hash
+                  << " for " << ModelTypeToString(type_);
     }
 #endif  // DCHECK_IS_ON()
     ProcessorEntityTracker* entity = CreateEntity(update.entity.value());

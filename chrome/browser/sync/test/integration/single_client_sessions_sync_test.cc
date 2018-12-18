@@ -401,6 +401,55 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, OpenNewWindow) {
       SessionsHierarchy({{base_url.spec()}, {new_window_url.spec()}}));
 }
 
+
+// Regression test for crbug.com/915133 that verifies the browser doesn't crash
+// if the server sends corrupt data during initial merge.
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CorruptInitialForeignTab) {
+  // Tabs with a negative node ID should be ignored.
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_session()->mutable_tab();
+  specifics.mutable_session()->set_tab_node_id(-1);
+
+  GetFakeServer()->InjectEntity(
+      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
+          "someclienttag", specifics,
+          /*creation_time=*/0,
+          /*last_modified_time=*/0));
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Foreign data should be empty.
+  SyncedSessionVector sessions;
+  ASSERT_FALSE(GetSessionData(0, &sessions));
+  EXPECT_EQ(0U, sessions.size());
+}
+
+// Regression test for crbug.com/915133 that verifies the browser doesn't crash
+// if the server sends corrupt data as incremental update.
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CorruptForeignTabUpdate) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Tabs with a negative node ID should be ignored.
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_session()->mutable_tab();
+  specifics.mutable_session()->set_tab_node_id(-1);
+
+  GetFakeServer()->InjectEntity(
+      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
+          "someclienttag", specifics,
+          /*creation_time=*/0,
+          /*last_modified_time=*/0));
+
+  // Mimic a browser restart to force a reconfiguration and fetch updates.
+  GetClient(0)->StopSyncService(syncer::SyncService::KEEP_DATA);
+  ASSERT_TRUE(GetClient(0)->StartSyncService());
+
+  // Foreign data should be empty.
+  SyncedSessionVector sessions;
+  ASSERT_FALSE(GetSessionData(0, &sessions));
+  EXPECT_EQ(0U, sessions.size());
+}
+
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TabMovedToOtherWindow) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(CheckInitialState(0));
