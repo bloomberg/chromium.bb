@@ -1642,12 +1642,16 @@ CSSFunctionValue* ValueForMatrixTransform(
   return transform_value;
 }
 
-static FloatRect ReferenceBoxForTransform(const LayoutObject& layout_object) {
+FloatRect ComputedStyleUtils::ReferenceBoxForTransform(
+    const LayoutObject& layout_object,
+    UsePixelSnappedBox pixel_snap_box) {
   if (layout_object.IsSVGChild())
     return ComputeSVGTransformReferenceBox(layout_object);
   if (layout_object.IsBox()) {
-    return FloatRect(
-        PixelSnappedIntRect(ToLayoutBox(layout_object).BorderBoxRect()));
+    const auto& layout_box = ToLayoutBox(layout_object);
+    if (pixel_snap_box == kUsePixelSnappedBox)
+      return FloatRect(layout_box.PixelSnappedBorderBoxRect());
+    return FloatRect(layout_box.BorderBoxRect());
   }
   return FloatRect();
 }

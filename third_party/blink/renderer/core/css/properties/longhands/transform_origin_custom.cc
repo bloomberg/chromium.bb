@@ -39,7 +39,8 @@ const CSSValue* TransformOrigin::ParseSingleValue(
 
 bool TransformOrigin::IsLayoutDependent(const ComputedStyle* style,
                                         LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox();
+  return layout_object &&
+         (layout_object->IsBox() || layout_object->IsSVGChild());
 }
 
 const CSSValue* TransformOrigin::CSSValueFromComputedStyleInternal(
@@ -50,24 +51,21 @@ const CSSValue* TransformOrigin::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (layout_object) {
-    LayoutRect box;
-    if (layout_object->IsBox())
-      box = ToLayoutBox(layout_object)->BorderBoxRect();
-
-    list->Append(*ZoomAdjustedPixelValue(
-        MinimumValueForLength(style.TransformOriginX(), box.Width()), style));
-    list->Append(*ZoomAdjustedPixelValue(
-        MinimumValueForLength(style.TransformOriginY(), box.Height()), style));
-    if (style.TransformOriginZ() != 0)
-      list->Append(*ZoomAdjustedPixelValue(style.TransformOriginZ(), style));
+    FloatRect reference_box = ComputedStyleUtils::ReferenceBoxForTransform(
+        *layout_object, ComputedStyleUtils::kDontUsePixelSnappedBox);
+    FloatSize resolved_origin(
+        FloatValueForLength(style.TransformOriginX(), reference_box.Width()),
+        FloatValueForLength(style.TransformOriginY(), reference_box.Height()));
+    list->Append(*ZoomAdjustedPixelValue(resolved_origin.Width(), style));
+    list->Append(*ZoomAdjustedPixelValue(resolved_origin.Height(), style));
   } else {
     list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
         style.TransformOriginX(), style));
     list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
         style.TransformOriginY(), style));
-    if (style.TransformOriginZ() != 0)
-      list->Append(*ZoomAdjustedPixelValue(style.TransformOriginZ(), style));
   }
+  if (style.TransformOriginZ() != 0)
+    list->Append(*ZoomAdjustedPixelValue(style.TransformOriginZ(), style));
   return list;
 }
 
