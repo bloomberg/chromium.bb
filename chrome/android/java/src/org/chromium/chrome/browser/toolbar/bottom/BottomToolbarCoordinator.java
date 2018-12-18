@@ -97,9 +97,6 @@ public class BottomToolbarCoordinator {
      */
     public void showAppMenuUpdateBadge() {
         mBrowsingModeCoordinator.showAppMenuUpdateBadge();
-        if (mTabSwitcherModeCoordinator != null) {
-            mTabSwitcherModeCoordinator.showAppMenuUpdateBadge();
-        }
     }
 
     /**
@@ -107,9 +104,6 @@ public class BottomToolbarCoordinator {
      */
     public void removeAppMenuUpdateBadge() {
         mBrowsingModeCoordinator.removeAppMenuUpdateBadge();
-        if (mTabSwitcherModeCoordinator != null) {
-            mTabSwitcherModeCoordinator.removeAppMenuUpdateBadge();
-        }
     }
 
     /**
