@@ -1,0 +1,48 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# To create CIPD package run the following command.
+# cipd create --pkg-def cipd.yaml -tag version:$(cat version.txt)
+package: chromium/chrome/test/data/autofill/captured_sites
+
+# Web Page Replay (WPR) Go archives and test recipes for Chrome Autofill
+# captured sites tests.
+# Each WPR go archive can simulate the checkout workflow on a site.
+# Each recipe contains instructions for the test framework to perform checkout.
+# Captured Sites Test Framework Eng doc:
+# https://docs.google.com/document/d/12ZLoGmBK9kc5C5ComHkJWWJUXOda5K0uFr-hfSt6ZUg
+description: captured sites test archives and recipes.
+data:
+  - file: amazon
+  - file: amazon.test
+  - file: bestbuy
+  - file: bestbuy.test
+  - file: etsy
+  - file: etsy.test
+  - file: groupon
+  - file: groupon.test
+  - file: home_depot
+  - file: home_depot.test
+  - file: jet
+  - file: jet.test
+  - file: macys
+  - file: macys.test
+  - file: newegg
+  - file: newegg.test
+  - file: pottery_barn
+  - file: pottery_barn.test
+  - file: qvc
+  - file: qvc.test
+  - file: walmart
+  - file: walmart.test
+  - file: wayfair
+  - file: wayfair.test
+  - file: west_elm
+  - file: west_elm.test
+  - file: williams_sonoma
+  - file: williams_sonoma.test
+  - file: zappos
+  - file: zappos.test
+  - file: zulily
+  - file: zulily.test
