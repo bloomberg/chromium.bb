@@ -5,6 +5,7 @@
 #include "base/macros.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/wallet_helper.h"
+#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -17,6 +18,7 @@
 
 namespace {
 
+using autofill::AutofillMetadata;
 using autofill::AutofillProfile;
 using autofill::CreditCard;
 using autofill::PersonalDataManager;
@@ -26,6 +28,8 @@ using wallet_helper::CreateSyncWalletCard;
 using wallet_helper::GetCreditCard;
 using wallet_helper::GetLocalProfiles;
 using wallet_helper::GetPersonalDataManager;
+using wallet_helper::GetServerAddressesMetadata;
+using wallet_helper::GetServerCardsMetadata;
 using wallet_helper::GetServerCreditCards;
 using wallet_helper::GetServerProfiles;
 using wallet_helper::kDefaultBillingAddressID;
@@ -586,6 +590,113 @@ IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
   local_addresses = GetLocalProfiles(1);
   EXPECT_EQ(1u, local_addresses.size());
   EXPECT_EQ(guid, local_addresses[0]->guid());
+}
+
+IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+                       DeleteServerCardMetadataWhenDataGetsRemoved) {
+  InitWithDefaultFeatures();
+
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Grab the current card on the first client.
+  std::vector<CreditCard*> credit_cards = GetServerCreditCards(0);
+  ASSERT_EQ(1u, credit_cards.size());
+  CreditCard card = *credit_cards[0];
+
+  // Remove the card from the data.
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+
+  // Simulate using the card locally, only to force an update when committing
+  // a change.
+  ASSERT_EQ(1u, card.use_count());
+  card.set_use_count(2);
+  card.set_use_date(kLaterTime);
+  UpdateServerCardMetadata(0, card);
+
+  // Wait for the change to propagate.
+  EXPECT_TRUE(AutofillWalletChecker(0, 1).Wait());
+
+  EXPECT_EQ(0U, GetServerCreditCards(0).size());
+  EXPECT_EQ(0U, GetServerCreditCards(1).size());
+
+  // Also check the DB directly that there is no _metadata_.
+  std::map<std::string, AutofillMetadata> cards_metadata_0;
+  GetServerCardsMetadata(0, &cards_metadata_0);
+  EXPECT_EQ(0U, cards_metadata_0.size());
+  std::map<std::string, AutofillMetadata> cards_metadata_1;
+  GetServerCardsMetadata(1, &cards_metadata_1);
+  EXPECT_EQ(0U, cards_metadata_1.size());
+
+  // Double check that cards data & metadata is intact.
+  EXPECT_EQ(1U, GetServerProfiles(0).size());
+  EXPECT_EQ(1U, GetServerProfiles(1).size());
+  std::map<std::string, AutofillMetadata> addresses_metadata_0;
+  GetServerAddressesMetadata(0, &addresses_metadata_0);
+  EXPECT_EQ(1U, addresses_metadata_0.size());
+  std::map<std::string, AutofillMetadata> addresses_metadata_1;
+  GetServerAddressesMetadata(1, &addresses_metadata_1);
+  EXPECT_EQ(1U, addresses_metadata_1.size());
+}
+
+IN_PROC_BROWSER_TEST_P(TwoClientWalletSyncTest,
+                       DeleteServerAddressMetadataWhenDataGetsRemoved) {
+  InitWithDefaultFeatures();
+
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
+       CreateDefaultSyncPaymentsCustomerData()});
+  ASSERT_TRUE(SetupSync());
+
+  // Grab the current address on the first client.
+  std::vector<AutofillProfile*> server_addresses = GetServerProfiles(0);
+  ASSERT_EQ(1u, server_addresses.size());
+  AutofillProfile address = *server_addresses[0];
+
+  // Remove the address from the data.
+  GetFakeServer()->SetWalletData(
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
+       CreateDefaultSyncPaymentsCustomerData()});
+
+  // Simulate using the address locally, only to force an update when committing
+  // a change.
+  ASSERT_EQ(1u, address.use_count());
+  address.set_use_count(2);
+  address.set_use_date(kLaterTime);
+  UpdateServerAddressMetadata(0, address);
+
+  // Wait for the change to propagate.
+  EXPECT_TRUE(AutofillWalletChecker(0, 1).Wait());
+
+  EXPECT_EQ(0U, GetServerProfiles(0).size());
+  EXPECT_EQ(0U, GetServerProfiles(1).size());
+
+  // Also check the DB directly that there is no _metadata_.
+  std::map<std::string, AutofillMetadata> addresses_metadata_0;
+  GetServerAddressesMetadata(0, &addresses_metadata_0);
+  EXPECT_EQ(0U, addresses_metadata_0.size());
+  std::map<std::string, AutofillMetadata> addresses_metadata_1;
+  GetServerAddressesMetadata(1, &addresses_metadata_1);
+  EXPECT_EQ(0U, addresses_metadata_1.size());
+
+  // Double check that cards data & metadata is intact.
+  EXPECT_EQ(1U, GetServerCreditCards(0).size());
+  EXPECT_EQ(1U, GetServerCreditCards(1).size());
+  std::map<std::string, AutofillMetadata> cards_metadata_0;
+  GetServerCardsMetadata(0, &cards_metadata_0);
+  EXPECT_EQ(1U, cards_metadata_0.size());
+  std::map<std::string, AutofillMetadata> cards_metadata_1;
+  GetServerCardsMetadata(1, &cards_metadata_1);
+  EXPECT_EQ(1U, cards_metadata_1.size());
 }
 
 INSTANTIATE_TEST_CASE_P(USS,
