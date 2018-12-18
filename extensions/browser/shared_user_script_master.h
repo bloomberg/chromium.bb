@@ -31,8 +31,9 @@ class SharedUserScriptMaster : public ExtensionRegistryObserver {
   explicit SharedUserScriptMaster(content::BrowserContext* browser_context);
   ~SharedUserScriptMaster() override;
 
-  // Provides access to loader state method: scripts_ready().
-  bool scripts_ready() const { return loader_.scripts_ready(); }
+  // Returns true if the initial load of static content scripts for extensions
+  // is complete.
+  bool initial_load_complete() const { return loader_.initial_load_complete(); }
 
  private:
   // ExtensionRegistryObserver implementation.

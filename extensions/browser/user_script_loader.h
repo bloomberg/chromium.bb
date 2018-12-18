@@ -84,7 +84,7 @@ class UserScriptLoader : public content::NotificationObserver {
   void StartLoad();
 
   // Returns true if we have any scripts ready.
-  bool scripts_ready() const { return shared_memory_.get() != NULL; }
+  bool initial_load_complete() const { return shared_memory_.get() != nullptr; }
 
   // Pickle user scripts and return pointer to the shared memory.
   static std::unique_ptr<base::SharedMemory> Serialize(
