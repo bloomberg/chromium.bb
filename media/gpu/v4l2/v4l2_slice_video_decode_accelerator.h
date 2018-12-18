@@ -23,6 +23,7 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/vp8_decoder.h"
 #include "media/gpu/vp9_decoder.h"
@@ -39,7 +40,7 @@ class V4L2DecodeSurface;
 // the input stream and managing decoder state across frames.
 class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     : public VideoDecodeAccelerator,
-      public DecodeSurfaceHandler<V4L2DecodeSurface> {
+      public V4L2DecodeSurfaceHandler {
  public:
   V4L2SliceVideoDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,
@@ -134,7 +135,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   //
   // Below methods are used by accelerator implementations.
   //
-  // DecodeSurfaceHandler implementation.
+  // V4L2DecodeSurfaceHandler implementation.
   scoped_refptr<V4L2DecodeSurface> CreateSurface() override;
   // SurfaceReady() uses |decoder_display_queue_| to guarantee that decoding
   // of |dec_surface| happens in order.
@@ -143,20 +144,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
                     const gfx::Rect& visible_rect,
                     const VideoColorSpace& /* color_space */) override;
 
-  // Append slice data in |data| of size |size| to pending hardware
-  // input buffer with |index|. This buffer will be submitted for decode
-  // on the next DecodeSurface(). Return true on success.
-  bool SubmitSlice(int index, const uint8_t* data, size_t size);
-
-  // Submit controls in |ext_ctrls| to hardware. Return true on success.
-  bool SubmitExtControls(struct v4l2_ext_controls* ext_ctrls);
-
-  // Gets current control values for controls in |ext_ctrls| from the driver.
-  // Return true on success.
-  bool GetExtControls(struct v4l2_ext_controls* ext_ctrls);
-
-  // Return true if the driver exposes V4L2 control |ctrl_id|, false otherwise.
-  bool IsCtrlExposed(uint32_t ctrl_id);
+  bool SubmitSlice(const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+                   const uint8_t* data,
+                   size_t size) override;
+  void DecodeSurface(
+      const scoped_refptr<V4L2DecodeSurface>& dec_surface) override;
 
   //
   // Internal methods of this class.
