@@ -220,6 +220,8 @@ component("gpu") {
       "v4l2/v4l2_video_decode_accelerator.h",
       "v4l2/v4l2_video_encode_accelerator.cc",
       "v4l2/v4l2_video_encode_accelerator.h",
+      "v4l2/v4l2_vp8_accelerator.cc",
+      "v4l2/v4l2_vp8_accelerator.h",
     ]
     libs = [
       "EGL",
