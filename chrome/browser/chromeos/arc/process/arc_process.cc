@@ -4,14 +4,54 @@
 
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
 
+#include <unordered_set>
 #include <utility>
 
 #include "base/strings/string_util.h"
 
 namespace arc {
 
+using mojom::ProcessState;
+
 constexpr char kCloudDpcrocessName[] =
     "com.google.android.apps.work.clouddpc.arc";
+
+const std::unordered_set<ProcessState> kImportantStates = {
+    ProcessState::IMPORTANT_FOREGROUND,
+    ProcessState::BOUND_FOREGROUND_SERVICE,
+    ProcessState::FOREGROUND_SERVICE,
+    ProcessState::TOP,
+    ProcessState::PERSISTENT_UI,
+    ProcessState::PERSISTENT
+};
+const std::unordered_set<ProcessState> kPersistentStates = {
+    ProcessState::PERSISTENT_UI,
+    ProcessState::PERSISTENT
+};
+const std::unordered_set<ProcessState> kProtectedBackgroundStates = {
+    ProcessState::TOP,
+    ProcessState::FOREGROUND_SERVICE,
+    ProcessState::BOUND_FOREGROUND_SERVICE,
+    ProcessState::IMPORTANT_FOREGROUND,
+    ProcessState::IMPORTANT_FOREGROUND
+};
+const std::unordered_set<ProcessState> kBackgroundStates = {
+    ProcessState::TRANSIENT_BACKGROUND,
+    ProcessState::BACKUP,
+    ProcessState::SERVICE,
+    ProcessState::RECEIVER,
+    ProcessState::TOP_SLEEPING,
+    ProcessState::HEAVY_WEIGHT,
+    ProcessState::HOME,
+    ProcessState::LAST_ACTIVITY,
+    ProcessState::CACHED_ACTIVITY
+};
+const std::unordered_set<ProcessState> kCachedStates = {
+    ProcessState::CACHED_ACTIVITY_CLIENT,
+    ProcessState::CACHED_RECENT,
+    ProcessState::CACHED_EMPTY,
+    ProcessState::NONEXISTENT
+};
 
 ArcProcess::ArcProcess(base::ProcessId nspid,
                        base::ProcessId pid,
@@ -40,15 +80,21 @@ ArcProcess::ArcProcess(ArcProcess&& other) = default;
 ArcProcess& ArcProcess::operator=(ArcProcess&& other) = default;
 
 bool ArcProcess::IsImportant() const {
-  return process_state() <= mojom::ProcessState::IMPORTANT_FOREGROUND ||
-         IsArcProtected();
+  return kImportantStates.count(process_state()) == 1 || IsArcProtected();
 }
 
 bool ArcProcess::IsPersistent() const {
   // Protect PERSISTENT, PERSISTENT_UI, our HOME and custom set of ARC processes
   // since they should have lower priority to be killed.
-  return process_state() <= arc::mojom::ProcessState::PERSISTENT_UI ||
-         IsArcProtected();
+  return kPersistentStates.count(process_state()) == 1 || IsArcProtected();
+}
+
+bool ArcProcess::IsCached() const {
+  return kCachedStates.count(process_state()) == 1;
+}
+
+bool ArcProcess::IsBackgroundProtected() const {
+  return kProtectedBackgroundStates.count(process_state()) == 1;
 }
 
 bool ArcProcess::IsArcProtected() const {

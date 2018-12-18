@@ -49,7 +49,17 @@ enum class ProcessType {
   BACKGROUND_APP = 4,
   PROTECTED_BACKGROUND_TAB = 5,
   BACKGROUND_TAB = 6,
-  UNKNOWN_TYPE = 7,
+
+  // PROTECTED_BACKGROUND, BACKGROUND, and CACHED_APP are newer types
+  // that are used instead of the previous 4 types on systems where the
+  // TabRanker experiment is disabled. Processes previously in IMPORTANT_APP
+  // and PROTECTED_BACKGROUND_TAB are now in PROTECTED_BACKGROUND, processes
+  // previously in either BACKGROUND_APP or BACKGROUND_TAB are now BACKGROUND.
+  // CACHED_APP marks Android processes which are cached or empty.
+  PROTECTED_BACKGROUND = 7,
+  BACKGROUND = 8,
+  CACHED_APP = 9,
+  UNKNOWN_TYPE = 10,
 };
 
 // The Chrome OS TabManagerDelegate is responsible for keeping the
@@ -231,6 +241,7 @@ class TabManagerDelegate::Candidate {
   const LifecycleUnit* lifecycle_unit() const { return lifecycle_unit_; }
   const arc::ArcProcess* app() const { return app_; }
   ProcessType process_type() const { return process_type_; }
+  base::TimeTicks GetLastActiveTime() const;
 
  private:
   // Derive process type for this candidate. Used to initialize |process_type_|.
