@@ -247,24 +247,32 @@ ScriptPromise ScriptPromise::Then(v8::Local<v8::Function> on_fulfilled,
   if (promise_.IsEmpty())
     return ScriptPromise();
 
-  v8::Local<v8::Object> promise = promise_.V8Value().As<v8::Object>();
+  v8::Local<v8::Promise> promise = promise_.V8Value().As<v8::Promise>();
 
-  DCHECK(promise->IsPromise());
-  // Return this Promise if no handlers are given.
-  // In fact it is not the exact bahavior of Promise.prototype.then
-  // but that is not a problem in this case.
-  v8::Local<v8::Promise> result_promise = promise.As<v8::Promise>();
-  if (!on_fulfilled.IsEmpty()) {
-    if (!result_promise->Then(script_state_->GetContext(), on_fulfilled)
-             .ToLocal(&result_promise))
+  if (on_fulfilled.IsEmpty() && on_rejected.IsEmpty())
+    return *this;
+
+  v8::Local<v8::Promise> result_promise;
+  if (on_rejected.IsEmpty()) {
+    if (!promise->Then(script_state_->GetContext(), on_fulfilled)
+             .ToLocal(&result_promise)) {
       return ScriptPromise();
-  }
-  if (!on_rejected.IsEmpty()) {
-    if (!result_promise->Catch(script_state_->GetContext(), on_rejected)
-             .ToLocal(&result_promise))
-      return ScriptPromise();
+    }
+    return ScriptPromise(script_state_, result_promise);
   }
 
+  if (on_fulfilled.IsEmpty()) {
+    if (!promise->Catch(script_state_->GetContext(), on_rejected)
+             .ToLocal(&result_promise)) {
+      return ScriptPromise();
+    }
+    return ScriptPromise(script_state_, result_promise);
+  }
+
+  if (!promise->Then(script_state_->GetContext(), on_fulfilled, on_rejected)
+           .ToLocal(&result_promise)) {
+    return ScriptPromise();
+  }
   return ScriptPromise(script_state_, result_promise);
 }
 
