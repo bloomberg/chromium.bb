@@ -184,6 +184,10 @@ base::string16 StripWWWFromHost(const GURL& url);
 // Returns skeleton strings computed from |host| for spoof checking.
 Skeletons GetSkeletons(const base::string16& host);
 
+// Returns a domain from the top 10K list matching the given skeleton. Used for
+// spoof checking.
+std::string LookupSkeletonInTopDomains(const std::string& skeleton);
+
 }  // namespace url_formatter
 
 #endif  // COMPONENTS_URL_FORMATTER_URL_FORMATTER_H_
