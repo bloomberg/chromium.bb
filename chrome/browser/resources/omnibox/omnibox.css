@@ -97,12 +97,18 @@ td {
   padding: 0 5px;
 }
 
-th {
+.header-container {
+  display: block;
   overflow: hidden;
   padding-bottom: 6px;
   padding-top: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.header-container span:not(:last-child)::after {
+  color: #555;
+  content: ' & ';
 }
 
 .filtered-highlighted {
@@ -207,4 +213,16 @@ tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
 .accesskey {
   text-decoration: underline;
   text-transform: capitalize;
+}
+
+.header-provider-and-type .header-container :first-child {
+  color: green;
+}
+
+.header-contents-and-description .header-container :first-child {
+  color: blue;
+}
+
+.header-fill-and-inline .header-container :nth-child(2) {
+  border: 1px solid;
 }
