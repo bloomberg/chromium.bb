@@ -39,10 +39,8 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
   HTMLCanvasElement* canvas =
       ToHTMLCanvasElement(layout_html_canvas_.GetNode());
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      canvas->RenderingContext() &&
-      canvas->RenderingContext()->IsComposited()) {
-    if (cc::Layer* layer = canvas->RenderingContext()->CcLayer()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    if (auto* layer = canvas->ContentsCcLayer()) {
       IntRect pixel_snapped_rect = PixelSnappedIntRect(paint_rect);
       layer->SetOffsetToTransformParent(
           gfx::Vector2dF(pixel_snapped_rect.X(), pixel_snapped_rect.Y()));

@@ -21,8 +21,10 @@ class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridgeObserver {
   // Triggered by resizing or surface layer creation.
   virtual void OnWebLayerUpdated() = 0;
 
-  // Called when new a SurfaceLayer is created.
+  // Called when a new contents cc layer is created.
   virtual void RegisterContentsLayer(cc::Layer*) = 0;
+
+  // Called when a contents cc layer will be destroyed.
   virtual void UnregisterContentsLayer(cc::Layer*) = 0;
 
   // Called when a SurfaceLayer is activated.

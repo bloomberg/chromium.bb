@@ -867,18 +867,10 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
     graphics_layer_->SetContentsToCcLayer(
         media_element->CcLayer(),
         /*prevent_contents_opaque_changes=*/true);
-  } else if (IsSurfaceLayerCanvas(layout_object)) {
-    HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
+  } else if (layout_object.IsCanvas()) {
     graphics_layer_->SetContentsToCcLayer(
-        canvas->SurfaceLayerBridge()->GetCcLayer(),
+        ToHTMLCanvasElement(layout_object.GetNode())->ContentsCcLayer(),
         /*prevent_contents_opaque_changes=*/false);
-    layer_config_changed = true;
-  } else if (IsTextureLayerCanvas(layout_object)) {
-    HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
-    if (CanvasRenderingContext* context = canvas->RenderingContext()) {
-      graphics_layer_->SetContentsToCcLayer(
-          context->CcLayer(), /*prevent_contents_opaque_changes=*/false);
-    }
     layer_config_changed = true;
   }
   if (layout_object.IsLayoutEmbeddedContent()) {
