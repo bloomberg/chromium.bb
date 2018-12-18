@@ -648,6 +648,7 @@ PasswordAutofillAgent::PasswordAutofillAgent(
       sent_request_to_store_(false),
       checked_safe_browsing_reputation_(false),
       focus_state_notifier_(this),
+      password_generation_agent_(nullptr),
       binding_(this) {
   registry->AddInterface(
       base::Bind(&PasswordAutofillAgent::BindRequest, base::Unretained(this)));
