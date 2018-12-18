@@ -59,9 +59,6 @@
   <message name="IDS_SETTINGS_SPELLING_DESCRIPTION_UNIFIED_CONSENT" desc="Description of using a web serviced to help resolve spelling errors. It is important to convey that what the user types will be sent to Google.">
     To fix spelling errors, Chromium sends the text you type in text fields to Google
   </message>
-  <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_DESC" desc="Brief explanation of the capability of Google services.">
-    Communicates with Google to improve browsing and Chromium
-  </message>
   <message name="IDS_SETTINGS_RESTART_TO_APPLY_CHANGES" desc="Description in the snackbar to restart Chrome and apply changes.">
     To apply your changes, relaunch Chromium
   </message>

@@ -142,19 +142,6 @@ Polymer({
       computed: 'computeSyncSectionDisabled_(' +
           'unifiedConsentEnabled, syncStatus.signedIn, syncStatus.disabled, ' +
           'syncStatus.hasError, syncStatus.statusAction)',
-      observer: 'onSyncSectionDisabledChanged_',
-    },
-
-    /** @private */
-    personalizeSectionOpened_: {
-      type: Boolean,
-      value: true,
-    },
-
-    /** @private */
-    syncSectionOpened_: {
-      type: Boolean,
-      value: true,
     },
 
     /** @private */
@@ -564,31 +551,6 @@ Polymer({
     settings.navigateTo(settings.routes.BASIC);
   },
 
-  /** @private */
-  onSyncSectionDisabledChanged_: function() {
-    this.syncSectionOpened_ = !this.syncSectionDisabled_;
-  },
-
-  /**
-   * Toggles the expand button within the element being listened to.
-   * @param {!Event} e
-   * @private
-   */
-  toggleExpandButton_: function(e) {
-    // The expand button handles toggling itself.
-    const expandButtonTag = 'CR-EXPAND-BUTTON';
-    if (e.target.tagName == expandButtonTag)
-      return;
-
-    if (!e.currentTarget.hasAttribute('actionable'))
-      return;
-
-    /** @type {!CrExpandButtonElement} */
-    const expandButton = e.currentTarget.querySelector(expandButtonTag);
-    assert(expandButton);
-    expandButton.expanded = !expandButton.expanded;
-  },
-
   /**
    * When unified-consent enabled, the non-toggle items on the bottom of sync
    * section should be wrapped with 'list-frame' in order to be indented
@@ -648,15 +610,6 @@ Polymer({
   shouldShowExistingPassphraseInSyncSection_: function() {
     return !this.unifiedConsentEnabled && this.syncPrefs !== undefined &&
         !!this.syncPrefs.passphraseRequired;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowSyncControls_: function() {
-    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
-        !this.syncStatus.disabled;
   },
 });
 

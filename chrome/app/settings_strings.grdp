@@ -3573,20 +3573,8 @@
   <message name="IDS_SETTINGS_SYNC_UNIFIED_CONSENT" desc="Name of the sync service when unified consent is enabled.">
     Sync and personalization
   </message>
-  <message name="IDS_SETTINGS_SYNC_DESCRIPTION" desc="Text explaining what the sync system does.">
-    Passwords, bookmarks, history, and more are synced to your account
-  </message>
-  <message name="IDS_SETTINGS_SYNC_DESCRIPTION_UNIFIED_CONSENT" desc="Text explaining what the sync system does, when unified consent is enabled.">
-    Your browsing data and activity, synced to your Google Account
-  </message>
-  <message name="IDS_SETTINGS_SYNC_SECTION_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the sync settings. Only visible by screen reader software.">
-    Show sync settings
-  </message>
   <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL" desc="Title for a section that shows options for various Google services">
     Other Google services
-  </message>
-  <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the google services settings. Only visible by screen reader software.">
-    Show Google services settings
   </message>
   <message name="IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES" desc="The name of the settings page and the label of the button that takes the user to manage their sync and non-personalized services settings.">
     Sync and Google services

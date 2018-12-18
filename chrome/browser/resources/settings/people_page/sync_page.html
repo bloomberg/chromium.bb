@@ -3,13 +3,11 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
@@ -27,8 +25,8 @@
 <dom-module id="settings-sync-page">
   <template>
     <style include="settings-shared iron-flex">
-      #sync-section-toggle:not([actionable]) {
-        opacity: var(--cr-disabled-opacity);
+      h2 {
+        font-size: var(--cr-title-text_-_font-size);
       }
 
       #create-password-box {
@@ -151,22 +149,11 @@
       </div>
     </template>
 
-    <div class="settings-box two-line" id="sync-section-toggle"
-        actionable$="[[!syncSectionDisabled_]]"
-        on-click="toggleExpandButton_"
-        hidden="[[!shouldShowSyncControls_(unifiedConsentEnabled,
-                   syncStatus.disabled)]]">
-      <div class="start">
-        <div>$i18n{sync}</div>
-        <div class="secondary">$i18n{syncDescription}</div>
-      </div>
-      <cr-expand-button expanded="{{syncSectionOpened_}}"
-          disabled$="[[syncSectionDisabled_]]" alt="$i18n{syncExpandA11yLabel}">
-      </cr-expand-button>
+    <div class="settings-box first" hidden="[[!unifiedConsentEnabled]]">
+      <h2 class="start">$i18n{sync}</h2>
     </div>
 
-    <iron-collapse id="sync-section" opened="[[syncSectionOpened_]]"
-        hidden="[[syncSectionDisabled_]]">
+    <div id="sync-section" hidden="[[syncSectionDisabled_]]">
       <div id="[[pages_.SPINNER]]" class="settings-box first"
           hidden$="[[!isStatus_(pages_.SPINNER, pageStatus_)]]">
         $i18n{syncLoading}
@@ -467,27 +454,15 @@
 
         </div>
       </div>
-    </iron-collapse>
+    </div>
     <template is="dom-if" if="[[unifiedConsentEnabled]]">
-      <div class="settings-box two-line" id="personalize-section-toggle"
-          actionable on-click="toggleExpandButton_">
-        <div class="start">
-          <div>$i18n{nonPersonalizedServicesSectionLabel}</div>
-          <div class="secondary">
-            $i18n{nonPersonalizedServicesSectionDesc}
-          </div>
-        </div>
-        <cr-expand-button expanded="{{personalizeSectionOpened_}}"
-            alt="$i18n{nonPersonalizedServicesExpandA11yLabel}">
-        </cr-expand-button>
+      <div class="settings-box first">
+        <h2>$i18n{nonPersonalizedServicesSectionLabel}</h2>
       </div>
-      <iron-collapse id="personalize-section"
-          opened="[[personalizeSectionOpened_]]">
-        <settings-personalization-options class="list-frame" prefs="{{prefs}}"
-            page-visibility="[[pageVisibility]]"
-            unified-consent-enabled="[[unifiedConsentEnabled]]"
-        </settings-personalization-options>
-      </iron-collapse>
+      <settings-personalization-options class="list-frame" prefs="{{prefs}}"
+          page-visibility="[[pageVisibility]]"
+          unified-consent-enabled="[[unifiedConsentEnabled]]">
+      </settings-personalization-options>
     </template>
 
 <if expr="not chromeos">
