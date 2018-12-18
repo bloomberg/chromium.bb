@@ -70,8 +70,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
  private:
-  class V4L2VP9Accelerator;
-
   // Record for input buffers.
   struct InputRecord {
     InputRecord();
@@ -140,7 +138,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
                     int32_t bitstream_id,
                     const gfx::Rect& visible_rect,
                     const VideoColorSpace& /* color_space */) override;
-
   bool SubmitSlice(const scoped_refptr<V4L2DecodeSurface>& dec_surface,
                    const uint8_t* data,
                    size_t size) override;
