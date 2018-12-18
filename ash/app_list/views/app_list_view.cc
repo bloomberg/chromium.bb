@@ -707,7 +707,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
         app_list_height = fullscreen_height;
         break;
       case AppListViewState::HALF:
-        app_list_height = kHalfAppListHeight;
+        app_list_height = std::min(fullscreen_height, kHalfAppListHeight);
         break;
       case AppListViewState::PEEKING: {
         const int peeking_height =
@@ -1593,7 +1593,8 @@ int AppListView::GetPreferredWidgetYForState(AppListViewState state) {
       return display.bounds().height() -
              AppListConfig::instance().peeking_app_list_height();
     case AppListViewState::HALF:
-      return std::max(0, display.bounds().height() - kHalfAppListHeight);
+      return std::max(work_area_bounds.y(),
+                      display.bounds().height() - kHalfAppListHeight);
     case AppListViewState::FULLSCREEN_ALL_APPS:
     case AppListViewState::FULLSCREEN_SEARCH:
       // The ChromeVox panel as well as the Docked Magnifier viewport affect the
