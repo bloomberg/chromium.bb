@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_features.h"
 #include "chromeos/dbus/concierge/service.pb.h"
@@ -70,6 +71,16 @@ void OnSeneschalUnsharePathResponse(
                           response.value().failure_reason());
 }
 
+void LogErrorResult(const std::string& operation,
+                    const base::FilePath& path,
+                    bool result,
+                    std::string failure_reason) {
+  if (!result) {
+    LOG(WARNING) << "Error " << operation << " " << path << ": "
+                 << failure_reason;
+  }
+}
+
 // Barrier Closure that captures the first instance of error.
 class ErrorCapture {
  public:
@@ -84,8 +95,8 @@ class ErrorCapture {
 
   void Run(base::FilePath path, bool success, std::string failure_reason) {
     if (!success) {
-      LOG(ERROR) << "Error SharePath=" << path.value()
-                 << ", FailureReason=" << failure_reason;
+      LOG(WARNING) << "Error SharePath=" << path.value()
+                   << ", FailureReason=" << failure_reason;
       if (success_) {
         success_ = false;
         first_failure_reason_ = failure_reason;
@@ -111,7 +122,12 @@ CrostiniSharePath* CrostiniSharePath::GetForProfile(Profile* profile) {
   return CrostiniSharePathFactory::GetForProfile(profile);
 }
 
-CrostiniSharePath::CrostiniSharePath(Profile* profile) : profile_(profile) {}
+CrostiniSharePath::CrostiniSharePath(Profile* profile)
+    : profile_(profile),
+      mount_event_seneschal_callback_(base::BindRepeating(LogErrorResult)) {
+  if (auto* vmgr = file_manager::VolumeManager::Get(profile_))
+    vmgr->AddObserver(this);
+}
 
 CrostiniSharePath::~CrostiniSharePath() {}
 
@@ -390,6 +406,42 @@ void CrostiniSharePath::RegisterPersistedPath(const base::FilePath& path) {
   }
   if (!exists)
     shared_paths->Append(std::make_unique<base::Value>(path.value()));
+}
+
+void CrostiniSharePath::OnVolumeMounted(chromeos::MountError error_code,
+                                        const file_manager::Volume& volume) {
+  if (!base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles) ||
+      error_code != chromeos::MountError::MOUNT_ERROR_NONE ||
+      !crostini::CrostiniManager::GetForProfile(profile_)->IsVmRunning(
+          kCrostiniDefaultVmName)) {
+    return;
+  }
+  auto paths = GetPersistedSharedPaths();
+  for (const auto& path : paths) {
+    if (path == volume.mount_path() || volume.mount_path().IsParent(path)) {
+      CallSeneschalSharePath(kCrostiniDefaultVmName, path, false,
+                             base::BindOnce(mount_event_seneschal_callback_,
+                                            "share-on-mount", path));
+    }
+  }
+}
+
+void CrostiniSharePath::OnVolumeUnmounted(chromeos::MountError error_code,
+                                          const file_manager::Volume& volume) {
+  if (!base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles) ||
+      error_code != chromeos::MountError::MOUNT_ERROR_NONE ||
+      !crostini::CrostiniManager::GetForProfile(profile_)->IsVmRunning(
+          kCrostiniDefaultVmName)) {
+    return;
+  }
+  auto paths = GetPersistedSharedPaths();
+  for (const auto& path : paths) {
+    if (path == volume.mount_path() || volume.mount_path().IsParent(path)) {
+      CallSeneschalUnsharePath(kCrostiniDefaultVmName, path,
+                               base::BindOnce(mount_event_seneschal_callback_,
+                                              "unshare-on-unmount", path));
+    }
+  }
 }
 
 }  // namespace crostini
