@@ -196,12 +196,6 @@ Tree: v2.2.2
 Revision: a89e8f491d01c77e167a4361d0535683591e0a01
 Tree link: https://github.com/PolymerElements/paper-input/tree/v2.2.2
 
-Name: paper-item
-Repository: https://github.com/PolymerElements/paper-item.git
-Tree: v2.0.0
-Revision: 07910f6f76e1042286e931da923bff8ceabc3dc6
-Tree link: https://github.com/PolymerElements/paper-item/tree/v2.0.0
-
 Name: paper-progress
 Repository: https://github.com/PolymerElements/paper-progress.git
 Tree: v2.0.1
