@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Pair;
+import android.view.KeyCharacterMap;
+import android.view.KeyEvent;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -57,6 +60,10 @@ public abstract class SingleTabActivity extends ChromeActivity {
     public void initializeState() {
         super.initializeState();
 
+        createAndShowTab();
+    }
+
+    protected void createAndShowTab() {
         Tab tab = createTab();
         getTabModelSelector().setTab(tab);
         tab.show(TabSelectionType.FROM_NEW);
@@ -101,6 +108,11 @@ public abstract class SingleTabActivity extends ChromeActivity {
 
     protected abstract Tab restoreTab(Bundle savedInstanceState);
 
+    private boolean supportsAppSwitcher() {
+        return getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)
+                || KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_APP_SWITCH);
+    }
+
     @Override
     protected boolean handleBackPressed() {
         Tab tab = getActivityTab();
@@ -110,6 +122,14 @@ public abstract class SingleTabActivity extends ChromeActivity {
 
         if (tab.canGoBack()) {
             tab.goBack();
+            return true;
+        }
+
+        if (!supportsAppSwitcher()) {
+            // If the device has no way to get to the task switcher, we don't want the default back
+            // button behavior of finishing the Activity. If the device is low on memory LMK will
+            // kill us, and if not, we'll start up faster when returned to.
+            moveTaskToBack(true);
             return true;
         }
         return false;

@@ -48,17 +48,23 @@ public class NoTouchActivity extends SingleTabActivity {
                 boolean hasUserGesture, Intent intent) {
             // TODO(mthiesse): ChromeTabbedActivity records a user Action here, we should do the
             // same.
+            assert getActivityTab() != null;
 
             switch (tabOpenType) {
-                case TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB: // fall through
+                case TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:
+                    if (getActivityTab().getUrl().contentEquals(url)) break;
+                    // fall through
                 case TabOpenType.BRING_TAB_TO_FRONT: // fall through
                 case TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB: // fall through
                 case TabOpenType.OPEN_NEW_TAB: // fall through
                 case TabOpenType.CLOBBER_CURRENT_TAB:
                     // TODO(mthiesse): For now, let's just clobber current tab always. Are the other
                     // tab open types meaningful when we only have a single tab?
+
+                    // When we get a view intent, create a new tab to reset history state so that
+                    // back returns you to the sender.
+                    if (tabOpenType != TabOpenType.BRING_TAB_TO_FRONT) createAndShowTab();
                     Tab currentTab = getActivityTab();
-                    assert currentTab != null;
                     TabRedirectHandler.from(currentTab).updateIntent(intent);
                     int transitionType = PageTransition.LINK | PageTransition.FROM_API;
                     LoadUrlParams loadUrlParams = new LoadUrlParams(url);
@@ -114,6 +120,7 @@ public class NoTouchActivity extends SingleTabActivity {
             }
             if (!intentWithEffect) getTabCreator(false).launchNTP();
         }
+        resetSavedInstanceState();
     }
 
     @Override
