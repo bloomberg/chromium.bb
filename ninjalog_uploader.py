@@ -46,6 +46,34 @@ def ParseGNArgs(gn_args):
         build_configs[config["name"]] = config["current"]["value"]
     return build_configs
 
+def GetBuildTargetFromCommandLine(cmdline):
+    """Get build targets from commandline."""
+
+    # Skip argv0.
+    idx = 1
+
+    # Skipping all args that involve these flags, and taking all remaining args
+    # as targets.
+    onearg_flags = ('-C', '-f', '-j', '-k', '-l', '-d', '-t', '-w')
+    zeroarg_flags = ('--version', '-n', '-v')
+
+    targets = []
+
+    while idx < len(cmdline):
+        if cmdline[idx] in onearg_flags:
+            idx += 2
+            continue
+
+        if (cmdline[idx][:2] in onearg_flags or
+            cmdline[idx] in zeroarg_flags):
+            idx += 1
+            continue
+
+        targets.append(cmdline[idx])
+        idx += 1
+
+    return targets
+
 
 def GetMetadata(cmdline, ninjalog):
     """Get metadata for uploaded ninjalog."""
