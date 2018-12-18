@@ -260,6 +260,16 @@ NET_EXPORT base::Value NetLogStringValue(base::StringPiece raw);
 // This wrapper encodes |bytes| as a Base64 encoded string.
 NET_EXPORT base::Value NetLogBinaryValue(const void* bytes, size_t length);
 
+// Creates a base::Value() to represent integers, including 64-bit ones.
+// base::Value() does not directly support 64-bit integers, as it is not
+// representable in JSON.
+//
+// These wrappers will return values that are either numbers, or a string
+// representation of their decimal value, depending on what is needed to ensure
+// no loss of precision when de-serializing from JavaScript.
+NET_EXPORT base::Value NetLogNumberValue(int64_t num);
+NET_EXPORT base::Value NetLogNumberValue(uint64_t num);
+
 }  // namespace net
 
 #endif  // NET_LOG_NET_LOG_H_

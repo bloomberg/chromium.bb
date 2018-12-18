@@ -4,6 +4,7 @@
 
 #include "net/log/net_log.h"
 
+#include <limits>
 #include <memory>
 #include <utility>
 
@@ -14,6 +15,7 @@
 #include "base/threading/simple_thread.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
+#include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
@@ -449,6 +451,62 @@ TEST(NetLogTest, NetLogBinaryValue) {
   std::string string2;
   ASSERT_TRUE(value2.GetAsString(&string2));
   EXPECT_EQ("APP4/w==", string2);
+}
+
+template <typename T>
+std::string SerializedNetLogNumber(T num) {
+  auto value = NetLogNumberValue(num);
+
+  EXPECT_TRUE(value.is_string() || value.is_int() || value.is_double());
+
+  return SerializeNetLogValueToJson(value);
+}
+
+std::string SerializedNetLogInt64(int64_t num) {
+  return SerializedNetLogNumber(num);
+}
+
+std::string SerializedNetLogUint64(uint64_t num) {
+  return SerializedNetLogNumber(num);
+}
+
+TEST(NetLogTest, NetLogNumberValue) {
+  const int64_t kMinInt = std::numeric_limits<int32_t>::min();
+  const int64_t kMaxInt = std::numeric_limits<int32_t>::max();
+
+  // Numbers which can be represented by an INTEGER base::Value().
+  EXPECT_EQ("0", SerializedNetLogInt64(0));
+  EXPECT_EQ("0", SerializedNetLogUint64(0));
+  EXPECT_EQ("-1", SerializedNetLogInt64(-1));
+  EXPECT_EQ("-2147483648", SerializedNetLogInt64(kMinInt));
+  EXPECT_EQ("2147483647", SerializedNetLogInt64(kMaxInt));
+
+  // Numbers which are outside of the INTEGER range, but fit within a DOUBLE.
+  EXPECT_EQ("-2147483649", SerializedNetLogInt64(kMinInt - 1));
+  EXPECT_EQ("2147483648", SerializedNetLogInt64(kMaxInt + 1));
+  EXPECT_EQ("4294967294", SerializedNetLogInt64(0xFFFFFFFF - 1));
+
+  // kMaxSafeInteger is the same as JavaScript's Numbers.MAX_SAFE_INTEGER.
+  const int64_t kMaxSafeInteger = 9007199254740991;  // 2^53 - 1
+
+  // Numbers that can be represented with full precision by a DOUBLE.
+  EXPECT_EQ("-9007199254740991", SerializedNetLogInt64(-kMaxSafeInteger));
+  EXPECT_EQ("9007199254740991", SerializedNetLogInt64(kMaxSafeInteger));
+  EXPECT_EQ("9007199254740991", SerializedNetLogUint64(kMaxSafeInteger));
+
+  // Numbers that are just outside of the range of a DOUBLE need to be encoded
+  // as strings.
+  EXPECT_EQ("\"-9007199254740992\"",
+            SerializedNetLogInt64(-kMaxSafeInteger - 1));
+  EXPECT_EQ("\"9007199254740992\"", SerializedNetLogInt64(kMaxSafeInteger + 1));
+  EXPECT_EQ("\"9007199254740992\"",
+            SerializedNetLogUint64(kMaxSafeInteger + 1));
+
+  // Test the 64-bit maximums.
+  EXPECT_EQ("\"9223372036854775807\"",
+            SerializedNetLogInt64(std::numeric_limits<int64_t>::max()));
+  EXPECT_EQ("\"18446744073709551615\"",
+            SerializedNetLogUint64(std::numeric_limits<uint64_t>::max()));
 }
 
 }  // namespace

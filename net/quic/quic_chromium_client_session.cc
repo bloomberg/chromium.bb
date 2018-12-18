@@ -2692,9 +2692,9 @@ std::unique_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
 
   dict->SetInteger("total_streams", num_total_streams_);
   dict->SetString("peer_address", peer_address().ToString());
-  dict->SetString(
+  dict->SetKey(
       "connection_id",
-      base::NumberToString(quic::QuicConnectionIdToUInt64(connection_id())));
+      NetLogNumberValue(quic::QuicConnectionIdToUInt64(connection_id())));
   dict->SetBoolean("connected", connection()->connected());
   const quic::QuicConnectionStats& stats = connection()->GetStats();
   dict->SetInteger("packets_sent", stats.packets_sent);

@@ -1148,9 +1148,9 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
       NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 
-  std::string packet_number;
-  ASSERT_TRUE(entries[pos].GetStringValue("packet_number", &packet_number));
-  EXPECT_EQ("1", packet_number);
+  int packet_number;
+  ASSERT_TRUE(entries[pos].GetIntegerValue("packet_number", &packet_number));
+  EXPECT_EQ(1, packet_number);
 
   // ... and also a TYPE_QUIC_SESSION_PACKET_AUTHENTICATED.
   pos = ExpectLogContainsSomewhere(

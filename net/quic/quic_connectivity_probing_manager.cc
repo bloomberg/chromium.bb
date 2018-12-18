@@ -22,10 +22,10 @@ std::unique_ptr<base::Value> NetLogStartProbingCallback(
     base::TimeDelta initial_timeout,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("network", base::Int64ToString(network));
+  dict->SetKey("network", NetLogNumberValue(network));
   dict->SetString("peer address", peer_address->ToString());
-  dict->SetString("initial_timeout_ms",
-                  base::Int64ToString(initial_timeout.InMilliseconds()));
+  dict->SetKey("initial_timeout_ms",
+               NetLogNumberValue(initial_timeout.InMilliseconds()));
   return std::move(dict);
 }
 
@@ -35,7 +35,7 @@ std::unique_ptr<base::Value> NetLogProbeReceivedCallback(
     const quic::QuicSocketAddress* peer_address,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("network", base::Int64ToString(network));
+  dict->SetKey("network", NetLogNumberValue(network));
   dict->SetString("self address", self_address->ToString());
   dict->SetString("peer address", peer_address->ToString());
   return std::move(dict);
