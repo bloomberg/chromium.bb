@@ -132,6 +132,17 @@ class ComputedStyleUtils {
                                                    const ComputedStyle&);
   static const CSSValue& ValueForBorderRadiusCorner(const LengthSize&,
                                                     const ComputedStyle&);
+  // TODO(fs): For some properties ('transform') we use the pixel snapped
+  // border-box as the reference box. In other cases ('transform-origin') we use
+  // the "unsnapped" border-box. Maybe use the same (the "unsnapped") in both
+  // cases?
+  enum UsePixelSnappedBox {
+    kDontUsePixelSnappedBox,
+    kUsePixelSnappedBox,
+  };
+  static FloatRect ReferenceBoxForTransform(
+      const LayoutObject&,
+      UsePixelSnappedBox = kUsePixelSnappedBox);
   static CSSValue* ComputedTransform(const LayoutObject*, const ComputedStyle&);
   static CSSValue* CreateTransitionPropertyValue(
       const CSSTransitionData::TransitionProperty&);
