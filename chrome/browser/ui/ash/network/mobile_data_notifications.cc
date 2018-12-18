@@ -9,7 +9,7 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -83,8 +83,7 @@ void MobileDataNotifications::ShowOptionalMobileDataNotification() {
           ->HasPendingConnectRequest())
     return;
 
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  PrefService* prefs = profile->GetPrefs();
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kShowMobileDataNotification))
     return;
 
@@ -108,6 +107,5 @@ void MobileDataNotifications::ShowOptionalMobileDataNotification() {
           ash::kNotificationMobileDataIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 
-  NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+  SystemNotificationHelper::GetInstance()->Display(*notification);
 }
