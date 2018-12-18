@@ -84,6 +84,7 @@
 #include "services/audio/public/cpp/fake_system_info.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 
 namespace em = enterprise_management;
@@ -2368,6 +2369,10 @@ class KioskVirtualKeyboardTest : public KioskTest,
 // Verifies that chrome.virtualKeyboard.restrictFeatures and related private
 // APIs work.
 IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
+  // TODO(crbug.com/916221): Crash in media::AudioOutputController::Create().
+  if (features::IsSingleProcessMash())
+    return;
+
   // Mock existence of audio input.
   // We cannot do this in SetUp because it's overriden in RunTestOnMainThread.
   mock_audio_manager_ = std::make_unique<media::MockAudioManager>(

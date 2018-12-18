@@ -136,6 +136,7 @@
 #include "services/network/public/cpp/resource_request_body.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
 using chrome_browser_net::NetworkPredictionOptions;
@@ -1836,6 +1837,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Video) {
 // Checks that video tags inserted by javascript are deferred and played
 // correctly on swap in.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoJs) {
+  // TODO(crbug.com/887175): flaky.
+  if (features::IsSingleProcessMash())
+    return;
   PrerenderTestURL("/prerender/prerender_html5_video_script.html",
                    FINAL_STATUS_USED, 1);
   NavigateToDestURL();

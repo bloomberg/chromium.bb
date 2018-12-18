@@ -3523,8 +3523,7 @@
         'test': 'browser_tests',
         'args': [
           '--enable-features=SingleProcessMash',
-          '--override-use-software-gl-for-tests',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.browser_tests.filter',
+          '--override-use-software-gl-for-tests'
         ],
         'swarming': {
           'shards': 10,
