@@ -50,6 +50,7 @@ class CORE_EXPORT ImeTextSpan {
               ws::mojom::ImeTextSpanThickness,
               const Color& background_color,
               const Color& suggestion_highlight_color = Color::kTransparent,
+              bool remove_on_finish_composing = false,
               const Vector<String>& suggestions = Vector<String>());
 
   ImeTextSpan(const WebImeTextSpan&);
@@ -63,6 +64,9 @@ class CORE_EXPORT ImeTextSpan {
   const Color& SuggestionHighlightColor() const {
     return suggestion_highlight_color_;
   }
+  bool NeedsRemovalOnFinishComposing() const {
+    return remove_on_finish_composing_;
+  }
   const Vector<String>& Suggestions() const { return suggestions_; }
 
  private:
@@ -73,6 +77,7 @@ class CORE_EXPORT ImeTextSpan {
   ws::mojom::ImeTextSpanThickness thickness_;
   Color background_color_;
   Color suggestion_highlight_color_;
+  bool remove_on_finish_composing_;
   Vector<String> suggestions_;
 };
 

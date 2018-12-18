@@ -101,6 +101,7 @@ void JNI_ImeAdapterImpl_AppendSuggestionSpan(
     jint start,
     jint end,
     jboolean is_misspelling,
+    jboolean remove_on_finish_composing,
     jint underline_color,
     jint suggestion_highlight_color,
     const JavaParamRef<jobjectArray>& suggestions) {
@@ -119,6 +120,7 @@ void JNI_ImeAdapterImpl_AppendSuggestionSpan(
       type, static_cast<unsigned>(start), static_cast<unsigned>(end),
       ui::ImeTextSpan::Thickness::kThick, SK_ColorTRANSPARENT,
       static_cast<unsigned>(suggestion_highlight_color), suggestions_vec);
+  ime_text_span.remove_on_finish_composing = remove_on_finish_composing;
   ime_text_span.underline_color = static_cast<unsigned>(underline_color);
   ime_text_spans->push_back(ime_text_span);
 }

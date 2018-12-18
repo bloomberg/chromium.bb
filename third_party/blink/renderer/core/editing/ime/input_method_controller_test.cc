@@ -2363,6 +2363,46 @@ TEST_F(InputMethodControllerTest,
   EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
+TEST_F(InputMethodControllerTest, RemoveSuggestionMarkerInRangeOnFinish) {
+  InsertHTMLElement(
+      "<div id='sample' contenteditable spellcheck='true'>text</div>",
+      "sample");
+
+  Vector<ImeTextSpan> ime_text_spans;
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kMisspellingSuggestion, 0, 5, Color::kTransparent,
+      ImeTextSpanThickness::kNone, Color::kTransparent, Color ::kTransparent,
+      /* remove_on_finish_composing */ true));
+
+  // Case 1: SetComposition() -> FinishComposingText() removes the suggestion
+  // marker when remove_on_finish_composing is true.
+  Controller().SetComposition("hello", ime_text_spans, 0, 5);
+  ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
+  ASSERT_TRUE(
+      Controller().FinishComposingText(InputMethodController::kKeepSelection));
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Case 2: SetComposition() -> CommitText() removes the suggestion marker when
+  // remove_on_finish_composing is true.
+  Controller().SetComposition("hello", ime_text_spans, 0, 5);
+  ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
+  ASSERT_TRUE(Controller().CommitText("world", Vector<ImeTextSpan>(), 1));
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Case 3: SetComposition() -> SetComposingText() removes the suggestion
+  // marker when remove_on_finish_composing is true.
+  Controller().SetComposition("hello", ime_text_spans, 0, 5);
+  ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
+  Controller().SetComposition("helloworld", Vector<ImeTextSpan>(), 0, 10);
+
+  // SetComposing() will add a composition marker.
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+  EXPECT_EQ(DocumentMarker::MarkerType::kComposition,
+            GetDocument().Markers().Markers()[0]->GetType());
+}
+
 // For http://crbug.com/712761
 TEST_F(InputMethodControllerTest, TextInputTypeAtBeforeEditable) {
   GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
