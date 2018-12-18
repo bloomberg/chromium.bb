@@ -2084,10 +2084,8 @@ void PDFiumEngine::AddFindResult(const PDFiumRange& result) {
 }
 
 bool PDFiumEngine::SelectFindResult(bool forward) {
-  if (find_results_.empty()) {
-    NOTREACHED();
+  if (find_results_.empty())
     return false;
-  }
 
   SelectionChangeInvalidator selection_invalidator(this);
 
