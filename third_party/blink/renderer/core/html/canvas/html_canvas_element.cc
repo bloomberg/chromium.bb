@@ -254,6 +254,16 @@ void HTMLCanvasElement::RegisterRenderingContextFactory(
 CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
     const String& type,
     const CanvasContextCreationAttributesCore& attributes) {
+  auto* old_contents_cc_layer = ContentsCcLayer();
+  auto* result = GetCanvasRenderingContextInternal(type, attributes);
+  if (ContentsCcLayer() != old_contents_cc_layer)
+    OnContentsCcLayerChanged();
+  return result;
+}
+
+CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
+    const String& type,
+    const CanvasContextCreationAttributesCore& attributes) {
   CanvasRenderingContext::ContextType context_type =
       CanvasRenderingContext::ContextTypeFromId(type);
 
@@ -1386,10 +1396,12 @@ void HTMLCanvasElement::OnWebLayerUpdated() {
 
 void HTMLCanvasElement::RegisterContentsLayer(cc::Layer* layer) {
   GraphicsLayer::RegisterContentsLayer(layer);
+  OnContentsCcLayerChanged();
 }
 
 void HTMLCanvasElement::UnregisterContentsLayer(cc::Layer* layer) {
   GraphicsLayer::UnregisterContentsLayer(layer);
+  OnContentsCcLayerChanged();
 }
 
 FontSelector* HTMLCanvasElement::GetFontSelector() {
@@ -1492,6 +1504,22 @@ bool HTMLCanvasElement::HasImageBitmapContext() const {
   CanvasRenderingContext::ContextType type = context_->GetContextType();
   return (type == CanvasRenderingContext::kContextImageBitmap ||
           type == CanvasRenderingContext::kContextXRPresent);
+}
+
+cc::Layer* HTMLCanvasElement::ContentsCcLayer() const {
+  if (surface_layer_bridge_)
+    return surface_layer_bridge_->GetCcLayer();
+  if (context_ && context_->IsComposited())
+    return context_->CcLayer();
+  return nullptr;
+}
+
+void HTMLCanvasElement::OnContentsCcLayerChanged() {
+  // We need to repaint the layer because the foreign layer display item may
+  // appear, disappear or change.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      GetLayoutObject() && GetLayoutObject()->HasLayer())
+    GetLayoutBoxModelObject()->Layer()->SetNeedsRepaint();
 }
 
 }  // namespace blink

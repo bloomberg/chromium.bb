@@ -301,6 +301,11 @@ class CORE_EXPORT HTMLCanvasElement final
   scoped_refptr<StaticBitmapImage> Snapshot(SourceDrawingBuffer,
                                             AccelerationHint) const;
 
+  // Returns the cc layer containing the contents. It's the cc layer of
+  // SurfaceLayerBridge() or RenderingContext(), or nullptr if the canvas is not
+  // composited.
+  cc::Layer* ContentsCcLayer() const;
+
  protected:
   void DidMoveToNewDocument(Document& old_document) override;
 
@@ -339,6 +344,12 @@ class CORE_EXPORT HTMLCanvasElement final
   // Returns true if the canvas' context type is inherited from
   // ImageBitmapRenderingContextBase.
   bool HasImageBitmapContext() const;
+
+  CanvasRenderingContext* GetCanvasRenderingContextInternal(
+      const String&,
+      const CanvasContextCreationAttributesCore&);
+
+  void OnContentsCcLayerChanged();
 
   HeapHashSet<WeakMember<CanvasDrawListener>> listeners_;
 
