@@ -37,10 +37,6 @@ class MockAssistant : public mojom::Assistant {
       AddAssistantInteractionSubscriber,
       void(chromeos::assistant::mojom::AssistantInteractionSubscriberPtr));
 
-  MOCK_METHOD1(
-      AddAssistantNotificationSubscriber,
-      void(chromeos::assistant::mojom::AssistantNotificationSubscriberPtr));
-
   MOCK_METHOD2(RetrieveNotification,
                void(chromeos::assistant::mojom::AssistantNotificationPtr, int));
 

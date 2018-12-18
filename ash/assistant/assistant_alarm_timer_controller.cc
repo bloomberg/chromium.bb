@@ -88,6 +88,7 @@ void AssistantAlarmTimerController::OnAlarmTimerAdded(
   notification->title = title;
   notification->message = message;
   notification->action_url = action_url;
+  notification->client_id = alarm_timer.id;
   notification->grouping_key = kTimerNotificationGroupingKey;
 
   // "STOP" button.
@@ -107,7 +108,7 @@ void AssistantAlarmTimerController::OnAlarmTimerAdded(
                   IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_QUERY))));
 
   DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
-  assistant_controller_->notification_controller()->OnShowNotification(
+  assistant_controller_->notification_controller()->AddNotification(
       std::move(notification));
 }
 
@@ -115,8 +116,9 @@ void AssistantAlarmTimerController::OnAllAlarmsTimersRemoved() {
   timer_.Stop();
 
   DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
-  assistant_controller_->notification_controller()->OnRemoveNotification(
-      kTimerNotificationGroupingKey);
+  assistant_controller_->notification_controller()
+      ->RemoveNotificationByGroupingKey(kTimerNotificationGroupingKey,
+                                        /*from_server=*/false);
 }
 
 }  // namespace ash

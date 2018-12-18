@@ -19,6 +19,7 @@
           "ash.mojom.AshMessageCenterController",
           "ash.mojom.AssistantAlarmTimerController",
           "ash.mojom.AssistantController",
+          "ash.mojom.AssistantNotificationController",
           "ash.mojom.AssistantScreenContextController",
           "ash.mojom.AssistantSetupController",
           "ash.mojom.AssistantVolumeControl",

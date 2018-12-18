@@ -12,6 +12,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_alarm_timer_controller.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/cast_config_controller.h"
@@ -95,6 +96,12 @@ void BindAssistantAlarmTimerControllerRequestOnMainThread(
 void BindAssistantControllerRequestOnMainThread(
     mojom::AssistantControllerRequest request) {
   Shell::Get()->assistant_controller()->BindRequest(std::move(request));
+}
+
+void BindAssistantNotificationControllerRequestOnMainThread(
+    mojom::AssistantNotificationControllerRequest request) {
+  Shell::Get()->assistant_controller()->notification_controller()->BindRequest(
+      std::move(request));
 }
 
 void BindAssistantScreenContextControllerRequestOnMainThread(
@@ -274,6 +281,10 @@ void RegisterInterfaces(
         main_thread_task_runner);
     registry->AddInterface(
         base::BindRepeating(&BindAssistantControllerRequestOnMainThread),
+        main_thread_task_runner);
+    registry->AddInterface(
+        base::BindRepeating(
+            &BindAssistantNotificationControllerRequestOnMainThread),
         main_thread_task_runner);
     registry->AddInterface(
         base::BindRepeating(

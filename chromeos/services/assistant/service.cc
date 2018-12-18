@@ -311,6 +311,10 @@ void Service::FinalizeAssistantManagerService() {
           ash::mojom::kServiceName, &assistant_alarm_timer_controller_);
     }
 
+    // Bind to the AssistantNotificationController in ash.
+    service_binding_.GetConnector()->BindInterface(
+        ash::mojom::kServiceName, &assistant_notification_controller_);
+
     // Bind to the AssistantScreenContextController in ash.
     service_binding_.GetConnector()->BindInterface(
         ash::mojom::kServiceName, &assistant_screen_context_controller_);
