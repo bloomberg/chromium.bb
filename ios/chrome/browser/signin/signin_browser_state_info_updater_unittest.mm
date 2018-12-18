@@ -30,6 +30,7 @@
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
+#include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -51,7 +52,8 @@ std::unique_ptr<KeyedService> BuildTestTokenService(web::BrowserState* state) {
       std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
           SigninClientFactory::GetForBrowserState(browser_state),
           std::make_unique<FakeProfileOAuth2TokenServiceIOSProvider>(),
-          ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state));
+          ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
+          ios::SigninErrorControllerFactory::GetForBrowserState(browser_state));
   return std::make_unique<FakeProfileOAuth2TokenService>(
       browser_state->GetPrefs(), std::move(delegate));
 }
