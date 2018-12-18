@@ -122,8 +122,6 @@ git commit -m "Squash: regenerate amalgamation and patches."
 git branch --set-upstream-to=origin/master
 git cl upload --squash
 
-# TODO(pwnall): Should hash changes be checked in, or backed out?
-
 ---
 
 3) Import a new SQLite release.
@@ -279,17 +277,14 @@ TODO(pwnall): This hasn't been tried out for at least a year.
 Prerequisites: The test suite requires tcl-dev and libicu-dev.  Install those on
 Ubuntu like:
   sudo apt-get install tcl8.6-dev libicu-dev
-On OSX, I use MacPorts:
-  sudo port install tcl
+On macOS, I use Homebrew:
+  brew install icu4c tcl-tk
+  export PATH="$(brew --prefix icu4c)/bin:$(brew --prefix tcl-tk)/bin:$PATH"
 
-cd third_party/sqlite/src
-mkdir build
-cd build
-# This sometimes gives integer-size warnings on the differences between
-# Tcl_WideInt and sqlite3_int64 and int64.  Usually this is easily fixed by
-# changing a variable to Tcl_WideInt.
-make -j -f ../Makefile.linux-gcc testfixture sqlite3 sqlite3_analyzer sqldiff
-make -f ../Makefile.linux-gcc test > /tmp/test.log
+Run the commands in scripts/generate_amalgamation.sh, but replace the "make"
+command with "make test".
+
+make test > /tmp/test.log
 egrep 'errors out of' /tmp/test.log
 # Show broken tests:
 egrep 'Failures on these tests:' /tmp/test.log

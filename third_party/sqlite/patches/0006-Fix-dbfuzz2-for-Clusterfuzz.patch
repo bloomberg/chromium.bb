@@ -1,3 +1,13 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matthew Denton <mpdenton@chromium.org>
+Date: Fri, 7 Dec 2018 14:49:36 -0700
+Subject: [PATCH 6/6] Fix dbfuzz2 for Clusterfuzz.
+
+This backports https://www.sqlite.org/src/info/9ad796a8822f1b7e
+---
+ third_party/sqlite/src/test/dbfuzz2.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
 diff --git a/third_party/sqlite/src/test/dbfuzz2.c b/third_party/sqlite/src/test/dbfuzz2.c
 index 0833f0386884..4ec43302ac37 100644
 --- a/third_party/sqlite/src/test/dbfuzz2.c
@@ -20,3 +30,6 @@ index 0833f0386884..4ec43302ac37 100644
    rc = sqlite3_open(0, &db);
    if( rc ) return 1;
    a = sqlite3_malloc64(nByte+1);
+--
+2.18.0
+
