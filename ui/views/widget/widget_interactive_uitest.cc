@@ -1425,6 +1425,43 @@ TEST_F(WidgetTestInteractive, RestoreAfterMinimize) {
   widget->CloseNow();
 }
 
+#if defined(OS_WIN)
+// Tests that widget visibility toggles correctly when minimized and maximized
+// on Windows. Test using both the widget API as well as native win32 functions
+// that operate directly on the underlying HWND. Behavior should be the same.
+TEST_F(WidgetTestInteractive, RestoreAndMinimizeVisibility) {
+  Widget* widget = CreateWidget();
+  ShowSync(widget);
+  ASSERT_FALSE(widget->IsMinimized());
+
+  PropertyWaiter minimize_widget_waiter(
+      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), true);
+  widget->Minimize();
+  EXPECT_TRUE(minimize_widget_waiter.Wait());
+  EXPECT_FALSE(widget->IsVisible());
+
+  PropertyWaiter restore_widget_waiter(
+      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), false);
+  widget->Restore();
+  EXPECT_TRUE(restore_widget_waiter.Wait());
+  EXPECT_TRUE(widget->IsVisible());
+
+  PropertyWaiter minimize_hwnd_waiter(
+      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), true);
+  CloseWindow(HWNDForWidget(widget));
+  EXPECT_TRUE(minimize_hwnd_waiter.Wait());
+  EXPECT_FALSE(widget->IsVisible());
+
+  PropertyWaiter restore_hwnd_waiter(
+      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), false);
+  OpenIcon(HWNDForWidget(widget));
+  EXPECT_TRUE(restore_hwnd_waiter.Wait());
+  EXPECT_TRUE(widget->IsVisible());
+
+  widget->CloseNow();
+}
+#endif  // defined(OS_WIN)
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Tests that when a desktop native widget has modal transient child, it should
 // avoid restore focused view itself as the modal transient child window will do

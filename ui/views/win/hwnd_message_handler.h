@@ -639,6 +639,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // activation, etc.)
   bool ignore_window_pos_changes_;
 
+  // Keeps track of the last size type param received from a WM_SIZE message.
+  UINT last_size_param_ = SIZE_RESTORED;
+
   // The last-seen monitor containing us, and its rect and work area.  These are
   // used to catch updates to the rect and work area and react accordingly.
   HMONITOR last_monitor_;
