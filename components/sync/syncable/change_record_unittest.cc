@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "components/sync/protocol/extension_specifics.pb.h"
 #include "components/sync/protocol/proto_value_conversions.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -22,8 +21,6 @@ namespace {
 
 using base::ExpectDictDictionaryValue;
 using base::ExpectDictStringValue;
-using testing::Invoke;
-using testing::StrictMock;
 
 class ChangeRecordTest : public testing::Test {};
 
@@ -54,11 +51,11 @@ void CheckChangeRecordValue(const ChangeRecord& record,
   ExpectDictStringValue(base::Int64ToString(record.id), value, "id");
   if (record.action == ChangeRecord::ACTION_DELETE) {
     std::unique_ptr<base::DictionaryValue> expected_extra_value;
-    if (record.extra.get()) {
+    if (record.extra.has_value()) {
       expected_extra_value = record.extra->ToValue();
     }
     const base::Value* extra_value = nullptr;
-    EXPECT_EQ(record.extra.get() != nullptr, value.Get("extra", &extra_value));
+    EXPECT_EQ(record.extra.has_value(), value.Get("extra", &extra_value));
     if (extra_value)
       EXPECT_EQ(*expected_extra_value, *extra_value);
 
@@ -67,34 +64,6 @@ void CheckChangeRecordValue(const ChangeRecord& record,
     ExpectDictDictionaryValue(*expected_specifics_value, value, "specifics");
   }
 }
-
-class TestExtraChangeRecordData : public ExtraPasswordChangeRecordData {
- public:
-  TestExtraChangeRecordData()
-      : to_value_calls_(0), expected_to_value_calls_(0) {}
-
-  ~TestExtraChangeRecordData() override {
-    EXPECT_EQ(expected_to_value_calls_, to_value_calls_);
-  }
-
-  std::unique_ptr<base::DictionaryValue> ToValue() const override {
-    const_cast<TestExtraChangeRecordData*>(this)->to_value_calls_++;
-    return dict_->CreateDeepCopy();
-  }
-
-  void set_dictionary_value(std::unique_ptr<base::DictionaryValue> dict) {
-    dict_ = std::move(dict);
-  }
-
-  void set_expected_to_value_calls(size_t expectation) {
-    expected_to_value_calls_ = expectation;
-  }
-
- private:
-  std::unique_ptr<base::DictionaryValue> dict_;
-  size_t to_value_calls_;
-  size_t expected_to_value_calls_;
-};
 
 TEST_F(ChangeRecordTest, ChangeRecordToValue) {
   sync_pb::EntitySpecifics old_specifics;
@@ -110,7 +79,7 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
     record.action = ChangeRecord::ACTION_ADD;
     record.id = kTestId;
     record.specifics = old_specifics;
-    record.extra.reset(new TestExtraChangeRecordData());
+    record.extra.emplace();
     std::unique_ptr<base::DictionaryValue> value(record.ToValue());
     CheckChangeRecordValue(record, *value);
   }
@@ -121,7 +90,7 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
     record.action = ChangeRecord::ACTION_UPDATE;
     record.id = kTestId;
     record.specifics = old_specifics;
-    record.extra.reset(new TestExtraChangeRecordData());
+    record.extra.emplace();
     std::unique_ptr<base::DictionaryValue> value(record.ToValue());
     CheckChangeRecordValue(record, *value);
   }
@@ -138,20 +107,17 @@ TEST_F(ChangeRecordTest, ChangeRecordToValue) {
 
   // Delete (with extra)
   {
+    sync_pb::PasswordSpecificsData unencrypted;
+    unencrypted.set_origin("http://example.com");
+    unencrypted.set_username_value("azure");
+    unencrypted.set_password_value("hunter2");
+
     ChangeRecord record;
     record.action = ChangeRecord::ACTION_DELETE;
     record.id = kTestId;
     record.specifics = old_specifics;
+    record.extra = ExtraPasswordChangeRecordData(unencrypted);
 
-    std::unique_ptr<base::DictionaryValue> extra_value(
-        new base::DictionaryValue());
-    extra_value->SetString("foo", "bar");
-    std::unique_ptr<TestExtraChangeRecordData> extra(
-        new TestExtraChangeRecordData());
-    extra->set_dictionary_value(std::move(extra_value));
-    extra->set_expected_to_value_calls(2U);
-
-    record.extra.reset(extra.release());
     std::unique_ptr<base::DictionaryValue> value(record.ToValue());
     CheckChangeRecordValue(record, *value);
   }

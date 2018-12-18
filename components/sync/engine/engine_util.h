@@ -8,6 +8,7 @@
 // The functions defined are shared among some of the classes that implement
 // the internal sync API.  They are not to be used by clients of the API.
 
+#include <memory>
 #include <string>
 
 namespace sync_pb {
@@ -19,7 +20,7 @@ namespace syncer {
 
 class Cryptographer;
 
-sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
+std::unique_ptr<sync_pb::PasswordSpecificsData> DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics,
     Cryptographer* crypto);
 

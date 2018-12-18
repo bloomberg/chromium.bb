@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/change_record.h"
 
@@ -47,7 +47,8 @@ class ChangeReorderBuffer {
   // This item will appear in the output list as an ACTION_UPDATE ChangeRecord.
   void PushUpdatedItem(int64_t id);
 
-  void SetExtraDataForId(int64_t id, ExtraPasswordChangeRecordData* extra);
+  void SetExtraDataForId(int64_t id,
+                         std::unique_ptr<ExtraPasswordChangeRecordData> extra);
 
   void SetSpecificsForId(int64_t id, const sync_pb::EntitySpecifics& specifics);
 
@@ -62,7 +63,7 @@ class ChangeReorderBuffer {
   // determine the ordering.  Returns true if successful, or false if
   // an error was encountered.
   bool GetAllChangesInTreeOrder(const BaseTransaction* sync_trans,
-                                ImmutableChangeRecordList* changes)
+                                ImmutableChangeRecordList* changes) const
       WARN_UNUSED_RESULT;
 
  private:
@@ -70,7 +71,7 @@ class ChangeReorderBuffer {
   using OperationMap = std::map<int64_t, ChangeRecord::Action>;
   using SpecificsMap = std::map<int64_t, sync_pb::EntitySpecifics>;
   using ExtraDataMap =
-      std::map<int64_t, linked_ptr<ExtraPasswordChangeRecordData>>;
+      std::map<int64_t, std::unique_ptr<ExtraPasswordChangeRecordData>>;
 
   // Stores the items that have been pushed into the buffer, and the type of
   // operation that was associated with them.
