@@ -78,7 +78,8 @@ void RemoteFrame::ScheduleNavigation(Document& origin_document,
 }
 
 void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
-                           WebFrameLoadType frame_load_type) {
+                           WebFrameLoadType frame_load_type,
+                           NavigationPolicy) {
   if (!navigation_rate_limiter().CanProceed())
     return;
 

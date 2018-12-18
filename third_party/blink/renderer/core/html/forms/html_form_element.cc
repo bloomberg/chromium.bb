@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -62,6 +63,7 @@
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -496,23 +498,32 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
                       WebFeature::kFormDisabledAttributePresentAndSubmit);
   }
 
-  // TODO(lukasza): Investigate if the code below can uniformly handle remote
-  // and local frames (i.e. by calling virtual Frame::navigate from a timer).
-  // See also https://goo.gl/95d2KA.
-  if (target_frame->IsLocalFrame()) {
-    ToLocalFrame(target_frame)
-        ->GetNavigationScheduler()
-        .ScheduleFormSubmission(&GetDocument(), submission);
-  } else {
-    FrameLoadRequest frame_load_request =
-        submission->CreateFrameLoadRequest(&GetDocument());
-    frame_load_request.GetResourceRequest().SetHasUserGesture(
-        LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
-    // TODO(dgozman): we lose information about triggering event and desired
-    // navigation policy here.
-    ToRemoteFrame(target_frame)
-        ->Navigate(frame_load_request, WebFrameLoadType::kStandard);
+  FrameLoadRequest frame_load_request =
+      submission->CreateFrameLoadRequest(&GetDocument());
+  frame_load_request.GetResourceRequest().SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
+  if (const WebInputEvent* input_event = CurrentInputEvent::Get())
+    frame_load_request.SetInputStartTime(input_event->TimeStamp());
+
+  WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
+  if (target_frame->IsLocalFrame() &&
+      NavigationScheduler::MustReplaceCurrentItem(ToLocalFrame(target_frame))) {
+    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
+
+  ClientNavigationReason reason =
+      submission->Method() == FormSubmission::kGetMethod
+          ? ClientNavigationReason::kFormSubmissionGet
+          : ClientNavigationReason::kFormSubmissionPost;
+  if (target_frame->IsLocalFrame()) {
+    probe::frameScheduledNavigation(
+        ToLocalFrame(target_frame),
+        frame_load_request.GetResourceRequest().Url(), 0.0, reason);
+    probe::frameClearedScheduledNavigation(ToLocalFrame(target_frame));
+  }
+
+  target_frame->Navigate(frame_load_request, frame_load_type,
+                         submission->GetNavigationPolicy());
 }
 
 void HTMLFormElement::reset() {
