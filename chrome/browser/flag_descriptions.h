@@ -2010,9 +2010,6 @@ extern const char kEnableSettingsShortcutSearchDescription[];
 extern const char kEnableStylusVirtualKeyboardName[];
 extern const char kEnableStylusVirtualKeyboardDescription[];
 
-extern const char kEnableUnifiedMultiDeviceSettingsName[];
-extern const char kEnableUnifiedMultiDeviceSettingsDescription[];
-
 extern const char kEnableUnifiedMultiDeviceSetupName[];
 extern const char kEnableUnifiedMultiDeviceSetupDescription[];
 

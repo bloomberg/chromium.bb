@@ -2161,11 +2161,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable_unified_multidevice_settings",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable_unified_multidevice_setup",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
