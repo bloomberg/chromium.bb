@@ -55,6 +55,19 @@ namespace {
 
 base::AtomicSequenceNumber g_next_command_buffer_id;
 
+// FakeOnScreenSurface is used to force GLContextVirtual::MakeCurrent to set
+// |surface| as the default framebuffer.
+class FakeOnScreenSurface : public gl::GLSurfaceAdapter {
+ public:
+  explicit FakeOnScreenSurface(gl::GLSurface* surface)
+      : gl::GLSurfaceAdapter(surface) {}
+
+  bool IsOffscreen() override { return false; }
+
+ private:
+  ~FakeOnScreenSurface() override = default;
+};
+
 }  // namespace
 
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
@@ -507,8 +520,12 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
     gl_surface_ = gpu::ImageTransportSurface::CreateNativeSurface(
         weak_ptr_factory_.GetWeakPtr(), surface_handle_, gl::GLSurfaceFormat());
   } else {
-    // surface_ could be null for pixel tests.
-    gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(1, 1));
+    // surface_ could be null for pixel tests. Use FakeOnScreenSurface so that
+    // virtual contexts always render to the surface.
+    scoped_refptr<gl::GLSurface> offscreen_surface =
+        gl::init::CreateOffscreenGLSurface(gfx::Size(1, 1));
+    gl_surface_ =
+        base::MakeRefCounted<FakeOnScreenSurface>(offscreen_surface.get());
   }
   DCHECK(gl_surface_);
 

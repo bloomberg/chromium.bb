@@ -27,7 +27,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/viz/common/features.h"
 #include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -425,12 +424,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
 
   use_virtualized_gl_context_ |=
       context_group_->feature_info()->workarounds().use_virtualized_gl_contexts;
-
-#if defined(OS_MACOSX)
-  // TODO(penghuang): remove below line when the framebuffer issue is fixed in
-  // skia. https://crbug.com/914495
-  use_virtualized_gl_context_ &= !features::IsUsingSkiaRenderer();
-#endif
 
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
