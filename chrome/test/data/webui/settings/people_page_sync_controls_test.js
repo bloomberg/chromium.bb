@@ -131,7 +131,11 @@ cr.define('settings_people_page_sync_controls', function() {
       settings.navigateTo(settings.routes.SYNC_ADVANCED);
       document.body.appendChild(syncControls);
 
+      syncControls
+          .syncStatus = {disabled: false, hasError: false, signedIn: true};
       Polymer.dom.flush();
+
+      assertEquals(settings.routes.SYNC_ADVANCED, settings.getCurrentRoute());
     });
 
     teardown(function() {
@@ -140,14 +144,40 @@ cr.define('settings_people_page_sync_controls', function() {
 
     if (!cr.isChromeOS) {
       test('ToastShownForSyncSetup', function() {
-        syncControls.syncStatus = {setupInProgress: false};
+        syncControls.syncStatus = {setupInProgress: false, signedIn: true};
         assertFalse(syncControls.$.toast.open);
 
-        syncControls.syncStatus = {setupInProgress: true};
+        syncControls.syncStatus = {setupInProgress: true, signedIn: true};
         assertTrue(syncControls.$.toast.open);
 
         syncControls.$.toast.querySelector('paper-button').click();
       });
     }
+
+    test('SignedOut', function() {
+      syncControls
+          .syncStatus = {disabled: false, hasError: false, signedIn: false};
+      assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
+    });
+
+    test('PassphraseError', function() {
+      syncControls.syncStatus = {
+        disabled: false,
+        hasError: true,
+        signedIn: true,
+        statusAction: settings.StatusAction.ENTER_PASSPHRASE
+      };
+      assertEquals(settings.routes.SYNC_ADVANCED, settings.getCurrentRoute());
+    });
+
+    test('SyncPaused', function() {
+      syncControls.syncStatus = {
+        disabled: false,
+        hasError: true,
+        signedIn: true,
+        statusAction: settings.StatusAction.REAUTHENTICATE
+      };
+      assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
+    });
   });
 });
