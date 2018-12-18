@@ -2264,8 +2264,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     private void updateVisualsForLocationBarState() {
-        final boolean isIncognito = isIncognito();
-
         // These are used to skip setting state unnecessarily while in the tab switcher.
         boolean inOrEnteringStaticTab =
                 mTabSwitcherState == STATIC_TAB || mTabSwitcherState == EXITING_TAB_SWITCHER;
@@ -2346,9 +2344,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         mLocationBarBackgroundAlpha = 255;
         getProgressBar().setThemeColor(themeColorForProgressBar, isIncognito());
 
-        if (inOrEnteringTabSwitcher) {
-            // No need to update visual state.
-        } else if (isIncognito()) {
+        if (isIncognito()) {
             mUseLightToolbarDrawables = true;
             mLocationBarBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
         } else if (mVisualState == VisualState.BRAND_COLOR) {
