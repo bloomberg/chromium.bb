@@ -23,10 +23,6 @@ class CONTENT_EXPORT InputDeviceChangeObserver
 
   // InputDeviceEventObserver public overrides.
   void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
-  void OnTouchscreenDeviceConfigurationChanged() override;
-  void OnKeyboardDeviceConfigurationChanged() override;
-  void OnMouseDeviceConfigurationChanged() override;
-  void OnTouchpadDeviceConfigurationChanged() override;
 
  private:
   RenderViewHost* render_view_host_;

@@ -31,7 +31,7 @@ class TestInputDeviceObserver : public InputDeviceEventObserver {
   }
 
   // InputDeviceEventObserver implementation.
-  void OnKeyboardDeviceConfigurationChanged() override {
+  void OnInputDeviceConfigurationChanged(uint8_t) override {
     change_notified_ = true;
   }
 

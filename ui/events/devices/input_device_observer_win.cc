@@ -12,10 +12,12 @@
 #include <windows.h>
 
 // This macro provides the implementation for the observer notification methods.
-#define NOTIFY_OBSERVERS_METHOD(method_decl, observer_call) \
-  void InputDeviceObserverWin::method_decl {                \
-    for (InputDeviceEventObserver & observer : observers_)  \
-      observer.observer_call;                               \
+#define NOTIFY_OBSERVERS(method_decl, input_device_types)    \
+  void InputDeviceObserverWin::method_decl {                 \
+    for (InputDeviceEventObserver & observer : observers_) { \
+      observer.OnInputDeviceConfigurationChanged(            \
+          InputDeviceEventObserver::input_device_types);     \
+    }                                                        \
   }
 
 namespace ui {
@@ -92,10 +94,10 @@ void InputDeviceObserverWin::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-NOTIFY_OBSERVERS_METHOD(NotifyObserversKeyboardDeviceConfigurationChanged(),
-                        OnKeyboardDeviceConfigurationChanged());
+NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
+                 kKeyboard);
 
-NOTIFY_OBSERVERS_METHOD(NotifyObserversTouchpadDeviceConfigurationChanged(),
-                        OnTouchpadDeviceConfigurationChanged());
+NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
+                 kTouchpad);
 
 }  // namespace ui

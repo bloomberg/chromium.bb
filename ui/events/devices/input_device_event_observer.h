@@ -25,17 +25,9 @@ class EVENTS_DEVICES_EXPORT InputDeviceEventObserver {
 
   virtual ~InputDeviceEventObserver() {}
 
-  // This method is called for configurations changes in any |IputDeviceType|
-  // specified in the |input_device_type| bit-field.
+  // This method is called for configurations changes in the device types
+  // specified in |input_device_types| bit-field.
   virtual void OnInputDeviceConfigurationChanged(uint8_t input_device_types) {}
-
-  // DEPRECATED: Use |OnInputDeviceConfigurationChanged()| instead.
-  //
-  // TODO(mustaq): Remove the On*DeviceConfigurationChanged() functions below.
-  virtual void OnKeyboardDeviceConfigurationChanged() {}
-  virtual void OnTouchscreenDeviceConfigurationChanged() {}
-  virtual void OnMouseDeviceConfigurationChanged() {}
-  virtual void OnTouchpadDeviceConfigurationChanged() {}
 
   virtual void OnDeviceListsComplete() {}
   virtual void OnStylusStateChanged(StylusState state) {}

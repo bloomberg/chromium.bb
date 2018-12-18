@@ -39,8 +39,8 @@ class OobeDisplayChooser : public ui::InputDeviceEventObserver {
   void MoveToTouchDisplay();
 
   // ui::InputDeviceEventObserver:
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
   void OnTouchDeviceAssociationChanged() override;
-  void OnTouchscreenDeviceConfigurationChanged() override;
   void OnDeviceListsComplete() override;
 
   ScopedObserver<ui::InputDeviceManager, ui::InputDeviceEventObserver>

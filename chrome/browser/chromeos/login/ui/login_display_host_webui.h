@@ -124,7 +124,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                                uint32_t changed_metrics) override;
 
   // ui::InputDeviceEventObserver
-  void OnTouchscreenDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
   // views::WidgetRemovalsObserver:
   void OnWillRemoveView(views::Widget* widget, views::View* view) override;

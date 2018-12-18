@@ -133,12 +133,12 @@ void VirtualKeyboardController::OnTabletModeEventsBlockingChanged() {
   UpdateKeyboardEnabled();
 }
 
-void VirtualKeyboardController::OnTouchscreenDeviceConfigurationChanged() {
-  UpdateDevices();
-}
-
-void VirtualKeyboardController::OnKeyboardDeviceConfigurationChanged() {
-  UpdateDevices();
+void VirtualKeyboardController::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & (ui::InputDeviceEventObserver::kKeyboard |
+                            ui::InputDeviceEventObserver::kTouchscreen)) {
+    UpdateDevices();
+  }
 }
 
 void VirtualKeyboardController::ToggleIgnoreExternalKeyboard() {

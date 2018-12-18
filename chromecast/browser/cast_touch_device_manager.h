@@ -22,7 +22,7 @@ class CastTouchDeviceManager : public ui::InputDeviceEventObserver {
   ~CastTouchDeviceManager() override;
 
   // ui::InputDeviceEventObserver:
-  void OnTouchscreenDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
   void OnDisplayConfigured(int64_t display_id,
                            display::Display::Rotation rotation,

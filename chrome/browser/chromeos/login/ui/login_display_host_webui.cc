@@ -851,9 +851,12 @@ void LoginDisplayHostWebUI::OnDisplayMetricsChanged(
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, ui::InputDeviceEventObserver
-void LoginDisplayHostWebUI::OnTouchscreenDeviceConfigurationChanged() {
-  if (GetOobeUI())
+void LoginDisplayHostWebUI::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if ((input_device_types & ui::InputDeviceEventObserver::kTouchscreen) &&
+      GetOobeUI()) {
     GetOobeUI()->OnDisplayConfigurationChanged();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

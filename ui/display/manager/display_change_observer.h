@@ -55,7 +55,7 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
       MultipleDisplayState failed_new_state) override;
 
   // Overriden from ui::InputDeviceEventObserver:
-  void OnTouchscreenDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
   // Exposed for testing.
   DISPLAY_EXPORT static float FindDeviceScaleFactor(float dpi);

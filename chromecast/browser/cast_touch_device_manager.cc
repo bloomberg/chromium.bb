@@ -44,8 +44,11 @@ CastTouchDeviceManager::~CastTouchDeviceManager() {
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 }
 
-void CastTouchDeviceManager::OnTouchscreenDeviceConfigurationChanged() {
-  UpdateTouchscreenConfiguration();
+void CastTouchDeviceManager::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kTouchscreen) {
+    UpdateTouchscreenConfiguration();
+  }
 }
 
 void CastTouchDeviceManager::OnDisplayConfigured(

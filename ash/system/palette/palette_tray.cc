@@ -314,8 +314,11 @@ void PaletteTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
     HidePalette();
 }
 
-void PaletteTray::OnTouchscreenDeviceConfigurationChanged() {
-  UpdateIconVisibility();
+void PaletteTray::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kTouchscreen) {
+    UpdateIconVisibility();
+  }
 }
 
 void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {

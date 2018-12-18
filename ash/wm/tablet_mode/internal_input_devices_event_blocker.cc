@@ -32,12 +32,14 @@ InternalInputDevicesEventBlocker::~InternalInputDevicesEventBlocker() {
     UpdateInternalInputDevices(/*should_block=*/false);
 }
 
-void InternalInputDevicesEventBlocker::OnKeyboardDeviceConfigurationChanged() {
-  UpdateInternalKeyboard(should_be_blocked_);
-}
-
-void InternalInputDevicesEventBlocker::OnTouchpadDeviceConfigurationChanged() {
-  UpdateInternalTouchpad(should_be_blocked_);
+void InternalInputDevicesEventBlocker::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kKeyboard) {
+    UpdateInternalKeyboard(should_be_blocked_);
+  }
+  if (input_device_types & ui::InputDeviceEventObserver::kTouchpad) {
+    UpdateInternalTouchpad(should_be_blocked_);
+  }
 }
 
 void InternalInputDevicesEventBlocker::UpdateInternalInputDevices(

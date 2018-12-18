@@ -93,7 +93,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   friend class PaletteTrayTestApi;
 
   // ui::InputDeviceObserver:
-  void OnTouchscreenDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
   void OnStylusStateChanged(ui::StylusState stylus_state) override;
 
   // TrayBubbleView::Delegate:

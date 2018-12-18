@@ -228,17 +228,21 @@ void DeviceDataManager::OnStylusStateChanged(StylusState state) {
   NotifyObserversStylusStateChanged(state);
 }
 
-NOTIFY_OBSERVERS(NotifyObserversTouchscreenDeviceConfigurationChanged(),
-                 OnTouchscreenDeviceConfigurationChanged());
+NOTIFY_OBSERVERS(
+    NotifyObserversKeyboardDeviceConfigurationChanged(),
+    OnInputDeviceConfigurationChanged(InputDeviceEventObserver::kKeyboard));
 
-NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
-                 OnKeyboardDeviceConfigurationChanged());
+NOTIFY_OBSERVERS(
+    NotifyObserversMouseDeviceConfigurationChanged(),
+    OnInputDeviceConfigurationChanged(InputDeviceEventObserver::kMouse));
 
-NOTIFY_OBSERVERS(NotifyObserversMouseDeviceConfigurationChanged(),
-                 OnMouseDeviceConfigurationChanged());
+NOTIFY_OBSERVERS(
+    NotifyObserversTouchpadDeviceConfigurationChanged(),
+    OnInputDeviceConfigurationChanged(InputDeviceEventObserver::kTouchpad));
 
-NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
-                 OnTouchpadDeviceConfigurationChanged());
+NOTIFY_OBSERVERS(
+    NotifyObserversTouchscreenDeviceConfigurationChanged(),
+    OnInputDeviceConfigurationChanged(InputDeviceEventObserver::kTouchscreen));
 
 NOTIFY_OBSERVERS(NotifyObserversDeviceListsComplete(), OnDeviceListsComplete());
 
