@@ -27,10 +27,8 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import fake_cidb
-from chromite.lib import failures_lib
 from chromite.lib import failure_message_lib_unittest
 from chromite.lib import gs_unittest
-from chromite.lib import metadata_lib
 from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import patch_unittest
@@ -73,24 +71,6 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.RunStage()
     tags = self._run.attrs.metadata.GetValue(constants.METADATA_TAGS)
     self.assertEqual(tags['version_full'], 'R39-4815.0.0-rc1')
-
-  def testMasterSlaveVersionMismatch(self):
-    """Test that master/slave version mismatch causes failure."""
-    master_release_tag = '9999.0.0-rc1'
-    master_build_id = self.fake_db.InsertBuild(
-        'master', 2, 'master config', 'master hostname')
-    master_metadata = metadata_lib.CBuildbotMetadata()
-    master_metadata.UpdateKeyDictWithDict(
-        'version', {'full' : 'R39-9999.0.0-rc1',
-                    'milestone': '39',
-                    'platform': master_release_tag})
-    self._run.attrs.metadata.UpdateWithDict(
-        {'master_build_id': master_build_id})
-    self.fake_db.UpdateMetadata(master_build_id, master_metadata)
-
-    stage = self.ConstructStage()
-    with self.assertRaises(failures_lib.StepFailure):
-      stage.Run()
 
   def ConstructStage(self):
     return report_stages.BuildReexecutionFinishedStage(self._run)
