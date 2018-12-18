@@ -70,7 +70,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
  private:
-  class V4L2VP8Accelerator;
   class V4L2VP9Accelerator;
 
   // Record for input buffers.
