@@ -337,9 +337,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
 };
 
 // static
-ClientSideDetectionHost* ClientSideDetectionHost::Create(
+std::unique_ptr<ClientSideDetectionHost> ClientSideDetectionHost::Create(
     WebContents* tab) {
-  return new ClientSideDetectionHost(tab);
+  return base::WrapUnique(new ClientSideDetectionHost(tab));
 }
 
 ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)

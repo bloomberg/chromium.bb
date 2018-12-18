@@ -47,8 +47,8 @@ SafeBrowsingTabObserver::SafeBrowsingTabObserver(
 
     if (prefs->GetBoolean(prefs::kSafeBrowsingEnabled) &&
         g_browser_process->safe_browsing_detection_service()) {
-      safebrowsing_detection_host_.reset(
-          ClientSideDetectionHost::Create(web_contents));
+      safebrowsing_detection_host_ =
+          ClientSideDetectionHost::Create(web_contents);
     }
   }
 #endif
@@ -69,8 +69,8 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
   if (safe_browsing &&
       g_browser_process->safe_browsing_detection_service()) {
     if (!safebrowsing_detection_host_.get()) {
-      safebrowsing_detection_host_.reset(
-          ClientSideDetectionHost::Create(web_contents_));
+      safebrowsing_detection_host_ =
+          ClientSideDetectionHost::Create(web_contents_);
     }
   } else {
     safebrowsing_detection_host_.reset();

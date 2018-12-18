@@ -37,7 +37,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
  public:
   // The caller keeps ownership of the tab object and is responsible for
   // ensuring that it stays valid until WebContentsDestroyed is called.
-  static ClientSideDetectionHost* Create(content::WebContents* tab);
+  static std::unique_ptr<ClientSideDetectionHost> Create(
+      content::WebContents* tab);
   ~ClientSideDetectionHost() override;
 
   // From content::WebContentsObserver.  If we navigate away we cancel all
