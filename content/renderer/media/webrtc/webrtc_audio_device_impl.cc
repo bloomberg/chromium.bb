@@ -51,7 +51,7 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   {
     base::AutoLock auto_lock(lock_);
 #if DCHECK_IS_ON()
-    DCHECK(renderer_->CurrentThreadIsRenderingThread());
+    DCHECK(!renderer_ || renderer_->CurrentThreadIsRenderingThread());
     if (!audio_renderer_thread_checker_.CalledOnValidThread()) {
       for (auto* sink : playout_sinks_)
         sink->OnRenderThreadChanged();
@@ -117,7 +117,7 @@ void WebRtcAudioDeviceImpl::AudioRendererThreadStopped() {
   // Notify the playout sink of the change.
   // Not holding |lock_| because the caller must guarantee that the audio
   // renderer thread is dead, so no race is possible with |playout_sinks_|
-  for (auto* sink : playout_sinks_)
+  for (auto* sink : TS_UNCHECKED_READ(playout_sinks_))
     sink->OnPlayoutDataSourceChanged();
 }
 
@@ -168,11 +168,10 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
   StopRecording();
   StopPlayout();
 
-  DCHECK(!renderer_ || !renderer_->IsStarted())
-      << "The shared audio renderer shouldn't be running";
-
   {
     base::AutoLock auto_lock(lock_);
+    DCHECK(!renderer_ || !renderer_->IsStarted())
+        << "The shared audio renderer shouldn't be running";
     capturers_.clear();
   }
 
