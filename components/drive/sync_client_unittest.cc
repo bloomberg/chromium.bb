@@ -36,6 +36,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -112,15 +113,15 @@ class SyncClientTest : public testing::Test {
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
-    fake_network_change_notifier_ =
-        std::make_unique<test_util::FakeNetworkChangeNotifier>();
-
     logger_ = std::make_unique<EventLogger>();
 
     drive_service_ = std::make_unique<SyncClientTestDriveService>();
 
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_WIFI);
     scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), drive_service_.get(),
+        network::TestNetworkConnectionTracker::GetInstance(),
         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
 
     metadata_storage_.reset(new ResourceMetadataStorage(
@@ -255,8 +256,6 @@ class SyncClientTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
-  std::unique_ptr<test_util::FakeNetworkChangeNotifier>
-      fake_network_change_notifier_;
   std::unique_ptr<EventLogger> logger_;
   std::unique_ptr<SyncClientTestDriveService> drive_service_;
   file_system::OperationDelegate delegate_;
@@ -397,9 +396,10 @@ TEST_F(SyncClientTest, RetryOnDisconnection) {
   // will receive no error.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&test_util::FakeNetworkChangeNotifier::SetConnectionType,
-                     base::Unretained(fake_network_change_notifier_.get()),
-                     net::NetworkChangeNotifier::CONNECTION_NONE),
+      base::BindOnce(&network::TestNetworkConnectionTracker::SetConnectionType,
+                     base::Unretained(
+                         network::TestNetworkConnectionTracker::GetInstance()),
+                     network::mojom::ConnectionType::CONNECTION_NONE),
       TestTimeouts::tiny_timeout());
 
   // Try fetch and upload.
@@ -418,8 +418,8 @@ TEST_F(SyncClientTest, RetryOnDisconnection) {
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
 
   // Switch to online.
-  fake_network_change_notifier_->SetConnectionType(
-      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   drive_service_->set_offline(false);
   base::RunLoop().RunUntilIdle();
 

@@ -54,6 +54,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/test/network_connection_change_simulator.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
@@ -1276,6 +1277,11 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         "fileManagerPrivate.getDriveConnectionState",
         &NewExtensionFunction<OfflineGetDriveConnectionState>);
   }
+
+  content::NetworkConnectionChangeSimulator network_change_simulator;
+  network_change_simulator.SetConnectionType(
+      IsOfflineTest() ? network::mojom::ConnectionType::CONNECTION_NONE
+                      : network::mojom::ConnectionType::CONNECTION_ETHERNET);
 
   // The test resources are setup: enable and add default ChromeOS component
   // extensions now and not before: crbug.com/831074, crbug.com/804413
