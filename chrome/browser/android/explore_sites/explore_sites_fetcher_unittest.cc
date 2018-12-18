@@ -8,6 +8,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -35,7 +36,6 @@ using testing::SaveArg;
 
 namespace {
 const char kAcceptLanguages[] = "en-US,en;q=0.5";
-const char kCountryOverride[] = "country_override";
 const char kExperimentData[] = "FooBar";
 const char kTestData[] = "Any data.";
 }  // namespace
@@ -277,7 +277,7 @@ std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcherTest::CreateFetcher(
     bool is_immediate_fetch) {
   std::unique_ptr<ExploreSitesFetcher> fetcher =
       ExploreSitesFetcher::CreateForGetCatalog(
-          is_immediate_fetch, "123", kAcceptLanguages,
+          is_immediate_fetch, "123", kAcceptLanguages, "zz",
           test_shared_url_loader_factory_, StoreResult());
   if (disable_retry)
     fetcher->disable_retry_for_testing();
@@ -338,19 +338,7 @@ TEST_F(ExploreSitesFetcherTest, Success) {
 
   EXPECT_EQ(last_resource_request.url.spec(),
             "https://exploresites-pa.googleapis.com/v1/"
-            "getcatalog?country_code=DEFAULT&version_token=123");
-}
-
-TEST_F(ExploreSitesFetcherTest, DefaultCountry) {
-  SetUpExperimentOption(kCountryOverride, "KZ");
-  std::string data;
-  EXPECT_EQ(ExploreSitesRequestStatus::kSuccess,
-            RunFetcherWithData(kTestData, &data));
-  EXPECT_EQ(kTestData, data);
-
-  EXPECT_EQ(last_resource_request.url.spec(),
-            "https://exploresites-pa.googleapis.com/v1/"
-            "getcatalog?country_code=KZ&version_token=123");
+            "getcatalog?country_code=zz&version_token=123");
 }
 
 TEST_F(ExploreSitesFetcherTest, TestHeaders) {

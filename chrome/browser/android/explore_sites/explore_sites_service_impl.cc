@@ -5,23 +5,33 @@
 #include "chrome/browser/android/explore_sites/explore_sites_service_impl.h"
 
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/blacklist_site_task.h"
 #include "chrome/browser/android/explore_sites/catalog.pb.h"
+#include "chrome/browser/android/explore_sites/clear_catalog_task.h"
 #include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 #include "chrome/browser/android/explore_sites/explore_sites_feature.h"
+#include "chrome/browser/android/explore_sites/explore_sites_schema.h"
 #include "chrome/browser/android/explore_sites/explore_sites_store.h"
 #include "chrome/browser/android/explore_sites/get_catalog_task.h"
 #include "chrome/browser/android/explore_sites/get_images_task.h"
 #include "chrome/browser/android/explore_sites/get_version_task.h"
 #include "chrome/browser/android/explore_sites/image_helper.h"
 #include "chrome/browser/android/explore_sites/import_catalog_task.h"
+#include "chrome/browser/browser_process.h"
 #include "components/offline_pages/task/task.h"
+#include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "sql/database.h"
+#include "sql/meta_table.h"
+#include "sql/statement.h"
 
 using chrome::android::explore_sites::ExploreSitesVariation;
 using chrome::android::explore_sites::GetExploreSitesVariation;
+using offline_pages::Task;
 
 namespace {
 void ReportCatalogError(explore_sites::ExploreSitesCatalogError error) {
@@ -123,6 +133,40 @@ void ExploreSitesServiceImpl::BlacklistSite(const std::string& url) {
   // TODO(https://crbug.com/893845): Remove cached category icon if affected.
 }
 
+void ExploreSitesServiceImpl::ClearCachedCatalogsForDebugging() {
+  task_queue_.AddTask(std::make_unique<ClearCatalogTask>(
+      explore_sites_store_.get(), base::BindOnce([](bool result) {})));
+}
+
+void ExploreSitesServiceImpl::OverrideCountryCodeForDebugging(
+    const std::string& country_code) {
+  country_override_ = std::make_unique<std::string>(country_code);
+}
+
+std::string ExploreSitesServiceImpl::GetCountryCode() {
+  if (country_override_)
+    return *country_override_;
+
+  std::string manually_set_variation_country =
+      base::GetFieldTrialParamValueByFeature(chrome::android::kExploreSites,
+                                             "country_override");
+  if (!manually_set_variation_country.empty())
+    return manually_set_variation_country;
+
+  variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  if (variations_service) {
+    std::string country = variations_service->GetStoredPermanentCountry();
+    if (!country.empty())
+      return country;
+    country = variations_service->GetLatestCountry();
+    if (!country.empty())
+      return country;
+  }
+
+  return "DEFAULT";
+}
+
 // Validate the catalog.  Note this does not take ownership of the pointer.
 // Since we can't modify the collection while iterating over it, we instead copy
 // the valid contents into a new validated catalog.
@@ -219,7 +263,7 @@ void ExploreSitesServiceImpl::GotVersionToStartFetch(
 
   // Create a fetcher and start fetching the protobuf (async).
   explore_sites_fetcher_ = ExploreSitesFetcher::CreateForGetCatalog(
-      is_immediate_fetch, catalog_version, accept_languages,
+      is_immediate_fetch, catalog_version, accept_languages, GetCountryCode(),
       url_loader_factory_getter_->GetFactory(),
       base::BindOnce(&ExploreSitesServiceImpl::OnCatalogFetched,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -300,4 +344,5 @@ void ExploreSitesServiceImpl::NotifyCatalogUpdated(
   for (auto& callback : callbacks)
     std::move(callback).Run(success);
 }
+
 }  // namespace explore_sites
