@@ -187,8 +187,8 @@ cr.define('cr.ui', function() {
         case 'mouseout':
           // If we're on top of the sub-menu, we don't want to dismiss it
           const childRect = subMenu.getBoundingClientRect();
-          if (childRect.left <= e.x && e.x < childRect.right &&
-              childRect.top <= e.y && e.y < childRect.bottom) {
+          if (childRect.left <= e.clientX && e.clientX < childRect.right &&
+              childRect.top <= e.clientY && e.clientY < childRect.bottom) {
             break;
           }
           item.removeAttribute('sub-menu-shown');
