@@ -466,6 +466,8 @@ void BackgroundFetchDelegateProxy::DidStartRequest(
   DCHECK(request_info);
   DCHECK_EQ(guid, request_info->download_guid());
 
+  request_info->PopulateWithResponse(std::move(response));
+
   if (job_details.controller)
     job_details.controller->DidStartRequest(request_info);
 }

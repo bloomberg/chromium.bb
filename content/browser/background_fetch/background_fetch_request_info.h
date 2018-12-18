@@ -50,6 +50,9 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   // retrieved from storage). Can only be used if no GUID is already set.
   void SetDownloadGuid(const std::string& download_guid);
 
+  // Extracts the headers and the status code.
+  void PopulateWithResponse(std::unique_ptr<BackgroundFetchResponse> response);
+
   void SetResult(std::unique_ptr<BackgroundFetchResult> result);
 
   // Creates an empty result, with no response, and assigns |failure_reason|
@@ -77,6 +80,12 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
 
   // Returns whether the request has a body that needs to be uploaded.
   bool has_request_body() const { return has_request_body_; }
+
+  void set_can_populate_body(bool can_populate_body) {
+    can_populate_body_ = can_populate_body;
+  }
+
+  bool can_populate_body() const { return can_populate_body_; }
 
   // Returns the response code for the download. Available for both successful
   // and failed requests.
@@ -114,9 +123,6 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   friend class base::DeleteHelper<BackgroundFetchRequestInfo>;
   friend class BackgroundFetchCrossOriginFilterTest;
 
-  // Extracts the headers and the status code.
-  void PopulateWithResponse(std::unique_ptr<BackgroundFetchResponse> response);
-
   ~BackgroundFetchRequestInfo();
 
   // ---- Data associated with the request -------------------------------------
@@ -133,6 +139,7 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   std::string response_text_;
   std::map<std::string, std::string> response_headers_;
   std::vector<GURL> url_chain_;
+  bool can_populate_body_ = false;
 
   // ---- Data associated with the response ------------------------------------
   std::unique_ptr<BackgroundFetchResult> result_;

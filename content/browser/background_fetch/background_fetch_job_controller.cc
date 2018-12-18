@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
+#include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/public/common/origin_util.h"
@@ -152,16 +153,19 @@ void BackgroundFetchJobController::StartRequest(
 void BackgroundFetchJobController::DidStartRequest(
     const scoped_refptr<BackgroundFetchRequestInfo>& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(crbug.com/884672): Either add CORS check here or remove this function
-  // and do the CORS check in BackgroundFetchDelegateImpl (since
-  // download::Client::OnDownloadStarted returns a value that can abort the
-  // download).
+  // TODO(crbug.com/884672): Stop the fetch if the cross origin filter fails.
+  BackgroundFetchCrossOriginFilter filter(registration_id_.origin(), *request);
+  request->set_can_populate_body(filter.CanPopulateBody());
 }
 
 void BackgroundFetchJobController::DidUpdateRequest(
     const scoped_refptr<BackgroundFetchRequestInfo>& request,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Don't send updates so the size is not leaked.
+  if (!request->can_populate_body())
+    return;
 
   if (active_request_downloaded_bytes_ == bytes_downloaded)
     return;
@@ -185,7 +189,8 @@ void BackgroundFetchJobController::DidCompleteRequest(
 
   active_request_downloaded_bytes_ = 0;
 
-  complete_requests_downloaded_bytes_cache_ += request->GetFileSize();
+  if (request->can_populate_body())
+    complete_requests_downloaded_bytes_cache_ += request->GetFileSize();
   ++completed_downloads_;
 
   std::move(active_request_finished_callback_).Run(request);
