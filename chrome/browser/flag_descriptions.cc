@@ -776,7 +776,9 @@ const char kOOPHPStackModePseudo[] = "Trace events";
 
 const char kEnablePictureInPictureName[] = "Enable Picture-in-Picture.";
 const char kEnablePictureInPictureDescription[] =
-    "Enable the Picture-in-Picture feature for videos.";
+    "Show Picture-in-Picture in browser context menu and video native "
+    "controls. The #enable-surfaces-for-videos flag must be enabled as well "
+    "to use it.";
 
 const char kEnablePixelCanvasRecordingName[] = "Enable pixel canvas recording";
 const char kEnablePixelCanvasRecordingDescription[] =
