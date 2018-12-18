@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.signin;
+package org.chromium.components.signin;
 
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
@@ -11,27 +11,23 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.components.signin.AccountIdProvider;
-import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.AccountsChangeObserver;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
 /**
-* Android wrapper of AccountTrackerService which provides access from the java layer.
-* It offers the capability of fetching and seeding system accounts into AccountTrackerService in C++
-* layer, and notifies observers when it is complete.
-*/
-@JNINamespace("signin::android")
+ * Android wrapper of AccountTrackerService which provides access from the java layer.
+ * It offers the capability of fetching and seeding system accounts into AccountTrackerService in
+ * C++ layer, and notifies observers when it is complete.
+ */
 public class AccountTrackerService {
     private static final String TAG = "AccountService";
-    private static AccountTrackerService sAccountTrackerService;
 
+    private final long mNativeAccountTrackerService;
     private @SystemAccountsSeedingStatus int mSystemAccountsSeedingStatus;
     private boolean mSystemAccountsChanged;
     private boolean mSyncForceRefreshedForTest;
@@ -50,9 +46,9 @@ public class AccountTrackerService {
     }
 
     /**
-    * Classes that want to listen for system accounts fetching and seeding should implement
-    * this interface and register with {@link #addSystemAccountsSeededListener}.
-    */
+     * Classes that want to listen for system accounts fetching and seeding should implement
+     * this interface and register with {@link #addSystemAccountsSeededListener}.
+     */
     public interface OnSystemAccountsSeededListener {
         // Called at the end of seedSystemAccounts().
         void onSystemAccountsSeedingComplete();
@@ -63,24 +59,23 @@ public class AccountTrackerService {
     private final ObserverList<OnSystemAccountsSeededListener> mSystemAccountsSeedingObservers =
             new ObserverList<>();
 
-    public static AccountTrackerService get() {
-        ThreadUtils.assertOnUiThread();
-        if (sAccountTrackerService == null) {
-            sAccountTrackerService = new AccountTrackerService();
-        }
-        return sAccountTrackerService;
-    }
-
-    private AccountTrackerService() {
+    private AccountTrackerService(long nativeAccountTrackerService) {
+        mNativeAccountTrackerService = nativeAccountTrackerService;
         mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_NOT_STARTED;
         mSystemAccountsChanged = false;
     }
 
+    @CalledByNative
+    private static AccountTrackerService create(long nativeAccountTrackerService) {
+        ThreadUtils.assertOnUiThread();
+        return new AccountTrackerService(nativeAccountTrackerService);
+    }
+
     /**
-    * Checks whether the account id <-> email mapping has been seeded into C++ layer.
-    * If not, it automatically starts fetching the mapping and seeds it.
-    * @return Whether the accounts have been seeded already.
-    */
+     * Checks whether the account id <-> email mapping has been seeded into C++ layer.
+     * If not, it automatically starts fetching the mapping and seeds it.
+     * @return Whether the accounts have been seeded already.
+     */
     public boolean checkAndSeedSystemAccounts() {
         ThreadUtils.assertOnUiThread();
         if (mSystemAccountsSeedingStatus == SystemAccountsSeedingStatus.SEEDING_DONE
@@ -97,8 +92,8 @@ public class AccountTrackerService {
     }
 
     /**
-    * Register an |observer| to observe system accounts seeding status.
-    */
+     * Register an |observer| to observe system accounts seeding status.
+     */
     public void addSystemAccountsSeededListener(OnSystemAccountsSeededListener observer) {
         ThreadUtils.assertOnUiThread();
         mSystemAccountsSeedingObservers.addObserver(observer);
@@ -108,8 +103,8 @@ public class AccountTrackerService {
     }
 
     /**
-    * Remove an |observer| from the list of observers.
-    */
+     * Remove an |observer| from the list of observers.
+     */
     public void removeSystemAccountsSeededListener(OnSystemAccountsSeededListener observer) {
         ThreadUtils.assertOnUiThread();
         mSystemAccountsSeedingObservers.removeObserver(observer);
@@ -163,7 +158,8 @@ public class AccountTrackerService {
                         return;
                     }
                     if (areAccountIdsValid(accountIdNameMap[0])) {
-                        nativeSeedAccountsInfo(accountIdNameMap[0], accountIdNameMap[1]);
+                        nativeSeedAccountsInfo(mNativeAccountTrackerService, accountIdNameMap[0],
+                                accountIdNameMap[1]);
                         mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_DONE;
                         notifyObserversOnSeedingComplete();
                     } else {
@@ -171,8 +167,7 @@ public class AccountTrackerService {
                         seedSystemAccounts();
                     }
                 }
-            }
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         });
     }
 
@@ -190,22 +185,22 @@ public class AccountTrackerService {
     }
 
     /**
-    * Seed system accounts into AccountTrackerService synchronously for test purpose.
-    */
+     * Seed system accounts into AccountTrackerService synchronously for test purpose.
+     */
     @VisibleForTesting
     public void syncForceRefreshForTest(String[] accountIds, String[] accountNames) {
         ThreadUtils.assertOnUiThread();
         mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_IN_PROGRESS;
         mSystemAccountsChanged = false;
         mSyncForceRefreshedForTest = true;
-        nativeSeedAccountsInfo(accountIds, accountNames);
+        nativeSeedAccountsInfo(mNativeAccountTrackerService, accountIds, accountNames);
         mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_DONE;
     }
 
     /**
-    * Notifies the AccountTrackerService about changed system accounts. without actually triggering
-    * @param reSeedAccounts Whether to also start seeding the new account information immediately.
-    */
+     * Notifies the AccountTrackerService about changed system accounts. without actually triggering
+     * @param reSeedAccounts Whether to also start seeding the new account information immediately.
+     */
     public void invalidateAccountSeedStatus(boolean reSeedAccounts) {
         ThreadUtils.assertOnUiThread();
         mSystemAccountsChanged = true;
@@ -238,7 +233,7 @@ public class AccountTrackerService {
             for (int i = 0; i < accounts.size(); ++i) {
                 accountNames[i] = accounts.get(i).name;
             }
-            if (nativeAreAccountsSeeded(accountNames)) {
+            if (nativeAreAccountsSeeded(mNativeAccountTrackerService, accountNames)) {
                 mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_DONE;
                 notifyObserversOnSeedingComplete();
             }
@@ -251,6 +246,8 @@ public class AccountTrackerService {
         }
     }
 
-    private static native void nativeSeedAccountsInfo(String[] gaiaIds, String[] accountNames);
-    private static native boolean nativeAreAccountsSeeded(String[] accountNames);
+    private static native void nativeSeedAccountsInfo(
+            long accountTrackerServicePtr, String[] gaiaIds, String[] accountNames);
+    private static native boolean nativeAreAccountsSeeded(
+            long accountTrackerServicePtr, String[] accountNames);
 }

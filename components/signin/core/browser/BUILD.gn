@@ -94,6 +94,10 @@ static_library("internals") {
     "//services/network/public/mojom",
     "//ui/gfx",
   ]
+
+  if (is_android) {
+    deps += [ "android:jni_headers" ]
+  }
 }
 
 static_library("browser") {

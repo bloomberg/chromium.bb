@@ -22,7 +22,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.signin.AccountTrackerService;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -140,7 +140,8 @@ public class SyncTest {
                 String[] accountNames = {oldAccount.name, newAccount.name};
                 String[] accountIds = {provider.getAccountId(accountNames[0]),
                         provider.getAccountId(accountNames[1])};
-                AccountTrackerService.get().syncForceRefreshForTest(accountIds, accountNames);
+                IdentityServicesProvider.getAccountTrackerService().syncForceRefreshForTest(
+                        accountIds, accountNames);
 
                 // Starts the rename process. Normally, this is triggered by the broadcast
                 // listener as well.

@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
-import org.chromium.chrome.browser.signin.AccountTrackerService;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
 
 /**
@@ -50,8 +50,6 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
     }
 
     private void continueHandleAccountChangeIfNeeded(final Context context) {
-        AccountTrackerService.get().invalidateAccountSeedStatus(
-                false /* don't refresh right now */);
         boolean isChromeVisible = ApplicationStatus.hasVisibleActivities();
         if (isChromeVisible) {
             startBrowserIfNeededAndValidateAccounts(context);
@@ -68,6 +66,9 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
                 ThreadUtils.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        // TODO(bsazonov): Check whether invalidateAccountSeedStatus is needed here.
+                        IdentityServicesProvider.getAccountTrackerService()
+                                .invalidateAccountSeedStatus(false /* don't refresh right now */);
                         SigninHelper.get().validateAccountSettings(true);
                     }
                 });

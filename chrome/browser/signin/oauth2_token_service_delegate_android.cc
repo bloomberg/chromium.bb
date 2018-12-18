@@ -143,7 +143,8 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
   DCHECK(account_tracker_service_);
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> local_java_ref =
-      Java_OAuth2TokenService_create(env, reinterpret_cast<intptr_t>(this));
+      Java_OAuth2TokenService_create(env, reinterpret_cast<intptr_t>(this),
+                                     account_tracker_service_->GetJavaObject());
   java_ref_.Reset(env, local_java_ref.obj());
 
   if (account_tracker_service_->GetMigrationState() ==

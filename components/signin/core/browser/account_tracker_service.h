@@ -16,10 +16,15 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/gfx/image/image.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
 
 class PrefRegistrySimple;
 class PrefService;
@@ -134,6 +139,11 @@ class AccountTrackerService : public KeyedService {
   AccountIdMigrationState GetMigrationState() const;
   void SetMigrationDone();
 
+#if defined(OS_ANDROID)
+  // Returns a reference to the corresponding Java AccountTrackerService object.
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+#endif
+
  protected:
   // Available to be called in tests.
   void SetAccountStateFromUserInfo(const std::string& account_id,
@@ -201,6 +211,11 @@ class AccountTrackerService : public KeyedService {
 
   // Task runner used for file operations on avatar images.
   scoped_refptr<base::SequencedTaskRunner> image_storage_task_runner_;
+
+#if defined(OS_ANDROID)
+  // A reference to the Java counterpart of this object.
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
+#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 

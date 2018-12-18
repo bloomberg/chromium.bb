@@ -29,12 +29,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.signin.AccountTrackerService.OnSystemAccountsSeededListener;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerResult;
+import org.chromium.components.signin.AccountTrackerService;
+import org.chromium.components.signin.AccountTrackerService.OnSystemAccountsSeededListener;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.GmsAvailabilityException;
@@ -649,15 +650,17 @@ public class AccountSigninView extends FrameLayout {
         // Ensure that the AccountTrackerService has a fully up to date GAIA id <-> email mapping,
         // as this is needed for the previous account check.
         final long seedingStartTime = SystemClock.elapsedRealtime();
-        if (AccountTrackerService.get().checkAndSeedSystemAccounts()) {
+        final AccountTrackerService accountTrackerService =
+                IdentityServicesProvider.getAccountTrackerService();
+        if (accountTrackerService.checkAndSeedSystemAccounts()) {
             recordAccountTrackerServiceSeedingTime(seedingStartTime);
             runStateMachineAndShowConfirmationPage();
         } else {
-            AccountTrackerService.get().addSystemAccountsSeededListener(
+            accountTrackerService.addSystemAccountsSeededListener(
                     new OnSystemAccountsSeededListener() {
                         @Override
                         public void onSystemAccountsSeedingComplete() {
-                            AccountTrackerService.get().removeSystemAccountsSeededListener(this);
+                            accountTrackerService.removeSystemAccountsSeededListener(this);
                             recordAccountTrackerServiceSeedingTime(seedingStartTime);
                             // Don't show dialogs and confirmation page if activity was destroyed.
                             if (ViewCompat.isAttachedToWindow(AccountSigninView.this)) {

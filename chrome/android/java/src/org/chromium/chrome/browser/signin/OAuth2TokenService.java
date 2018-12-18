@@ -17,6 +17,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
 
 import java.util.Arrays;
@@ -57,12 +58,15 @@ public final class OAuth2TokenService
     private boolean mPendingValidationForceNotifications;
 
     private final long mNativeOAuth2TokenServiceDelegateAndroid;
-    private final ObserverList<OAuth2TokenServiceObserver> mObservers;
+    private final ObserverList<OAuth2TokenServiceObserver> mObservers = new ObserverList<>();
+    private final AccountTrackerService mAccountTrackerService;
 
-    private OAuth2TokenService(long nativeOAuth2Service) {
+    private OAuth2TokenService(
+            long nativeOAuth2Service, AccountTrackerService accountTrackerService) {
         mNativeOAuth2TokenServiceDelegateAndroid = nativeOAuth2Service;
-        mObservers = new ObserverList<>();
-        AccountTrackerService.get().addSystemAccountsSeededListener(this);
+        mAccountTrackerService = accountTrackerService;
+
+        mAccountTrackerService.addSystemAccountsSeededListener(this);
     }
 
     public static OAuth2TokenService getForProfile(Profile profile) {
@@ -71,9 +75,10 @@ public final class OAuth2TokenService
     }
 
     @CalledByNative
-    private static OAuth2TokenService create(long nativeOAuth2Service) {
+    private static OAuth2TokenService create(
+            long nativeOAuth2Service, AccountTrackerService accountTrackerService) {
         ThreadUtils.assertOnUiThread();
-        return new OAuth2TokenService(nativeOAuth2Service);
+        return new OAuth2TokenService(nativeOAuth2Service, accountTrackerService);
     }
 
     @VisibleForTesting
@@ -271,7 +276,7 @@ public final class OAuth2TokenService
     @CalledByNative
     public void validateAccounts(boolean forceNotifications) {
         ThreadUtils.assertOnUiThread();
-        if (!AccountTrackerService.get().checkAndSeedSystemAccounts()) {
+        if (!mAccountTrackerService.checkAndSeedSystemAccounts()) {
             mPendingValidation = true;
             mPendingValidationForceNotifications = forceNotifications;
             return;
