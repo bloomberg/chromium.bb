@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -90,6 +91,7 @@ class MobileDataNotificationsTest : public testing::Test {
 
  protected:
   void SetupUser() {
+    // Add a user.
     auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
     const AccountId test_account_id(AccountId::FromUserEmail(kTestUserName));
     user_manager->AddUser(test_account_id);
@@ -97,18 +99,23 @@ class MobileDataNotificationsTest : public testing::Test {
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(user_manager));
 
+    // Set up notifications.
+    TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
+        std::make_unique<SystemNotificationHelper>());
+    // Passing nullptr sets up |display_service_| with system notifications.
+    display_service_ = std::make_unique<NotificationDisplayServiceTester>(
+        nullptr /* profile */);
+
+    // Create a valid profile for the user.
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
+    TestingProfile* profile =
+        profile_manager_->CreateTestingProfile(test_account_id.GetUserEmail());
     profile_manager_->SetLoggedIn(true);
+    ASSERT_TRUE(ProfileManager::GetActiveUserProfile() == profile);
 
-    display_service_ = std::make_unique<NotificationDisplayServiceTester>(
-        chromeos::ProfileHelper::GetProfileByUserIdHashForTest(
-            chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
-                test_account_id.GetUserEmail())));
-
-    ASSERT_TRUE(user_manager::UserManager::Get()->GetPrimaryUser());
-
+    // Set up login state.
     LoginState::Initialize();
     LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
                                         LoginState::LOGGED_IN_USER_REGULAR);
