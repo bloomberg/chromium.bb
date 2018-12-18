@@ -5236,7 +5236,6 @@ crbug.com/855816 [ Win ] virtual/outofblink-cors-ns/http/tests/navigation/rename
 crbug.com/855816 [ Win ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
 
 # Sheriff 2018-06-29
-crbug.com/859064 http/tests/devtools/console-resource-errors.js [ Pass Failure ]
 crbug.com/859169 http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure Pass ]
 
 # User Activation
@@ -5693,7 +5692,6 @@ crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pa
 crbug.com/907412 [ Mac10.13 ] external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
 
 #Sheriff 2018-11-22
-crbug.com/907736 http/tests/devtools/elements/elements-save-to-temp-var.js [ Timeout Pass ]
 crbug.com/907862 [ Mac10.13 ] virtual/user-activation-v2/gamepad/multiple-event-listeners.html [ Pass Failure ]
 
 # Sheriff 2018-11-23
