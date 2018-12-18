@@ -44,7 +44,7 @@ class MockWeb(object):
             return None
         return 'MOCK Web result, 404 Not found'
 
-    def request(self, method, url, data, headers=None):  # pylint: disable=unused-argument
+    def request(self, method, url, data=None, headers=None):  # pylint: disable=unused-argument
         return MockResponse(self.responses.pop(0))
 
 

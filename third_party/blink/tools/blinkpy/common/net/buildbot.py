@@ -31,11 +31,10 @@ import logging
 import json
 import re
 import urllib
-import urllib2
 
 from blinkpy.common.memoized import memoized
+from blinkpy.common.net.web import Web
 from blinkpy.common.net.web_test_results import WebTestResults
-from blinkpy.common.net.network_transaction import NetworkTransaction
 from blinkpy.web_tests.layout_package import json_results_generator
 
 _log = logging.getLogger(__name__)
@@ -61,6 +60,9 @@ class BuildBot(object):
     for more information about the web test result format, see:
         https://www.chromium.org/developers/the-json-test-results-format
     """
+
+    def __init__(self):
+        self.web = Web()
 
     def results_url(self, builder_name, build_number=None, step_name=None):
         """Returns a URL for one set of archived web test results.
@@ -102,8 +104,8 @@ class BuildBot(object):
         # Originally we used retry_summary.json, which is the summary of retry
         # without patch; now we retry again with patch and ignore the flakes.
         # See https://crbug.com/882969.
-        return NetworkTransaction(return_none_on_404=True).run(
-            lambda: self.fetch_file('%s/%s' % (url_base, 'retry_with_patch_summary.json')))
+        return self.web.get_binary('%s/%s' % (url_base, 'retry_with_patch_summary.json'),
+                                   return_none_on_404=True)
 
     def accumulated_results_url_base(self, builder_name):
         return self.builder_results_url_base(builder_name) + '/results/layout-test-results'
@@ -134,8 +136,7 @@ class BuildBot(object):
             # This forces the server to gives us JSON rather than an HTML page.
             'callback': json_results_generator.JSON_CALLBACK,
         }))
-        data = NetworkTransaction(return_none_on_404=True).run(
-            lambda: self.fetch_file(url))
+        data = self.web.get_binary(url, return_none_on_404=True)
         if not data:
             _log.debug('Got 404 response from:\n%s', url)
             return None
@@ -168,22 +169,12 @@ class BuildBot(object):
         Uses full_results.json if full is True, otherwise failing_results.json.
         """
         base_filename = 'full_results.json' if full else 'failing_results.json'
-        results_file = NetworkTransaction(return_none_on_404=True).run(
-            lambda: self.fetch_file('%s/%s' % (results_url, base_filename)))
+        results_file = self.web.get_binary('%s/%s' % (results_url, base_filename),
+                                           return_none_on_404=True)
         if results_file is None:
             _log.debug('Got 404 response from:\n%s/%s', results_url, base_filename)
             return None
         return WebTestResults.results_from_string(results_file)
-
-    def fetch_file(self, url):
-        # It seems this can return None if the url redirects and then returns 404.
-        # FIXME: This could use Web instead of using urllib2 directly.
-        result = urllib2.urlopen(url)
-        if not result:
-            return None
-        # urlopen returns a file-like object which sometimes works fine with str()
-        # but sometimes is a addinfourl object.  In either case calling read() is correct.
-        return result.read()
 
 
 def current_build_link(host):
