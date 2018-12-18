@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: 761c6fe8be0e18da9bb13b8dbdb57b4bf7be054b
+Revision: 2afe6dc210e3f52da56bc28d234f65d62b490ace
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
