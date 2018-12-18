@@ -49,7 +49,9 @@ constexpr char kNumTasksBeforeDetachHistogramPrefix[] =
     "TaskScheduler.NumTasksBeforeDetach.";
 constexpr char kNumTasksBetweenWaitsHistogramPrefix[] =
     "TaskScheduler.NumTasksBetweenWaits.";
-constexpr char kNumThreadsHistogramPrefix[] = "TaskScheduler.NumWorkers.";
+constexpr char kNumWorkersHistogramPrefix[] = "TaskScheduler.NumWorkers.";
+constexpr char kNumActiveWorkersHistogramPrefix[] =
+    "TaskScheduler.NumActiveWorkers.";
 constexpr size_t kMaxNumberOfWorkers = 256;
 
 // Only used in DCHECKs.
@@ -196,8 +198,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
     ThreadPriority priority_hint,
     TrackedRef<TaskTracker> task_tracker,
     TrackedRef<Delegate> delegate)
-    : SchedulerWorkerPool(std::move(task_tracker),
-                          std::move(delegate)),
+    : SchedulerWorkerPool(std::move(task_tracker), std::move(delegate)),
       pool_label_(pool_label.as_string()),
       priority_hint_(priority_hint),
       lock_(shared_priority_queue_.container_lock()),
@@ -240,12 +241,20 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
       // number of workers that ran.
       num_workers_histogram_(Histogram::FactoryGet(
           JoinString(
-              {kNumThreadsHistogramPrefix, histogram_label, kPoolNameSuffix},
+              {kNumWorkersHistogramPrefix, histogram_label, kPoolNameSuffix},
               ""),
           1,
           100,
           50,
           HistogramBase::kUmaTargetedHistogramFlag)),
+      num_active_workers_histogram_(
+          Histogram::FactoryGet(JoinString({kNumActiveWorkersHistogramPrefix,
+                                            histogram_label, kPoolNameSuffix},
+                                           ""),
+                                1,
+                                100,
+                                50,
+                                HistogramBase::kUmaTargetedHistogramFlag)),
       tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
   DCHECK(!pool_label_.empty());
@@ -336,6 +345,7 @@ void SchedulerWorkerPoolImpl::GetHistograms(
   histograms->push_back(detach_duration_histogram_);
   histograms->push_back(num_tasks_between_waits_histogram_);
   histograms->push_back(num_workers_histogram_);
+  histograms->push_back(num_active_workers_histogram_);
 }
 
 int SchedulerWorkerPoolImpl::GetMaxConcurrentNonBlockedTasksDeprecated() const {
@@ -436,9 +446,12 @@ void SchedulerWorkerPoolImpl::MaximizeMayBlockThresholdForTesting() {
   may_block_threshold_ = TimeDelta::Max();
 }
 
-void SchedulerWorkerPoolImpl::RecordNumWorkersHistogram() const {
+void SchedulerWorkerPoolImpl::ReportHeartbeatMetrics() const {
   AutoSchedulerLock auto_lock(lock_);
   num_workers_histogram_->Add(workers_.size());
+
+  num_active_workers_histogram_->Add(workers_.size() -
+                                     idle_workers_stack_.Size());
 }
 
 void SchedulerWorkerPoolImpl::UpdateSortKey(

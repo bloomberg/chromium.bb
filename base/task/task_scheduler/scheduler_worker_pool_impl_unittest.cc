@@ -1741,11 +1741,14 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, RacyCleanup) {
   worker_pool_.reset();
 }
 
-TEST_P(TaskSchedulerWorkerPoolImplTestParam, RecordNumWorkersHistogram) {
+TEST_P(TaskSchedulerWorkerPoolImplTestParam, ReportHeartbeatMetrics) {
   HistogramTester tester;
-  worker_pool_->RecordNumWorkersHistogram();
+  worker_pool_->ReportHeartbeatMetrics();
   EXPECT_FALSE(
       tester.GetAllSamples("TaskScheduler.NumWorkers.TestWorkerPoolPool")
+          .empty());
+  EXPECT_FALSE(
+      tester.GetAllSamples("TaskScheduler.NumActiveWorkers.TestWorkerPoolPool")
           .empty());
 }
 
