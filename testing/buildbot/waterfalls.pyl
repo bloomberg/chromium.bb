@@ -183,6 +183,9 @@
           'dump_syms',
           'microdump_stackwalk',
         ],
+        'test_suites': {
+          'junit_tests': 'chromium_junit_tests',
+        },
       },
       'Android arm64 Builder (dbg)': {
         'additional_compile_targets': [
@@ -211,7 +214,6 @@
       'KitKat Phone Tester (dbg)': {
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
-          'junit_tests': 'chromium_junit_tests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
         'swarming': {
