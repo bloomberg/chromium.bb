@@ -20,7 +20,7 @@ void ActiveScriptWrappableBase::TraceActiveScriptWrappables(
   if (!active_script_wrappables)
     return;
 
-  for (auto active_wrappable : *active_script_wrappables) {
+  for (const auto& active_wrappable : *active_script_wrappables) {
     if (!active_wrappable->DispatchHasPendingActivity())
       continue;
 
