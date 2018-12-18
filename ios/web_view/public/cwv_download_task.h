@@ -53,11 +53,13 @@ CWV_EXPORT
 
 // Starts to download the file to a local file at |path|.
 //
-// This can be only called once. The local file is not deleted automatically. It
-// is the caller's responsibility to delete it when it is unnecessary.
+// The local file is not deleted automatically. It is the caller's
+// responsibility to delete it when it is unnecessary. This method can only be
+// called if the task is not in progress.
 - (void)startDownloadToLocalFileAtPath:(NSString*)path;
 
-// Cancels the download. Once cancelled, it cannot be restarted.
+// Cancels the download. Cancelled download can be restarted by calling
+// -startDownloadToLocalFileAtPath:
 - (void)cancel;
 
 @end
