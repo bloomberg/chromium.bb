@@ -444,8 +444,6 @@ const char kHasChromeOSDiamondKey[] = "has-chromeos-diamond-key";
 // that only use external keyboards.
 const char kHasChromeOSKeyboard[] = "has-chromeos-keyboard";
 
-const char kHideActiveAppsFromShelf[] = "hide-active-apps-from-shelf";
-
 // Defines user homedir. This defaults to primary user homedir.
 const char kHomedir[] = "homedir";
 
@@ -677,11 +675,6 @@ bool IsSigninFrameClientCertsEnabled() {
 bool IsSigninFrameClientCertUserSelectionEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSigninFrameClientCertUserSelection);
-}
-
-bool ShouldHideActiveAppsFromShelf() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kHideActiveAppsFromShelf);
 }
 
 bool ShouldShowShelfHoverPreviews() {

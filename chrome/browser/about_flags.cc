@@ -1619,10 +1619,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVideoPlayerChromecastSupportDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(
          chromeos::switches::kEnableVideoPlayerChromecastSupport)},
-    {"hide-active-apps-from-shelf",
-     flag_descriptions::kHideActiveAppsFromShelfName,
-     flag_descriptions::kHideActiveAppsFromShelfDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kHideActiveAppsFromShelf)},
     {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kInstantTethering)},

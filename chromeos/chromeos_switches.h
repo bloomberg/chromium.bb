@@ -123,7 +123,6 @@ CHROMEOS_EXPORT extern const char kGuestWallpaperLarge[];
 CHROMEOS_EXPORT extern const char kGuestWallpaperSmall[];
 CHROMEOS_EXPORT extern const char kHasChromeOSDiamondKey[];
 CHROMEOS_EXPORT extern const char kHasChromeOSKeyboard[];
-CHROMEOS_EXPORT extern const char kHideActiveAppsFromShelf[];
 CHROMEOS_EXPORT extern const char kHideAndroidFilesInFilesApp[];
 CHROMEOS_EXPORT extern const char kHomedir[];
 CHROMEOS_EXPORT extern const char kIgnoreUserProfileMappingForTests[];
@@ -207,9 +206,6 @@ CHROMEOS_EXPORT bool IsSigninFrameClientCertsEnabled();
 // Returns true if user selection of certificates is enabled for the sign-in
 // frame on the Chrome OS sign-in screen.
 CHROMEOS_EXPORT bool IsSigninFrameClientCertUserSelectionEnabled();
-
-// Returns true if we should hide open apps that aren't pinned from the shelf.
-CHROMEOS_EXPORT bool ShouldHideActiveAppsFromShelf();
 
 // Returns true if we should show window previews when hovering over an app
 // on the shelf.
