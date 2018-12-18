@@ -4,6 +4,10 @@
 
 import("//services/service_manager/public/service_manifest.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 source_set("lib") {
   sources = [
     "identity_manager_impl.cc",
@@ -59,4 +63,12 @@ source_set("tests") {
     "public/cpp/identity_test_environment_unittest.cc",
     "public/cpp/primary_account_access_token_fetcher_unittest.cc",
   ]
+}
+
+if (is_android) {
+  java_group("java") {
+    deps = [
+      "//components/signin/core/browser/android:java",
+    ]
+  }
 }

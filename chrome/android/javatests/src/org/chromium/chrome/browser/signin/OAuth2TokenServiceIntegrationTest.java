@@ -113,7 +113,8 @@ public class OAuth2TokenServiceIntegrationTest {
         String[] accountNames = {TEST_ACCOUNT1.name, TEST_ACCOUNT2.name};
         String[] accountIds = {
                 provider.getAccountId(accountNames[0]), provider.getAccountId(accountNames[1])};
-        AccountTrackerService.get().syncForceRefreshForTest(accountIds, accountNames);
+        IdentityServicesProvider.getAccountTrackerService().syncForceRefreshForTest(
+                accountIds, accountNames);
     }
 
     private void addAccount(AccountHolder accountHolder) {

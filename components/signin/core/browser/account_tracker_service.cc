@@ -25,6 +25,11 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_array.h"
+#include "jni/AccountTrackerService_jni.h"
+#endif
+
 namespace {
 
 const char kAccountKeyPath[] = "account_id";
@@ -107,7 +112,14 @@ const char AccountTrackerService::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
 // This must be a string which can never be a valid picture URL.
 const char AccountTrackerService::kNoPictureURLFound[] = "NO_PICTURE_URL";
 
-AccountTrackerService::AccountTrackerService() : weak_factory_(this) {}
+AccountTrackerService::AccountTrackerService() : weak_factory_(this) {
+#if defined(OS_ANDROID)
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jobject> java_ref =
+      Java_AccountTrackerService_create(env, reinterpret_cast<intptr_t>(this));
+  java_ref_.Reset(env, java_ref.obj());
+#endif
+}
 
 AccountTrackerService::~AccountTrackerService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -706,3 +718,61 @@ std::string AccountTrackerService::SeedAccountInfo(AccountInfo info) {
 void AccountTrackerService::RemoveAccount(const std::string& account_id) {
   StopTrackingAccount(account_id);
 }
+
+#if defined(OS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject>
+AccountTrackerService::GetJavaObject() {
+  return base::android::ScopedJavaLocalRef<jobject>(java_ref_);
+}
+
+void JNI_AccountTrackerService_SeedAccountsInfo(
+    JNIEnv* env,
+    jlong nativeAccountTrackerService,
+    const base::android::JavaParamRef<jobjectArray>& gaiaIds,
+    const base::android::JavaParamRef<jobjectArray>& accountNames) {
+  AccountTrackerService* service =
+      reinterpret_cast<AccountTrackerService*>(nativeAccountTrackerService);
+  DCHECK(service);
+
+  std::vector<std::string> gaia_ids;
+  std::vector<std::string> account_names;
+  base::android::AppendJavaStringArrayToStringVector(env, gaiaIds, &gaia_ids);
+  base::android::AppendJavaStringArrayToStringVector(env, accountNames,
+                                                     &account_names);
+  DCHECK_EQ(gaia_ids.size(), account_names.size());
+
+  DVLOG(1) << "AccountTrackerService.SeedAccountsInfo: "
+           << " number of accounts " << gaia_ids.size();
+  for (size_t i = 0; i < gaia_ids.size(); ++i) {
+    service->SeedAccountInfo(gaia_ids[i], account_names[i]);
+  }
+}
+
+jboolean JNI_AccountTrackerService_AreAccountsSeeded(
+    JNIEnv* env,
+    jlong nativeAccountTrackerService,
+    const base::android::JavaParamRef<jobjectArray>& accountNames) {
+  AccountTrackerService* service =
+      reinterpret_cast<AccountTrackerService*>(nativeAccountTrackerService);
+  DCHECK(service);
+
+  std::vector<std::string> account_names;
+  base::android::AppendJavaStringArrayToStringVector(env, accountNames,
+                                                     &account_names);
+
+  bool migrated =
+      service->GetMigrationState() ==
+      AccountTrackerService::AccountIdMigrationState::MIGRATION_DONE;
+
+  for (const auto& account_name : account_names) {
+    AccountInfo info = service->FindAccountInfoByEmail(account_name);
+    if (info.account_id.empty()) {
+      return false;
+    }
+    if (migrated && info.gaia.empty()) {
+      return false;
+    }
+  }
+  return true;
+}
+#endif

@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -114,7 +115,7 @@ public class SigninHelper {
     private SigninHelper() {
         mProfileSyncService = ProfileSyncService.get();
         mSigninManager = SigninManager.get();
-        mAccountTrackerService = AccountTrackerService.get();
+        mAccountTrackerService = IdentityServicesProvider.getAccountTrackerService();
         mOAuth2TokenService = OAuth2TokenService.getForProfile(Profile.getLastUsedProfile());
         mChromeSigninController = ChromeSigninController.get();
     }

@@ -10,7 +10,7 @@ import android.support.annotation.WorkerThread;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.signin.AccountTrackerService;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.OAuth2TokenService;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.components.signin.AccountIdProvider;
@@ -111,7 +111,8 @@ public final class SigninTestUtil {
             accountNames[i] = accounts[i].name;
             accountIds[i] = accountIdProvider.getAccountId(accounts[i].name);
         }
-        AccountTrackerService.get().syncForceRefreshForTest(accountIds, accountNames);
+        IdentityServicesProvider.getAccountTrackerService().syncForceRefreshForTest(
+                accountIds, accountNames);
     }
 
     private static void overrideAccountIdProvider() {

@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.sync.SyncUserDataWiper;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 
@@ -223,8 +224,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     private SigninManager() {
-        this(ContextUtils.getApplicationContext(), AccountTrackerService.get(),
-                AndroidSyncSettings.get());
+        this(ContextUtils.getApplicationContext(),
+                IdentityServicesProvider.getAccountTrackerService(), AndroidSyncSettings.get());
     }
 
     @VisibleForTesting
