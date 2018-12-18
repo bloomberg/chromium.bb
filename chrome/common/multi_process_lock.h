@@ -6,6 +6,7 @@
 #define CHROME_COMMON_MULTI_PROCESS_LOCK_H_
 
 #include <sys/types.h>
+#include <memory>
 #include <string>
 
 // Platform abstraction for a lock that can be shared between processes.
@@ -13,13 +14,12 @@
 // the exit is due to a crash. Locks are not recursive.
 class MultiProcessLock {
  public:
-
   // Factory method for creating a multi-process lock.
   // |name| is the name of the lock. The name has special meaning on Windows
   // where the prefix can determine the namespace of the lock.
   // See http://msdn.microsoft.com/en-us/library/aa382954(v=VS.85).aspx for
   // details.
-  static MultiProcessLock* Create(const std::string& name);
+  static std::unique_ptr<MultiProcessLock> Create(const std::string& name);
 
   virtual ~MultiProcessLock() { }
 
