@@ -764,6 +764,18 @@ message DisplayRotationDefaultProto {
 // This setting is configured by the device policy DeviceDisplayResolution.
 // If |device_display_resolution| contains a value, then it's treated as a JSON
 // object that uses the schema defined for DeviceDisplayResolution policy.
+// Example of the policy value:
+// {
+//   "external_width": 1920,
+//   "external_height": 1080,
+//   "external_scale_percentage": 50,
+//   "internal_scale_percentage": 150,
+//   "recommended": true
+// }
+// It sets a 1920x1080 display mode for any external displays and
+// scales them to 50%, also scales the built-in display to 150%.
+// If "recommended" flag is set to true, user is able to override
+// any settings via the settings page.
 message DeviceDisplayResolutionProto {
   optional string device_display_resolution = 1;
 }
