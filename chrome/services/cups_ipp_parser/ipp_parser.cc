@@ -9,19 +9,15 @@
 #include <utility>
 
 #include "base/optional.h"
-#include "base/strings/string_split.h"
-#include "chrome/services/cups_ipp_parser/ipp_parser_util.h"
+#include "chrome/services/cups_ipp_parser/public/cpp/ipp_converter.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 
 namespace chrome {
 namespace {
 
-const char kCarriage[] = "\r\n";
-const char kStatusDelimiter[] = " ";
-
-using HttpHeader = std::pair<std::string, std::string>;
+using ipp_converter::HttpHeader;
+using ipp_converter::kCarriage;
 
 // Log debugging error and send empty response, signalling error.
 void Fail(const std::string& error_log, IppParser::ParseIppCallback cb) {
@@ -30,40 +26,20 @@ void Fail(const std::string& error_log, IppParser::ParseIppCallback cb) {
   return;
 }
 
-// Returns a parsed request line on success, empty Optional on failure.
-base::Optional<std::vector<std::string>> ParseRequestLine(
-    base::StringPiece request) {
+// Returns the starting index of the request-line-delimiter, -1 on failure.
+int LocateEndOfRequestLine(base::StringPiece request) {
   auto end_of_request_line = request.find(kCarriage);
   if (end_of_request_line == std::string::npos) {
-    return base::nullopt;
+    return -1;
   }
 
-  // Pare down request to just the HTTP request_line
-  request.remove_suffix(request.size() - end_of_request_line);
-
-  std::vector<std::string> terms = base::SplitString(
-      request, kStatusDelimiter, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (terms.size() != 3) {
-    return base::nullopt;
-  }
-
-  // All CUPS IPP request lines must be in format 'POST *endpoint* HTTP/1.1'.
-  // TODO(crbug/831928): parse printing *endpoint*
-  if (terms[0] != "POST") {
-    return base::nullopt;
-  }
-
-  if (terms[2] != "HTTP/1.1") {
-    return base::nullopt;
-  }
-
-  return terms;
+  return end_of_request_line;
 }
 
-// Return starting index of first HTTP header, -1 on failure.
+// Returns the starting index of the first HTTP header, -1 on failure.
 int LocateStartOfHeaders(base::StringPiece request) {
   auto idx = request.find(kCarriage);
-  if (idx == std::string::npos) {
+  if (idx == base::StringPiece::npos) {
     return -1;
   }
 
@@ -72,92 +48,97 @@ int LocateStartOfHeaders(base::StringPiece request) {
   return idx < request.size() ? idx : -1;
 }
 
-// Returns a parsed HttpHeader on success, empty Optional on failure.
-base::Optional<HttpHeader> ParseHeader(base::StringPiece header) {
-  if (header.find(kCarriage) != std::string::npos) {
-    return base::nullopt;
+// Returns the starting index of the end-of-headers-delimiter, -1 on failure.
+int LocateEndOfHeaders(base::StringPiece request) {
+  auto idx = net::HttpUtil::LocateEndOfHeaders(request.data(), request.size());
+  if (idx < 0) {
+    return -1;
   }
 
-  // Parse key
-  size_t key_end_index = header.find_first_of(":");
-  if (key_end_index == std::string::npos || key_end_index == 0) {
-    return base::nullopt;
-  }
-
-  const base::StringPiece key = header.substr(0, key_end_index);
-  if (!net::HttpUtil::IsValidHeaderName(key)) {
-    return base::nullopt;
-  }
-
-  // Parse value
-  const base::StringPiece remains = header.substr(key_end_index);
-  size_t value_begin_index = remains.find_first_not_of(":");
-  if (value_begin_index == header.size()) {
-    // Empty header value is valid
-    return HttpHeader{key.as_string(), ""};
-  }
-
-  base::StringPiece value =
-      remains.substr(value_begin_index, remains.size() - value_begin_index);
-  value = net::HttpUtil::TrimLWS(value);
-  if (!net::HttpUtil::IsValidHeaderValue(value)) {
-    return base::nullopt;
-  }
-
-  return HttpHeader{key.as_string(), value.as_string()};
+  // Back up to the start of the delimiter.
+  // Note: The end-of-http-headers delimiter is 2 back-to-back carriage returns.
+  const size_t end_of_headers_delimiter_size = 2 * strlen(kCarriage);
+  return idx - end_of_headers_delimiter_size;
 }
 
-// Returns parsed HTTP request headers on success, empty Optional on
-// failure.
-// TODO(crbug/894274): Refactor by modifying base::SplitStringIntoKeyValuePairs
-base::Optional<std::vector<HttpHeader>> ParseHeaders(
-    base::StringPiece headers_slice) {
-  auto raw_headers = base::SplitStringPieceUsingSubstr(
-      headers_slice, kCarriage, base::TRIM_WHITESPACE,
-      base::SPLIT_WANT_NONEMPTY);
+// Returns the starting index of the IPP message, -1 on failure.
+int LocateStartOfIppMessage(base::StringPiece request) {
+  return net::HttpUtil::LocateEndOfHeaders(request.data(), request.size());
+}
 
-  std::vector<HttpHeader> parsed_headers;
-  for (auto raw_header : raw_headers) {
-    auto header = ParseHeader(raw_header);
-    if (!header) {
-      return base::nullopt;
-    }
-
-    parsed_headers.push_back(header.value());
+// Return the starting index of the IPP data/payload(pdf),
+// Returns |request|.size() on empty IppData and -1 on failure.
+int LocateStartOfIppData(base::StringPiece request) {
+  int end_of_headers = LocateEndOfHeaders(request);
+  if (end_of_headers < 0) {
+    return -1;
   }
 
-  return parsed_headers;
+  auto idx = request.find(ipp_converter::kIppSentinel, end_of_headers);
+  if (idx == base::StringPiece::npos) {
+    return -1;
+  }
+
+  // Advance to start and check existence or end of request.
+  idx += strlen(ipp_converter::kIppSentinel);
+  return idx <= request.size() ? idx : -1;
+}
+
+base::Optional<std::vector<std::string>> ExtractRequestLine(
+    base::StringPiece request) {
+  int end_of_request_line = LocateEndOfRequestLine(request);
+  if (end_of_request_line < 0) {
+    return base::nullopt;
+  }
+
+  const base::StringPiece request_line_slice =
+      request.substr(0, end_of_request_line);
+  return ipp_converter::ParseRequestLine(request_line_slice);
+}
+
+base::Optional<std::vector<HttpHeader>> ExtractHeaders(
+    base::StringPiece request) {
+  int start_of_headers = LocateStartOfHeaders(request);
+  if (start_of_headers < 0) {
+    return base::nullopt;
+  }
+
+  int end_of_headers = LocateEndOfHeaders(request);
+  if (end_of_headers < 0) {
+    return base::nullopt;
+  }
+
+  const base::StringPiece headers_slice =
+      request.substr(start_of_headers, end_of_headers - start_of_headers);
+  return ipp_converter::ParseHeaders(headers_slice);
+}
+
+mojom::IppMessagePtr ExtractIppMessage(base::StringPiece request) {
+  int start_of_ipp_message = LocateStartOfIppMessage(request);
+  if (start_of_ipp_message < 0) {
+    return nullptr;
+  }
+
+  std::vector<uint8_t> ipp_slice =
+      ipp_converter::ConvertToByteBuffer(request.substr(start_of_ipp_message));
+  printing::ScopedIppPtr ipp = ipp_converter::ParseIppMessage(ipp_slice);
+  if (!ipp) {
+    return nullptr;
+  }
+
+  return ipp_converter::ConvertIppToMojo(ipp.release());
 }
 
 // Parse IPP request's |ipp_data|
-base::Optional<std::vector<uint8_t>> ParseIppData(base::StringPiece ipp_data,
-                                                  ipp_op_t opcode) {
-  if (!opcode) {
+base::Optional<std::vector<uint8_t>> ExtractIppData(base::StringPiece request) {
+  size_t start_of_ipp_data = LocateStartOfIppData(request);
+  if (start_of_ipp_data < 0) {
     return base::nullopt;
   }
 
-  // Non-Send-document requests enforced empty |ipp_data|
-  if (opcode != IPP_SEND_DOCUMENT) {
-    if (ipp_data.empty()) {
-      return std::vector<uint8_t>{};
-    } else {
-      return base::nullopt;
-    }
-  }
-
-  // Send-document requests require (pdf)ippData
-  if (ipp_data.empty()) {
-    return base::nullopt;
-  }
-
-  // TODO(crbug/894607): Lacking pdf verification
-
-  // Convert and return
-  std::vector<uint8_t> parsed_data;
-  for (auto c : ipp_data) {
-    parsed_data.push_back(static_cast<uint8_t>(c));
-  }
-  return parsed_data;
+  // Subtlety: Correctly generates empty buffers for requests without ipp_data.
+  const base::StringPiece ipp_data_slice = request.substr(start_of_ipp_data);
+  return ipp_converter::ConvertToByteBuffer(ipp_data_slice);
 }
 
 }  // namespace
@@ -168,62 +149,31 @@ IppParser::IppParser(
 
 IppParser::~IppParser() = default;
 
-// Checks that |request| is a correctly formatted IPP request, per RFC2910.
+// Checks that |to_parse| is a correctly formatted IPP request, per RFC2910.
 // Calls |callback| with a fully parsed IPP request on success, empty on
 // failure.
-void IppParser::ParseIpp(const std::string& request,
+void IppParser::ParseIpp(const std::string& to_parse,
                          ParseIppCallback callback) {
-  // StringPiece representing request to help parsing
-  // Note: Lifetimes of this StringPiece and |request| match, so this is safe
-  // TODO(crbug.com/903561): Investigate mojo std::string -> base::StringPiece
-  // type-mapping
-  base::StringPiece to_parse(request);
-
-  // Parse request line
-  auto request_line = ParseRequestLine(to_parse);
+  // Parse Request line
+  auto request_line = ExtractRequestLine(to_parse);
   if (!request_line) {
     return Fail("Failed to parse request line", std::move(callback));
   }
 
-  // Parse headers
-  int start_of_headers = LocateStartOfHeaders(to_parse);
-  if (start_of_headers < 0) {
-    return Fail("Failed to find start of headers", std::move(callback));
-  }
-
-  int end_of_headers = net::HttpUtil::LocateEndOfHeaders(
-      to_parse.data(), to_parse.size(), start_of_headers);
-  if (end_of_headers < 0) {
-    return Fail("Failed to find end of headers", std::move(callback));
-  }
-
-  const base::StringPiece headers_slice =
-      to_parse.substr(start_of_headers, end_of_headers - start_of_headers);
-  auto headers = ParseHeaders(headers_slice);
+  // Parse Headers
+  auto headers = ExtractHeaders(to_parse);
   if (!headers) {
     return Fail("Failed to parse headers", std::move(callback));
   }
 
   // Parse IPP message
-  const base::StringPiece ipp_slice = to_parse.substr(end_of_headers);
-  printing::ScopedIppPtr ipp = ReadIppSlice(ipp_slice);
-  if (!ipp) {
-    return Fail("Failed to read IPP slice", std::move(callback));
-  }
-
-  auto ipp_message = ParseIppMessage(ipp.get());
+  auto ipp_message = ExtractIppMessage(to_parse);
   if (!ipp_message) {
     return Fail("Failed to parse IPP message", std::move(callback));
   }
 
-  // Parse IPP body/payload, if present
-  size_t message_len = ippLength(ipp.get());
-  if (message_len > ipp_slice.size()) {
-    return Fail("Failed to calculate IPP message length", std::move(callback));
-  }
-
-  const base::StringPiece ipp_data_slice = ipp_slice.substr(message_len);
-  auto ipp_data = ParseIppData(ipp_data_slice, ippGetOperation(ipp.get()));
+  // Parse IPP data
+  auto ipp_data = ExtractIppData(to_parse);
   if (!ipp_data) {
     return Fail("Failed to parse IPP data", std::move(callback));
   }
