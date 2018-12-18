@@ -16,12 +16,6 @@
     <message name="IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM" desc="Text on the payment request primary button to confirm payment information [CHAR-LIMIT=32]" formatter_data="android_java">
       Continue
     </message>
-    <message name="IDS_AUTOFILL_ASSISTANT_TERMS" desc="The text for the terms and service acceptance checkbox. Sentence-cased." formatter_data="android_java">
-      I know the terms &amp; conditions, privacy policy and right of withdrawal of <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="ORIGIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph> (leave unchecked to read).
-    </message>
-    <message name="IDS_AUTOFILL_ASSISTANT_TERMS_TITLE" desc="The title for the terms and service checkbox." formatter_data="android_java">
-      Terms &amp; Conditions
-    </message>
     <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER" desc="Shown as Status Message when details differ." formatter_data="android_java">
       The screening is different from what you selected. Continue?
     </message>
@@ -29,10 +23,10 @@
       Go back
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_FIRST_RUN_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant first run screen is shown." formatter_data="android_java">
-      Autofill assistant first run screen is shown
+      Google Assistant in Chrome first run screen is shown
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_AVAILABLE_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant is available." formatter_data="android_java">
-      Autofill assistant is available near bottom of the screen
+      Google Assistant in Chrome is available near bottom of the screen
     </message>
   </if>
 </grit-part>
