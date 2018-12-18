@@ -233,10 +233,12 @@
   },
   {
     "failure": {
-      "failure": {
-        "step": "Aggregate step failure."
+      "exception": {
+        "traceback": [
+          "<omitted by recipe engine>"
+        ]
       },
-      "humanReason": "1 out of 1 aggregated steps failed. Failures: Error querying for CL description: host:'https://chromium-review.googlesource.com' change:122; patchset:3"
+      "humanReason": "1 out of 1 aggregated steps failed: Error querying for CL description: host:'https://chromium-review.googlesource.com' change:122; patchset:3"
     },
     "name": "$result"
   }
