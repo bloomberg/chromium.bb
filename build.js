@@ -11,8 +11,8 @@ browserify({
   debug: true,
   paths: ['src'],
 })
-	.add('src/index.ts')
+  .add('src/index.ts')
   .plugin(tsify)
-	.bundle()
-	.on('error', error => { console.error(error.toString()) })
-	.pipe(fs.createWriteStream('out/main.js'));
+  .bundle()
+  .on('error', error => { console.error(error.toString()) })
+  .pipe(fs.createWriteStream('out/main.js'));
