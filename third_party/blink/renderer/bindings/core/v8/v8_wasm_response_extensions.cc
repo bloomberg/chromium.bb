@@ -67,7 +67,10 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
           break;
         }
         case BytesConsumer::Result::kDone: {
-          streaming_->Finish();
+          {
+            ScriptState::Scope scope(script_state_);
+            streaming_->Finish();
+          }
           client_->DidFetchDataLoadedCustomFormat();
           return;
         }
