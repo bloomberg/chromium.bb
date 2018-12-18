@@ -285,6 +285,7 @@ jumbo_source_set("base") {
     "video_types.h",
     "video_util.cc",
     "video_util.h",
+    "waiting.h",
     "wall_clock_time_source.cc",
     "wall_clock_time_source.h",
     "watch_time_keys.cc",

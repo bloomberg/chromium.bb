@@ -147,7 +147,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnDurationChange() override {}
   void OnAddTextTrack(const TextTrackConfig& config,
                       const AddTextTrackDoneCB& done_cb) override {}
-  void OnWaitingForDecryptionKey() override {}
+  void OnWaiting(WaitingReason reason) override {}
   void OnVideoNaturalSizeChange(const gfx::Size& size) override {}
   void OnAudioConfigChange(const AudioDecoderConfig& config) override {}
   void OnVideoConfigChange(const VideoDecoderConfig& config) override {}

@@ -264,7 +264,8 @@ void Receiver::OnBufferingStateChange(BufferingState state) {
   rpc_broker_->SendMessageToRemote(std::move(rpc));
 }
 
-void Receiver::OnWaitingForDecryptionKey() {
+// TODO: Passes |reason| over.
+void Receiver::OnWaiting(WaitingReason reason) {
   DVLOG(3) << __func__ << ": Issues RPC_RC_ONWAITINGFORDECRYPTIONKEY message.";
   std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
   rpc->set_handle(remote_handle_);

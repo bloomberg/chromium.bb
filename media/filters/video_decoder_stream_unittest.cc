@@ -249,7 +249,7 @@ class VideoDecoderStreamTest
     decoder_ = static_cast<FakeVideoDecoder*>(decoder);
   }
 
-  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
+  MOCK_METHOD1(OnWaiting, void(WaitingReason));
 
   void OnStatistics(const PipelineStatistics& statistics) {
     num_decoded_bytes_unreported_ -= statistics.video_bytes_decoded;
@@ -275,7 +275,7 @@ class VideoDecoderStreamTest
         cdm_context_.get(),
         base::BindRepeating(&VideoDecoderStreamTest::OnStatistics,
                             base::Unretained(this)),
-        base::BindRepeating(&VideoDecoderStreamTest::OnWaitingForDecryptionKey,
+        base::BindRepeating(&VideoDecoderStreamTest::OnWaiting,
                             base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
@@ -374,7 +374,7 @@ class VideoDecoderStreamTest
       case DECRYPTOR_NO_KEY:
         if (GetParam().is_encrypted && GetParam().has_decryptor) {
           EXPECT_MEDIA_LOG(HasSubstr("no key for key ID"));
-          EXPECT_CALL(*this, OnWaitingForDecryptionKey());
+          EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey));
           has_no_key_ = true;
         }
         ReadOneFrame();

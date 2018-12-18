@@ -33,7 +33,7 @@ class MockRendererClient : public media::RendererClient {
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD1(OnStatisticsUpdate, void(const media::PipelineStatistics&));
   MOCK_METHOD1(OnBufferingStateChange, void(media::BufferingState));
-  MOCK_METHOD0(OnWaitingForDecryptionKey, void());
+  MOCK_METHOD1(OnWaiting, void(media::WaitingReason));
   MOCK_METHOD1(OnAudioConfigChange, void(const media::AudioDecoderConfig&));
   MOCK_METHOD1(OnVideoConfigChange, void(const media::VideoDecoderConfig&));
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));

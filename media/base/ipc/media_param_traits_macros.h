@@ -33,6 +33,7 @@
 #include "media/base/video_color_space.h"
 #include "media/base/video_rotation.h"
 #include "media/base/video_types.h"
+#include "media/base/waiting.h"
 #include "media/base/watch_time_keys.h"
 // TODO(crbug.com/676224): When EnabledIf attribute is supported in mojom files,
 // move CdmProxy related code into #if BUILDFLAG(ENABLE_LIBRARY_CDMS).
@@ -118,6 +119,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::PipelineStatus,
 IPC_ENUM_TRAITS_MAX_VALUE(media::SampleFormat, media::kSampleFormatMax)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoCodec, media::kVideoCodecMax)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::WaitingReason,
+                          media::WaitingReason::kMaxValue);
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::WatchTimeKey,
                           media::WatchTimeKey::kWatchTimeKeyMax);

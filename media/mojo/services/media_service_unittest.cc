@@ -106,7 +106,7 @@ class MockRendererClient : public mojom::RendererClient {
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size& size));
   MOCK_METHOD1(OnStatisticsUpdate,
                void(const media::PipelineStatistics& stats));
-  MOCK_METHOD0(OnWaitingForDecryptionKey, void());
+  MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnDurationChange, void(base::TimeDelta duration));
 
  private:

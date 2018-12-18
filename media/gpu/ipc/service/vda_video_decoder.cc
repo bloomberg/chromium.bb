@@ -207,13 +207,12 @@ std::string VdaVideoDecoder::GetDisplayName() const {
   return "VdaVideoDecoder";
 }
 
-void VdaVideoDecoder::Initialize(
-    const VideoDecoderConfig& config,
-    bool low_delay,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) {
+void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                 bool low_delay,
+                                 CdmContext* cdm_context,
+                                 const InitCB& init_cb,
+                                 const OutputCB& output_cb,
+                                 const WaitingCB& waiting_cb) {
   DVLOG(1) << __func__ << "(" << config.AsHumanReadableString() << ")";
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());

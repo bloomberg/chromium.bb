@@ -9,6 +9,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
+#include "media/base/waiting.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -29,8 +30,8 @@ class RendererClient {
   // Executed when buffering state is changed.
   virtual void OnBufferingStateChange(BufferingState state) = 0;
 
-  // Executed whenever the key needed to decrypt the stream is not available.
-  virtual void OnWaitingForDecryptionKey() = 0;
+  // Executed whenever the Renderer is waiting because of |reason|.
+  virtual void OnWaiting(WaitingReason reason) = 0;
 
   // Executed whenever DemuxerStream status returns kConfigChange. Initial
   // configs provided by OnMetadata.

@@ -140,8 +140,8 @@ void MediaPlayerRendererClient::OnBufferingStateChange(
   client_->OnBufferingStateChange(state);
 }
 
-void MediaPlayerRendererClient::OnWaitingForDecryptionKey() {
-  client_->OnWaitingForDecryptionKey();
+void MediaPlayerRendererClient::OnWaiting(media::WaitingReason reason) {
+  client_->OnWaiting(reason);
 }
 
 void MediaPlayerRendererClient::OnAudioConfigChange(

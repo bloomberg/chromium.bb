@@ -169,9 +169,9 @@ void MojoRendererService::OnBufferingStateChange(BufferingState state) {
   client_->OnBufferingStateChange(state);
 }
 
-void MojoRendererService::OnWaitingForDecryptionKey() {
+void MojoRendererService::OnWaiting(WaitingReason reason) {
   DVLOG(1) << __func__;
-  client_->OnWaitingForDecryptionKey();
+  client_->OnWaiting(reason);
 }
 
 void MojoRendererService::OnAudioConfigChange(

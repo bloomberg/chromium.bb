@@ -33,12 +33,11 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
   // AudioDecoder implementation.
   std::string GetDisplayName() const final;
   bool IsPlatformDecoder() const final;
-  void Initialize(
-      const AudioDecoderConfig& config,
-      CdmContext* cdm_context,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) final;
+  void Initialize(const AudioDecoderConfig& config,
+                  CdmContext* cdm_context,
+                  const InitCB& init_cb,
+                  const OutputCB& output_cb,
+                  const WaitingCB& waiting_cb) final;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) final;
   void Reset(const base::Closure& closure) final;

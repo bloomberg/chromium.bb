@@ -136,13 +136,12 @@ std::string AomVideoDecoder::GetDisplayName() const {
   return "AomVideoDecoder";
 }
 
-void AomVideoDecoder::Initialize(
-    const VideoDecoderConfig& config,
-    bool /* low_delay */,
-    CdmContext* /* cdm_context */,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+void AomVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                 bool /* low_delay */,
+                                 CdmContext* /* cdm_context */,
+                                 const InitCB& init_cb,
+                                 const OutputCB& output_cb,
+                                 const WaitingCB& /* waiting_cb */) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(config.IsValidConfig());
 

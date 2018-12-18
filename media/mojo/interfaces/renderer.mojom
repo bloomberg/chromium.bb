@@ -87,9 +87,9 @@ interface RendererClient {
   // media_types.mojom.
   OnStatisticsUpdate(PipelineStatistics stats);
 
-  // Called when the remote renderering service is waiting on the decryption
-  // key.
-  OnWaitingForDecryptionKey();
+  // Called when the remote renderering service is waiting for |reason|,
+  // e.g. waiting for decryption key.
+  OnWaiting(WaitingReason reason);
 
   // Executed the first time the metadata is updated, and whenever the duration
   // changes.

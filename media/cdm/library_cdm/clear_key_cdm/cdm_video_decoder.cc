@@ -182,7 +182,7 @@ class VideoDecoderAdapter : public CdmVideoDecoder {
                             weak_factory_.GetWeakPtr(), run_loop.QuitClosure()),
         base::BindRepeating(&VideoDecoderAdapter::OnVideoFrameReady,
                             weak_factory_.GetWeakPtr()),
-        /* waiting_for_decryption_key_cb = */ base::DoNothing());
+        /* waiting_cb = */ base::DoNothing());
     run_loop.Run();
 
     auto result = last_init_result_.value();

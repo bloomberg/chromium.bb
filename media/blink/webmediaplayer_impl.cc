@@ -2091,14 +2091,20 @@ void WebMediaPlayerImpl::OnAddTextTrack(const TextTrackConfig& config,
   done_cb.Run(std::move(text_track));
 }
 
-void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
+void WebMediaPlayerImpl::OnWaiting(WaitingReason reason) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  encrypted_client_->DidBlockPlaybackWaitingForKey();
-  // TODO(jrummell): didResumePlaybackBlockedForKey() should only be called
-  // when a key has been successfully added (e.g. OnSessionKeysChange() with
-  // |has_additional_usable_key| = true). http://crbug.com/461903
-  encrypted_client_->DidResumePlaybackBlockedForKey();
+  switch (reason) {
+    case WaitingReason::kNoDecryptionKey:
+      encrypted_client_->DidBlockPlaybackWaitingForKey();
+      // TODO(jrummell): didResumePlaybackBlockedForKey() should only be called
+      // when a key has been successfully added (e.g. OnSessionKeysChange() with
+      // |has_additional_usable_key| = true). http://crbug.com/461903
+      encrypted_client_->DidResumePlaybackBlockedForKey();
+      return;
+  }
+
+  // TODO(xhwang): Handle other |reason| when added.
 }
 
 void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {

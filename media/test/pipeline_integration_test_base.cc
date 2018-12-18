@@ -280,7 +280,7 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
 
   // Should never be called as the required decryption keys for the encrypted
   // media files are provided in advance.
-  EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
+  EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey)).Times(0);
 
   // DemuxerStreams may signal config changes.
   // In practice, this doesn't happen for FFmpegDemuxer, but it's allowed for
@@ -629,14 +629,14 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
 
     // Encrypted content used but keys provided in advance, so this is
     // never called.
-    EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey)).Times(0);
     pipeline_->SetCdm(
         encrypted_media->GetCdmContext(),
         base::Bind(&PipelineIntegrationTestBase::DecryptorAttached,
                    base::Unretained(this)));
   } else {
     // Encrypted content not used, so this is never called.
-    EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey)).Times(0);
   }
 
   pipeline_->Start(
