@@ -30,8 +30,8 @@ std::unique_ptr<RandomForestTrainer::TrainingResult> RandomForestTrainer::Train(
   std::vector<std::unique_ptr<Model>> trees;
   trees.reserve(n_trees);
 
-  // [example] = sum of all oob predictions
-  std::map<const TrainingExample*, TargetDistribution> oob_distributions;
+  // [example index] = sum of all oob predictions
+  std::map<size_t, TargetDistribution> oob_distributions;
 
   // We don't support weighted training data, since bagging with weights is
   // very hard to do right without spending time that depends on the value of
@@ -42,37 +42,35 @@ std::unique_ptr<RandomForestTrainer::TrainingResult> RandomForestTrainer::Train(
   const size_t n_examples = training_data.size();
   for (int i = 0; i < n_trees; i++) {
     // Collect a bagged training set and oob data for it.
-    TrainingData bagged_data(training_data.storage());
+    std::vector<size_t> bagged_idx;
+    bagged_idx.reserve(training_data.size());
 
-    std::set<const TrainingExample*> bagged_set;
+    std::set<size_t> bagged_set;
     for (size_t e = 0; e < n_examples; e++) {
-      WeightedExample weighted_example =
-          training_data[rng()->Generate(n_examples)];
-      const TrainingExample* example = weighted_example.example();
-      bagged_data.push_back(example);
-      bagged_set.insert(example);
+      size_t idx = rng()->Generate(n_examples);
+      bagged_idx.push_back(idx);
+      bagged_set.insert(idx);
     }
 
     // Train the tree.
-    std::unique_ptr<Model> tree = tree_trainer.Train(task, bagged_data);
+    std::unique_ptr<Model> tree =
+        tree_trainer.Train(task, training_data, bagged_idx);
 
     // Compute OOB distribution.
-    int n_oob = 0;
-    for (WeightedExample weighted_example : training_data) {
-      const TrainingExample* example = weighted_example.example();
-
-      if (bagged_set.find(example) != bagged_set.end())
+    for (size_t e = 0; e < n_examples; e++) {
+      if (bagged_set.find(e) != bagged_set.end())
         continue;
 
-      n_oob++;
+      const TrainingExample& example = training_data[e];
+
       TargetDistribution predicted =
-          tree->PredictDistribution(example->features);
+          tree->PredictDistribution(example.features);
 
       // Add the predicted distribution to this example's total distribution.
       // Remember that the distribution is not normalized, so the counts will
       // scale with the number of examples.
       // TODO(liberato): Should it be normalized before being combined?
-      TargetDistribution& our_oob_dist = oob_distributions[example];
+      TargetDistribution& our_oob_dist = oob_distributions[e];
       our_oob_dist += predicted;
     }
 
@@ -85,13 +83,13 @@ std::unique_ptr<RandomForestTrainer::TrainingResult> RandomForestTrainer::Train(
   // Compute OOB accuracy.
   int num_correct = 0;
   for (auto& oob_pair : oob_distributions) {
-    const TrainingExample* example = oob_pair.first;
+    const TrainingExample& example = training_data[oob_pair.first];
     const TargetDistribution& distribution = oob_pair.second;
 
     // If there are no guesses, or if it's a tie, then count it as wrong.
     TargetValue max_value;
     if (distribution.FindSingularMax(&max_value) &&
-        max_value == example->target_value) {
+        max_value == example.target_value) {
       num_correct++;
     }
   }

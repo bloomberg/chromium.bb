@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) TargetDistribution {
   TargetDistribution& operator+=(const TargetValue& rhs);
 
   // Increment the distribution by |example|'s target value and weight.
-  TargetDistribution& operator+=(const WeightedExample& weighted_example);
+  TargetDistribution& operator+=(const TrainingExample& example);
 
   // Return the number of counts for |value|.
   size_t operator[](const TargetValue& value) const;

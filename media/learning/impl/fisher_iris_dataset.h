@@ -27,10 +27,10 @@ class FisherIrisDataset {
   FisherIrisDataset();
   ~FisherIrisDataset();
 
-  TrainingData GetTrainingData() const;
+  const TrainingData& GetTrainingData() const;
 
  private:
-  scoped_refptr<TrainingDataStorage> storage_;
+  TrainingData training_data_;
 };
 
 }  // namespace learning

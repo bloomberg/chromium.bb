@@ -67,8 +67,14 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
   // Return a callback that can be used to train a random tree.
   static TrainingAlgorithmCB GetTrainingAlgorithmCB(const LearningTask& task);
 
+  // Train on all examples.
   std::unique_ptr<Model> Train(const LearningTask& task,
                                const TrainingData& examples);
+
+  // Train on the subset |training_idx|.
+  std::unique_ptr<Model> Train(const LearningTask& task,
+                               const TrainingData& examples,
+                               const std::vector<size_t>& training_idx);
 
  private:
   // Set of feature indices.
@@ -97,7 +103,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
 
     // Per-branch (i.e. per-child node) information about this split.
     struct BranchInfo {
-      explicit BranchInfo(scoped_refptr<TrainingDataStorage> storage);
+      explicit BranchInfo();
       BranchInfo(const BranchInfo& rhs) = delete;
       BranchInfo(BranchInfo&& rhs);
       ~BranchInfo();
@@ -105,8 +111,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
       BranchInfo& operator=(const BranchInfo& rhs) = delete;
       BranchInfo& operator=(BranchInfo&& rhs) = delete;
 
-      // Training set for this branch of the split.
-      TrainingData training_data;
+      // Training set for this branch of the split.  |training_idx| holds the
+      // indices that we're using out of our training data.
+      std::vector<size_t> training_idx;
 
       // Number of occurances of each target value in |training_data| along this
       // branch of the split.
@@ -126,16 +133,19 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
   // that we already used higher in the tree.
   std::unique_ptr<Model> Build(const LearningTask& task,
                                const TrainingData& training_data,
+                               const std::vector<size_t>& training_idx,
                                const FeatureSet& used_set);
 
   // Compute and return a split of |training_data| on the |index|-th feature.
   Split ConstructSplit(const LearningTask& task,
                        const TrainingData& training_data,
+                       const std::vector<size_t>& training_idx,
                        int index);
 
   // Compute the split point for |training_data| for a numeric feature.
   FeatureValue FindNumericSplitPoint(size_t index,
-                                     const TrainingData& training_data);
+                                     const TrainingData& training_data,
+                                     const std::vector<size_t>& training_idx);
 
   DISALLOW_COPY_AND_ASSIGN(RandomTreeTrainer);
 };

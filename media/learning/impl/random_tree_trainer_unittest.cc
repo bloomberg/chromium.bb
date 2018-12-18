@@ -18,7 +18,6 @@ class RandomTreeTest : public testing::TestWithParam<LearningTask::Ordering> {
   RandomTreeTest()
       : rng_(0),
         trainer_(&rng_),
-        storage_(base::MakeRefCounted<TrainingDataStorage>()),
         ordering_(GetParam()) {}
 
   // Set up |task_| to have |n| features with the given ordering.
@@ -35,13 +34,12 @@ class RandomTreeTest : public testing::TestWithParam<LearningTask::Ordering> {
   TestRandomNumberGenerator rng_;
   RandomTreeTrainer trainer_;
   LearningTask task_;
-  scoped_refptr<TrainingDataStorage> storage_;
   // Feature ordering.
   LearningTask::Ordering ordering_;
 };
 
 TEST_P(RandomTreeTest, EmptyTrainingDataWorks) {
-  TrainingData empty(storage_);
+  TrainingData empty;
   std::unique_ptr<Model> model = trainer_.Train(task_, empty);
   EXPECT_NE(model.get(), nullptr);
   EXPECT_EQ(model->PredictDistribution(FeatureVector()), TargetDistribution());
@@ -51,10 +49,10 @@ TEST_P(RandomTreeTest, UniformTrainingDataWorks) {
   SetupFeatures(2);
   TrainingExample example({FeatureValue(123), FeatureValue(456)},
                           TargetValue(789));
+  TrainingData training_data;
   const size_t n_examples = 10;
   for (size_t i = 0; i < n_examples; i++)
-    storage_->push_back(example);
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
+    training_data.push_back(example);
   std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
 
   // The tree should produce a distribution for one value (our target), which
@@ -69,10 +67,10 @@ TEST_P(RandomTreeTest, UniformTrainingDataWorksWithCallback) {
   SetupFeatures(2);
   TrainingExample example({FeatureValue(123), FeatureValue(456)},
                           TargetValue(789));
+  TrainingData training_data;
   const size_t n_examples = 10;
   for (size_t i = 0; i < n_examples; i++)
-    storage_->push_back(example);
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
+    training_data.push_back(example);
 
   // Construct a TrainedModelCB that will store the model locally.
   std::unique_ptr<Model> model;
@@ -95,11 +93,11 @@ TEST_P(RandomTreeTest, UniformTrainingDataWorksWithCallback) {
 
 TEST_P(RandomTreeTest, SimpleSeparableTrainingData) {
   SetupFeatures(1);
+  TrainingData training_data;
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
-  storage_->push_back(example_1);
-  storage_->push_back(example_2);
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
+  training_data.push_back(example_1);
+  training_data.push_back(example_2);
   std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
 
   // Each value should have a distribution with one target value with one count.
@@ -124,47 +122,43 @@ TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
   SetupFeatures(4);
   // Build a four-feature training set that's completely separable, but one
   // needs all four features to do it.
+  TrainingData training_data;
   for (int f1 = 0; f1 < 2; f1++) {
     for (int f2 = 0; f2 < 2; f2++) {
       for (int f3 = 0; f3 < 2; f3++) {
         for (int f4 = 0; f4 < 2; f4++) {
-          storage_->push_back(
-              TrainingExample({FeatureValue(f1), FeatureValue(f2),
-                               FeatureValue(f3), FeatureValue(f4)},
-                              TargetValue(f1 * 1 + f2 * 2 + f3 * 4 + f4 * 8)));
+          TrainingExample example(
+              {FeatureValue(f1), FeatureValue(f2), FeatureValue(f3),
+               FeatureValue(f4)},
+              TargetValue(f1 * 1 + f2 * 2 + f3 * 4 + f4 * 8));
+          // Add two copies of each example.
+          training_data.push_back(example);
+          training_data.push_back(example);
         }
       }
     }
-  }
-
-  // Add two copies of each example.
-  TrainingData training_data(storage_);
-  for (auto& example : *storage_) {
-    training_data.push_back(example);
-    training_data.push_back(example);
   }
 
   std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
   EXPECT_NE(model.get(), nullptr);
 
   // Each example should have a distribution that selects the right value.
-  for (WeightedExample weighted_example : training_data) {
-    const TrainingExample* example = weighted_example.example();
+  for (const TrainingExample& example : training_data) {
     TargetDistribution distribution =
-        model->PredictDistribution(example->features);
+        model->PredictDistribution(example.features);
     TargetValue singular_max;
     EXPECT_TRUE(distribution.FindSingularMax(&singular_max));
-    EXPECT_EQ(singular_max, example->target_value);
+    EXPECT_EQ(singular_max, example.target_value);
   }
 }
 
 TEST_P(RandomTreeTest, UnseparableTrainingData) {
   SetupFeatures(2);
+  TrainingData training_data;
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
-  storage_->push_back(example_1);
-  storage_->push_back(example_2);
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
+  training_data.push_back(example_1);
+  training_data.push_back(example_2);
   std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
   EXPECT_NE(model.get(), nullptr);
 
@@ -184,11 +178,11 @@ TEST_P(RandomTreeTest, UnseparableTrainingData) {
 TEST_P(RandomTreeTest, UnknownFeatureValueHandling) {
   // Verify how a previously unseen feature value is handled.
   SetupFeatures(2);
+  TrainingData training_data;
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
-  storage_->push_back(example_1);
-  storage_->push_back(example_2);
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
+  training_data.push_back(example_1);
+  training_data.push_back(example_2);
 
   task_.rt_unknown_value_handling =
       LearningTask::RTUnknownValueHandling::kEmptyDistribution;
@@ -226,12 +220,12 @@ TEST_P(RandomTreeTest, NumericFeaturesSplitMultipleTimes) {
   // Verify that numeric features can be split more than once in the tree.
   // This should also pass for nominal features, though it's less interesting.
   SetupFeatures(2);
+  TrainingData training_data;
   const int feature_mult = 10;
   for (size_t i = 0; i < 4; i++) {
     TrainingExample example({FeatureValue(i * feature_mult)}, TargetValue(i));
-    storage_->push_back(example);
+    training_data.push_back(example);
   }
-  TrainingData training_data(storage_, storage_->begin(), storage_->end());
 
   task_.rt_unknown_value_handling =
       LearningTask::RTUnknownValueHandling::kEmptyDistribution;

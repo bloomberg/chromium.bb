@@ -41,9 +41,8 @@ TargetDistribution& TargetDistribution::operator+=(const TargetValue& rhs) {
 }
 
 TargetDistribution& TargetDistribution::operator+=(
-    const WeightedExample& weighted_example) {
-  counts_[weighted_example.example()->target_value] +=
-      weighted_example.weight();
+    const TrainingExample& example) {
+  counts_[example.target_value] += example.weight;
   return *this;
 }
 
