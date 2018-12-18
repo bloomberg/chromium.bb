@@ -336,7 +336,7 @@ specialize qw/av1_highbd_warp_affine sse4_1/;
 
 if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/double compute_cross_correlation/, "unsigned char *im1, int stride1, int x1, int y1, unsigned char *im2, int stride2, int x2, int y2";
-  specialize qw/compute_cross_correlation sse4_1/;
+  specialize qw/compute_cross_correlation sse4_1 avx2/;
 }
 
 # LOOP_RESTORATION functions

@@ -282,6 +282,7 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_SSE4_1
 list(APPEND AOM_AV1_ENCODER_INTRIN_AVX2
             "${AOM_ROOT}/av1/encoder/x86/av1_quantize_avx2.c"
             "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_avx2.c"
+            "${AOM_ROOT}/av1/encoder/x86/corner_match_avx2.c"
             "${AOM_ROOT}/av1/encoder/x86/error_intrin_avx2.c"
             "${AOM_ROOT}/av1/encoder/x86/av1_fwd_txfm_avx2.h"
             "${AOM_ROOT}/av1/encoder/x86/av1_fwd_txfm2d_avx2.c"
