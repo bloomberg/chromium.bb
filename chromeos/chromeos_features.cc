@@ -59,11 +59,6 @@ const base::Feature kMyFilesVolume{"MyFilesVolume",
 const base::Feature kEnableSupervisionTransitionScreens{
     "EnableSupervisionTransitionScreens", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, the Chrome OS Settings UI will include a menu for the unified
-// MultiDevice settings.
-const base::Feature kEnableUnifiedMultiDeviceSettings{
-    "EnableUnifiedMultiDeviceSettings", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable the device to setup all MultiDevice services in a single workflow.
 const base::Feature kEnableUnifiedMultiDeviceSetup{
     "EnableUnifiedMultiDeviceSetup", base::FEATURE_ENABLED_BY_DEFAULT};

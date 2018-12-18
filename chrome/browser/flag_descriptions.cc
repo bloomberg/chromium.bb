@@ -3345,12 +3345,6 @@ const char kEnableStylusVirtualKeyboardDescription[] =
     "If enabled, tapping with a stylus will show the handwriting virtual "
     "keyboard.";
 
-const char kEnableUnifiedMultiDeviceSettingsName[] =
-    "Enable unified MultiDevice settings";
-const char kEnableUnifiedMultiDeviceSettingsDescription[] =
-    "If enabled, the Chrome OS Settings UI will include a menu for the unified "
-    "MultiDevice settings.";
-
 const char kEnableUnifiedMultiDeviceSetupName[] =
     "Enable unified MultiDevice setup";
 const char kEnableUnifiedMultiDeviceSetupDescription[] =
