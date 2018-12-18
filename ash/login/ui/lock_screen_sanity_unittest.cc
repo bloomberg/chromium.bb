@@ -20,6 +20,9 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
@@ -415,6 +418,30 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
                   ->GetCurrentUser()
                   ->basic_user_info->account_id ==
               users()[1]->basic_user_info->account_id);
+}
+
+TEST_F(LockScreenSanityTest, LockScreenKillsPreventsClipboardPaste) {
+  {
+    ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    writer.WriteText(base::UTF8ToUTF16("password"));
+  }
+
+  ShowLockScreen();
+
+  auto* text_input = new views::Textfield;
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(text_input);
+
+  text_input->RequestFocus();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_CONTROL_DOWN);
+
+  EXPECT_TRUE(text_input->text().empty());
+
+  LockScreen::Get()->Destroy();
+  text_input->RequestFocus();
+  generator->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(base::UTF8ToUTF16("password"), text_input->text());
 }
 
 }  // namespace ash
