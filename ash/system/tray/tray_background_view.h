@@ -48,7 +48,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   const char* GetClassName() const override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // ActionableView:
@@ -130,6 +129,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
  protected:
   // ActionableView:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
   bool PerformAction(const ui::Event& event) override;
