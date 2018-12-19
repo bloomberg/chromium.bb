@@ -43,6 +43,9 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_status.h"
+#include "services/identity/public/cpp/access_token_info.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -209,8 +212,7 @@ ExtensionDownloader::ExtensionDownloader(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     service_manager::Connector* connector,
     const base::FilePath& profile_path)
-    : OAuth2TokenService::Consumer(kTokenServiceConsumerId),
-      delegate_(delegate),
+    : delegate_(delegate),
       url_loader_factory_(std::move(url_loader_factory)),
       profile_path_for_url_loader_factory_(profile_path),
       connector_(connector),
@@ -223,7 +225,7 @@ ExtensionDownloader::ExtensionDownloader(
           base::BindRepeating(&ExtensionDownloader::CreateExtensionLoader,
                               base::Unretained(this))),
       extension_cache_(nullptr),
-      token_service_(nullptr),
+      identity_manager_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(url_loader_factory_);
@@ -301,11 +303,9 @@ void ExtensionDownloader::DoStartAllPending() {
   fetches_preparing_.clear();
 }
 
-void ExtensionDownloader::SetWebstoreAuthenticationCapabilities(
-    const GetWebstoreAccountCallback& webstore_account_callback,
-    OAuth2TokenService* token_service) {
-  webstore_account_callback_ = webstore_account_callback;
-  token_service_ = token_service;
+void ExtensionDownloader::SetIdentityManager(
+    identity::IdentityManager* identity_manager) {
+  identity_manager_ = identity_manager;
 }
 
 // static
@@ -928,12 +928,17 @@ void ExtensionDownloader::CreateExtensionLoader() {
       // We should try OAuth2, but we have no token cached. This
       // ExtensionLoader will be started once the token fetch is complete,
       // in either OnTokenFetchSuccess or OnTokenFetchFailure.
-      DCHECK(token_service_);
-      DCHECK(!webstore_account_callback_.is_null());
-      OAuth2TokenService::ScopeSet webstore_scopes;
+      DCHECK(identity_manager_);
+      identity::ScopeSet webstore_scopes;
       webstore_scopes.insert(kWebstoreOAuth2Scope);
-      access_token_request_ = token_service_->StartRequest(
-          webstore_account_callback_.Run(), webstore_scopes, this);
+      // It is safe to use Unretained(this) here given that the callback
+      // will not be invoked if this object is deleted.
+      access_token_fetcher_ =
+          std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+              kTokenServiceConsumerId, identity_manager_, webstore_scopes,
+              base::BindOnce(&ExtensionDownloader::OnAccessTokenFetchComplete,
+                             base::Unretained(this)),
+              identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
       return;
     }
     extension_loader_resource_request_->headers.SetHeader(
@@ -1098,7 +1103,7 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
   // fetch.
   switch (fetch->credentials) {
     case ExtensionFetch::CREDENTIALS_NONE:
-      if (fetch->url.DomainIs(kGoogleDotCom) && token_service_) {
+      if (fetch->url.DomainIs(kGoogleDotCom) && identity_manager_) {
         fetch->credentials = ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN;
       } else {
         fetch->credentials = ExtensionFetch::CREDENTIALS_COOKIES;
@@ -1110,12 +1115,12 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
       // should invalidate the token and try again.
       if (response_code == net::HTTP_UNAUTHORIZED &&
           fetch->oauth2_attempt_count <= kMaxOAuth2Attempts) {
-        DCHECK(token_service_);
-        DCHECK(!webstore_account_callback_.is_null());
-        OAuth2TokenService::ScopeSet webstore_scopes;
+        DCHECK(identity_manager_);
+        identity::ScopeSet webstore_scopes;
         webstore_scopes.insert(kWebstoreOAuth2Scope);
-        token_service_->InvalidateAccessToken(webstore_account_callback_.Run(),
-                                              webstore_scopes, access_token_);
+        identity_manager_->RemoveAccessTokenFromCache(
+            identity_manager_->GetPrimaryAccountId(), webstore_scopes,
+            access_token_);
         access_token_.clear();
         return true;
       }
@@ -1142,21 +1147,22 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
   return false;
 }
 
-void ExtensionDownloader::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
-  access_token_ = token_response.access_token;
+void ExtensionDownloader::OnAccessTokenFetchComplete(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo token_info) {
+  access_token_fetcher_.reset();
+
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    // If we fail to get an access token, kick the pending fetch and let it fall
+    // back on cookies.
+    StartExtensionLoader();
+    return;
+  }
+
+  access_token_ = token_info.token;
   extension_loader_resource_request_->headers.SetHeader(
       net::HttpRequestHeaders::kAuthorization,
       base::StringPrintf("Bearer %s", access_token_.c_str()));
-  StartExtensionLoader();
-}
-
-void ExtensionDownloader::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  // If we fail to get an access token, kick the pending fetch and let it fall
-  // back on cookies.
   StartExtensionLoader();
 }
 

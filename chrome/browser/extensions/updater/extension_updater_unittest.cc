@@ -67,12 +67,12 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_constants.h"
-#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -312,7 +312,6 @@ class MockService : public TestExtensionService {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : prefs_(prefs),
         pending_extension_manager_(prefs->profile()),
-        fake_account_id_("bobloblaw@lawblog.example.com"),
         downloader_delegate_override_(NULL),
         test_shared_url_loader_factory_(url_loader_factory) {}
 
@@ -334,11 +333,11 @@ class MockService : public TestExtensionService {
 
   PrefService* pref_service() { return prefs_->pref_service(); }
 
-  FakeOAuth2TokenService* fake_token_service() {
-    return fake_token_service_.get();
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_env_.get();
   }
 
-  const std::string& fake_account_id() { return fake_account_id_; }
+  const std::string& account_id() { return account_info_.account_id; }
 
   // Creates test extensions and inserts them into list. The name and
   // version are all based on their index. If |update_url| is non-null, it
@@ -396,20 +395,18 @@ class MockService : public TestExtensionService {
 
   std::unique_ptr<ExtensionDownloader> CreateExtensionDownloaderWithIdentity(
       ExtensionDownloaderDelegate* delegate) {
-    fake_token_service_.reset(new FakeOAuth2TokenService());
-    fake_token_service_->AddAccount(fake_account_id_);
+    identity_test_env_ = std::make_unique<identity::IdentityTestEnvironment>();
+    account_info_ = identity_test_env_->MakePrimaryAccountAvailable(
+        "bobloblaw@lawblog.example.com");
 
     std::unique_ptr<ExtensionDownloader> downloader(
         CreateExtensionDownloader(delegate));
-    downloader->SetWebstoreAuthenticationCapabilities(
-        base::BindRepeating(&MockService::fake_account_id,
-                            base::Unretained(this)),
-        fake_token_service_.get());
+    downloader->SetIdentityManager(identity_test_env_->identity_manager());
     return downloader;
   }
 
-  std::string fake_account_id_;
-  std::unique_ptr<FakeOAuth2TokenService> fake_token_service_;
+  AccountInfo account_info_;
+  std::unique_ptr<identity::IdentityTestEnvironment> identity_test_env_;
 
   ExtensionDownloaderDelegate* downloader_delegate_override_;
 
@@ -1598,11 +1595,19 @@ class ExtensionUpdaterTest : public testing::Test {
                                          net::HTTP_FORBIDDEN);
     delegate.Wait();
 
-    if (service->fake_token_service()) {
-      service->fake_token_service()->IssueAllTokensForAccount(
-          service->fake_account_id(),
-          OAuth2AccessTokenConsumer::TokenResponse(
-              kFakeOAuth2Token, base::Time::Now(), std::string()));
+    // Only call out to WaitForAccessTokenRequest(...) method below if
+    // HTTPS is in use in a google domain and oauth is explicitly enabled.
+    // Otherwise, test will await an access token request that have not
+    // (and will not) happen.
+    //
+    // Note that in case the condition below isn't satisfied, the download
+    // proceeds normally, but the request does not carry an 'Authorization'
+    // HTTP header.
+    if (enable_oauth2 && test_url.DomainIs("google.com") &&
+        test_url.SchemeIsCryptographic()) {
+      service->identity_test_env()
+          ->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+              service->account_id(), kFakeOAuth2Token, base::Time::Now());
     }
 
     bool using_oauth2 = false;

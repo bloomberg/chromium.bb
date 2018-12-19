@@ -11,14 +11,13 @@
 #include "chrome/browser/extensions/updater/extension_updater_switches.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/updater/extension_downloader.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using extensions::ExtensionDownloader;
@@ -68,15 +67,11 @@ ChromeExtensionDownloaderFactory::CreateForProfile(
   // ExtensionUpdater is owned by ExtensionService.
   // ExtensionService is owned by ExtensionSystemImpl::Shared.
   // ExtensionSystemImpl::Shared is a KeyedService. Its factory
-  // (ExtensionSystemSharedFactory) specifies that it depends on SigninManager
-  // and ProfileOAuth2TokenService.
-  // Hence, the SigninManager and ProfileOAuth2TokenService instances are
-  // guaranteed to outlive |downloader|.
+  // (ExtensionSystemSharedFactory) specifies that it depends on
+  // IdentityManager. Hence, the IdentityManager instance is guaranteed to
+  // outlive |downloader|.
   // TODO(843519): Make this lifetime relationship more explicit/cleaner.
-  downloader->SetWebstoreAuthenticationCapabilities(
-      base::BindRepeating(
-          &SigninManagerBase::GetAuthenticatedAccountId,
-          base::Unretained(SigninManagerFactory::GetForProfile(profile))),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
+  downloader->SetIdentityManager(
+      IdentityManagerFactory::GetForProfile(profile));
   return downloader;
 }
