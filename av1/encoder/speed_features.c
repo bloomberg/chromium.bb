@@ -131,6 +131,12 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
 
   if (speed >= 2) {
     if (is_720p_or_larger) {
+      // TODO(chiyotsai@google.com): Set a threshold for hdres
+      sf->use_square_partition_only_threshold = BLOCK_128X128;
+    } else if (is_480p_or_larger) {
+      sf->use_square_partition_only_threshold = BLOCK_32X32;
+    }
+    if (is_720p_or_larger) {
       sf->disable_split_mask =
           cm->show_frame ? DISABLE_ALL_SPLIT : DISABLE_ALL_INTER_SPLIT;
       sf->adaptive_pred_interp_filter = 0;
