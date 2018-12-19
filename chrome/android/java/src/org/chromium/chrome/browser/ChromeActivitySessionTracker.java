@@ -126,7 +126,7 @@ public class ChromeActivitySessionTracker {
     }
 
     /**
-     * Called when a top-level Chrome activity (ChromeTabbedActivity, FullscreenActivity) is
+     * Called when a top-level Chrome activity (ChromeTabbedActivity, CustomTabActivity) is
      * started in foreground. It will not be called again when other Chrome activities take over
      * (see onStart()), that is, when correct activity calls startActivity() for another Chrome
      * activity.

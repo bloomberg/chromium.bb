@@ -2381,11 +2381,6 @@ public class ChromeTabbedActivity
     }
 
     @Override
-    public boolean supportsFullscreenActivity() {
-        return !VrModuleProvider.getDelegate().isInVr();
-    }
-
-    @Override
     public boolean supportsContextualSuggestionsBottomSheet() {
         return true;
     }

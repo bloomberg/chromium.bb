@@ -212,8 +212,6 @@ public abstract class ChromeFeatureList {
     public static final String EXPLICIT_LANGUAGE_ASK = "ExplicitLanguageAsk";
     public static final String EXPLORE_SITES = "ExploreSites";
     public static final String FCM_INVALIDATIONS = "FCMInvalidations";
-    // When enabled, fullscreen WebContents will be moved to a new Activity. Coming soon...
-    public static final String FULLSCREEN_ACTIVITY = "FullscreenActivity";
     public static final String GESTURE_NAVIGATION = "GestureNavigation";
     public static final String GRANT_NOTIFICATIONS_TO_DSE = "GrantNotificationsToDSE";
     public static final String GENERIC_SENSOR_EXTRA_CLASSES = "GenericSensorExtraClasses";

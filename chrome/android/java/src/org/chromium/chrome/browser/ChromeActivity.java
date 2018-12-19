@@ -1729,7 +1729,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      *
      * Returns the tab being displayed by this ChromeActivity instance. This allows differentiation
      * between ChromeActivity subclasses that swap between multiple tabs (e.g. ChromeTabbedActivity)
-     * and subclasses that only display one Tab (e.g. FullScreenActivity and DocumentActivity).
+     * and subclasses that only display one Tab (e.g. DocumentActivity).
      *
      * The default implementation grabs the tab currently selected by the TabModel, which may be
      * null if the Tab does not exist or the system is not initialized.
@@ -2465,14 +2465,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * in this call, including showing 2D UI that was hidden.
      */
     public void onExitVr() {}
-
-    /**
-     * Whether this Activity supports moving a {@link Tab} to the {@link FullscreenActivity} when it
-     * enters fullscreen.
-     */
-    public boolean supportsFullscreenActivity() {
-        return false;
-    }
 
     /**
      * @return Whether this Activity supports showing contextual suggestions in a bottom sheet.

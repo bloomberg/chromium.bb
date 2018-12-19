@@ -67,7 +67,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "disable-features=" + ChromeFeatureList.FULLSCREEN_ACTIVITY,
         "enable-blink-features=FullscreenUnprefixed,FullscreenOptions",
 })
 @RetryOnFailure

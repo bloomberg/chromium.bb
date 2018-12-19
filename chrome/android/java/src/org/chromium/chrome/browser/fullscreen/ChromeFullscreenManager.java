@@ -79,7 +79,7 @@ public class ChromeFullscreenManager
     public @interface ControlsPosition {
         /** Controls are at the top, eg normal ChromeTabbedActivity. */
         int TOP = 0;
-        /** Controls are not present, eg FullscreenActivity. */
+        /** Controls are not present, eg NoTouchActivity. */
         int NONE = 1;
     }
 
