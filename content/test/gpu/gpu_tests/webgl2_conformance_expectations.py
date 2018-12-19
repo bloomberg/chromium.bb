@@ -896,6 +896,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/textures/image_bitmap_from_image_data/' +
         'tex-2d-srgb8-rgb-unsigned_byte.html',
         ['linux', 'no_passthrough', 'nvidia'], bug=694354)
+    self.Flaky('conformance2/transform_feedback/switching-objects.html',
+        ['linux', 'no_passthrough', 'nvidia'], bug=832238)
 
     # Linux NVIDIA Quadro P400
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
