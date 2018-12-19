@@ -285,8 +285,13 @@ Polymer({
    * Get called when user's sign in state changes, this will affect UI of synced
    * tabs page. Sign in promo gets displayed when user is signed out, and
    * different messages are shown when there are no synced tabs.
+   * @param {?boolean} current
+   * @param {?boolean} previous
    */
-  signInStateChanged_: function() {
+  signInStateChanged_: function(current, previous) {
+    if (previous === undefined)
+      return;
+
     this.fire('history-view-changed');
 
     // User signed out, clear synced device list and show the sign in promo.
