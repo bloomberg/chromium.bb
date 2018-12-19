@@ -269,7 +269,7 @@ static_library("test_support") {
     ]
     public_deps += [
       "//ash",
-      "//ash:test_support_with_content",
+      "//ash:test_support",
       "//components/ownership",
       "//components/user_manager:test_support",
       "//ui/aura",
@@ -1873,7 +1873,7 @@ test("browser_tests") {
         "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest.cc",
       ]
       deps += [
-        "//ash:test_support_with_content",
+        "//ash:test_support",
         "//ash/public/interfaces:test_interfaces",
         "//chrome/browser/chromeos:arc_test_support",
         "//chrome/browser/chromeos:test_support",
@@ -3495,7 +3495,7 @@ test("unit_tests") {
       "../browser/ui/window_sizer/window_sizer_ash_unittest.cc",
     ]
     deps += [
-      "//ash:test_support_with_content",
+      "//ash:test_support",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/strings",
       "//chrome/browser/resources/chromeos/zip_archiver/cpp:ziparchiver_unittests",
@@ -4127,10 +4127,6 @@ test("unit_tests") {
     ]
     sources -=
         [ "../browser/policy/cloud/user_policy_signin_service_unittest.cc" ]
-    sources += [
-      "base/ash_test_environment_chrome.cc",
-      "base/ash_test_environment_chrome.h",
-    ]
   }
   if (use_x11) {
     deps += [ "//ui/events/devices" ]
@@ -4508,11 +4504,21 @@ static_library("test_support_unit") {
     "//chrome/common",
     "//mojo/core/test:test_support",
   ]
+  deps = []
 
   if (is_win) {
     deps = [
       "//chrome/install_static/test:test_support",
     ]
+  }
+
+  if (is_chromeos) {
+    sources += [
+      "base/chrome_ash_test_base.cc",
+      "base/chrome_ash_test_base.h",
+    ]
+
+    deps += [ "//ash:test_support" ]
   }
 }
 

@@ -12,7 +12,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -20,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/system_display/display_info_provider_chromeos.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "extensions/common/api/system_display.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -46,7 +46,7 @@ void ErrorCallback(std::string* result,
   std::move(callback).Run();
 }
 
-class DisplayInfoProviderChromeosTest : public ash::AshTestBase {
+class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
  public:
   DisplayInfoProviderChromeosTest() {}
 
@@ -56,7 +56,7 @@ class DisplayInfoProviderChromeosTest : public ash::AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFirstDisplayAsInternal);
 
-    ash::AshTestBase::SetUp();
+    ChromeAshTestBase::SetUp();
 
     // Note: for now we have two instances of CrosDisplayConfig, one owned by
     // ash::Shell and this one. Since CrosDisplayConfig just provides an

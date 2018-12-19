@@ -10,7 +10,6 @@
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "base/command_line.h"
@@ -30,20 +29,6 @@
 #include "ui/wm/core/wm_core_switches.h"
 
 namespace exo {
-
-class AshTestEnvironmentWayland : public ash::AshTestEnvironment {
- public:
-  AshTestEnvironmentWayland() = default;
-  ~AshTestEnvironmentWayland() override = default;
-
-  // Overriden from ash::AshTestEnvironment:
-  std::unique_ptr<ash::AshTestViewsDelegate> CreateViewsDelegate() override {
-    return std::make_unique<ash::AshTestViewsDelegate>();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AshTestEnvironmentWayland);
-};
 
 // The ui message loop for running the wayland server. If it is not provided, we
 // will use external wayland server.
@@ -124,9 +109,7 @@ void WaylandClientTest::SetUpOnUIThread(base::WaitableEvent* event) {
   // Disable window animation when running tests.
   command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
 
-  ash_test_environment_ = std::make_unique<AshTestEnvironmentWayland>();
-  ash_test_helper_ =
-      std::make_unique<ash::AshTestHelper>(ash_test_environment_.get());
+  ash_test_helper_ = std::make_unique<ash::AshTestHelper>();
 
   ash_test_helper_->SetUp(false /* start_session */,
                           true /* provide_local_state */);
@@ -164,7 +147,6 @@ void WaylandClientTest::TearDownOnUIThread(base::WaitableEvent* event) {
   ash::Shell::Get()->session_controller()->NotifyChromeTerminating();
   ash_test_helper_->TearDown();
   ash_test_helper_ = nullptr;
-  ash_test_environment_ = nullptr;
   xdg_temp_dir_ = nullptr;
   event->Signal();
 }

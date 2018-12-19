@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -22,12 +21,12 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/test_browser_context.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_input_method_manager.h"
@@ -167,9 +166,9 @@ class TestIMEInputContextHandler : public ui::MockIMEInputContextHandler {
   DISALLOW_COPY_AND_ASSIGN(TestIMEInputContextHandler);
 };
 
-// TODO(crbug.com/890677): Stop inheriting ash::AshTestBase once ash::Shell
+// TODO(crbug.com/890677): Stop inheriting ChromeAshTestBase once ash::Shell
 // dependency is removed from ArcInputMethodManagerService.
-class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
+class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
  protected:
   ArcInputMethodManagerServiceTest()
       : arc_service_manager_(std::make_unique<ArcServiceManager>()) {}
@@ -188,7 +187,7 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
   }
 
   void SetUp() override {
-    ash::AshTestBase::SetUp();
+    ChromeAshTestBase::SetUp();
     SetRunningOutsideAsh();
     ui::IMEBridge::Initialize();
     input_method_manager_ = new TestInputMethodManager();
@@ -216,7 +215,7 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
     tablet_mode_client_.reset(nullptr);
     chromeos::input_method::InputMethodManager::Shutdown();
     ui::IMEBridge::Shutdown();
-    ash::AshTestBase::TearDown();
+    ChromeAshTestBase::TearDown();
   }
 
  private:

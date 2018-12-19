@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -10,6 +9,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
 #include "components/signin/core/browser/account_info.h"
@@ -26,13 +26,13 @@ const char kTestAccountEmail[] = "test@test.com";
 
 }  // namespace
 
-class MultiUserUtilTest : public AshTestBase {
+class MultiUserUtilTest : public ChromeAshTestBase {
  public:
   MultiUserUtilTest() {}
   ~MultiUserUtilTest() override {}
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    ChromeAshTestBase::SetUp();
 
     fake_user_manager_ = new chromeos::FakeChromeUserManager;
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
@@ -49,7 +49,7 @@ class MultiUserUtilTest : public AshTestBase {
   void TearDown() override {
     identity_test_env_adaptor_.reset();
     profile_.reset();
-    AshTestBase::TearDown();
+    ChromeAshTestBase::TearDown();
   }
 
   // Add a user to the identity manager with given gaia_id and email.

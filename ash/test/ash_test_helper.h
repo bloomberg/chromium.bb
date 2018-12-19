@@ -53,7 +53,6 @@ class WMState;
 namespace ash {
 
 class AppListTestHelper;
-class AshTestEnvironment;
 class AshTestViewsDelegate;
 class TestKeyboardControllerObserver;
 class TestShellDelegate;
@@ -62,7 +61,7 @@ class TestShellDelegate;
 // root window and an ash::Shell instance with a test delegate.
 class AshTestHelper {
  public:
-  explicit AshTestHelper(AshTestEnvironment* ash_test_environment);
+  AshTestHelper();
   ~AshTestHelper();
 
   // Creates the ash::Shell and performs associated initialization.  Set
@@ -94,8 +93,6 @@ class AshTestHelper {
   AshTestViewsDelegate* test_views_delegate() {
     return test_views_delegate_.get();
   }
-
-  AshTestEnvironment* ash_test_environment() { return ash_test_environment_; }
 
   display::Display GetSecondaryDisplay();
 
@@ -135,7 +132,6 @@ class AshTestHelper {
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
 
-  AshTestEnvironment* ash_test_environment_;  // Not owned.
   TestShellDelegate* test_shell_delegate_ = nullptr;  // Owned by ash::Shell.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 

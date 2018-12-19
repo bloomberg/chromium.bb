@@ -4,9 +4,9 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
-import("//testing/test.gni")
 
 declare_args() {
   # Enable experimental vulkan wayland client.
@@ -426,7 +426,7 @@ test("wayland_client_perftests") {
 
     deps += [
       "//ash",
-      "//ash:test_support_without_content",
+      "//ash:test_support",
       "//ash/public/cpp",
     ]
   }

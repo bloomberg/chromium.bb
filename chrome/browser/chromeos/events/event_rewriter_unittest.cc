@@ -7,7 +7,6 @@
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/sticky_keys/sticky_keys_overlay.h"
-#include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -113,7 +113,7 @@ void CheckKeyTestCase(
 
 namespace chromeos {
 
-class EventRewriterTest : public ash::AshTestBase {
+class EventRewriterTest : public ChromeAshTestBase {
  public:
   EventRewriterTest()
       : fake_user_manager_(new chromeos::FakeChromeUserManager),
@@ -128,11 +128,11 @@ class EventRewriterTest : public ash::AshTestBase {
     delegate_->set_pref_service_for_testing(prefs());
     rewriter_ =
         std::make_unique<ui::EventRewriterChromeOS>(delegate_.get(), nullptr);
-    AshTestBase::SetUp();
+    ChromeAshTestBase::SetUp();
   }
 
   void TearDown() override {
-    AshTestBase::TearDown();
+    ChromeAshTestBase::TearDown();
     // Shutdown() deletes the IME mock object.
     chromeos::input_method::Shutdown();
   }
@@ -2357,7 +2357,7 @@ class TestEventSource : public ui::EventSource {
 };
 
 // Tests of event rewriting that depend on the Ash window manager.
-class EventRewriterAshTest : public ash::AshTestBase {
+class EventRewriterAshTest : public ChromeAshTestBase {
  public:
   EventRewriterAshTest()
       : source_(&buffer_),
@@ -2406,7 +2406,7 @@ class EventRewriterAshTest : public ash::AshTestBase {
   }
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    ChromeAshTestBase::SetUp();
     sticky_keys_controller_ = ash::Shell::Get()->sticky_keys_controller();
     delegate_ = std::make_unique<EventRewriterDelegateImpl>(nullptr);
     delegate_->set_pref_service_for_testing(prefs());
@@ -2419,7 +2419,7 @@ class EventRewriterAshTest : public ash::AshTestBase {
 
   void TearDown() override {
     rewriter_.reset();
-    AshTestBase::TearDown();
+    ChromeAshTestBase::TearDown();
   }
 
  protected:

@@ -34,6 +34,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/mus_property_mirror_ash.h"
 #include "ash/test/ash_test_views_delegate.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "content/public/browser/context_factory.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -70,9 +71,6 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest(
     bool hosted_app,
     content::TestBrowserThreadBundle::Options thread_bundle_options)
     : thread_bundle_(thread_bundle_options),
-#if defined(OS_CHROMEOS)
-      ash_test_helper_(&ash_test_environment_),
-#endif
       browser_type_(browser_type),
       hosted_app_(hosted_app) {
 }
@@ -140,6 +138,11 @@ void BrowserWithTestWindowTest::TearDown() {
   profile_manager_.reset();
 
 #if defined(OS_CHROMEOS)
+  // If initialized, the KioskAppManager will register an observer to
+  // CrosSettings and will need to be destroyed before it. Having it destroyed
+  // as part of the teardown will avoid unexpected test failures.
+  chromeos::KioskAppManager::Shutdown();
+
   ash_test_helper_.TearDown();
 #elif defined(TOOLKIT_VIEWS)
   views_test_helper_.reset();

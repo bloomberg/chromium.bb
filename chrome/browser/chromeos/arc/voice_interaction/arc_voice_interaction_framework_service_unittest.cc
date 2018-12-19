@@ -10,7 +10,6 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/chromeos/arc/voice_interaction/highlighter_controller_client.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
@@ -126,12 +126,12 @@ ui::Layer* FindLayer(ui::Layer* root, ui::Layer* target) {
 
 }  // namespace
 
-class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
+class ArcVoiceInteractionFrameworkServiceTest : public ChromeAshTestBase {
  public:
   ArcVoiceInteractionFrameworkServiceTest() = default;
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    ChromeAshTestBase::SetUp();
     SetRunningOutsideAsh();
     // Setup test profile.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -184,7 +184,7 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
     arc_session_manager_.reset();
     session_manager_.reset();
     profile_.reset();
-    AshTestBase::TearDown();
+    ChromeAshTestBase::TearDown();
   }
 
  protected:

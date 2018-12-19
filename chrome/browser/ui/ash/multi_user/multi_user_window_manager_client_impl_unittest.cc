@@ -16,8 +16,6 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_environment_content.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -52,6 +50,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -135,13 +134,13 @@ namespace ash {
 
 // A test class for preparing the MultiUserWindowManager. It creates
 // various windows and instantiates the MultiUserWindowManager.
-class MultiUserWindowManagerClientImplTest : public AshTestBase {
+class MultiUserWindowManagerClientImplTest : public ChromeAshTestBase {
  public:
   MultiUserWindowManagerClientImplTest()
       : fake_user_manager_(new chromeos::FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
 
-  // AshTestBase:
+  // ChromeAshTestBase:
   void SetUp() override;
   void TearDown() override;
 
@@ -309,7 +308,7 @@ void MultiUserWindowManagerClientImplTest::SetUp() {
   chromeos::CrosSettings::Initialize(
       TestingBrowserProcess::GetGlobal()->local_state());
   ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
-  AshTestBase::SetUp();
+  ChromeAshTestBase::SetUp();
   ash_test_helper()
       ->test_session_controller_client()
       ->set_use_lower_case_user_id(false);
@@ -353,7 +352,7 @@ void MultiUserWindowManagerClientImplTest::TearDown() {
   }
 
   ::MultiUserWindowManagerClient::DeleteInstance();
-  AshTestBase::TearDown();
+  ChromeAshTestBase::TearDown();
   wallpaper_controller_client_.reset();
   profile_manager_.reset();
   chromeos::CrosSettings::Shutdown();

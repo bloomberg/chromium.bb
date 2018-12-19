@@ -9,9 +9,9 @@
 
 #include "ash/display/display_configuration_controller.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,17 +73,17 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController {
   DISALLOW_COPY_AND_ASSIGN(TestCrosDisplayConfig);
 };
 
-class OobeDisplayChooserTest : public ash::AshTestBase {
+class OobeDisplayChooserTest : public ChromeAshTestBase {
  public:
-  OobeDisplayChooserTest() : ash::AshTestBase() {}
+  OobeDisplayChooserTest() : ChromeAshTestBase() {}
 
   int64_t GetPrimaryDisplay() {
     return display::Screen::GetScreen()->GetPrimaryDisplay().id();
   }
 
-  // ash::AshTestBase:
+  // ChromeAshTestBase:
   void SetUp() override {
-    ash::AshTestBase::SetUp();
+    ChromeAshTestBase::SetUp();
 
     cros_display_config_ = std::make_unique<TestCrosDisplayConfig>();
     display_chooser_ = std::make_unique<OobeDisplayChooser>();

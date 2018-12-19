@@ -20,7 +20,6 @@
 #include "ash/test/ash_test_views_delegate.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/test/base/ash_test_environment_chrome.h"
 #else
 #include "ui/views/test/scoped_views_test_helper.h"
 #endif
@@ -193,7 +192,6 @@ class BrowserWithTestWindowTest : public testing::Test {
   std::unique_ptr<Browser> browser_;
 
 #if defined(OS_CHROMEOS)
-  AshTestEnvironmentChrome ash_test_environment_;
   ash::AshTestHelper ash_test_helper_;
   std::unique_ptr<views::MusClient> mus_client_;
 #elif defined(TOOLKIT_VIEWS)

@@ -4,11 +4,11 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/window_sizer/window_sizer_common_unittest.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/render_view_test.h"
@@ -22,7 +22,7 @@
 #include "ui/display/screen.h"
 #include "ui/wm/public/activation_client.h"
 
-class WindowSizerAshTest : public ash::AshTestBase {
+class WindowSizerAshTest : public ChromeAshTestBase {
  public:
   WindowSizerAshTest() = default;
   ~WindowSizerAshTest() override = default;
