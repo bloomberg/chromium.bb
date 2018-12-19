@@ -154,7 +154,7 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
 
   // If the device has not yet been identified, try identifying |service_data|
   // as a background advertisement.
-  if (chromeos::switches::IsInstantTetheringBackgroundAdvertisingSupported() &&
+  if (switches::IsInstantTetheringBackgroundAdvertisingSupported() &&
       identified_device_id.empty() &&
       service_data.size() >= kMinNumBytesInServiceData &&
       service_data.size() <= kMaxNumBytesInBackgroundServiceData) {
@@ -175,7 +175,7 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
   if (identified_device_id.empty())
     return base::nullopt;
 
-  return secure_channel::BleServiceDataHelper::DeviceWithBackgroundBool(
+  return BleServiceDataHelper::DeviceWithBackgroundBool(
       *remote_device_cache_->GetRemoteDevice(identified_device_id),
       is_background_advertisement);
 }

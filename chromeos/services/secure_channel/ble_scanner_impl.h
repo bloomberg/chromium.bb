@@ -37,7 +37,7 @@ class BleScannerImpl : public BleScanner,
     static void SetFactoryForTesting(Factory* test_factory);
     virtual std::unique_ptr<BleScanner> BuildInstance(
         Delegate* delegate,
-        secure_channel::BleServiceDataHelper* service_data_helper,
+        BleServiceDataHelper* service_data_helper,
         BleSynchronizerBase* ble_synchronizer,
         scoped_refptr<device::BluetoothAdapter> adapter);
 
@@ -61,7 +61,7 @@ class BleScannerImpl : public BleScanner,
   };
 
   BleScannerImpl(Delegate* delegate,
-                 secure_channel::BleServiceDataHelper* service_data_helper,
+                 BleServiceDataHelper* service_data_helper,
                  BleSynchronizerBase* ble_synchronizer,
                  scoped_refptr<device::BluetoothAdapter> adapter);
 
@@ -96,7 +96,7 @@ class BleScannerImpl : public BleScanner,
   void SetServiceDataProviderForTesting(
       std::unique_ptr<ServiceDataProvider> service_data_provider);
 
-  secure_channel::BleServiceDataHelper* service_data_helper_;
+  BleServiceDataHelper* service_data_helper_;
   BleSynchronizerBase* ble_synchronizer_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
 

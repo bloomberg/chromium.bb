@@ -23,11 +23,9 @@ namespace device_sync {
 
 namespace {
 
-std::map<chromeos::multidevice::SoftwareFeature,
-         chromeos::multidevice::SoftwareFeatureState>
+std::map<multidevice::SoftwareFeature, multidevice::SoftwareFeatureState>
 GetSoftwareFeatureToStateMap(const cryptauth::ExternalDeviceInfo& device) {
-  std::map<chromeos::multidevice::SoftwareFeature,
-           chromeos::multidevice::SoftwareFeatureState>
+  std::map<multidevice::SoftwareFeature, multidevice::SoftwareFeatureState>
       software_feature_to_state_map;
 
   for (int i = 0; i < device.supported_software_features_size(); ++i) {
@@ -36,8 +34,8 @@ GetSoftwareFeatureToStateMap(const cryptauth::ExternalDeviceInfo& device) {
     if (feature == cryptauth::UNKNOWN_FEATURE)
       continue;
 
-    software_feature_to_state_map[chromeos::multidevice::FromCryptAuthFeature(
-        feature)] = chromeos::multidevice::SoftwareFeatureState::kSupported;
+    software_feature_to_state_map[multidevice::FromCryptAuthFeature(feature)] =
+        multidevice::SoftwareFeatureState::kSupported;
   }
 
   for (int i = 0; i < device.enabled_software_features_size(); ++i) {
@@ -46,8 +44,8 @@ GetSoftwareFeatureToStateMap(const cryptauth::ExternalDeviceInfo& device) {
     if (feature == cryptauth::UNKNOWN_FEATURE)
       continue;
 
-    software_feature_to_state_map[chromeos::multidevice::FromCryptAuthFeature(
-        feature)] = chromeos::multidevice::SoftwareFeatureState::kEnabled;
+    software_feature_to_state_map[multidevice::FromCryptAuthFeature(feature)] =
+        multidevice::SoftwareFeatureState::kEnabled;
   }
 
   return software_feature_to_state_map;
@@ -138,13 +136,13 @@ void RemoteDeviceLoader::OnPSKDerived(
   DCHECK(iterator != remaining_devices_.end());
   remaining_devices_.erase(iterator);
 
-  std::vector<chromeos::multidevice::BeaconSeed> multidevice_beacon_seeds;
+  std::vector<multidevice::BeaconSeed> multidevice_beacon_seeds;
   for (const auto& cryptauth_beacon_seed : device.beacon_seeds()) {
     multidevice_beacon_seeds.push_back(
-        chromeos::multidevice::FromCryptAuthSeed(cryptauth_beacon_seed));
+        multidevice::FromCryptAuthSeed(cryptauth_beacon_seed));
   }
 
-  chromeos::multidevice::RemoteDevice remote_device(
+  multidevice::RemoteDevice remote_device(
       user_id_, device.friendly_device_name(), device.public_key(), psk,
       device.last_update_time_millis(), GetSoftwareFeatureToStateMap(device),
       multidevice_beacon_seeds);

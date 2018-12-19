@@ -38,11 +38,11 @@ const char kBetterTogetherClientCallbackBluetoothAddress[] =
 
 std::vector<cryptauth::ExternalDeviceInfo>
 CreateExternalDeviceInfosForRemoteDevices(
-    const chromeos::multidevice::RemoteDeviceRefList remote_devices) {
+    const multidevice::RemoteDeviceRefList remote_devices) {
   std::vector<cryptauth::ExternalDeviceInfo> device_infos;
   for (const auto& remote_device : remote_devices) {
     // Add an cryptauth::ExternalDeviceInfo with the same public key as the
-    // chromeos::multidevice::RemoteDevice.
+    // multidevice::RemoteDevice.
     cryptauth::ExternalDeviceInfo info;
     info.set_public_key(remote_device.public_key());
     device_infos.push_back(info);
@@ -59,7 +59,7 @@ class DeviceSyncSoftwareFeatureManagerImplTest
   DeviceSyncSoftwareFeatureManagerImplTest()
       : all_test_external_device_infos_(
             CreateExternalDeviceInfosForRemoteDevices(
-                chromeos::multidevice::CreateRemoteDeviceRefListForTest(5))),
+                multidevice::CreateRemoteDeviceRefListForTest(5))),
         test_eligible_external_devices_infos_(
             {all_test_external_device_infos_[0],
              all_test_external_device_infos_[1],
@@ -158,7 +158,7 @@ class DeviceSyncSoftwareFeatureManagerImplTest
     result_ineligible_devices_.clear();
   }
 
-  void SetSoftwareFeatureState(chromeos::multidevice::SoftwareFeature feature,
+  void SetSoftwareFeatureState(multidevice::SoftwareFeature feature,
                                const cryptauth::ExternalDeviceInfo& device_info,
                                bool enabled,
                                bool is_exclusive = false) {
@@ -172,7 +172,7 @@ class DeviceSyncSoftwareFeatureManagerImplTest
         is_exclusive);
   }
 
-  void FindEligibleDevices(chromeos::multidevice::SoftwareFeature feature) {
+  void FindEligibleDevices(multidevice::SoftwareFeature feature) {
     software_feature_manager_->FindEligibleDevices(
         feature,
         base::Bind(
@@ -270,16 +270,14 @@ class DeviceSyncSoftwareFeatureManagerImplTest
 
 TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
        TestOrderUponMultipleRequests) {
-  SetSoftwareFeatureState(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherHost,
-      test_eligible_external_devices_infos_[0], true /* enable */);
-  FindEligibleDevices(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherHost);
-  SetSoftwareFeatureState(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherClient,
-      test_eligible_external_devices_infos_[1], false /* enable */);
-  FindEligibleDevices(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherClient);
+  SetSoftwareFeatureState(multidevice::SoftwareFeature::kBetterTogetherHost,
+                          test_eligible_external_devices_infos_[0],
+                          true /* enable */);
+  FindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
+  SetSoftwareFeatureState(multidevice::SoftwareFeature::kBetterTogetherClient,
+                          test_eligible_external_devices_infos_[1],
+                          false /* enable */);
+  FindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherClient);
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST),
@@ -318,15 +316,15 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
 
 TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
        TestMultipleSetUnlocksRequests) {
-  SetSoftwareFeatureState(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherHost,
-      test_eligible_external_devices_infos_[0], true /* enable */);
-  SetSoftwareFeatureState(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherClient,
-      test_eligible_external_devices_infos_[1], false /* enable */);
-  SetSoftwareFeatureState(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherHost,
-      test_eligible_external_devices_infos_[2], true /* enable */);
+  SetSoftwareFeatureState(multidevice::SoftwareFeature::kBetterTogetherHost,
+                          test_eligible_external_devices_infos_[0],
+                          true /* enable */);
+  SetSoftwareFeatureState(multidevice::SoftwareFeature::kBetterTogetherClient,
+                          test_eligible_external_devices_infos_[1],
+                          false /* enable */);
+  SetSoftwareFeatureState(multidevice::SoftwareFeature::kBetterTogetherHost,
+                          test_eligible_external_devices_infos_[2],
+                          true /* enable */);
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST),
@@ -355,12 +353,9 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
 
 TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
        TestMultipleFindEligibleForUnlockDevicesRequests) {
-  FindEligibleDevices(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherHost);
-  FindEligibleDevices(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherClient);
-  FindEligibleDevices(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherHost);
+  FindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
+  FindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherClient);
+  FindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST),
@@ -390,11 +385,10 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest,
 }
 
 TEST_F(DeviceSyncSoftwareFeatureManagerImplTest, TestOrderViaMultipleErrors) {
-  SetSoftwareFeatureState(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherHost,
-      test_eligible_external_devices_infos_[0], true /* enable */);
-  FindEligibleDevices(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherHost);
+  SetSoftwareFeatureState(multidevice::SoftwareFeature::kBetterTogetherHost,
+                          test_eligible_external_devices_infos_[0],
+                          true /* enable */);
+  FindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST),
@@ -412,10 +406,9 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest, TestOrderViaMultipleErrors) {
 }
 
 TEST_F(DeviceSyncSoftwareFeatureManagerImplTest, TestIsExclusive) {
-  SetSoftwareFeatureState(
-      chromeos::multidevice::SoftwareFeature::kBetterTogetherHost,
-      test_eligible_external_devices_infos_[0], true /* enable */,
-      true /* is_exclusive */);
+  SetSoftwareFeatureState(multidevice::SoftwareFeature::kBetterTogetherHost,
+                          test_eligible_external_devices_infos_[0],
+                          true /* enable */, true /* is_exclusive */);
 
   EXPECT_EQ(SoftwareFeatureEnumToString(
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST),
@@ -427,9 +420,9 @@ TEST_F(DeviceSyncSoftwareFeatureManagerImplTest, TestIsExclusive) {
 }
 
 TEST_F(DeviceSyncSoftwareFeatureManagerImplTest, TestEasyUnlockSpecialCase) {
-  SetSoftwareFeatureState(
-      chromeos::multidevice::SoftwareFeature::kSmartLockHost,
-      test_eligible_external_devices_infos_[0], false /* enable */);
+  SetSoftwareFeatureState(multidevice::SoftwareFeature::kSmartLockHost,
+                          test_eligible_external_devices_infos_[0],
+                          false /* enable */);
 
   EXPECT_EQ(
       SoftwareFeatureEnumToString(cryptauth::SoftwareFeature::EASY_UNLOCK_HOST),

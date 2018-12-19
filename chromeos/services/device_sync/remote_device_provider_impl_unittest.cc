@@ -51,11 +51,11 @@ class FakeSecureMessageDelegateFactory
 
 std::vector<cryptauth::ExternalDeviceInfo>
 CreateExternalDeviceInfosForRemoteDevices(
-    const chromeos::multidevice::RemoteDeviceList remote_devices) {
+    const multidevice::RemoteDeviceList remote_devices) {
   std::vector<cryptauth::ExternalDeviceInfo> device_infos;
   for (const auto& remote_device : remote_devices) {
     // Add an cryptauth::ExternalDeviceInfo with the same public key as the
-    // chromeos::multidevice::RemoteDevice.
+    // multidevice::RemoteDevice.
     cryptauth::ExternalDeviceInfo info;
     info.set_public_key(remote_device.public_key);
     device_infos.push_back(info);
@@ -85,8 +85,7 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
       : public RemoteDeviceLoader::Factory {
    public:
     TestRemoteDeviceLoaderFactory()
-        : test_devices_(
-              chromeos::multidevice::CreateRemoteDeviceListForTest(5)),
+        : test_devices_(multidevice::CreateRemoteDeviceListForTest(5)),
           test_device_infos_(
               CreateExternalDeviceInfosForRemoteDevices(test_devices_)) {}
 
@@ -111,7 +110,7 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
       ASSERT_TRUE(!callback_.is_null());
       // Fetch only the devices inserted by tests, since test_devices_ contains
       // all available devices.
-      chromeos::multidevice::RemoteDeviceList devices;
+      multidevice::RemoteDeviceList devices;
       for (const auto remote_device : test_devices_) {
         for (const auto& external_device_info : device_info_list) {
           if (remote_device.public_key == external_device_info.public_key())
@@ -125,7 +124,7 @@ class FakeDeviceLoader final : public RemoteDeviceLoader {
     // Fetch is only started if the change result passed to OnSyncFinished() is
     // CHANGED and sync is SUCCESS.
     bool HasQueuedCallback() { return !callback_.is_null(); }
-    const chromeos::multidevice::RemoteDeviceList test_devices_;
+    const multidevice::RemoteDeviceList test_devices_;
     const std::vector<cryptauth::ExternalDeviceInfo> test_device_infos_;
 
     void QueueCallback(const RemoteDeviceCallback& callback) {
@@ -185,7 +184,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public testing::Test {
   }
 
   void VerifySyncedDevicesMatchExpectation(size_t expected_size) {
-    chromeos::multidevice::RemoteDeviceList synced_devices =
+    multidevice::RemoteDeviceList synced_devices =
         remote_device_provider_->GetSyncedDevices();
     EXPECT_EQ(expected_size, synced_devices.size());
     EXPECT_EQ(expected_size, fake_device_manager_->GetSyncedDevices().size());
@@ -199,7 +198,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public testing::Test {
     }
   }
 
-  chromeos::multidevice::RemoteDeviceList test_devices() {
+  multidevice::RemoteDeviceList test_devices() {
     return test_device_loader_factory_->test_devices_;
   }
 

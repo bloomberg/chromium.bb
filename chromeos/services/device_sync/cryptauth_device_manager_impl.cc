@@ -137,8 +137,7 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
   for (const auto& supported_software_feature : supported_software_features) {
     dictionary->SetInteger(
         supported_software_feature,
-        static_cast<int>(
-            chromeos::multidevice::SoftwareFeatureState::kSupported));
+        static_cast<int>(multidevice::SoftwareFeatureState::kSupported));
   }
 
   for (const auto& enabled_software_feature : enabled_software_features) {
@@ -149,9 +148,9 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
     int software_feature_state;
     if (!dictionary->GetInteger(software_feature_key,
                                 &software_feature_state) ||
-        static_cast<chromeos::multidevice::SoftwareFeatureState>(
+        static_cast<multidevice::SoftwareFeatureState>(
             software_feature_state) !=
-            chromeos::multidevice::SoftwareFeatureState::kSupported) {
+            multidevice::SoftwareFeatureState::kSupported) {
       if (software_feature == cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) {
         // Allow this known special-case for legacy purposes; fall-through to
         // logic which marks this device as enabled.
@@ -173,8 +172,7 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
 
     dictionary->SetInteger(
         software_feature_key,
-        static_cast<int>(
-            chromeos::multidevice::SoftwareFeatureState::kEnabled));
+        static_cast<int>(multidevice::SoftwareFeatureState::kEnabled));
   }
 
   // If software features for EASY_UNLOCK_HOST or MAGIC_TETHER_HOST have not
@@ -189,8 +187,7 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
       !dictionary->GetInteger(software_feature_key, &software_feature_state)) {
     dictionary->SetInteger(
         software_feature_key,
-        static_cast<int>(
-            chromeos::multidevice::SoftwareFeatureState::kEnabled));
+        static_cast<int>(multidevice::SoftwareFeatureState::kEnabled));
   }
   software_feature_key = SoftwareFeatureEnumToString(
       cryptauth::SoftwareFeature::MAGIC_TETHER_HOST);
@@ -198,8 +195,7 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
       !dictionary->GetInteger(software_feature_key, &software_feature_state)) {
     dictionary->SetInteger(
         software_feature_key,
-        static_cast<int>(
-            chromeos::multidevice::SoftwareFeatureState::kSupported));
+        static_cast<int>(multidevice::SoftwareFeatureState::kSupported));
   }
 
   return dictionary;
@@ -360,12 +356,12 @@ void AddSoftwareFeaturesToExternalDevice(
       continue;
     }
 
-    switch (static_cast<chromeos::multidevice::SoftwareFeatureState>(
+    switch (static_cast<multidevice::SoftwareFeatureState>(
         software_feature_state)) {
-      case chromeos::multidevice::SoftwareFeatureState::kEnabled:
+      case multidevice::SoftwareFeatureState::kEnabled:
         external_device->add_enabled_software_features(software_feature);
         FALLTHROUGH;
-      case chromeos::multidevice::SoftwareFeatureState::kSupported:
+      case multidevice::SoftwareFeatureState::kSupported:
         external_device->add_supported_software_features(software_feature);
         break;
       default:

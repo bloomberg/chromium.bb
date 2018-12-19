@@ -17,7 +17,7 @@ namespace chromeos {
 
 namespace secure_channel {
 
-Connection::Connection(chromeos::multidevice::RemoteDeviceRef remote_device)
+Connection::Connection(multidevice::RemoteDeviceRef remote_device)
     : remote_device_(remote_device),
       status_(Status::DISCONNECTED),
       is_sending_message_(false) {}

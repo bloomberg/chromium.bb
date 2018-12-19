@@ -33,7 +33,7 @@ class Connection {
   };
 
   // Constructs a connection to the given |remote_device|.
-  explicit Connection(chromeos::multidevice::RemoteDeviceRef remote_device);
+  explicit Connection(multidevice::RemoteDeviceRef remote_device);
   virtual ~Connection();
 
   // Returns true iff the connection's status is CONNECTED.
@@ -50,9 +50,7 @@ class Connection {
   virtual void AddObserver(ConnectionObserver* observer);
   virtual void RemoveObserver(ConnectionObserver* observer);
 
-  chromeos::multidevice::RemoteDeviceRef remote_device() const {
-    return remote_device_;
-  }
+  multidevice::RemoteDeviceRef remote_device() const { return remote_device_; }
 
   // Returns the RSSI of the connection; if no derived class overrides this
   // function, base::nullopt is returned.
@@ -107,7 +105,7 @@ class Connection {
 
  private:
   // The remote device corresponding to this connection.
-  const chromeos::multidevice::RemoteDeviceRef remote_device_;
+  const multidevice::RemoteDeviceRef remote_device_;
 
   // The current status of the connection.
   Status status_;

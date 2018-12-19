@@ -68,7 +68,7 @@ void SaveValidateHelloMessageResult(bool* validated_out,
 // Connection implementation for testing.
 class FakeConnection : public Connection {
  public:
-  explicit FakeConnection(chromeos::multidevice::RemoteDeviceRef remote_device)
+  explicit FakeConnection(multidevice::RemoteDeviceRef remote_device)
       : Connection(remote_device), connection_blocked_(false) {}
   ~FakeConnection() override {}
 
@@ -141,7 +141,7 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
 class SecureChannelDeviceToDeviceAuthenticatorTest : public testing::Test {
  public:
   SecureChannelDeviceToDeviceAuthenticatorTest()
-      : remote_device_(chromeos::multidevice::CreateRemoteDeviceRefForTest()),
+      : remote_device_(multidevice::CreateRemoteDeviceRefForTest()),
         connection_(remote_device_),
         secure_message_delegate_(new multidevice::FakeSecureMessageDelegate),
         authenticator_(&connection_,
@@ -199,7 +199,7 @@ class SecureChannelDeviceToDeviceAuthenticatorTest : public testing::Test {
   std::string SimulateResponderAuth(const std::string& hello_message) {
     std::string remote_device_private_key =
         secure_message_delegate_->GetPrivateKeyForPublicKey(
-            chromeos::multidevice::kTestRemoteDevicePublicKey);
+            multidevice::kTestRemoteDevicePublicKey);
 
     std::string responder_auth_message;
     DeviceToDeviceResponderOperations::CreateResponderAuthMessage(
@@ -225,7 +225,7 @@ class SecureChannelDeviceToDeviceAuthenticatorTest : public testing::Test {
   MOCK_METHOD1(OnAuthenticationResultProxy, void(Authenticator::Result result));
 
   // Contains information about the remote device.
-  const chromeos::multidevice::RemoteDeviceRef remote_device_;
+  const multidevice::RemoteDeviceRef remote_device_;
 
   // Simulates the connection to the remote device.
   FakeConnection connection_;

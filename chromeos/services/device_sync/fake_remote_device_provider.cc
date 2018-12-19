@@ -16,7 +16,7 @@ void FakeRemoteDeviceProvider::NotifyObserversDeviceListChanged() {
   RemoteDeviceProvider::NotifyObserversDeviceListChanged();
 }
 
-const chromeos::multidevice::RemoteDeviceList&
+const multidevice::RemoteDeviceList&
 FakeRemoteDeviceProvider::GetSyncedDevices() const {
   return synced_remote_devices_;
 }

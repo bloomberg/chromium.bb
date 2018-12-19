@@ -12,9 +12,8 @@ namespace chromeos {
 
 namespace device_sync {
 
-// This class generates and caches chromeos::multidevice::RemoteDevice objects
-// when associated metadata has been synced, and updates this cache when a new
-// sync occurs.
+// This class generates and caches RemoteDevice objects when associated metadata
+// has been synced, and updates this cache when a new sync occurs.
 class RemoteDeviceProvider {
  public:
   class Observer {
@@ -31,10 +30,8 @@ class RemoteDeviceProvider {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Returns a list of all chromeos::multidevice::RemoteDevices that have been
-  // synced.
-  virtual const chromeos::multidevice::RemoteDeviceList& GetSyncedDevices()
-      const = 0;
+  // Returns a list of all RemoteDevices that have been synced.
+  virtual const multidevice::RemoteDeviceList& GetSyncedDevices() const = 0;
 
  protected:
   void NotifyObserversDeviceListChanged();

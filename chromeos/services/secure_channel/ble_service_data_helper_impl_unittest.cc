@@ -162,7 +162,7 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
   multidevice::RemoteDeviceRef test_local_device_1_;
   multidevice::RemoteDeviceRef test_local_device_2_;
   multidevice::RemoteDeviceRefList test_remote_devices_;
-  secure_channel::DeviceIdPairSet device_id_pair_set_;
+  DeviceIdPairSet device_id_pair_set_;
 
   DataWithTimestamp fake_advertisement_;
 
@@ -173,35 +173,31 @@ class SecureChannelBleServiceDataHelperImplTest : public testing::Test {
 TEST_F(SecureChannelBleServiceDataHelperImplTest,
        TestGenerateForegroundAdvertisement_CannotGenerateAdvertisement) {
   fake_ble_advertisement_generator_->set_advertisement(nullptr);
-  EXPECT_FALSE(
-      helper_->GenerateForegroundAdvertisement(secure_channel::DeviceIdPair(
-          test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
-          test_local_device_1_.GetDeviceId() /* local_device_id */)));
+  EXPECT_FALSE(helper_->GenerateForegroundAdvertisement(
+      DeviceIdPair(test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
+                   test_local_device_1_.GetDeviceId() /* local_device_id */)));
 }
 
 TEST_F(SecureChannelBleServiceDataHelperImplTest,
        TestGenerateForegroundAdvertisement) {
-  auto data_with_timestamp =
-      helper_->GenerateForegroundAdvertisement(secure_channel::DeviceIdPair(
-          test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
-          test_local_device_1_.GetDeviceId() /* local_device_id */));
+  auto data_with_timestamp = helper_->GenerateForegroundAdvertisement(
+      DeviceIdPair(test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
+                   test_local_device_1_.GetDeviceId() /* local_device_id */));
   EXPECT_EQ(fake_advertisement_, *data_with_timestamp);
 }
 
 TEST_F(SecureChannelBleServiceDataHelperImplTest,
        TestGenerateForegroundAdvertisement_InvalidLocalDevice) {
-  EXPECT_FALSE(
-      helper_->GenerateForegroundAdvertisement(secure_channel::DeviceIdPair(
-          test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
-          "invalid local device id" /* local_device_id */)));
+  EXPECT_FALSE(helper_->GenerateForegroundAdvertisement(
+      DeviceIdPair(test_remote_devices_[0].GetDeviceId() /* remote_device_id */,
+                   "invalid local device id" /* local_device_id */)));
 }
 
 TEST_F(SecureChannelBleServiceDataHelperImplTest,
        TestGenerateForegroundAdvertisement_InvalidRemoteDevice) {
-  EXPECT_FALSE(
-      helper_->GenerateForegroundAdvertisement(secure_channel::DeviceIdPair(
-          "invalid remote device id" /* remote_device_id */,
-          test_local_device_1_.GetDeviceId() /* local_device_id */)));
+  EXPECT_FALSE(helper_->GenerateForegroundAdvertisement(
+      DeviceIdPair("invalid remote device id" /* remote_device_id */,
+                   test_local_device_1_.GetDeviceId() /* local_device_id */)));
 }
 
 TEST_F(SecureChannelBleServiceDataHelperImplTest,

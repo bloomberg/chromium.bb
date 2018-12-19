@@ -16,7 +16,7 @@ FakeBleAdvertisementGenerator::~FakeBleAdvertisementGenerator() {}
 
 std::unique_ptr<DataWithTimestamp>
 FakeBleAdvertisementGenerator::GenerateBleAdvertisementInternal(
-    chromeos::multidevice::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     const std::string& local_device_public_key) {
   return std::move(advertisement_);
 }

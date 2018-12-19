@@ -31,7 +31,7 @@ class BleAdvertisementGenerator {
   // generated advertisement should be used immediately since it is based on the
   // current timestamp.
   static std::unique_ptr<DataWithTimestamp> GenerateBleAdvertisement(
-      chromeos::multidevice::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       const std::string& local_device_public_key);
 
   virtual ~BleAdvertisementGenerator();
@@ -40,15 +40,15 @@ class BleAdvertisementGenerator {
   BleAdvertisementGenerator();
 
   virtual std::unique_ptr<DataWithTimestamp> GenerateBleAdvertisementInternal(
-      chromeos::multidevice::RemoteDeviceRef remote_device,
+      multidevice::RemoteDeviceRef remote_device,
       const std::string& local_device_public_key);
 
  private:
   friend class SecureChannelBleAdvertisementGeneratorTest;
   friend class SecureChannelBleServiceDataHelperImplTest;
-  friend class chromeos::tether::BleAdvertiserImplTest;
-  friend class chromeos::tether::BleServiceDataHelperImplTest;
-  friend class chromeos::tether::AdHocBleAdvertiserImplTest;
+  friend class tether::BleAdvertiserImplTest;
+  friend class tether::BleServiceDataHelperImplTest;
+  friend class tether::AdHocBleAdvertiserImplTest;
 
   static BleAdvertisementGenerator* instance_;
 

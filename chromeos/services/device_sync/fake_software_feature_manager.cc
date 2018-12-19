@@ -11,7 +11,7 @@ namespace device_sync {
 FakeSoftwareFeatureManager::SetSoftwareFeatureStateArgs::
     SetSoftwareFeatureStateArgs(
         const std::string& public_key,
-        chromeos::multidevice::SoftwareFeature software_feature,
+        multidevice::SoftwareFeature software_feature,
         bool enabled,
         const base::Closure& success_callback,
         const base::Callback<void(NetworkRequestError)>& error_callback,
@@ -27,7 +27,7 @@ FakeSoftwareFeatureManager::SetSoftwareFeatureStateArgs::
     ~SetSoftwareFeatureStateArgs() = default;
 
 FakeSoftwareFeatureManager::FindEligibleDevicesArgs::FindEligibleDevicesArgs(
-    chromeos::multidevice::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     const base::Callback<void(const std::vector<cryptauth::ExternalDeviceInfo>&,
                               const std::vector<cryptauth::IneligibleDevice>&)>&
         success_callback,
@@ -45,7 +45,7 @@ FakeSoftwareFeatureManager::~FakeSoftwareFeatureManager() = default;
 
 void FakeSoftwareFeatureManager::SetSoftwareFeatureState(
     const std::string& public_key,
-    chromeos::multidevice::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     bool enabled,
     const base::Closure& success_callback,
     const base::Callback<void(NetworkRequestError)>& error_callback,
@@ -60,7 +60,7 @@ void FakeSoftwareFeatureManager::SetSoftwareFeatureState(
 }
 
 void FakeSoftwareFeatureManager::FindEligibleDevices(
-    chromeos::multidevice::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     const base::Callback<void(const std::vector<cryptauth::ExternalDeviceInfo>&,
                               const std::vector<cryptauth::IneligibleDevice>&)>&
         success_callback,

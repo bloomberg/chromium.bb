@@ -97,7 +97,7 @@ std::unique_ptr<DataWithTimestamp> BackgroundEidGenerator::GenerateEid(
 
 std::string BackgroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
     const std::string& advertisement_service_data,
-    const chromeos::multidevice::RemoteDeviceRefList& remote_devices) const {
+    const multidevice::RemoteDeviceRefList& remote_devices) const {
   // Resize the service data to analyze only the first |kNumBytesInEidValue|
   // bytes. If there are any bytes after those first |kNumBytesInEidValue|
   // bytes, they are flags, so they are not needed to identify the device which
@@ -108,9 +108,8 @@ std::string BackgroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
   const auto remote_device_it = std::find_if(
       remote_devices.begin(), remote_devices.end(),
       [this, &service_data_without_flags](const auto& remote_device) {
-        std::vector<DataWithTimestamp> eids =
-            GenerateNearestEids(chromeos::multidevice::ToCryptAuthSeedList(
-                remote_device.beacon_seeds()));
+        std::vector<DataWithTimestamp> eids = GenerateNearestEids(
+            multidevice::ToCryptAuthSeedList(remote_device.beacon_seeds()));
         const auto eid_it = std::find_if(
             eids.begin(), eids.end(), [&service_data_without_flags](auto eid) {
               return eid.data == service_data_without_flags;

@@ -19,9 +19,9 @@ namespace secure_channel {
 
 class SecureChannelBase;
 
-// Service which provides an implementation for
-// secure_channel::mojom::SecureChannel. This service creates one
-// implementation and shares it among all connection requests.
+// Service which provides an implementation for mojom::SecureChannel. This
+// service creates one implementation and shares it among all connection
+// requests.
 class SecureChannelService : public service_manager::Service {
  public:
   explicit SecureChannelService(service_manager::mojom::ServiceRequest request);

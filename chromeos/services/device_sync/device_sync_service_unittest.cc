@@ -503,8 +503,7 @@ class DeviceSyncServiceTest : public testing::Test {
     service_ = std::make_unique<DeviceSyncService>(
         identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
         fake_gcm_device_info_provider_.get(), shared_url_loader_factory,
-        connector_factory_.RegisterInstance(
-            chromeos::device_sync::mojom::kServiceName));
+        connector_factory_.RegisterInstance(mojom::kServiceName));
   }
 
   void TearDown() override { DBusThreadManager::Shutdown(); }
@@ -1156,7 +1155,7 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
 
   auto last_response = GetLastSetSoftwareFeatureStateResponseAndReset();
   EXPECT_TRUE(last_response);
-  EXPECT_EQ(device_sync::mojom::NetworkRequestResult::kSuccess, *last_response);
+  EXPECT_EQ(mojom::NetworkRequestResult::kSuccess, *last_response);
 
   histogram_tester().ExpectBucketCount<bool>(
       "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Result", false, 0);
@@ -1204,8 +1203,7 @@ TEST_F(DeviceSyncServiceTest,
 
   auto last_response = GetLastSetSoftwareFeatureStateResponseAndReset();
   EXPECT_TRUE(last_response);
-  EXPECT_EQ(device_sync::mojom::NetworkRequestResult::
-                kRequestSucceededButUnexpectedResult,
+  EXPECT_EQ(mojom::NetworkRequestResult::kRequestSucceededButUnexpectedResult,
             *last_response);
 
   histogram_tester().ExpectBucketCount<bool>(
@@ -1290,8 +1288,7 @@ TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
   base::RunLoop().RunUntilIdle();
   auto last_response = GetLastFindEligibleDevicesResponseAndReset();
   EXPECT_TRUE(last_response);
-  EXPECT_EQ(device_sync::mojom::NetworkRequestResult::kSuccess,
-            last_response->first);
+  EXPECT_EQ(mojom::NetworkRequestResult::kSuccess, last_response->first);
   EXPECT_EQ(last_response->second->eligible_devices,
             multidevice::RemoteDeviceList(test_devices().begin(),
                                           test_devices().begin()));

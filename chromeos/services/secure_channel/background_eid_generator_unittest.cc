@@ -99,14 +99,13 @@ class SecureChannelBackgroundEidGeneratorTest : public testing::Test {
         kFourthSeed, kStartPeriodMs + 2 * kBeaconSeedDurationMs,
         kStartPeriodMs + 3 * kBeaconSeedDurationMs));
 
-    chromeos::multidevice::RemoteDeviceRef device_1 =
-        chromeos::multidevice::RemoteDeviceRefBuilder()
+    multidevice::RemoteDeviceRef device_1 =
+        multidevice::RemoteDeviceRefBuilder()
             .SetPublicKey("publicKey1")
-            .SetBeaconSeeds(
-                chromeos::multidevice::FromCryptAuthSeedList(beacon_seeds_))
+            .SetBeaconSeeds(multidevice::FromCryptAuthSeedList(beacon_seeds_))
             .Build();
-    chromeos::multidevice::RemoteDeviceRef device_2 =
-        chromeos::multidevice::RemoteDeviceRefBuilder()
+    multidevice::RemoteDeviceRef device_2 =
+        multidevice::RemoteDeviceRefBuilder()
             .SetPublicKey("publicKey2")
             .Build();
     test_remote_devices_ = {device_1, device_2};
@@ -128,7 +127,7 @@ class SecureChannelBackgroundEidGeneratorTest : public testing::Test {
   std::unique_ptr<BackgroundEidGenerator> eid_generator_;
   base::SimpleTestClock test_clock_;
   std::vector<cryptauth::BeaconSeed> beacon_seeds_;
-  chromeos::multidevice::RemoteDeviceRefList test_remote_devices_;
+  multidevice::RemoteDeviceRefList test_remote_devices_;
 };
 
 TEST_F(SecureChannelBackgroundEidGeneratorTest,

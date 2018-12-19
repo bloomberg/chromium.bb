@@ -22,7 +22,7 @@ namespace device_sync {
 
 namespace {
 
-// Prefixes for chromeos::multidevice::RemoteDevice fields.
+// Prefixes for RemoteDevice fields.
 const char kDeviceNamePrefix[] = "device";
 const char kPublicKeyPrefix[] = "pk";
 
@@ -63,7 +63,7 @@ class DeviceSyncRemoteDeviceLoaderTest : public testing::Test {
   ~DeviceSyncRemoteDeviceLoaderTest() {}
 
   void OnRemoteDevicesLoaded(
-      const chromeos::multidevice::RemoteDeviceList& remote_devices) {
+      const multidevice::RemoteDeviceList& remote_devices) {
     remote_devices_ = remote_devices;
     LoadCompleted();
   }
@@ -71,16 +71,16 @@ class DeviceSyncRemoteDeviceLoaderTest : public testing::Test {
   MOCK_METHOD0(LoadCompleted, void());
 
  protected:
-  // Handles deriving the PSK. Ownership will be passed to the
-  // chromeos::multidevice::RemoteDeviceLoader under test.
+  // Handles deriving the PSK. Ownership will be passed to the\
+  // RemoteDeviceLoader under test.
   std::unique_ptr<multidevice::FakeSecureMessageDelegate>
       secure_message_delegate_;
 
   // The private key of the user local device.
   std::string user_private_key_;
 
-  // Stores the result of the chromeos::multidevice::RemoteDeviceLoader.
-  chromeos::multidevice::RemoteDeviceList remote_devices_;
+  // Stores the result of the RemoteDeviceLoader.
+  multidevice::RemoteDeviceList remote_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncRemoteDeviceLoaderTest);
 };
@@ -116,8 +116,7 @@ TEST_F(DeviceSyncRemoteDeviceLoaderTest, LoadOneDevice) {
   ASSERT_EQ(1u, remote_devices_[0].beacon_seeds.size());
 
   const cryptauth::BeaconSeed& beacon_seed =
-      chromeos::multidevice::ToCryptAuthSeed(
-          remote_devices_[0].beacon_seeds[0]);
+      multidevice::ToCryptAuthSeed(remote_devices_[0].beacon_seeds[0]);
   EXPECT_EQ(kBeaconSeedData, beacon_seed.data());
   EXPECT_EQ(kBeaconSeedStartTimeMs, beacon_seed.start_time_millis());
   EXPECT_EQ(kBeaconSeedEndTimeMs, beacon_seed.end_time_millis());
@@ -175,17 +174,15 @@ TEST_F(DeviceSyncRemoteDeviceLoaderTest, SoftwareFeatures) {
 
   EXPECT_EQ(1u, remote_devices_.size());
 
-  EXPECT_EQ(
-      chromeos::multidevice::SoftwareFeatureState::kSupported,
-      remote_devices_[0].software_features
-          [chromeos::multidevice::SoftwareFeature::kBetterTogetherClient]);
-  EXPECT_EQ(chromeos::multidevice::SoftwareFeatureState::kEnabled,
+  EXPECT_EQ(multidevice::SoftwareFeatureState::kSupported,
             remote_devices_[0].software_features
-                [chromeos::multidevice::SoftwareFeature::kBetterTogetherHost]);
-  EXPECT_EQ(
-      chromeos::multidevice::SoftwareFeatureState::kNotSupported,
-      remote_devices_[0].software_features
-          [chromeos::multidevice::SoftwareFeature::kInstantTetheringHost]);
+                [multidevice::SoftwareFeature::kBetterTogetherClient]);
+  EXPECT_EQ(multidevice::SoftwareFeatureState::kEnabled,
+            remote_devices_[0].software_features
+                [multidevice::SoftwareFeature::kBetterTogetherHost]);
+  EXPECT_EQ(multidevice::SoftwareFeatureState::kNotSupported,
+            remote_devices_[0].software_features
+                [multidevice::SoftwareFeature::kInstantTetheringHost]);
 }
 
 }  // namespace device_sync

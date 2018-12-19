@@ -15,13 +15,11 @@ namespace chromeos {
 
 namespace secure_channel {
 
-FakeConnection::FakeConnection(
-    chromeos::multidevice::RemoteDeviceRef remote_device)
+FakeConnection::FakeConnection(multidevice::RemoteDeviceRef remote_device)
     : FakeConnection(remote_device, /* should_auto_connect */ true) {}
 
-FakeConnection::FakeConnection(
-    chromeos::multidevice::RemoteDeviceRef remote_device,
-    bool should_auto_connect)
+FakeConnection::FakeConnection(multidevice::RemoteDeviceRef remote_device,
+                               bool should_auto_connect)
     : Connection(remote_device), should_auto_connect_(should_auto_connect) {
   if (should_auto_connect_) {
     Connect();
