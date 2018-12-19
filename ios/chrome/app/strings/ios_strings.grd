@@ -1328,6 +1328,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SEARCH_COPIED" desc="The message displayed when the search is copied via long press (contextual search) [Length: 10em] [iOS only]">
         Copied
       </message>
+      <message name="IDS_IOS_SEARCH_COPIED_TEXT" desc="Text in the search accelerator menu shown when long-pressing the omnibox with copied text. Enables pasting the current contents of the clipboard and searching the text. [iOS only]">
+          Search Copied Text
+      </message>
       <message name="IDS_IOS_SEARCH_ENGINE_SETTING_TITLE" desc="The title for Search Engine selection setting [iOS only]">
         Search Engine
       </message>
@@ -1844,6 +1847,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_UPGRADE_AVAILABLE_BUTTON" desc="Displayed on a button the user can use to upgrade the a more recent version of the application. [Length: 10em]">
         Update
       </message>
+      <message name="IDS_IOS_VISIT_COPIED_LINK" desc="Text in the search accelerator menu shown when long-pressing the omnibox with a copied url. Enables pasting the current contents of the clipboard and navigating to the url. [iOS only]">
+          Visit Copied Link
+      </message>
       <message name="IDS_IOS_VERSION" desc="The label for the Chrome version on which the application is based, displayed in the About Chrome settings page [Length: 30em] [iOS only]">
         Version <ph name="PRODUCT_VERSION">$1<ex>31.0.1650.18</ex></ph>
       </message>
@@ -1925,6 +1931,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_PASTE_AND_GO" desc="Text in the editing menu shown when long-pressing the omnibox. Enables pasting the current contents of the clipboard and searching the text or navigating to the url. [iOS only]">
           Paste and Go
       </message>
-   </messages>
+    </messages>
   </release>
 </grit>
