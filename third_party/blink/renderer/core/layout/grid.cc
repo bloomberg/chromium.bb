@@ -452,17 +452,14 @@ std::unique_ptr<GridArea> ListGridIterator::NextEmptyGridArea(
   auto& varying_index = is_row_axis ? row_index_ : column_index_;
   const size_t fixed_index = is_row_axis ? column_index_ : row_index_;
   const size_t end_fixed_span = fixed_index + fixed_track_span - 1;
-  size_t last_varying_index = grid_.NumTracks(orthogonal_axis);
   auto* track_node = tracks.Head();
   while (track_node && track_node->Index() < varying_index)
     track_node = track_node->Next();
 
-  do {
-    if (!track_node) {
-      if (last_varying_index - varying_index >= varying_track_span)
-        return CreateUniqueGridArea();
-      return nullptr;
-    }
+  for (; track_node; track_node = track_node->Next()) {
+    if (!track_node)
+      return CreateUniqueGridArea();
+
     if (track_node->Index() - varying_index >= varying_track_span)
       return CreateUniqueGridArea();
 
@@ -473,10 +470,9 @@ std::unique_ptr<GridArea> ListGridIterator::NextEmptyGridArea(
       varying_index = track_node->Index() + 1;
     else if (track_node->Index() - varying_index >= varying_track_span)
       return CreateUniqueGridArea();
-    track_node = track_node->Next();
-  } while (true);  // track_node will eventually be nullptr
+  }
 
-  return nullptr;
+  return CreateUniqueGridArea();
 }
 
 }  // namespace blink

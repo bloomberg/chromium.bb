@@ -997,11 +997,7 @@ void LayoutGrid::PlaceSpecifiedMajorAxisItemsOnGrid(
             : minor_axis_cursors.at(major_axis_initial_position));
     std::unique_ptr<GridArea> empty_grid_area = iterator->NextEmptyGridArea(
         major_axis_positions.IntegerSpan(), minor_axis_span_size);
-    if (!empty_grid_area) {
-      empty_grid_area = CreateEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
-          grid, *auto_grid_item, AutoPlacementMajorAxisDirection(),
-          major_axis_positions);
-    }
+    DCHECK(empty_grid_area);
 
     grid.Insert(*auto_grid_item, *empty_grid_area);
 
@@ -1085,25 +1081,24 @@ void LayoutGrid::PlaceAutoMajorAxisItemOnGrid(
                                           minor_axis_auto_placement_cursor);
       empty_grid_area = iterator->NextEmptyGridArea(major_axis_span_size,
                                                     minor_axis_span_size);
+      DCHECK(empty_grid_area);
 
-      if (empty_grid_area) {
-        // Check that it fits in the minor axis direction, as we shouldn't grow
-        // in that direction here (it was already managed in
-        // populateExplicitGridAndOrderIterator()).
-        size_t minor_axis_final_position_index =
-            AutoPlacementMinorAxisDirection() == kForColumns
-                ? empty_grid_area->columns.EndLine()
-                : empty_grid_area->rows.EndLine();
-        const size_t end_of_minor_axis =
-            grid.NumTracks(AutoPlacementMinorAxisDirection());
-        if (minor_axis_final_position_index <= end_of_minor_axis)
-          break;
+      // Check that it fits in the minor axis direction, as we shouldn't grow
+      // in that direction here (it was already managed in
+      // populateExplicitGridAndOrderIterator()).
+      size_t minor_axis_final_position_index =
+          AutoPlacementMinorAxisDirection() == kForColumns
+              ? empty_grid_area->columns.EndLine()
+              : empty_grid_area->rows.EndLine();
+      const size_t end_of_minor_axis =
+          grid.NumTracks(AutoPlacementMinorAxisDirection());
+      if (minor_axis_final_position_index <= end_of_minor_axis)
+        break;
 
-        // Discard empty grid area as it does not fit in the minor axis
-        // direction. We don't need to create a new empty grid area yet as we
-        // might find a valid one in the next iteration.
-        empty_grid_area = nullptr;
-      }
+      // Discard empty grid area as it does not fit in the minor axis
+      // direction. We don't need to create a new empty grid area yet as we
+      // might find a valid one in the next iteration.
+      empty_grid_area.reset();
 
       // As we're moving to the next track in the major axis we should reset the
       // auto-placement cursor in the minor axis.
