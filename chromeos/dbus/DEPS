@@ -2,8 +2,9 @@ noparent = True
 
 include_rules = [
   "+base",
+  # Please do not add any additional chromeos/ dependencies here, see
+  # https://crbug.com/863439
   "+chromeos/chromeos_export.h",
-  "+chromeos/chromeos_features.h",
   "+components/account_id/account_id.h",
   "+components/device_event_log",
   "+components/policy/proto",
