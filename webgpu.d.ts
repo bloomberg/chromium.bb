@@ -2,6 +2,37 @@ type i32 = number;
 type u32 = number;
 type u64 = number;
 
+type WebGPUObjectStatusQuery = Promise<WebGPUObjectStatus>;
+type WebGPUStatusableObject = WebGPUBuffer | WebGPUTexture;
+type WebGPUBufferUsageFlags = u32;
+type WebGPUTextureUsageFlags = u32;
+type WebGPUTextureAspectFlags = u32;
+type WebGPUShaderStageFlags = u32;
+type WebGPUBindingResource = WebGPUSampler | WebGPUTextureView | WebGPUBufferBinding;
+type WebGPUColorWriteFlags = u32;
+
+type WebGPUAddressMode = "clampToEdge" | "repeat" | "mirrorRepeat" | "clampToBorderColor";
+type WebGPUBindingType = "uniformBuffer" | "sampler" | "sampledTexture" | "storageBuffer";
+type WebGPUBlendFactor = "zero" | "one" | "srcColor" | "oneMinusSrcColor" | "srcAlpha" | "oneMinusSrcAlpha" | "dstColor" | "oneMinusDstColor" | "dstAlpha" | "oneMinusDstAlpha" | "srcAlphaSaturated" | "blendColor" | "oneMinusBlendColor";
+type WebGPUBlendOperation = "add" | "subtract" | "reverseSubtract" | "min" | "max";
+type WebGPUBorderColor = "transparentBlack" | "opaqueBlack" | "opaqueWhite";
+type WebGPUCompareFunction = "never" | "less" | "equal" | "lessEqual" | "greater" | "notEqual" | "greaterEqual" | "always";
+type WebGPUCullMode = "none" | "front" | "back";
+type WebGPUFilterMode = "nearest" | "linear";
+type WebGPUFrontFace = "ccw" | "cw";
+type WebGPUIndexFormat = "uint16" | "uint32";
+type WebGPUInputStepMode = "vertex" | "instance";
+type WebGPULoadOp = "clear" | "load";
+type WebGPULogEntryType = "device-lost" | "validation-error" | "recoverable-out-of-memory";
+type WebGPUObjectStatus = "valid" | "out-of-memory" | "invalid";
+type WebGPUPrimitiveTopology = "pointList" | "lineList" | "lineStrip" | "trangleList" | "triangleStrip";
+type WebGPUStencilOperation = "keep" | "zero" | "replace" | "invert" | "incrementClamp" | "decrementClamp" | "incrementWrap" | "decrementWrap";
+type WebGPUStoreOp = "store";
+type WebGPUTextureDimension = "1d" | "2d" | "3d";
+type WebGPUTextureFormat = "R8G8B8A8Unorm" | "R8G8B8A8Uint" | "B8G8R8A8Unorm" | "D32FloatS8Uint";
+type WebGPUTextureViewDimension = "1d" | "2d" | "2darray" | "cube" | "cubearray" | "3d";
+type WebGPUVertexFormat = "floatR32G32B32A32" | "floatR32G32B32" | "floatR32G32" | "floatR32";
+
 interface WebGPUAttachmentDescriptor {
     format?: WebGPUTextureFormat;
 }
@@ -194,7 +225,7 @@ interface WebGPUSamplerDescriptor {
 }
 
 interface WebGPUShaderModuleDescriptor {
-    code: ArrayBufferOrDOMString;
+    code: ArrayBuffer | string;
     label?: string;
 }
 
@@ -585,34 +616,3 @@ declare var WebGPUTextureView: {
 interface WebGPULogCallback {
     (error: WebGPULogEntry): void;
 }
-
-type WebGPUObjectStatusQuery = Promise<WebGPUObjectStatus>;
-type WebGPUStatusableObject = WebGPUBuffer | WebGPUTexture;
-type WebGPUBufferUsageFlags = u32;
-type WebGPUTextureUsageFlags = u32;
-type WebGPUTextureAspectFlags = u32;
-type WebGPUShaderStageFlags = u32;
-type WebGPUBindingResource = WebGPUSampler | WebGPUTextureView | WebGPUBufferBinding;
-type WebGPUColorWriteFlags = u32;
-
-type WebGPUAddressMode = "clampToEdge" | "repeat" | "mirrorRepeat" | "clampToBorderColor";
-type WebGPUBindingType = "uniformBuffer" | "sampler" | "sampledTexture" | "storageBuffer";
-type WebGPUBlendFactor = "zero" | "one" | "srcColor" | "oneMinusSrcColor" | "srcAlpha" | "oneMinusSrcAlpha" | "dstColor" | "oneMinusDstColor" | "dstAlpha" | "oneMinusDstAlpha" | "srcAlphaSaturated" | "blendColor" | "oneMinusBlendColor";
-type WebGPUBlendOperation = "add" | "subtract" | "reverseSubtract" | "min" | "max";
-type WebGPUBorderColor = "transparentBlack" | "opaqueBlack" | "opaqueWhite";
-type WebGPUCompareFunction = "never" | "less" | "equal" | "lessEqual" | "greater" | "notEqual" | "greaterEqual" | "always";
-type WebGPUCullMode = "none" | "front" | "back";
-type WebGPUFilterMode = "nearest" | "linear";
-type WebGPUFrontFace = "ccw" | "cw";
-type WebGPUIndexFormat = "uint16" | "uint32";
-type WebGPUInputStepMode = "vertex" | "instance";
-type WebGPULoadOp = "clear" | "load";
-type WebGPULogEntryType = "device-lost" | "validation-error" | "recoverable-out-of-memory";
-type WebGPUObjectStatus = "valid" | "out-of-memory" | "invalid";
-type WebGPUPrimitiveTopology = "pointList" | "lineList" | "lineStrip" | "trangleList" | "triangleStrip";
-type WebGPUStencilOperation = "keep" | "zero" | "replace" | "invert" | "incrementClamp" | "decrementClamp" | "incrementWrap" | "decrementWrap";
-type WebGPUStoreOp = "store";
-type WebGPUTextureDimension = "1d" | "2d" | "3d";
-type WebGPUTextureFormat = "R8G8B8A8Unorm" | "R8G8B8A8Uint" | "B8G8R8A8Unorm" | "D32FloatS8Uint";
-type WebGPUTextureViewDimension = "1d" | "2d" | "2darray" | "cube" | "cubearray" | "3d";
-type WebGPUVertexFormat = "floatR32G32B32A32" | "floatR32G32B32" | "floatR32G32" | "floatR32";
