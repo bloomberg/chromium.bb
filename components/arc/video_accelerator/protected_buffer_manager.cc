@@ -245,7 +245,8 @@ void ProtectedBufferManager::ProtectedBufferAllocatorImpl::
                                                     std::move(dummy_fd));
 }
 
-ProtectedBufferManager::ProtectedBufferManager() {
+ProtectedBufferManager::ProtectedBufferManager()
+    : next_protected_buffer_allocator_id_(0) {
   VLOGF(2);
 }
 
@@ -480,7 +481,6 @@ scoped_refptr<gfx::NativePixmap> ProtectedBufferManager::ImportDummyFd(
 }
 
 void ProtectedBufferManager::RemoveEntry(uint32_t id) {
-  buffer_map_lock_.AssertAcquired();
   VLOGF(2) << "id: " << id;
   auto num_erased = buffer_map_.erase(id);
   if (num_erased != 1)
@@ -489,7 +489,6 @@ void ProtectedBufferManager::RemoveEntry(uint32_t id) {
 
 bool ProtectedBufferManager::CanAllocateFor(uint64_t allocator_id,
                                             uint32_t id) {
-  buffer_map_lock_.AssertAcquired();
   if (buffer_map_.find(id) != buffer_map_.end()) {
     VLOGF(1) << "A protected buffer for this handle already exists";
     return false;

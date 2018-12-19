@@ -14,6 +14,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -111,23 +112,24 @@ class ProtectedBufferManager
                                                  uint32_t* id) const;
 
   // Removes an entry for given |id| from buffer_map_.
-  void RemoveEntry(uint32_t id);
+  void RemoveEntry(uint32_t id) EXCLUSIVE_LOCKS_REQUIRED(buffer_map_lock_);
 
   // Returns whether a protected buffer whose unique id is |id| can be
   // allocated by PBA whose allocator id is |allocator_id|.
-  bool CanAllocateFor(uint64_t allocator_id, uint32_t id);
+  bool CanAllocateFor(uint64_t allocator_id, uint32_t id)
+      EXCLUSIVE_LOCKS_REQUIRED(buffer_map_lock_);
 
   // A map of unique ids to the ProtectedBuffers associated with them.
   using ProtectedBufferMap =
       std::map<uint32_t, std::unique_ptr<ProtectedBuffer>>;
-  ProtectedBufferMap buffer_map_;
+  ProtectedBufferMap buffer_map_ GUARDED_BY(buffer_map_lock_);
   // A map of allocator ids to the unique ids of ProtectedBuffers allocated by
   // the allocator with the allocator id. The size is equal to the number of
   // active protected buffer allocators.
-  std::map<uint64_t, std::set<uint32_t>> allocator_to_buffers_map_;
-  uint64_t next_protected_buffer_allocator_id_ = 0;
-  // The lock for buffer_map_ and alocator_to_buffers_map_ and
-  // next_protected_buffer_allocator_id_.
+  std::map<uint64_t, std::set<uint32_t>> allocator_to_buffers_map_
+      GUARDED_BY(buffer_map_lock_);
+  uint64_t next_protected_buffer_allocator_id_ GUARDED_BY(buffer_map_lock_);
+
   base::Lock buffer_map_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtectedBufferManager);
