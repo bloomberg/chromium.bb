@@ -227,6 +227,8 @@
 
         <include name="IDR_APP_MANAGEMENT_ACTIONS_HTML" file="resources\app_management\actions.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_ACTIONS_JS" file="resources\app_management\actions.js" type="BINDATA" />
+        <include name="IDR_APP_MANAGEMENT_API_LISTENER_HTML" file="resources\app_management\api_listener.html" type="BINDATA"/>
+        <include name="IDR_APP_MANAGEMENT_API_LISTENER_JS" file="resources\app_management\api_listener.js" type="BINDATA"/>
         <include name="IDR_APP_MANAGEMENT_APP_HTML" file="resources\app_management\app.html" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_APP_JS" file="resources\app_management\app.js" type="BINDATA" />
         <include name="IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML" file="resources\app_management\browser_proxy.html" type="BINDATA" />

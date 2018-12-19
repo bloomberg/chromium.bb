@@ -54,6 +54,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
 
   source->AddResourcePath("actions.html", IDR_APP_MANAGEMENT_ACTIONS_HTML);
   source->AddResourcePath("actions.js", IDR_APP_MANAGEMENT_ACTIONS_JS);
+  source->AddResourcePath("api_listener.html",
+                          IDR_APP_MANAGEMENT_API_LISTENER_HTML);
+  source->AddResourcePath("api_listener.js",
+                          IDR_APP_MANAGEMENT_API_LISTENER_JS);
   source->AddResourcePath("app.html", IDR_APP_MANAGEMENT_APP_HTML);
   source->AddResourcePath("app.js", IDR_APP_MANAGEMENT_APP_JS);
   source->AddResourcePath("browser_proxy.html",
