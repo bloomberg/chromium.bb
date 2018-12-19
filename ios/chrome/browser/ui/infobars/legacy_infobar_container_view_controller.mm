@@ -7,6 +7,7 @@
 #include "base/ios/block_types.h"
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
+#import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -46,8 +47,10 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
 
 #pragma mark - InfobarConsumer
 
-- (void)addInfoBarView:(UIView*)infoBarView position:(NSInteger)position {
+- (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
+                      position:(NSInteger)position {
   DCHECK_LE(static_cast<NSUInteger>(position), [[self.view subviews] count]);
+  UIView* infoBarView = infoBarDelegate.view;
   [self.view insertSubview:infoBarView atIndex:position];
   infoBarView.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[

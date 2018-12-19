@@ -21,7 +21,8 @@ InfoBarContainerIOS::~InfoBarContainerIOS() {
 void InfoBarContainerIOS::PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,
                                                      size_t position) {
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
-  [consumer_ addInfoBarView:infobar_ios->view() position:position];
+  [consumer_ addInfoBarWithDelegate:infobar_ios->InfobarUIDelegate()
+                           position:position];
 }
 
 void InfoBarContainerIOS::PlatformSpecificRemoveInfoBar(

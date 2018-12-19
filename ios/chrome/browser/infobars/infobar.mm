@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
-#import "ios/chrome/browser/infobars/confirm_infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
+#import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,7 +20,7 @@
 using infobars::InfoBar;
 using infobars::InfoBarDelegate;
 
-InfoBarIOS::InfoBarIOS(InfoBarController* controller,
+InfoBarIOS::InfoBarIOS(id<InfobarUIDelegate> controller,
                        std::unique_ptr<InfoBarDelegate> delegate)
     : InfoBar(std::move(delegate)), controller_(controller) {
   DCHECK(controller_);
@@ -33,9 +33,14 @@ InfoBarIOS::~InfoBarIOS() {
   controller_ = nil;
 }
 
-UIView* InfoBarIOS::view() {
+UIView* InfoBarIOS::View() {
   DCHECK(controller_);
   return [controller_ view];
+}
+
+id<InfobarUIDelegate> InfoBarIOS::InfobarUIDelegate() {
+  DCHECK(controller_);
+  return controller_;
 }
 
 void InfoBarIOS::RemoveView() {
