@@ -5,16 +5,19 @@
 #include "services/service_manager/background/background_service_manager.h"
 
 #include <memory>
+#include <vector>
 
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "services/service_manager/background/tests/test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
+#include "services/service_manager/public/cpp/manifest.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/tests/catalog_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
@@ -22,6 +25,22 @@ namespace {
 
 const char kTestName[] = "background_service_manager_unittest";
 const char kAppName[] = "background_service_manager_test_service";
+
+const char kTestServiceCapability[] = "test_service";
+
+const std::vector<Manifest>& GetTestManifests() {
+  static base::NoDestructor<std::vector<Manifest>> manifests{
+      {ManifestBuilder()
+           .WithServiceName(kTestName)
+           .RequireCapability(kAppName, kTestServiceCapability)
+           .Build(),
+       service_manager::ManifestBuilder()
+           .WithServiceName(kAppName)
+           .ExposeCapability(kTestServiceCapability,
+                             Manifest::InterfaceList<mojom::TestService>())
+           .Build()}};
+  return *manifests;
+}
 
 // The parent unit test suite service, not the underlying test service.
 class ServiceImpl : public Service {
@@ -55,8 +74,8 @@ void SetFlagAndRunClosure(bool* flag, const base::Closure& closure) {
 #endif
 TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
-  BackgroundServiceManager background_service_manager(
-      nullptr, test::CreateTestCatalog());
+  BackgroundServiceManager background_service_manager(nullptr,
+                                                      GetTestManifests());
   mojom::ServicePtr service;
   ServiceImpl service_impl(mojo::MakeRequest(&service));
   background_service_manager.RegisterService(

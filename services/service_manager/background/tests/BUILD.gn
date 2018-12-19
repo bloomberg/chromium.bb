@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service_executable.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("unittests") {
@@ -20,7 +18,6 @@ source_set("unittests") {
     "//base/test:test_support",
     "//services/service_manager/background:lib",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/tests:catalog_source",
     "//testing/gtest",
     "//url",
   ]
@@ -47,20 +44,4 @@ service_executable("background_service_manager_test_service") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
   ]
-}
-
-service_manifest("test_manifest") {
-  name = "background_service_manager_unittest"
-  source = "test_manifest.json"
-}
-
-service_manifest("test_service_manifest") {
-  name = "background_service_manager_test_service"
-  source = "test_service_manifest.json"
-}
-
-catalog("catalog") {
-  embedded_services = [ ":test_manifest" ]
-
-  standalone_services = [ ":test_service_manifest" ]
 }

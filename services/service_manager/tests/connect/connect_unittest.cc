@@ -7,13 +7,16 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -22,11 +25,13 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/constants.h"
+#include "services/service_manager/public/cpp/manifest.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
-#include "services/service_manager/tests/catalog_source.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
 #include "services/service_manager/tests/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,12 +47,114 @@ namespace {
 const char kTestServiceName[] = "connect_unittests";
 const char kTestPackageName[] = "connect_test_package";
 const char kTestAppName[] = "connect_test_app";
+const char kTestExeName[] = "connect_test_exe";
 const char kTestAppAName[] = "connect_test_a";
 const char kTestAppBName[] = "connect_test_b";
 const char kTestNonexistentAppName[] = "connect_test_nonexistent_app";
 const char kTestSandboxedAppName[] = "connect_test_sandboxed_app";
 const char kTestClassAppName[] = "connect_test_class_app";
 const char kTestSingletonAppName[] = "connect_test_singleton_app";
+
+const char kIdentityTestCapability[] = "identity_test";
+const char kConnectTestServiceCapability[] = "connect_test_service";
+const char kStandaloneAppControlCapability[] = "standalone_app_control";
+
+const char kConnectClassCapability[] = "connect_class";
+const char kExposedInterfaceCapability[] = "exposed_interface";
+
+const std::vector<Manifest>& GetTestManifests() {
+  static base::NoDestructor<std::vector<Manifest>> manifests{
+      {ManifestBuilder()
+           .WithServiceName(kTestAppName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .CanConnectToInstancesInAnyGroup(true)
+                            .Build())
+           .ExposeCapability(
+               kIdentityTestCapability,
+               Manifest::InterfaceList<test::mojom::IdentityTest>())
+           .ExposeCapability(
+               kConnectTestServiceCapability,
+               Manifest::InterfaceList<test::mojom::ConnectTestService>())
+           .ExposeCapability(
+               kStandaloneAppControlCapability,
+               Manifest::InterfaceList<test::mojom::StandaloneApp>())
+           .RequireCapability(kTestClassAppName, kConnectClassCapability)
+           .RequireCapability(kTestClassAppName, kConnectTestServiceCapability)
+           .RequireCapability(kTestServiceName, kExposedInterfaceCapability)
+           .RequireCapability(kTestAppAName, kConnectTestServiceCapability)
+           .Build(),
+       ManifestBuilder()
+           .WithServiceName(kTestClassAppName)
+           .ExposeCapability(
+               kConnectClassCapability,
+               Manifest::InterfaceList<test::mojom::ClassInterface>())
+           .ExposeCapability(
+               kConnectTestServiceCapability,
+               Manifest::InterfaceList<test::mojom::ConnectTestService>())
+           .Build(),
+       ManifestBuilder().WithServiceName(kTestExeName).Build(),
+       ManifestBuilder()
+           .WithServiceName(kTestPackageName)
+           .ExposeCapability("service_manager:service_factory",
+                             Manifest::InterfaceList<mojom::ServiceFactory>())
+           .ExposeCapability(
+               kConnectTestServiceCapability,
+               Manifest::InterfaceList<test::mojom::ConnectTestService>())
+           .PackageService(
+               ManifestBuilder()
+                   .WithServiceName(kTestAppAName)
+                   .ExposeCapability(
+                       kIdentityTestCapability,
+                       Manifest::InterfaceList<test::mojom::IdentityTest>())
+                   .ExposeCapability(kConnectTestServiceCapability,
+                                     Manifest::InterfaceList<
+                                         test::mojom::ConnectTestService>())
+                   .ExposeCapability(
+                       kStandaloneAppControlCapability,
+                       Manifest::InterfaceList<test::mojom::StandaloneApp>())
+                   .RequireCapability(kTestClassAppName,
+                                      kConnectClassCapability)
+                   .RequireCapability(kTestServiceName,
+                                      kExposedInterfaceCapability)
+                   .Build())
+           .PackageService(
+               ManifestBuilder().WithServiceName(kTestAppBName).Build())
+           .PackageService(ManifestBuilder()
+                               .WithServiceName(kTestSandboxedAppName)
+                               .WithOptions(ManifestOptionsBuilder()
+                                                .WithSandboxType("superduper")
+                                                .Build())
+                               .Build())
+           .Build(),
+       ManifestBuilder()
+           .WithServiceName(kTestSingletonAppName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .WithInstanceSharingPolicy(
+                                service_manager::Manifest::
+                                    InstanceSharingPolicy::kSharedAcrossGroups)
+                            .Build())
+           .Build(),
+       ManifestBuilder()
+           .WithServiceName(kTestServiceName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .CanConnectToInstancesInAnyGroup(true)
+                            .CanConnectToInstancesWithAnyId(true)
+                            .Build())
+           .ExposeCapability(
+               kExposedInterfaceCapability,
+               Manifest::InterfaceList<test::mojom::ExposedInterface>())
+           .RequireCapability(kTestSingletonAppName, "")
+           .RequireCapability(kTestAppName, kConnectTestServiceCapability)
+           .RequireCapability(kTestAppName, kStandaloneAppControlCapability)
+           .RequireCapability(kTestAppName, kIdentityTestCapability)
+           .RequireCapability(kTestAppAName, kConnectTestServiceCapability)
+           .RequireCapability(kTestAppAName, kStandaloneAppControlCapability)
+           .RequireCapability(kTestAppAName, kIdentityTestCapability)
+           .RequireCapability(kTestPackageName, kConnectTestServiceCapability)
+           .Build()}};
+
+  return *manifests;
+}
 
 void ReceiveOneString(std::string* out_string,
                       base::RunLoop* loop,
@@ -151,7 +258,7 @@ class ConnectTest : public testing::Test,
                     public Service,
                     public test::mojom::ExposedInterface {
  public:
-  ConnectTest() : test_service_manager_(test::CreateTestCatalog()) {}
+  ConnectTest() : test_service_manager_(GetTestManifests()) {}
   ~ConnectTest() override = default;
 
   Connector* connector() { return service_binding_.GetConnector(); }
@@ -540,11 +647,11 @@ TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
   mojom::ConnectResult result =
       service_manager::test::LaunchAndConnectToProcess(
 #if defined(OS_WIN)
-          "connect_test_exe.exe",
+          base::StrCat({kTestExeName, ".exe"}),
 #else
-          "connect_test_exe",
+          kTestExeName,
 #endif
-          service_manager::Identity("connect_test_exe", kSystemInstanceGroup,
+          service_manager::Identity(kTestExeName, kSystemInstanceGroup,
                                     base::Token{}, base::Token::CreateRandom()),
           connector(), &process);
   EXPECT_EQ(result, mojom::ConnectResult::ACCESS_DENIED);

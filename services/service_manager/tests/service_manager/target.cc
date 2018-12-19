@@ -10,6 +10,7 @@
 #include "services/service_manager/public/cpp/service_executable/service_main.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/tests/service_manager/service_manager_unittest.mojom.h"
+#include "services/service_manager/tests/service_manager/test_manifests.h"
 
 namespace {
 
@@ -23,8 +24,8 @@ class Target : public service_manager::Service {
   // service_manager::Service:
   void OnStart() override {
     service_manager::test::mojom::CreateInstanceTestPtr service;
-    service_binding_.GetConnector()->BindInterface("service_manager_unittest",
-                                                   &service);
+    service_binding_.GetConnector()->BindInterface(
+        service_manager::kTestServiceName, &service);
     service->SetTargetIdentity(service_binding_.identity());
   }
 

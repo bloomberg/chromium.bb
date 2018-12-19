@@ -13,6 +13,7 @@
 #include "services/service_manager/public/cpp/service_executable/service_main.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "services/service_manager/tests/service_manager/test_manifests.h"
 
 namespace {
 
@@ -56,12 +57,12 @@ class Embedder : public service_manager::Service,
       service_manager::mojom::ServiceRequest request,
       const std::string& name,
       service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    if (name == "service_manager_unittest_shared_instance_across_users" ||
-        name == "service_manager_unittest_singleton" ||
-        name == "service_manager_unittest_regular") {
+    if (name == service_manager::kTestRegularServiceName ||
+        name == service_manager::kTestSharedServiceName ||
+        name == service_manager::kTestSingletonServiceName) {
       packaged_service_ = std::make_unique<PackagedService>(std::move(request));
     } else {
-      LOG(ERROR) << "Failed to create unknow service " << name;
+      LOG(ERROR) << "Failed to create unknown service " << name;
     }
   }
 
