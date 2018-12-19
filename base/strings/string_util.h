@@ -17,7 +17,9 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/bit_cast.h"
 #include "base/compiler_specific.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"  // For implicit conversions.
 #include "build/build_config.h"
@@ -230,12 +232,31 @@ BASE_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
                                         std::string* output);
 
 #if defined(WCHAR_T_IS_UTF16)
+// Utility functions to access the underlying string buffer as a wide char
+// pointer.
+inline wchar_t* wdata(char16* str) {
+  return bit_cast<wchar_t*>(str);
+}
+
+inline wchar_t* wdata(string16& str) {
+  return bit_cast<wchar_t*>(data(str));
+}
+
+inline const wchar_t* wdata(StringPiece16 str) {
+  return bit_cast<const wchar_t*>(str.data());
+}
+
 // In case wchar_t is UTF-16 StringPiece16 and WStringPiece can be effieciently
 // converted into each other.
 // Note: These functions will only become useful once base::char16 is char16_t
 // on all platforms: https://crbug.com/911896
-BASE_EXPORT StringPiece16 CastToStringPiece16(WStringPiece wide);
-BASE_EXPORT WStringPiece CastToWStringPiece(StringPiece16 utf16);
+inline StringPiece16 CastToStringPiece16(WStringPiece wide) {
+  return StringPiece16(bit_cast<const char16*>(wide.data()), wide.size());
+}
+
+inline WStringPiece CastToWStringPiece(StringPiece16 utf16) {
+  return WStringPiece(wdata(utf16), utf16.size());
+}
 #endif  // defined(WCHAR_T_IS_UTF16)
 
 // Trims any whitespace from either end of the input string.
