@@ -172,6 +172,7 @@ public class AutofillAssistantUiTest {
                                 -> uiDelegate.showDetails(new Details(movieTitle, /* url = */ "",
                                         Calendar.getInstance().getTime(), movieDescription,
                                         /* mId = */ "",
+                                        /* price = */ null,
                                         /* isFinal= */ true, Collections.emptySet()))));
         TextView detailsTitle = (TextView) bottomSheet.findViewById(R.id.details_title);
         TextView detailsText = (TextView) bottomSheet.findViewById(R.id.details_text);
