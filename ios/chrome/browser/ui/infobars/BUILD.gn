@@ -14,7 +14,7 @@ source_set("infobars") {
     ":infobars_ui",
     ":public",
     "//base",
-    "//ios/chrome/browser/download",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/translate",
@@ -55,6 +55,9 @@ source_set("infobars_ui") {
     "infobar_constants.h",
     "infobar_constants.mm",
     "infobar_container_consumer.h",
+    "infobar_container_view_controller.h",
+    "infobar_container_view_controller.mm",
+    "infobar_ui_delegate.h",
     "legacy_infobar_container_view_controller.h",
     "legacy_infobar_container_view_controller.mm",
   ]

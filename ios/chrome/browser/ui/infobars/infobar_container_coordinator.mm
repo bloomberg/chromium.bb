@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
+#include "ios/chrome/browser/ui/infobars/infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
@@ -24,7 +26,7 @@
 
 // UIViewController that contains Infobars.
 @property(nonatomic, strong)
-    LegacyInfobarContainerViewController* containerViewController;
+    UIViewController<InfobarContainerConsumer>* containerViewController;
 // The mediator for this Coordinator.
 @property(nonatomic, strong) InfobarContainerMediator* mediator;
 
@@ -49,16 +51,26 @@
   DCHECK(self.dispatcher);
 
   // Create and setup the ViewController.
-  self.containerViewController =
-      [[LegacyInfobarContainerViewController alloc] init];
-  [self.baseViewController addChildViewController:self.containerViewController];
-  // TODO(crbug.com/892376): We shouldn't modify the BaseVC hierarchy, BVC needs
-  // to handle this.
-  [self.baseViewController.view insertSubview:self.containerViewController.view
-                                 aboveSubview:self.positioner.parentView];
-  [self.containerViewController
-      didMoveToParentViewController:self.baseViewController];
-  self.containerViewController.positioner = self.positioner;
+  if (experimental_flags::IsInfobarUIRebootEnabled()) {
+    self.containerViewController =
+        [[InfobarContainerViewController alloc] init];
+    [self.baseViewController
+        addChildViewController:self.containerViewController];
+    [self.baseViewController.view addSubview:self.containerViewController.view];
+    [self.containerViewController
+        didMoveToParentViewController:self.baseViewController];
+  } else {
+    LegacyInfobarContainerViewController* legacyContainer =
+        [[LegacyInfobarContainerViewController alloc] init];
+    [self.baseViewController addChildViewController:legacyContainer];
+    // TODO(crbug.com/892376): We shouldn't modify the BaseVC hierarchy, BVC
+    // needs to handle this.
+    [self.baseViewController.view insertSubview:legacyContainer.view
+                                   aboveSubview:self.positioner.parentView];
+    [legacyContainer didMoveToParentViewController:self.baseViewController];
+    legacyContainer.positioner = self.positioner;
+    self.containerViewController = legacyContainer;
+  }
 
   // Create the mediator once the VC has been added to the View hierarchy.
   self.mediator = [[InfobarContainerMediator alloc]
