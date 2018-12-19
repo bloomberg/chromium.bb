@@ -58,50 +58,40 @@ namespace {
 
 enum InputMethodCategory {
   INPUT_METHOD_CATEGORY_UNKNOWN = 0,
-  INPUT_METHOD_CATEGORY_XKB,  // XKB input methods
-  INPUT_METHOD_CATEGORY_ZH,   // Chinese input methods
-  INPUT_METHOD_CATEGORY_JA,   // Japanese input methods
-  INPUT_METHOD_CATEGORY_KO,   // Korean input methods
-  INPUT_METHOD_CATEGORY_M17N, // Multilingualization input methods
-  INPUT_METHOD_CATEGORY_T13N, // Transliteration input methods
+  INPUT_METHOD_CATEGORY_XKB,   // XKB input methods
+  INPUT_METHOD_CATEGORY_ZH,    // Chinese input methods
+  INPUT_METHOD_CATEGORY_JA,    // Japanese input methods
+  INPUT_METHOD_CATEGORY_KO,    // Korean input methods
+  INPUT_METHOD_CATEGORY_M17N,  // Multilingualization input methods
+  INPUT_METHOD_CATEGORY_T13N,  // Transliteration input methods
+  INPUT_METHOD_CATEGORY_ARC,   // ARC input methods
   INPUT_METHOD_CATEGORY_MAX
 };
 
-InputMethodCategory GetInputMethodCategory(const std::string& input_method_id,
-                                           char* first_char = NULL) {
+InputMethodCategory GetInputMethodCategory(const std::string& input_method_id) {
   const std::string component_id =
       extension_ime_util::GetComponentIDByInputMethodID(input_method_id);
   InputMethodCategory category = INPUT_METHOD_CATEGORY_UNKNOWN;
-  char ch = 0;
   if (base::StartsWith(component_id, "xkb:", base::CompareCase::SENSITIVE)) {
-    ch = component_id[4];
     category = INPUT_METHOD_CATEGORY_XKB;
   } else if (base::StartsWith(component_id, "zh-",
                               base::CompareCase::SENSITIVE)) {
-    size_t pos = component_id.find("-t-i0-");
-    if (pos > 0)
-      pos += 6;
-    ch = component_id[pos];
     category = INPUT_METHOD_CATEGORY_ZH;
   } else if (base::StartsWith(component_id, "nacl_mozc_",
                               base::CompareCase::SENSITIVE)) {
-    ch = component_id[10];
     category = INPUT_METHOD_CATEGORY_JA;
   } else if (base::StartsWith(component_id, "hangul_",
                               base::CompareCase::SENSITIVE)) {
-    ch = component_id[7];
     category = INPUT_METHOD_CATEGORY_KO;
   } else if (base::StartsWith(component_id, "vkd_",
                               base::CompareCase::SENSITIVE)) {
-    ch = component_id[4];
     category = INPUT_METHOD_CATEGORY_M17N;
-  } else if (component_id.find("-t-i0-") > 0) {
-    ch = component_id[0];
+  } else if (component_id.find("-t-i0-") != std::string::npos) {
     category = INPUT_METHOD_CATEGORY_T13N;
+  } else if (extension_ime_util::IsArcIME(input_method_id)) {
+    category = INPUT_METHOD_CATEGORY_ARC;
   }
 
-  if (first_char)
-    *first_char = ch;
   return category;
 }
 
