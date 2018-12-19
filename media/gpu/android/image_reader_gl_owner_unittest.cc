@@ -9,7 +9,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "gpu/command_buffer/service/abstract_texture.h"
 #include "media/base/media_switches.h"
+#include "media/gpu/android/mock_abstract_texture.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context_egl.h"
@@ -36,10 +38,18 @@ class ImageReaderGLOwnerTest : public testing::Test {
     context_->Initialize(surface_.get(), gl::GLContextAttribs());
     ASSERT_TRUE(context_->MakeCurrent(surface_.get()));
 
-    image_reader_ = TextureOwner::Create();
+    // Create a texture.
+    glGenTextures(1, &texture_id_);
+
+    std::unique_ptr<MockAbstractTexture> texture =
+        std::make_unique<MockAbstractTexture>(texture_id_);
+    abstract_texture_ = texture->AsWeakPtr();
+    image_reader_ = TextureOwner::Create(std::move(texture));
   }
 
   void TearDown() override {
+    if (texture_id_ && context_->MakeCurrent(surface_.get()))
+      glDeleteTextures(1, &texture_id_);
     image_reader_ = nullptr;
     context_ = nullptr;
     share_group_ = nullptr;
@@ -50,6 +60,8 @@ class ImageReaderGLOwnerTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<TextureOwner> image_reader_;
   GLuint texture_id_ = 0;
+
+  base::WeakPtr<MockAbstractTexture> abstract_texture_;
 
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLShareGroup> share_group_;
@@ -71,7 +83,7 @@ TEST_F(ImageReaderGLOwnerTest, ScopedJavaSurfaceCreation) {
 TEST_F(ImageReaderGLOwnerTest, GLTextureIsCreatedAndDestroyed) {
   // |texture_id| should not work anymore after we delete image_reader_.
   image_reader_ = nullptr;
-  ASSERT_FALSE(glIsTexture(texture_id_));
+  EXPECT_FALSE(abstract_texture_);
 }
 
 // Make sure that image_reader_ remembers the correct context and surface.
@@ -93,7 +105,7 @@ TEST_F(ImageReaderGLOwnerTest, DestructionWorksWithWrongContext) {
   ASSERT_TRUE(new_context->MakeCurrent(new_surface.get()));
 
   image_reader_ = nullptr;
-  ASSERT_FALSE(glIsTexture(texture_id_));
+  EXPECT_FALSE(abstract_texture_);
 
   // |new_context| should still be current.
   ASSERT_TRUE(new_context->IsCurrent(new_surface.get()));

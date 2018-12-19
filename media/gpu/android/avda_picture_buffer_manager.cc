@@ -54,7 +54,16 @@ bool AVDAPictureBufferManager::Initialize(
 
   if (!surface_bundle->overlay) {
     // Create the texture owner.
-    texture_owner_ = TextureOwner::Create();
+    // TODO(liberato): Don't memorize this.  However, since this entire path is
+    // deprecated, it's probably okay.
+    std::unique_ptr<gpu::gles2::AbstractTexture> texture =
+        state_provider_->CreateAbstractTexture(GL_TEXTURE_EXTERNAL_OES, GL_RGBA,
+                                               0,  // width,
+                                               0,  // height
+                                               1,  // depth
+                                               0,  // border
+                                               GL_RGBA, GL_UNSIGNED_BYTE);
+    texture_owner_ = TextureOwner::Create(std::move(texture));
     if (!texture_owner_)
       return false;
 

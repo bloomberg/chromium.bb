@@ -435,6 +435,8 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/fake_codec_allocator.h",
       "android/image_reader_gl_owner_unittest.cc",
       "android/media_codec_video_decoder_unittest.cc",
+      "android/mock_abstract_texture.cc",
+      "android/mock_abstract_texture.h",
       "android/mock_android_video_surface_chooser.cc",
       "android/mock_android_video_surface_chooser.h",
       "android/mock_device_info.cc",

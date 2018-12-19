@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "gpu/command_buffer/service/abstract_texture.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
 
@@ -30,9 +31,10 @@ struct FrameAvailableEvent
   ~FrameAvailableEvent() = default;
 };
 
-SurfaceTextureGLOwner::SurfaceTextureGLOwner(GLuint texture_id)
-    : surface_texture_(gl::SurfaceTexture::Create(texture_id)),
-      texture_id_(texture_id),
+SurfaceTextureGLOwner::SurfaceTextureGLOwner(
+    std::unique_ptr<gpu::gles2::AbstractTexture> texture)
+    : TextureOwner(std::move(texture)),
+      surface_texture_(gl::SurfaceTexture::Create(GetTextureId())),
       context_(gl::GLContext::GetCurrent()),
       surface_(gl::GLSurface::GetCurrent()),
       frame_available_event_(new FrameAvailableEvent()) {
@@ -45,47 +47,43 @@ SurfaceTextureGLOwner::SurfaceTextureGLOwner(GLuint texture_id)
 SurfaceTextureGLOwner::~SurfaceTextureGLOwner() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Make sure that the SurfaceTexture isn't using the GL objects.
-  surface_texture_ = nullptr;
-
-  std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
-
-  // If the context is current, skip ScopedMakeCurrent to prevent (a) a
-  // potentially heavyweight virtual context switch and (b) a potential crash
-  // during stub destruction (https://crbug.com/839605).
-  if (!context_->IsCurrent(nullptr)) {
-    scoped_make_current =
-        std::make_unique<ui::ScopedMakeCurrent>(context_.get(), surface_.get());
-    if (!context_->IsCurrent(surface_.get()))
-      return;
-  }
-
-  glDeleteTextures(1, &texture_id_);
-  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  // Clear the texture before we return, so that it can OnTextureDestroyed() if
+  // it hasn't already.
+  ClearAbstractTexture();
 }
 
-GLuint SurfaceTextureGLOwner::GetTextureId() const {
+void SurfaceTextureGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return texture_id_;
+
+  // Make sure that the SurfaceTexture isn't using the GL objects.
+  surface_texture_ = nullptr;
 }
 
 gl::ScopedJavaSurface SurfaceTextureGLOwner::CreateJavaSurface() const {
+  // |surface_texture_| might be null, but that's okay.
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
 
 void SurfaceTextureGLOwner::UpdateTexImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  surface_texture_->UpdateTexImage();
+  if (surface_texture_)
+    surface_texture_->UpdateTexImage();
 }
 
 void SurfaceTextureGLOwner::GetTransformMatrix(float mtx[]) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  surface_texture_->GetTransformMatrix(mtx);
+  // If we don't have a SurfaceTexture, then the matrix doesn't matter.  We
+  // still initialize it for good measure.
+  if (surface_texture_)
+    surface_texture_->GetTransformMatrix(mtx);
+  else
+    memset(mtx, 0, sizeof(mtx[0]) * 16);
 }
 
 void SurfaceTextureGLOwner::ReleaseBackBuffers() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  surface_texture_->ReleaseBackBuffers();
+  if (surface_texture_)
+    surface_texture_->ReleaseBackBuffers();
 }
 
 gl::GLContext* SurfaceTextureGLOwner::GetContext() const {

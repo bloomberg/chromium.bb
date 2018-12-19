@@ -14,6 +14,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/gpu/buildflags.h"
+#include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_decode_accelerator.h"
 
@@ -70,7 +71,8 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactory {
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
       const GetContextGroupCallback& get_context_group_cb,
-      const AndroidOverlayMojoFactoryCB& overlay_factory_cb);
+      const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
+      const CreateAbstractTextureCallback& create_abstract_texture_cb);
 
   static std::unique_ptr<GpuVideoDecodeAcceleratorFactory> CreateWithNoGL();
 
@@ -91,7 +93,8 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactory {
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
       const GetContextGroupCallback& get_context_group_cb,
-      const AndroidOverlayMojoFactoryCB& overlay_factory_cb);
+      const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
+      const CreateAbstractTextureCallback& create_abstract_texture_cb);
 
 #if defined(OS_WIN)
   std::unique_ptr<VideoDecodeAccelerator> CreateD3D11VDA(
@@ -137,6 +140,7 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactory {
   const BindGLImageCallback bind_image_cb_;
   const GetContextGroupCallback get_context_group_cb_;
   const AndroidOverlayMojoFactoryCB overlay_factory_cb_;
+  const CreateAbstractTextureCallback create_abstract_texture_cb_;
 
   base::ThreadChecker thread_checker_;
 
