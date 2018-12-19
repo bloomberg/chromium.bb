@@ -101,13 +101,10 @@ class IncludeNodeUnittest(unittest.TestCase):
                    preprocess="true" type="chrome_html"/>
         </includes>''', base_dir = util.PathFromRoot('grit/testdata'))
     inc, = root.GetChildrenOfType(include.IncludeNode)
-    temp_dir = util.TempDir({})
-    output_file = inc.Process(temp_dir.GetPath())
-    result = open(temp_dir.GetPath(output_file)).read()
+    result = inc.GetDataPackValue(lang='en', encoding=1)
     self.failUnless(result.find('should be kept') != -1)
     self.failUnless(result.find('in the middle...') != -1)
     self.failUnless(result.find('should be removed') == -1)
-    temp_dir.CleanUp()
 
 
 if __name__ == '__main__':
