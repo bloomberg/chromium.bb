@@ -73,6 +73,7 @@ ScriptState* CallbackFunctionBase::CallbackRelevantScriptStateOrThrowException(
 V8PersistentCallbackFunctionBase::V8PersistentCallbackFunctionBase(
     CallbackFunctionBase* callback_function)
     : callback_function_(callback_function) {
+  v8::HandleScope scope(callback_function_->GetIsolate());
   v8_function_.Reset(callback_function_->GetIsolate(),
                      callback_function_->callback_function_.Get());
 }
