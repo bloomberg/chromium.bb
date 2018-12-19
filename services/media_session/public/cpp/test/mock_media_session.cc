@@ -46,6 +46,9 @@ void MockMediaSessionMojoObserver::MediaSessionMetadataChanged(
   if (waiting_for_metadata_) {
     run_loop_.Quit();
     waiting_for_metadata_ = false;
+  } else if (waiting_for_non_empty_metadata_ && metadata.has_value()) {
+    run_loop_.Quit();
+    waiting_for_non_empty_metadata_ = false;
   }
 }
 
@@ -75,6 +78,15 @@ MockMediaSessionMojoObserver::WaitForMetadata() {
   }
 
   return session_metadata_.value();
+}
+
+const MediaMetadata& MockMediaSessionMojoObserver::WaitForNonEmptyMetadata() {
+  if (!session_metadata_.has_value() || !session_metadata_->has_value()) {
+    waiting_for_non_empty_metadata_ = true;
+    run_loop_.Run();
+  }
+
+  return session_metadata_->value();
 }
 
 MockMediaSession::MockMediaSession() = default;

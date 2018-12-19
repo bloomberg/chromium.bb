@@ -553,7 +553,7 @@ TEST_F(MediaControllerTest, ActiveController_Metadata_Observer_WithInfo) {
   {
     test::MockMediaSessionMojoObserver observer(controller());
     media_session.SimulateMetadataChanged(test_metadata);
-    EXPECT_EQ(metadata, *observer.WaitForMetadata());
+    EXPECT_EQ(metadata, observer.WaitForNonEmptyMetadata());
   }
 }
 

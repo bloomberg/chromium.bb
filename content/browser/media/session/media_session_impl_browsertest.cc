@@ -1768,7 +1768,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
     ResolveAudioFocusSuccess();
-    EXPECT_EQ(metadata, *observer.WaitForMetadata());
+    EXPECT_EQ(metadata, observer.WaitForNonEmptyMetadata());
   }
 }
 
