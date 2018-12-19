@@ -134,7 +134,7 @@ class CONTENT_EXPORT ResourceDispatcher {
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.
-  bool RemovePendingRequest(
+  virtual bool RemovePendingRequest(
       int request_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
