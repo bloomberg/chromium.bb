@@ -127,10 +127,8 @@ void SubframeNavigationFilteringThrottle::NotifyLoadPolicy() const {
       navigation_handle()->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
           navigation_handle()->GetFrameTreeNodeId());
   if (!starting_rfh) {
-    // This should not happen. See https://crbug.com/904248.
-    DEBUG_ALIAS_FOR_GURL(previous_url, navigation_handle()->GetPreviousURL());
-    DEBUG_ALIAS_FOR_GURL(new_url, navigation_handle()->GetURL());
-    base::debug::DumpWithoutCrashing();
+    // TODO(arthursonzogni): Remove this block, this must not happen.
+    // See https://crbug.com/904248.
     observer_manager->NotifySubframeNavigationEvaluated(
         navigation_handle(), load_policy_, false /* is_ad_subframe */);
     return;
