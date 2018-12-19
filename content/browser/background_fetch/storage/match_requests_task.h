@@ -30,7 +30,7 @@ class MatchRequestsTask : public DatabaseTask {
   // |match_params|.
   MatchRequestsTask(
       DatabaseTaskHost* host,
-      BackgroundFetchRegistrationId registration_id,
+      const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
       SettledFetchesCallback callback);
 
