@@ -1840,6 +1840,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_enable_skylab_hwtest = frozenset([
+      'coral',
       'nyan_blaze',
       'reef',
   ])
@@ -1847,6 +1848,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_separate_unittest_phase = frozenset([
       'grunt',
   ])
+
+  _paladin_enable_skylab_partial_boards = {
+      'coral': ['astronaut'],
+  }
 
   ### Master paladin (CQ builder).
   master_config = site_config.Add(
@@ -1883,9 +1888,16 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           for model in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]:
             name = model[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
             lab_board_name = model[config_lib.CONFIG_TEMPLATE_MODEL_BOARD_NAME]
+            enable_skylab = True
+            if (lab_board_name in _paladin_enable_skylab_hwtest and
+                lab_board_name in _paladin_enable_skylab_partial_boards and
+                name not in _paladin_enable_skylab_partial_boards[
+                    lab_board_name]):
+              enable_skylab = False
             if (config_lib.CONFIG_TEMPLATE_MODEL_CQ_TEST_ENABLED in model
                 and model[config_lib.CONFIG_TEMPLATE_MODEL_CQ_TEST_ENABLED]):
-              models.append(config_lib.ModelTestConfig(name, lab_board_name))
+              models.append(config_lib.ModelTestConfig(
+                  name, lab_board_name, enable_skylab=enable_skylab))
 
           customizations.update(models=models)
 
