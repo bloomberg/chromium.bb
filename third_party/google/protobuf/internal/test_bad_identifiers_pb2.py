@@ -9,7 +9,6 @@ from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf import service as _service
 from google.protobuf import service_reflection
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -21,9 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='google/protobuf/internal/test_bad_identifiers.proto',
   package='protobuf_unittest',
   syntax='proto2',
+  serialized_options=_b('\220\001\001'),
   serialized_pb=_b('\n3google/protobuf/internal/test_bad_identifiers.proto\x12\x11protobuf_unittest\"\x1e\n\x12TestBadIdentifiers*\x08\x08\x64\x10\x80\x80\x80\x80\x02\"\x10\n\x0e\x41notherMessage2\x10\n\x0e\x41notherService:;\n\x07message\x12%.protobuf_unittest.TestBadIdentifiers\x18\x64 \x01(\t:\x03\x66oo:>\n\ndescriptor\x12%.protobuf_unittest.TestBadIdentifiers\x18\x65 \x01(\t:\x03\x62\x61r:>\n\nreflection\x12%.protobuf_unittest.TestBadIdentifiers\x18\x66 \x01(\t:\x03\x62\x61z:;\n\x07service\x12%.protobuf_unittest.TestBadIdentifiers\x18g \x01(\t:\x03quxB\x03\x90\x01\x01')
 )
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 MESSAGE_FIELD_NUMBER = 100
@@ -33,7 +32,7 @@ message = _descriptor.FieldDescriptor(
   has_default_value=True, default_value=_b("foo").decode('utf-8'),
   message_type=None, enum_type=None, containing_type=None,
   is_extension=True, extension_scope=None,
-  options=None)
+  serialized_options=None, file=DESCRIPTOR)
 DESCRIPTOR_FIELD_NUMBER = 101
 descriptor = _descriptor.FieldDescriptor(
   name='descriptor', full_name='protobuf_unittest.descriptor', index=1,
@@ -41,7 +40,7 @@ descriptor = _descriptor.FieldDescriptor(
   has_default_value=True, default_value=_b("bar").decode('utf-8'),
   message_type=None, enum_type=None, containing_type=None,
   is_extension=True, extension_scope=None,
-  options=None)
+  serialized_options=None, file=DESCRIPTOR)
 REFLECTION_FIELD_NUMBER = 102
 reflection = _descriptor.FieldDescriptor(
   name='reflection', full_name='protobuf_unittest.reflection', index=2,
@@ -49,7 +48,7 @@ reflection = _descriptor.FieldDescriptor(
   has_default_value=True, default_value=_b("baz").decode('utf-8'),
   message_type=None, enum_type=None, containing_type=None,
   is_extension=True, extension_scope=None,
-  options=None)
+  serialized_options=None, file=DESCRIPTOR)
 SERVICE_FIELD_NUMBER = 103
 service = _descriptor.FieldDescriptor(
   name='service', full_name='protobuf_unittest.service', index=3,
@@ -57,7 +56,7 @@ service = _descriptor.FieldDescriptor(
   has_default_value=True, default_value=_b("qux").decode('utf-8'),
   message_type=None, enum_type=None, containing_type=None,
   is_extension=True, extension_scope=None,
-  options=None)
+  serialized_options=None, file=DESCRIPTOR)
 
 
 _TESTBADIDENTIFIERS = _descriptor.Descriptor(
@@ -73,7 +72,7 @@ _TESTBADIDENTIFIERS = _descriptor.Descriptor(
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=True,
   syntax='proto2',
   extension_ranges=[(100, 536870912), ],
@@ -97,7 +96,7 @@ _ANOTHERMESSAGE = _descriptor.Descriptor(
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
@@ -113,6 +112,7 @@ DESCRIPTOR.extensions_by_name['message'] = message
 DESCRIPTOR.extensions_by_name['descriptor'] = descriptor
 DESCRIPTOR.extensions_by_name['reflection'] = reflection
 DESCRIPTOR.extensions_by_name['service'] = service
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 TestBadIdentifiers = _reflection.GeneratedProtocolMessageType('TestBadIdentifiers', (_message.Message,), dict(
   DESCRIPTOR = _TESTBADIDENTIFIERS,
@@ -133,19 +133,21 @@ TestBadIdentifiers.RegisterExtension(descriptor)
 TestBadIdentifiers.RegisterExtension(reflection)
 TestBadIdentifiers.RegisterExtension(service)
 
-DESCRIPTOR.has_options = True
-DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('\220\001\001'))
+DESCRIPTOR._options = None
 
 _ANOTHERSERVICE = _descriptor.ServiceDescriptor(
   name='AnotherService',
   full_name='protobuf_unittest.AnotherService',
   file=DESCRIPTOR,
   index=0,
-  options=None,
+  serialized_options=None,
   serialized_start=124,
   serialized_end=140,
   methods=[
 ])
+_sym_db.RegisterServiceDescriptor(_ANOTHERSERVICE)
+
+DESCRIPTOR.services_by_name['AnotherService'] = _ANOTHERSERVICE
 
 AnotherService = service_reflection.GeneratedServiceType('AnotherService', (_service.Service,), dict(
   DESCRIPTOR = _ANOTHERSERVICE,

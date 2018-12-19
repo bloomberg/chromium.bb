@@ -34,6 +34,7 @@
 
 __author__ = 'jieluo@google.com (Jie Luo)'
 
+import collections
 from datetime import datetime
 
 try:
@@ -100,10 +101,14 @@ class TimeUtilTest(TimeUtilTestBase):
     message.FromJsonString('1970-01-01T00:00:00.1Z')
     self.assertEqual(0, message.seconds)
     self.assertEqual(100000000, message.nanos)
-    # Parsing accpets offsets.
+    # Parsing accepts offsets.
     message.FromJsonString('1970-01-01T00:00:00-08:00')
     self.assertEqual(8 * 3600, message.seconds)
     self.assertEqual(0, message.nanos)
+
+    # It is not easy to check with current time. For test coverage only.
+    message.GetCurrentTime()
+    self.assertNotEqual(8 * 3600, message.seconds)
 
   def testDurationSerializeAndParse(self):
     message = duration_pb2.Duration()
@@ -268,6 +273,17 @@ class TimeUtilTest(TimeUtilTestBase):
   def testInvalidTimestamp(self):
     message = timestamp_pb2.Timestamp()
     self.assertRaisesRegexp(
+        well_known_types.ParseError,
+        'Failed to parse timestamp: missing valid timezone offset.',
+        message.FromJsonString,
+        '')
+    self.assertRaisesRegexp(
+        well_known_types.ParseError,
+        'Failed to parse timestamp: invalid trailing data '
+        '1970-01-01T00:00:01Ztrail.',
+        message.FromJsonString,
+        '1970-01-01T00:00:01Ztrail')
+    self.assertRaisesRegexp(
         ValueError,
         'time data \'10000-01-01T00:00:00\' does not match'
         ' format \'%Y-%m-%dT%H:%M:%S\'',
@@ -284,7 +300,7 @@ class TimeUtilTest(TimeUtilTestBase):
         '1972-01-01T01:00:00.01+08',)
     self.assertRaisesRegexp(
         ValueError,
-        'year is out of range',
+        'year (0 )?is out of range',
         message.FromJsonString,
         '0000-01-01T00:00:00Z')
     message.seconds = 253402300800
@@ -303,6 +319,38 @@ class TimeUtilTest(TimeUtilTestBase):
         well_known_types.ParseError,
         'Couldn\'t parse duration: 1...2s.',
         message.FromJsonString, '1...2s')
+    text = '-315576000001.000000000s'
+    self.assertRaisesRegexp(
+        well_known_types.Error,
+        r'Duration is not valid\: Seconds -315576000001 must be in range'
+        r' \[-315576000000\, 315576000000\].',
+        message.FromJsonString, text)
+    text = '315576000001.000000000s'
+    self.assertRaisesRegexp(
+        well_known_types.Error,
+        r'Duration is not valid\: Seconds 315576000001 must be in range'
+        r' \[-315576000000\, 315576000000\].',
+        message.FromJsonString, text)
+    message.seconds = -315576000001
+    message.nanos = 0
+    self.assertRaisesRegexp(
+        well_known_types.Error,
+        r'Duration is not valid\: Seconds -315576000001 must be in range'
+        r' \[-315576000000\, 315576000000\].',
+        message.ToJsonString)
+    message.seconds = 0
+    message.nanos = 999999999 + 1
+    self.assertRaisesRegexp(
+        well_known_types.Error,
+        r'Duration is not valid\: Nanos 1000000000 must be in range'
+        r' \[-999999999\, 999999999\].',
+        message.ToJsonString)
+    message.seconds = -1
+    message.nanos = 1
+    self.assertRaisesRegexp(
+        well_known_types.Error,
+        r'Duration is not valid\: Sign mismatch.',
+        message.ToJsonString)
 
 
 class FieldMaskTest(unittest.TestCase):
@@ -322,6 +370,20 @@ class FieldMaskTest(unittest.TestCase):
     mask.FromJsonString('foo,bar')
     self.assertEqual(['foo', 'bar'], mask.paths)
 
+    # Test camel case
+    mask.Clear()
+    mask.paths.append('foo_bar')
+    self.assertEqual('fooBar', mask.ToJsonString())
+    mask.paths.append('bar_quz')
+    self.assertEqual('fooBar,barQuz', mask.ToJsonString())
+
+    mask.FromJsonString('')
+    self.assertEqual('', mask.ToJsonString())
+    mask.FromJsonString('fooBar')
+    self.assertEqual(['foo_bar'], mask.paths)
+    mask.FromJsonString('fooBar,barQuz')
+    self.assertEqual(['foo_bar', 'bar_quz'], mask.paths)
+
   def testDescriptorToFieldMask(self):
     mask = field_mask_pb2.FieldMask()
     msg_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
@@ -330,9 +392,36 @@ class FieldMaskTest(unittest.TestCase):
     self.assertTrue(mask.IsValidForDescriptor(msg_descriptor))
     for field in msg_descriptor.fields:
       self.assertTrue(field.name in mask.paths)
+
+  def testIsValidForDescriptor(self):
+    msg_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
+    # Empty mask
+    mask = field_mask_pb2.FieldMask()
+    self.assertTrue(mask.IsValidForDescriptor(msg_descriptor))
+    # All fields from descriptor
+    mask.AllFieldsFromDescriptor(msg_descriptor)
+    self.assertTrue(mask.IsValidForDescriptor(msg_descriptor))
+    # Child under optional message
     mask.paths.append('optional_nested_message.bb')
     self.assertTrue(mask.IsValidForDescriptor(msg_descriptor))
+    # Repeated field is only allowed in the last position of path
     mask.paths.append('repeated_nested_message.bb')
+    self.assertFalse(mask.IsValidForDescriptor(msg_descriptor))
+    # Invalid top level field
+    mask = field_mask_pb2.FieldMask()
+    mask.paths.append('xxx')
+    self.assertFalse(mask.IsValidForDescriptor(msg_descriptor))
+    # Invalid field in root
+    mask = field_mask_pb2.FieldMask()
+    mask.paths.append('xxx.zzz')
+    self.assertFalse(mask.IsValidForDescriptor(msg_descriptor))
+    # Invalid field in internal node
+    mask = field_mask_pb2.FieldMask()
+    mask.paths.append('optional_nested_message.xxx.zzz')
+    self.assertFalse(mask.IsValidForDescriptor(msg_descriptor))
+    # Invalid field in leaf
+    mask = field_mask_pb2.FieldMask()
+    mask.paths.append('optional_nested_message.xxx')
     self.assertFalse(mask.IsValidForDescriptor(msg_descriptor))
 
   def testCanonicalFrom(self):
@@ -389,6 +478,9 @@ class FieldMaskTest(unittest.TestCase):
     mask2.FromJsonString('foo.bar,bar')
     out_mask.Union(mask1, mask2)
     self.assertEqual('bar,foo.bar,quz', out_mask.ToJsonString())
+    src = unittest_pb2.TestAllTypes()
+    with self.assertRaises(ValueError):
+      out_mask.Union(src, mask2)
 
   def testIntersect(self):
     mask1 = field_mask_pb2.FieldMask()
@@ -502,22 +594,98 @@ class FieldMaskTest(unittest.TestCase):
     nested_src.payload.repeated_int32.append(1234)
     nested_dst.payload.repeated_int32.append(5678)
     # Repeated fields will be appended by default.
-    mask.FromJsonString('payload.repeated_int32')
+    mask.FromJsonString('payload.repeatedInt32')
     mask.MergeMessage(nested_src, nested_dst)
     self.assertEqual(2, len(nested_dst.payload.repeated_int32))
     self.assertEqual(5678, nested_dst.payload.repeated_int32[0])
     self.assertEqual(1234, nested_dst.payload.repeated_int32[1])
     # Change the behavior to replace repeated fields.
-    mask.FromJsonString('payload.repeated_int32')
+    mask.FromJsonString('payload.repeatedInt32')
     mask.MergeMessage(nested_src, nested_dst, False, True)
     self.assertEqual(1, len(nested_dst.payload.repeated_int32))
     self.assertEqual(1234, nested_dst.payload.repeated_int32[0])
+
+    # Test Merge oneof field.
+    new_msg = unittest_pb2.TestOneof2()
+    dst = unittest_pb2.TestOneof2()
+    dst.foo_message.qux_int = 1
+    mask = field_mask_pb2.FieldMask()
+    mask.FromJsonString('fooMessage,fooLazyMessage.quxInt')
+    mask.MergeMessage(new_msg, dst)
+    self.assertTrue(dst.HasField('foo_message'))
+    self.assertFalse(dst.HasField('foo_lazy_message'))
+
+  def testMergeErrors(self):
+    src = unittest_pb2.TestAllTypes()
+    dst = unittest_pb2.TestAllTypes()
+    mask = field_mask_pb2.FieldMask()
+    test_util.SetAllFields(src)
+    mask.FromJsonString('optionalInt32.field')
+    with self.assertRaises(ValueError) as e:
+      mask.MergeMessage(src, dst)
+    self.assertEqual('Error: Field optional_int32 in message '
+                     'protobuf_unittest.TestAllTypes is not a singular '
+                     'message field and cannot have sub-fields.',
+                     str(e.exception))
+
+  def testSnakeCaseToCamelCase(self):
+    self.assertEqual('fooBar',
+                     well_known_types._SnakeCaseToCamelCase('foo_bar'))
+    self.assertEqual('FooBar',
+                     well_known_types._SnakeCaseToCamelCase('_foo_bar'))
+    self.assertEqual('foo3Bar',
+                     well_known_types._SnakeCaseToCamelCase('foo3_bar'))
+
+    # No uppercase letter is allowed.
+    self.assertRaisesRegexp(
+        well_known_types.Error,
+        'Fail to print FieldMask to Json string: Path name Foo must '
+        'not contain uppercase letters.',
+        well_known_types._SnakeCaseToCamelCase,
+        'Foo')
+    # Any character after a "_" must be a lowercase letter.
+    #   1. "_" cannot be followed by another "_".
+    #   2. "_" cannot be followed by a digit.
+    #   3. "_" cannot appear as the last character.
+    self.assertRaisesRegexp(
+        well_known_types.Error,
+        'Fail to print FieldMask to Json string: The character after a '
+        '"_" must be a lowercase letter in path name foo__bar.',
+        well_known_types._SnakeCaseToCamelCase,
+        'foo__bar')
+    self.assertRaisesRegexp(
+        well_known_types.Error,
+        'Fail to print FieldMask to Json string: The character after a '
+        '"_" must be a lowercase letter in path name foo_3bar.',
+        well_known_types._SnakeCaseToCamelCase,
+        'foo_3bar')
+    self.assertRaisesRegexp(
+        well_known_types.Error,
+        'Fail to print FieldMask to Json string: Trailing "_" in path '
+        'name foo_bar_.',
+        well_known_types._SnakeCaseToCamelCase,
+        'foo_bar_')
+
+  def testCamelCaseToSnakeCase(self):
+    self.assertEqual('foo_bar',
+                     well_known_types._CamelCaseToSnakeCase('fooBar'))
+    self.assertEqual('_foo_bar',
+                     well_known_types._CamelCaseToSnakeCase('FooBar'))
+    self.assertEqual('foo3_bar',
+                     well_known_types._CamelCaseToSnakeCase('foo3Bar'))
+    self.assertRaisesRegexp(
+        well_known_types.ParseError,
+        'Fail to parse FieldMask: Path name foo_bar must not contain "_"s.',
+        well_known_types._CamelCaseToSnakeCase,
+        'foo_bar')
 
 
 class StructTest(unittest.TestCase):
 
   def testStruct(self):
     struct = struct_pb2.Struct()
+    self.assertIsInstance(struct, collections.Mapping)
+    self.assertEqual(0, len(struct))
     struct_class = struct.__class__
 
     struct['key1'] = 5
@@ -525,56 +693,157 @@ class StructTest(unittest.TestCase):
     struct['key3'] = True
     struct.get_or_create_struct('key4')['subkey'] = 11.0
     struct_list = struct.get_or_create_list('key5')
+    self.assertIsInstance(struct_list, collections.Sequence)
     struct_list.extend([6, 'seven', True, False, None])
     struct_list.add_struct()['subkey2'] = 9
+    struct['key6'] = {'subkey': {}}
+    struct['key7'] = [2, False]
 
+    self.assertEqual(7, len(struct))
     self.assertTrue(isinstance(struct, well_known_types.Struct))
-    self.assertEquals(5, struct['key1'])
-    self.assertEquals('abc', struct['key2'])
+    self.assertEqual(5, struct['key1'])
+    self.assertEqual('abc', struct['key2'])
     self.assertIs(True, struct['key3'])
-    self.assertEquals(11, struct['key4']['subkey'])
+    self.assertEqual(11, struct['key4']['subkey'])
     inner_struct = struct_class()
     inner_struct['subkey2'] = 9
-    self.assertEquals([6, 'seven', True, False, None, inner_struct],
-                      list(struct['key5'].items()))
+    self.assertEqual([6, 'seven', True, False, None, inner_struct],
+                     list(struct['key5'].items()))
+    self.assertEqual({}, dict(struct['key6']['subkey'].fields))
+    self.assertEqual([2, False], list(struct['key7'].items()))
 
     serialized = struct.SerializeToString()
-
     struct2 = struct_pb2.Struct()
     struct2.ParseFromString(serialized)
 
-    self.assertEquals(struct, struct2)
+    self.assertEqual(struct, struct2)
+    for key, value in struct.items():
+      self.assertIn(key, struct)
+      self.assertIn(key, struct2)
+      self.assertEqual(value, struct2[key])
+
+    self.assertEqual(7, len(struct.keys()))
+    self.assertEqual(7, len(struct.values()))
+    for key in struct.keys():
+      self.assertIn(key, struct)
+      self.assertIn(key, struct2)
+      self.assertEqual(struct[key], struct2[key])
+
+    item = (next(iter(struct.keys())), next(iter(struct.values())))
+    self.assertEqual(item, next(iter(struct.items())))
 
     self.assertTrue(isinstance(struct2, well_known_types.Struct))
-    self.assertEquals(5, struct2['key1'])
-    self.assertEquals('abc', struct2['key2'])
+    self.assertEqual(5, struct2['key1'])
+    self.assertEqual('abc', struct2['key2'])
     self.assertIs(True, struct2['key3'])
-    self.assertEquals(11, struct2['key4']['subkey'])
-    self.assertEquals([6, 'seven', True, False, None, inner_struct],
-                      list(struct2['key5'].items()))
+    self.assertEqual(11, struct2['key4']['subkey'])
+    self.assertEqual([6, 'seven', True, False, None, inner_struct],
+                     list(struct2['key5'].items()))
 
     struct_list = struct2['key5']
-    self.assertEquals(6, struct_list[0])
-    self.assertEquals('seven', struct_list[1])
-    self.assertEquals(True, struct_list[2])
-    self.assertEquals(False, struct_list[3])
-    self.assertEquals(None, struct_list[4])
-    self.assertEquals(inner_struct, struct_list[5])
+    self.assertEqual(6, struct_list[0])
+    self.assertEqual('seven', struct_list[1])
+    self.assertEqual(True, struct_list[2])
+    self.assertEqual(False, struct_list[3])
+    self.assertEqual(None, struct_list[4])
+    self.assertEqual(inner_struct, struct_list[5])
 
     struct_list[1] = 7
-    self.assertEquals(7, struct_list[1])
+    self.assertEqual(7, struct_list[1])
 
     struct_list.add_list().extend([1, 'two', True, False, None])
-    self.assertEquals([1, 'two', True, False, None],
-                      list(struct_list[6].items()))
+    self.assertEqual([1, 'two', True, False, None],
+                     list(struct_list[6].items()))
+    struct_list.extend([{'nested_struct': 30}, ['nested_list', 99], {}, []])
+    self.assertEqual(11, len(struct_list.values))
+    self.assertEqual(30, struct_list[7]['nested_struct'])
+    self.assertEqual('nested_list', struct_list[8][0])
+    self.assertEqual(99, struct_list[8][1])
+    self.assertEqual({}, dict(struct_list[9].fields))
+    self.assertEqual([], list(struct_list[10].items()))
+    struct_list[0] = {'replace': 'set'}
+    struct_list[1] = ['replace', 'set']
+    self.assertEqual('set', struct_list[0]['replace'])
+    self.assertEqual(['replace', 'set'], list(struct_list[1].items()))
 
     text_serialized = str(struct)
     struct3 = struct_pb2.Struct()
     text_format.Merge(text_serialized, struct3)
-    self.assertEquals(struct, struct3)
+    self.assertEqual(struct, struct3)
 
     struct.get_or_create_struct('key3')['replace'] = 12
-    self.assertEquals(12, struct['key3']['replace'])
+    self.assertEqual(12, struct['key3']['replace'])
+
+    # Tests empty list.
+    struct.get_or_create_list('empty_list')
+    empty_list = struct['empty_list']
+    self.assertEqual([], list(empty_list.items()))
+    list2 = struct_pb2.ListValue()
+    list2.add_list()
+    empty_list = list2[0]
+    self.assertEqual([], list(empty_list.items()))
+
+    # Tests empty struct.
+    struct.get_or_create_struct('empty_struct')
+    empty_struct = struct['empty_struct']
+    self.assertEqual({}, dict(empty_struct.fields))
+    list2.add_struct()
+    empty_struct = list2[1]
+    self.assertEqual({}, dict(empty_struct.fields))
+
+    self.assertEqual(9, len(struct))
+    del struct['key3']
+    del struct['key4']
+    self.assertEqual(7, len(struct))
+    self.assertEqual(6, len(struct['key5']))
+    del struct['key5'][1]
+    self.assertEqual(5, len(struct['key5']))
+    self.assertEqual([6, True, False, None, inner_struct],
+                     list(struct['key5'].items()))
+
+  def testMergeFrom(self):
+    struct = struct_pb2.Struct()
+    struct_class = struct.__class__
+
+    dictionary = {
+        'key1': 5,
+        'key2': 'abc',
+        'key3': True,
+        'key4': {'subkey': 11.0},
+        'key5': [6, 'seven', True, False, None, {'subkey2': 9}],
+        'key6': [['nested_list', True]],
+        'empty_struct': {},
+        'empty_list': []
+    }
+    struct.update(dictionary)
+    self.assertEqual(5, struct['key1'])
+    self.assertEqual('abc', struct['key2'])
+    self.assertIs(True, struct['key3'])
+    self.assertEqual(11, struct['key4']['subkey'])
+    inner_struct = struct_class()
+    inner_struct['subkey2'] = 9
+    self.assertEqual([6, 'seven', True, False, None, inner_struct],
+                     list(struct['key5'].items()))
+    self.assertEqual(2, len(struct['key6'][0].values))
+    self.assertEqual('nested_list', struct['key6'][0][0])
+    self.assertEqual(True, struct['key6'][0][1])
+    empty_list = struct['empty_list']
+    self.assertEqual([], list(empty_list.items()))
+    empty_struct = struct['empty_struct']
+    self.assertEqual({}, dict(empty_struct.fields))
+
+    # According to documentation: "When parsing from the wire or when merging,
+    # if there are duplicate map keys the last key seen is used".
+    duplicate = {
+        'key4': {'replace': 20},
+        'key5': [[False, 5]]
+    }
+    struct.update(duplicate)
+    self.assertEqual(1, len(struct['key4'].fields))
+    self.assertEqual(20, struct['key4']['replace'])
+    self.assertEqual(1, len(struct['key5'].values))
+    self.assertEqual(False, struct['key5'][0][0])
+    self.assertEqual(5, struct['key5'][0][1])
 
 
 class AnyTest(unittest.TestCase):
@@ -638,6 +907,20 @@ class AnyTest(unittest.TestCase):
     unpacked_message = any_test_pb2.TestAny()
     self.assertTrue(msg.Unpack(unpacked_message))
     self.assertEqual(submessage, unpacked_message)
+
+  def testPackDeterministic(self):
+    submessage = any_test_pb2.TestAny()
+    for i in range(10):
+      submessage.map_value[str(i)] = i * 2
+    msg = any_pb2.Any()
+    msg.Pack(submessage, deterministic=True)
+    serialized = msg.SerializeToString(deterministic=True)
+    golden = (b'\n4type.googleapis.com/google.protobuf.internal.TestAny\x12F'
+              b'\x1a\x05\n\x010\x10\x00\x1a\x05\n\x011\x10\x02\x1a\x05\n\x01'
+              b'2\x10\x04\x1a\x05\n\x013\x10\x06\x1a\x05\n\x014\x10\x08\x1a'
+              b'\x05\n\x015\x10\n\x1a\x05\n\x016\x10\x0c\x1a\x05\n\x017\x10'
+              b'\x0e\x1a\x05\n\x018\x10\x10\x1a\x05\n\x019\x10\x12')
+    self.assertEqual(golden, serialized)
 
 
 if __name__ == '__main__':

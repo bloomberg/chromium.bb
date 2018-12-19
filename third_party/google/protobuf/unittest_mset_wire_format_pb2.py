@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -19,9 +18,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='google/protobuf/unittest_mset_wire_format.proto',
   package='proto2_wireformat_unittest',
   syntax='proto2',
+  serialized_options=_b('H\001\370\001\001\252\002!Google.ProtocolBuffers.TestProtos'),
   serialized_pb=_b('\n/google/protobuf/unittest_mset_wire_format.proto\x12\x1aproto2_wireformat_unittest\"\x1e\n\x0eTestMessageSet*\x08\x08\x04\x10\xff\xff\xff\xff\x07:\x02\x08\x01\"d\n!TestMessageSetWireFormatContainer\x12?\n\x0bmessage_set\x18\x01 \x01(\x0b\x32*.proto2_wireformat_unittest.TestMessageSetB)H\x01\xf8\x01\x01\xaa\x02!Google.ProtocolBuffers.TestProtos')
 )
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -39,7 +38,7 @@ _TESTMESSAGESET = _descriptor.Descriptor(
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('\010\001')),
+  serialized_options=_b('\010\001'),
   is_extendable=True,
   syntax='proto2',
   extension_ranges=[(4, 2147483647), ],
@@ -63,14 +62,14 @@ _TESTMESSAGESETWIREFORMATCONTAINER = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
@@ -83,6 +82,7 @@ _TESTMESSAGESETWIREFORMATCONTAINER = _descriptor.Descriptor(
 _TESTMESSAGESETWIREFORMATCONTAINER.fields_by_name['message_set'].message_type = _TESTMESSAGESET
 DESCRIPTOR.message_types_by_name['TestMessageSet'] = _TESTMESSAGESET
 DESCRIPTOR.message_types_by_name['TestMessageSetWireFormatContainer'] = _TESTMESSAGESETWIREFORMATCONTAINER
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 TestMessageSet = _reflection.GeneratedProtocolMessageType('TestMessageSet', (_message.Message,), dict(
   DESCRIPTOR = _TESTMESSAGESET,
@@ -99,8 +99,6 @@ TestMessageSetWireFormatContainer = _reflection.GeneratedProtocolMessageType('Te
 _sym_db.RegisterMessage(TestMessageSetWireFormatContainer)
 
 
-DESCRIPTOR.has_options = True
-DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('H\001\370\001\001\252\002!Google.ProtocolBuffers.TestProtos'))
-_TESTMESSAGESET.has_options = True
-_TESTMESSAGESET._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('\010\001'))
+DESCRIPTOR._options = None
+_TESTMESSAGESET._options = None
 # @@protoc_insertion_point(module_scope)
