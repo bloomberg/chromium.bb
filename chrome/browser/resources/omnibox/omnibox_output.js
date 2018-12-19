@@ -24,6 +24,8 @@ cr.define('omnibox_output', function() {
       this.queryInputs_ = /** @type {!QueryInputs} */ ({});
       /** @private {!DisplayInputs} */
       this.displayInputs_ = /** @type {!DisplayInputs} */ ({});
+      /** @private {string} */
+      this.filterText_ = '';
     }
 
     /** @param {!QueryInputs} queryInputs */
@@ -35,6 +37,12 @@ cr.define('omnibox_output', function() {
     updateDisplayInputs(displayInputs) {
       this.displayInputs_ = displayInputs;
       this.updateVisibility_();
+    }
+
+    /** @param {string} filterText */
+    updateFilterText(filterText) {
+      this.filterText_ = filterText;
+      this.updateFilterHighlights_();
     }
 
     clearAutocompleteResponses() {
@@ -53,6 +61,7 @@ cr.define('omnibox_output', function() {
       this.$$('contents').appendChild(resultsGroup);
 
       this.updateVisibility_();
+      this.updateFilterHighlights_();
     }
 
     /**
@@ -79,9 +88,9 @@ cr.define('omnibox_output', function() {
       });
     }
 
-    /** @param {string} filterText */
-    filter(filterText) {
-      this.matches.forEach(match => match.filter(filterText));
+    /** @private */
+    updateFilterHighlights_() {
+      this.matches.forEach(match => match.filter(this.filterText_));
     }
 
     /** @return {!Array<!OutputMatch>} */
