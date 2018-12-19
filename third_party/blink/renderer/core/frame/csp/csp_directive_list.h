@@ -380,6 +380,14 @@ class CORE_EXPORT CSPDirectiveList
 
   uint8_t require_sri_for_;
 
+  // If a "report-to" directive is used:
+  // - |report_endpoints_| is a list of token parsed from the "report-to"
+  //   directive's value, and
+  // - |use_reporting_api_| is true.
+  // Otherwise,
+  // - |report_endpoints_| is a list of uri-reference parsed from a
+  //   "report-uri" directive's value if any, and
+  // - |use_reporting_api_| is false.
   Vector<String> report_endpoints_;
   bool use_reporting_api_;
 

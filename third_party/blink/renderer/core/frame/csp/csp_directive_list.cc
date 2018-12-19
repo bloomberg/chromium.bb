@@ -1258,20 +1258,47 @@ void CSPDirectiveList::ParseReportURI(const String& name, const String& value) {
   ParseAndAppendReportEndpoints(value);
 }
 
+// For "report-uri" directive, this method corresponds to:
+// https://w3c.github.io/webappsec-csp/#report-violation
+// Step 3.4.2. For each token returned by splitting a string on ASCII whitespace
+// with directive's value as the input. [spec text]
+
+// For "report-to" directive, the spec says |value| is a single token
+// but we use the same logic as "report-uri" and thus we split |value| by
+// ASCII whitespaces.
+// https://w3c.github.io/webappsec-csp/#directive-report-to
+//
+// TODO(https://crbug.com/916265): Fix this inconsistency.
 void CSPDirectiveList::ParseAndAppendReportEndpoints(const String& value) {
   Vector<UChar> characters;
   value.AppendTo(characters);
 
+  // https://infra.spec.whatwg.org/#split-on-ascii-whitespace
+
+  // Step 2. Let tokens be a list of strings, initially empty. [spec text]
+  DCHECK(report_endpoints_.IsEmpty());
+
   const UChar* position = characters.data();
   const UChar* end = position + characters.size();
 
+  // Step 4. While position is not past the end of input: [spec text]
   while (position < end) {
+    // Step 3. Skip ASCII whitespace within input given position. [spec text]
+    // Step 4.3. Skip ASCII whitespace within input given position. [spec text]
+    //
+    // Note: IsASCIISpace returns true for U+000B which is not included in
+    // https://infra.spec.whatwg.org/#ascii-whitespace.
+    // TODO(mkwst): Investigate why the restrictions in the infra spec are
+    // different than those in Blink here.
     SkipWhile<UChar, IsASCIISpace>(position, end);
 
+    // Step 4.1. Let token be the result of collecting a sequence of code points
+    // that are not ASCII whitespace from input, given position. [spec text]
     const UChar* endpoint_begin = position;
     SkipWhile<UChar, IsNotASCIISpace>(position, end);
 
     if (endpoint_begin < position) {
+      // Step 4.2. Append token to tokens. [spec text]
       String endpoint = String(
           endpoint_begin, static_cast<wtf_size_t>(position - endpoint_begin));
       report_endpoints_.push_back(endpoint);

@@ -106,6 +106,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void SetRequireTrustedTypes() { require_safe_types_ = true; }
   bool RequireTrustedTypes() const { return require_safe_types_; }
 
+  // https://w3c.github.io/webappsec-upgrade-insecure-requests/#upgrade-insecure-navigations-set
   void SetInsecureNavigationsSet(const std::vector<unsigned>& set) {
     insecure_navigations_to_upgrade_.clear();
     for (unsigned hash : set)
@@ -118,6 +119,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
     return &insecure_navigations_to_upgrade_;
   }
 
+  // https://w3c.github.io/webappsec-upgrade-insecure-requests/#insecure-requests-policy
   virtual void SetInsecureRequestPolicy(WebInsecureRequestPolicy policy) {
     insecure_request_policy_ = policy;
   }
