@@ -106,6 +106,7 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   void StartTrackingMetadata(
       std::vector<NodeMetadataPair> nodes_metadata,
       std::unique_ptr<sync_pb::ModelTypeState> model_type_state);
+  void StopTrackingMetadata();
 
   // Creates a DictionaryValue for local and remote debugging information about
   // |node| and appends it to |all_nodes|. It does the same for child nodes
@@ -157,6 +158,8 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // GUID string that identifies the sync client and is received from the sync
   // engine.
   std::string cache_guid_;
+
+  syncer::ModelErrorHandler error_handler_;
 
   std::unique_ptr<BookmarkModelObserverImpl> bookmark_model_observer_;
 

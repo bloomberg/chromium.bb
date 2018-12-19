@@ -115,7 +115,11 @@ void BookmarkModelTypeProcessor::ConnectSync(
 
 void BookmarkModelTypeProcessor::DisconnectSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(worker_);
+
+  if (!worker_) {
+    return;
+  }
+
   DVLOG(1) << "Disconnecting sync for Bookmarks";
   worker_.reset();
 }
@@ -170,8 +174,27 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
       BookmarkModelMerger(&updates, bookmark_model_, favicon_service_,
                           bookmark_tracker_.get())
           .Merge();
-      bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
     }
+
+    // If any of the permanent nodes is missing, we treat it as failure.
+    // TODO(mamir): Revisit if this is too aggressive since it may influence
+    // the USS migrator case on desktop (which wouldn't usually have mobile
+    // bookmarks).
+    if (!bookmark_tracker_->GetEntityForBookmarkNode(
+            bookmark_model_->bookmark_bar_node()) ||
+        !bookmark_tracker_->GetEntityForBookmarkNode(
+            bookmark_model_->other_node()) ||
+        !bookmark_tracker_->GetEntityForBookmarkNode(
+            bookmark_model_->mobile_node())) {
+      StopTrackingMetadata();
+      bookmark_tracker_.reset();
+      error_handler_.Run(
+          syncer::ModelError(FROM_HERE, "Permanent bookmark entities missing"));
+      return;
+    }
+
+    bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
+
     schedule_save_closure_.Run();
     NudgeForCommitIfNeeded();
     return;
@@ -288,6 +311,8 @@ void BookmarkModelTypeProcessor::OnSyncStarting(
 
   cache_guid_ = request.cache_guid;
   start_callback_ = std::move(start_callback);
+  error_handler_ = request.error_handler;
+
   DCHECK(!cache_guid_.empty());
   ConnectIfReady();
 }
@@ -383,13 +408,7 @@ void BookmarkModelTypeProcessor::NudgeForCommitIfNeeded() {
 void BookmarkModelTypeProcessor::OnBookmarkModelBeingDeleted() {
   DCHECK(bookmark_model_);
   DCHECK(bookmark_model_observer_);
-  bookmark_model_->RemoveObserver(bookmark_model_observer_.get());
-  bookmark_model_ = nullptr;
-  bookmark_model_observer_.reset();
-
-  if (worker_) {
-    DisconnectSync();
-  }
+  StopTrackingMetadata();
 }
 
 void BookmarkModelTypeProcessor::StartTrackingMetadata(
@@ -405,6 +424,16 @@ void BookmarkModelTypeProcessor::StartTrackingMetadata(
                      base::Unretained(this)),
       bookmark_tracker_.get());
   bookmark_model_->AddObserver(bookmark_model_observer_.get());
+}
+
+void BookmarkModelTypeProcessor::StopTrackingMetadata() {
+  DCHECK(bookmark_model_observer_);
+
+  bookmark_model_->RemoveObserver(bookmark_model_observer_.get());
+  bookmark_model_ = nullptr;
+  bookmark_model_observer_.reset();
+
+  DisconnectSync();
 }
 
 void BookmarkModelTypeProcessor::GetAllNodesForDebugging(
