@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -228,8 +227,6 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.start_behavior = start_behavior;
   init_params.sync_client = std::move(sync_client);
   init_params.identity_manager = identity_manager();
-  init_params.signin_scoped_device_id_callback =
-      base::BindRepeating([]() { return std::string(); });
   init_params.invalidations_identity_providers.push_back(
       identity_provider_.get());
   init_params.network_time_update_callback = base::DoNothing();

@@ -195,12 +195,11 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.network_connection_tracker =
       content::GetNetworkConnectionTracker();
   init_params.debug_identifier = profile->GetDebugName();
-  init_params.local_device_info_provider =
-      std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
-          chrome::GetChannel(), chrome::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
 
   bool local_sync_backend_enabled = false;
+  syncer::LocalDeviceInfoProviderImpl::SigninScopedDeviceIdCallback
+      signin_scoped_device_id_callback;
+
 // Since the local sync backend is currently only supported on Windows don't
 // even check the pref on other os-es.
 #if defined(OS_WIN)
@@ -219,7 +218,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     if (local_sync_backend_folder.empty())
       return nullptr;
 
-    init_params.signin_scoped_device_id_callback =
+    signin_scoped_device_id_callback =
         base::BindRepeating([]() { return std::string("local_device"); });
 
     init_params.start_behavior = ProfileSyncService::AUTO_START;
@@ -238,10 +237,11 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
     init_params.identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
-    init_params.signin_scoped_device_id_callback =
-        base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);
     init_params.gaia_cookie_manager_service =
         GaiaCookieManagerServiceFactory::GetForProfile(profile);
+
+    signin_scoped_device_id_callback =
+        base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);
 
     bool use_fcm_invalidations =
         base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);
@@ -275,6 +275,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
                                      ? ProfileSyncService::AUTO_START
                                      : ProfileSyncService::MANUAL_START;
   }
+
+  init_params.local_device_info_provider =
+      std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
+          chrome::GetChannel(), chrome::GetVersionString(),
+          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
+          signin_scoped_device_id_callback);
 
   auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
   pss->Initialize();

@@ -75,8 +75,6 @@ class CWVSyncControllerTest : public PlatformTest {
     init_params.sync_client = std::make_unique<syncer::FakeSyncClient>();
     init_params.url_loader_factory = browser_state_.GetSharedURLLoaderFactory();
     init_params.network_time_update_callback = base::DoNothing();
-    init_params.signin_scoped_device_id_callback = base::BindRepeating(
-        &signin::GetSigninScopedDeviceId, browser_state_.GetPrefs());
     init_params.local_device_info_provider =
         std::make_unique<syncer::LocalDeviceInfoProviderMock>();
     profile_sync_service_ =

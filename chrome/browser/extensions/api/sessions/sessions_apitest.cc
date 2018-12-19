@@ -181,7 +181,7 @@ void ExtensionSessionsTest::SetUpOnMainThread() {
   CreateTestExtension();
   ProfileSyncServiceFactory::GetForProfile(browser()->profile())
       ->GetLocalDeviceInfoProviderForTest()
-      ->Initialize(kTestCacheGuid, "machine name", "device_id");
+      ->Initialize(kTestCacheGuid, "machine name");
 }
 
 void ExtensionSessionsTest::CreateTestExtension() {

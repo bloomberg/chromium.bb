@@ -143,8 +143,6 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   ProfileSyncService::InitParams init_params;
   init_params.identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
-  init_params.signin_scoped_device_id_callback = base::BindRepeating(
-      &signin::GetSigninScopedDeviceId, browser_state->GetPrefs());
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client =
       std::make_unique<IOSChromeSyncClient>(browser_state);
@@ -156,7 +154,10 @@ ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           ::GetChannel(), ::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
+          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
+          /*signin_scoped_device_id_callback=*/
+          base::BindRepeating(&signin::GetSigninScopedDeviceId,
+                              browser_state->GetPrefs()));
 
   bool use_fcm_invalidations =
       base::FeatureList::IsEnabled(invalidation::switches::kFCMInvalidations);

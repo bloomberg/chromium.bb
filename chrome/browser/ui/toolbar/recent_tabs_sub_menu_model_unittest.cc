@@ -126,8 +126,7 @@ class RecentTabsSubMenuModelTest
 
     ProfileSyncServiceFactory::GetForProfile(profile())
         ->GetLocalDeviceInfoProviderForTest()
-        ->Initialize(activation_request.cache_guid, "Test Machine",
-                     "device_id");
+        ->Initialize(activation_request.cache_guid, "Test Machine");
 
     std::unique_ptr<syncer::DataTypeActivationResponse> activation_response;
     base::RunLoop loop;
