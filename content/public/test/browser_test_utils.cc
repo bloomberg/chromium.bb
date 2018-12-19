@@ -1800,18 +1800,18 @@ void WaitForInterstitialAttach(content::WebContents* web_contents) {
 }
 
 void WaitForInterstitialDetach(content::WebContents* web_contents) {
-  RunTaskAndWaitForInterstitialDetach(web_contents, base::Closure());
+  RunTaskAndWaitForInterstitialDetach(web_contents, base::OnceClosure());
 }
 
 void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
-                                         const base::Closure& task) {
+                                         base::OnceClosure task) {
   if (!web_contents || !web_contents->ShowingInterstitialPage())
     return;
   base::RunLoop run_loop;
   InterstitialObserver observer(web_contents, base::OnceClosure(),
                                 run_loop.QuitClosure());
   if (!task.is_null())
-    task.Run();
+    std::move(task).Run();
   // At this point, web_contents may have been deleted.
   run_loop.Run();
 }
