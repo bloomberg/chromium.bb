@@ -291,7 +291,7 @@ cr.define('omnibox_output', function() {
       this.matches.forEach(this.appendChild.bind(this));
     }
 
-    /** @return {string} */
+    /** @return {?string} */
     get innerHeaderText() {
       return this.matches[0].providerName;
     }
@@ -319,8 +319,8 @@ cr.define('omnibox_output', function() {
     set match(match) {
       /** @type {!Object} */
       this.properties = {};
-      /** @type {string} */
-      this.providerName = match.providerName;
+      /** @type {?string} */
+      this.providerName = match.providerName || null;
 
       COLUMNS.forEach(column => {
         const values = column.sourceProperties.map(

@@ -2,14 +2,18 @@
    Closure base library is unavailable. See https://crbug.com/898692 #}
 goog.provide('{{module.namespace}}.{{struct.name}}');
 
-{{module.namespace}}.{{struct.name}} = class {
-  constructor() {
+{% if struct.packed.packed_fields %}
+/**
+ * @typedef { {
 {%- for packed_field in struct.packed.packed_fields %}
-    /** @type { {{packed_field.field.kind|lite_closure_type_with_nullability}} } */
-    this.{{packed_field.field.name}};
+ *   {{packed_field.field.name}}: {{packed_field.field.kind|lite_closure_field_type}},
 {%-  endfor %}
-  }
-};
+ * } }
+ */
+{% else %}
+/** @typedef {Object} */
+{% endif %}
+{{module.namespace}}.{{struct.name}};
 
 {#--- Enum definitions #}
 {% for enum in struct.enums %}

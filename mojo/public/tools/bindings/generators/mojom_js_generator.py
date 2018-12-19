@@ -305,6 +305,7 @@ class Generator(generator.Generator):
       "lite_closure_param_type": self._LiteClosureParamType,
       "lite_closure_type_with_nullability":
           self._LiteClosureTypeWithNullability,
+      "lite_closure_field_type": self._LiteClosureFieldType,
       "payload_size": JavaScriptPayloadSize,
       "to_camel": generator.ToCamel,
       "union_decode_snippet": self._JavaScriptUnionDecodeSnippet,
@@ -420,17 +421,17 @@ class Generator(generator.Generator):
     if kind in mojom.PRIMITIVES:
       return _kind_to_closure_type[kind]
     if mojom.IsArrayKind(kind):
-      return "Array<%s>" % self._ClosureType(kind.kind)
+      return "Array<%s>" % self._LiteClosureTypeWithNullability(kind.kind)
     if mojom.IsMapKind(kind) and self._IsStringableKind(kind.key_kind):
-      return "Map<%s, %s>|Object<%s, %s>" % (
-          self._LiteClosureType(kind.key_kind),
-          self._LiteClosureType(kind.value_kind),
-          self._LiteClosureType(kind.key_kind),
-          self._LiteClosureType(kind.value_kind))
+      return "(Map<%s, %s>|Object<%s, %s>)" % (
+          self._LiteClosureTypeWithNullability(kind.key_kind),
+          self._LiteClosureTypeWithNullability(kind.value_kind),
+          self._LiteClosureTypeWithNullability(kind.key_kind),
+          self._LiteClosureTypeWithNullability(kind.value_kind))
     if mojom.IsMapKind(kind):
       return "Map<%s, %s>" % (
-          self._LiteClosureType(kind.key_kind),
-          self._LiteClosureType(kind.value_kind))
+          self._LiteClosureTypeWithNullability(kind.key_kind),
+          self._LiteClosureTypeWithNullability(kind.value_kind))
 
     if mojom.IsAssociatedKind(kind) or mojom.IsInterfaceRequestKind(kind):
       named_kind = kind.kind
@@ -471,7 +472,8 @@ class Generator(generator.Generator):
     if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
       return prefix + "Object"
     if mojom.IsArrayKind(kind):
-      return prefix + ("Array<%s>" % self._LiteClosureParamType(kind.kind))
+      return prefix + ("Array<%s>" %
+                       self._LiteClosureParamType(kind.kind))
     if mojom.IsMapKind(kind):
       return "%sMap<%s, %s>|%sObject<%s, %s>" % (
           prefix, self._LiteClosureParamType(kind.key_kind),
@@ -482,8 +484,14 @@ class Generator(generator.Generator):
     return prefix + self._LiteClosureType(kind)
 
   def _LiteClosureTypeWithNullability(self, kind):
-    return (("" if mojom.IsNullableKind(kind) else "!") +
+    return (("?" if mojom.IsNullableKind(kind) else "!") +
         self._LiteClosureType(kind))
+
+  def _LiteClosureFieldType(self, kind):
+    if mojom.IsNullableKind(kind):
+      return "(" + self._LiteClosureType(kind) + "|undefined)"
+    else:
+      return "!" + self._LiteClosureType(kind)
 
   def _NamespaceDeclarations(self, namespace):
     pieces = namespace.split('.')
