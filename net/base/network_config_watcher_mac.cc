@@ -115,6 +115,8 @@ void DynamicStoreCallback(SCDynamicStoreRef /* store */,
 }
 #endif  // !defined(OS_IOS)
 
+}  // namespace
+
 class NetworkConfigWatcherMacThread : public base::Thread {
  public:
   NetworkConfigWatcherMacThread(NetworkConfigWatcherMac::Delegate* delegate);
@@ -154,10 +156,8 @@ NetworkConfigWatcherMacThread::NetworkConfigWatcherMacThread(
 }
 
 NetworkConfigWatcherMacThread::~NetworkConfigWatcherMacThread() {
-  // Allow IO because Stop() calls PlatformThread::Join(), which is a blocking
-  // operation. This is expected during shutdown.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
+  // This is expected to be invoked during shutdown.
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
   Stop();
 }
 
@@ -258,8 +258,6 @@ bool NetworkConfigWatcherMacThread::InitNotificationsHelper() {
 #endif  // !defined(OS_IOS)
   return true;
 }
-
-}  // namespace
 
 NetworkConfigWatcherMac::NetworkConfigWatcherMac(Delegate* delegate)
     : notifier_thread_(new NetworkConfigWatcherMacThread(delegate)) {
