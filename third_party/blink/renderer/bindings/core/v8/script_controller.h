@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
@@ -120,7 +121,11 @@ class CORE_EXPORT ScriptController final
       SanitizeScriptErrors sanitize_script_errors);
 
   // Returns true if argument is a JavaScript URL.
-  bool ExecuteScriptIfJavaScriptURL(const KURL&, Element*);
+  bool ExecuteScriptIfJavaScriptURL(
+      const KURL&,
+      Element*,
+      ContentSecurityPolicyDisposition check_main_world_csp =
+          kCheckContentSecurityPolicy);
 
   // Creates a new isolated world for DevTools with the given human readable
   // |world_name| and returns it id or nullptr on failure.

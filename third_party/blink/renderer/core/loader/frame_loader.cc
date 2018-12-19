@@ -712,8 +712,29 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
     return true;
 
   KURL url = request.GetResourceRequest().Url();
-  if (frame_->GetScriptController().ExecuteScriptIfJavaScriptURL(url, nullptr))
-    return false;
+  if (url.ProtocolIsJavaScript()) {
+    Document* origin_document = request.OriginDocument();
+    // Check the CSP of the caller (the "source browsing context") if required,
+    // as per https://html.spec.whatwg.org/#javascript-protocol.
+    bool javascript_url_is_allowed =
+        request.ShouldCheckMainWorldContentSecurityPolicy() ==
+            kDoNotCheckContentSecurityPolicy ||
+        origin_document->GetContentSecurityPolicy()->AllowJavaScriptURLs(
+            frame_->DeprecatedLocalOwner(), url.GetString(),
+            origin_document->Url(), OrdinalNumber::First());
+
+    if (!javascript_url_is_allowed)
+      return false;
+
+    if (frame_->Owner() && frame_->Owner()->GetSandboxFlags() & kSandboxOrigin)
+      return false;
+
+    if (frame_->GetScriptController().ExecuteScriptIfJavaScriptURL(
+            url, nullptr,
+            request.ShouldCheckMainWorldContentSecurityPolicy())) {
+      return false;
+    }
+  }
 
   if (!request.OriginDocument()->GetSecurityOrigin()->CanDisplay(url)) {
     request.OriginDocument()->AddConsoleMessage(ConsoleMessage::Create(

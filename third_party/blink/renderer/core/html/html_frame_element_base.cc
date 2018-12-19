@@ -86,39 +86,8 @@ void HTMLFrameElementBase::OpenURL(bool replace_current_item) {
   if (!parent_frame)
     return;
 
-  // Support for <frame src="javascript:string">
-  KURL script_url;
   KURL url = GetDocument().CompleteURL(url_);
-  if (url.ProtocolIsJavaScript()) {
-    // We'll set/execute |scriptURL| iff CSP allows us to execute inline
-    // JavaScript. If CSP blocks inline JavaScript, then exit early if
-    // we're trying to execute script in an existing document. If we're
-    // executing JavaScript to create a new document (e.g.
-    // '<iframe src="javascript:...">' then continue loading 'about:blank'
-    // so that the frame is populated with something reasonable.
-    if (ContentSecurityPolicy::ShouldBypassMainWorld(&GetDocument()) ||
-        GetDocument().GetContentSecurityPolicy()->AllowJavaScriptURLs(
-            this, url.GetString(), GetDocument().Url(),
-            OrdinalNumber::First())) {
-      script_url = url;
-    } else {
-      if (ContentFrame())
-        return;
-    }
-
-    url = BlankURL();
-  }
-
-  if (!LoadOrRedirectSubframe(url, frame_name_, replace_current_item))
-    return;
-  if (!ContentFrame() || script_url.IsEmpty() ||
-      !ContentFrame()->IsLocalFrame())
-    return;
-  if (ContentFrame()->Owner()->GetSandboxFlags() & kSandboxOrigin)
-    return;
-  ToLocalFrame(ContentFrame())
-      ->GetScriptController()
-      .ExecuteScriptIfJavaScriptURL(script_url, this);
+  LoadOrRedirectSubframe(url, frame_name_, replace_current_item);
 }
 
 void HTMLFrameElementBase::ParseAttribute(
