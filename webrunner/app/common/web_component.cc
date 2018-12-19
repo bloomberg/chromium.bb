@@ -33,7 +33,10 @@ std::unique_ptr<WebComponent> WebComponent::ForUrlRequest(
   DCHECK(url.is_valid());
   std::unique_ptr<WebComponent> component(new WebComponent(
       runner, std::move(startup_info), std::move(controller_request)));
-  component->navigation_controller()->LoadUrl(url.spec(), nullptr);
+  chromium::web::NavigationControllerPtr navigation_controller;
+  component->frame()->GetNavigationController(
+      navigation_controller.NewRequest());
+  navigation_controller->LoadUrl(url.spec(), nullptr);
   return component;
 }
 
@@ -57,7 +60,6 @@ WebComponent::WebComponent(
 
   // Create the underlying Frame and get its NavigationController.
   runner_->context()->CreateFrame(frame_.NewRequest());
-  frame_->GetNavigationController(navigation_controller_.NewRequest());
 
   // Create a ServiceDirectory for this component, and publish a ViewProvider
   // into it, for the caller to use to create a View for this component.

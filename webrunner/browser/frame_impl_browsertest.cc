@@ -21,6 +21,7 @@
 #include "webrunner/common/test/test_common.h"
 #include "webrunner/common/test/webrunner_browser_test.h"
 #include "webrunner/service/common.h"
+#include "webrunner/test/promise.h"
 
 namespace webrunner {
 
@@ -739,7 +740,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
   message.data = MemBufferFromString(kPage1Path);
   Promise<bool> post_result;
   frame->PostMessage(std::move(message), post_message_url.GetOrigin().spec(),
-                     post_result.GetReceiveCallback());
+                     ConvertToFitFunction(post_result.GetReceiveCallback()));
   base::RunLoop run_loop;
   EXPECT_CALL(navigation_observer_,
               MockableOnNavigationStateChanged(
@@ -771,11 +772,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
     msg.data = MemBufferFromString("hi");
     Promise<bool> post_result;
     frame->PostMessage(std::move(msg), post_message_url.GetOrigin().spec(),
-                       post_result.GetReceiveCallback());
+                       ConvertToFitFunction(post_result.GetReceiveCallback()));
 
     base::RunLoop run_loop;
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
-    message_port->ReceiveMessage(receiver.GetReceiveCallback());
+    message_port->ReceiveMessage(
+        ConvertToFitFunction(receiver.GetReceiveCallback()));
     CheckRunWithTimeout(&run_loop);
     EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
   }
@@ -783,10 +785,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
   {
     msg.data = MemBufferFromString("ping");
     Promise<bool> post_result;
-    message_port->PostMessage(std::move(msg), post_result.GetReceiveCallback());
+    message_port->PostMessage(
+        std::move(msg), ConvertToFitFunction(post_result.GetReceiveCallback()));
     base::RunLoop run_loop;
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
-    message_port->ReceiveMessage(receiver.GetReceiveCallback());
+    message_port->ReceiveMessage(
+        ConvertToFitFunction(receiver.GetReceiveCallback()));
     CheckRunWithTimeout(&run_loop);
     EXPECT_EQ("ack ping", StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
@@ -814,11 +818,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
     msg.data = MemBufferFromString("hi");
     Promise<bool> post_result;
     frame->PostMessage(std::move(msg), post_message_url.GetOrigin().spec(),
-                       post_result.GetReceiveCallback());
+                       ConvertToFitFunction(post_result.GetReceiveCallback()));
 
     base::RunLoop run_loop;
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
-    message_port->ReceiveMessage(receiver.GetReceiveCallback());
+    message_port->ReceiveMessage(
+        ConvertToFitFunction(receiver.GetReceiveCallback()));
     CheckRunWithTimeout(&run_loop);
     EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
@@ -857,11 +862,13 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     msg.outgoing_transfer->set_message_port(message_port.NewRequest());
     msg.data = MemBufferFromString("hi");
     Promise<bool> post_result;
-    frame->PostMessage(std::move(msg), "*", post_result.GetReceiveCallback());
+    frame->PostMessage(std::move(msg), "*",
+                       ConvertToFitFunction(post_result.GetReceiveCallback()));
 
     base::RunLoop run_loop;
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
-    message_port->ReceiveMessage(receiver.GetReceiveCallback());
+    message_port->ReceiveMessage(
+        ConvertToFitFunction(receiver.GetReceiveCallback()));
     CheckRunWithTimeout(&run_loop);
     EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
     incoming_message_port = receiver->incoming_transfer->message_port().Bind();
@@ -874,8 +881,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     base::RunLoop run_loop;
     Promise<bool> post_result(run_loop.QuitClosure());
     msg.data = MemBufferFromString("ping");
-    incoming_message_port->PostMessage(std::move(msg),
-                                       post_result.GetReceiveCallback());
+    incoming_message_port->PostMessage(
+        std::move(msg), ConvertToFitFunction(post_result.GetReceiveCallback()));
     run_loop.Run();
     EXPECT_TRUE(*post_result);
   }
@@ -893,10 +900,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
     // Quit the runloop only after we've received a WebMessage AND a PostMessage
     // result.
     Promise<bool> post_result;
-    frame->PostMessage(std::move(msg), "*", post_result.GetReceiveCallback());
+    frame->PostMessage(std::move(msg), "*",
+                       ConvertToFitFunction(post_result.GetReceiveCallback()));
     base::RunLoop run_loop;
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
-    ack_message_port->ReceiveMessage(receiver.GetReceiveCallback());
+    ack_message_port->ReceiveMessage(
+        ConvertToFitFunction(receiver.GetReceiveCallback()));
     CheckRunWithTimeout(&run_loop);
     EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
     EXPECT_TRUE(*post_result);
@@ -906,7 +915,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
   for (int i = 0; i < 3; ++i) {
     base::RunLoop run_loop;
     Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
-    incoming_message_port->ReceiveMessage(receiver.GetReceiveCallback());
+    incoming_message_port->ReceiveMessage(
+        ConvertToFitFunction(receiver.GetReceiveCallback()));
     CheckRunWithTimeout(&run_loop);
     EXPECT_EQ("ack ping", StringFromMemBufferOrDie(receiver->data));
   }
@@ -933,11 +943,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
   msg.outgoing_transfer->set_message_port(unused_message_port.NewRequest());
   msg.data = MemBufferFromString("bad origin, bad!");
   Promise<bool> unused_post_result;
-  frame->PostMessage(std::move(msg), "https://example.com",
-                     unused_post_result.GetReceiveCallback());
+  frame->PostMessage(
+      std::move(msg), "https://example.com",
+      ConvertToFitFunction(unused_post_result.GetReceiveCallback()));
   Promise<chromium::web::WebMessage> unused_message_read;
   bad_origin_incoming_message_port->ReceiveMessage(
-      unused_message_read.GetReceiveCallback());
+      ConvertToFitFunction(unused_message_read.GetReceiveCallback()));
 
   // PostMessage() with a valid origin should succeed.
   // Verify it by looking for an ack message on the MessagePort we passed in.
@@ -951,10 +962,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
   msg.outgoing_transfer->set_message_port(message_port.NewRequest());
   msg.data = MemBufferFromString("good origin");
   Promise<bool> post_result;
-  frame->PostMessage(std::move(msg), "*", post_result.GetReceiveCallback());
+  frame->PostMessage(std::move(msg), "*",
+                     ConvertToFitFunction(post_result.GetReceiveCallback()));
   base::RunLoop run_loop;
   Promise<chromium::web::WebMessage> receiver(run_loop.QuitClosure());
-  message_port->ReceiveMessage(receiver.GetReceiveCallback());
+  message_port->ReceiveMessage(
+      ConvertToFitFunction(receiver.GetReceiveCallback()));
   CheckRunWithTimeout(&run_loop);
   EXPECT_EQ("got_port", StringFromMemBufferOrDie(receiver->data));
   incoming_message_port = receiver->incoming_transfer->message_port().Bind();

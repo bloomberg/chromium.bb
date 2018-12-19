@@ -44,6 +44,8 @@ class WebComponent : public fuchsia::sys::ComponentController,
       fidl::InterfaceRequest<fuchsia::sys::ComponentController>
           controller_request);
 
+  chromium::web::Frame* frame() { return frame_.get(); }
+
  protected:
   // Creates a WebComponent encapsulating a web.Frame. A ViewProvider service
   // will be published to the service-directory specified in |startup_info|, and
@@ -76,10 +78,6 @@ class WebComponent : public fuchsia::sys::ComponentController,
   void DestroyComponent(int termination_exit_code,
                         fuchsia::sys::TerminationReason reason);
 
-  chromium::web::Frame* frame() { return frame_.get(); }
-  chromium::web::NavigationController* navigation_controller() {
-    return navigation_controller_.get();
-  }
   base::fuchsia::ServiceDirectory* service_directory() {
     return service_directory_.get();
   }
@@ -88,7 +86,6 @@ class WebComponent : public fuchsia::sys::ComponentController,
   WebContentRunner* runner_ = nullptr;
 
   chromium::web::FramePtr frame_;
-  chromium::web::NavigationControllerPtr navigation_controller_;
 
   fidl::Binding<fuchsia::sys::ComponentController> controller_binding_;
 

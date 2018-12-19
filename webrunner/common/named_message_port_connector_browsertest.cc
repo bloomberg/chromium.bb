@@ -17,6 +17,7 @@
 #include "webrunner/common/test/run_with_timeout.h"
 #include "webrunner/common/test/test_common.h"
 #include "webrunner/common/test/webrunner_browser_test.h"
+#include "webrunner/test/promise.h"
 
 namespace webrunner {
 
@@ -90,13 +91,16 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
   msg.data = MemBufferFromString("ping");
   Promise<bool> post_result;
   (*message_port)
-      ->PostMessage(std::move(msg), post_result.GetReceiveCallback());
+      ->PostMessage(std::move(msg),
+                    ConvertToFitFunction(post_result.GetReceiveCallback()));
 
   std::vector<std::string> test_messages = {"early 1", "early 2", "ack ping"};
   for (std::string expected_msg : test_messages) {
     base::RunLoop run_loop;
     Promise<chromium::web::WebMessage> message_receiver(run_loop.QuitClosure());
-    (*message_port)->ReceiveMessage(message_receiver.GetReceiveCallback());
+    (*message_port)
+        ->ReceiveMessage(
+            ConvertToFitFunction(message_receiver.GetReceiveCallback()));
     CheckRunWithTimeout(&run_loop);
     EXPECT_EQ(StringFromMemBufferOrDie(message_receiver->data), expected_msg);
   }
