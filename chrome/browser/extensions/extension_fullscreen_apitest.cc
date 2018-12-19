@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "ui/base/ui_base_features.h"
 
 namespace extensions {
 
@@ -70,6 +71,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        MAYBE_DisplayModeWindowIsInFullscreen) {
+  // TODO(crbug.com/897879): this test is flaky.
+  if (features::IsSingleProcessMash())
+    return;
   ASSERT_TRUE(RunPlatformAppTest("fullscreen/mq_display_mode")) << message_;
 }
 
