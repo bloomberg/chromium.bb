@@ -197,12 +197,12 @@ class SearchBoxTextfield : public views::Textfield {
   }
 
   void OnFocus() override {
-    search_box_view_->OnOnSearchBoxFocusedChanged();
+    search_box_view_->OnSearchBoxFocusedChanged();
     Textfield::OnFocus();
   }
 
   void OnBlur() override {
-    search_box_view_->OnOnSearchBoxFocusedChanged();
+    search_box_view_->OnSearchBoxFocusedChanged();
     // Clear selection and set the caret to the end of the text.
     ClearSelection();
     Textfield::OnBlur();
@@ -426,7 +426,7 @@ void SearchBoxViewBase::OnTabletModeChanged(bool started) {
   UpdateSearchBoxBorder();
 }
 
-void SearchBoxViewBase::OnOnSearchBoxFocusedChanged() {
+void SearchBoxViewBase::OnSearchBoxFocusedChanged() {
   UpdateSearchBoxBorder();
   Layout();
   SchedulePaint();

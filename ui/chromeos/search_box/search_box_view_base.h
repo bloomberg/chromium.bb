@@ -116,7 +116,7 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
 
   bool show_assistant_button() { return show_assistant_button_; }
 
-  void OnOnSearchBoxFocusedChanged();
+  void OnSearchBoxFocusedChanged();
 
   // Whether the trimmed query in the search box is empty.
   bool IsSearchBoxTrimmedQueryEmpty() const;
