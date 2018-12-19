@@ -33,10 +33,11 @@ SigninManager::SigninManager(
     SigninErrorController* signin_error_controller,
     signin::AccountConsistencyMethod account_consistency)
     : SigninManagerBase(client,
-                        token_service,
                         account_tracker_service,
                         signin_error_controller),
       type_(SIGNIN_TYPE_NONE),
+      client_(client),
+      token_service_(token_service),
       cookie_manager_service_(cookie_manager_service),
       account_consistency_(account_consistency),
       signin_manager_signed_in_(false),
@@ -125,7 +126,7 @@ void SigninManager::CopyCredentialsFrom(const SigninManager& source) {
   possibly_invalid_email_ = source.possibly_invalid_email_;
   temp_refresh_token_ = source.temp_refresh_token_;
   password_ = source.password_;
-  source.signin_client()->AfterCredentialsCopied();
+  source.client_->AfterCredentialsCopied();
 }
 
 void SigninManager::ClearTransientSigninData() {
@@ -174,7 +175,7 @@ void SigninManager::StartSignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
     RemoveAccountsOption remove_option) {
-  signin_client()->PreSignOut(
+  client_->PreSignOut(
       base::BindOnce(&SigninManager::OnSignoutDecisionReached,
                      base::Unretained(this), signout_source_metric,
                      signout_delete_metric, remove_option),
@@ -217,14 +218,13 @@ void SigninManager::OnSignoutDecisionReached(
   AccountInfo account_info = GetAuthenticatedAccountInfo();
   const std::string account_id = GetAuthenticatedAccountId();
   const std::string username = account_info.email;
-  const base::Time signin_time =
-      base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromMicroseconds(
-          signin_client()->GetPrefs()->GetInt64(prefs::kSignedInTime)));
+  const base::Time signin_time = base::Time::FromInternalValue(
+      client_->GetPrefs()->GetInt64(prefs::kSignedInTime));
   ClearAuthenticatedAccountId();
-  signin_client()->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
-  signin_client()->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
-  signin_client()->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
-  signin_client()->GetPrefs()->ClearPref(prefs::kSignedInTime);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
+  client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
 
   // Determine the duration the user was logged in and log that to UMA.
   if (!signin_time.is_null()) {
@@ -240,13 +240,13 @@ void SigninManager::OnSignoutDecisionReached(
     case RemoveAccountsOption::kRemoveAllAccounts:
       VLOG(0) << "Revoking all refresh tokens on server. Reason: sign out, "
               << "IsSigninAllowed: " << IsSigninAllowed();
-      token_service()->RevokeAllCredentials(
+      token_service_->RevokeAllCredentials(
           signin_metrics::SourceForRefreshTokenOperation::
               kSigninManager_ClearPrimaryAccount);
       break;
     case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
-      if (token_service()->RefreshTokenHasError(account_id))
-        token_service()->RevokeCredentials(
+      if (token_service_->RefreshTokenHasError(account_id))
+        token_service_->RevokeCredentials(
             account_id, signin_metrics::SourceForRefreshTokenOperation::
                             kSigninManager_ClearPrimaryAccount);
       break;
@@ -258,8 +258,9 @@ void SigninManager::OnSignoutDecisionReached(
   FireGoogleSignedOut(account_info);
 }
 
-void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
-    PrefService* local_state) {
+void SigninManager::Initialize(PrefService* local_state) {
+  SigninManagerBase::Initialize(local_state);
+
   // local_state can be null during unit tests.
   if (local_state) {
     local_state_pref_registrar_.Init(local_state);
@@ -268,12 +269,12 @@ void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
         base::Bind(&SigninManager::OnGoogleServicesUsernamePatternChanged,
                    weak_pointer_factory_.GetWeakPtr()));
   }
-  signin_allowed_.Init(prefs::kSigninAllowed, signin_client()->GetPrefs(),
+  signin_allowed_.Init(prefs::kSigninAllowed, client_->GetPrefs(),
                        base::Bind(&SigninManager::OnSigninAllowedPrefChanged,
                                   base::Unretained(this)));
 
   std::string account_id =
-      signin_client()->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
+      client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
   std::string user = account_id.empty() ? std::string() :
       account_tracker_service()->GetAccountInfo(account_id).email;
   if (!account_id.empty() && (!IsAllowedUsername(user) || !IsSigninAllowed())) {
@@ -302,11 +303,12 @@ void SigninManager::FinalizeInitBeforeLoadingRefreshTokens(
 
   // It is important to only load credentials after starting to observe the
   // token service.
-  token_service()->AddObserver(this);
+  token_service_->AddObserver(this);
+  token_service_->LoadCredentials(GetAuthenticatedAccountId());
 }
 
 void SigninManager::Shutdown() {
-  token_service()->RemoveObserver(this);
+  token_service_->RemoveObserver(this);
   account_tracker_service()->RemoveObserver(this);
   local_state_pref_registrar_.RemoveAll();
   SigninManagerBase::Shutdown();
@@ -387,7 +389,7 @@ void SigninManager::CompletePendingSignin() {
 
   if (!temp_refresh_token_.empty()) {
     std::string account_id = GetAuthenticatedAccountId();
-    token_service()->UpdateCredentials(
+    token_service_->UpdateCredentials(
         account_id, temp_refresh_token_,
         signin_metrics::SourceForRefreshTokenOperation::
             kSigninManager_LegacyPreDiceSigninFlow);
@@ -410,9 +412,8 @@ void SigninManager::OnExternalSigninCompleted(const std::string& username) {
 void SigninManager::OnSignedIn() {
   bool reauth_in_progress = IsAuthenticated();
 
-  signin_client()->GetPrefs()->SetInt64(
-      prefs::kSignedInTime,
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  client_->GetPrefs()->SetInt64(prefs::kSignedInTime,
+                                base::Time::Now().ToInternalValue());
 
   SetAuthenticatedAccountInfo(possibly_invalid_gaia_id_,
                               possibly_invalid_email_);
@@ -426,8 +427,8 @@ void SigninManager::OnSignedIn() {
   if (!reauth_in_progress)
     FireGoogleSigninSucceeded();
 
-  signin_metrics::LogSigninProfile(signin_client()->IsFirstRun(),
-                                   signin_client()->GetInstallDate());
+  signin_metrics::LogSigninProfile(client_->IsFirstRun(),
+                                   client_->GetInstallDate());
 
   PostSignedIn();
 }
@@ -450,8 +451,8 @@ void SigninManager::PostSignedIn() {
   if (!signin_manager_signed_in_ || !user_info_fetched_by_account_tracker_)
     return;
 
-  signin_client()->PostSignedIn(GetAuthenticatedAccountId(),
-                                GetAuthenticatedAccountInfo().email, password_);
+  client_->PostSignedIn(GetAuthenticatedAccountId(),
+                        GetAuthenticatedAccountInfo().email, password_);
   password_.clear();
 }
 
@@ -469,7 +470,7 @@ void SigninManager::OnAccountUpdateFailed(const std::string& account_id) {
 }
 
 void SigninManager::OnRefreshTokensLoaded() {
-  token_service()->RemoveObserver(this);
+  token_service_->RemoveObserver(this);
 
   if (account_tracker_service()->GetMigrationState() ==
       AccountTrackerService::MIGRATION_IN_PROGRESS) {
@@ -477,12 +478,12 @@ void SigninManager::OnRefreshTokensLoaded() {
   }
 
   // Remove account information from the account tracker service if needed.
-  if (token_service()->HasLoadCredentialsFinishedWithNoErrors()) {
+  if (token_service_->HasLoadCredentialsFinishedWithNoErrors()) {
     std::vector<AccountInfo> accounts_in_tracker_service =
         account_tracker_service()->GetAccounts();
     for (const auto& account : accounts_in_tracker_service) {
       if (GetAuthenticatedAccountId() != account.account_id &&
-          !token_service()->RefreshTokenIsAvailable(account.account_id)) {
+          !token_service_->RefreshTokenIsAvailable(account.account_id)) {
         DVLOG(0) << "Removed account from account tracker service: "
                  << account.account_id;
         account_tracker_service()->RemoveAccount(account.account_id);

@@ -48,6 +48,8 @@
 class GaiaCookieManagerService;
 class GoogleServiceAuthError;
 class PrefService;
+class ProfileOAuth2TokenService;
+class SigninClient;
 class SigninErrorController;
 
 namespace identity {
@@ -141,9 +143,7 @@ class SigninManager : public SigninManagerBase,
   // On platforms where SigninManager is responsible for dealing with
   // invalid username policy updates, we need to check this during
   // initialization and sign the user out.
-  void FinalizeInitBeforeLoadingRefreshTokens(
-      PrefService* local_state) override;
-
+  void Initialize(PrefService* local_state) override;
   void Shutdown() override;
 
   // If applicable, merge the signed in account into the cookie jar.
@@ -267,6 +267,14 @@ class SigninManager : public SigninManagerBase,
   // Temporarily saves the oauth2 refresh token.  It will be passed to the
   // token service so that it does not need to mint new ones.
   std::string temp_refresh_token_;
+
+  // The SigninClient object associated with this object. Must outlive this
+  // object.
+  SigninClient* client_;
+
+  // The ProfileOAuth2TokenService instance associated with this object. Must
+  // outlive this object.
+  ProfileOAuth2TokenService* token_service_;
 
   // Object used to use the token to push a GAIA cookie into the cookie jar.
   GaiaCookieManagerService* cookie_manager_service_;

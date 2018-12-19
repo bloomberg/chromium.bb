@@ -19,7 +19,6 @@ class FakeSigninManagerBase : public SigninManagerBase {
  public:
   FakeSigninManagerBase(
       SigninClient* client,
-      ProfileOAuth2TokenService* token_service,
       AccountTrackerService* account_tracker_service,
       SigninErrorController* signin_error_controller = nullptr);
   ~FakeSigninManagerBase() override;

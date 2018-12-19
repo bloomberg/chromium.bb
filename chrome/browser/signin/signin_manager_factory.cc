@@ -115,8 +115,7 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
 #if defined(OS_CHROMEOS)
   service = new SigninManagerBase(
-      client, ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      AccountTrackerServiceFactory::GetForProfile(profile),
+      client, AccountTrackerServiceFactory::GetForProfile(profile),
       SigninErrorControllerFactory::GetForProfile(profile));
 #else
   service = new SigninManager(
