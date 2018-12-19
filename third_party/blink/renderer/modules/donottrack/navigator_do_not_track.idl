@@ -31,5 +31,5 @@
 [
     ImplementedAs=NavigatorDoNotTrack
 ] partial interface Navigator {
-    readonly attribute DOMString? doNotTrack;
+    [HighEntropy, MeasureAs=NavigatorDoNotTrack] readonly attribute DOMString? doNotTrack;
 };

@@ -932,6 +932,22 @@ If the method/accessor creates elements or modifies DOM nodes in any way, it sho
 
 Usage: `[CustomElementCallbacks]` takes no arguments.
 
+### [HighEntropy] _(m, a, c)_
+
+Summary: Denotes an API that exposes data that folks on the internet find useful for fingerprinting.
+
+Attributes and methods marked as `[HighEntropy]` are known to be practically useful for [identifying particular clients](https://dev.chromium.org/Home/chromium-security/client-identification-mechanisms) on the web today.
+Both methods and attribute/constant getters annotated with this attribute are wired up to [`Dactyloscoper::Record`](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/core/frame/use_counter.cc&q=Dactyloscoper::Record) for additional processing.
+
+This attribute must be accompanied by either `[Measure]` or `[MeasureAs]`.
+
+```webidl
+[HighEntropy, Measure] attribute Node interestingAttribute;
+[HighEntropy, MeasureAs=InterestingNamedAttribute] attribute Node interestingNamedAttribute;
+[HighEntropy, Measure] Node getInterestingNode();
+[HighEntropy, Measure] const INTERESTING_CONSTANT = 1;
+```
+
 ### [Default] _(p)_
 
 Summary: `[Default]` allows one to specify the default values for optional arguments. This removes the need to have C++ overloads in the Blink implementation.

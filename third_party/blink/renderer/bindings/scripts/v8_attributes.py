@@ -129,6 +129,9 @@ def attribute_context(interface, attribute, interfaces):
     deprecate_as = v8_utilities.deprecate_as(attribute)
     measure_as = v8_utilities.measure_as(attribute, interface)
 
+    # [HighEntropy]
+    high_entropy = v8_utilities.high_entropy(attribute)
+
     is_lazy_data_attribute = \
         (constructor_type and not (measure_as or deprecate_as)) or \
         (str(idl_type) == 'Window' and attribute.name in ('frames', 'self', 'window'))
@@ -144,6 +147,7 @@ def attribute_context(interface, attribute, interfaces):
         'cpp_name': cpp_name(attribute),
         'cpp_type': idl_type.cpp_type,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
+        'high_entropy': high_entropy,
         'deprecate_as': deprecate_as,
         'enum_type': idl_type.enum_type,
         'enum_values': idl_type.enum_values,

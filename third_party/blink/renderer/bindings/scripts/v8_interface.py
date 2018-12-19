@@ -841,6 +841,7 @@ def constant_context(constant, interface):
         'deprecate_as': v8_utilities.deprecate_as(constant),  # [DeprecateAs]
         'idl_type': constant.idl_type.name,
         'measure_as': v8_utilities.measure_as(constant, interface),  # [MeasureAs]
+        'high_entropy': v8_utilities.high_entropy(constant),  # [HighEntropy]
         'name': constant.name,
         'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(constant),  # [OriginTrialEnabled]
         # FIXME: use 'reflected_name' as correct 'name'

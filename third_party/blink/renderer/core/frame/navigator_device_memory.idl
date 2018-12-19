@@ -8,6 +8,6 @@
     NoInterfaceObject,
     Exposed=(Window,Worker)
 ] interface NavigatorDeviceMemory {
-    [MeasureAs=NavigatorDeviceMemory,RuntimeEnabled=NavigatorDeviceMemory,SecureContext]
+    [HighEntropy,MeasureAs=NavigatorDeviceMemory,RuntimeEnabled=NavigatorDeviceMemory,SecureContext]
     readonly attribute float deviceMemory;
 };

@@ -402,6 +402,19 @@ def measure_as(definition_or_member, interface):
     return None
 
 
+# [HighEntropy]
+def high_entropy(definition_or_member):
+    extended_attributes = definition_or_member.extended_attributes
+    if 'HighEntropy' in extended_attributes:
+        includes.add('core/frame/dactyloscoper.h')
+        if not ('Measure' in extended_attributes or 'MeasureAs' in extended_attributes):
+            raise Exception('%s specified [HighEntropy], but does not include '
+                            'either [Measure] or [MeasureAs]'
+                            % definition_or_member.name)
+        return True
+    return False
+
+
 # [OriginTrialEnabled]
 def origin_trial_feature_name(definition_or_member):
     """Returns the name of the feature for the OriginTrialEnabled attribute.

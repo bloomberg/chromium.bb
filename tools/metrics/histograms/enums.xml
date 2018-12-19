@@ -21054,6 +21054,16 @@ Called by update_net_error_codes.py.-->
   <int value="2651" label="V8RegExpMatchIsFalseishOnJSRegExp"/>
   <int value="2652" label="DownloadInAdFrameWithUserGesture"/>
   <int value="2653" label="DownloadInAdFrameWithoutUserGesture"/>
+  <int value="2654" label="NavigatorAppVersion"/>
+  <int value="2655" label="NavigatorDoNotTrack"/>
+  <int value="2656" label="NavigatorHardwareConcurrency"/>
+  <int value="2657" label="NavigatorLanguage"/>
+  <int value="2658" label="NavigatorLanguages"/>
+  <int value="2659" label="NavigatorMaxTouchPoints"/>
+  <int value="2660" label="NavigatorMimeTypes"/>
+  <int value="2661" label="NavigatorPlatform"/>
+  <int value="2662" label="NavigatorPlugins"/>
+  <int value="2663" label="NavigatorUserAgent"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

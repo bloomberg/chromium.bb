@@ -252,7 +252,11 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if attribute.measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.measure_as('AttributeGetter')}});
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::k{{attribute.measure_as('AttributeGetter')}});
+  {% if attribute.high_entropy %}
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::k{{attribute.measure_as('AttributeGetter')}});
+  {% endif %}
   {% endif %}
 
   {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
@@ -290,7 +294,11 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}ConstructorGetterCall
   {% endif %}
 
   {% if attribute.measure_as %}
-  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{attribute.measure_as('ConstructorGetter')}});
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::k{{attribute.measure_as('ConstructorGetter')}});
+  {% if attribute.high_entropy %}
+  Dactyloscoper::Record(execution_context_for_measurement, WebFeature::k{{attribute.measure_as('ConstructorGetter')}});
+  {% endif %}
   {% endif %}
 
   {% if attribute.is_named_constructor %}

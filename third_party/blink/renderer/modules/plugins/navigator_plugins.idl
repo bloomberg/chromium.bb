@@ -6,7 +6,7 @@
 [
     ImplementedAs=NavigatorPlugins
 ] partial interface Navigator {
-    readonly attribute PluginArray plugins;
-    readonly attribute MimeTypeArray mimeTypes;
+    [HighEntropy, MeasureAs=NavigatorPlugins] readonly attribute PluginArray plugins;
+    [HighEntropy, MeasureAs=NavigatorMimeTypes] readonly attribute MimeTypeArray mimeTypes;
     boolean javaEnabled();
 };

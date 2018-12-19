@@ -195,6 +195,7 @@ def method_context(interface, method, is_visible=True):
                      if idl_type.is_explicit_nullable else idl_type.cpp_type),
         'cpp_value': this_cpp_value,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
+        'high_entropy': v8_utilities.high_entropy(method),  # [HighEntropy]
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
         'do_not_test_new_object': 'DoNotTestNewObject' in extended_attributes,
         'exposed_test': v8_utilities.exposed(method, interface),  # [Exposed]

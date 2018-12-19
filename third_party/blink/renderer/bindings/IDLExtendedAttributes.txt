@@ -58,6 +58,7 @@ Exposed=*
 FeaturePolicy=*
 FlexibleArrayBufferView
 Global=*
+HighEntropy
 HTMLConstructor
 ImmutablePrototype
 ImplementedAs=*

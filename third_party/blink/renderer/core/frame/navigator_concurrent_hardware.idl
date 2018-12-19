@@ -8,5 +8,5 @@
     NoInterfaceObject,
     Exposed=(Window,Worker)
 ] interface NavigatorConcurrentHardware {
-    readonly attribute unsigned long long hardwareConcurrency;
+    [HighEntropy, MeasureAs=NavigatorHardwareConcurrency] readonly attribute unsigned long long hardwareConcurrency;
 };
