@@ -230,6 +230,171 @@ TEST_F(FlexLayoutTest, GetMinimumSize_MinimumCross_Vertical) {
   EXPECT_EQ(Size(14, 11), host_->GetMinimumSize());
 }
 
+// Visibility and Inclusion Tests ----------------------------------------------
+
+TEST_F(FlexLayoutTest, Layout_VisibilitySetBeforeInstall) {
+  // Since our test fixture creates a host and adds the layout manager right
+  // away, we need to create our own for this test.
+  std::unique_ptr<views::View> host = std::make_unique<views::View>();
+  View* child1 =
+      AddChild(host.get(), Size(10, 10), base::Optional<Size>(), false);
+  View* child2 =
+      AddChild(host.get(), Size(10, 10), base::Optional<Size>(), true);
+  host->SetLayoutManager(std::make_unique<FlexLayout>());
+
+  host->Layout();
+  EXPECT_FALSE(child1->visible());
+  EXPECT_TRUE(child2->visible());
+
+  child1->SetVisible(true);
+  child2->SetVisible(false);
+
+  host->Layout();
+  EXPECT_TRUE(child1->visible());
+  EXPECT_FALSE(child2->visible());
+}
+
+TEST_F(FlexLayoutTest, Layout_VisibilitySetAfterInstall) {
+  // Unlike the last test, we'll use the built-in host and layout manager since
+  // they're already set up.
+  View* child1 = AddChild(Size(10, 10), base::Optional<Size>(), false);
+  View* child2 = AddChild(Size(10, 10), base::Optional<Size>(), true);
+
+  host_->Layout();
+  EXPECT_FALSE(child1->visible());
+  EXPECT_TRUE(child2->visible());
+
+  child1->SetVisible(true);
+  child2->SetVisible(false);
+
+  host_->Layout();
+  EXPECT_TRUE(child1->visible());
+  EXPECT_FALSE(child2->visible());
+}
+
+TEST_F(FlexLayoutTest, Layout_VisibilitySetBeforeAdd) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetInteriorMargin(Insets(5, 6, 7, 9));
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  View* child1 = AddChild(Size(12, 10));
+  View* child2 = AddChild(Size(13, 11), Optional<Size>(), false);
+  View* child3 = AddChild(Size(17, 13));
+
+  host_->Layout();
+  EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
+  EXPECT_FALSE(child2->visible());
+  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
+  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
+  EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
+
+  // This should have no additional effect since the child is already invisible.
+  child2->SetVisible(false);
+  host_->Layout();
+  EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
+  EXPECT_FALSE(child2->visible());
+  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
+  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
+  EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
+
+  child2->SetVisible(true);
+  host_->Layout();
+  std::vector<Rect> expected{Rect(6, 5, 12, 10), Rect(18, 5, 13, 11),
+                             Rect(31, 5, 17, 13)};
+  EXPECT_EQ(false, layout_->IsHiddenByOwner(child2));
+  EXPECT_TRUE(child2->visible());
+  EXPECT_EQ(expected, GetChildBounds());
+  EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
+}
+
+TEST_F(FlexLayoutTest, Layout_VisibilitySetAfterAdd) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetInteriorMargin(Insets(5, 6, 7, 9));
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  View* child1 = AddChild(Size(12, 10));
+  View* child2 = AddChild(Size(13, 11));
+  View* child3 = AddChild(Size(17, 13));
+
+  child2->SetVisible(false);
+  host_->Layout();
+  EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
+  EXPECT_FALSE(child2->visible());
+  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
+  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
+  EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
+
+  child2->SetVisible(true);
+  host_->Layout();
+  std::vector<Rect> expected{Rect(6, 5, 12, 10), Rect(18, 5, 13, 11),
+                             Rect(31, 5, 17, 13)};
+  EXPECT_EQ(false, layout_->IsHiddenByOwner(child2));
+  EXPECT_TRUE(child2->visible());
+  EXPECT_EQ(expected, GetChildBounds());
+  EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
+}
+
+TEST_F(FlexLayoutTest,
+       Layout_ViewVisibilitySetNotContingentOnActualVisibility) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetInteriorMargin(Insets(5, 6, 7, 9));
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  View* child1 = AddChild(Size(12, 10));
+  View* child2 = AddChild(Size(13, 11));
+  View* child3 = AddChild(Size(17, 13));
+  layout_->SetFlexForView(child2, kDropOut);
+
+  // Layout makes child view invisible due to flex rule.
+  host_->SetSize(Size(40, 25));
+  host_->Layout();
+  EXPECT_EQ(false, layout_->IsHiddenByOwner(child2));
+  EXPECT_FALSE(child2->visible());
+  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
+  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
+  // Preferred size should still reflect child hidden due to flex rule.
+  EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
+
+  // Now we will make child explicitly hidden.
+  child2->SetVisible(false);
+  EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
+
+  // Layout is the same, but we should report that the view is hidden by owner.
+  host_->Layout();
+  EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
+  EXPECT_FALSE(child2->visible());
+  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
+  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
+  EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
+}
+
+TEST_F(FlexLayoutTest, Layout_Exlcude) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetInteriorMargin(Insets(5, 6, 7, 9));
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  const View* child1 = AddChild(Size(12, 10));
+  View* child2 = AddChild(Size(13, 11));
+  const View* child3 = AddChild(Size(17, 13));
+
+  layout_->SetViewExcluded(child2, true);
+  child2->SetBounds(3, 3, 3, 3);
+  host_->Layout();
+  EXPECT_EQ(true, layout_->IsViewExcluded(child2));
+  EXPECT_EQ(Rect(3, 3, 3, 3), child2->bounds());
+  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
+  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
+  EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
+
+  layout_->SetViewExcluded(child2, false);
+  host_->Layout();
+  std::vector<Rect> expected{Rect(6, 5, 12, 10), Rect(18, 5, 13, 11),
+                             Rect(31, 5, 17, 13)};
+  EXPECT_EQ(false, layout_->IsViewExcluded(child2));
+  EXPECT_EQ(expected, GetChildBounds());
+  EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
+}
+
 // Child Positioning Tests -----------------------------------------------------
 
 TEST_F(FlexLayoutTest, LayoutSingleView_Horizontal) {
@@ -370,129 +535,6 @@ TEST_F(FlexLayoutTest, LayoutMultipleViews_Vertical_CrossStretch) {
                              Rect(6, 26, 17, 13)};
   EXPECT_EQ(expected, GetChildBounds());
   EXPECT_EQ(Size(32, 46), host_->GetPreferredSize());
-}
-
-TEST_F(FlexLayoutTest, LayoutMultipleViews_VisibilitySetBeforeAdd) {
-  layout_->SetOrientation(LayoutOrientation::kHorizontal);
-  layout_->SetCollapseMargins(true);
-  layout_->SetInteriorMargin(Insets(5, 6, 7, 9));
-  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
-  View* child1 = AddChild(Size(12, 10));
-  View* child2 = AddChild(Size(13, 11), Optional<Size>(), false);
-  View* child3 = AddChild(Size(17, 13));
-
-  host_->Layout();
-  EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
-  EXPECT_FALSE(child2->visible());
-  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
-  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
-  EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
-
-  // This should have no additional effect since the child is already invisible.
-  child2->SetVisible(false);
-  host_->Layout();
-  EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
-  EXPECT_FALSE(child2->visible());
-  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
-  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
-  EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
-
-  child2->SetVisible(true);
-  host_->Layout();
-  std::vector<Rect> expected{Rect(6, 5, 12, 10), Rect(18, 5, 13, 11),
-                             Rect(31, 5, 17, 13)};
-  EXPECT_EQ(false, layout_->IsHiddenByOwner(child2));
-  EXPECT_TRUE(child2->visible());
-  EXPECT_EQ(expected, GetChildBounds());
-  EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
-}
-
-TEST_F(FlexLayoutTest, LayoutMultipleViews_VisibilitySetAfterAdd) {
-  layout_->SetOrientation(LayoutOrientation::kHorizontal);
-  layout_->SetCollapseMargins(true);
-  layout_->SetInteriorMargin(Insets(5, 6, 7, 9));
-  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
-  View* child1 = AddChild(Size(12, 10));
-  View* child2 = AddChild(Size(13, 11));
-  View* child3 = AddChild(Size(17, 13));
-
-  child2->SetVisible(false);
-  host_->Layout();
-  EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
-  EXPECT_FALSE(child2->visible());
-  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
-  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
-  EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
-
-  child2->SetVisible(true);
-  host_->Layout();
-  std::vector<Rect> expected{Rect(6, 5, 12, 10), Rect(18, 5, 13, 11),
-                             Rect(31, 5, 17, 13)};
-  EXPECT_EQ(false, layout_->IsHiddenByOwner(child2));
-  EXPECT_TRUE(child2->visible());
-  EXPECT_EQ(expected, GetChildBounds());
-  EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
-}
-
-TEST_F(FlexLayoutTest,
-       LayoutMultipleViews_ViewVisibilitySetNotContingentOnActualVisibility) {
-  layout_->SetOrientation(LayoutOrientation::kHorizontal);
-  layout_->SetCollapseMargins(true);
-  layout_->SetInteriorMargin(Insets(5, 6, 7, 9));
-  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
-  View* child1 = AddChild(Size(12, 10));
-  View* child2 = AddChild(Size(13, 11));
-  View* child3 = AddChild(Size(17, 13));
-  layout_->SetFlexForView(child2, kDropOut);
-
-  // Layout makes child view invisible due to flex rule.
-  host_->SetSize(Size(40, 25));
-  host_->Layout();
-  EXPECT_EQ(false, layout_->IsHiddenByOwner(child2));
-  EXPECT_FALSE(child2->visible());
-  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
-  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
-  // Preferred size should still reflect child hidden due to flex rule.
-  EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
-
-  // Now we will make child explicitly hidden.
-  child2->SetVisible(false);
-  EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
-
-  // Layout is the same, but we should report that the view is hidden by owner.
-  host_->Layout();
-  EXPECT_EQ(true, layout_->IsHiddenByOwner(child2));
-  EXPECT_FALSE(child2->visible());
-  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
-  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
-  EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
-}
-
-TEST_F(FlexLayoutTest, LayoutMultipleViews_Exlcude) {
-  layout_->SetOrientation(LayoutOrientation::kHorizontal);
-  layout_->SetCollapseMargins(true);
-  layout_->SetInteriorMargin(Insets(5, 6, 7, 9));
-  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
-  const View* child1 = AddChild(Size(12, 10));
-  View* child2 = AddChild(Size(13, 11));
-  const View* child3 = AddChild(Size(17, 13));
-
-  layout_->SetViewExcluded(child2, true);
-  child2->SetBounds(3, 3, 3, 3);
-  host_->Layout();
-  EXPECT_EQ(true, layout_->IsViewExcluded(child2));
-  EXPECT_EQ(Rect(3, 3, 3, 3), child2->bounds());
-  EXPECT_EQ(Rect(6, 5, 12, 10), child1->bounds());
-  EXPECT_EQ(Rect(18, 5, 17, 13), child3->bounds());
-  EXPECT_EQ(Size(44, 25), host_->GetPreferredSize());
-
-  layout_->SetViewExcluded(child2, false);
-  host_->Layout();
-  std::vector<Rect> expected{Rect(6, 5, 12, 10), Rect(18, 5, 13, 11),
-                             Rect(31, 5, 17, 13)};
-  EXPECT_EQ(false, layout_->IsViewExcluded(child2));
-  EXPECT_EQ(expected, GetChildBounds());
-  EXPECT_EQ(Size(57, 25), host_->GetPreferredSize());
 }
 
 TEST_F(FlexLayoutTest,
