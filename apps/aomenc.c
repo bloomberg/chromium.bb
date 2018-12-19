@@ -516,6 +516,9 @@ static const arg_def_t enable_intrabc =
     ARG_DEF(NULL, "enable-intrabc", 1,
             "Enable intra block copy prediction mode "
             "(0: false, 1: true (default))");
+static const arg_def_t enable_angle_delta =
+    ARG_DEF(NULL, "enable-angle-delta", 1,
+            "Enable intra angle delta (0: false, 1: true (default))");
 static const arg_def_t disable_trellis_quant =
     ARG_DEF(NULL, "disable-trellis-quant", 1,
             "Disable trellis optimization of quantized coefficients (0: false ("
@@ -743,6 +746,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_obmc,
                                        &enable_palette,
                                        &enable_intrabc,
+                                       &enable_angle_delta,
                                        &disable_trellis_quant,
                                        &enable_qm,
                                        &qm_min,
@@ -824,6 +828,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_OBMC,
                                         AV1E_SET_ENABLE_PALETTE,
                                         AV1E_SET_ENABLE_INTRABC,
+                                        AV1E_SET_ENABLE_ANGLE_DELTA,
                                         AV1E_SET_DISABLE_TRELLIS_QUANT,
                                         AV1E_SET_ENABLE_QM,
                                         AV1E_SET_QM_MIN,

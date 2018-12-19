@@ -346,6 +346,7 @@ typedef struct AV1EncoderConfig {
   int enable_superres;
   int enable_palette;
   int enable_intrabc;
+  int enable_angle_delta;
   unsigned int save_as_annexb;
 
 #if CONFIG_DENOISE

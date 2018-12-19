@@ -909,6 +909,9 @@ enum {
   /*!\brief Codec control function to turn on/off intra block copy mode */
   AV1E_SET_ENABLE_INTRABC,
 
+  /*!\brief Codec control function to turn on/off intra angle delta */
+  AV1E_SET_ENABLE_ANGLE_DELTA,
+
   /*!\brief Codec control function to set the delta q mode
    *
    * AV1 has a segment based feature that allows encoder to adaptively change
@@ -1248,6 +1251,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_PALETTE, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_INTRABC, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_INTRABC
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_ANGLE_DELTA, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_ANGLE_DELTA
 
 AOM_CTRL_USE_TYPE(AV1E_SET_FRAME_PARALLEL_DECODING, unsigned int)
 #define AOM_CTRL_AV1E_SET_FRAME_PARALLEL_DECODING

@@ -4493,7 +4493,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (this_model_rd < best_model_rd) best_model_rd = this_model_rd;
     is_directional_mode = av1_is_directional_mode(mbmi->mode);
     if (is_directional_mode && directional_mode_skip_mask[mbmi->mode]) continue;
-    if (is_directional_mode && av1_use_angle_delta(bsize)) {
+    if (is_directional_mode && av1_use_angle_delta(bsize) &&
+        cpi->oxcf.enable_angle_delta) {
       this_rd_stats.rate = INT_MAX;
       rd_pick_intra_angle_sby(cpi, x, mi_row, mi_col, &this_rate,
                               &this_rd_stats, bsize, bmode_costs[mbmi->mode],
@@ -6355,7 +6356,8 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       if (cfl_alpha_rate == INT_MAX) continue;
     }
     mbmi->angle_delta[PLANE_TYPE_UV] = 0;
-    if (is_directional_mode && av1_use_angle_delta(mbmi->sb_type)) {
+    if (is_directional_mode && av1_use_angle_delta(mbmi->sb_type) &&
+        cpi->oxcf.enable_angle_delta) {
       const int rate_overhead =
           x->intra_uv_mode_cost[is_cfl_allowed(xd)][mbmi->mode][mode];
       if (!rd_pick_intra_angle_sbuv(cpi, x, bsize, rate_overhead, best_rd,
@@ -11172,7 +11174,8 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
 
   TX_SIZE uv_tx;
   int is_directional_mode = av1_is_directional_mode(mbmi->mode);
-  if (is_directional_mode && av1_use_angle_delta(bsize)) {
+  if (is_directional_mode && av1_use_angle_delta(bsize) &&
+      cpi->oxcf.enable_angle_delta) {
     int rate_dummy;
     int64_t model_rd = INT64_MAX;
     if (sf->intra_angle_estimation && !search_state->angle_stats_ready) {
