@@ -30,16 +30,18 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
-#include "third_party/blink/renderer/core/frame/pausable_timer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
 class ExecutionContext;
 
 class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
-                                   public PausableTimer {
+                                   public ContextLifecycleObserver,
+                                   public TimerBase {
   USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
 
  public:
@@ -58,7 +60,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
            int timeout_id);
   ~DOMTimer() override;
 
-  // PausableObject
+  // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
   // Eager finalization is needed to promptly stop this Timer object.

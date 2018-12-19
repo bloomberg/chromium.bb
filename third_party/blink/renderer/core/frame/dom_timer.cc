@@ -80,7 +80,8 @@ DOMTimer::DOMTimer(ExecutionContext* context,
                    TimeDelta interval,
                    bool single_shot,
                    int timeout_id)
-    : PausableTimer(context, TaskType::kJavascriptTimer),
+    : ContextLifecycleObserver(context),
+      TimerBase(context->GetTaskRunner(TaskType::kJavascriptTimer)),
       timeout_id_(timeout_id),
       nesting_level_(context->Timers()->TimerNestingLevel() + 1),
       action_(action) {
@@ -101,7 +102,6 @@ DOMTimer::DOMTimer(ExecutionContext* context,
   else
     StartRepeating(interval_milliseconds, FROM_HERE);
 
-  PauseIfNeeded();
   TRACE_EVENT_INSTANT1("devtools.timeline", "TimerInstall",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        inspector_timer_install_event::Data(
@@ -128,7 +128,7 @@ void DOMTimer::Stop() {
   if (action_)
     action_->Dispose();
   action_ = nullptr;
-  PausableTimer::Stop();
+  TimerBase::Stop();
 }
 
 void DOMTimer::ContextDestroyed(ExecutionContext*) {
@@ -192,7 +192,7 @@ scoped_refptr<base::SingleThreadTaskRunner> DOMTimer::TimerTaskRunner() const {
 
 void DOMTimer::Trace(blink::Visitor* visitor) {
   visitor->Trace(action_);
-  PausableTimer::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink
