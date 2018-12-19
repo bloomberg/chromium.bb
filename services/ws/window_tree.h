@@ -118,8 +118,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // windows, as described for OnTopmostWindowChanged() in window_tree.mojom.
   void SendTopmostWindows(const std::vector<aura::Window*>& topmosts);
 
-  // Notifies the client that the window occlusion state has changed.
-  void SendOcclusionState(aura::Window* window);
+  // Notifies the client that the occlusion state of |windows| have changed.
+  void SendOcclusionStates(const std::set<aura::Window*>& windows);
 
   WindowService* window_service() { return window_service_; }
 

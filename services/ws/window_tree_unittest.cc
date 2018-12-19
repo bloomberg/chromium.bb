@@ -19,7 +19,6 @@
 #include "services/ws/proxy_window_test_helper.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
-#include "services/ws/window_delegate_impl.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_test_setup.h"
 #include "services/ws/window_tree_test_helper.h"
@@ -2160,41 +2159,110 @@ TEST(WindowTreeTest, AttachFrameSinkId) {
 TEST(WindowTreeTest, OcclusionStateChange) {
   WindowServiceTestSetup setup;
 
-  // WindowDelegateImpl deletes itself when the window is deleted.
-  WindowDelegateImpl* delegate = new WindowDelegateImpl();
-  setup.delegate()->set_delegate_for_next_top_level(delegate);
+  // Create |tracked| and tracks its occlusion state.
+  aura::Window* tracked = setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(tracked);
+  tracked->SetBounds(gfx::Rect(0, 0, 10, 10));
 
-  // Create |top_level1| and tracks its occlusion state.
-  aura::Window* top_level1 =
-      setup.window_tree_test_helper()->NewTopLevelWindow();
-  delegate->set_window(top_level1);
-  ASSERT_TRUE(top_level1);
-  top_level1->SetBounds(gfx::Rect(0, 0, 10, 10));
+  tracked->TrackOcclusionState();
 
-  top_level1->TrackOcclusionState();
-
-  // Gets HIDDEN state since |top_level1| is created hidden.
+  // Gets HIDDEN state since |tracked| is created hidden.
   EXPECT_TRUE(ContainsChange(
-      *setup.changes(), "OnOcclusionStateChanged window_id=0,1, state=HIDDEN"));
+      *setup.changes(),
+      "OnOcclusionStatesChanged {{window_id=0,1, state=HIDDEN}}"));
 
-  // Gets VISIBLE state when |top_level1| is shown.
-  top_level1->Show();
-  EXPECT_TRUE(
-      ContainsChange(*setup.changes(),
-                     "OnOcclusionStateChanged window_id=0,1, state=VISIBLE"));
+  // Gets VISIBLE state when |tracked| is shown.
+  tracked->Show();
+  EXPECT_TRUE(ContainsChange(
+      *setup.changes(),
+      "OnOcclusionStatesChanged {{window_id=0,1, state=VISIBLE}}"));
 
-  // Creates |top_level2| and make it occlude |top_level1|.
-  aura::Window* top_level2 =
+  // Creates |blocking_window| and make it occlude |tracked|.
+  aura::Window* blocking_window =
       setup.window_tree_test_helper()->NewTopLevelWindow();
-  ASSERT_TRUE(top_level2);
-  top_level2->SetProperty(aura::client::kClientWindowHasContent, true);
-  top_level2->SetBounds(gfx::Rect(0, 0, 15, 15));
-  top_level2->Show();
+  ASSERT_TRUE(blocking_window);
+  blocking_window->SetProperty(aura::client::kClientWindowHasContent, true);
+  blocking_window->SetBounds(gfx::Rect(0, 0, 15, 15));
+  blocking_window->Show();
 
-  // Gets OCCLUDED state since |top_level2| covers |top_level1|.
+  // Gets OCCLUDED state since |blocking_window| covers |tracked|.
+  EXPECT_TRUE(ContainsChange(
+      *setup.changes(),
+      "OnOcclusionStatesChanged {{window_id=0,1, state=OCCLUDED}}"));
+}
+
+TEST(WindowTreeTest, OcclusionStateChangeBatchSameTree) {
+  WindowServiceTestSetup setup;
+
+  // Create two tracked windows and tracks their occlusion state.
+  aura::Window* tracked_1 =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(tracked_1);
+  tracked_1->SetBounds(gfx::Rect(0, 0, 10, 10));
+  tracked_1->TrackOcclusionState();
+  tracked_1->Show();
+
+  aura::Window* tracked_2 =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(tracked_2);
+  tracked_2->SetBounds(gfx::Rect(10, 0, 10, 10));
+  tracked_2->TrackOcclusionState();
+  tracked_2->Show();
+
+  // Creates |blocking_window| and make it occlude both tracked windows.
+  aura::Window* blocking_window =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(blocking_window);
+  blocking_window->SetProperty(aura::client::kClientWindowHasContent, true);
+  blocking_window->SetBounds(gfx::Rect(0, 0, 20, 15));
+  blocking_window->Show();
+
+  // Occlusion changes of windows for the same tree are sent together.
   EXPECT_TRUE(
       ContainsChange(*setup.changes(),
-                     "OnOcclusionStateChanged window_id=0,1, state=OCCLUDED"));
+                     "OnOcclusionStatesChanged {{window_id=0,1, "
+                     "state=OCCLUDED}, {window_id=0,2, state=OCCLUDED}}"));
+}
+
+TEST(WindowTreeTest, OcclusionStateChangeBatchDifferentTree) {
+  WindowServiceTestSetup setup;
+
+  // Create |tracked_1| from default tree.
+  aura::Window* tracked_1 =
+      setup.window_tree_test_helper()->NewTopLevelWindow(100);
+  ASSERT_TRUE(tracked_1);
+  tracked_1->SetBounds(gfx::Rect(0, 0, 10, 10));
+  tracked_1->TrackOcclusionState();
+  tracked_1->Show();
+
+  // Create |tracked_2| from a second tree.
+  TestWindowTreeClient client2;
+  std::unique_ptr<WindowTree> tree2 =
+      setup.service()->CreateWindowTree(&client2);
+  tree2->InitFromFactory();
+  WindowTreeTestHelper tree2_test_helper(tree2.get());
+
+  aura::Window* tracked_2 = tree2_test_helper.NewTopLevelWindow(200);
+  ASSERT_TRUE(tracked_2);
+  tracked_2->SetBounds(gfx::Rect(10, 0, 10, 10));
+  tracked_2->TrackOcclusionState();
+  tracked_2->Show();
+
+  // Creates |blocking_window| and make it occlude both tracked windows.
+  aura::Window* blocking_window =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(blocking_window);
+  blocking_window->SetProperty(aura::client::kClientWindowHasContent, true);
+  blocking_window->SetBounds(gfx::Rect(0, 0, 20, 15));
+  blocking_window->Show();
+
+  // Occlusion changes are sent separately for different trees.
+  EXPECT_TRUE(ContainsChange(*setup.changes(),
+                             "OnOcclusionStatesChanged {{window_id=0,100, "
+                             "state=OCCLUDED}}"));
+  EXPECT_TRUE(ContainsChange(*client2.tracker()->changes(),
+                             "OnOcclusionStatesChanged {{window_id=0,200, "
+                             "state=OCCLUDED}}"));
 }
 
 TEST(WindowTreeTest, OcclusionTrackingPause) {

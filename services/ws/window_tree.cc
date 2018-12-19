@@ -730,12 +730,16 @@ void WindowTree::SendTopmostWindows(
   window_tree_client_->OnTopmostWindowChanged(topmost_ids);
 }
 
-void WindowTree::SendOcclusionState(aura::Window* window) {
-  DCHECK(IsWindowKnown(window));
+void WindowTree::SendOcclusionStates(const std::set<aura::Window*>& windows) {
+  base::flat_map<ws::Id, ws::mojom::OcclusionState> occlusion_changes;
+  for (auto* window : windows) {
+    DCHECK(IsWindowKnown(window));
 
-  window_tree_client_->OnOcclusionStateChanged(
-      TransportIdForWindow(window),
-      aura::WindowOcclusionStateToMojom(window->occlusion_state()));
+    // TODO(crbug.com/900568): Send occluded region.
+    occlusion_changes[TransportIdForWindow(window)] =
+        aura::WindowOcclusionStateToMojom(window->occlusion_state());
+  }
+  window_tree_client_->OnOcclusionStatesChanged(occlusion_changes);
 }
 
 bool WindowTree::NewWindowImpl(

@@ -201,9 +201,9 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   void RequestClose(ws::Id window_id) override;
   void GetScreenProviderObserver(
       ws::mojom::ScreenProviderObserverAssociatedRequest observer) override;
-  void OnOcclusionStateChanged(
-      ws::Id window_id,
-      ws::mojom::OcclusionState occlusion_state) override;
+  void OnOcclusionStatesChanged(
+      const base::flat_map<ws::Id, ws::mojom::OcclusionState>&
+          occlusion_changes) override;
 
   const int routing_id_;
   ws::Id root_window_id_ = 0u;

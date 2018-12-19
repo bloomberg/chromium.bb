@@ -2666,8 +2666,8 @@ TEST_F(WindowTreeClientTest, OcclusionStateFromServer) {
       window.Hide();
     }
 
-    window_tree_client()->OnOcclusionStateChanged(
-        server_id(&window), test.changed_state_from_server);
+    window_tree_client()->OnOcclusionStatesChanged(
+        {{server_id(&window), test.changed_state_from_server}});
     EXPECT_EQ(test.expected_state, window.occlusion_state()) << test.name;
   }
 }

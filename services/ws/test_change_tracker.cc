@@ -53,6 +53,22 @@ std::string OcclusionStateToString(
   return "UNKNOWN";
 }
 
+std::string OcclusionChangesToString(
+    const base::flat_map<Id, mojom::OcclusionState>& changes) {
+  std::string ret("{");
+  bool first = true;
+  for (const auto& change : changes) {
+    if (!first)
+      ret += ", ";
+
+    ret += std::string("{window_id=") + WindowIdToString(change.first) +
+           ", state=" + OcclusionStateToString(change.second) + "}";
+    first = false;
+  }
+  ret += "}";
+  return ret;
+}
+
 enum class ChangeDescriptionType { ONE, TWO };
 
 std::string ChangeToDescription(const Change& change,
@@ -209,11 +225,10 @@ std::string ChangeToDescription(const Change& change,
           "OnPerformDragDropCompleted id=%d success=%s action=%d",
           change.change_id, change.bool_value ? "true" : "false",
           change.drag_drop_action);
-    case CHANGE_TYPE_ON_OCCLUSION_STATE_CHANGED:
+    case CHANGE_TYPE_ON_OCCLUSION_STATES_CHANGED:
       return base::StringPrintf(
-          "OnOcclusionStateChanged window_id=%s, state=%s",
-          WindowIdToString(change.window_id).c_str(),
-          OcclusionStateToString(change.occlusion_state).c_str());
+          "OnOcclusionStatesChanged %s",
+          OcclusionChangesToString(change.occlusion_changes).c_str());
   }
   return std::string();
 }
@@ -615,13 +630,11 @@ void TestChangeTracker::RequestClose(Id window_id) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnOcclusionStateChanged(
-    Id window_id,
-    mojom::OcclusionState occlusion_state) {
+void TestChangeTracker::OnOcclusionStatesChanged(
+    const base::flat_map<Id, mojom::OcclusionState>& occlusion_changes) {
   Change change;
-  change.type = CHANGE_TYPE_ON_OCCLUSION_STATE_CHANGED;
-  change.window_id = window_id;
-  change.occlusion_state = occlusion_state;
+  change.type = CHANGE_TYPE_ON_OCCLUSION_STATES_CHANGED;
+  change.occlusion_changes = occlusion_changes;
   AddChange(change);
 }
 

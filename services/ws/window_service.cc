@@ -20,6 +20,7 @@
 #include "services/ws/remoting_event_injector.h"
 #include "services/ws/screen_provider.h"
 #include "services/ws/user_activity_monitor.h"
+#include "services/ws/window_occlusion_change_builder.h"
 #include "services/ws/window_server_test_impl.h"
 #include "services/ws/window_service_delegate.h"
 #include "services/ws/window_service_observer.h"
@@ -39,6 +40,13 @@ namespace {
 bool IsOpaqueProxyWindow(const aura::Window* window) {
   return WindowService::IsProxyWindow(window) &&
          window->GetProperty(aura::client::kClientWindowHasContent);
+}
+
+// Factory to create ws::WindowOcclusionChangeBuilder that dispatches occlusion
+// change per WindowTree in a single mojo call.
+std::unique_ptr<aura::WindowOcclusionChangeBuilder>
+CreateOcclusionChangeBuilder() {
+  return std::make_unique<ws::WindowOcclusionChangeBuilder>();
 }
 
 }  // namespace
@@ -75,8 +83,14 @@ WindowService::WindowService(
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
 
   // Extends WindowOcclusionTracker to check whether remote window has content.
-  env_->GetWindowOcclusionTracker()->set_window_has_content_callback(
+  auto* occlusion_tracker = env_->GetWindowOcclusionTracker();
+  DCHECK(occlusion_tracker);
+  occlusion_tracker->set_window_has_content_callback(
       base::BindRepeating(&IsOpaqueProxyWindow));
+
+  // Makes WindowOcclusionTracker to use ws::WindowOcclusionChangeBuilder.
+  occlusion_tracker->set_occlusion_change_builder_factory(
+      base::BindRepeating(&CreateOcclusionChangeBuilder));
 }
 
 WindowService::~WindowService() {
