@@ -48,12 +48,23 @@ class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
       : WebAppShortcutCreator(app_data_dir, shortcut_info) {}
 
   MOCK_CONST_METHOD0(GetApplicationsDirname, base::FilePath());
-  MOCK_CONST_METHOD1(GetAppBundleById,
-                     base::FilePath(const std::string& bundle_id));
+  MOCK_CONST_METHOD0(GetAppBundlesByIdUnsorted, std::vector<base::FilePath>());
   MOCK_CONST_METHOD0(RevealAppShimInFinder, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorMock);
+};
+
+class WebAppShortcutCreatorSortingMock : public web_app::WebAppShortcutCreator {
+ public:
+  WebAppShortcutCreatorSortingMock(const base::FilePath& app_data_dir,
+                                   const web_app::ShortcutInfo* shortcut_info)
+      : WebAppShortcutCreator(app_data_dir, shortcut_info) {}
+
+  MOCK_CONST_METHOD0(GetAppBundlesByIdUnsorted, std::vector<base::FilePath>());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorSortingMock);
 };
 
 std::unique_ptr<web_app::ShortcutInfo> GetShortcutInfo() {
@@ -183,8 +194,10 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
 
   std::string expected_bundle_id = kFakeChromeBundleId;
   expected_bundle_id += ".app.Profile-1-" + info_->extension_id;
-  EXPECT_CALL(shortcut_creator, GetAppBundleById(expected_bundle_id))
-      .WillOnce(Return(other_shim_path));
+  std::vector<base::FilePath> bundle_by_id_paths;
+  bundle_by_id_paths.push_back(other_shim_path);
+  EXPECT_CALL(shortcut_creator, GetAppBundlesByIdUnsorted())
+      .WillOnce(Return(bundle_by_id_paths));
 
   EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
 
@@ -194,9 +207,10 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
   EXPECT_FALSE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(other_shim_path.Append("Contents")));
 
-  // Also test case where GetAppBundleById fails.
-  EXPECT_CALL(shortcut_creator, GetAppBundleById(expected_bundle_id))
-      .WillOnce(Return(base::FilePath()));
+  // Also test case where GetAppBundlesByIdUnsorted fails.
+  bundle_by_id_paths.clear();
+  EXPECT_CALL(shortcut_creator, GetAppBundlesByIdUnsorted())
+      .WillOnce(Return(bundle_by_id_paths));
 
   EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
 
@@ -222,8 +236,10 @@ TEST_F(WebAppShortcutCreatorTest, UpdateBookmarkAppShortcut) {
   std::string expected_bundle_id = kFakeChromeBundleId;
   expected_bundle_id += ".app.Profile-1-" + info_->extension_id;
 
-  EXPECT_CALL(shortcut_creator, GetAppBundleById(expected_bundle_id))
-      .WillOnce(Return(shim_path_));
+  std::vector<base::FilePath> bundle_by_id_paths;
+  bundle_by_id_paths.push_back(shim_path_);
+  EXPECT_CALL(shortcut_creator, GetAppBundlesByIdUnsorted())
+      .WillOnce(Return(bundle_by_id_paths));
 
   EXPECT_TRUE(shortcut_creator.BuildShortcut(other_shim_path));
 
@@ -253,8 +269,10 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
 
   std::string expected_bundle_id = kFakeChromeBundleId;
   expected_bundle_id += ".app.Profile-1-" + info_->extension_id;
-  EXPECT_CALL(shortcut_creator, GetAppBundleById(expected_bundle_id))
-      .WillOnce(Return(other_shim_path));
+  std::vector<base::FilePath> bundle_by_id_paths;
+  bundle_by_id_paths.push_back(other_shim_path);
+  EXPECT_CALL(shortcut_creator, GetAppBundlesByIdUnsorted())
+      .WillOnce(Return(bundle_by_id_paths));
 
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
                                                web_app::ShortcutLocations()));
@@ -357,6 +375,24 @@ TEST_F(WebAppShortcutCreatorTest, DISABLED_RevealAppShimInFinder) {
   EXPECT_CALL(shortcut_creator, RevealAppShimInFinder());
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_BY_USER,
                                                web_app::ShortcutLocations()));
+}
+
+TEST_F(WebAppShortcutCreatorTest, SortAppBundles) {
+  base::FilePath app_dir("/home/apps");
+  NiceMock<WebAppShortcutCreatorSortingMock> shortcut_creator(app_dir,
+                                                              info_.get());
+  base::FilePath a = shortcut_creator.GetApplicationsShortcutPath();
+  base::FilePath b = shortcut_creator.GetApplicationsDirname().Append("a");
+  base::FilePath c = shortcut_creator.GetApplicationsDirname().Append("z");
+  base::FilePath d("/a/b/c");
+  base::FilePath e("/z/y/w");
+  std::vector<base::FilePath> unsorted = {e, c, a, d, b};
+  std::vector<base::FilePath> sorted = {a, b, c, d, e};
+
+  EXPECT_CALL(shortcut_creator, GetAppBundlesByIdUnsorted())
+      .WillOnce(Return(unsorted));
+  std::vector<base::FilePath> result = shortcut_creator.GetAppBundlesById();
+  EXPECT_EQ(result, sorted);
 }
 
 }  // namespace web_app

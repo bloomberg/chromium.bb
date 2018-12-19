@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <map>
 #include <utility>
 
@@ -187,19 +188,16 @@ void LaunchShimOnFileThread(web_app::LaunchAppCallback callback,
                             const web_app::ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
-  // TODO(https://crbug.com/913394): Attempt to locate the shim's path using
-  // LSCopyApplicationURLsForBundleIdentifier.
-  base::FilePath shim_path = web_app::GetAppInstallPath(shortcut_info);
+  web_app::WebAppShortcutCreator shortcut_creator(
+      web_app::internals::GetShortcutDataDir(shortcut_info), &shortcut_info);
 
-  if (shim_path.empty() || !base::PathExists(shim_path) ||
-      !HasSameUserDataDir(shim_path)) {
-    // The user may have deleted the copy in the Applications folder, use the
-    // one in the web app's |app_data_dir_|.
-    base::FilePath app_data_dir = web_app::GetWebAppDataDirectory(
-        shortcut_info.profile_path, shortcut_info.extension_id, GURL());
-    shim_path = app_data_dir.Append(shim_path.BaseName());
-  }
+  // Attempt to locate the shim's path using LaunchServices.
+  std::vector<base::FilePath> shim_paths = shortcut_creator.GetAppBundlesById();
 
+  // Add as a last resort the copy in the web app's |app_data_dir_|, in case
+  // the user deleted all other copies.
+  shim_paths.push_back(shortcut_creator.GetInternalShortcutPath());
+  base::FilePath shim_path = shim_paths.front();
   if (!base::PathExists(shim_path)) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
@@ -418,14 +416,6 @@ bool UpdateAppShortcutsSubdirLocalizedName(
           &GetImageResourcesOnUIThread,
           base::BindOnce(&SetWorkspaceIconOnWorkerThread, apps_directory)));
   return true;
-}
-
-void DeletePathAndParentIfEmpty(const base::FilePath& app_path) {
-  DCHECK(!app_path.empty());
-  base::DeleteFile(app_path, true);
-  base::FilePath apps_folder = app_path.DirName();
-  if (base::IsDirectoryEmpty(apps_folder))
-    base::DeleteFile(apps_folder, false);
 }
 
 bool IsShimForProfile(const base::FilePath& base_name,
@@ -680,17 +670,27 @@ bool WebAppShortcutCreator::CreateShortcuts(
 }
 
 void WebAppShortcutCreator::DeleteShortcuts() {
-  base::FilePath app_path = GetApplicationsShortcutPath();
-  if (!app_path.empty() && HasSameUserDataDir(app_path))
-    DeletePathAndParentIfEmpty(app_path);
+  base::FilePath apps_dir = GetApplicationsDirname();
+  bool deleted_instance_in_apps_dir = false;
 
-  // In case the user has moved/renamed/copied the app bundle.
-  base::FilePath bundle_path = GetAppBundleById(GetBundleIdentifier());
-  if (!bundle_path.empty() && HasSameUserDataDir(bundle_path))
+  // Remove all instances found by LaunchServices.
+  std::vector<base::FilePath> bundle_paths = GetAppBundlesById();
+  for (const auto& bundle_path : bundle_paths) {
+    deleted_instance_in_apps_dir |= apps_dir.IsParent(bundle_path);
     base::DeleteFile(bundle_path, true);
+  }
 
-  // Delete the internal one.
-  DeletePathAndParentIfEmpty(GetInternalShortcutPath());
+  // If we just deleted the last entry in Chrome's apps directory, remove the
+  // apps directory itself. In practice, we never do this, because the the apps
+  // directory still has its .DS_Store and .localized files.
+  if (deleted_instance_in_apps_dir && base::IsDirectoryEmpty(apps_dir))
+    base::DeleteFile(apps_dir, false);
+
+  // Delete the internal one (and its parent directory if it is empty -- this
+  // actually does happen often, because the path is rarely viewed in Finder).
+  base::DeleteFile(GetInternalShortcutPath(), true);
+  if (base::IsDirectoryEmpty(app_data_dir_))
+    base::DeleteFile(app_data_dir_, false);
 }
 
 bool WebAppShortcutCreator::UpdateShortcuts() {
@@ -713,8 +713,13 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
   // |g_app_shims_allow_update_and_launch_in_tests| can properly mock out all
   // the calls below.
   if (!g_app_shims_allow_update_and_launch_in_tests) {
-    if (app_path.empty() || !base::PathExists(app_path))
-      app_path = GetAppBundleById(GetBundleIdentifier());
+    if (app_path.empty() || !base::PathExists(app_path)) {
+      auto app_paths = GetAppBundlesById();
+      if (!app_paths.empty())
+        app_path = app_paths.front();
+      else
+        app_path = base::FilePath();
+    }
 
     if (app_path.empty()) {
       if (profile_copy_exists && info_->from_bookmark) {
@@ -882,19 +887,59 @@ bool WebAppShortcutCreator::UpdateInternalBundleIdentifier() const {
   return [plist writeToFile:plist_path atomically:YES];
 }
 
-base::FilePath WebAppShortcutCreator::GetAppBundleById(
-    const std::string& bundle_id) const {
+std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesByIdUnsorted()
+    const {
   base::ScopedCFTypeRef<CFStringRef> bundle_id_cf(
-      base::SysUTF8ToCFStringRef(bundle_id));
-  CFURLRef url_ref = NULL;
-  OSStatus status = LSFindApplicationForInfo(
-      kLSUnknownCreator, bundle_id_cf.get(), NULL, NULL, &url_ref);
-  if (status != noErr)
-    return base::FilePath();
+      base::SysUTF8ToCFStringRef(GetBundleIdentifier()));
 
-  base::ScopedCFTypeRef<CFURLRef> url(url_ref);
-  NSString* path_string = [base::mac::CFToNSCast(url.get()) path];
-  return base::FilePath([path_string fileSystemRepresentation]);
+  // Retrieve the URLs found by LaunchServices.
+  base::scoped_nsobject<NSArray> urls;
+  if (@available(macOS 10.10, *)) {
+    urls.reset(base::mac::CFToNSCast(
+        LSCopyApplicationURLsForBundleIdentifier(bundle_id_cf.get(), nullptr)));
+  } else {
+    base::ScopedCFTypeRef<CFURLRef> cf_url;
+    LSFindApplicationForInfo(kLSUnknownCreator, bundle_id_cf.get(), NULL, NULL,
+                             cf_url.InitializeInto());
+    if (cf_url)
+      urls.reset([@[ base::mac::CFToNSCast(cf_url) ] retain]);
+  }
+
+  // Store only those results corresponding to this user data dir.
+  std::vector<base::FilePath> paths;
+  for (NSURL* url : urls.get()) {
+    NSString* path_string = [url path];
+    base::FilePath path([path_string fileSystemRepresentation]);
+    if (HasSameUserDataDir(path))
+      paths.push_back(path);
+  }
+  return paths;
+}
+
+std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesById() const {
+  std::vector<base::FilePath> paths = GetAppBundlesByIdUnsorted();
+
+  // Sort the matches by preference.
+  base::FilePath default_path = GetApplicationsShortcutPath();
+  base::FilePath apps_dir = GetApplicationsDirname();
+  auto compare = [default_path, apps_dir](const base::FilePath& a,
+                                          const base::FilePath& b) {
+    if (a == b)
+      return false;
+    // The default install path is preferred above all others.
+    if (a == default_path)
+      return true;
+    if (b == default_path)
+      return false;
+    // Paths in ~/Applications are preferred to paths not in ~/Applications.
+    bool a_in_apps_dir = apps_dir.IsParent(a);
+    bool b_in_apps_dir = apps_dir.IsParent(b);
+    if (a_in_apps_dir != b_in_apps_dir)
+      return a_in_apps_dir > b_in_apps_dir;
+    return a < b;
+  };
+  std::sort(paths.begin(), paths.end(), compare);
+  return paths;
 }
 
 std::string WebAppShortcutCreator::GetBundleIdentifier() const {
@@ -915,12 +960,14 @@ std::string WebAppShortcutCreator::GetInternalBundleIdentifier() const {
 }
 
 void WebAppShortcutCreator::RevealAppShimInFinder() const {
-  base::FilePath app_path = GetApplicationsShortcutPath();
-  if (app_path.empty())
-    return;
+  // Note that RevealAppShimInFinder is called immediately after requesting to
+  // build the app shim. This almost always happens before the app shim has
+  // completed building (and so we just open the Chrome apps folder).
 
   // Check if the app shim exists.
-  if (base::PathExists(app_path)) {
+  auto app_paths = GetAppBundlesById();
+  if (!app_paths.empty()) {
+    base::FilePath app_path = app_paths.front();
     // Use selectFile to show the contents of parent directory with the app
     // shim selected.
     [[NSWorkspace sharedWorkspace]
@@ -929,20 +976,17 @@ void WebAppShortcutCreator::RevealAppShimInFinder() const {
     return;
   }
 
-  // Otherwise, go up a directory.
-  app_path = app_path.DirName();
+  // Otherwise, open the Chrome apps folder.
+  base::FilePath apps_path = GetApplicationsDirname();
+
   // Check if the Chrome apps folder exists, otherwise go up to ~/Applications.
-  if (!base::PathExists(app_path))
-    app_path = app_path.DirName();
+  if (!base::PathExists(apps_path))
+    apps_path = apps_path.DirName();
+
   // Since |app_path| is a directory, use openFile to show the contents of
   // that directory in Finder.
   [[NSWorkspace sharedWorkspace]
-      openFile:base::mac::FilePathToNSString(app_path)];
-}
-
-base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info) {
-  WebAppShortcutCreator shortcut_creator(base::FilePath(), &shortcut_info);
-  return shortcut_creator.GetApplicationsShortcutPath();
+      openFile:base::mac::FilePathToNSString(apps_path)];
 }
 
 void MaybeLaunchShortcut(std::unique_ptr<ShortcutInfo> shortcut_info,
