@@ -54,9 +54,12 @@ CrostiniInstallerView* g_crostini_installer_view = nullptr;
 // TODO(timloh): This is just a placeholder.
 constexpr int kDownloadSizeInBytes = 300 * 1024 * 1024;
 
-constexpr int kOOBEButtonRowInset = 32;
+constexpr gfx::Insets kOOBEButtonRowInsets(32, 64, 32, 64);
 constexpr int kOOBEWindowWidth = 768;
-constexpr int kOOBEWindowHeight = 640 - 2 * kOOBEButtonRowInset;
+// TODO(timloh): The button row's preferred height (48px) adds to this. I'm not
+// sure where this actually comes from but since we plan to rewrite this dialog
+// in WebUI soon, this constant just hard-coded here.
+constexpr int kOOBEWindowHeight = 640 - 48;
 constexpr int kLinuxIllustrationWidth = 448;
 constexpr int kLinuxIllustrationHeight = 180;
 
@@ -99,7 +102,7 @@ void CrostiniInstallerView::Show(Profile* profile) {
                                               nullptr, nullptr);
   }
   g_crostini_installer_view->GetDialogClientView()->SetButtonRowInsets(
-      gfx::Insets(kOOBEButtonRowInset));
+      kOOBEButtonRowInsets);
   g_crostini_installer_view->GetWidget()->GetRootView()->Layout();
   // We do our layout when the big message is at its biggest. Then we can
   // set it to the desired value.
@@ -370,27 +373,24 @@ CrostiniInstallerView* CrostiniInstallerView::GetActiveViewForTesting() {
 CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {
   // Layout constants from the spec.
-  constexpr gfx::Insets kDialogInsets(60, 64, 32, 64);
+  constexpr gfx::Insets kDialogInsets(60, 64, 0, 64);
   constexpr int kDialogSpacingVertical = 32;
   constexpr gfx::Size kLogoImageSize(32, 32);
+  constexpr gfx::Insets kLowerContainerInsets(0, 0, 80, 0);
 
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kVertical, gfx::Insets(), kDialogSpacingVertical));
 
   views::View* upper_container_view = new views::View();
-  upper_container_view->SetSize(gfx::Size(
-      kOOBEWindowWidth, kOOBEWindowHeight - kLinuxIllustrationHeight));
   upper_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, kDialogInsets, kDialogSpacingVertical));
   AddChildView(upper_container_view);
 
   views::View* lower_container_view = new views::View();
-  lower_container_view->SetSize(
-      gfx::Size(kOOBEWindowWidth, kLinuxIllustrationHeight));
   views::BoxLayout* lower_container_layout =
-      lower_container_view->SetLayoutManager(
-          std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+      lower_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kVertical, kLowerContainerInsets));
   AddChildView(lower_container_view);
 
   logo_image_ = new views::ImageView();
