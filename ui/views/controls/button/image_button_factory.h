@@ -45,6 +45,18 @@ VIEWS_EXPORT void SetImageFromVectorIcon(
     int dip_size,
     SkColor related_text_color = gfx::kGoogleGrey900);
 
+// Sets images on |button| for STATE_NORMAL and STATE_DISABLED from the given
+// vector icon and color.
+VIEWS_EXPORT void SetImageFromVectorIconWithColor(ImageButton* button,
+                                                  const gfx::VectorIcon& icon,
+                                                  SkColor icon_color);
+
+// As above, but creates the images at the given size.
+VIEWS_EXPORT void SetImageFromVectorIconWithColor(ImageButton* button,
+                                                  const gfx::VectorIcon& icon,
+                                                  int dip_size,
+                                                  SkColor icon_color);
+
 // As above, but sets the toggled images for a toggled image button.
 VIEWS_EXPORT void SetToggledImageFromVectorIcon(
     ToggleImageButton* button,

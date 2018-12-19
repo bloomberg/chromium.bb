@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
@@ -13,15 +16,24 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "components/url_formatter/url_formatter.h"
+#include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
+#include "ui/views/view_properties.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_constants.h"
@@ -40,6 +52,50 @@ SkColor GetDefaultFrameColor() {
 #else
   return ThemeProperties::GetDefaultColor(ThemeProperties::COLOR_FRAME, false);
 #endif
+}
+
+views::ImageButton* CreateCloseButton(views::ButtonListener* listener,
+                                      SkColor color) {
+  views::ImageButton* close_button = CreateVectorImageButton(listener);
+  SetImageFromVectorIconWithColor(close_button, vector_icons::kCloseRoundedIcon,
+                                  color);
+  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
+  close_button->SizeToPreferredSize();
+
+  // Use a circular ink drop.
+  auto highlight_path = std::make_unique<SkPath>();
+  highlight_path->addOval(gfx::RectToSkRect(gfx::Rect(close_button->size())));
+  close_button->SetProperty(views::kHighlightPathKey, highlight_path.release());
+
+  return close_button;
+}
+
+void GoBackToApp(content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  GURL launch_url = browser->hosted_app_controller()->GetAppLaunchURL();
+  content::NavigationController& controller = web_contents->GetController();
+  content::BrowserContext* context = web_contents->GetBrowserContext();
+
+  content::NavigationEntry* entry = nullptr;
+  int offset = 0;
+
+  // Go back until we find an in scope url, or run out of urls.
+  while ((entry = controller.GetEntryAtOffset(offset)) &&
+         !extensions::IsSameScope(entry->GetURL(), launch_url, context)) {
+    offset--;
+  }
+
+  // If there are no in scope urls, push the app's launch url and clear
+  // the history.
+  if (!entry) {
+    content::NavigationController::LoadURLParams load(launch_url);
+    load.should_clear_history_list = true;
+    controller.LoadURLWithParams(load);
+    return;
+  }
+
+  // Otherwise, go back to the first in scope url.
+  controller.GoToOffset(offset);
 }
 
 }  // namespace
@@ -105,6 +161,9 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
 
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
+
+  close_button_ = CreateCloseButton(this, text_color_);
+  AddChildView(close_button_);
 
   location_icon_view_ = new LocationIconView(font_list, this);
   AddChildView(location_icon_view_);
@@ -197,4 +256,9 @@ SkColor CustomTabBarView::GetLocationIconInkDropColor() const {
 
 const LocationBarModel* CustomTabBarView::GetLocationBarModel() const {
   return delegate_->GetLocationBarModel();
+}
+
+void CustomTabBarView::ButtonPressed(views::Button* sender,
+                                     const ui::Event& event) {
+  GoBackToApp(GetWebContents());
 }
