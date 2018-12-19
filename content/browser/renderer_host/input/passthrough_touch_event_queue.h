@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -112,6 +113,27 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
 
  private:
   friend class PassthroughTouchEventQueueTest;
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchScrollStartedUnfiltered);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchStartWithoutPageHandlersFiltered);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchStartWithPageHandlersUnfiltered);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchMoveFilteredAfterTimeout);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchMoveWithoutPageHandlersFiltered);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           StationaryTouchMoveFiltered);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           StationaryTouchMoveWithActualTouchMoveUnfiltered);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           NonTouchMoveUnfiltered);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchMoveWithNonTouchMoveUnfiltered);
+  FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
+                           TouchMoveWithoutSequenceHandlerFiltered);
+
   friend class TouchTimeoutHandler;
 
   class TouchEventWithLatencyInfoAndAckState
@@ -131,11 +153,19 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
     InputEventAckState ack_state_;
   };
 
-  enum PreFilterResult {
-    ACK_WITH_NO_CONSUMER_EXISTS,
-    ACK_WITH_NOT_CONSUMED,
-    FORWARD_TO_RENDERER,
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "EventPreFilterResult" in src/tools/metrics/histograms/enums.xml.
+  enum class PreFilterResult {
+    kUnfiltered = 0,
+    kFilteredNoPageHandlers = 1,
+    kFilteredTimeout = 2,
+    kFilteredNoNonstationaryPointers = 3,
+    kFilteredNoHandlerForSequence = 4,
+    kMaxValue = kFilteredNoHandlerForSequence,
+
   };
+
   // Filter touches prior to forwarding to the renderer, e.g., if the renderer
   // has no touch handler.
   PreFilterResult FilterBeforeForwarding(const blink::WebTouchEvent& event);

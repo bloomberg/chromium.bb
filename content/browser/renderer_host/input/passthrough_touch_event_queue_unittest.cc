@@ -315,6 +315,11 @@ class PassthroughTouchEventQueueTest : public testing::Test,
     run_loop.Run();
   }
 
+  PassthroughTouchEventQueue::PreFilterResult FilterBeforeForwarding(
+      const blink::WebTouchEvent& event) {
+    return queue_->FilterBeforeForwarding(event);
+  }
+
   int GetUniqueTouchEventID() { return sent_events_ids_.back(); }
 
  private:
@@ -1773,6 +1778,148 @@ TEST_F(PassthroughTouchEventQueueTest, TouchStartOrFirstTouchMove) {
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(WebInputEvent::kTouchEnd, sent_event().GetType());
   EXPECT_FALSE(sent_event().touch_start_or_first_touch_move);
+}
+
+TEST_F(PassthroughTouchEventQueueTest, TouchScrollStartedUnfiltered) {
+  SyntheticWebTouchEvent event;
+  event.SetType(WebInputEvent::kTouchScrollStarted);
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
+            FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest, TouchStartWithoutPageHandlersFiltered) {
+  OnHasTouchEventHandlers(false);
+  SyntheticWebTouchEvent event;
+  event.PressPoint(1, 1);
+
+  EXPECT_EQ(
+      PassthroughTouchEventQueue::PreFilterResult::kFilteredNoPageHandlers,
+      FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest, TouchStartWithPageHandlersUnfiltered) {
+  OnHasTouchEventHandlers(true);
+  SyntheticWebTouchEvent event;
+  event.PressPoint(1, 1);
+
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
+            FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest, TouchMoveFilteredAfterTimeout) {
+  SetUpForTimeoutTesting();
+  OnHasTouchEventHandlers(true);
+  PressTouchPoint(1, 1);
+
+  // Allow the initial touch start event to time out.
+  RunTasksAndWait(DefaultTouchTimeoutDelay() * 2);
+
+  // Any subsequent touch move events are filtered.
+  SyntheticWebTouchEvent event;
+  int id = event.PressPoint(1, 1);
+  event.MovePoint(id, 2, 2);
+
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kFilteredTimeout,
+            FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest, TouchMoveWithoutPageHandlersFiltered) {
+  OnHasTouchEventHandlers(false);
+  // Start the touch sequence.
+  PressTouchPoint(1, 1);
+
+  SyntheticWebTouchEvent event;
+  int id = event.PressPoint(1, 1);
+  event.ReleasePoint(id);
+
+  EXPECT_EQ(
+      PassthroughTouchEventQueue::PreFilterResult::kFilteredNoPageHandlers,
+      FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest, StationaryTouchMoveFiltered) {
+  OnHasTouchEventHandlers(true);
+  // Start the touch sequence.
+  PressTouchPoint(1, 1);
+
+  // Touch move events with stationary pointers are filtered.
+  SyntheticWebTouchEvent event;
+  int id = event.PressPoint(1, 1);
+  event.MovePoint(id, 1, 1);
+
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::
+                kFilteredNoNonstationaryPointers,
+            FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest,
+       StationaryTouchMoveWithActualTouchMoveUnfiltered) {
+  OnHasTouchEventHandlers(true);
+  // Start the touch sequence.
+  PressTouchPoint(1, 1);
+  PressTouchPoint(2, 2);
+
+  // Touch move events with non stationary pointers are unfiltered, even if
+  // there's another touch with a stationary pointer.
+  SyntheticWebTouchEvent event;
+  int id1 = event.PressPoint(1, 1);
+  event.MovePoint(id1, 1, 1);
+  int id2 = event.PressPoint(2, 2);
+  event.MovePoint(id2, 3, 3);
+
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
+            FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest, NonTouchMoveUnfiltered) {
+  OnHasTouchEventHandlers(true);
+  // Start the touch sequence.
+  PressTouchPoint(1, 1);
+
+  // Non-touchmove events are never filtered.
+  SyntheticWebTouchEvent event;
+  int id = event.PressPoint(1, 1);
+  event.ReleasePoint(id);
+
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
+            FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest, TouchMoveWithNonTouchMoveUnfiltered) {
+  OnHasTouchEventHandlers(true);
+  // Start the touch sequence.
+  PressTouchPoint(1, 1);
+  PressTouchPoint(1, 1);
+
+  // Non-touchmove events are never filtered, even if they're paired with a
+  // touchmove event that would otherwise be filtered.
+  SyntheticWebTouchEvent event;
+  int id1 = event.PressPoint(1, 1);
+  event.MovePoint(id1, 1, 1);
+  int id2 = event.PressPoint(2, 2);
+  event.ReleasePoint(id2);
+
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::kUnfiltered,
+            FilterBeforeForwarding(event));
+}
+
+TEST_F(PassthroughTouchEventQueueTest,
+       TouchMoveWithoutSequenceHandlerFiltered) {
+  OnHasTouchEventHandlers(true);
+  // Start the touch sequence.
+  PressTouchPoint(1, 1);
+
+  // Send an ack indicating that there's no handler for the current sequence.
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+
+  // Any subsequent touches in the sequence should be filtered.
+  SyntheticWebTouchEvent event;
+  int id = event.PressPoint(1, 1);
+  event.MovePoint(id, 3, 3);
+
+  EXPECT_EQ(PassthroughTouchEventQueue::PreFilterResult::
+                kFilteredNoHandlerForSequence,
+            FilterBeforeForwarding(event));
 }
 
 }  // namespace content
