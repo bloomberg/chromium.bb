@@ -293,7 +293,7 @@ DeviceSyncImpl::DeviceSyncImpl(
     base::Clock* clock,
     std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate,
     std::unique_ptr<base::OneShotTimer> timer)
-    : DeviceSyncBase(gcm_driver),
+    : DeviceSyncBase(),
       identity_manager_(identity_manager),
       gcm_driver_(gcm_driver),
       connector_(connector),
