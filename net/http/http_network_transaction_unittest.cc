@@ -5827,6 +5827,149 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyConnectFailure) {
   // TODO(juliatuttle): Anything else to check here?
 }
 
+// Test the case where a proxied H2 session doesn't exist when an auth challenge
+// is observed, but does exist by the time auth credentials are provided.
+// Proxy-Connection: Close is used so that there's a second DNS lookup, which is
+// what causes the existing H2 session to be noticed and reused.
+TEST_F(HttpNetworkTransactionTest, ProxiedH2SessionAppearsDuringAuth) {
+  ProxyConfig proxy_config;
+  proxy_config.set_auto_detect(true);
+  proxy_config.set_pac_url(GURL("http://fooproxyurl"));
+
+  CapturingProxyResolver capturing_proxy_resolver;
+  capturing_proxy_resolver.set_proxy_server(
+      ProxyServer(ProxyServer::SCHEME_HTTP, HostPortPair("myproxy", 70)));
+  session_deps_.proxy_resolution_service =
+      std::make_unique<ProxyResolutionService>(
+          std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
+              proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
+          std::make_unique<CapturingProxyResolverFactory>(
+              &capturing_proxy_resolver),
+          nullptr);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  const char kMyUrl[] = "https://www.example.org/";
+  spdy::SpdySerializedFrame get(spdy_util_.ConstructSpdyGet(kMyUrl, 1, LOWEST));
+  spdy::SpdySerializedFrame get_resp(
+      spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+
+  spdy_util_.UpdateWithStreamDestruction(1);
+  spdy::SpdySerializedFrame get2(
+      spdy_util_.ConstructSpdyGet(kMyUrl, 3, LOWEST));
+  spdy::SpdySerializedFrame get_resp2(
+      spdy_util_.ConstructSpdyGetReply(NULL, 0, 3));
+  spdy::SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+
+  MockWrite auth_challenge_writes[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead auth_challenge_reads[] = {
+      MockRead(ASYNC, 1,
+               "HTTP/1.1 407 Authentication Required\r\n"
+               "Content-Length: 0\r\n"
+               "Proxy-Connection: close\r\n"
+               "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n\r\n"),
+  };
+
+  MockWrite spdy_writes[] = {
+      MockWrite(ASYNC, 0,
+                "CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+      CreateMockWrite(get, 2),
+      CreateMockWrite(get2, 5),
+  };
+
+  MockRead spdy_reads[] = {
+      MockRead(ASYNC, 1, "HTTP/1.1 200 OK\r\n\r\n"),
+      CreateMockRead(get_resp, 3, ASYNC),
+      CreateMockRead(body, 4, ASYNC),
+      CreateMockRead(get_resp2, 6, ASYNC),
+      CreateMockRead(body2, 7, ASYNC),
+
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 8),
+  };
+
+  SequencedSocketData auth_challenge1(auth_challenge_reads,
+                                      auth_challenge_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&auth_challenge1);
+
+  SequencedSocketData auth_challenge2(auth_challenge_reads,
+                                      auth_challenge_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&auth_challenge2);
+
+  SequencedSocketData spdy_data(spdy_reads, spdy_writes);
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  TestCompletionCallback callback;
+  std::string response_data;
+
+  // Run first request until an auth challenge is observed.
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL(kMyUrl);
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  HttpNetworkTransaction trans1(LOWEST, session.get());
+  int rv = trans1.Start(&request1, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  const HttpResponseInfo* response = trans1.GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ(407, response->headers->response_code());
+  EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+
+  // Run second request until an auth challenge is observed.
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL(kMyUrl);
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  HttpNetworkTransaction trans2(LOWEST, session.get());
+  rv = trans2.Start(&request2, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  response = trans2.GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ(407, response->headers->response_code());
+  EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+  EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge.get()));
+
+  // Now provide credentials for the first request, and wait for it to complete.
+  rv = trans1.RestartWithAuth(AuthCredentials(kFoo, kBar), callback.callback());
+  rv = callback.GetResult(rv);
+  EXPECT_THAT(rv, IsOk());
+  response = trans1.GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  ASSERT_THAT(ReadTransaction(&trans1, &response_data), IsOk());
+  EXPECT_EQ(kUploadData, response_data);
+
+  // Now provide credentials for the second request. It should notice the
+  // existing session, and reuse it.
+  rv = trans2.RestartWithAuth(AuthCredentials(kFoo, kBar), callback.callback());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  response = trans2.GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+  ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
+  EXPECT_EQ(kUploadData, response_data);
+}
+
 // Test load timing in the case of two HTTPS (non-SPDY) requests through a SPDY
 // HTTPS Proxy to different servers.
 TEST_F(HttpNetworkTransactionTest,
