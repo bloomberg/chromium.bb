@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client_impl_test_helper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -98,7 +99,7 @@ TEST_F(BrowserFinderChromeOSTest, IncognitoBrowserMatchTest) {
   // Create an incognito browser.
   Browser::CreateParams params(profile()->GetOffTheRecordProfile(), true);
   std::unique_ptr<Browser> incognito_browser(
-      chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
+      chrome::CreateBrowserWithViewsTestWindowForParams(params));
   // Incognito windows are excluded in GetBrowserCount() because kMatchAll
   // doesn't match original profile of the browser with the given profile.
   EXPECT_EQ(0u, chrome::GetBrowserCount(profile()));
@@ -107,14 +108,11 @@ TEST_F(BrowserFinderChromeOSTest, IncognitoBrowserMatchTest) {
 }
 
 TEST_F(BrowserFinderChromeOSTest, FindBrowserOwnedByAnotherProfile) {
-  // TODO(crbug.com/910241): fix for mash.
-  if (features::IsSingleProcessMash())
-    return;
   set_browser(nullptr);
 
   Browser::CreateParams params(profile()->GetOriginalProfile(), true);
   std::unique_ptr<Browser> browser(
-      chrome::CreateBrowserWithAuraTestWindowForParams(nullptr, &params));
+      chrome::CreateBrowserWithViewsTestWindowForParams(params));
   GetUserWindowManager()->SetWindowOwner(browser->window()->GetNativeWindow(),
                                          test_account_id1_);
   EXPECT_EQ(1u, chrome::GetBrowserCount(profile()));
@@ -125,6 +123,9 @@ TEST_F(BrowserFinderChromeOSTest, FindBrowserOwnedByAnotherProfile) {
   // be available for the current profile.
   GetUserWindowManager()->ShowWindowForUser(
       browser->window()->GetNativeWindow(), test_account_id2_);
+  // ShowWindowForUser() notifies chrome async. FlushBindings() to ensure all
+  // the changes happen.
+  MultiUserWindowManagerClientImplTestHelper::FlushBindings();
   EXPECT_EQ(0u, chrome::GetBrowserCount(profile()));
   EXPECT_FALSE(chrome::FindAnyBrowser(profile(), true));
   EXPECT_FALSE(chrome::FindAnyBrowser(profile(), false));
