@@ -61,4 +61,9 @@ public class ActivityHostImpl extends BaseActivityHost {
     public void setTopBarHeight(int heightInPx) {
         mModuleCoordinator.setTopBarHeight(heightInPx);
     }
+
+    @Override
+    public void setTopBarMinHeight(int heightInPx) {
+        // Do nothing for now.
+    }
 }
