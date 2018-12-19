@@ -30,6 +30,7 @@ class WebAppTabHelper : public WebAppTabHelperBase {
   WebAppTabHelperBase* CloneForWebContents(
       content::WebContents* web_contents) const override;
   AppId GetAppId(const GURL& url) override;
+  bool IsInAppWindow() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppTabHelper);

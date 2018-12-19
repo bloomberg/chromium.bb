@@ -8,6 +8,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
@@ -53,6 +54,10 @@ web_app::AppId BookmarkAppTabHelper::GetAppId(const GURL& url) {
   }
 
   return extension ? extension->id() : web_app::AppId();
+}
+
+bool BookmarkAppTabHelper::IsInAppWindow() const {
+  return util::IsWebContentsInAppWindow(web_contents());
 }
 
 }  // namespace extensions

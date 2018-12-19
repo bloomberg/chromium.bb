@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -30,6 +31,7 @@ namespace web_app {
 // Forward declarations of generalized interfaces.
 class PendingAppManager;
 class InstallManager;
+class WebAppAudioFocusIdMap;
 class WebAppTabHelperBase;
 
 // Forward declarations for new extension-independent subsystems.
@@ -87,6 +89,7 @@ class WebAppProvider : public KeyedService,
       std::vector<web_app::PendingAppManager::AppInfo>);
 
   // New extension-independent subsystems:
+  std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;
   std::unique_ptr<WebAppRegistrar> registrar_;

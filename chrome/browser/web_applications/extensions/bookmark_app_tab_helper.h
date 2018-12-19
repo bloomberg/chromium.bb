@@ -30,6 +30,7 @@ class BookmarkAppTabHelper : public web_app::WebAppTabHelperBase {
   web_app::WebAppTabHelperBase* CloneForWebContents(
       content::WebContents* web_contents) const override;
   web_app::AppId GetAppId(const GURL& url) override;
+  bool IsInAppWindow() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppTabHelper);
