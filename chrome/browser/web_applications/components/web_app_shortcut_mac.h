@@ -103,9 +103,9 @@ class WebAppShortcutCreator {
   // relevant information.
   bool BuildShortcut(const base::FilePath& staging_path) const;
 
-  // Builds a shortcut and copies it into the given destination folders.
-  // Returns with the number of successful copies. Returns on the first failure.
-  size_t CreateShortcutsIn(const std::vector<base::FilePath>& folders) const;
+  // Builds a shortcut and copies it to the specified app paths. Returns with
+  // the number of successful copies created.
+  size_t CreateShortcutsAt(const std::vector<base::FilePath>& app_paths) const;
 
   // Updates the InfoPlist.string inside |app_path| with the display name for
   // the app.
