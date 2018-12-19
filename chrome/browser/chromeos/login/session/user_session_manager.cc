@@ -2040,11 +2040,8 @@ void UserSessionManager::CheckEolStatus(Profile* profile) {
 }
 
 void UserSessionManager::StartAccountManagerMigration(Profile* profile) {
-  // |migrator| is nullptr for incognito profiles.
-  auto* migrator =
-      chromeos::AccountManagerMigratorFactory::GetForBrowserContext(profile);
-  if (migrator)
-    migrator->Start();
+  chromeos::AccountManagerMigratorFactory::GetForBrowserContext(profile)
+      ->Start();
 }
 
 EasyUnlockKeyManager* UserSessionManager::GetEasyUnlockKeyManager() {
