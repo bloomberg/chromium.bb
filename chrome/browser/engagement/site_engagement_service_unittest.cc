@@ -21,6 +21,7 @@
 #include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
+#include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -169,6 +170,12 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile(), base::BindRepeating(&BuildTestHistoryService));
     SiteEngagementScore::SetParamValuesForTesting();
+
+    // Ensure that we have just one SiteEngagementService: no service created
+    // with TestingProfile.
+    // (See KeyedServiceBaseFactory::ServiceIsCreatedWithContext).
+    DCHECK(!SiteEngagementServiceFactory::GetForProfileIfExists(profile()));
+
     service_ = base::WrapUnique(new SiteEngagementService(profile(), &clock_));
   }
 
