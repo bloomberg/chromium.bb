@@ -67,7 +67,7 @@ IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
       signin_client_(pref_service()),
       token_service_(pref_service()),
 #if defined(OS_CHROMEOS)
-      signin_manager_(&signin_client_, &account_tracker_) {
+      signin_manager_(&signin_client_, &token_service_, &account_tracker_) {
 #else
       signin_manager_(&signin_client_,
                       &token_service_,

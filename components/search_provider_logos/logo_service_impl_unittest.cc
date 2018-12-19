@@ -297,7 +297,9 @@ class SigninHelper {
                         &signin_client_,
                         &test_url_loader_factory_),
 #if defined(OS_CHROMEOS)
-        signin_manager_(&signin_client_, &account_tracker_service_),
+        signin_manager_(&signin_client_,
+                        &token_service_,
+                        &account_tracker_service_),
 #else
         signin_manager_(&signin_client_,
                         &token_service_,
