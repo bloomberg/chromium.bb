@@ -50,12 +50,12 @@ class TestSuiteAll(unittest.TestSuite):
     import grit.gather.tr_html_unittest
     import grit.gather.txt_unittest
     import grit.node.base_unittest
-    import grit.node.io_unittest
+    import grit.node.custom.filename_unittest
     import grit.node.include_unittest
     import grit.node.message_unittest
     import grit.node.misc_unittest
-    import grit.node.structure_unittest #
-    import grit.node.custom.filename_unittest
+    import grit.node.node_io_unittest
+    import grit.node.structure_unittest
     import grit.tool.android2grd_unittest
     import grit.tool.build_unittest
     import grit.tool.buildinfo_unittest
@@ -95,14 +95,14 @@ class TestSuiteAll(unittest.TestSuite):
         grit.gather.tr_html_unittest.TrHtmlUnittest,
         grit.gather.txt_unittest.TxtUnittest,
         grit.node.base_unittest.NodeUnittest,
-        grit.node.io_unittest.FileNodeUnittest,
+        grit.node.custom.filename_unittest.WindowsFilenameUnittest,
         grit.node.include_unittest.IncludeNodeUnittest,
         grit.node.message_unittest.MessageUnittest,
         grit.node.misc_unittest.GritNodeUnittest,
         grit.node.misc_unittest.IfNodeUnittest,
         grit.node.misc_unittest.ReleaseNodeUnittest,
+        grit.node.node_io_unittest.FileNodeUnittest,
         grit.node.structure_unittest.StructureUnittest,
-        grit.node.custom.filename_unittest.WindowsFilenameUnittest,
         grit.tool.android2grd_unittest.Android2GrdUnittest,
         grit.tool.build_unittest.BuildUnittest,
         grit.tool.buildinfo_unittest.BuildInfoUnittest,

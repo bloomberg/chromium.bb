@@ -12,11 +12,7 @@ import unittest
 import StringIO
 
 if __name__ == '__main__':
-  # When executed as the main module, the first entry in sys.path will be
-  # the directory contain this module. This entry causes the io.py file in this
-  # directory to be selected whenever any file does "import io", rather than the
-  # system "io" module. As a work-around, remove the first sys.path entry.
-  sys.path[0] = os.path.join(os.path.dirname(__file__), '../..')
+  sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 from grit import tclib
 from grit import util

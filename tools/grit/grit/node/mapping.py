@@ -10,12 +10,12 @@ When adding a new node type, you add to this mapping.
 from grit import exception
 
 from grit.node import empty
+from grit.node import include
 from grit.node import message
 from grit.node import misc
-from grit.node import variant
+from grit.node import node_io
 from grit.node import structure
-from grit.node import include
-from grit.node import io
+from grit.node import variant
 
 
 _ELEMENT_TO_CLASS = {
@@ -26,9 +26,9 @@ _ELEMENT_TO_CLASS = {
   'structures'    : empty.StructuresNode,
   'translations'  : empty.TranslationsNode,
   'include'       : include.IncludeNode,
-  'emit'          : io.EmitNode,
-  'file'          : io.FileNode,
-  'output'        : io.OutputNode,
+  'emit'          : node_io.EmitNode,
+  'file'          : node_io.FileNode,
+  'output'        : node_io.OutputNode,
   'ex'            : message.ExNode,
   'message'       : message.MessageNode,
   'ph'            : message.PhNode,

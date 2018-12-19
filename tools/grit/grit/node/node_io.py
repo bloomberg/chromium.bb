@@ -7,8 +7,6 @@
 
 import os
 
-import grit.format.rc_header
-
 from grit import xtb_reader
 from grit.node import base
 
