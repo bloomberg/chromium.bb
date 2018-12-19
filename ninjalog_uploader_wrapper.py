@@ -41,8 +41,8 @@ def SaveConfig(config):
 
 def ShowMessage(countdown):
     print """
-Your ninjalog will be uploaded to build stats server. Uploaded log will be used
-to analyze user side build performance.
+Your ninjalog will be uploaded to build stats server. The uploaded log will be
+used to analyze user side build performance.
 
 The following information will be uploaded with ninjalog.
 * OS (e.g. Win, Mac or Linux)
@@ -57,13 +57,17 @@ Uploading ninjalog will be started after you run autoninja another %d time.
 If you don't want to upload ninjalog, please run following command.
 $ %s opt-out
 
-If you allow upload ninjalog from next autoninja run, please run the following
-command.
+If you want to allow upload ninjalog from next autoninja run, please run the
+following command.
 $ %s opt-in
 
-If you have question about this, please send mail to infra-dev@chromium.org
+If you have questions about this, please send mail to infra-dev@chromium.org
 
-""" % (countdown, __file__, __file__)
+You can find a more detailed explanation in
+%s
+
+""" % (countdown, __file__, __file__,
+       os.path.abspath(os.path.join(THIS_DIR, "ninjalog.README.md")))
 
 
 def main():
