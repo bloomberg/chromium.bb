@@ -93,6 +93,14 @@ extern "C" {
 #define DRM_CONTROL_DEV_NAME  "%s/" DRM_CONTROL_MINOR_NAME "%d"
 #define DRM_RENDER_DEV_NAME   "%s/" DRM_RENDER_MINOR_NAME  "%d"
 
+#define DRM_NODE_NAME_MAX \
+    (sizeof(DRM_DIR_NAME) + 1 /* slash */ \
+     + MAX3(sizeof(DRM_PRIMARY_MINOR_NAME), \
+            sizeof(DRM_CONTROL_MINOR_NAME), \
+            sizeof(DRM_RENDER_MINOR_NAME)) \
+     + sizeof("144") /* highest possible node number */ \
+     + 1) /* NULL-terminator */
+
 #define DRM_ERR_NO_DEVICE  (-1001)
 #define DRM_ERR_NO_ACCESS  (-1002)
 #define DRM_ERR_NOT_ROOT   (-1003)

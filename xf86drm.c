@@ -317,7 +317,7 @@ static int drmOpenDevice(dev_t dev, int minor, int type)
 {
     stat_t          st;
     const char      *dev_name;
-    char            buf[64];
+    char            buf[DRM_NODE_NAME_MAX];
     int             fd;
     mode_t          devmode = DRM_DEV_MODE, serv_mode;
     gid_t           serv_group;
@@ -445,7 +445,7 @@ wait_for_udev:
 static int drmOpenMinor(int minor, int create, int type)
 {
     int  fd;
-    char buf[64];
+    char buf[DRM_NODE_NAME_MAX];
     const char *dev_name;
 
     if (create)
