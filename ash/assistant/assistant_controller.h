@@ -81,6 +81,7 @@ class ASH_EXPORT AssistantController
   void SetAssistantImageDownloader(
       mojom::AssistantImageDownloaderPtr assistant_image_downloader) override;
   void OpenAssistantSettings() override;
+  void StartSpeakerIdEnrollmentFlow() override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(

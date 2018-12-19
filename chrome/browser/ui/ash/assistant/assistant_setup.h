@@ -24,6 +24,7 @@ class AssistantSetup : public ash::mojom::AssistantSetup,
 
   // ash::mojom::AssistantSetup:
   void StartAssistantOptInFlow(
+      ash::mojom::FlowType type,
       StartAssistantOptInFlowCallback callback) override;
 
  private:
