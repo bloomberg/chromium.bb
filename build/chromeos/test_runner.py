@@ -162,6 +162,9 @@ class TastTest(RemoteTest):
     self._suite_name = args.suite_name
     self._tests = args.tests
     self._conditional = args.conditional
+    # VMs don't have the disk space for an unstripped version of Chrome, so only
+    # strip when running on VMs.
+    self._should_strip = args.use_vm
 
   @property
   def suite_name(self):
@@ -185,6 +188,9 @@ class TastTest(RemoteTest):
       logging.error(
           'Tast tests should not have additional args. These will be '
           'ignored: %s', self._additional_args)
+
+    if not self._should_strip:
+      self._vm_test_cmd.append('--nostrip')
 
     self._vm_test_cmd += [
         '--deploy',
