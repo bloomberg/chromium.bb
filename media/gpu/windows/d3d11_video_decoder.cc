@@ -215,6 +215,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    const OutputCB& output_cb,
                                    const WaitingCB& waiting_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(output_cb);
+  DCHECK(waiting_cb);
 
   if (!IsPotentiallySupported(config)) {
     DVLOG(3) << "D3D11 video decoder not supported for the config.";
@@ -222,9 +224,10 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  config_ = config;
   init_cb_ = init_cb;
   output_cb_ = output_cb;
-  config_ = config;
+  waiting_cb_ = waiting_cb;
 
   D3D11VideoDecoderImpl::InitCB cb = base::BindOnce(
       &D3D11VideoDecoder::OnGpuInitComplete, weak_factory_.GetWeakPtr());
@@ -471,6 +474,7 @@ void D3D11VideoDecoder::DoDecode() {
       CreatePictureBuffers();
     } else if (result == media::AcceleratedVideoDecoder::kTryAgain) {
       state_ = State::kWaitingForNewKey;
+      waiting_cb_.Run(WaitingReason::kNoDecryptionKey);
       // Note that another DoDecode() task would be posted in NotifyNewKey().
       return;
     } else {

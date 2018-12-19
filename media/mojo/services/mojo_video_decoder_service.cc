@@ -207,13 +207,12 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
     DCHECK(cdm_context);
   }
 
+  using Self = MojoVideoDecoderService;
   decoder_->Initialize(
       config, low_delay, cdm_context,
-      base::BindRepeating(&MojoVideoDecoderService::OnDecoderInitialized,
-                          weak_this_),
-      base::BindRepeating(&MojoVideoDecoderService::OnDecoderOutput,
-                          weak_this_),
-      base::NullCallback());
+      base::BindRepeating(&Self::OnDecoderInitialized, weak_this_),
+      base::BindRepeating(&Self::OnDecoderOutput, weak_this_),
+      base::BindRepeating(&Self::OnDecoderWaiting, weak_this_));
 }
 
 void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
@@ -356,6 +355,14 @@ void MojoVideoDecoderService::OnDecoderOutput(
 
   client_->OnVideoFrameDecoded(frame, decoder_->CanReadWithoutStalling(),
                                std::move(release_token));
+}
+
+void MojoVideoDecoderService::OnDecoderWaiting(WaitingReason reason) {
+  DVLOG(3) << __func__;
+  DCHECK(client_);
+  TRACE_EVENT1("media", "MojoVideoDecoderService::OnDecoderWaiting", "reason",
+               static_cast<int>(reason));
+  client_->OnWaiting(reason);
 }
 
 void MojoVideoDecoderService::OnOverlayInfoChanged(

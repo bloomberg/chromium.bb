@@ -151,6 +151,10 @@ interface VideoDecoderClient {
                       bool can_read_without_stalling,
                       mojo_base.mojom.UnguessableToken? release_token);
 
+  // Called when the remote decoder is waiting because of |reason|, e.g. waiting
+  // for decryption key.
+  OnWaiting(WaitingReason reason);
+
   // Request to be notified when the current OverlayInfo changes. This results
   // in at least one call to OnOverlayInfoChanged() for the initial OverlayInfo.
   // |restart_for_transitions| sets whether the decoder should be restarted on

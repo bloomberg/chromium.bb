@@ -76,6 +76,8 @@ class MEDIA_MOJO_EXPORT MojoVideoDecoderService final
   void OnDecoderReset();
   void OnDecoderOutput(const scoped_refptr<VideoFrame>& frame);
 
+  void OnDecoderWaiting(WaitingReason reason);
+
   void OnDecoderRequestedOverlayInfo(
       bool restart_for_transitions,
       const ProvideOverlayInfoCB& provide_overlay_info_cb);

@@ -147,6 +147,8 @@ class MEDIA_EXPORT DecoderBuffer
     discard_padding_ = discard_padding;
   }
 
+  // Returns DecryptConfig associated with |this|. Returns null iff |this| is
+  // not encrypted.
   const DecryptConfig* decrypt_config() const {
     DCHECK(!end_of_stream());
     return decrypt_config_.get();

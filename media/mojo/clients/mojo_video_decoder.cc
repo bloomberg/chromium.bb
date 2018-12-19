@@ -116,7 +116,7 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   CdmContext* cdm_context,
                                   const InitCB& init_cb,
                                   const OutputCB& output_cb,
-                                  const WaitingCB& /* waiting_cb */) {
+                                  const WaitingCB& waiting_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -155,6 +155,8 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
   initialized_ = false;
   init_cb_ = init_cb;
   output_cb_ = output_cb;
+  waiting_cb_ = waiting_cb;
+
   remote_decoder_->Initialize(
       config, low_delay, cdm_id,
       base::Bind(&MojoVideoDecoder::OnInitializeDone, base::Unretained(this)));
@@ -321,9 +323,18 @@ void MojoVideoDecoder::BindRemoteDecoder() {
                              std::move(command_buffer_id), target_color_space_);
 }
 
+void MojoVideoDecoder::OnWaiting(WaitingReason reason) {
+  DVLOG(2) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  waiting_cb_.Run(reason);
+}
+
 void MojoVideoDecoder::RequestOverlayInfo(bool restart_for_transitions) {
   DVLOG(2) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(request_overlay_info_cb_);
+
   overlay_info_requested_ = true;
   request_overlay_info_cb_.Run(
       restart_for_transitions,
@@ -333,6 +344,8 @@ void MojoVideoDecoder::RequestOverlayInfo(bool restart_for_transitions) {
 
 void MojoVideoDecoder::OnOverlayInfoChanged(const OverlayInfo& overlay_info) {
   DVLOG(2) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   if (has_connection_error_)
     return;
   remote_decoder_->OnOverlayInfoChanged(overlay_info);

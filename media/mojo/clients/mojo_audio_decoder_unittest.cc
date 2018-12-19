@@ -18,6 +18,7 @@
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
+#include "media/base/waiting.h"
 #include "media/mojo/clients/mojo_audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
 #include "media/mojo/services/mojo_audio_decoder_service.h"
@@ -78,6 +79,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
   // Completion callbacks.
   MOCK_METHOD1(OnInitialized, void(bool));
   MOCK_METHOD1(OnOutput, void(const scoped_refptr<AudioBuffer>&));
+  MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnDecoded, void(DecodeStatus));
   MOCK_METHOD0(OnReset, void());
 
@@ -109,7 +111,8 @@ class MojoAudioDecoderTest : public ::testing::Test {
     mock_audio_decoder_ = mock_audio_decoder.get();
 
     EXPECT_CALL(*mock_audio_decoder_, Initialize(_, _, _, _, _))
-        .WillRepeatedly(DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(true)));
+        .WillRepeatedly(DoAll(SaveArg<3>(&output_cb_), SaveArg<4>(&waiting_cb_),
+                              RunCallback<2>(true)));
     EXPECT_CALL(*mock_audio_decoder_, Decode(_, _))
         .WillRepeatedly(
             DoAll(InvokeWithoutArgs(this, &MojoAudioDecoderTest::ReturnOutput),
@@ -141,7 +144,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
         base::Bind(&MojoAudioDecoderTest::OnInitialized,
                    base::Unretained(this)),
         base::Bind(&MojoAudioDecoderTest::OnOutput, base::Unretained(this)),
-        base::NullCallback());
+        base::Bind(&MojoAudioDecoderTest::OnWaiting, base::Unretained(this)));
 
     RunLoop();
   }
@@ -177,6 +180,8 @@ class MojoAudioDecoderTest : public ::testing::Test {
       output_cb_.Run(audio_buffer);
     }
   }
+
+  void WaitForKey() { waiting_cb_.Run(WaitingReason::kNoDecryptionKey); }
 
   void DecodeMultipleTimes(int num_of_decodes) {
     num_of_decodes_ = num_of_decodes;
@@ -218,6 +223,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
   std::unique_ptr<MojoAudioDecoder> mojo_audio_decoder_;
   MojoCdmServiceContext mojo_cdm_service_context_;
   AudioDecoder::OutputCB output_cb_;
+  WaitingCB waiting_cb_;
   AudioTimestampHelper input_timestamp_helper_;
 
   // The thread where the service runs. This provides test coverage in an
@@ -273,6 +279,19 @@ TEST_F(MojoAudioDecoderTest, Reset_DuringDecode_ChunkedWrite) {
   SetWriterCapacity(10);
   Initialize();
   DecodeAndReset();
+}
+
+TEST_F(MojoAudioDecoderTest, WaitingForKey) {
+  Initialize();
+  EXPECT_CALL(*mock_audio_decoder_, Decode(_, _))
+      .WillOnce(
+          DoAll(InvokeWithoutArgs(this, &MojoAudioDecoderTest::WaitForKey),
+                RunCallback<1>(DecodeStatus::OK)));
+  EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey)).Times(1);
+  EXPECT_CALL(*this, OnDecoded(DecodeStatus::OK))
+      .WillOnce(InvokeWithoutArgs(this, &MojoAudioDecoderTest::QuitLoop));
+  Decode();
+  RunLoop();
 }
 
 // TODO(xhwang): Add more tests.

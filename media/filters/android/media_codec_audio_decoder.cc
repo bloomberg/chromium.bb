@@ -64,9 +64,11 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                         CdmContext* cdm_context,
                                         const InitCB& init_cb,
                                         const OutputCB& output_cb,
-                                        const WaitingCB& /* waiting_cb */) {
+                                        const WaitingCB& waiting_cb) {
   DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK_NE(state_, STATE_WAITING_FOR_MEDIA_CRYPTO);
+  DCHECK(output_cb);
+  DCHECK(waiting_cb);
 
   // Initialization and reinitialization should not be called during pending
   // decode.
@@ -103,7 +105,11 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
   }
 
   config_ = config;
+
+  // TODO(xhwang): Check whether BindToCurrentLoop is needed here.
   output_cb_ = BindToCurrentLoop(output_cb);
+  waiting_cb_ = BindToCurrentLoop(waiting_cb);
+
   SetInitialConfiguration();
 
   if (config_.is_encrypted() && !media_crypto_) {
@@ -463,6 +469,11 @@ bool MediaCodecAudioDecoder::OnDecodedFrame(
   output_cb_.Run(audio_buffer);
 
   return true;
+}
+
+void MediaCodecAudioDecoder::OnWaiting(WaitingReason reason) {
+  DVLOG(2) << __func__;
+  waiting_cb_.Run(reason);
 }
 
 bool MediaCodecAudioDecoder::OnOutputFormatChanged() {

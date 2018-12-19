@@ -183,7 +183,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
     mcvd_->Initialize(config, false, cdm_.get(), base::Bind(init_cb, &result),
                       base::BindRepeating(&OutputCb, &most_recent_frame_),
-                      base::NullCallback());
+                      base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
     // If there is a CDM available, then we expect that MCVD will be waiting
