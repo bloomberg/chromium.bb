@@ -7,6 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#include "components/sessions/core/session_id.h"
+#include "ui/base/window_open_disposition.h"
+
 class GURL;
 namespace ios {
 class ChromeBrowserState;
@@ -21,5 +24,9 @@ class WebState;
 void LoadJavaScriptURL(const GURL& url,
                        ios::ChromeBrowserState* browserState,
                        web::WebState* webState);
+
+void RestoreTab(const SessionID sessionID,
+                WindowOpenDisposition disposition,
+                ios::ChromeBrowserState* browserState);
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_UTIL_H_

@@ -10,8 +10,12 @@ source_set("url_loading") {
   ]
   deps = [
     "//base",
+    "//components/sessions",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/prerender",
+    "//ios/chrome/browser/sessions",
     "//ios/web/public",
+    "//ui/base",
     "//url",
   ]
 }

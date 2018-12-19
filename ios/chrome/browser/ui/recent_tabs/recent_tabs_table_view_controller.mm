@@ -46,6 +46,7 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_util.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -118,17 +119,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 @end
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
-@synthesize browserState = _browserState;
-@synthesize contextMenuCoordinator = _contextMenuCoordinator;
-@synthesize delegate = delegate_;
-@synthesize dispatcher = _dispatcher;
-@synthesize presentationDelegate = _presentationDelegate;
-@synthesize imageDataSource = _imageDataSource;
-@synthesize loader = _loader;
-@synthesize sessionState = _sessionState;
-@synthesize signinPromoViewMediator = _signinPromoViewMediator;
-@synthesize updatesTableView = _updatesTableView;
-@synthesize tabRestoreService = _tabRestoreService;
 
 #pragma mark - Public Interface
 
@@ -138,6 +128,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if (self) {
     _sessionState = SessionsSyncUserState::USER_SIGNED_OUT;
     _syncedSessions.reset(new synced_sessions::SyncedSessions());
+    _restoredTabDisposition = WindowOpenDisposition::CURRENT_TAB;
   }
   return self;
 }
@@ -882,7 +873,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
   new_tab_page_uma::RecordAction(
       self.browserState, new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
-  [self.loader restoreTabWithSessionID:entry->id];
+  RestoreTab(entry->id, self.restoredTabDisposition, self.browserState);
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 

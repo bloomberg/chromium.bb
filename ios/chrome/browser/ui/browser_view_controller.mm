@@ -4096,7 +4096,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
 
   [self.dispatcher openURLInNewTab:[OpenNewTabCommand command]];
-  [self restoreTabWithSessionID:entry->id];
+  RestoreTab(entry->id, WindowOpenDisposition::CURRENT_TAB, self.browserState);
 }
 
 #pragma mark - MainContentUI
@@ -4273,17 +4273,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       session_util::CreateWebStateWithNavigationEntries(
           [self.tabModel browserState], sessionTab->current_navigation_index,
           sessionTab->navigations));
-}
-
-- (void)restoreTabWithSessionID:(const SessionID)sessionID {
-  TabRestoreServiceDelegateImplIOS* delegate =
-      TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
-          self.browserState);
-  sessions::TabRestoreService* restoreService =
-      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
-          self.browserState->GetOriginalChromeBrowserState());
-  restoreService->RestoreEntryById(delegate, sessionID,
-                                   WindowOpenDisposition::CURRENT_TAB);
 }
 
 #pragma mark - UrlLoader helpers
