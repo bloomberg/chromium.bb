@@ -76,10 +76,34 @@ class NET_EXPORT ProxyConfigServiceAndroid : public ProxyConfigService {
   ConfigAvailability GetLatestProxyConfig(
       ProxyConfigWithAnnotation* config) override;
 
-  void SetProxyOverride(const std::string& host,
-                        int port,
-                        const std::vector<std::string>& exclusion_list,
-                        base::OnceClosure callback);
+  // Holds a single proxy_url and the scheme for which it should be used.
+  // If url_scheme is "*", this proxy will be used for all schemes.
+  // The proxy_url is a string in the format: [scheme://] host [:port] for
+  // a proxy or "direct://" for direct. Scheme is optional and will default to
+  // HTTP; port is optional and defaults to 80 for HTTP, 443 for HTTPS and QUIC,
+  // and 1080 for SOCKS. Host must be one of:
+  // - IPv6 literal with brackets
+  // - IPv4 literal
+  // - A label or labels separated by periods
+  struct ProxyOverrideRule {
+    ProxyOverrideRule(const std::string& url_scheme,
+                      const std::string& proxy_url)
+        : url_scheme(url_scheme), proxy_url(proxy_url) {}
+
+    std::string url_scheme;
+    std::string proxy_url;
+  };
+
+  // Receives a list of ProxyOverrideRule and a list of strings for bypass
+  // rules. Wildcards are accepted. URLs that match any pattern in any bypass
+  // rule will go to DIRECT. "<local>" and "<-loopback>" are also accepted.
+  // If no errors were found, returns an empty string, otherwise an UTF-8 string
+  // with a description of the error that was found.
+  // Callback is called (asynchronously) if input was valid.
+  std::string SetProxyOverride(
+      const std::vector<ProxyOverrideRule>& proxy_rules,
+      const std::vector<std::string>& bypass_rules,
+      base::OnceClosure callback);
   void ClearProxyOverride(base::OnceClosure callback);
 
  private:

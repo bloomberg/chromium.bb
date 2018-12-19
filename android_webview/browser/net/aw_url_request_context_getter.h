@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_context.h"
+#include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -52,10 +53,11 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
       const override;
 
   // Methods to set and clear proxy override
-  void SetProxyOverride(const std::string& host,
-                        int port,
-                        const std::vector<std::string>& exclusion_list,
-                        base::OnceClosure callback);
+  std::string SetProxyOverride(
+      const std::vector<net::ProxyConfigServiceAndroid::ProxyOverrideRule>&
+          proxy_rules,
+      const std::vector<std::string>& bypass_rules,
+      base::OnceClosure callback);
   void ClearProxyOverride(base::OnceClosure callback);
 
  private:

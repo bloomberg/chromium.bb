@@ -17,4 +17,5 @@ public interface WebViewProviderFactoryBoundaryInterface {
     String[] getSupportedFeatures();
     /* SupportLibraryServiceWorkerController */ InvocationHandler getServiceWorkerController();
     /* SupportLibraryTracingController */ InvocationHandler getTracingController();
+    /* SupportLibraryProxyController */ InvocationHandler getProxyController();
 }

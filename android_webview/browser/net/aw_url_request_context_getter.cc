@@ -191,7 +191,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
       channel_id_path_(channel_id_path),
       net_log_(net_log),
       proxy_config_service_(std::move(config_service)),
-      proxy_config_service_android_(nullptr),
+      proxy_config_service_android_(proxy_config_service_.get()),
       http_user_agent_settings_(new AwHttpUserAgentSettings()) {
   // CreateSystemProxyConfigService for Android must be called on main thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -292,9 +292,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
         net::ProxyResolutionService::CreateFixed(net::ProxyConfigWithAnnotation(
             proxy_config, NO_TRAFFIC_ANNOTATION_YET)));
   } else {
-    // Retain a pointer to the config proxy service before ownership is passed
-    // on.
-    proxy_config_service_android_ = proxy_config_service_.get();
     builder.set_proxy_resolution_service(
         net::ProxyResolutionService::CreateWithoutProxyResolver(
             std::move(proxy_config_service_), net_log_));
@@ -414,21 +411,19 @@ void AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType() {
       auth_android_negotiate_account_type_.GetValue());
 }
 
-void AwURLRequestContextGetter::SetProxyOverride(
-    const std::string& host,
-    int port,
-    const std::vector<std::string>& exclusion_list,
+std::string AwURLRequestContextGetter::SetProxyOverride(
+    const std::vector<net::ProxyConfigServiceAndroid::ProxyOverrideRule>&
+        proxy_rules,
+    const std::vector<std::string>& bypass_rules,
     base::OnceClosure callback) {
-  if (proxy_config_service_android_ != NULL) {
-    proxy_config_service_android_->SetProxyOverride(host, port, exclusion_list,
-                                                    std::move(callback));
-  }
+  DCHECK(proxy_config_service_android_ != nullptr);
+  return proxy_config_service_android_->SetProxyOverride(
+      proxy_rules, bypass_rules, std::move(callback));
 }
 
 void AwURLRequestContextGetter::ClearProxyOverride(base::OnceClosure callback) {
-  if (proxy_config_service_android_ != NULL) {
-    proxy_config_service_android_->ClearProxyOverride(std::move(callback));
-  }
+  DCHECK(proxy_config_service_android_ != nullptr);
+  proxy_config_service_android_->ClearProxyOverride(std::move(callback));
 }
 
 }  // namespace android_webview
