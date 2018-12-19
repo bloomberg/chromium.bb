@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 
@@ -59,8 +58,8 @@ NET_EXPORT bool IsDomainMatch(const std::string& domain,
                               const std::string& host);
 
 // A ParsedRequestCookie consists of the key and value of the cookie.
-typedef std::pair<base::StringPiece, base::StringPiece> ParsedRequestCookie;
-typedef std::vector<ParsedRequestCookie> ParsedRequestCookies;
+using ParsedRequestCookie = std::pair<std::string, std::string>;
+using ParsedRequestCookies = std::vector<ParsedRequestCookie>;
 
 // Assumes that |header_value| is the cookie header value of a HTTP Request
 // following the cookie-string schema of RFC 6265, section 4.2.1, and returns

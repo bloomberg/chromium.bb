@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -346,7 +347,8 @@ void ParseRequestCookieLine(const std::string& header_value,
         // i points to ';' or end of string.
       }
     }
-    parsed_cookies->push_back(std::make_pair(cookie_name, cookie_value));
+    parsed_cookies->emplace_back(cookie_name.as_string(),
+                                 cookie_value.as_string());
     // Eat ';'.
     if (i != header_value.end()) ++i;
   }

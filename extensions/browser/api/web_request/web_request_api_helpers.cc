@@ -558,8 +558,7 @@ static bool MergeAddRequestCookieModifications(
         }
       }
       if (!cookie_with_same_name_found) {
-        cookies->push_back(std::make_pair(base::StringPiece(*new_name),
-                                          base::StringPiece(*new_value)));
+        cookies->emplace_back(*new_name, *new_value);
         modified = true;
       }
     }
