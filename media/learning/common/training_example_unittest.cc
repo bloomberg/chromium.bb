@@ -195,5 +195,39 @@ TEST_F(LearnerTrainingExampleTest, WeightedTrainingDataPushBack) {
   EXPECT_EQ(training_data[0], example);
 }
 
+TEST_F(LearnerTrainingExampleTest, TrainingDataDeDuplicate) {
+  // Make sure that TrainingData::DeDuplicate works properly.
+
+  const weight_t weight_0_a(100);
+  const weight_t weight_0_b(200);
+  const weight_t weight_1(500);
+  TrainingExample example_0({FeatureValue(123)}, TargetValue(789));
+  TrainingExample example_1({FeatureValue(456)}, TargetValue(789));
+
+  TrainingData training_data;
+  example_0.weight = weight_0_a;
+  training_data.push_back(example_0);
+  example_1.weight = weight_1;
+  training_data.push_back(example_1);
+  example_0.weight = weight_0_b;
+  training_data.push_back(example_0);
+
+  EXPECT_EQ(training_data.total_weight(), weight_0_a + weight_0_b + weight_1);
+  EXPECT_EQ(training_data.size(), 3u);
+  EXPECT_EQ(training_data[0].weight, weight_0_a);
+  EXPECT_EQ(training_data[1].weight, weight_1);
+  EXPECT_EQ(training_data[2].weight, weight_0_b);
+
+  TrainingData dedup = training_data.DeDuplicate();
+  EXPECT_EQ(dedup.total_weight(), weight_0_a + weight_0_b + weight_1);
+  EXPECT_EQ(dedup.size(), 2u);
+  // We don't care which order they're in, so find the index of |example_0|.
+  size_t idx_0 = (dedup[0] == example_0) ? 0 : 1;
+  EXPECT_EQ(dedup[idx_0], example_0);
+  EXPECT_EQ(dedup[idx_0].weight, weight_0_a + weight_0_b);
+  EXPECT_EQ(dedup[1u - idx_0], example_1);
+  EXPECT_EQ(dedup[1u - idx_0].weight, weight_1);
+}
+
 }  // namespace learning
 }  // namespace media

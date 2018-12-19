@@ -4,6 +4,8 @@
 
 #include "media/learning/common/training_example.h"
 
+#include "base/containers/flat_set.h"
+
 namespace media {
 namespace learning {
 
@@ -29,15 +31,18 @@ std::ostream& operator<<(std::ostream& out, const TrainingExample& example) {
 }
 
 bool TrainingExample::operator==(const TrainingExample& rhs) const {
+  // Do not check weight.
   return target_value == rhs.target_value && features == rhs.features;
 }
 
 bool TrainingExample::operator!=(const TrainingExample& rhs) const {
+  // Do not check weight.
   return !((*this) == rhs);
 }
 
 bool TrainingExample::operator<(const TrainingExample& rhs) const {
   // Impose a somewhat arbitrary ordering.
+  // Do not check weight.
   if (target_value != rhs.target_value)
     return target_value < rhs.target_value;
 
@@ -59,6 +64,25 @@ TrainingData::TrainingData(const TrainingData& rhs) = default;
 TrainingData::TrainingData(TrainingData&& rhs) = default;
 
 TrainingData::~TrainingData() = default;
+
+TrainingData TrainingData::DeDuplicate() const {
+  // flat_set has non-const iterators, while std::set does not.  const_cast is
+  // not allowed by chromium style outside of getters, so flat_set it is.
+  base::flat_set<TrainingExample> example_set;
+  for (auto& example : examples_) {
+    auto iter = example_set.find(example);
+    if (iter != example_set.end())
+      iter->weight += example.weight;
+    else
+      example_set.insert(example);
+  }
+
+  TrainingData deduplicated_data;
+  for (auto& example : example_set)
+    deduplicated_data.push_back(example);
+
+  return deduplicated_data;
+}
 
 }  // namespace learning
 }  // namespace media
