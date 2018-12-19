@@ -182,7 +182,9 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   if (!service_) {
     LocalFrame* frame = doc.GetFrame();
     if (frame) {
-      frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
+      // See https://bit.ly/2S0zRAS for task types.
+      frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
+          &service_, context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     }
   }
 
