@@ -97,11 +97,14 @@ td {
   padding: 0 5px;
 }
 
+th {
+  padding-bottom: 6px;
+  padding-top: 12px;
+}
+
 .header-container {
   display: block;
   overflow: hidden;
-  padding-bottom: 6px;
-  padding-top: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
