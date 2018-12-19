@@ -361,7 +361,7 @@ struct drm_vmw_fence_rep {
  * Allocate a DMA buffer that is visible also to the host.
  * NOTE: The buffer is
  * identified by a handle and an offset, which are private to the guest, but
- * useable in the command stream. The guest kernel may translate these
+ * usable in the command stream. The guest kernel may translate these
  * and patch up the command stream accordingly. In the future, the offset may
  * be zero at all times, or it may disappear from the interface before it is
  * fixed.
@@ -446,7 +446,7 @@ struct drm_vmw_unref_dmabuf_arg {
  *
  * This IOCTL controls the overlay units of the svga device.
  * The SVGA overlay units does not work like regular hardware units in
- * that they do not automaticaly read back the contents of the given dma
+ * that they do not automatically read back the contents of the given dma
  * buffer. But instead only read back for each call to this ioctl, and
  * at any point between this call being made and a following call that
  * either changes the buffer or disables the stream.
@@ -1035,7 +1035,7 @@ union drm_vmw_gb_surface_reference_arg {
  * for read-only.
  * @drm_vmw_synccpu_write: Sync for write. Block all command submissions
  * referencing this buffer.
- * @drm_vmw_synccpu_dontblock: Dont wait for GPU idle, but rather return
+ * @drm_vmw_synccpu_dontblock: Don't wait for GPU idle, but rather return
  * -EBUSY should the buffer be busy.
  * @drm_vmw_synccpu_allow_cs: Allow command submission that touches the buffer
  * while the buffer is synced for CPU. This is similar to the GEM bo idle

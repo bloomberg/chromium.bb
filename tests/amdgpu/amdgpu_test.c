@@ -245,7 +245,7 @@ static const char usage[] =
 static const char options[]   = "hlrps:t:b:d:f";
 
 /* Open AMD devices.
- * Return the number of AMD device openned.
+ * Return the number of AMD device opened.
  */
 static int amdgpu_open_devices(int open_render_node)
 {
@@ -333,7 +333,7 @@ static void amdgpu_print_devices()
 	int i;
 	drmDevicePtr device;
 
-	/* Open the first AMD devcie to print driver information. */
+	/* Open the first AMD device to print driver information. */
 	if (drm_amdgpu[0] >=0) {
 		/* Display AMD driver version information.*/
 		drmVersionPtr retval = drmGetVersion(drm_amdgpu[0]);

@@ -276,7 +276,7 @@ drm_public uint32_t exynos_bo_handle(struct exynos_bo *bo)
  * @bo: a exynos buffer object including a gem object handle to be mmapped
  *	to user space.
  *
- * if true, user pointer mmaped else NULL.
+ * if true, user pointer mmapped else NULL.
  */
 drm_public void *exynos_bo_map(struct exynos_bo *bo)
 {

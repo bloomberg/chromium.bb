@@ -179,7 +179,7 @@ drm_public void drmFree(void *pt)
 }
 
 /**
- * Call ioctl, restarting if it is interupted
+ * Call ioctl, restarting if it is interrupted
  */
 drm_public int
 drmIoctl(int fd, unsigned long request, void *arg)
@@ -289,7 +289,7 @@ static int drmMatchBusID(const char *id1, const char *id2, int pci_domain_ok)
  *
  * \internal
  * Checks for failure. If failure was caused by signal call chown again.
- * If any other failure happened then it will output error mesage using
+ * If any other failure happened then it will output error message using
  * drmMsg() call.
  */
 #if !UDEV
@@ -1481,7 +1481,7 @@ drm_public int drmDMA(int fd, drmDMAReqPtr request)
  *
  * \param fd file descriptor.
  * \param context context.
- * \param flags flags that determine the sate of the hardware when the function
+ * \param flags flags that determine the state of the hardware when the function
  * returns.
  *
  * \return always zero.

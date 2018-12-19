@@ -520,7 +520,7 @@ typedef struct drm_i915_irq_wait {
 #define I915_PARAM_HAS_EXEC_FENCE	 44
 
 /* Query whether DRM_I915_GEM_EXECBUFFER2 supports the ability to capture
- * user specified bufffers for post-mortem debugging of GPU hangs. See
+ * user specified buffers for post-mortem debugging of GPU hangs. See
  * EXEC_OBJECT_CAPTURE.
  */
 #define I915_PARAM_HAS_EXEC_CAPTURE	 45
@@ -1220,7 +1220,7 @@ struct drm_i915_gem_caching {
 	__u32 handle;
 
 	/**
-	 * Cacheing level to apply or return value
+	 * Caching level to apply or return value
 	 *
 	 * bits0-15 are for generic caching control (i.e. the above defined
 	 * values). bits16-31 are reserved for platform-specific variations

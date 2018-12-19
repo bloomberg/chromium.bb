@@ -157,7 +157,7 @@ if _vc4 != 'false'
   with_vc4 = _vc4 == 'true' or ['arm', 'aarch64'].contains(host_machine.cpu_family())
 endif
 
-# XXX: Aparently only freebsd and dragonfly bsd actually need this (and
+# XXX: Apparently only freebsd and dragonfly bsd actually need this (and
 # gnu/kfreebsd), not openbsd and netbsd
 with_libkms = false
 _libkms = get_option('libkms')

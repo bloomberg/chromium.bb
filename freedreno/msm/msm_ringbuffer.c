@@ -74,7 +74,7 @@ struct msm_ringbuffer {
 	/* should have matching entries in submit.cmds: */
 	DECLARE_ARRAY(struct msm_cmd *, cmds);
 
-	/* List of physical cmdstream buffers (msm_cmd) assocated with this
+	/* List of physical cmdstream buffers (msm_cmd) associated with this
 	 * logical fd_ringbuffer.
 	 *
 	 * Note that this is different from msm_ringbuffer::cmds (which
