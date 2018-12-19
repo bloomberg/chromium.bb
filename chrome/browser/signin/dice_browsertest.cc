@@ -34,10 +34,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/mutable_profile_oauth2_token_service_delegate.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -56,10 +53,8 @@
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/dice_header_helper.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/sync_prefs.h"
@@ -72,12 +67,13 @@
 #include "content/public/test/browser_test.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -112,7 +108,6 @@ const char kNoDiceRequestHeader[] = "NoDiceHeader";
 const char kOAuth2TokenExchangeURL[] = "/oauth2/v4/token";
 const char kOAuth2TokenRevokeURL[] = "/o/oauth2/revoke";
 const char kSecondaryEmail[] = "secondary_email@example.com";
-const char kSecondaryGaiaID[] = "secondary_gaia_id";
 const char kSigninURL[] = "/signin";
 const char kSignoutURL[] = "/signout";
 
@@ -233,9 +228,11 @@ std::unique_ptr<HttpResponse> HandleSignoutURL(const std::string& main_email,
   if (signout_type == kAllAccounts || signout_type == kSecondaryAccount) {
     if (!signout_header_value.empty())
       signout_header_value += ", ";
+    std::string secondary_gaia_id =
+        identity::GetTestGaiaIdForEmail(kSecondaryEmail);
     signout_header_value +=
         base::StringPrintf("email=\"%s\", obfuscatedid=\"%s\", sessionindex=2",
-                           kSecondaryEmail, kSecondaryGaiaID);
+                           kSecondaryEmail, secondary_gaia_id.c_str());
   }
 
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
@@ -365,12 +362,6 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     ui_test_utils::NavigateToURL(browser(), https_server_.GetURL(path));
   }
 
-  // Returns the token service.
-  ProfileOAuth2TokenService* GetTokenService() {
-    return ProfileOAuth2TokenServiceFactory::GetForProfile(
-        browser()->profile());
-  }
-
   // Returns the account tracker service.
   AccountTrackerService* GetAccountTrackerService() {
     return AccountTrackerServiceFactory::GetForProfile(browser()->profile());
@@ -381,21 +372,17 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     return IdentityManagerFactory::GetForProfile(browser()->profile());
   }
 
-  // Returns the signin manager.
-  SigninManager* GetSigninManager() {
-    return SigninManagerFactory::GetForProfile(browser()->profile());
-  }
-
   // Returns the account ID associated with |main_email_|, kMainGaiaID.
   std::string GetMainAccountID() {
     return GetAccountTrackerService()->PickAccountIdForAccount(kMainGaiaID,
                                                                main_email_);
   }
 
-  // Returns the account ID associated with kSecondaryEmail, kSecondaryGaiaID.
+  // Returns the account ID associated with kSecondaryEmail and its associated
+  // gaia ID.
   std::string GetSecondaryAccountID() {
-    return GetAccountTrackerService()->PickAccountIdForAccount(kSecondaryGaiaID,
-                                                               kSecondaryEmail);
+    return GetAccountTrackerService()->PickAccountIdForAccount(
+        identity::GetTestGaiaIdForEmail(kSecondaryEmail), kSecondaryEmail);
   }
 
   std::string GetDeviceId() {
@@ -405,22 +392,26 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   // Signin with a main account and add token for a secondary account.
   void SetupSignedInAccounts() {
     // Signin main account.
-    SigninManager* signin_manager = GetSigninManager();
-    signin_manager->StartSignInWithRefreshToken(
+    auto* primary_account_mutator =
+        GetIdentityManager()->GetPrimaryAccountMutator();
+    primary_account_mutator->LegacyStartSigninWithRefreshTokenForPrimaryAccount(
         "existing_refresh_token", kMainGaiaID, main_email_, "password",
-        SigninManager::OAuthTokenFetchedCallback());
-    ASSERT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
-    ASSERT_FALSE(GetTokenService()->RefreshTokenHasError(GetMainAccountID()));
-    ASSERT_EQ(GetMainAccountID(), signin_manager->GetAuthenticatedAccountId());
+        base::OnceCallback<void(const std::string&)>());
+    ASSERT_TRUE(
+        GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
+    ASSERT_FALSE(
+        GetIdentityManager()->HasAccountWithRefreshTokenInPersistentErrorState(
+            GetMainAccountID()));
+    ASSERT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId());
 
     // Add a token for a secondary account.
-    std::string secondary_account_id =
-        GetAccountTrackerService()->SeedAccountInfo(kSecondaryGaiaID,
-                                                    kSecondaryEmail);
-    GetTokenService()->UpdateCredentials(secondary_account_id, "other_token");
-    ASSERT_TRUE(
-        GetTokenService()->RefreshTokenIsAvailable(secondary_account_id));
-    ASSERT_FALSE(GetTokenService()->RefreshTokenHasError(secondary_account_id));
+    AccountInfo secondary_account_info =
+        identity::MakeAccountAvailable(GetIdentityManager(), kSecondaryEmail);
+    ASSERT_TRUE(GetIdentityManager()->HasAccountWithRefreshToken(
+        secondary_account_info.account_id));
+    ASSERT_FALSE(
+        GetIdentityManager()->HasAccountWithRefreshTokenInPersistentErrorState(
+            secondary_account_info.account_id));
   }
 
   // Navigate to a Gaia URL setting the Google-Accounts-SignOut header.
@@ -460,9 +451,10 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
     GetIdentityManager()->AddObserver(this);
     // Wait for the token service to be ready.
-    if (!GetTokenService()->AreAllCredentialsLoaded())
+    if (!identity::AreAllCredentialsLoaded(GetIdentityManager())) {
       WaitForClosure(&tokens_loaded_quit_closure_);
-    ASSERT_TRUE(GetTokenService()->AreAllCredentialsLoaded());
+    }
+    ASSERT_TRUE(identity::AreAllCredentialsLoaded(GetIdentityManager()));
 
     AccountReconcilor* reconcilor =
         AccountReconcilorFactory::GetForProfile(browser()->profile());
@@ -669,10 +661,14 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Signin) {
 
   // Check that the token was requested and added to the token service.
   SendRefreshTokenResponse();
-  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
   // Sync should not be enabled.
-  EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
-  EXPECT_TRUE(GetSigninManager()->GetAccountIdForAuthInProgress().empty());
+  EXPECT_TRUE(GetIdentityManager()->GetPrimaryAccountId().empty());
+  EXPECT_TRUE(GetIdentityManager()
+                  ->GetPrimaryAccountMutator()
+                  ->LegacyPrimaryAccountForAuthInProgress()
+                  .account_id.empty());
 
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
@@ -701,8 +697,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Reauth) {
 
   // Check that the token was requested and added to the token service.
   SendRefreshTokenResponse();
-  EXPECT_EQ(GetMainAccountID(),
-            GetSigninManager()->GetAuthenticatedAccountId());
+  EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId());
 
   // Old token must not be revoked (see http://crbug.com/865189).
   EXPECT_EQ(0, token_revoked_notification_count_);
@@ -721,19 +716,14 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutMainAccount) {
   SignOutWithDice(kMainAccount);
 
   // Check that the user is in error state.
-  EXPECT_EQ(GetMainAccountID(),
-            GetSigninManager()->GetAuthenticatedAccountId());
-  MutableProfileOAuth2TokenServiceDelegate* delegate =
-      static_cast<MutableProfileOAuth2TokenServiceDelegate*>(
-          GetTokenService()->GetDelegate());
-  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
-  EXPECT_TRUE(GetTokenService()->RefreshTokenHasError(GetMainAccountID()));
-  EXPECT_EQ(MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
-            delegate->GetRefreshTokenForTest(GetMainAccountID()));
+  EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId());
   EXPECT_TRUE(
-      GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
-  EXPECT_EQ("other_token",
-            delegate->GetRefreshTokenForTest(GetSecondaryAccountID()));
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
+  EXPECT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          GetMainAccountID()));
+  EXPECT_TRUE(GetIdentityManager()->HasAccountWithRefreshToken(
+      GetSecondaryAccountID()));
 
   // Token for main account is revoked on server but not notified in the client.
   EXPECT_EQ(0, token_revoked_notification_count_);
@@ -754,11 +744,11 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutSecondaryAccount) {
 
   // Check that the user is still signed in from main account, but secondary
   // token is deleted.
-  EXPECT_EQ(GetMainAccountID(),
-            GetSigninManager()->GetAuthenticatedAccountId());
-  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
-  EXPECT_FALSE(
-      GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
+  EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId());
+  EXPECT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
+  EXPECT_FALSE(GetIdentityManager()->HasAccountWithRefreshToken(
+      GetSecondaryAccountID()));
   EXPECT_EQ(1, token_revoked_notification_count_);
   WaitForTokenRevokedCount(1);
   EXPECT_EQ(1, reconcilor_blocked_count_);
@@ -774,17 +764,14 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutAllAccounts) {
   SignOutWithDice(kAllAccounts);
 
   // Check that the user is in error state.
-  EXPECT_EQ(GetMainAccountID(),
-            GetSigninManager()->GetAuthenticatedAccountId());
-  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
-  EXPECT_TRUE(GetTokenService()->RefreshTokenHasError(GetMainAccountID()));
-  MutableProfileOAuth2TokenServiceDelegate* delegate =
-      static_cast<MutableProfileOAuth2TokenServiceDelegate*>(
-          GetTokenService()->GetDelegate());
-  EXPECT_EQ(MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
-            delegate->GetRefreshTokenForTest(GetMainAccountID()));
-  EXPECT_FALSE(
-      GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
+  EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId());
+  EXPECT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
+  EXPECT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          GetMainAccountID()));
+  EXPECT_FALSE(GetIdentityManager()->HasAccountWithRefreshToken(
+      GetSecondaryAccountID()));
 
   // Token for main account is revoked on server but not notified in the client.
   EXPECT_EQ(1, token_revoked_notification_count_);
@@ -824,9 +811,11 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
       signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
 
   // Receive token.
-  EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_FALSE(
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
   SendRefreshTokenResponse();
-  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
 
   // Receive ENABLE_SYNC.
   SendEnableSyncResponse();
@@ -845,8 +834,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
       content::NotificationService::AllSources());
 
   WaitForSigninSucceeded();
-  EXPECT_EQ(GetMainAccountID(),
-            GetSigninManager()->GetAuthenticatedAccountId());
+  EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId());
 
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
@@ -880,9 +868,11 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncBeforeToken) {
   enable_sync_url_observer.Wait();
 
   // Receive token.
-  EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_FALSE(
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
   SendRefreshTokenResponse();
-  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
 
   // Check that the Dice request header was sent, with signout confirmation.
   std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
@@ -898,8 +888,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncBeforeToken) {
       content::NotificationService::AllSources());
 
   WaitForSigninSucceeded();
-  EXPECT_EQ(GetMainAccountID(),
-            GetSigninManager()->GetAuthenticatedAccountId());
+  EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId());
 
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
@@ -922,9 +911,13 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, PRE_TurnOffDice) {
   EXPECT_TRUE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
       browser()->profile()));
 
-  EXPECT_FALSE(GetSigninManager()->GetAuthenticatedAccountId().empty());
-  EXPECT_TRUE(GetSigninManager()->GetAccountIdForAuthInProgress().empty());
-  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_FALSE(GetIdentityManager()->GetPrimaryAccountId().empty());
+  EXPECT_TRUE(GetIdentityManager()
+                  ->GetPrimaryAccountMutator()
+                  ->LegacyPrimaryAccountForAuthInProgress()
+                  .account_id.empty());
+  EXPECT_TRUE(
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
   EXPECT_FALSE(GetAccountTrackerService()->GetAccounts().empty());
 
   // Turn off Dice for this profile.
@@ -941,9 +934,13 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, TurnOffDice) {
   EXPECT_FALSE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
       browser()->profile()));
 
-  EXPECT_TRUE(GetSigninManager()->GetAuthenticatedAccountId().empty());
-  EXPECT_TRUE(GetSigninManager()->GetAccountIdForAuthInProgress().empty());
-  EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
+  EXPECT_TRUE(GetIdentityManager()->GetPrimaryAccountId().empty());
+  EXPECT_TRUE(GetIdentityManager()
+                  ->GetPrimaryAccountMutator()
+                  ->LegacyPrimaryAccountForAuthInProgress()
+                  .account_id.empty());
+  EXPECT_FALSE(
+      GetIdentityManager()->HasAccountWithRefreshToken(GetMainAccountID()));
   EXPECT_TRUE(GetAccountTrackerService()->GetAccounts().empty());
 
   // Navigate to Gaia and sign in.
