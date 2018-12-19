@@ -9,14 +9,8 @@
 
 #include "base/macros.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
-#include "components/signin/core/browser/account_info.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-
-namespace gcm {
-class GCMAppHandler;
-class GCMDriver;
-}  // namespace gcm
 
 namespace chromeos {
 
@@ -38,7 +32,7 @@ class DeviceSyncBase : public mojom::DeviceSync {
   void CloseAllBindings();
 
  protected:
-  explicit DeviceSyncBase(gcm::GCMDriver* gcm_driver);
+  DeviceSyncBase();
 
   // Derived types should override this function to remove references to any
   // dependencies.
@@ -52,10 +46,6 @@ class DeviceSyncBase : public mojom::DeviceSync {
 
   mojo::InterfacePtrSet<mojom::DeviceSyncObserver> observers_;
   mojo::BindingSet<mojom::DeviceSync> bindings_;
-
-  std::unique_ptr<gcm::GCMAppHandler> gcm_app_handler_;
-
-  gcm::GCMDriver* gcm_driver_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncBase);
 };
