@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NET_PROXY_CONFIG_MONITOR_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "build/buildflag.h"

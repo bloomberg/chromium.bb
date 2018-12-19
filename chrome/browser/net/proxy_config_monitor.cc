@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/proxy_config_monitor.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -35,16 +37,16 @@ ProxyConfigMonitor::ProxyConfigMonitor(Profile* profile) {
 // state.
 #if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
-    pref_proxy_config_tracker_.reset(
+    pref_proxy_config_tracker_ =
         ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
-            g_browser_process->local_state()));
+            g_browser_process->local_state());
   }
 #endif  // defined(OS_CHROMEOS)
 
   if (!pref_proxy_config_tracker_) {
-    pref_proxy_config_tracker_.reset(
+    pref_proxy_config_tracker_ =
         ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
-            profile->GetPrefs(), g_browser_process->local_state()));
+            profile->GetPrefs(), g_browser_process->local_state());
   }
 
   proxy_config_service_ = ProxyServiceFactory::CreateProxyConfigService(
@@ -57,9 +59,9 @@ ProxyConfigMonitor::ProxyConfigMonitor(PrefService* local_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          !BrowserThread::IsThreadInitialized(BrowserThread::UI));
 
-  pref_proxy_config_tracker_.reset(
+  pref_proxy_config_tracker_ =
       ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
-          local_state));
+          local_state);
 
   proxy_config_service_ = ProxyServiceFactory::CreateProxyConfigService(
       pref_proxy_config_tracker_.get());
