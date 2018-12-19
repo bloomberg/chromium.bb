@@ -174,8 +174,6 @@ void AssertEqState(State expected, State actual) {
 
   if (actual.is_locked)
     ASSERT_EQ(expected.next_unlock_time, actual.next_unlock_time);
-
-  ASSERT_EQ(expected.last_state_changed, actual.last_state_changed);
 }
 
 namespace internal {
@@ -385,7 +383,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeWindowLimitSet) {
   expected_state_one.is_time_usage_limit_enabled = false;
   expected_state_one.next_state_change_time = monday_time_window_limit_start;
   expected_state_one.next_state_active_policy = ActivePolicies::kFixedLimit;
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -401,7 +398,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeWindowLimitSet) {
   expected_state_two.next_state_change_time = monday_time_window_limit_end;
   expected_state_two.next_state_active_policy = ActivePolicies::kFixedLimit;
   expected_state_two.next_unlock_time = tuesday_time_window_limit_end;
-  expected_state_two.last_state_changed = time_two;
 
   AssertEqState(expected_state_two, state_two);
 
@@ -417,7 +413,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeWindowLimitSet) {
   expected_state_three.is_time_usage_limit_enabled = false;
   expected_state_three.next_state_change_time = friday_time_window_limit_start;
   expected_state_three.next_state_active_policy = ActivePolicies::kFixedLimit;
-  expected_state_three.last_state_changed = time_three;
 
   AssertEqState(expected_state_three, state_three);
 }
@@ -451,7 +446,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeUsageLimitSet) {
   expected_state_one.next_state_change_time =
       TimeFromString("Tue, 2 Jan 2018 10:00");
   expected_state_one.next_state_active_policy = ActivePolicies::kUsageLimit;
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -468,7 +462,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeUsageLimitSet) {
   expected_state_two.next_state_change_time =
       time_two + base::TimeDelta::FromMinutes(60);
   expected_state_two.next_state_active_policy = ActivePolicies::kUsageLimit;
-  expected_state_two.last_state_changed = base::Time();
 
   AssertEqState(expected_state_two, state_two);
 
@@ -490,7 +483,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOnlyTimeUsageLimitSet) {
   expected_state_three.next_state_active_policy =
       ActivePolicies::kNoActivePolicy;
   expected_state_three.next_unlock_time = wednesday_reset_time;
-  expected_state_three.last_state_changed = time_three;
 
   AssertEqState(expected_state_three, state_three);
 }
@@ -525,7 +517,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithTimeUsageAndWindowLimitActive) {
   expected_state_one.next_state_change_time =
       time_one + base::TimeDelta::FromMinutes(40);
   expected_state_one.next_state_active_policy = ActivePolicies::kUsageLimit;
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -546,7 +537,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithTimeUsageAndWindowLimitActive) {
   expected_state_two.next_state_change_time = monday_time_window_limit_start;
   expected_state_two.next_state_active_policy = ActivePolicies::kFixedLimit;
   expected_state_two.next_unlock_time = TimeFromString("Tue, 2 Jan 2018 8:30");
-  expected_state_two.last_state_changed = time_two;
 
   AssertEqState(expected_state_two, state_two);
 
@@ -568,7 +558,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithTimeUsageAndWindowLimitActive) {
       ActivePolicies::kNoActivePolicy;
   expected_state_three.next_unlock_time =
       TimeFromString("Tue, 2 Jan 2018 8:30");
-  expected_state_three.last_state_changed = time_three;
 
   AssertEqState(expected_state_three, state_three);
 
@@ -585,7 +574,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithTimeUsageAndWindowLimitActive) {
   expected_state_four.next_state_change_time =
       TimeFromString("Fri, 5 Jan 2018 21:00");
   expected_state_four.next_state_active_policy = ActivePolicies::kFixedLimit;
-  expected_state_four.last_state_changed = time_four;
 
   AssertEqState(expected_state_four, state_four);
 }
@@ -616,7 +604,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateFirstExecutionLockByUsageLimit) {
   expected_state_one.time_usage_limit_started = time_one;
   expected_state_one.next_unlock_time =
       TimeFromString("Sat, 6 Jan 2018 6:00 PST");
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 }
@@ -643,7 +630,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithOverrideLock) {
       TimeFromString("Tue, 2 Jan 2018 0:00");
   expected_state_one.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_one.next_unlock_time = TimeFromString("Tue, 2 Jan 2018 0:00");
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 }
@@ -676,7 +662,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUpdateUnlockedTimeWindowLimit) {
   expected_state_one.next_state_change_time =
       TimeFromString("Mon, 8 Jan 2018 18:00 GMT+0800");
   expected_state_one.next_state_active_policy = ActivePolicies::kFixedLimit;
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -700,7 +685,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUpdateUnlockedTimeWindowLimit) {
   expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_two.next_unlock_time =
       TimeFromString("Tue, 2 Jan 2018 8:00 GMT+0800");
-  expected_state_two.last_state_changed = time_two;
 
   AssertEqState(expected_state_two, state_two);
 }
@@ -733,7 +717,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOverrideTimeWindowLimitOnly) {
   expected_state_one.next_state_change_time =
       TimeFromString("Mon, 1 Jan 2018 22:30 PST");
   expected_state_one.next_state_active_policy = ActivePolicies::kUsageLimit;
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -755,7 +738,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOverrideTimeWindowLimitOnly) {
   expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_two.next_unlock_time =
       TimeFromString("Tue, 2 Jan 2018 8:00 PST");
-  expected_state_two.last_state_changed = time_two;
 
   AssertEqState(expected_state_two, state_two);
 }
@@ -783,7 +765,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOverrideTimeUsageLimit) {
   expected_state_one.next_state_change_time =
       TimeFromString("Sun, 7 Jan 2018 15:20 PST");
   expected_state_one.next_state_active_policy = ActivePolicies::kUsageLimit;
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -802,7 +783,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOverrideTimeUsageLimit) {
   expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_two.next_unlock_time =
       TimeFromString("Mon, 8 Jan 2018 6:00 PST");
-  expected_state_two.last_state_changed = time_two;
 
   AssertEqState(expected_state_two, state_two);
 
@@ -825,7 +805,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOverrideTimeUsageLimit) {
       ActivePolicies::kNoActivePolicy;
   // This should be TimeFromString("Sun, 14 Jan 2018 7:00 PST"), crbug/902348:
   expected_state_three.next_unlock_time = base::Time();
-  expected_state_three.last_state_changed = time_three;
 
   AssertEqState(expected_state_three, state_three);
 }
@@ -856,7 +835,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOldLockOverride) {
   expected_state_one.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_one.next_unlock_time =
       TimeFromString("Tue, 2 Jan 2018 6:00 PST");
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -874,7 +852,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOldLockOverride) {
   expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_two.next_unlock_time =
       TimeFromString("Tue, 2 Jan 2018 6:00 PST");
-  expected_state_two.last_state_changed = base::Time();
 
   AssertEqState(expected_state_two, state_two);
 
@@ -892,7 +869,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOldLockOverride) {
   expected_state_three.next_state_active_policy =
       ActivePolicies::kNoActivePolicy;
   expected_state_three.next_unlock_time = base::Time();
-  expected_state_three.last_state_changed = time_three;
 
   AssertEqState(expected_state_three, state_three);
 }
@@ -947,7 +923,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateDefaultBedtime) {
     expected_night_state.next_state_active_policy =
         ActivePolicies::kNoActivePolicy;
     expected_night_state.next_unlock_time = window_limit_end_time;
-    expected_night_state.last_state_changed = base::Time();
 
     AssertEqState(expected_night_state, night_state);
 
@@ -964,7 +939,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateDefaultBedtime) {
     expected_morning_state.next_state_active_policy =
         ActivePolicies::kNoActivePolicy;
     expected_morning_state.next_unlock_time = window_limit_end_time;
-    expected_morning_state.last_state_changed = base::Time();
 
     AssertEqState(expected_morning_state, morning_state);
   }
@@ -1021,7 +995,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateDefaultDailyLimit) {
         ActivePolicies::kNoActivePolicy;
     expected_night_state.next_unlock_time = usage_limit_reset_time;
     expected_night_state.time_usage_limit_started = night_time;
-    expected_night_state.last_state_changed = base::Time();
 
     AssertEqState(expected_night_state, night_state);
 
@@ -1039,7 +1012,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateDefaultDailyLimit) {
         ActivePolicies::kNoActivePolicy;
     expected_morning_state.next_unlock_time = usage_limit_reset_time;
     expected_morning_state.time_usage_limit_started = night_time;
-    expected_morning_state.last_state_changed = base::Time();
 
     AssertEqState(expected_morning_state, morning_state);
   }
@@ -1070,7 +1042,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithPreviousDayTimeWindowLimit) {
   expected_state_one.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_one.next_unlock_time =
       TimeFromString("Sun, 7 Jan 2018 8:30 GMT");
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 }
@@ -1102,7 +1073,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithPreviousDayTimeUsageLimit) {
   expected_state_one.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_one.next_unlock_time =
       TimeFromString("Sun, 7 Jan 2018 6:00 GMT");
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 }
@@ -1134,7 +1104,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithWeekendTimeUsageLimit) {
   expected_state_one.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_one.next_unlock_time =
       TimeFromString("Sun, 7 Jan 2018 6:00 PST");
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 }
@@ -1167,7 +1136,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateLockOverrideFollowedByBedtime) {
   expected_state_one.next_state_active_policy = ActivePolicies::kFixedLimit;
   expected_state_one.next_unlock_time =
       TimeFromString("Mon, 1 Jan 2018 20:00 PST");
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -1185,7 +1153,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateLockOverrideFollowedByBedtime) {
   expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_two.next_unlock_time =
       TimeFromString("Mon, 1 Jan 2018 20:00 PST");
-  expected_state_two.last_state_changed = time_two;
 
   AssertEqState(expected_state_two, state_two);
 
@@ -1202,7 +1169,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateLockOverrideFollowedByBedtime) {
   expected_state_three.next_state_change_time =
       TimeFromString("Mon, 8 Jan 2018 18:00 PST");
   expected_state_three.next_state_active_policy = ActivePolicies::kFixedLimit;
-  expected_state_three.last_state_changed = time_three;
 
   AssertEqState(expected_state_three, state_three);
 }
@@ -1232,7 +1198,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockLockDuringBedtime) {
   expected_state_one.next_state_change_time =
       TimeFromString("Mon, 8 Jan 2018 10:00 PST");
   expected_state_one.next_state_active_policy = ActivePolicies::kFixedLimit;
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -1254,7 +1219,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockLockDuringBedtime) {
   expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_two.next_unlock_time =
       TimeFromString("Mon, 1 Jan 2018 20:00 PST");
-  expected_state_two.last_state_changed = time_two;
 
   AssertEqState(expected_state_two, state_two);
 
@@ -1271,7 +1235,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockLockDuringBedtime) {
   expected_state_three.next_state_change_time =
       TimeFromString("Mon, 8 Jan 2018 10:00 PST");
   expected_state_three.next_state_active_policy = ActivePolicies::kFixedLimit;
-  expected_state_three.last_state_changed = time_three;
 
   AssertEqState(expected_state_three, state_three);
 }
@@ -1304,7 +1267,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateIncreaseUsageLimitAfterLocked) {
   expected_state_one.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_one.next_unlock_time =
       TimeFromString("Thu, 4 Jan 2018 6:00 BRT");
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -1325,7 +1287,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateIncreaseUsageLimitAfterLocked) {
   expected_state_two.time_usage_limit_started = time_one;
   expected_state_two.next_state_change_time = base::Time();
   expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
-  expected_state_two.last_state_changed = time_two;
 
   AssertEqState(expected_state_two, state_two);
 
@@ -1351,7 +1312,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateIncreaseUsageLimitAfterLocked) {
       ActivePolicies::kNoActivePolicy;
   expected_state_three.next_unlock_time =
       TimeFromString("Thu, 4 Jan 2018 6:00 BRT");
-  expected_state_three.last_state_changed = time_three;
 
   AssertEqState(expected_state_three, state_three);
 
@@ -1373,7 +1333,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateIncreaseUsageLimitAfterLocked) {
   expected_state_four.next_state_change_time =
       TimeFromString("Wed, 3 Jan 2018 18:00 BRT");
   expected_state_four.next_state_active_policy = ActivePolicies::kUsageLimit;
-  expected_state_four.last_state_changed = time_four;
 
   AssertEqState(expected_state_four, state_four);
 }
@@ -1410,7 +1369,6 @@ TEST_F(UsageTimeLimitProcessorTest,
   expected_state_one.next_state_active_policy = ActivePolicies::kUsageLimit;
   expected_state_one.next_unlock_time =
       TimeFromString("Thu, 4 Jan 2018 6:00 BRT");
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -1431,7 +1389,6 @@ TEST_F(UsageTimeLimitProcessorTest,
   expected_state_two.next_state_change_time =
       TimeFromString("Thu, 4 Jan 2018 6:00 BRT");
   expected_state_two.next_state_active_policy = ActivePolicies::kUsageLimit;
-  expected_state_two.last_state_changed = time_two;
 
   AssertEqState(expected_state_two, state_two);
 
@@ -1452,7 +1409,6 @@ TEST_F(UsageTimeLimitProcessorTest,
   expected_state_three.next_state_active_policy = ActivePolicies::kUsageLimit;
   expected_state_three.next_unlock_time =
       TimeFromString("Fri, 5 Jan 2018 6:00 BRT");
-  expected_state_three.last_state_changed = time_three;
 
   AssertEqState(expected_state_three, state_three);
 
@@ -1473,7 +1429,6 @@ TEST_F(UsageTimeLimitProcessorTest,
       ActivePolicies::kNoActivePolicy;
   expected_state_four.next_unlock_time =
       TimeFromString("Sat, 6 Jan 2018 6:00 BRT");
-  expected_state_four.last_state_changed = time_three;
 
   AssertEqState(expected_state_four, state_four);
 
@@ -1489,7 +1444,6 @@ TEST_F(UsageTimeLimitProcessorTest,
   expected_state_five.next_state_change_time =
       TimeFromString("Wed, 10 Jan 2018 6:00 BRT");
   expected_state_five.next_state_active_policy = ActivePolicies::kUsageLimit;
-  expected_state_five.last_state_changed = time_five;
 
   AssertEqState(expected_state_five, state_five);
 }
@@ -1523,7 +1477,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockConsecutiveLockedAllDay) {
   expected_state_one.next_state_active_policy = ActivePolicies::kUsageLimit;
   expected_state_one.next_unlock_time =
       TimeFromString("Thu, 4 Jan 2018 6:00 BRT");
-  expected_state_one.last_state_changed = base::Time();
 
   AssertEqState(expected_state_one, state_one);
 
@@ -1543,7 +1496,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockConsecutiveLockedAllDay) {
   expected_state_two.next_state_active_policy = ActivePolicies::kNoActivePolicy;
   expected_state_two.next_unlock_time =
       TimeFromString("Fri, 5 Jan 2018 6:00 BRT");
-  expected_state_two.last_state_changed = base::Time();
 
   AssertEqState(expected_state_two, state_two);
 
@@ -1565,7 +1517,6 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockConsecutiveLockedAllDay) {
   expected_state_three.next_state_change_time =
       TimeFromString("Wed, 10 Jan 2018 6:00 BRT");
   expected_state_three.next_state_active_policy = ActivePolicies::kUsageLimit;
-  expected_state_three.last_state_changed = time_three;
 
   AssertEqState(expected_state_three, state_three);
 }

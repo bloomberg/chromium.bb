@@ -292,17 +292,6 @@ State UsageTimeLimitProcessor::GetState() {
 
   state.next_unlock_time = GetNextUnlockTime();
 
-  if (!previous_state_)
-    return state;
-
-  if (previous_state_->is_locked == state.is_locked &&
-      previous_state_->active_policy == state.active_policy) {
-    state.last_state_changed = previous_state_->last_state_changed;
-    return state;
-  }
-
-  state.last_state_changed = current_time_;
-
   return state;
 }
 

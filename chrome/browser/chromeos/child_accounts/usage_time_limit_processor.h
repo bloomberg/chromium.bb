@@ -150,9 +150,6 @@ struct State {
   // This is the next time that the user's session will be unlocked. This is
   // only set when is_locked=true;
   base::Time next_unlock_time;
-
-  // Last time the state changed.
-  base::Time last_state_changed;
 };
 
 // Returns the current state of the user session with the given usage time limit
