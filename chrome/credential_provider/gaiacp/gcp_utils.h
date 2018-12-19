@@ -196,6 +196,12 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::DictionaryValue& properties);
 // Gets the auth package id for NEGOSSP_NAME_A.
 HRESULT GetAuthenticationPackageId(ULONG* id);
 
+// Handles the writing and deletion of a startup sentinel file used to ensure
+// that the GCPW does not crash continuously on startup and render the
+// winlogon process unusable.
+bool VerifyStartupSentinel();
+void DeleteStartupSentinel();
+
 // Gets a string resource from the DLL with the given id.
 base::string16 GetStringResource(int base_message_id);
 

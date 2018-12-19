@@ -44,6 +44,7 @@
 #include "base/win/embedded_i18n/language_Selector.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
@@ -52,12 +53,32 @@ namespace credential_provider {
 
 namespace {
 
+constexpr char kSentinelFilename[] = "gcpw_startup.sentinel";
+constexpr base::FilePath::CharType kCredentialProviderFolder[] =
+    L"Credential Provider";
+constexpr int64_t kMaxConsecutiveCrashCount = 5;
+
 constexpr base::win::i18n::LanguageSelector::LangToOffset
     kLanguageOffsetPairs[] = {
 #define HANDLE_LANGUAGE(l_, o_) {L## #l_, o_},
         DO_LANGUAGES
 #undef HANDLE_LANGUAGE
 };
+
+base::FilePath GetStartupSentinelLocation() {
+  base::FilePath sentienal_path;
+  if (!base::PathService::Get(base::DIR_COMMON_APP_DATA, &sentienal_path)) {
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "PathService::Get(DIR_COMMON_APP_DATA) hr=" << putHR(hr);
+    return base::FilePath();
+  }
+
+  sentienal_path = sentienal_path.Append(GetInstallParentDirectoryName())
+                       .Append(kCredentialProviderFolder);
+
+  return sentienal_path.Append(TEXT(CHROME_VERSION_STRING))
+      .AppendASCII(kSentinelFilename);
+}
 
 const base::win::i18n::LanguageSelector& GetLanguageSelector() {
   static base::NoDestructor<base::win::i18n::LanguageSelector> instance(
@@ -156,7 +177,7 @@ base::FilePath GetInstallDirectory() {
   }
 
   dest_path = dest_path.Append(GetInstallParentDirectoryName())
-                  .Append(FILE_PATH_LITERAL("Credential Provider"));
+                  .Append(kCredentialProviderFolder);
 
   return dest_path;
 }
@@ -736,6 +757,49 @@ HRESULT GetAuthenticationPackageId(ULONG* id) {
     LOGFN(ERROR) << "LsaLookupAuthenticationPackage hr=" << putHR(hr);
 
   return hr;
+}
+
+bool VerifyStartupSentinel() {
+  // Always try to write to the startup sentinel file. If writing or opening
+  // fails for any reason (file locked, no access etc) consider this a failure.
+  // If no sentinel file path can be found this probably means that we are
+  // running in a unit test so just let the verification pass in this case.
+  base::FilePath startup_sentinel_path = GetStartupSentinelLocation();
+  if (!startup_sentinel_path.empty()) {
+    base::FilePath startup_sentinel_directory = startup_sentinel_path.DirName();
+    if (!base::DirectoryExists(startup_sentinel_directory)) {
+      base::File::Error error;
+      if (!base::CreateDirectoryAndGetError(startup_sentinel_directory,
+                                            &error)) {
+        LOGFN(ERROR) << "Could not create sentinel directory='"
+                     << startup_sentinel_directory << "' error=" << error;
+        return false;
+      }
+    }
+    base::File startup_sentinel(
+        startup_sentinel_path,
+        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
+
+    // Keep writing to the sentinel file until we have reached
+    // |kMaxConsecutiveCrashCount| at which point it is assumed that GCPW
+    // is crashing continuously and should be disabled.
+    if (!startup_sentinel.IsValid() ||
+        startup_sentinel.GetLength() >= kMaxConsecutiveCrashCount) {
+      return false;
+    }
+
+    return startup_sentinel.WriteAtCurrentPos("0", 1) == 1;
+  }
+
+  return true;
+}
+
+void DeleteStartupSentinel() {
+  base::FilePath startup_sentinel_path = GetStartupSentinelLocation();
+  if (base::PathExists(startup_sentinel_path) &&
+      !base::DeleteFile(startup_sentinel_path, false)) {
+    LOGFN(ERROR) << "Failed to delete sentinel file: " << startup_sentinel_path;
+  }
 }
 
 base::string16 GetStringResource(int base_message_id) {

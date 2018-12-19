@@ -771,12 +771,23 @@ HRESULT CGaiaCredentialBase::Advise(ICredentialProviderCredentialEvents* cpce) {
 HRESULT CGaiaCredentialBase::UnAdvise(void) {
   LOGFN(INFO);
   events_.Release();
+
+  // The unadvise should only occur after the user has logged in, so if they
+  // never selected any gaia credential and just used normal credentials this
+  // function will be called in that situation and it is guaranteed that the
+  // user has at least been able provide some input to winlogon.
+  DeleteStartupSentinel();
+
   return S_OK;
 }
 
 HRESULT CGaiaCredentialBase::SetSelected(BOOL* auto_login) {
   *auto_login = AreCredentialsValid();
   LOGFN(INFO) << "auto-login=" << *auto_login;
+
+  // After this point the user is able to interact with the winlogon and thus
+  // can avoid potential crash loops so the startup sentinel can be deleted.
+  DeleteStartupSentinel();
   return S_OK;
 }
 
