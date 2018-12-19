@@ -171,21 +171,18 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     Raises:
       failures_lib.TestFailure if an internal error is encountered.
     """
+    # TODO(achuith, derat): This should be constants.VM_IMAGE_BIN.
     image_path = os.path.join(self.GetImageDirSymlink(),
                               constants.TEST_IMAGE_BIN)
-    chromite_bin = os.path.join(self._build_root, 'chromite/bin')
-    cros_run_vm_test = os.path.join(chromite_bin, 'cros_run_vm_test')
-    cros_sdk = os.path.join(chromite_bin, 'cros_sdk')
-    cmd = [cros_run_vm_test, '--no-display', '--board=' + self._current_board,
-           '--image-path=' + image_path, '--copy-on-write',
-           '--host-cmd', '--', cros_sdk, '--',
-           'tast', '-verbose', 'run', '-build=false', '-extrauseflags=tast_vm',
-           '-waituntilready', '-resultsdir=' + suite_chroot_results_dir,
-           '127.0.0.1:9222'] + test_exprs
+    results_dir = self._MakeChrootPathAbsolute(suite_chroot_results_dir)
+    cmd = ['./cros_run_vm_test', '--no-display', '--copy-on-write', '--debug',
+           '--board=%s' % self._current_board, '--image-path=%s' % image_path,
+           '--results-dir=%s' % results_dir, '--tast'] + test_exprs
 
     result = cros_build_lib.RunCommand(
-        cmd, error_code_ok=True,
-        kill_timeout=TastVMTestStage.CLEANUP_TIMEOUT_SEC)
+        cmd, error_code_ok=True, cwd=constants.CHROMITE_BIN_DIR,
+        kill_timeout=TastVMTestStage.CLEANUP_TIMEOUT_SEC
+    )
     if result.returncode:
       raise failures_lib.TestFailure(FAILURE_EXIT_CODE % result.returncode)
 

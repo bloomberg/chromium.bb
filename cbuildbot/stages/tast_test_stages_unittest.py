@@ -114,7 +114,7 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     # pylint: disable=unused-argument
     # Just check positional args and tricky flags. Checking all args is an
     # exercise in verifying that we're capable of typing the same thing twice.
-    self.assertEqual(os.path.basename(cmd[0]), 'cros_run_vm_test')
+    self.assertEqual(cmd[0], './cros_run_vm_test')
 
     # test_exprs are at the end, if they exist.
     num_test_exprs = len(self._exp_test_exprs)
@@ -123,13 +123,11 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     # The passed results dir should be relative to the chroot and should contain
     # the test suite.
-    results_dir = os.path.join(TastVMTestStageTest.RESULTS_CHROOT_PATH,
-                               self._exp_test_suite)
-    self.assertIn('-resultsdir=' + results_dir, cmd)
+    results_dir = os.path.join(self._test_root, self._exp_test_suite)
+    self.assertIn('--results-dir=' + results_dir, cmd)
 
-    # Should have tast and two instances of --.
-    self.assertIn('tast', cmd)
-    self.assertEqual(cmd.count('--'), 2)
+    # Should have tast.
+    self.assertIn('--tast', cmd)
 
     if self._test_results_data is not None:
       self._WriteResultsFile(self._test_results_data)
