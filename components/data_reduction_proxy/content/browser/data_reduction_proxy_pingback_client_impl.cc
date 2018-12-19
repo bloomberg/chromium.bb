@@ -131,6 +131,12 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
             timing.page_end_time.value())
             .release());
   }
+  if (timing.navigation_start_to_main_frame_fetch_start) {
+    request->set_allocated_navigation_start_to_main_frame_fetch_start(
+        protobuf_parser::CreateDurationFromTimeDelta(
+            timing.navigation_start_to_main_frame_fetch_start.value())
+            .release());
+  }
   // Only set the lite page info if both the penalty and status have values.
   if (timing.lite_page_redirect_penalty.has_value() &&
       timing.lite_page_redirect_status.has_value()) {
@@ -143,10 +149,6 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
         protobuf_parser::ProtoLitePageRedirectStatusFromLitePageRedirectStatus(
             timing.lite_page_redirect_status.value()));
   }
-  request->set_allocated_navigation_start_to_main_frame_fetch_start(
-      protobuf_parser::CreateDurationFromTimeDelta(
-          timing.navigation_start_to_main_frame_fetch_start)
-          .release());
 
   request->set_effective_connection_type(
       protobuf_parser::ProtoEffectiveConnectionTypeFromEffectiveConnectionType(
