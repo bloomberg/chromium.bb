@@ -36,7 +36,7 @@ class SourceListDirectiveTest : public testing::Test {
         SecurityOrigin::Create(secure_url));
     document = Document::CreateForTest();
     document->SetSecurityOrigin(secure_origin);
-    csp->BindToExecutionContext(document.Get());
+    csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
   }
 
   ContentSecurityPolicy* SetUpWithOrigin(const String& origin) {
@@ -46,7 +46,7 @@ class SourceListDirectiveTest : public testing::Test {
     Document* document = Document::CreateForTest();
     document->SetSecurityOrigin(secure_origin);
     ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
-    csp->BindToExecutionContext(document);
+    csp->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     return csp;
   }
 

@@ -6552,7 +6552,8 @@ void Document::InitContentSecurityPolicy(
     const ContentSecurityPolicy* last_origin_document_csp) {
   SetContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::Create());
 
-  GetContentSecurityPolicy()->BindToExecutionContext(this);
+  GetContentSecurityPolicy()->BindToDelegate(
+      GetContentSecurityPolicyDelegate());
 
   // We should inherit the navigation initiator CSP if the document is loaded
   // using a local-scheme url.

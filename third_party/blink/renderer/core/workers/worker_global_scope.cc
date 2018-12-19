@@ -610,7 +610,8 @@ void WorkerGlobalScope::ApplyContentSecurityPolicyFromHeaders(
     SetContentSecurityPolicy(csp);
   }
   GetContentSecurityPolicy()->DidReceiveHeaders(headers);
-  GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
+  GetContentSecurityPolicy()->BindToDelegate(
+      GetContentSecurityPolicyDelegate());
 }
 
 void WorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {

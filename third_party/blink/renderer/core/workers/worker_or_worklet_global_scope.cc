@@ -212,7 +212,8 @@ void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
 
 void WorkerOrWorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
   DCHECK(IsContextThread());
-  GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
+  GetContentSecurityPolicy()->BindToDelegate(
+      GetContentSecurityPolicyDelegate());
 }
 
 // Implementation of the "fetch a module worker script graph" algorithm in the

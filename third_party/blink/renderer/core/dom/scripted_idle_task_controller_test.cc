@@ -95,7 +95,6 @@ TEST_F(ScriptedIdleTaskControllerTest, RunCallback) {
   MockScriptedIdleTaskControllerScheduler scheduler(ShouldYield::DONT_YIELD);
   ScopedSchedulerOverrider scheduler_overrider(&scheduler);
 
-  NullExecutionContext execution_context;
   ScriptedIdleTaskController* controller =
       ScriptedIdleTaskController::Create(execution_context_);
 
@@ -116,7 +115,6 @@ TEST_F(ScriptedIdleTaskControllerTest, DontRunCallbackWhenAskedToYield) {
   MockScriptedIdleTaskControllerScheduler scheduler(ShouldYield::YIELD);
   ScopedSchedulerOverrider scheduler_overrider(&scheduler);
 
-  NullExecutionContext execution_context;
   ScriptedIdleTaskController* controller =
       ScriptedIdleTaskController::Create(execution_context_);
 

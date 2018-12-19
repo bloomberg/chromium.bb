@@ -55,6 +55,7 @@ namespace blink {
 
 class ConsoleMessage;
 class ContentSecurityPolicy;
+class ContentSecurityPolicyDelegate;
 class CoreProbeSink;
 class DOMTimerCoordinator;
 class ErrorEvent;
@@ -175,6 +176,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   PublicURLManager& GetPublicURLManager();
 
+  ContentSecurityPolicyDelegate& GetContentSecurityPolicyDelegate();
+
   virtual void RemoveURLFromMemoryCache(const KURL&);
 
   void PausePausableObjects();
@@ -272,6 +275,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool is_context_destroyed_;
 
   Member<PublicURLManager> public_url_manager_;
+
+  const Member<ContentSecurityPolicyDelegate> csp_delegate_;
 
   // Counter that keeps track of how many window interaction calls are allowed
   // for this ExecutionContext. Callers are expected to call
