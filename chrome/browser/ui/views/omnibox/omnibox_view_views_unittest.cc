@@ -210,7 +210,13 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
 
   TestLocationBarModel* location_bar_model() { return &location_bar_model_; }
   TestingOmniboxView* omnibox_view() const { return omnibox_view_; }
+
+  // TODO(tommycli): These base class accessors exist because Textfield and
+  // OmniboxView both hide member functions that were public in base classes.
+  // Remove these after we stop doing that.
   views::Textfield* omnibox_textfield() const { return omnibox_view(); }
+  views::View* omnibox_textfield_view() const { return omnibox_view(); }
+
   ui::TextEditCommand scheduled_text_edit_command() const {
     return test_api_->scheduled_text_edit_command();
   }
@@ -410,7 +416,7 @@ TEST_F(OmniboxViewViewsTest, OnBlur) {
   // SetWindowTextAndCaretPos to scroll such that the start of the string is
   // on-screen. Because the domain is RTL, this scrolls to an offset greater
   // than 0.
-  omnibox_view()->OnFocus();
+  omnibox_textfield()->OnFocus();
   const base::string16 kContentsRtl =
       base::WideToUTF16(L"\x05e8\x05e2.\x05e7\x05d5\x05dd/0123/abcd");
   static_cast<OmniboxView*>(omnibox_view())
@@ -426,7 +432,7 @@ TEST_F(OmniboxViewViewsTest, OnBlur) {
   // Now enter blurred mode, where the text should be elided to 60px. This means
   // the string itself is truncated. Scrolling would therefore mean the text is
   // off-screen. Ensure that the horizontal scrolling has been reset to 0.
-  omnibox_view()->OnBlur();
+  omnibox_textfield()->OnBlur();
   EXPECT_EQ(gfx::ELIDE_TAIL, render_text->elide_behavior());
   EXPECT_EQ(0, render_text->GetUpdatedDisplayOffset().x());
   EXPECT_FALSE(omnibox_view()->IsSelectAll());
@@ -606,14 +612,13 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   // beginning of the RenderText.
   void SendMouseClick(int x_offset) {
     gfx::Point point = GetPointInTextAtXOffset(x_offset);
-    omnibox_view()->OnMousePressed(
+    omnibox_textfield()->OnMousePressed(
         CreateMouseEvent(ui::ET_MOUSE_PRESSED, point));
-    omnibox_view()->OnMouseReleased(
+    omnibox_textfield()->OnMouseReleased(
         CreateMouseEvent(ui::ET_MOUSE_RELEASED, point));
   }
 
   // Used to access members that are marked private in views::TextField.
-  views::View* omnibox_textfield_view() { return omnibox_view(); }
   base::SimpleTestTickClock* clock() { return &clock_; }
 
  private:
@@ -670,19 +675,19 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, GestureTaps) {
     return;
   ui::GestureEvent tap_down(0, 0, 0, ui::EventTimeForNow(),
                             ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
-  omnibox_textfield_view()->OnGestureEvent(&tap_down);
+  omnibox_textfield()->OnGestureEvent(&tap_down);
 
   // Select all on first tap.
   ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP);
   tap_details.set_tap_count(1);
   ui::GestureEvent tap(0, 0, 0, ui::EventTimeForNow(), tap_details);
-  omnibox_textfield_view()->OnGestureEvent(&tap);
+  omnibox_textfield()->OnGestureEvent(&tap);
 
   EXPECT_TRUE(omnibox_view()->IsSelectAll());
   EXPECT_TRUE(IsElidedUrlDisplayed());
 
   // Unelide on second tap (cursor placement).
-  omnibox_textfield_view()->OnGestureEvent(&tap);
+  omnibox_textfield()->OnGestureEvent(&tap);
   ExpectFullUrlDisplayed();
 }
 
@@ -698,15 +703,15 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, FirstMouseClickFocusesOnly) {
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, NegligibleDragKeepsElisions) {
   gfx::Point click_point = GetPointInTextAtXOffset(2 * kCharacterWidth);
-  omnibox_view()->OnMousePressed(
+  omnibox_textfield()->OnMousePressed(
       CreateMouseEvent(ui::ET_MOUSE_PRESSED, click_point));
 
   // Offset the drag and release point by an insignificant 2 px.
   gfx::Point drag_point = click_point;
   drag_point.Offset(2, 0);
-  omnibox_view()->OnMouseDragged(
+  omnibox_textfield()->OnMouseDragged(
       CreateMouseEvent(ui::ET_MOUSE_DRAGGED, drag_point));
-  omnibox_view()->OnMouseReleased(
+  omnibox_textfield()->OnMouseReleased(
       CreateMouseEvent(ui::ET_MOUSE_RELEASED, drag_point));
 
   // Expect that after a negligible drag and release, everything is selected.
@@ -723,10 +728,10 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, CaretPlacementByMouse) {
   clock()->Advance(base::TimeDelta::FromSeconds(5));
 
   // Second click should unelide only on mouse release.
-  omnibox_view()->OnMousePressed(CreateMouseEvent(
+  omnibox_textfield()->OnMousePressed(CreateMouseEvent(
       ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
   EXPECT_TRUE(IsElidedUrlDisplayed());
-  omnibox_view()->OnMouseReleased(CreateMouseEvent(
+  omnibox_textfield()->OnMouseReleased(CreateMouseEvent(
       ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
 
@@ -744,7 +749,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClick) {
 
   // Second click without advancing the clock should be a double-click, which
   // should do a single word selection and unelide the text on mousedown.
-  omnibox_view()->OnMousePressed(CreateMouseEvent(
+  omnibox_textfield()->OnMousePressed(CreateMouseEvent(
       ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
 
@@ -772,12 +777,12 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseTripleClick) {
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseClickDrag) {
-  omnibox_view()->OnMousePressed(CreateMouseEvent(
+  omnibox_textfield()->OnMousePressed(CreateMouseEvent(
       ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
   EXPECT_TRUE(IsElidedUrlDisplayed());
 
   // Expect that during the drag, the URL is still elided.
-  omnibox_view()->OnMouseDragged(CreateMouseEvent(
+  omnibox_textfield()->OnMouseDragged(CreateMouseEvent(
       ui::ET_MOUSE_DRAGGED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
   EXPECT_TRUE(IsElidedUrlDisplayed());
 
@@ -787,7 +792,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseClickDrag) {
   EXPECT_EQ(2U, start);
   EXPECT_EQ(4U, end);
 
-  omnibox_view()->OnMouseReleased(CreateMouseEvent(
+  omnibox_textfield()->OnMouseReleased(CreateMouseEvent(
       ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
 
@@ -801,11 +806,11 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseClickDrag) {
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
        MouseClickDragToBeginningSelectingText) {
   // Backwards drag-select this portion of the elided URL: |exam|ple.com
-  omnibox_view()->OnMousePressed(CreateMouseEvent(
+  omnibox_textfield()->OnMousePressed(CreateMouseEvent(
       ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
-  omnibox_view()->OnMouseDragged(CreateMouseEvent(
+  omnibox_textfield()->OnMouseDragged(CreateMouseEvent(
       ui::ET_MOUSE_DRAGGED, GetPointInTextAtXOffset(0 * kCharacterWidth)));
-  omnibox_view()->OnMouseReleased(CreateMouseEvent(
+  omnibox_textfield()->OnMouseReleased(CreateMouseEvent(
       ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(0 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
 
@@ -821,11 +826,11 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
        MouseClickDragToBeginningSelectingURL) {
   // Backwards drag-select this portion of the elided URL: |example.co|m
-  omnibox_view()->OnMousePressed(CreateMouseEvent(
+  omnibox_textfield()->OnMousePressed(CreateMouseEvent(
       ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(10 * kCharacterWidth)));
-  omnibox_view()->OnMouseDragged(CreateMouseEvent(
+  omnibox_textfield()->OnMouseDragged(CreateMouseEvent(
       ui::ET_MOUSE_DRAGGED, GetPointInTextAtXOffset(0 * kCharacterWidth)));
-  omnibox_view()->OnMouseReleased(CreateMouseEvent(
+  omnibox_textfield()->OnMouseReleased(CreateMouseEvent(
       ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(0 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
 
@@ -842,7 +847,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClickDrag) {
   // Expect that after a double-click after the third character of the elided
   // text, the text is unelided, and https://www.|example|.com is selected.
   SendMouseClick(4 * kCharacterWidth);
-  omnibox_view()->OnMousePressed(CreateMouseEvent(
+  omnibox_textfield()->OnMousePressed(CreateMouseEvent(
       ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
   size_t start, end;
@@ -855,7 +860,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClickDrag) {
   // domain, so the new selection will be |https://www.example|.com. The
   // expected selection is backwards, since we are dragging the mouse from the
   // domain to the scheme.
-  omnibox_view()->OnMouseDragged(CreateMouseEvent(
+  omnibox_textfield()->OnMouseDragged(CreateMouseEvent(
       ui::ET_MOUSE_DRAGGED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
   omnibox_view()->GetSelectionBounds(&start, &end);
@@ -863,7 +868,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClickDrag) {
   EXPECT_EQ(0U, end);
 
   // Expect the selection to stay the same after mouse-release.
-  omnibox_view()->OnMouseReleased(CreateMouseEvent(
+  omnibox_textfield()->OnMouseReleased(CreateMouseEvent(
       ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
   omnibox_view()->GetSelectionBounds(&start, &end);
