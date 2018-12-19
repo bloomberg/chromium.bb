@@ -100,6 +100,11 @@ void AssistantController::OpenAssistantSettings() {
   OpenUrl(assistant::util::CreateAssistantSettingsDeepLink());
 }
 
+void AssistantController::StartSpeakerIdEnrollmentFlow() {
+  setup_controller()->StartOnboarding(false /* relaunch */,
+                                      mojom::FlowType::SPEAKER_ID_ENROLLMENT);
+}
+
 void AssistantController::DownloadImage(
     const GURL& url,
     mojom::AssistantImageDownloader::DownloadCallback callback) {

@@ -35,14 +35,17 @@ class AssistantOptInUI : public ui::WebDialogUI {
 class AssistantOptInDialog : public SystemWebDialogDelegate {
  public:
   // Shows the assistant optin dialog.
-  static void Show(ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback
-                       callback = base::DoNothing());
+  static void Show(
+      ash::mojom::FlowType type = ash::mojom::FlowType::CONSENT_FLOW,
+      ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback =
+          base::DoNothing());
 
   // Returns whether the dialog is being shown.
   static bool IsActive();
 
  protected:
-  explicit AssistantOptInDialog(
+  AssistantOptInDialog(
+      ash::mojom::FlowType type,
       ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback);
   ~AssistantOptInDialog() override;
 

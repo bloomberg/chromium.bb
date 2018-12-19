@@ -39,9 +39,10 @@ class AssistantSetupController : public mojom::AssistantSetupController,
   // AssistantOptInDelegate:
   void OnOptInButtonPressed() override;
 
- private:
-  void StartOnboarding(bool relaunch);
+  void StartOnboarding(bool relaunch,
+                       mojom::FlowType type = mojom::FlowType::CONSENT_FLOW);
 
+ private:
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   mojo::Binding<mojom::AssistantSetupController> binding_;

@@ -15,9 +15,10 @@ cr.define('login.AssistantOptInFlowScreen', function() {
 
     /**
      * Starts the assistant opt-in flow.
+     * @param {number} type The type of the flow.
      */
-    show: function() {
-      $('assistant-optin-flow-card').onShow();
+    show: function(type) {
+      $('assistant-optin-flow-card').onShow(type);
     },
 
     /**
@@ -59,5 +60,6 @@ cr.define('login.AssistantOptInFlowScreen', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-  login.AssistantOptInFlowScreen.show();
+  var url = new URL(document.URL);
+  login.AssistantOptInFlowScreen.show(url.searchParams.get('flow-type'));
 });

@@ -48,22 +48,26 @@ void AssistantSetupController::OnOptInButtonPressed() {
   StartOnboarding(/*relaunch=*/true);
 }
 
-void AssistantSetupController::StartOnboarding(bool relaunch) {
+void AssistantSetupController::StartOnboarding(bool relaunch,
+                                               mojom::FlowType type) {
   if (!assistant_setup_)
     return;
 
   if (relaunch) {
-    assistant_setup_->StartAssistantOptInFlow(base::BindOnce(
-        [](AssistantController* assistant_controller, bool completed) {
-          if (completed) {
-            assistant_controller->ui_controller()->ShowUi(
-                AssistantEntryPoint::kSetup);
-          }
-        },
-        // AssistantController owns |assistant_setup_| so a raw pointer is safe.
-        assistant_controller_));
+    assistant_setup_->StartAssistantOptInFlow(
+        type,
+        base::BindOnce(
+            [](AssistantController* assistant_controller, bool completed) {
+              if (completed) {
+                assistant_controller->ui_controller()->ShowUi(
+                    AssistantEntryPoint::kSetup);
+              }
+            },
+            // AssistantController owns |assistant_setup_| so a raw pointer is
+            // safe.
+            assistant_controller_));
   } else {
-    assistant_setup_->StartAssistantOptInFlow(base::DoNothing());
+    assistant_setup_->StartAssistantOptInFlow(type, base::DoNothing());
   }
 
   // Assistant UI should be hidden while the user onboards.

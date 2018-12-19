@@ -23,17 +23,40 @@ Polymer({
   behaviors: [OobeDialogHostBehavior],
 
   /**
-   * Signal from host to show the screen.
+   * Indicates the type of the opt-in flow.
    */
-  onShow: function() {
+  FlowType: {
+    // The whole consent flow.
+    CONSENT_FLOW: 0,
+    // The voice match enrollment flow.
+    SPEAKER_ID_ENROLLMENT: 1,
+  },
+
+  /**
+   * Signal from host to show the screen.
+   * @param {number} type The type of the flow.
+   */
+  onShow: function(type) {
+    this.flowType = Number(type);
+    if (this.flowType == NaN) {
+      console.error('Invalid flow type.');
+    }
+
     this.boundShowLoadingScreen = this.showLoadingScreen.bind(this);
     this.boundOnScreenLoadingError = this.onScreenLoadingError.bind(this);
     this.boundOnScreenLoaded = this.onScreenLoaded.bind(this);
 
     this.$['loading'].onBeforeShow();
     this.$['loading'].addEventListener('reload', this.onReload.bind(this));
-    this.showScreen(this.$['value-prop']);
-    chrome.send('login.AssistantOptInFlowScreen.initialized');
+
+    switch (this.flowType) {
+      case this.FlowType.SPEAKER_ID_ENROLLMENT:
+        this.showScreen(this.$['voice-match']);
+        break;
+      default:
+        this.showScreen(this.$['value-prop']);
+    }
+    chrome.send('login.AssistantOptInFlowScreen.initialized', [this.flowType]);
   },
 
   /**
@@ -42,6 +65,7 @@ Polymer({
    */
   reloadContent: function(data) {
     this.voiceMatchFeatureEnabled = data['voiceMatchFeatureEnabled'];
+    data['flowType'] = this.flowType;
     this.$['value-prop'].reloadContent(data);
     this.$['third-party'].reloadContent(data);
     this.$['get-more'].reloadContent(data);
@@ -84,7 +108,11 @@ Polymer({
         }
         break;
       case this.$['voice-match']:
-        this.showScreen(this.$['get-more']);
+        if (this.flowType == this.FlowType.SPEAKER_ID_ENROLLMENT) {
+          chrome.send('login.AssistantOptInFlowScreen.flowFinished');
+        } else {
+          this.showScreen(this.$['get-more']);
+        }
         break;
       case this.$['get-more']:
         this.showScreen(this.$['ready']);

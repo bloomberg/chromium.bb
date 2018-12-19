@@ -494,10 +494,12 @@ void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
     CallJSWithPrefix("closeDialog");
 }
 
-void AssistantOptInFlowScreenHandler::HandleFlowInitialized() {
+void AssistantOptInFlowScreenHandler::HandleFlowInitialized(
+    const int flow_type) {
   initialized_ = true;
 
-  if (settings_manager_.is_bound()) {
+  if (settings_manager_.is_bound() &&
+      flow_type == static_cast<int>(ash::mojom::FlowType::CONSENT_FLOW)) {
     SendGetSettingsRequest();
   }
 }

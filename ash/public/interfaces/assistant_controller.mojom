@@ -24,6 +24,9 @@ interface AssistantController {
 
   // Opens Google Assistant settings.
   OpenAssistantSettings();
+
+  // Show speaker id enrollment flow.
+  StartSpeakerIdEnrollmentFlow();
 };
 
 // Interface to the AssistantAlarmTimerController which is owned by the

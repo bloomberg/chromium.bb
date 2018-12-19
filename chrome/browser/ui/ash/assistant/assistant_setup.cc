@@ -94,11 +94,12 @@ AssistantSetup::~AssistantSetup() {
 }
 
 void AssistantSetup::StartAssistantOptInFlow(
+    ash::mojom::FlowType type,
     StartAssistantOptInFlowCallback callback) {
   if (chromeos::AssistantOptInDialog::IsActive())
     return;
 
-  chromeos::AssistantOptInDialog::Show(std::move(callback));
+  chromeos::AssistantOptInDialog::Show(type, std::move(callback));
 }
 
 void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {

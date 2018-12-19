@@ -177,8 +177,13 @@ void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentStatusSync(
     case SpeakerIdEnrollmentState::LISTEN:
       speaker_id_enrollment_done_ = false;
       // Stop the enrollment since we already get the status.
-      if (!speaker_id_enrollment_client_)
+      if (!speaker_id_enrollment_client_) {
         StopSpeakerIdEnrollment(base::DoNothing());
+        // If hotword is enabled but there is no voice model found, launch the
+        // enrollment flow.
+        if (service_->assistant_state()->hotword_enabled().value())
+          service_->assistant_controller()->StartSpeakerIdEnrollmentFlow();
+      }
       break;
     case SpeakerIdEnrollmentState::DONE:
       speaker_id_enrollment_done_ = true;

@@ -4,10 +4,17 @@
 
 module ash.mojom;
 
+enum FlowType {
+  // The whole consent flow.
+  CONSENT_FLOW,
+  // The speaker id enrollment flow.
+  SPEAKER_ID_ENROLLMENT,
+};
+
 // Interface for a class which is responsible for start Assistant OptIn flow.
 interface AssistantSetup {
   // Start the assistant setup flow.
   // |completed| is true if the user has completed the entire flow and opted in
   // to using assistant.
-  StartAssistantOptInFlow() => (bool completed);
+  StartAssistantOptInFlow(FlowType type) => (bool completed);
 };

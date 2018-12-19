@@ -20,6 +20,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "net/base/url_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
@@ -30,6 +31,15 @@ bool is_active = false;
 
 constexpr int kAssistantOptInDialogWidth = 768;
 constexpr int kAssistantOptInDialogHeight = 640;
+constexpr char kFlowTypeParamKey[] = "flow-type";
+
+GURL CreateAssistantOptInURL(ash::mojom::FlowType type) {
+  // TODO(updowndota): Directly use mojom enum types in js.
+  auto gurl = net::AppendOrReplaceQueryParameter(
+      GURL(chrome::kChromeUIAssistantOptInURL), kFlowTypeParamKey,
+      std::to_string(static_cast<int>(type)));
+  return gurl;
+}
 
 }  // namespace
 
@@ -66,9 +76,11 @@ AssistantOptInUI::~AssistantOptInUI() = default;
 
 // static
 void AssistantOptInDialog::Show(
+    ash::mojom::FlowType type,
     ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback) {
   DCHECK(!is_active);
-  AssistantOptInDialog* dialog = new AssistantOptInDialog(std::move(callback));
+  AssistantOptInDialog* dialog =
+      new AssistantOptInDialog(type, std::move(callback));
 
   views::Widget::InitParams extra_params = ash_util::GetFramelessInitParams();
   chrome::ShowWebDialogWithParams(nullptr /* parent */,
@@ -82,9 +94,9 @@ bool AssistantOptInDialog::IsActive() {
 }
 
 AssistantOptInDialog::AssistantOptInDialog(
+    ash::mojom::FlowType type,
     ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback)
-    : SystemWebDialogDelegate(GURL(chrome::kChromeUIAssistantOptInURL),
-                              base::string16()),
+    : SystemWebDialogDelegate(CreateAssistantOptInURL(type), base::string16()),
       callback_(std::move(callback)) {
   DCHECK(!is_active);
   is_active = true;
