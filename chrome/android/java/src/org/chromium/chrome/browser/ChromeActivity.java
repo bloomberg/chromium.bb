@@ -1535,7 +1535,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return false;
         }
 
-        if (getEphemeralTabPanel() != null && getEphemeralTabPanel().isPanelOpened()) {
+        if (getEphemeralTabPanel() != null && getEphemeralTabPanel().isShowing()) {
             return false;
         }
 
@@ -1806,8 +1806,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return mReaderModeManager;
     }
 
+    /**
+     * @return The {@code EphemeralTabPanel} or {@code null} if none.
+     */
     public EphemeralTabPanel getEphemeralTabPanel() {
-        return getCompositorViewHolder().getLayoutManager().getEphemeralTabPanel();
+        LayoutManager layoutManager = getCompositorViewHolder().getLayoutManager();
+        return layoutManager != null ? layoutManager.getEphemeralTabPanel() : null;
     }
 
     /**
