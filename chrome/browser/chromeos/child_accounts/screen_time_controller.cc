@@ -34,7 +34,6 @@ constexpr char kScreenStateUsageLimitStarted[] = "usage_limit_started";
 constexpr char kScreenStateNextStateChangeTime[] = "next_state_change_time";
 constexpr char kScreenStateNextPolicyType[] = "next_active_policy";
 constexpr char kScreenStateNextUnlockTime[] = "next_unlock_time";
-constexpr char kScreenStateLastStateChanged[] = "last_state_changed";
 
 }  // namespace
 
@@ -216,8 +215,6 @@ void ScreenTimeController::SaveCurrentStateToPref(
       base::Value(static_cast<int>(state.next_state_active_policy)));
   state_dict->SetKey(kScreenStateNextUnlockTime,
                      base::Value(state.next_unlock_time.ToDoubleT()));
-  state_dict->SetKey(kScreenStateLastStateChanged,
-                     base::Value(state.last_state_changed.ToDoubleT()));
 
   pref_service_->Set(prefs::kScreenTimeLastState, *state_dict);
   pref_service_->CommitPendingWrite();
@@ -302,14 +299,6 @@ ScreenTimeController::GetLastStateFromPref() {
     return base::nullopt;
   result.next_unlock_time =
       base::Time::FromDoubleT(next_unlock_time->GetDouble());
-
-  // Verify last_state_changed from the pref is a double value.
-  const base::Value* last_state_changed =
-      last_state->FindKey(kScreenStateLastStateChanged);
-  if (!last_state_changed || !last_state_changed->is_double())
-    return base::nullopt;
-  result.last_state_changed =
-      base::Time::FromDoubleT(last_state_changed->GetDouble());
   return result;
 }
 
