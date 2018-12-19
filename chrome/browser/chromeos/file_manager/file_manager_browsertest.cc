@@ -296,7 +296,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       ZipCase("zipFileOpenDownloadsShiftJIS"),
                       ZipCase("zipFileOpenDownloadsMacOs"),
                       ZipCase("zipFileOpenDownloadsWithAbsolutePaths"),
+// Disable the test in debug mode. In debug mode, the test run time is very
+// close to, and often exceeds the 45 second test timeout.
+#if defined(NDEBUG)
                       ZipCase("zipFileOpenDownloadsEncryptedCancelPassphrase"),
+#endif
                       ZipCase("zipFileOpenDrive").DisableDriveFs(),
                       ZipCase("zipFileOpenDrive").EnableDriveFs(),
                       ZipCase("zipFileOpenUsb"),
