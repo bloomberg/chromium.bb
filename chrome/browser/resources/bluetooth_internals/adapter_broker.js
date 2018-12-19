@@ -31,25 +31,22 @@ cr.define('adapter_broker', function() {
    * to specific AdapterClient events.
    * Provides proxy access to Adapter functions. Converts parameters to Mojo
    * handles and back when necessary.
-   * @constructor
-   * @extends {cr.EventTarget}
-   * @param {!AdapterPtr} adapter
    */
-  var AdapterBroker = function(adapter) {
-    this.adapter_ = adapter;
-    this.adapterClient_ = new AdapterClient(this);
-    this.setClient(this.adapterClient_);
-  };
-
-  AdapterBroker.prototype = {
-    __proto__: cr.EventTarget.prototype,
+  class AdapterBroker extends cr.EventTarget {
+    /** @param {!AdapterPtr} adapter */
+    constructor(adapter) {
+      super();
+      this.adapter_ = adapter;
+      this.adapterClient_ = new AdapterClient(this);
+      this.setClient(this.adapterClient_);
+    }
 
     /**
      * Creates a GATT connection to the device with |address|.
      * @param {string} address
      * @return {!Promise<!DevicePtr>}
      */
-    connectToDevice: function(address) {
+    connectToDevice(address) {
       return this.adapter_.connectToDevice(address).then(function(response) {
         if (response.result != bluetooth.mojom.ConnectResult.SUCCESS) {
           // TODO(crbug.com/663394): Replace with more descriptive error
@@ -64,41 +61,41 @@ cr.define('adapter_broker', function() {
 
         return response.device;
       });
-    },
+    }
 
     /**
      * Gets an array of currently detectable devices from the Adapter service.
      * @return {!Array<!bluetooth.mojom.DeviceInfo>}
      */
-    getDevices: function() {
+    getDevices() {
       return this.adapter_.getDevices();
-    },
+    }
 
     /**
      * Gets the current state of the Adapter.
      * @return {!bluetooth.mojom.AdapterInfo}
      */
-    getInfo: function() {
+    getInfo() {
       return this.adapter_.getInfo();
-    },
+    }
 
     /**
      * Sets client of Adapter service.
      * @param {!bluetooth.mojom.AdapterClient} adapterClient
      */
-    setClient: function(adapterClient) {
+    setClient(adapterClient) {
       adapterClient.binding =
           new mojo.Binding(bluetooth.mojom.AdapterClient, adapterClient);
 
       this.adapter_.setClient(
           adapterClient.binding.createInterfacePtrAndBind());
-    },
+    }
 
     /**
      * Requests the adapter to start a new discovery session.
      * @return {!Promise<!DiscoverySessionPtr>}
      */
-    startDiscoverySession: function() {
+    startDiscoverySession() {
       return this.adapter_.startDiscoverySession().then(function(response) {
         if (!response.session.ptr.isBound()) {
           throw new Error('Discovery session failed to start');
@@ -106,27 +103,28 @@ cr.define('adapter_broker', function() {
 
         return response.session;
       });
-    },
-  };
+    }
+  }
 
   /**
    * The implementation of AdapterClient in
    * device/bluetooth/public/mojom/adapter.mojom. Dispatches events
    * through AdapterBroker to notify client objects of changes to the Adapter
    * service.
-   * @constructor
-   * @param {!AdapterBroker} adapterBroker Broker to dispatch events through.
    */
-  var AdapterClient = function(adapterBroker) {
-    this.adapterBroker_ = adapterBroker;
-  };
+  class AdapterClient {
+    /**
+     * @param {!AdapterBroker} adapterBroker Broker to dispatch events through.
+     */
+    constructor(adapterBroker) {
+      this.adapterBroker_ = adapterBroker;
+    }
 
-  AdapterClient.prototype = {
     /**
      * Fires adapterchanged event with "present" property.
      * @param {boolean} present
      */
-    presentChanged: function(present) {
+    presentChanged(present) {
       var event = new CustomEvent('adapterchanged', {
         detail: {
           property: AdapterProperty.PRESENT,
@@ -134,13 +132,13 @@ cr.define('adapter_broker', function() {
         }
       });
       this.adapterBroker_.dispatchEvent(event);
-    },
+    }
 
     /**
      * Fires adapterchanged event with "powered" property changed.
      * @param {boolean} powered
      */
-    poweredChanged: function(powered) {
+    poweredChanged(powered) {
       var event = new CustomEvent('adapterchanged', {
         detail: {
           property: AdapterProperty.POWERED,
@@ -148,13 +146,13 @@ cr.define('adapter_broker', function() {
         }
       });
       this.adapterBroker_.dispatchEvent(event);
-    },
+    }
 
     /**
      * Fires adapterchanged event with "discoverable" property changed.
      * @param {boolean} discoverable
      */
-    discoverableChanged: function(discoverable) {
+    discoverableChanged(discoverable) {
       var event = new CustomEvent('adapterchanged', {
         detail: {
           property: AdapterProperty.DISCOVERABLE,
@@ -162,13 +160,13 @@ cr.define('adapter_broker', function() {
         }
       });
       this.adapterBroker_.dispatchEvent(event);
-    },
+    }
 
     /**
      * Fires adapterchanged event with "discovering" property changed.
      * @param {boolean} discovering
      */
-    discoveringChanged: function(discovering) {
+    discoveringChanged(discovering) {
       var event = new CustomEvent('adapterchanged', {
         detail: {
           property: AdapterProperty.DISCOVERING,
@@ -176,38 +174,38 @@ cr.define('adapter_broker', function() {
         }
       });
       this.adapterBroker_.dispatchEvent(event);
-    },
+    }
 
     /**
      * Fires deviceadded event.
      * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      */
-    deviceAdded: function(deviceInfo) {
+    deviceAdded(deviceInfo) {
       var event =
           new CustomEvent('deviceadded', {detail: {deviceInfo: deviceInfo}});
       this.adapterBroker_.dispatchEvent(event);
-    },
+    }
 
     /**
      * Fires devicechanged event.
      * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      */
-    deviceChanged: function(deviceInfo) {
+    deviceChanged(deviceInfo) {
       var event =
           new CustomEvent('devicechanged', {detail: {deviceInfo: deviceInfo}});
       this.adapterBroker_.dispatchEvent(event);
-    },
+    }
 
     /**
      * Fires deviceremoved event.
      * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      */
-    deviceRemoved: function(deviceInfo) {
+    deviceRemoved(deviceInfo) {
       var event =
           new CustomEvent('deviceremoved', {detail: {deviceInfo: deviceInfo}});
       this.adapterBroker_.dispatchEvent(event);
-    },
-  };
+    }
+  }
 
   var adapterBroker = null;
 
