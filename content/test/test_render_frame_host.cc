@@ -376,7 +376,6 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   // initialized. Do it if it hasn't happened yet.
   InitializeRenderFrameIfNeeded();
 
-  // TODO(mkwst): The initiator origin here is incorrect.
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New(
           std::string() /* headers */, net::LOAD_NORMAL,
@@ -384,9 +383,10 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           blink::mojom::RequestContextType::HYPERLINK,
           blink::WebMixedContentContextType::kBlockable,
           false /* is_form_submission */, GURL() /* searchable_form_url */,
-          std::string() /* searchable_form_encoding */, url::Origin(),
+          std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
           base::nullopt /* devtools_initiator_info */);
+  // TODO(mkwst): The initiator origin in |common_params| is missing/incorrect.
   CommonNavigationParams common_params;
   common_params.url = url;
   common_params.referrer =

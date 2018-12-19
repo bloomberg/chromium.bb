@@ -299,18 +299,12 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   // This is not currently handled here.
   bool is_form_submission = !!post_body;
 
-  base::Optional<url::Origin> initiator =
-      frame_tree_node->IsMainFrame()
-          ? base::Optional<url::Origin>()
-          : base::Optional<url::Origin>(
-                frame_tree_node->frame_tree()->root()->current_origin());
-
   auto navigation_params = mojom::BeginNavigationParams::New(
       extra_headers, net::LOAD_NORMAL, false /* skip_service_worker */,
       blink::mojom::RequestContextType::LOCATION,
       blink::WebMixedContentContextType::kBlockable, is_form_submission,
       GURL() /* searchable_form_url */,
-      std::string() /* searchable_form_encoding */, initiator,
+      std::string() /* searchable_form_encoding */,
       GURL() /* client_side_redirect_url */,
       base::nullopt /* devtools_initiator_info */);
 
@@ -365,9 +359,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       0,                              // nav_entry_id
       false,                          // is_history_navigation_in_new_child
       std::map<std::string, bool>(),  // subframe_unique_names
-      false,  // intended_as_new_entry
-      -1,     // |pending_history_list_offset| is set to -1 because
-              // history-navigations do not use this path. See comments above.
+      false,                          // intended_as_new_entry
+      -1,  // |pending_history_list_offset| is set to -1 because
+           // history-navigations do not use this path. See comments above.
       current_history_list_offset, current_history_list_length,
       false,  // is_view_source
       false /*should_clear_history_list*/);
@@ -394,7 +388,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
   // TODO(clamy): Improve the *NavigationParams and *CommitParams to avoid
   // copying so many parameters here.
   CommonNavigationParams common_params(
-      params.url, params.referrer, params.transition,
+      params.url,
+      // TODO(nasko): Investigate better value to pass for |initiator_origin|.
+      params.origin, params.referrer, params.transition,
       is_same_document ? FrameMsg_Navigate_Type::SAME_DOCUMENT
                        : FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT,
       NavigationDownloadPolicy::kAllow, params.should_replace_current_entry,
@@ -538,7 +534,7 @@ NavigationRequest::NavigationRequest(
         common_params_.navigation_type,
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
         common_params.method, user_agent_override,
-        common_params_.has_user_gesture, begin_params_->initiator_origin,
+        common_params_.has_user_gesture, common_params.initiator_origin,
         frame_tree_node);
 
     if (begin_params_->is_form_submission) {
@@ -1627,7 +1623,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       auto resource_request = std::make_unique<network::ResourceRequest>();
       resource_request->url = common_params_.url;
       resource_request->method = common_params_.method;
-      resource_request->request_initiator = begin_params_->initiator_origin;
+      resource_request->request_initiator = common_params_.initiator_origin;
       resource_request->referrer = common_params_.referrer.url;
       resource_request->has_user_gesture = common_params_.has_user_gesture;
 

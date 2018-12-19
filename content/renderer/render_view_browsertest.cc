@@ -660,6 +660,9 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   WebUITestWebUIControllerFactory factory;
   WebUIControllerFactory::RegisterFactory(&factory);
 
+  blink::WebSecurityOrigin requestor_origin =
+      blink::WebSecurityOrigin::Create(GURL("http://foo.com"));
+
   // Navigations to normal HTTP URLs can be handled locally.
   blink::WebURLRequest request(GURL("http://foo.com"));
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
@@ -668,12 +671,12 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
   request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
-  request.SetRequestorOrigin(
-      blink::WebSecurityOrigin::Create(GURL("http://foo.com")));
+  request.SetRequestorOrigin(requestor_origin);
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = request;
   navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
+  DCHECK(!navigation_info->url_request.RequestorOrigin().IsNull());
   frame()->BeginNavigation(std::move(navigation_info));
   // If this is a renderer-initiated navigation that just begun, it should
   // stop and be sent to the browser.
@@ -684,6 +687,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   form_navigation_info->url_request =
       blink::WebURLRequest(GURL("chrome://foo"));
   form_navigation_info->url_request.SetHTTPMethod("POST");
+  form_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   form_navigation_info->navigation_type =
       blink::kWebNavigationTypeFormSubmitted;
   form_navigation_info->navigation_policy =
@@ -698,6 +702,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   popup_navigation_info->url_request =
       blink::WebURLRequest(GURL("chrome://foo"));
+  popup_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   popup_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   popup_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
@@ -724,6 +729,8 @@ TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
   for (size_t i = 0; i < arraysize(kNavTypes); ++i) {
     auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
     navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
+    navigation_info->url_request.SetRequestorOrigin(
+        blink::WebSecurityOrigin::Create(GURL("http://foo.com")));
     navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
     navigation_info->navigation_type = kNavTypes[i];
 
@@ -738,9 +745,13 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   // Enable bindings to simulate a WebUI view.
   view()->GetMainRenderFrame()->AllowBindings(BINDINGS_POLICY_WEB_UI);
 
+  blink::WebSecurityOrigin requestor_origin =
+      blink::WebSecurityOrigin::Create(GURL("http://foo.com"));
+
   // Navigations to normal HTTP URLs will be sent to browser process.
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
+  navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
 
@@ -753,6 +764,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   auto webui_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   webui_navigation_info->url_request =
       blink::WebURLRequest(GURL("chrome://foo"));
+  webui_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   webui_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   webui_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyCurrentTab;
@@ -765,6 +777,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   auto data_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   data_navigation_info->url_request =
       blink::WebURLRequest(GURL("data:text/html,foo"));
+  data_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   data_navigation_info->url_request.SetHTTPMethod("POST");
   data_navigation_info->navigation_type =
       blink::kWebNavigationTypeFormSubmitted;
@@ -779,6 +792,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   // normal HTTP URL will be sent to the browser process, even though the
   // new view does not have any enabled_bindings_.
   blink::WebURLRequest popup_request(GURL("http://foo.com"));
+  popup_request.SetRequestorOrigin(requestor_origin);
   blink::WebView* new_web_view = view()->CreateView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
       blink::kWebNavigationPolicyNewForegroundTab, false,

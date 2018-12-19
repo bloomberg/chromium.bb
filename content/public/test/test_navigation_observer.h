@@ -67,6 +67,10 @@ class TestNavigationObserver {
 
   bool last_navigation_succeeded() const { return last_navigation_succeeded_; }
 
+  const base::Optional<url::Origin>& last_initiator_origin() const {
+    return last_initiator_origin_;
+  }
+
   net::Error last_net_error_code() const { return last_net_error_code_; }
 
   NavigationType last_navigation_type() const { return last_navigation_type_; }
@@ -99,7 +103,7 @@ class TestNavigationObserver {
   void OnDidAttachInterstitialPage(WebContents* web_contents);
   void OnDidStartLoading(WebContents* web_contents);
   void OnDidStopLoading(WebContents* web_contents);
-  void OnDidStartNavigation();
+  void OnDidStartNavigation(NavigationHandle* navigation_handle);
   void EventTriggered();
 
   // The event that once triggered will quit the run loop.
@@ -122,6 +126,9 @@ class TestNavigationObserver {
 
   // True if the last navigation succeeded.
   bool last_navigation_succeeded_;
+
+  // The initiator origin of the last observed navigation.
+  base::Optional<url::Origin> last_initiator_origin_;
 
   // The net error code of the last navigation.
   net::Error last_net_error_code_;

@@ -946,7 +946,7 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
           blink::mojom::RequestContextType::HYPERLINK,
           blink::WebMixedContentContextType::kBlockable,
           false /* is_form_submission */, GURL() /* searchable_form_url */,
-          std::string() /* searchable_form_encoding */, url::Origin(),
+          std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
           base::nullopt /* detools_initiator_info */);
   CommonNavigationParams common_params;

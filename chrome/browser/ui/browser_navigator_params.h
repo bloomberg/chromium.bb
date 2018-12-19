@@ -80,6 +80,9 @@ struct NavigateParams {
   GURL url;
   content::Referrer referrer;
 
+  // The origin of the initiator of the navigation.
+  base::Optional<url::Origin> initiator_origin;
+
   // The frame name to be used for the main frame.
   std::string frame_name;
 

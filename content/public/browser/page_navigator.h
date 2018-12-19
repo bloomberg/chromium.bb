@@ -56,6 +56,9 @@ struct CONTENT_EXPORT OpenURLParams {
   GURL url;
   Referrer referrer;
 
+  // The origin of the initiator of the navigation.
+  base::Optional<url::Origin> initiator_origin;
+
   // SiteInstance of the frame that initiated the navigation or null if we
   // don't know it.
   scoped_refptr<content::SiteInstance> source_site_instance;

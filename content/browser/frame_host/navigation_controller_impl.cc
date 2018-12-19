@@ -2062,6 +2062,7 @@ bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
 void NavigationControllerImpl::NavigateFromFrameProxy(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
+    const url::Origin& initiator_origin,
     bool is_renderer_initiated,
     SiteInstance* source_site_instance,
     const Referrer& referrer,
@@ -2146,6 +2147,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   }
 
   LoadURLParams params(url);
+  params.initiator_origin = initiator_origin;
   params.source_site_instance = source_site_instance;
   params.load_type = method == "POST" ? LOAD_TYPE_HTTP_POST : LOAD_TYPE_DEFAULT;
   params.transition_type = page_transition;
@@ -2803,6 +2805,10 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     FrameNavigationEntry* frame_entry) {
   DCHECK_EQ(-1, GetIndexOfEntry(&entry));
   DCHECK(frame_entry);
+  // TODO(nasko): Enforce this check once all code is updated to supply
+  // initiator_origin for renderer initiated navigations.
+  // DCHECK(!params.is_renderer_initiated ||
+  // params.initiator_origin.has_value());
 
   GURL url_to_load;
   GURL virtual_url;
@@ -2884,10 +2890,10 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   const GURL& history_url_for_data_url =
       params.base_url_for_data_url.is_empty() ? GURL() : virtual_url;
   CommonNavigationParams common_params(
-      url_to_load, params.referrer, params.transition_type, navigation_type,
-      download_policy, should_replace_current_entry,
-      params.base_url_for_data_url, history_url_for_data_url, previews_state,
-      navigation_start,
+      url_to_load, params.initiator_origin, params.referrer,
+      params.transition_type, navigation_type, download_policy,
+      should_replace_current_entry, params.base_url_for_data_url,
+      history_url_for_data_url, previews_state, navigation_start,
       params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
       params.post_data, base::Optional<SourceLocation>(),
       params.started_from_context_menu, has_user_gesture, InitiatorCSPInfo(),

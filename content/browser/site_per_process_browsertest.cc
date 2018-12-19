@@ -469,6 +469,7 @@ void OpenURLBlockUntilNavigationComplete(Shell* shell, const GURL& url) {
                         network::mojom::ReferrerPolicy::kAlways),
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
       true /* is_renderer_initiated */);
+  params.initiator_origin = url::Origin::Create(url);
   shell->OpenURLFromTab(shell->web_contents(), params);
 
   same_tab_observer.Wait();

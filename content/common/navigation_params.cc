@@ -54,6 +54,7 @@ CommonNavigationParams::CommonNavigationParams() = default;
 
 CommonNavigationParams::CommonNavigationParams(
     const GURL& url,
+    const base::Optional<url::Origin>& initiator_origin,
     const Referrer& referrer,
     ui::PageTransition transition,
     FrameMsg_Navigate_Type::Value navigation_type,
@@ -72,6 +73,7 @@ CommonNavigationParams::CommonNavigationParams(
     const std::string& href_translate,
     base::TimeTicks input_start)
     : url(url),
+      initiator_origin(initiator_origin),
       referrer(referrer),
       transition(transition),
       navigation_type(navigation_type),

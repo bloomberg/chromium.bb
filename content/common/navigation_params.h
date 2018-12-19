@@ -125,6 +125,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
   CommonNavigationParams();
   CommonNavigationParams(
       const GURL& url,
+      const base::Optional<url::Origin>& initiator_origin,
       const Referrer& referrer,
       ui::PageTransition transition,
       FrameMsg_Navigate_Type::Value navigation_type,
@@ -148,6 +149,11 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // The URL to navigate to.
   // PlzNavigate: May be modified when the navigation is ready to commit.
   GURL url;
+
+  // When a frame navigates another frame, this is the origin of the document
+  // which initiated the navigation. This parameter can be null for
+  // browser-initiated navigations.
+  base::Optional<url::Origin> initiator_origin;
 
   // The URL to send in the "Referer" header field. Can be empty if there is
   // no referrer.

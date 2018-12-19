@@ -665,6 +665,7 @@ TEST_F(NavigationControllerTest, LoadURLWithParams) {
   NavigationControllerImpl& controller = controller_impl();
 
   NavigationController::LoadURLParams load_params(GURL("http://foo/2"));
+  load_params.initiator_origin = url::Origin::Create(url1);
   load_params.referrer = Referrer(GURL("http://referrer"),
                                   network::mojom::ReferrerPolicy::kDefault);
   load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
@@ -3439,6 +3440,7 @@ TEST_F(NavigationControllerTest, DontShowRendererURLUntilCommit) {
   // For link clicks (renderer-initiated navigations), the pending entry should
   // update before commit but the visible should not.
   NavigationController::LoadURLParams load_url_params(url1);
+  load_url_params.initiator_origin = url::Origin::Create(url0);
   load_url_params.is_renderer_initiated = true;
   controller.LoadURLWithParams(load_url_params);
   entry_id = controller.GetPendingEntry()->GetUniqueID();
@@ -3468,6 +3470,7 @@ TEST_F(NavigationControllerTest, ShowRendererURLInNewTabUntilModified) {
   // we show the pending entry's URL as long as the about:blank page is not
   // modified.
   NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.initiator_origin = url::Origin();
   load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
   load_url_params.is_renderer_initiated = true;
   controller.LoadURLWithParams(load_url_params);
@@ -3541,6 +3544,7 @@ TEST_F(NavigationControllerTest, ShowRendererURLAfterFailUntilModified) {
   // we show the pending entry's URL as long as the about:blank page is not
   // modified.
   NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.initiator_origin = url::Origin();
   load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
   load_url_params.is_renderer_initiated = true;
   controller.LoadURLWithParams(load_url_params);
@@ -3582,6 +3586,7 @@ TEST_F(NavigationControllerTest, DontShowRendererURLInNewTabAfterCommit) {
   // we show the pending entry's URL as long as the about:blank page is not
   // modified.
   NavigationController::LoadURLParams load_url_params(url1);
+  load_url_params.initiator_origin = url::Origin();
   load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
   load_url_params.is_renderer_initiated = true;
   controller.LoadURLWithParams(load_url_params);
@@ -3595,6 +3600,7 @@ TEST_F(NavigationControllerTest, DontShowRendererURLInNewTabAfterCommit) {
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(entry_id, true, url1);
   NavigationController::LoadURLParams load_url2_params(url2);
+  load_url2_params.initiator_origin = url::Origin::Create(url1);
   load_url2_params.transition_type = ui::PAGE_TRANSITION_LINK;
   load_url2_params.is_renderer_initiated = true;
   controller.LoadURLWithParams(load_url2_params);
@@ -5339,7 +5345,7 @@ TEST_F(NavigationControllerTest, NoURLRewriteForSubframes) {
   FrameTreeNode* subframe_node =
       main_test_rfh()->frame_tree_node()->child_at(0);
   controller_impl().NavigateFromFrameProxy(
-      subframe_node->current_frame_host(), kSrcDoc,
+      subframe_node->current_frame_host(), kSrcDoc, url::Origin::Create(kUrl2),
       true /* is_renderer_initiated */, main_test_rfh()->GetSiteInstance(),
       Referrer(), ui::PAGE_TRANSITION_LINK,
       false /* should_replace_current_entry */, "GET", nullptr, "", nullptr);

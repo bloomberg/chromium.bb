@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -47,7 +48,7 @@ class TestNavigationObserver::TestWebContentsObserver
     if (navigation_handle->IsSameDocument())
       return;
 
-    parent_->OnDidStartNavigation();
+    parent_->OnDidStartNavigation(navigation_handle);
   }
 
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
@@ -178,8 +179,19 @@ void TestNavigationObserver::OnDidStopLoading(WebContents* web_contents) {
     EventTriggered();
 }
 
-void TestNavigationObserver::OnDidStartNavigation() {
+void TestNavigationObserver::OnDidStartNavigation(
+    NavigationHandle* navigation_handle) {
   last_navigation_succeeded_ = false;
+  NavigationHandleImpl* nav_handle =
+      static_cast<NavigationHandleImpl*>(navigation_handle);
+  if (nav_handle->frame_tree_node()->navigation_request()) {
+    last_initiator_origin_ = nav_handle->frame_tree_node()
+                                 ->navigation_request()
+                                 ->common_params()
+                                 .initiator_origin;
+  } else {
+    last_initiator_origin_.reset();
+  }
 }
 
 void TestNavigationObserver::OnDidFinishNavigation(
