@@ -43,8 +43,7 @@ class LocalDeviceInfoProvider {
 
   // Initializes the local device info.
   virtual void Initialize(const std::string& cache_guid,
-                          const std::string& session_name,
-                          const std::string& signin_scoped_device_id) = 0;
+                          const std::string& session_name) = 0;
 
   // Registers a callback to be called when local device info becomes available.
   // The callback will remain registered until the

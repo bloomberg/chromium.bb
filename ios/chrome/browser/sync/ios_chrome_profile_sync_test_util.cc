@@ -28,8 +28,6 @@ CreateProfileSyncServiceParamsForTest(
 
   init_params.identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
-  init_params.signin_scoped_device_id_callback =
-      base::BindRepeating([]() { return std::string(); });
   init_params.start_behavior = browser_sync::ProfileSyncService::MANUAL_START;
   init_params.sync_client =
       sync_client ? std::move(sync_client)
@@ -40,7 +38,9 @@ CreateProfileSyncServiceParamsForTest(
   init_params.local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           ::GetChannel(), ::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
+          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
+          /*signin_scoped_device_id_callback=*/
+          base::BindRepeating([]() { return std::string(); }));
 
   return init_params;
 }

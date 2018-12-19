@@ -155,8 +155,6 @@ class ProfileSyncService : public syncer::SyncService,
                            public syncer::UnrecoverableErrorHandler,
                            public GaiaCookieManagerService::Observer {
  public:
-  using SigninScopedDeviceIdCallback = base::RepeatingCallback<std::string()>;
-
   // If AUTO_START, sync will set IsFirstSetupComplete() automatically and sync
   // will begin syncing without the user needing to confirm sync settings.
   enum StartBehavior {
@@ -183,8 +181,6 @@ class ProfileSyncService : public syncer::SyncService,
 
     std::unique_ptr<syncer::SyncClient> sync_client;
     identity::IdentityManager* identity_manager = nullptr;
-    // TODO(mastiz): Move this to LocalDeviceInfoProviderImpl.
-    SigninScopedDeviceIdCallback signin_scoped_device_id_callback;
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
     std::vector<invalidation::IdentityProvider*>
         invalidations_identity_providers;
@@ -579,7 +575,6 @@ class ProfileSyncService : public syncer::SyncService,
   // this object was created on.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  SigninScopedDeviceIdCallback signin_scoped_device_id_callback_;
   // Cache of the last SyncCycleSnapshot received from the sync engine.
   syncer::SyncCycleSnapshot last_snapshot_;
 

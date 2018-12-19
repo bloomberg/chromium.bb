@@ -52,8 +52,6 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   ProfileSyncService::InitParams init_params;
 
   init_params.identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  init_params.signin_scoped_device_id_callback =
-      base::BindRepeating([]() { return std::string(); });
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client = std::move(sync_client);
   init_params.network_time_update_callback = base::DoNothing();
@@ -75,7 +73,10 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   init_params.local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           chrome::GetChannel(), chrome::GetVersionString(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
+          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
+          /*signin_scoped_device_id_callback=*/base::BindRepeating([]() {
+            return std::string();
+          }));
 
   return init_params;
 }

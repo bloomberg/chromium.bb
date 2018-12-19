@@ -182,8 +182,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
           base::BindRepeating(&ProfileSyncService::ReconfigureDueToPassphrase,
                               base::Unretained(this)),
           &sync_prefs_),
-      signin_scoped_device_id_callback_(
-          init_params.signin_scoped_device_id_callback),
       network_time_update_callback_(
           std::move(init_params.network_time_update_callback)),
       url_loader_factory_(std::move(init_params.url_loader_factory)),
@@ -203,7 +201,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       sync_enabled_weak_factory_(this),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(signin_scoped_device_id_callback_);
   DCHECK(sync_client_);
   DCHECK(local_device_);
 
@@ -635,8 +632,6 @@ void ProfileSyncService::Shutdown() {
 
   auth_manager_.reset();
 
-  signin_scoped_device_id_callback_.Reset();
-
   if (sync_thread_)
     sync_thread_->Stop();
 
@@ -966,8 +961,7 @@ void ProfileSyncService::OnEngineInitialized(
   sync_js_controller_.AttachJsBackend(js_backend);
 
   // Initialize local device info.
-  local_device_->Initialize(cache_guid, session_name,
-                            signin_scoped_device_id_callback_.Run());
+  local_device_->Initialize(cache_guid, session_name);
 
   if (protocol_event_observers_.might_have_observers()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();

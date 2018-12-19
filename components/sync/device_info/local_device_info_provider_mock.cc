@@ -41,13 +41,11 @@ std::string LocalDeviceInfoProviderMock::GetLocalSyncCacheGUID() const {
   return local_device_info_ ? local_device_info_->guid() : "";
 }
 
-void LocalDeviceInfoProviderMock::Initialize(
-    const std::string& cache_guid,
-    const std::string& session_name,
-    const std::string& signin_scoped_device_id) {
+void LocalDeviceInfoProviderMock::Initialize(const std::string& cache_guid,
+                                             const std::string& session_name) {
   local_device_info_ = std::make_unique<DeviceInfo>(
       cache_guid, session_name, "chrome_version", GetSyncUserAgent(),
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, signin_scoped_device_id);
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "signin-scoped-device-id");
   SetInitialized(true);
 }
 

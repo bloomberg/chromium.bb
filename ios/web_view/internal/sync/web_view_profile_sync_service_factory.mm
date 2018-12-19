@@ -92,8 +92,6 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.url_loader_factory = browser_state->GetSharedURLLoaderFactory();
   // ios/web_view has no need to update network time.
   init_params.network_time_update_callback = base::DoNothing();
-  init_params.signin_scoped_device_id_callback = base::BindRepeating(
-      &signin::GetSigninScopedDeviceId, browser_state->GetPrefs());
   init_params.network_connection_tracker =
       ApplicationContext::GetInstance()->GetNetworkConnectionTracker();
   init_params.invalidations_identity_providers.push_back(
@@ -103,7 +101,10 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           version_info::Channel::UNKNOWN, version_info::GetVersionNumber(),
-          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
+          ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
+          /*signin_scoped_device_id_callback=*/
+          base::BindRepeating(&signin::GetSigninScopedDeviceId,
+                              browser_state->GetPrefs()));
 
   auto profile_sync_service =
       std::make_unique<ProfileSyncService>(std::move(init_params));
