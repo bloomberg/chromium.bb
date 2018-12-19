@@ -811,6 +811,9 @@ void AppMenuModel::Build() {
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   }
 
+  // On Chrome OS, similar UI is displayed in the system tray menu, instead of
+  // this menu.
+#if !defined(OS_CHROMEOS)
   if (chrome::ShouldDisplayManagedUi(browser_->profile())) {
     AddSeparator(ui::LOWER_SEPARATOR);
     const int kIconSize = 18;
@@ -820,6 +823,7 @@ void AppMenuModel::Build() {
     AddHighlightedItemWithStringIdAndIcon(IDC_MANAGED_UI_HELP,
                                           IDS_MANAGED_BY_ORG, icon);
   }
+#endif  // !defined(OS_CHROMEOS)
 
   uma_action_recorded_ = false;
 }
