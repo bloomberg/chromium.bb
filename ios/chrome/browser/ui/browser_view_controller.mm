@@ -1228,9 +1228,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // existing snapshot for the tab. This can happen when a new regular tab is
   // opened from an incognito tab. A different BVC is displayed, which may not
   // have enough time to finish appearing before a snapshot is requested.
-  Tab* currentTab = self.tabModel.currentTab;
-  if (currentTab && self.viewVisible) {
-    SnapshotTabHelper::FromWebState(currentTab.webState)->UpdateSnapshot();
+  if (self.currentWebState && self.viewVisible) {
+    SnapshotTabHelper::FromWebState(self.currentWebState)->UpdateSnapshot();
   }
 
   [self.tabModel insertTabWithLoadParams:CreateWebLoadParams(
@@ -1328,13 +1327,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (active) {
     // Make sure the tab (if any; it's possible to get here without a current
     // tab if the caller is about to create one) ends up on screen completely.
-    Tab* currentTab = [self.tabModel currentTab];
     // Force loading the view in case it was not loaded yet.
     [self loadViewIfNeeded];
-    if (currentTab && _expectingForegroundTab) {
-      PagePlaceholderTabHelper::FromWebState(currentTab.webState)
+    if (self.currentWebState && _expectingForegroundTab) {
+      PagePlaceholderTabHelper::FromWebState(self.currentWebState)
           ->AddPlaceholderForNextNavigation();
     }
+    Tab* currentTab = self.tabModel.currentTab;
     if (currentTab)
       [self displayTab:currentTab];
   } else {
@@ -1359,16 +1358,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (_voiceSearchController)
     _voiceSearchController->DismissMicPermissionsHelp();
 
-  Tab* currentTab = self.tabModel.currentTab;
-  [currentTab dismissModals];
+  web::WebState* webState = self.currentWebState;
+  [self.tabModel.currentTab dismissModals];
 
-  if (currentTab) {
+  if (webState) {
     NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(currentTab.webState);
+        NewTabPageTabHelper::FromWebState(webState);
     if (NTPHelper && NTPHelper->IsActive()) {
-      [_ntpCoordinatorsForWebStates[currentTab.webState] dismissModals];
+      [_ntpCoordinatorsForWebStates[webState] dismissModals];
     }
-    auto* findHelper = FindTabHelper::FromWebState(currentTab.webState);
+    auto* findHelper = FindTabHelper::FromWebState(webState);
     if (findHelper) {
       findHelper->StopFinding(^{
         [self updateFindBar:NO shouldFocus:NO];
@@ -1501,9 +1500,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // If there is no first responder, try to make the webview the first
   // responder.
   if (!GetFirstResponder()) {
-    web::WebState* webState = self.tabModel.currentTab.webState;
-    if (webState)
-      [webState->GetWebViewProxy() becomeFirstResponder];
+    if (self.currentWebState)
+      [self.currentWebState->GetWebViewProxy() becomeFirstResponder];
   }
 
   return YES;
@@ -2274,7 +2272,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                     browserState:_browserState
                       dispatcher:self.dispatcher];
   [_paymentRequestManager setLocationBarModel:_locationBarModel.get()];
-  [_paymentRequestManager setActiveWebState:self.tabModel.currentTab.webState];
+  [_paymentRequestManager setActiveWebState:self.currentWebState];
 }
 
 // Set the frame for the various views. View must be loaded.
@@ -2718,10 +2716,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/731045): This early return temporarily replaces a DCHECK.
   // For unknown reasons, this DCHECK sometimes was hit in the wild, resulting
   // in a crash.
-  if (!self.tabModel.currentTab) {
+  if (!self.currentWebState) {
     return;
   }
-  auto* helper = FindTabHelper::FromWebState(self.tabModel.currentTab.webState);
+  auto* helper = FindTabHelper::FromWebState(self.currentWebState);
   if (helper && helper->IsFindUIActive()) {
     if (initialUpdate && !_isOffTheRecord) {
       helper->RestoreSearchTerm();
@@ -3136,12 +3134,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // cause both snapshot and real infobars to appear at the same time.
     return nil;
   }
-  Tab* currentTab = self.tabModel.currentTab;
-  if (currentTab && tab == currentTab) {
-    DCHECK(currentTab.webState);
+  if (tab && self.tabModel.currentTab == tab) {
+    DCHECK(self.currentWebState);
     DCHECK(self.infobarContainerCoordinator);
     if ([self.infobarContainerCoordinator
-            isInfobarPresentingForWebState:currentTab.webState]) {
+            isInfobarPresentingForWebState:self.currentWebState]) {
       return [self.infobarContainerCoordinator view];
     }
   }
@@ -3295,7 +3292,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     handleContextMenu:(const web::ContextMenuParams&)params {
   // Prevent context menu from displaying for a tab which is no longer the
   // current one.
-  if (webState != self.tabModel.currentTab.webState) {
+  if (webState != self.currentWebState) {
     return;
   }
 
@@ -3528,9 +3525,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)openJavascript:(NSString*)javascript {
   DCHECK(javascript);
   javascript = [javascript stringByRemovingPercentEncoding];
-  web::WebState* webState = self.tabModel.currentTab.webState;
-  if (webState) {
-    webState->ExecuteJavaScript(base::SysNSStringToUTF16(javascript));
+  if (self.currentWebState) {
+    self.currentWebState->ExecuteJavaScript(
+        base::SysNSStringToUTF16(javascript));
   }
 }
 
@@ -3690,7 +3687,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
   if (host == kChromeUIExternalFileHost) {
     id<CRWNativeContent> controller =
-        [self controllerForURL:url webState:self.tabModel.currentTab.webState];
+        [self controllerForURL:url webState:self.currentWebState];
     return controller ? YES : NO;
   }
 
@@ -3770,8 +3767,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/498568): To reduce complexity here, refactor the flow so
   // that native controllers vended here always correspond to the current tab.
   Tab* currentTab = self.tabModel.currentTab;
-  if (!currentTab.webState ||
-      currentTab.webState->GetLastCommittedURL() != url ||
+  if (!self.currentWebState ||
+      self.currentWebState->GetLastCommittedURL() != url ||
       [currentTab.webController.nativeController
           isKindOfClass:[nativeController class]]) {
     _temporaryNativeController = nativeController;
@@ -4034,12 +4031,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (BOOL)isFindInPageAvailable {
-  Tab* tab = self.tabModel.currentTab;
-  if (!tab) {
+  if (!self.currentWebState) {
     return NO;
   }
 
-  auto* helper = FindTabHelper::FromWebState(tab.webState);
+  auto* helper = FindTabHelper::FromWebState(self.currentWebState);
   return (helper && helper->CurrentPageSupportsFindInPage());
 }
 
@@ -4124,10 +4120,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [_bookmarkInteractionController dismissBookmarkModalControllerAnimated:YES];
   if (params.transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) {
     BOOL isExpectingVoiceSearch = NO;
-    web::WebState* webState = self.tabModel.currentTab.webState;
-    if (webState) {
+    if (self.currentWebState) {
       isExpectingVoiceSearch =
-          VoiceSearchNavigationTabHelper::FromWebState(webState)
+          VoiceSearchNavigationTabHelper::FromWebState(self.currentWebState)
               ->IsExpectingVoiceSearch();
     }
     new_tab_page_uma::RecordActionFromOmnibox(_browserState, params.url,
@@ -4220,7 +4215,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   if (typed_or_generated_transition) {
-    LoadTimingTabHelper::FromWebState(self.tabModel.currentTab.webState)
+    LoadTimingTabHelper::FromWebState(self.currentWebState)
         ->DidInitiatePageLoad();
   }
 
@@ -4242,10 +4237,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // calling -LoadURLWithParams.  Otherwise, if the webState has never been
   // visible (such as during startup with an NTP), it's possible the webView can
   // trigger a unnecessary load for chrome://newtab.
-  web::WebState* webState = self.tabModel.currentTab.webState;
-  if (webState && params.url.GetOrigin() != kChromeUINewTabURL) {
+  if (self.currentWebState && params.url.GetOrigin() != kChromeUINewTabURL) {
     NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(webState);
+        NewTabPageTabHelper::FromWebState(self.currentWebState);
     if (NTPHelper && NTPHelper->IsActive()) {
       NTPHelper->Deactivate();
     }
@@ -4348,8 +4342,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                     object:nil];
   [self.sideSwipeController setEnabled:NO];
 
-  web::WebState* webState = self.tabModel.currentTab.webState;
-  if (!IsVisibleURLNewTabPage(webState)) {
+  if (!IsVisibleURLNewTabPage(self.currentWebState)) {
     // Tapping on web content area should dismiss the keyboard. Tapping on NTP
     // gesture should propagate to NTP view.
     [self.view insertSubview:self.typingShield aboveSubview:self.contentArea];
@@ -4393,7 +4386,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (_locationBarEditCancelledLoad) {
     _locationBarEditCancelledLoad = NO;
 
-    web::WebState* webState = self.tabModel.currentTab.webState;
+    web::WebState* webState = self.currentWebState;
     if (webState && ![self.helper isToolbarLoading:webState])
       webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
                                                false /* check_for_repost */);
@@ -4425,16 +4418,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)stopLoading {
-  self.tabModel.currentTab.webState->Stop();
+  self.currentWebState->Stop();
 }
 
 - (void)reload {
-  web::WebState* webState = self.tabModel.currentTab.webState;
-  if (webState) {
+  if (self.currentWebState) {
     // |check_for_repost| is true because the reload is explicitly initiated
     // by the user.
-    webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
-                                             true /* check_for_repost */);
+    self.currentWebState->GetNavigationManager()->Reload(
+        web::ReloadType::NORMAL, true /* check_for_repost */);
   }
 }
 
@@ -4511,17 +4503,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)closeFindInPage {
   __weak BrowserViewController* weakSelf = self;
-  Tab* currentTab = self.tabModel.currentTab;
-  if (currentTab) {
-    FindTabHelper::FromWebState(currentTab.webState)->StopFinding(^{
+  if (self.currentWebState) {
+    FindTabHelper::FromWebState(self.currentWebState)->StopFinding(^{
       [weakSelf updateFindBar:NO shouldFocus:NO];
     });
   }
 }
 
 - (void)searchFindInPage {
-  DCHECK(self.tabModel.currentTab);
-  auto* helper = FindTabHelper::FromWebState(self.tabModel.currentTab.webState);
+  DCHECK(self.currentWebState);
+  auto* helper = FindTabHelper::FromWebState(self.currentWebState);
   __weak BrowserViewController* weakSelf = self;
   helper->StartFinding(
       [_findBarController searchTerm], ^(FindInPageModel* model) {
@@ -4537,20 +4528,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)findNextStringInPage {
-  Tab* currentTab = self.tabModel.currentTab;
-  DCHECK(currentTab);
+  DCHECK(self.currentWebState);
   // TODO(crbug.com/603524): Reshow find bar if necessary.
-  FindTabHelper::FromWebState(currentTab.webState)
+  FindTabHelper::FromWebState(self.currentWebState)
       ->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
         [_findBarController updateResultsCount:model];
       });
 }
 
 - (void)findPreviousStringInPage {
-  Tab* currentTab = self.tabModel.currentTab;
-  DCHECK(currentTab);
+  DCHECK(self.currentWebState);
   // TODO(crbug.com/603524): Reshow find bar if necessary.
-  FindTabHelper::FromWebState(currentTab.webState)
+  FindTabHelper::FromWebState(self.currentWebState)
       ->ContinueFinding(FindTabHelper::REVERSE, ^(FindInPageModel* model) {
         [_findBarController updateResultsCount:model];
       });
@@ -4590,7 +4579,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // iPad.
   UIImageView* exitingPage = [self pageOpenCloseAnimationView];
   exitingPage.image =
-      SnapshotTabHelper::FromWebState(currentTab.webState)->UpdateSnapshot();
+      SnapshotTabHelper::FromWebState(self.currentWebState)->UpdateSnapshot();
 
   // Close the actual tab, and add its image as a subview.
   [self.tabModel closeTabAtIndex:tabIndex];
@@ -4641,7 +4630,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType {
   if (self.userAgentType == userAgentType)
     return;
-  web::WebState* webState = self.tabModel.currentTab.webState;
+  web::WebState* webState = self.currentWebState;
   web::NavigationManager* navigationManager = webState->GetNavigationManager();
   navigationManager->ReloadWithUserAgentType(userAgentType);
 }
@@ -4978,7 +4967,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [[self.infobarContainerCoordinator view] setHidden:NO];
 
   if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
-    web::WebState* webState = self.tabModel.currentTab.webState;
+    web::WebState* webState = self.currentWebState;
     if (webState && webState->IsVisible()) {
       // Side swipe did not change the tab represented by |webState|.
       SadTabTabHelper* sadTabHelper = SadTabTabHelper::FromWebState(webState);
@@ -5200,7 +5189,7 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 #pragma mark - WebStatePrinter
 
 - (void)printWebState:(web::WebState*)webState {
-  if (webState == self.tabModel.currentTab.webState)
+  if (webState == self.currentWebState)
     [self.dispatcher printTab];
 }
 
@@ -5287,7 +5276,6 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 
 - (void)newTabPageHelperDidChangeVisibility:(NewTabPageTabHelper*)NTPHelper
                                 forWebState:(web::WebState*)webState {
-  Tab* currentTab = self.tabModel.currentTab;
   if (NTPHelper->IsActive()) {
     DCHECK(!_ntpCoordinatorsForWebStates[webState]);
     NewTabPageCoordinator* newTabPageCoordinator =
@@ -5301,8 +5289,8 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
     DCHECK(_ntpCoordinatorsForWebStates[webState]);
     _ntpCoordinatorsForWebStates.erase(webState);
   }
-  if (self.active && currentTab.webState == webState) {
-    [self displayTab:currentTab];
+  if (self.active && self.currentWebState == webState) {
+    [self displayTab:self.tabModel.currentTab];
   }
 }
 
