@@ -65,11 +65,12 @@
     omniboxInputs.addEventListener(
         'display-inputs-changed',
         event => omniboxOutput.updateDisplayInputs(event.detail));
+    omniboxInputs.addEventListener(
+        'filter-input-changed',
+        event => omniboxOutput.updateFilterText(event.detail));
     omniboxInputs.addEventListener('copy-request', event => {
       event.detail === 'text' ? omniboxOutput.copyDelegate.copyTextOutput() :
                                 omniboxOutput.copyDelegate.copyJsonOutput();
     });
-    omniboxInputs.addEventListener(
-        'filter-input-changed', event => omniboxOutput.filter(event.detail));
   });
 })();
