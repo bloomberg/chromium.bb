@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/browser/password_store.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential_password_form.h"
@@ -36,6 +37,8 @@ NSString* const ManagePasswordsAccessibilityIdentifier =
     @"kManualFillManagePasswordsAccessibilityIdentifier";
 NSString* const OtherPasswordsAccessibilityIdentifier =
     @"kManualFillOtherPasswordsAccessibilityIdentifier";
+NSString* const SuggestPasswordAccessibilityIdentifier =
+    @"kManualFillSuggestPasswordAccessibilityIdentifier";
 
 }  // namespace manual_fill
 
@@ -203,19 +206,42 @@ BOOL AreCredentialsAtIndexesConnected(
     return;
   }
   if (self.isAllPasswordButtonEnabled) {
-    NSString* otherPasswordsTitleString = l10n_util::GetNSString(
-        IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS);
+    NSMutableArray<ManualFillActionItem*>* actions =
+        [[NSMutableArray alloc] init];
     __weak __typeof(self) weakSelf = self;
 
-    auto otherPasswordsItem = [[ManualFillActionItem alloc]
-        initWithTitle:otherPasswordsTitleString
-               action:^{
-                 base::RecordAction(base::UserMetricsAction(
-                     "ManualFallback_Password_OpenOtherPassword"));
-                 [weakSelf.navigationDelegate openAllPasswordsList];
-               }];
-    otherPasswordsItem.accessibilityIdentifier =
-        manual_fill::OtherPasswordsAccessibilityIdentifier;
+    if (experimental_flags::IsAutomaticPasswordGenerationEnabled() &&
+        [self.contentDelegate canUserInjectInPasswordField:YES
+                                             requiresHTTPS:YES]) {
+      NSString* generatePasswordTitleString =
+          l10n_util::GetNSString(IDS_IOS_SUGGEST_PASSWORD);
+      auto generatePasswordItem = [[ManualFillActionItem alloc]
+          initWithTitle:generatePasswordTitleString
+                 action:^{
+                   base::RecordAction(base::UserMetricsAction(
+                       "ManualFallback_Password_OpenSuggestPassword"));
+                   [self generateAndOfferPassword];
+                 }];
+      generatePasswordItem.accessibilityIdentifier =
+          manual_fill::SuggestPasswordAccessibilityIdentifier;
+      [actions addObject:generatePasswordItem];
+    }
+
+    // TODO(crbug.com/908776): fix or wait until iOS 11.2- is deprecated.
+    if (@available(iOS 11.3, *)) {
+      NSString* otherPasswordsTitleString = l10n_util::GetNSString(
+          IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS);
+      auto otherPasswordsItem = [[ManualFillActionItem alloc]
+          initWithTitle:otherPasswordsTitleString
+                 action:^{
+                   base::RecordAction(base::UserMetricsAction(
+                       "ManualFallback_Password_OpenOtherPassword"));
+                   [weakSelf.navigationDelegate openAllPasswordsList];
+                 }];
+      otherPasswordsItem.accessibilityIdentifier =
+          manual_fill::OtherPasswordsAccessibilityIdentifier;
+      [actions addObject:otherPasswordsItem];
+    }
 
     NSString* managePasswordsTitle =
         l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS);
@@ -228,13 +254,9 @@ BOOL AreCredentialsAtIndexesConnected(
                }];
     managePasswordsItem.accessibilityIdentifier =
         manual_fill::ManagePasswordsAccessibilityIdentifier;
-    if (@available(iOS 11.3, *)) {
-      [self.consumer
-          presentActions:@[ otherPasswordsItem, managePasswordsItem ]];
-    } else {
-      // TODO(crbug.com/908776): fix or wait until iOS 11.2- is deprecated.
-      [self.consumer presentActions:@[ managePasswordsItem ]];
-    }
+    [actions addObject:managePasswordsItem];
+
+    [self.consumer presentActions:actions];
   } else {
     [self.consumer presentActions:@[]];
   }
@@ -271,6 +293,10 @@ BOOL AreCredentialsAtIndexesConnected(
   [self.contentDelegate userDidPickContent:content
                              passwordField:passwordField
                              requiresHTTPS:requiresHTTPS];
+}
+
+- (void)generateAndOfferPassword {
+  [self.contentDelegate generateAndOfferPassword];
 }
 
 @end

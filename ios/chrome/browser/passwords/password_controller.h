@@ -79,6 +79,11 @@ class PasswordManagerClient;
 
 - (instancetype)init NS_UNAVAILABLE;
 
+// Generates and offers a password to the user based on given |formName|.
+// |completionHandler| called with YES if user accepted the generated password.
+- (void)generatePasswordForForm:(NSString*)formName
+              completionHandler:(void (^)(BOOL))completionHandler;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_PASSWORDS_PASSWORD_CONTROLLER_H_

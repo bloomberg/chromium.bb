@@ -23,6 +23,7 @@ namespace manual_fill {
 
 extern NSString* const ManagePasswordsAccessibilityIdentifier;
 extern NSString* const OtherPasswordsAccessibilityIdentifier;
+extern NSString* const SuggestPasswordAccessibilityIdentifier;
 
 }  // namespace manual_fill
 

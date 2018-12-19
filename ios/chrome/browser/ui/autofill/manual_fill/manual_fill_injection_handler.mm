@@ -18,6 +18,7 @@
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
+#import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/form_observer_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -66,6 +67,9 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
 
 // The last seen focused element identifier.
 @property(nonatomic, assign) std::string lastFocusedElementIdentifier;
+
+// The form name of the last seen focused element.
+@property(nonatomic, assign) std::string lastFocusedFormName;
 
 // The view controller this object was initialized with.
 @property(weak, nonatomic, nullable, readonly)
@@ -120,6 +124,12 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
   }
 }
 
+- (void)generateAndOfferPassword {
+  web::WebState* webState = self.webStateList->GetActiveWebState();
+  PasswordTabHelper::FromWebState(webState)->GenerateAndOfferPassword(
+      base::SysUTF8ToNSString(self.lastFocusedFormName));
+}
+
 #pragma mark - FormActivityObserver
 
 - (void)webState:(web::WebState*)webState
@@ -132,6 +142,7 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
       autofill::IsContextSecureForWebState(webState);
   self.lastFocusedElementPasswordField = params.field_type == "password";
   self.lastFocusedElementIdentifier = params.field_identifier;
+  self.lastFocusedFormName = params.form_name;
   if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
     DCHECK(frame);
     self.lastFocusedElementFrameIdentifier = frame->GetFrameId();

@@ -33,6 +33,9 @@
              passwordField:(BOOL)passwordField
              requiresHTTPS:(BOOL)requiresHTTPS;
 
+// Generate and offer to user a password that matches current form.
+- (void)generateAndOfferPassword;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_MANUAL_FILL_CONTENT_DELEGATE_H_

@@ -37,6 +37,10 @@ void PasswordTabHelper::SetPasswordControllerDelegate(
   controller_.delegate = delegate;
 }
 
+void PasswordTabHelper::GenerateAndOfferPassword(NSString* formName) {
+  [controller_ generatePasswordForForm:formName completionHandler:nil];
+}
+
 id<FormSuggestionProvider> PasswordTabHelper::GetSuggestionProvider() {
   return controller_.suggestionProvider;
 }
