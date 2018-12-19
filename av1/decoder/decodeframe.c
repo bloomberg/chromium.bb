@@ -4852,9 +4852,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       // generate_next_ref_frame_map() has not been called, so ref_count
       // should still be 1.
       assert(cm->cur_frame->ref_count == 1);
-      // ref_cnt_fb() decrements ref_count directly rather than call
-      // decrease_ref_count(). If cm->cur_frame->raw_frame_buffer
-      // has already been allocated, it will not be released by ref_cnt_fb()!
+      // assign_frame_buffer_p() decrements ref_count directly rather than
+      // call decrease_ref_count(). If cm->cur_frame->raw_frame_buffer has
+      // already been allocated, it will not be released by
+      // assign_frame_buffer_p()!
       assert(!cm->cur_frame->raw_frame_buffer.data);
       assign_frame_buffer_p(&cm->cur_frame, frame_to_show);
       cm->reset_decoder_state = frame_to_show->frame_type == KEY_FRAME;
