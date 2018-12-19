@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, Pipeline) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 5, 1);
   // Same document anchor element should be removed after merge.
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
@@ -605,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 5, 1);
   // Same document anchor element should be removed after merge.
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);

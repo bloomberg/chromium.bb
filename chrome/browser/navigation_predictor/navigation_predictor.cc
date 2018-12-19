@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
+#include "url/url_canon.h"
 
 namespace {
 
@@ -34,6 +35,19 @@ bool IsMainFrame(content::RenderFrameHost* rfh) {
   // RenderViewHost::GetMainFrame() returns nullptr for child frames hosted in a
   // different process from the main frame.
   return rfh->GetParent() == nullptr;
+}
+
+std::string GetURLWithoutRefParams(const GURL& gurl) {
+  url::Replacements<char> replacements;
+  replacements.ClearRef();
+  return gurl.ReplaceComponents(replacements).spec();
+}
+
+// Returns true if |a| and |b| are both valid HTTP/HTTPS URLs and have the
+// same scheme, host, path and query params. This method does not take into
+// account the ref params of the two URLs.
+bool AreGURLsEqualExcludingRefParams(const GURL& a, const GURL& b) {
+  return GetURLWithoutRefParams(a) == GetURLWithoutRefParams(b);
 }
 
 }  // namespace
@@ -457,9 +471,13 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
 
   for (auto& metric : *metrics) {
     // Do not include anchor elements that point to the same URL as the URL of
-    // the current navigation since these are unlikely to be clicked.
-    if (metric->target_url == metric->source_url)
+    // the current navigation since these are unlikely to be clicked. Also,
+    // exclude the anchor elements that differ from the URL of the current
+    // navigation by only the ref param.
+    if (AreGURLsEqualExcludingRefParams(metric->target_url,
+                                        metric->source_url)) {
       continue;
+    }
 
     if (!metric->target_url.SchemeIsCryptographic())
       continue;
@@ -470,7 +488,10 @@ void NavigationPredictor::MergeMetricsSameTargetUrl(
     if (metric->is_in_iframe)
       continue;
 
-    const std::string& key = metric->target_url.spec();
+    // Skip ref params when merging the anchor elements. This ensures that two
+    // anchor elements which differ only in the ref params are combined
+    // together.
+    const std::string& key = GetURLWithoutRefParams(metric->target_url);
     auto iter = metrics_map.find(key);
     if (iter == metrics_map.end()) {
       metrics_map[key] = std::move(metric);
