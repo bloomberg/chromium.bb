@@ -230,6 +230,10 @@ DesktopAutomationHandler.prototype = {
   onAriaAttributeChanged: function(evt) {
     if (evt.target.state.editable)
       return;
+    // Only report attribute changes on menu list items if it is selected.
+    if (evt.target.role == RoleType.MENU_LIST_OPTION && !evt.target.selected)
+      return;
+
     this.onEventIfInRange(evt);
   },
 
