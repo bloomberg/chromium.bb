@@ -73,6 +73,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerUITest, CrostiniTasks) {
   RunTest("crostiniTasks");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, Menu) {
+  RunTest("menu");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerUITest, ProgressCenter) {
   RunTest("progressCenter");
 }
