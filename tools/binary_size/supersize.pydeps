@@ -29,9 +29,9 @@
 ../grit/grit/node/__init__.py
 ../grit/grit/node/base.py
 ../grit/grit/node/include.py
-../grit/grit/node/io.py
 ../grit/grit/node/message.py
 ../grit/grit/node/misc.py
+../grit/grit/node/node_io.py
 ../grit/grit/node/structure.py
 ../grit/grit/node/variant.py
 ../grit/grit/pseudo.py

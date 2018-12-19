@@ -8,10 +8,10 @@
 
 from grit.node import base
 from grit.node import include
-from grit.node import structure
 from grit.node import message
-from grit.node import io
 from grit.node import misc
+from grit.node import node_io
+from grit.node import structure
 
 
 class GroupingNode(base.Node):
@@ -48,13 +48,13 @@ class StructuresNode(GroupingNode):
 class TranslationsNode(base.Node):
   '''The <translations> element.'''
   def _IsValidChild(self, child):
-    return isinstance(child, (io.FileNode, misc.IfNode, misc.PartNode))
+    return isinstance(child, (node_io.FileNode, misc.IfNode, misc.PartNode))
 
 
 class OutputsNode(base.Node):
   '''The <outputs> element.'''
   def _IsValidChild(self, child):
-    return isinstance(child, (io.OutputNode, misc.IfNode, misc.PartNode))
+    return isinstance(child, (node_io.OutputNode, misc.IfNode, misc.PartNode))
 
 
 class IdentifiersNode(GroupingNode):

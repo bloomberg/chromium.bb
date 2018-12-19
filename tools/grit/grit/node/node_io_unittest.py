@@ -3,19 +3,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-'''Unit tests for io.FileNode'''
+'''Unit tests for node_io.FileNode'''
 
+import StringIO
 import os
 import sys
+import unittest
+
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-import os
-import StringIO
-import unittest
-
 from grit.node import misc
-from grit.node import io
+from grit.node import node_io
 from grit.node import empty
 from grit import grd_reader
 from grit import util
@@ -31,7 +30,7 @@ class FileNodeUnittest(unittest.TestCase):
     translations = empty.TranslationsNode()
     translations.StartParsing(u'translations', root)
     root.AddChild(translations)
-    file_node = io.FileNode()
+    file_node = node_io.FileNode()
     file_node.StartParsing(u'file', translations)
     file_node.HandleAttribute(u'path', ur'flugel\kugel.pdf')
     translations.AddChild(file_node)
@@ -137,7 +136,7 @@ class FileNodeUnittest(unittest.TestCase):
                            defines={})
     grd.SetOutputLanguage('en')
     grd.RunGatherers()
-    outputs = grd.GetChildrenOfType(io.OutputNode)
+    outputs = grd.GetChildrenOfType(node_io.OutputNode)
     active = set(grd.ActiveDescendants())
     self.failUnless(outputs[0] in active)
     self.failUnless(outputs[0].GetType() == 'rc_header')
