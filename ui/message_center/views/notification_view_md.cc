@@ -967,14 +967,17 @@ void NotificationViewMD::CreateOrUpdateIconView(
 
 void NotificationViewMD::CreateOrUpdateSmallIconView(
     const Notification& notification) {
-  if (!notification.vector_small_image().is_empty()) {
-    header_row_->SetAppIcon(
-        gfx::CreateVectorIcon(notification.vector_small_image(),
-                              kSmallImageSizeMD, notification.accent_color()));
-  } else if (!notification.small_image().IsEmpty()) {
-    header_row_->SetAppIcon(notification.small_image().AsImageSkia());
-  } else {
+  // TODO(knollr): figure out if this has a performance impact and
+  // cache images if so. (crbug.com/768748)
+  gfx::Image masked_small_icon = notification.GenerateMaskedSmallIcon(
+      kSmallImageSizeMD, notification.accent_color() == SK_ColorTRANSPARENT
+                             ? message_center::kNotificationDefaultAccentColor
+                             : notification.accent_color());
+
+  if (masked_small_icon.IsEmpty()) {
     header_row_->ClearAppIcon();
+  } else {
+    header_row_->SetAppIcon(masked_small_icon.AsImageSkia());
   }
 }
 
