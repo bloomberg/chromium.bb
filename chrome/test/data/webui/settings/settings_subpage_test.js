@@ -67,6 +67,20 @@ cr.define('settings_subpage', function() {
         done();
       });
     });
+
+    test('updates the title of the document when active', function() {
+      const expectedTitle = 'My Subpage Title';
+      settings.navigateTo(settings.routes.SEARCH);
+      const subpage = document.createElement('settings-subpage');
+      subpage.setAttribute('route-path', settings.routes.SEARCH_ENGINES.path);
+      subpage.setAttribute('page-title', expectedTitle);
+      document.body.appendChild(subpage);
+
+      settings.navigateTo(settings.routes.SEARCH_ENGINES);
+      assertEquals(
+          document.title,
+          loadTimeData.getStringF('settingsAltPageTitle', expectedTitle));
+    });
   });
 
   suite('SettingsSubpageSearch', function() {
