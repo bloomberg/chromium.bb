@@ -62,6 +62,10 @@ class DOMAgentViz : public viz::SurfaceObserver,
       const viz::FrameSinkId& parent_frame_sink_id,
       const viz::FrameSinkId& child_frame_sink_id) override;
 
+  // DOM::Backend:
+  protocol::Response enable() override;
+  protocol::Response disable() override;
+
   SurfaceElement* GetRootSurfaceElement();
 
  private:
@@ -72,10 +76,6 @@ class DOMAgentViz : public viz::SurfaceObserver,
   std::unique_ptr<protocol::DOM::Node> BuildTreeForSurface(
       UIElement* parent_element,
       const viz::SurfaceId& parent_id);
-
-  // DOM::Backend:
-  protocol::Response enable() override;
-  protocol::Response disable() override;
 
   // DOMAgent:
   std::vector<UIElement*> CreateChildrenForRoot() override;

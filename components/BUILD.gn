@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
+import("//components/ui_devtools/devtools.gni")
 import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
@@ -181,6 +182,10 @@ test("components_unittests") {
       "//components/ui_devtools:unit_tests",
       "//components/ui_devtools/views:unit_tests",
     ]
+  }
+
+  if (use_viz_devtools) {
+    deps += [ "//components/ui_devtools/viz_views:unit_tests" ]
   }
 
   if (enable_nacl) {
