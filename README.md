@@ -16,7 +16,6 @@ npm run fix # tslint --fix
 
 ## TODO
 
-* write tests in unittests/test_tree_filesystem
 * `pfilter()` or `params.skip([{...}])`
 * `--gtest_filter` equivalent
   * `npm run unittests` = `npm run cts -- --filter='unittests'`
