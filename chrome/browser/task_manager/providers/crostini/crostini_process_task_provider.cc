@@ -25,9 +25,8 @@ constexpr char kVmConciergeName[] = "/usr/bin/vm_concierge";
 // This is the binary executed for a VM process.
 constexpr char kVmProcessName[] = "/usr/bin/crosvm";
 
-// This is the suffix on VM disk names, and the actual name before the suffix
-// will be the base64 encoded name of the VM itself.
-constexpr char kVmDiskNameExtension[] = ".qcow2";
+// All VM disk images are contained in a subdirectory of this path.
+constexpr char kVmDiskRoot[] = "/home/root/";
 
 // Delay between refreshing the list of VM processes.
 constexpr base::TimeDelta kRefreshProcessListDelay =
@@ -46,20 +45,41 @@ base::ProcessId GetVmInitProcessId(
   return base::kNullProcessId;
 }
 
+// Check for the possible suffixes on VM disk names. The actual name before
+// the suffix will be the base64 encoded name of the VM itself.
+bool HasValidVmDiskExtension(const std::string& filename) {
+  constexpr const char* valid_extensions[] = {
+      ".qcow2",
+      ".img",
+  };
+
+  for (auto* const ext : valid_extensions) {
+    if (base::EndsWith(filename, ext, base::CompareCase::SENSITIVE)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // The argument this is extracting from will look like this:
 // /home/root/53d63eda33c610d37b44cde8ed06854a05e9cc84/crosvm/dGVybWluYQ==.qcow2
 // This is the path to a VM disk in the user-specific root directory that is not
 // exposed to the user in the Files app. The base for this is /home/root and
 // the cryptohome ID for the user is the next path element. Then we have the
 // service specific 'crosvm' directory which we put VM images in. VM images use
-// base64 encoding of the VM name as the filename with a .qcow2 extension.
+// base64 encoding of the VM name as the filename with a .qcow2/.img extension.
 void ExtractVmNameAndOwnerIdFromCmdLine(const std::vector<std::string>& cmdline,
                                         std::string* vm_name_out,
                                         std::string* owner_id_out) {
   // Find the arg with the disk file path on it.
   for (const auto arg : cmdline) {
-    if (!base::EndsWith(arg, kVmDiskNameExtension,
-                        base::CompareCase::SENSITIVE)) {
+    // Skip paths that don't start with the correct prefix to filter out the
+    // rootfs .img file.
+    if (!base::StartsWith(arg, kVmDiskRoot, base::CompareCase::SENSITIVE)) {
+      continue;
+    }
+
+    if (!HasValidVmDiskExtension(arg)) {
       continue;
     }
 
