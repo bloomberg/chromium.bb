@@ -18,27 +18,16 @@ struct RequestCookieParsingTest {
   base::StringPairs parsed;
 };
 
-cookie_util::ParsedRequestCookies MakeParsedRequestCookies(
-    const base::StringPairs& data) {
-  cookie_util::ParsedRequestCookies parsed;
-  for (size_t i = 0; i < data.size(); i++) {
-    parsed.push_back(std::make_pair(base::StringPiece(data[i].first),
-                                    base::StringPiece(data[i].second)));
-  }
-  return parsed;
-}
-
 void CheckParse(const std::string& str,
                 const base::StringPairs& parsed_expected) {
   cookie_util::ParsedRequestCookies parsed;
   cookie_util::ParseRequestCookieLine(str, &parsed);
-  EXPECT_EQ(MakeParsedRequestCookies(parsed_expected), parsed);
+  EXPECT_EQ(parsed_expected, parsed);
 }
 
 void CheckSerialize(const base::StringPairs& parsed,
                     const std::string& str_expected) {
-  cookie_util::ParsedRequestCookies prc = MakeParsedRequestCookies(parsed);
-  EXPECT_EQ(str_expected, cookie_util::SerializeRequestCookieLine(prc));
+  EXPECT_EQ(str_expected, cookie_util::SerializeRequestCookieLine(parsed));
 }
 
 TEST(CookieUtilTest, TestDomainIsHostOnly) {
