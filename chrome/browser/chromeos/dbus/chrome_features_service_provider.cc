@@ -18,6 +18,19 @@
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace {
+
+void SendResponse(dbus::MethodCall* method_call,
+                  dbus::ExportedObject::ResponseSender response_sender,
+                  bool answer) {
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+  dbus::MessageWriter writer(response.get());
+  writer.AppendBool(answer);
+  response_sender.Run(std::move(response));
+}
+}  // namespace
+
 namespace chromeos {
 
 ChromeFeaturesServiceProvider::ChromeFeaturesServiceProvider()
@@ -31,6 +44,13 @@ void ChromeFeaturesServiceProvider::Start(
       kChromeFeaturesServiceInterface,
       kChromeFeaturesServiceIsCrostiniEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsCrostiniEnabled,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsPluginVmEnabledMethod,
+      base::BindRepeating(&ChromeFeaturesServiceProvider::IsPluginVmEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -79,32 +99,30 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
           : g_browser_process->profile_manager()->GetProfileByPath(
                 ProfileHelper::GetProfilePathByUserIdHash(user_id_hash));
 
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-  writer.AppendBool(crostini::IsCrostiniAllowedForProfile(profile));
-  response_sender.Run(std::move(response));
+  SendResponse(method_call, response_sender,
+               crostini::IsCrostiniAllowedForProfile(profile));
 }
 
-// TODO(mortonm): Combine these functions below when adding any more flags.
+void ChromeFeaturesServiceProvider::IsPluginVmEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  // TODO(dtor): extend the check to include device capabilities
+  // and device/user policies.
+  SendResponse(method_call, response_sender,
+               base::FeatureList::IsEnabled(features::kPluginVm));
+}
+
 void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-  writer.AppendBool(base::FeatureList::IsEnabled(features::kUsbguard));
-  response_sender.Run(std::move(response));
+  SendResponse(method_call, response_sender,
+               base::FeatureList::IsEnabled(features::kUsbguard));
 }
 
 void ChromeFeaturesServiceProvider::IsShillSandboxingEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-  writer.AppendBool(base::FeatureList::IsEnabled(features::kShillSandboxing));
-  response_sender.Run(std::move(response));
+  SendResponse(method_call, response_sender,
+               base::FeatureList::IsEnabled(features::kShillSandboxing));
 }
-
 }  // namespace chromeos
