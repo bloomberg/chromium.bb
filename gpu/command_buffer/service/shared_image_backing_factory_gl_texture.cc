@@ -445,6 +445,26 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
     texture_passthrough_.reset();
   }
 
+  void OnMemoryDump(const std::string& dump_name,
+                    base::trace_event::MemoryAllocatorDump* dump,
+                    base::trace_event::ProcessMemoryDump* pmd,
+                    uint64_t client_tracing_id) override {
+    // Add a |service_guid| which expresses shared ownership between the
+    // various GPU dumps.
+    auto client_guid = GetSharedImageGUIDForTracing(mailbox());
+    auto service_guid = gl::GetGLTextureServiceGUIDForTracing(
+        texture_passthrough_->service_id());
+    pmd->CreateSharedGlobalAllocatorDump(service_guid);
+
+    int importance = 2;  // This client always owns the ref.
+    pmd->AddOwnershipEdge(client_guid, service_guid, importance);
+
+    auto* gl_image = texture_passthrough_->GetLevelImage(
+        texture_passthrough_->target(), /*level=*/0);
+    if (gl_image)
+      gl_image->OnMemoryDump(pmd, client_tracing_id, dump_name);
+  }
+
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
   ProduceGLTexturePassthrough(SharedImageManager* manager,
