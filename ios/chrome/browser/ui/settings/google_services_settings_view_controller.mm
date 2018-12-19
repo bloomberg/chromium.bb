@@ -8,8 +8,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_local_commands.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller_model_delegate.h"
@@ -60,8 +60,9 @@ constexpr NSInteger kSectionOffset = 1000;
 
 - (void)switchAction:(UISwitch*)sender {
   NSIndexPath* indexPath = [self indexPathForTag:sender.tag];
-  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
-      [self.collectionViewModel itemAtIndexPath:indexPath]);
+  LegacySyncSwitchItem* syncSwitchItem =
+      base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
+          [self.collectionViewModel itemAtIndexPath:indexPath]);
   BOOL isOn = sender.isOn;
   GoogleServicesSettingsCommandID commandID =
       static_cast<GoogleServicesSettingsCommandID>(syncSwitchItem.commandID);
@@ -107,9 +108,9 @@ constexpr NSInteger kSectionOffset = 1000;
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
   UICollectionViewCell* cell =
       [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
-  if ([cell isKindOfClass:[SyncSwitchCell class]]) {
-    SyncSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SyncSwitchCell>(cell);
+  if ([cell isKindOfClass:[LegacySyncSwitchCell class]]) {
+    LegacySyncSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<LegacySyncSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(switchAction:)
                     forControlEvents:UIControlEventValueChanged];
@@ -197,7 +198,7 @@ constexpr NSInteger kSectionOffset = 1000;
       shouldHighlightItemAtIndexPath:indexPath];
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  if ([item isKindOfClass:[SyncSwitchItem class]]) {
+  if ([item isKindOfClass:[LegacySyncSwitchItem class]]) {
     return NO;
   } else if ([item isKindOfClass:[SettingsImageDetailTextItem class]]) {
     return YES;

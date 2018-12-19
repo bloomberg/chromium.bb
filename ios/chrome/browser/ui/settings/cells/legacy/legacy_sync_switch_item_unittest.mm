@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -14,14 +14,14 @@
 
 namespace {
 
-using SyncSwitchItemTest = PlatformTest;
+using LegacySyncSwitchItemTest = PlatformTest;
 
 // Tests that the text label and showing status are set properly after a call to
 // |configureCell:|.
-TEST_F(SyncSwitchItemTest, ConfigureCell) {
-  SyncSwitchItem* item = [[SyncSwitchItem alloc] initWithType:0];
-  SyncSwitchCell* cell = [[[item cellClass] alloc] init];
-  EXPECT_TRUE([cell isMemberOfClass:[SyncSwitchCell class]]);
+TEST_F(LegacySyncSwitchItemTest, ConfigureCell) {
+  LegacySyncSwitchItem* item = [[LegacySyncSwitchItem alloc] initWithType:0];
+  LegacySyncSwitchCell* cell = [[[item cellClass] alloc] init];
+  EXPECT_TRUE([cell isMemberOfClass:[LegacySyncSwitchCell class]]);
   EXPECT_NSEQ(nil, cell.textLabel.text);
 
   NSString* text = @"Test Switch";
@@ -45,16 +45,16 @@ TEST_F(SyncSwitchItemTest, ConfigureCell) {
 
 // Tests that the text color and enabled state of the switch are set correctly
 // by a call to |configureCell:|.
-TEST_F(SyncSwitchItemTest, EnabledAndDisabled) {
-  SyncSwitchCell* cell = [[SyncSwitchCell alloc] init];
-  SyncSwitchItem* item = [[SyncSwitchItem alloc] initWithType:0];
+TEST_F(LegacySyncSwitchItemTest, EnabledAndDisabled) {
+  LegacySyncSwitchCell* cell = [[LegacySyncSwitchCell alloc] init];
+  LegacySyncSwitchItem* item = [[LegacySyncSwitchItem alloc] initWithType:0];
   item.text = @"Test Switch";
 
   // Text color possibilities.
   UIColor* enabledColor =
-      [SyncSwitchCell defaultTextColorForState:UIControlStateNormal];
+      [LegacySyncSwitchCell defaultTextColorForState:UIControlStateNormal];
   UIColor* disabledColor =
-      [SyncSwitchCell defaultTextColorForState:UIControlStateDisabled];
+      [LegacySyncSwitchCell defaultTextColorForState:UIControlStateDisabled];
 
   // Enabled and off.
   item.on = NO;
@@ -85,8 +85,8 @@ TEST_F(SyncSwitchItemTest, EnabledAndDisabled) {
   EXPECT_NSEQ(disabledColor, cell.textLabel.textColor);
 }
 
-TEST_F(SyncSwitchItemTest, PrepareForReuseClearsActions) {
-  SyncSwitchCell* cell = [[SyncSwitchCell alloc] init];
+TEST_F(LegacySyncSwitchItemTest, PrepareForReuseClearsActions) {
+  LegacySyncSwitchCell* cell = [[LegacySyncSwitchCell alloc] init];
   UISwitch* switchView = cell.switchView;
   NSArray* target = [NSArray array];
 

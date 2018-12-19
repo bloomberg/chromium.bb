@@ -7,8 +7,8 @@
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
-#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 
@@ -106,8 +106,8 @@ id<GREYAction> TurnSyncSwitchOn(BOOL on) {
          constraints:constraints
         performBlock:^BOOL(id sync_switch_cell,
                            __strong NSError** error_or_nil) {
-          SyncSwitchCell* switch_cell =
-              base::mac::ObjCCastStrict<SyncSwitchCell>(sync_switch_cell);
+          LegacySyncSwitchCell* switch_cell =
+              base::mac::ObjCCastStrict<LegacySyncSwitchCell>(sync_switch_cell);
           UISwitch* switch_view = switch_cell.switchView;
           if (switch_view.on != on) {
             id<GREYAction> long_press_action = [GREYActions

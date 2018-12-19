@@ -27,7 +27,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -249,7 +249,7 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestModel) {
   EXPECT_EQ(expected_number_of_items, NumberOfItemsInSection(1));
   EXPECT_EQ(2, NumberOfItemsInSection(2));
 
-  SyncSwitchItem* syncItem = GetCollectionViewItem(0, 0);
+  LegacySyncSwitchItem* syncItem = GetCollectionViewItem(0, 0);
   EXPECT_EQ(syncItem.isOn, YES);
   EXPECT_NSEQ(syncItem.text,
               l10n_util::GetNSString(IDS_IOS_SYNC_SETTING_TITLE));
@@ -257,7 +257,7 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestModel) {
       syncItem.detailText,
       l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SUBTITLE));
 
-  SyncSwitchItem* syncEverythingItem = GetCollectionViewItem(1, 0);
+  LegacySyncSwitchItem* syncEverythingItem = GetCollectionViewItem(1, 0);
   EXPECT_EQ(syncEverythingItem.isOn, YES);
   EXPECT_NSEQ(syncEverythingItem.text,
               l10n_util::GetNSString(IDS_IOS_SYNC_EVERYTHING_TITLE));
@@ -266,13 +266,14 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestModel) {
   for (int i = 0; i < SyncSetupService::kNumberOfSyncableDatatypes; i++) {
     SyncSetupService::SyncableDatatype dataType =
         static_cast<SyncSetupService::SyncableDatatype>(i);
-    SyncSwitchItem* syncDataTypeItem = GetCollectionViewItem(1, item++);
+    LegacySyncSwitchItem* syncDataTypeItem = GetCollectionViewItem(1, item++);
     EXPECT_NSEQ(syncDataTypeItem.text,
                 l10n_util::GetNSString(
                     [sync_controller titleIdForSyncableDataType:dataType]));
   }
 
-  SyncSwitchItem* autofillWalletImportItem = GetCollectionViewItem(1, item);
+  LegacySyncSwitchItem* autofillWalletImportItem =
+      GetCollectionViewItem(1, item);
   NSString* title = l10n_util::GetNSString(
       IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
   EXPECT_NSEQ(autofillWalletImportItem.text, title);
@@ -287,7 +288,7 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestEnabledCellsSyncOff) {
   CreateSyncController();
 
   for (int item = 0; item < NumberOfItemsInSection(1); ++item) {
-    SyncSwitchItem* object = GetCollectionViewItem(1, item);
+    LegacySyncSwitchItem* object = GetCollectionViewItem(1, item);
     EXPECT_FALSE(object.enabled);
   }
 
@@ -301,15 +302,15 @@ TEST_F(SyncSettingsCollectionViewControllerTest,
   TurnSyncEverythingOn();
   CreateSyncController();
 
-  SyncSwitchItem* syncEverythingItem = GetCollectionViewItem(1, 0);
+  LegacySyncSwitchItem* syncEverythingItem = GetCollectionViewItem(1, 0);
   EXPECT_TRUE(syncEverythingItem.enabled);
   for (int item = 1; item <= SyncSetupService::kNumberOfSyncableDatatypes;
        ++item) {
-    SyncSwitchItem* object = GetCollectionViewItem(1, item);
+    LegacySyncSwitchItem* object = GetCollectionViewItem(1, item);
     EXPECT_FALSE(object.enabled);
   }
 
-  SyncSwitchItem* autofillWalletImportItem =
+  LegacySyncSwitchItem* autofillWalletImportItem =
       GetCollectionViewItem(1, NumberOfItemsInSection(1) - 1);
   EXPECT_FALSE(autofillWalletImportItem.enabled);
 
@@ -325,7 +326,7 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestAutofillWalletImportOff) {
   TurnSyncEverythingOn();
   CreateSyncController();
 
-  SyncSwitchItem* autofillWalletImportItem =
+  LegacySyncSwitchItem* autofillWalletImportItem =
       GetCollectionViewItem(1, NumberOfItemsInSection(1) - 1);
   EXPECT_FALSE(autofillWalletImportItem.isOn);
 }
@@ -338,7 +339,7 @@ TEST_F(SyncSettingsCollectionViewControllerTest, TestAutofillWalletImportOn) {
   TurnSyncEverythingOn();
   CreateSyncController();
 
-  SyncSwitchItem* autofillWalletImportItem =
+  LegacySyncSwitchItem* autofillWalletImportItem =
       GetCollectionViewItem(1, NumberOfItemsInSection(1) - 1);
   EXPECT_TRUE(autofillWalletImportItem.isOn);
 }

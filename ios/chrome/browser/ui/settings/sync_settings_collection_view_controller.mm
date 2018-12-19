@@ -39,8 +39,8 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_table_view_controller.h"
@@ -350,7 +350,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Model items
 
 - (CollectionViewItem*)syncSwitchItem:(BOOL)isOn {
-  SyncSwitchItem* syncSwitchItem = [self
+  LegacySyncSwitchItem* syncSwitchItem = [self
       switchItemWithType:ItemTypeSyncSwitch
                    title:l10n_util::GetNSString(IDS_IOS_SYNC_SETTING_TITLE)
                 subTitle:l10n_util::GetNSString(
@@ -387,7 +387,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)syncEverythingSwitchItem:(BOOL)isOn {
-  SyncSwitchItem* syncSwitchItem = [self
+  LegacySyncSwitchItem* syncSwitchItem = [self
       switchItemWithType:ItemTypeSyncEverything
                    title:l10n_util::GetNSString(IDS_IOS_SYNC_EVERYTHING_TITLE)
                 subTitle:nil];
@@ -401,7 +401,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   syncer::ModelType modelType = _syncSetupService->GetModelType(dataType);
   BOOL isOn = _syncSetupService->IsDataTypePreferred(modelType);
 
-  SyncSwitchItem* syncDataTypeItem =
+  LegacySyncSwitchItem* syncDataTypeItem =
       [self switchItemWithType:ItemTypeSyncableDataType
                          title:l10n_util::GetNSString(
                                    [self titleIdForSyncableDataType:dataType])
@@ -415,7 +415,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)switchItemForAutofillWalletImport {
   NSString* title = l10n_util::GetNSString(
       IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
-  SyncSwitchItem* autofillWalletImportItem =
+  LegacySyncSwitchItem* autofillWalletImportItem =
       [self switchItemWithType:ItemTypeAutofillWalletImport
                          title:title
                       subTitle:nil];
@@ -447,10 +447,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark Item Constructors
 
-- (SyncSwitchItem*)switchItemWithType:(NSInteger)type
-                                title:(NSString*)title
-                             subTitle:(NSString*)detailText {
-  SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:type];
+- (LegacySyncSwitchItem*)switchItemWithType:(NSInteger)type
+                                      title:(NSString*)title
+                                   subTitle:(NSString*)detailText {
+  LegacySyncSwitchItem* switchItem =
+      [[LegacySyncSwitchItem alloc] initWithType:type];
   switchItem.text = title;
   switchItem.detailText = detailText;
   return switchItem;
@@ -474,16 +475,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeSyncSwitch: {
-      SyncSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<SyncSwitchCell>(cell);
+      LegacySyncSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<LegacySyncSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(changeSyncStatusToOn:)
                       forControlEvents:UIControlEventValueChanged];
       break;
     }
     case ItemTypeSyncEverything: {
-      SyncSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<SyncSwitchCell>(cell);
+      LegacySyncSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<LegacySyncSwitchCell>(cell);
       [switchCell.switchView
                  addTarget:self
                     action:@selector(changeSyncEverythingStatusToOn:)
@@ -491,8 +492,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeSyncableDataType: {
-      SyncSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<SyncSwitchCell>(cell);
+      LegacySyncSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<LegacySyncSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(changeDataTypeSyncStatusToOn:)
                       forControlEvents:UIControlEventValueChanged];
@@ -500,8 +501,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeAutofillWalletImport: {
-      SyncSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<SyncSwitchCell>(cell);
+      LegacySyncSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<LegacySyncSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(autofillWalletImportChanged:)
                       forControlEvents:UIControlEventValueChanged];
@@ -613,8 +614,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
         indexPathForItemType:ItemTypeSyncSwitch
            sectionIdentifier:SectionIdentifierEnableSync];
 
-    SyncSwitchItem* item = base::mac::ObjCCastStrict<SyncSwitchItem>(
-        [self.collectionViewModel itemAtIndexPath:indexPath]);
+    LegacySyncSwitchItem* item =
+        base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
+            [self.collectionViewModel itemAtIndexPath:indexPath]);
     item.on = isNowOn;
   }
   [self updateCollectionView];
@@ -715,8 +717,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     NSIndexPath* indexPath = [self.collectionViewModel
         indexPathForItemType:ItemTypeSyncEverything
            sectionIdentifier:SectionIdentifierSyncServices];
-    SyncSwitchItem* item = base::mac::ObjCCastStrict<SyncSwitchItem>(
-        [self.collectionViewModel itemAtIndexPath:indexPath]);
+    LegacySyncSwitchItem* item =
+        base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
+            [self.collectionViewModel itemAtIndexPath:indexPath]);
     item.on = isNowOn;
   }
   [self updateCollectionView];
@@ -730,8 +733,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   BOOL isOn = sender.isOn;
 
-  SyncSwitchItem* syncSwitchItem =
-      base::mac::ObjCCastStrict<SyncSwitchItem>([self.collectionViewModel
+  LegacySyncSwitchItem* syncSwitchItem =
+      base::mac::ObjCCastStrict<LegacySyncSwitchItem>([self.collectionViewModel
           itemAtIndexPath:[self indexPathForTag:sender.tag]]);
   SyncSetupService::SyncableDatatype dataType =
       (SyncSetupService::SyncableDatatype)syncSwitchItem.dataType;
@@ -791,8 +794,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       indexPathForItemType:ItemTypeSyncSwitch
          sectionIdentifier:SectionIdentifierEnableSync];
 
-  SyncSwitchItem* syncItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
-      [self.collectionViewModel itemAtIndexPath:indexPath]);
+  LegacySyncSwitchItem* syncItem =
+      base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
+          [self.collectionViewModel itemAtIndexPath:indexPath]);
   syncItem.on = _syncSetupService->IsSyncEnabled();
   [self reconfigureCellsForItems:@[ syncItem ]];
 
@@ -821,8 +825,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   indexPath = [self.collectionViewModel
       indexPathForItemType:ItemTypeSyncEverything
          sectionIdentifier:SectionIdentifierSyncServices];
-  SyncSwitchItem* syncEverythingItem =
-      base::mac::ObjCCastStrict<SyncSwitchItem>(
+  LegacySyncSwitchItem* syncEverythingItem =
+      base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:indexPath]);
   syncEverythingItem.on = _syncSetupService->IsSyncingAllDataTypes();
   syncEverythingItem.enabled = [self shouldSyncEverythingItemBeEnabled];
@@ -838,8 +842,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
         indexPathForItemType:ItemTypeSyncableDataType
            sectionIdentifier:SectionIdentifierSyncServices
                      atIndex:index];
-    SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
-        [self.collectionViewModel itemAtIndexPath:indexPath]);
+    LegacySyncSwitchItem* syncSwitchItem =
+        base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
+            [self.collectionViewModel itemAtIndexPath:indexPath]);
     DCHECK_EQ(index, syncSwitchItem.dataType);
     syncer::ModelType modelType = _syncSetupService->GetModelType(dataType);
     syncSwitchItem.on = _syncSetupService->IsDataTypePreferred(modelType);
@@ -893,8 +898,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSIndexPath* indexPath = [self.collectionViewModel
       indexPathForItemType:ItemTypeAutofillWalletImport
          sectionIdentifier:SectionIdentifierSyncServices];
-  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCastStrict<SyncSwitchItem>(
-      [self.collectionViewModel itemAtIndexPath:indexPath]);
+  LegacySyncSwitchItem* syncSwitchItem =
+      base::mac::ObjCCastStrict<LegacySyncSwitchItem>(
+          [self.collectionViewModel itemAtIndexPath:indexPath]);
   syncSwitchItem.on = [self isAutofillWalletImportOn];
   syncSwitchItem.enabled = [self isAutofillWalletImportItemEnabled];
   [self reconfigureCellsForItems:@[ syncSwitchItem ]];

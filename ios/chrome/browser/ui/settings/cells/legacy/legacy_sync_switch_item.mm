@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -28,9 +28,9 @@ const CGFloat kVerticalPadding = 16;
 const CGFloat kHorizontalSwitchPadding = 10;
 }  // namespace
 
-#pragma mark - SyncSwitchItem
+#pragma mark - LegacySyncSwitchItem
 
-@implementation SyncSwitchItem
+@implementation LegacySyncSwitchItem
 
 @synthesize text = _text;
 @synthesize detailText = _detailText;
@@ -42,20 +42,20 @@ const CGFloat kHorizontalSwitchPadding = 10;
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [SyncSwitchCell class];
+    self.cellClass = [LegacySyncSwitchCell class];
     self.enabled = YES;
   }
   return self;
 }
 
-- (void)configureCell:(SyncSwitchCell*)cell {
+- (void)configureCell:(LegacySyncSwitchCell*)cell {
   [super configureCell:cell];
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
   cell.switchView.enabled = self.isEnabled;
   cell.switchView.on = self.isOn;
   cell.textLabel.textColor =
-      [SyncSwitchCell defaultTextColorForState:cell.switchView.state];
+      [LegacySyncSwitchCell defaultTextColorForState:cell.switchView.state];
   if (self.isEnabled) {
     cell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
     cell.switchView.enabled = YES;
@@ -69,7 +69,7 @@ const CGFloat kHorizontalSwitchPadding = 10;
 
 @end
 
-@implementation SyncSwitchCell
+@implementation LegacySyncSwitchCell
 
 @synthesize textLabel = _textLabel;
 @synthesize detailTextLabel = _detailTextLabel;

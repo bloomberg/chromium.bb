@@ -21,8 +21,8 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
@@ -123,11 +123,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Item to display the sync error.
 @property(nonatomic, strong) SettingsImageDetailTextItem* syncErrorItem;
 // Item for "Sync Everything" section.
-@property(nonatomic, strong, readonly) SyncSwitchItem* syncEverythingItem;
+@property(nonatomic, strong, readonly) LegacySyncSwitchItem* syncEverythingItem;
 // All the items for the personalized section.
 @property(nonatomic, strong, readonly) ItemArray personalizedItems;
 // Item for the autocomplete wallet feature.
-@property(nonatomic, strong, readonly) SyncSwitchItem* autocompleteWalletItem;
+@property(nonatomic, strong, readonly)
+    LegacySyncSwitchItem* autocompleteWalletItem;
 // All the items for the non-personalized section.
 @property(nonatomic, strong, readonly) ItemArray nonPersonalizedItems;
 
@@ -274,43 +275,43 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 - (ItemArray)personalizedItems {
   if (!_personalizedItems) {
-    SyncSwitchItem* syncBookmarksItem = [self
+    LegacySyncSwitchItem* syncBookmarksItem = [self
         switchItemWithItemType:SyncBookmarksItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_BOOKMARKS_TEXT
                 detailStringID:0
                      commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
                       dataType:SyncSetupService::kSyncBookmarks];
-    SyncSwitchItem* syncHistoryItem = [self
+    LegacySyncSwitchItem* syncHistoryItem = [self
         switchItemWithItemType:SyncHistoryItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_HISTORY_TEXT
                 detailStringID:0
                      commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
                       dataType:SyncSetupService::kSyncOmniboxHistory];
-    SyncSwitchItem* syncPasswordsItem = [self
+    LegacySyncSwitchItem* syncPasswordsItem = [self
         switchItemWithItemType:SyncPasswordsItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_PASSWORD_TEXT
                 detailStringID:0
                      commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
                       dataType:SyncSetupService::kSyncPasswords];
-    SyncSwitchItem* syncOpenTabsItem = [self
+    LegacySyncSwitchItem* syncOpenTabsItem = [self
         switchItemWithItemType:SyncOpenTabsItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_OPENTABS_TEXT
                 detailStringID:0
                      commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
                       dataType:SyncSetupService::kSyncOpenTabs];
-    SyncSwitchItem* syncAutofillItem = [self
+    LegacySyncSwitchItem* syncAutofillItem = [self
         switchItemWithItemType:SyncAutofillItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOFILL_TEXT
                 detailStringID:0
                      commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
                       dataType:SyncSetupService::kSyncAutofill];
-    SyncSwitchItem* syncSettingsItem = [self
+    LegacySyncSwitchItem* syncSettingsItem = [self
         switchItemWithItemType:SyncAutofillItemType
                   textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_SETTINGS_TEXT
                 detailStringID:0
                      commandID:GoogleServicesSettingsCommandIDToggleDataTypeSync
                       dataType:SyncSetupService::kSyncPreferences];
-    SyncSwitchItem* syncReadingListItem = [self
+    LegacySyncSwitchItem* syncReadingListItem = [self
         switchItemWithItemType:SyncReadingListItemType
                   textStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_READING_LIST_TEXT
@@ -351,7 +352,7 @@ initWithUserPrefService:(PrefService*)userPrefService
   return _personalizedItems;
 }
 
-- (SyncSwitchItem*)autocompleteWalletItem {
+- (LegacySyncSwitchItem*)autocompleteWalletItem {
   if (!_autocompleteWalletItem) {
     _autocompleteWalletItem = [self
         switchItemWithItemType:AutocompleteWalletItemType
@@ -367,7 +368,7 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 - (ItemArray)nonPersonalizedItems {
   if (!_nonPersonalizedItems) {
-    SyncSwitchItem* autocompleteSearchesAndURLsItem = [self
+    LegacySyncSwitchItem* autocompleteSearchesAndURLsItem = [self
         switchItemWithItemType:AutocompleteSearchesAndURLsItemType
                   textStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
@@ -376,7 +377,7 @@ initWithUserPrefService:(PrefService*)userPrefService
                      commandID:
                          GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService
                       dataType:0];
-    SyncSwitchItem* preloadPagesItem = [self
+    LegacySyncSwitchItem* preloadPagesItem = [self
         switchItemWithItemType:PreloadPagesItemType
                   textStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_PRELOAD_PAGES_TEXT
@@ -385,7 +386,7 @@ initWithUserPrefService:(PrefService*)userPrefService
                      commandID:
                          GoogleServicesSettingsCommandIDTogglePreloadPagesService
                       dataType:0];
-    SyncSwitchItem* improveChromeItem = [self
+    LegacySyncSwitchItem* improveChromeItem = [self
         switchItemWithItemType:ImproveChromeItemType
                   textStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_TEXT
@@ -394,7 +395,7 @@ initWithUserPrefService:(PrefService*)userPrefService
                      commandID:
                          GoogleServicesSettingsCommandIDToggleImproveChromeService
                       dataType:0];
-    SyncSwitchItem* betterSearchAndBrowsingItemType = [self
+    LegacySyncSwitchItem* betterSearchAndBrowsingItemType = [self
         switchItemWithItemType:BetterSearchAndBrowsingItemType
                   textStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT
@@ -413,13 +414,14 @@ initWithUserPrefService:(PrefService*)userPrefService
 
 #pragma mark - Private
 
-// Creates a SyncSwitchItem instance.
-- (SyncSwitchItem*)switchItemWithItemType:(NSInteger)itemType
-                             textStringID:(int)textStringID
-                           detailStringID:(int)detailStringID
-                                commandID:(NSInteger)commandID
-                                 dataType:(NSInteger)dataType {
-  SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:itemType];
+// Creates a LegacySyncSwitchItem instance.
+- (LegacySyncSwitchItem*)switchItemWithItemType:(NSInteger)itemType
+                                   textStringID:(int)textStringID
+                                 detailStringID:(int)detailStringID
+                                      commandID:(NSInteger)commandID
+                                       dataType:(NSInteger)dataType {
+  LegacySyncSwitchItem* switchItem =
+      [[LegacySyncSwitchItem alloc] initWithType:itemType];
   switchItem.text = GetNSString(textStringID);
   if (detailStringID)
     switchItem.detailText = GetNSString(detailStringID);
@@ -537,8 +539,9 @@ textItemWithItemType:(NSInteger)itemType
              switchItemEnabled:(BOOL)switchItemEnabled
                textItemEnabled:(BOOL)textItemEnabled {
   for (CollectionViewItem* item in items) {
-    if ([item isKindOfClass:[SyncSwitchItem class]]) {
-      SyncSwitchItem* switchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
+    if ([item isKindOfClass:[LegacySyncSwitchItem class]]) {
+      LegacySyncSwitchItem* switchItem =
+          base::mac::ObjCCast<LegacySyncSwitchItem>(item);
       switch (switchItem.commandID) {
         case GoogleServicesSettingsCommandIDToggleDataTypeSync: {
           SyncSetupService::SyncableDatatype dataType =
