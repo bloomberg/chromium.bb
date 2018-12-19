@@ -39,6 +39,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -638,7 +639,7 @@ void MessageService::ClosePortImpl(const PortId& port_id,
     auto pending = pending_lazy_background_page_channels_.find(channel_id);
     if (pending != pending_lazy_background_page_channels_.end()) {
       lazy_background_task_queue_->AddPendingTask(
-          pending->second.first, pending->second.second,
+          LazyContextId(pending->second.first, pending->second.second),
           base::BindOnce(&MessageService::PendingLazyBackgroundPageClosePort,
                          weak_factory_.GetWeakPtr(), port_id, process_id,
                          routing_id, force_close, error_message));
@@ -738,7 +739,7 @@ void MessageService::EnqueuePendingMessageForLazyBackgroundLoad(
   auto pending = pending_lazy_background_page_channels_.find(channel_id);
   if (pending != pending_lazy_background_page_channels_.end()) {
     lazy_background_task_queue_->AddPendingTask(
-        pending->second.first, pending->second.second,
+        LazyContextId(pending->second.first, pending->second.second),
         base::BindOnce(&MessageService::PendingLazyBackgroundPagePostMessage,
                        weak_factory_.GetWeakPtr(), source_port_id, message));
   }
@@ -780,7 +781,7 @@ bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
       PendingLazyBackgroundPageChannel(context, extension->id());
   int source_id = (*params)->source_process_id;
   lazy_background_task_queue_->AddPendingTask(
-      context, extension->id(),
+      LazyContextId(context, extension->id()),
       base::BindOnce(&MessageService::PendingLazyBackgroundPageOpenChannel,
                      weak_factory_.GetWeakPtr(), base::Passed(params),
                      source_id));

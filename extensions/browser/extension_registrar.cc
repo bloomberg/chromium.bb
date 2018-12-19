@@ -17,6 +17,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/renderer_startup_helper.h"
@@ -522,7 +523,8 @@ void ExtensionRegistrar::MaybeSpinUpLazyBackgroundPage(
   // Wake up the event page by posting a dummy task.
   LazyBackgroundTaskQueue* queue =
       LazyBackgroundTaskQueue::Get(browser_context_);
-  queue->AddPendingTask(browser_context_, extension->id(), base::DoNothing());
+  queue->AddPendingTask(LazyContextId(browser_context_, extension->id()),
+                        base::DoNothing());
 }
 
 }  // namespace extensions

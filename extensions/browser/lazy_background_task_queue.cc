@@ -82,21 +82,14 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
   return false;
 }
 
-void LazyBackgroundTaskQueue::AddPendingTaskToDispatchEvent(
-    const LazyContextId& context_id,
-    LazyContextTaskQueue::PendingTask task) {
-  AddPendingTask(context_id.browser_context(), context_id.extension_id(),
-                 std::move(task));
-}
-
-void LazyBackgroundTaskQueue::AddPendingTask(
-    content::BrowserContext* browser_context,
-    const std::string& extension_id,
-    PendingTask task) {
+void LazyBackgroundTaskQueue::AddPendingTask(const LazyContextId& context_id,
+                                             PendingTask task) {
   if (ExtensionsBrowserClient::Get()->IsShuttingDown()) {
     std::move(task).Run(nullptr);
     return;
   }
+  const ExtensionId& extension_id = context_id.extension_id();
+  content::BrowserContext* const browser_context = context_id.browser_context();
   PendingTasksList* tasks_list = nullptr;
   PendingTasksKey key(browser_context, extension_id);
   auto it = pending_tasks_.find(key);

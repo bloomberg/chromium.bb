@@ -56,19 +56,14 @@ class LazyBackgroundTaskQueue : public KeyedService,
   bool ShouldEnqueueTask(content::BrowserContext* context,
                          const Extension* extension) override;
 
-  // TODO(lazyboy): Find a better way to use AddPendingTask instead of this.
-  void AddPendingTaskToDispatchEvent(const LazyContextId& context_id,
-                                     PendingTask task) override;
-
   // Adds a task to the queue for a given extension. If this is the first
   // task added for the extension, its lazy background page will be loaded.
   // The task will be called either when the page is loaded, or when the
   // page fails to load for some reason (e.g. a crash or browser
   // shutdown). In the latter case, |task| will be called with an empty
   // std::unique_ptr<ContextItem> parameter.
-  void AddPendingTask(content::BrowserContext* context,
-                      const std::string& extension_id,
-                      PendingTask task);
+  void AddPendingTask(const LazyContextId& context_id,
+                      PendingTask task) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest, AddPendingTask);

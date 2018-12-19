@@ -35,6 +35,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/granted_file_entry.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
@@ -293,7 +294,7 @@ class PlatformAppPathLauncher
         extensions::LazyBackgroundTaskQueue::Get(context_);
     if (queue->ShouldEnqueueTask(context_, app)) {
       queue->AddPendingTask(
-          context_, extension_id,
+          extensions::LazyContextId(context_, extension_id),
           base::Bind(&PlatformAppPathLauncher::GrantAccessToFilesAndLaunch,
                      this));
       return;

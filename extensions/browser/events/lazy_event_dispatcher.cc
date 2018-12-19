@@ -118,8 +118,8 @@ bool LazyEventDispatcher::QueueEventDispatch(
     dispatched_event->will_dispatch_callback.Reset();
   }
 
-  queue->AddPendingTaskToDispatchEvent(
-      dispatch_context, base::BindOnce(dispatch_function_, dispatched_event));
+  queue->AddPendingTask(dispatch_context,
+                        base::BindOnce(dispatch_function_, dispatched_event));
 
   return true;
 }

@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 
@@ -34,7 +35,8 @@ void InspectBackgroundPage(const Extension* extension, Profile* profile) {
         std::make_unique<LazyContextTaskQueue::ContextInfo>(host));
   } else {
     LazyBackgroundTaskQueue::Get(profile)->AddPendingTask(
-        profile, extension->id(), base::BindOnce(&InspectExtensionHost));
+        LazyContextId(profile, extension->id()),
+        base::BindOnce(&InspectExtensionHost));
   }
 }
 

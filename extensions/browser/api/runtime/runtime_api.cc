@@ -32,6 +32,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/api/runtime.h"
 #include "extensions/common/error_utils.h"
@@ -130,7 +131,7 @@ void DispatchOnStartupEventImpl(
       LazyBackgroundTaskQueue::Get(browser_context)
           ->ShouldEnqueueTask(browser_context, extension)) {
     LazyBackgroundTaskQueue::Get(browser_context)
-        ->AddPendingTask(browser_context, extension_id,
+        ->AddPendingTask(LazyContextId(browser_context, extension_id),
                          base::BindOnce(&DispatchOnStartupEventImpl,
                                         browser_context, extension_id, false));
     return;
@@ -599,7 +600,7 @@ ExtensionFunction::ResponseAction RuntimeGetBackgroundPageFunction::Run() {
           ->ShouldEnqueueTask(browser_context(), extension())) {
     LazyBackgroundTaskQueue::Get(browser_context())
         ->AddPendingTask(
-            browser_context(), extension_id(),
+            LazyContextId(browser_context(), extension_id()),
             base::BindOnce(&RuntimeGetBackgroundPageFunction::OnPageLoaded,
                            this));
   } else if (host) {

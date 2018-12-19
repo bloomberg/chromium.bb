@@ -65,15 +65,8 @@ class LazyContextTaskQueue {
   // be loaded. The task will be called either when the page is loaded,
   // or when the page fails to load for some reason (e.g. a crash or browser
   // shutdown). In the latter case, the ContextInfo will be nullptr.
-  //
-  // TODO(lazyboy): Remove "ToDispatchEvent" suffix and simply call this
-  // AddPendingTask. Issues:
-  // 1. We already have LazyBackgroundTaskQueue::AddPendingTask. Moreover, that
-  //    is heavily used thoughout the codebase.
-  // 2. LazyBackgroundTaskQueue::AddPendingTask is tied to ExtensionHost. This
-  //    class should be ExtensionHost agnostic.
-  virtual void AddPendingTaskToDispatchEvent(const LazyContextId& context_id,
-                                             PendingTask task) = 0;
+  virtual void AddPendingTask(const LazyContextId& context_id,
+                              PendingTask task) = 0;
 };
 
 }  // namespace extensions

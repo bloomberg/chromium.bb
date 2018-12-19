@@ -20,6 +20,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/app_view/app_view_constants.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/api/app_runtime.h"
@@ -197,7 +198,7 @@ void AppViewGuest::CreateWebContents(const base::DictionaryValue& create_params,
       LazyBackgroundTaskQueue::Get(browser_context());
   if (queue->ShouldEnqueueTask(browser_context(), guest_extension)) {
     queue->AddPendingTask(
-        browser_context(), guest_extension->id(),
+        LazyContextId(browser_context(), guest_extension->id()),
         base::BindOnce(&AppViewGuest::LaunchAppAndFireEvent,
                        weak_ptr_factory_.GetWeakPtr(), data->CreateDeepCopy(),
                        std::move(callback)));
