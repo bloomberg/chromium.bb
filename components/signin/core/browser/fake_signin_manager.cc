@@ -14,9 +14,11 @@
 
 FakeSigninManagerBase::FakeSigninManagerBase(
     SigninClient* client,
+    ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
     SigninErrorController* signin_error_controller)
     : SigninManagerBase(client,
+                        token_service,
                         account_tracker_service,
                         signin_error_controller) {}
 

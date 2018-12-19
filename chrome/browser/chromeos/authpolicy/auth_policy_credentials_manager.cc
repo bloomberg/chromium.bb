@@ -23,7 +23,6 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,7 +36,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "dbus/message.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -93,7 +91,7 @@ std::string AdjustConfig(const std::string& config, bool is_dns_cname_enabled) {
   return adjusted_config;
 }
 
-// Sets up Chrome OS Account Manager and starts |ProfileOAuth2TokenService|.
+// Sets up Chrome OS Account Manager.
 // |profile| is a non-owning pointer to |Profile|.
 // |object_guid| is the Active Directory Object GUID for the Device Account.
 void SetupAccountManager(Profile* profile, const std::string& object_guid) {
@@ -113,11 +111,6 @@ void SetupAccountManager(Profile* profile, const std::string& object_guid) {
           object_guid,
           account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY},
       AccountManager::kActiveDirectoryDummyToken);
-
-  // Needed to work with Secondary Accounts in Chrome OS Account Manager. The
-  // value of |primary_account_id| doesn't matter.
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->LoadCredentials(
-      std::string() /* primary_account_id */);
 }
 
 }  // namespace
@@ -413,7 +406,6 @@ AuthPolicyCredentialsManagerFactory::AuthPolicyCredentialsManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "AuthPolicyCredentialsManager",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 AuthPolicyCredentialsManagerFactory::~AuthPolicyCredentialsManagerFactory() {}

@@ -16,6 +16,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 
 namespace file_manager {
@@ -978,14 +979,10 @@ class MultiProfileFilesAppBrowserTest : public FileManagerBrowserTestBase {
         account_id, base::UTF8ToUTF16(info.display_name));
     Profile* profile =
         chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash);
-    // TODO(https://crbug.com/814307): We can't use
-    // identity::MakePrimaryAccountAvailable from identity_test_utils.h here
-    // because that DCHECKs that the SigninManager isn't authenticated yet.
-    // Here, it *can* be already authenticated if a PRE_ test previously set up
-    // the user.
-    IdentityManagerFactory::GetForProfile(profile)
-        ->SetPrimaryAccountSynchronouslyForTests(info.gaia_id, info.email,
-                                                 "refresh_token");
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+    if (!identity_manager->HasPrimaryAccount())
+      identity::MakePrimaryAccountAvailable(identity_manager, info.email);
   }
 
   GuestMode GetGuestMode() const override { return NOT_IN_GUEST_MODE; }

@@ -41,6 +41,7 @@
 class AccountTrackerService;
 class PrefRegistrySimple;
 class PrefService;
+class ProfileOAuth2TokenService;
 class SigninClient;
 class SigninErrorController;
 
@@ -95,6 +96,7 @@ class SigninManagerBase : public KeyedService {
  private:
 #endif
   SigninManagerBase(SigninClient* client,
+                    ProfileOAuth2TokenService* token_service,
                     AccountTrackerService* account_tracker_service,
                     SigninErrorController* signin_error_controller);
 #if !defined(OS_CHROMEOS)
@@ -110,7 +112,7 @@ class SigninManagerBase : public KeyedService {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // If user was signed in, load tokens from DB if available.
-  virtual void Initialize(PrefService* local_state);
+  void Initialize(PrefService* local_state);
   bool IsInitialized() const;
 
   // Returns true if a signin to Chrome is allowed (by policy or pref).
@@ -157,6 +159,8 @@ class SigninManagerBase : public KeyedService {
   // Gives access to the SigninClient instance associated with this instance.
   SigninClient* signin_client() const { return client_; }
 
+  ProfileOAuth2TokenService* token_service() const { return token_service_; }
+
   // Adds a callback that will be called when this instance is shut down.Not
   // intended for general usage, but rather for usage only by the Identity
   // Service implementation during the time period of conversion of Chrome to
@@ -170,6 +174,10 @@ class SigninManagerBase : public KeyedService {
   AccountTrackerService* account_tracker_service() const {
     return account_tracker_service_;
   }
+
+  // Invoked at the end of |Initialize| before the refresh token for the primary
+  // account is loaded.
+  virtual void FinalizeInitBeforeLoadingRefreshTokens(PrefService* local_state);
 
   // Sets the authenticated user's account id.
   // If the user is already authenticated with the same account id, then this
@@ -200,6 +208,11 @@ class SigninManagerBase : public KeyedService {
   friend class SigninManager;
 
   SigninClient* client_;
+
+  // The ProfileOAuth2TokenService instance associated with this object. Must
+  // outlive this object.
+  ProfileOAuth2TokenService* token_service_;
+
   AccountTrackerService* account_tracker_service_;
   SigninErrorController* signin_error_controller_;
   bool initialized_;
