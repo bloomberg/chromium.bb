@@ -15,6 +15,7 @@
 #include "content/browser/media/capture/content_capture_device_browsertest_base.h"
 #include "content/browser/media/capture/fake_video_capture_stack.h"
 #include "content/browser/media/capture/frame_test_util.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -150,6 +151,14 @@ class WebContentsVideoCaptureDeviceBrowserTest
     }
   }
 
+  // Used by certain tests to determine whether the capturer has been
+  // re-targetted.
+  viz::FrameSinkId GetCurrentFrameSinkId() {
+    auto* const view = static_cast<RenderWidgetHostViewBase*>(
+        shell()->web_contents()->GetRenderWidgetHostView());
+    return view ? view->GetFrameSinkId() : viz::FrameSinkId();
+  }
+
  protected:
   // Don't call this. Call <BaseClass>::GetExpectedSourceSize() instead.
   gfx::Size GetCapturedSourceSize() const final {
@@ -229,6 +238,64 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   capture_stack()->ExpectHasLogMessages();
 
   StopAndDeAllocate();
+}
+
+// Tests that capture is re-targetted when the render view of a WebContents
+// changes.
+IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
+                       ChangesTargettedRenderView) {
+  NavigateToInitialDocument();
+  AllocateAndStartAndWaitForFirstFrame();
+  EXPECT_TRUE(shell()->web_contents()->IsBeingCaptured());
+
+  // Make a content change in the first page and wait for capture to reflect
+  // that.
+  ChangePageContentColor(SK_ColorRED);
+  WaitForFrameWithColor(SK_ColorRED);
+
+  // Navigate to an alternate site, checking that the FrameSinkIds before/after
+  // the navigation are different.
+  const viz::FrameSinkId frame_sink_id_before = GetCurrentFrameSinkId();
+  EXPECT_TRUE(frame_sink_id_before.is_valid());
+  NavigateToAlternateSite();
+  const viz::FrameSinkId frame_sink_id_after = GetCurrentFrameSinkId();
+  EXPECT_TRUE(frame_sink_id_after.is_valid());
+  EXPECT_NE(frame_sink_id_before, frame_sink_id_after);
+
+  // Make a content change in the second page and wait for capture to reflect
+  // that. This proves that the capturer was successfully re-targetted to the
+  // second page.
+  ChangePageContentColor(SK_ColorGREEN);
+  WaitForFrameWithColor(SK_ColorGREEN);
+}
+
+// Tests that capture is re-targetted when a renderer crash is followed by a
+// reload. Regression test for http://crbug.com/916332.
+IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
+                       RecoversAfterRendererCrash) {
+  NavigateToInitialDocument();
+  AllocateAndStartAndWaitForFirstFrame();
+  EXPECT_TRUE(shell()->web_contents()->IsBeingCaptured());
+
+  // Make a content change in the first page and wait for capture to reflect
+  // that.
+  ChangePageContentColor(SK_ColorRED);
+  WaitForFrameWithColor(SK_ColorRED);
+
+  // Crash the renderer.
+  EXPECT_TRUE(GetCurrentFrameSinkId().is_valid());
+  CrashTheRenderer();
+  EXPECT_FALSE(GetCurrentFrameSinkId().is_valid());
+
+  // Now, reload the page.
+  ReloadAfterCrash();
+  EXPECT_TRUE(GetCurrentFrameSinkId().is_valid());
+
+  // Make a content change in the reloaded page and wait for capture to reflect
+  // that. This proves that the capturer successfully re-targetted to the
+  // reloaded page.
+  ChangePageContentColor(SK_ColorGREEN);
+  WaitForFrameWithColor(SK_ColorGREEN);
 }
 
 // Tests that the device stops delivering frames while suspended. When resumed,

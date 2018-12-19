@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -153,6 +154,26 @@ void ContentCaptureDeviceBrowserTestBase::RunUntilIdle() {
   base::RunLoop().RunUntilIdle();
 }
 
+void ContentCaptureDeviceBrowserTestBase::NavigateToAlternateSite() {
+  ASSERT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                         kAlternateHostname, kAlternatePath)));
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+}
+
+void ContentCaptureDeviceBrowserTestBase::CrashTheRenderer() {
+  RenderProcessHostWatcher crash_observer(
+      shell()->web_contents(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  ASSERT_TRUE(NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
+  crash_observer.Wait();
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+}
+
+void ContentCaptureDeviceBrowserTestBase::ReloadAfterCrash() {
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+}
+
 bool ContentCaptureDeviceBrowserTestBase::IsSoftwareCompositingTest() const {
   return false;
 }
@@ -276,5 +297,9 @@ constexpr char ContentCaptureDeviceBrowserTestBase::kOuterFramePath[];
 constexpr char ContentCaptureDeviceBrowserTestBase::kSingleFrameHostname[];
 // static
 constexpr char ContentCaptureDeviceBrowserTestBase::kSingleFramePath[];
+// static
+constexpr char ContentCaptureDeviceBrowserTestBase::kAlternateHostname[];
+// static
+constexpr char ContentCaptureDeviceBrowserTestBase::kAlternatePath[];
 
 }  // namespace content
