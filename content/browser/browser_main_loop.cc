@@ -1019,6 +1019,17 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::BindOnce(
           base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed), true));
 
+  // Also allow waiting to join threads.
+  // TODO(https://crbug.com/800808): Ideally this (and the above SetIOAllowed()
+  // would be scoped allowances). That would be one of the first step to ensure
+  // no persistent work is being done after TaskScheduler::Shutdown() in order
+  // to move towards atomic shutdown.
+  base::ThreadRestrictions::SetWaitAllowed(true);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          base::IgnoreResult(&base::ThreadRestrictions::SetWaitAllowed), true));
+
 #if defined(OS_ANDROID)
   g_browser_main_loop_shutting_down = true;
 #endif
@@ -1096,16 +1107,13 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     save_file_manager_->Shutdown();
 
   {
-    base::ScopedAllowBaseSyncPrimitives allow_wait_for_join;
-    {
-      TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
-      ResetThread_IO(std::move(io_thread_));
-    }
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
+    ResetThread_IO(std::move(io_thread_));
+  }
 
-    {
-      TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:TaskScheduler");
-      base::TaskScheduler::GetInstance()->Shutdown();
-    }
+  {
+    TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:TaskScheduler");
+    base::TaskScheduler::GetInstance()->Shutdown();
   }
 
   // Must happen after the IO thread is shutdown since this may be accessed from

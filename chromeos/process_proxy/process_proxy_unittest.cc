@@ -206,6 +206,8 @@ class ProcessProxyTest : public testing::Test {
   }
 
   void EndRegistryTest(base::OnceClosure done_closure) {
+    base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync_primitives;
+
     registry_->CloseProcess(terminal_id_);
 
     int unused_exit_code = 0;
@@ -213,7 +215,6 @@ class ProcessProxyTest : public testing::Test {
         base::GetTerminationStatus(terminal_id_, &unused_exit_code);
     EXPECT_NE(base::TERMINATION_STATUS_STILL_RUNNING, status);
     if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
-      base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync_primitives;
       base::Process process =
           base::Process::DeprecatedGetProcessFromHandle(terminal_id_);
       process.Terminate(0, true);
