@@ -83,6 +83,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
   static aura::Window* CreateParentWindow(aura::Window* child_window,
                                           const gfx::Rect& bounds,
                                           bool full_screen,
+                                          bool is_menu,
                                           bool root_is_always_on_top) {
     // This instance will get deleted when the widget is destroyed.
     DesktopNativeWidgetTopLevelHandler* top_level_handler =
@@ -91,8 +92,9 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     child_window->SetBounds(gfx::Rect(bounds.size()));
 
     Widget::InitParams init_params;
-    init_params.type = full_screen ? Widget::InitParams::TYPE_WINDOW :
-        Widget::InitParams::TYPE_POPUP;
+    init_params.type = full_screen ? Widget::InitParams::TYPE_WINDOW
+                                   : is_menu ? Widget::InitParams::TYPE_MENU
+                                             : Widget::InitParams::TYPE_POPUP;
     init_params.bounds = bounds;
     init_params.ownership = Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
     init_params.layer_type = ui::LAYER_NOT_DRAWN;
@@ -198,7 +200,7 @@ class DesktopNativeWidgetAuraWindowParentingClient
         root_is_always_on_top = native_widget->IsAlwaysOnTop();
 
       return DesktopNativeWidgetTopLevelHandler::CreateParentWindow(
-          window, bounds, is_fullscreen, root_is_always_on_top);
+          window, bounds, is_fullscreen, is_menu, root_is_always_on_top);
     }
     return root_window_;
   }
