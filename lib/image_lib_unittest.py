@@ -74,7 +74,6 @@ class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
     part_count: How many partition device files to make up.  Default: normal
         partition table.
   """
-  # pylint: disable=dangerous-default-value
   # pylint: disable=super-init-not-called
   def __init__(self, path, destination=None, util_path=None,
                dev=LOOP_DEV, part_count=0):
@@ -92,12 +91,16 @@ class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
       self._gpt_table = LOOP_PARTITION_INFO
     self.parts = {p.number: '%sp%s' % (dev, p.number)
                   for p in self._gpt_table}
+    self.enable_rw_called = set()
+    self.disable_rw_called = set()
 
   def EnableRwMount(self, part_id, offset=0):
     """Stub out enable rw mount."""
+    self.enable_rw_called.add((part_id, offset))
 
   def DisableRwMount(self, part_id, offset=0):
     """Stub out disable rw mount."""
+    self.disable_rw_called.add((part_id, offset))
 
   def _Mount(self, part, mount_opts):
     """Stub out mount operations."""
