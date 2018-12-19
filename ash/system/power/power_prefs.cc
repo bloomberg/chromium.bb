@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/time/default_tick_clock.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -259,15 +260,26 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
       prefs->GetBoolean(prefs::kPowerAllowScreenWakeLocks);
   values.enable_auto_screen_lock =
       prefs->GetBoolean(prefs::kEnableAutoScreenLock);
-  values.presentation_screen_dim_delay_factor =
-      prefs->GetDouble(prefs::kPowerPresentationScreenDimDelayFactor);
-  values.user_activity_screen_dim_delay_factor =
-      prefs->GetDouble(prefs::kPowerUserActivityScreenDimDelayFactor);
+
+  // Screen-dim deferral in response to user activity predictions can interact
+  // poorly with delay scaling, resulting in the system staying awake for a long
+  // time if a prediction is wrong. https://crbug.com/888392.
+  if (prefs->GetBoolean(prefs::kPowerSmartDimEnabled) &&
+      base::FeatureList::IsEnabled(
+          chromeos::features::kUserActivityPrediction)) {
+    values.presentation_screen_dim_delay_factor = 1.0;
+    values.user_activity_screen_dim_delay_factor = 1.0;
+  } else {
+    values.presentation_screen_dim_delay_factor =
+        prefs->GetDouble(prefs::kPowerPresentationScreenDimDelayFactor);
+    values.user_activity_screen_dim_delay_factor =
+        prefs->GetDouble(prefs::kPowerUserActivityScreenDimDelayFactor);
+  }
+
   values.wait_for_initial_user_activity =
       prefs->GetBoolean(prefs::kPowerWaitForInitialUserActivity);
   values.force_nonzero_brightness_for_user_activity =
       prefs->GetBoolean(prefs::kPowerForceNonzeroBrightnessForUserActivity);
-  values.smart_dim_enabled = prefs->GetBoolean(prefs::kPowerSmartDimEnabled);
 
   power_policy_controller_->ApplyPrefs(values);
 }
