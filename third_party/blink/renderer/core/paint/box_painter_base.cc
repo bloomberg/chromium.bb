@@ -580,6 +580,12 @@ LayoutRectOutsets AdjustOutsetsForEdgeInclusion(
   return adjusted;
 }
 
+bool ShouldApplyBlendOperation(const BoxPainterBase::FillLayerInfo& info,
+                               const FillLayer& layer) {
+  // For a mask layer, don't use the operator if this is the bottom layer.
+  return !info.is_bottom_layer || layer.GetType() != EFillLayerType::kMask;
+}
+
 }  // anonymous namespace
 
 LayoutRectOutsets BoxPainterBase::AdjustedBorderOutsets(
@@ -612,7 +618,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   const auto did_adjust_paint_rect = scrolled_paint_rect != rect;
 
   scoped_refptr<Image> image;
-  SkBlendMode composite_op = op;
+  SkBlendMode composite_op = SkBlendMode::kSrcOver;
   base::Optional<ScopedInterpolationQuality> interpolation_quality_context;
   if (info.should_paint_image) {
     geometry.Calculate(paint_info.PaintContainer(), paint_info.phase,
@@ -627,10 +633,10 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
     if (bg_layer.MaskSourceType() == EMaskSourceType::kLuminance)
       context.SetColorFilter(kColorFilterLuminanceToAlpha);
 
-    // If op != SkBlendMode::kSrcOver, a mask is being painted.
-    SkBlendMode bg_op = WebCoreCompositeToSkiaComposite(
-        bg_layer.Composite(), bg_layer.GetBlendMode());
-    composite_op = (op == SkBlendMode::kSrcOver) ? bg_op : op;
+    if (ShouldApplyBlendOperation(info, bg_layer)) {
+      composite_op = WebCoreCompositeToSkiaComposite(bg_layer.Composite(),
+                                                     bg_layer.GetBlendMode());
+    }
   }
 
   LayoutRectOutsets border = ComputeBorders();
