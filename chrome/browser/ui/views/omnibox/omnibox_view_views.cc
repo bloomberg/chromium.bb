@@ -386,6 +386,9 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     case IDS_PASTE_AND_GO:
       model()->PasteAndGo(GetClipboardText());
       return;
+    case IDS_SHOW_URL:
+      model()->Unelide(true /* exit_query_in_omnibox */);
+      return;
     case IDC_EDIT_SEARCH_ENGINES:
       location_bar_view_->command_updater()->ExecuteCommand(command_id);
       return;
@@ -1223,6 +1226,11 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
     return !read_only() && !GetClipboardText().empty();
   if (command_id == IDS_PASTE_AND_GO)
     return !read_only() && model()->CanPasteAndGo(GetClipboardText());
+
+  // Menu item is only shown when it is valid.
+  if (command_id == IDS_SHOW_URL)
+    return true;
+
   return Textfield::IsCommandIdEnabled(command_id) ||
          location_bar_view_->command_updater()->IsCommandEnabled(command_id);
 }
@@ -1573,6 +1581,16 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   DCHECK_GE(paste_position, 0);
   menu_contents->InsertItemWithStringIdAt(
       paste_position + 1, IDS_PASTE_AND_GO, IDS_PASTE_AND_GO);
+
+  // Only add this menu entry if Query in Omnibox feature is enabled.
+  if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox)) {
+    // If the user has not started editing the text, and we are not showing the
+    // full URL, then provide a way to unelide via the context menu.
+    if (!read_only() && !model()->user_input_in_progress() &&
+        text() != controller()->GetLocationBarModel()->GetFormattedFullURL()) {
+      menu_contents->AddItemWithStringId(IDS_SHOW_URL, IDS_SHOW_URL);
+    }
+  }
 
   menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
 
