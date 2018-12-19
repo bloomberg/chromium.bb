@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/devtools/device/usb/usb_device_manager_helper.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 
@@ -39,8 +38,6 @@ struct AndroidDeviceInfo {
   int zero_mask = 0;
 };
 
-using AndroidInterfaceInfoListCallback =
-    base::OnceCallback<void(std::vector<AndroidInterfaceInfo>)>;
 using AndroidDeviceInfoListCallback =
     base::OnceCallback<void(std::vector<AndroidDeviceInfo>)>;
 

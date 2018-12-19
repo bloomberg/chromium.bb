@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -162,7 +163,9 @@ void UsbDeviceManagerHelper::GetAndroidDevices(
   DCHECK(device_manager_);
   device_manager_->GetDevices(
       /*options=*/nullptr,
-      base::BindOnce(&GetAndroidDeviceInfoList, std::move(callback)));
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(&GetAndroidDeviceInfoList, std::move(callback)),
+          std::vector<device::mojom::UsbDeviceInfoPtr>()));
 }
 
 void UsbDeviceManagerHelper::GetDevice(
@@ -206,10 +209,12 @@ void UsbDeviceManagerHelper::CountDevicesInternal(
   EnsureUsbDeviceManagerConnection();
 
   DCHECK(device_manager_);
+  auto countCb = base::BindOnce(&CountAndroidDevices, std::move(callback));
   device_manager_->GetDevices(
-      /*options=*/nullptr, base::BindOnce(&GetAndroidDeviceInfoList,
-                                          base::BindOnce(&CountAndroidDevices,
-                                                         std::move(callback))));
+      /*options=*/nullptr,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(&GetAndroidDeviceInfoList, std::move(countCb)),
+          std::vector<device::mojom::UsbDeviceInfoPtr>()));
 }
 
 void UsbDeviceManagerHelper::SetUsbManagerForTestingInternal(
@@ -221,7 +226,5 @@ void UsbDeviceManagerHelper::SetUsbManagerForTestingInternal(
 
 void UsbDeviceManagerHelper::OnDeviceManagerConnectionError() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(donna.wu@intel.com): finish ongoing count/enumerate requests with some
-  // result for the connection error cases.
   device_manager_.reset();
 }
