@@ -29,7 +29,7 @@ class WindowProxyManager : public GarbageCollected<WindowProxyManager> {
   void ClearForClose();
   void CORE_EXPORT ClearForNavigation();
   void ClearForSwap();
-  void ClearForMummification();
+  void ClearForV8MemoryPurge();
 
   // Global proxies are passed in a vector to maintain their order: global proxy
   // object for the main world is always first. This is needed to prevent bugs

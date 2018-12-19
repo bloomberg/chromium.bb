@@ -73,7 +73,7 @@ void WindowProxy::ClearForSwap() {
   DisposeContext(Lifecycle::kGlobalObjectIsDetached, kFrameWillNotBeReused);
 }
 
-void WindowProxy::ClearForMummification() {
+void WindowProxy::ClearForV8MemoryPurge() {
   DisposeContext(Lifecycle::kForciblyPurgeV8Memory, kFrameWillNotBeReused);
 }
 
