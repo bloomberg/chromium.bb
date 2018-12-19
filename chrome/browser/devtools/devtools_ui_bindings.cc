@@ -544,8 +544,8 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       web_contents_);
 
   // Register on-load actions.
-  embedder_message_dispatcher_.reset(
-      DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(this));
+  embedder_message_dispatcher_ =
+      DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(this);
 }
 
 DevToolsUIBindings::~DevToolsUIBindings() {
