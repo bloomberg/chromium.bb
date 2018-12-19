@@ -3160,8 +3160,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
-
-    if (!cpi->optimize_seg_arr[mbmi->segment_id]) {
+    if (cpi->optimize_seg_arr[mbmi->segment_id] != FULL_TRELLIS_OPT) {
       av1_xform_quant(
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,
           USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
@@ -3307,7 +3306,7 @@ RECON_INTRA:
     // if the last search tx_type is the best tx_type, we don't need to
     // do this again
     if (best_tx_type != last_tx_type) {
-      if (!cpi->optimize_seg_arr[mbmi->segment_id]) {
+      if (cpi->optimize_seg_arr[mbmi->segment_id] != FULL_TRELLIS_OPT) {
         av1_xform_quant(
             cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
             best_tx_type,

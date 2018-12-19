@@ -226,7 +226,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   if (!is_blk_skip(x, plane, blk_row * bw + blk_col) && !mbmi->skip_mode) {
     TX_TYPE tx_type = av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col,
                                       tx_size, cm->reduced_tx_set_used);
-    if (args->enable_optimize_b) {
+    if (args->enable_optimize_b != NO_TRELLIS_OPT) {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, tx_type, AV1_XFORM_QUANT_FP);
       TXB_CTX txb_ctx;
@@ -578,7 +578,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
     const ENTROPY_CONTEXT *a = &args->ta[blk_col];
     const ENTROPY_CONTEXT *l = &args->tl[blk_row];
-    if (args->enable_optimize_b) {
+    if (args->enable_optimize_b != NO_TRELLIS_OPT) {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, tx_type, AV1_XFORM_QUANT_FP);
       TXB_CTX txb_ctx;
