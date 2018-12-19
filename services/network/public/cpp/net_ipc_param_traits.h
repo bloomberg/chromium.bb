@@ -232,7 +232,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::SSLInfo::HandshakeType,
                           net::SSLInfo::HANDSHAKE_FULL)
 
 IPC_ENUM_TRAITS_MAX_VALUE(net::URLRequest::ReferrerPolicy,
-                          net::URLRequest::MAX_REFERRER_POLICY - 1)
+                          net::URLRequest::MAX_REFERRER_POLICY)
 
 IPC_STRUCT_TRAITS_BEGIN(net::HttpRequestHeaders::HeaderKeyValuePair)
   IPC_STRUCT_TRAITS_MEMBER(key)

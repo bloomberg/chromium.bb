@@ -349,9 +349,6 @@ GURL URLRequestJob::ComputeReferrerForPolicy(URLRequest::ReferrerPolicy policy,
       return referrer_origin.GetURL();
     case URLRequest::NO_REFERRER:
       return GURL();
-    case URLRequest::MAX_REFERRER_POLICY:
-      NOTREACHED();
-      return GURL();
   }
 
   NOTREACHED();

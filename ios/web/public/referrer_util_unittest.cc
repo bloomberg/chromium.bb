@@ -233,9 +233,6 @@ TEST_F(ReferrerUtilTest, PolicyForNavigation) {
       case net::URLRequest::NO_REFERRER:
         EXPECT_EQ(ReferrerPolicyNever, policy);
         break;
-      case net::URLRequest::MAX_REFERRER_POLICY:
-        FAIL();
-        break;
     }
   }
 }
