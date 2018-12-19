@@ -436,12 +436,14 @@ class LaunchCommand(object):
     Returns:
       A list of strings forming the command to launch the test.
     """
-    return ['xcodebuild', 'test-without-building',
-            '-xctestrun', self.fill_xctest_run(egtests_app),
-            '-resultBundlePath', out_dir,
-            '-parallel-testing-enabled', 'YES',
-            '-destination', destination,
-            '-parallel-testing-worker-count', str(shards)]
+    cmd = ['xcodebuild', 'test-without-building',
+           '-xctestrun', self.fill_xctest_run(egtests_app),
+           '-destination', destination,
+           '-resultBundlePath', out_dir]
+    if self.shards > 1:
+      cmd += ['-parallel-testing-enabled', 'YES',
+              '-parallel-testing-worker-count', str(shards)]
+    return cmd
 
 
 class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
@@ -457,7 +459,8 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
       mac_toolchain=None,
       retry=1,
       shards=1,
-      xcode_path=None
+      xcode_path=None,
+      test_cases=None
   ):
     """Initializes a new instance of SimulatorParallelTestRunner class.
 
@@ -471,6 +474,8 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
       retry: (int) A number to retry test run, will re-run only failed tests.
       shards: (int) A number of shards. Default is 1.
       xcode_path: (str) A path to Xcode.app folder.
+      test_cases: (list) List of tests to be included in the test run.
+                  None or [] to include all tests.
 
     Raises:
       AppNotFoundError: If the given app does not exist.
@@ -487,6 +492,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     self.retry = retry or 1
     self.shards = shards or 1
     self.xcode_path = xcode_path
+    self.test_cases = test_cases
     self._init_sharding_data()
     self.logs = collections.OrderedDict()
     self.test_results = collections.OrderedDict()
@@ -515,6 +521,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
             'destination': 'platform=iOS Simulator,OS=%s,name=%s' % (
                 self.version, self.platform),
             'shards': self.shards,
+            'test_cases': self.test_cases
         }
     ]
 
@@ -532,16 +539,16 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     """Launches tests using xcodebuild."""
     destinaion_folder = lambda dest: dest.replace(
         'platform=iOS Simulator,', '').replace(',name=', ' ').replace('OS=', '')
-    launch_commands = [
-        LaunchCommand(EgtestsApp(params['app']),
-                      params['destination'],
-                      shards=params['shards'],
-                      retries=self.retry,
-                      out_dir=os.path.join(
-                          self.out_dir,
-                          destinaion_folder(params['destination'])),
-                      env=self.get_launch_env())
-        for params in self.sharding_data]
+    launch_commands = []
+    for params in self.sharding_data:
+      launch_commands.append(LaunchCommand(
+          EgtestsApp(params['app'], filtered_tests=params['test_cases']),
+          params['destination'],
+          shards=params['shards'],
+          retries=self.retry,
+          out_dir=os.path.join(self.out_dir,
+                               destinaion_folder(params['destination'])),
+          env=self.get_launch_env()))
 
     pool = multiprocessing.pool.ThreadPool(len(launch_commands))
     self.test_results['commands'] = []

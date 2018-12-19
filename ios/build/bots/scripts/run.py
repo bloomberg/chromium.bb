@@ -48,6 +48,7 @@ def main():
           retry=args.retries,
           shards=args.shards,
           xcode_path=args.xcode_path,
+          test_cases=args.test_cases
       )
     elif args.replay_path != 'NO_PATH':
       tr = test_runner.WprProxySimulatorTestRunner(
