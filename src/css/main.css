@@ -59,37 +59,30 @@ body {
   width: 8px;
 }
 
-.buttons {
-  align-items: center;
-  display: flex;
-  justify-content: center;
+button,
+input {
+  background-color: transparent;
+  position: relative;
+  pointer-events: auto;
+  margin: 0;
+  padding: 0;
+  border-radius: 4px;
+  border-style: none;
+  outline: none;
+}
+
+input {
+  -webkit-appearance: none;
+}
+
+button[disabled],
+input[disabled] {
+  opacity: 0.75;
   pointer-events: none;
 }
 
-.buttons[hidden],
-#record-time[hidden] {
-  display: none;  /* Required for flexbox hidden. */
-}
-
-.buttons button,
-.buttons input {
-  pointer-events: auto;
-  -webkit-app-region: no-drag;
-  background-color: transparent;
-  background-position: center;
-  background-repeat: no-repeat;
-  border: none;
-  border-radius: 4px;
-  width: 40px;
-  height: 40px;
-  margin: 0;
-  padding: 0;
-  outline: none;
-  position: relative;
-}
-
-.buttons button:focus:after,
-.buttons input:focus:after {
+button:focus:after,
+input:focus:after {
   position: absolute;
   border: 2px solid rgba(37, 129, 223, 0.7);
   border-radius: 4px;
@@ -100,37 +93,38 @@ body {
   content: '';
 }
 
-.buttons.circle button:focus:after,
-.buttons.circle input:focus:after {
+#browser .media-wrapper:focus {
+  /* Make elements have the same focus style. */
+  outline: 2px solid rgba(37, 129, 223, 0.7);
+}
+
+.circle button,
+.circle button:focus:after,
+.circle input:focus:after {
   border-radius: 50%;
 }
 
-*:focus {
-  /* Make all elements have the same focus-outline style. */
-  outline: 2px solid rgba(26, 115, 232, 0.5);
-}
-
-.buttons input {
-  -webkit-appearance: none;
-}
-
-.buttons.circle button {
-  border-radius: 50%;
-}
-
-.buttons button[disabled],
-.buttons input[disabled] {
-  opacity: 0.65;
+.buttons {
+  align-items: center;
+  display: flex;
+  justify-content: center;
   pointer-events: none;
-}
-
-.buttons.circle button[disabled] {
-  opacity: 0.75;
 }
 
 .buttons button:active,
 .buttons input:active {
   -webkit-transform: scale(1.07);
+}
+
+.buttons button,
+.buttons input,
+.menu-header .icon,
+.menu-item .icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 #browser-print {
@@ -324,7 +318,7 @@ body:not(.multi-camera) #switch-device {
 
 #camera-mode {
   background-image: url(../images/camera_mode_photo.svg);
-  width:  40px;
+  width: 40px;
   height: 40px;
   visibility: hidden;
 }
@@ -646,6 +640,11 @@ body.grid._4x4 #preview-grid-vertical:before {
   padding: 0 12px;
 }
 
+#record-time[hidden],
+.menu-item[hidden] {
+  display: none;  /* Required for flexbox hidden. */
+}
+
 #record-time .icon {
   flex-shrink: 0;
   background-color: #ea4335;
@@ -702,7 +701,6 @@ body.grid._4x4 #preview-grid-vertical:before {
   width: 50%;
 }
 
-/* Printing in the browser view. */
 @media print {
   html {
     height: 100%;  /* Required for printing. */
@@ -741,10 +739,9 @@ body.grid._4x4 #preview-grid-vertical:before {
     align-items: flex-start;
   }
 
-  /* Reset styles to default on the borwser view, and set the maximum dimensions
-     to 100%. */
+  /* Set default styles and max-dimensions for printing the browser view. */
   #browser div.media-wrapper.selected {
-    display: block; /* Allows to keep aspect ratio of children. */
+    display: block;  /* Allows to keep aspect ratio of children. */
     border: none;
     box-shadow: none;
     margin: auto;
@@ -825,11 +822,7 @@ body.grid._4x4 #preview-grid-vertical:before {
   }
 }
 
-#settings .menu,
-#gridsettings .menu,
-#timersettings .menu,
-body.settings.gridsettings #settings .menu,
-body.settings.timersettings #settings .menu {
+.menu {
   background: rgba(0, 0, 0, 0.75);
   display: flex;
   flex-direction: column;
@@ -843,16 +836,19 @@ body.settings.timersettings #settings .menu {
   transition: -webkit-transform 150ms ease-in;
 }
 
-body.settings #settings .menu,
+body.settings:not(.gridsettings):not(.timersettings) #settings .menu,
 body.gridsettings #gridsettings .menu,
 body.timersettings #timersettings .menu {
   -webkit-transform: translateX(0);
 }
 
-.buttons.menu-header,
-.buttons.menu-item {
+.menu-header,
+.menu-item {
+  align-items: center;
+  display: flex;
   flex-shrink: 0;
   justify-content: flex-start;
+  text-align: left;
   padding: 0 20px 0 24px;
   height: 64px;
   color: #f1f3f4;
@@ -860,39 +856,27 @@ body.timersettings #timersettings .menu {
   font-family: 'Roboto', sans-serif;
 }
 
-.buttons.menu-header {
+.menu-header {
   height: 88px;
   color: white;
   font-size: 20px;
 }
 
-.buttons.menu-item {
-  pointer-events: auto;
-}
-
-.buttons.menu-header .icon,
-.buttons.menu-item .icon,
-.buttons.menu-item button,
-.buttons.menu-item input {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.buttons.menu-header .icon,
-.buttons.menu-item .icon,
-.buttons.menu-item input {
+.menu-header .icon,
+.menu-item .icon {
   margin-right: 6px;
 }
 
-.buttons.menu-item .description {
+.menu-item .end {
+  margin-left: auto;
+}
+
+.menu-item .description {
   margin-top: 5px;
   color: #bdc1c6;
 }
 
-.description span {
+.menu-item .description span {
   display: none;
 }
 
@@ -904,11 +888,7 @@ body._10sec .description span[i18n-content=labelTimer10s] {
   display: inline;
 }
 
-.buttons.menu-item button {
-  margin-left: auto;
-}
-
-.buttons.menu-item input:before {
+.menu-item input:before {
   position: absolute;
   top: 13px;
   left: 13px;
@@ -919,7 +899,7 @@ body._10sec .description span[i18n-content=labelTimer10s] {
   content: '';
 }
 
-.buttons.menu-item input:checked:before {
+.menu-item input:checked:before {
   top: 12px;
   left: 12px;
   bottom: 12px;
@@ -931,7 +911,12 @@ body._10sec .description span[i18n-content=labelTimer10s] {
   transition: border-width 100ms ease-in;
 }
 
-.menu-header button {
+.menu-item:focus:after {
+  left: 2px;
+  right: 2px;
+}
+
+.menu-header .icon {
   background-image: url(../images/settings_button_back.svg);
 }
 
@@ -951,14 +936,9 @@ body._10sec .description span[i18n-content=labelTimer10s] {
   background-image: url(../images/settings_help.svg);
 }
 
-#settings-gridtype button,
-#settings-timerdur button {
+#settings-gridtype .icon.end,
+#settings-timerdur .icon.end {
   background-image: url(../images/settings_button_expand.svg);
-}
-
-#settings-feedback button,
-#settings-help button {
-  background-image: url(../images/settings_button_external.svg);
 }
 
 #warning,
@@ -986,7 +966,7 @@ body._10sec .description span[i18n-content=labelTimer10s] {
   background: rgba(0, 0, 0, 0.8);
 }
 
-#dialog #dialog-popup {
+#dialog-popup {
   -webkit-transform: translateY(20px);
   background: white;
   display: flex;
@@ -1003,7 +983,9 @@ body.dialog #dialog #dialog-popup {
 #dialog #dialog-msg {
   -webkit-user-select: text;  /* Allow copying the message. */
   cursor: text;
-  font-size: 110%;
+  color: #202124;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
   max-height: 320px;
   max-width: 472px;
   overflow: auto;
@@ -1026,21 +1008,35 @@ body.dialog #dialog #dialog-popup {
   height: 6px;
 }
 
-#dialog #dialog-buttons {
+#dialog-buttons {
   align-items: center;
   display: flex;
   justify-content: flex-end;
   margin: 0 -2px;
 }
 
-#dialog #dialog-buttons button {
+#dialog-buttons button {
+  background-color: white;
+  color: #2581df;
+  font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+  border-style: solid;
   padding: 6px 18px;
   margin: 4px;
 }
 
+#dialog-buttons button:focus {
+  background-color: #2581df;
+  color: white;
+}
+
+#dialog-buttons button:focus:after {
+  border: none;
+}
+
 #spinner {
   background-image: url(../images/spinner.svg);
-  width:  32px;
+  width: 32px;
   height: 32px;
   z-index: 1;
   visibility: hidden;

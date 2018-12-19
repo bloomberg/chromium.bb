@@ -30,21 +30,7 @@ cca.views.BaseSettings = function(selector, itemHandlers) {
 
   this.root.querySelector('.menu-header button').addEventListener(
       'click', () => this.leave());
-  // TODO(yuli): Simplify by changing '.menu-item button' to 'button.menu-item'.
-  this.root.querySelectorAll('.menu-item').forEach((wrapper) => {
-    var wrapped = wrapper.querySelector('button');
-    if (wrapped) {
-      wrapped.addEventListener('click', (event) => {
-        var handler = itemHandlers[wrapper.id];
-        if (handler) {
-          handler(event);
-        }
-        event.stopPropagation(); // Don't trigger clicking the wrapper.
-      });
-      wrapper.addEventListener('click', (event) => wrapped.click());
-    }
-  });
-  this.root.querySelectorAll('.menu-item input').forEach((element) => {
+  this.root.querySelectorAll('.menu-item').forEach((element) => {
     var handler = itemHandlers[element.id];
     if (handler) {
       element.addEventListener('click', handler);
@@ -71,7 +57,6 @@ cca.views.GridSettings = function() {
 cca.views.GridSettings.prototype = {
   __proto__: cca.views.BaseSettings.prototype,
 };
-
 
 /**
  * Creates the controller of timer settings view.
