@@ -19,37 +19,18 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "components/url_formatter/top_domains/top_domain_util.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/uspoof.h"
 
 namespace {
 
-const size_t kMinLengthForEditDistance = 5u;
-
 const size_t kTopN = 500;
 
 void PrintHelp() {
   std::cout << "make_top_domain_list_for_edit_distance <input-file>"
             << " <output-file> [--v=1]" << std::endl;
-}
-
-// Returns the length of the hostname without the registry part and the
-// dot preceeding it.
-// E.g. For hostname = "google.com", the registry is "com", so this returns 6
-// (length of "google").
-size_t GetWithoutRegistryLength(const std::string& hostname) {
-  const size_t registry_size =
-      net::registry_controlled_domains::PermissiveGetHostRegistryLength(
-          hostname.c_str(),
-          net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  if (registry_size == 0) {
-    return hostname.size();
-  }
-  DCHECK_LE(registry_size, hostname.size() - 1);
-  return hostname.size() - registry_size - 1;
 }
 
 std::string GetSkeleton(const std::string& domain,
@@ -123,7 +104,7 @@ int main(int argc, char* argv[]) {
     }
     if (count > kTopN)
       break;
-    if (GetWithoutRegistryLength(line) < kMinLengthForEditDistance) {
+    if (!url_formatter::top_domains::IsEditDistanceCandidate(line)) {
       continue;
     }
     count++;

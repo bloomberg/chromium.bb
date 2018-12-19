@@ -27,6 +27,7 @@ jumbo_static_library("url_formatter") {
   deps = [
     "//base",
     "//base:i18n",
+    "//components/url_formatter/top_domains:common",
     "//components/url_formatter/top_domains:generate_top_domains_trie",
     "//net",
     "//net:preload_decoder",
