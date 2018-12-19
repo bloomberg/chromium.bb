@@ -1235,7 +1235,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertFalse(self._driver.capabilities['mobileEmulationEnabled'])
 
   def testChromeDriverSendLargeData(self):
-    script = 's = ""; for (i = 0; i < 10e6; i++) s += "0"; return s;'
+    script = 'var s = ""; for (var i = 0; i < 10e6; i++) s += "0"; return s;'
     lots_of_data = self._driver.ExecuteScript(script)
     self.assertEquals('0'.zfill(int(10e6)), lots_of_data)
 
