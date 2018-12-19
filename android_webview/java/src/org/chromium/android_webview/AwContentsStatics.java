@@ -121,21 +121,6 @@ public class AwContentsStatics {
         nativeSetCheckClearTextPermitted(permitted);
     }
 
-    @CalledByNative
-    private static void proxyOverrideChanged(Runnable callback) {
-        if (callback == null) return;
-        callback.run();
-    }
-
-    public static void setProxyOverride(
-            String host, int port, String[] exclusionList, Runnable callback) {
-        nativeSetProxyOverride(host, port, exclusionList, callback);
-    }
-
-    public static void clearProxyOverride(Runnable callback) {
-        nativeClearProxyOverride(callback);
-    }
-
     /**
      * Return the first substring consisting of the address of a physical location.
      * @see {@link android.webkit.WebView#findAddress(String)}
@@ -162,7 +147,4 @@ public class AwContentsStatics {
     private static native void nativeSetSafeBrowsingWhitelist(
             String[] urls, Callback<Boolean> callback);
     private static native void nativeSetCheckClearTextPermitted(boolean permitted);
-    private static native void nativeSetProxyOverride(
-            String host, int port, String[] exclusionList, Runnable callback);
-    private static native void nativeClearProxyOverride(Runnable callback);
 }

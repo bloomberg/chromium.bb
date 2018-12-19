@@ -25,6 +25,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
+import org.chromium.android_webview.AwProxyController;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwServiceWorkerController;
@@ -72,6 +73,7 @@ public class WebViewChromiumAwInit {
     private AwTracingController mAwTracingController;
     private VariationsSeedLoader mSeedLoader;
     private Thread mSetUpResourcesThread;
+    private AwProxyController mAwProxyController;
 
     // Guards accees to the other members, and is notifyAll() signalled on the UI thread
     // when the chromium process has been started.
@@ -97,6 +99,15 @@ public class WebViewChromiumAwInit {
             }
         }
         return mAwTracingController;
+    }
+
+    public AwProxyController getAwProxyController() {
+        synchronized (mLock) {
+            if (mAwProxyController == null) {
+                ensureChromiumStartedLocked(true);
+            }
+        }
+        return mAwProxyController;
     }
 
     // TODO: DIR_RESOURCE_PAKS_ANDROID needs to live somewhere sensible,
@@ -181,6 +192,7 @@ public class WebViewChromiumAwInit {
                 mWebStorage = new WebStorageAdapter(mFactory, AwQuotaManagerBridge.getInstance());
                 mAwTracingController = awBrowserContext.getTracingController();
                 mServiceWorkerController = awBrowserContext.getServiceWorkerController();
+                mAwProxyController = new AwProxyController();
             }
 
             mFactory.getRunQueue().drainQueue();

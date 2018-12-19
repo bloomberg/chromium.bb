@@ -110,11 +110,20 @@ class ProxyConfigServiceAndroidTestBase : public TestWithScopedTaskEnvironment {
     EXPECT_EQ(expected, proxy_info.ToPacString());
   }
 
-  void SetProxyOverride(const std::string& host,
-                        int port,
-                        const std::vector<std::string>& exclusion_list,
-                        base::OnceClosure callback) {
-    service_.SetProxyOverride(host, port, exclusion_list, std::move(callback));
+  void SetProxyOverride(
+      const ProxyConfigServiceAndroid::ProxyOverrideRule& rule,
+      const std::vector<std::string>& bypass_rules,
+      base::OnceClosure callback) {
+    std::vector<ProxyConfigServiceAndroid::ProxyOverrideRule> rules;
+    rules.push_back(rule);
+    SetProxyOverride(rules, bypass_rules, std::move(callback));
+  }
+
+  void SetProxyOverride(
+      const std::vector<ProxyConfigServiceAndroid::ProxyOverrideRule>& rules,
+      const std::vector<std::string>& bypass_rules,
+      base::OnceClosure callback) {
+    service_.SetProxyOverride(rules, bypass_rules, std::move(callback));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -199,30 +208,113 @@ TEST_F(ProxyConfigServiceAndroidTest, TestProxyOverrideCallback) {
   EXPECT_TRUE(proxyCallback.called);
 }
 
-TEST_F(ProxyConfigServiceAndroidTest, TestOverrideNoProxy) {
-  std::vector<std::string> exclusion_list;
+TEST_F(ProxyConfigServiceAndroidTest, TestProxyOverrideSchemes) {
+  std::vector<std::string> bypass_rules;
 
   // Check that webview uses the default proxy
   TestMapping("http://example.com/", "DIRECT");
+  TestMapping("https://example.com/", "DIRECT");
+  TestMapping("ftp://example.com/", "DIRECT");
 
-  // Check that webview uses the custom proxy
-  SetProxyOverride("httpoverrideproxy.com", 200, exclusion_list,
+  SetProxyOverride({"*", "httpoverrideproxy.com:200"}, bypass_rules,
                    base::DoNothing());
   TestMapping("http://example.com/", "PROXY httpoverrideproxy.com:200");
+  TestMapping("https://example.com/", "PROXY httpoverrideproxy.com:200");
+  TestMapping("ftp://example.com/", "PROXY httpoverrideproxy.com:200");
+
+  // Check that webview uses the custom proxy only for https
+  SetProxyOverride({"https", "httpoverrideproxy.com:200"}, bypass_rules,
+                   base::DoNothing());
+  TestMapping("http://example.com/", "DIRECT");
+  TestMapping("https://example.com/", "PROXY httpoverrideproxy.com:200");
+  TestMapping("ftp://example.com/", "DIRECT");
 
   // Check that webview uses the default proxy
   ClearProxyOverride(base::DoNothing());
   TestMapping("http://example.com/", "DIRECT");
+  TestMapping("https://example.com/", "DIRECT");
+  TestMapping("ftp://example.com/", "DIRECT");
+}
+
+TEST_F(ProxyConfigServiceAndroidTest, TestProxyOverridePorts) {
+  std::vector<std::string> bypass_rules;
+
+  // Check that webview uses the default proxy
+  TestMapping("http://example.com/", "DIRECT");
+  TestMapping("https://example.com/", "DIRECT");
+  TestMapping("ftp://example.com/", "DIRECT");
+
+  // Check that webview uses port 80 for http proxies
+  SetProxyOverride({"*", "httpoverrideproxy.com"}, bypass_rules,
+                   base::DoNothing());
+  TestMapping("http://example.com:444", "PROXY httpoverrideproxy.com:80");
+  TestMapping("https://example.com:2222", "PROXY httpoverrideproxy.com:80");
+  TestMapping("ftp://example.com:15", "PROXY httpoverrideproxy.com:80");
+
+  // Check that webview uses port 443 for https proxies
+  SetProxyOverride({"*", "https://httpoverrideproxy.com"}, bypass_rules,
+                   base::DoNothing());
+  TestMapping("http://example.com:8080", "HTTPS httpoverrideproxy.com:443");
+  TestMapping("https://example.com:1111", "HTTPS httpoverrideproxy.com:443");
+  TestMapping("ftp://example.com:752", "HTTPS httpoverrideproxy.com:443");
+
+  // Check that webview uses custom port
+  SetProxyOverride({"*", "https://httpoverrideproxy.com:777"}, bypass_rules,
+                   base::DoNothing());
+  TestMapping("http://example.com:8080", "HTTPS httpoverrideproxy.com:777");
+  TestMapping("https://example.com:1111", "HTTPS httpoverrideproxy.com:777");
+  TestMapping("ftp://example.com:752", "HTTPS httpoverrideproxy.com:777");
+
+  ClearProxyOverride(base::DoNothing());
+}
+
+TEST_F(ProxyConfigServiceAndroidTest, TestProxyOverrideMultipleRules) {
+  std::vector<std::string> bypass_rules;
+
+  // Multiple rules with schemes are valid
+  std::vector<ProxyConfigServiceAndroid::ProxyOverrideRule> rules;
+  rules.push_back({"http", "httpoverrideproxy.com"});
+  rules.push_back({"https", "https://httpoverrideproxy.com"});
+  SetProxyOverride(rules, bypass_rules, base::DoNothing());
+  TestMapping("https://example.com/", "HTTPS httpoverrideproxy.com:443");
+  TestMapping("http://example.com/", "PROXY httpoverrideproxy.com:80");
+
+  // Rules with and without scheme can be combined
+  rules.clear();
+  rules.push_back({"http", "overrideproxy1.com"});
+  rules.push_back({"*", "overrideproxy2.com"});
+  SetProxyOverride(rules, bypass_rules, base::DoNothing());
+  TestMapping("https://example.com/", "PROXY overrideproxy2.com:80");
+  TestMapping("http://example.com/", "PROXY overrideproxy1.com:80");
+
+  ClearProxyOverride(base::DoNothing());
+}
+
+TEST_F(ProxyConfigServiceAndroidTest, TestProxyOverrideListOfRules) {
+  std::vector<std::string> bypass_rules;
+
+  std::vector<ProxyConfigServiceAndroid::ProxyOverrideRule> rules;
+  rules.push_back({"http", "httpproxy1"});
+  rules.push_back({"*", "socks5://fallback1"});
+  rules.push_back({"http", "httpproxy2"});
+  rules.push_back({"*", "fallback2"});
+  rules.push_back({"*", "direct://"});
+  SetProxyOverride(rules, bypass_rules, base::DoNothing());
+
+  TestMapping("http://example.com", "PROXY httpproxy1:80;PROXY httpproxy2:80");
+  TestMapping("https://example.com",
+              "SOCKS5 fallback1:1080;PROXY fallback2:80;DIRECT");
 }
 
 TEST_F(ProxyConfigServiceAndroidTest, TestOverrideAndProxy) {
-  std::vector<std::string> exclusion_list;
+  std::vector<std::string> bypass_rules;
+  bypass_rules.push_back("www.excluded.com");
 
   // Check that webview uses the default proxy
   TestMapping("http://example.com/", "DIRECT");
 
   // Check that webview uses the custom proxy
-  SetProxyOverride("httpoverrideproxy.com", 200, exclusion_list,
+  SetProxyOverride({"*", "httpoverrideproxy.com:200"}, bypass_rules,
                    base::DoNothing());
   TestMapping("http://example.com/", "PROXY httpoverrideproxy.com:200");
 
@@ -230,6 +322,7 @@ TEST_F(ProxyConfigServiceAndroidTest, TestOverrideAndProxy) {
   AddProperty("http.proxyHost", "httpsomeproxy.com");
   ProxySettingsChanged();
   TestMapping("http://example.com/", "PROXY httpoverrideproxy.com:200");
+  TestMapping("http://www.excluded.com/", "DIRECT");
 
   // Check that webview uses the non default proxy
   ClearProxyOverride(base::DoNothing());
@@ -237,7 +330,7 @@ TEST_F(ProxyConfigServiceAndroidTest, TestOverrideAndProxy) {
 }
 
 TEST_F(ProxyConfigServiceAndroidTest, TestProxyAndOverride) {
-  std::vector<std::string> exclusion_list;
+  std::vector<std::string> bypass_rules;
 
   // Check that webview uses the default proxy
   TestMapping("http://example.com/", "DIRECT");
@@ -248,7 +341,7 @@ TEST_F(ProxyConfigServiceAndroidTest, TestProxyAndOverride) {
   TestMapping("http://example.com/", "PROXY httpsomeproxy.com:80");
 
   // Check that webview uses the custom proxy
-  SetProxyOverride("httpoverrideproxy.com", 200, exclusion_list,
+  SetProxyOverride({"*", "httpoverrideproxy.com:200"}, bypass_rules,
                    base::DoNothing());
   TestMapping("http://example.com/", "PROXY httpoverrideproxy.com:200");
 
@@ -258,13 +351,13 @@ TEST_F(ProxyConfigServiceAndroidTest, TestProxyAndOverride) {
 }
 
 TEST_F(ProxyConfigServiceAndroidTest, TestOverrideThenProxy) {
-  std::vector<std::string> exclusion_list;
+  std::vector<std::string> bypass_rules;
 
   // Check that webview uses the default proxy
   TestMapping("http://example.com/", "DIRECT");
 
   // Check that webview uses the custom proxy
-  SetProxyOverride("httpoverrideproxy.com", 200, exclusion_list,
+  SetProxyOverride({"*", "httpoverrideproxy.com:200"}, bypass_rules,
                    base::DoNothing());
   TestMapping("http://example.com/", "PROXY httpoverrideproxy.com:200");
 
@@ -279,7 +372,7 @@ TEST_F(ProxyConfigServiceAndroidTest, TestOverrideThenProxy) {
 }
 
 TEST_F(ProxyConfigServiceAndroidTest, TestClearOverride) {
-  std::vector<std::string> exclusion_list;
+  std::vector<std::string> bypass_rules;
 
   // Check that webview uses the default proxy
   TestMapping("http://example.com/", "DIRECT");
@@ -290,7 +383,7 @@ TEST_F(ProxyConfigServiceAndroidTest, TestClearOverride) {
 }
 
 TEST_F(ProxyConfigServiceAndroidTest, TestProxyAndClearOverride) {
-  std::vector<std::string> exclusion_list;
+  std::vector<std::string> bypass_rules;
 
   // Check that webview uses the non default proxy
   AddProperty("http.proxyHost", "httpsomeproxy.com");
@@ -302,16 +395,16 @@ TEST_F(ProxyConfigServiceAndroidTest, TestProxyAndClearOverride) {
   TestMapping("http://example.com/", "PROXY httpsomeproxy.com:80");
 }
 
-TEST_F(ProxyConfigServiceAndroidTest, TestOverrideExclusionList) {
-  std::vector<std::string> exclusion_list;
-  exclusion_list.push_back("excluded.com");
+TEST_F(ProxyConfigServiceAndroidTest, TestOverrideBypassRules) {
+  std::vector<std::string> bypass_rules;
+  bypass_rules.push_back("excluded.com");
 
   // Check that webview uses the default proxy
   TestMapping("http://excluded.com/", "DIRECT");
   TestMapping("http://example.com/", "DIRECT");
 
-  // Check that webview handles the exclusion list correctly
-  SetProxyOverride("httpoverrideproxy.com", 200, exclusion_list,
+  // Check that webview handles the bypass rules correctly
+  SetProxyOverride({"*", "httpoverrideproxy.com:200"}, bypass_rules,
                    base::DoNothing());
   TestMapping("http://excluded.com/", "DIRECT");
   TestMapping("http://example.com/", "PROXY httpoverrideproxy.com:200");
@@ -320,6 +413,22 @@ TEST_F(ProxyConfigServiceAndroidTest, TestOverrideExclusionList) {
   ClearProxyOverride(base::DoNothing());
   TestMapping("http://excluded.com/", "DIRECT");
   TestMapping("http://example.com/", "DIRECT");
+}
+
+TEST_F(ProxyConfigServiceAndroidTest, TestOverrideToDirect) {
+  std::vector<std::string> bypass_rules;
+
+  // Check that webview uses the non default proxy
+  AddProperty("http.proxyHost", "httpsomeproxy.com");
+  ProxySettingsChanged();
+  TestMapping("http://example.com/", "PROXY httpsomeproxy.com:80");
+
+  // Check that webview uses no proxy
+  TestMapping("http://example.com/", "PROXY httpsomeproxy.com:80");
+  SetProxyOverride({"*", "direct://"}, bypass_rules, base::DoNothing());
+  TestMapping("http://example.com/", "DIRECT");
+
+  ClearProxyOverride(base::DoNothing());
 }
 
 // !! The following test cases are automatically generated from

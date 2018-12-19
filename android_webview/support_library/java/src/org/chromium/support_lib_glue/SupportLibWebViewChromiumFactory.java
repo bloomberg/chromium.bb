@@ -76,6 +76,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
     private InvocationHandler mStatics;
     private InvocationHandler mServiceWorkerController;
     private InvocationHandler mTracingController;
+    private InvocationHandler mProxyController;
 
     public SupportLibWebViewChromiumFactory() {
         mCompatConverterAdapter = BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
@@ -116,17 +117,6 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         @Override
         public Uri getSafeBrowsingPrivacyPolicyUrl() {
             return mSharedStatics.getSafeBrowsingPrivacyPolicyUrl();
-        }
-
-        @Override
-        public void setProxyOverride(
-                String host, int port, String[] exclusionList, Runnable callback) {
-            mSharedStatics.setProxyOverride(host, port, exclusionList, callback);
-        }
-
-        @Override
-        public void clearProxyOverride(Runnable callback) {
-            mSharedStatics.clearProxyOverride(callback);
         }
     }
 
@@ -170,5 +160,16 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
             }
         }
         return mTracingController;
+    }
+
+    @Override
+    public InvocationHandler getProxyController() {
+        synchronized (mAwInit.getLock()) {
+            if (mProxyController == null) {
+                mProxyController = BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
+                        new SupportLibProxyControllerAdapter(mAwInit.getAwProxyController()));
+            }
+        }
+        return mProxyController;
     }
 }

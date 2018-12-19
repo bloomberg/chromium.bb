@@ -17,6 +17,4 @@ public interface StaticsBoundaryInterface {
     void initSafeBrowsing(Context context, ValueCallback<Boolean> callback);
     void setSafeBrowsingWhitelist(List<String> hosts, ValueCallback<Boolean> callback);
     Uri getSafeBrowsingPrivacyPolicyUrl();
-    void setProxyOverride(String host, int port, String[] exclusionList, Runnable callback);
-    void clearProxyOverride(Runnable callback);
 }
