@@ -20,8 +20,8 @@ void AutofillDriverIOSWebFrameFactory::CreateForWebStateAndDelegate(
 
   web_state->SetUserData(
       UserDataKey(),
-      base::WrapUnique(new AutofillDriverIOSWebFrameFactory(
-          web_state, client, bridge, app_locale, enable_download_manager)));
+      std::make_unique<AutofillDriverIOSWebFrameFactory>(
+          web_state, client, bridge, app_locale, enable_download_manager));
 }
 
 AutofillDriverIOSWebFrameFactory::AutofillDriverIOSWebFrameFactory(
@@ -59,9 +59,9 @@ void AutofillDriverIOSWebFrame::CreateForWebFrameAndDelegate(
     return;
 
   web_frame->SetUserData(UserDataKey(),
-                         base::WrapUnique(new AutofillDriverIOSWebFrame(
+                         std::make_unique<AutofillDriverIOSWebFrame>(
                              web_state, web_frame, client, bridge, app_locale,
-                             enable_download_manager)));
+                             enable_download_manager));
 }
 
 AutofillDriverIOSRefCountable::AutofillDriverIOSRefCountable(

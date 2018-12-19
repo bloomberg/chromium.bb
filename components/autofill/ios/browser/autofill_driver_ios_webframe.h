@@ -34,18 +34,19 @@ class AutofillDriverIOSWebFrameFactory
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
   ~AutofillDriverIOSWebFrameFactory() override;
 
-  // Returns a AutofillDriverIOSFromWebFrame for |web_frame|, creating it if
-  // needed.
-  AutofillDriverIOSWebFrame* AutofillDriverIOSFromWebFrame(
-      web::WebFrame* web_frame);
-
- private:
   AutofillDriverIOSWebFrameFactory(
       web::WebState* web_state,
       AutofillClient* client,
       id<AutofillDriverIOSBridge> bridge,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
+
+  // Returns a AutofillDriverIOSFromWebFrame for |web_frame|, creating it if
+  // needed.
+  AutofillDriverIOSWebFrame* AutofillDriverIOSFromWebFrame(
+      web::WebFrame* web_frame);
+
+ private:
   web::WebState* web_state_ = nullptr;
   AutofillClient* client_ = nullptr;
   id<AutofillDriverIOSBridge> bridge_ = nil;
@@ -96,7 +97,6 @@ class AutofillDriverIOSWebFrame
   AutofillDriverIOS* driver() { return driver_.get(); }
   scoped_refptr<AutofillDriverIOSRefCountable> GetRetainableDriver();
 
- private:
   AutofillDriverIOSWebFrame(
       web::WebState* web_state,
       web::WebFrame* web_frame,

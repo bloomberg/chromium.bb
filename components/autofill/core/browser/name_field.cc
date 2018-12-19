@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
@@ -23,13 +22,12 @@ namespace {
 class FullNameField : public NameField {
  public:
   static std::unique_ptr<FullNameField> Parse(AutofillScanner* scanner);
+  explicit FullNameField(AutofillField* field);
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
 
  private:
-  explicit FullNameField(AutofillField* field);
-
   AutofillField* field_;
 
   DISALLOW_COPY_AND_ASSIGN(FullNameField);
@@ -91,7 +89,7 @@ std::unique_ptr<FullNameField> FullNameField::Parse(AutofillScanner* scanner) {
   // "Travel Profile Name".
   AutofillField* field = nullptr;
   if (ParseField(scanner, UTF8ToUTF16(kNameRe), &field))
-    return base::WrapUnique(new FullNameField(field));
+    return std::make_unique<FullNameField>(field);
 
   return nullptr;
 }

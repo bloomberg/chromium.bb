@@ -20,6 +20,11 @@ class ManualFillingControllerImpl
     : public ManualFillingController,
       public content::WebContentsUserData<ManualFillingControllerImpl> {
  public:
+  // Constructor that allows to inject a mock or fake view.
+  ManualFillingControllerImpl(
+      content::WebContents* web_contents,
+      base::WeakPtr<PasswordAccessoryController> pwd_controller,
+      std::unique_ptr<ManualFillingViewInterface> view);
   ~ManualFillingControllerImpl() override;
 
   // ManualFillingController:
@@ -60,12 +65,6 @@ class ManualFillingControllerImpl
 
   // Required for construction via |CreateForWebContents|:
   explicit ManualFillingControllerImpl(content::WebContents* contents);
-
-  // Constructor that allows to inject a mock or fake view.
-  ManualFillingControllerImpl(
-      content::WebContents* web_contents,
-      base::WeakPtr<PasswordAccessoryController> pwd_controller,
-      std::unique_ptr<ManualFillingViewInterface> view);
 
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;

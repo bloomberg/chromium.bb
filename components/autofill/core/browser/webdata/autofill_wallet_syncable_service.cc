@@ -252,8 +252,8 @@ void AutofillWalletSyncableService::CreateForWebDataServiceAndBackend(
     const std::string& app_locale) {
   web_data_service->GetDBUserData()->SetUserData(
       AutofillWalletSyncableServiceUserDataKey(),
-      base::WrapUnique(
-          new AutofillWalletSyncableService(webdata_backend, app_locale)));
+      std::make_unique<AutofillWalletSyncableService>(webdata_backend,
+                                                      app_locale));
 }
 
 // static

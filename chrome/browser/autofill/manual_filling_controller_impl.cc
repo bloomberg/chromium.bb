@@ -37,8 +37,8 @@ void ManualFillingControllerImpl::CreateForWebContentsForTesting(
 
   web_contents->SetUserData(
       UserDataKey(),
-      base::WrapUnique(new ManualFillingControllerImpl(
-          web_contents, std::move(pwd_controller), std::move(view))));
+      std::make_unique<ManualFillingControllerImpl>(
+          web_contents, std::move(pwd_controller), std::move(view)));
 }
 
 void ManualFillingControllerImpl::OnAutomaticGenerationStatusChanged(

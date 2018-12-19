@@ -32,7 +32,8 @@ class SearchFieldTest : public testing::Test {
   // Downcast for tests.
   static std::unique_ptr<SearchField> Parse(AutofillScanner* scanner) {
     std::unique_ptr<FormField> field = SearchField::Parse(scanner);
-    return base::WrapUnique(static_cast<SearchField*>(field.release()));
+    return std::unique_ptr<SearchField>(
+        static_cast<SearchField*>(field.release()));
   }
 
  private:

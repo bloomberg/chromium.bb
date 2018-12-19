@@ -85,8 +85,7 @@ std::unique_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
     return nullptr;
 
-  // Using 'new' to access private constructor.
-  auto credit_card_field = base::WrapUnique(new CreditCardField());
+  auto credit_card_field = std::make_unique<CreditCardField>();
   size_t saved_cursor = scanner->SaveCursor();
   int nb_unknown_fields = 0;
 

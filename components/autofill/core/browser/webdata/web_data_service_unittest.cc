@@ -106,7 +106,7 @@ class WebDataServiceTest : public testing::Test {
         base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()});
     wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                    db_task_runner);
-    wdbs_->AddTable(base::WrapUnique(new AutofillTable));
+    wdbs_->AddTable(std::make_unique<AutofillTable>());
     wdbs_->LoadDatabase();
 
     wds_ = new AutofillWebDataService(

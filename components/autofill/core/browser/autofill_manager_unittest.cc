@@ -4228,7 +4228,8 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
   form_structure->DetermineHeuristicTypes();
-  autofill_manager_->AddSeenFormStructure(base::WrapUnique(form_structure));
+  autofill_manager_->AddSeenFormStructure(
+      std::unique_ptr<TestFormStructure>(form_structure));
 
   // Similarly, a second form.
   FormData form2;
@@ -4248,7 +4249,8 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
 
   TestFormStructure* form_structure2 = new TestFormStructure(form2);
   form_structure2->DetermineHeuristicTypes();
-  autofill_manager_->AddSeenFormStructure(base::WrapUnique(form_structure2));
+  autofill_manager_->AddSeenFormStructure(
+      std::unique_ptr<TestFormStructure>(form_structure2));
 
   AutofillQueryResponseContents response;
   response.add_field()->set_overall_type_prediction(3);
@@ -4410,7 +4412,8 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
   form_structure->DetermineHeuristicTypes();
-  autofill_manager_->AddSeenFormStructure(base::WrapUnique(form_structure));
+  autofill_manager_->AddSeenFormStructure(
+      std::unique_ptr<TestFormStructure>(form_structure));
 
   AutofillQueryResponseContents response;
   response.add_field()->set_overall_type_prediction(3);
@@ -4464,7 +4467,8 @@ TEST_F(AutofillManagerTest, DetermineHeuristicsWithOverallPrediction) {
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
   form_structure->DetermineHeuristicTypes();
-  autofill_manager_->AddSeenFormStructure(base::WrapUnique(form_structure));
+  autofill_manager_->AddSeenFormStructure(
+      std::unique_ptr<TestFormStructure>(form_structure));
 
   AutofillQueryResponseContents response;
   response.add_field()->set_overall_type_prediction(CREDIT_CARD_NAME_FIRST);
@@ -4539,7 +4543,8 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
     server_types.push_back(form_structure->field(i)->heuristic_type());
   }
   form_structure->SetFieldTypes(heuristic_types, server_types);
-  autofill_manager_->AddSeenFormStructure(base::WrapUnique(form_structure));
+  autofill_manager_->AddSeenFormStructure(
+      std::unique_ptr<TestFormStructure>(form_structure));
 
   // Fill the form.
   const char guid[] = "00000000-0000-0000-0000-000000000001";

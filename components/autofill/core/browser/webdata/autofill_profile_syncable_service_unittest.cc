@@ -1604,7 +1604,7 @@ TEST_F(AutofillProfileSyncableServiceTest, ClientOverwritesUsageStats) {
       .WillOnce(Return(true));
   autofill_syncable_service_.MergeDataAndStartSyncing(
       syncer::AUTOFILL_PROFILE, data_list,
-      base::WrapUnique(sync_change_processor),
+      std::unique_ptr<TestSyncChangeProcessor>(sync_change_processor),
       std::unique_ptr<syncer::SyncErrorFactory>(
           new syncer::SyncErrorFactoryMock()));
 
@@ -1640,7 +1640,7 @@ TEST_F(AutofillProfileSyncableServiceTest, IgnoreServerProfileUpdate) {
       .WillOnce(Return(true));
   autofill_syncable_service_.MergeDataAndStartSyncing(
       syncer::AUTOFILL_PROFILE, syncer::SyncDataList(),
-      base::WrapUnique(new TestSyncChangeProcessor),
+      std::make_unique<TestSyncChangeProcessor>(),
       std::unique_ptr<syncer::SyncErrorFactory>(
           new syncer::SyncErrorFactoryMock()));
   AutofillProfile server_profile(AutofillProfile::SERVER_PROFILE, "server-id");
