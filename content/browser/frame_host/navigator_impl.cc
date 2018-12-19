@@ -389,6 +389,7 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
 void NavigatorImpl::RequestOpenURL(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
+    const base::Optional<url::Origin>& initiator_origin,
     bool uses_post,
     const scoped_refptr<network::ResourceRequestBody>& body,
     const std::string& extra_headers,
@@ -447,6 +448,7 @@ void NavigatorImpl::RequestOpenURL(
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = user_gesture;
   params.triggering_event_info = triggering_event_info;
+  params.initiator_origin = initiator_origin;
 
   // RequestOpenURL is used only for local frames, so we can get here only if
   // the navigation is initiated by a frame in the same SiteInstance as this
@@ -482,6 +484,7 @@ void NavigatorImpl::RequestOpenURL(
 void NavigatorImpl::NavigateFromFrameProxy(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
+    const url::Origin& initiator_origin,
     SiteInstance* source_site_instance,
     const Referrer& referrer,
     ui::PageTransition page_transition,
@@ -535,9 +538,10 @@ void NavigatorImpl::NavigateFromFrameProxy(
       &referrer_to_use);
 
   controller_->NavigateFromFrameProxy(
-      render_frame_host, url, is_renderer_initiated, source_site_instance,
-      referrer_to_use, page_transition, should_replace_current_entry, method,
-      post_body, extra_headers, std::move(blob_url_loader_factory));
+      render_frame_host, url, initiator_origin, is_renderer_initiated,
+      source_site_instance, referrer_to_use, page_transition,
+      should_replace_current_entry, method, post_body, extra_headers,
+      std::move(blob_url_loader_factory));
 }
 
 void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,

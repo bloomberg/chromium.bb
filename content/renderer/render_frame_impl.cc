@@ -475,6 +475,14 @@ WebURLRequest CreateURLRequestForNavigation(
 
   request.SetOriginPolicy(WebString::FromUTF8(common_params.origin_policy));
 
+  // Set the request initiator origin, which is supplied by the browser
+  // process. It is present in cases such as navigating a frame in a different
+  // process, which is routed through RenderFrameProxy and the origin is
+  // required to correctly compute the effective origin in which the
+  // navigation will commit.
+  if (common_params.initiator_origin)
+    request.SetRequestorOrigin(common_params.initiator_origin.value());
+
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_navigation_response_override(std::move(response_override));
   extra_data->set_navigation_initiated_by_renderer(
@@ -510,6 +518,9 @@ CommonNavigationParams MakeCommonNavigationParams(
     std::unique_ptr<blink::WebNavigationInfo> info,
     int load_flags,
     bool prevent_sandboxed_download) {
+  // A valid RequestorOrigin is always expected to be present.
+  DCHECK(!info->url_request.RequestorOrigin().IsNull());
+
   Referrer referrer(
       GURL(info->url_request.HttpHeaderField(WebString::FromUTF8("Referer"))
                .Latin1()),
@@ -549,8 +560,8 @@ CommonNavigationParams MakeCommonNavigationParams(
       GetDownloadPolicy(prevent_sandboxed_download, info->is_opener_navigation,
                         info->url_request, current_origin);
   return CommonNavigationParams(
-      info->url_request.Url(), referrer, extra_data->transition_type(),
-      navigation_type, download_policy,
+      info->url_request.Url(), info->url_request.RequestorOrigin(), referrer,
+      extra_data->transition_type(), navigation_type, download_policy,
       info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem, GURL(),
       GURL(), static_cast<PreviewsState>(info->url_request.GetPreviewsState()),
       base::TimeTicks::Now(), info->url_request.HttpMethod().Latin1(),
@@ -6382,9 +6393,13 @@ void RenderFrameImpl::OnSelectPopupMenuItems(
 
 void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info,
                               bool is_history_navigation_in_new_child) {
+  // A valid RequestorOrigin is always expected to be present.
+  DCHECK(!info->url_request.RequestorOrigin().IsNull());
+
   WebNavigationPolicy policy = info->navigation_policy;
   FrameHostMsg_OpenURL_Params params;
   params.url = info->url_request.Url();
+  params.initiator_origin = info->url_request.RequestorOrigin();
   params.uses_post = IsHttpPost(info->url_request);
   params.resource_request_body =
       GetRequestBodyForWebURLRequest(info->url_request);
@@ -6733,10 +6748,6 @@ void RenderFrameImpl::BeginNavigationInternal(
          info->url_request.GetFrameType() ==
              network::mojom::RequestContextFrameType::kNested);
 
-  DCHECK(!info->url_request.RequestorOrigin().IsNull());
-  base::Optional<url::Origin> initiator_origin =
-      base::Optional<url::Origin>(info->url_request.RequestorOrigin());
-
   bool is_form_submission =
       info->navigation_type == blink::kWebNavigationTypeFormSubmitted ||
       info->navigation_type == blink::kWebNavigationTypeFormResubmitted;
@@ -6766,7 +6777,7 @@ void RenderFrameImpl::BeginNavigationInternal(
           GetRequestContextTypeForWebURLRequest(info->url_request),
           GetMixedContentContextTypeForWebURLRequest(info->url_request),
           is_form_submission, searchable_form_url, searchable_form_encoding,
-          initiator_origin, client_side_redirect_url,
+          client_side_redirect_url,
           initiator ? base::make_optional<base::Value>(std::move(*initiator))
                     : base::nullopt);
 

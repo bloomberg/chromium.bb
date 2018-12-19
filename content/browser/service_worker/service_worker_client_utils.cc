@@ -288,8 +288,8 @@ void NavigateClientOnUI(const GURL& url,
 
   Navigator* navigator = rfhi->frame_tree_node()->navigator();
   navigator->RequestOpenURL(
-      rfhi, url, false /* uses_post */, nullptr /* body */,
-      std::string() /* extra_headers */,
+      rfhi, url, url::Origin::Create(script_url), false /* uses_post */,
+      nullptr /* body */, std::string() /* extra_headers */,
       Referrer::SanitizeForRequest(
           url, Referrer(script_url, network::mojom::ReferrerPolicy::kDefault)),
       WindowOpenDisposition::CURRENT_TAB,

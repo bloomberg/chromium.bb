@@ -237,6 +237,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserInitiatedNavigations) {
     NavigateToURL(shell(), url);
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_FALSE(observer.last_initiator_origin().has_value());
   }
 
   RenderFrameHost* initial_rfh =
@@ -252,6 +253,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserInitiatedNavigations) {
     NavigateToURL(shell(), url);
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_FALSE(observer.last_initiator_origin().has_value());
   }
 
   // The RenderFrameHost should not have changed.
@@ -267,6 +269,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserInitiatedNavigations) {
     NavigateToURL(shell(), url);
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_FALSE(observer.last_initiator_origin().has_value());
   }
 
   // The RenderFrameHost should have changed.
@@ -286,6 +289,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     NavigateToURL(shell(), url);
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_FALSE(observer.last_initiator_origin().has_value());
   }
 
   RenderFrameHost* initial_rfh =
@@ -306,6 +310,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin(),
+              observer.last_initiator_origin());
   }
 
   // The RenderFrameHost should not have changed.
@@ -332,6 +338,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
           ->GetFrameTree()
           ->root()
           ->current_frame_host();
+  url::Origin initial_origin = initial_rfh->GetLastCommittedOrigin();
 
   // Simulate clicking on a cross-site link.
   {
@@ -352,6 +359,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(initial_origin, observer.last_initiator_origin().value());
   }
 
   // The RenderFrameHost should not have changed unless site-per-process is
@@ -617,8 +625,8 @@ IN_PROC_BROWSER_TEST_F(NavigationDisableWebSecurityTest,
       features::kAllowContentInitiatedDataUrlNavigations);
   // Setup a BeginNavigate IPC with non-empty base_url_for_data_url.
   CommonNavigationParams common_params(
-      data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
-      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT,
+      data_url, url::Origin::Create(data_url), Referrer(),
+      ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT,
       NavigationDownloadPolicy::kAllow,
       false /* should_replace_current_entry */,
       file_url, /* base_url_for_data_url */
@@ -635,7 +643,7 @@ IN_PROC_BROWSER_TEST_F(NavigationDisableWebSecurityTest,
           blink::WebMixedContentContextType::kBlockable,
           false /* is_form_submission */, GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */,
-          url::Origin::Create(data_url), GURL() /* client_side_redirect_url */,
+          GURL() /* client_side_redirect_url */,
           base::nullopt /* devtools_initiator_info */);
 
   // Receiving the invalid IPC message should lead to renderer process

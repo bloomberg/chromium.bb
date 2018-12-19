@@ -2776,6 +2776,7 @@ void WebContentsImpl::CreateNewWindow(
       std::unique_ptr<NavigationController::LoadURLParams> load_params =
           std::make_unique<NavigationController::LoadURLParams>(
               params.target_url);
+      load_params->initiator_origin = opener->GetLastCommittedOrigin();
       load_params->referrer = params.referrer.To<Referrer>();
       load_params->transition_type = ui::PAGE_TRANSITION_LINK;
       load_params->is_renderer_initiated = true;

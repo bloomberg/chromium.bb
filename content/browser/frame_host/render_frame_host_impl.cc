@@ -2071,10 +2071,10 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
                validated_url.possibly_invalid_spec());
 
   frame_tree_node_->navigator()->RequestOpenURL(
-      this, validated_url, params.uses_post, params.resource_request_body,
-      params.extra_headers, params.referrer, params.disposition,
-      params.should_replace_current_entry, params.user_gesture,
-      params.triggering_event_info, params.href_translate,
+      this, validated_url, params.initiator_origin, params.uses_post,
+      params.resource_request_body, params.extra_headers, params.referrer,
+      params.disposition, params.should_replace_current_entry,
+      params.user_gesture, params.triggering_event_info, params.href_translate,
       std::move(blob_url_loader_factory));
 }
 
@@ -4154,7 +4154,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
   DCHECK(data_url.SchemeIs(url::kDataScheme));
   CommonNavigationParams common_params(
-      data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
+      data_url, base::nullopt, Referrer(), ui::PAGE_TRANSITION_LINK,
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT,
       NavigationDownloadPolicy::kDisallowInterstitial, false, GURL(), GURL(),
       PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,

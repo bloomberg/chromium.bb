@@ -535,6 +535,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
   OpenURLParams params(url, Referrer(), frame_tree_node_id,
                        WindowOpenDisposition::CURRENT_TAB,
                        ui::PAGE_TRANSITION_LINK, true);
+  params.initiator_origin = wc->GetMainFrame()->GetLastCommittedOrigin();
   shell()->web_contents()->OpenURL(params);
 
   // Make sure the NavigationEntry ends up with the FrameTreeNode ID.

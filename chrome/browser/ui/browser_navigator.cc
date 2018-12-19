@@ -313,6 +313,7 @@ void LoadURLInContents(WebContents* target_contents,
                        const GURL& url,
                        NavigateParams* params) {
   NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.initiator_origin = params->initiator_origin;
   load_url_params.source_site_instance = params->source_site_instance;
   load_url_params.referrer = params->referrer;
   load_url_params.frame_name = params->frame_name;

@@ -788,8 +788,12 @@ void RenderFrameProxy::ForwardPostMessage(
 void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
                                 bool should_replace_current_entry,
                                 mojo::ScopedMessagePipeHandle blob_url_token) {
+  // The request must always have a valid initiator origin.
+  DCHECK(!request.RequestorOrigin().IsNull());
+
   FrameHostMsg_OpenURL_Params params;
   params.url = request.Url();
+  params.initiator_origin = request.RequestorOrigin();
   params.uses_post = request.HttpMethod().Utf8() == "POST";
   params.resource_request_body = GetRequestBodyForWebURLRequest(request);
   params.extra_headers = GetWebURLRequestHeadersAsString(request);

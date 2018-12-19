@@ -111,6 +111,9 @@ class NavigationController {
     // The url to load. This field is required.
     GURL url;
 
+    // The origin of the initiator of the navigation.
+    base::Optional<url::Origin> initiator_origin;
+
     // SiteInstance of the frame that initiated the navigation or null if we
     // don't know it.
     scoped_refptr<SiteInstance> source_site_instance;

@@ -697,7 +697,10 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       IsViewSourceMode() ? NavigationDownloadPolicy::kDisallowViewSource
                          : NavigationDownloadPolicy::kAllow;
   return CommonNavigationParams(
-      dest_url, dest_referrer, GetTransitionType(), navigation_type,
+      dest_url,
+      // This is constructing parameters for browser-initiated navigation,
+      // therefore there is no initiator origin.
+      base::nullopt, dest_referrer, GetTransitionType(), navigation_type,
       download_policy, should_replace_entry(), GetBaseURLForDataURL(),
       GetHistoryURLForDataURL(), previews_state, navigation_start,
       frame_entry.method(), post_body ? post_body : post_data_,
