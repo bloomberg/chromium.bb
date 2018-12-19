@@ -229,6 +229,7 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
   base::Optional<base::TimeDelta> parse_blocked_on_script_load_duration;
   base::Optional<base::TimeDelta> parse_stop;
   base::Optional<base::TimeDelta> page_end_time;
+  base::Optional<base::TimeDelta> main_frame_fetch_start;
   if (WasStartedInForegroundOptionalEventInForeground(timing.response_start,
                                                       info)) {
     response_start = timing.response_start;
@@ -262,6 +263,10 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
   if (WasStartedInForegroundOptionalEventInForeground(
           timing.parse_timing->parse_stop, info)) {
     parse_stop = timing.parse_timing->parse_stop;
+  }
+  if (navigation_start_ && main_frame_fetch_start_) {
+    main_frame_fetch_start =
+        main_frame_fetch_start_.value() - navigation_start_.value();
   }
   if (info.started_in_foreground && info.page_end_time.has_value()) {
     // This should be reported even when the app goes into the background which
@@ -312,9 +317,9 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
       experimental_first_meaningful_paint, first_input_delay,
       parse_blocked_on_script_load_duration, parse_stop, page_end_time,
       lite_page_redirect_penalty_, lite_page_redirect_status_,
-      navigation_start_to_main_frame_fetch_start_, network_bytes,
-      original_network_bytes, total_page_size_bytes, cached_fraction,
-      app_background_occurred, opted_out_, renderer_memory_usage_kb_, host_id,
+      main_frame_fetch_start, network_bytes, original_network_bytes,
+      total_page_size_bytes, cached_fraction, app_background_occurred,
+      opted_out_, renderer_memory_usage_kb_, host_id,
       ConvertPLMPageEndReasonToProto(info.page_end_reason), touch_count_,
       scroll_count_, redirect_count_);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
@@ -343,9 +348,8 @@ void DataReductionProxyMetricsObserverBase::OnLoadedResource(
 
   if (extra_request_complete_info.resource_type ==
       content::RESOURCE_TYPE_MAIN_FRAME) {
-    navigation_start_to_main_frame_fetch_start_ =
-        extra_request_complete_info.load_timing_info->request_start -
-        navigation_start_;
+    main_frame_fetch_start_ =
+        extra_request_complete_info.load_timing_info->request_start;
   }
 }
 
