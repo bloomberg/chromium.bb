@@ -119,6 +119,10 @@ class POLICY_EXPORT CloudPolicyCore {
   // Removes the specified observer.
   void RemoveObserver(Observer* observer);
 
+  // Initializes the cloud connection using injected |service| and |client|.
+  void ConnectForTesting(std::unique_ptr<CloudPolicyService> service,
+                         std::unique_ptr<CloudPolicyClient> client);
+
  private:
   // Updates the refresh scheduler on refresh delay changes.
   void UpdateRefreshDelayFromPref();

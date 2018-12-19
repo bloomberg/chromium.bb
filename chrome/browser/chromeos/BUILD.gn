@@ -2336,6 +2336,7 @@ source_set("unit_tests") {
     "policy/upload_job_unittest.cc",
     "policy/user_cloud_policy_manager_chromeos_unittest.cc",
     "policy/user_cloud_policy_store_chromeos_unittest.cc",
+    "policy/user_cloud_policy_token_forwarder_unittest.cc",
     "power/auto_screen_brightness/adapter_unittest.cc",
     "power/auto_screen_brightness/als_reader_impl_unittest.cc",
     "power/auto_screen_brightness/brightness_monitor_impl_unittest.cc",

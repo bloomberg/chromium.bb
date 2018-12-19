@@ -122,7 +122,11 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // this method once available.
   // The |access_token| can then be used to authenticate the registration
   // request to the DMServer.
-  void OnAccessTokenAvailable(const std::string& access_token);
+  virtual void OnAccessTokenAvailable(const std::string& access_token);
+
+  // Whether OAuth2 token is required for DMServer requests (policy fetch,
+  // uploading status report) for child user.
+  bool RequiresOAuthTokenForChildUser() const;
 
   // Returns true if the underlying CloudPolicyClient is already registered.
   bool IsClientRegistered() const;
@@ -275,7 +279,7 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   base::debug::StackTrace connect_callstack_;
 
   // The AccountId associated with the user whose policy is being loaded.
-  AccountId account_id_;
+  const AccountId account_id_;
 
   // The callback to invoke if the user session should be shutdown. This is
   // injected in the constructor to make it easier to write tests.
