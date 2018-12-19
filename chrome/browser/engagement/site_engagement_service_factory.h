@@ -22,6 +22,7 @@ class SiteEngagementService;
 class SiteEngagementServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static SiteEngagementService* GetForProfile(Profile* profile);
+  static SiteEngagementService* GetForProfileIfExists(Profile* profile);
 
   static SiteEngagementServiceFactory* GetInstance();
 

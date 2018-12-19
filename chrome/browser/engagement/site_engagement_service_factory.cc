@@ -15,7 +15,16 @@
 SiteEngagementService* SiteEngagementServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<SiteEngagementService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile,
+                                                 /*create_service=*/true));
+}
+
+// static
+SiteEngagementService* SiteEngagementServiceFactory::GetForProfileIfExists(
+    Profile* profile) {
+  return static_cast<SiteEngagementService*>(
+      GetInstance()->GetServiceForBrowserContext(profile,
+                                                 /*create_service=*/false));
 }
 
 // static
