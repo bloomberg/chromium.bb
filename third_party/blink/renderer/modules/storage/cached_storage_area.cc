@@ -424,8 +424,11 @@ void CachedStorageArea::EnsureLoaded() {
   if (map_)
     return;
 
+  // There might be something weird happening during the sync call that destroys
+  // this object. Keep a reference to either fix or rule out that this is the
+  // problem. See https://crbug.com/915577.
+  scoped_refptr<CachedStorageArea> keep_alive(this);
   base::TimeTicks before = base::TimeTicks::Now();
-
   ignore_all_mutations_ = true;
   bool success = false;
   Vector<mojom::blink::KeyValuePtr> data;
