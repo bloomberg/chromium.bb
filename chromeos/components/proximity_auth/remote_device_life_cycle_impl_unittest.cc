@@ -21,7 +21,6 @@
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "chromeos/services/secure_channel/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -55,12 +55,8 @@ static_library("proximity_auth") {
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
     "//chromeos/components/proximity_auth/public/interfaces",
-
-    # TODO(hansberry): Remove this dependency once https://crbug.com/870123 is
-    # fixed.
     "//chromeos/services/multidevice_setup/public/cpp",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
-    "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/mojom",
     "//components/account_id",
@@ -92,7 +88,7 @@ static_library("test_support") {
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
     "//chromeos/components/multidevice/logging",
-    "//chromeos/services/device_sync",
+    "//chromeos/services/device_sync/proto",
     "//chromeos/services/secure_channel:test_support",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//testing/gmock",
@@ -123,12 +119,8 @@ source_set("unit_tests") {
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
     "//chromeos/components/multidevice/logging",
-
-    # TODO(hansberry): Remove this dependency once https://crbug.com/870123 is
-    # fixed.
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
-    "//chromeos/services/secure_channel",
     "//chromeos/services/secure_channel:test_support",
     "//chromeos/services/secure_channel/public/cpp/client:test_support",
     "//components/prefs:test_support",

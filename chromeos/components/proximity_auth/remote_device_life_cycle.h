@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/services/secure_channel/connection.h"
 
 namespace chromeos {
 namespace secure_channel {

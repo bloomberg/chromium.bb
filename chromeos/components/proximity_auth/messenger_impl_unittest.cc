@@ -14,11 +14,7 @@
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/proximity_auth/messenger_observer.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
-#include "chromeos/services/secure_channel/connection.h"
-#include "chromeos/services/secure_channel/fake_connection.h"
-#include "chromeos/services/secure_channel/fake_secure_context.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
-#include "chromeos/services/secure_channel/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

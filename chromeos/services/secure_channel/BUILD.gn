@@ -166,6 +166,12 @@ static_library("secure_channel") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
   ]
+
+  visibility = [
+    ":*",
+    "//chrome/browser",
+    "//chromeos/services/secure_channel/public/cpp/client:unit_tests",
+  ]
 }
 
 service_manifest("manifest") {

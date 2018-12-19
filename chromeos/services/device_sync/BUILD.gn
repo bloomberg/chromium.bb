@@ -80,6 +80,13 @@ static_library("device_sync") {
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
   ]
+
+  visibility = [
+    ":*",
+    "//chrome/browser",
+    "//chrome/test:test_support_ui",
+    "//chromeos/services/device_sync/public/cpp:unit_tests",
+  ]
 }
 
 service_manifest("manifest") {

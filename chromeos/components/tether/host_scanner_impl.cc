@@ -17,7 +17,6 @@
 #include "chromeos/components/tether/master_host_scan_cache.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/network/network_state.h"
-#include "chromeos/services/device_sync/remote_device_loader.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
