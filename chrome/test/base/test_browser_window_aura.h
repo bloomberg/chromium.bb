@@ -7,9 +7,16 @@
 
 #include "base/macros.h"
 #include "chrome/test/base/test_browser_window.h"
-#include "ui/aura/window.h"
+
+namespace aura {
+class Window;
+}
+namespace views {
+class Widget;
+}
 
 // A browser window proxy with an associated Aura native window.
+// TODO: replace this with TestBrowserWindowViews.
 class TestBrowserWindowAura : public TestBrowserWindow {
  public:
   explicit TestBrowserWindowAura(std::unique_ptr<aura::Window> native_window);
@@ -33,6 +40,29 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowAura);
 };
 
+class TestBrowserWindowViews : public TestBrowserWindow {
+ public:
+  explicit TestBrowserWindowViews(aura::Window* parent = nullptr);
+  ~TestBrowserWindowViews() override;
+
+  // TestBrowserWindow overrides:
+  gfx::NativeWindow GetNativeWindow() const override;
+  void Show() override;
+  void Hide() override;
+  bool IsVisible() const override;
+  void Activate() override;
+  bool IsActive() const override;
+  gfx::Rect GetBounds() const override;
+
+  std::unique_ptr<Browser> CreateBrowser(const Browser::CreateParams& params);
+
+ private:
+  Browser* browser_;  // not owned
+  std::unique_ptr<views::Widget> widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowViews);
+};
+
 namespace chrome {
 
 // Helper that creates a browser with a native Aura |window|. If |window| is
@@ -41,6 +71,11 @@ namespace chrome {
 std::unique_ptr<Browser> CreateBrowserWithAuraTestWindowForParams(
     std::unique_ptr<aura::Window> window,
     Browser::CreateParams* params);
+
+// Helper that creates a browser with a Widget serving as the BrowserWindow.
+std::unique_ptr<Browser> CreateBrowserWithViewsTestWindowForParams(
+    const Browser::CreateParams& params,
+    aura::Window* parent = nullptr);
 
 }  // namespace chrome
 
