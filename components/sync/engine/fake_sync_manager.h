@@ -119,6 +119,7 @@ class FakeSyncManager : public SyncManager {
   void ClearServerData(const base::Closure& callback) override;
   void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
+  void UpdateInvalidationClientId(const std::string&) override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;

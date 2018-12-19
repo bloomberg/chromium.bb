@@ -119,6 +119,11 @@ void InvalidatorRegistrar::UpdateInvalidatorState(InvalidatorState state) {
     observer.OnInvalidatorStateChange(state);
 }
 
+void InvalidatorRegistrar::UpdateInvalidatorId(const std::string& id) {
+  for (auto& observer : handlers_)
+    observer.OnInvalidatorClientIdChange(id);
+}
+
 InvalidatorState InvalidatorRegistrar::GetInvalidatorState() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return state_;

@@ -29,6 +29,11 @@ class INVALIDATION_EXPORT InvalidationHandler {
 
   virtual std::string GetOwnerName() const = 0;
 
+  // Called on change of |client_id|. Client id is used to identify the
+  // the invalidator. The id is only relevant to some handlers, e.g. Sync
+  // where the reflection blocking logic is based on it.
+  virtual void OnInvalidatorClientIdChange(const std::string& client_id) {}
+
  protected:
   virtual ~InvalidationHandler();
 };

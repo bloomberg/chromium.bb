@@ -64,6 +64,10 @@ class INVALIDATION_EXPORT InvalidatorRegistrar {
   // call GetInvalidatorState() when notified will see the new state.
   void UpdateInvalidatorState(InvalidatorState state);
 
+  // Updates the invalidator id to the given one and then notifies
+  // all handlers.
+  void UpdateInvalidatorId(const std::string& id);
+
   // Returns the current invalidator state.  When called from within
   // InvalidationHandler::OnInvalidatorStateChange(), this returns the
   // updated state.

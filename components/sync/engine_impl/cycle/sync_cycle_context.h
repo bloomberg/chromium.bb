@@ -103,6 +103,10 @@ class SyncCycleContext {
     return invalidator_client_id_;
   }
 
+  void set_invalidator_client_id(const std::string& id) {
+    invalidator_client_id_ = id;
+  }
+
   bool ShouldFetchUpdatesBeforeCommit() const {
     return !(server_enabled_pre_commit_update_avoidance_ ||
              client_enabled_pre_commit_update_avoidance_);
@@ -174,7 +178,7 @@ class SyncCycleContext {
   // register itself with the invalidations server during startup.  We need to
   // provide this to the sync server when we make changes to enable it to
   // prevent us from receiving notifications of changes we make ourselves.
-  const std::string invalidator_client_id_;
+  std::string invalidator_client_id_;
 
   // Flag to enable or disable the no pre-commit GetUpdates experiment.  When
   // this flag is set to false, the syncer has the option of not performing at
