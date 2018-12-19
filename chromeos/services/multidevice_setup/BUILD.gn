@@ -74,6 +74,13 @@ static_library("multidevice_setup") {
     "//components/prefs:prefs",
     "//services/service_manager/public/cpp",
   ]
+
+  visibility = [
+    ":*",
+    "//chrome/browser",
+    "//chromeos/services/multidevice_setup/public/cpp:test_support",
+    "//chromeos/services/multidevice_setup/public/cpp:unit_tests",
+  ]
 }
 
 service_manifest("manifest") {

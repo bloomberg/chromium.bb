@@ -16,7 +16,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/services/device_sync/cryptauth_device_manager.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "components/keyed_service/core/keyed_service.h"

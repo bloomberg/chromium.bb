@@ -61,10 +61,6 @@ class RemoteDeviceLifeCycleImpl
   // |connection_finder_|.
   void FindConnection();
 
-  // Called when |connection_finder_| finds a connection.
-  void OnConnectionFound(
-      std::unique_ptr<chromeos::secure_channel::Connection> connection);
-
   // Creates the messenger which parses status updates.
   void CreateMessenger();
 

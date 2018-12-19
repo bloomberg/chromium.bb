@@ -24,7 +24,6 @@
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"

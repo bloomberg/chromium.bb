@@ -25,10 +25,7 @@
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/services/secure_channel/fake_connection.h"
-#include "chromeos/services/secure_channel/fake_secure_context.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
-#include "chromeos/services/secure_channel/secure_context.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -70,8 +67,6 @@ class MockMessenger : public Messenger {
   MOCK_METHOD0(DispatchUnlockEvent, void());
   MOCK_METHOD1(RequestDecryption, void(const std::string& challenge));
   MOCK_METHOD0(RequestUnlock, void());
-  MOCK_CONST_METHOD0(GetSecureContext,
-                     chromeos::secure_channel::SecureContext*());
   MOCK_CONST_METHOD0(GetConnection, chromeos::secure_channel::Connection*());
   MOCK_CONST_METHOD0(GetChannel, chromeos::secure_channel::ClientChannel*());
 
@@ -155,7 +150,6 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
       : remote_device_(chromeos::multidevice::CreateRemoteDeviceRefForTest()),
         local_device_(chromeos::multidevice::CreateRemoteDeviceRefForTest()),
         life_cycle_(remote_device_, local_device_),
-        connection_(remote_device_),
         fake_client_channel_(
             std::make_unique<chromeos::secure_channel::FakeClientChannel>()),
         bluetooth_adapter_(CreateAndRegisterMockBluetoothAdapter()),
@@ -184,8 +178,6 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(true));
     ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(true));
     ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
-    ON_CALL(messenger_, GetSecureContext())
-        .WillByDefault(Return(&secure_context_));
     ON_CALL(messenger_, GetChannel())
         .WillByDefault(Return(fake_client_channel_.get()));
 
@@ -220,7 +212,6 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
   chromeos::multidevice::RemoteDeviceRef remote_device_;
   chromeos::multidevice::RemoteDeviceRef local_device_;
   FakeRemoteDeviceLifeCycle life_cycle_;
-  chromeos::secure_channel::FakeConnection connection_;
   std::unique_ptr<chromeos::secure_channel::FakeClientChannel>
       fake_client_channel_;
 
@@ -230,7 +221,6 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
   NiceMock<MockProximityAuthClient> proximity_auth_client_;
   NiceMock<MockMessenger> messenger_;
   std::unique_ptr<TestUnlockManager> unlock_manager_;
-  chromeos::secure_channel::FakeSecureContext secure_context_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
