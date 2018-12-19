@@ -28,6 +28,7 @@ include_rules = [
     "+cc/paint/display_item_list.h",
     "+cc/paint/paint_canvas.h",
     "+cc/paint/paint_flags.h",
+    "+cc/paint/paint_worklet_input.h",
     "+gpu/config/gpu_feature_info.h",
     "-inspector/v8",
     "+inspector/v8/public",

@@ -1751,6 +1751,7 @@ jumbo_source_set("unit_tests") {
     "css/cssom/css_style_image_value_test.cc",
     "css/cssom/css_unit_value_test.cc",
     "css/cssom/css_unparsed_value_test.cc",
+    "css/cssom/paint_worklet_style_property_map_test.cc",
     "css/cssom/prepopulated_computed_style_property_map_test.cc",
     "css/drag_update_test.cc",
     "css/font_face_cache_test.cc",
