@@ -724,13 +724,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         (ControlContainer) findViewById(R.id.control_container);
                 controlContainer.getToolbarResourceAdapter().invalidate(null);
             }
-
-            @Override
-            public void onContentChanged(Tab tab) {
-                if (getBottomSheet() != null) {
-                    setStatusBarColor(tab, TabThemeColorHelper.get(tab).getDefaultColor());
-                }
-            }
         };
 
         if (mAssistStatusHandler != null) {
