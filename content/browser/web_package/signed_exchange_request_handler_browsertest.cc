@@ -284,6 +284,31 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
+                       MissingNosniff) {
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
+  InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/sxg/test.example.org_test_missing_nosniff.sxg");
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
+
+  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  RedirectObserver redirect_observer(shell()->web_contents());
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  EXPECT_EQ(303, redirect_observer.response_code());
+  histogram_tester_.ExpectUniqueSample(
+      "SignedExchange.LoadResult",
+      SignedExchangeLoadResult::kSXGServedWithoutNosniff,
+      PrefetchIsEnabled() ? 2 : 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        InvalidContentType) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),

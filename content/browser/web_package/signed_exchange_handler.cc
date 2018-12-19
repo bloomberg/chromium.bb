@@ -60,6 +60,11 @@ constexpr char kHistogramOCSPResponseStatus[] =
     "SignedExchange.OCSPResponseStatus";
 constexpr char kHistogramOCSPRevocationStatus[] =
     "SignedExchange.OCSPRevocationStatus";
+constexpr char kSXGFromNonHTTPSErrorMessage[] =
+    "Signed exchange response from non secure origin is not supported.";
+constexpr char kSXGWithoutNoSniffErrorMessage[] =
+    "Signed exchange response without \"X-Content-Type-Options: nosniff\" "
+    "header is not supported.";
 
 network::mojom::NetworkContext* g_network_context_for_testing = nullptr;
 
@@ -170,6 +175,7 @@ void SignedExchangeHandler::SetVerificationTimeForTesting(
 
 SignedExchangeHandler::SignedExchangeHandler(
     bool is_secure_transport,
+    bool has_nosniff,
     std::string content_type,
     std::unique_ptr<net::SourceStream> body,
     ExchangeHeadersCallback headers_callback,
@@ -178,6 +184,7 @@ SignedExchangeHandler::SignedExchangeHandler(
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
     : is_secure_transport_(is_secure_transport),
+      has_nosniff_(has_nosniff),
       headers_callback_(std::move(headers_callback)),
       source_(std::move(body)),
       cert_fetcher_factory_(std::move(cert_fetcher_factory)),
@@ -197,8 +204,17 @@ SignedExchangeHandler::SignedExchangeHandler(
   // without TLS. [spec text]
   if (!is_secure_transport_) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy_.get(),
-        "Signed exchange response from non secure origin is not supported.");
+        devtools_proxy_.get(), kSXGFromNonHTTPSErrorMessage);
+    // Proceed to extract and redirect to the fallback URL.
+  }
+
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#seccons-content-sniffing
+  // To encourage servers to include the `X-Content-Type-Options: nosniff`
+  // header field, clients SHOULD reject signed exchanges served without it.
+  // [spec text]
+  if (!has_nosniff_) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy_.get(), kSXGWithoutNoSniffErrorMessage);
     // Proceed to extract and redirect to the fallback URL.
   }
 
@@ -226,6 +242,7 @@ SignedExchangeHandler::~SignedExchangeHandler() = default;
 
 SignedExchangeHandler::SignedExchangeHandler()
     : is_secure_transport_(true),
+      has_nosniff_(true),
       load_flags_(net::LOAD_NORMAL),
       weak_factory_(this) {}
 
@@ -358,6 +375,9 @@ SignedExchangeHandler::ParsePrologueFallbackUrlAndAfter() {
 
   if (!is_secure_transport_)
     return SignedExchangeLoadResult::kSXGServedFromNonHTTPS;
+
+  if (!has_nosniff_)
+    return SignedExchangeLoadResult::kSXGServedWithoutNosniff;
 
   // If the signed exchange version from content-type is unsupported or the
   // prologue's magic string is incorrect, abort parsing and redirect to the

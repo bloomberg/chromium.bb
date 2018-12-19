@@ -87,6 +87,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   // is used to create a SignedExchangeCertFetcher that fetches the certificate.
   SignedExchangeHandler(
       bool is_secure_transport,
+      bool has_nosniff,
       std::string content_type,
       std::unique_ptr<net::SourceStream> body,
       ExchangeHeadersCallback headers_callback,
@@ -129,6 +130,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
                     const net::ct::CTVerifyResult& ct_result);
 
   const bool is_secure_transport_;
+  const bool has_nosniff_;
   ExchangeHeadersCallback headers_callback_;
   base::Optional<SignedExchangeVersion> version_;
   std::unique_ptr<net::SourceStream> source_;
