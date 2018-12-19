@@ -436,6 +436,10 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
   source->AddResourcePath(
       "pdf/elements/viewer-error-screen/viewer-error-screen.js",
       IDR_PDF_VIEWER_ERROR_SCREEN_JS);
+  source->AddResourcePath("pdf/elements/viewer-ink-host/viewer-ink-host.html",
+                          IDR_PDF_VIEWER_INK_HOST_HTML);
+  source->AddResourcePath("pdf/elements/viewer-ink-host/viewer-ink-host.js",
+                          IDR_PDF_VIEWER_INK_HOST_JS);
   source->AddResourcePath(
       "pdf/elements/viewer-page-indicator/viewer-page-indicator.html",
       IDR_PDF_VIEWER_PAGE_INDICATOR_HTML);

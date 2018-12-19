@@ -125,9 +125,7 @@ function PDFViewer(browserApi) {
   this.isFormFieldFocused_ = false;
   this.beepCount_ = 0;
   this.delayedScriptingMessages_ = [];
-
-  /** @private {!Set<string>} */
-  this.pendingTokens_ = new Set();
+  this.loaded_ = new PromiseResolver();
 
   this.isPrintPreview_ = location.origin === 'chrome://print';
   this.isPrintPreviewLoadingFinished_ = false;
@@ -220,10 +218,12 @@ function PDFViewer(browserApi) {
   } else {
     this.plugin_.setAttribute('full-frame', '');
   }
+
   document.body.appendChild(this.plugin_);
 
   this.pluginController_ =
       new PluginController(this.plugin_, this, this.viewport_);
+  this.inkController_ = new InkController(this, this.viewport_);
   this.currentController_ = this.pluginController_;
 
   // Setup the button event listeners.
@@ -252,6 +252,8 @@ function PDFViewer(browserApi) {
         'print', () => this.currentController_.print());
     this.toolbar_.addEventListener(
         'rotate-right', () => this.currentController_.rotateClockwise());
+    this.toolbar_.addEventListener(
+        'annotation-mode-changed', e => this.annotationModeChanged_(e));
 
     this.toolbar_.docTitle = getFilenameFromURL(this.originalUrl_);
   }
@@ -473,6 +475,52 @@ PDFViewer.prototype = {
   },
 
   /**
+   * Handles the annotation mode being toggled on or off.
+   *
+   * @param {CustomEvent} e
+   * @private
+   */
+  annotationModeChanged_: async function(e) {
+    const annotationMode = e.detail.value;
+    if (annotationMode) {
+      // TODO(dstockwell): add assert lib and replace this with assert
+      if (this.currentController_ != this.pluginController_) {
+        throw new Error(
+            'Plugin controller is not current, cannot enter annotation mode');
+      }
+      // Enter annotation mode.
+      // TODO(dstockwell): set plugin read-only, begin transition
+      this.updateProgress(0);
+      // TODO(dstockwell): handle save failure
+      const result = await this.pluginController_.save(true);
+      // TODO(dstockwell): feed real progress data from the Ink component
+      this.updateProgress(50);
+      await this.inkController_.load(result.fileName, result.dataToSave);
+      this.currentController_ = this.inkController_;
+      this.pluginController_.unload();
+      this.updateProgress(100);
+    } else {
+      // Exit annotation mode.
+      // TODO(dstockwell): add assert lib and replace this with assert
+      if (this.currentController_ != this.inkController_) {
+        throw new Error(
+            'Ink controller is not current, cannot exit annotation mode');
+      }
+      // TODO(dstockwell): set ink read-only, begin transition
+      this.updateProgress(0);
+      // This runs separately to allow other consumers of `loaded` to queue
+      // up after this task.
+      this.loaded.then(() => {
+        this.currentController_ = this.pluginController_;
+        this.inkController_.unload();
+      });
+      // TODO(dstockwell): handle save failure
+      const result = await this.inkController_.save(true);
+      await this.pluginController_.load(result.fileName, result.dataToSave);
+    }
+  },
+
+  /**
    * Request to change the viewport fitting type.
    *
    * @param {CustomEvent} e Event received with the new FittingType as detail.
@@ -560,8 +608,40 @@ PDFViewer.prototype = {
   },
 
   /**
+   * @return {Promise} Resolved when the load state reaches LOADED,
+   *     rejects on FAILED.
+   */
+  get loaded() {
+    return this.loaded_.promise;
+  },
+
+  /**
+   * Updates the load state and triggers completion of the `loaded`
+   * promise if necessary.
+   * @param {!LoadState} loadState
+   * @private
+   */
+  setLoadState_(loadState) {
+    if (this.loadState_ == loadState) {
+      return;
+    }
+    if ((loadState == LoadState.SUCCESS || loadState == LoadState.FAILURE) &&
+        this.loadState_ != LoadState.LOADING) {
+      throw new Error('Internal error: invalid loadState transition.');
+    }
+    this.loadState_ = loadState;
+    if (loadState == LoadState.SUCCESS) {
+      this.loaded_.resolve();
+    } else if (loadState == LoadState.FAILED) {
+      this.loaded_.reject();
+    } else {
+      this.loaded_ = new PromiseResolver();
+    }
+  },
+
+  /**
    * Update the loading progress of the document in response to a progress
-   * message being received from the plugin.
+   * message being received from the content controller.
    *
    * @param {number} progress the progress as a percentage.
    */
@@ -577,7 +657,7 @@ PDFViewer.prototype = {
         this.passwordScreen_.deny();
         this.passwordScreen_.close();
       }
-      this.loadState_ = LoadState.FAILED;
+      this.setLoadState_(LoadState.FAILED);
       this.isPrintPreviewLoadingFinished_ = true;
       this.sendDocumentLoadedMessage_();
     } else if (progress == 100) {
@@ -586,12 +666,14 @@ PDFViewer.prototype = {
         this.viewport_.position = this.lastViewportPosition_;
       this.paramsParser_.getViewportFromUrlParams(
           this.originalUrl_, this.handleURLParams_.bind(this));
-      this.loadState_ = LoadState.SUCCESS;
+      this.setLoadState_(LoadState.SUCCESS);
       this.sendDocumentLoadedMessage_();
       while (this.delayedScriptingMessages_.length > 0)
         this.handleScriptingMessage(this.delayedScriptingMessages_.shift());
 
       this.toolbarManager_.hideToolbarsAfterTimeout();
+    } else {
+      this.setLoadState_(LoadState.LOADING);
     }
   },
 
@@ -797,7 +879,7 @@ PDFViewer.prototype = {
         this.pluginController_.postMessage(message.data);
         return true;
       case 'resetPrintPreviewMode':
-        this.loadState_ = LoadState.LOADING;
+        this.setLoadState_(LoadState.LOADING);
         if (!this.inPrintPreviewMode_) {
           this.inPrintPreviewMode_ = true;
           this.isUserInitiatedEvent_ = false;
@@ -1003,7 +1085,8 @@ PDFViewer.prototype = {
    * Saves the current PDF document to disk.
    */
   save: async function() {
-    const result = await this.currentController_.save();
+    // TODO(dstockwell): Report an error to user if this fails.
+    const result = await this.currentController_.save(false);
     if (result == null) {
       // The content controller handled the save internally.
       return;
@@ -1057,10 +1140,77 @@ class ContentController {
 
   /**
    * Requests that the current document be saved.
+   * @param {boolean} requireResult whether a response is required, otherwise
+   *     the controller may save the document to disk internally.
    * @return {Promise<{fileName: string, dataToSave: ArrayBuffer}}
    * @abstract
    */
-  save() {}
+  save(requireResult) {}
+
+  /**
+   * Loads PDF document from `data` activates UI.
+   * @param {string} fileName
+   * @param {ArrayBuffer} data
+   * @return {Promise<void>}
+   * @abstract
+   */
+  load(fileName, data) {}
+
+  /**
+   * Unloads the current document and removes the UI.
+   * @abstract
+   */
+  unload() {}
+}
+
+class InkController extends ContentController {
+  /**
+   * @param {PDFViewer} viewer
+   * @param {Viewport} viewport
+   */
+  constructor(viewer, viewport) {
+    super();
+    this.viewer_ = viewer;
+    this.viewport_ = viewport;
+
+    /** @type {ViewerInkHost} */
+    this.inkHost_ = null;
+  }
+
+  /** @override */
+  rotateClockwise() {
+    // TODO(dstockwell): implement rotation
+  }
+
+  /** @override */
+  rotateCounterClockwise() {
+    // TODO(dstockwell): implement rotation
+  }
+
+  /** @override */
+  print() {
+    // TODO(dstockwell): implement printing
+  }
+
+  /** @override */
+  save(requireResult) {
+    return this.inkHost_.saveDocument();
+  }
+
+  /** @override */
+  load(filename, data) {
+    if (!this.inkHost_) {
+      this.inkHost_ = document.createElement('viewer-ink-host');
+      document.body.appendChild(this.inkHost_);
+    }
+    return this.inkHost_.load(filename, data);
+  }
+
+  /** @override */
+  unload() {
+    this.inkHost_.remove();
+    this.inkHost_ = null;
+  }
 }
 
 class PluginController extends ContentController {
@@ -1075,7 +1225,7 @@ class PluginController extends ContentController {
     this.viewer_ = viewer;
     this.viewport_ = viewport;
 
-    /** @private {!Map<string, Function>} */
+    /** @private {!Map<string, PromiseResolver>} */
     this.pendingTokens_ = new Map();
     this.plugin_.addEventListener(
         'message', e => this.handlePluginMessage_(e), false);
@@ -1162,13 +1312,30 @@ class PluginController extends ContentController {
   }
 
   /** @override */
-  save() {
-    return new Promise(resolve => {
-      const newToken = createToken();
-      this.pendingTokens_.set(newToken, resolve);
-      const force = false;
-      this.postMessage({type: 'save', token: newToken});
-    });
+  save(requireResult) {
+    const resolver = new PromiseResolver();
+    const newToken = createToken();
+    this.pendingTokens_.set(newToken, resolver);
+    this.postMessage({type: 'save', token: newToken, force: requireResult});
+    return resolver.promise;
+  }
+
+  /** @override */
+  async load(fileName, data) {
+    const url = URL.createObjectURL(new Blob([data]));
+    this.plugin_.removeAttribute('headers');
+    this.plugin_.setAttribute('stream-url', url);
+    this.plugin_.style.display = 'block';
+    try {
+      await this.viewer_.loaded;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  /** @override */
+  unload() {
+    this.plugin_.style.display = 'none';
   }
 
   /**
@@ -1250,14 +1417,20 @@ class PluginController extends ContentController {
    * @private
    */
   saveData_(messageData) {
-    if (!(loadTimeData.getBoolean('pdfFormSaveEnabled')))
+    if (!(loadTimeData.getBoolean('pdfFormSaveEnabled') ||
+          loadTimeData.getBoolean('pdfAnnotationsEnabled')))
       throw new Error('Internal error: save not enabled.');
 
     // Verify a token that was created by this instance is included to avoid
     // being spammed.
-    const resolve = this.pendingTokens_.get(messageData.token);
+    const resolver = this.pendingTokens_.get(messageData.token);
     if (!this.pendingTokens_.delete(messageData.token))
       throw new Error('Internal error: save token not found, abort save.');
+
+    if (!messageData.dataToSave) {
+      resolver.reject();
+      return;
+    }
 
     // Verify the file size and the first bytes to make sure it's a PDF. Cap at
     // 100 MB. This cap should be kept in sync with and is also enforced in
@@ -1275,6 +1448,6 @@ class PluginController extends ContentController {
       throw new Error('Not a PDF file.');
     }
 
-    resolve(messageData);
+    resolver.resolve(messageData);
   }
 }

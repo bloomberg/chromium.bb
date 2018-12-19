@@ -535,7 +535,6 @@ gin::IsolateHolder* g_isolate_holder = nullptr;
 void SetUpV8() {
   const char* recommended = FPDF_GetRecommendedV8Flags();
   v8::V8::SetFlagsFromString(recommended, strlen(recommended));
-
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
                                  gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
@@ -1225,6 +1224,15 @@ pp::Buffer_Dev PDFiumEngine::ConvertPdfToBufferDev(
 void PDFiumEngine::KillFormFocus() {
   FORM_ForceToKillFocus(form());
   SetInFormTextArea(false);
+}
+
+uint32_t PDFiumEngine::GetLoadedByteSize() {
+  return doc_loader_->GetDocumentSize();
+}
+
+bool PDFiumEngine::ReadLoadedBytes(uint32_t length, void* buffer) {
+  DCHECK_LE(length, GetLoadedByteSize());
+  return doc_loader_->GetBlock(0, length, buffer);
 }
 
 void PDFiumEngine::SetFormSelectedText(FPDF_FORMHANDLE form_handle,

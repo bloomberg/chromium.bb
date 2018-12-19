@@ -9,7 +9,7 @@ Polymer({
     /**
      * The current loading progress of the PDF document (0 - 100).
      */
-    loadProgress: {type: Number, observer: 'loadProgressChanged'},
+    loadProgress: {type: Number, observer: 'loadProgressChanged_'},
 
     /**
      * The title of the PDF document.
@@ -37,6 +37,14 @@ Polymer({
     opened: {type: Boolean, value: true},
 
     /**
+     * Whether the viewer is currently in annotation mode.
+     */
+    annotationMode: {
+      type: Boolean,
+      notify: true,
+    },
+
+    /**
      * Whether the PDF Annotations feature is enabled.
      */
     pdfAnnotationsEnabled: Boolean,
@@ -44,11 +52,18 @@ Polymer({
     strings: Object,
   },
 
-  loadProgressChanged: function() {
-    if (this.loadProgress >= 100) {
-      this.$.pageselector.classList.toggle('invisible', false);
-      this.$.buttons.classList.toggle('invisible', false);
-      this.$.progress.style.opacity = 0;
+  /**
+   * @param {number} newProgress
+   * @param {number} oldProgress
+   * @private
+   */
+  loadProgressChanged_: function(newProgress, oldProgress) {
+    const loaded = newProgress >= 100;
+    const progressReset = newProgress < oldProgress;
+    if (progressReset || loaded) {
+      this.$.pageselector.classList.toggle('invisible', !loaded);
+      this.$.buttons.classList.toggle('invisible', !loaded);
+      this.$.progress.style.opacity = loaded ? 0 : 1;
     }
   },
 
@@ -126,6 +141,10 @@ Polymer({
 
   print: function() {
     this.fire('print');
+  },
+
+  toggleAnnotation: function() {
+    this.annotationMode = !this.annotationMode;
   }
 });
 })();

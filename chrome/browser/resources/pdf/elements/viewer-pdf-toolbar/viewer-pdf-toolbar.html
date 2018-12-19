@@ -125,6 +125,7 @@
         <div id="buttons" class="invisible">
           <template is="dom-if" if="[[pdfAnnotationsEnabled]]">
             <paper-icon-button id="annotate" icon="pdf:create"
+                on-click="toggleAnnotation"
                 aria-label$="{{strings.tooltipAnnotate}}"
                 title$="{{strings.tooltipAnnotate}}">
             </paper-icon-button>
@@ -160,7 +161,7 @@
         </div>
       </div>
       <div id="progress-container">
-        <paper-progress id="progress" value="{{loadProgress}}"></paper-progress>
+        <paper-progress id="progress" value="[[loadProgress]]"></paper-progress>
       </div>
     </div>
   </template>

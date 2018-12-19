@@ -412,6 +412,9 @@ class PDFEngine {
 
   // Remove focus from form widgets, consolidating the user input.
   virtual void KillFormFocus() = 0;
+
+  virtual uint32_t GetLoadedByteSize() = 0;
+  virtual bool ReadLoadedBytes(uint32_t length, void* buffer) = 0;
 };
 
 // Interface for exports that wrap the PDF engine.
