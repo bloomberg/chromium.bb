@@ -169,6 +169,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     kMaxValue = kIncorrectLock,
   };
 
+  // Verifies if |request.request_initiator| matches
+  // |factory_params.request_initiator_site_lock|.
+  static RequestInitiatorOriginLockCompatibility
+  VerifyRequestInitiatorOriginLockForTesting(
+      const mojom::URLLoaderFactoryParams& factory_params,
+      const ResourceRequest& request);
+
  private:
   // This class is used to set the URLLoader as user data on a URLRequest. This
   // is used instead of URLLoader directly because SetUserData requires a

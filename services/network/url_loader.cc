@@ -322,33 +322,31 @@ InitiatorOriginLockCompatibility VerifyRequestInitiatorOriginLock(
   }
   const url::Origin& initiator = request.request_initiator.value();
 
+  // TODO(lukasza, nasko): Also consider equality of precursor origins (e.g. if
+  // |initiator| is opaque, then it's precursor origin should match the |lock|
+  // [or |lock|'s precursor if |lock| is also opaque]).
   if (initiator.opaque() || (initiator == lock))
     return InitiatorOriginLockCompatibility::kCompatibleLock;
 
   // TODO(lukasza, nasko): https://crbug.com/888079: Return kIncorrectLock if
-  // the origins do not match exactly in the previous if statement.  Once we
-  // have precursor origins, there should be no need to fall back to
-  // site-url-safe comparisons.
-  //
-  // It is only safe to compare sites if no other site can reuse the process.
-  // For some schemes (e.g. chrome-extension) the comparison is not safe.
-  if (initiator.GetURL().SchemeIsHTTPOrHTTPS()) {
-    // Only keep the scheme and registered domain of |initiator|.
-    std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
-        initiator.host(),
-        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-    std::string site = initiator.scheme();
-    site += url::kStandardSchemeSeparator;
-    site += domain.empty() ? initiator.host() : domain;
-
-    // Compare just the site URLs.
-    return GURL(site) == lock.GetURL()
-               ? InitiatorOriginLockCompatibility::kCompatibleLock
-               : InitiatorOriginLockCompatibility::kIncorrectLock;
+  // the origins do not match exactly in the previous if statement.  This should
+  // be possible to do once we no longer fall back to site_url and have
+  // request_initiator_*origin*_lock instead.  The fallback will go away after:
+  // - We have precursor origins: https://crbug.com/888079
+  // and
+  // - We no longer vend process-wide factory: https://crbug.com/891872
+  if (!initiator.opaque() && !lock.opaque() &&
+      initiator.scheme() == lock.scheme() &&
+      initiator.GetURL().SchemeIsHTTPOrHTTPS() &&
+      !initiator.GetURL().HostIsIPAddress()) {
+    std::string lock_domain = lock.host();
+    if (!lock_domain.empty() && lock_domain.back() == '.')
+      lock_domain.erase(lock_domain.length() - 1);
+    if (initiator.DomainIs(lock_domain))
+      return InitiatorOriginLockCompatibility::kCompatibleLock;
   }
-  return initiator.scheme() == lock.scheme()
-             ? InitiatorOriginLockCompatibility::kCompatibleLock
-             : InitiatorOriginLockCompatibility::kIncorrectLock;
+
+  return InitiatorOriginLockCompatibility::kIncorrectLock;
 }
 
 }  // namespace
@@ -1386,6 +1384,14 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
       FROM_HERE,
       base::BindOnce(&URLLoader::DeleteSelf, weak_ptr_factory_.GetWeakPtr()));
   return kWillCancelRequest;
+}
+
+// static
+InitiatorOriginLockCompatibility
+URLLoader::VerifyRequestInitiatorOriginLockForTesting(
+    const mojom::URLLoaderFactoryParams& factory_params,
+    const ResourceRequest& request) {
+  return VerifyRequestInitiatorOriginLock(factory_params, request);
 }
 
 }  // namespace network
