@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SYNC_SWITCH_ITEM_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SYNC_SWITCH_ITEM_H_
+#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_LEGACY_LEGACY_SYNC_SWITCH_ITEM_H_
+#define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_LEGACY_LEGACY_SYNC_SWITCH_ITEM_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
-@interface SyncSwitchItem : CollectionViewItem
+@interface LegacySyncSwitchItem : CollectionViewItem
 
 // The title text to display.
 @property(nonatomic, copy) NSString* text;
@@ -34,7 +34,7 @@
 @end
 
 // Cell representation for AccountSignInItem.
-@interface SyncSwitchCell : MDCCollectionViewCell
+@interface LegacySyncSwitchCell : MDCCollectionViewCell
 
 // Cell title.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
@@ -50,4 +50,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_SYNC_SWITCH_ITEM_H_
+#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_LEGACY_LEGACY_SYNC_SWITCH_ITEM_H_

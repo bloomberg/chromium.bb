@@ -109,8 +109,9 @@ id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
                                          BOOL is_toggled_on,
                                          BOOL is_enabled);
 
-// Matcher for SyncSwitchCell.
-id<GREYMatcher> SyncSwitchCell(NSString* accessibilityLabel, BOOL isToggledOn);
+// Matcher for LegacySyncSwitchCell.
+id<GREYMatcher> LegacySyncSwitchCell(NSString* accessibilityLabel,
+                                     BOOL isToggledOn);
 
 // Matcher for the Open in New Tab option in the context menu when long pressing
 // a link.
