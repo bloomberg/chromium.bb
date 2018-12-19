@@ -131,10 +131,16 @@ def Install(device, install_json, apk=None, enable_device_cache=False,
       splits = []
       for split_glob in split_globs:
         splits.extend((f for f in glob.glob(split_glob)))
-      device.InstallSplitApk(apk, splits, reinstall=True,
-                             allow_cached_props=True, permissions=permissions)
+      device.InstallSplitApk(
+          apk,
+          splits,
+          allow_downgrade=True,
+          reinstall=True,
+          allow_cached_props=True,
+          permissions=permissions)
     else:
-      device.Install(apk, reinstall=True, permissions=permissions)
+      device.Install(
+          apk, allow_downgrade=True, reinstall=True, permissions=permissions)
     install_timer.Stop(log=False)
 
   # Push .so and .dex files to the device (if they have changed).

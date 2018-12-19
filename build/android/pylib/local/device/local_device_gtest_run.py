@@ -127,8 +127,11 @@ class _ApkDelegate(object):
       installer.Install(device, self._test_apk_incremental_install_json,
                         apk=self._apk_helper, permissions=self._permissions)
     else:
-      device.Install(self._apk_helper, reinstall=True,
-                     permissions=self._permissions)
+      device.Install(
+          self._apk_helper,
+          allow_downgrade=True,
+          reinstall=True,
+          permissions=self._permissions)
 
   def ResultsDirectory(self, device):
     return device.GetApplicationDataDirectory(self._package)
