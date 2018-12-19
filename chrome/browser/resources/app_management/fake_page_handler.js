@@ -10,15 +10,7 @@ cr.define('app_management', function() {
       this.page = page;
 
       /** @type {!Array<appManagement.mojom.App>} */
-      this.apps_ = [
-        FakePageHandler.createApp('ahfgeienlihckogmohjhadlkjgocpleb'),
-        FakePageHandler.createApp(
-            'aohghmighlieiainnegkcijnfilokake',
-            {type: apps.mojom.AppType.kArc}),
-        FakePageHandler.createApp('blpcfgokakmgnkcojhhkbfbldkacnbeo'),
-        FakePageHandler.createApp('pjkljhegncpnkpknbcohdijeoejaedia'),
-        FakePageHandler.createApp('aapocclcgogkmnckokdopfmhonfmgoek'),
-      ];
+      this.apps_ = [];
     }
 
     getApps() {
@@ -42,6 +34,13 @@ cr.define('app_management', function() {
         Object.assign(app, config);
 
       return app;
+    }
+
+    /**
+     * @param {!Array<appManagement.mojom.App>} appList
+     */
+    setApps(appList) {
+      this.apps_ = appList;
     }
   }
 

@@ -16,6 +16,20 @@ cr.define('app_management', function() {
       if (useFake) {
         this.handler = new app_management.FakePageHandler(
             this.callbackRouter.createProxy());
+        const /** @type {!Array<appManagement.mojom.App>}*/ appList = [
+          app_management.FakePageHandler.createApp(
+              'ahfgeienlihckogmohjhadlkjgocpleb'),
+          app_management.FakePageHandler.createApp(
+              'aohghmighlieiainnegkcijnfilokake',
+              {type: apps.mojom.AppType.kArc}),
+          app_management.FakePageHandler.createApp(
+              'blpcfgokakmgnkcojhhkbfbldkacnbeo'),
+          app_management.FakePageHandler.createApp(
+              'pjkljhegncpnkpknbcohdijeoejaedia'),
+          app_management.FakePageHandler.createApp(
+              'aapocclcgogkmnckokdopfmhonfmgoek'),
+        ];
+        this.handler.setApps(appList);
       } else {
         this.handler = new appManagement.mojom.PageHandlerProxy();
         const factory = appManagement.mojom.PageHandlerFactory.getProxy();

@@ -31,6 +31,15 @@ if (!is_android) {
     ]
   }
 
+  js_library("api_listener") {
+    deps = [
+      ":actions",
+      ":store",
+      ":util",
+      "//ui/webui/resources/js:cr",
+    ]
+  }
+
   js_library("app") {
     deps = [
       ":actions",
