@@ -77,9 +77,9 @@ std::unique_ptr<AddressValidator> CreateAddressValidator(
     std::unique_ptr<Source> source,
     DeleteOnTaskRunnerStorageUniquePtr storage,
     LoadRulesListener* load_rules_listener) {
-  return std::make_unique<AddressValidator>(std::move(source),
-                                            base::WrapUnique(storage.release()),
-                                            load_rules_listener);
+  return std::make_unique<AddressValidator>(
+      std::move(source), std::unique_ptr<Storage>(storage.release()),
+      load_rules_listener);
 }
 
 }  // namespace

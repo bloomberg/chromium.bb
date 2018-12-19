@@ -28,7 +28,6 @@ class AutofillDriverIOSWebState
 
   ~AutofillDriverIOSWebState() override;
 
- protected:
   AutofillDriverIOSWebState(
       web::WebState* web_state,
       AutofillClient* client,

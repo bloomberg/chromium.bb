@@ -31,7 +31,7 @@ std::unique_ptr<icu::Collator> GetCollatorForLocale(const icu::Locale& locale) {
                << locale_name;
 
     // Attempt to load the English locale.
-    collator = base::WrapUnique(
+    collator.reset(
         icu::Collator::createInstance(icu::Locale::getEnglish(), ignored));
     if (!collator) {
       LOG(ERROR) << "Failed to initialize the ICU Collator with the English "

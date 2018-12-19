@@ -3848,7 +3848,7 @@ TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
   // Create the |existing_profiles| vector.
   std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
   existing_profiles.push_back(std::move(profile1));
-  existing_profiles.push_back(base::WrapUnique(profile2));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile2));
 
   // Create a new imported profile with no company name.
   AutofillProfile imported_profile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -3891,7 +3891,7 @@ TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
 
   // Create the |existing_profiles| vector.
   std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
-  existing_profiles.push_back(base::WrapUnique(profile));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile));
 
   // Change the current date.
   test_clock.SetNow(kSomeLaterTime);
@@ -3971,11 +3971,11 @@ TEST_F(PersonalDataManagerTest, DedupeProfiles_ProfilesToDelete) {
 
   // Add the profiles.
   std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
-  existing_profiles.push_back(base::WrapUnique(profile1));
-  existing_profiles.push_back(base::WrapUnique(profile2));
-  existing_profiles.push_back(base::WrapUnique(profile3));
-  existing_profiles.push_back(base::WrapUnique(profile4));
-  existing_profiles.push_back(base::WrapUnique(profile5));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile1));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile2));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile3));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile4));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile5));
 
   // Enable the profile cleanup.
   EnableAutofillProfileCleanup();
@@ -4056,11 +4056,11 @@ TEST_F(PersonalDataManagerTest, DedupeProfiles_GuidsMergeMap) {
 
   // Add the profiles.
   std::vector<std::unique_ptr<AutofillProfile>> existing_profiles;
-  existing_profiles.push_back(base::WrapUnique(profile1));
-  existing_profiles.push_back(base::WrapUnique(profile2));
-  existing_profiles.push_back(base::WrapUnique(profile3));
-  existing_profiles.push_back(base::WrapUnique(profile4));
-  existing_profiles.push_back(base::WrapUnique(profile5));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile1));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile2));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile3));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile4));
+  existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile5));
 
   // Enable the profile cleanup.
   EnableAutofillProfileCleanup();
@@ -4115,12 +4115,14 @@ TEST_F(PersonalDataManagerTest, UpdateCardsBillingAddressReference) {
   credit_card4->set_billing_address_id("F");
 
   // Add the credit cards to the database.
-  personal_data_->local_credit_cards_.push_back(base::WrapUnique(credit_card1));
+  personal_data_->local_credit_cards_.push_back(
+      std::unique_ptr<CreditCard>(credit_card1));
   personal_data_->server_credit_cards_.push_back(
-      base::WrapUnique(credit_card2));
-  personal_data_->local_credit_cards_.push_back(base::WrapUnique(credit_card3));
+      std::unique_ptr<CreditCard>(credit_card2));
+  personal_data_->local_credit_cards_.push_back(
+      std::unique_ptr<CreditCard>(credit_card3));
   personal_data_->server_credit_cards_.push_back(
-      base::WrapUnique(credit_card4));
+      std::unique_ptr<CreditCard>(credit_card4));
 
   personal_data_->UpdateCardsBillingAddressReference(guids_merge_map);
 

@@ -24,8 +24,8 @@ void AutofillDriverIOSWebState::CreateForWebStateAndDelegate(
 
   web_state->SetUserData(
       UserDataKey(),
-      base::WrapUnique(new AutofillDriverIOSWebState(
-          web_state, client, bridge, app_locale, enable_download_manager)));
+      std::make_unique<AutofillDriverIOSWebState>(
+          web_state, client, bridge, app_locale, enable_download_manager));
 }
 
 AutofillDriverIOSWebState::AutofillDriverIOSWebState(

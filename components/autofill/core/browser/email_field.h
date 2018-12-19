@@ -16,13 +16,12 @@ namespace autofill {
 class EmailField : public FormField {
  public:
   static std::unique_ptr<FormField> Parse(AutofillScanner* scanner);
+  explicit EmailField(const AutofillField* field);
 
  protected:
   void AddClassifications(FieldCandidatesMap* field_candidates) const override;
 
  private:
-  explicit EmailField(const AutofillField* field);
-
   const AutofillField* field_;
 
   DISALLOW_COPY_AND_ASSIGN(EmailField);

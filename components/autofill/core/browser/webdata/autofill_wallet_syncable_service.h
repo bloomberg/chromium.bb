@@ -29,6 +29,9 @@ class AutofillWalletSyncableService
     : public base::SupportsUserData::Data,
       public syncer::SyncableService {
  public:
+  AutofillWalletSyncableService(AutofillWebDataBackend* webdata_backend,
+                                const std::string& app_locale);
+
   ~AutofillWalletSyncableService() override;
 
   // syncer::SyncableService implementation.
@@ -59,11 +62,6 @@ class AutofillWalletSyncableService
   // sync_start_util for more.
   void InjectStartSyncFlare(
       const syncer::SyncableService::StartSyncFlare& flare);
-
- protected:
-  AutofillWalletSyncableService(
-      AutofillWebDataBackend* webdata_backend,
-      const std::string& app_locale);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillWalletSyncableServiceTest,
