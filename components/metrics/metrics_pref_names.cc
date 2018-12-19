@@ -28,10 +28,16 @@ const char kMetricsDefaultOptIn[] = "user_experience_metrics.default_opt_in";
 // count info, etc.
 const char kMetricsInitialLogs[] = "user_experience_metrics.initial_logs2";
 
-// The metrics entropy source.
-// Note: The name low_entropy_source2 is a result of creating
-// new prefs to do a one-time reset of the previous values.
+// Low entropy source values. The new source (with suffix "3") was created
+// because the old source (with suffix "2") is biased in the wild. Clients which
+// have an old source still incorporate it into the high entropy source, to
+// avoid reshuffling experiments using high entropy, but use the new source for
+// experiments requiring low entropy. Newer clients only have the new source,
+// and use it both for low entropy experiments to to incorporate into the high
+// entropy source for high entropy experiments.
 const char kMetricsLowEntropySource[] =
+    "user_experience_metrics.low_entropy_source3";
+const char kMetricsOldLowEntropySource[] =
     "user_experience_metrics.low_entropy_source2";
 
 // A machine ID used to detect when underlying hardware changes. It is only

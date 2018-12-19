@@ -87,7 +87,7 @@ double SHA1EntropyProvider::GetEntropyForTrial(
   // Note: If |entropy_source_| has very low entropy, such as 13 bits or less,
   // it has been observed that this method does not result in a uniform
   // distribution given the same |trial_name|. When using such a low entropy
-  // source, PermutedEntropyProvider should be used instead.
+  // source, NormalizedMurmurHashEntropyProvider should be used instead.
   std::string input(entropy_source_);
   input.append(randomization_seed == 0 ? trial_name : base::UintToString(
                                                           randomization_seed));
