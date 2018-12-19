@@ -101,8 +101,11 @@ media_session::mojom::MediaController*
 MediaController::GetMediaSessionController() {
   // |connector_| can be null in tests.
   if (connector_ && !media_session_controller_ptr_.is_bound()) {
+    media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
     connector_->BindInterface(media_session::mojom::kServiceName,
-                              &media_session_controller_ptr_);
+                              &controller_manager_ptr);
+    controller_manager_ptr->CreateActiveMediaController(
+        mojo::MakeRequest(&media_session_controller_ptr_));
 
     media_session_controller_ptr_.set_connection_error_handler(
         base::BindRepeating(&MediaController::OnMediaSessionControllerError,

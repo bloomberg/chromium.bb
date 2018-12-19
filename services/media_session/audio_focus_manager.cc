@@ -119,6 +119,15 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
     return request;
   }
 
+  void BindToController(mojom::MediaControllerRequest request) {
+    if (!controller_) {
+      controller_ = std::make_unique<MediaController>();
+      controller_->SetMediaSession(session_.get());
+    }
+
+    controller_->BindToInterface(std::move(request));
+  }
+
  private:
   void SetSessionInfo(mojom::MediaSessionInfoPtr session_info) {
     bool is_controllable_changed =
@@ -153,6 +162,8 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
 
   AudioFocusManagerMetricsHelper metrics_helper_;
   bool encountered_error_ = false;
+
+  std::unique_ptr<MediaController> controller_;
 
   mojom::MediaSessionPtr session_;
   mojom::MediaSessionInfoPtr session_info_;
@@ -277,6 +288,24 @@ void AudioFocusManager::SetSourceName(const std::string& name) {
   bindings_.dispatch_context()->source_name = name;
 }
 
+void AudioFocusManager::CreateActiveMediaController(
+    mojom::MediaControllerRequest request) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  active_media_controller_.BindToInterface(std::move(request));
+}
+
+void AudioFocusManager::CreateMediaControllerForSession(
+    mojom::MediaControllerRequest request,
+    const base::UnguessableToken& request_id) {
+  for (auto& row : audio_focus_stack_) {
+    if (row->id() != request_id)
+      continue;
+
+    row->BindToController(std::move(request));
+    break;
+  }
+}
+
 void AudioFocusManager::BindToInterface(
     mojom::AudioFocusManagerRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -290,10 +319,10 @@ void AudioFocusManager::BindToDebugInterface(
   debug_bindings_.AddBinding(this, std::move(request));
 }
 
-void AudioFocusManager::BindToActiveControllerInterface(
-    mojom::MediaControllerRequest request) {
+void AudioFocusManager::BindToControllerManagerInterface(
+    mojom::MediaControllerManagerRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  active_media_controller_.BindToInterface(std::move(request));
+  controller_bindings_.AddBinding(this, std::move(request));
 }
 
 void AudioFocusManager::RequestAudioFocusInternal(

@@ -31,7 +31,8 @@ class MockMediaSession;
 class MediaController;
 
 class AudioFocusManager : public mojom::AudioFocusManager,
-                          public mojom::AudioFocusManagerDebug {
+                          public mojom::AudioFocusManagerDebug,
+                          public mojom::MediaControllerManager {
  public:
   AudioFocusManager();
   ~AudioFocusManager() override;
@@ -59,14 +60,22 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void GetDebugInfoForRequest(const RequestId& request_id,
                               GetDebugInfoForRequestCallback callback) override;
 
+  // mojom::MediaControllerManager.
+  void CreateActiveMediaController(
+      mojom::MediaControllerRequest request) override;
+  void CreateMediaControllerForSession(
+      mojom::MediaControllerRequest request,
+      const base::UnguessableToken& request_id) override;
+
   // Bind to a mojom::AudioFocusManagerRequest.
   void BindToInterface(mojom::AudioFocusManagerRequest request);
 
   // Bind to a mojom::AudioFocusManagerDebugRequest.
   void BindToDebugInterface(mojom::AudioFocusManagerDebugRequest request);
 
-  // Bind to a mojom::MediaControllerRequest.
-  void BindToActiveControllerInterface(mojom::MediaControllerRequest request);
+  // Bind to a mojom::MediaControllerManagerRequest.
+  void BindToControllerManagerInterface(
+      mojom::MediaControllerManagerRequest request);
 
  private:
   friend class AudioFocusManagerTest;
@@ -116,6 +125,9 @@ class AudioFocusManager : public mojom::AudioFocusManager,
 
   // Holds mojo bindings for the Audio Focus Manager Debug API.
   mojo::BindingSet<mojom::AudioFocusManagerDebug> debug_bindings_;
+
+  // Holds mojo bindings for the Media Controller Manager API.
+  mojo::BindingSet<mojom::MediaControllerManager> controller_bindings_;
 
   // Weak reference of managed observers. Observers are expected to remove
   // themselves before being destroyed.

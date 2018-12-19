@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "services/media_session/media_session_service.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
@@ -32,7 +33,11 @@ class MediaControllerTest : public testing::Test {
     connector_factory_.GetDefaultConnector()->BindInterface(mojom::kServiceName,
                                                             &audio_focus_ptr_);
     connector_factory_.GetDefaultConnector()->BindInterface(
-        mojom::kServiceName, &media_controller_ptr_);
+        mojom::kServiceName, &controller_manager_ptr_);
+
+    controller_manager_ptr_->CreateActiveMediaController(
+        mojo::MakeRequest(&media_controller_ptr_));
+    controller_manager_ptr_.FlushForTesting();
   }
 
   void TearDown() override {
@@ -47,12 +52,17 @@ class MediaControllerTest : public testing::Test {
 
   mojom::MediaControllerPtr& controller() { return media_controller_ptr_; }
 
+  mojom::MediaControllerManagerPtr& manager() {
+    return controller_manager_ptr_;
+  }
+
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<MediaSessionService> service_;
   mojom::AudioFocusManagerPtr audio_focus_ptr_;
   mojom::MediaControllerPtr media_controller_ptr_;
+  mojom::MediaControllerManagerPtr controller_manager_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaControllerTest);
 };
@@ -617,6 +627,102 @@ TEST_F(MediaControllerTest, ActiveController_Stop) {
     controller()->Stop();
     observer.WaitForState(mojom::MediaSessionInfo::SessionState::kInactive);
   }
+}
+
+TEST_F(MediaControllerTest, BoundController_Routing) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  media_session_1.SetIsControllable(true);
+  media_session_2.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    RequestAudioFocus(media_session_1, mojom::AudioFocusType::kGain);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  mojom::MediaControllerPtr controller;
+  manager()->CreateMediaControllerForSession(
+      mojo::MakeRequest(&controller), media_session_1.GetRequestIdFromClient());
+  manager().FlushForTesting();
+
+  EXPECT_EQ(0, media_session_1.next_track_count());
+
+  controller->NextTrack();
+  controller.FlushForTesting();
+
+  EXPECT_EQ(1, media_session_1.next_track_count());
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_2);
+    RequestAudioFocus(media_session_2, mojom::AudioFocusType::kGain);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  EXPECT_EQ(1, media_session_1.next_track_count());
+  EXPECT_EQ(0, media_session_2.next_track_count());
+
+  controller->NextTrack();
+  controller.FlushForTesting();
+
+  EXPECT_EQ(2, media_session_1.next_track_count());
+  EXPECT_EQ(0, media_session_2.next_track_count());
+}
+
+TEST_F(MediaControllerTest, BoundController_BadRequestId) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  mojom::MediaControllerPtr controller;
+  manager()->CreateMediaControllerForSession(mojo::MakeRequest(&controller),
+                                             base::UnguessableToken::Create());
+  manager().FlushForTesting();
+
+  EXPECT_EQ(0, media_session.next_track_count());
+
+  controller->NextTrack();
+  controller.FlushForTesting();
+
+  EXPECT_EQ(0, media_session.next_track_count());
+}
+
+TEST_F(MediaControllerTest, BoundController_DropOnAbandon) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
+  }
+
+  mojom::MediaControllerPtr controller;
+  manager()->CreateMediaControllerForSession(
+      mojo::MakeRequest(&controller), media_session.GetRequestIdFromClient());
+  manager().FlushForTesting();
+
+  EXPECT_EQ(0, media_session.next_track_count());
+
+  controller->NextTrack();
+  controller.FlushForTesting();
+
+  EXPECT_EQ(1, media_session.next_track_count());
+
+  media_session.AbandonAudioFocusFromClient();
+
+  EXPECT_EQ(1, media_session.next_track_count());
+
+  controller->NextTrack();
+  controller.FlushForTesting();
+
+  EXPECT_EQ(1, media_session.next_track_count());
 }
 
 }  // namespace media_session
