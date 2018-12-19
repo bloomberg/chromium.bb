@@ -509,10 +509,15 @@ def main():
       if sys.platform not in ('win32', 'cygwin'):
         doc = 'https://chromium.googlesource.com/chromium/src/+/master/docs/' \
               'win_cross.md'
+        print('\n\n\nPlease follow the instructions at %s\n\n' % doc)
       else:
         doc = 'https://chromium.googlesource.com/chromium/src/+/master/docs/' \
               'windows_build_instructions.md'
-      print('\n\n\nPlease follow the instructions at %s\n\n' % doc)
+        print('\n\n\nNo downloadable toolchain found. In order to use your '
+              'locally installed version of Visual Studio to build Chrome '
+              'please set DEPOT_TOOLS_WIN_TOOLCHAIN=0.\n'
+              'For details search for DEPOT_TOOLS_WIN_TOOLCHAIN in the '
+              'instructions at %s\n\n' % doc)
       return 1
     print('Windows toolchain out of date or doesn\'t exist, updating (Pro)...')
     print('  current_hashes: %s' % ', '.join(current_hashes))
