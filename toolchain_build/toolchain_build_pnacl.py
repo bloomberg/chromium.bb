@@ -96,6 +96,7 @@ CHROME_CLANG_DIR = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                                 'llvm-build', 'Release+Asserts', 'bin')
 CHROME_CLANG = os.path.join(CHROME_CLANG_DIR, 'clang')
 CHROME_CLANGXX = os.path.join(CHROME_CLANG_DIR, 'clang++')
+CHROME_LLD = os.path.join(CHROME_CLANG_DIR, 'lld')
 CHROME_SYSROOT_DIR = os.path.join(os.path.dirname(NACL_DIR), 'build',
                                   'linux', 'debian_sid_amd64-sysroot')
 
@@ -310,6 +311,8 @@ def HostArchToolFlags(host, extra_cflags, opts):
       result['CFLAGS'] += extra_cc_flags
       result['LDFLAGS'] += ['-L%(' + FlavoredName('abs_libcxx',
                                                   host, opts) + ')s/lib']
+      if TripleIsLinux(host) and not opts.gcc:
+        result['LDFLAGS'] += ['-fuse-ld=lld']
       result['CXXFLAGS'] += ([
         '-stdlib=libc++',
         '-nostdinc++',
@@ -387,6 +390,8 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
       # does not pass CFLAGS to its compile tests
       cc_list += ['--sysroot=%s' % CHROME_SYSROOT_DIR]
       cxx_list += ['--sysroot=%s' % CHROME_SYSROOT_DIR]
+      if CHROME_CLANG in cc:
+        configure_args.append('LD=' + CHROME_LLD)
 
     configure_args.append('CC=' + ' '.join(cc_list + extra_cc_args))
     configure_args.append('CXX=' + ' '.join(cxx_list + extra_cxx_args))
@@ -419,12 +424,15 @@ def LibCxxHostArchFlags(host, options):
 
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if TripleIsLinux(host):
-    cflags = ['--sysroot=%s' % CHROME_SYSROOT_DIR]
+    # -fuse-lld should be an LDFLAG and not a cflag. See CMake bug link below.
+    # The consequence is just extra warnings during the CMake build.
+    cflags = ['--sysroot=%s' % CHROME_SYSROOT_DIR, '-fuse-ld=lld']
     if not TripleIsX8664(host):
       # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux
       cflags.extend(['-m32'])
     cmake_flags.extend(['-DCMAKE_C_FLAGS=%s' % ' '.join(cflags),
-                        '-DCMAKE_CXX_FLAGS=%s' % ' '.join(cflags)])
+                        '-DCMAKE_CXX_FLAGS=%s' % ' '.join(cflags),
+                        '-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=lld'])
   elif TripleIsMac(host):
     sdk_flags = ' '.join(MAC_SDK_FLAGS)
     cmake_flags.extend(['-DCMAKE_C_FLAGS=' + sdk_flags,
@@ -474,7 +482,7 @@ def CmakeHostArchFlags(host, options):
 def ConfigureBinutilsCommon(host, options, is_pnacl):
   # Binutils still has some warnings when building with clang
   if not options.gcc:
-    warning_flags = ['-Wno-extended-offsetof', '-Wno-absolute-value',
+    warning_flags = ['-Wno-absolute-value',
                     '-Wno-unused-function', '-Wno-unused-const-variable',
                     '-Wno-unneeded-internal-declaration',
                     '-Wno-unused-private-field', '-Wno-format-security']
