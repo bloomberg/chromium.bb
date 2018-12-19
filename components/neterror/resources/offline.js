@@ -712,13 +712,13 @@ Runner.prototype = {
             this.tRex.setDuck(true);
           }
         }
-      } else if (this.crashed && e.type == Runner.events.TOUCHSTART &&
+      // iOS only triggers touchstart and no pointer events.
+      } else if (IS_IOS && this.crashed && e.type == Runner.events.TOUCHSTART &&
           e.currentTarget == this.containerEl) {
-        this.restart();
+        this.handleGameOverClicks(e);
       }
     }
   },
-
 
   /**
    * Process key up.
@@ -743,12 +743,34 @@ Runner.prototype = {
           (Runner.keycodes.RESTART[keyCode] || this.isLeftClickOnCanvas(e) ||
           (deltaTime >= this.config.GAMEOVER_CLEAR_TIME &&
           Runner.keycodes.JUMP[keyCode]))) {
-        this.restart();
+        this.handleGameOverClicks(e);
       }
     } else if (this.paused && isjumpKey) {
       // Reset the jump state
       this.tRex.reset();
       this.play();
+    }
+  },
+
+  /**
+   * Handle interactions on the game over screen state.
+   * A user is able to tap the high score twice to reset it.
+   * @param {Event} e
+   */
+  handleGameOverClicks: function(e) {
+    e.preventDefault();
+    if (this.distanceMeter.hasClickedOnHighScore(e) && this.highestScore) {
+      if (this.distanceMeter.isHighScoreFlashing()) {
+        // Subsequent click, reset the high score.
+        this.saveHighScore(0, true);
+        this.distanceMeter.resetHighScore();
+      } else {
+        // First click, flash the high score.
+        this.distanceMeter.startHighScoreFlashing();
+      }
+    } else {
+      this.distanceMeter.cancelHighScoreFlashing();
+      this.restart();
     }
   },
 
@@ -799,6 +821,25 @@ Runner.prototype = {
   },
 
   /**
+   * Sets the current high score and saves to the profile if available.
+   * @param {number} distanceRan Total distance ran.
+   * @param {boolean} opt_resetScore Whether to reset the score.
+   */
+  saveHighScore: function(distanceRan, opt_resetScore) {
+    this.highestScore = Math.ceil(distanceRan);
+    this.distanceMeter.setHighScore(this.highestScore);
+
+    // Store the new high score in the profile.
+    if (this.syncHighestScore && window.errorPageController) {
+      if (opt_resetScore) {
+        errorPageController.resetEasterEggHighScore();
+      } else {
+        errorPageController.updateEasterEggHighScore(this.highestScore);
+      }
+    }
+  },
+
+  /**
    * Game over state.
    */
   gameOver: function() {
@@ -822,13 +863,7 @@ Runner.prototype = {
 
     // Update the high score.
     if (this.distanceRan > this.highestScore) {
-      this.highestScore = Math.ceil(this.distanceRan);
-      this.distanceMeter.setHighScore(this.highestScore);
-
-      // Store the new high score in the profile.
-      if (this.syncHighestScore && window.errorPageController) {
-        errorPageController.updateEasterEggHighScore(this.highestScore);
-      }
+      this.saveHighScore(this.distanceRan);
     }
 
     // Reset the time clock.
@@ -1952,6 +1987,9 @@ function DistanceMeter(canvas, spritePos, canvasWidth) {
   this.flashTimer = 0;
   this.flashIterations = 0;
   this.invertTrigger = false;
+  this.flashingRafId = null;
+  this.highScoreBounds = {};
+  this.highScoreFlashing = false;
 
   this.config = DistanceMeter.config;
   this.maxScoreUnits = this.config.MAX_DISTANCE_UNITS;
@@ -1995,7 +2033,10 @@ DistanceMeter.config = {
   FLASH_DURATION: 1000 / 4,
 
   // Flash iterations for achievement animation.
-  FLASH_ITERATIONS: 3
+  FLASH_ITERATIONS: 3,
+
+  // Padding around the high score hit area.
+  HIGH_SCORE_HIT_AREA_PADDING: 4
 };
 
 
@@ -2173,6 +2214,133 @@ DistanceMeter.prototype = {
         distance).substr(-this.maxScoreUnits);
 
     this.highScore = ['10', '11', ''].concat(highScoreStr.split(''));
+  },
+
+
+  /**
+   * Whether a clicked is in the high score area.
+   * @param {TouchEvent|ClickEvent} e Event object.
+   * @return {boolean} Whether the click was in the high score bounds.
+   */
+  hasClickedOnHighScore: function(e) {
+    var x = 0;
+    var y = 0;
+
+    if (e.touches) {
+      // Bounds for touch differ from pointer.
+      var canvasBounds = this.canvas.getBoundingClientRect();
+      x = e.touches[0].clientX - canvasBounds.left;
+      y = e.touches[0].clientY - canvasBounds.top;
+    } else {
+      x = e.offsetX;
+      y = e.offsetY;
+    }
+
+    this.highScoreBounds = this.getHighScoreBounds();
+    return x >= this.highScoreBounds.x && x <=
+        this.highScoreBounds.x + this.highScoreBounds.width &&
+        y >= this.highScoreBounds.y && y <=
+        this.highScoreBounds.y + this.highScoreBounds.height;
+  },
+
+  /**
+   * Get the bounding box for the high score.
+   * @return {Object} Object with x, y, width and height properties.
+   */
+  getHighScoreBounds: function() {
+    return {
+      x: (this.x - (this.maxScoreUnits * 2) *
+          DistanceMeter.dimensions.WIDTH) -
+          DistanceMeter.config.HIGH_SCORE_HIT_AREA_PADDING,
+      y: this.y,
+      width: DistanceMeter.dimensions.WIDTH * (this.highScore.length + 1) +
+          DistanceMeter.config.HIGH_SCORE_HIT_AREA_PADDING,
+      height: DistanceMeter.dimensions.HEIGHT +
+          (DistanceMeter.config.HIGH_SCORE_HIT_AREA_PADDING * 2)
+    };
+  },
+
+  /**
+   * Animate flashing the high score to indicate ready for resetting.
+   * The flashing stops following this.config.FLASH_ITERATIONS x 2 flashes.
+   */
+  flashHighScore: function() {
+    var now = getTimeStamp();
+    var deltaTime = now - (this.frameTimeStamp || now);
+    var paint = true;
+    this.frameTimeStamp = now;
+
+    // Reached the max number of flashes.
+    if (this.flashIterations > this.config.FLASH_ITERATIONS * 2) {
+      this.cancelHighScoreFlashing();
+      return;
+    }
+
+    this.flashTimer += deltaTime;
+
+    if (this.flashTimer < this.config.FLASH_DURATION) {
+      paint = false;
+    } else if (this.flashTimer > this.config.FLASH_DURATION * 2) {
+      this.flashTimer = 0;
+      this.flashIterations++;
+    }
+
+    if (paint) {
+      this.drawHighScore();
+    } else {
+      this.clearHighScoreBounds();
+    }
+    // Frame update.
+    this.flashingRafId =
+        requestAnimationFrame(this.flashHighScore.bind(this));
+  },
+
+  /**
+   * Draw empty rectangle over high score.
+   */
+  clearHighScoreBounds: function() {
+    this.canvasCtx.save();
+    this.canvasCtx.fillStyle = '#fff';
+    this.canvasCtx.rect(this.highScoreBounds.x, this.highScoreBounds.y,
+        this.highScoreBounds.width, this.highScoreBounds.height);
+    this.canvasCtx.fill();
+    this.canvasCtx.restore();
+  },
+
+  /**
+   * Starts the flashing of the high score.
+   */
+  startHighScoreFlashing() {
+    this.highScoreFlashing = true;
+    this.flashHighScore();
+  },
+
+  /**
+   * Whether high score is flashing.
+   * @return {boolean}
+   */
+  isHighScoreFlashing() {
+    return this.highScoreFlashing;
+  },
+
+  /**
+   * Stop flashing the high score.
+   */
+  cancelHighScoreFlashing: function() {
+    cancelAnimationFrame(this.flashingRafId);
+    this.flashIterations = 0;
+    this.flashTimer = 0;
+    this.highScoreFlashing = false;
+    this.clearHighScoreBounds();
+    this.drawHighScore();
+  },
+
+  /**
+   * Clear the high score.
+   */
+  resetHighScore: function() {
+    this.setHighScore(0);
+    this.cancelHighScoreFlashing();
   },
 
   /**
