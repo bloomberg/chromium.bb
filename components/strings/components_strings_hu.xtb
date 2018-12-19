@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">Könyvtár API-azonosítója:</translation>
 <translation id="2597378329261239068">Ez a dokumentum jelszóval védett. Kérjük, adja meg a jelszót.</translation>
 <translation id="2609632851001447353">Változatok</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{Nincs}=1{1 alkalmazás ($1)}=2{2 alkalmazás ($1, $2)}other{# alkalmazás ($1, $2 $3)}}</translation>
 <translation id="2625385379895617796">Az órája siet</translation>
 <translation id="2634124572758952069">A(z) <ph name="HOST_NAME" /> szerver IP-címe nem található.</translation>
 <translation id="2639739919103226564">Állapot:</translation>

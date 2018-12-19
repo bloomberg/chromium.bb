@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">ID da API de diretório:</translation>
 <translation id="2597378329261239068">Este documento está protegido por palavra-passe.  Introduza uma palavra-passe.</translation>
 <translation id="2609632851001447353">Variações</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{Nenhuma}=1{1 aplicação ($1)}=2{2 aplicações ($1, $2)}other{# aplicações ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">O seu relógio está adiantado</translation>
 <translation id="2634124572758952069">Não foi possível encontrar o endereço IP do servidor de <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">Estado:</translation>

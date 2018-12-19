@@ -2609,11 +2609,10 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7620869951155758729">Sera hii inaeleza mipangilio inayotumika kuunda na kuthibitisha Msimbo wa Kufikia wa Mzazi.
 
       |current_config| hutumika kila mara kuunda msimbo wa kufikia na inapaswa kutumika kuthibitisha msimbo wa kufikia iwapo tu hauwezi kuthibitishwa na |future_config|.
-      |future_config| ni mpangilio wa msingi unaotumiwa kuthibitisha msimbo wa kufikia.
+|future_config| ni mpangilio wa msingi unaotumiwa kuthibitisha msimbo wa kufikia.
       |old_configs| inapaswa kutumika kuthibitisha msimbo wa kufikia iwapo tu hauwezi kuthibitishwa na |future_config| wala |current_config|.
 
-      Njia inayotarajiwa ya kutumia sera hii ni kuzungusha kwa hatua mpangilio wa msimbo wa kufikia. Mipangilio mipya huwekwa kwenye |future_config| kila mara na wakati huo huo
-      thamani iliyopo huhamishiwa kwenye |current_config|. Thamani za awali za |current_config| zitahamishiwa kwenye |old_configs| na kuondolewa bada ya mzunguko kukamilika.
+      Njia inayotarajiwa ya kutumia sera hii ni kuzungusha kwa hatua mpangilio wa msimbo wa kufikia. Mipangilio mipya huwekwa kwenye |future_config| kila mara na wakati huo huo thamani iliyopo huhamishiwa kwenye |current_config|. Thamani za awali za |current_config| zitahamishiwa kwenye |old_configs| na kuondolewa bada ya mzunguko kukamilika.
 
       Sera hii inatumika kwa mtumiaji mtoto pekee.
       Sera hii inapowekwa, mipangilio ya Msimbo wa kufikia wa Mzazi inaweza kuthibitishwa kwenye kifaa kinachotumiwa na mtoto.

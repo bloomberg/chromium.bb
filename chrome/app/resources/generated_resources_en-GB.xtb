@@ -69,7 +69,6 @@
 <translation id="1091767800771861448">Press ESCAPE to skip (Non-official builds only).</translation>
 <translation id="1093457606523402488">Visible Networks:</translation>
 <translation id="1094607894174825014">Read or write operation was requested with an invalid offset on: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="109758035718544977">Unmute Sites</translation>
 <translation id="1097658378307015415">Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Always translate <ph name="LANGUAGE" /></translation>
 <translation id="1108600514891325577">&amp;Stop</translation>
@@ -156,7 +155,6 @@
 <translation id="1211364473545090084">Use the web without saving your browsing history with an incognito window</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> fingerprints set up</translation>
 <translation id="1215411991991485844">New background app added</translation>
-<translation id="1216654534877302979">Mute Sites</translation>
 <translation id="1216659994753476700">We're sorry. We can't access your profile. Files and data stored on this device may have been lost.<ph name="BR" />
     <ph name="BR" />
     You'll have to set up your profile again.<ph name="BR" />
@@ -206,7 +204,6 @@
 <translation id="1285484354230578868">Store data in your Google Drive account</translation>
 <translation id="1288037062697528143">Night Light will turn on automatically at sunset</translation>
 <translation id="1288300545283011870">Speech Properties</translation>
-<translation id="1293177648337752319">Unmute Site</translation>
 <translation id="1293264513303784526">USB-C device (left port)</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1296497012903089238">Certificate Type</translation>
@@ -305,7 +302,6 @@
 <translation id="1434886155212424586">Homepage is the New Tab page</translation>
 <translation id="1436671784520050284">Continue setup</translation>
 <translation id="1436784010935106834">Removed</translation>
-<translation id="1438632560381091872">Unmute tabs</translation>
 <translation id="1442392616396121389">Routing prefix</translation>
 <translation id="144283815522798837"><ph name="NUMBER_OF_ITEMS_SELECTED" /> selected</translation>
 <translation id="1444628761356461360">This setting is managed by the device owner, <ph name="OWNER_EMAIL" />.</translation>
@@ -388,7 +384,6 @@
 <translation id="1567387640189251553">A different keyboard has been connected since you last entered your password. It may be attempting to steal your keystrokes.</translation>
 <translation id="1567750922576943685">Verifying your identity helps protect your personal information</translation>
 <translation id="1567993339577891801">JavaScript Console</translation>
-<translation id="1568067597247500137">Mute Site</translation>
 <translation id="1568323446248056064">Open display device settings</translation>
 <translation id="1572266655485775982">Wi-Fi enable</translation>
 <translation id="1572585716423026576">Set as wallpaper</translation>
@@ -440,7 +435,6 @@
 <translation id="1643072738649235303">X9.62 ECDSA Signature with SHA-1</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1645516838734033527">To keep your <ph name="DEVICE_TYPE" /> safe, Smart Lock requires a screen lock on your phone.</translation>
-<translation id="1646102270785326155">All files and local data associated with this user will be permanently deleted once this user is removed. $1 can still sign in later.</translation>
 <translation id="1646982517418478057">Please enter a password to encrypt this certificate</translation>
 <translation id="164814987133974965">A supervised user can explore the web with your guidance. As the manager of a supervised user, you can
     <ph name="BEGIN_BOLD" />allow or prohibit<ph name="END_BOLD" /> certain websites,
@@ -499,7 +493,6 @@
 <translation id="1729533290416704613">It also controls what page is shown when you search from the Omnibox.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />To remove apps, go to Settings &gt; Google Play Store &gt; Manage Android preferences &gt; Apps or Application manager. Then tap the app that you want to uninstall (you may need to swipe right or left to find the app). Then tap Uninstall or Disable.<ph name="END_PARAGRAPH1" /></translation>
 <translation id="1731911755844941020">Sending request...</translation>
-<translation id="1732215134274276513">Unpin Tabs</translation>
 <translation id="1733383495376208985">Encrypt synced data with your own <ph name="BEGIN_LINK" />sync passphrase<ph name="END_LINK" />. This doesn't include payment methods and addresses from Google Pay.</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> may not be able to keep itself updated</translation>
 <translation id="1736419249208073774">Explore</translation>
@@ -551,7 +544,6 @@
 <translation id="1807938677607439181">All files</translation>
 <translation id="1809734401532861917">Add my bookmarks, history, passwords and other settings to <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1810764548349082891">No preview available</translation>
-<translation id="1812631533912615985">Unpin tabs</translation>
 <translation id="1813278315230285598">Services</translation>
 <translation id="18139523105317219">EDI Party Name</translation>
 <translation id="1815083418640426271">Paste as Plain Text</translation>
@@ -710,7 +702,6 @@
 <translation id="2065405795449409761">Chrome is being controlled by automated test software.</translation>
 <translation id="2070909990982335904">Names starting with dot are reserved for the system. Please choose another name.</translation>
 <translation id="2071393345806050157">No local log file.</translation>
-<translation id="2074527029802029717">Unpin tab</translation>
 <translation id="2075474481720804517"><ph name="BATTERY_PERCENTAGE" />% Battery</translation>
 <translation id="2075959085554270910">Allows you to enable/disable tap-to-click and tap dragging</translation>
 <translation id="2076269580855484719">Hide this plug-in</translation>
@@ -1356,7 +1347,6 @@
 <translation id="3045447014237878114">This site downloaded multiple files automatically</translation>
 <translation id="3046910703532196514">Web Page, Complete</translation>
 <translation id="304747341537320566">Speech Engines</translation>
-<translation id="304826556400666995">Unmute Tabs</translation>
 <translation id="3053013834507634016">Certificate Key Usage</translation>
 <translation id="3057861065630527966">Backup your photos and videos</translation>
 <translation id="3060379269883947824">Enable Select to Speak</translation>
@@ -2342,7 +2332,6 @@
 <translation id="4628762811416793313">The Linux container setup did not complete. Please try again.</translation>
 <translation id="4628948037717959914">Photo</translation>
 <translation id="4631887759990505102">Artist</translation>
-<translation id="4632483769545853758">Unmute Tab</translation>
 <translation id="4633003931260532286">Extension requires '<ph name="IMPORT_NAME" />' with a minimum version '<ph name="IMPORT_VERSION" />', but only version '<ph name="INSTALLED_VERSION" />' is installed</translation>
 <translation id="4634771451598206121">Sign in again...</translation>
 <translation id="4635398712689569051"><ph name="PAGE_NAME" /> is not available to Guest users.</translation>
@@ -2407,7 +2396,6 @@
 <translation id="4736292055110123391">Sync your bookmarks, passwords, history and more on all your devices</translation>
 <translation id="4737715515457435632">Please connect to a network</translation>
 <translation id="473775607612524610">Update</translation>
-<translation id="474217410105706308">Mute Tab</translation>
 <translation id="4742746985488890273">Pin to Shelf</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Find out how to update applications<ph name="END_LINK" /></translation>
 <translation id="4746351372139058112">Messages</translation>
@@ -2632,7 +2620,6 @@
 <translation id="5094721898978802975">Communicate with cooperating native applications</translation>
 <translation id="5097002363526479830">Failed to connect to the network '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="5101042277149003567">Open all bookmarks</translation>
-<translation id="5105855035535475848">Pin tabs</translation>
 <translation id="5108967062857032718">Settings – Remove Android apps</translation>
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;Bookmark Manager</translation>
@@ -2697,7 +2684,6 @@
 <translation id="520621735928254154">Certificate import error</translation>
 <translation id="5209320130288484488">No devices found</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
-<translation id="5210365745912300556">Close tab</translation>
 <translation id="5213481667492808996">Your '<ph name="NAME" />' data service is ready to use</translation>
 <translation id="5213891612754844763">Show proxy settings</translation>
 <translation id="521582610500777512">Photo was discarded</translation>
@@ -2749,7 +2735,6 @@
 <translation id="5272654297705279635">Custom settings</translation>
 <translation id="5275352920323889391">Dog</translation>
 <translation id="5275973617553375938">Recovered files from Google Drive</translation>
-<translation id="527605719918376753">Mute tab</translation>
 <translation id="527605982717517565">Always allow JavaScript on <ph name="HOST" /></translation>
 <translation id="5280426389926346830">Create Shortcut?</translation>
 <translation id="528208740344463258">To download and use Android apps, first you need to install this required update. While your <ph name="DEVICE_TYPE" /> is updating, you can’t use it. After installation is complete, your <ph name="DEVICE_TYPE" /> will restart.</translation>
@@ -2872,7 +2857,6 @@
 <translation id="5449551289610225147">Invalid password</translation>
 <translation id="5449588825071916739">Bookmark All Tabs</translation>
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
-<translation id="5453029940327926427">Close tabs</translation>
 <translation id="5454166040603940656">with <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Invalid</translation>
 <translation id="5457459357461771897">Read and delete photos, music and other media from your computer</translation>
@@ -3337,7 +3321,6 @@
 <translation id="6122875415561139701">Write operation is not permitted on: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">The following extensions depend on this extension:</translation>
 <translation id="6125479973208104919">Unfortunately, you'll need to add your account to this <ph name="DEVICE_TYPE" /> again.</translation>
-<translation id="612596694132302162">Unmute Site</translation>
 <translation id="6129691635767514872">The selected data has been removed from Chrome and synced devices. Your Google Account may have other forms of browsing history such as searches and activity from other Google services at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Netscape Certificate Comment</translation>
 <translation id="6129953537138746214">Space</translation>
@@ -3540,7 +3523,6 @@
 <translation id="6436164536244065364">View in Web Store</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – Audio playing</translation>
 <translation id="6442187272350399447">Happy</translation>
-<translation id="6442697326824312960">Unpin Tab</translation>
 <translation id="6444070574980481588">Set date and time</translation>
 <translation id="6445450263907939268">If you didn't want these changes, you can restore your previous settings.</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -3743,7 +3725,6 @@
 <translation id="6770664076092644100">Verify via NFC</translation>
 <translation id="6771503742377376720">Is a Certification Authority</translation>
 <translation id="6777817260680419853">Redirect blocked</translation>
-<translation id="6778959797435875428">Unmute Sites</translation>
 <translation id="677965093459947883">Very small</translation>
 <translation id="6780439250949340171">manage other settings</translation>
 <translation id="6781284683813954823">Doodle Link</translation>
@@ -4060,7 +4041,6 @@
 <translation id="7257666756905341374">Read data that you copy and paste</translation>
 <translation id="7258697411818564379">Your PIN is added</translation>
 <translation id="7262004276116528033">This sign-in service is hosted by <ph name="SAML_DOMAIN" /></translation>
-<translation id="7268365133021434339">Close Tabs</translation>
 <translation id="7268659760406822741">Available services</translation>
 <translation id="7270858098575133036">Ask when a site wants to use system exclusive messages to access MIDI devices</translation>
 <translation id="7272674038937250585">No description provided</translation>
@@ -4250,7 +4230,6 @@
 <translation id="7576032389798113292">6 x 4</translation>
 <translation id="7576690715254076113">Collate</translation>
 <translation id="7576976045740938453">A problem with demo mode account occurred.</translation>
-<translation id="7579149537961810247">Mute Sites</translation>
 <translation id="7580671184200851182">Play the same audio through all speakers (mono audio)</translation>
 <translation id="7581462281756524039">A cleanup tool</translation>
 <translation id="7582582252461552277">Prefer this network</translation>
@@ -4604,7 +4583,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8068253693380742035">Touch to sign in</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Print as image</translation>
-<translation id="8072988827236813198">Pin Tabs</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />App data can be any data that an app has saved (based on developer settings), including data such as contacts, messages and photos.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Backup data will not count toward your child's Drive storage quota.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />You can turn this service off in Settings.<ph name="END_PARAGRAPH3" /></translation>
@@ -4790,7 +4768,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8368859634510605990">&amp;Open all bookmarks</translation>
 <translation id="8371695176452482769">Speak now</translation>
 <translation id="8372369524088641025">Bad WEP key</translation>
-<translation id="8373553483208508744">Mute tabs</translation>
 <translation id="8378714024927312812">Managed by your organisation</translation>
 <translation id="8379878387931047019">This device doesn't support the type of security key requested by this website</translation>
 <translation id="8382913212082956454">Copy &amp;email address</translation>
@@ -4898,7 +4875,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8546930481464505581">Customise Touch Bar</translation>
 <translation id="8547013269961688403">Enable full-screen magnifier</translation>
 <translation id="85486688517848470">Hold the Search key to switch the behaviour of the top-row keys</translation>
-<translation id="855081842937141170">Pin tab</translation>
 <translation id="8551388862522347954">Licences</translation>
 <translation id="8553342806078037065">Manage other people</translation>
 <translation id="8554899698005018844">No language</translation>
@@ -5213,7 +5189,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9038430547971207796">Next time, your phone will unlock your <ph name="DEVICE_TYPE" />. Turn off Smart Lock in Settings.</translation>
 <translation id="9038649477754266430">Use a prediction service to load pages more quickly</translation>
 <translation id="9039663905644212491">PEAP</translation>
-<translation id="9039890312082871605">Mute Tabs</translation>
 <translation id="9040661932550800571">Update password for <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Access to local files on your machine is disabled by your administrator</translation>
 <translation id="9042893549633094279">Privacy and security</translation>
@@ -5311,7 +5286,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="920045321358709304">Search <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201220332032049474">Screen lock options</translation>
 <translation id="9203398526606335860">&amp;Profiling enabled</translation>
-<translation id="9203478404496196495">Unmute tab</translation>
 <translation id="9203904171912129171">Select a device</translation>
 <translation id="9203962528777363226">The administrator of this device has disabled new users from being added</translation>
 <translation id="9213073329713032541">Installation successfully started.</translation>

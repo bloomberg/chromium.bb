@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">Dizin API'sı Kimliği:</translation>
 <translation id="2597378329261239068">Doküman şifre korumalı. Lütfen şifreyi girin.</translation>
 <translation id="2609632851001447353">Varyasyonlar</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{Yok}=1{1 uygulama ($1)}=2{2 uygulama ($1, $2)}other{# uygulama ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Saatiniz ileri</translation>
 <translation id="2634124572758952069"><ph name="HOST_NAME" /> ana makinesinin sunucu IP adresi bulunamadı.</translation>
 <translation id="2639739919103226564">Durum:</translation>

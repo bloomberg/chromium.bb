@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">รหัส API ไดเรกทอรี:</translation>
 <translation id="2597378329261239068">เอกสารนี้ได้รับการป้องกันด้วยรหัสผ่าน โปรดป้อนรหัสผ่าน</translation>
 <translation id="2609632851001447353">รูปแบบต่างๆ</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{ไม่มี}=1{1 แอป ($1)}=2{2 แอป ($1, $2)}other{# แอป ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">นาฬิกาเร็วเกินไป</translation>
 <translation id="2634124572758952069">ไม่พบที่อยู่ IP ของเซิร์ฟเวอร์ <ph name="HOST_NAME" /></translation>
 <translation id="2639739919103226564">สถานะ:</translation>

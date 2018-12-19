@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">Identificador de l'API de directoris:</translation>
 <translation id="2597378329261239068">Aquest document està protegit mitjançant contrasenya. Introduïu una contrasenya.</translation>
 <translation id="2609632851001447353">Variacions</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{Cap}=1{1 aplicació ($1)}=2{2 aplicacions ($1, $2)}other{# aplicacions ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">El rellotge està avançat</translation>
 <translation id="2634124572758952069">No s'ha trobat l'adreça IP del servidor de l'amfitrió <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">Estat:</translation>

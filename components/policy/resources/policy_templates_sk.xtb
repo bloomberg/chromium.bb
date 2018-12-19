@@ -2633,7 +2633,7 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
       Očakávaným spôsobom používania týchto pravidiel je postupné striedanie konfigurácie prístupového kódu. Nová konfigurácia sa vždy vloží do konfigurácie |future_config| a zároveň sa existujúca hodnota presunie do konfigurácie |current_config|. Predchádzajúce hodnoty konfigurácie |current_config| sa presunú do konfigurácie |old_configs| a následne odstránia po dokončení cyklu striedania.
 
       Tieto pravidlá sa používajú iba pre detských používateľov.
-      Ak je toto pravidlo nastavené, prístupový kód rodiča je možné overiť na zariadení detského používateľa.
+      Ak je toto pravidlo nastavené, prístupový kód rodiča je možné overiť v zariadení detského používateľa.
       Ak toto pravidlo nie je nastavené, prístupový kód rodiča nie je možné overiť v zariadení detského používateľa.</translation>
 <translation id="7625444193696794922">Určuje, aký kanál verzie by mal byť v zariadení uzamknutý.</translation>
 <translation id="7632724434767231364">Názov knižnice GSSAPI</translation>

@@ -2660,7 +2660,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si une extension ne figure pas dans la liste, ou si la liste n'est pas définie, l'appel vers l'API échoue, et un code d'erreur est renvoyé.</translation>
 <translation id="7618907117929117943">Rétablissez et conservez la version cible si elle est antérieure à la version de l'OS et qu'il est possible de conserver la configuration de l'appareil (y compris les identifiants réseau) par ce biais, tout en ignorant OOBE après la restauration. Si cela n'est pas possible, n'effectuez pas et n'annulez pas la restauration (car la version cible n'est pas compatible avec la restauration de données ou en raison d'une modification incompatible avec la restauration).
           Compatible avec la version 70 et les versions ultérieures de <ph name="PRODUCT_OS_NAME" />. Pour les clients plus anciens, cette valeur signifie que la restauration est désactivée.</translation>
-<translation id="7620869951155758729">Cette règle définit la configuration utilisée pour générer et validerle code d'accès parental.
+<translation id="7620869951155758729">Cette règle définit la configuration utilisée pour générer et valider le code d'accès parental.
 
       |current_config| est toujours utilisée pour générer le code d'accès et ne doit être employée pour valider le code d'accès que lorsque ce dernier ne peut pas être validé avec |future_config|.
 |future_config| est la configuration principale utilisée pour valider le code d'accès.

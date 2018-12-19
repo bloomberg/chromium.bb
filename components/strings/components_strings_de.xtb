@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">Directory API-ID:</translation>
 <translation id="2597378329261239068">Dieses Dokument ist passwortgeschützt. Geben Sie ein Passwort ein.</translation>
 <translation id="2609632851001447353">Varianten</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{Keine}=1{1 App ($1)}=2{2 Apps ($1, $2)}other{# Apps ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">Ihre Uhr geht vor.</translation>
 <translation id="2634124572758952069">Die Server-IP-Adresse von <ph name="HOST_NAME" /> wurde nicht gefunden.</translation>
 <translation id="2639739919103226564">Status:</translation>

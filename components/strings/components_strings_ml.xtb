@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">ഡയറക്‌ടറി API ഐഡി:</translation>
 <translation id="2597378329261239068">ഈ പ്രമാണം പാസ്‌വേഡ് പരിരക്ഷിതമാണ്.  ദയവായി ഒരു പാസ്‌വേഡ് നല്‍‌കുക.</translation>
 <translation id="2609632851001447353">വേരിയേഷനുകൾ</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{ഒന്നുമില്ല}=1{ഒരു ആപ്പ് ($1)}=2{2 ആപ്‌സ് ($1, $2)}other{# ആപ്‌സ് ($1, $2, $3)}}</translation>
 <translation id="2625385379895617796">നിങ്ങളുടെ ക്ലോക്ക് വളരെ മുമ്പിലാണ്</translation>
 <translation id="2634124572758952069"><ph name="HOST_NAME" />-ന്‍റെ സെർവർ IP വിലാസം കണ്ടെത്താനായില്ല.</translation>
 <translation id="2639739919103226564">നില:</translation>

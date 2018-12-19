@@ -256,7 +256,6 @@
 <translation id="2587841377698384444">ডিরেক্টরি API আইডি:</translation>
 <translation id="2597378329261239068">এই দস্তাবেজটি পাসওয়ার্ড সুরক্ষিত৷  দয়া করে একটি পাসওয়ার্ড লিখুন৷</translation>
 <translation id="2609632851001447353">বৈচিত্রতা</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{কিছুই নয়}=1{১টি অ্যাপ ($১)}=2{২টি অ্যাপ ($১, $২)}one{#টি অ্যাপ ($১, $২, $৩)}other{#টি অ্যাপ ($১, $২, $৩)}}</translation>
 <translation id="2625385379895617796">আপনার ঘড়ির সময় অনেকটা এগিয়ে</translation>
 <translation id="2634124572758952069"><ph name="HOST_NAME" />এর সার্ভার IP অ্যাড্রেস পাওয়া যায়নি।</translation>
 <translation id="2639739919103226564">স্থিতি: </translation>

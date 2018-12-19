@@ -69,7 +69,6 @@
 <translation id="1091767800771861448">Натисніть ESCAPE, щоб пропустити (лише в неофіційних версіях складання).</translation>
 <translation id="1093457606523402488">Видимі мережі:</translation>
 <translation id="1094607894174825014">Запит на операцію перегляду або внесення змін надіслано з недійсним зміщенням на пристрої <ph name="DEVICE_NAME" />.</translation>
-<translation id="109758035718544977">Увімкнути звук на сайтах</translation>
 <translation id="1097658378307015415">Перш ніж увійти, розпочніть сеанс у режимі гостя, щоб активувати мережу <ph name="NETWORK_ID" /></translation>
 <translation id="1103523840287552314">Завжди перекладати з такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="1108600514891325577">&amp;Зупинити</translation>
@@ -156,7 +155,6 @@
 <translation id="1211364473545090084">Відкрийте анонімне вікно й користуйтесь Інтернетом, не зберігаючи історію веб-перегляду</translation>
 <translation id="1213037489357051291">Налаштовано відбитків пальців: <ph name="NUM_FINGERPRINTS" /></translation>
 <translation id="1215411991991485844">Додано нову фонову програму</translation>
-<translation id="1216654534877302979">Вимкнути звук на сайтах</translation>
 <translation id="1216659994753476700">На жаль, нам не вдалось отримати доступ до вашого профілю. Можливо, файли й дані, збережені на цьому пристрої, утрачено.<ph name="BR" />
     <ph name="BR" />
     Вам потрібно знову налаштувати свій профіль.<ph name="BR" />
@@ -206,7 +204,6 @@
 <translation id="1285484354230578868">Зберігати дані в обліковому записі Google Диска</translation>
 <translation id="1288037062697528143">Нічний режим увімкнеться автоматично після заходу сонця</translation>
 <translation id="1288300545283011870">Властивості мовлення</translation>
-<translation id="1293177648337752319">Увімкнути звук на сайті</translation>
 <translation id="1293264513303784526">Пристрій із портом USB типу C (ліворуч)</translation>
 <translation id="1293556467332435079">Файли</translation>
 <translation id="1296497012903089238">Тип сертифіката</translation>
@@ -305,7 +302,6 @@
 <translation id="1434886155212424586">Домашня сторінка – це сторінка нової вкладки</translation>
 <translation id="1436671784520050284">Продовжити налаштування</translation>
 <translation id="1436784010935106834">Видалено</translation>
-<translation id="1438632560381091872">Увімкнути звук на вкладках</translation>
 <translation id="1442392616396121389">Префікс маршрутизації</translation>
 <translation id="144283815522798837">Вибрано <ph name="NUMBER_OF_ITEMS_SELECTED" /></translation>
 <translation id="1444628761356461360">Цим налаштуванням керує власник пристрою (<ph name="OWNER_EMAIL" />).</translation>
@@ -388,7 +384,6 @@
 <translation id="1567387640189251553">Після останнього введення пароля було під’єднано іншу клавіатуру. Можливо, це спроба викрасти введені символи.</translation>
 <translation id="1567750922576943685">Підтвердження особи допомагає захистити особисту інформацію</translation>
 <translation id="1567993339577891801">Консоль JavaScript</translation>
-<translation id="1568067597247500137">Вимкнути звук на сайті</translation>
 <translation id="1568323446248056064">Відкрити налаштування дисплея</translation>
 <translation id="1572266655485775982">Увімкнути Wi-Fi</translation>
 <translation id="1572585716423026576">Зробити фоновим малюнком</translation>
@@ -440,7 +435,6 @@
 <translation id="1643072738649235303">Алгоритм ECDSA X9.62 з підписом SHA-1</translation>
 <translation id="1644574205037202324">Історія</translation>
 <translation id="1645516838734033527">Щоб захистити ваш пристрій <ph name="DEVICE_TYPE" /> за допомогою Smart Lock, потрібно налаштувати блокування екрана на телефоні.</translation>
-<translation id="1646102270785326155">Якщо вилучити цього користувача, усі пов’язані з ним файли та локальні дані буде назавжди видалено. $1 усе одно зможе ввійти в обліковий запис.</translation>
 <translation id="1646982517418478057">Введіть пароль, щоб зашифрувати цей сертифікат</translation>
 <translation id="164814987133974965">Користувач, яким керує адміністратор, може переглядати веб-сайти під вашим наглядом. Як адміністратор такого користувача ви можете:
     <ph name="BEGIN_BOLD" />дозволяти чи забороняти<ph name="END_BOLD" /> певні веб-сайти;
@@ -499,7 +493,6 @@
 <translation id="1729533290416704613">Розширення також змінило сторінку, яка відкривається під час пошуку в універсальному вікні пошуку.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />Щоб видалити додатки, перейдіть у меню "Налаштування" &gt; "Google Play" &gt; "Змінити налаштування Android" &gt; "Додатки" або "Менеджер додатків". Торкніться додатка (якщо потрібно, проведіть пальцем управо або вліво, щоб знайти його) і натисніть "Видалити" або "Вимкнути".<ph name="END_PARAGRAPH1" /></translation>
 <translation id="1731911755844941020">...</translation>
-<translation id="1732215134274276513">Відкріпити вкладки</translation>
 <translation id="1733383495376208985">Шифрувати синхронізовані дані за допомогою <ph name="BEGIN_LINK" />парольної фрази<ph name="END_LINK" />. Це не стосується способів оплати й адрес із Google Pay.</translation>
 <translation id="1734824808160898225">Можливо, <ph name="PRODUCT_NAME" /> не зможе оновлюватись</translation>
 <translation id="1736419249208073774">Огляд</translation>
@@ -551,7 +544,6 @@
 <translation id="1807938677607439181">Усі файли</translation>
 <translation id="1809734401532861917">Додати закладки, історію, паролі й інші налаштування в обліковий запис <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1810764548349082891">Попередній перегляд недоступний</translation>
-<translation id="1812631533912615985">Відкріпити вкладки</translation>
 <translation id="1813278315230285598">Служби</translation>
 <translation id="18139523105317219">Ім'я сторони EDI</translation>
 <translation id="1815083418640426271">Вставити як звичайний текст</translation>
@@ -710,7 +702,6 @@
 <translation id="2065405795449409761">Веб-переглядачем Chrome керує автоматична пробна програма.</translation>
 <translation id="2070909990982335904">Імена, які починаються з крапки, зарезервовані для системи. Виберіть інше ім’я.</translation>
 <translation id="2071393345806050157">Немає локального файлу журналу.</translation>
-<translation id="2074527029802029717">Відмінити закріплення вкладки</translation>
 <translation id="2075474481720804517"><ph name="BATTERY_PERCENTAGE" />% заряду акумулятора</translation>
 <translation id="2075959085554270910">Можна ввімкнути або вимкнути функції натискання дотиком і перетягування дотиком</translation>
 <translation id="2076269580855484719">Сховати цей плагін</translation>
@@ -1357,7 +1348,6 @@
 <translation id="3045447014237878114">Цей сайт автоматично завантажив декілька файлів</translation>
 <translation id="3046910703532196514">Веб-сторінка, повністю</translation>
 <translation id="304747341537320566">Системи синтезу мовлення</translation>
-<translation id="304826556400666995">Увімкнути звук на вкладках</translation>
 <translation id="3053013834507634016">Використання ключа сертифіката</translation>
 <translation id="3057861065630527966">Створити резервні копії фотографій і відео</translation>
 <translation id="3060379269883947824">Увімкнути службу Читання з екрана</translation>
@@ -2343,7 +2333,6 @@
 <translation id="4628762811416793313">Налаштування контейнера Linux не завершено. Повторіть спробу.</translation>
 <translation id="4628948037717959914">Фотографія</translation>
 <translation id="4631887759990505102">Виконавець</translation>
-<translation id="4632483769545853758">Увімкнути звук на вкладці</translation>
 <translation id="4633003931260532286"><ph name="IMPORT_NAME" /> з мінімальною версією <ph name="IMPORT_VERSION" /> – це обов’язковий компонент для роботи розширення, але встановлено версію <ph name="INSTALLED_VERSION" /></translation>
 <translation id="4634771451598206121">Увійти знову...</translation>
 <translation id="4635398712689569051">Сторінка "<ph name="PAGE_NAME" />" недоступна гостям.</translation>
@@ -2408,7 +2397,6 @@
 <translation id="4736292055110123391">Синхронізуйте закладки, паролі, історію й інші дані на всіх своїх пристроях</translation>
 <translation id="4737715515457435632">Під’єднайтеся до мережі</translation>
 <translation id="473775607612524610">Оновити</translation>
-<translation id="474217410105706308">Вимкнути звук на вкладці</translation>
 <translation id="4742746985488890273">Закріпити на полиці</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Дізнайтеся, як оновити додатки<ph name="END_LINK" /></translation>
 <translation id="4746351372139058112">Повідомлення</translation>
@@ -2633,7 +2621,6 @@
 <translation id="5094721898978802975">Підтримувати зв’язок із взаємодійними рідними програмами</translation>
 <translation id="5097002363526479830">Не вдалося під’єднатися до мережі "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5101042277149003567">Відкрити всі закладки</translation>
-<translation id="5105855035535475848">Закріпити вкладки</translation>
 <translation id="5108967062857032718">Налаштування – Видалення додатків Android</translation>
 <translation id="5109044022078737958">Краля</translation>
 <translation id="5111692334209731439">&amp;Диспетчер закладок</translation>
@@ -2698,7 +2685,6 @@
 <translation id="520621735928254154">Не вдалось імпортувати сертифікат</translation>
 <translation id="5209320130288484488">Пристрої не знайдено.</translation>
 <translation id="5209518306177824490">Відбиток SHA-1</translation>
-<translation id="5210365745912300556">Закрити вкладку</translation>
 <translation id="5213481667492808996">Службу передавання даних "<ph name="NAME" />" активовано</translation>
 <translation id="5213891612754844763">Показати налаштування проксі</translation>
 <translation id="521582610500777512">Фотографію відхилено</translation>
@@ -2750,7 +2736,6 @@
 <translation id="5272654297705279635">Власні налаштування</translation>
 <translation id="5275352920323889391">Собака</translation>
 <translation id="5275973617553375938">Відновлені файли з Google Диска</translation>
-<translation id="527605719918376753">Вимкнути звук на вкладці</translation>
 <translation id="527605982717517565">Завжди дозволяти JavaScript на хості <ph name="HOST" /></translation>
 <translation id="5280426389926346830">Створити комбінацію клавіш?</translation>
 <translation id="528208740344463258">Щоб завантажувати й використовувати додатки Android, спершу потрібно встановити оновлення. Не користуйтеся пристроєм <ph name="DEVICE_TYPE" />, поки він оновлюється. Коли встановляться оновлення, <ph name="DEVICE_TYPE" /> перезапуститься.</translation>
@@ -2873,7 +2858,6 @@
 <translation id="5449551289610225147">Недійсний пароль</translation>
 <translation id="5449588825071916739">Зробити закладки для всіх вкладок</translation>
 <translation id="5449716055534515760">Закрити вік&amp;но</translation>
-<translation id="5453029940327926427">Закрити вкладки</translation>
 <translation id="5454166040603940656">за допомогою <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">Недійсні дані</translation>
 <translation id="5457459357461771897">Читати й видаляти фотографії, музику та інші медіафайли на комп’ютері</translation>
@@ -3338,7 +3322,6 @@
 <translation id="6122875415561139701">Операцію внесення змін заборонено на пристрої <ph name="DEVICE_NAME" />.</translation>
 <translation id="6124650939968185064">Від цього розширення залежать такі розширення:</translation>
 <translation id="6125479973208104919">На жаль, потрібно ще раз додати обліковий запис на пристрої <ph name="DEVICE_TYPE" />.</translation>
-<translation id="612596694132302162">Увімкнути звук на сайті</translation>
 <translation id="6129691635767514872">Вибрані дані видалено з Chrome і синхронізованих пристроїв. У вашому обліковому записі на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду, як-от пошукові запити чи дані про активність з інших сервісів Google.</translation>
 <translation id="6129938384427316298">Коментар сертифіката Netscape</translation>
 <translation id="6129953537138746214">Пробіл</translation>
@@ -3541,7 +3524,6 @@
 <translation id="6436164536244065364">Переглянути у веб-магазині</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> – відтворюється аудіо</translation>
 <translation id="6442187272350399447">Фантастика!</translation>
-<translation id="6442697326824312960">Відмінити закріплення вкладки</translation>
 <translation id="6444070574980481588">Вибрати дату й час</translation>
 <translation id="6445450263907939268">Якщо ви не хочете цих змін, можна відновити попередні налаштування.</translation>
 <translation id="6447842834002726250">Cookie-файли</translation>
@@ -3744,7 +3726,6 @@
 <translation id="6770664076092644100">Підтвердити через NFC</translation>
 <translation id="6771503742377376720">Є Центром сертифікації</translation>
 <translation id="6777817260680419853">Переспрямування заблоковано</translation>
-<translation id="6778959797435875428">Увімкнути звук на сайтах</translation>
 <translation id="677965093459947883">Дуже малий</translation>
 <translation id="6780439250949340171">керувати іншими налаштуваннями</translation>
 <translation id="6781284683813954823">Посилання на дудл</translation>
@@ -4061,7 +4042,6 @@
 <translation id="7257666756905341374">Читати дані, які ви копіюєте та вставляєте</translation>
 <translation id="7258697411818564379">PIN-код додано</translation>
 <translation id="7262004276116528033">Ця служба входу в обліковий запис зареєстрована в домені <ph name="SAML_DOMAIN" /></translation>
-<translation id="7268365133021434339">Закрити вкладки</translation>
 <translation id="7268659760406822741">Доступні сервіси</translation>
 <translation id="7270858098575133036">Запитувати, коли сайт хоче використовувати виключні повідомлення системи, щоб отримувати доступ до пристроїв MIDI</translation>
 <translation id="7272674038937250585">Немає опису</translation>
@@ -4251,7 +4231,6 @@
 <translation id="7576032389798113292">6x4</translation>
 <translation id="7576690715254076113">Сортувати за копіями</translation>
 <translation id="7576976045740938453">Виникла проблема з обліковим записом демо-режиму.</translation>
-<translation id="7579149537961810247">Вимкнути звук на сайтах</translation>
 <translation id="7580671184200851182">Відтворювати один аудіозапис на всіх динаміках (монофонічне аудіо)</translation>
 <translation id="7581462281756524039">Інструмент очищення</translation>
 <translation id="7582582252461552277">Віддавати перевагу цій мережі</translation>
@@ -4605,7 +4584,6 @@
 <translation id="8068253693380742035">Торкніться, щоб увійти</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Друкувати як зображення</translation>
-<translation id="8072988827236813198">Закріпити вкладки</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Дані додатків – це будь-яка інформація, яку вони зберігають (залежно від налаштувань розробника), зокрема контакти, повідомлення та фотографії.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Резервні копії даних не займають місця на Диску дитини.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Цей сервіс можна вимкнути в налаштуваннях.<ph name="END_PARAGRAPH3" /></translation>
@@ -4791,7 +4769,6 @@
 <translation id="8368859634510605990">&amp;Відкрити всі закладки</translation>
 <translation id="8371695176452482769">Диктуйте</translation>
 <translation id="8372369524088641025">Поганий WEP-ключ</translation>
-<translation id="8373553483208508744">Вимкнути звук на вкладках</translation>
 <translation id="8378714024927312812">Профілем керує ваша організація</translation>
 <translation id="8379878387931047019">Пристрій не підтримує тип ключа безпеки, потрібний для цього веб-сайту</translation>
 <translation id="8382913212082956454">Копіювати &amp;адресу електронної пошти</translation>
@@ -4899,7 +4876,6 @@
 <translation id="8546930481464505581">Налаштувати Touch Bar</translation>
 <translation id="8547013269961688403">Увімкнути лупу для всього екрана</translation>
 <translation id="85486688517848470">Утримуйте клавішу пошуку, щоб змінити функції клавіш угорі клавіатури</translation>
-<translation id="855081842937141170">Закріпити вкладку</translation>
 <translation id="8551388862522347954">Ліцензії</translation>
 <translation id="8553342806078037065">Керувати іншими користувачами</translation>
 <translation id="8554899698005018844">Мову не вибрано</translation>
@@ -5214,7 +5190,6 @@
 <translation id="9038430547971207796">Наступного разу пристрій <ph name="DEVICE_TYPE" /> буде розблоковано за допомогою вашого телефона. Smart Lock можна вимкнути в налаштуваннях.</translation>
 <translation id="9038649477754266430">Користуйтеся службою передбачення, щоб сторінки завантажувалися швидше</translation>
 <translation id="9039663905644212491">PEAP</translation>
-<translation id="9039890312082871605">Вимкнути звук на вкладках</translation>
 <translation id="9040661932550800571">Оновити пароль для <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Адміністратор вимкнув доступ до локальних файлів на вашому комп’ютері</translation>
 <translation id="9042893549633094279">Конфіденційність і безпека</translation>
@@ -5312,7 +5287,6 @@
 <translation id="920045321358709304">Пошук у <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201220332032049474">Способи блокування екрана</translation>
 <translation id="9203398526606335860">&amp;Профілювання ввімкнено</translation>
-<translation id="9203478404496196495">Увімкнути звук на вкладці</translation>
 <translation id="9203904171912129171">Виберіть пристрій</translation>
 <translation id="9203962528777363226">Адміністратор цього пристрою вимкнув можливість додавати нових користувачів</translation>
 <translation id="9213073329713032541">Встановлення розпочато.</translation>

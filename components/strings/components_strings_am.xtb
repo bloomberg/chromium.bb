@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">የማውጫ የኤፒአይ መታወቂያ፦</translation>
 <translation id="2597378329261239068">ይህ ሰነድ በይለፍ ቃል የተጠበቀ ነው። እባክዎ የይለፍ ቃል ያስገቡ።</translation>
 <translation id="2609632851001447353">ልዩነቶች</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{ምንም}=1{1 መተግበሪያ ($1)}=2{2 መተግበሪያዎች ($1፣ $2)}one{# መተግበሪያዎች ($1፣ $2፣ $3)}other{# መተግበሪያዎች ($1፣ $2፣ $3)}}</translation>
 <translation id="2625385379895617796">የእርስዎ ሰዓት ገና የወደፊት ነው</translation>
 <translation id="2634124572758952069">የ<ph name="HOST_NAME" /> አገልጋይ አይፒ አድራሻ ሊገኝ አልቻለም።</translation>
 <translation id="2639739919103226564">ሁኔታ፦</translation>

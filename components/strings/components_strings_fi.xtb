@@ -255,7 +255,6 @@
 <translation id="2587841377698384444">Hakemistosovellusliittymän tunnus:</translation>
 <translation id="2597378329261239068">Tämä asiakirja on suojattu salasanalla. Anna salasana.</translation>
 <translation id="2609632851001447353">Muunnelmat</translation>
-<translation id="262424810616849754">{COUNT,plural, =0{Ei mitään}=1{1 sovellus ($1)}=2{2 sovellusta ($1 ja $2)}other{# sovellusta ($1, $2 ja $3)}}</translation>
 <translation id="2625385379895617796">Kellosi edistää</translation>
 <translation id="2634124572758952069">Sivuston <ph name="HOST_NAME" /> palvelimen IP-osoitetta ei löytynyt.</translation>
 <translation id="2639739919103226564">Tila:</translation>

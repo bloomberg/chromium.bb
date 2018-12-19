@@ -69,7 +69,6 @@
 <translation id="1091767800771861448">건너뛰려면 Esc 키를 누르세요(비공식 빌드만 해당).</translation>
 <translation id="1093457606523402488">표시된 네트워크:</translation>
 <translation id="1094607894174825014">기기(<ph name="DEVICE_NAME" />)에서 잘못된 오프셋으로 읽기 또는 쓰기 작업을 요청했습니다.</translation>
-<translation id="109758035718544977">사이트 음소거 해제</translation>
 <translation id="1097658378307015415">로그인하기 전에 게스트로 로그인하여 <ph name="NETWORK_ID" /> 네트워크를 활성화하세요.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> 항상 번역</translation>
 <translation id="1108600514891325577">중지(&amp;S)</translation>
@@ -156,7 +155,6 @@
 <translation id="1211364473545090084">시크릿 창에서는 인터넷 사용 기록을 저장하지 않고 웹을 사용할 수 있습니다.</translation>
 <translation id="1213037489357051291">지문 <ph name="NUM_FINGERPRINTS" />개 설정됨</translation>
 <translation id="1215411991991485844">새 백그라운드 앱을 추가함</translation>
-<translation id="1216654534877302979">사이트 음소거</translation>
 <translation id="1216659994753476700">죄송합니다. 프로필에 액세스할 수 없습니다. 기기에 저장된 파일 및 데이터가 손실될 수 있습니다.<ph name="BR" />
     <ph name="BR" />
     프로필을 다시 설정해야 합니다.<ph name="BR" />
@@ -206,7 +204,6 @@
 <translation id="1285484354230578868">Google 드라이브 계정에 데이터 저장</translation>
 <translation id="1288037062697528143">일몰 시 야간 조명이 자동으로 켜짐</translation>
 <translation id="1288300545283011870">음성 속성</translation>
-<translation id="1293177648337752319">사이트 음소거 해제</translation>
 <translation id="1293264513303784526">USB-C 기기(왼쪽 포트)</translation>
 <translation id="1293556467332435079">파일</translation>
 <translation id="1296497012903089238">인증서 유형</translation>
@@ -305,7 +302,6 @@
 <translation id="1434886155212424586">홈페이지가 새 탭 페이지입니다.</translation>
 <translation id="1436671784520050284">설정 계속하기</translation>
 <translation id="1436784010935106834">삭제됨</translation>
-<translation id="1438632560381091872">탭 음소거 해제</translation>
 <translation id="1442392616396121389">라우팅 프리픽스</translation>
 <translation id="144283815522798837"><ph name="NUMBER_OF_ITEMS_SELECTED" />개가 선택되었습니다</translation>
 <translation id="1444628761356461360">기기 소유자인 <ph name="OWNER_EMAIL" />이(가) 관리하는 설정입니다.</translation>
@@ -388,7 +384,6 @@
 <translation id="1567387640189251553">마지막으로 비밀번호를 입력한 후 다른 키보드가 연결되었습니다. 키 입력 내용을 도용하려는 시도일 수 있습니다.</translation>
 <translation id="1567750922576943685">신원을 인증하면 개인정보를 보호하는 데 도움이 됩니다.</translation>
 <translation id="1567993339577891801">자바스크립트 콘솔</translation>
-<translation id="1568067597247500137">사이트 음소거</translation>
 <translation id="1568323446248056064">디스플레이 기기 설정 열기</translation>
 <translation id="1572266655485775982">Wi-Fi 사용</translation>
 <translation id="1572585716423026576">배경화면으로 설정</translation>
@@ -440,7 +435,6 @@
 <translation id="1643072738649235303">SHA-1을 포함한 X9.62 ECDSA 서명</translation>
 <translation id="1644574205037202324">방문 기록</translation>
 <translation id="1645516838734033527">Smart Lock을 사용하려면 <ph name="DEVICE_TYPE" />의 보안 유지를 위해 휴대전화에 화면 잠금을 설정해야 합니다.</translation>
-<translation id="1646102270785326155">이 사용자를 제거하면 해당 사용자와 연결된 모든 파일 및 로컬 데이터가 영구적으로 삭제됩니다. $1은(는) 나중에 또 로그인할 수 있습니다.</translation>
 <translation id="1646982517418478057">이 인증서를 암호화하려면 비밀번호를 입력하세요.</translation>
 <translation id="164814987133974965">관리 대상 사용자는 관리자가 정한 범위 내에서 웹을 탐색할 수 있습니다. 관리 대상 사용자의 관리자는 Chrome에서 다음을 수행할 수 있습니다.
     특정 웹사이트 <ph name="BEGIN_BOLD" />허용 또는 금지<ph name="END_BOLD" />
@@ -499,7 +493,6 @@
 <translation id="1729533290416704613">또한 검색주소창에서 검색할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="1730917990259790240"><ph name="BEGIN_PARAGRAPH1" />앱을 삭제하려면 설정 &gt; Google Play 스토어 &gt; Android 환경설정 관리 &gt; 앱 또는 애플리케이션 관리자로 이동합니다. 그런 다음 제거하려는 앱을 탭합니다(앱을 찾으려면 오른쪽이나 왼쪽으로 스와이프해야 할 수 있음). 그런 다음 제거 또는 사용 중지를 탭합니다.<ph name="END_PARAGRAPH1" /></translation>
 <translation id="1731911755844941020">요청하는 중...</translation>
-<translation id="1732215134274276513">탭 고정 해제</translation>
 <translation id="1733383495376208985">나만의 <ph name="BEGIN_LINK" />동기화 암호<ph name="END_LINK" />로 동기화된 데이터를 암호화합니다. Google Pay의 결제 수단 및 주소는 암호화되지 않습니다.</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" />에서 자동 업데이트를 수행하지 못할 수 있습니다</translation>
 <translation id="1736419249208073774">탐색</translation>
@@ -551,7 +544,6 @@
 <translation id="1807938677607439181">모든 파일</translation>
 <translation id="1809734401532861917">북마크, 방문 기록, 비밀번호, 기타 설정을 <ph name="USER_EMAIL_ADDRESS" />에 추가합니다.</translation>
 <translation id="1810764548349082891">미리보기 없음</translation>
-<translation id="1812631533912615985">탭 고정 해제</translation>
 <translation id="1813278315230285598">서비스</translation>
 <translation id="18139523105317219">EDI측 이름</translation>
 <translation id="1815083418640426271">일반 텍스트로 붙여넣기</translation>
@@ -710,7 +702,6 @@
 <translation id="2065405795449409761">Chrome이 자동화된 테스트 소프트웨어에 의해 제어되고 있습니다.</translation>
 <translation id="2070909990982335904">점(.)으로 시작하는 이름은 시스템 전용입니다. 다른 이름을 선택하세요.</translation>
 <translation id="2071393345806050157">로컬 로그 파일이 없습니다.</translation>
-<translation id="2074527029802029717">탭 고정 해제</translation>
 <translation id="2075474481720804517">배터리 <ph name="BATTERY_PERCENTAGE" />% 남음</translation>
 <translation id="2075959085554270910">탭하여 클릭 및 탭 드래그를 사용/사용 중지하도록 허용합니다.</translation>
 <translation id="2076269580855484719">이 플러그인 숨기기</translation>
@@ -1352,7 +1343,6 @@
 <translation id="3045447014237878114">이 사이트에서 여러 파일을 자동으로 다운로드함</translation>
 <translation id="3046910703532196514">웹페이지, 전부</translation>
 <translation id="304747341537320566">음성 엔진</translation>
-<translation id="304826556400666995">탭 음소거 해제</translation>
 <translation id="3053013834507634016">인증서 키 사용</translation>
 <translation id="3057861065630527966">사진 및 동영상을 백업합니다.</translation>
 <translation id="3060379269883947824">텍스트 읽어주기 사용</translation>
@@ -2333,7 +2323,6 @@
 <translation id="4628762811416793313">Linux 컨테이너 설정이 완료되지 않았습니다. 다시 시도해 주세요.</translation>
 <translation id="4628948037717959914">사진</translation>
 <translation id="4631887759990505102">아티스트</translation>
-<translation id="4632483769545853758">탭 음소거 해제</translation>
 <translation id="4633003931260532286">확장 프로그램은 최소 버전 '<ph name="IMPORT_VERSION" />'의 '<ph name="IMPORT_NAME" />'을(를) 요구하지만 '<ph name="INSTALLED_VERSION" />' 버전만 설치되었습니다</translation>
 <translation id="4634771451598206121">다시 로그인...</translation>
 <translation id="4635398712689569051">게스트 사용자는 <ph name="PAGE_NAME" />을(를) 사용할 수 없음</translation>
@@ -2397,7 +2386,6 @@
 <translation id="4735803855089279419">시스템에서 이 기기의 기기 식별자를 확인하지 못했습니다.</translation>
 <translation id="4737715515457435632">네트워크에 연결하세요.</translation>
 <translation id="473775607612524610">업데이트</translation>
-<translation id="474217410105706308">탭 음소거</translation>
 <translation id="4742746985488890273">임시보관함에 고정</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />애플리케이션 업데이트 방법 알아보기<ph name="END_LINK" /></translation>
 <translation id="4746351372139058112">메시지</translation>
@@ -2622,7 +2610,6 @@
 <translation id="5094721898978802975">협력 중인 기본 애플리케이션과 통신</translation>
 <translation id="5097002363526479830">'<ph name="NAME" />' 네트워크에 연결하지 못했습니다: <ph name="DETAILS" /></translation>
 <translation id="5101042277149003567">모든 북마크 열기</translation>
-<translation id="5105855035535475848">탭 고정</translation>
 <translation id="5108967062857032718">설정 - Android 앱 삭제</translation>
 <translation id="5109044022078737958">미미</translation>
 <translation id="5111692334209731439">북마크 관리자(&amp;B)</translation>
@@ -2687,7 +2674,6 @@
 <translation id="520621735928254154">인증서 가져오기 오류</translation>
 <translation id="5209320130288484488">기기를 찾을 수 없음</translation>
 <translation id="5209518306177824490">SHA-1 지문</translation>
-<translation id="5210365745912300556">탭 닫기</translation>
 <translation id="5213481667492808996">'<ph name="NAME" />' 데이터 서비스를 사용할 수 있습니다.</translation>
 <translation id="5213891612754844763">프록시 설정 표시</translation>
 <translation id="521582610500777512">사진이 삭제되었습니다.</translation>
@@ -2738,7 +2724,6 @@
 <translation id="5270167208902136840"><ph name="NUMBER_OF_MORE_APPS" />개 앱 더 표시</translation>
 <translation id="5275352920323889391">개</translation>
 <translation id="5275973617553375938">Google 드라이브에서 복구된 파일</translation>
-<translation id="527605719918376753">탭 음소거</translation>
 <translation id="527605982717517565"><ph name="HOST" />에서 자바스크립트 항상 허용</translation>
 <translation id="5280426389926346830">바로가기를 만드시겠습니까?</translation>
 <translation id="528208740344463258">Android 앱을 다운로드하고 사용하려면 우선 필수 업데이트를 설치해야 합니다. 업데이트 중에는 <ph name="DEVICE_TYPE" /> 기기를 사용할 수 없습니다. 설치가 완료되면 <ph name="DEVICE_TYPE" /> 기기가 다시 시작됩니다.</translation>
@@ -2861,7 +2846,6 @@
 <translation id="5449551289610225147">비밀번호가 잘못되었습니다.</translation>
 <translation id="5449588825071916739">모든 탭 북마크</translation>
 <translation id="5449716055534515760">창 닫기(&amp;D)</translation>
-<translation id="5453029940327926427">탭 닫기</translation>
 <translation id="5454166040603940656">제공업체: <ph name="PROVIDER" /></translation>
 <translation id="5457113250005438886">잘못된 데이터</translation>
 <translation id="5457459357461771897">컴퓨터에서 사진, 음악, 기타 미디어 조회 및 삭제</translation>
@@ -3326,7 +3310,6 @@
 <translation id="6122875415561139701">기기(<ph name="DEVICE_NAME" />)에서 쓰기 작업이 허용되지 않습니다.</translation>
 <translation id="6124650939968185064">이 확장 프로그램에 종속되는 확장 프로그램:</translation>
 <translation id="6125479973208104919">이 <ph name="DEVICE_TYPE" />에 계정을 다시 추가해야 합니다.</translation>
-<translation id="612596694132302162">사이트 음소거 해제</translation>
 <translation id="6129691635767514872">선택한 데이터가 Chrome 및 동기화된 기기에서 삭제되었습니다. <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />에서 검색이나 기타 Google 서비스에서의 활동 등 내 Google 계정에 있는 다른 형식의 탐색 기록을 확인할 수 있습니다.</translation>
 <translation id="6129938384427316298">Netscape Certificate Comment</translation>
 <translation id="6129953537138746214">공백</translation>
@@ -3529,7 +3512,6 @@
 <translation id="6436164536244065364">웹 스토어에서 보기</translation>
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" /> - 오디오 재생</translation>
 <translation id="6442187272350399447">멋쟁이</translation>
-<translation id="6442697326824312960">탭 고정 해제</translation>
 <translation id="6444070574980481588">날짜 및 시간 설정</translation>
 <translation id="6445450263907939268">변경하지 않으려는 경우 이전 설정을 복원할 수 있습니다.</translation>
 <translation id="6447842834002726250">쿠키</translation>
@@ -3732,7 +3714,6 @@
 <translation id="6770664076092644100">NFC를 통해 인증</translation>
 <translation id="6771503742377376720">인증 기관임</translation>
 <translation id="6777817260680419853">리디렉션이 차단됨</translation>
-<translation id="6778959797435875428">사이트 음소거 해제</translation>
 <translation id="677965093459947883">아주 작게</translation>
 <translation id="6780439250949340171">기타 설정 관리</translation>
 <translation id="6781284683813954823">기념일 로고 링크</translation>
@@ -4049,7 +4030,6 @@
 <translation id="7257666756905341374">복사하여 붙여넣은 데이터 조회</translation>
 <translation id="7258697411818564379">PIN이 추가됨</translation>
 <translation id="7262004276116528033">이 로그인 서비스는 <ph name="SAML_DOMAIN" />에서 호스팅됩니다.</translation>
-<translation id="7268365133021434339">탭 닫기</translation>
 <translation id="7268659760406822741">사용 가능한 서비스</translation>
 <translation id="7270858098575133036">사이트에서 시스템 전용 메시지를 사용하여 MIDI 기기에 액세스하려는 경우 확인</translation>
 <translation id="7272674038937250585">제공된 설명이 없음</translation>
@@ -4239,7 +4219,6 @@
 <translation id="7576032389798113292">6x4</translation>
 <translation id="7576690715254076113">한 부씩 인쇄</translation>
 <translation id="7576976045740938453">데모 모드 계정에 문제가 발생했습니다.</translation>
-<translation id="7579149537961810247">사이트 음소거</translation>
 <translation id="7580671184200851182">모든 스피커에서 동일한 오디오 실행(모노 오디오)</translation>
 <translation id="7581462281756524039">정리도구</translation>
 <translation id="7582582252461552277">이 네트워크를 사용</translation>
@@ -4593,7 +4572,6 @@
 <translation id="8068253693380742035">로그인하려면 터치하세요.</translation>
 <translation id="8069615408251337349">Google 클라우드 프린트</translation>
 <translation id="8071432093239591881">이미지로 인쇄</translation>
-<translation id="8072988827236813198">탭 고정</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />앱 데이터에는 연락처, 메시지, 사진 등 앱에서 개발자 설정에 따라 저장한 모든 데이터가 포함될 수 있습니다.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />백업 데이터는 자녀의 드라이브 스토리지 용량에 포함되지 않습니다.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />설정에서 이 서비스를 사용 중지할 수 있습니다.<ph name="END_PARAGRAPH3" /></translation>
@@ -4779,7 +4757,6 @@
 <translation id="8368859634510605990">모든 북마크 열기(&amp;O)</translation>
 <translation id="8371695176452482769">말하세요</translation>
 <translation id="8372369524088641025">잘못된 WEP 키</translation>
-<translation id="8373553483208508744">탭 음소거</translation>
 <translation id="8378714024927312812">조직에서 관리</translation>
 <translation id="8379878387931047019">이 기기는 이 웹사이트에서 요청하는 유형의 보안 키를 지원하지 않습니다.</translation>
 <translation id="8382913212082956454">이메일 주소 복사(&amp;E)</translation>
@@ -4887,7 +4864,6 @@
 <translation id="8546930481464505581">Touch Bar 맞춤설정</translation>
 <translation id="8547013269961688403">전체화면 돋보기 사용</translation>
 <translation id="85486688517848470">맨 위 키의 동작을 전환하려면 검색 키를 길게 누름</translation>
-<translation id="855081842937141170">탭 고정</translation>
 <translation id="8551388862522347954">라이선스</translation>
 <translation id="8553342806078037065">다른 사용자 관리</translation>
 <translation id="8554899698005018844">언어가 없음</translation>
@@ -5201,7 +5177,6 @@
 <translation id="9038430547971207796">다음번에는 휴대전화를 통해 <ph name="DEVICE_TYPE" />이(가) 잠금 해제됩니다. 설정에서 Smart Lock을 사용 중지하세요.</translation>
 <translation id="9038649477754266430">빠른 페이지 로드를 위해 예상 검색어 서비스 사용</translation>
 <translation id="9039663905644212491">PEAP</translation>
-<translation id="9039890312082871605">탭 음소거</translation>
 <translation id="9040661932550800571"><ph name="ORIGIN" /> 비밀번호를 업데이트하시겠습니까?</translation>
 <translation id="9041692268811217999">관리자가 시스템의 로컬 파일 액세스를 차단했습니다</translation>
 <translation id="9042893549633094279">개인정보 및 보안</translation>
@@ -5299,7 +5274,6 @@
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> 검색</translation>
 <translation id="9201220332032049474">화면 잠금 옵션</translation>
 <translation id="9203398526606335860">프로파일링 사용(&amp;P)</translation>
-<translation id="9203478404496196495">탭 음소거 해제</translation>
 <translation id="9203904171912129171">기기를 선택하세요.</translation>
 <translation id="9203962528777363226">이 기기의 관리자가 새로운 사용자를 추가하지 못하도록 설정함</translation>
 <translation id="9213073329713032541">설치가 시작되었습니다.</translation>
