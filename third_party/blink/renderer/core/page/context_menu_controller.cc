@@ -128,17 +128,12 @@ Node* ContextMenuController::ContextMenuNodeForFrame(LocalFrame* frame) {
              : nullptr;
 }
 
-// Figure out the URL of a page or subframe. Returns |page_type| as the type,
-// which indicates page or subframe, or ContextNodeType::kNone if the URL could
-// not be determined for some reason.
+// Figure out the URL of a page or subframe.
 static KURL UrlFromFrame(LocalFrame* frame) {
   if (frame) {
     DocumentLoader* document_loader = frame->Loader().GetDocumentLoader();
-    if (document_loader) {
-      return document_loader->UnreachableURL().IsEmpty()
-                 ? document_loader->GetRequest().Url()
-                 : document_loader->UnreachableURL();
-    }
+    if (document_loader)
+      return document_loader->UrlForHistory();
   }
   return KURL();
 }

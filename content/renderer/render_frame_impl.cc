@@ -416,7 +416,7 @@ GURL GetOriginalRequestURL(WebDocumentLoader* document_loader) {
   if (!redirects.empty())
     return redirects.at(0);
 
-  return document_loader->OriginalRequest().Url();
+  return document_loader->OriginalUrl();
 }
 
 // Returns false unless this is a top-level navigation.
@@ -4214,7 +4214,7 @@ void RenderFrameImpl::DidStartProvisionalLoad(
 
   TRACE_EVENT2("navigation,benchmark,rail",
                "RenderFrameImpl::didStartProvisionalLoad", "id", routing_id_,
-               "url", document_loader->GetRequest().Url().GetString().Utf8());
+               "url", document_loader->GetUrl().GetString().Utf8());
 
   NavigationState* navigation_state =
       NavigationState::FromDocumentLoader(document_loader);
@@ -4592,8 +4592,7 @@ void RenderFrameImpl::DidFinishLoad() {
     observer.DidFinishLoad();
 
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
-  Send(new FrameHostMsg_DidFinishLoad(routing_id_,
-                                      document_loader->GetRequest().Url()));
+  Send(new FrameHostMsg_DidFinishLoad(routing_id_, document_loader->GetUrl()));
 
   if (!RenderThreadImpl::current())
     return;
@@ -6042,7 +6041,7 @@ void RenderFrameImpl::BeginNavigation(
   // subsequent checks.  For a popup, the document's URL may become the opener
   // window's URL if the opener has called document.write().
   // See http://crbug.com/93517.
-  GURL old_url(frame_->GetDocumentLoader()->GetRequest().Url());
+  GURL old_url(frame_->GetDocumentLoader()->GetUrl());
 
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
   // an extension or app origin, leaving a WebUI page, etc). We only care about
@@ -6911,8 +6910,7 @@ GURL RenderFrameImpl::GetLoadingUrl() const {
   if (MaybeGetOverriddenURL(document_loader, &overriden_url))
     return overriden_url;
 
-  const WebURLRequest& request = document_loader->GetRequest();
-  return request.Url();
+  return document_loader->GetUrl();
 }
 
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {

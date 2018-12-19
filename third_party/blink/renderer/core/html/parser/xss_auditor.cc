@@ -454,7 +454,7 @@ void XSSAuditor::Init(Document* document,
     if (auditor_delegate)
       auditor_delegate->SetReportURL(xss_protection_report_url.Copy());
 
-    EncodedFormData* http_body = document_loader->GetRequest().HttpBody();
+    EncodedFormData* http_body = document_loader->HttpBody();
     if (http_body && !http_body->IsEmpty())
       http_body_as_string_ = http_body->FlattenToString();
   }

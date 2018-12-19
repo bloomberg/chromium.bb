@@ -86,7 +86,7 @@ const int kNavigationCorrectionFetchTimeoutSec = 3;
 
 NetErrorHelperCore::PageType GetLoadingPageType(
     blink::WebDocumentLoader* document_loader) {
-  GURL url = document_loader->GetRequest().Url();
+  GURL url = document_loader->GetUrl();
   if (!url.is_valid() || url.spec() != kUnreachableWebDataURL)
     return NetErrorHelperCore::NON_ERROR_PAGE;
   return NetErrorHelperCore::ERROR_PAGE;
