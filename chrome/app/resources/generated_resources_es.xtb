@@ -783,6 +783,7 @@
 <translation id="215753907730220065">Desactivar pantalla completa</translation>
 <translation id="2157875535253991059">Esta página se muestra ahora en pantalla completa.</translation>
 <translation id="216169395504480358">Añadir Wi-Fi...</translation>
+<translation id="2162155940152307086">La sincronización empezará cuando salgas de la configuración</translation>
 <translation id="2163470535490402084">Conéctate a Internet para iniciar sesión en tu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2166369534954157698">Benjamín pidió una bebida de kiwi y fresa. Noé, sin vergüenza, la más exquisita champaña del menú.</translation>
 <translation id="2169062631698640254">Iniciar sesión de todas formas</translation>
@@ -793,6 +794,7 @@
 <translation id="2178098616815594724">El complemento <ph name="PEPPER_PLUGIN_NAME" /> de <ph name="PEPPER_PLUGIN_DOMAIN" /> quiere acceder a tu ordenador</translation>
 <translation id="2178614541317717477">Compromiso de entidad emisora de certificados</translation>
 <translation id="218070003709087997">Usa un número para indicar cuántas copias quieres imprimir (entre 1 y 999).</translation>
+<translation id="2182253583899676504">El texto que escribas en los campos de texto se enviará a Google.</translation>
 <translation id="2184515124301515068">Permitir que Chrome elija cuándo los sitios web pueden reproducir sonidos (recomendado)</translation>
 <translation id="2187895286714876935">Error de importación del certificado de servidor</translation>
 <translation id="2187906491731510095">Se han actualizado las extensiones</translation>
@@ -804,7 +806,9 @@
 <translation id="2192505247865591433">De:</translation>
 <translation id="2193365732679659387">Configuración de confianza</translation>
 <translation id="2195729137168608510">Protección de correo electrónico</translation>
+<translation id="2198757192731523470">Es posible que se utilice tu historial para personalizar la Búsqueda, los anuncios y otros servicios de Google.</translation>
 <translation id="2199298570273670671">Error</translation>
+<translation id="2199719347983604670">Datos de Sincronización de Chrome</translation>
 <translation id="2200356397587687044">Chrome necesita permiso para continuar</translation>
 <translation id="220138918934036434">Ocultar botón</translation>
 <translation id="2202898655984161076">Se ha producido un error al mostrar las impresoras. Es posible que algunas impresoras no se hayan registrado correctamente en <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -1261,6 +1265,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2889925978073739256">Seguir bloqueando complementos no incluidos en la zona de pruebas</translation>
 <translation id="2890678560483811744">La referencia de página está fuera de los límites admitidos</translation>
 <translation id="2893168226686371498">Navegador predeterminado</translation>
+<translation id="2895734772884435517">Puedes personalizar la configuración en cualquier momento.</translation>
 <translation id="289644616180464099">La tarjeta SIM está bloqueada</translation>
 <translation id="289695669188700754">ID de clave: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">¿Seguro que quieres abrir <ph name="TAB_COUNT" /> pestañas?</translation>
@@ -1736,6 +1741,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3636096452488277381">Hola, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> hasta agotar la batería</translation>
 <translation id="3637682276779847508">La tarjeta SIM se inhabilitará de forma permanente si no introduces el código PUK correcto.</translation>
+<translation id="363863692969456324">Corrige errores ortográficos con la revisión ortográfica mejorada</translation>
 <translation id="3640214691812501263">¿Añadir <ph name="EXTENSION_NAME" /> para <ph name="USER_NAME" />?</translation>
 <translation id="3644896802912593514">Anchura</translation>
 <translation id="3645372836428131288">Mueve el dedo ligeramente para capturar otra parte de la huella digital.</translation>
@@ -2174,6 +2180,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4310139701823742692">El formato del archivo no es correcto. Comprueba el archivo PPD e inténtalo de nuevo.</translation>
 <translation id="431076611119798497">&amp;Detalles</translation>
 <translation id="4312866146174492540">Bloquear (predeterminado)</translation>
+<translation id="4314815835985389558">Gestionar la sincronización</translation>
 <translation id="4316850752623536204">Sitio web del desarrollador</translation>
 <translation id="4320177379694898372">No hay conexión a Internet</translation>
 <translation id="4320948194796820126">Añade un marcador a tu correo electrónico</translation>
@@ -2253,6 +2260,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4450974146388585462">Diagnosticar</translation>
 <translation id="4451757071857432900">Bloqueados en sitios web que muestran anuncios invasivos o engañosos (opción recomendada)</translation>
 <translation id="4453946976636652378">Busca <ph name="SEARCH_ENGINE_NAME" /> o introduce una URL</translation>
+<translation id="4461835665417498653">Envía a Google información del sistema y contenido de las páginas de forma anónima.</translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
 <translation id="4467101674048705704">Mostrar <ph name="FOLDER_NAME" /></translation>
 <translation id="4469477701382819144">Bloqueados en sitios web que muestran anuncios invasivos o engañosos</translation>
@@ -2422,6 +2430,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4735265153267957659">Introduce tu contraseña para habilitar Smart Lock. La próxima vez, el teléfono desbloqueará tu <ph name="DEVICE_TYPE" />. Puedes desactivar Smart Lock en la configuración.</translation>
 <translation id="473546211690256853">Esta cuenta está administrada por <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">El sistema no ha podido determinar los identificadores de este dispositivo.</translation>
+<translation id="4736292055110123391">Sincroniza tus marcadores, tus contraseñas, tu historial y mucho más en todos tus dispositivos</translation>
 <translation id="4737715515457435632">Establece conexión con una red</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="474217410105706308">Silenciar pestaña</translation>
@@ -4976,6 +4985,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8598453409908276158">Complemento no incluido en la zona de pruebas bloqueado</translation>
 <translation id="8601206103050338563">Autenticación de cliente WWW TLS</translation>
 <translation id="8602851771975208551">Otro programa de tu ordenador ha añadido una aplicación que puede cambiar el funcionamiento de Chrome.</translation>
+<translation id="8604763363205185560">Ayuda a mejorar Chrome y su seguridad</translation>
 <translation id="8605428685123651449">Memoria SQLite</translation>
 <translation id="8606726445206553943">Utilizar tus dispositivos MIDI</translation>
 <translation id="8609465669617005112">Subir</translation>

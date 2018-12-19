@@ -2022,7 +2022,7 @@
 <translation id="4037084878352560732">Konj</translation>
 <translation id="4037889604535939429">Urejanje osebe</translation>
 <translation id="4042264909745389898">Pogoji za Googlov OS Chrome</translation>
-<translation id="4042863763121826131">{NUM_PAGES,plural, =1{Izhodna stran}one{Izhodne strani}two{Izhodne strani}few{Izhodne strani}other{Izhodne strani}}</translation>
+<translation id="4042863763121826131">{NUM_PAGES,plural, =1{Zapri stran}one{Zapri strani}two{Zapri strani}few{Zapri strani}other{Zapri strani}}</translation>
 <translation id="4044612648082411741">Vnesite geslo za potrdilo</translation>
 <translation id="404493185430269859">Privzeti iskalnik</translation>
 <translation id="4052120076834320548">Drobna</translation>
@@ -4065,7 +4065,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="720110658997053098">Ta naprava naj bo trajno v načinu kioska</translation>
 <translation id="7201118060536064622">Element »<ph name="DELETED_ITEM_NAME" />« je izbrisan</translation>
 <translation id="7206693748120342859">Prenos vtičnika <ph name="PLUGIN_NAME" /> ...</translation>
-<translation id="720715819012336933">{NUM_PAGES,plural, =1{Izhodna stran}one{Izhodne strani}two{Izhodne strani}few{Izhodne strani}other{Izhodne strani}}</translation>
+<translation id="720715819012336933">{NUM_PAGES,plural, =1{Zapri stran}one{Zapri strani}two{Zapri strani}few{Zapri strani}other{Zapri strani}}</translation>
 <translation id="7210499381659830293">Tiskalniki razširitev</translation>
 <translation id="721467499098558573">Pritisnite in vsaj 5 sekund pridržite gumb na varnostnem ključu</translation>
 <translation id="7216409898977639127">Ponudnik mobilnih storitev</translation>
