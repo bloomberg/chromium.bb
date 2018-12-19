@@ -19,6 +19,8 @@ blink_core_sources("frame") {
     "csp/csp_directive_list.h",
     "csp/csp_source.cc",
     "csp/csp_source.h",
+    "csp/execution_context_csp_delegate.cc",
+    "csp/execution_context_csp_delegate.h",
     "csp/media_list_directive.cc",
     "csp/media_list_directive.h",
     "csp/source_list_directive.cc",

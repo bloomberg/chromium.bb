@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/dom/pausable_object.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -52,6 +53,7 @@ ExecutionContext::ExecutionContext(v8::Isolate* isolate)
       in_dispatch_error_event_(false),
       is_context_paused_(false),
       is_context_destroyed_(false),
+      csp_delegate_(MakeGarbageCollected<ExecutionContextCSPDelegate>(*this)),
       window_interaction_tokens_(0),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       invalidator_(std::make_unique<InterfaceInvalidator>()) {}
@@ -165,6 +167,11 @@ PublicURLManager& ExecutionContext::GetPublicURLManager() {
   return *public_url_manager_;
 }
 
+ContentSecurityPolicyDelegate&
+ExecutionContext::GetContentSecurityPolicyDelegate() {
+  return *csp_delegate_;
+}
+
 const SecurityOrigin* ExecutionContext::GetSecurityOrigin() {
   return GetSecurityContext().GetSecurityOrigin();
 }
@@ -250,6 +257,7 @@ void ExecutionContext::RemoveURLFromMemoryCache(const KURL& url) {
 void ExecutionContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(public_url_manager_);
   visitor->Trace(pending_exceptions_);
+  visitor->Trace(csp_delegate_);
   ContextLifecycleNotifier::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);
 }

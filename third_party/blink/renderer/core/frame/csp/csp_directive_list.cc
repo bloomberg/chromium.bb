@@ -276,8 +276,10 @@ bool CSPDirectiveList::CheckSource(
   // If |url| is empty, fall back to the policy URL to ensure that <object>'s
   // without a `src` can be blocked/allowed, as they can still load plugins
   // even though they don't actually have a URL.
-  return !directive || directive->Allows(url.IsEmpty() ? policy_->Url() : url,
-                                         redirect_status);
+  return !directive ||
+         directive->Allows(
+             url.IsEmpty() ? policy_->FallbackUrlForPlugin() : url,
+             redirect_status);
 }
 
 bool CSPDirectiveList::CheckAncestors(SourceListDirective* directive,
@@ -958,8 +960,7 @@ bool CSPDirectiveList::AllowBaseURI(
       !CheckSource(
           OperativeDirective(ContentSecurityPolicy::DirectiveType::kBaseURI),
           url, redirect_status)) {
-    UseCounter::Count(policy_->GetDocument(),
-                      WebFeature::kBaseWouldBeBlockedByDefaultSrc);
+    policy_->Count(WebFeature::kBaseWouldBeBlockedByDefaultSrc);
   }
 
   return result;
@@ -1122,7 +1123,7 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
   // The directive-name must be non-empty.
   if (name_begin == position) {
     // Malformed CSP: directive starts with invalid characters
-    UseCounter::Count(policy_->GetDocument(), WebFeature::kMalformedCSP);
+    policy_->Count(WebFeature::kMalformedCSP);
 
     SkipWhile<UChar, IsNotASCIISpace>(position, end);
     policy_->ReportUnsupportedDirective(
@@ -1138,7 +1139,7 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
 
   if (!SkipExactly<UChar, IsASCIISpace>(position, end)) {
     // Malformed CSP: after the directive name we don't have a space
-    UseCounter::Count(policy_->GetDocument(), WebFeature::kMalformedCSP);
+    policy_->Count(WebFeature::kMalformedCSP);
 
     SkipWhile<UChar, IsNotASCIISpace>(position, end);
     policy_->ReportUnsupportedDirective(
@@ -1153,7 +1154,7 @@ bool CSPDirectiveList::ParseDirective(const UChar* begin,
 
   if (position != end) {
     // Malformed CSP: directive value has invalid characters
-    UseCounter::Count(policy_->GetDocument(), WebFeature::kMalformedCSP);
+    policy_->Count(WebFeature::kMalformedCSP);
 
     policy_->ReportInvalidDirectiveValueCharacter(
         *name, String(value_begin, static_cast<wtf_size_t>(end - value_begin)));
@@ -1277,13 +1278,9 @@ void CSPDirectiveList::ParseAndAppendReportEndpoints(const String& value) {
     }
   }
 
-  if (report_endpoints_.size() > 1) {
-    UseCounter::Count(policy_->GetDocument(),
-                      WebFeature::kReportUriMultipleEndpoints);
-  } else {
-    UseCounter::Count(policy_->GetDocument(),
-                      WebFeature::kReportUriSingleEndpoint);
-  }
+  policy_->Count(report_endpoints_.size() > 1
+                     ? WebFeature::kReportUriMultipleEndpoints
+                     : WebFeature::kReportUriSingleEndpoint);
 }
 
 template <class CSPDirectiveType>

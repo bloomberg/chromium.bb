@@ -71,7 +71,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
     execution_context = CreateExecutionContext();
     execution_context->SetSecurityOrigin(secure_origin);
     execution_context->SetURL(secure_url);
-    csp->BindToExecutionContext(execution_context.Get());
+    csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(test.expected_policy,
               execution_context->GetInsecureRequestPolicy());
     bool expect_upgrade = test.expected_policy & kUpgradeInsecureRequests;
@@ -91,7 +91,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 
     execution_context = CreateExecutionContext();
     execution_context->SetSecurityOrigin(secure_origin);
-    csp->BindToExecutionContext(execution_context.Get());
+    csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(kLeaveInsecureRequestsAlone,
               execution_context->GetInsecureRequestPolicy());
     EXPECT_FALSE(execution_context->InsecureNavigationsToUpgrade()->Contains(
@@ -107,7 +107,7 @@ TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
   csp->DidReceiveHeader("treat-as-public-address",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   EXPECT_EQ(mojom::IPAddressSpace::kPrivate, execution_context->AddressSpace());
 }
 
@@ -119,7 +119,7 @@ TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled) {
   csp->DidReceiveHeader("treat-as-public-address",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   EXPECT_EQ(mojom::IPAddressSpace::kPublic, execution_context->AddressSpace());
 }
 
@@ -224,7 +224,7 @@ TEST_F(ContentSecurityPolicyTest, IsActiveForConnectionsWithDefaultSrc) {
 // Tests that frame-ancestors directives are discarded from policies
 // delivered in <meta> elements.
 TEST_F(ContentSecurityPolicyTest, FrameAncestorsInMeta) {
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("frame-ancestors 'none';",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceMeta);
@@ -238,7 +238,7 @@ TEST_F(ContentSecurityPolicyTest, FrameAncestorsInMeta) {
 // Tests that sandbox directives are discarded from policies
 // delivered in <meta> elements.
 TEST_F(ContentSecurityPolicyTest, SandboxInMeta) {
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("sandbox;", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceMeta);
   EXPECT_FALSE(execution_context->GetSecurityOrigin()->IsOpaque());
@@ -270,7 +270,7 @@ TEST_F(ContentSecurityPolicyTest, ReportURIInMeta) {
 // makes. https://crbug.com/603952
 TEST_F(ContentSecurityPolicyTest, ObjectSrc) {
   const KURL url("https://example.test");
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("object-src 'none';",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceMeta);
@@ -290,7 +290,7 @@ TEST_F(ContentSecurityPolicyTest, ObjectSrc) {
 
 TEST_F(ContentSecurityPolicyTest, ConnectSrc) {
   const KURL url("https://example.test");
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("connect-src 'none';",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceMeta);
@@ -323,7 +323,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderMissingIntegrity) {
   const KURL url("https://example.test");
   // Enforce
   Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
-  policy->BindToExecutionContext(execution_context.Get());
+  policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeEnforce,
                            kContentSecurityPolicyHeaderSourceHTTP);
@@ -359,7 +359,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderMissingIntegrity) {
       SecurityViolationReportingPolicy::kSuppressReporting));
   // Report
   policy = ContentSecurityPolicy::Create();
-  policy->BindToExecutionContext(execution_context.Get());
+  policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeReport,
                            kContentSecurityPolicyHeaderSourceHTTP);
@@ -402,10 +402,10 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity) {
   IntegrityMetadataSet integrity_metadata;
   integrity_metadata.insert(
       IntegrityMetadata("1234", IntegrityAlgorithm::kSha384).ToPair());
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   // Enforce
   Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
-  policy->BindToExecutionContext(execution_context.Get());
+  policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeEnforce,
                            kContentSecurityPolicyHeaderSourceHTTP);
@@ -442,7 +442,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity) {
   // Content-Security-Policy-Report-Only is not supported in meta element,
   // so nothing should be blocked
   policy = ContentSecurityPolicy::Create();
-  policy->BindToExecutionContext(execution_context.Get());
+  policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeReport,
                            kContentSecurityPolicyHeaderSourceHTTP);
@@ -484,7 +484,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaMissingIntegrity) {
   const KURL url("https://example.test");
   // Enforce
   Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
-  policy->BindToExecutionContext(execution_context.Get());
+  policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeEnforce,
                            kContentSecurityPolicyHeaderSourceMeta);
@@ -521,7 +521,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaMissingIntegrity) {
   // Content-Security-Policy-Report-Only is not supported in meta element,
   // so nothing should be blocked
   policy = ContentSecurityPolicy::Create();
-  policy->BindToExecutionContext(execution_context.Get());
+  policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeReport,
                            kContentSecurityPolicyHeaderSourceMeta);
@@ -564,10 +564,10 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaPresentIntegrity) {
   IntegrityMetadataSet integrity_metadata;
   integrity_metadata.insert(
       IntegrityMetadata("1234", IntegrityAlgorithm::kSha384).ToPair());
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   // Enforce
   Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
-  policy->BindToExecutionContext(execution_context.Get());
+  policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeEnforce,
                            kContentSecurityPolicyHeaderSourceMeta);
@@ -604,7 +604,7 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaPresentIntegrity) {
   // Content-Security-Policy-Report-Only is not supported in meta element,
   // so nothing should be blocked
   policy = ContentSecurityPolicy::Create();
-  policy->BindToExecutionContext(execution_context.Get());
+  policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            kContentSecurityPolicyHeaderTypeReport,
                            kContentSecurityPolicyHeaderSourceMeta);
@@ -667,7 +667,8 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
 
     // Single enforce-mode policy should match `test.expected`:
     Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
-    policy->BindToExecutionContext(execution_context.Get());
+    policy->BindToDelegate(
+        execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
@@ -680,7 +681,8 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
 
     // Single report-mode policy should always be `true`:
     policy = ContentSecurityPolicy::Create();
-    policy->BindToExecutionContext(execution_context.Get());
+    policy->BindToDelegate(
+        execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy,
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
@@ -727,7 +729,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     // Enforce 'script-src'
     Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
-    policy->BindToExecutionContext(document);
+    policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
@@ -739,7 +741,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     // Enforce 'style-src'
     policy = ContentSecurityPolicy::Create();
-    policy->BindToExecutionContext(document);
+    policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("style-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
@@ -751,7 +753,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     // Report 'script-src'
     policy = ContentSecurityPolicy::Create();
-    policy->BindToExecutionContext(document);
+    policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
@@ -762,7 +764,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     // Report 'style-src'
     policy = ContentSecurityPolicy::Create();
-    policy->BindToExecutionContext(document);
+    policy->BindToDelegate(document->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("style-src ") + test.policy,
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
@@ -832,7 +834,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
 
     // Enforce / Report
     Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();
-    policy->BindToExecutionContext(execution_context.Get());
+    policy->BindToDelegate(
+        execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy1,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
@@ -854,7 +857,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
 
     // Report / Enforce
     policy = ContentSecurityPolicy::Create();
-    policy->BindToExecutionContext(execution_context.Get());
+    policy->BindToDelegate(
+        execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy1,
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
@@ -876,7 +880,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
 
     // Enforce / Enforce
     policy = ContentSecurityPolicy::Create();
-    policy->BindToExecutionContext(execution_context.Get());
+    policy->BindToDelegate(
+        execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy1,
                              kContentSecurityPolicyHeaderTypeEnforce,
                              kContentSecurityPolicyHeaderSourceHTTP);
@@ -893,7 +898,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
 
     // Report / Report
     policy = ContentSecurityPolicy::Create();
-    policy->BindToExecutionContext(execution_context.Get());
+    policy->BindToDelegate(
+        execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy1,
                              kContentSecurityPolicyHeaderTypeReport,
                              kContentSecurityPolicyHeaderSourceHTTP);
@@ -1051,7 +1057,7 @@ TEST_F(ContentSecurityPolicyTest, RequestsAllowedWhenBypassingCSP) {
   execution_context = CreateExecutionContext();
   execution_context->SetSecurityOrigin(secure_origin);  // https://example.com
   execution_context->SetURL(secure_url);                // https://example.com
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("default-src https://example.com",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1091,7 +1097,7 @@ TEST_F(ContentSecurityPolicyTest, FilesystemAllowedWhenBypassingCSP) {
   execution_context = CreateExecutionContext();
   execution_context->SetSecurityOrigin(secure_origin);  // https://example.com
   execution_context->SetURL(secure_url);                // https://example.com
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("default-src https://example.com",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1136,7 +1142,7 @@ TEST_F(ContentSecurityPolicyTest, BlobAllowedWhenBypassingCSP) {
   execution_context = CreateExecutionContext();
   execution_context->SetSecurityOrigin(secure_origin);  // https://example.com
   execution_context->SetURL(secure_url);                // https://example.com
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("default-src https://example.com",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1179,7 +1185,7 @@ TEST_F(ContentSecurityPolicyTest, CSPBypassDisabledWhenSchemeIsPrivileged) {
   execution_context = CreateExecutionContext();
   execution_context->SetSecurityOrigin(secure_origin);
   execution_context->SetURL(BlankURL());
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("script-src http://example.com",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1359,14 +1365,14 @@ TEST_F(ContentSecurityPolicyTest, IsValidCSPAttrTest) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesNoDirective) {
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
   EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy"));
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesSimpleDirective) {
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one two three",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1377,7 +1383,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesSimpleDirective) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesWhitespace) {
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1387,7 +1393,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesWhitespace) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesEmpty) {
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1395,7 +1401,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesEmpty) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types *",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1403,7 +1409,7 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesReserved) {
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one \"two\" 'three'",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1425,7 +1431,7 @@ TEST_F(ContentSecurityPolicyTest, DirectiveNameCaseInsensitive) {
   csp->DidReceiveHeader("sCrIpt-sRc http://example.com",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
 
   EXPECT_TRUE(csp->AllowScriptFromSource(
       example_url, String(), IntegrityMetadataSet(), kParserInserted));
@@ -1439,7 +1445,7 @@ TEST_F(ContentSecurityPolicyTest, DirectiveNameCaseInsensitive) {
       "SCRipt-SRC http://example.com; script-src http://not-example.com;",
       kContentSecurityPolicyHeaderTypeEnforce,
       kContentSecurityPolicyHeaderSourceHTTP);
-  csp->BindToExecutionContext(execution_context.Get());
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
 
   EXPECT_TRUE(csp->AllowScriptFromSource(
       example_url, String(), IntegrityMetadataSet(), kParserInserted));

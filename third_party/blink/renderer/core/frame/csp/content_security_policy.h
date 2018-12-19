@@ -32,8 +32,8 @@
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -62,7 +62,9 @@ class CSPDirectiveList;
 class CSPSource;
 class Document;
 class Element;
+class ExecutionContext;
 class LocalFrameClient;
+class LocalFrame;
 class KURL;
 class ResourceRequest;
 class SecurityOrigin;
@@ -75,6 +77,56 @@ typedef HeapVector<Member<CSPDirectiveList>> CSPDirectiveListVector;
 typedef HeapVector<Member<ConsoleMessage>> ConsoleMessageVector;
 typedef std::pair<String, ContentSecurityPolicyHeaderType> CSPHeaderAndType;
 using RedirectStatus = ResourceRequest::RedirectStatus;
+
+//  A delegate interface to implement violation reporting, support for some
+//  directives and other miscellaneous functionality.
+class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
+ public:
+  // Returns the SecurityOrigin this content security policy is bound to. Used
+  // for matching the 'self' keyword. Must return a non-null value.
+  // See https://w3c.github.io/webappsec-csp/#policy-self-origin.
+  virtual const SecurityOrigin* GetSecurityOrigin() = 0;
+
+  // Returns the URL this content security policy is bound to.
+  // Used for https://w3c.github.io/webappsec-csp/#violation-url and so.
+  // Note: Url() is used for several purposes that are specced slightly
+  // differently.
+  // See comments at the callers.
+  virtual const KURL& Url() const = 0;
+
+  // Directives support.
+  virtual void SetSandboxFlags(SandboxFlags) = 0;
+  virtual void SetAddressSpace(mojom::IPAddressSpace) = 0;
+  virtual void SetRequireTrustedTypes() = 0;
+  virtual void AddInsecureRequestPolicy(WebInsecureRequestPolicy) = 0;
+
+  // Violation reporting.
+
+  // See https://w3c.github.io/webappsec-csp/#create-violation-for-global.
+  // These functions are used to create the violation object.
+  virtual std::unique_ptr<SourceLocation> GetSourceLocation() = 0;
+  virtual base::Optional<uint16_t> GetStatusCode() = 0;
+  // If the Delegate is not bound to a document, a null string should be
+  // returned as the referrer.
+  virtual String GetDocumentReferrer() = 0;
+
+  virtual void DispatchViolationEvent(const SecurityPolicyViolationEventInit&,
+                                      Element*) = 0;
+  virtual void PostViolationReport(const SecurityPolicyViolationEventInit&,
+                                   const String& stringified_report,
+                                   bool is_frame_ancestors_violaton,
+                                   const Vector<String>& report_endpoints,
+                                   bool use_reporting_api) = 0;
+
+  virtual void Count(WebFeature) = 0;
+
+  virtual void AddConsoleMessage(ConsoleMessage*) = 0;
+  virtual void DisableEval(const String& error_message) = 0;
+  virtual void ReportBlockedScriptExecutionToInspector(
+      const String& directive_text) = 0;
+  virtual void DidAddContentSecurityPolicies(
+      const blink::WebVector<WebContentSecurityPolicy>&) = 0;
+};
 
 class CORE_EXPORT ContentSecurityPolicy
     : public GarbageCollectedFinalized<ContentSecurityPolicy> {
@@ -147,7 +199,7 @@ class CORE_EXPORT ContentSecurityPolicy
   ~ContentSecurityPolicy();
   void Trace(blink::Visitor*);
 
-  void BindToExecutionContext(ExecutionContext*);
+  void BindToDelegate(ContentSecurityPolicyDelegate&);
   void SetupSelf(const SecurityOrigin&);
   void SetupSelf(const ContentSecurityPolicy&);
   void CopyStateFrom(const ContentSecurityPolicy*);
@@ -404,7 +456,9 @@ class CORE_EXPORT ContentSecurityPolicy
   void ReportBlockedScriptExecutionToInspector(
       const String& directive_text) const;
 
-  const KURL Url() const;
+  // Used as <object>'s URL when there is no `src` attribute.
+  const KURL FallbackUrlForPlugin() const;
+
   void EnforceSandboxFlags(SandboxFlags);
   void TreatAsPublicAddress();
   void RequireTrustedTypes();
@@ -429,10 +483,6 @@ class CORE_EXPORT ContentSecurityPolicy
   CSPSource* GetSelfSource() const { return self_source_; }
 
   static bool ShouldBypassMainWorld(const ExecutionContext*);
-  static bool ShouldBypassContentSecurityPolicy(
-      const KURL&,
-      ExecutionContext*,
-      SchemeRegistry::PolicyAreas = SchemeRegistry::kPolicyAreaAll);
 
   static bool IsNonceableElement(const Element*);
 
@@ -450,8 +500,6 @@ class CORE_EXPORT ContentSecurityPolicy
   // CSPDirectiveList. More information here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
   bool Subsumes(const ContentSecurityPolicy&) const;
-
-  Document* GetDocument() const;
 
   bool HasHeaderDeliveredPolicy() const { return header_delivered_; }
 
@@ -492,6 +540,8 @@ class CORE_EXPORT ContentSecurityPolicy
         directive_type == ContentSecurityPolicy::DirectiveType::kStyleSrcElem);
   }
 
+  void Count(WebFeature feature) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceSinglePolicy);
@@ -503,7 +553,7 @@ class CORE_EXPORT ContentSecurityPolicy
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextTest,
                            PopulateResourceRequestChecksReportOnlyCSP);
 
-  void ApplyPolicySideEffectsToExecutionContext();
+  void ApplyPolicySideEffectsToDelegate();
 
   void LogToConsole(const String& message, MessageLevel = kErrorMessageLevel);
 
@@ -513,8 +563,6 @@ class CORE_EXPORT ContentSecurityPolicy
 
   bool ShouldSendViolationReport(const String&) const;
   void DidSendViolationReport(const String&);
-  void DispatchViolationEvents(const SecurityPolicyViolationEventInit*,
-                               Element*);
   void PostViolationReport(const SecurityPolicyViolationEventInit*,
                            LocalFrame*,
                            const Vector<String>& report_endpoints,
@@ -533,7 +581,11 @@ class CORE_EXPORT ContentSecurityPolicy
                                           const Member<CSPDirectiveList>&,
                                           InlineType);
 
-  Member<ExecutionContext> execution_context_;
+  bool ShouldBypassContentSecurityPolicy(
+      const KURL&,
+      SchemeRegistry::PolicyAreas = SchemeRegistry::kPolicyAreaAll) const;
+
+  Member<ContentSecurityPolicyDelegate> delegate_;
   bool override_inline_style_allowed_;
   CSPDirectiveListVector policies_;
   ConsoleMessageVector console_messages_;
