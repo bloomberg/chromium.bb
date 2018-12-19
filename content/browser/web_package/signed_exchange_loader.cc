@@ -35,6 +35,8 @@ namespace {
 constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult";
 constexpr char kPrefetchLoadResultHistogram[] =
     "SignedExchange.Prefetch.LoadResult";
+constexpr char kContentTypeOptionsHeaderName[] = "x-content-type-options";
+constexpr char kNoSniffHeaderValue[] = "nosniff";
 
 net::RedirectInfo CreateRedirectInfo(const GURL& new_url,
                                      const GURL& outer_request_url) {
@@ -54,6 +56,13 @@ net::RedirectInfo CreateRedirectInfo(const GURL& new_url,
   redirect_info.status_code = 303;
   redirect_info.new_site_for_cookies = redirect_info.new_url;
   return redirect_info;
+}
+
+bool HasNoSniffHeader(const network::ResourceResponseHead& response) {
+  std::string content_type_options;
+  response.headers->EnumerateHeader(nullptr, kContentTypeOptionsHeaderName,
+                                    &content_type_options);
+  return base::LowerCaseEqualsASCII(content_type_options, kNoSniffHeaderValue);
 }
 
 constexpr static int kDefaultBufferSize = 64 * 1024;
@@ -213,8 +222,8 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
   }
 
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
-      IsOriginSecure(outer_request_url_), content_type_,
-      std::make_unique<DataPipeToSourceStream>(std::move(body)),
+      IsOriginSecure(outer_request_url_), HasNoSniffHeader(outer_response_),
+      content_type_, std::make_unique<DataPipeToSourceStream>(std::move(body)),
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(cert_fetcher_factory), load_flags_, std::move(devtools_proxy_),

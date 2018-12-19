@@ -48,6 +48,9 @@ gen-signedexchange \
   -o test.example.org_test.sxg \
   -miRecordSize 100
 
+# Generate the signed exchange for the missing nosniff header test case.
+cp test.example.org_test.sxg test.example.org_test_missing_nosniff.sxg
+
 # Generate the signed exchange for the invalid content-type test case.
 cp test.example.org_test.sxg test.example.org_test_invalid_content_type.sxg
 
