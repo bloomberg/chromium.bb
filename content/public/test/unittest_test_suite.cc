@@ -54,21 +54,18 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
 #if defined(USE_X11)
   XInitThreads();
 #endif
-#if defined(USE_AURA)
-  aura_test_suite_setup_ = std::make_unique<aura::AuraTestSuiteSetup>();
-#endif
   DCHECK(test_suite);
   blink_test_support_.reset(new TestBlinkWebUnitTestSupport);
 }
 
-UnitTestTestSuite::~UnitTestTestSuite() {
-  blink_test_support_.reset();
-#if defined(USE_AURA)
-  aura_test_suite_setup_.reset();
-#endif
-}
+UnitTestTestSuite::~UnitTestTestSuite() = default;
 
 int UnitTestTestSuite::Run() {
+#if defined(USE_AURA)
+  // Must be initialized after test suites manipulate feature flags.
+  aura::AuraTestSuiteSetup aura_setup;
+#endif
+
   return test_suite_->Run();
 }
 
