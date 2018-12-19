@@ -14,6 +14,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_log.h"
@@ -161,48 +163,105 @@ TEST_F(MetricsStateManagerTest, LowEntropySource0NotReset) {
   EXPECT_EQ(0, state_manager->GetLowEntropySource());
 }
 
-TEST_F(MetricsStateManagerTest,
-       PermutedEntropyCacheClearedWhenLowEntropyReset) {
-  const PrefService::Preference* low_entropy_pref =
-      prefs_.FindPreference(prefs::kMetricsLowEntropySource);
-  const char* kCachePrefName =
-      variations::prefs::kVariationsPermutedEntropyCache;
-  int low_entropy_value = -1;
+TEST_F(MetricsStateManagerTest, HaveNoLowEntropySource) {
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  state_manager->client_id_ = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF";
+  // If we have neither the new nor old low entropy sources in prefs, then the
+  // new source should be created...
+  int new_low_source = state_manager->GetLowEntropySource();
+  EXPECT_TRUE(MetricsStateManager::IsValidLowEntropySource(new_low_source))
+      << new_low_source;
+  // ...but the old source should not...
+  EXPECT_EQ(MetricsStateManager::kLowEntropySourceNotSet,
+            state_manager->GetOldLowEntropySource());
+  // ...and the high entropy source should include the *new* low entropy source.
+  std::string high_source = state_manager->GetHighEntropySource();
+  EXPECT_TRUE(base::EndsWith(high_source, base::IntToString(new_low_source),
+                             base::CompareCase::SENSITIVE))
+      << high_source;
+}
 
-  // First, generate an initial low entropy source value.
-  {
-    EXPECT_TRUE(low_entropy_pref->IsDefaultValue());
+TEST_F(MetricsStateManagerTest, HaveOnlyNewLowEntropySource) {
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  state_manager->client_id_ = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF";
+  // If we have the new low entropy sources in prefs, but not the old one...
+  const int new_low_source = 1234;
+  prefs_.SetInteger(prefs::kMetricsLowEntropySource, new_low_source);
+  // ...then the new source should be loaded...
+  EXPECT_EQ(new_low_source, state_manager->GetLowEntropySource());
+  // ...but the old source should not be created...
+  EXPECT_EQ(MetricsStateManager::kLowEntropySourceNotSet,
+            state_manager->GetOldLowEntropySource());
+  // ...and the high entropy source should include the *new* low entropy source.
+  std::string high_source = state_manager->GetHighEntropySource();
+  EXPECT_TRUE(base::EndsWith(high_source, base::IntToString(new_low_source),
+                             base::CompareCase::SENSITIVE))
+      << high_source;
+}
 
-    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
-    state_manager->GetLowEntropySource();
+TEST_F(MetricsStateManagerTest, HaveOnlyOldLowEntropySource) {
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  state_manager->client_id_ = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF";
+  // If we have the old low entropy sources in prefs, but not the new one...
+  const int old_low_source = 5678;
+  prefs_.SetInteger(prefs::kMetricsOldLowEntropySource, old_low_source);
+  // ...then the new source should be created...
+  int new_low_source = state_manager->GetLowEntropySource();
+  EXPECT_TRUE(MetricsStateManager::IsValidLowEntropySource(new_low_source))
+      << new_low_source;
+  // ...and the old source should be loaded...
+  EXPECT_EQ(old_low_source, state_manager->GetOldLowEntropySource());
+  // ...and the high entropy source should include the *old* low entropy source.
+  std::string high_source = state_manager->GetHighEntropySource();
+  EXPECT_TRUE(base::EndsWith(high_source, base::IntToString(old_low_source),
+                             base::CompareCase::SENSITIVE))
+      << high_source;
+}
 
-    EXPECT_FALSE(low_entropy_pref->IsDefaultValue());
-    EXPECT_TRUE(low_entropy_pref->GetValue()->GetAsInteger(&low_entropy_value));
+TEST_F(MetricsStateManagerTest, HaveBothLowEntropySources) {
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  state_manager->client_id_ = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF";
+  // If we have the new and old low entropy sources in prefs...
+  const int new_low_source = 1234;
+  const int old_low_source = 5678;
+  prefs_.SetInteger(prefs::kMetricsLowEntropySource, new_low_source);
+  prefs_.SetInteger(prefs::kMetricsOldLowEntropySource, old_low_source);
+  // ...then both should be loaded...
+  EXPECT_EQ(new_low_source, state_manager->GetLowEntropySource());
+  EXPECT_EQ(old_low_source, state_manager->GetOldLowEntropySource());
+  // ...and the high entropy source should include the *old* low entropy source.
+  std::string high_source = state_manager->GetHighEntropySource();
+  EXPECT_TRUE(base::EndsWith(high_source, base::IntToString(old_low_source),
+                             base::CompareCase::SENSITIVE))
+      << high_source;
+}
+
+TEST_F(MetricsStateManagerTest, CorruptNewLowEntropySources) {
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  const int corrupt_sources[] = {-12345, -1, 8000, 12345};
+  for (int corrupt_source : corrupt_sources) {
+    // If the new low entropy source has been corrupted...
+    EXPECT_FALSE(MetricsStateManager::IsValidLowEntropySource(corrupt_source))
+        << corrupt_source;
+    prefs_.SetInteger(prefs::kMetricsLowEntropySource, corrupt_source);
+    // ...then a new source should be created.
+    int loaded_source = state_manager->GetLowEntropySource();
+    EXPECT_TRUE(MetricsStateManager::IsValidLowEntropySource(loaded_source))
+        << loaded_source;
   }
+}
 
-  // Now, set a dummy value in the permuted entropy cache pref and verify that
-  // another call to GetLowEntropySource() doesn't clobber it when
-  // --reset-variation-state wasn't specified.
-  {
-    prefs_.SetString(kCachePrefName, "test");
-
-    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
-    state_manager->GetLowEntropySource();
-
-    EXPECT_EQ("test", prefs_.GetString(kCachePrefName));
-    EXPECT_EQ(low_entropy_value,
-              prefs_.GetInteger(prefs::kMetricsLowEntropySource));
-  }
-
-  // Verify that the cache does get reset if --reset-variations-state is passed.
-  {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kResetVariationState);
-
-    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
-    state_manager->GetLowEntropySource();
-
-    EXPECT_TRUE(prefs_.GetString(kCachePrefName).empty());
+TEST_F(MetricsStateManagerTest, CorruptOldLowEntropySources) {
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  const int corrupt_sources[] = {-12345, -1, 8000, 12345};
+  for (int corrupt_source : corrupt_sources) {
+    // If the old low entropy source has been corrupted...
+    EXPECT_FALSE(MetricsStateManager::IsValidLowEntropySource(corrupt_source))
+        << corrupt_source;
+    prefs_.SetInteger(prefs::kMetricsOldLowEntropySource, corrupt_source);
+    // ...then it should be ignored.
+    EXPECT_EQ(MetricsStateManager::kLowEntropySourceNotSet,
+              state_manager->GetOldLowEntropySource());
   }
 }
 

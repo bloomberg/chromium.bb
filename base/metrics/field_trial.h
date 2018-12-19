@@ -460,10 +460,11 @@ class BASE_EXPORT FieldTrialList {
   // |randomization_seed| value (other than 0) should never be the same for two
   // trials, else this would result in correlated group assignments.  Note:
   // Using a custom randomization seed is only supported by the
-  // PermutedEntropyProvider (which is used when UMA is not enabled). If
-  // |override_entropy_provider| is not null, then it will be used for
-  // randomization instead of the provider given when the FieldTrialList was
-  // instantiated.
+  // NormalizedMurmurHashEntropyProvider, which is used when UMA is not enabled
+  // (and is always used in Android WebView, where UMA is enabled
+  // asyncronously). If |override_entropy_provider| is not null, then it will be
+  // used for randomization instead of the provider given when the
+  // FieldTrialList was instantiated.
   static FieldTrial* FactoryGetFieldTrialWithRandomizationSeed(
       const std::string& trial_name,
       FieldTrial::Probability total_probability,

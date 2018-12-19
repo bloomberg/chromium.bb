@@ -4,15 +4,17 @@
 
 #include "components/metrics/metrics_state_manager.h"
 
-#include <stddef.h>
-#include <utility>
-
+#include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <memory>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -28,6 +30,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/caching_permuted_entropy_provider.h"
+#include "components/variations/entropy_provider.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
@@ -40,20 +43,10 @@ namespace {
 // [0, 7999] as the entropy source (12.97 bits of entropy).
 const int kMaxLowEntropySize = 8000;
 
-// Default prefs value for prefs::kMetricsLowEntropySource to indicate that
-// the value has not yet been set.
-const int kLowEntropySourceNotSet = -1;
-
 // Generates a new non-identifying entropy source used to seed persistent
 // activities.
 int GenerateLowEntropySource() {
   return base::RandInt(0, kMaxLowEntropySize - 1);
-}
-
-// Records the given |low_entorpy_source_value| in a histogram.
-void LogLowEntropyValue(int low_entropy_source_value) {
-  base::UmaHistogramSparse("UMA.LowEntropySourceValue",
-                           low_entropy_source_value);
 }
 
 int64_t ReadEnabledDate(PrefService* local_state) {
@@ -142,6 +135,7 @@ MetricsStateManager::MetricsStateManager(
       load_client_info_(retrieve_client_info),
       clean_exit_beacon_(backup_registry_key, local_state),
       low_entropy_source_(kLowEntropySourceNotSet),
+      old_low_entropy_source_(kLowEntropySourceNotSet),
       entropy_source_returned_(ENTROPY_SOURCE_NONE),
       metrics_ids_were_reset_(false) {
   ResetMetricsIDsIfNecessary();
@@ -246,20 +240,9 @@ void MetricsStateManager::CheckForClonedInstall() {
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
 MetricsStateManager::CreateDefaultEntropyProvider() {
   if (enabled_state_provider_->IsConsentGiven()) {
-    // For metrics reporting-enabled users, we combine the client ID and low
-    // entropy source to get the final entropy source. Otherwise, only use the
-    // low entropy source.
-    // This has two useful properties:
-    //  1) It makes the entropy source less identifiable for parties that do not
-    //     know the low entropy source.
-    //  2) It makes the final entropy source resettable.
-    const int low_entropy_source_value = GetLowEntropySource();
-
     UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_HIGH);
-    const std::string high_entropy_source =
-        client_id_ + base::IntToString(low_entropy_source_value);
     return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
-        new variations::SHA1EntropyProvider(high_entropy_source));
+        new variations::SHA1EntropyProvider(GetHighEntropySource()));
   }
 
   UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_LOW);
@@ -268,17 +251,9 @@ MetricsStateManager::CreateDefaultEntropyProvider() {
 
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
 MetricsStateManager::CreateLowEntropyProvider() {
-  const int low_entropy_source_value = GetLowEntropySource();
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
-      new variations::CachingPermutedEntropyProvider(
-          local_state_, low_entropy_source_value, kMaxLowEntropySize));
-#else
-  return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
-      new variations::PermutedEntropyProvider(low_entropy_source_value,
-                                              kMaxLowEntropySize));
-#endif
+  int source = GetLowEntropySource();
+  return std::make_unique<variations::NormalizedMurmurHashEntropyProvider>(
+      base::checked_cast<uint16_t>(source), kMaxLowEntropySize);
 }
 
 // static
@@ -305,11 +280,16 @@ void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kMetricsReportingEnabledTimestamp, 0);
   registry->RegisterIntegerPref(prefs::kMetricsLowEntropySource,
                                 kLowEntropySourceNotSet);
+  registry->RegisterIntegerPref(prefs::kMetricsOldLowEntropySource,
+                                kLowEntropySourceNotSet);
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
 
   ClonedInstallDetector::RegisterPrefs(registry);
   variations::CachingPermutedEntropyProvider::RegisterPrefs(registry);
 }
+
+// static
+constexpr int MetricsStateManager::kLowEntropySourceNotSet;
 
 void MetricsStateManager::BackUpCurrentClientInfo() {
   ClientInfo client_info;
@@ -331,38 +311,86 @@ std::unique_ptr<ClientInfo> MetricsStateManager::LoadClientInfo() {
   return client_info;
 }
 
+std::string MetricsStateManager::GetHighEntropySource() {
+  // This should only be called if UMA is enabled, and if UMA is enabled, then
+  // the constructor should have loaded |client_id_|. The user shouldn't be able
+  // to enable UMA between the constructor and calling this, because field trial
+  // setup happens at Chrome initialization.
+  DCHECK(!client_id_.empty());
+
+  // For metrics reporting-enabled users, we combine the client ID and low
+  // entropy source to get the final entropy source.
+  // This has two useful properties:
+  //  1) It makes the entropy source less identifiable for parties that do not
+  //     know the low entropy source.
+  //  2) It makes the final entropy source resettable.
+
+  // If this install has an old low entropy source, continue using it, to avoid
+  // changing the group assignments of studies using high entropy. New installs
+  // only have the new low entropy source. If the number of installs with old
+  // sources ever becomes small enough (see UMA.LowEntropySourceValue), we could
+  // remove it, and just use the new source here.
+  int low_entropy_source = GetOldLowEntropySource();
+  if (low_entropy_source == kLowEntropySourceNotSet)
+    low_entropy_source = GetLowEntropySource();
+
+  return client_id_ + base::IntToString(low_entropy_source);
+}
+
 int MetricsStateManager::GetLowEntropySource() {
-  UpdateLowEntropySource();
+  UpdateLowEntropySources();
   return low_entropy_source_;
 }
 
-void MetricsStateManager::UpdateLowEntropySource() {
-  // Note that the default value for the low entropy source and the default pref
-  // value are both kLowEntropySourceNotSet, which is used to identify if the
-  // value has been set or not.
+int MetricsStateManager::GetOldLowEntropySource() {
+  UpdateLowEntropySources();
+  return old_low_entropy_source_;
+}
+
+void MetricsStateManager::UpdateLowEntropySources() {
+  // The default value for |low_entropy_source_| and the default pref value are
+  // both |kLowEntropySourceNotSet|, which indicates the value has not been set.
   if (low_entropy_source_ != kLowEntropySourceNotSet)
     return;
 
   const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
-  // Only try to load the value from prefs if the user did not request a
-  // reset.
-  // Otherwise, skip to generating a new value.
+  // Only try to load the value from prefs if the user did not request a reset.
+  // Otherwise, skip to generating a new value. We would have already returned
+  // if |low_entropy_source_| were set, ensuring we only do this reset on the
+  // first call to UpdateLowEntropySources().
   if (!command_line->HasSwitch(switches::kResetVariationState)) {
-    int value = local_state_->GetInteger(prefs::kMetricsLowEntropySource);
-    // If the value is outside the [0, kMaxLowEntropySize) range, re-generate
-    // it below.
-    if (value >= 0 && value < kMaxLowEntropySize) {
-      low_entropy_source_ = value;
-      LogLowEntropyValue(low_entropy_source_);
-      return;
-    }
+    int new_pref = local_state_->GetInteger(prefs::kMetricsLowEntropySource);
+    if (IsValidLowEntropySource(new_pref))
+      low_entropy_source_ = new_pref;
+    int old_pref = local_state_->GetInteger(prefs::kMetricsOldLowEntropySource);
+    if (IsValidLowEntropySource(old_pref))
+      old_low_entropy_source_ = old_pref;
   }
 
-  low_entropy_source_ = GenerateLowEntropySource();
-  LogLowEntropyValue(low_entropy_source_);
-  local_state_->SetInteger(prefs::kMetricsLowEntropySource,
-                           low_entropy_source_);
-  variations::CachingPermutedEntropyProvider::ClearCache(local_state_);
+  // If the new source is missing or corrupt (or requested to be reset), then
+  // (re)create it. Don't bother recreating the old source if it's corrupt,
+  // because we only keep the old source around for consistency, and we can't
+  // maintain a consistent value if we recreate it.
+  if (low_entropy_source_ == kLowEntropySourceNotSet) {
+    low_entropy_source_ = GenerateLowEntropySource();
+    DCHECK(IsValidLowEntropySource(low_entropy_source_));
+    local_state_->SetInteger(prefs::kMetricsLowEntropySource,
+                             low_entropy_source_);
+  }
+
+  // If the old source was present but corrupt (or requested to be reset), then
+  // we'll never use it again, so delete it.
+  if (old_low_entropy_source_ == kLowEntropySourceNotSet &&
+      local_state_->HasPrefPath(prefs::kMetricsOldLowEntropySource)) {
+    local_state_->ClearPref(prefs::kMetricsOldLowEntropySource);
+  }
+
+  DCHECK_NE(low_entropy_source_, kLowEntropySourceNotSet);
+  base::UmaHistogramSparse("UMA.LowEntropySource3Value", low_entropy_source_);
+  if (old_low_entropy_source_ != kLowEntropySourceNotSet) {
+    base::UmaHistogramSparse("UMA.LowEntropySourceValue",
+                             old_low_entropy_source_);
+  }
 }
 
 void MetricsStateManager::UpdateEntropySourceReturnedValue(
@@ -392,6 +420,11 @@ void MetricsStateManager::ResetMetricsIDsIfNecessary() {
 
   // Also clear the backed up client info.
   store_client_info_.Run(ClientInfo());
+}
+
+// static
+bool MetricsStateManager::IsValidLowEntropySource(int value) {
+  return value >= 0 && value < kMaxLowEntropySize;
 }
 
 }  // namespace metrics

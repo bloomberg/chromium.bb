@@ -21,7 +21,8 @@ namespace variations {
 
 // CachingPermutedEntropyProvider is an entropy provider that uses the same
 // algorithm as the PermutedEntropyProvider, but caches the results in Local
-// State between runs.
+// State between runs. Replaced by NormalizedMurmurHashEntropyProvider.
+// TODO(crbug/912368): Remove this.
 class CachingPermutedEntropyProvider : public PermutedEntropyProvider {
  public:
   // Creates a CachingPermutedEntropyProvider using the given |local_state|
