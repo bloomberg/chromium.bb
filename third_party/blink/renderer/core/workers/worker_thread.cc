@@ -160,7 +160,7 @@ void WorkerThread::EvaluateClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
-      *GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
+      *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
                       CrossThreadUnretained(this), script_url, source_code,
                       WTF::Passed(std::move(cached_meta_data)), stack_id));
@@ -172,7 +172,7 @@ void WorkerThread::ImportClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
-      *GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
+      *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       CrossThreadBind(&WorkerThread::ImportClassicScriptOnWorkerThread,
                       CrossThreadUnretained(this), script_url,
                       WTF::Passed(outside_settings_object->CopyData()),
@@ -185,7 +185,7 @@ void WorkerThread::ImportModuleScript(
     network::mojom::FetchCredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
-      *GetTaskRunner(TaskType::kInternalWorker), FROM_HERE,
+      *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       CrossThreadBind(&WorkerThread::ImportModuleScriptOnWorkerThread,
                       CrossThreadUnretained(this), script_url,
                       WTF::Passed(outside_settings_object->CopyData()),
