@@ -41987,6 +41987,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Popup clicked through (abusive)"/>
 </enum>
 
+<enum name="PortalDetectionMultiProbeResult">
+  <int value="0" label="Undefined result"/>
+  <int value="1" label="HTTPS traffic blocked, no HTTP redirect"/>
+  <int value="2" label="HTTPS traffic blocked, HTTP redirect received"/>
+  <int value="3" label="HTTPS traffic blocked, HTTP 204 received"/>
+  <int value="4" label="HTTPS traffic not blocked, no HTTP redirect"/>
+  <int value="5" label="HTTPS traffic not blocked, HTTP redirect received"/>
+  <int value="6" label="HTTPS traffic not blocked, HTTP 204 received"/>
+</enum>
+
 <enum name="Ports">
   <int value="80" label="Port 80"/>
   <int value="443" label="Port 443"/>
