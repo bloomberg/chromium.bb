@@ -264,14 +264,6 @@ bool AreMediaDrmApisAvailable() {
   return true;
 }
 
-bool IsPersistentLicenseTypeSupportedByMediaDrm() {
-  return MediaDrmBridge::IsAvailable() &&
-         // In development. See http://crbug.com/493521
-         base::FeatureList::IsEnabled(kMediaDrmPersistentLicense) &&
-         base::android::BuildInfo::GetInstance()->sdk_int() >=
-             base::android::SDK_VERSION_MARSHMALLOW;
-}
-
 }  // namespace
 
 // MediaDrm is not generally usable without MediaCodec. Thus, both the MediaDrm
@@ -290,11 +282,20 @@ bool MediaDrmBridge::IsKeySystemSupported(const std::string& key_system) {
 }
 
 // static
+bool MediaDrmBridge::IsPerOriginProvisioningSupported() {
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_MARSHMALLOW;
+}
+
+// static
 bool MediaDrmBridge::IsPersistentLicenseTypeSupported(
-    const std::string& key_system) {
+    const std::string& /* key_system */) {
   // TODO(yucliu): Check |key_system| if persistent license is supported by
   // MediaDrm.
-  return IsPersistentLicenseTypeSupportedByMediaDrm();
+  return MediaDrmBridge::IsAvailable() &&
+         // In development. See http://crbug.com/493521
+         base::FeatureList::IsEnabled(kMediaDrmPersistentLicense) &&
+         IsPerOriginProvisioningSupported();
 }
 
 // static
@@ -455,7 +456,8 @@ void MediaDrmBridge::LoadSession(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __func__;
 
-  DCHECK(IsPersistentLicenseTypeSupportedByMediaDrm());
+  // Key system is not used, so just pass an empty string here.
+  DCHECK(IsPersistentLicenseTypeSupported(""));
 
   if (session_type != CdmSessionType::kPersistentLicense) {
     promise->reject(
@@ -828,9 +830,8 @@ MediaDrmBridge::MediaDrmBridge(
       // TODO(yucliu): Remove the check once persistent storage is fully
       // supported and check if origin is valid.
       base::FeatureList::IsEnabled(kMediaDrmPersistentLicense) &&
-      // MediaDrm implements origin isolated storage on Marshmallow.
-      base::android::BuildInfo::GetInstance()->sdk_int() >=
-          base::android::SDK_VERSION_MARSHMALLOW &&
+      // Per-origin provisioning must be supported for origin isolated storage.
+      IsPerOriginProvisioningSupported() &&
       // origin id can be empty when MediaDrmBridge is created by
       // CreateWithoutSessionSupport, which is used for unprovisioning.
       !origin_id.empty();

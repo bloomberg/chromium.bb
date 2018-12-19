@@ -13,6 +13,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
+#include "media/base/android/media_drm_bridge.h"
 #else
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
@@ -102,7 +103,10 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
       message_id = IDS_MIDI_SYSEX_INFOBAR_TEXT;
       break;
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-      message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_TEXT;
+      message_id =
+          media::MediaDrmBridge::IsPerOriginProvisioningSupported()
+              ? IDS_PROTECTED_MEDIA_IDENTIFIER_PER_ORIGIN_PROVISIONING_INFOBAR_TEXT
+              : IDS_PROTECTED_MEDIA_IDENTIFIER_PER_DEVICE_PROVISIONING_INFOBAR_TEXT;
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
       message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_INFOBAR_TEXT;

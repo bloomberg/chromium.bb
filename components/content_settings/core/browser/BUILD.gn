@@ -62,6 +62,10 @@ jumbo_static_library("browser") {
     "//url",
   ]
 
+  if (is_android) {
+    deps += [ "//media" ]
+  }
+
   configs += [
     "//build/config/compiler:no_size_t_to_int_warning",
     "//build/config/compiler:wexit_time_destructors",
