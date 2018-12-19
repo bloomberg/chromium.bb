@@ -162,6 +162,16 @@ error, etc).
 The `BlobReader` class is for reading blobs, and is accessible off of the
 `BlobDataHandle` at any time.
 
+Updated Recommendations:
+- In `blink::` you'll probably have a `blink::BlobDataHandle`, so use
+`FileReaderLoader`/`FileReaderLoaderClient` as an abstraction around the mojom
+Blob interface.
+- Outside of `blink` (in both browser and renderer): you'll probably have a
+`blink::mojom::BlobPtr`, so just call `ReadAll`/`ReadRange` on that directly.
+- In legacy cases, only in the browser process, only on the IO thread, where
+you only have a `storage::BlobDataHandle` use
+`CreateReader/storage::BlobReader`.
+
 # Blob Creation & Transportation (Renderer)
 
 **This process is outlined with diagrams and illustrations [here](
