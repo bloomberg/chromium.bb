@@ -231,6 +231,9 @@ if (is_android || is_chromeos) {
 
     # Speed up dexing using dx --incremental.
     enable_incremental_dx = is_java_debug
+
+    # Use hashed symbol names to reduce JNI symbol overhead.
+    use_hashed_jni_names = !is_java_debug
   }
 
   # Neither of these should ever be used for release builds since they are

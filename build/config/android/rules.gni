@@ -444,7 +444,7 @@ if (enable_java_templates) {
         rebase_path(depfile, root_build_dir),
       ]
 
-      if (!is_java_debug) {
+      if (use_hashed_jni_names) {
         args += [ "--use_proxy_hash" ]
       }
 
@@ -1779,13 +1779,16 @@ if (enable_java_templates) {
         jar_excluded_patterns = []
       }
       jar_excluded_patterns += [
-        "*J/N.class",
-        "*/GEN_JNI.class",
         "*/R.class",
         "*/R\$*.class",
         "*/Manifest.class",
         "*/Manifest\$*.class",
       ]
+      if (use_hashed_jni_names) {
+        jar_excluded_patterns += [ "J/N.class" ]
+      } else {
+        jar_excluded_patterns += [ "*/GEN_JNI.class" ]
+      }
     }
   }
 

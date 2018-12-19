@@ -5,5 +5,5 @@
 package org.chromium.jni_generator;
 
 class ProcessorArgs {
-    public static final boolean IS_JAVA_DEBUG = IS_JAVA_DEBUG_VALUE;
+    public static final boolean HASH_JNI_NAMES = HASH_JNI_NAMES_VALUE;
 }
