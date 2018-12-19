@@ -13,6 +13,7 @@
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tracing_lifecycle_unit_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -187,8 +188,9 @@ void TabLifecycleUnitSource::OnTabInserted(TabStripModel* tab_strip_model,
     if (GetFocusedTabStripModel() == tab_strip_model && foreground)
       UpdateFocusedTabTo(lifecycle_unit);
 
-    // Add a self-owned observer to the LifecycleUnit to record metrics.
+    // Add a self-owned observers to record metrics and trace events.
     lifecycle_unit->AddObserver(new DiscardMetricsLifecycleUnitObserver());
+    lifecycle_unit->AddObserver(new TracingLifecycleUnitObserver());
 
     NotifyLifecycleUnitCreated(lifecycle_unit);
   }
