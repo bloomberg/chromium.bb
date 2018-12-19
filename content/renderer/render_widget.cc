@@ -3041,6 +3041,14 @@ void RenderWidget::AnimateDoubleTapZoomInMainFrame(
                                                          rect_to_zoom));
 }
 
+void RenderWidget::ZoomToFindInPageRectInMainFrame(
+    const blink::WebRect& rect_to_zoom) {
+  // Only oopif subframes should be sending this message.
+  DCHECK(!owner_delegate_);
+  Send(new WidgetHostMsg_ZoomToFindInPageRectInMainFrame(routing_id(),
+                                                         rect_to_zoom));
+}
+
 void RenderWidget::RequestUnbufferedInputEvents() {
   if (input_event_queue_)
     input_event_queue_->RequestUnbufferedInputEvents();

@@ -134,7 +134,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetInitialFocus(bool reverse) override;
   void ClearFocusedElement() override;
   void SmoothScroll(int target_x, int target_y, long duration_ms) override;
-  void ZoomToFindInPageRect(const WebRect&);
   void AdvanceFocus(bool reverse) override;
   void AdvanceFocusAcrossFrames(WebFocusType,
                                 WebRemoteFrame* from,
@@ -161,6 +160,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetDisplayMode(WebDisplayMode) override;
   void AnimateDoubleTapZoom(const gfx::Point&,
                             const WebRect& block_bounds) override;
+  void ZoomToFindInPageRect(const WebRect&) override;
 
   void SetDeviceScaleFactor(float) override;
   void SetZoomFactorForDeviceScaleFactor(float) override;

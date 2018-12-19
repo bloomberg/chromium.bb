@@ -731,6 +731,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnIntrinsicSizingInfoChanged)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_AnimateDoubleTapZoomInMainFrame,
                         OnAnimateDoubleTapZoomInMainFrame)
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_ZoomToFindInPageRectInMainFrame,
+                        OnZoomToFindInPageRectInMainFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -3176,6 +3178,30 @@ RenderWidgetHostImpl::GetEmbeddedRenderWidgetHosts() {
   return std::move(hosts);
 }
 
+namespace {
+
+bool TransformPointAndRectToRootView(RenderWidgetHostViewBase* view,
+                                     RenderWidgetHostViewBase* root_view,
+                                     gfx::Point* transformed_point,
+                                     gfx::Rect* transformed_rect) {
+  gfx::Transform transform_to_main_frame;
+  if (!view->GetTransformToViewCoordSpace(root_view, &transform_to_main_frame))
+    return false;
+
+  if (transformed_point)
+    transform_to_main_frame.TransformPoint(transformed_point);
+
+  if (transformed_rect) {
+    gfx::RectF transformed_rect_f(*transformed_rect);
+    transform_to_main_frame.TransformRect(&transformed_rect_f);
+    *transformed_rect = gfx::ToEnclosingRect(transformed_rect_f);
+  }
+
+  return true;
+}
+
+}  // namespace
+
 void RenderWidgetHostImpl::OnAnimateDoubleTapZoomInMainFrame(
     const gfx::Point& point,
     const gfx::Rect& rect_to_zoom) {
@@ -3183,20 +3209,34 @@ void RenderWidgetHostImpl::OnAnimateDoubleTapZoomInMainFrame(
     return;
 
   auto* root_view = view_->GetRootView();
-  gfx::Transform transform_to_main_frame;
-  if (!view_->GetTransformToViewCoordSpace(root_view, &transform_to_main_frame))
-    return;
   gfx::Point transformed_point(point);
-  transform_to_main_frame.TransformPoint(&transformed_point);
-  gfx::RectF transformed_rect(rect_to_zoom);
-  transform_to_main_frame.TransformRect(&transformed_rect);
-
-  // Transform the point & rect into the root-view's coordinates.
-  gfx::Rect transformed_rect_to_zoom = gfx::ToEnclosingRect(transformed_rect);
+  gfx::Rect transformed_rect_to_zoom(rect_to_zoom);
+  if (!TransformPointAndRectToRootView(view_.get(), root_view,
+                                       &transformed_point,
+                                       &transformed_rect_to_zoom)) {
+    return;
+  }
 
   auto* root_rvhi = RenderViewHostImpl::From(root_view->GetRenderWidgetHost());
   root_rvhi->Send(new ViewMsg_AnimateDoubleTapZoom(
       root_rvhi->GetRoutingID(), transformed_point, transformed_rect_to_zoom));
+}
+
+void RenderWidgetHostImpl::OnZoomToFindInPageRectInMainFrame(
+    const gfx::Rect& rect_to_zoom) {
+  if (!view_)
+    return;
+
+  auto* root_view = view_->GetRootView();
+  gfx::Rect transformed_rect_to_zoom(rect_to_zoom);
+  if (!TransformPointAndRectToRootView(view_.get(), root_view, nullptr,
+                                       &transformed_rect_to_zoom)) {
+    return;
+  }
+
+  auto* root_rvhi = RenderViewHostImpl::From(root_view->GetRenderWidgetHost());
+  root_rvhi->Send(new ViewMsg_ZoomToFindInPageRect(root_rvhi->GetRoutingID(),
+                                                   transformed_rect_to_zoom));
 }
 
 }  // namespace content

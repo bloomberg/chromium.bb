@@ -182,6 +182,9 @@ class WebWidgetClient {
   // Double tap zooms a rect in the main-frame renderer.
   virtual void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
                                                const blink::WebRect& bounds) {}
+
+  // Find in page zooms a rect in the main-frame renderer.
+  virtual void ZoomToFindInPageRectInMainFrame(const blink::WebRect& rect) {}
 };
 
 }  // namespace blink

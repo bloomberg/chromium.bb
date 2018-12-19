@@ -375,6 +375,8 @@ class CONTENT_EXPORT RenderWidget
   void SetNeedsLowLatencyInput(bool) override;
   void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
                                        const blink::WebRect& bounds) override;
+  void ZoomToFindInPageRectInMainFrame(
+      const blink::WebRect& rect_to_zoom) override;
 
   // Override point to obtain that the current input method state and caret
   // position.
