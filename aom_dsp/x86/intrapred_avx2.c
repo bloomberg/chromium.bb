@@ -12,6 +12,7 @@
 #include <immintrin.h>
 
 #include "config/aom_dsp_rtcd.h"
+#include "config/av1_rtcd.h"
 #include "aom_dsp/x86/lpf_common_sse2.h"
 #include "aom_ports/mem.h"
 
@@ -1482,9 +1483,10 @@ static void highbd_dr_prediction_z1_64xN_avx2(int N, uint16_t *dst,
 void av1_highbd_dr_prediction_z1_avx2(uint16_t *dst, ptrdiff_t stride, int bw,
                                       int bh, const uint16_t *above,
                                       const uint16_t *left, int upsample_above,
-                                      int dx, int dy) {
+                                      int dx, int dy, int bd) {
   (void)left;
   (void)dy;
+  (void)bd;
 
   switch (bw) {
     case 4:
@@ -1911,9 +1913,10 @@ static void highbd_dr_prediction_z3_64x16_avx2(uint16_t *dst, ptrdiff_t stride,
 void av1_highbd_dr_prediction_z3_avx2(uint16_t *dst, ptrdiff_t stride, int bw,
                                       int bh, const uint16_t *above,
                                       const uint16_t *left, int upsample_left,
-                                      int dx, int dy) {
+                                      int dx, int dy, int bd) {
   (void)above;
   (void)dx;
+  (void)bd;
   assert(dx == 1);
   assert(dy > 0);
   if (bw == bh) {
