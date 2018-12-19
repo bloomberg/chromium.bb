@@ -102,6 +102,7 @@ constexpr char kJSPrintType[] = "print";
 // Save (Page -> Plugin)
 constexpr char kJSSaveType[] = "save";
 constexpr char kJSToken[] = "token";
+constexpr char kJSForce[] = "force";
 // Save Data (Plugin -> Page)
 constexpr char kJSSaveDataType[] = "saveData";
 constexpr char kJSFileName[] = "fileName";
@@ -666,11 +667,17 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   } else if (type == kJSPrintType) {
     Print();
   } else if (type == kJSSaveType) {
-    if (!dict.Get(pp::Var(kJSToken)).is_string()) {
+    if (!(dict.Get(pp::Var(kJSToken)).is_string() &&
+          dict.Get(pp::Var(kJSForce)).is_bool())) {
       NOTREACHED();
       return;
     }
-    Save(dict.Get(pp::Var(kJSToken)).AsString());
+    const bool force = dict.Get(pp::Var(kJSForce)).AsBool();
+    if (force) {
+      SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
+    } else {
+      SaveToFile(dict.Get(pp::Var(kJSToken)).AsString());
+    }
   } else if (type == kJSRotateClockwiseType) {
     RotateClockwise();
   } else if (type == kJSRotateCounterclockwiseType) {
@@ -1473,35 +1480,56 @@ void OutOfProcessInstance::GetDocumentPassword(
   PostMessage(message);
 }
 
-void OutOfProcessInstance::Save(const std::string& token) {
-  engine_->KillFormFocus();
+bool OutOfProcessInstance::ShouldSaveEdits() const {
+  return edit_mode_ &&
+         base::FeatureList::IsEnabled(features::kSaveEditedPDFForm);
+}
 
-  if (!base::FeatureList::IsEnabled(features::kSaveEditedPDFForm) ||
-      !edit_mode_) {
-    ConsumeSaveToken(token);
-    pp::PDF::SaveAs(this);
-    return;
-  }
+void OutOfProcessInstance::SaveToBuffer(const std::string& token) {
+  engine_->KillFormFocus();
 
   GURL url(url_);
   std::string file_name = url.ExtractFileName();
   file_name = net::UnescapeURLComponent(file_name, net::UnescapeRule::SPACES);
-  std::vector<uint8_t> data = engine_->GetSaveData();
-
-  if (data.size() == 0u || data.size() > kMaximumSavedFileSize) {
-    // TODO(thestig): Add feedback to the user that a failure occurred.
-    ConsumeSaveToken(token);
-    return;
-  }
 
   pp::VarDictionary message;
   message.Set(kType, kJSSaveDataType);
   message.Set(kJSToken, pp::Var(token));
   message.Set(kJSFileName, pp::Var(file_name));
-  pp::VarArrayBuffer buffer(data.size());
-  std::copy(data.begin(), data.end(), reinterpret_cast<char*>(buffer.Map()));
-  message.Set(kJSDataToSave, buffer);
+  // This will be overwritten if the save is successful.
+  message.Set(kJSDataToSave, pp::Var(pp::Var::Null()));
+
+  if (ShouldSaveEdits()) {
+    std::vector<uint8_t> data = engine_->GetSaveData();
+    if (data.size() > 0 && data.size() <= kMaximumSavedFileSize) {
+      pp::VarArrayBuffer buffer(data.size());
+      std::copy(data.begin(), data.end(),
+                reinterpret_cast<char*>(buffer.Map()));
+      message.Set(kJSDataToSave, buffer);
+    }
+  } else {
+    DCHECK(base::FeatureList::IsEnabled(features::kPDFAnnotations));
+    uint32_t length = engine_->GetLoadedByteSize();
+    if (length > 0 && length <= kMaximumSavedFileSize) {
+      pp::VarArrayBuffer buffer(length);
+      if (engine_->ReadLoadedBytes(length, buffer.Map())) {
+        message.Set(kJSDataToSave, buffer);
+      }
+    }
+  }
+
   PostMessage(message);
+}
+
+void OutOfProcessInstance::SaveToFile(const std::string& token) {
+  if (!ShouldSaveEdits()) {
+    engine_->KillFormFocus();
+    ConsumeSaveToken(token);
+    pp::PDF::SaveAs(this);
+    return;
+  }
+
+  SaveToBuffer(token);
 }
 
 void OutOfProcessInstance::ConsumeSaveToken(const std::string& token) {

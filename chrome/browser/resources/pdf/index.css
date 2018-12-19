@@ -20,6 +20,7 @@ viewer-pdf-toolbar {
   z-index: 4;
 }
 
+viewer-ink-host,
 #plugin {
   height: 100%;
   position: fixed;

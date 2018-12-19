@@ -186,7 +186,9 @@ class OutOfProcessInstance : public pp::Instance,
   // frame's origin.
   pp::URLLoader CreateURLLoaderInternal();
 
-  void Save(const std::string& token);
+  bool ShouldSaveEdits() const;
+  void SaveToFile(const std::string& token);
+  void SaveToBuffer(const std::string& token);
   void ConsumeSaveToken(const std::string& token);
 
   void FormDidOpen(int32_t result);
