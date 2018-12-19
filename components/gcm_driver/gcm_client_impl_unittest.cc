@@ -318,12 +318,11 @@ class GCMClientImplTest : public testing::Test,
                        const std::string& registration_id);
 
   // GCMClient::Delegate overrides (for verification).
-  void OnRegisterFinished(const linked_ptr<RegistrationInfo>& registration_info,
+  void OnRegisterFinished(scoped_refptr<RegistrationInfo> registration_info,
                           const std::string& registration_id,
                           GCMClient::Result result) override;
-  void OnUnregisterFinished(
-      const linked_ptr<RegistrationInfo>& registration_info,
-      GCMClient::Result result) override;
+  void OnUnregisterFinished(scoped_refptr<RegistrationInfo> registration_info,
+                            GCMClient::Result result) override;
   void OnSendFinished(const std::string& app_id,
                       const std::string& message_id,
                       GCMClient::Result result) override {}
@@ -611,10 +610,10 @@ void GCMClientImplTest::AddRegistration(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids,
     const std::string& registration_id) {
-  linked_ptr<GCMRegistrationInfo> registration(new GCMRegistrationInfo);
+  auto registration = base::MakeRefCounted<GCMRegistrationInfo>();
   registration->app_id = app_id;
   registration->sender_ids = sender_ids;
-  gcm_client_->registrations_[registration] = registration_id;
+  gcm_client_->registrations_.emplace(std::move(registration), registration_id);
 }
 
 void GCMClientImplTest::InitializeGCMClient() {
@@ -641,17 +640,16 @@ void GCMClientImplTest::StartGCMClient() {
 
 void GCMClientImplTest::Register(const std::string& app_id,
                                  const std::vector<std::string>& senders) {
-  std::unique_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
+  auto gcm_info = base::MakeRefCounted<GCMRegistrationInfo>();
   gcm_info->app_id = app_id;
   gcm_info->sender_ids = senders;
-  gcm_client()->Register(make_linked_ptr<RegistrationInfo>(gcm_info.release()));
+  gcm_client()->Register(std::move(gcm_info));
 }
 
 void GCMClientImplTest::Unregister(const std::string& app_id) {
-  std::unique_ptr<GCMRegistrationInfo> gcm_info(new GCMRegistrationInfo);
+  auto gcm_info = base::MakeRefCounted<GCMRegistrationInfo>();
   gcm_info->app_id = app_id;
-  gcm_client()->Unregister(
-      make_linked_ptr<RegistrationInfo>(gcm_info.release()));
+  gcm_client()->Unregister(std::move(gcm_info));
 }
 
 void GCMClientImplTest::ReceiveMessageFromMCS(const MCSMessage& message) {
@@ -683,7 +681,7 @@ void GCMClientImplTest::OnMessageReceived(const std::string& registration_id,
 }
 
 void GCMClientImplTest::OnRegisterFinished(
-    const linked_ptr<RegistrationInfo>& registration_info,
+    scoped_refptr<RegistrationInfo> registration_info,
     const std::string& registration_id,
     GCMClient::Result result) {
   last_event_ = REGISTRATION_COMPLETED;
@@ -693,7 +691,7 @@ void GCMClientImplTest::OnRegisterFinished(
 }
 
 void GCMClientImplTest::OnUnregisterFinished(
-    const linked_ptr<RegistrationInfo>& registration_info,
+    scoped_refptr<RegistrationInfo> registration_info,
     GCMClient::Result result) {
   last_event_ = UNREGISTRATION_COMPLETED;
   last_app_id_ = registration_info->app_id;
@@ -831,12 +829,12 @@ TEST_F(GCMClientImplTest, DestroyStoreWhenNotNeeded) {
 
 TEST_F(GCMClientImplTest, SerializeAndDeserialize) {
   std::vector<std::string> senders{"sender"};
-  auto gcm_info = std::make_unique<GCMRegistrationInfo>();
+  auto gcm_info = base::MakeRefCounted<GCMRegistrationInfo>();
   gcm_info->app_id = kExtensionAppId;
   gcm_info->sender_ids = senders;
   gcm_info->last_validated = clock()->Now();
 
-  auto gcm_info_deserialized = std::make_unique<GCMRegistrationInfo>();
+  auto gcm_info_deserialized = base::MakeRefCounted<GCMRegistrationInfo>();
   std::string gcm_registration_id_deserialized;
   {
     std::string serialized_key = gcm_info->GetSerializedKey();
@@ -852,13 +850,14 @@ TEST_F(GCMClientImplTest, SerializeAndDeserialize) {
   EXPECT_EQ(gcm_info->last_validated, gcm_info_deserialized->last_validated);
   EXPECT_EQ(kRegistrationId, gcm_registration_id_deserialized);
 
-  auto instance_id_info = std::make_unique<InstanceIDTokenInfo>();
+  auto instance_id_info = base::MakeRefCounted<InstanceIDTokenInfo>();
   instance_id_info->app_id = kExtensionAppId;
   instance_id_info->last_validated = clock()->Now();
   instance_id_info->authorized_entity = "different_sender";
   instance_id_info->scope = "scope";
 
-  auto instance_id_info_deserialized = std::make_unique<InstanceIDTokenInfo>();
+  auto instance_id_info_deserialized =
+      base::MakeRefCounted<InstanceIDTokenInfo>();
   std::string instance_id_registration_id_deserialized;
   {
     std::string serialized_key = instance_id_info->GetSerializedKey();
@@ -1683,25 +1682,21 @@ void GCMClientInstanceIDTest::RemoveInstanceID(const std::string& app_id) {
 void GCMClientInstanceIDTest::GetToken(const std::string& app_id,
                                        const std::string& authorized_entity,
                                        const std::string& scope) {
-  std::unique_ptr<InstanceIDTokenInfo> instance_id_info(
-      new InstanceIDTokenInfo);
+  auto instance_id_info = base::MakeRefCounted<InstanceIDTokenInfo>();
   instance_id_info->app_id = app_id;
   instance_id_info->authorized_entity = authorized_entity;
   instance_id_info->scope = scope;
-  gcm_client()->Register(
-      make_linked_ptr<RegistrationInfo>(instance_id_info.release()));
+  gcm_client()->Register(std::move(instance_id_info));
 }
 
 void GCMClientInstanceIDTest::DeleteToken(const std::string& app_id,
                                           const std::string& authorized_entity,
                                           const std::string& scope) {
-  std::unique_ptr<InstanceIDTokenInfo> instance_id_info(
-      new InstanceIDTokenInfo);
+  auto instance_id_info = base::MakeRefCounted<InstanceIDTokenInfo>();
   instance_id_info->app_id = app_id;
   instance_id_info->authorized_entity = authorized_entity;
   instance_id_info->scope = scope;
-  gcm_client()->Unregister(
-      make_linked_ptr<RegistrationInfo>(instance_id_info.release()));
+  gcm_client()->Unregister(std::move(instance_id_info));
 }
 
 void GCMClientInstanceIDTest::CompleteDeleteToken() {
@@ -1718,13 +1713,11 @@ void GCMClientInstanceIDTest::CompleteDeleteToken() {
 bool GCMClientInstanceIDTest::ExistsToken(const std::string& app_id,
                                           const std::string& authorized_entity,
                                           const std::string& scope) const {
-  std::unique_ptr<InstanceIDTokenInfo> instance_id_info(
-      new InstanceIDTokenInfo);
+  auto instance_id_info = base::MakeRefCounted<InstanceIDTokenInfo>();
   instance_id_info->app_id = app_id;
   instance_id_info->authorized_entity = authorized_entity;
   instance_id_info->scope = scope;
-  return gcm_client()->registrations_.count(
-      make_linked_ptr<RegistrationInfo>(instance_id_info.release())) > 0;
+  return gcm_client()->registrations_.count(std::move(instance_id_info)) > 0;
 }
 
 TEST_F(GCMClientInstanceIDTest, GetToken) {

@@ -147,10 +147,9 @@ class GCMDriverDesktop : public GCMDriver,
     bool operator()(const TokenTuple& a, const TokenTuple& b) const;
   };
 
-  void DoValidateRegistration(
-      std::unique_ptr<RegistrationInfo> registration_info,
-      const std::string& registration_id,
-      const ValidateRegistrationCallback& callback);
+  void DoValidateRegistration(scoped_refptr<RegistrationInfo> registration_info,
+                              const std::string& registration_id,
+                              const ValidateRegistrationCallback& callback);
 
   //  Stops the GCM service. It can be restarted by calling EnsureStarted again.
   void Stop();

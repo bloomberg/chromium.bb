@@ -43,12 +43,11 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
 
   // Overridden from GCMClient::Delegate:
   // Called on IO thread.
-  void OnRegisterFinished(const linked_ptr<RegistrationInfo>& registration_info,
+  void OnRegisterFinished(scoped_refptr<RegistrationInfo> registration_info,
                           const std::string& registration_id,
                           GCMClient::Result result) override;
-  void OnUnregisterFinished(
-      const linked_ptr<RegistrationInfo>& registration_info,
-      GCMClient::Result result) override;
+  void OnUnregisterFinished(scoped_refptr<RegistrationInfo> registration_info,
+                            GCMClient::Result result) override;
   void OnSendFinished(const std::string& app_id,
                       const std::string& message_id,
                       GCMClient::Result result) override;
@@ -108,7 +107,7 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
                 const std::string& authorized_entity,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options);
-  bool ValidateRegistration(std::unique_ptr<RegistrationInfo> registration_info,
+  bool ValidateRegistration(scoped_refptr<RegistrationInfo> registration_info,
                             const std::string& registration_id);
   void DeleteToken(const std::string& app_id,
                    const std::string& authorized_entity,
@@ -167,7 +166,7 @@ void GCMDriverDesktop::IOWorker::Initialize(
 }
 
 void GCMDriverDesktop::IOWorker::OnRegisterFinished(
-    const linked_ptr<RegistrationInfo>& registration_info,
+    scoped_refptr<RegistrationInfo> registration_info,
     const std::string& registration_id,
     GCMClient::Result result) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
@@ -194,7 +193,7 @@ void GCMDriverDesktop::IOWorker::OnRegisterFinished(
 }
 
 void GCMDriverDesktop::IOWorker::OnUnregisterFinished(
-    const linked_ptr<RegistrationInfo>& registration_info,
+    scoped_refptr<RegistrationInfo> registration_info,
     GCMClient::Result result) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
@@ -317,28 +316,27 @@ void GCMDriverDesktop::IOWorker::Register(
     const std::vector<std::string>& sender_ids) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  auto gcm_info = std::make_unique<GCMRegistrationInfo>();
+  auto gcm_info = base::MakeRefCounted<GCMRegistrationInfo>();
   gcm_info->app_id = app_id;
   gcm_info->sender_ids = sender_ids;
-  gcm_client_->Register(make_linked_ptr<RegistrationInfo>(gcm_info.release()));
+  gcm_client_->Register(std::move(gcm_info));
 }
 
 bool GCMDriverDesktop::IOWorker::ValidateRegistration(
-    std::unique_ptr<RegistrationInfo> registration_info,
+    scoped_refptr<RegistrationInfo> registration_info,
     const std::string& registration_id) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  return gcm_client_->ValidateRegistration(
-      make_linked_ptr(registration_info.release()), registration_id);
+  return gcm_client_->ValidateRegistration(std::move(registration_info),
+                                           registration_id);
 }
 
 void GCMDriverDesktop::IOWorker::Unregister(const std::string& app_id) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  auto gcm_info = std::make_unique<GCMRegistrationInfo>();
+  auto gcm_info = base::MakeRefCounted<GCMRegistrationInfo>();
   gcm_info->app_id = app_id;
-  gcm_client_->Unregister(
-      make_linked_ptr<RegistrationInfo>(gcm_info.release()));
+  gcm_client_->Unregister(std::move(gcm_info));
 }
 
 void GCMDriverDesktop::IOWorker::Send(const std::string& app_id,
@@ -450,25 +448,23 @@ void GCMDriverDesktop::IOWorker::GetToken(
     const std::map<std::string, std::string>& options) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  auto instance_id_token_info = std::make_unique<InstanceIDTokenInfo>();
+  auto instance_id_token_info = base::MakeRefCounted<InstanceIDTokenInfo>();
   instance_id_token_info->app_id = app_id;
   instance_id_token_info->authorized_entity = authorized_entity;
   instance_id_token_info->scope = scope;
   instance_id_token_info->options = options;
-  gcm_client_->Register(
-      make_linked_ptr<RegistrationInfo>(instance_id_token_info.release()));
+  gcm_client_->Register(std::move(instance_id_token_info));
 }
 
 void GCMDriverDesktop::IOWorker::DeleteToken(
     const std::string& app_id,
     const std::string& authorized_entity,
     const std::string& scope) {
-  auto instance_id_token_info = std::make_unique<InstanceIDTokenInfo>();
+  auto instance_id_token_info = base::MakeRefCounted<InstanceIDTokenInfo>();
   instance_id_token_info->app_id = app_id;
   instance_id_token_info->authorized_entity = authorized_entity;
   instance_id_token_info->scope = scope;
-  gcm_client_->Unregister(
-      make_linked_ptr<RegistrationInfo>(instance_id_token_info.release()));
+  gcm_client_->Unregister(std::move(instance_id_token_info));
 }
 
 void GCMDriverDesktop::IOWorker::WakeFromSuspendForHeartbeat(bool wake) {
@@ -579,17 +575,16 @@ void GCMDriverDesktop::ValidateRegistration(
 
   // Only validating current state, so ignore pending register_callbacks_.
 
-  auto gcm_info = std::make_unique<GCMRegistrationInfo>();
+  auto gcm_info = base::MakeRefCounted<GCMRegistrationInfo>();
   gcm_info->app_id = app_id;
   gcm_info->sender_ids = sender_ids;
   // Normalize the sender IDs by making them sorted.
   std::sort(gcm_info->sender_ids.begin(), gcm_info->sender_ids.end());
 
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
-    delayed_task_controller_->AddTask(
-        base::Bind(&GCMDriverDesktop::DoValidateRegistration,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&gcm_info),
-                   registration_id, callback));
+    delayed_task_controller_->AddTask(base::Bind(
+        &GCMDriverDesktop::DoValidateRegistration,
+        weak_ptr_factory_.GetWeakPtr(), gcm_info, registration_id, callback));
     return;
   }
 
@@ -597,14 +592,14 @@ void GCMDriverDesktop::ValidateRegistration(
 }
 
 void GCMDriverDesktop::DoValidateRegistration(
-    std::unique_ptr<RegistrationInfo> registration_info,
+    scoped_refptr<RegistrationInfo> registration_info,
     const std::string& registration_id,
     const ValidateRegistrationCallback& callback) {
   base::PostTaskAndReplyWithResult(
       io_thread_.get(), FROM_HERE,
       base::Bind(&GCMDriverDesktop::IOWorker::ValidateRegistration,
                  base::Unretained(io_worker_.get()),
-                 base::Passed(&registration_info), registration_id),
+                 std::move(registration_info), registration_id),
       callback);
 }
 
@@ -948,16 +943,15 @@ void GCMDriverDesktop::ValidateToken(const std::string& app_id,
 
   // Only validating current state, so ignore pending get_token_callbacks_.
 
-  auto instance_id_info = std::make_unique<InstanceIDTokenInfo>();
+  auto instance_id_info = base::MakeRefCounted<InstanceIDTokenInfo>();
   instance_id_info->app_id = app_id;
   instance_id_info->authorized_entity = authorized_entity;
   instance_id_info->scope = scope;
 
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
-    delayed_task_controller_->AddTask(
-        base::Bind(&GCMDriverDesktop::DoValidateRegistration,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&instance_id_info), token, callback));
+    delayed_task_controller_->AddTask(base::Bind(
+        &GCMDriverDesktop::DoValidateRegistration,
+        weak_ptr_factory_.GetWeakPtr(), instance_id_info, token, callback));
     return;
   }
 
