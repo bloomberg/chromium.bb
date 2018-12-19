@@ -22,6 +22,8 @@ class ExecutionContext;
 // error signals, we define another interface, CompletionNotifier, for the
 // signals.
 class CORE_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
+  USING_PRE_FINALIZER(DataPipeBytesConsumer, Dispose);
+
  public:
   class CORE_EXPORT CompletionNotifier final
       : public GarbageCollected<CompletionNotifier> {
@@ -70,6 +72,7 @@ class CORE_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
   void ClearDataPipe();
   void SignalComplete();
   void SignalError(const Error& error);
+  void Dispose();
 
   Member<ExecutionContext> execution_context_;
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
