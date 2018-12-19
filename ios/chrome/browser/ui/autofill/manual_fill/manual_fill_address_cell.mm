@@ -454,6 +454,10 @@
   AppendHorizontalConstraintsForViews(staticConstraints,
                                       @[ self.emailAddressButton ], guide);
 
+  // Without this set, Voice Over will read the content vertically instead of
+  // horizontally.
+  self.contentView.shouldGroupAccessibilityChildren = YES;
+
   [NSLayoutConstraint activateConstraints:staticConstraints];
 }
 
