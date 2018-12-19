@@ -841,6 +841,8 @@ bool FragmentPaintPropertyTreeBuilder::EffectCanUseCurrentClipAsOutputClip()
 
   // Some descendants under a pagination container (e.g. composited objects
   // in SPv1 and column spanners) may escape fragment clips.
+  // TODO(crbug.com/803649): Remove this when we fix fragment clip hierarchy
+  // issues.
   if (layer->EnclosingPaginationLayer())
     return false;
 
@@ -2352,17 +2354,29 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
   // should also skip any fragment clip created by the skipped pagination
   // container. We also need to skip fragment clip if the object is a paint
   // invalidation container which doesn't allow fragmentation.
+  // TODO(crbug.com/803649): This may also skip necessary clips under the
+  // skipped fragment clip.
   if (object_.IsColumnSpanAll() ||
       (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
        object_.IsPaintInvalidationContainer() &&
        ToLayoutBoxModelObject(object_).Layer()->EnclosingPaginationLayer())) {
     if (const auto* pagination_layer_in_tree_hierarchy =
             object_.Parent()->EnclosingLayer()->EnclosingPaginationLayer()) {
-      const auto* properties =
-          pagination_layer_in_tree_hierarchy->GetLayoutObject()
-              .FirstFragment()
-              .PaintProperties();
+      const auto& clip_container =
+          pagination_layer_in_tree_hierarchy->GetLayoutObject();
+      const auto* properties = clip_container.FirstFragment().PaintProperties();
       if (properties && properties->FragmentClip()) {
+        // However, because we don't allow an object's clip to escape the
+        // output clip of the object's effect, we can't skip fragment clip if
+        // between this object and the container there is any effect that has
+        // an output clip. TODO(crbug.com/803649): Fix this workaround.
+        const auto* clip_container_effect =
+            clip_container.FirstFragment().PostIsolationEffect();
+        for (const auto* effect = context_.fragments[0].current_effect;
+             effect != clip_container_effect; effect = effect->Parent()) {
+          if (effect->OutputClip())
+            return;
+        }
         context_.fragments[0].current.clip =
             properties->FragmentClip()->Parent();
       }
